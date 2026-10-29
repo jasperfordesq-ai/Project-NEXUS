@@ -962,6 +962,44 @@ function jobTranslation(req, key, fallbackMessage = '', replacements = {}) {
   return typeof english === 'string' && english !== '' && english !== key ? english : fallbackMessage;
 }
 
+// React CreateJobPage shows the market rate for the title as it is typed. Without
+// JavaScript the form shows it whenever it already has a title (edit, template,
+// or a form returned with errors). Best effort: no benchmark, no line.
+async function salaryBenchmarkLine(req, token, title) {
+  const role = typeof title === 'string' ? title.trim() : '';
+  if (!role) return '';
+  let benchmark;
+  try {
+    const data = objectFrom(await callJob(token, 'GET', `/salary-benchmark?title=${encodeURIComponent(role)}`)) || {};
+    benchmark = data.benchmark && typeof data.benchmark === 'object' ? data.benchmark : null;
+  } catch {
+    return '';
+  }
+  if (!benchmark || !Number.isFinite(Number(benchmark.salary_min)) || !Number.isFinite(Number(benchmark.salary_max))) {
+    return '';
+  }
+  const currency = /^[A-Z]{3}$/.test(String(benchmark.currency || '')) ? benchmark.currency : null;
+  const money = (value) => {
+    try {
+      return new Intl.NumberFormat(getRequestIntlLocale(), currency
+        ? { style: 'currency', currency, maximumFractionDigits: 2 }
+        : { maximumFractionDigits: 2 }).format(Number(value));
+    } catch {
+      return String(value);
+    }
+  };
+  const type = String(benchmark.salary_type || '');
+  const periodKey = `jobs_t3.salary_type_${type}`;
+  const period = ['hourly', 'monthly', 'annual'].includes(type) ? jobTranslation(req, periodKey, type) : type;
+  return jobTranslation(req, 'jobs_t3.salary_benchmark', '', {
+    role: String(benchmark.role_keyword || role),
+    min: money(benchmark.salary_min),
+    max: money(benchmark.salary_max),
+    median: money(benchmark.salary_median ?? (Number(benchmark.salary_min) + Number(benchmark.salary_max)) / 2),
+    period
+  });
+}
+
 function offerSalaryLine(offer, req) {
   const amount = offer.salary_offered ?? offer.salary_amount ?? offer.salary;
   if (amount === null || amount === undefined || amount === '' || Number(amount) <= 0) {
@@ -2366,6 +2404,7 @@ router.get('/create', asyncRoute(async (req, res) => {
       : templateMessage.success,
     jobTemplates: templates,
     companySizes: JOB_COMPANY_SIZES,
+    salaryBenchmark: await salaryBenchmarkLine(req, token, jobForm && jobForm.title),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }));
@@ -2779,18 +2818,20 @@ router.get('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
   const templateMessage = jobTemplateMessage(req, req.query.status);
   const errors = rememberedErrors.length > 0 ? rememberedErrors : formErrors(req, req.query.status);
   if (errors.length === 0 && templateMessage.error) errors.push({ text: templateMessage.error });
+  const editForm = { ...jobFormForEdit(job), ...recalledJobForm(req) };
   return res.render('jobs/form', {
     title: 'Edit opportunity',
     titleKey: 'jobs_t3.edit_title',
     activeNav: 'explore',
     formMode: 'edit',
     formAction: `/jobs/${id}/update`,
-    jobForm: { ...jobFormForEdit(job), ...recalledJobForm(req) },
+    jobForm: editForm,
     jobFormErrors: errors,
     jobFormNotice: templateMessage.success,
     // On edit only "save as template" is offered; loading one would overwrite the advert.
     jobTemplates: templates,
     companySizes: JOB_COMPANY_SIZES,
+    salaryBenchmark: await salaryBenchmarkLine(req, token, editForm.title),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }));

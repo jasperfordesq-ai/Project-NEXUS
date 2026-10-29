@@ -2847,6 +2847,7 @@ return [
         'label_salary_max' => 'Uasmhéid pá (roghnach)',
         'label_salary_currency' => 'Airgeadra (roghnach)',
         'hint_salary_currency' => 'Cód 3 litreach mar EUR, GBP nó USD.',
+        'salary_benchmark' => 'Pá tipiciúil do róil chosúla (:role): :min go :max, :period. Lár an raoin: :median.',
         'label_salary_type' => 'Tréimhse phá (roghnach)',
         'salary_type_none' => 'Gan sonrú',
         'salary_type_hourly' => 'In aghaidh na huaire',

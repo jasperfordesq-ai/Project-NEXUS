@@ -11,6 +11,8 @@
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/character-count/macro.njk" import govukCharacterCount %}
 {% block beforeContent %}
   {{ super() }}
   {% if listing %}
@@ -235,6 +237,51 @@
           value: currentLocation,
           attributes: { maxlength: "255", autocomplete: "off" },
           errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.location } if fieldErrors.location else undefined
+        }) }}
+
+        {# React ListingForm "Optional service details": added to the end of the
+           description on save (Laravel has no fields for them), so always blank here. #}
+        {% set sd = "govuk_alpha_listings.service_details." %}
+        {% set serviceDetailsHtml %}
+          {{ govukSelect({
+            id: "experience_level",
+            name: "experience_level",
+            label: { text: t(sd + "experience_label") },
+            items: [
+              { value: "", text: t(sd + "not_specified") },
+              { value: "beginner_friendly", text: t(sd + "experience_beginner"), selected: values and values.experience_level == "beginner_friendly" },
+              { value: "some_experience", text: t(sd + "experience_some"), selected: values and values.experience_level == "some_experience" },
+              { value: "experienced", text: t(sd + "experience_experienced"), selected: values and values.experience_level == "experienced" },
+              { value: "professional", text: t(sd + "experience_professional"), selected: values and values.experience_level == "professional" }
+            ]
+          }) }}
+          {{ govukSelect({
+            id: "equipment_provided",
+            name: "equipment_provided",
+            label: { text: t(sd + "equipment_label") },
+            items: [
+              { value: "", text: t(sd + "not_specified") },
+              { value: "provided", text: t(sd + "equipment_provided"), selected: values and values.equipment_provided == "provided" },
+              { value: "partial", text: t(sd + "equipment_partial"), selected: values and values.equipment_provided == "partial" },
+              { value: "bring_own", text: t(sd + "equipment_bring_own"), selected: values and values.equipment_provided == "bring_own" },
+              { value: "not_applicable", text: t(sd + "equipment_na"), selected: values and values.equipment_provided == "not_applicable" }
+            ]
+          }) }}
+          {{ govukCharacterCount({
+            id: "accessibility_notes",
+            name: "accessibility_notes",
+            maxlength: 200,
+            rows: 2,
+            label: { text: t(sd + "accessibility_label") },
+            hint: { text: t(sd + "accessibility_hint") },
+            value: values.accessibility_notes if values else "",
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.accessibility_notes } if fieldErrors.accessibility_notes else undefined
+          }) }}
+        {% endset %}
+        {{ govukDetails({
+          summaryText: t(sd + "toggle"),
+          html: serviceDetailsHtml,
+          open: (values and (values.experience_level or values.equipment_provided or values.accessibility_notes)) or fieldErrors.accessibility_notes
         }) }}
 
         <div class="govuk-form-group{% if fieldErrors.image %} govuk-form-group--error{% endif %}">

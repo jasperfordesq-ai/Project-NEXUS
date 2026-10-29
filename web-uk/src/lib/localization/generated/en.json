@@ -3878,6 +3878,7 @@
                 "label_salary_max": "Maximum pay (optional)",
                 "label_salary_currency": "Currency (optional)",
                 "hint_salary_currency": "A 3-letter code such as EUR, GBP or USD.",
+                "salary_benchmark": "Typical pay for similar roles (:role): :min to :max, :period. Middle of the range: :median.",
                 "label_salary_type": "Pay period (optional)",
                 "salary_type_none": "Not specified",
                 "salary_type_hourly": "Per hour",
@@ -8066,6 +8067,9 @@
                 "quiz_failed": "You did not reach the pass mark this time. Review the lesson and try again if you have attempts left.",
                 "quiz_no_attempts": "You have no attempts remaining for this quiz.",
                 "quiz_error": "Sorry, we could not record your quiz attempt. Please try again.",
+                "lesson_quiz_required": "Pass this lesson's quiz before marking the lesson as complete.",
+                "lesson_locked": "This lesson is not open yet. Complete the earlier lessons first.",
+                "lesson_failed": "Sorry, that lesson action could not be completed. Please try again.",
                 "deleted": "Your course was deleted.",
                 "delete_failed": "Sorry, your course could not be deleted. Please try again.",
                 "created": "Your course was created. Add the details and publish when you are ready.",
@@ -8085,7 +8089,6 @@
                 "lesson_added": "Your lesson was added.",
                 "lesson_saved": "Your lesson was saved.",
                 "lesson_deleted": "Your lesson was deleted.",
-                "lesson_failed": "Sorry, that lesson action could not be completed. Please try again.",
                 "lesson_title_missing": "Enter a title for the lesson.",
                 "graded": "The attempt has been graded.",
                 "grade_failed": "The attempt could not be graded. Please try again."
@@ -11323,6 +11326,23 @@
                     "ai-failed": "We could not generate a description right now. Please write one yourself or try again later.",
                     "ai-disabled": "AI description suggestions are not available on this community."
                 }
+            },
+            "service_details": {
+                "not_specified": "Not specified",
+                "toggle": "Optional service details",
+                "experience_label": "Experience",
+                "experience_beginner": "Beginner-friendly",
+                "experience_some": "Some experience helpful",
+                "experience_experienced": "Experienced practitioner",
+                "experience_professional": "Professional / certified",
+                "equipment_label": "Equipment",
+                "equipment_provided": "I'll provide everything needed",
+                "equipment_partial": "Some things needed from you",
+                "equipment_bring_own": "You'll need to provide your own",
+                "equipment_na": "Not applicable",
+                "accessibility_label": "Accessibility Notes",
+                "accessibility_hint": "e.g., Wheelchair accessible, hearing loop available",
+                "accessibility_max_length": "Accessibility notes must be 200 characters or fewer"
             }
         },
         "govuk_alpha_members": {

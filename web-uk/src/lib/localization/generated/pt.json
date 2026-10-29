@@ -3878,6 +3878,7 @@
                 "label_salary_max": "Remuneração máxima (opcional)",
                 "label_salary_currency": "Moeda (opcional)",
                 "hint_salary_currency": "Um código de 3 letras como EUR, GBP ou USD.",
+                "salary_benchmark": "Remuneração habitual para funções semelhantes (:role): de :min a :max, :period. Valor intermédio: :median.",
                 "label_salary_type": "Período de pagamento (opcional)",
                 "salary_type_none": "Não especificado",
                 "salary_type_hourly": "Por hora",
@@ -8066,6 +8067,9 @@
                 "quiz_failed": "Você não atingiu a marca de aprovação desta vez. Revise a lição e tente novamente se ainda tiver tentativas.",
                 "quiz_no_attempts": "Você não tem mais tentativas para este teste.",
                 "quiz_error": "Desculpe, não foi possível registrar sua tentativa de teste. Por favor, tente novamente.",
+                "lesson_quiz_required": "Passe no questionário desta lição antes de a marcar como concluída.",
+                "lesson_locked": "Esta lição ainda não está disponível. Conclua primeiro as lições anteriores.",
+                "lesson_failed": "Desculpe, não foi possível concluir essa ação de lição. Por favor, tente novamente.",
                 "deleted": "Seu curso foi excluído.",
                 "delete_failed": "Desculpe, não foi possível excluir seu curso. Por favor, tente novamente.",
                 "created": "Seu curso foi criado. Adicione os detalhes e publique quando estiver pronto.",
@@ -8085,7 +8089,6 @@
                 "lesson_added": "Sua lição foi adicionada.",
                 "lesson_saved": "Sua lição foi salva.",
                 "lesson_deleted": "Sua lição foi excluída.",
-                "lesson_failed": "Desculpe, não foi possível concluir essa ação de lição. Por favor, tente novamente.",
                 "lesson_title_missing": "Insira um título para a lição.",
                 "graded": "A tentativa foi avaliada.",
                 "grade_failed": "A tentativa não pôde ser avaliada. Por favor, tente novamente."
@@ -11323,6 +11326,23 @@
                     "ai-failed": "Não foi possível gerar uma descrição no momento. Escreva você mesmo ou tente novamente mais tarde.",
                     "ai-disabled": "Sugestões de descrição de IA não estão disponíveis nesta comunidade."
                 }
+            },
+            "service_details": {
+                "not_specified": "Não especificado",
+                "toggle": "Detalhes opcionais do serviço",
+                "experience_label": "Experiência",
+                "experience_beginner": "Adequado para iniciantes",
+                "experience_some": "Alguma experiência útil",
+                "experience_experienced": "Praticante experiente",
+                "experience_professional": "Profissional / certificado",
+                "equipment_label": "Equipamento",
+                "equipment_provided": "Vou fornecer tudo o que é necessário",
+                "equipment_partial": "Algumas coisas necessárias da sua parte",
+                "equipment_bring_own": "Terá de trazer o seu próprio",
+                "equipment_na": "Não aplicável",
+                "accessibility_label": "Notas de Acessibilidade",
+                "accessibility_hint": "ex.: acessível a cadeira de rodas, ciclo de audição disponível",
+                "accessibility_max_length": "As notas de acessibilidade devem ter 200 caracteres ou menos"
             }
         },
         "govuk_alpha_members": {

@@ -238,8 +238,41 @@ function listingFormValues(source = {}, listing = null) {
       : (base.hours_available ?? ''),
     service_type: values.service_type !== undefined ? values.service_type : (base.service_type || 'physical_only'),
     location: values.location !== undefined ? values.location : (base.location || ''),
-    skill_tags: skillTags
+    skill_tags: skillTags,
+    // Optional service details (React ListingForm). Not stored as fields: they are
+    // appended to the description on save, so they always start blank.
+    experience_level: values.experience_level !== undefined ? values.experience_level : '',
+    equipment_provided: values.equipment_provided !== undefined ? values.equipment_provided : '',
+    accessibility_notes: values.accessibility_notes !== undefined ? values.accessibility_notes : ''
   };
+}
+
+const LISTING_EXPERIENCE_LEVELS = {
+  beginner_friendly: 'experience_beginner',
+  some_experience: 'experience_some',
+  experienced: 'experience_experienced',
+  professional: 'experience_professional'
+};
+const LISTING_EQUIPMENT = {
+  provided: 'equipment_provided',
+  partial: 'equipment_partial',
+  bring_own: 'equipment_bring_own',
+  not_applicable: 'equipment_na'
+};
+
+// React ListingForm doSubmit: the optional details are added to the end of the
+// description as "Label: value" lines after a "---" separator, in the author's
+// language. Laravel has no columns for them.
+function serviceDetailsSuffix(values, t) {
+  const key = (name) => t(`govuk_alpha_listings.service_details.${name}`);
+  const lines = [];
+  const experience = LISTING_EXPERIENCE_LEVELS[trimmed(values.experience_level)];
+  if (experience) lines.push(`${key('experience_label')}: ${key(experience)}`);
+  const equipment = LISTING_EQUIPMENT[trimmed(values.equipment_provided)];
+  if (equipment) lines.push(`${key('equipment_label')}: ${key(equipment)}`);
+  const notes = trimmed(values.accessibility_notes);
+  if (notes) lines.push(`${key('accessibility_label')}: ${notes}`);
+  return lines.length > 0 ? `\n\n---\n${lines.join('\n')}` : '';
 }
 
 function boundedListingFormValues(source = {}) {
@@ -253,7 +286,10 @@ function boundedListingFormValues(source = {}) {
     hours_available: trimmed(values.hours_available, 32),
     service_type: trimmed(values.service_type, 64),
     location: trimmed(values.location, 255),
-    skill_tags: trimmed(values.skill_tags, 600)
+    skill_tags: trimmed(values.skill_tags, 600),
+    experience_level: trimmed(values.experience_level, 32),
+    equipment_provided: trimmed(values.equipment_provided, 32),
+    accessibility_notes: trimmed(values.accessibility_notes, 400)
   };
 }
 
@@ -275,11 +311,11 @@ function consumeListingFormReplay(req, listingId) {
 
 // `hoursAvailableSubmitted`: only a form that offered the "hours available" field may
 // set or clear the cap. A post without the field leaves the stored cap alone.
-function listingPayloadFrom(values, { hoursAvailableSubmitted = false } = {}) {
+function listingPayloadFrom(values, { hoursAvailableSubmitted = false, t = null } = {}) {
   const hours = trimmed(values.hours_estimate);
   const payload = {
     title: trimmed(values.title),
-    description: trimmed(values.description),
+    description: trimmed(values.description) + (typeof t === 'function' ? serviceDetailsSuffix(values, t) : ''),
     type: trimmed(values.type),
     category_id: positiveInteger(values.category_id),
     hours_estimate: hours === '' ? null : Number(hours),
@@ -352,6 +388,9 @@ function validateListingValues(values, config, allowedTypes, image = null, t = k
 
   if (config.requireLocation && !location) add('location', t('listings.create.errors.location_required'));
   else if (locationLength > 255) add('location', 'Location must be 255 characters or fewer');
+  if (characterLength(trimmed(values.accessibility_notes)) > 200) {
+    add('accessibility_notes', t('govuk_alpha_listings.service_details.accessibility_max_length'));
+  }
 
   if (config.enableServiceType && !LISTING_SERVICE_TYPES.has(trimmed(values.service_type))) {
     add('service_type', 'Select how the service will be delivered');
@@ -1496,7 +1535,7 @@ router.post('/new', requireAuth, audit.listingCreate(), asyncRoute(async (req, r
   }
 
   try {
-    const result = await createListing(req.token, listingPayloadFrom(values, { hoursAvailableSubmitted: hoursAvailableSubmitted(req) }));
+    const result = await createListing(req.token, listingPayloadFrom(values, { hoursAvailableSubmitted: hoursAvailableSubmitted(req), t: res.locals.t }));
     const listingId = positiveInteger(listingFrom(result).id);
     if (listingId === null) {
       if (req.flash) {
@@ -1653,7 +1692,7 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.listingUpdate(), asyncRoute(as
   }
 
   try {
-    await updateListing(req.token, id, listingPayloadFrom(values, { hoursAvailableSubmitted: hoursAvailableSubmitted(req) }));
+    await updateListing(req.token, id, listingPayloadFrom(values, { hoursAvailableSubmitted: hoursAvailableSubmitted(req), t: res.locals.t }));
     const secondaryFailures = [];
     try {
       await setListingSkillTags(req.token, id, skillTagsFrom(values.skill_tags));

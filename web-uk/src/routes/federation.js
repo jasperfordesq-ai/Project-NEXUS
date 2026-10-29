@@ -114,7 +114,8 @@ function normalizePartner(partner, options = {}) {
     listingCount,
     listingCountLabel: formatNumber(listingCount),
     levelName,
-    levelLabel: knownLevels.has(levelName) ? t(`federation.levels.${levelName}`) : levelName,
+    // Laravel sends 'Discovery', 'Social', … capitalised; the label keys are lowercase.
+    levelLabel: knownLevels.has(levelName.toLowerCase()) ? t(`federation.levels.${levelName.toLowerCase()}`) : levelName,
     partnershipSince,
     partnershipSinceLabel: partnershipSince
       ? formatDate(partnershipSince, partnershipDateOptions)
@@ -186,7 +187,10 @@ function normalizeMember(member, options = {}) {
     tenantName: trimmed((member && member.tenant_name) || timebank.name),
     messagingEnabled: bool(member && member.messaging_enabled),
     transactionsEnabled: bool(member && member.transactions_enabled),
-    showReviews: bool(member && member.show_reviews),
+    // Laravel never sends show_reviews; it adds trust_score / reputation_* only
+    // when the member shares reviews with partners (show_reviews_federated).
+    showReviews: bool(member && (member.show_reviews
+      || member.trust_score !== undefined || member.reputation_score !== undefined)),
     reputationScore,
     reputationScoreLabel: formatNumber(reputationScore ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
     reputationCount,
@@ -951,10 +955,11 @@ router.get('/', asyncRoute(async (req, res) => {
 
   const stats = asObject(dataFrom(statusResult));
   const partnerData = dataFrom(partnersResult);
-  const partners = asList(partnerData).map(normalizePartner).slice(0, 6);
+  const allPartners = asList(partnerData).map(normalizePartner);
+  const partners = allPartners.slice(0, 6);
   const activity = asList(dataFrom(activityResult)).map(normalizeActivity).slice(0, 5);
   const partnerMeta = metaFrom(partnersResult);
-  const partnerTotal = numberOrZero(partnerMeta.total || (partnerData && partnerData.total) || partners.length);
+  const partnerTotal = numberOrZero(partnerMeta.total || (partnerData && partnerData.total) || allPartners.length);
 
   return res.render('federation/index', {
     // 🔴 Was hardcoded English. This is the browser tab name and what a screen
@@ -1424,7 +1429,8 @@ router.get('/members', asyncRoute(async (req, res) => {
     federationActiveTab: 'members',
     members,
     partnerOptions,
-    total: meta.total_items !== undefined ? numberOrZero(meta.total_items) : null,
+    // Laravel only counts on the first page (total_items is 0 after a cursor).
+    total: !trimmed(req.query.cursor) && meta.total_items !== undefined ? numberOrZero(meta.total_items) : null,
     nextCursor,
     loadMoreHref: nextCursor ? loadMoreHref('/federation/members', req, nextCursor) : '',
     filters: {

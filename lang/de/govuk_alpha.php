@@ -2845,6 +2845,7 @@ return [
         'label_salary_max' => 'Maximale Vergütung (optional)',
         'label_salary_currency' => 'Währung (optional)',
         'hint_salary_currency' => 'Ein 3-Buchstaben-Code wie EUR, GBP oder USD.',
+        'salary_benchmark' => 'Übliche Bezahlung für ähnliche Stellen (:role): :min bis :max, :period. Mitte der Spanne: :median.',
         'label_salary_type' => 'Vergütungszeitraum (optional)',
         'salary_type_none' => 'Nicht angegeben',
         'salary_type_hourly' => 'Pro Stunde',

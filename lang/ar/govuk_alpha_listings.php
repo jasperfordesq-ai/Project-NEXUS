@@ -110,4 +110,22 @@ return [
             'ai-disabled' => 'اقتراحات وصف الذكاء الاصطناعي غير متوفرة في هذا المجتمع.',
         ],
     ],
+    // React ListingForm optional service details (folded into the description).
+    'service_details' => [
+        'not_specified' => 'غير محدد',
+        'toggle' => 'تفاصيل الخدمة الاختيارية',
+        'experience_label' => 'الخبرة',
+        'experience_beginner' => 'مناسب للمبتدئين',
+        'experience_some' => 'بعض الخبرة مفيدة',
+        'experience_experienced' => 'ممارس متمرس',
+        'experience_professional' => 'محترف / معتمد',
+        'equipment_label' => 'المعدات',
+        'equipment_provided' => 'سأوفر كل ما هو مطلوب',
+        'equipment_partial' => 'بعض الأشياء مطلوبة منك',
+        'equipment_bring_own' => 'ستحتاج إلى توفير معداتك الخاصة',
+        'equipment_na' => 'غير منطبق',
+        'accessibility_label' => 'ملاحظات الوصول',
+        'accessibility_hint' => 'مثل: مناسب لكراسي الإعاقة، حلقة سمعية متاحة',
+        'accessibility_max_length' => 'يجب ألا تتجاوز ملاحظات الوصول 200 حرف',
+    ],
 ];

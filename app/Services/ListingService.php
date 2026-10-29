@@ -1287,21 +1287,22 @@ class ListingService
         $initialStatus = $moderationEnabled ? 'pending' : 'active';
         $initialModerationStatus = $moderationEnabled ? 'pending_review' : 'approved';
 
-        // Fall back to user's location when not provided
-        if (
-            empty($data['location'])
-            || !array_key_exists('latitude', $data)
-            || $data['latitude'] === null
-            || $data['latitude'] === ''
-            || !array_key_exists('longitude', $data)
-            || $data['longitude'] === null
-            || $data['longitude'] === ''
-        ) {
+        // No place given: fall back to the member's own place and coordinates.
+        // A typed place with no coordinates (the accessible frontend has no map
+        // picker) is looked up instead — copying the member's home coordinates
+        // onto it pinned the listing in the wrong town, and because it then had
+        // coordinates the background lookup never corrected it.
+        if (!self::hasCoordinates($data)) {
             $user = User::find($userId);
-            if ($user) {
-                $data['location']  = $data['location']  ?? $user->location;
-                $data['latitude']  = $data['latitude']  ?? $user->latitude;
-                $data['longitude'] = $data['longitude'] ?? $user->longitude;
+            $typed = trim((string) ($data['location'] ?? ''));
+            if ($typed === '' || ($user && self::samePlace($typed, $user->location))) {
+                if ($user) {
+                    $data['location']  = $typed !== '' ? $data['location'] : $user->location;
+                    $data['latitude']  = $user->latitude;
+                    $data['longitude'] = $user->longitude;
+                }
+            } else {
+                [$data['latitude'], $data['longitude']] = self::lookUpPlace($typed);
             }
         }
 
@@ -1454,6 +1455,18 @@ class ListingService
         ];
 
         $updates = collect($data)->only($allowed)->all();
+
+        // A changed place without new coordinates moves the pin to the new place;
+        // if it cannot be found, the old pin is cleared so the background lookup
+        // retries it, rather than the listing staying where the old place was.
+        if (
+            array_key_exists('location', $updates)
+            && !self::hasCoordinates($updates)
+            && !self::samePlace((string) $updates['location'], $listing->location)
+        ) {
+            $typed = trim((string) $updates['location']);
+            [$updates['latitude'], $updates['longitude']] = $typed === '' ? [null, null] : self::lookUpPlace($typed);
+        }
 
         // F-568 (E-093): the description box is a plain text box — markup is stored as words.
         if (isset($updates['description']) && is_string($updates['description'])) {
@@ -1694,6 +1707,43 @@ class ListingService
         }
 
         return empty(self::$errors);
+    }
+
+    // -----------------------------------------------------------------
+    //  Location
+    // -----------------------------------------------------------------
+
+    private static function hasCoordinates(array $data): bool
+    {
+        foreach (['latitude', 'longitude'] as $key) {
+            if (!array_key_exists($key, $data) || $data[$key] === null || $data[$key] === '') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static function samePlace(string $a, ?string $b): bool
+    {
+        return mb_strtolower(trim($a)) === mb_strtolower(trim((string) $b));
+    }
+
+    /**
+     * Best-effort lookup of a typed place. Null coordinates leave the listing
+     * for the background lookup (CronJobRunner geocode-batch) to retry.
+     *
+     * @return array{0: ?float, 1: ?float}
+     */
+    private static function lookUpPlace(string $place): array
+    {
+        try {
+            $coords = GeocodingService::geocode($place);
+        } catch (\Throwable $e) {
+            Log::warning('Listing place lookup failed', ['error' => $e->getMessage()]);
+            $coords = null;
+        }
+
+        return $coords ? [(float) $coords['latitude'], (float) $coords['longitude']] : [null, null];
     }
 
     // -----------------------------------------------------------------

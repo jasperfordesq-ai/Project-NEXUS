@@ -110,4 +110,22 @@ return [
             'ai-disabled' => 'Sugestie dotyczące opisu sztucznej inteligencji nie są dostępne w tej społeczności.',
         ],
     ],
+    // React ListingForm optional service details (folded into the description).
+    'service_details' => [
+        'not_specified' => 'Nieokreślone',
+        'toggle' => 'Opcjonalne szczegóły usługi',
+        'experience_label' => 'Doświadczenie',
+        'experience_beginner' => 'Przyjazne dla początkujących',
+        'experience_some' => 'Pewne doświadczenie pomocne',
+        'experience_experienced' => 'Doświadczony praktyk',
+        'experience_professional' => 'Profesjonalny / certyfikowany',
+        'equipment_label' => 'Wyposażenie',
+        'equipment_provided' => 'Zapewnię wszystko co potrzebne',
+        'equipment_partial' => 'Niektóre rzeczy potrzebne od ciebie',
+        'equipment_bring_own' => 'Będziesz musiał/a zapewnić własne',
+        'equipment_na' => 'Nie dotyczy',
+        'accessibility_label' => 'Uwagi dotyczące dostępności',
+        'accessibility_hint' => 'np. dostęp dla wózków inwalidzkich, pętla indukcyjna dostępna',
+        'accessibility_max_length' => 'Uwagi dotyczące dostępności muszą mieć 200 znaków lub mniej',
+    ],
 ];

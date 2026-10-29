@@ -110,4 +110,22 @@ return [
             'ai-disabled' => 'Níl moltaí tuairiscithe AI ​​ar fáil ar an bpobal seo.',
         ],
     ],
+    // React ListingForm optional service details (folded into the description).
+    'service_details' => [
+        'not_specified' => 'Gan sonrú',
+        'toggle' => 'Sonraí seirbhíse roghnacha',
+        'experience_label' => 'Taithí',
+        'experience_beginner' => 'Oiriúnach do thosaitheoirí',
+        'experience_some' => 'Roinnt taithí ina chabhair',
+        'experience_experienced' => 'Oiriúnach do dhuine a bhfuil taithí aige',
+        'experience_professional' => 'Gairmiúil / deimhnithe',
+        'equipment_label' => 'Trealamh',
+        'equipment_provided' => 'Soláthróidh mé gach rud is gá',
+        'equipment_partial' => 'Beidh ort roinnt trealaimh a thabhairt leat',
+        'equipment_bring_own' => 'Beidh ort do threalamh féin a sholáthar',
+        'equipment_na' => 'Ní bhaineann',
+        'accessibility_label' => 'Nótaí Inrochtaineachta',
+        'accessibility_hint' => 'm.sh., Inrochtana do chathaoir rothaí, lúb éisteachta ar fáil',
+        'accessibility_max_length' => 'Ní mór do nótaí inrochtaineachta a bheith 200 carachtar nó níos lú',
+    ],
 ];

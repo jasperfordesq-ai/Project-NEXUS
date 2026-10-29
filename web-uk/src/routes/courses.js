@@ -113,6 +113,9 @@ const LEARN_STATUS_MESSAGES = {
   'quiz-failed': { type: 'error', key: 'quiz_failed' },
   'quiz-no-attempts': { type: 'error', key: 'quiz_no_attempts' },
   'quiz-error': { type: 'error', key: 'quiz_error' },
+  'lesson-quiz-required': { type: 'error', key: 'lesson_quiz_required' },
+  'lesson-locked': { type: 'error', key: 'lesson_locked' },
+  'lesson-failed': { type: 'error', key: 'lesson_failed' },
   'comment-posted': { type: 'success', messageKey: 'govuk_alpha_courses.discussion.comment_posted' },
   'comment-deleted': { type: 'success', messageKey: 'govuk_alpha_courses.discussion.comment_deleted' },
   'comment-required': { type: 'error', messageKey: 'govuk_alpha_courses.discussion.comment_required' },
@@ -1294,8 +1297,9 @@ router.get('/:id(\\d+)/certificate', asyncRoute(async (req, res) => {
     }
     return res.type('html').send(html);
   } catch (error) {
-    if (error instanceof ApiError && [401, 403, 404].includes(error.status)) {
-      const status = error.status === 403 ? 'certificate-locked' : 'certificate-failed';
+    if (error instanceof ApiError && [401, 403, 404, 422].includes(error.status)) {
+      // 422 = QUIZ_PASS_REQUIRED: the course is not finished yet, same as 403.
+      const status = [403, 422].includes(error.status) ? 'certificate-locked' : 'certificate-failed';
       return redirectTo(res, courseRedirect(req.params.id, status));
     }
     if (handleCourseGetError(error, res)) return undefined;
@@ -1521,10 +1525,19 @@ function firstErrorCode(error) {
 }
 
 function reviewFailureStatus(error) {
-  const code = errorCode(error);
+  const code = errorCode(error) || firstErrorCode(error);
   if (code === 'NOT_ENROLLED') return 'review-not-enrolled';
   if (code === 'VALIDATION_FAILED') return 'review-invalid';
   return 'review-failed';
+}
+
+// Laravel refuses completion of an unpassed quiz lesson (QUIZ_PASS_REQUIRED) or a
+// locked lesson (LESSON_LOCKED); neither may be reported as "Lesson marked as complete".
+function lessonCompleteFailureStatus(error) {
+  const code = errorCode(error) || firstErrorCode(error);
+  if (code === 'QUIZ_PASS_REQUIRED') return 'lesson-quiz-required';
+  if (code === 'LESSON_LOCKED') return 'lesson-locked';
+  return 'lesson-failed';
 }
 
 function quizStatus(result) {
@@ -1545,7 +1558,7 @@ router.post('/:id(\\d+)/enrol', asyncRoute(async (req, res) => {
 }));
 
 router.post('/:id(\\d+)/lessons/:lessonId(\\d+)/complete', asyncRoute(async (req, res) => {
-  return requireCourseAction(req, res, learnRedirect(req.params.id, 'lesson-completed'), async (token) => {
+  return requireCourseAction(req, res, (error) => learnRedirect(req.params.id, lessonCompleteFailureStatus(error), req.params.lessonId), async (token) => {
     const result = await callCourse(token, 'POST', `/${encodeURIComponent(req.params.id)}/lessons/${encodeURIComponent(req.params.lessonId)}/complete`, completionPayload(req.body));
     const data = dataFrom(result);
     const status = data && typeof data === 'object' && data.course_completed
@@ -1569,7 +1582,7 @@ router.post('/:id(\\d+)/lessons/:lessonId(\\d+)/quiz', asyncRoute(async (req, re
       return redirectTo(res, learnRedirect(req.params.id, quizStatus(result), req.params.lessonId));
     } catch (error) {
       if (redirectOnAuthError(error, res)) return undefined;
-      const status = errorCode(error) === 'MAX_ATTEMPTS_REACHED' ? 'quiz-no-attempts' : 'quiz-error';
+      const status = (errorCode(error) || firstErrorCode(error)) === 'MAX_ATTEMPTS_REACHED' ? 'quiz-no-attempts' : 'quiz-error';
       return redirectTo(res, learnRedirect(req.params.id, status, req.params.lessonId));
     }
   });

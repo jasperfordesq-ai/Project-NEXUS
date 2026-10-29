@@ -2845,6 +2845,7 @@ return [
         'label_salary_max' => 'Rémunération maximale (facultatif)',
         'label_salary_currency' => 'Devise (facultatif)',
         'hint_salary_currency' => 'Un code à 3 lettres tel que EUR, GBP ou USD.',
+        'salary_benchmark' => 'Rémunération habituelle pour des postes similaires (:role) : de :min à :max, :period. Milieu de la fourchette : :median.',
         'label_salary_type' => 'Période de rémunération (facultatif)',
         'salary_type_none' => 'Non spécifié',
         'salary_type_hourly' => 'Par heure',

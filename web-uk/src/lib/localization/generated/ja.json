@@ -3878,6 +3878,7 @@
                 "label_salary_max": "最高報酬（任意）",
                 "label_salary_currency": "通貨（任意）",
                 "hint_salary_currency": "EUR、GBP、USD などの3文字コードを使用してください。",
+                "salary_benchmark": "類似の職種の一般的な報酬（:role）：:min～:max、:period。中央値：:median。",
                 "label_salary_type": "支払い期間（任意）",
                 "salary_type_none": "未指定",
                 "salary_type_hourly": "時間単位",
@@ -8066,6 +8067,9 @@
                 "quiz_failed": "今回は合格点に達しませんでした。レッスンを復習し、試行回数が残っている場合は再試行してください。",
                 "quiz_no_attempts": "このクイズに対する残りの試行回数はありません。",
                 "quiz_error": "申し訳ありませんが、クイズの解答を記録できませんでした。もう一度試してください。",
+                "lesson_quiz_required": "このレッスンを完了にする前に、レッスンのクイズに合格してください。",
+                "lesson_locked": "このレッスンはまだ公開されていません。先に前のレッスンを完了してください。",
+                "lesson_failed": "申し訳ありませんが、そのレッスンアクションを完了できませんでした。もう一度試してください。",
                 "deleted": "あなたのコースは削除されました。",
                 "delete_failed": "申し訳ありませんが、コースを削除できませんでした。もう一度試してください。",
                 "created": "コースが作成されました。詳細を追加し、準備ができたら公開します。",
@@ -8085,7 +8089,6 @@
                 "lesson_added": "あなたのレッスンが追加されました。",
                 "lesson_saved": "レッスンが保存されました。",
                 "lesson_deleted": "あなたのレッスンは削除されました。",
-                "lesson_failed": "申し訳ありませんが、そのレッスンアクションを完了できませんでした。もう一度試してください。",
                 "lesson_title_missing": "レッスンのタイトルを入力します。",
                 "graded": "この試みは採点されました。",
                 "grade_failed": "試技は採点できませんでした。もう一度試してください。"
@@ -11323,6 +11326,23 @@
                     "ai-failed": "現在説明を生成できませんでした。自分で作成するか、後でもう一度試してください。",
                     "ai-disabled": "AI の説明の提案は、このコミュニティでは利用できません。"
                 }
+            },
+            "service_details": {
+                "not_specified": "未指定",
+                "toggle": "サービスの任意詳細",
+                "experience_label": "経験",
+                "experience_beginner": "初心者歓迎",
+                "experience_some": "ある程度の経験があると助かります",
+                "experience_experienced": "経験豊富な実践者",
+                "experience_professional": "プロフェッショナル / 認定資格者",
+                "equipment_label": "機器・道具",
+                "equipment_provided": "必要なものはすべて提供します",
+                "equipment_partial": "一部ご用意いただく必要があります",
+                "equipment_bring_own": "ご自身でご用意いただく必要があります",
+                "equipment_na": "該当なし",
+                "accessibility_label": "アクセシビリティに関するメモ",
+                "accessibility_hint": "例：車椅子対応、補聴器ループ利用可能",
+                "accessibility_max_length": "アクセシビリティのメモは200文字以内にしてください"
             }
         },
         "govuk_alpha_members": {

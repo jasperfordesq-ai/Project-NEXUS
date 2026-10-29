@@ -3878,6 +3878,7 @@
                 "label_salary_max": "Maximale Vergütung (optional)",
                 "label_salary_currency": "Währung (optional)",
                 "hint_salary_currency": "Ein 3-Buchstaben-Code wie EUR, GBP oder USD.",
+                "salary_benchmark": "Übliche Bezahlung für ähnliche Stellen (:role): :min bis :max, :period. Mitte der Spanne: :median.",
                 "label_salary_type": "Vergütungszeitraum (optional)",
                 "salary_type_none": "Nicht angegeben",
                 "salary_type_hourly": "Pro Stunde",
@@ -8066,6 +8067,9 @@
                 "quiz_failed": "Diesmal haben Sie die Mindestpunktzahl nicht erreicht. Gehen Sie die Lektion noch einmal durch und versuchen Sie es noch einmal, wenn Sie noch Versuche übrig haben.",
                 "quiz_no_attempts": "Sie haben für dieses Quiz keine Versuche übrig.",
                 "quiz_error": "Leider konnten wir Ihren Quizversuch nicht aufzeichnen. Bitte versuchen Sie es erneut.",
+                "lesson_quiz_required": "Bestehen Sie das Quiz dieser Lektion, bevor Sie die Lektion als abgeschlossen markieren.",
+                "lesson_locked": "Diese Lektion ist noch nicht freigeschaltet. Schließen Sie zuerst die vorherigen Lektionen ab.",
+                "lesson_failed": "Leider konnte diese Unterrichtsaktion nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
                 "deleted": "Ihr Kurs wurde gelöscht.",
                 "delete_failed": "Leider konnte Ihr Kurs nicht gelöscht werden. Bitte versuchen Sie es erneut.",
                 "created": "Ihr Kurs wurde erstellt. Fügen Sie die Details hinzu und veröffentlichen Sie, wenn Sie bereit sind.",
@@ -8085,7 +8089,6 @@
                 "lesson_added": "Ihre Lektion wurde hinzugefügt.",
                 "lesson_saved": "Ihre Lektion wurde gespeichert.",
                 "lesson_deleted": "Ihre Lektion wurde gelöscht.",
-                "lesson_failed": "Leider konnte diese Unterrichtsaktion nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
                 "lesson_title_missing": "Geben Sie einen Titel für die Lektion ein.",
                 "graded": "Der Versuch wurde bewertet.",
                 "grade_failed": "Der Versuch konnte nicht bewertet werden. Bitte versuchen Sie es erneut."
@@ -11323,6 +11326,23 @@
                     "ai-failed": "Wir konnten momentan keine Beschreibung erstellen. Bitte schreiben Sie selbst eine oder versuchen Sie es später noch einmal.",
                     "ai-disabled": "KI-Beschreibungsvorschläge sind in dieser Community nicht verfügbar."
                 }
+            },
+            "service_details": {
+                "not_specified": "Nicht angegeben",
+                "toggle": "Optionale Servicedetails",
+                "experience_label": "Erfahrung",
+                "experience_beginner": "Anfängergeeignet",
+                "experience_some": "Etwas Erfahrung hilfreich",
+                "experience_experienced": "Erfahrene Person",
+                "experience_professional": "Professionell / zertifiziert",
+                "equipment_label": "Ausrüstung",
+                "equipment_provided": "Ich stelle alles Notwendige zur Verfügung",
+                "equipment_partial": "Einige Dinge sind von Ihnen mitzubringen",
+                "equipment_bring_own": "Sie müssen eigenes Material mitbringen",
+                "equipment_na": "Nicht zutreffend",
+                "accessibility_label": "Hinweise zur Barrierefreiheit",
+                "accessibility_hint": "z. B. rollstuhlgängig, mit Hörschleife",
+                "accessibility_max_length": "Hinweise zur Barrierefreiheit dürfen höchstens 200 Zeichen umfassen"
             }
         },
         "govuk_alpha_members": {

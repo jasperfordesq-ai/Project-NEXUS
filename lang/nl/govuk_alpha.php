@@ -2845,6 +2845,7 @@ return [
         'label_salary_max' => 'Maximale vergoeding (optioneel)',
         'label_salary_currency' => 'Valuta (optioneel)',
         'hint_salary_currency' => 'Een code van 3 letters, zoals EUR, GBP of USD.',
+        'salary_benchmark' => 'Gebruikelijke betaling voor vergelijkbare functies (:role): :min tot :max, :period. Midden van de bandbreedte: :median.',
         'label_salary_type' => 'Betalingsperiode (optioneel)',
         'salary_type_none' => 'Niet opgegeven',
         'salary_type_hourly' => 'Per uur',

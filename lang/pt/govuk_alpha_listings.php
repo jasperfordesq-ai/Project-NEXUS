@@ -110,4 +110,22 @@ return [
             'ai-disabled' => 'Sugestões de descrição de IA não estão disponíveis nesta comunidade.',
         ],
     ],
+    // React ListingForm optional service details (folded into the description).
+    'service_details' => [
+        'not_specified' => 'Não especificado',
+        'toggle' => 'Detalhes opcionais do serviço',
+        'experience_label' => 'Experiência',
+        'experience_beginner' => 'Adequado para iniciantes',
+        'experience_some' => 'Alguma experiência útil',
+        'experience_experienced' => 'Praticante experiente',
+        'experience_professional' => 'Profissional / certificado',
+        'equipment_label' => 'Equipamento',
+        'equipment_provided' => 'Vou fornecer tudo o que é necessário',
+        'equipment_partial' => 'Algumas coisas necessárias da sua parte',
+        'equipment_bring_own' => 'Terá de trazer o seu próprio',
+        'equipment_na' => 'Não aplicável',
+        'accessibility_label' => 'Notas de Acessibilidade',
+        'accessibility_hint' => 'ex.: acessível a cadeira de rodas, ciclo de audição disponível',
+        'accessibility_max_length' => 'As notas de acessibilidade devem ter 200 caracteres ou menos',
+    ],
 ];

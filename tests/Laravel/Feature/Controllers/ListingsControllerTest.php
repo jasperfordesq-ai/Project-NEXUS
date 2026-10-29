@@ -15,6 +15,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -26,6 +27,14 @@ use Tests\Laravel\TestCase;
 class ListingsControllerTest extends TestCase
 {
     use DatabaseTransactions;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // A typed place with no coordinates is looked up (ListingService); never
+        // reach the real map service from a test.
+        Http::fake(['nominatim.openstreetmap.org/*' => Http::response([], 200)]);
+    }
 
     protected function tearDown(): void
     {

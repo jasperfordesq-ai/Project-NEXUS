@@ -183,3 +183,36 @@ describe('removing the listing photo', () => {
     expect(flashSpy).toHaveBeenCalledWith('error', expect.stringContaining(t('govuk_alpha_listings.create.remove_image_failed')));
   });
 });
+
+// React ListingForm "Optional service details" (W5, 29 Oct 2026): experience,
+// equipment and accessibility notes are appended to the description as
+// "Label: value" lines after "---", exactly as React's doSubmit builds them.
+describe('optional service details', () => {
+  it('offers the three optional fields inside a details section', () => {
+    const html = renderForm({ title: 'New', listing: null, values: null, fieldErrors: {}, config: {}, categories: [] });
+    expect(html).toContain(t('govuk_alpha_listings.service_details.toggle'));
+    expect(html).toContain('name="experience_level"');
+    expect(html).toContain('name="equipment_provided"');
+    expect(html).toContain('name="accessibility_notes"');
+  });
+
+  it('appends the chosen details to the description', async () => {
+    await request(createApp()).post('/listings/new').type('form').send({
+      ...BASE, experience_level: 'beginner_friendly', equipment_provided: 'bring_own', accessibility_notes: 'Step-free access'
+    });
+    expect(api.createListing.mock.calls[0][1].description).toBe(
+      `${BASE.description}\n\n---\nExperience: Beginner-friendly\nEquipment: You'll need to provide your own\nAccessibility Notes: Step-free access`
+    );
+  });
+
+  it('leaves the description alone when nothing is chosen, and ignores unknown values', async () => {
+    await request(createApp()).post('/listings/new').type('form').send({ ...BASE, experience_level: 'wizard' });
+    expect(api.createListing.mock.calls[0][1].description).toBe(BASE.description);
+  });
+
+  it('refuses accessibility notes over 200 characters', async () => {
+    const response = await request(createApp()).post('/listings/new').type('form').send({ ...BASE, accessibility_notes: 'a'.repeat(201) });
+    expect(api.createListing).not.toHaveBeenCalled();
+    expect(response.body.locals.fieldErrors.accessibility_notes).toBe(t('govuk_alpha_listings.service_details.accessibility_max_length'));
+  });
+});

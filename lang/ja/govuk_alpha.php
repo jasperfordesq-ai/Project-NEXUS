@@ -2845,6 +2845,7 @@ return [
         'label_salary_max' => '最高報酬（任意）',
         'label_salary_currency' => '通貨（任意）',
         'hint_salary_currency' => 'EUR、GBP、USD などの3文字コードを使用してください。',
+        'salary_benchmark' => '類似の職種の一般的な報酬（:role）：:min～:max、:period。中央値：:median。',
         'label_salary_type' => '支払い期間（任意）',
         'salary_type_none' => '未指定',
         'salary_type_hourly' => '時間単位',

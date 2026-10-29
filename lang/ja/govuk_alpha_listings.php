@@ -110,4 +110,22 @@ return [
             'ai-disabled' => 'AI の説明の提案は、このコミュニティでは利用できません。',
         ],
     ],
+    // React ListingForm optional service details (folded into the description).
+    'service_details' => [
+        'not_specified' => '未指定',
+        'toggle' => 'サービスの任意詳細',
+        'experience_label' => '経験',
+        'experience_beginner' => '初心者歓迎',
+        'experience_some' => 'ある程度の経験があると助かります',
+        'experience_experienced' => '経験豊富な実践者',
+        'experience_professional' => 'プロフェッショナル / 認定資格者',
+        'equipment_label' => '機器・道具',
+        'equipment_provided' => '必要なものはすべて提供します',
+        'equipment_partial' => '一部ご用意いただく必要があります',
+        'equipment_bring_own' => 'ご自身でご用意いただく必要があります',
+        'equipment_na' => '該当なし',
+        'accessibility_label' => 'アクセシビリティに関するメモ',
+        'accessibility_hint' => '例：車椅子対応、補聴器ループ利用可能',
+        'accessibility_max_length' => 'アクセシビリティのメモは200文字以内にしてください',
+    ],
 ];

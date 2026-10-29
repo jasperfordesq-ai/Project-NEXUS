@@ -2912,6 +2912,7 @@ return [
         'label_salary_max' => 'Maximum pay (optional)',
         'label_salary_currency' => 'Currency (optional)',
         'hint_salary_currency' => 'A 3-letter code such as EUR, GBP or USD.',
+        'salary_benchmark' => 'Typical pay for similar roles (:role): :min to :max, :period. Middle of the range: :median.',
         'label_salary_type' => 'Pay period (optional)',
         'salary_type_none' => 'Not specified',
         'salary_type_hourly' => 'Per hour',

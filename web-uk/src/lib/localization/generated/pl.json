@@ -3878,6 +3878,7 @@
                 "label_salary_max": "Maksymalne wynagrodzenie (opcjonalnie)",
                 "label_salary_currency": "Waluta (opcjonalnie)",
                 "hint_salary_currency": "3-literowy kod waluty, np. EUR, GBP lub USD.",
+                "salary_benchmark": "Typowe wynagrodzenie na podobnych stanowiskach (:role): od :min do :max, :period. Środek przedziału: :median.",
                 "label_salary_type": "Okres rozliczeniowy wynagrodzenia (opcjonalnie)",
                 "salary_type_none": "Nieokreślone",
                 "salary_type_hourly": "Za godzinę",
@@ -8066,6 +8067,9 @@
                 "quiz_failed": "Tym razem nie udało Ci się dotrzeć do celu. Przejrzyj lekcję i spróbuj ponownie, jeśli pozostały Ci próby.",
                 "quiz_no_attempts": "Nie masz już żadnych prób wzięcia udziału w tym quizie.",
                 "quiz_error": "Przepraszamy, nie udało nam się nagrać Twojej próby quizu. Spróbuj ponownie.",
+                "lesson_quiz_required": "Zalicz quiz z tej lekcji, zanim oznaczysz ją jako ukończoną.",
+                "lesson_locked": "Ta lekcja nie jest jeszcze dostępna. Najpierw ukończ wcześniejsze lekcje.",
+                "lesson_failed": "Przepraszamy, nie można ukończyć tej lekcji. Spróbuj ponownie.",
                 "deleted": "Twój kurs został usunięty.",
                 "delete_failed": "Przepraszamy, nie można usunąć Twojego kursu. Spróbuj ponownie.",
                 "created": "Twój kurs został utworzony. Dodaj szczegóły i opublikuj, gdy będziesz gotowy.",
@@ -8085,7 +8089,6 @@
                 "lesson_added": "Twoja lekcja została dodana.",
                 "lesson_saved": "Twoja lekcja została zapisana.",
                 "lesson_deleted": "Twoja lekcja została usunięta.",
-                "lesson_failed": "Przepraszamy, nie można ukończyć tej lekcji. Spróbuj ponownie.",
                 "lesson_title_missing": "Wpisz tytuł lekcji.",
                 "graded": "Próba została oceniona.",
                 "grade_failed": "Próba nie mogła zostać oceniona. Spróbuj ponownie."
@@ -11323,6 +11326,23 @@
                     "ai-failed": "Nie mogliśmy w tej chwili wygenerować opisu. Napisz go samodzielnie lub spróbuj ponownie później.",
                     "ai-disabled": "Sugestie dotyczące opisu sztucznej inteligencji nie są dostępne w tej społeczności."
                 }
+            },
+            "service_details": {
+                "not_specified": "Nieokreślone",
+                "toggle": "Opcjonalne szczegóły usługi",
+                "experience_label": "Doświadczenie",
+                "experience_beginner": "Przyjazne dla początkujących",
+                "experience_some": "Pewne doświadczenie pomocne",
+                "experience_experienced": "Doświadczony praktyk",
+                "experience_professional": "Profesjonalny / certyfikowany",
+                "equipment_label": "Wyposażenie",
+                "equipment_provided": "Zapewnię wszystko co potrzebne",
+                "equipment_partial": "Niektóre rzeczy potrzebne od ciebie",
+                "equipment_bring_own": "Będziesz musiał/a zapewnić własne",
+                "equipment_na": "Nie dotyczy",
+                "accessibility_label": "Uwagi dotyczące dostępności",
+                "accessibility_hint": "np. dostęp dla wózków inwalidzkich, pętla indukcyjna dostępna",
+                "accessibility_max_length": "Uwagi dotyczące dostępności muszą mieć 200 znaków lub mniej"
             }
         },
         "govuk_alpha_members": {

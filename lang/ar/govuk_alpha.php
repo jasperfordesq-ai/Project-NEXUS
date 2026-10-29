@@ -2845,6 +2845,7 @@ return [
         'label_salary_max' => 'الحد الأقصى للأجر (اختياري)',
         'label_salary_currency' => 'العملة (اختياري)',
         'hint_salary_currency' => 'رمز مكوّن من 3 أحرف مثل EUR أو GBP أو USD.',
+        'salary_benchmark' => 'الأجر المعتاد للأدوار المماثلة (:role): من :min إلى :max، :period. منتصف النطاق: :median.',
         'label_salary_type' => 'فترة الدفع (اختياري)',
         'salary_type_none' => 'غير محدد',
         'salary_type_hourly' => 'في الساعة',

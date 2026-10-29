@@ -11,17 +11,11 @@ const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 
 const router = express.Router();
 
-const LEADERBOARD_TYPES = [
-  'credits_earned',
-  'credits_spent',
-  'vol_hours',
-  'badges',
-  'xp',
-  'connections',
-  'reviews',
-  'posts',
-  'streak'
-];
+// Only the metrics Laravel ranks by (GamificationV2Controller::leaderboard
+// $typeMap). Six more were offered here and silently showed the XP ranking under
+// the wrong heading. `vol_hours` is the label key; the API name is volunteer_hours.
+const LEADERBOARD_TYPES = ['credits_earned', 'vol_hours', 'xp'];
+const LEADERBOARD_API_TYPES = { vol_hours: 'volunteer_hours' };
 
 const LEADERBOARD_PERIODS = ['all_time', 'month', 'week'];
 
@@ -118,7 +112,7 @@ function selectedOption(options, requested, fallback) {
 
 function boundedLimit(value) {
   const pageSize = 20;
-  const maxLimit = 200;
+  const maxLimit = 100; // Laravel caps limit at 100 and has no offset
   const requested = intFrom(value);
   const minimum = requested < pageSize ? pageSize : requested;
   return Math.min(maxLimit, Math.ceil(minimum / pageSize) * pageSize);
@@ -445,8 +439,9 @@ router.get('/competitive', asyncRoute(async (req, res) => {
       season: normalizeCompetitiveSeason(seasonPayload, res.locals.tc),
       yourRank: intFrom(meta.your_position),
       hasYourRank: intFrom(meta.your_position) > 0,
-      hasMore: boolFrom(meta.has_more),
-      nextLimit: Math.min(200, limit + 20),
+      // At Laravel's 100-row cap a bigger limit returns the same rows again.
+      hasMore: boolFrom(meta.has_more) && limit < 100,
+      nextLimit: Math.min(100, limit + 20),
       countLabel: countLabel(rows.length, res.locals.tc)
     }
   });
@@ -549,7 +544,7 @@ router.get('/', asyncRoute(async (req, res) => {
   let loadError = '';
   try {
     [leaderboardPayload, impactPayload] = await Promise.all([
-      callGamificationApi(token, 'GET', `/leaderboard?type=${encodeURIComponent(selectedType)}&period=${encodeURIComponent(selectedPeriod)}&limit=20`),
+      callGamificationApi(token, 'GET', `/leaderboard?type=${encodeURIComponent(LEADERBOARD_API_TYPES[selectedType] || selectedType)}&period=${encodeURIComponent(selectedPeriod)}&limit=20`),
       callGamificationApi(token, 'GET', '/community-dashboard')
     ]);
   } catch (error) {

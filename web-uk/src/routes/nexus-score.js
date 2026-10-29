@@ -83,7 +83,10 @@ function labelFromInsight(value) {
 }
 
 function normalizeBreakdownRows(breakdown, t) {
-  const object = objectFrom(breakdown);
+  // Laravel sends a list of {key, label, score, max, percentage}; index it by key.
+  const object = Array.isArray(breakdown)
+    ? Object.fromEntries(breakdown.filter((row) => row && typeof row === 'object' && row.key).map((row) => [row.key, row]))
+    : objectFrom(breakdown);
   return BREAKDOWN_CATEGORIES.map((key) => {
     const row = objectFrom(object[key]);
     if (!Object.keys(row).length) {

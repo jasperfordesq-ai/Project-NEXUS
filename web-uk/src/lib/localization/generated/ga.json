@@ -3878,6 +3878,7 @@
                 "label_salary_max": "Uasmhéid pá (roghnach)",
                 "label_salary_currency": "Airgeadra (roghnach)",
                 "hint_salary_currency": "Cód 3 litreach mar EUR, GBP nó USD.",
+                "salary_benchmark": "Pá tipiciúil do róil chosúla (:role): :min go :max, :period. Lár an raoin: :median.",
                 "label_salary_type": "Tréimhse phá (roghnach)",
                 "salary_type_none": "Gan sonrú",
                 "salary_type_hourly": "In aghaidh na huaire",
@@ -8066,6 +8067,9 @@
                 "quiz_failed": "Níor bhain tú an pasmharc amach an uair seo. Féach ar an gceacht arís agus bain triail eile as má tá iarrachtaí fágtha agat.",
                 "quiz_no_attempts": "Níl aon iarracht fágtha agat don tráth na gceist seo.",
                 "quiz_error": "Ár leithscéal, níorbh fhéidir linn d’iarracht ar an tráth na gceist a thaifeadadh. Bain triail eile as.",
+                "lesson_quiz_required": "Pas an tráth na gceist don cheacht seo sula marcálann tú an ceacht mar chríochnaithe.",
+                "lesson_locked": "Níl an ceacht seo oscailte fós. Críochnaigh na ceachtanna roimhe seo ar dtús.",
+                "lesson_failed": "Ár leithscéal, níorbh fhéidir an gníomh sin a dhéanamh ar an gceacht. Bain triail eile as.",
                 "deleted": "Scriosadh do chúrsa.",
                 "delete_failed": "Ár leithscéal, níorbh fhéidir do chúrsa a scriosadh. Bain triail eile as.",
                 "created": "Cruthaíodh do chúrsa. Cuir na sonraí leis agus foilsigh é nuair a bheidh tú réidh.",
@@ -8085,7 +8089,6 @@
                 "lesson_added": "Cuireadh do cheacht leis.",
                 "lesson_saved": "Sábháladh do cheacht.",
                 "lesson_deleted": "Scriosadh do cheacht.",
-                "lesson_failed": "Ár leithscéal, níorbh fhéidir an gníomh sin a dhéanamh ar an gceacht. Bain triail eile as.",
                 "lesson_title_missing": "Cuir teideal an cheachta isteach.",
                 "graded": "Marcáladh an iarracht.",
                 "grade_failed": "Níorbh fhéidir an iarracht a mharcáil. Bain triail eile as."
@@ -11323,6 +11326,23 @@
                     "ai-failed": "Níorbh fhéidir linn cur síos a ghiniúint faoi láthair. Scríobh ceann duit féin nó bain triail eile as ar ball.",
                     "ai-disabled": "Níl moltaí tuairiscithe AI ​​ar fáil ar an bpobal seo."
                 }
+            },
+            "service_details": {
+                "not_specified": "Gan sonrú",
+                "toggle": "Sonraí seirbhíse roghnacha",
+                "experience_label": "Taithí",
+                "experience_beginner": "Oiriúnach do thosaitheoirí",
+                "experience_some": "Roinnt taithí ina chabhair",
+                "experience_experienced": "Oiriúnach do dhuine a bhfuil taithí aige",
+                "experience_professional": "Gairmiúil / deimhnithe",
+                "equipment_label": "Trealamh",
+                "equipment_provided": "Soláthróidh mé gach rud is gá",
+                "equipment_partial": "Beidh ort roinnt trealaimh a thabhairt leat",
+                "equipment_bring_own": "Beidh ort do threalamh féin a sholáthar",
+                "equipment_na": "Ní bhaineann",
+                "accessibility_label": "Nótaí Inrochtaineachta",
+                "accessibility_hint": "m.sh., Inrochtana do chathaoir rothaí, lúb éisteachta ar fáil",
+                "accessibility_max_length": "Ní mór do nótaí inrochtaineachta a bheith 200 carachtar nó níos lú"
             }
         },
         "govuk_alpha_members": {

@@ -147,6 +147,9 @@
 
     <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
       <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha.jobs.salary_label") }}</legend>
+      {% if salaryBenchmark %}
+        <div class="govuk-inset-text" id="salary-benchmark">{{ salaryBenchmark }}</div>
+      {% endif %}
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-one-third">
           <div class="govuk-form-group">

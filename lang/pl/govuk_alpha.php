@@ -2845,6 +2845,7 @@ return [
         'label_salary_max' => 'Maksymalne wynagrodzenie (opcjonalnie)',
         'label_salary_currency' => 'Waluta (opcjonalnie)',
         'hint_salary_currency' => '3-literowy kod waluty, np. EUR, GBP lub USD.',
+        'salary_benchmark' => 'Typowe wynagrodzenie na podobnych stanowiskach (:role): od :min do :max, :period. Środek przedziału: :median.',
         'label_salary_type' => 'Okres rozliczeniowy wynagrodzenia (opcjonalnie)',
         'salary_type_none' => 'Nieokreślone',
         'salary_type_hourly' => 'Za godzinę',

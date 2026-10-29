@@ -2845,6 +2845,7 @@ return [
         'label_salary_max' => 'Remuneração máxima (opcional)',
         'label_salary_currency' => 'Moeda (opcional)',
         'hint_salary_currency' => 'Um código de 3 letras como EUR, GBP ou USD.',
+        'salary_benchmark' => 'Remuneração habitual para funções semelhantes (:role): de :min a :max, :period. Valor intermédio: :median.',
         'label_salary_type' => 'Período de pagamento (opcional)',
         'salary_type_none' => 'Não especificado',
         'salary_type_hourly' => 'Por hora',

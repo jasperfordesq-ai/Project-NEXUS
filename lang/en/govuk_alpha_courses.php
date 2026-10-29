@@ -146,6 +146,9 @@ return [
         'quiz_failed' => 'You did not reach the pass mark this time. Review the lesson and try again if you have attempts left.',
         'quiz_no_attempts' => 'You have no attempts remaining for this quiz.',
         'quiz_error' => 'Sorry, we could not record your quiz attempt. Please try again.',
+        'lesson_quiz_required' => 'Pass this lesson\'s quiz before marking the lesson as complete.',
+        'lesson_locked' => 'This lesson is not open yet. Complete the earlier lessons first.',
+        'lesson_failed' => 'Sorry, we could not mark the lesson as complete. Please try again.',
 
         // Instructor dashboard
         'deleted' => 'Your course was deleted.',

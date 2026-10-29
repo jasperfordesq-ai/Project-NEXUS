@@ -1427,7 +1427,9 @@ router.get('/', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
 
-  const result = await getGoals(token, { per_page: 30 });
+  // "Load more" links back here with ?cursor=; without passing it on, a member
+  // with more than 30 goals saw the first page again.
+  const result = await getGoals(token, { per_page: 30, cursor: trimmed(req.query.cursor) || undefined });
   const goals = collectionFrom(result).map((goal) => normalizeGoal(goal, res.locals.t)).filter((goal) => goal.id !== null);
   const status = trimmed(req.query.status);
 

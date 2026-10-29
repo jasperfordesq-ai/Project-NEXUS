@@ -110,4 +110,22 @@ return [
             'ai-disabled' => 'Suggesties voor AI-beschrijvingen zijn niet beschikbaar in deze community.',
         ],
     ],
+    // React ListingForm optional service details (folded into the description).
+    'service_details' => [
+        'not_specified' => 'Niet opgegeven',
+        'toggle' => 'Optionele servicedetails',
+        'experience_label' => 'Ervaring',
+        'experience_beginner' => 'Geschikt voor beginners',
+        'experience_some' => 'Enige ervaring nuttig',
+        'experience_experienced' => 'Ervaren beoefenaar',
+        'experience_professional' => 'Professioneel / gecertificeerd',
+        'equipment_label' => 'Benodigdheden',
+        'equipment_provided' => 'Ik zorg voor alles wat nodig is',
+        'equipment_partial' => 'Sommige zaken zijn van u nodig',
+        'equipment_bring_own' => 'U moet uw eigen spullen meenemen',
+        'equipment_na' => 'Niet van toepassing',
+        'accessibility_label' => 'Toegankelijkheidsnotities',
+        'accessibility_hint' => 'bijv. rolstoeltoegankelijk, ringleiding beschikbaar',
+        'accessibility_max_length' => 'Toegankelijkheidsnotities mogen maximaal 200 tekens bevatten',
+    ],
 ];

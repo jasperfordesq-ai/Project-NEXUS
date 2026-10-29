@@ -430,3 +430,24 @@ describe('3. duplicate-advert warning', () => {
     expect(res.headers.location).toBe('/jobs/61?status=created');
   });
 });
+
+describe('5. suggested pay range (React CreateJobPage salary benchmark, W3, 29 Oct 2026)', () => {
+  it('shows the market rate for the advert title on the edit form', async () => {
+    jobApi({ 'GET /salary-benchmark?title=Garden%20helper': { data: { benchmark: {
+      role_keyword: 'gardener', salary_min: 12, salary_max: 18, salary_median: 15, salary_type: 'hourly', currency: 'EUR'
+    } } } });
+    const res = await request(app).get('/jobs/31/edit');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('id="salary-benchmark"');
+    expect(res.text).toMatch(/Typical pay for similar roles \(gardener\): €12(\.00)? to €18(\.00)?, Per hour\. Middle of the range: €15/);
+  });
+
+  it('shows nothing when Laravel has no benchmark or the lookup fails', async () => {
+    jobApi({ 'GET /salary-benchmark?title=Garden%20helper': { data: { benchmark: null } } });
+    expect((await request(app).get('/jobs/31/edit')).text).not.toContain('id="salary-benchmark"');
+    jobApi({ 'GET /salary-benchmark?title=Garden%20helper': new api.ApiError('down', 500) });
+    const res = await request(app).get('/jobs/31/edit');
+    expect(res.status).toBe(200);
+    expect(res.text).not.toContain('id="salary-benchmark"');
+  });
+});

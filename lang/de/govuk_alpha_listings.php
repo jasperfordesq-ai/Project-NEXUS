@@ -110,4 +110,22 @@ return [
             'ai-disabled' => 'KI-Beschreibungsvorschläge sind in dieser Community nicht verfügbar.',
         ],
     ],
+    // React ListingForm optional service details (folded into the description).
+    'service_details' => [
+        'not_specified' => 'Nicht angegeben',
+        'toggle' => 'Optionale Servicedetails',
+        'experience_label' => 'Erfahrung',
+        'experience_beginner' => 'Anfängergeeignet',
+        'experience_some' => 'Etwas Erfahrung hilfreich',
+        'experience_experienced' => 'Erfahrene Person',
+        'experience_professional' => 'Professionell / zertifiziert',
+        'equipment_label' => 'Ausrüstung',
+        'equipment_provided' => 'Ich stelle alles Notwendige zur Verfügung',
+        'equipment_partial' => 'Einige Dinge sind von Ihnen mitzubringen',
+        'equipment_bring_own' => 'Sie müssen eigenes Material mitbringen',
+        'equipment_na' => 'Nicht zutreffend',
+        'accessibility_label' => 'Hinweise zur Barrierefreiheit',
+        'accessibility_hint' => 'z. B. rollstuhlgängig, mit Hörschleife',
+        'accessibility_max_length' => 'Hinweise zur Barrierefreiheit dürfen höchstens 200 Zeichen umfassen',
+    ],
 ];

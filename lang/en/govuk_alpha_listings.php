@@ -131,4 +131,22 @@ return [
             'ai-disabled' => 'AI description suggestions are not available on this community.',
         ],
     ],
+    // React ListingForm optional service details (folded into the description).
+    'service_details' => [
+        'not_specified' => 'Not specified',
+        'toggle' => 'Optional service details',
+        'experience_label' => 'Experience',
+        'experience_beginner' => 'Beginner-friendly',
+        'experience_some' => 'Some experience helpful',
+        'experience_experienced' => 'Experienced practitioner',
+        'experience_professional' => 'Professional / certified',
+        'equipment_label' => 'Equipment',
+        'equipment_provided' => 'I\'ll provide everything needed',
+        'equipment_partial' => 'Some things needed from you',
+        'equipment_bring_own' => 'You\'ll need to provide your own',
+        'equipment_na' => 'Not applicable',
+        'accessibility_label' => 'Accessibility Notes',
+        'accessibility_hint' => 'e.g., Wheelchair accessible, hearing loop available',
+        'accessibility_max_length' => 'Accessibility notes must be 200 characters or fewer',
+    ],
 ];
