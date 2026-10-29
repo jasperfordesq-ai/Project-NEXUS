@@ -211,7 +211,7 @@ const EVENT_DETAIL_STATUSES = [
   'rsvp-failed', 'rsvp-vetting-required', 'rsvp-policy-unavailable',
   'event-update-failed', 'event-cancel-failed', 'event-publication-failed',
   'waitlist-failed', 'waitlist-offer-accept-failed', 'waitlist-vetting-required',
-  'waitlist-policy-unavailable', 'poll-vote-failed'
+  'waitlist-policy-unavailable', 'poll-vote-failed', 'event-archive-failed'
 ];
 
 function redirectTo(res, pathname) {
@@ -2658,11 +2658,26 @@ router.get('/:id(\\d+)/tickets', requireAuth, asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   const [eventResult, catalogue] = await Promise.all([callApi(token, 'GET', `/${encodeURIComponent(id)}`), ticketCatalogue(token, id)]);
   const event = eventFrom(eventResult);
+  // Organisers can check that ticket inventory and the ledger agree, as React's
+  // "Run reconciliation" does (read-only GET, 29 Oct 2026).
+  let reconciliation = null;
+  if (req.query.check === '1' && catalogue.permissions && catalogue.permissions.reconcile) {
+    try {
+      const rows = collectionFrom({ data: dataFrom(await callApi(token, 'GET', `/${encodeURIComponent(id)}/tickets/reconciliation`))?.ticket_types || [] });
+      const warnings = rows.filter((row) => row && (row.allocation_overrun || row.inventory_mismatch
+        || Number(row.registration_mismatches) > 0 || Number(row.price_snapshot_violations) > 0)).length;
+      reconciliation = { warnings };
+    } catch (error) {
+      if (isAuthError(error)) throw error;
+      reconciliation = { failed: true };
+    }
+  }
   res.set('Cache-Control', 'private, no-store');
   res.set('Pragma', 'no-cache');
   return res.render('events/tickets', {
     title: res.locals.t('event_tickets.title'), activeNav: 'events', event: { id, title: trimmed(event.title) },
     catalogue, ticketNames: Object.fromEntries(collectionFrom({ data: catalogue.ticket_types || [] }).map((ticket) => [ticket.id, ticket])),
+    reconciliation,
     status: trimmed(req.query.status), apiReason: trimmed(req.query.status) === 'allocate-failed' ? consumeEventRefusal(req, id, 'tickets') : '', idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { notFoundTitle: 'Event not found' }));
@@ -4390,13 +4405,16 @@ router.post('/:id(\\d+)/delete', requireAuth, audit.eventDelete(), asyncRoute(as
   const reason = trimmed(req.body.reason);
   const idempotencyKey = trimmed(req.body.idempotency_key) || randomUUID();
 
-  if (!reason || reason.length > 4000) {
-    return redirectTo(res, `${EVENTS_PATH}?status=event-archive-failed`);
+  // Laravel decides whether a reason is needed (only for a published event); React
+  // treats it as optional. Until 29 Oct 2026 a blank reason was refused here, so a
+  // draft could not be archived without inventing one.
+  if (reason.length > 4000) {
+    return redirectTo(res, eventPath(id, '?status=event-archive-failed'));
   }
 
   try {
     await deleteEvent(req.token, id, {
-      reason,
+      ...(reason ? { reason } : {}),
       idempotency_key: idempotencyKey
     });
 
@@ -4409,7 +4427,10 @@ router.post('/:id(\\d+)/delete', requireAuth, audit.eventDelete(), asyncRoute(as
       return renderForbidden(res, error);
     }
     if (error instanceof ApiError && [400, 409, 422].includes(error.status)) {
-      return redirectTo(res, `${EVENTS_PATH}?status=event-archive-failed`);
+      // Back to the event, with Laravel's reason ("a reason is required to archive
+      // a published event"), as React shows it.
+      rememberEventRefusal(req, id, 'detail', error, { requireReason: false });
+      return redirectTo(res, eventPath(id, '?status=event-archive-failed'));
     }
     throw error; // asyncRoute handles 401, 404, and 503 consistently.
   }

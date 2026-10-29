@@ -93,6 +93,8 @@
         {% set eventErrorMessage = apiReason or t("govuk_alpha.events.states.waitlist-failed") %}
       {% elif status == "poll-vote-failed" %}
         {% set eventErrorMessage = t("govuk_alpha.events.states.poll-vote-failed") %}
+      {% elif status == "event-archive-failed" %}
+        {% set eventErrorMessage = apiReason or t("events.archive_failed") %}
       {% endif %}
 
       {% if eventErrorMessage %}

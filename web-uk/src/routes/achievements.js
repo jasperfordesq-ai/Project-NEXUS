@@ -168,6 +168,14 @@ function normalizeProfile(result, earnedBadgesCount) {
   const level = intFrom(profile.level);
   const levelName = textFrom(profile.level_name);
   const progressPercent = percentFrom(levelProgress.progress_percentage);
+  // At the top level Laravel repeats the current threshold as the next one
+  // (GamificationV2Controller: `$nextThreshold ?? $currentThreshold`); it never
+  // sends null, so the old null check never fired (29 Oct 2026).
+  const nextThreshold = levelProgress.xp_for_next_level;
+  const currentThreshold = levelProgress.xp_for_current_level;
+  const atTopLevel = nextThreshold === null
+    || (Number.isFinite(Number(nextThreshold)) && Number.isFinite(Number(currentThreshold))
+      && currentThreshold !== null && Number(nextThreshold) <= Number(currentThreshold));
   const hasNextLevel = Object.prototype.hasOwnProperty.call(levelProgress, 'xp_for_next_level');
 
   return {
@@ -177,7 +185,7 @@ function normalizeProfile(result, earnedBadgesCount) {
     xpLabel: formatInteger(profile.xp),
     badgesCountLabel: formatInteger(profile.badges_count ?? earnedBadgesCount),
     progressPercent,
-    atMaxLevel: hasNextLevel && levelProgress.xp_for_next_level === null
+    atMaxLevel: hasNextLevel && atTopLevel
   };
 }
 
@@ -677,3 +685,4 @@ router.post('/showcase', asyncRoute(async (req, res) => {
 }));
 
 module.exports = router;
+module.exports.normalizeProfile = normalizeProfile;

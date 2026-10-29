@@ -22032,7 +22032,10 @@ describe('shared accessible frontend shell', () => {
 
   it('treats challenge-deleted as a confirmation message, never a Laravel status filter', async () => {
     const api = require('../src/lib/api');
-    api.callIdeationApi.mockResolvedValueOnce({ data: [{ id: 7, title: 'Better local parks', status: 'open' }] });
+    api.callIdeationApi
+      .mockResolvedValueOnce({ data: [] }) // categories (29 Oct 2026 filters)
+      .mockResolvedValueOnce({ data: [] }) // popular tags
+      .mockResolvedValueOnce({ data: [{ id: 7, title: 'Better local parks', status: 'open' }] });
     const response = await request(app).get('/ideation?status=challenge-deleted').set('Cookie', signedCookieHeader());
     expect(response.status).toBe(200);
     // No status param may reach the API: WHERE status='challenge-deleted' empties the list.
@@ -25334,11 +25337,14 @@ describe('shared accessible frontend shell', () => {
       if (headingId) expect(response.text).toContain(`id="${headingId}"`);
     }
 
+    // An index-page status still never renders on the detail page. (Archive
+    // failures moved to the detail page on 29 Oct 2026, so the member stays on
+    // the event they tried to archive.)
     const unrelated = await request(app)
-      .get('/events/42?status=event-archive-failed')
+      .get('/events/42?status=event-deleted')
       .set('Cookie', signedCookieHeader());
     expect(unrelated.status).toBe(200);
-    expect(unrelated.text).not.toContain('Your event could not be archived.');
+    expect(unrelated.text).not.toContain('Your event has been archived.');
   });
 
   it('redirects non-series events from Laravel recurring edit to the normal edit page', async () => {
@@ -28294,12 +28300,13 @@ describe('shared accessible frontend shell', () => {
     });
   });
 
-  it('rejects an event archive without a reason before calling Laravel', async () => {
+  // Laravel decides whether a reason is needed (only for a published event); React
+  // treats it as optional (29 Oct 2026: a blank reason used to be refused here).
+  it('archives without a reason when none is given, letting Laravel decide', async () => {
     const api = require('../src/lib/api');
+    api.deleteEvent.mockResolvedValueOnce({ data: { archived: true } });
     const agent = request.agent(app);
-    const page = await agent
-      .get('/events/42')
-      .set('Cookie', signedCookieHeader());
+    const page = await agent.get('/events/42').set('Cookie', signedCookieHeader());
     const csrfMatch = page.text.match(/name="_csrf" value="([^"]+)"/);
 
     const response = await agent
@@ -28308,9 +28315,28 @@ describe('shared accessible frontend shell', () => {
       .type('form')
       .send({ _csrf: csrfMatch[1], reason: '   ' });
 
-    expect(response.status).toBe(302);
-    expect(response.headers.location).toBe('/events?status=event-archive-failed');
-    expect(api.deleteEvent).not.toHaveBeenCalled();
+    expect(response.headers.location).toBe('/events?status=event-archived');
+    expect(api.deleteEvent).toHaveBeenCalledWith('test-token', '42', expect.not.objectContaining({ reason: expect.anything() }));
+  });
+
+  it('returns to the event with the reason Laravel gives when it asks for one', async () => {
+    const api = require('../src/lib/api');
+    api.deleteEvent.mockRejectedValueOnce(new api.ApiError('Reason required', 422, {
+      errors: [{ code: 'VALIDATION_ERROR', field: 'reason', message: 'Give a reason for archiving a published event.' }]
+    }));
+    const agent = request.agent(app);
+    const page = await agent.get('/events/42').set('Cookie', signedCookieHeader());
+    const csrfMatch = page.text.match(/name="_csrf" value="([^"]+)"/);
+
+    const response = await agent
+      .post('/events/42/delete')
+      .set('Cookie', signedCookieHeader())
+      .type('form')
+      .send({ _csrf: csrfMatch[1], reason: '' });
+
+    expect(response.headers.location).toBe('/events/42?status=event-archive-failed');
+    const detail = await agent.get('/events/42?status=event-archive-failed').set('Cookie', signedCookieHeader());
+    expect(detail.text).toContain('Give a reason for archiving a published event.');
   });
 
   it('renders the Laravel event cover image on the event detail page', async () => {
@@ -37656,7 +37682,7 @@ describe('shared accessible frontend shell', () => {
       '/applications?per_page=10&status=pending'
     );
     expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/hours/summary');
-    expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/my-organisations?per_page=5');
+    expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/my-organisations?per_page=50');
     expect(response.status).toBe(200);
     expect(response.text).toContain('aria-current="page">Applications</a>');
     expect(response.text).toContain('Community Kitchen Helper');
@@ -37708,7 +37734,7 @@ describe('shared accessible frontend shell', () => {
         }], cursor: null, has_more: false } };
       }
       if (path === '/hours/summary') return { data: {} };
-      if (path === '/my-organisations?per_page=5') return { data: [] };
+      if (path === '/my-organisations?per_page=50') return { data: [] };
       return { data: [] };
     });
 

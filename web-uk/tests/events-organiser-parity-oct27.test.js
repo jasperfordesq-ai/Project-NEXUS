@@ -443,6 +443,40 @@ describe('5. the API\'s explained refusal is shown', () => {
   });
 });
 
+describe('ticket reconciliation for organisers (React "Run reconciliation", 29 Oct 2026)', () => {
+  const catalogue = (reconcile) => ({ data: { catalogue: { permissions: { manage: true, reconcile }, ticket_types: [], payment_gateway: {} } } });
+  const row = (extra) => ({ ticket_type_id: 1, allocation_overrun: false, inventory_mismatch: false, registration_mismatches: 0, price_snapshot_violations: 0, ...extra });
+
+  it('reports clear records, and counts ticket types that need attention', async () => {
+    routeApi([
+      [/^GET \/501$/, () => SUMMER_EVENT],
+      [/^GET \/501\/tickets$/, () => catalogue(true)],
+      [/^GET \/501\/tickets\/reconciliation$/, () => ({ data: { ticket_types: [row({}), row({ inventory_mismatch: true }), row({ registration_mismatches: 2 })] } })],
+    ]);
+    const page = await request(app).get('/501/tickets?check=1');
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('2 reconciliation warnings');
+
+    routeApi([
+      [/^GET \/501$/, () => SUMMER_EVENT],
+      [/^GET \/501\/tickets$/, () => catalogue(true)],
+      [/^GET \/501\/tickets\/reconciliation$/, () => ({ data: { ticket_types: [row({})] } })],
+    ]);
+    const clear = await request(app).get('/501/tickets?check=1');
+    expect(clear.text).toContain(t('event_tickets.reconciliation_clear'));
+  });
+
+  it('offers and runs the check only for organisers allowed to reconcile', async () => {
+    routeApi([
+      [/^GET \/501$/, () => SUMMER_EVENT],
+      [/^GET \/501\/tickets$/, () => catalogue(false)],
+    ]);
+    const page = await request(app).get('/501/tickets?check=1');
+    expect(page.text).not.toContain(t('event_tickets.reconcile'));
+    expect(lastCall('GET', /reconciliation$/)).toBeUndefined();
+  });
+});
+
 describe('6. a pending RSVP is recognised', () => {
   it('says the request is waiting for the organiser', async () => {
     routeApi([

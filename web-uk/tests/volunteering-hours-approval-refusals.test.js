@@ -151,6 +151,26 @@ describe('logging hours says WHY it was refused', () => {
     expect(res.headers.location).toContain('status=hours-failed');
   });
 
+  it('shows the reason Laravel gives for a refusal it explains (29 Oct 2026)', async () => {
+    api.callVolunteeringApi.mockImplementation(async (token, method) => {
+      if (method === 'POST') {
+        throw new api.ApiError('nope', 422, {
+          errors: [{ code: 'VALIDATION_ERROR', message: 'You cannot log hours for a future date.', field: 'date' }],
+        });
+      }
+      return { data: [] };
+    });
+    const agent = request.agent(app);
+    const posted = await agent.post('/hours').type('form').send({
+      organization_id: '108', opportunity_id: '130', hours: '2', description: 'Weeding',
+      'date-day': '23', 'date-month': '8', 'date-year': '2026',
+    });
+    expect(posted.headers.location).toContain('status=hours-failed');
+    const page = await agent.get('/hours?status=hours-failed');
+    expect(page.text).toContain('You cannot log hours for a future date.');
+    expect(page.text).not.toContain(t('govuk_alpha.volunteering.hours_failed'));
+  });
+
   it('still reports success when the hours are accepted', async () => {
     api.callVolunteeringApi.mockResolvedValue({ data: { id: 586, status: 'pending' } });
     const res = await submitHours();

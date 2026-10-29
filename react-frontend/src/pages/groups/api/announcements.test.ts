@@ -122,9 +122,20 @@ describe('full announcement contract', () => {
     await expect(listGroupAnnouncements(23, { signal: controller.signal })).resolves.toEqual([
       announcement,
     ]);
-    expect(mockGet).toHaveBeenCalledWith('/v2/groups/23/announcements', {
+    expect(mockGet).toHaveBeenCalledWith('/v2/groups/23/announcements?limit=100', {
       signal: controller.signal,
     });
+  });
+
+  it('follows the cursor so a group with many announcements is listed in full', async () => {
+    const first = makeAnnouncement({ id: 1 });
+    const second = makeAnnouncement({ id: 2 });
+    mockGet
+      .mockResolvedValueOnce({ success: true, data: { items: [first], cursor: 'next-1', has_more: true } })
+      .mockResolvedValueOnce({ success: true, data: { items: [second], cursor: null, has_more: false } });
+
+    await expect(listGroupAnnouncements(23)).resolves.toEqual([first, second]);
+    expect(mockGet).toHaveBeenNthCalledWith(2, '/v2/groups/23/announcements?limit=100&cursor=next-1', { signal: undefined });
   });
 
   it.each([{ unexpected: [] }, null])(

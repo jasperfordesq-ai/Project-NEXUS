@@ -1314,7 +1314,9 @@ app.get('/volunteering', requireAuth, (req, res) => {
     ? callVolunteeringApi(token, 'GET', '/hours/summary').catch(() => ({ data: {} }))
     : Promise.resolve({ data: {} });
   const organisationsPromise = token
-    ? callVolunteeringApi(token, 'GET', '/my-organisations?per_page=5').catch(() => ({ data: [] }))
+    ? // 50, as React: with 5, a member of six or more organisations could be sent to
+    // the wrong one ("sole organisation") or miss one awaiting setup (29 Oct 2026).
+    callVolunteeringApi(token, 'GET', '/my-organisations?per_page=50').catch(() => ({ data: [] }))
     : Promise.resolve({ data: [] });
   const categoriesPromise = getVolunteeringCategories(token).catch(() => ({ data: [] }));
   const recommendedPromise = selectedTab === 'recommended'

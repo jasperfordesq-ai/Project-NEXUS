@@ -504,7 +504,7 @@ function certificateStatus(status, t = null, refusal = '') {
   return null;
 }
 
-function hoursStatus(status, t = null) {
+function hoursStatus(status, t = null, apiReason = '') {
   if (status === 'hours-created') {
     return {
       type: 'success',
@@ -530,9 +530,11 @@ function hoursStatus(status, t = null) {
   if (status === 'hours-failed') {
     return {
       type: 'error',
-      message: t
+      // Laravel's own translated reason when it gave one (29 Oct 2026), e.g. a
+      // date in the future or more hours than the shift allowed.
+      message: apiReason || (t
         ? t('govuk_alpha.volunteering.hours_failed')
-        : 'Your hours could not be logged. Check the details and try again.'
+        : 'Your hours could not be logged. Check the details and try again.')
     };
   }
   return null;
@@ -3559,7 +3561,8 @@ router.get('/hours', asyncRoute(async (req, res) => {
     // Three-field GOV.UK date pattern needs the same default split into parts.
     // `today` stays because other views still read it.
     dateParts: splitDate(new Date().toISOString().slice(0, 10)),
-    status: hoursStatus(trimmed(req.query.status), res.locals.t),
+    status: hoursStatus(trimmed(req.query.status), res.locals.t,
+      trimmed(req.query.status) === 'hours-failed' ? consumeApiRefusal(req, 'hours-log') : ''),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: loginRedirect() }));
@@ -3996,7 +3999,8 @@ router.post('/hours', asyncRoute(async (req, res) => {
     // "check the details and try again" sent members back to re-read a date and
     // an hours figure that were both fine, with no way to discover that they
     // were waiting on the organisation.
-    (error) => `/volunteering/hours?status=${hoursFailureStatus(error)}`
+    (error) => `/volunteering/hours?status=${hoursFailureStatus(error)}`,
+    { refusalKey: 'hours-log' }
   );
 }));
 

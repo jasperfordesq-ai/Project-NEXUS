@@ -35,7 +35,12 @@ export interface UpdateGroupAnnouncementInput {
 interface GroupAnnouncementsEnvelope {
   items?: GroupAnnouncement[];
   announcements?: GroupAnnouncement[];
+  cursor?: string | null;
+  has_more?: boolean;
 }
+
+/** Pages walked by listGroupAnnouncements (100 each) before it stops. */
+const ANNOUNCEMENT_PAGE_LIMIT = 10;
 
 export interface GetPinnedAnnouncementsOptions {
   signal?: AbortSignal;
@@ -79,12 +84,34 @@ async function readGroupAnnouncements(
   }
 }
 
-/** List every visible announcement for a group. */
-export function listGroupAnnouncements(
+/**
+ * List every visible announcement for a group. The API pages (20 by default,
+ * with `cursor`/`has_more`); until 29 Oct 2026 only the first page was read, so
+ * a group with more than 20 announcements lost the rest.
+ */
+export async function listGroupAnnouncements(
   groupId: number,
   options: ListGroupAnnouncementsOptions = {},
 ): Promise<GroupAnnouncement[]> {
-  return readGroupAnnouncements(`/v2/groups/${groupId}/announcements`, options);
+  const all: GroupAnnouncement[] = [];
+  let cursor: string | null = null;
+  try {
+    for (let page = 0; page < ANNOUNCEMENT_PAGE_LIMIT; page += 1) {
+      const query = new URLSearchParams({ limit: '100' });
+      if (cursor) query.set('cursor', cursor);
+      const response = await api.get<unknown>(`/v2/groups/${groupId}/announcements?${query.toString()}`, {
+        signal: options.signal,
+      });
+      const payload = unwrapGroupResponse(response);
+      all.push(...getAnnouncementItems(payload));
+      const envelope = payload as GroupAnnouncementsEnvelope | null;
+      cursor = envelope && !Array.isArray(envelope) && envelope.has_more && envelope.cursor ? envelope.cursor : null;
+      if (!cursor) break;
+    }
+  } catch (error) {
+    throw normalizeGroupApiError(error);
+  }
+  return all;
 }
 
 /** Read the non-critical pinned-announcement banner through the Groups contract. */
