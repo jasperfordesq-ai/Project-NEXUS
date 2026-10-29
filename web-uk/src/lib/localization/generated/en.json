@@ -8093,7 +8093,7 @@
                 "quiz_error": "Sorry, we could not record your quiz attempt. Please try again.",
                 "lesson_quiz_required": "Pass this lesson's quiz before marking the lesson as complete.",
                 "lesson_locked": "This lesson is not open yet. Complete the earlier lessons first.",
-                "lesson_failed": "Sorry, that lesson action could not be completed. Please try again.",
+                "lesson_complete_failed": "Sorry, we could not mark the lesson as complete. Please try again.",
                 "deleted": "Your course was deleted.",
                 "delete_failed": "Sorry, your course could not be deleted. Please try again.",
                 "created": "Your course was created. Add the details and publish when you are ready.",
@@ -8113,6 +8113,7 @@
                 "lesson_added": "Your lesson was added.",
                 "lesson_saved": "Your lesson was saved.",
                 "lesson_deleted": "Your lesson was deleted.",
+                "lesson_failed": "Sorry, that lesson action could not be completed. Please try again.",
                 "lesson_title_missing": "Enter a title for the lesson.",
                 "graded": "The attempt has been graded.",
                 "grade_failed": "The attempt could not be graded. Please try again."

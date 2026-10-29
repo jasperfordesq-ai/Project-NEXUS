@@ -126,7 +126,7 @@ return [
         'quiz_error' => 'Lo sentimos, no pudimos grabar su intento de prueba. Por favor inténtalo de nuevo.',
         'lesson_quiz_required' => 'Aprueba el cuestionario de esta lección antes de marcarla como completada.',
         'lesson_locked' => 'Esta lección aún no está disponible. Completa primero las lecciones anteriores.',
-        'lesson_failed' => 'Lo sentimos, no pudimos marcar la lección como completada. Inténtalo de nuevo.',
+        'lesson_complete_failed' => 'Lo sentimos, no pudimos marcar la lección como completada. Inténtalo de nuevo.',
         'deleted' => 'Tu curso fue eliminado.',
         'delete_failed' => 'Lo sentimos, tu curso no se pudo eliminar. Por favor inténtalo de nuevo.',
         'created' => 'Tu curso fue creado. Agregue los detalles y publíquelos cuando esté listo.',

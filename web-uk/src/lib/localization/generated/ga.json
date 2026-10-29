@@ -8093,7 +8093,7 @@
                 "quiz_error": "Ár leithscéal, níorbh fhéidir linn d’iarracht ar an tráth na gceist a thaifeadadh. Bain triail eile as.",
                 "lesson_quiz_required": "Pas an tráth na gceist don cheacht seo sula marcálann tú an ceacht mar chríochnaithe.",
                 "lesson_locked": "Níl an ceacht seo oscailte fós. Críochnaigh na ceachtanna roimhe seo ar dtús.",
-                "lesson_failed": "Ár leithscéal, níorbh fhéidir an gníomh sin a dhéanamh ar an gceacht. Bain triail eile as.",
+                "lesson_complete_failed": "Ár leithscéal, níorbh fhéidir linn an ceacht a mharcáil mar chríochnaithe. Bain triail eile as.",
                 "deleted": "Scriosadh do chúrsa.",
                 "delete_failed": "Ár leithscéal, níorbh fhéidir do chúrsa a scriosadh. Bain triail eile as.",
                 "created": "Cruthaíodh do chúrsa. Cuir na sonraí leis agus foilsigh é nuair a bheidh tú réidh.",
@@ -8113,6 +8113,7 @@
                 "lesson_added": "Cuireadh do cheacht leis.",
                 "lesson_saved": "Sábháladh do cheacht.",
                 "lesson_deleted": "Scriosadh do cheacht.",
+                "lesson_failed": "Ár leithscéal, níorbh fhéidir an gníomh sin a dhéanamh ar an gceacht. Bain triail eile as.",
                 "lesson_title_missing": "Cuir teideal an cheachta isteach.",
                 "graded": "Marcáladh an iarracht.",
                 "grade_failed": "Níorbh fhéidir an iarracht a mharcáil. Bain triail eile as."

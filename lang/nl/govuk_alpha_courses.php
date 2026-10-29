@@ -126,7 +126,7 @@ return [
         'quiz_error' => 'Sorry, we konden uw quizpoging niet opnemen. Probeer het opnieuw.',
         'lesson_quiz_required' => 'Haal eerst de quiz van deze les voordat je de les als voltooid markeert.',
         'lesson_locked' => 'Deze les is nog niet beschikbaar. Rond eerst de eerdere lessen af.',
-        'lesson_failed' => 'Sorry, we konden de les niet als voltooid markeren. Probeer het opnieuw.',
+        'lesson_complete_failed' => 'Sorry, we konden de les niet als voltooid markeren. Probeer het opnieuw.',
         'deleted' => 'Je cursus is verwijderd.',
         'delete_failed' => 'Sorry, je cursus kan niet worden verwijderd. Probeer het opnieuw.',
         'created' => 'Je cursus is gemaakt. Voeg de details toe en publiceer wanneer u klaar bent.',

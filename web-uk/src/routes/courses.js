@@ -116,7 +116,7 @@ const LEARN_STATUS_MESSAGES = {
   'quiz-error': { type: 'error', key: 'quiz_error' },
   'lesson-quiz-required': { type: 'error', key: 'lesson_quiz_required' },
   'lesson-locked': { type: 'error', key: 'lesson_locked' },
-  'lesson-failed': { type: 'error', key: 'lesson_failed' },
+  'lesson-failed': { type: 'error', key: 'lesson_complete_failed' },
   'comment-posted': { type: 'success', messageKey: 'govuk_alpha_courses.discussion.comment_posted' },
   'comment-deleted': { type: 'success', messageKey: 'govuk_alpha_courses.discussion.comment_deleted' },
   'comment-required': { type: 'error', messageKey: 'govuk_alpha_courses.discussion.comment_required' },

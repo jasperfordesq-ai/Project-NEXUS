@@ -8093,7 +8093,7 @@
                 "quiz_error": "Leider konnten wir Ihren Quizversuch nicht aufzeichnen. Bitte versuchen Sie es erneut.",
                 "lesson_quiz_required": "Bestehen Sie das Quiz dieser Lektion, bevor Sie die Lektion als abgeschlossen markieren.",
                 "lesson_locked": "Diese Lektion ist noch nicht freigeschaltet. Schließen Sie zuerst die vorherigen Lektionen ab.",
-                "lesson_failed": "Leider konnte diese Unterrichtsaktion nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
+                "lesson_complete_failed": "Leider konnten wir die Lektion nicht als abgeschlossen markieren. Bitte versuchen Sie es erneut.",
                 "deleted": "Ihr Kurs wurde gelöscht.",
                 "delete_failed": "Leider konnte Ihr Kurs nicht gelöscht werden. Bitte versuchen Sie es erneut.",
                 "created": "Ihr Kurs wurde erstellt. Fügen Sie die Details hinzu und veröffentlichen Sie, wenn Sie bereit sind.",
@@ -8113,6 +8113,7 @@
                 "lesson_added": "Ihre Lektion wurde hinzugefügt.",
                 "lesson_saved": "Ihre Lektion wurde gespeichert.",
                 "lesson_deleted": "Ihre Lektion wurde gelöscht.",
+                "lesson_failed": "Leider konnte diese Unterrichtsaktion nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
                 "lesson_title_missing": "Geben Sie einen Titel für die Lektion ein.",
                 "graded": "Der Versuch wurde bewertet.",
                 "grade_failed": "Der Versuch konnte nicht bewertet werden. Bitte versuchen Sie es erneut."

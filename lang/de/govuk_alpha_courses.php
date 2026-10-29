@@ -126,7 +126,7 @@ return [
         'quiz_error' => 'Leider konnten wir Ihren Quizversuch nicht aufzeichnen. Bitte versuchen Sie es erneut.',
         'lesson_quiz_required' => 'Bestehen Sie das Quiz dieser Lektion, bevor Sie die Lektion als abgeschlossen markieren.',
         'lesson_locked' => 'Diese Lektion ist noch nicht freigeschaltet. Schließen Sie zuerst die vorherigen Lektionen ab.',
-        'lesson_failed' => 'Leider konnten wir die Lektion nicht als abgeschlossen markieren. Bitte versuchen Sie es erneut.',
+        'lesson_complete_failed' => 'Leider konnten wir die Lektion nicht als abgeschlossen markieren. Bitte versuchen Sie es erneut.',
         'deleted' => 'Ihr Kurs wurde gelöscht.',
         'delete_failed' => 'Leider konnte Ihr Kurs nicht gelöscht werden. Bitte versuchen Sie es erneut.',
         'created' => 'Ihr Kurs wurde erstellt. Fügen Sie die Details hinzu und veröffentlichen Sie, wenn Sie bereit sind.',

@@ -126,7 +126,7 @@ return [
         'quiz_error' => 'Désolé, nous n\'avons pas pu enregistrer votre tentative de quiz. Veuillez réessayer.',
         'lesson_quiz_required' => 'Réussissez le quiz de cette leçon avant de la marquer comme terminée.',
         'lesson_locked' => 'Cette leçon n\'est pas encore ouverte. Terminez d\'abord les leçons précédentes.',
-        'lesson_failed' => 'Désolé, nous n\'avons pas pu marquer la leçon comme terminée. Veuillez réessayer.',
+        'lesson_complete_failed' => 'Désolé, nous n\'avons pas pu marquer la leçon comme terminée. Veuillez réessayer.',
         'deleted' => 'Votre cours a été supprimé.',
         'delete_failed' => 'Désolé, votre cours n\'a pas pu être supprimé. Veuillez réessayer.',
         'created' => 'Votre cours a été créé. Ajoutez les détails et publiez lorsque vous êtes prêt.',

@@ -126,7 +126,7 @@ return [
         'quiz_error' => 'Przepraszamy, nie udało nam się nagrać Twojej próby quizu. Spróbuj ponownie.',
         'lesson_quiz_required' => 'Zalicz quiz z tej lekcji, zanim oznaczysz ją jako ukończoną.',
         'lesson_locked' => 'Ta lekcja nie jest jeszcze dostępna. Najpierw ukończ wcześniejsze lekcje.',
-        'lesson_failed' => 'Przepraszamy, nie udało się oznaczyć lekcji jako ukończonej. Spróbuj ponownie.',
+        'lesson_complete_failed' => 'Przepraszamy, nie udało się oznaczyć lekcji jako ukończonej. Spróbuj ponownie.',
         'deleted' => 'Twój kurs został usunięty.',
         'delete_failed' => 'Przepraszamy, nie można usunąć Twojego kursu. Spróbuj ponownie.',
         'created' => 'Twój kurs został utworzony. Dodaj szczegóły i opublikuj, gdy będziesz gotowy.',

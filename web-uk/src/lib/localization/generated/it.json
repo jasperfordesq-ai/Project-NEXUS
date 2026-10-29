@@ -8093,7 +8093,7 @@
                 "quiz_error": "Siamo spiacenti, non è stato possibile registrare il tuo tentativo di quiz. Per favore riprova.",
                 "lesson_quiz_required": "Supera il quiz di questa lezione prima di segnarla come completata.",
                 "lesson_locked": "Questa lezione non è ancora disponibile. Completa prima le lezioni precedenti.",
-                "lesson_failed": "Spiacenti, non è stato possibile completare l'azione della lezione. Per favore riprova.",
+                "lesson_complete_failed": "Spiacenti, non è stato possibile segnare la lezione come completata. Riprova.",
                 "deleted": "Il tuo corso è stato eliminato.",
                 "delete_failed": "Siamo spiacenti, non è stato possibile eliminare il tuo corso. Per favore riprova.",
                 "created": "Il tuo corso è stato creato. Aggiungi i dettagli e pubblica quando sei pronto.",
@@ -8113,6 +8113,7 @@
                 "lesson_added": "La tua lezione è stata aggiunta.",
                 "lesson_saved": "La tua lezione è stata salvata.",
                 "lesson_deleted": "La tua lezione è stata eliminata.",
+                "lesson_failed": "Spiacenti, non è stato possibile completare l'azione della lezione. Per favore riprova.",
                 "lesson_title_missing": "Inserisci un titolo per la lezione.",
                 "graded": "Il tentativo è stato classificato.",
                 "grade_failed": "Non è stato possibile valutare il tentativo. Per favore riprova."

@@ -126,7 +126,7 @@ return [
         'quiz_error' => 'Desculpe, não foi possível registrar sua tentativa de teste. Por favor, tente novamente.',
         'lesson_quiz_required' => 'Passe no questionário desta lição antes de a marcar como concluída.',
         'lesson_locked' => 'Esta lição ainda não está disponível. Conclua primeiro as lições anteriores.',
-        'lesson_failed' => 'Lamentamos, não foi possível marcar a lição como concluída. Tente novamente.',
+        'lesson_complete_failed' => 'Lamentamos, não foi possível marcar a lição como concluída. Tente novamente.',
         'deleted' => 'Seu curso foi excluído.',
         'delete_failed' => 'Desculpe, não foi possível excluir seu curso. Por favor, tente novamente.',
         'created' => 'Seu curso foi criado. Adicione os detalhes e publique quando estiver pronto.',

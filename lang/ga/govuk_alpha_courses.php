@@ -148,7 +148,7 @@ return [
         'quiz_error' => 'Ár leithscéal, níorbh fhéidir linn d’iarracht ar an tráth na gceist a thaifeadadh. Bain triail eile as.',
         'lesson_quiz_required' => 'Pas an tráth na gceist don cheacht seo sula marcálann tú an ceacht mar chríochnaithe.',
         'lesson_locked' => 'Níl an ceacht seo oscailte fós. Críochnaigh na ceachtanna roimhe seo ar dtús.',
-        'lesson_failed' => 'Ár leithscéal, níorbh fhéidir linn an ceacht a mharcáil mar chríochnaithe. Bain triail eile as.',
+        'lesson_complete_failed' => 'Ár leithscéal, níorbh fhéidir linn an ceacht a mharcáil mar chríochnaithe. Bain triail eile as.',
 
         // Instructor dashboard
         'deleted' => 'Scriosadh do chúrsa.',
