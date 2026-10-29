@@ -2452,7 +2452,8 @@ describe('Laravel-first Federation sub-navigation source contract', () => {
     ];
 
     expect(nav).toContain('t("govuk_alpha.federation.nav.label")');
-    expect(nav).toContain('t("govuk_alpha.federation.title")');
+    // The visible "Federation" heading above the links went with the tab styling
+    // (29 Oct 2026, GOV.UK: no tabs between pages); the nav keeps its label.
     for (const key of [
       'overview', 'partners', 'members', 'listings', 'events', 'groups',
       'connections', 'messages', 'settings'

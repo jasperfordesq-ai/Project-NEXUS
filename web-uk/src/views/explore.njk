@@ -51,12 +51,11 @@
     </ul>
   {% endif %}
 
-  <nav class="govuk-tabs govuk-!-margin-top-2 govuk-!-margin-bottom-6" aria-label="{{ t("govuk_alpha_explore.tabs_label") }}">
-    <h2 class="govuk-tabs__title">{{ t("govuk_alpha_explore.tabs_label") }}</h2>
-    <ul class="govuk-tabs__list">
+  <nav class="govuk-!-margin-top-2 govuk-!-margin-bottom-6" aria-label="{{ t("govuk_alpha_explore.tabs_label") }}">
+    <ul class="nexus-alpha-filter-nav">
       {% for tab in tabs %}
-        <li class="govuk-tabs__list-item{% if activeTab == tab.key %} govuk-tabs__list-item--selected{% endif %}">
-          <a class="govuk-tabs__tab" href="{{ urlFor(tab.href) }}"{% if activeTab == tab.key %} aria-current="page"{% endif %}>{{ tab.label }}</a>
+        <li>
+          <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(tab.href) }}"{% if activeTab == tab.key %} aria-current="page"{% endif %}>{{ tab.label }}</a>
         </li>
       {% endfor %}
     </ul>

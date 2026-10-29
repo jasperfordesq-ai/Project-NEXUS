@@ -23,12 +23,11 @@
   ] %}
 {% endif %}
 
-<nav class="govuk-tabs govuk-!-margin-top-2 govuk-!-margin-bottom-4" aria-label="{{ heading }}">
-  <h2 class="govuk-tabs__title">{{ heading }}</h2>
-  <ul class="govuk-tabs__list">
+<nav class="govuk-!-margin-top-2 govuk-!-margin-bottom-4" aria-label="{{ heading }}">
+  <ul class="nexus-alpha-filter-nav">
     {% for tab in tabs %}
-      <li class="govuk-tabs__list-item{% if active == tab.key %} govuk-tabs__list-item--selected{% endif %}">
-        <a class="govuk-tabs__tab" href="{{ urlFor(tab.href) }}"{% if active == tab.key %} aria-current="page"{% endif %}>{{ tab.label }}</a>
+      <li>
+        <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(tab.href) }}"{% if active == tab.key %} aria-current="page"{% endif %}>{{ tab.label }}</a>
       </li>
     {% endfor %}
   </ul>

@@ -146,7 +146,7 @@ describe('the qualifications register', () => {
     expect(res.text).toContain('Garden Trust');
     expect(res.text).toContain(t(`${K}heading`));
     expect(res.text).toContain(t(`${K}tiles.expiring`));
-    expect(res.text).toMatch(/govuk-tabs__list-item--selected">\s*<a[^>]*aria-current="page">/);
+    expect(res.text).toMatch(/<li>\s*<a[^>]*aria-current="page">/);
   });
 
   it('shows each qualification with its details', async () => {

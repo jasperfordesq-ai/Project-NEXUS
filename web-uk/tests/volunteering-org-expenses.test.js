@@ -152,7 +152,7 @@ describe('the expense claims page', () => {
     // Totals cover every claim, not just the filtered ones.
     expect(res.text).toContain('€12.00');
     expect(res.text).toContain('€44.50');
-    expect(res.text).toMatch(/govuk-tabs__list-item--selected">\s*<a[^>]*aria-current="page">Pending</);
+    expect(res.text).toMatch(/<li>\s*<a[^>]*aria-current="page">Pending</);
   });
 
   it('offers only the next step the API accepts', async () => {

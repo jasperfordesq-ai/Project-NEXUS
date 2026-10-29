@@ -39,14 +39,13 @@
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_volunteers.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.org_volunteers.description") }}</p>
 
-  <nav class="govuk-tabs govuk-!-margin-bottom-4" aria-label="{{ t(R ~ 'tabs_label') }}">
-    <h2 class="govuk-tabs__title">{{ t(R ~ "tabs_label") }}</h2>
-    <ul class="govuk-tabs__list">
-      <li class="govuk-tabs__list-item{% if show == 'active' %} govuk-tabs__list-item--selected{% endif %}">
-        <a class="govuk-tabs__tab" href="{{ urlFor(base) }}"{% if show == 'active' %} aria-current="page"{% endif %} data-testid="roster-tab-active">{{ t(R ~ "tab_active") }}</a>
+  <nav class="govuk-!-margin-bottom-4" aria-label="{{ t(R ~ 'tabs_label') }}">
+    <ul class="nexus-alpha-filter-nav">
+      <li>
+        <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(base) }}"{% if show == 'active' %} aria-current="page"{% endif %} data-testid="roster-tab-active">{{ t(R ~ "tab_active") }}</a>
       </li>
-      <li class="govuk-tabs__list-item{% if show == 'retired' %} govuk-tabs__list-item--selected{% endif %}">
-        <a class="govuk-tabs__tab" href="{{ urlFor(base ~ '?show=retired') }}"{% if show == 'retired' %} aria-current="page"{% endif %} data-testid="roster-tab-retired">{{ t(R ~ "tab_retired") }}</a>
+      <li>
+        <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(base ~ '?show=retired') }}"{% if show == 'retired' %} aria-current="page"{% endif %} data-testid="roster-tab-retired">{{ t(R ~ "tab_retired") }}</a>
       </li>
     </ul>
   </nav>

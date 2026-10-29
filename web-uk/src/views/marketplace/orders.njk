@@ -22,11 +22,11 @@
   <p class="govuk-body-l">{{ t("govuk_alpha_commerce.orders_seller.description" if isSeller else "govuk_alpha_commerce.orders_buyer.description") }}</p>
 
 
-  <nav class="govuk-tabs govuk-!-margin-bottom-4" aria-label="{{ t('govuk_alpha_commerce.orders_seller.title' if isSeller else 'govuk_alpha_commerce.orders_buyer.title') }}">
-    <ul class="govuk-tabs__list">
+  <nav class="govuk-!-margin-bottom-4" aria-label="{{ t('govuk_alpha_commerce.orders_seller.title' if isSeller else 'govuk_alpha_commerce.orders_buyer.title') }}">
+    <ul class="nexus-alpha-filter-nav">
       {% for tabItem in tabs %}
-        <li class="govuk-tabs__list-item{% if tabItem.active %} govuk-tabs__list-item--selected{% endif %}">
-          <a class="govuk-tabs__tab" href="{{ urlFor(tabItem.href) }}" {% if tabItem.active %}aria-current="page"{% endif %}>{{ tabItem.label }}</a>
+        <li>
+          <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(tabItem.href) }}" {% if tabItem.active %}aria-current="page"{% endif %}>{{ tabItem.label }}</a>
         </li>
       {% endfor %}
     </ul>

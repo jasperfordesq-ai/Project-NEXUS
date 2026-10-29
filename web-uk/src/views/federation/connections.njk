@@ -51,19 +51,21 @@
   {% if not allowed %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("fed2.connections.not_available") }}</p></div>
   {% else %}
-  <div class="govuk-tabs" data-module="govuk-tabs">
-    <h2 class="govuk-tabs__title">{{ t("polish_federation.connections_tabs_label") }}</h2>
-    <ul class="govuk-tabs__list">
+  {# Page links, not GOV.UK tabs: each list loads with its own page, and the tabs
+     script turned these links into empty in-page panels (29 Oct 2026). #}
+  <nav class="govuk-!-margin-top-2" aria-label="{{ t('polish_federation.connections_tabs_label') }}">
+    <ul class="nexus-alpha-filter-nav">
       {% for tab in tabs %}
-        <li class="govuk-tabs__list-item{% if activeTab == tab.id %} govuk-tabs__list-item--selected{% endif %}">
-          <a class="govuk-tabs__tab" href="{{ urlFor('/federation/connections?tab=' + tab.id) }}" id="tab-{{ tab.id }}"{% if activeTab == tab.id %} aria-current="page"{% endif %}>{{ t(tab.labelKey) }}</a>
+        <li>
+          <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/federation/connections?tab=' + tab.id) }}"{% if activeTab == tab.id %} aria-current="page"{% endif %}>{{ t(tab.labelKey) }}</a>
         </li>
       {% endfor %}
     </ul>
+  </nav>
 
     {% for tab in tabs %}
-      <div class="govuk-tabs__panel{% if activeTab != tab.id %} govuk-tabs__panel--hidden{% endif %}" id="panel-{{ tab.id }}">
         {% if activeTab == tab.id %}
+      <div id="panel-{{ tab.id }}">
           {% if loadError %}
             <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
               <div role="alert">
@@ -134,9 +136,8 @@
               </nav>
             {% endif %}
           {% endif %}
-        {% endif %}
       </div>
+        {% endif %}
     {% endfor %}
-  </div>
   {% endif %}
 {% endblock %}

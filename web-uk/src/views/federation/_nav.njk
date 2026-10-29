@@ -16,12 +16,11 @@
   { key: "settings", href: "/federation/settings", label: t("govuk_alpha.federation.nav.settings") }
 ] %}
 
-<nav class="govuk-tabs govuk-!-margin-top-2 govuk-!-margin-bottom-6" aria-label="{{ t("govuk_alpha.federation.nav.label") }}">
-  <h2 class="govuk-tabs__title">{{ t("govuk_alpha.federation.title") }}</h2>
-  <ul class="govuk-tabs__list">
+<nav class="govuk-!-margin-top-2 govuk-!-margin-bottom-6" aria-label="{{ t("govuk_alpha.federation.nav.label") }}">
+  <ul class="nexus-alpha-filter-nav">
     {% for item in federationNavItems %}
-      <li class="govuk-tabs__list-item{% if active == item.key %} govuk-tabs__list-item--selected{% endif %}">
-        <a class="govuk-tabs__tab" href="{{ urlFor(item.href) }}"{% if active == item.key %} aria-current="page"{% endif %}>{{ item.label }}</a>
+      <li>
+        <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(item.href) }}"{% if active == item.key %} aria-current="page"{% endif %}>{{ item.label }}</a>
       </li>
     {% endfor %}
   </ul>

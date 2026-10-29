@@ -55,12 +55,11 @@
 
   {# The same tab-style navigation as jobs/_nav.njk: links, so each filter has its own
      address and works without JavaScript. #}
-  <nav class="govuk-tabs govuk-!-margin-bottom-4" aria-label="{{ t(K ~ 'filter_label') }}">
-    <h2 class="govuk-tabs__title">{{ t(K ~ "filter_label") }}</h2>
-    <ul class="govuk-tabs__list">
+  <nav class="govuk-!-margin-bottom-4" aria-label="{{ t(K ~ 'filter_label') }}">
+    <ul class="nexus-alpha-filter-nav">
       {% for filter in filters %}
-        <li class="govuk-tabs__list-item{% if filter.current %} govuk-tabs__list-item--selected{% endif %}">
-          <a class="govuk-tabs__tab" href="{{ urlFor(filter.href) }}"{% if filter.current %} aria-current="page"{% endif %}>{{ filter.label }}</a>
+        <li>
+          <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(filter.href) }}"{% if filter.current %} aria-current="page"{% endif %}>{{ filter.label }}</a>
         </li>
       {% endfor %}
     </ul>

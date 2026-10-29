@@ -58,12 +58,11 @@
     <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t(K ~ "search_button") }}</button>
   </form>
 
-  <nav class="govuk-tabs govuk-!-margin-bottom-4" aria-label="{{ t(K ~ 'heading') }}">
-    <h2 class="govuk-tabs__title">{{ t(K ~ "heading") }}</h2>
-    <ul class="govuk-tabs__list">
+  <nav class="govuk-!-margin-bottom-4" aria-label="{{ t(K ~ 'heading') }}">
+    <ul class="nexus-alpha-filter-nav">
       {% for filter in filters %}
-        <li class="govuk-tabs__list-item{% if filter.current %} govuk-tabs__list-item--selected{% endif %}">
-          <a class="govuk-tabs__tab" href="{{ urlFor(filter.href) }}"{% if filter.current %} aria-current="page"{% endif %}>{{ filter.label }}</a>
+        <li>
+          <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(filter.href) }}"{% if filter.current %} aria-current="page"{% endif %}>{{ filter.label }}</a>
         </li>
       {% endfor %}
     </ul>

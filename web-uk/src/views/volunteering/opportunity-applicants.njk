@@ -40,12 +40,11 @@
   <h1 class="govuk-heading-xl">{{ t(K ~ "title") }}</h1>
   <p class="govuk-body-l">{{ t(K ~ "intro") }}</p>
 
-  <nav class="govuk-tabs govuk-!-margin-bottom-4" aria-label="{{ t('volunteering.application_status_label') }}">
-    <h2 class="govuk-tabs__title">{{ t("volunteering.application_status_label") }}</h2>
-    <ul class="govuk-tabs__list">
+  <nav class="govuk-!-margin-bottom-4" aria-label="{{ t('volunteering.application_status_label') }}">
+    <ul class="nexus-alpha-filter-nav">
       {% for filter in filters %}
-        <li class="govuk-tabs__list-item{% if filter.current %} govuk-tabs__list-item--selected{% endif %}">
-          <a class="govuk-tabs__tab" href="{{ urlFor(filter.href) }}"{% if filter.current %} aria-current="page"{% endif %} data-testid="applicants-filter-{{ filter.value }}">{{ filter.label }}</a>
+        <li>
+          <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(filter.href) }}"{% if filter.current %} aria-current="page"{% endif %} data-testid="applicants-filter-{{ filter.value }}">{{ filter.label }}</a>
         </li>
       {% endfor %}
     </ul>
