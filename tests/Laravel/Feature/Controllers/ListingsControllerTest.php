@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Laravel\TestCase;
 
 /**
@@ -765,6 +766,200 @@ class ListingsControllerTest extends TestCase
         ]);
 
         $response->assertStatus(403);
+    }
+
+    // ================================================================
+    // UPDATE — staff editing someone else's listing
+    // ================================================================
+
+    /** @return array<string, array{0: array<string, mixed>}> */
+    public static function listingStaffProvider(): array
+    {
+        return [
+            'broker' => [['role' => 'broker']],
+            'coordinator' => [['role' => 'coordinator']],
+            'tenant admin' => [['role' => 'admin']],
+            // Granted by the legacy flag only — AdminTier counts it, the old
+            // role-string check did not.
+            'legacy admin flag' => [['role' => 'member', 'is_admin' => 1]],
+        ];
+    }
+
+    #[DataProvider('listingStaffProvider')]
+    public function test_staff_can_update_another_members_listing(array $staff): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $listing = Listing::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $owner->id,
+            'title' => 'Original',
+        ]);
+        $editor = $this->authenticatedUser($staff);
+
+        $response = $this->apiPut("/v2/listings/{$listing->id}", [
+            'title' => 'Tidied by staff',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('listings', [
+            'id' => $listing->id,
+            'tenant_id' => $this->testTenantId,
+            'title' => 'Tidied by staff',
+            'user_id' => $owner->id,
+        ]);
+        $this->assertDatabaseHas('org_audit_log', [
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $editor->id,
+            'target_user_id' => $owner->id,
+            'action' => 'listing_edited_by_staff',
+        ]);
+    }
+
+    public function test_staff_edit_never_moves_the_members_listing(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $listing = Listing::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $owner->id,
+            'location' => 'Member Town',
+            'latitude' => 51.5000000,
+            'longitude' => -0.1200000,
+        ]);
+        $this->authenticatedUser(['role' => 'broker']);
+
+        // The member-side edit form fills location from the SIGNED-IN person's
+        // profile, so a staff save would otherwise publish the editor's own
+        // address on the member's listing.
+        $this->apiPut("/v2/listings/{$listing->id}", [
+            'title' => 'New title',
+            'location' => 'Editor Home Street',
+            'latitude' => 53.3,
+            'longitude' => -6.2,
+        ])->assertStatus(200);
+
+        $row = DB::table('listings')->where('id', $listing->id)->first();
+        $this->assertSame('New title', $row->title);
+        $this->assertSame('Member Town', $row->location);
+        $this->assertEqualsWithDelta(51.5, (float) $row->latitude, 0.0001);
+        $this->assertEqualsWithDelta(-0.12, (float) $row->longitude, 0.0001);
+    }
+
+    public function test_owner_editing_own_listing_is_not_audited_as_staff_edit(): void
+    {
+        $user = $this->authenticatedUser(['role' => 'broker']);
+        $listing = Listing::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $user->id,
+        ]);
+
+        $this->apiPut("/v2/listings/{$listing->id}", ['title' => 'My own listing'])->assertStatus(200);
+
+        $this->assertDatabaseMissing('org_audit_log', [
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $user->id,
+            'action' => 'listing_edited_by_staff',
+        ]);
+    }
+
+    public function test_broker_cannot_set_admin_only_status_on_members_listing(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $listing = Listing::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $owner->id,
+            'status' => 'active',
+        ]);
+        $this->authenticatedUser(['role' => 'broker']);
+
+        // Suspending is a moderation decision, which stays with admins.
+        $this->apiPut("/v2/listings/{$listing->id}", ['status' => 'suspended'])->assertStatus(422);
+
+        $this->assertDatabaseHas('listings', ['id' => $listing->id, 'status' => 'active']);
+    }
+
+    public function test_broker_cannot_delete_a_members_listing(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $listing = Listing::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $owner->id,
+            'status' => 'active',
+        ]);
+        $this->authenticatedUser(['role' => 'broker']);
+
+        // Brokers may edit and add photos; removing a member's listing stays
+        // with the owner and admins.
+        $this->apiDelete("/v2/listings/{$listing->id}")->assertStatus(403);
+        $this->assertDatabaseHas('listings', ['id' => $listing->id, 'status' => 'active']);
+    }
+
+    public function test_admin_can_still_delete_a_members_listing(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $listing = Listing::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $owner->id,
+            'status' => 'active',
+        ]);
+        $this->authenticatedUser(['role' => 'admin']);
+
+        $this->apiDelete("/v2/listings/{$listing->id}")->assertStatus(204);
+    }
+
+    public function test_broker_can_reach_image_upload_for_members_listing(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $listing = Listing::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $owner->id,
+            'status' => 'active',
+        ]);
+        $this->authenticatedUser(['role' => 'broker']);
+
+        // No file sent: a broker must get past the permission check to the
+        // "no image" validation, not be refused outright.
+        $this->apiPost("/v2/listings/{$listing->id}/image")->assertStatus(400);
+    }
+
+    public function test_ordinary_member_still_cannot_reach_image_upload(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $listing = Listing::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $owner->id,
+            'status' => 'active',
+        ]);
+        $this->authenticatedUser();
+
+        $this->apiPost("/v2/listings/{$listing->id}/image")->assertStatus(403);
+    }
+
+    public function test_show_reports_whether_the_viewer_can_edit(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $listing = Listing::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $owner->id,
+            'status' => 'active',
+        ]);
+
+        $this->authenticatedUser();
+        $this->apiGet("/v2/listings/{$listing->id}")->assertOk()->assertJsonPath('data.can_edit', false);
+
+        $this->authenticatedUser(['role' => 'broker']);
+        $this->apiGet("/v2/listings/{$listing->id}")->assertOk()->assertJsonPath('data.can_edit', true);
+
+        Sanctum::actingAs($owner, ['*']);
+        $this->apiGet("/v2/listings/{$listing->id}")->assertOk()->assertJsonPath('data.can_edit', true);
+    }
+
+    public function test_staff_can_open_a_members_paused_listing_to_edit_it(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $listing = Listing::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $owner->id,
+            'status' => 'paused',
+        ]);
+
+        // Hidden from other members, as before.
+        $this->authenticatedUser();
+        $this->apiGet("/v2/listings/{$listing->id}")->assertStatus(404);
+
+        // Visible to staff, so the admin screen's Edit link does not dead-end.
+        $this->authenticatedUser(['role' => 'admin']);
+        $this->apiGet("/v2/listings/{$listing->id}")->assertOk()->assertJsonPath('data.can_edit', true);
+        $this->apiPut("/v2/listings/{$listing->id}", ['title' => 'Fixed while paused'])->assertStatus(200);
     }
 
     // ================================================================

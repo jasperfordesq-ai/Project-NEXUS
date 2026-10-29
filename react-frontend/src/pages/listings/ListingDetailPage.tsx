@@ -431,6 +431,9 @@ export function ListingDetailPage() {
   }
 
   const isOwner = user && listing && user.id === listing.user_id;
+  // Admins, brokers and coordinators may edit a member's listing (and add a
+  // photo); the server decides and says so in `can_edit`.
+  const canStaffEdit = !isOwner && listing?.can_edit === true;
 
   if (isLoading) {
     return (
@@ -615,6 +618,19 @@ export function ListingDetailPage() {
                 isLoading={isDeleting}
               >
                 {t('detail_delete')}
+              </Button>
+            </div>
+          )}
+
+          {canStaffEdit && (
+            <div className="flex flex-wrap gap-2 rounded-2xl border border-theme-default bg-theme-hover/60 p-2">
+              <Button as={Link} to={tenantPath(`/listings/edit/${listing.id}`)}
+                size="sm"
+                variant="secondary"
+                className="bg-theme-elevated text-theme-primary"
+                startContent={<Edit className="w-4 h-4" aria-hidden="true" />}
+              >
+                {t('detail_edit')}
               </Button>
             </div>
           )}

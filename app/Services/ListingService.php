@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use App\Support\Authorization\AdminTier;
 use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
 
@@ -811,14 +812,18 @@ class ListingService
             return null;
         }
 
-        // Draft/pending/suspended listings are only visible to their owner
+        // Draft/pending/suspended listings are only visible to their owner and
+        // to community staff, who can edit them (and reach them from the admin
+        // Listings screen). The staff lookup runs only for a hidden listing.
         $listingStatus = $listing->status ?? 'active';
-        if (!in_array($listingStatus, ['active', null], true) && $listing->user_id !== $currentUserId) {
-            return null;
-        }
-
         $moderationStatus = $listing->moderation_status;
-        if ($listing->user_id !== $currentUserId && $moderationStatus !== null && $moderationStatus !== 'approved') {
+        $hidden = !in_array($listingStatus, ['active', null], true)
+            || ($moderationStatus !== null && $moderationStatus !== 'approved');
+        if (
+            $hidden
+            && $listing->user_id !== $currentUserId
+            && ($currentUserId === null || ! self::isListingStaff($currentUserId))
+        ) {
             return null;
         }
 
@@ -1645,26 +1650,36 @@ class ListingService
     // -----------------------------------------------------------------
 
     /**
-     * Check if a user can modify a listing (owner or admin).
+     * Check if a user can modify a listing: its owner, or community staff
+     * (an admin of any tier, or a broker/coordinator — owner, 29 Oct 2026:
+     * staff tidy listings and add missing photos for members).
+     *
+     * Admin-only status changes are a separate decision; see update()'s
+     * $isAdmin, which callers set from AdminTier, never from this.
      */
     public static function canModify(array $listing, int $userId): bool
     {
-        // Owner can always modify
         if ((int) ($listing['user_id'] ?? 0) === $userId) {
             return true;
         }
 
-        // Check if user is admin
-        $user = User::find($userId);
+        return self::isListingStaff($userId);
+    }
 
-        if ($user) {
-            $role = $user->role ?? '';
-            if (in_array($role, ['admin', 'tenant_admin']) || $user->is_super_admin || $user->is_tenant_super_admin) {
-                return true;
-            }
+    /**
+     * Community staff who may edit any listing in their community.
+     * The listing itself is already confined to the request's tenant by
+     * Listing's tenant scope.
+     */
+    public static function isListingStaff(int $userId): bool
+    {
+        $user = User::find($userId);
+        if (! $user) {
+            return false;
         }
 
-        return false;
+        return AdminTier::allows($user)
+            || in_array((string) ($user->role ?? ''), AdminTier::OPERATIONAL_ROLES, true);
     }
 
     /**

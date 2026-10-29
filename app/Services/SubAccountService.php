@@ -1265,7 +1265,7 @@ class SubAccountService
 
         // Skill tags are part of the listing form, but the member-facing route
         // that saves them (PUT /v2/listings/{id}/tags) checks
-        // ListingService::canModify(), which admits the owner or an admin and
+        // ListingService::canModify(), which admits the owner or community staff and
         // refuses a carer. Applying them HERE keeps them inside the operation
         // whose authority was already established above, rather than widening
         // that ownership check for everyone. A tag failure must not undo a

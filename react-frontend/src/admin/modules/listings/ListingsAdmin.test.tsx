@@ -249,6 +249,27 @@ describe('ListingsAdmin', () => {
     });
   });
 
+  it('opens the listing\'s edit form from the Edit action', async () => {
+    mockAdminListings.list.mockResolvedValue(
+      makeListResponse([makeListing({ id: 4, title: 'Needs A Photo' })], 1)
+    );
+
+    const { ListingsAdmin } = await import('./ListingsAdmin');
+    render(<ListingsAdmin />);
+
+    await waitFor(() => screen.getByText('Needs A Photo'));
+
+    const editBtn = screen.queryAllByRole('button').find(
+      (b) => b.getAttribute('aria-label')?.toLowerCase() === 'edit'
+    );
+    expect(editBtn).toBeDefined();
+    fireEvent.click(editBtn!);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/test/listings/edit/4');
+    });
+  });
+
   it('opens on the status tab named in the address and asks the API for it', async () => {
     window.history.pushState({}, '', '/admin/listings?status=pending');
     const { ListingsAdmin } = await import('./ListingsAdmin');

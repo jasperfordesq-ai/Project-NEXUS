@@ -13,17 +13,18 @@ import { Button, Chip, Card, CardBody, Input, Spinner, Tabs, Tab, Tooltip } from
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
 import Trash2 from 'lucide-react/icons/trash-2';
+import Pencil from 'lucide-react/icons/pencil';
 import Star from 'lucide-react/icons/star';
 import StarOff from 'lucide-react/icons/star-off';
 import Search from 'lucide-react/icons/search';
 import Plus from 'lucide-react/icons/plus';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { useAdminPageMeta } from '../../AdminMetaContext';
 import { adminListings } from '../../api/adminApi';
 import { DataTable, StatusBadge, type Column } from '../../components/DataTable';
@@ -323,6 +324,8 @@ export function ListingsAdmin() {
     description: t('listings.listings_admin_desc'),
   });
   const toast = useToast();
+  const navigate = useNavigate();
+  const { tenantPath } = useTenant();
 
   const [activeTab, setActiveTab] = useState('content');
   const [items, setItems] = useState<AdminListing[]>([]);
@@ -520,6 +523,19 @@ export function ListingsAdmin() {
               </Button>
             </>
           )}
+          {/* Opens the member-side edit form, where staff can also add a
+              photo to a listing that has none. */}
+          <Tooltip content={t('common.edit')}>
+            <Button
+              isIconOnly
+              size="sm"
+              variant="tertiary"
+              onPress={() => navigate(tenantPath(`/listings/edit/${item.id}`))}
+              aria-label={t('common.edit')}
+            >
+              <Pencil size={14} />
+            </Button>
+          </Tooltip>
           <Tooltip content={item.is_featured ? t('listings.unfeature') : t('listings.feature')}>
             <Button
               isIconOnly

@@ -273,6 +273,12 @@ class ListingsController extends BaseApiController
 
         $listing['is_featured'] = (bool) ($listing['is_featured'] ?? false);
 
+        // Drives the Edit button: the owner, or community staff. A manager
+        // visiting from a community above may look but not change (E-107).
+        $listing['can_edit'] = $userId !== null
+            && ! \App\Support\Authorization\CrossTenantEntry::isVisitingNow()
+            && $this->listingService->canModify($listing, $userId);
+
         // F-082: exact coordinates only for the owner (their edit form) and
         // administrators; everyone else sees them rounded to ~1 km.
         $listing = ListingService::coarsenListingCoordinates($listing, $userId);
@@ -423,10 +429,23 @@ class ListingsController extends BaseApiController
         // image_url must go through the dedicated uploadImage endpoint — strip from user input
         unset($data['image_url']);
 
-        $isAdmin = $this->listingService->canModify($existing, $userId) && (int) ($existing['user_id'] ?? 0) !== $userId;
+        // A listing's place comes from its owner's profile. Staff editing a
+        // member's listing never change it: the edit form pre-fills location
+        // from the signed-in person's own profile, so honouring it would move
+        // the member's listing to the editor's address.
+        if ((int) ($existing['user_id'] ?? 0) !== $userId) {
+            unset($data['location'], $data['latitude'], $data['longitude']);
+        }
+
+        // Editing someone else's listing does not by itself unlock the
+        // admin-only statuses: brokers and coordinators may edit, but
+        // suspending or reactivating stays with admins.
+        $isAdmin = (int) ($existing['user_id'] ?? 0) !== $userId
+            && \App\Support\Authorization\AdminTier::allows($this->resolveUser());
 
         try {
             $this->listingService->update($id, $data, $isAdmin);
+            $this->auditStaffListingEdit($existing, $userId, 'details', array_keys($data));
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->respondWithError('NOT_FOUND', __('api.listing_not_found'), null, 404);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -458,7 +477,10 @@ class ListingsController extends BaseApiController
         if (!$existing) {
             return $this->respondWithError('NOT_FOUND', __('api.listing_not_found'), null, 404);
         }
-        if (!$this->listingService->canModify($existing, $userId)) {
+        // Owner or an admin. Brokers and coordinators may edit a member's
+        // listing (canModify) but not remove it.
+        $isOwner = (int) ($existing['user_id'] ?? 0) === $userId;
+        if (! $isOwner && ! \App\Support\Authorization\AdminTier::allows($this->resolveUser())) {
             return $this->respondWithError('FORBIDDEN', __('api.listing_delete_own_only'), null, 403);
         }
 
@@ -826,6 +848,7 @@ class ListingsController extends BaseApiController
         }
 
         $this->listingService->update($id, ['image_url' => null]);
+        $this->auditStaffListingEdit($listing, $userId, 'image_removed');
 
         return $this->respondWithData(['image_url' => null]);
     }
@@ -970,6 +993,7 @@ class ListingsController extends BaseApiController
 
             // Update listing with new image
             $this->listingService->update($id, ['image_url' => $imageUrl]);
+            $this->auditStaffListingEdit($listing, $userId, 'image_added');
 
             return $this->respondWithData(['image_url' => $imageUrl]);
         } catch (\Exception $e) {
@@ -1379,5 +1403,27 @@ class ListingsController extends BaseApiController
         }
 
         return $this->respondWithData(['description' => $result['reply']]);
+    }
+
+    /**
+     * Record a change a staff member made to someone else's listing, so the
+     * community can see who edited a member's listing and when. An owner
+     * editing their own listing is not recorded here.
+     *
+     * @param array<string, mixed> $listing
+     * @param list<string|int> $fields
+     */
+    private function auditStaffListingEdit(array $listing, int $editorId, string $change, array $fields = []): void
+    {
+        $ownerId = (int) ($listing['user_id'] ?? 0);
+        if ($ownerId === $editorId) {
+            return;
+        }
+
+        app(\App\Services\AuditLogService::class)->log('listing_edited_by_staff', null, $editorId, [
+            'listing_id' => (int) ($listing['id'] ?? 0),
+            'change' => $change,
+            'fields' => array_values(array_map('strval', $fields)),
+        ], $ownerId);
     }
 }

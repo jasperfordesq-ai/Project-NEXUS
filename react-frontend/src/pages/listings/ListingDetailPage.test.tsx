@@ -389,6 +389,30 @@ describe('ListingDetailPage', () => {
     expect(screen.queryByRole('button', { name: /try again/i })).not.toBeInTheDocument();
   });
 
+  describe('staff editing a member\'s listing', () => {
+    // The default signed-in user (id 99) does not own mockListing (user 5).
+    it('shows an Edit link, and no owner-only actions, when the server says the viewer can edit', async () => {
+      api.get.mockImplementation((url: string) => {
+        if (url.includes('/config')) return Promise.resolve({ success: true, data: { exchange_workflow_enabled: true } });
+        if (url.includes('/check')) return Promise.resolve({ success: true, data: null });
+        return Promise.resolve({ success: true, data: { ...mockListing, can_edit: true } });
+      });
+
+      render(<ListingDetailPage />);
+
+      const edit = await screen.findByRole('link', { name: 'Edit' });
+      expect(edit.getAttribute('href')).toContain('/listings/edit/1');
+      expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+    });
+
+    it('shows no Edit link to an ordinary member', async () => {
+      render(<ListingDetailPage />);
+
+      await screen.findAllByText('Web Design Help');
+      expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument();
+    });
+  });
+
   describe('owner delete/renew failure handling (regression)', () => {
     // Regression: api.delete/api.post resolve { success: false } on a 4xx
     // (403/404/429/…) WITHOUT throwing, and the global error toast only fires

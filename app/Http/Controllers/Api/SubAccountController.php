@@ -380,8 +380,8 @@ class SubAccountController extends BaseApiController
      * Attach a photo to a listing a supporter just posted for someone.
      *
      * 🔴 Why this exists rather than reusing POST /v2/listings/{id}/image: that
-     * route checks ListingService::canModify(), which admits the owner or an
-     * admin and refuses a carer. Without this route the supporter could fill in
+     * route checks ListingService::canModify(), which admits the owner or community staff
+     * (admin, broker, coordinator) and refuses a carer. Without this route the supporter could fill in
      * every field of the listing form except the photo, and the upload would
      * fail with a bare 403 after the listing had already been created.
      *

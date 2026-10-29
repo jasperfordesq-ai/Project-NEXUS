@@ -264,6 +264,11 @@ export function ListingForm({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  // Set when editing an existing listing. Staff (admin/broker/coordinator)
+  // may edit a member's listing; its place then stays the member's, not the
+  // editor's profile location the form would otherwise fill in.
+  const [listingOwner, setListingOwner] = useState<{ id: number; location: string } | null>(null);
+  const isEditingOthersListing = isEditing && listingOwner !== null && listingOwner.id !== user?.id;
   const [removeExistingImage, setRemoveExistingImage] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const selectedCategoryName = categories.find((c) => c.id.toString() === formData.category_id)?.name;
@@ -352,6 +357,7 @@ export function ListingForm({
             // (set during state initialisation above); do not overwrite with stored
             // listing values here.
           }));
+          setListingOwner({ id: listing.user_id, location: listing.location ?? '' });
           if (listing.image_url) {
             setExistingImageUrl(listing.image_url);
           }
@@ -478,9 +484,11 @@ export function ListingForm({
         title: formData.title,
         description: enrichedDescription,
         type: formData.type,
-        location: formData.location,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
+        // Never send the editor's own place onto a member's listing (the
+        // server ignores a non-owner's location fields too).
+        location: isEditingOthersListing ? listingOwner?.location ?? '' : formData.location,
+        latitude: isEditingOthersListing ? undefined : formData.latitude,
+        longitude: isEditingOthersListing ? undefined : formData.longitude,
         category_id: formData.category_id ? parseInt(formData.category_id, 10) : undefined,
         hours_estimate: parseFloat(formData.hours_estimate),
         // Blank means "no limit", which the API stores as NULL. Sending an empty
@@ -1034,9 +1042,9 @@ export function ListingForm({
           <div>
             <Input
               label={t('form.location_optional_label')}
-              value={formData.location}
+              value={isEditingOthersListing ? listingOwner?.location ?? '' : formData.location}
               isDisabled
-              description={t('form.location_from_profile')}
+              description={isEditingOthersListing ? undefined : t('form.location_from_profile')}
               startContent={<MapPin className="w-4 h-4 text-theme-subtle" aria-hidden="true" />}
               classNames={{
                 input: 'bg-transparent text-theme-primary',
