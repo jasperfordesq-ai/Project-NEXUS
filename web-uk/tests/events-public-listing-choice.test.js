@@ -307,3 +307,17 @@ describe('recurring edit form', () => {
     expect(offCall[3]).not.toHaveProperty('is_public_listing');
   });
 });
+
+// 29 Oct deep audit H1: Laravel sends UTC instants and reads an offset-less save in
+// the event's own zone, so the edit form must show the event-zone wall clock.
+describe('single-event edit shows times in the event zone', () => {
+  it('shows a summer Dublin event at its local time, not UTC', async () => {
+    api.getEvent.mockResolvedValueOnce({ data: existingEvent({
+      start_time: '2027-07-01T13:00:00.000000Z', end_time: '2027-07-01T15:00:00.000000Z', timezone: 'Europe/Dublin'
+    }) });
+    const page = await request(featureOn).get('/42/edit');
+    expect(page.status).toBe(200);
+    expect(page.text).toMatch(/name="start_time-time"[^>]*value="14:00"|value="14:00"[^>]*name="start_time-time"/);
+    expect(page.text).toMatch(/name="end_time-time"[^>]*value="16:00"|value="16:00"[^>]*name="end_time-time"/);
+  });
+});

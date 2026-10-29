@@ -30,6 +30,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { audit } = require('../lib/auditLogger');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
@@ -387,20 +388,20 @@ function validateListingValues(values, config, allowedTypes, image = null, t = k
   }
 
   if (config.requireLocation && !location) add('location', t('listings.create.errors.location_required'));
-  else if (locationLength > 255) add('location', 'Location must be 255 characters or fewer');
+  else if (locationLength > 255) add('location', t('govuk_alpha_listings.form_messages.location_max'));
   if (characterLength(trimmed(values.accessibility_notes)) > 200) {
     add('accessibility_notes', t('govuk_alpha_listings.service_details.accessibility_max_length'));
   }
 
   if (config.enableServiceType && !LISTING_SERVICE_TYPES.has(trimmed(values.service_type))) {
-    add('service_type', 'Select how the service will be delivered');
+    add('service_type', t('govuk_alpha_listings.form_messages.service_type_required'));
   }
   if (image) {
     const allowedMimes = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
     if (!allowedMimes.has(trimmed(image.mimetype).toLowerCase())) {
-      add('image', 'Choose a JPEG, PNG, GIF or WebP image');
+      add('image', t('govuk_alpha_listings.form_messages.image_type'));
     } else if (Number(image.size) > config.maxImageSizeMb * 1024 * 1024) {
-      add('image', `Image must be ${config.maxImageSizeMb} MB or smaller`);
+      add('image', t('govuk_alpha_listings.form_messages.image_size', { max: config.maxImageSizeMb }));
     }
   }
 
@@ -1148,6 +1149,7 @@ router.post('/:listingId(\\d+)/exchange-request', asyncRoute(async (req, res) =>
     if (code === 'FEATURE_DISABLED') {
       return redirectTo(res, listingRedirect(listingId, 'exchange-disabled'));
     }
+    rememberClientRefusal(req, 'exchange-request', error);
   }
 
   return redirectTo(res, `/listings/${listingId}/exchange-request?status=exchange-failed`);
@@ -1188,7 +1190,10 @@ router.get('/:listingId(\\d+)/exchange-request', asyncRoute(async (req, res) => 
     suggestedHoursLabel: oneDecimal(suggestedHours),
     walletBalance,
     walletBalanceLabel: walletBalance === null ? '' : oneDecimal(walletBalance),
-    status: exchangeRequestStatus(req.query.status, t),
+    status: req.query.status === 'exchange-failed' && (() => {
+      const refusal = consumeApiRefusal(req, 'exchange-request');
+      return refusal ? { type: 'error', message: refusal } : null;
+    })() || exchangeRequestStatus(req.query.status, t),
     submissionToken: issueExchangeSubmissionToken(req, listingId),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -1351,6 +1356,9 @@ router.get('/', asyncRoute(async (req, res) => {
   if (service === 'in_person') params.service_type = 'physical_only';
   if (posted !== 'any') params.posted_within = Number(posted);
   if (sort === 'recommended') params.featured_first = true;
+  // React ListingsPage: "newest" sends sort=newest, and personalised mirrors the choice.
+  if (sort === 'newest') params.sort = 'newest';
+  params.personalised = sort === 'recommended';
   const currentUserResult = token ? await getRequestProfile(req, token).catch(() => null) : null;
   const currentUser = profileFrom(currentUserResult);
   const latitude = Number(currentUser.latitude);
@@ -1539,7 +1547,7 @@ router.post('/new', requireAuth, audit.listingCreate(), asyncRoute(async (req, r
     const listingId = positiveInteger(listingFrom(result).id);
     if (listingId === null) {
       if (req.flash) {
-        req.flash('error', 'The listing was saved, but Laravel did not return its ID.');
+        req.flash('error', res.locals.t('govuk_alpha_listings.form_messages.saved_no_id'));
       }
       return redirectTo(res, '/listings');
     }
@@ -1547,19 +1555,20 @@ router.post('/new', requireAuth, audit.listingCreate(), asyncRoute(async (req, r
     const secondaryFailures = [];
     try {
       await setListingSkillTags(req.token, listingId, skillTagsFrom(values.skill_tags));
-    } catch (error) {
-      secondaryFailures.push(error.message || 'skill tags could not be saved');
+    } catch {
+      secondaryFailures.push(res.locals.t('govuk_alpha_listings.form_messages.created_tags_failed'));
     }
     if (image) {
       try {
         await uploadListingCoverImage(req.token, listingId, image);
-      } catch (error) {
-        secondaryFailures.push(error.message || 'the image could not be uploaded');
+      } catch {
+        secondaryFailures.push(res.locals.t('govuk_alpha_listings.form_messages.created_image_failed'));
       }
     }
 
+    // Whole translated sentences (they were English fragments joined in English).
     if (req.flash && secondaryFailures.length > 0) {
-      req.flash('error', `The listing was created, but ${secondaryFailures.join('; ')}.`);
+      req.flash('error', secondaryFailures.join(' '));
     }
     return redirectTo(res, `/listings/${listingId}?status=listing-created`);
   } catch (error) {
@@ -1696,14 +1705,14 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.listingUpdate(), asyncRoute(as
     const secondaryFailures = [];
     try {
       await setListingSkillTags(req.token, id, skillTagsFrom(values.skill_tags));
-    } catch (error) {
-      secondaryFailures.push(error.message || 'skill tags could not be saved');
+    } catch {
+      secondaryFailures.push(res.locals.t('govuk_alpha_listings.form_messages.updated_tags_failed'));
     }
     if (image) {
       try {
         await uploadListingCoverImage(req.token, positiveInteger(id), image);
-      } catch (error) {
-        secondaryFailures.push(error.message || 'the image could not be uploaded');
+      } catch {
+        secondaryFailures.push(res.locals.t('govuk_alpha_listings.form_messages.updated_image_failed'));
       }
     } else if (req.body.remove_image === '1') {
       // React ListingForm: remove the current photo without choosing a new one.
@@ -1711,12 +1720,12 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.listingUpdate(), asyncRoute(as
         await deleteListingImage(req.token, positiveInteger(id));
       } catch (error) {
         if (isAuthError(error)) throw error;
-        secondaryFailures.push(res.locals.t('govuk_alpha_listings.create.remove_image_failed'));
+        secondaryFailures.push(res.locals.t('govuk_alpha_listings.form_messages.updated_photo_remove_failed'));
       }
     }
 
     if (req.flash && secondaryFailures.length > 0) {
-      req.flash('error', `The listing was updated, but ${secondaryFailures.join('; ')}.`);
+      req.flash('error', secondaryFailures.join(' '));
     }
     return redirectTo(res, `/listings/${id}?status=listing-updated`);
   } catch (error) {

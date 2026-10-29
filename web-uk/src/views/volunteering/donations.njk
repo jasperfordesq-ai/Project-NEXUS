@@ -215,7 +215,7 @@
       <div id="donate-amount-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.donations.amount_hint") }}</div>
       {% if status and status.type == 'error' %}
         <p id="donate-amount-error" class="govuk-error-message">
-          <span class="govuk-visually-hidden">There is a problem:</span>
+          <span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span>
           {{ status.message }}
         </p>
       {% endif %}

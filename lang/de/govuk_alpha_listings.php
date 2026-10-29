@@ -128,4 +128,17 @@ return [
         'accessibility_hint' => 'z. B. rollstuhlgängig, mit Hörschleife',
         'accessibility_max_length' => 'Hinweise zur Barrierefreiheit dürfen höchstens 200 Zeichen umfassen',
     ],
+    // Listing form messages that were hard-coded English until 29 Oct 2026.
+    'form_messages' => [
+        'location_max' => 'Der Ort darf höchstens 255 Zeichen lang sein',
+        'service_type_required' => 'Wählen Sie aus, wie die Leistung erbracht wird',
+        'image_type' => 'Das Bild muss eine JPEG-, PNG-, GIF- oder WebP-Datei sein',
+        'image_size' => 'Das Bild darf höchstens :max MB groß sein',
+        'saved_no_id' => 'Ihr Angebot wurde gespeichert, konnte aber nicht geöffnet werden. Sie finden es unter „Meine Angebote“.',
+        'created_tags_failed' => 'Ihr Angebot wurde erstellt, aber die Fähigkeiten konnten nicht gespeichert werden. Bearbeiten Sie das Angebot, um es erneut zu versuchen.',
+        'created_image_failed' => 'Ihr Angebot wurde erstellt, aber das Bild konnte nicht hochgeladen werden. Bearbeiten Sie das Angebot, um es erneut zu versuchen.',
+        'updated_tags_failed' => 'Ihr Angebot wurde aktualisiert, aber die Fähigkeiten konnten nicht gespeichert werden. Versuchen Sie es erneut.',
+        'updated_image_failed' => 'Ihr Angebot wurde aktualisiert, aber das Bild konnte nicht hochgeladen werden. Versuchen Sie es erneut.',
+        'updated_photo_remove_failed' => 'Ihr Angebot wurde aktualisiert, aber das Foto konnte nicht entfernt werden. Versuchen Sie es erneut.',
+    ],
 ];

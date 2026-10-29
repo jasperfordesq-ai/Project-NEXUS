@@ -380,6 +380,13 @@
   margin: govuk-spacing(4) 0;
 }
 
+// An image that keeps its proportions and never overflows its column
+// (replaces inline style="max-width:100%;height:auto").
+.nexus-alpha-responsive-image {
+  max-width: 100%;
+  height: auto;
+}
+
 .nexus-alpha-detail-hero img {
   display: block;
   width: 100%;

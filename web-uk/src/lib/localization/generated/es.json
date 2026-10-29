@@ -1585,6 +1585,7 @@
                 "need_account": "Regístrese para obtener una cuenta",
                 "have_account": "Iniciar sesión en una cuenta existente",
                 "login_failed": "Ingrese la dirección de correo electrónico y la contraseña correctas.",
+                "login_missing": "Introduce tu dirección de correo electrónico y tu contraseña",
                 "two_factor_required": "Se requiere autenticación de dos factores para esta cuenta.",
                 "rate_limited": "Demasiados intentos de inicio de sesión. Espere unos minutos y vuelva a intentarlo.",
                 "email_not_verified": "Verifique su dirección de correo electrónico antes de iniciar sesión. Revise su bandeja de entrada para ver el enlace de confirmación.",
@@ -5208,6 +5209,10 @@
                 "password_failed": "No se pudo cambiar su contraseña. Intentar otra vez.",
                 "language_changed": "Su idioma ha sido actualizado.",
                 "language_invalid": "Elija un idioma de la lista",
+                "avatar_invalid": "Sube una imagen JPG, PNG, GIF o WEBP de menos de 10 MB.",
+                "email_reauthentication_unavailable": "Los cambios de correo electrónico no están disponibles temporalmente porque no podemos confirmar tu contraseña de forma segura. Tu correo electrónico no se ha cambiado.",
+                "language_failed": "No se ha podido actualizar tu idioma.",
+                "passkey_failed": "No se ha podido actualizar tu clave de acceso.",
                 "photo_title": "Foto de perfil",
                 "photo_hint": "Cargue una imagen JPG, PNG, GIF o WEBP. Lo recortaremos en un cuadrado de 400 por 400 píxeles.",
                 "photo_current_alt": "Tu foto de perfil actual",
@@ -11343,6 +11348,18 @@
                 "accessibility_label": "Notas de Accesibilidad",
                 "accessibility_hint": "p.ej., Accesible en silla de ruedas, bucle de audio disponible",
                 "accessibility_max_length": "Las notas de accesibilidad deben tener 200 caracteres o menos"
+            },
+            "form_messages": {
+                "location_max": "La ubicación debe tener 255 caracteres o menos",
+                "service_type_required": "Selecciona cómo se prestará el servicio",
+                "image_type": "La imagen debe ser un archivo JPEG, PNG, GIF o WebP",
+                "image_size": "La imagen debe tener :max MB o menos",
+                "saved_no_id": "Tu anuncio se ha guardado, pero no hemos podido abrirlo. Puedes encontrarlo en Mis anuncios.",
+                "created_tags_failed": "Tu anuncio se ha creado, pero no se han podido guardar sus habilidades. Edita el anuncio para volver a intentarlo.",
+                "created_image_failed": "Tu anuncio se ha creado, pero no se ha podido subir su imagen. Edita el anuncio para volver a intentarlo.",
+                "updated_tags_failed": "Tu anuncio se ha actualizado, pero no se han podido guardar sus habilidades. Inténtalo de nuevo.",
+                "updated_image_failed": "Tu anuncio se ha actualizado, pero no se ha podido subir su imagen. Inténtalo de nuevo.",
+                "updated_photo_remove_failed": "Tu anuncio se ha actualizado, pero no se ha podido quitar su foto. Inténtalo de nuevo."
             }
         },
         "govuk_alpha_members": {

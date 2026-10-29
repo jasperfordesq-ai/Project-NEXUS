@@ -128,4 +128,17 @@ return [
         'accessibility_hint' => 'مثل: مناسب لكراسي الإعاقة، حلقة سمعية متاحة',
         'accessibility_max_length' => 'يجب ألا تتجاوز ملاحظات الوصول 200 حرف',
     ],
+    // Listing form messages that were hard-coded English until 29 Oct 2026.
+    'form_messages' => [
+        'location_max' => 'يجب ألا يزيد الموقع عن 255 حرفًا',
+        'service_type_required' => 'اختر طريقة تقديم الخدمة',
+        'image_type' => 'يجب أن تكون الصورة ملفًا بصيغة JPEG أو PNG أو GIF أو WebP',
+        'image_size' => 'يجب ألا يزيد حجم الصورة عن :max ميغابايت',
+        'saved_no_id' => 'تم حفظ إعلانك، لكن تعذّر فتحه. يمكنك العثور عليه في إعلاناتي.',
+        'created_tags_failed' => 'تم إنشاء إعلانك، لكن تعذّر حفظ مهاراته. عدّل الإعلان للمحاولة مرة أخرى.',
+        'created_image_failed' => 'تم إنشاء إعلانك، لكن تعذّر رفع صورته. عدّل الإعلان للمحاولة مرة أخرى.',
+        'updated_tags_failed' => 'تم تحديث إعلانك، لكن تعذّر حفظ مهاراته. حاول مرة أخرى.',
+        'updated_image_failed' => 'تم تحديث إعلانك، لكن تعذّر رفع صورته. حاول مرة أخرى.',
+        'updated_photo_remove_failed' => 'تم تحديث إعلانك، لكن تعذّرت إزالة صورته. حاول مرة أخرى.',
+    ],
 ];

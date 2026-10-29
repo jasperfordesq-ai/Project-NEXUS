@@ -180,7 +180,7 @@ describe('removing the listing photo', () => {
     api.deleteListingImage.mockRejectedValue(new api.ApiError('nope', 500));
     const response = await request(createApp()).post('/listings/5/edit').type('form').send({ ...BASE, remove_image: '1' });
     expect(response.headers.location).toBe('/listings/5?status=listing-updated');
-    expect(flashSpy).toHaveBeenCalledWith('error', expect.stringContaining(t('govuk_alpha_listings.create.remove_image_failed')));
+    expect(flashSpy).toHaveBeenCalledWith('error', t('govuk_alpha_listings.form_messages.updated_photo_remove_failed'));
   });
 });
 

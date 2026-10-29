@@ -65,8 +65,11 @@ describe('localised client-side validation messages', () => {
     // A miss means that field's inline error would render in English.
     expect(missing).toEqual([]);
 
-    // And the messages must be wired to the shared translation keys.
-    expect(src).toContain('states.validation.');
+    // And the messages must be translated. Since 29 Oct 2026 the events and groups
+    // forms use the SAME field-specific keys the server validation uses ("Enter an
+    // event title"), not the generic "Enter :field" (which read "Enter Event title"),
+    // so the in-browser and server messages match, as GOV.UK error messages should.
+    expect(src).toMatch(/"data-required-message": t\("[a-z_.]+"/);
   });
 
   it('resolves the shared keys in every supported locale with tokens replaced', () => {

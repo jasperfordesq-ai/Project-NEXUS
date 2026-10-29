@@ -107,11 +107,12 @@ describe('request-scoped profile status localization', () => {
     ['email-reauthentication-unavailable', 'Email changes are temporarily unavailable because we cannot securely confirm your password. Your email was not changed.'],
     ['language-failed', 'Your language could not be updated.'],
     ['passkey-failed', 'Your passkey could not be updated.']
-  ])('keeps the English fallback for %s because Laravel has no exact message key', async (status, fallback) => {
+  ])('translates %s (it stayed English until the 29 Oct 2026 deep audit)', async (status, english) => {
     const response = await request(createApp('ga')).get(`/profile/settings?status=${status}`);
 
     expect(response.status).toBe(200);
-    expect(response.body.locals.statusConfig.message).toBe(fallback);
+    expect(response.body.locals.statusConfig.message).not.toBe(english);
+    expect(response.body.locals.statusConfig.message).not.toMatch(/^profile_settings\./);
   });
 
   it('localizes delete-account errors in Arabic', async () => {

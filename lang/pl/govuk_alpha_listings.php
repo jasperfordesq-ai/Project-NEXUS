@@ -128,4 +128,17 @@ return [
         'accessibility_hint' => 'np. dostęp dla wózków inwalidzkich, pętla indukcyjna dostępna',
         'accessibility_max_length' => 'Uwagi dotyczące dostępności muszą mieć 200 znaków lub mniej',
     ],
+    // Listing form messages that were hard-coded English until 29 Oct 2026.
+    'form_messages' => [
+        'location_max' => 'Lokalizacja może mieć maksymalnie 255 znaków',
+        'service_type_required' => 'Wybierz, jak usługa będzie świadczona',
+        'image_type' => 'Obraz musi być plikiem JPEG, PNG, GIF lub WebP',
+        'image_size' => 'Obraz może mieć maksymalnie :max MB',
+        'saved_no_id' => 'Ogłoszenie zostało zapisane, ale nie udało się go otworzyć. Znajdziesz je w sekcji Moje ogłoszenia.',
+        'created_tags_failed' => 'Ogłoszenie zostało utworzone, ale nie udało się zapisać umiejętności. Edytuj ogłoszenie, aby spróbować ponownie.',
+        'created_image_failed' => 'Ogłoszenie zostało utworzone, ale nie udało się przesłać obrazu. Edytuj ogłoszenie, aby spróbować ponownie.',
+        'updated_tags_failed' => 'Ogłoszenie zostało zaktualizowane, ale nie udało się zapisać umiejętności. Spróbuj ponownie.',
+        'updated_image_failed' => 'Ogłoszenie zostało zaktualizowane, ale nie udało się przesłać obrazu. Spróbuj ponownie.',
+        'updated_photo_remove_failed' => 'Ogłoszenie zostało zaktualizowane, ale nie udało się usunąć zdjęcia. Spróbuj ponownie.',
+    ],
 ];

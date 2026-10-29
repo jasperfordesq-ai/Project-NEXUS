@@ -16,6 +16,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
+const { rememberClientRefusal, consumeApiRefusal, firstApiError: apiErrorParts } = require('../lib/api-refusal');
 const { audit } = require('../lib/auditLogger');
 const { PLATFORM_MAX_TRANSFER, walletMaxTransfer } = require('../lib/wallet-limits');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
@@ -111,7 +112,7 @@ function normalizeRecipient(row, t = (key) => key) {
   };
 }
 
-function walletManageStatus(status, transferError = '', donateError = '', t = (key) => key) {
+function walletManageStatus(status, transferError = '', donateError = '', t = (key) => key, apiRefusal = '') {
   const errors = {
     invalid: t('govuk_alpha_wallet.errors.invalid'),
     insufficient: t('govuk_alpha_wallet.errors.insufficient'),
@@ -119,7 +120,8 @@ function walletManageStatus(status, transferError = '', donateError = '', t = (k
     self: t('govuk_alpha_wallet.errors.self'),
     inactive: t('govuk_alpha_wallet.errors.inactive'),
     'too-large': t('govuk_alpha_wallet.errors.too_large'),
-    decimals: t('govuk_alpha_wallet.errors.decimals'),
+    // Laravel accepts up to two decimal places for both transfers and donations.
+    decimals: t('wallet.errors.decimals'),
     failed: t('govuk_alpha_wallet.errors.failed')
   };
 
@@ -127,7 +129,7 @@ function walletManageStatus(status, transferError = '', donateError = '', t = (k
     return { type: 'error', href: '#transfer', message: errors[transferError] || errors.failed };
   }
   if (status === 'donate-failed') {
-    return { type: 'error', href: '#donate', message: errors[donateError] || errors.failed };
+    return { type: 'error', href: '#donate', message: errors[donateError] || apiRefusal || errors.failed };
   }
   if (status === 'transfer-sent') {
     return { type: 'success', message: t('govuk_alpha_wallet.states.transfer_sent') };
@@ -338,6 +340,9 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     txNextCursor: txMeta.has_more && txMeta.cursor ? String(txMeta.cursor) : '',
     status: typeof req.query.status === 'string' ? req.query.status : '',
     transferError: typeof req.query.error === 'string' ? req.query.error : '',
+    apiRefusal: req.query.status === 'transfer-failed'
+      ? consumeApiRefusal(req, 'wallet-transfer')
+      : (req.query.status === 'donate-failed' ? consumeApiRefusal(req, 'wallet-donate') : ''),
     transferForm,
     donateError: typeof req.query.donate_error === 'string' ? req.query.donate_error : '',
     donateForm,
@@ -419,7 +424,8 @@ router.get('/manage', requireAuth, asyncRoute(async (req, res) => {
     donateTarget,
     donateForm,
     donateRecipient,
-    status: walletManageStatus(req.query.status, req.query.error, req.query.donate_error, res.locals.t),
+    status: walletManageStatus(req.query.status, req.query.error, req.query.donate_error, res.locals.t,
+      req.query.status === 'donate-failed' ? consumeApiRefusal(req, 'wallet-donate') : ''),
     donateIdempotencyKey: randomUUID(),
     maxTransfer,
     hoursValue,
@@ -450,7 +456,9 @@ router.post('/transfer', requireAuth, audit.walletTransfer(), asyncRoute(async (
       return redirectTo(res, '/onboarding');
     }
     storeTransferForm(req);
-    return redirectTo(res, transferFailurePath(transferFailureKey(error), req.body.recipient_q));
+    const failureKey = transferFailureKey(error);
+    if (failureKey === 'failed') rememberClientRefusal(req, 'wallet-transfer', error);
+    return redirectTo(res, transferFailurePath(failureKey, req.body.recipient_q));
   }
 }));
 
@@ -498,7 +506,9 @@ router.post('/donate', requireAuth, asyncRoute(async (req, res) => {
   if (!Number.isFinite(payload.amount) || payload.amount <= 0) {
     return failDonate('invalid');
   }
-  if (Math.round(payload.amount) !== payload.amount) {
+  // Laravel (F-166) and React accept up to two decimal places, e.g. 2.5 hours.
+  const cents = payload.amount * 100;
+  if (Math.abs(cents - Math.round(cents)) > 1e-6) {
     return failDonate('decimals');
   }
   if (payload.amount > 1000) {
@@ -524,13 +534,16 @@ router.post('/donate', requireAuth, asyncRoute(async (req, res) => {
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
-    const message = String(error.message || '');
-    if (/insufficient/i.test(message)) {
+    // Decide by Laravel's error code, never by English words in the message, which
+    // only matched when the member's language was English (29 Oct deep audit C4).
+    const { code } = apiErrorParts(error);
+    if (code === 'INSUFFICIENT_FUNDS' || code === 'INSUFFICIENT_BALANCE') {
       return failDonate('insufficient');
     }
-    if (/not found|recipient/i.test(message)) {
+    if (code === 'NOT_FOUND' || code === 'RESOURCE_NOT_FOUND' || (error instanceof ApiError && error.status === 404)) {
       return failDonate('not-found');
     }
+    rememberClientRefusal(req, 'wallet-donate', error);
     return failDonate('failed');
   }
 

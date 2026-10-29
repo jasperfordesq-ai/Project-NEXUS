@@ -1368,10 +1368,12 @@ function advancedSearchQuery(query) {
   appendPositive(params, 'category_id', query.category_id);
   appendDecimal(params, 'price_min', query.price_min);
   appendDecimal(params, 'price_max', query.price_max);
-  arrayFrom(query.condition)
+  // One comma-separated value, as React sends: PHP keeps only the LAST of
+  // repeated `condition=` keys, so ticking two conditions filtered by one.
+  const conditions = arrayFrom(query.condition)
     .map((value) => allowed(value, CONDITIONS, ''))
-    .filter(Boolean)
-    .forEach((value) => params.append('condition', value));
+    .filter(Boolean);
+  if (conditions.length > 0) params.set('condition', conditions.join(','));
   appendText(params, 'seller_type', allowed(query.seller_type, ['private', 'business'], ''));
   appendText(params, 'delivery_method', allowed(query.delivery_method, DELIVERY_METHODS, ''));
   const postedWithin = allowed(query.posted_within, ['1', '7', '30', '90'], '');

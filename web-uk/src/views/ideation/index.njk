@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block content %}
   <span class="govuk-caption-xl">{{ tenant.name or tenant.slug or t("govuk_alpha_ideation.page.community_fallback") }}</span>
@@ -66,6 +67,9 @@
         </article>
       {% endfor %}
     </div>
+    {% if nextPageHref %}
+      {{ loadMoreNext(urlFor(nextPageHref), t("actions.load_more")) }}
+    {% endif %}
   {% else %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>{{ t("ideation.empty") }}</div>
   {% endif %}

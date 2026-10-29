@@ -275,7 +275,7 @@ router.post('/login', asyncRoute(async (req, res) => {
   if (!email || !password || !tenantSlug) {
     return res.render('login', {
       title: translate(req, 'auth.login_title'),
-      error: 'Enter your email, password and tenant',
+      error: translate(req, 'auth.login_missing'),
       values: { email, tenant_slug: tenantSlug },
       returnTo,
       csrfToken: req.csrfToken ? req.csrfToken() : ''

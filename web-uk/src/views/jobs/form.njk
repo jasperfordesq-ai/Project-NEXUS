@@ -13,6 +13,21 @@
 {% endblock %}
 
 {% block mainContent %}
+  {% if jobFormErrors and jobFormErrors.length %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            {% for error in jobFormErrors %}
+              <li>{% if error.href %}<a href="{{ error.href }}">{{ error.text }}</a>{% else %}{{ error.text or error }}{% endif %}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
   <span class="govuk-caption-xl">{{ t("govuk_alpha.jobs_t3.create_caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{% if formMode == "edit" %}{{ t("govuk_alpha.jobs_t3.edit_title") }}{% else %}{{ t("govuk_alpha.jobs_t3.create_title") }}{% endif %}</h1>
   <p class="govuk-body-l">{% if formMode == "edit" %}{{ t("govuk_alpha.jobs_t3.edit_description") }}{% else %}{{ t("govuk_alpha.jobs_t3.create_description") }}{% endif %}</p>
@@ -28,20 +43,6 @@
     </div>
   {% endif %}
 
-  {% if jobFormErrors and jobFormErrors.length %}
-    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
-      <div role="alert">
-        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
-        <div class="govuk-error-summary__body">
-          <ul class="govuk-list govuk-error-summary__list">
-            {% for error in jobFormErrors %}
-              <li>{% if error.href %}<a href="{{ error.href }}">{{ error.text }}</a>{% else %}{{ error.text or error }}{% endif %}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-    </div>
-  {% endif %}
 
   {% if formMode != "edit" and jobTemplates and jobTemplates.length %}
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.posting.templates_heading") }}</h2>
@@ -79,32 +80,36 @@
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <input type="hidden" name="posting_extras" value="1">
 
-    <div class="govuk-form-group">
+    <div class="govuk-form-group{% if jobErr.title %} govuk-form-group--error{% endif %}">
       <label class="govuk-label govuk-label--m" for="title">{{ t("govuk_alpha.jobs_t3.label_title") }}</label>
       <div id="title-hint" class="govuk-hint">{{ t("govuk_alpha.jobs_t3.hint_title") }}</div>
-      <input class="govuk-input" id="title" name="title" type="text" value="{{ jobForm.title or "" }}" maxlength="255" aria-describedby="title-hint">
+      {% if jobErr.title %}<p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.title }}</p>{% endif %}
+      <input class="govuk-input{% if jobErr.title %} govuk-input--error{% endif %}" id="title" name="title" type="text" value="{{ jobForm.title or "" }}" maxlength="255" aria-describedby="{% if jobErr.title %}title-error {% endif %}title-hint">
     </div>
 
     {% call characterCount(5000, characterCountMessages, "description") %}
-    <div class="govuk-form-group">
+    <div class="govuk-form-group{% if jobErr.description %} govuk-form-group--error{% endif %}">
       <label class="govuk-label govuk-label--m" for="description">{{ t("govuk_alpha.jobs_t3.label_description") }}</label>
       <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha.jobs_t3.hint_description") }}</div>
-      <textarea class="govuk-textarea govuk-js-character-count" id="description" name="description" rows="6" maxlength="5000" aria-describedby="description-hint description-info">{{ jobForm.description or "" }}</textarea>
+      {% if jobErr.description %}<p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.description }}</p>{% endif %}
+      <textarea class="govuk-textarea govuk-js-character-count{% if jobErr.description %} govuk-textarea--error{% endif %}" id="description" name="description" rows="6" maxlength="5000" aria-describedby="{% if jobErr.description %}description-error {% endif %}description-hint description-info">{{ jobForm.description or "" }}</textarea>
     </div>
     {% endcall %}
 
-    <div class="govuk-form-group">
+    <div class="govuk-form-group{% if jobErr.type %} govuk-form-group--error{% endif %}">
       <label class="govuk-label govuk-label--m" for="type">{{ t("govuk_alpha.jobs_t3.label_type") }}</label>
-      <select class="govuk-select" id="type" name="type">
+      {% if jobErr.type %}<p id="type-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.type }}</p>{% endif %}
+      <select class="govuk-select{% if jobErr.type %} govuk-select--error{% endif %}" id="type"{% if jobErr.type %} aria-describedby="type-error"{% endif %} name="type">
         <option value="volunteer"{% if not jobForm.type or jobForm.type == "volunteer" %} selected{% endif %}>{{ t("jobs.type_volunteer") }}</option>
         <option value="paid"{% if jobForm.type == "paid" %} selected{% endif %}>{{ t("jobs.type_paid") }}</option>
         <option value="timebank"{% if jobForm.type == "timebank" %} selected{% endif %}>{{ t("jobs.type_timebank") }}</option>
       </select>
     </div>
 
-    <div class="govuk-form-group">
+    <div class="govuk-form-group{% if jobErr.commitment %} govuk-form-group--error{% endif %}">
       <label class="govuk-label govuk-label--m" for="commitment">{{ t("govuk_alpha.jobs_t3.label_commitment") }}</label>
-      <select class="govuk-select" id="commitment" name="commitment">
+      {% if jobErr.commitment %}<p id="commitment-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.commitment }}</p>{% endif %}
+      <select class="govuk-select{% if jobErr.commitment %} govuk-select--error{% endif %}" id="commitment"{% if jobErr.commitment %} aria-describedby="commitment-error"{% endif %} name="commitment">
         <option value="flexible"{% if not jobForm.commitment or jobForm.commitment == "flexible" %} selected{% endif %}>{{ t("jobs_t2.commitment_flexible") }}</option>
         <option value="full_time"{% if jobForm.commitment == "full_time" %} selected{% endif %}>{{ t("jobs_t2.commitment_full_time") }}</option>
         <option value="part_time"{% if jobForm.commitment == "part_time" %} selected{% endif %}>{{ t("jobs_t2.commitment_part_time") }}</option>
@@ -112,14 +117,16 @@
       </select>
     </div>
 
-    <div class="govuk-form-group">
+    <div class="govuk-form-group{% if jobErr.category %} govuk-form-group--error{% endif %}">
       <label class="govuk-label" for="category">{{ t("govuk_alpha.jobs_t3.label_category") }}</label>
-      <input class="govuk-input govuk-!-width-two-thirds" id="category" name="category" type="text" value="{{ jobForm.category or "" }}" maxlength="100">
+      {% if jobErr.category %}<p id="category-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.category }}</p>{% endif %}
+      <input class="govuk-input govuk-!-width-two-thirds{% if jobErr.category %} govuk-input--error{% endif %}" id="category"{% if jobErr.category %} aria-describedby="category-error"{% endif %} name="category" type="text" value="{{ jobForm.category or "" }}" maxlength="100">
     </div>
 
-    <div class="govuk-form-group">
+    <div class="govuk-form-group{% if jobErr.location %} govuk-form-group--error{% endif %}">
       <label class="govuk-label" for="location">{{ t("govuk_alpha.jobs_t3.label_location") }}</label>
-      <input class="govuk-input govuk-!-width-two-thirds" id="location" name="location" type="text" value="{{ jobForm.location or "" }}" maxlength="255">
+      {% if jobErr.location %}<p id="location-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.location }}</p>{% endif %}
+      <input class="govuk-input govuk-!-width-two-thirds{% if jobErr.location %} govuk-input--error{% endif %}" id="location"{% if jobErr.location %} aria-describedby="location-error"{% endif %} name="location" type="text" value="{{ jobForm.location or "" }}" maxlength="255">
     </div>
 
     <div class="govuk-form-group">
@@ -132,10 +139,11 @@
       </div>
     </div>
 
-    <div class="govuk-form-group">
+    <div class="govuk-form-group{% if jobErr.skills_required %} govuk-form-group--error{% endif %}">
       <label class="govuk-label" for="skills_required">{{ t("jobs_t3.label_skills") }}</label>
       <div id="skills-hint" class="govuk-hint">{{ t("govuk_alpha.jobs_t3.hint_skills") }}</div>
-      <input class="govuk-input govuk-!-width-two-thirds" id="skills_required" name="skills_required" type="text" value="{{ jobForm.skills_required or "" }}" maxlength="500" aria-describedby="skills-hint">
+      {% if jobErr.skills_required %}<p id="skills_required-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.skills_required }}</p>{% endif %}
+      <input class="govuk-input govuk-!-width-two-thirds{% if jobErr.skills_required %} govuk-input--error{% endif %}" id="skills_required" name="skills_required" type="text" value="{{ jobForm.skills_required or "" }}" maxlength="500" aria-describedby="{% if jobErr.skills_required %}skills_required-error {% endif %}skills-hint">
     </div>
 
     {{ nexusDateInput({
@@ -152,28 +160,32 @@
       {% endif %}
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-one-third">
-          <div class="govuk-form-group">
+          <div class="govuk-form-group{% if jobErr.salary_min %} govuk-form-group--error{% endif %}">
             <label class="govuk-label" for="salary_min">{{ t("jobs_t3.label_salary_min") }}</label>
-            <input class="govuk-input" id="salary_min" name="salary_min" type="text" spellcheck="false" value="{{ jobForm.salary_min or "" }}" inputmode="decimal">
+            {% if jobErr.salary_min %}<p id="salary_min-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.salary_min }}</p>{% endif %}
+            <input class="govuk-input{% if jobErr.salary_min %} govuk-input--error{% endif %}" id="salary_min"{% if jobErr.salary_min %} aria-describedby="salary_min-error"{% endif %} name="salary_min" type="text" spellcheck="false" value="{{ jobForm.salary_min or "" }}" inputmode="decimal">
           </div>
         </div>
         <div class="govuk-grid-column-one-third">
-          <div class="govuk-form-group">
+          <div class="govuk-form-group{% if jobErr.salary_max %} govuk-form-group--error{% endif %}">
             <label class="govuk-label" for="salary_max">{{ t("jobs_t3.label_salary_max") }}</label>
-            <input class="govuk-input" id="salary_max" name="salary_max" type="text" spellcheck="false" value="{{ jobForm.salary_max or "" }}" inputmode="decimal">
+            {% if jobErr.salary_max %}<p id="salary_max-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.salary_max }}</p>{% endif %}
+            <input class="govuk-input{% if jobErr.salary_max %} govuk-input--error{% endif %}" id="salary_max"{% if jobErr.salary_max %} aria-describedby="salary_max-error"{% endif %} name="salary_max" type="text" spellcheck="false" value="{{ jobForm.salary_max or "" }}" inputmode="decimal">
           </div>
         </div>
         <div class="govuk-grid-column-one-third">
-          <div class="govuk-form-group">
+          <div class="govuk-form-group{% if jobErr.salary_currency %} govuk-form-group--error{% endif %}">
             <label class="govuk-label" for="salary_currency">{{ t("jobs_t3.label_salary_currency") }}</label>
             <div id="currency-hint" class="govuk-hint">{{ t("jobs_t3.hint_salary_currency") }}</div>
-            <input class="govuk-input govuk-input--width-5" id="salary_currency" name="salary_currency" type="text" value="{{ jobForm.salary_currency or "" }}" maxlength="3" aria-describedby="currency-hint">
+            {% if jobErr.salary_currency %}<p id="salary_currency-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.salary_currency }}</p>{% endif %}
+            <input class="govuk-input govuk-input--width-5{% if jobErr.salary_currency %} govuk-input--error{% endif %}" id="salary_currency" name="salary_currency" type="text" value="{{ jobForm.salary_currency or "" }}" maxlength="3" aria-describedby="{% if jobErr.salary_currency %}salary_currency-error {% endif %}currency-hint">
           </div>
         </div>
       </div>
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if jobErr.salary_type %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="salary_type">{{ t("jobs_t3.label_salary_type") }}</label>
-        <select class="govuk-select" id="salary_type" name="salary_type">
+        {% if jobErr.salary_type %}<p id="salary_type-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.salary_type }}</p>{% endif %}
+        <select class="govuk-select{% if jobErr.salary_type %} govuk-select--error{% endif %}" id="salary_type"{% if jobErr.salary_type %} aria-describedby="salary_type-error"{% endif %} name="salary_type">
           <option value=""{% if not jobForm.salary_type %} selected{% endif %}>{{ t("jobs_t3.salary_type_none") }}</option>
           <option value="hourly"{% if jobForm.salary_type == "hourly" %} selected{% endif %}>{{ t("jobs_t3.salary_type_hourly") }}</option>
           <option value="monthly"{% if jobForm.salary_type == "monthly" %} selected{% endif %}>{{ t("jobs_t3.salary_type_monthly") }}</option>
@@ -193,27 +205,31 @@
 
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-one-half">
-        <div class="govuk-form-group">
+        <div class="govuk-form-group{% if jobErr.hours_per_week %} govuk-form-group--error{% endif %}">
           <label class="govuk-label" for="hours_per_week">{{ t("jobs_t3.label_hours") }}</label>
-          <input class="govuk-input govuk-input--width-5" id="hours_per_week" name="hours_per_week" type="text" spellcheck="false" value="{{ jobForm.hours_per_week or "" }}" inputmode="decimal">
+          {% if jobErr.hours_per_week %}<p id="hours_per_week-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.hours_per_week }}</p>{% endif %}
+          <input class="govuk-input govuk-input--width-5{% if jobErr.hours_per_week %} govuk-input--error{% endif %}" id="hours_per_week"{% if jobErr.hours_per_week %} aria-describedby="hours_per_week-error"{% endif %} name="hours_per_week" type="text" spellcheck="false" value="{{ jobForm.hours_per_week or "" }}" inputmode="decimal">
         </div>
       </div>
       <div class="govuk-grid-column-one-half">
-        <div class="govuk-form-group">
+        <div class="govuk-form-group{% if jobErr.time_credits %} govuk-form-group--error{% endif %}">
           <label class="govuk-label" for="time_credits">{{ t("jobs_t3.label_credits") }}</label>
-          <input class="govuk-input govuk-input--width-5" id="time_credits" name="time_credits" type="text" spellcheck="false" value="{{ jobForm.time_credits or "" }}" inputmode="decimal">
+          {% if jobErr.time_credits %}<p id="time_credits-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.time_credits }}</p>{% endif %}
+          <input class="govuk-input govuk-input--width-5{% if jobErr.time_credits %} govuk-input--error{% endif %}" id="time_credits"{% if jobErr.time_credits %} aria-describedby="time_credits-error"{% endif %} name="time_credits" type="text" spellcheck="false" value="{{ jobForm.time_credits or "" }}" inputmode="decimal">
         </div>
       </div>
     </div>
 
-    <div class="govuk-form-group">
+    <div class="govuk-form-group{% if jobErr.contact_email %} govuk-form-group--error{% endif %}">
       <label class="govuk-label" for="contact_email">{{ t("govuk_alpha.jobs_t3.label_contact_email") }}</label>
-      <input class="govuk-input govuk-!-width-two-thirds" id="contact_email" name="contact_email" type="email" value="{{ jobForm.contact_email or "" }}" maxlength="255" autocomplete="email">
+      {% if jobErr.contact_email %}<p id="contact_email-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.contact_email }}</p>{% endif %}
+      <input class="govuk-input govuk-!-width-two-thirds{% if jobErr.contact_email %} govuk-input--error{% endif %}" id="contact_email"{% if jobErr.contact_email %} aria-describedby="contact_email-error"{% endif %} name="contact_email" type="email" value="{{ jobForm.contact_email or "" }}" maxlength="255" autocomplete="email">
     </div>
 
-    <div class="govuk-form-group">
+    <div class="govuk-form-group{% if jobErr.contact_phone %} govuk-form-group--error{% endif %}">
       <label class="govuk-label" for="contact_phone">{{ t("govuk_alpha_jobs.posting.contact_phone_label") }}</label>
-      <input class="govuk-input govuk-input--width-20" id="contact_phone" name="contact_phone" type="tel" value="{{ jobForm.contact_phone or "" }}" maxlength="50" autocomplete="tel">
+      {% if jobErr.contact_phone %}<p id="contact_phone-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.contact_phone }}</p>{% endif %}
+      <input class="govuk-input govuk-input--width-20{% if jobErr.contact_phone %} govuk-input--error{% endif %}" id="contact_phone"{% if jobErr.contact_phone %} aria-describedby="contact_phone-error"{% endif %} name="contact_phone" type="tel" value="{{ jobForm.contact_phone or "" }}" maxlength="50" autocomplete="tel">
     </div>
 
     <div class="govuk-form-group">
@@ -231,21 +247,24 @@
       <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha_jobs.posting.branding_legend") }}</legend>
       <div id="branding-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.posting.branding_hint") }}</div>
 
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if jobErr.tagline %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="tagline">{{ t("govuk_alpha_jobs.posting.tagline_label") }}</label>
         <div id="tagline-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.posting.tagline_hint") }}</div>
-        <input class="govuk-input" id="tagline" name="tagline" type="text" value="{{ jobForm.tagline or "" }}" maxlength="160" aria-describedby="tagline-hint">
+        {% if jobErr.tagline %}<p id="tagline-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.tagline }}</p>{% endif %}
+        <input class="govuk-input{% if jobErr.tagline %} govuk-input--error{% endif %}" id="tagline" name="tagline" type="text" value="{{ jobForm.tagline or "" }}" maxlength="160" aria-describedby="{% if jobErr.tagline %}tagline-error {% endif %}tagline-hint">
       </div>
 
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if jobErr.video_url %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="video_url">{{ t("govuk_alpha_jobs.posting.video_label") }}</label>
         <div id="video_url-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.posting.video_hint") }}</div>
-        <input class="govuk-input" id="video_url" name="video_url" type="url" inputmode="url" spellcheck="false" value="{{ jobForm.video_url or "" }}" maxlength="2000" aria-describedby="video_url-hint">
+        {% if jobErr.video_url %}<p id="video_url-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.video_url }}</p>{% endif %}
+        <input class="govuk-input{% if jobErr.video_url %} govuk-input--error{% endif %}" id="video_url" name="video_url" type="url" inputmode="url" spellcheck="false" value="{{ jobForm.video_url or "" }}" maxlength="2000" aria-describedby="{% if jobErr.video_url %}video_url-error {% endif %}video_url-hint">
       </div>
 
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if jobErr.company_size %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="company_size">{{ t("govuk_alpha_jobs.posting.company_size_label") }}</label>
-        <select class="govuk-select" id="company_size" name="company_size">
+        {% if jobErr.company_size %}<p id="company_size-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.company_size }}</p>{% endif %}
+        <select class="govuk-select{% if jobErr.company_size %} govuk-select--error{% endif %}" id="company_size"{% if jobErr.company_size %} aria-describedby="company_size-error"{% endif %} name="company_size">
           <option value=""{% if not jobForm.company_size %} selected{% endif %}>{{ t("govuk_alpha_jobs.posting.company_size_none") }}</option>
           {% for size in companySizes %}
             <option value="{{ size }}"{% if jobForm.company_size == size %} selected{% endif %}>{{ t("govuk_alpha_jobs.posting.company_size_people", { size: size }) }}</option>
@@ -253,10 +272,11 @@
         </select>
       </div>
 
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if jobErr.benefits %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="benefits">{{ t("govuk_alpha_jobs.posting.benefits_label") }}</label>
         <div id="benefits-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.posting.benefits_hint") }}</div>
-        <textarea class="govuk-textarea" id="benefits" name="benefits" rows="4" aria-describedby="benefits-hint">{{ jobForm.benefitsText or "" }}</textarea>
+        {% if jobErr.benefits %}<p id="benefits-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.benefits }}</p>{% endif %}
+        <textarea class="govuk-textarea{% if jobErr.benefits %} govuk-textarea--error{% endif %}" id="benefits" name="benefits" rows="4" aria-describedby="{% if jobErr.benefits %}benefits-error {% endif %}benefits-hint">{{ jobForm.benefitsText or "" }}</textarea>
       </div>
     </fieldset>
 

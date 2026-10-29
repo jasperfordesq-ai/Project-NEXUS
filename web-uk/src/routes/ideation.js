@@ -419,7 +419,7 @@ function normalizeMedia(item) {
 }
 
 function statusMessage(status, t) {
-  return ['idea-submitted', 'idea-voted', 'challenge-created', 'challenge-duplicated'].includes(trimmed(status)) ? ideationStateMessage(status, t) : '';
+  return ['idea-submitted', 'idea-voted', 'challenge-created', 'challenge-duplicated', 'favorited', 'unfavorited'].includes(trimmed(status)) ? ideationStateMessage(status, t) : '';
 }
 
 function indexStatusMessage(status, t) {
@@ -428,6 +428,7 @@ function indexStatusMessage(status, t) {
 
 function errorMessage(status, t) {
   if (trimmed(status) === 'idea-invalid') return t('ideation.states.idea-invalid');
+  if (trimmed(status) === 'challenge-failed') return ideationStateMessage(status, t);
   return trimmed(status) === 'idea-failed' ? t('ideation.states.idea-failed') : '';
 }
 
@@ -502,10 +503,13 @@ router.get('/', asyncRoute(async (req, res) => {
   const rawStatus = trimmed(req.query.status);
   const status = IDEATION_FILTER_STATUSES.includes(rawStatus) ? rawStatus : '';
   const query = trimmed(req.query.q);
+  // Laravel reads per_page (default 20) and pages by cursor; `limit` was ignored,
+  // so challenges past the first 20 never appeared (29 Oct deep audit M1).
   const queryString = compactQuery({
-    limit: 30,
+    per_page: 30,
     status,
-    search: query
+    search: query,
+    cursor: trimmed(req.query.cursor)
   });
   const result = await callIdeationApi(token, 'GET', `/ideation-challenges?${queryString}`);
   const challenges = collectionFrom(result)
@@ -518,6 +522,9 @@ router.get('/', asyncRoute(async (req, res) => {
     challenges,
     activeStatus: status,
     activeQuery: query,
+    nextPageHref: result && result.meta && result.meta.has_more && result.meta.cursor
+      ? `/ideation?${compactQuery({ status, q: query, cursor: result.meta.cursor })}`
+      : '',
     successMessage: status ? '' : indexStatusMessage(rawStatus, res.locals.t)
   });
 }, { redirectOn401: loginRedirect() }));
@@ -689,7 +696,7 @@ router.get('/tags', asyncRoute(async (req, res) => {
 
   if (selectedTag) {
     const selected = selectedTag.toLowerCase();
-    const challengesResult = await callIdeationApi(token, 'GET', '/ideation-challenges?limit=100');
+    const challengesResult = await callIdeationApi(token, 'GET', '/ideation-challenges?per_page=100');
     matches = collectionFrom(challengesResult)
       .map(normalizeChallenge)
       .filter((challenge) => challenge.id !== null)
@@ -741,7 +748,7 @@ router.get('/:id(\\d+)/outcome', asyncRoute(async (req, res) => {
 
   const id = positiveInteger(req.params.id);
   const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}`);
-  const ideasResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}/ideas?limit=100&sort=votes`);
+  const ideasResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}/ideas?per_page=100&sort=votes`);
   const outcomeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}/outcome`);
   const challenge = normalizeChallenge({ id, ...itemFrom(challengeResult) });
   const ideas = collectionFrom(ideasResult)
@@ -882,8 +889,12 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
 
   const id = positiveInteger(req.params.id);
   const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}`);
-  const ideasResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}/ideas?limit=30&sort=votes`);
-  const challenge = normalizeChallenge({ id, ...itemFrom(challengeResult) });
+  const ideasResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}/ideas?per_page=30&sort=votes`);
+  const challengeData = itemFrom(challengeResult);
+  const challenge = normalizeChallenge({ id, ...challengeData });
+  // React IdeationDetailPage offers favourite, drafts and (for admins) management
+  // from the challenge itself; the pages existed here but nothing linked to them.
+  const isAdmin = ideationAdministrator(await getRequestProfile(req, token).catch(() => null));
   const ideas = collectionFrom(ideasResult)
     .map(normalizeIdea)
     .filter((idea) => idea.id !== null);
@@ -903,6 +914,8 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     ideas,
     ideaForm,
     status,
+    isAdmin,
+    isFavorited: Boolean(challengeData.is_favorited || challengeData.isFavorited || challengeData.has_favorited || challengeData.hasFavorited),
     // layouts/base.njk cannot see a validation failure signalled ONLY by a `-invalid`
     // status string, so the "Error:" page-title prefix is passed from the route. A
     // template-level {% set %} would run after the parent rendered <head>.

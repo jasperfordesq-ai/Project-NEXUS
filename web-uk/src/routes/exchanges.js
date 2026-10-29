@@ -16,6 +16,7 @@ const {
   ApiOfflineError
 } = require('../lib/api');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
+const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 const { getRequestProfile } = require('../lib/request-profile');
 
 const router = express.Router();
@@ -291,7 +292,8 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     canReview: exchange.status === 'completed' && !ratings.hasRated,
     status: req.query.status || '',
     successMessage: flashValue(req, 'success'),
-    statusMessage: statusMessage(req.query.status, res.locals.t),
+    statusMessage: (req.query.status === 'exchange-action-failed' && consumeApiRefusal(req, 'exchange-action'))
+      || statusMessage(req.query.status, res.locals.t),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }));
@@ -325,6 +327,8 @@ router.post('/:id(\\d+)', asyncRoute(async (req, res) => {
   } catch (error) {
     if (error instanceof ApiError || error instanceof ApiOfflineError) {
       if (handleApiError(error, req, res, { redirectOn401: '/login' })) return undefined;
+      // e.g. not enough balance to confirm, or the other member is unavailable.
+      rememberClientRefusal(req, 'exchange-action', error);
       return redirectTo(res, `/exchanges/${encodeURIComponent(id)}?status=exchange-action-failed`);
     }
     throw error;

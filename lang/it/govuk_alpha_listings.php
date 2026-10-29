@@ -128,4 +128,17 @@ return [
         'accessibility_hint' => 'es. accessibile in sedia a rotelle, anello di induzione disponibile',
         'accessibility_max_length' => 'Le note sull\'accessibilità devono essere di 200 caratteri o meno',
     ],
+    // Listing form messages that were hard-coded English until 29 Oct 2026.
+    'form_messages' => [
+        'location_max' => 'La località deve contenere al massimo 255 caratteri',
+        'service_type_required' => 'Seleziona come verrà fornito il servizio',
+        'image_type' => 'L’immagine deve essere un file JPEG, PNG, GIF o WebP',
+        'image_size' => 'L’immagine deve essere di :max MB o meno',
+        'saved_no_id' => 'Il tuo annuncio è stato salvato, ma non è stato possibile aprirlo. Lo trovi in I miei annunci.',
+        'created_tags_failed' => 'Il tuo annuncio è stato creato, ma non è stato possibile salvarne le competenze. Modifica l’annuncio per riprovare.',
+        'created_image_failed' => 'Il tuo annuncio è stato creato, ma non è stato possibile caricarne l’immagine. Modifica l’annuncio per riprovare.',
+        'updated_tags_failed' => 'Il tuo annuncio è stato aggiornato, ma non è stato possibile salvarne le competenze. Riprova.',
+        'updated_image_failed' => 'Il tuo annuncio è stato aggiornato, ma non è stato possibile caricarne l’immagine. Riprova.',
+        'updated_photo_remove_failed' => 'Il tuo annuncio è stato aggiornato, ma non è stato possibile rimuoverne la foto. Riprova.',
+    ],
 ];

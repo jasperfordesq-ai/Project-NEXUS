@@ -61,6 +61,7 @@ async function mentionUsernameFor(token, member) {
 }
 const { requireAuth, withTokenRefresh } = require('../middleware/auth');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
+const { rememberClientRefusal, consumeApiRefusal, firstApiError } = require('../lib/api-refusal');
 const { PLATFORM_MAX_TRANSFER, walletMaxTransfer } = require('../lib/wallet-limits');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
@@ -142,6 +143,9 @@ function profileStatusMessage(req, params = {}) {
   };
   const status = statuses[String(req.query.status || '')];
   if (!status) return null;
+  // Laravel's own reason for a refused transfer (e.g. a safeguarding restriction).
+  const refusal = req.query.status === 'transfer-failed' ? consumeApiRefusal(req, 'member-transfer') : '';
+  if (refusal) return { type: 'error', text: refusal };
   return {
     type: status.type,
     text: typeof req.t === 'function'
@@ -606,16 +610,16 @@ function redirectAuthIfNeeded(error, res) {
   return false;
 }
 
+// Decided by Laravel's code (errors[0].code), as the wallet page does. This read
+// error.data.error and English words in the message, so outside English both
+// refusals became the generic failure (29 Oct deep audit C3/M4).
 function transferFailureStatus(error) {
-  const message = error instanceof Error ? error.message : '';
-  const code = error instanceof ApiError && error.data && typeof error.data === 'object'
-    ? String(error.data.error || error.data.code || '')
-    : '';
+  const { code, message } = firstApiError(error);
 
-  if (code === 'INSUFFICIENT_FUNDS' || message.includes('Insufficient')) {
+  if (code === 'INSUFFICIENT_FUNDS' || /insufficient/i.test(message)) {
     return 'transfer-insufficient';
   }
-  if (message.includes('yourself')) {
+  if (code === 'VALIDATION_ERROR' && /yourself/i.test(message)) {
     return 'transfer-self';
   }
   return 'transfer-failed';
@@ -881,6 +885,7 @@ router.post('/:id(\\d+)/transfer', asyncRoute(async (req, res) => {
     if (redirectAuthIfNeeded(error, res)) return undefined;
     if (isNotFound(error)) throw error;
     status = transferFailureStatus(error);
+    if (status === 'transfer-failed') rememberClientRefusal(req, 'member-transfer', error);
   }
 
   return redirectTo(res, memberUrl(id, status));

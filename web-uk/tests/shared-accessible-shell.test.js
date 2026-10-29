@@ -954,7 +954,7 @@ describe('shared accessible frontend shell', () => {
     expect(api.getGamificationProfile).toHaveBeenCalledWith('test-token');
     expect(api.getMyBadges).toHaveBeenCalledWith('test-token');
     expect(api.getFeedPosts).toHaveBeenCalledWith('test-token', { per_page: 5 });
-    expect(api.getListings).toHaveBeenCalledWith('test-token', { limit: 5 });
+    expect(api.getListings).toHaveBeenCalledWith('test-token', { limit: 5, sort: 'newest', personalised: false });
     expect(api.getMyEvents).toHaveBeenCalledWith('test-token');
     expect(api.getExchangeAttentionCount).toHaveBeenCalledWith('test-token');
     expect(api.getMemberEndorsements).toHaveBeenCalledWith('test-token', 101);
@@ -8126,7 +8126,7 @@ describe('shared accessible frontend shell', () => {
       .send({
         _csrf: csrfMatch[1],
         target: 'community_fund',
-        amount: '1.5'
+        amount: '1.555'
       });
 
     expect(response.status).toBe(302);
@@ -8150,7 +8150,7 @@ describe('shared accessible frontend shell', () => {
       .send({
         _csrf: csrfMatch[1],
         target: 'community_fund',
-        amount: '1.5'
+        amount: '1.555'
       });
 
     expect(response.status).toBe(302);
@@ -21261,9 +21261,9 @@ describe('shared accessible frontend shell', () => {
     expect(detail.text).toContain('method="post" action="/ideation/7/ideas/12/vote"');
     expect(detail.text).toContain('method="post" action="/ideation/7/ideas"');
     expect(detail.text).toContain('name="idea_title"');
-    expect(api.callIdeationApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/ideation-challenges?limit=30&status=open&search=parks');
+    expect(api.callIdeationApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/ideation-challenges?per_page=30&status=open&search=parks');
     expect(api.callIdeationApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/ideation-challenges/7');
-    expect(api.callIdeationApi).toHaveBeenNthCalledWith(3, 'test-token', 'GET', '/ideation-challenges/7/ideas?limit=30&sort=votes');
+    expect(api.callIdeationApi).toHaveBeenNthCalledWith(3, 'test-token', 'GET', '/ideation-challenges/7/ideas?per_page=30&sort=votes');
   });
 
   it('renders the Laravel-backed ideation tag browser', async () => {
@@ -21317,7 +21317,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('Community transport');
     expect(response.text).not.toContain('shared accessible frontend preparation page');
     expect(api.callIdeationApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/ideation-tags/popular');
-    expect(api.callIdeationApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/ideation-challenges?limit=100');
+    expect(api.callIdeationApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/ideation-challenges?per_page=100');
   });
 
   it('renders the Laravel-backed ideation campaigns page', async () => {
@@ -21922,7 +21922,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Save outcome');
     expect(response.text).not.toContain('shared accessible frontend preparation page');
     expect(api.callIdeationApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/ideation-challenges/7');
-    expect(api.callIdeationApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/ideation-challenges/7/ideas?limit=100&sort=votes');
+    expect(api.callIdeationApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/ideation-challenges/7/ideas?per_page=100&sort=votes');
     expect(api.callIdeationApi).toHaveBeenNthCalledWith(3, 'test-token', 'GET', '/ideation-challenges/7/outcome');
   });
 
@@ -22024,7 +22024,7 @@ describe('shared accessible frontend shell', () => {
     const response = await request(app).get('/ideation?status=challenge-deleted').set('Cookie', signedCookieHeader());
     expect(response.status).toBe(200);
     // No status param may reach the API: WHERE status='challenge-deleted' empties the list.
-    expect(api.callIdeationApi).toHaveBeenLastCalledWith('test-token', 'GET', '/ideation-challenges?limit=30');
+    expect(api.callIdeationApi).toHaveBeenLastCalledWith('test-token', 'GET', '/ideation-challenges?per_page=30');
     expect(response.text).toContain('The challenge has been deleted.');
     expect(response.text).toContain('Better local parks');
   });
@@ -29658,7 +29658,9 @@ describe('shared accessible frontend shell', () => {
 
     expect(response.status).toBe(200);
     expect(api.getListings).toHaveBeenCalledWith('test-token', {
-      limit: 12
+      limit: 12,
+      sort: 'newest',
+      personalised: false
     });
     expect(response.text).toContain('Borrow a ladder');
     expect(response.text).toContain('class="nexus-alpha-card-list"');
@@ -29809,6 +29811,7 @@ describe('shared accessible frontend shell', () => {
       service_type: 'remote_only,hybrid',
       posted_within: 7,
       featured_first: true,
+      personalised: true,
       near_lat: 51.9,
       near_lng: -8.5,
       radius_km: 10
@@ -30151,7 +30154,8 @@ describe('shared accessible frontend shell', () => {
 
       expect(detail.status).toBe(200);
       expect(detail.text).toContain('Your listing has been published.');
-      expect(detail.text).toContain('The listing was created, but Skill tags unavailable; Image upload unavailable.');
+      expect(detail.text).toContain('Your listing was created, but its skills could not be saved. Edit the listing to try again.');
+      expect(detail.text).toContain('Your listing was created, but its image could not be uploaded. Edit the listing to try again.');
     });
 
     it('unwraps v2 detail/edit envelopes, enforces ownership, and updates the seven-field payload', async () => {
@@ -34949,7 +34953,7 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', signedCookieHeader());
 
     expect(response.status).toBe(200);
-    expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/listings?limit=30&q=bike&category_id=9&price_min=10&price_max=50&condition=good&condition=fair&seller_type=private&delivery_method=pickup&posted_within=7&sort=price_asc');
+    expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/listings?limit=30&q=bike&category_id=9&price_min=10&price_max=50&condition=good%2Cfair&seller_type=private&delivery_method=pickup&posted_within=7&sort=price_asc');
     expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/categories');
     expect(response.text).toContain('Advanced search');
     expect(response.text).toContain('Narrow your search by price, condition, delivery and more.');

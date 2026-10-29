@@ -128,4 +128,17 @@ return [
         'accessibility_hint' => 'm.sh., Inrochtana do chathaoir rothaí, lúb éisteachta ar fáil',
         'accessibility_max_length' => 'Ní mór do nótaí inrochtaineachta a bheith 200 carachtar nó níos lú',
     ],
+    // Listing form messages that were hard-coded English until 29 Oct 2026.
+    'form_messages' => [
+        'location_max' => 'Ní mór 255 carachtar nó níos lú a bheith sa suíomh',
+        'service_type_required' => 'Roghnaigh conas a sholáthrófar an tseirbhís',
+        'image_type' => 'Ní mór gur comhad JPEG, PNG, GIF nó WebP í an íomhá',
+        'image_size' => 'Ní mór don íomhá a bheith :max MB nó níos lú',
+        'saved_no_id' => 'Sábháladh d’fhógra, ach níorbh fhéidir linn é a oscailt. Is féidir leat é a aimsiú i Mo chuid fógraí.',
+        'created_tags_failed' => 'Cruthaíodh d’fhógra, ach níorbh fhéidir a scileanna a shábháil. Cuir an fógra in eagar chun triail eile a bhaint as.',
+        'created_image_failed' => 'Cruthaíodh d’fhógra, ach níorbh fhéidir a íomhá a uaslódáil. Cuir an fógra in eagar chun triail eile a bhaint as.',
+        'updated_tags_failed' => 'Nuashonraíodh d’fhógra, ach níorbh fhéidir a scileanna a shábháil. Bain triail eile as.',
+        'updated_image_failed' => 'Nuashonraíodh d’fhógra, ach níorbh fhéidir a íomhá a uaslódáil. Bain triail eile as.',
+        'updated_photo_remove_failed' => 'Nuashonraíodh d’fhógra, ach níorbh fhéidir a ghrianghraf a bhaint. Bain triail eile as.',
+    ],
 ];

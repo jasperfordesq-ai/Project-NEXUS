@@ -1585,6 +1585,7 @@
                 "need_account": "アカウントに登録する",
                 "have_account": "既存のアカウントにサインインする",
                 "login_failed": "正しいメールアドレスとパスワードを入力してください。",
+                "login_missing": "メールアドレスとパスワードを入力してください",
                 "two_factor_required": "このアカウントには 2 要素認証が必要です。",
                 "rate_limited": "サインイン試行が多すぎます。数分待ってからもう一度試してください。",
                 "email_not_verified": "サインインする前に電子メール アドレスを確認してください。受信トレイで確認リンクを確認してください。",
@@ -5208,6 +5209,10 @@
                 "password_failed": "パスワードを変更できませんでした。もう一度やり直してください。",
                 "language_changed": "言語が更新されました。",
                 "language_invalid": "リストから言語を選択してください",
+                "avatar_invalid": "10MB未満のJPG、PNG、GIF、またはWEBP画像をアップロードしてください。",
+                "email_reauthentication_unavailable": "パスワードを安全に確認できないため、メールアドレスの変更は一時的にご利用いただけません。メールアドレスは変更されていません。",
+                "language_failed": "言語を更新できませんでした。",
+                "passkey_failed": "パスキーを更新できませんでした。",
                 "photo_title": "プロフィール写真",
                 "photo_hint": "JPG、PNG、GIF、または WEBP 画像をアップロードします。 400 x 400 ピクセルの正方形にトリミングします。",
                 "photo_current_alt": "現在のプロフィール写真",
@@ -11343,6 +11348,18 @@
                 "accessibility_label": "アクセシビリティに関するメモ",
                 "accessibility_hint": "例：車椅子対応、補聴器ループ利用可能",
                 "accessibility_max_length": "アクセシビリティのメモは200文字以内にしてください"
+            },
+            "form_messages": {
+                "location_max": "場所は255文字以内で入力してください",
+                "service_type_required": "サービスの提供方法を選択してください",
+                "image_type": "画像はJPEG、PNG、GIF、WebPのいずれかの形式にしてください",
+                "image_size": "画像は:max MB以下にしてください",
+                "saved_no_id": "出品は保存されましたが、開くことができませんでした。「自分の出品」で確認できます。",
+                "created_tags_failed": "出品は作成されましたが、スキルを保存できませんでした。出品を編集してもう一度お試しください。",
+                "created_image_failed": "出品は作成されましたが、画像をアップロードできませんでした。出品を編集してもう一度お試しください。",
+                "updated_tags_failed": "出品は更新されましたが、スキルを保存できませんでした。もう一度お試しください。",
+                "updated_image_failed": "出品は更新されましたが、画像をアップロードできませんでした。もう一度お試しください。",
+                "updated_photo_remove_failed": "出品は更新されましたが、写真を削除できませんでした。もう一度お試しください。"
             }
         },
         "govuk_alpha_members": {

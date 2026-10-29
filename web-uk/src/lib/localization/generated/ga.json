@@ -1585,6 +1585,7 @@
                 "need_account": "Cláraigh le haghaidh cuntas",
                 "have_account": "Sínigh isteach i gcuntas atá ann cheana féin",
                 "login_failed": "Cuir isteach an seoladh ríomhphoist agus an pasfhocal ceart.",
+                "login_missing": "Cuir isteach do sheoladh ríomhphoist agus do phasfhocal",
                 "two_factor_required": "Tá fíordheimhniú dhá fhachtóir riachtanach don chuntas seo.",
                 "rate_limited": "An iomarca iarrachtaí síniú isteach. Fan cúpla nóiméad agus bain triail eile as.",
                 "email_not_verified": "Fíoraigh do sheoladh ríomhphoist roimh síniú isteach. Seiceáil do bhosca isteach chun an nasc deimhnithe a fháil.",
@@ -5208,6 +5209,10 @@
                 "password_failed": "Níorbh fhéidir do phasfhocal a athrú. Bain triail eile as.",
                 "language_changed": "Nuashonraíodh do theanga.",
                 "language_invalid": "Roghnaigh teanga ón liosta",
+                "avatar_invalid": "Uaslódáil íomhá JPG, PNG, GIF nó WEBP atá níos lú ná 10MB.",
+                "email_reauthentication_unavailable": "Níl athruithe ríomhphoist ar fáil faoi láthair mar ní féidir linn do phasfhocal a dheimhniú go slán. Níor athraíodh do ríomhphost.",
+                "language_failed": "Níorbh fhéidir do theanga a nuashonrú.",
+                "passkey_failed": "Níorbh fhéidir do phaseochair a nuashonrú.",
                 "photo_title": "Grianghraf próifíle",
                 "photo_hint": "Uaslódáil íomhá JPG, PNG, GIF nó WEBP. Déanfaimid é a bhearradh go dtí cearnóg 400 faoi 400 picteilín.",
                 "photo_current_alt": "Do ghrianghraf próifíle reatha",
@@ -11343,6 +11348,18 @@
                 "accessibility_label": "Nótaí Inrochtaineachta",
                 "accessibility_hint": "m.sh., Inrochtana do chathaoir rothaí, lúb éisteachta ar fáil",
                 "accessibility_max_length": "Ní mór do nótaí inrochtaineachta a bheith 200 carachtar nó níos lú"
+            },
+            "form_messages": {
+                "location_max": "Ní mór 255 carachtar nó níos lú a bheith sa suíomh",
+                "service_type_required": "Roghnaigh conas a sholáthrófar an tseirbhís",
+                "image_type": "Ní mór gur comhad JPEG, PNG, GIF nó WebP í an íomhá",
+                "image_size": "Ní mór don íomhá a bheith :max MB nó níos lú",
+                "saved_no_id": "Sábháladh d’fhógra, ach níorbh fhéidir linn é a oscailt. Is féidir leat é a aimsiú i Mo chuid fógraí.",
+                "created_tags_failed": "Cruthaíodh d’fhógra, ach níorbh fhéidir a scileanna a shábháil. Cuir an fógra in eagar chun triail eile a bhaint as.",
+                "created_image_failed": "Cruthaíodh d’fhógra, ach níorbh fhéidir a íomhá a uaslódáil. Cuir an fógra in eagar chun triail eile a bhaint as.",
+                "updated_tags_failed": "Nuashonraíodh d’fhógra, ach níorbh fhéidir a scileanna a shábháil. Bain triail eile as.",
+                "updated_image_failed": "Nuashonraíodh d’fhógra, ach níorbh fhéidir a íomhá a uaslódáil. Bain triail eile as.",
+                "updated_photo_remove_failed": "Nuashonraíodh d’fhógra, ach níorbh fhéidir a ghrianghraf a bhaint. Bain triail eile as."
             }
         },
         "govuk_alpha_members": {

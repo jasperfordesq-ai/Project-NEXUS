@@ -128,4 +128,17 @@ return [
         'accessibility_hint' => 'ex.: acessível a cadeira de rodas, ciclo de audição disponível',
         'accessibility_max_length' => 'As notas de acessibilidade devem ter 200 caracteres ou menos',
     ],
+    // Listing form messages that were hard-coded English until 29 Oct 2026.
+    'form_messages' => [
+        'location_max' => 'A localização deve ter 255 caracteres ou menos',
+        'service_type_required' => 'Selecione como o serviço será prestado',
+        'image_type' => 'A imagem tem de ser um ficheiro JPEG, PNG, GIF ou WebP',
+        'image_size' => 'A imagem tem de ter :max MB ou menos',
+        'saved_no_id' => 'O seu anúncio foi guardado, mas não conseguimos abri-lo. Pode encontrá-lo em Os meus anúncios.',
+        'created_tags_failed' => 'O seu anúncio foi criado, mas não foi possível guardar as competências. Edite o anúncio para tentar novamente.',
+        'created_image_failed' => 'O seu anúncio foi criado, mas não foi possível carregar a imagem. Edite o anúncio para tentar novamente.',
+        'updated_tags_failed' => 'O seu anúncio foi atualizado, mas não foi possível guardar as competências. Tente novamente.',
+        'updated_image_failed' => 'O seu anúncio foi atualizado, mas não foi possível carregar a imagem. Tente novamente.',
+        'updated_photo_remove_failed' => 'O seu anúncio foi atualizado, mas não foi possível remover a fotografia. Tente novamente.',
+    ],
 ];

@@ -702,6 +702,10 @@ async function getListings(token, params = {}) {
   if (params.category_id) query.set('category_id', params.category_id);
   if (params.skills) query.set('skills', params.skills);
   if (params.featured_first) query.set('featured_first', 'true');
+  // Ordering (React ListingsPage): without these Laravel applies the member's
+  // personalised ranking, so "Newest" was not newest for signed-in members.
+  if (params.sort) query.set('sort', params.sort);
+  if (params.personalised !== undefined) query.set('personalised', params.personalised ? 'true' : 'false');
   if (params.min_hours) query.set('min_hours', params.min_hours);
   if (params.max_hours) query.set('max_hours', params.max_hours);
   if (params.service_type) query.set('service_type', params.service_type);

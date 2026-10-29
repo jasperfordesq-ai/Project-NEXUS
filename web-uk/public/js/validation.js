@@ -236,16 +236,22 @@
   }
 
   /**
-   * Show error summary at top of form
+   * Show error summary at the top of the main column (GOV.UK error summary:
+   * "at the top of the main container", above the h1), and prefix the page
+   * title with "Error:" as the server-rendered page does.
    * @param {HTMLFormElement} form - The form
    * @param {Array} errors - Array of error objects
    */
+  function summaryContainer(form) {
+    return form.closest('.govuk-grid-column-two-thirds, .govuk-grid-column-full')
+      || form.closest('main')
+      || form.parentNode;
+  }
+
   function showErrorSummary(form, errors) {
-    // Remove existing summary
-    const existingSummary = form.querySelector('.govuk-error-summary');
-    if (existingSummary) {
-      existingSummary.remove();
-    }
+    const container = summaryContainer(form);
+    // Remove an earlier summary (client- or server-rendered): one summary per page.
+    container.querySelectorAll('.govuk-error-summary').forEach((existing) => existing.remove());
 
     // Create error summary
     const summary = document.createElement('div');
@@ -280,12 +286,13 @@
       });
     });
 
-    // Insert at top of form or before first form group
-    const firstFormGroup = form.querySelector('.govuk-form-group');
-    if (firstFormGroup) {
-      form.insertBefore(summary, firstFormGroup);
-    } else {
-      form.prepend(summary);
+    // Top of the main column. The old insertBefore(firstFormGroup) threw when the
+    // first form group sat inside a fieldset (events form), so no summary showed.
+    container.prepend(summary);
+
+    const prefix = form.dataset.validationErrorPrefix || 'Error:';
+    if (document.title.indexOf(prefix) !== 0) {
+      document.title = prefix + ' ' + document.title;
     }
 
     // Focus the summary

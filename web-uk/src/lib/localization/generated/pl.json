@@ -1585,6 +1585,7 @@
                 "need_account": "Zarejestruj konto",
                 "have_account": "Zaloguj się do istniejącego konta",
                 "login_failed": "Wprowadź poprawny adres e-mail i hasło.",
+                "login_missing": "Wpisz swój adres e-mail i hasło",
                 "two_factor_required": "Dla tego konta wymagane jest uwierzytelnianie dwuskładnikowe.",
                 "rate_limited": "Zbyt wiele prób logowania. Poczekaj kilka minut i spróbuj ponownie.",
                 "email_not_verified": "Przed zalogowaniem zweryfikuj swój adres e-mail. Sprawdź, czy w skrzynce odbiorczej znajduje się link potwierdzający.",
@@ -5208,6 +5209,10 @@
                 "password_failed": "Nie można zmienić Twojego hasła. Spróbuj ponownie.",
                 "language_changed": "Twój język został zaktualizowany.",
                 "language_invalid": "Wybierz język z listy",
+                "avatar_invalid": "Prześlij obraz JPG, PNG, GIF lub WEBP mniejszy niż 10 MB.",
+                "email_reauthentication_unavailable": "Zmiana adresu e-mail jest tymczasowo niedostępna, ponieważ nie możemy bezpiecznie potwierdzić Twojego hasła. Twój adres e-mail nie został zmieniony.",
+                "language_failed": "Nie udało się zaktualizować języka.",
+                "passkey_failed": "Nie udało się zaktualizować klucza dostępu.",
                 "photo_title": "Zdjęcie profilowe",
                 "photo_hint": "Prześlij obraz JPG, PNG, GIF lub WEBP. Przytniemy go do kwadratu o wymiarach 400 na 400 pikseli.",
                 "photo_current_alt": "Twoje aktualne zdjęcie profilowe",
@@ -11343,6 +11348,18 @@
                 "accessibility_label": "Uwagi dotyczące dostępności",
                 "accessibility_hint": "np. dostęp dla wózków inwalidzkich, pętla indukcyjna dostępna",
                 "accessibility_max_length": "Uwagi dotyczące dostępności muszą mieć 200 znaków lub mniej"
+            },
+            "form_messages": {
+                "location_max": "Lokalizacja może mieć maksymalnie 255 znaków",
+                "service_type_required": "Wybierz, jak usługa będzie świadczona",
+                "image_type": "Obraz musi być plikiem JPEG, PNG, GIF lub WebP",
+                "image_size": "Obraz może mieć maksymalnie :max MB",
+                "saved_no_id": "Ogłoszenie zostało zapisane, ale nie udało się go otworzyć. Znajdziesz je w sekcji Moje ogłoszenia.",
+                "created_tags_failed": "Ogłoszenie zostało utworzone, ale nie udało się zapisać umiejętności. Edytuj ogłoszenie, aby spróbować ponownie.",
+                "created_image_failed": "Ogłoszenie zostało utworzone, ale nie udało się przesłać obrazu. Edytuj ogłoszenie, aby spróbować ponownie.",
+                "updated_tags_failed": "Ogłoszenie zostało zaktualizowane, ale nie udało się zapisać umiejętności. Spróbuj ponownie.",
+                "updated_image_failed": "Ogłoszenie zostało zaktualizowane, ale nie udało się przesłać obrazu. Spróbuj ponownie.",
+                "updated_photo_remove_failed": "Ogłoszenie zostało zaktualizowane, ale nie udało się usunąć zdjęcia. Spróbuj ponownie."
             }
         },
         "govuk_alpha_members": {

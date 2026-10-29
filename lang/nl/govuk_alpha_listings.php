@@ -128,4 +128,17 @@ return [
         'accessibility_hint' => 'bijv. rolstoeltoegankelijk, ringleiding beschikbaar',
         'accessibility_max_length' => 'Toegankelijkheidsnotities mogen maximaal 200 tekens bevatten',
     ],
+    // Listing form messages that were hard-coded English until 29 Oct 2026.
+    'form_messages' => [
+        'location_max' => 'De locatie mag maximaal 255 tekens bevatten',
+        'service_type_required' => 'Kies hoe de dienst wordt geleverd',
+        'image_type' => 'De afbeelding moet een JPEG-, PNG-, GIF- of WebP-bestand zijn',
+        'image_size' => 'De afbeelding mag maximaal :max MB zijn',
+        'saved_no_id' => 'Je advertentie is opgeslagen, maar we konden hem niet openen. Je vindt hem bij Mijn advertenties.',
+        'created_tags_failed' => 'Je advertentie is aangemaakt, maar de vaardigheden konden niet worden opgeslagen. Bewerk de advertentie om het opnieuw te proberen.',
+        'created_image_failed' => 'Je advertentie is aangemaakt, maar de afbeelding kon niet worden geüpload. Bewerk de advertentie om het opnieuw te proberen.',
+        'updated_tags_failed' => 'Je advertentie is bijgewerkt, maar de vaardigheden konden niet worden opgeslagen. Probeer het opnieuw.',
+        'updated_image_failed' => 'Je advertentie is bijgewerkt, maar de afbeelding kon niet worden geüpload. Probeer het opnieuw.',
+        'updated_photo_remove_failed' => 'Je advertentie is bijgewerkt, maar de foto kon niet worden verwijderd. Probeer het opnieuw.',
+    ],
 ];

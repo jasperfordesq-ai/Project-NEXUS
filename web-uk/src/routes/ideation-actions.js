@@ -477,8 +477,9 @@ router.post('/:id(\\d+)/favorite', asyncRoute(async (req, res) => {
     'POST',
     `/ideation-challenges/${id}/favorite`,
     undefined,
-    (result) => challengeManageRedirect(id, favoriteStatus(result)),
-    challengeManageRedirect(id, 'challenge-failed')
+    // The challenge page has a favourite button too (`return=detail`).
+    (result) => (req.body && req.body.return === 'detail' ? challengeRedirect : challengeManageRedirect)(id, favoriteStatus(result)),
+    (req.body && req.body.return === 'detail' ? challengeRedirect : challengeManageRedirect)(id, 'challenge-failed')
   );
 }));
 

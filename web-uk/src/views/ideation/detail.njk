@@ -53,6 +53,20 @@
     <div class="govuk-body-l">{{ challenge.description | nl2br | safe }}</div>
   {% endif %}
 
+  <div class="govuk-button-group">
+    <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/favorite') }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="return" value="detail">
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">
+        {{ t("govuk_alpha_ideation.manage.remove_favorite") if isFavorited else t("govuk_alpha_ideation.manage.add_favorite") }}
+      </button>
+    </form>
+    <a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id ~ '/drafts') }}">{{ t("govuk_alpha_ideation.drafts.title") }}</a>
+    {% if isAdmin %}
+      <a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id ~ '/manage') }}">{{ t("govuk_alpha_ideation.detail.manage_link") }}</a>
+    {% endif %}
+  </div>
+
   {% set hasMeta = challenge.submissionDeadline or challenge.votingDeadline or challenge.maxIdeasPerUser or challenge.category or (challenge.tags and challenge.tags.length) or challenge.viewsCount > 0 or challenge.favoritesCount > 0 %}
   {% if hasMeta %}
     <h2 class="govuk-heading-m govuk-!-margin-top-4">{{ t("govuk_alpha_ideation.detail.meta_heading") }}</h2>

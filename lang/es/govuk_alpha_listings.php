@@ -128,4 +128,17 @@ return [
         'accessibility_hint' => 'p.ej., Accesible en silla de ruedas, bucle de audio disponible',
         'accessibility_max_length' => 'Las notas de accesibilidad deben tener 200 caracteres o menos',
     ],
+    // Listing form messages that were hard-coded English until 29 Oct 2026.
+    'form_messages' => [
+        'location_max' => 'La ubicación debe tener 255 caracteres o menos',
+        'service_type_required' => 'Selecciona cómo se prestará el servicio',
+        'image_type' => 'La imagen debe ser un archivo JPEG, PNG, GIF o WebP',
+        'image_size' => 'La imagen debe tener :max MB o menos',
+        'saved_no_id' => 'Tu anuncio se ha guardado, pero no hemos podido abrirlo. Puedes encontrarlo en Mis anuncios.',
+        'created_tags_failed' => 'Tu anuncio se ha creado, pero no se han podido guardar sus habilidades. Edita el anuncio para volver a intentarlo.',
+        'created_image_failed' => 'Tu anuncio se ha creado, pero no se ha podido subir su imagen. Edita el anuncio para volver a intentarlo.',
+        'updated_tags_failed' => 'Tu anuncio se ha actualizado, pero no se han podido guardar sus habilidades. Inténtalo de nuevo.',
+        'updated_image_failed' => 'Tu anuncio se ha actualizado, pero no se ha podido subir su imagen. Inténtalo de nuevo.',
+        'updated_photo_remove_failed' => 'Tu anuncio se ha actualizado, pero no se ha podido quitar su foto. Inténtalo de nuevo.',
+    ],
 ];

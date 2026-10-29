@@ -18,6 +18,7 @@ const {
   uploadJobApplication
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 const { readDate, readDateTime, splitDate } = require('../lib/date-input');
 const { createTranslator } = require('../lib/localization');
 const { formatRequestList } = require('../lib/list-format');
@@ -1805,7 +1806,18 @@ function applicationErrorMessage(req, status) {
 }
 
 function actionErrorMessage(req, status) {
+  const refusal = status === 'apply-failed' ? consumeApiRefusal(req, 'job-apply') : '';
+  if (refusal) return refusal;
   return localizedStatusMessage(req, status, JOB_ACTION_ERROR_MESSAGES, JOB_ACTION_ERROR_MESSAGE_KEYS);
+}
+
+function jobFieldErrorMap(errors) {
+  const map = {};
+  for (const error of errors || []) {
+    const href = error && typeof error.href === 'string' ? error.href : '';
+    if (href.startsWith('#') && !map[href.slice(1)]) map[href.slice(1)] = error.text;
+  }
+  return map;
 }
 
 function formErrors(req, status) {
@@ -2399,6 +2411,9 @@ router.get('/create', asyncRoute(async (req, res) => {
     formAction: '/jobs',
     jobForm,
     jobFormErrors: errors,
+    // Field -> message, for the inline error on each field (GOV.UK error message).
+    jobErr: jobFieldErrorMap(errors),
+    pageHasErrors: errors.length > 0,
     jobFormNotice: templateLoaded
       ? jobTranslation(req, 'govuk_alpha_jobs.posting.template_loaded', 'Template loaded.')
       : templateMessage.success,
@@ -2827,6 +2842,9 @@ router.get('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
     formAction: `/jobs/${id}/update`,
     jobForm: editForm,
     jobFormErrors: errors,
+    // Field -> message, for the inline error on each field (GOV.UK error message).
+    jobErr: jobFieldErrorMap(errors),
+    pageHasErrors: errors.length > 0,
     jobFormNotice: templateMessage.success,
     // On edit only "save as template" is offered; loading one would overwrite the advert.
     jobTemplates: templates,
@@ -3300,6 +3318,8 @@ router.post('/:id(\\d+)/apply', asyncRoute(async (req, res) => {
     if (redirectOnAuthError(error, res)) return undefined;
     rememberJobApplication(req, id, req.body);
     await removeUploadedFile(file);
+    // e.g. "you have already applied" or a cover message the employer requires.
+    rememberClientRefusal(req, 'job-apply', error);
     return redirectTo(res, jobRedirect(id, 'apply-failed'));
   }
 

@@ -444,7 +444,7 @@ router.get('/', asyncRoute(async (req, res) => {
     getGamificationProfile(req.token).catch(track({ data: null })),
     getMyBadges(req.token).catch(track({ data: [], meta: { total: 0, available_types: [] } })),
     dashboardFeatures.listings
-      ? getListings(req.token, { limit: 5 }).catch(track({ data: [] }))
+      ? getListings(req.token, { limit: 5, sort: 'newest', personalised: false }).catch(track({ data: [] }))
       : Promise.resolve({ data: [] }),
     dashboardFeatures.feed
       ? getFeedPosts(req.token, { per_page: 5 }).catch(track({ data: [] }))

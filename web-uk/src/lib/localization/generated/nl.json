@@ -1585,6 +1585,7 @@
                 "need_account": "Registreer voor een account",
                 "have_account": "Meld u aan bij een bestaand account",
                 "login_failed": "Voer het juiste e-mailadres en wachtwoord in.",
+                "login_missing": "Vul je e-mailadres en wachtwoord in",
                 "two_factor_required": "Voor dit account is tweefactorauthenticatie vereist.",
                 "rate_limited": "Te veel inlogpogingen. Wacht een paar minuten en probeer het opnieuw.",
                 "email_not_verified": "Controleer uw e-mailadres voordat u zich aanmeldt. Controleer uw inbox voor de bevestigingslink.",
@@ -5208,6 +5209,10 @@
                 "password_failed": "Uw wachtwoord kon niet worden gewijzigd. Probeer het opnieuw.",
                 "language_changed": "Uw taal is bijgewerkt.",
                 "language_invalid": "Kies een taal uit de lijst",
+                "avatar_invalid": "Upload een JPG-, PNG-, GIF- of WEBP-afbeelding kleiner dan 10 MB.",
+                "email_reauthentication_unavailable": "E-mailwijzigingen zijn tijdelijk niet mogelijk omdat we je wachtwoord niet veilig kunnen bevestigen. Je e-mailadres is niet gewijzigd.",
+                "language_failed": "Je taal kon niet worden bijgewerkt.",
+                "passkey_failed": "Je passkey kon niet worden bijgewerkt.",
                 "photo_title": "Profiel foto",
                 "photo_hint": "Upload een JPG-, PNG-, GIF- of WEBP-afbeelding. We snijden het bij tot een vierkant van 400 bij 400 pixels.",
                 "photo_current_alt": "Je huidige profielfoto",
@@ -11343,6 +11348,18 @@
                 "accessibility_label": "Toegankelijkheidsnotities",
                 "accessibility_hint": "bijv. rolstoeltoegankelijk, ringleiding beschikbaar",
                 "accessibility_max_length": "Toegankelijkheidsnotities mogen maximaal 200 tekens bevatten"
+            },
+            "form_messages": {
+                "location_max": "De locatie mag maximaal 255 tekens bevatten",
+                "service_type_required": "Kies hoe de dienst wordt geleverd",
+                "image_type": "De afbeelding moet een JPEG-, PNG-, GIF- of WebP-bestand zijn",
+                "image_size": "De afbeelding mag maximaal :max MB zijn",
+                "saved_no_id": "Je advertentie is opgeslagen, maar we konden hem niet openen. Je vindt hem bij Mijn advertenties.",
+                "created_tags_failed": "Je advertentie is aangemaakt, maar de vaardigheden konden niet worden opgeslagen. Bewerk de advertentie om het opnieuw te proberen.",
+                "created_image_failed": "Je advertentie is aangemaakt, maar de afbeelding kon niet worden geüpload. Bewerk de advertentie om het opnieuw te proberen.",
+                "updated_tags_failed": "Je advertentie is bijgewerkt, maar de vaardigheden konden niet worden opgeslagen. Probeer het opnieuw.",
+                "updated_image_failed": "Je advertentie is bijgewerkt, maar de afbeelding kon niet worden geüpload. Probeer het opnieuw.",
+                "updated_photo_remove_failed": "Je advertentie is bijgewerkt, maar de foto kon niet worden verwijderd. Probeer het opnieuw."
             }
         },
         "govuk_alpha_members": {

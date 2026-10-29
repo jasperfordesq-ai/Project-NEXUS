@@ -84,8 +84,8 @@
           attributes: {
             "data-validate": "required maxLength:255",
             "data-label": t("events.title_label"),
-            "data-required-message": t("states.validation.required", { field: t("events.title_label") }),
-            "data-max-length-message": t("states.validation.max_length", { field: t("events.title_label"), max: 255 })
+            "data-required-message": t("web_uk.event_validation.title_required"),
+            "data-max-length-message": t("web_uk.event_validation.title_too_long")
           }
         }) }}
 
@@ -104,7 +104,7 @@
           attributes: {
             "data-validate": "required",
             "data-label": t("events.description_label"),
-            "data-required-message": t("states.validation.required", { field: t("events.description_label") })}
+            "data-required-message": t("web_uk.event_validation.description_required")}
         }) }}
 
         {% set selectedCategoryId = values.category_id if values else "" %}

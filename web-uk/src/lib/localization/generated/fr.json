@@ -1585,6 +1585,7 @@
                 "need_account": "Créer un compte",
                 "have_account": "Connectez-vous à un compte existant",
                 "login_failed": "Entrez l'adresse e-mail et le mot de passe corrects.",
+                "login_missing": "Saisissez votre adresse e-mail et votre mot de passe",
                 "two_factor_required": "Une authentification à deux facteurs est requise pour ce compte.",
                 "rate_limited": "Trop de tentatives de connexion. Attendez quelques minutes et réessayez.",
                 "email_not_verified": "Vérifiez votre adresse e-mail avant de vous connecter. Vérifiez votre boîte de réception pour le lien de confirmation.",
@@ -5208,6 +5209,10 @@
                 "password_failed": "Votre mot de passe n'a pas pu être modifié. Essayer à nouveau.",
                 "language_changed": "Votre langue a été mise à jour.",
                 "language_invalid": "Choisissez une langue dans la liste",
+                "avatar_invalid": "Téléversez une image JPG, PNG, GIF ou WEBP de moins de 10 Mo.",
+                "email_reauthentication_unavailable": "Les modifications d'adresse e-mail sont temporairement indisponibles, car nous ne pouvons pas confirmer votre mot de passe de façon sécurisée. Votre adresse e-mail n'a pas été modifiée.",
+                "language_failed": "Votre langue n'a pas pu être mise à jour.",
+                "passkey_failed": "Votre clé d'accès n'a pas pu être mise à jour.",
                 "photo_title": "Photo de profil",
                 "photo_hint": "Téléchargez une image JPG, PNG, GIF ou WEBP. Nous allons le recadrer dans un carré de 400 x 400 pixels.",
                 "photo_current_alt": "Votre photo de profil actuelle",
@@ -11343,6 +11348,18 @@
                 "accessibility_label": "Notes d'accessibilité",
                 "accessibility_hint": "ex. : accessible en fauteuil roulant, boucle auditive disponible",
                 "accessibility_max_length": "Les notes d'accessibilité ne doivent pas dépasser 200 caractères"
+            },
+            "form_messages": {
+                "location_max": "Le lieu doit comporter 255 caractères maximum",
+                "service_type_required": "Sélectionnez la façon dont le service sera rendu",
+                "image_type": "L’image doit être un fichier JPEG, PNG, GIF ou WebP",
+                "image_size": "L’image doit faire :max Mo maximum",
+                "saved_no_id": "Votre annonce a été enregistrée, mais nous n’avons pas pu l’ouvrir. Vous la trouverez dans Mes annonces.",
+                "created_tags_failed": "Votre annonce a été créée, mais ses compétences n’ont pas pu être enregistrées. Modifiez l’annonce pour réessayer.",
+                "created_image_failed": "Votre annonce a été créée, mais son image n’a pas pu être téléversée. Modifiez l’annonce pour réessayer.",
+                "updated_tags_failed": "Votre annonce a été mise à jour, mais ses compétences n’ont pas pu être enregistrées. Réessayez.",
+                "updated_image_failed": "Votre annonce a été mise à jour, mais son image n’a pas pu être téléversée. Réessayez.",
+                "updated_photo_remove_failed": "Votre annonce a été mise à jour, mais sa photo n’a pas pu être supprimée. Réessayez."
             }
         },
         "govuk_alpha_members": {

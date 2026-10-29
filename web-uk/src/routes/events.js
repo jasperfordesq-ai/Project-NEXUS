@@ -4040,10 +4040,14 @@ router.get('/:id(\\d+)/edit', requireAuth, asyncRoute(async (req, res) => {
     event,
     categories,
     setupErrorMessage,
-    startTime: dateTimeLocal(event.start_time ?? event.startTime),
-    endTime: dateTimeLocal(event.end_time ?? event.endTime),
-    startTimeParts: splitDateTime(dateTimeLocal(event.start_time ?? event.startTime)),
-    endTimeParts: splitDateTime(dateTimeLocal(event.end_time ?? event.endTime)),
+    // Laravel sends UTC instants and reads an offset-less save in the EVENT's
+    // zone (EventService::normalizeEventDateInput), so the form must show the
+    // event-zone wall clock. Showing UTC moved the event by the zone's offset on
+    // every save in summer time (29 Oct deep audit H1); the series form was right.
+    startTime: dateTimeLocalInZone(event.start_time ?? event.startTime, trimmed(event.timezone) || 'UTC'),
+    endTime: dateTimeLocalInZone(event.end_time ?? event.endTime, trimmed(event.timezone) || 'UTC'),
+    startTimeParts: splitDateTime(dateTimeLocalInZone(event.start_time ?? event.startTime, trimmed(event.timezone) || 'UTC')),
+    endTimeParts: splitDateTime(dateTimeLocalInZone(event.end_time ?? event.endTime, trimmed(event.timezone) || 'UTC')),
     // 🔴 This form rendered NONE of the ten venue-accessibility fields, so an organiser
     // could set step-free access, a hearing loop or a quiet space when creating an
     // event and never correct it afterwards — the information a disabled member needs

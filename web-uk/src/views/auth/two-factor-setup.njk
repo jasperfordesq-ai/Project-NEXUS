@@ -3,11 +3,22 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% block mainContent %}
+{# GOV.UK error pattern (29 Oct deep audit M8): summary at the top of the main
+   column linking to the code field, and the same message inline on the field. A
+   bare red paragraph was all a wrong code produced before. #}
+{% set codeFieldShown = error and setup and not backupCodes %}
 <div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds">
+  {% if error %}
+    {{ govukErrorSummary({
+      titleText: t("states.error_title"),
+      errorList: [{ text: error, href: "#code" if codeFieldShown else undefined }],
+      attributes: { tabindex: "-1" }
+    }) }}
+  {% endif %}
   <h1 class="govuk-heading-xl">{{ t('mandatory_2fa.title') }}</h1>
   <p class="govuk-body">{{ t('mandatory_2fa.reason') }}</p>
-  {% if error %}<p class="govuk-error-message" role="alert">{{ error }}</p>{% endif %}
   {% if backupCodes %}
     <h2 class="govuk-heading-m">{{ t('security_2fa.backup_codes_title') }}</h2>
     <p class="govuk-body">{{ t('mandatory_2fa.recovery_help') }}</p>
@@ -22,9 +33,12 @@
     <p class="govuk-body">{{ t('security_2fa.manual_intro') }} <code>{{ setup.secret }}</code></p>
     <form method="post" action="{{ urlFor('/login/two-factor/setup') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if codeFieldShown %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="code">{{ t('security_2fa.code_label') }}</label>
-        <input class="govuk-input govuk-input--width-10" id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6">
+        {% if codeFieldShown %}
+          <p id="code-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ error }}</p>
+        {% endif %}
+        <input class="govuk-input govuk-input--width-10{% if codeFieldShown %} govuk-input--error{% endif %}" id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" spellcheck="false"{% if codeFieldShown %} aria-describedby="code-error"{% endif %}>
       </div>
       <button class="govuk-button" data-module="govuk-button">{{ t('security_2fa.verify_button') }}</button>
     </form>

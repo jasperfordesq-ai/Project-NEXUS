@@ -44,4 +44,33 @@ function consumeApiRefusal(req, key) {
   return stored && typeof stored.message === 'string' ? stored.message : '';
 }
 
-module.exports = { rememberApiRefusal, consumeApiRefusal, refusalMessageOf };
+/**
+ * The first error's code and message, wherever Laravel put them
+ * (`errors[0].code` from respondWithError, or the older `error`/`code` keys).
+ */
+function firstApiError(error) {
+  const data = error && error.data && typeof error.data === 'object' ? error.data : null;
+  if (!data) return { code: '', message: '' };
+  const errors = Array.isArray(data.errors) ? data.errors : [];
+  const first = errors.find((item) => item && typeof item === 'object') || {};
+  const nested = data.error && typeof data.error === 'object' ? data.error : {};
+  return {
+    code: String(first.code || nested.code || data.code || (typeof data.error === 'string' ? data.error : '') || '')
+      .trim()
+      .toUpperCase(),
+    message: String(first.message || nested.message || data.message || '').trim()
+  };
+}
+
+/**
+ * As rememberApiRefusal, but only for a genuine refusal (4xx other than 401). A 5xx
+ * or network failure's text is not written for members (29 Oct 2026 deep audit P1:
+ * wallet, member transfer, exchanges, exchange requests, job applications).
+ */
+function rememberClientRefusal(req, key, error) {
+  const status = Number(error && error.status);
+  if (!(status >= 400 && status < 500) || status === 401) return '';
+  return rememberApiRefusal(req, key, error);
+}
+
+module.exports = { rememberApiRefusal, consumeApiRefusal, refusalMessageOf, firstApiError, rememberClientRefusal };

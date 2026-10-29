@@ -128,4 +128,17 @@ return [
         'accessibility_hint' => '例：車椅子対応、補聴器ループ利用可能',
         'accessibility_max_length' => 'アクセシビリティのメモは200文字以内にしてください',
     ],
+    // Listing form messages that were hard-coded English until 29 Oct 2026.
+    'form_messages' => [
+        'location_max' => '場所は255文字以内で入力してください',
+        'service_type_required' => 'サービスの提供方法を選択してください',
+        'image_type' => '画像はJPEG、PNG、GIF、WebPのいずれかの形式にしてください',
+        'image_size' => '画像は:max MB以下にしてください',
+        'saved_no_id' => '出品は保存されましたが、開くことができませんでした。「自分の出品」で確認できます。',
+        'created_tags_failed' => '出品は作成されましたが、スキルを保存できませんでした。出品を編集してもう一度お試しください。',
+        'created_image_failed' => '出品は作成されましたが、画像をアップロードできませんでした。出品を編集してもう一度お試しください。',
+        'updated_tags_failed' => '出品は更新されましたが、スキルを保存できませんでした。もう一度お試しください。',
+        'updated_image_failed' => '出品は更新されましたが、画像をアップロードできませんでした。もう一度お試しください。',
+        'updated_photo_remove_failed' => '出品は更新されましたが、写真を削除できませんでした。もう一度お試しください。',
+    ],
 ];

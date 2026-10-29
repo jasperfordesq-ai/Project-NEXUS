@@ -149,4 +149,17 @@ return [
         'accessibility_hint' => 'e.g., Wheelchair accessible, hearing loop available',
         'accessibility_max_length' => 'Accessibility notes must be 200 characters or fewer',
     ],
+    // Listing form messages that were hard-coded English until 29 Oct 2026.
+    'form_messages' => [
+        'location_max' => 'Location must be 255 characters or fewer',
+        'service_type_required' => 'Select how the service will be delivered',
+        'image_type' => 'The image must be a JPEG, PNG, GIF or WebP file',
+        'image_size' => 'The image must be :max MB or smaller',
+        'saved_no_id' => 'Your listing was saved, but we could not open it. You can find it in My listings.',
+        'created_tags_failed' => 'Your listing was created, but its skills could not be saved. Edit the listing to try again.',
+        'created_image_failed' => 'Your listing was created, but its image could not be uploaded. Edit the listing to try again.',
+        'updated_tags_failed' => 'Your listing was updated, but its skills could not be saved. Try again.',
+        'updated_image_failed' => 'Your listing was updated, but its image could not be uploaded. Try again.',
+        'updated_photo_remove_failed' => 'Your listing was updated, but its photo could not be removed. Try again.',
+    ],
 ];
