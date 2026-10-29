@@ -599,7 +599,9 @@ test.describe('keyboard, focus, error, and forced-colour gate', () => {
     await submit.focus();
     await page.keyboard.press('Enter');
 
-    const summary = page.locator('form[data-validate-form] .govuk-error-summary');
+    // GOV.UK: the summary goes at the top of the main column, above the h1 —
+    // not inside the form (moved there on 29 Oct 2026; it used to be inserted in the form).
+    const summary = page.locator('main .govuk-error-summary');
     await expect(summary).toHaveCount(1);
     await expect(summary).toBeFocused();
     // role="alert" belongs on the nested CHILD, never on the focused root:
@@ -642,7 +644,9 @@ test.describe('keyboard, focus, error, and forced-colour gate', () => {
     await submit.focus();
     await page.keyboard.press('Enter');
 
-    const summary = page.locator('form[data-validate-form] .govuk-error-summary');
+    // GOV.UK: the summary goes at the top of the main column, above the h1 —
+    // not inside the form (moved there on 29 Oct 2026; it used to be inserted in the form).
+    const summary = page.locator('main .govuk-error-summary');
     await expect(summary).toBeFocused();
     const announcement = await summary.innerText();
     expect(announcement).not.toContain('There is a problem');
