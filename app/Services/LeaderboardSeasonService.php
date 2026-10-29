@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -51,7 +52,7 @@ class LeaderboardSeasonService
     /**
      * Get season leaderboard rankings.
      */
-    public function getSeasonLeaderboard(int $tenantId, int $seasonId, int $limit = 20): array
+    public function getSeasonLeaderboard(int $tenantId, int $seasonId, int $limit = 20, ?int $viewerId = null): array
     {
         $rankings = [];
 
@@ -62,6 +63,8 @@ class LeaderboardSeasonService
                     ->join('users as u', 'sr.user_id', '=', 'u.id')
                     ->where('sr.season_id', $seasonId)
                     ->where('u.tenant_id', $tenantId)
+                    ->where('u.status', 'active')
+                    ->where('u.is_approved', 1)
                     ->select('sr.*', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url', 'u.level')
                     ->orderByDesc('sr.season_xp')
                     ->limit($limit)
@@ -80,7 +83,7 @@ class LeaderboardSeasonService
             }
         }
 
-        return $rankings;
+        return $this->withoutOtherMembersSurnames($rankings, $viewerId);
     }
 
     /**
@@ -117,7 +120,7 @@ class LeaderboardSeasonService
         }
 
         $userRank = $this->getUserSeasonRank($userId, $season['id']);
-        $leaderboard = $this->getSeasonLeaderboard($tenantId, $season['id'], 10);
+        $leaderboard = $this->getSeasonLeaderboard($tenantId, $season['id'], 10, $userId);
         $rewards = json_decode($season['rewards'] ?? '{}', true);
 
         $endDate = strtotime($season['end_date']);
@@ -255,10 +258,35 @@ class LeaderboardSeasonService
 
     // ─── Private helpers ─────────────────────────────────────────────
 
+    /**
+     * F-607 (F-084 rule): a member sees other members' first names only; an
+     * administrator sees surnames. `last_name` stays, null, for client schemas (F-591).
+     *
+     * @param  list<array<string, mixed>> $rows
+     * @return list<array<string, mixed>>
+     */
+    private function withoutOtherMembersSurnames(array $rows, ?int $viewerId): array
+    {
+        if ($rows === [] || MemberProfileVisibility::viewerIsAdmin($viewerId)) {
+            return $rows;
+        }
+
+        foreach ($rows as &$row) {
+            if ((int) ($row['user_id'] ?? 0) !== (int) $viewerId) {
+                $row['last_name'] = null;
+            }
+        }
+        unset($row);
+
+        return $rows;
+    }
+
     private function calculateSeasonRankings(int $tenantId): array
     {
         return DB::table('users')
             ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->where('is_approved', 1)
             ->where(DB::raw('COALESCE(xp, 0)'), '>', 0)
             ->select('id as user_id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url', 'level', 'xp as season_xp')
             ->orderByDesc('xp')

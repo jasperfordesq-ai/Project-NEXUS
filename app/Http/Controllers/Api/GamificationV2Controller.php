@@ -773,7 +773,7 @@ class GamificationV2Controller extends BaseApiController
     {
         $tenantId = TenantContext::getId();
         $limit = (int) (request()->query('limit', 3));
-        $data = CommunityDashboardService::getMemberSpotlight($tenantId, min($limit, 10));
+        $data = CommunityDashboardService::getMemberSpotlight($tenantId, min($limit, 10), $this->getUserId());
 
         return $this->respondWithData($data);
     }

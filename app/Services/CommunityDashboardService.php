@@ -15,6 +15,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\UserBadge;
 use App\Models\VolLog;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -118,14 +119,20 @@ class CommunityDashboardService
      * Get randomly spotlighted active members — daily rotation.
      * Uses XP, badges, and activity to find active members (not just transactions).
      */
-    public static function getMemberSpotlight(?int $tenantId = null, int $limit = 3): array
+    public static function getMemberSpotlight(?int $tenantId = null, int $limit = 3, ?int $viewerId = null): array
     {
         $tenantId = $tenantId ?? TenantContext::getId();
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
 
         try {
             // Find members with real activity: XP > 0 OR badges earned recently OR vol hours
-            $activeUsers = User::where('tenant_id', $tenantId)
+            // F-607: only members the viewer could find in the directory — active,
+            // approved, not opted out of member search, and a profile the viewer
+            // may see (connections-only stays with connections).
+            $query = User::where('tenant_id', $tenantId)
                 ->where('is_approved', true)
+                ->where('status', 'active')
+                ->where(fn ($q) => $q->where('privacy_search', 1)->orWhereNull('privacy_search'))
                 ->where(function ($q) {
                     $q->where('xp', '>', 0)
                       ->orWhereExists(function ($sub) {
@@ -134,7 +141,9 @@ class CommunityDashboardService
                               ->whereColumn('user_badges.user_id', 'users.id');
                       });
                 })
-                ->orderByRaw('RAND(' . ((int) now()->format('Ymd')) . ')')
+                ->orderByRaw('RAND(' . ((int) now()->format('Ymd')) . ')');
+            MemberProfileVisibility::applyToQuery($query, $tenantId, $viewerId, 'users', $viewerIsAdmin);
+            $activeUsers = $query
                 ->limit($limit)
                 ->get(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url', 'bio', 'xp', 'level', 'created_at']);
 
@@ -142,7 +151,7 @@ class CommunityDashboardService
                 return [];
             }
 
-            return $activeUsers->map(function ($user) {
+            return $activeUsers->map(function ($user) use ($viewerIsAdmin, $viewerId) {
                 $badgeCount = (int) UserBadge::where('user_id', $user->id)->count();
                 $activity = $badgeCount > 0
                     ? "Earned {$badgeCount} " . ($badgeCount === 1 ? 'badge' : 'badges')
@@ -151,7 +160,9 @@ class CommunityDashboardService
                 return [
                     'id' => $user->id,
                     'first_name' => $user->first_name,
-                    'last_name' => $user->last_name,
+                    // F-607 (F-084 rule): surnames are for administrators and the
+                    // member themself. The key stays, null, for client schemas (F-591).
+                    'last_name' => ($viewerIsAdmin || (int) $user->id === (int) $viewerId) ? $user->last_name : null,
                     'avatar_url' => $user->avatar_url,
                     'bio' => $user->bio ? mb_substr($user->bio, 0, 120) : null,
                     'member_since' => $user->created_at?->format('M Y'),

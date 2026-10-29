@@ -29,7 +29,8 @@ import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@
 interface SpotlightMember {
   id: number;
   first_name: string;
-  last_name: string;
+  // Null for other members unless the viewer is an administrator (F-607).
+  last_name: string | null;
   avatar_url: string | null;
   bio: string | null;
   member_since: string | null;
