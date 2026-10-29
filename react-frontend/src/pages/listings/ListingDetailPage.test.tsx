@@ -225,7 +225,7 @@ describe('ListingDetailPage', () => {
     vi.clearAllMocks();
     window.history.replaceState(null, '', '/test/listings/1');
     mockUseSocialInteractions.mockReturnValue(createSocialMock());
-    api.get.mockImplementation((url: string) => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
       if (url.includes('/config')) return Promise.resolve({ success: true, data: { exchange_workflow_enabled: true } });
       if (url.includes('/check')) return Promise.resolve({ success: true, data: null });
       return Promise.resolve({ success: true, data: mockListing });
