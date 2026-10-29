@@ -38,7 +38,7 @@
             {% endif %}
           </div>
           {% if collection.description %}
-            <p class="govuk-body">{{ collection.description }}</p>
+            <p class="govuk-body" dir="auto">{{ collection.description }}</p>
           {% endif %}
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
             {{ t("govuk_alpha_gamification.collections.progress", { earned: collection.earnedCount, total: collection.totalCount }) }}

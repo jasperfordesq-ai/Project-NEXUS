@@ -5,7 +5,7 @@
 {% if attendee.form %}
   <section id="registration-answers" aria-labelledby="registration-answers-heading">
     <h3 class="govuk-heading-m" id="registration-answers-heading">{{ attendee.form.name }}</h3>
-    {% if attendee.form.description %}<p class="govuk-body">{{ attendee.form.description }}</p>{% endif %}
+    {% if attendee.form.description %}<p class="govuk-body" dir="auto">{{ attendee.form.description }}</p>{% endif %}
 
     {% if active %}
     {% set replayValues = answerValues or {} %}

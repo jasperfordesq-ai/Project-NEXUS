@@ -59,7 +59,7 @@
           </nav>
         {% endif %}
 
-        <div class="legal-content govuk-body">
+        <div class="legal-content govuk-body" dir="auto">
           {{ document.content | safe }}
         </div>
 
@@ -91,7 +91,7 @@
         {% if config.sections %}
           {% for section in config.sections %}
             <h2 class="govuk-heading-m">{{ section.heading }}</h2>
-            <p class="govuk-body">{{ section.body }}</p>
+            <p class="govuk-body" dir="auto">{{ section.body }}</p>
           {% endfor %}
         {% endif %}
 

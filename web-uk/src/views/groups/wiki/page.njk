@@ -22,7 +22,7 @@
       <h1 class="govuk-heading-xl">{{ page.title }}</h1>
       {% if not page.isPublished %}<p class="govuk-body">{{ govukTag({ text: t("govuk_alpha_group_tools.wiki.draft"), classes: "govuk-tag--grey" }) }}</p>{% endif %}
       <p class="govuk-body-s">{{ t("govuk_alpha_group_tools.wiki.last_updated", { name: page.authorName, date: page.updatedAtLabel }) }}</p>
-      <div class="govuk-body app-formatted-text">{{ page.content }}</div>
+      <div class="govuk-body app-formatted-text" dir="auto">{{ page.content }}</div>
 
       <ul class="govuk-list">
         <li><a class="govuk-link" href="{{ urlFor(pagePath + '/edit') }}">{{ t("govuk_alpha_group_tools.wiki.edit") }}<span class="govuk-visually-hidden">: {{ page.title }}</span></a></li>

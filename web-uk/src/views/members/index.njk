@@ -152,7 +152,7 @@
                         {% for badge in member.badges %}<li>{% if badge.icon %}<span aria-hidden="true">{{ badge.icon }}</span>{% endif %}{{ govukTag({ text: badge.name, classes: "govuk-tag--blue" }) }}</li>{% endfor %}
                       </ul>
                     {% endif %}
-                    {% if member.tagline %}<p class="govuk-body">{{ member.tagline }}</p>{% endif %}
+                    {% if member.tagline %}<p class="govuk-body" dir="auto">{{ member.tagline }}</p>{% endif %}
                     <dl class="nexus-alpha-inline-list">
                       {% if member.location %}<div><dt>{{ t("members.location_label") }}</dt><dd>{{ member.location }}</dd></div>{% endif %}
                       <div><dt>{{ t("members.hours_given_label") }}</dt><dd>{{ member.hoursGivenLabel }}</dd></div>

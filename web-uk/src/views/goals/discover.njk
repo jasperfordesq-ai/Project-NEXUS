@@ -52,7 +52,7 @@
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("goals.owned_by", { name: goal.ownerName }) }}</p>
 
               {% if goal.description %}
-                <p class="govuk-body-s govuk-!-margin-bottom-1">{{ goal.description }}</p>
+                <p class="govuk-body-s govuk-!-margin-bottom-1" dir="auto">{{ goal.description }}</p>
               {% endif %}
 
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("goals.progress_label", { current: goal.currentText, target: goal.targetText }) }}</p>

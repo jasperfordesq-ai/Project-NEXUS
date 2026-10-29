@@ -48,7 +48,7 @@
             {% for member in selectedMembers %}
               <li class="govuk-!-margin-bottom-2" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
                 <span>{{ member.displayName }}</span>
-                <form method="get" action="{{ urlFor('/messages/groups/new') }}" style="display:inline">
+                <form class="govuk-!-display-inline" method="get" action="{{ urlFor('/messages/groups/new') }}">
                   {% if groupName %}
                     <input type="hidden" name="name" value="{{ groupName }}">
                   {% endif %}

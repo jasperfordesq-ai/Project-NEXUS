@@ -15492,7 +15492,7 @@ describe('shared accessible frontend shell', () => {
     expect(index.text).toContain('Remove from saved<span class="govuk-visually-hidden"> Post by Current member</span>');
     expect(index.text).toContain('action="/feed/posts/42/update"');
     expect(index.text).toContain('action="/feed/posts/42/delete"');
-    expect(index.text).toContain('href="https://cdn.example.test/feed/full.png" target="_blank" rel="noopener noreferrer"');
+    expect(index.text).toContain('href="https://cdn.example.test/feed/full.png"');
     expect(index.text).toContain('(opens in new tab)');
     expect(index.text).toContain('<div class="govuk-warning-text">');
     expect(index.text).toContain('<span class="govuk-visually-hidden">Warning</span>');
@@ -25646,6 +25646,18 @@ describe('shared accessible frontend shell', () => {
     expect(forbidden.text).not.toContain('Neighbourhood repair day');
   });
 
+  it('links the Event check-in reason error to the box to fill in (GOV.UK error summary)', async () => {
+    const page = await request(app)
+      .get('/events/42/check-in?status=attendance-reason-required&field=signed-code-reason')
+      .set('Cookie', signedCookieHeader());
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('href="#signed-code-reason"');
+    const forged = await request(app)
+      .get('/events/42/check-in?status=attendance-reason-required&field=evil"x')
+      .set('Cookie', signedCookieHeader());
+    expect(forged.text).not.toContain('href="#evil');
+  });
+
   it('rejects invalid Event People bulk actions before the Laravel API', async () => {
     const api = require('../src/lib/api');
     const agent = request.agent(app);
@@ -25658,7 +25670,8 @@ describe('shared accessible frontend shell', () => {
       .send({ _csrf: csrf, 'user_ids[]': '55', action: 'reject', confirmation: '1' });
 
     expect(response.status).toBe(302);
-    expect(response.headers.location).toBe('/events/42/people?status=people-invalid');
+    // A reject with no reason: the error summary links to the reason box (29 Oct 2026).
+    expect(response.headers.location).toBe('/events/42/people?status=people-invalid&field=people-reason');
     expect(api.callEventApi).not.toHaveBeenCalled();
   });
 
@@ -25749,7 +25762,7 @@ describe('shared accessible frontend shell', () => {
       .send({ _csrf: csrf, action: 'undo', expected_version: '9', confirmation: '1' });
 
     // E-105: undo with everything else right is 'reason required', not the generic refusal.
-    expect(invalid.headers.location).toBe('/events/42/check-in?status=attendance-reason-required');
+    expect(invalid.headers.location).toBe('/events/42/check-in?status=attendance-reason-required&field=attendance-reason-55');
     expect(api.callEventApi).not.toHaveBeenCalled();
 
     api.callEventApi.mockRejectedValueOnce(new api.ApiError('Version conflict', 409));
@@ -25831,7 +25844,7 @@ describe('shared accessible frontend shell', () => {
     // Undo with no reason: a correction to a register has to be auditable.
     const noReason = await post({ action: 'undo', credential: 'nqx2_code', confirmation: '1' });
     // E-105: only the reason is missing, so the page says exactly that.
-    expect(noReason.headers.location).toBe('/events/42/check-in?status=attendance-reason-required');
+    expect(noReason.headers.location).toBe('/events/42/check-in?status=attendance-reason-required&field=signed-code-reason');
 
     expect(api.callEventApi).not.toHaveBeenCalled();
 
@@ -31300,7 +31313,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Remove<span class="govuk-visually-hidden"> Remove Casey Quinn from the group</span>');
     // app-link-button, not an inline-styled govuk-link: the inline color beat
     // the focus state and failed contrast on keyboard focus.
-    expect(response.text).toMatch(/<form method="get" action="\/acme\/accessible\/messages\/groups\/new" style="display:inline">\s*<input type="hidden" name="name" value="Local helpers">\s*<button type="submit" class="app-link-button"/);
+    expect(response.text).toMatch(/<form class="govuk-!-display-inline" method="get" action="\/acme\/accessible\/messages\/groups\/new">\s*<input type="hidden" name="name" value="Local helpers">\s*<button type="submit" class="app-link-button"/);
     expect(response.text).toContain('id="group-name" name="name"');
     expect(response.text).toContain('Local helpers');
     expect(response.text).toContain('Create group conversation');

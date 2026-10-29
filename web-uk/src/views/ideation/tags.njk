@@ -49,10 +49,10 @@
               {{ govukTag({ text: challenge.statusLabel, classes: (challenge.statusClass) }) }}
             </div>
             {% if challenge.description %}
-              <p class="govuk-body govuk-!-margin-bottom-1">{{ challenge.description }}</p>
+              <p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ challenge.description }}</p>
             {% endif %}
             <p class="govuk-body-s nexus-alpha-actions govuk-!-margin-bottom-0">
-              <a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id) }}">{{ t("ideation.view") }}</a>
+              <a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id) }}">{{ t("ideation.view") }}<span class="govuk-visually-hidden"> {{ challenge.title }}</span></a>
             </p>
           </article>
         {% endfor %}

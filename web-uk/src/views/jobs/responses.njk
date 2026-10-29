@@ -57,8 +57,8 @@
           {% endif %}
           {% if interview.calendarHref or interview.icsHref %}
             <ul class="govuk-list govuk-body-s govuk-!-margin-bottom-2">
-              {% if interview.calendarHref %}<li><a class="govuk-link" href="{{ interview.calendarHref }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_jobs.responses.add_to_calendar") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span></a></li>{% endif %}
-              {% if interview.outlookHref %}<li><a class="govuk-link" href="{{ interview.outlookHref }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_jobs.responses.add_to_outlook") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span></a></li>{% endif %}
+              {% if interview.calendarHref %}<li><a class="govuk-link" href="{{ interview.calendarHref }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_jobs.responses.add_to_calendar") }} {{ t("opens_new_tab") }}</a></li>{% endif %}
+              {% if interview.outlookHref %}<li><a class="govuk-link" href="{{ interview.outlookHref }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_jobs.responses.add_to_outlook") }} {{ t("opens_new_tab") }}</a></li>{% endif %}
               {% if interview.icsHref and interview.scheduledLabel %}<li><a class="govuk-link" href="{{ urlFor(interview.icsHref) }}" download>{{ t("govuk_alpha_jobs.responses.download_ics") }}</a></li>{% endif %}
             </ul>
           {% endif %}

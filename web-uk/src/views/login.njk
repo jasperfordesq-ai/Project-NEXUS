@@ -139,7 +139,7 @@
             <div class="govuk-form-group">
               <label class="govuk-label" for="resend_email">{{ t("auth.resend_email_label") }}</label>
               <div id="resend-email-hint" class="govuk-hint">{{ t("auth.resend_verification_hint") }}</div>
-              <input class="govuk-input govuk-!-width-two-thirds" id="resend_email" name="email" type="email" autocomplete="email" value="{{ values.email if values else '' }}" aria-describedby="resend-email-hint">
+              <input class="govuk-input govuk-!-width-two-thirds" id="resend_email" name="email" type="email" autocomplete="email" value="{{ values.email if values else '' }}" aria-describedby="resend-email-hint" spellcheck="false">
             </div>
             <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("auth.resend_verification_button") }}</button>
           </form>

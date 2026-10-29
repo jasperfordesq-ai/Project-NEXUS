@@ -43,9 +43,11 @@
       </div>
     </div>
     <div class="govuk-grid-column-one-third">
-      <div class="govuk-panel govuk-panel--confirmation nexus-alpha-panel">
-        <h2 class="govuk-panel__title">{{ t("home.panel_title") }}</h2>
-        <div class="govuk-panel__body">{{ t("home.panel_body") }}</div>
+      {# Inset text, not a confirmation panel: GOV.UK keeps the panel for
+         "you have finished" pages (29 Oct 2026). #}
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-m">{{ t("home.panel_title") }}</h2>
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ t("home.panel_body") }}</p>
       </div>
     </div>
   </div>
@@ -82,7 +84,7 @@
               <a class="govuk-link" href="{{ community.href }}">{{ community.name }}</a>
             </h3>
             {% if community.tagline %}
-              <p class="govuk-body govuk-!-margin-bottom-0">{{ community.tagline }}</p>
+              <p class="govuk-body govuk-!-margin-bottom-0" dir="auto">{{ community.tagline }}</p>
             {% endif %}
             {% if community.slug %}
               <p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ t("home.network_community_link", { slug: community.slug }) }}</p>
@@ -131,7 +133,7 @@
                 {{ module.title }}
               {% endif %}
             </h3>
-            <p class="govuk-body govuk-!-margin-bottom-0">{{ module.description }}</p>
+            <p class="govuk-body govuk-!-margin-bottom-0" dir="auto">{{ module.description }}</p>
             {% if module.needsSignIn %}
               <p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ t("home.module_signin_hint") }}</p>
             {% elseif not module.available %}
@@ -159,7 +161,7 @@
           <h2 class="govuk-heading-l">{{ landingClosing.title }}</h2>
         {% endif %}
         {% if landingClosing.description %}
-          <p class="govuk-body-l">{{ landingClosing.description }}</p>
+          <p class="govuk-body-l" dir="auto">{{ landingClosing.description }}</p>
         {% endif %}
         {{ govukButton({ text: t("home.secondary_guest"), href: urlFor("/register") }) }}
       </div>

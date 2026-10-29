@@ -32,7 +32,7 @@
     {% if post.media.length > 0 %}
       <ul class="nexus-alpha-feed-media" data-count="{{ post.media.length }}">
         {% for media in post.media %}
-          <li><a href="{{ media.fullUrl }}" target="_blank" rel="noopener noreferrer"><span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span><img src="{{ media.thumbnailUrl | thumb(640, 640) }}" width="320" height="320" alt="{{ media.altText or t('groups_t1.image_alt', { group: group.name }) }}" class="nexus-alpha-feed-image" loading="lazy">{% if loop.last and post.mediaExtra > 0 %}<span class="nexus-alpha-feed-media__more" aria-hidden="true">+{{ post.mediaExtra }}</span><span class="govuk-visually-hidden">{{ t("feed.media_more", { count: post.mediaExtra }) }}</span>{% endif %}</a></li>
+          <li><a href="{{ media.fullUrl }}" target="_blank" rel="noopener noreferrer"> {{ t("opens_new_tab") }}<img src="{{ media.thumbnailUrl | thumb(640, 640) }}" width="320" height="320" alt="{{ media.altText or t('groups_t1.image_alt', { group: group.name }) }}" class="nexus-alpha-feed-image" loading="lazy">{% if loop.last and post.mediaExtra > 0 %}<span class="nexus-alpha-feed-media__more" aria-hidden="true">+{{ post.mediaExtra }}</span><span class="govuk-visually-hidden">{{ t("feed.media_more", { count: post.mediaExtra }) }}</span>{% endif %}</a></li>
         {% endfor %}
       </ul>
     {% endif %}

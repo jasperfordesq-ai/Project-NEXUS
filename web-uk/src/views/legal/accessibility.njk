@@ -28,7 +28,7 @@
             {% if document.versionNumber %} &middot; {{ t("legal.version_label") }} {{ document.versionNumber }}{% endif %}
           </p>
         {% endif %}
-        <div class="legal-content govuk-body">
+        <div class="legal-content govuk-body" dir="auto">
           {{ document.content | safe }}
         </div>
         <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/contact') }}">{{ t("accessibility.feedback_cta") }}</a></p>

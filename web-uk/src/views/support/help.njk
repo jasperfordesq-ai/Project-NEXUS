@@ -63,7 +63,7 @@
                 {% else %}
                   <a class="govuk-link" href="{{ urlFor(option.href) }}">{{ option.title }}</a>
                 {% endif %}
-                <br><span class="govuk-body-s">{{ option.description }}</span>
+                <br><span class="govuk-body-s" dir="auto">{{ option.description }}</span>
               </li>
             {% endfor %}
           </ul>

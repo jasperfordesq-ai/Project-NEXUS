@@ -175,7 +175,7 @@
             {% endif %}
           </dl>
           {% if log.description %}
-            <p class="govuk-body govuk-!-margin-top-3">{{ log.description }}</p>
+            <p class="govuk-body govuk-!-margin-top-3" dir="auto">{{ log.description }}</p>
           {% endif %}
           {% if log.isOwn %}
             <div class="govuk-inset-text govuk-!-margin-top-3 govuk-!-margin-bottom-0" data-testid="org-hours-own-{{ log.id }}">{{ t("govuk_alpha_volunteering.own_hours.note") }}</div>

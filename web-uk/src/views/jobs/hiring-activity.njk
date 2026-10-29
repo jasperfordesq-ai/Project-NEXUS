@@ -25,7 +25,7 @@
       {% for event in events %}
         <li class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
-            <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ event.description }}</p>
+            <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1" dir="auto">{{ event.description }}</p>
             {{ govukTag({ text: event.typeLabel, classes: event.tagClass }) }}
           </div>
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">

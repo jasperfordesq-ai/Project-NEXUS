@@ -63,7 +63,7 @@
   {% endif %}
 
   {% if group.description %}
-    <p class="govuk-body-l">{{ group.description }}</p>
+    <p class="govuk-body-l" dir="auto">{{ group.description }}</p>
   {% endif %}
 
   <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-6">
@@ -150,7 +150,7 @@
             {{ govukTag({ text: t("polish_groups.announcement_pinned_tag"), classes: "govuk-tag--blue" }) }}
           </p>
           <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ announcement.title }}</h3>
-          {% if announcement.content %}<p class="govuk-body">{{ announcement.content }}</p>{% endif %}
+          {% if announcement.content %}<p class="govuk-body" dir="auto">{{ announcement.content }}</p>{% endif %}
         </article>
       {% endfor %}
     </div>
@@ -207,7 +207,7 @@
                 <span aria-hidden="true"> | </span>
                 {{ tc("govuk_alpha_groups.subgroups.members_count", subGroup.memberCount, { count: subGroup.memberCount }) }}
               </p>
-              {% if subGroup.description %}<p class="govuk-body">{{ subGroup.description | truncate(160) }}</p>{% endif %}
+              {% if subGroup.description %}<p class="govuk-body" dir="auto">{{ subGroup.description | truncate(160) }}</p>{% endif %}
               <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/groups/' + (subGroup.id | string)) }}">{{ t("govuk_alpha_groups.subgroups.view_link") }}</a>
             </div>
           </div>
@@ -248,7 +248,7 @@
                 {% if event.startsAt %}<div><dt>{{ t("groups_t1.event_starts") }}</dt><dd>{{ event.startsAt | formatBladeDateTime }}</dd></div>{% endif %}
                 <div><dt>{{ t("groups_t1.event_location") }}</dt><dd>{{ event.location or t("groups_t1.event_online") }}</dd></div>
               </dl>
-              <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("actions.view_details") }}</a>
+              <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("actions.view_details") }}<span class="govuk-visually-hidden"> {{ event.title }}</span></a>
             </div>
           </div>
         </article>

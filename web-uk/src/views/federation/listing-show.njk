@@ -71,7 +71,7 @@
 
   {% if listing.description %}
     <h2 class="govuk-heading-m">{{ t("federation.listings_browse.detail_description_heading") }}</h2>
-    <p class="govuk-body">{{ listing.description | nl2br | safe }}</p>
+    <p class="govuk-body" dir="auto">{{ listing.description | nl2br | safe }}</p>
   {% endif %}
 
   {% if listing.memberHref %}

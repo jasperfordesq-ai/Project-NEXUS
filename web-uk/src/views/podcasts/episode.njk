@@ -50,7 +50,7 @@
   {% endif %}
 
   {% if episode.description %}
-    <div class="govuk-body{% if not episode.summaryText %}-l{% endif %}">{{ episode.description | striptags | nl2br | safe }}</div>
+    <div class="govuk-body{% if not episode.summaryText %}-l{% endif %}" dir="auto">{{ episode.description | striptags | nl2br | safe }}</div>
   {% endif %}
 
   {% if episode.audioUrl %}

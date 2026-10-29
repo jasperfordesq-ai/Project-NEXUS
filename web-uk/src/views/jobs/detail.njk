@@ -123,13 +123,13 @@
 
   {% if job.description %}
     <h2 class="govuk-heading-l">{{ t("jobs.about_label") }}</h2>
-    <div class="govuk-body">{{ job.description | nl2br | safe }}</div>
+    <div class="govuk-body" dir="auto">{{ job.description | nl2br | safe }}</div>
   {% endif %}
 
   {% if job.hasBranding %}
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.posting.about_company") }}</h2>
     {% if job.tagline %}
-      <div class="govuk-inset-text">{{ job.tagline }}</div>
+      <div class="govuk-inset-text" dir="auto">{{ job.tagline }}</div>
     {% endif %}
     {% if job.companySize %}
       <p class="govuk-body"><strong>{{ t("govuk_alpha_jobs.posting.company_size_label") }}:</strong> {{ t("govuk_alpha_jobs.posting.company_size_people", { size: job.companySize }) }}</p>
@@ -141,7 +141,7 @@
       </ul>
     {% endif %}
     {% if job.videoHref %}
-      <p class="govuk-body"><a class="govuk-link" href="{{ job.videoHref }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_jobs.posting.watch_video") }}<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
+      <p class="govuk-body"><a class="govuk-link" href="{{ job.videoHref }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_jobs.posting.watch_video") }} {{ t("opens_new_tab") }}</a></p>
     {% endif %}
   {% endif %}
 

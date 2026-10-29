@@ -8,7 +8,7 @@
 {% macro challengeCard(challenge, group, isAdmin, t, urlFor) %}
   <li class="nexus-alpha-card">
     <h3 class="govuk-heading-m govuk-!-margin-bottom-2">{{ challenge.title }}</h3>
-    {% if challenge.description %}<p class="govuk-body">{{ challenge.description }}</p>{% endif %}
+    {% if challenge.description %}<p class="govuk-body" dir="auto">{{ challenge.description }}</p>{% endif %}
     <dl class="govuk-summary-list govuk-!-margin-bottom-3">
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">{{ t("govuk_alpha_group_media.challenges.row_progress") }}</dt>

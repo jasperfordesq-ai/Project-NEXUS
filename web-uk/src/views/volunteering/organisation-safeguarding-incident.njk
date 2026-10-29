@@ -73,7 +73,7 @@
   {% if incident.fullReport %}
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.org_safeguarding.full_report_heading") }}</h2>
     <p class="govuk-body govuk-!-font-weight-bold">{{ incident.fullReport.title }}</p>
-    <p class="govuk-body app-formatted-text">{{ incident.fullReport.description }}</p>
+    <p class="govuk-body app-formatted-text" dir="auto">{{ incident.fullReport.description }}</p>
     {% if incident.fullReport.subjectName %}
       <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_safeguarding.about_label") }}: {{ incident.fullReport.subjectName }}</p>
     {% endif %}
@@ -88,7 +88,7 @@
       <li class="govuk-!-margin-bottom-4">
         <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ event.label }}{% if event.detail %} — {{ event.detail }}{% endif %}</p>
         <p class="govuk-hint govuk-!-margin-bottom-1">{% if event.actorName %}{{ event.actorName }} · {% endif %}{{ event.dateLabel }}</p>
-        {% if event.body %}<p class="govuk-body app-formatted-text">{{ event.body }}</p>{% endif %}
+        {% if event.body %}<p class="govuk-body app-formatted-text" dir="auto">{{ event.body }}</p>{% endif %}
       </li>
     {% endfor %}
   </ol>

@@ -70,7 +70,7 @@
               {% if errors.email %}
                 <p id="email-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ errors.email }}</p>
               {% endif %}
-              <input class="govuk-input govuk-!-width-two-thirds{% if errors.email %} govuk-input--error{% endif %}" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}" {% if errors.email %}aria-describedby="email-error"{% endif %}>
+              <input class="govuk-input govuk-!-width-two-thirds{% if errors.email %} govuk-input--error{% endif %}" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}" {% if errors.email %}aria-describedby="email-error"{% endif %} spellcheck="false">
             </div>
 
             <div class="govuk-form-group">

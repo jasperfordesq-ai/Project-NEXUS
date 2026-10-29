@@ -157,7 +157,7 @@
                   {% if message.body and message.searchSegments %}
                     <div class="govuk-body">{% for segment in message.searchSegments %}{% if segment.match %}<mark class="nexus-alpha-search-match">{{ segment.text }}</mark>{% else %}{{ segment.text }}{% endif %}{% endfor %}</div>
                   {% elif message.body %}
-                    <div class="govuk-body">{{ message.body }}</div>
+                    <div class="govuk-body" dir="auto">{{ message.body }}</div>
                   {% endif %}
 
                   {% if (message.is_voice or message.isVoice) and message.audioAssetUrl %}
@@ -186,7 +186,7 @@
                         <li>
                           {% if attachmentHref %}
                             {% if attachmentMime.startsWith('image/') %}
-                              <a class="govuk-link" href="{{ attachmentHref }}" target="_blank" rel="noopener"><span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span>
+                              <a class="govuk-link" href="{{ attachmentHref }}" target="_blank" rel="noopener"> {{ t("opens_new_tab") }}
                                 <img src="{{ attachmentHref }}" alt="{{ attachmentName }}" width="220" loading="lazy" decoding="async">
                               </a>
                             {% else %}

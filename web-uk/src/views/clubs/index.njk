@@ -35,7 +35,7 @@
           </div>
 
           {% if club.description %}
-            <p class="govuk-body govuk-!-margin-bottom-2">{{ club.description }}</p>
+            <p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ club.description }}</p>
           {% endif %}
 
           <dl class="nexus-alpha-inline-list">
@@ -49,7 +49,7 @@
 
           {% if club.websiteHref %}
             <p class="govuk-body govuk-!-margin-bottom-0">
-              <a class="govuk-link" href="{{ club.websiteHref }}" rel="noopener noreferrer" target="_blank">{{ t("clubs.visit_website") }}<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a>
+              <a class="govuk-link" href="{{ club.websiteHref }}" rel="noopener noreferrer" target="_blank">{{ t("clubs.visit_website") }} {{ t("opens_new_tab") }}</a>
             </p>
           {% endif %}
         </article>

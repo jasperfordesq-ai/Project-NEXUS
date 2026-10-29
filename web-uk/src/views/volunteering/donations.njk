@@ -104,7 +104,7 @@
             </p>
           {% endif %}
           {% if day.description %}
-            <p class="govuk-body">{{ day.description }}</p>
+            <p class="govuk-body" dir="auto">{{ day.description }}</p>
           {% endif %}
           <p class="govuk-body govuk-!-margin-bottom-1">{{ t("govuk_alpha_volunteering.donations.progress_label", { raised: day.raisedLabel, goal: day.goalLabel }) }}</p>
           <progress max="100" value="{{ day.percent }}" aria-label="{{ t('govuk_alpha_volunteering.donations.progress_aria', { percent: day.percent }) }}">{{ day.percent }}%</progress>

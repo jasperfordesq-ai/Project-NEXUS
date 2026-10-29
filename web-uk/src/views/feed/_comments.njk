@@ -19,7 +19,7 @@
           <strong>{{ authorName }}</strong>
           {% if comment.created_at %}<span aria-hidden="true"> | </span><span class="govuk-visually-hidden">{{ t("feed.comment_posted_on_prefix") }}</span><time datetime="{{ comment.created_at }}">{{ comment.created_at | formatDate }}</time>{% endif %}
         </p>
-        <p class="govuk-body govuk-!-margin-bottom-2">{{ comment.content or comment.body }}</p>
+        <p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ comment.content or comment.body }}</p>
 
         {% if not requiresAuth and comment.id %}
           {# The six comment reactions React offers (useSocialInteractions AVAILABLE_REACTIONS). #}

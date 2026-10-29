@@ -85,7 +85,7 @@
             {{ govukTag({ text: challenge.statusLabel, classes: (challenge.statusClass) }) }}
           </div>
           {% if challenge.description %}
-            <p class="govuk-body govuk-!-margin-bottom-1">{{ challenge.description | truncate(160) }}</p>
+            <p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ challenge.description | truncate(160) }}</p>
           {% endif %}
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ challenge.ideasCountText }}</p>
         </article>

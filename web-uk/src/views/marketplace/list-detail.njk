@@ -17,7 +17,7 @@
 
   <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.wish_lists.nav") }}</span>
   <h1 class="govuk-heading-xl">{{ list.name }}</h1>
-  {% if list.description %}<p class="govuk-body-l">{{ list.description }}</p>{% endif %}
+  {% if list.description %}<p class="govuk-body-l" dir="auto">{{ list.description }}</p>{% endif %}
 
   <h2 class="govuk-heading-l">{{ t("govuk_alpha_commerce.wish_lists.items_heading") }}</h2>
   {% if not items.length %}

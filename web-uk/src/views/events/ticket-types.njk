@@ -42,7 +42,7 @@
         <section class="govuk-!-margin-bottom-8" aria-labelledby="ticket-type-{{ type.id }}">
           <h2 class="govuk-heading-m" id="ticket-type-{{ type.id }}">{{ type.name }}</h2>
           <p class="govuk-body">{{ govukTag({ text: t(T ~ "state_" ~ type.status), classes: ("govuk-tag--green" if type.status == "active" else "govuk-tag--grey") }) }}</p>
-          {% if type.description %}<p class="govuk-body">{{ type.description }}</p>{% endif %}
+          {% if type.description %}<p class="govuk-body" dir="auto">{{ type.description }}</p>{% endif %}
           <dl class="govuk-summary-list">
             <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t(T ~ "price") }}</dt><dd class="govuk-summary-list__value">{{ t(T ~ "free") if type.kind == "free" else t(T ~ "credit_price", { value: type.price }) }}</dd></div>
             <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t(T ~ "allocation") }}</dt><dd class="govuk-summary-list__value">{{ type.allocationLimit }}</dd></div>

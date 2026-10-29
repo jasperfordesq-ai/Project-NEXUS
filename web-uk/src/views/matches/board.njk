@@ -79,7 +79,7 @@
 
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("govuk_alpha_connections.matches.by_label", { name: match.userName }) }}{% if match.category %} - {{ match.category }}{% endif %}{% if match.matchedWhen %} - {{ t("govuk_alpha_connections.matches.matched_when", { when: match.matchedWhen }) }}{% endif %}</p>
           {% if match.description %}
-            <p class="govuk-body govuk-!-margin-bottom-2">{{ match.description }}</p>
+            <p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ match.description }}</p>
           {% endif %}
 
           <div class="govuk-!-margin-bottom-2">

@@ -239,7 +239,7 @@
                 <div><dt>{{ t("events.location") }}</dt><dd>{{ event.location_label or t("events.online") }}</dd></div>
                 {% if categoryName %}<div><dt>{{ t("events.category") }}</dt><dd>{{ categoryName }}</dd></div>{% endif %}
               </dl>
-              {% if event.description %}<p class="govuk-body govuk-!-margin-top-3">{{ event.description | striptags | truncate(220) }}</p>{% endif %}
+              {% if event.description %}<p class="govuk-body govuk-!-margin-top-3" dir="auto">{{ event.description | striptags | truncate(220) }}</p>{% endif %}
               <p class="govuk-body-s nexus-alpha-meta">
                 {{ tc("events.attendees", event.attendee_count, { count: event.attendee_count }) }}
                 {% if event.interested_count %}<br>{{ tc("events.interested", event.interested_count, { count: event.interested_count }) }}{% endif %}

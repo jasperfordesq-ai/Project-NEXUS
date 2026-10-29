@@ -46,7 +46,7 @@
                 {{ partnerName }}
               </h2>
               {% if conversation.last_message and conversation.last_message.body %}
-                <p class="govuk-body govuk-!-margin-bottom-1">{{ conversation.last_message.body }}</p>
+                <p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ conversation.last_message.body }}</p>
               {% endif %}
               {% if partnerId %}
                 {# `open_thread` is 'Conversation with :name'. Called without the

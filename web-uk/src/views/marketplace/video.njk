@@ -31,7 +31,7 @@
       {% if item.videoUrl %}
         {% set videoUrl = item.videoUrl %}
         {% include "marketplace/_listing-video.njk" %}
-        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string) + '/video/remove') }}">{{ t("govuk_alpha_commerce.listing_video.remove") }}</a></p>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string) + '/video/remove') }}">{{ t("govuk_alpha_commerce.listing_video.remove") }}<span class="govuk-visually-hidden"> {{ item.title }}</span></a></p>
       {% else %}
         <div class="govuk-inset-text">
           <p class="govuk-body">{{ t("govuk_alpha_commerce.listing_video.empty") }}</p>

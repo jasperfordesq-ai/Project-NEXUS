@@ -46,12 +46,12 @@
     <p class="govuk-body-l">{{ show.summary }}</p>
   {% endif %}
   {% if show.description %}
-    <div class="govuk-body">{{ show.description | striptags | nl2br | safe }}</div>
+    <div class="govuk-body" dir="auto">{{ show.description | striptags | nl2br | safe }}</div>
   {% endif %}
 
   {% if show.rssEnabled %}
     <p class="govuk-body-s">
-      <a class="govuk-link" href="{{ show.rssUrl }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha.polish_commerce.podcast_rss_link") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span></a>
+      <a class="govuk-link" href="{{ show.rssUrl }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha.polish_commerce.podcast_rss_link") }} {{ t("opens_new_tab") }}</a>
     </p>
   {% endif %}
 

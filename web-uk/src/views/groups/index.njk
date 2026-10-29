@@ -25,7 +25,7 @@
     {% endif %}
     <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ tc("groups.members_count", memberCount, { count: memberCount }) }}</p>
     {% if group.description %}
-      <p class="govuk-body govuk-!-margin-bottom-0">{{ group.description | truncate(160) }}</p>
+      <p class="govuk-body govuk-!-margin-bottom-0" dir="auto">{{ group.description | truncate(160) }}</p>
     {% endif %}
   </article>
 {% endmacro %}

@@ -50,7 +50,7 @@
   </div>
 
   {% if challenge.description %}
-    <div class="govuk-body-l">{{ challenge.description | nl2br | safe }}</div>
+    <div class="govuk-body-l" dir="auto">{{ challenge.description | nl2br | safe }}</div>
   {% endif %}
 
   <div class="govuk-button-group">
@@ -137,7 +137,7 @@
             {{ govukTag({ text: idea.voteText, classes: "govuk-tag--blue" }) }}
           </div>
           {% if idea.description %}
-            <p class="govuk-body govuk-!-margin-bottom-1">{{ idea.description | truncate(240) }}</p>
+            <p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ idea.description | truncate(240) }}</p>
           {% endif %}
           {% if idea.authorName %}
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("govuk_alpha_ideation.page.detail_idea_suggested_by", { name: idea.authorName }) }}</p>

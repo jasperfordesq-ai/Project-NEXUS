@@ -68,7 +68,7 @@
           {% endif %}
         </dl>
       {% elif outcome == 'invalid' %}
-        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="alert" aria-labelledby="certificate-check-result-title" data-testid="certificate-check-invalid">
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="certificate-check-result-title" data-testid="certificate-check-invalid">
           <div class="govuk-notification-banner__header">
             <h2 class="govuk-notification-banner__title" id="certificate-check-result-title">{{ t(K ~ "result_title") }}</h2>
           </div>
@@ -78,7 +78,7 @@
           </div>
         </div>
       {% elif outcome == 'rate-limited' or outcome == 'error' %}
-        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="alert" aria-labelledby="certificate-check-result-title" data-testid="certificate-check-error">
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="certificate-check-result-title" data-testid="certificate-check-error">
           <div class="govuk-notification-banner__header">
             <h2 class="govuk-notification-banner__title" id="certificate-check-result-title">{{ t("states.error_title") }}</h2>
           </div>

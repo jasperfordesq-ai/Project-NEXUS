@@ -41,7 +41,7 @@
           {% if member.avatarUrl %}<img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ member.avatarUrl | thumb(64, 64) }}" alt="" loading="lazy" decoding="async" width="32" height="32">{% endif %}
           {% if member.id %}<a class="govuk-link" href="{{ urlFor('/members/' + (member.id | string)) }}">{{ member.name }}</a>{% else %}{{ member.name }}{% endif %}
           {% if member.isAdmin %}{{ govukTag({ text: t("govuk_alpha_groups.members_page.role_admin"), classes: "govuk-tag--blue" }) }}{% endif %}
-          {% if member.tagline %}<br><span class="govuk-body-s nexus-alpha-meta">{{ member.tagline }}</span>{% endif %}
+          {% if member.tagline %}<br><span class="govuk-body-s nexus-alpha-meta" dir="auto">{{ member.tagline }}</span>{% endif %}
         </li>
       {% endfor %}
     </ul>

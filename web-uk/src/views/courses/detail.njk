@@ -55,7 +55,7 @@
 
   {% if course.description %}
     <h2 class="govuk-heading-l">{{ t("courses.about_label") }}</h2>
-    <div class="govuk-body">{{ course.description | nl2br | safe }}</div>
+    <div class="govuk-body" dir="auto">{{ course.description | nl2br | safe }}</div>
   {% endif %}
 
   {% if prerequisites and prerequisites.length %}
@@ -81,7 +81,7 @@
   {% if isCompleted %}
     <h2 class="govuk-heading-l">{{ t("courses.certificate_label") }}</h2>
     <p class="govuk-body">
-      <a class="govuk-button govuk-button--secondary" role="button" data-module="govuk-button" href="{{ urlFor('/courses/' + (course.id | string) + '/certificate') }}" target="_blank" rel="noopener noreferrer" draggable="false">{{ t("courses.certificate_download") }}<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a>
+      <a class="govuk-button govuk-button--secondary" role="button" data-module="govuk-button" href="{{ urlFor('/courses/' + (course.id | string) + '/certificate') }}" target="_blank" rel="noopener noreferrer" draggable="false">{{ t("courses.certificate_download") }} {{ t("opens_new_tab") }}</a>
     </p>
   {% endif %}
 
@@ -104,7 +104,7 @@
             <strong>{{ review.name }}</strong>{% if review.createdAtLabel %} · {{ review.createdAtLabel }}{% endif %}
           </p>
           {% if review.body %}
-            <p class="govuk-body govuk-!-margin-bottom-0">{{ review.body }}</p>
+            <p class="govuk-body govuk-!-margin-bottom-0" dir="auto">{{ review.body }}</p>
           {% endif %}
         </li>
       {% endfor %}

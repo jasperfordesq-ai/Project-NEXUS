@@ -49,11 +49,11 @@
     </div>
   {% endif %}
 
-  <div class="govuk-panel govuk-panel--confirmation nexus-alpha-panel govuk-!-margin-bottom-6">
-    <div class="govuk-panel__body">
+  <div class="govuk-inset-text govuk-!-margin-bottom-6">
+    <p class="govuk-body-l govuk-!-margin-bottom-0">
       {{ t("govuk_alpha_gamification.shop.balance_label") }}
       <br><strong>{{ shop.userXpLabel }}</strong>
-    </div>
+    </p>
   </div>
 
   <div class="govuk-warning-text">
@@ -73,7 +73,7 @@
             {{ govukTag({ text: item.typeLabel, classes: "govuk-tag--grey" }) }}
           </div>
           {% if item.description %}
-            <p class="govuk-body">{{ item.description }}</p>
+            <p class="govuk-body" dir="auto">{{ item.description }}</p>
           {% endif %}
           <p class="govuk-body-s nexus-alpha-meta">{{ item.costLabel }}</p>
 

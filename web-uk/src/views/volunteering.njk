@@ -134,7 +134,7 @@
     {% elif status == 'application-withdraw-failed' %}
       {# The withdraw route redirects here on failure; without this branch the page
          reloaded with no message and the member could not tell the withdraw was refused. #}
-      <div class="govuk-error-summary" tabindex="-1" aria-labelledby="application-status-title"><div role="alert">
+      <div class="govuk-error-summary" tabindex="-1" aria-labelledby="application-status-title" data-module="govuk-error-summary"><div role="alert">
         <h2 class="govuk-error-summary__title" id="application-status-title">{{ t("states.error_title") }}</h2>
         <div class="govuk-error-summary__body">
           <p class="govuk-body">{{ t("volunteering.application_withdraw_failed") }}</p>
@@ -243,7 +243,7 @@
           <article class="nexus-alpha-card" id="project-{{ project.id }}" data-testid="community-project-{{ project.id }}">
             <div class="nexus-alpha-module-row"><h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ project.title or t("volunteering.community_project_untitled") }}</h3>{% if projectState %}<strong class="govuk-tag{% if projectState == 'completed' %} govuk-tag--green{% elseif projectState == 'active' %} govuk-tag--turquoise{% else %} govuk-tag--blue{% endif %}">{% if projectState == 'approved' %}{{ t("ux.project_status_approved") }}{% elseif projectState == 'active' %}{{ t("ux.project_status_active") }}{% elseif projectState == 'completed' %}{{ t("ux.project_status_completed") }}{% else %}{{ projectState }}{% endif %}</strong>{% endif %}</div>
             {% if proposer %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("volunteering.community_project_proposed_by", { name: proposer }) }}</p>{% endif %}
-            {% if project.description %}<p class="govuk-body govuk-!-margin-bottom-1">{{ project.description }}</p>{% endif %}
+            {% if project.description %}<p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ project.description }}</p>{% endif %}
             {% if project.targetVolunteers or project.proposedDateLabel or project.location %}
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
                 {%- if project.location %}{{ project.location }}{% endif %}

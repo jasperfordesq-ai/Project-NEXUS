@@ -46,7 +46,7 @@
         {{ govukTag({ text: t("govuk_alpha.volunteering.remote"), classes: "govuk-tag--turquoise" }) }}
       {% endif %}
       {% if opportunity.description %}
-        <div class="govuk-body govuk-!-margin-top-5">{{ opportunity.description | nl2br | safe }}</div>
+        <div class="govuk-body govuk-!-margin-top-5" dir="auto">{{ opportunity.description | nl2br | safe }}</div>
       {% endif %}
     </div>
 

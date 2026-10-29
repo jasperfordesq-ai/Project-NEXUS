@@ -30,7 +30,7 @@
       <p class="govuk-body">{{ t("about.values.subtitle", { name: communityName }) }}</p>
       {% for value in values %}
         <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ value.title }}</h3>
-        <p class="govuk-body">{{ value.description }}</p>
+        <p class="govuk-body" dir="auto">{{ value.description }}</p>
       {% endfor %}
     </div>
   </div>

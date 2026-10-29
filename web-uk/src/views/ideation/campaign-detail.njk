@@ -41,7 +41,7 @@
   {% endif %}
 
   {% if campaign.description %}
-    <div class="govuk-body-l">{{ campaign.description | nl2br | safe }}</div>
+    <div class="govuk-body-l" dir="auto">{{ campaign.description | nl2br | safe }}</div>
   {% endif %}
 
   <h2 class="govuk-heading-l govuk-!-margin-top-7" id="challenges">{{ t("govuk_alpha_ideation.campaigns.linked_heading") }}</h2>

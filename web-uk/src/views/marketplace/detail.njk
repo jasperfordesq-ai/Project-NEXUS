@@ -45,14 +45,14 @@
   {% elseif item.images.length > 1 %}
     <ul class="govuk-list nexus-alpha-image-strip govuk-!-margin-bottom-4">
       {% for image in item.images %}
-        <li><a href="{{ image }}" target="_blank" rel="noopener noreferrer"><span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span><img src="{{ image }}" alt="{{ t('listings.gallery_image_alt', { number: loop.index, title: item.title }) }}" loading="lazy" decoding="async"></a></li>
+        <li><a href="{{ image }}" target="_blank" rel="noopener noreferrer"> {{ t("opens_new_tab") }}<img src="{{ image }}" alt="{{ t('listings.gallery_image_alt', { number: loop.index, title: item.title }) }}" loading="lazy" decoding="async"></a></li>
       {% endfor %}
     </ul>
   {% endif %}
 
   {% if item.description %}
     <h2 class="govuk-heading-l">{{ t("marketplace.about_label") }}</h2>
-    <div class="govuk-body">{{ item.description | nl2br | safe }}</div>
+    <div class="govuk-body" dir="auto">{{ item.description | nl2br | safe }}</div>
   {% endif %}
 
   {% if item.videoUrl %}

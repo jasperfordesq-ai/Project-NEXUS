@@ -20,7 +20,7 @@
             {{ govukTag({ text: tc("messages.unread_count", item.badge), classes: "govuk-tag--blue govuk-!-margin-left-2" }) }}
           {% endif %}
         </h2>
-        <p class="govuk-body govuk-!-margin-bottom-0">{{ item.description }}</p>
+        <p class="govuk-body govuk-!-margin-bottom-0" dir="auto">{{ item.description }}</p>
       </article>
     {% endfor %}
   </div>

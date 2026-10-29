@@ -16,7 +16,7 @@
 
       <div class="nexus-alpha-card govuk-!-margin-bottom-6">
         <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ option.label }}</h2>
-        {% if option.description %}<p class="govuk-body">{{ option.description }}</p>{% endif %}
+        {% if option.description %}<p class="govuk-body" dir="auto">{{ option.description }}</p>{% endif %}
         {% if option.effects.length %}
           <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1" id="sg-add-effects-heading">{{ t("profile_settings.safeguarding.effects_heading") }}</p>
           <ul class="govuk-list govuk-list--bullet" aria-labelledby="sg-add-effects-heading">

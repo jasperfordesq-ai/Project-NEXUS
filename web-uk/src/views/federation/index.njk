@@ -91,7 +91,7 @@
           {% for item in activity %}
             <article class="nexus-alpha-card">
               <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ item.title }}</h3>
-              {% if item.description %}<p class="govuk-body govuk-!-margin-bottom-1">{{ item.description }}</p>{% endif %}
+              {% if item.description %}<p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ item.description }}</p>{% endif %}
               {% if item.community %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("federation.hub.activity_from_community", { community: item.community }) }}</p>{% endif %}
               {% if item.createdAt %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ item.createdAt | date }}</p>{% endif %}
             </article>
@@ -118,7 +118,7 @@
                 {{ govukTag({ text: partner.levelName, classes: "govuk-tag--purple" }) }}
               {% endif %}
             </div>
-            {% if partner.tagline %}<p class="govuk-body govuk-!-margin-bottom-2">{{ partner.tagline }}</p>{% endif %}
+            {% if partner.tagline %}<p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ partner.tagline }}</p>{% endif %}
             <dl class="nexus-alpha-inline-list">
             {% if partner.location %}<div><dt>{{ t("federation.location_label") }}</dt><dd>{{ partner.location }}</dd></div>{% endif %}
             <div><dt>{{ t("federation.members_label") }}</dt><dd>{{ partner.memberCount }}</dd></div>

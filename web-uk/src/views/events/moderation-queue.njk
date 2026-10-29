@@ -37,7 +37,7 @@
             {% if event.startLabel %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.moderation.schedule") }}</dt><dd class="govuk-summary-list__value">{{ event.startLabel }}{% if event.endLabel %} {{ t("govuk_alpha_events.moderation.schedule_to") }} {{ event.endLabel }}{% endif %}{% if event.allDay %}<br>{{ t("govuk_alpha_events.moderation.all_day") }}{% endif %}</dd></div>{% endif %}
             <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.moderation.location") }}</dt><dd class="govuk-summary-list__value">{{ event.location or (t("govuk_alpha_events.moderation.online") if event.isOnline else t("govuk_alpha_events.moderation.location_unavailable")) }}</dd></div>
           </dl>
-          <h3 class="govuk-heading-s">{{ t("govuk_alpha_events.moderation.description") }}</h3><p class="govuk-body">{{ event.description }}</p>
+          <h3 class="govuk-heading-s">{{ t("govuk_alpha_events.moderation.description") }}</h3><p class="govuk-body" dir="auto">{{ event.description }}</p>
           <div class="govuk-button-group"><a class="govuk-button" href="{{ urlFor('/events/moderation/' + (event.id | string) + '/approve') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_events.moderation.approve") }}</a><a class="govuk-button govuk-button--warning" href="{{ urlFor('/events/moderation/' + (event.id | string) + '/reject') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_events.moderation.reject") }}<span class="govuk-visually-hidden"> {{ event.title }}</span></a></div>
         </article>
       {% endfor %}

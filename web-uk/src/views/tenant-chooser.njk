@@ -29,7 +29,7 @@
               </h2>
 
               {% if community.tagline %}
-                <p class="govuk-body">{{ community.tagline }}</p>
+                <p class="govuk-body" dir="auto">{{ community.tagline }}</p>
               {% endif %}
 
               <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t("tenant_chooser.community_slug", { slug: community.slug }) }}</p>

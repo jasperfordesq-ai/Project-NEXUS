@@ -42,7 +42,7 @@
   </p>
 
   <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.safeguarding.report_what_you_reported") }}</h2>
-  <p class="govuk-body app-formatted-text">{{ report.description }}</p>
+  <p class="govuk-body app-formatted-text" dir="auto">{{ report.description }}</p>
   {% if report.facts.length %}
     <dl class="govuk-summary-list">
       {% for fact in report.facts %}
@@ -62,7 +62,7 @@
           {{ event.label }}{% if event.detail %} — {{ event.detail }}{% endif %}
         </p>
         {% if event.dateLabel %}<p class="govuk-hint govuk-!-margin-bottom-1">{{ event.dateLabel }}</p>{% endif %}
-        {% if event.body %}<p class="govuk-body app-formatted-text">{{ event.body }}</p>{% endif %}
+        {% if event.body %}<p class="govuk-body app-formatted-text" dir="auto">{{ event.body }}</p>{% endif %}
       </li>
     {% endfor %}
   </ol>

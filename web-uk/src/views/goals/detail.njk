@@ -44,7 +44,7 @@
   </div>
 
   {% if goal.description %}
-    <p class="govuk-body-l">{{ goal.description }}</p>
+    <p class="govuk-body-l" dir="auto">{{ goal.description }}</p>
   {% endif %}
 
   <p class="govuk-body govuk-!-margin-bottom-1">{{ t("goals.progress_label", { current: goal.currentText, target: goal.targetText }) }}</p>
@@ -139,7 +139,7 @@
         {% for event in goalHistory %}
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">{{ t("goals.history_type_" + event.type) }}</dt>
-            <dd class="govuk-summary-list__value">
+            <dd class="govuk-summary-list__value" dir="auto">
               {{ event.description }}
               {% if event.createdAtLabel %}<span class="govuk-!-display-block govuk-body-s nexus-alpha-meta">{{ event.createdAtLabel }}</span>{% endif %}
             </dd>

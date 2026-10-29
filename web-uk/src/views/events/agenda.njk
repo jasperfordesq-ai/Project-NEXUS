@@ -50,10 +50,10 @@
             {% if session.speakers.length %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha.events.agenda.fields.speakers") }}</dt><dd class="govuk-summary-list__value"><ul class="govuk-list govuk-list--bullet">{% for speaker in session.speakers %}<li>{{ speaker.display_name }}{% if speaker.role %}, {{ speaker.role }}{% endif %}</li>{% endfor %}</ul></dd></div>{% endif %}
           </dl>
 
-          {% if session.description %}<p class="govuk-body">{{ session.description }}</p>{% endif %}
+          {% if session.description %}<p class="govuk-body" dir="auto">{{ session.description }}</p>{% endif %}
           {% if session.resources.length %}
             <h4 class="govuk-heading-s">{{ t("event_agenda.resources_title") }}</h4>
-            <ul class="govuk-list govuk-list--bullet">{% for resource in session.resources %}<li><strong>{{ t("event_agenda.resource_types." + resource.type) }}:</strong> {% if resource.url %}<a class="govuk-link" href="{{ resource.url }}" target="_blank" rel="noopener noreferrer">{{ resource.title }}</a> <span class="govuk-visually-hidden">{{ t("event_agenda.opens_new_window") }}</span>{% else %}{{ resource.title }} — {{ t("event_agenda.resource_unavailable") }}{% endif %}</li>{% endfor %}</ul>
+            <ul class="govuk-list govuk-list--bullet">{% for resource in session.resources %}<li><strong>{{ t("event_agenda.resource_types." + resource.type) }}:</strong> {% if resource.url %}<a class="govuk-link" href="{{ resource.url }}" target="_blank" rel="noopener noreferrer">{{ resource.title }} {{ t("opens_new_tab") }}</a>{% else %}{{ resource.title }} — {{ t("event_agenda.resource_unavailable") }}{% endif %}</li>{% endfor %}</ul>
           {% endif %}
 
           {% if session.registration.can_register %}<form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/agenda') }}" class="govuk-!-margin-bottom-4" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="register"><input type="hidden" name="session_id" value="{{ session.id }}"><input type="hidden" name="expected_version" value="{{ session.registration.version }}"><input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}"><button class="govuk-button" data-module="govuk-button">{{ t("event_agenda.register_action") }}</button></form>{% endif %}

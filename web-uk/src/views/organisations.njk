@@ -102,7 +102,7 @@
       <div class="govuk-form-group{% if fieldErrors["email"] %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="email">{{ t("govuk_alpha.organisations.email_label") }}</label>
         {% if fieldErrors["email"] %}<p id="email-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors["email"] }}</p>{% endif %}
-        <input class="govuk-input{% if fieldErrors["email"] %} govuk-input--error{% endif %}" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}"{% if fieldErrors["email"] %} aria-describedby="email-error"{% endif %}>
+        <input class="govuk-input{% if fieldErrors["email"] %} govuk-input--error{% endif %}" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}"{% if fieldErrors["email"] %} aria-describedby="email-error"{% endif %} spellcheck="false">
       </div>
 
       <div class="govuk-form-group{% if fieldErrors["website"] %} govuk-form-group--error{% endif %}">

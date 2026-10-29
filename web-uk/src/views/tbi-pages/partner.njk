@@ -49,7 +49,7 @@
       {% for card in impactCards %}
         <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ card.title }}</h3>
         <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ card.highlight }}</p>
-        <p class="govuk-body">{{ card.description }}</p>
+        <p class="govuk-body" dir="auto">{{ card.description }}</p>
       {% endfor %}
 
       <h2 class="govuk-heading-l">{{ t(ns + "our_partners_heading") }}</h2>
@@ -61,7 +61,7 @@
       <p class="govuk-body">{{ t(ns + "partnership_opportunities_subtitle") }}</p>
       {% for type in partnershipTypes %}
         <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ type.title }}</h3>
-        <p class="govuk-body">{{ type.description }}</p>
+        <p class="govuk-body" dir="auto">{{ type.description }}</p>
       {% endfor %}
 
       <h2 class="govuk-heading-l">{{ t(ns + "learn_more_heading") }}</h2>
@@ -69,7 +69,7 @@
         {% for link in learnMore %}
           <li>
             <a class="govuk-link" href="{{ urlFor(link.href) }}">{{ link.title }}</a>
-            <span class="govuk-body-s govuk-!-display-block govuk-!-margin-bottom-0">{{ link.description }}</span>
+            <span class="govuk-body-s govuk-!-display-block govuk-!-margin-bottom-0" dir="auto">{{ link.description }}</span>
           </li>
         {% endfor %}
       </ul>

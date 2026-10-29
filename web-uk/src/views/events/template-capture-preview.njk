@@ -48,7 +48,7 @@
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
     {% if template %}<input type="hidden" name="template_id" value="{{ template.id }}"><input type="hidden" name="expected_version" value="{{ template.current_version }}">{% endif %}
-    <button class="govuk-button">{{ t("event_templates.confirm_revision") if template else t("event_templates.confirm_capture") }}</button>
+    <button class="govuk-button" data-module="govuk-button">{{ t("event_templates.confirm_revision") if template else t("event_templates.confirm_capture") }}</button>
   </form>
     </div>
   </div>

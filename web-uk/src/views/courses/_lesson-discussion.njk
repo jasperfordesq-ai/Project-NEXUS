@@ -10,7 +10,7 @@
 {% macro discussionComment(comment, isReply) %}
   <div class="govuk-!-margin-bottom-4{% if isReply %} govuk-!-margin-left-6{% endif %}">
     <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ comment.authorName or t("govuk_alpha_courses.discussion.unknown_member") }}</strong>{% if comment.postedLabel %} <span class="govuk-body-s nexus-alpha-meta">{{ comment.postedLabel }}</span>{% endif %}</p>
-    <p class="govuk-body govuk-!-margin-bottom-1">{{ comment.body | nl2br | safe }}</p>
+    <p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ comment.body | nl2br | safe }}</p>
     {% if comment.isOwn %}
       <form method="post" action="{{ urlFor(discussionAction + '/' + (comment.id | string) + '/delete') }}" class="govuk-!-margin-bottom-2" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">

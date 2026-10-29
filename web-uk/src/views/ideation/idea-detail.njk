@@ -46,7 +46,7 @@
 
   <h2 class="govuk-heading-m">{{ t("govuk_alpha_ideation.idea.description_heading") }}</h2>
   {% if idea.description %}
-    <div class="govuk-body">{{ idea.description | nl2br | safe }}</div>
+    <div class="govuk-body" dir="auto">{{ idea.description | nl2br | safe }}</div>
   {% else %}
     <p class="govuk-body">{{ t("govuk_alpha_ideation.idea.no_description") }}</p>
   {% endif %}
@@ -71,7 +71,7 @@
         <li class="govuk-!-margin-bottom-2">
           {% if mediaScheme.indexOf("https://") == 0 or mediaScheme.indexOf("http://") == 0 %}
           <a class="govuk-link" href="{{ mediaHref }}" rel="noopener noreferrer" target="_blank">
-            {{ item.caption if item.caption else t("govuk_alpha_ideation.media.open") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_ideation.page.media_opens_new_tab") }}</span>
+            {{ item.caption if item.caption else t("govuk_alpha_ideation.media.open") }} {{ t("opens_new_tab") }}
           </a>
           {% else %}
           <span>{{ item.caption if item.caption else t("govuk_alpha_ideation.media.open") }}</span>
@@ -205,7 +205,7 @@
           {% if comment.authorName %}
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("govuk_alpha_ideation.comments.by", { name: comment.authorName }) }}</p>
           {% endif %}
-          <div class="govuk-body govuk-!-margin-bottom-1">{{ comment.body | nl2br | safe }}</div>
+          <div class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ comment.body | nl2br | safe }}</div>
           {% if idea.isAdmin %}
             <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/comments/' ~ comment.id ~ '/delete') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">

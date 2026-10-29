@@ -129,7 +129,7 @@
             {% endif %}
           </div>
           {% if challenge.description %}
-            <p class="govuk-body-s govuk-!-margin-bottom-1">{{ challenge.description }}</p>
+            <p class="govuk-body-s govuk-!-margin-bottom-1" dir="auto">{{ challenge.description }}</p>
           {% endif %}
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
             {{ t("polish_gamify.challenge_progress_label", { current: challenge.current, target: challenge.target }) }}

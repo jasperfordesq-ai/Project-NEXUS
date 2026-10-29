@@ -68,7 +68,7 @@
         <p class="govuk-body">{{ t(ns + "literature_para") }}</p>
         {% for item in literature %}
           <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ item.title }}</h3>
-          <p class="govuk-body">{{ item.description }}</p>
+          <p class="govuk-body" dir="auto">{{ item.description }}</p>
         {% endfor %}
       </section>
 
@@ -164,7 +164,7 @@
         <p class="govuk-body">{{ t(ns + "discussion_para") }}</p>
         {% for factor in discussion %}
           <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ factor.title }}</h3>
-          <p class="govuk-body">{{ factor.description }}</p>
+          <p class="govuk-body" dir="auto">{{ factor.description }}</p>
         {% endfor %}
       </section>
 

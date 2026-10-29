@@ -31,7 +31,7 @@
         {{ govukTag({ text: t("profile.profile_type_" ~ profileType), classes: "govuk-tag--grey" }) }}
       </div>
       {% if profile.tagline %}
-        <p class="govuk-body-l govuk-!-margin-top-2">{{ profile.tagline }}</p>
+        <p class="govuk-body-l govuk-!-margin-top-2" dir="auto">{{ profile.tagline }}</p>
       {% endif %}
       <div class="govuk-button-group govuk-!-margin-top-4">
         <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/profile/settings') }}" role="button" draggable="false">{{ t("actions.edit_profile") }}</a>
@@ -82,7 +82,7 @@
     <div class="govuk-grid-column-two-thirds">
       <h2 class="govuk-heading-l">{{ t("profile.about_title") }}</h2>
       {% if profile.bio %}
-        <p class="govuk-body">{{ profile.bio }}</p>
+        <p class="govuk-body" dir="auto">{{ profile.bio }}</p>
       {% else %}
         <div class="govuk-inset-text">{{ t("profile.empty_bio") }}</div>
       {% endif %}
@@ -112,7 +112,7 @@
                 <h3 class="govuk-heading-m govuk-!-margin-top-2 govuk-!-margin-bottom-2">
                   <a class="govuk-link" href="{{ urlFor('/listings/' ~ listing.id) }}">{{ listing.title }}</a>
                 </h3>
-                {% if listing.description %}<p class="govuk-body">{{ listing.description }}</p>{% endif %}
+                {% if listing.description %}<p class="govuk-body" dir="auto">{{ listing.description }}</p>{% endif %}
                 {% if listing.imageUrl %}
                   <img class="nexus-alpha-card-thumb" src="{{ listing.imageUrl }}" alt="{{ t('listings.image_alt', { title: listing.title }) }}" width="120" height="90" loading="lazy" decoding="async">
                 {% endif %}
@@ -152,7 +152,7 @@
       <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.recent_activity_title") }}</h2>
       {% if profileActivity.length %}
         <ol class="govuk-list nexus-alpha-timeline">
-          {% for activity in profileActivity %}<li class="govuk-!-margin-bottom-3">{{ govukTag({ text: activity.label, classes: (activity.tagClass) }) }}{% if activity.description %} <span class="govuk-body">{{ activity.description }}</span>{% endif %}{% if activity.date %} <span class="govuk-body-s nexus-alpha-meta">{{ activity.date }}</span>{% endif %}</li>{% endfor %}
+          {% for activity in profileActivity %}<li class="govuk-!-margin-bottom-3">{{ govukTag({ text: activity.label, classes: (activity.tagClass) }) }}{% if activity.description %} <span class="govuk-body" dir="auto">{{ activity.description }}</span>{% endif %}{% if activity.date %} <span class="govuk-body-s nexus-alpha-meta">{{ activity.date }}</span>{% endif %}</li>{% endfor %}
         </ol>
       {% else %}<div class="govuk-inset-text">{{ t("profile.empty_activity") }}</div>{% endif %}
     </div>

@@ -18,7 +18,9 @@
   {% elif status == "people-invalid" or status == "people-failed" %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert">
       <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
-      <div class="govuk-error-summary__body"><p>{{ t("govuk_alpha.events.people_failed") }}</p></div>
+      {# Link to the field to fix (GOV.UK); "selection" points at the first person. #}
+      {% set peopleErrorHref = ('#person-' ~ (people[0].id | string)) if (errorField == 'people-selection' and people and people.length) else (('#' ~ errorField) if (errorField and errorField != 'people-selection') else '') %}
+      <div class="govuk-error-summary__body">{% if status == "people-invalid" and peopleErrorHref %}<ul class="govuk-list govuk-error-summary__list"><li><a href="{{ peopleErrorHref }}">{{ t("govuk_alpha.events.people_failed") }}</a></li></ul>{% else %}<p>{{ t("govuk_alpha.events.people_failed") }}</p>{% endif %}</div>
     </div></div>
   {% endif %}
   <span class="govuk-caption-xl">{{ event.title }}</span>

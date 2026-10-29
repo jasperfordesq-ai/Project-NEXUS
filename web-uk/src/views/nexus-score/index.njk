@@ -31,12 +31,12 @@
       <p class="govuk-body">{{ t("nexus_score.unavailable") }}</p>
     </div>
   {% else %}
-    <div class="govuk-panel govuk-panel--confirmation nexus-alpha-panel">
-      <h2 class="govuk-panel__title">{{ nexusScore.scoreLabel }}</h2>
-      <div class="govuk-panel__body">
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-l govuk-!-margin-bottom-2">{{ nexusScore.scoreLabel }}</h2>
+      <p class="govuk-body-l govuk-!-margin-bottom-0">
         {{ nexusScore.tierName }}
         {% if nexusScore.percentileLabel %}<br>{{ nexusScore.percentileLabel }}{% endif %}
-      </div>
+      </p>
     </div>
 
     <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("nexus_score.breakdown_title") }}</h2>

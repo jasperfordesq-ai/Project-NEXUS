@@ -23,7 +23,7 @@
         <time datetime="{{ comment.createdAt }}">{{ comment.createdAtLabel }}</time>
       {% endif %}
     </p>
-    <p class="govuk-body govuk-!-margin-bottom-2">{{ comment.content }}</p>
+    <p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ comment.content }}</p>
 
     {% if comment.id and not isReply %}
       <div class="nexus-alpha-comment-actions govuk-!-margin-bottom-2">

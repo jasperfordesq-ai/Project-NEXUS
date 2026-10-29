@@ -27,7 +27,7 @@
 
   {% if partner.tagline %}
     <h2 class="govuk-heading-l">{{ t("federation.partner.about_label") }}</h2>
-    <div class="govuk-body">{{ partner.tagline | nl2br | safe }}</div>
+    <div class="govuk-body" dir="auto">{{ partner.tagline | nl2br | safe }}</div>
   {% endif %}
 
   <dl class="govuk-summary-list">

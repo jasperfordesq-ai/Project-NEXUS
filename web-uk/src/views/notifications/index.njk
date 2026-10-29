@@ -17,7 +17,7 @@
   {# 🔴 The routes have always flashed an `error` on failure; nothing rendered it,
      so every failed action on this page reloaded the inbox in silence. #}
   {% if errorMessage %}
-    <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="alert" aria-labelledby="notification-error-title">
+    <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="notification-error-title">
       <div class="govuk-notification-banner__header">
         <h2 class="govuk-notification-banner__title" id="notification-error-title">{{ t("states.important") }}</h2>
       </div>

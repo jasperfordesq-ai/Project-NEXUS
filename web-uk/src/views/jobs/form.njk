@@ -223,7 +223,7 @@
     <div class="govuk-form-group{% if jobErr.contact_email %} govuk-form-group--error{% endif %}">
       <label class="govuk-label" for="contact_email">{{ t("govuk_alpha.jobs_t3.label_contact_email") }}</label>
       {% if jobErr.contact_email %}<p id="contact_email-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ jobErr.contact_email }}</p>{% endif %}
-      <input class="govuk-input govuk-!-width-two-thirds{% if jobErr.contact_email %} govuk-input--error{% endif %}" id="contact_email"{% if jobErr.contact_email %} aria-describedby="contact_email-error"{% endif %} name="contact_email" type="email" value="{{ jobForm.contact_email or "" }}" maxlength="255" autocomplete="email">
+      <input class="govuk-input govuk-!-width-two-thirds{% if jobErr.contact_email %} govuk-input--error{% endif %}" id="contact_email"{% if jobErr.contact_email %} aria-describedby="contact_email-error"{% endif %} name="contact_email" type="email" value="{{ jobForm.contact_email or "" }}" maxlength="255" autocomplete="email" spellcheck="false">
     </div>
 
     <div class="govuk-form-group{% if jobErr.contact_phone %} govuk-form-group--error{% endif %}">

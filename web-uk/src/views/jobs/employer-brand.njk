@@ -31,7 +31,7 @@
   </p>
 
   {% if employer.bio %}
-    <div class="govuk-body govuk-!-margin-bottom-6">{{ employer.bio | nl2br | safe }}</div>
+    <div class="govuk-body govuk-!-margin-bottom-6" dir="auto">{{ employer.bio | nl2br | safe }}</div>
   {% endif %}
 
   <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.employer.open_jobs_heading") }}</h2>

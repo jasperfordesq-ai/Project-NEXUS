@@ -14,7 +14,7 @@
   <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.seller.caption", { community: tenantName or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{{ seller.name }}</h1>
   {% if seller.businessName or seller.sellerTypeLabel %}<p class="govuk-body-l">{{ seller.businessName }}{% if seller.businessName and seller.sellerTypeLabel %} · {% endif %}{{ seller.sellerTypeLabel }}</p>{% endif %}
-  {% if seller.bio %}<p class="govuk-body app-formatted-text">{{ seller.bio }}</p>{% endif %}
+  {% if seller.bio %}<p class="govuk-body app-formatted-text" dir="auto">{{ seller.bio }}</p>{% endif %}
 
   <div class="nexus-alpha-card govuk-!-margin-bottom-6">
     {% if seller.avatarUrl %}

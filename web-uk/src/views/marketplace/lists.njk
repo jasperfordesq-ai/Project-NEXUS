@@ -31,7 +31,7 @@
               {{ govukTag({ text: t("govuk_alpha_commerce.wish_lists.private_tag"), classes: "govuk-tag--grey" }) }}
             {% endif %}
           </div>
-          {% if list.description %}<p class="govuk-body govuk-!-margin-bottom-1">{{ list.description }}</p>{% endif %}
+          {% if list.description %}<p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ list.description }}</p>{% endif %}
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ t("govuk_alpha_commerce.wish_lists.item_count", { count: formatLocaleNumber(list.itemCount) }) }}</p>
         </li>
       {% endfor %}

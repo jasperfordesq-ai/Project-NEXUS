@@ -4,7 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 <li class="nexus-alpha-comment">
-  <p class="govuk-body govuk-!-margin-bottom-1">{{ comment.content }}</p>
+  <p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ comment.content }}</p>
   {% set meta = [] %}
   {% if comment.authorName %}{% set meta = meta.concat([comment.authorName]) %}{% endif %}
   {% if comment.createdAtLabel %}{% set meta = meta.concat([comment.createdAtLabel]) %}{% endif %}

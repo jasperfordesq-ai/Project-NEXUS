@@ -1070,7 +1070,8 @@ async function handleResetPasswordPost(req, res) {
   const fieldErrors = {};
 
   if (!token) {
-    errors.push({ text: translate(req, 'auth.reset_link_invalid_title'), href: '#' });
+    // Not a field the member can correct, so no link (GOV.UK: link only to answers).
+    errors.push({ text: translate(req, 'auth.reset_link_invalid_title') });
   }
 
   if (!password) {

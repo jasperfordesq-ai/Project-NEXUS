@@ -69,7 +69,7 @@
       <div class="govuk-form-group">
         <label class="govuk-label govuk-label--s" for="code">{{ t("govuk_alpha_commerce.coupons.code_form_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
         <div id="code-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupons.code_form_hint") }}</div>
-        <input class="govuk-input govuk-input--width-20" id="code" name="code" type="text" maxlength="64" value="{{ coupon.code }}" aria-describedby="code-hint">
+        <input class="govuk-input govuk-input--width-20" id="code" name="code" type="text" maxlength="64" value="{{ coupon.code }}" aria-describedby="code-hint" spellcheck="false">
       </div>
 
       <div class="govuk-form-group">

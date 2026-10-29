@@ -35,7 +35,7 @@
           </h2>
           {% if room.isDefault %}{{ govukTag({ text: t("govuk_alpha_group_media.channels.default_tag"), classes: "govuk-tag--blue" }) }}{% endif %}
           {% if room.isPrivate %}{{ govukTag({ text: t("govuk_alpha_group_media.channels.private_tag"), classes: "govuk-tag--grey" }) }}{% endif %}
-          {% if room.description %}<p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ room.description }}</p>{% endif %}
+          {% if room.description %}<p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0" dir="auto">{{ room.description }}</p>{% endif %}
         </li>
       {% endfor %}
     </ul>

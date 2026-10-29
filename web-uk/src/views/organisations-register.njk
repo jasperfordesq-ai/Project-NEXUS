@@ -70,7 +70,7 @@
           <label class="govuk-label" for="email">{{ t("govuk_alpha_organisations.register.email_label") }}</label>
           <div id="email-hint" class="govuk-hint">{{ t("govuk_alpha_organisations.register.email_hint") }}</div>
           {{ errorMessage('email') }}
-          <input class="govuk-input{{ errorClass('email', 'govuk-input--error') }}" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}" aria-describedby="{{ describedBy('email', 'email-hint') }}">
+          <input class="govuk-input{{ errorClass('email', 'govuk-input--error') }}" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}" aria-describedby="{{ describedBy('email', 'email-hint') }}" spellcheck="false">
         </div>
 
         <div class="govuk-form-group{{ errorClass('website', 'govuk-form-group--error') }}">

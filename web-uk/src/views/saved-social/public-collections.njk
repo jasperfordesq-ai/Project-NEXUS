@@ -26,10 +26,10 @@
           </h2>
           <p class="govuk-body nexus-alpha-meta">{{ tc("govuk_alpha_saved.collections.count", collection.itemsCount, { count: collection.itemsCount }) }}</p>
           {% if collection.description %}
-            <p class="govuk-body">{{ collection.description }}</p>
+            <p class="govuk-body" dir="auto">{{ collection.description }}</p>
           {% endif %}
           <p class="govuk-body govuk-!-margin-bottom-0">
-            <a class="govuk-link" href="{{ urlFor('/me/collections/' + (collection.id | string)) }}">{{ t("govuk_alpha_saved.collections.view") }}</a>
+            <a class="govuk-link" href="{{ urlFor('/me/collections/' + (collection.id | string)) }}">{{ t("govuk_alpha_saved.collections.view") }}<span class="govuk-visually-hidden"> {{ collection.name }}</span></a>
           </p>
         </li>
       {% endfor %}

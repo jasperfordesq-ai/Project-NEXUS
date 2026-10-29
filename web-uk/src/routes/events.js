@@ -1191,6 +1191,7 @@ router.get('/:id(\\d+)/people', requireAuth, asyncRoute(async (req, res) => {
     query,
     filters: PEOPLE_FILTERS,
     status: trimmed(req.query.status),
+    errorField: ['people-action', 'people-selection', 'people-reason', 'people-confirmation'].includes(trimmed(req.query.field)) ? trimmed(req.query.field) : '',
     exportHref: eventPath(id, `/people/export.csv?${peopleExportParameters(query).toString()}`),
     updated: Math.max(0, Number.parseInt(req.query.updated, 10) || 0),
     failed: Math.max(0, Number.parseInt(req.query.failed, 10) || 0),
@@ -1317,6 +1318,8 @@ router.get('/:id(\\d+)/check-in', requireAuth, asyncRoute(async (req, res) => {
     attendanceStates: PEOPLE_FILTERS.attendance_state,
     attendanceWindow: attendanceWindow(event, res.locals.formatLocaleDate),
     status: trimmed(req.query.status),
+    // The field an error points at (GOV.UK: the error summary links to the answer).
+    errorField: /^(signed-code-reason|signed-attendee-code|attendance-reason-\d+)$/.test(trimmed(req.query.field)) ? trimmed(req.query.field) : '',
     apiReason: consumeEventRefusal(req, id, 'check-in'),
     // One key per rendered page. The signed-code endpoint requires an idempotency
     // key, so a double-tapped submit replays the same action instead of recording a
@@ -1671,9 +1674,13 @@ router.post('/:id(\\d+)/people', requireAuth, asyncRoute(async (req, res) => {
   const userIds = pollIdsFrom(req.body.user_ids).slice(0, 101);
   const reason = trimmed(req.body.reason, 1000);
   const confirmed = checked(req.body.confirmation);
-  if (!action || userIds.length === 0 || userIds.length > 100 || !confirmed
-    || (['reject', 'cancel'].includes(action) && !reason)) {
-    return redirectTo(res, eventPath(id, '/people?status=people-invalid'));
+  // Name the field to fix, so the error summary can link to it (GOV.UK).
+  const invalidField = !action ? 'people-action'
+    : (userIds.length === 0 || userIds.length > 100) ? 'people-selection'
+      : (['reject', 'cancel'].includes(action) && !reason) ? 'people-reason'
+        : !confirmed ? 'people-confirmation' : '';
+  if (invalidField) {
+    return redirectTo(res, eventPath(id, `/people?status=people-invalid&field=${invalidField}`));
   }
 
   const requestKey = trimmed(req.body.idempotency_key, 128) || randomUUID();
@@ -1741,7 +1748,7 @@ router.post('/:id(\\d+)/check-in/code', requireAuth, asyncRoute(async (req, res)
   if (action === 'undo' && !reason && checked(req.body.confirmation) && credential.startsWith('nqx2_')) {
     // Everything else was right; only the reason is missing. Say so, rather than the
     // generic "check the action, reason and confirmation" (E-105).
-    return redirectTo(res, eventPath(id, '/check-in?status=attendance-reason-required'));
+    return redirectTo(res, eventPath(id, '/check-in?status=attendance-reason-required&field=signed-code-reason'));
   }
   if (!action
     || !checked(req.body.confirmation)
@@ -1796,7 +1803,7 @@ router.post('/:id(\\d+)/check-in/:userId(\\d+)', requireAuth, asyncRoute(async (
   const expectedVersion = Number.parseInt(req.body.expected_version, 10);
   const reason = trimmed(req.body.reason, 4000);
   if (action === 'undo' && !reason && Number.isInteger(expectedVersion) && expectedVersion >= 0 && checked(req.body.confirmation)) {
-    return redirectTo(res, eventPath(id, '/check-in?status=attendance-reason-required'));
+    return redirectTo(res, eventPath(id, `/check-in?status=attendance-reason-required&field=attendance-reason-${userId}`));
   }
   if (!action || !Number.isInteger(expectedVersion) || expectedVersion < 0 || !checked(req.body.confirmation)
     || (action === 'undo' && !reason)) {
@@ -2410,6 +2417,7 @@ router.get('/:id(\\d+)/reminders', requireAuth, asyncRoute(async (req, res) => {
     channels: { ...(resolved.channels || {}), email: overrides.email_enabled ?? resolved.channels?.email, in_app: overrides.in_app_enabled ?? resolved.channels?.in_app, web_push: overrides.web_push_enabled ?? resolved.channels?.web_push, fcm: overrides.fcm_enabled ?? resolved.channels?.fcm, realtime: overrides.realtime_enabled ?? resolved.channels?.realtime },
     source: selectedValue(resolved.reminders_source, ['event', 'category', 'global', 'tenant'], 'unavailable'),
     status: trimmed(req.query.status),
+    errorField: trimmed(req.query.field) === 'custom-offset' ? 'custom-offset' : '',
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { notFoundTitle: 'Event not found' }));
@@ -2423,10 +2431,10 @@ router.post('/:id(\\d+)/reminders', requireAuth, asyncRoute(async (req, res) => 
   const enabled = checked(req.body.reminders_enabled);
   const customOffsetText = trimmed(req.body.custom_offset);
   if (customOffsetText !== '' && positiveInteger(customOffsetText) === null) {
-    return redirectTo(res, eventPath(id, '/reminders?status=invalid'));
+    return redirectTo(res, eventPath(id, '/reminders?status=invalid&field=custom-offset'));
   }
   if ((enabled && uniqueOffsets.length === 0) || uniqueOffsets.length > 10 || uniqueOffsets.some((offset) => offset < 5 || offset > 525600)) {
-    return redirectTo(res, eventPath(id, '/reminders?status=invalid'));
+    return redirectTo(res, eventPath(id, '/reminders?status=invalid&field=custom-offset'));
   }
   try {
     await callApi(tokenFrom(req), 'PUT', `/${encodeURIComponent(id)}/reminders`, {

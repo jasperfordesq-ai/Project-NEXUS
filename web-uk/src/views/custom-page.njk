@@ -22,7 +22,7 @@
       {% endif %}
 
       {# Sanitized in the route by sanitizeCmsHtml before it reaches here. #}
-      <div class="legal-content govuk-body">
+      <div class="legal-content govuk-body" dir="auto">
         {{ page.content | safe }}
       </div>
     </div>

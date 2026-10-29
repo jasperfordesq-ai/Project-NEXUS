@@ -37,7 +37,7 @@
   <span class="govuk-caption-xl">{{ t("govuk_alpha_group_media.channels.channel_caption", { group: group.name }) }}</span>
   <h1 class="govuk-heading-xl">{{ room.name }}</h1>
   {% if room.isPrivate %}<p class="govuk-body">{{ govukTag({ text: t("govuk_alpha_group_media.channels.private_tag"), classes: "govuk-tag--grey" }) }}</p>{% endif %}
-  {% if room.description %}<p class="govuk-body-l">{{ room.description }}</p>{% endif %}
+  {% if room.description %}<p class="govuk-body-l" dir="auto">{{ room.description }}</p>{% endif %}
 
   {% include "groups/gallery/_status-banner.njk" %}
 
@@ -51,7 +51,7 @@
       {% for message in pinned %}
         <li class="govuk-inset-text govuk-!-margin-top-0">
           <p class="govuk-body-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_group_media.channels.posted_by", { name: message.authorName or t("govuk_alpha_group_media.common.unknown_member"), date: message.postedLabel }) }}</p>
-          <p class="govuk-body govuk-!-margin-bottom-2" style="white-space:pre-wrap">{{ message.body }}</p>
+          <p class="govuk-body govuk-!-margin-bottom-2" style="white-space:pre-wrap" dir="auto">{{ message.body }}</p>
           {% if isChannelAdmin %}
             <form method="post" action="{{ urlFor(roomBase + '/messages/' + (message.id | string) + '/unpin') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -79,7 +79,7 @@
             <strong>{{ message.authorName or t("govuk_alpha_group_media.common.unknown_member") }}</strong>, {{ message.postedLabel }}
             {% if message.isPinned %}{{ govukTag({ text: t("govuk_alpha_group_media.channels.pinned_tag"), classes: "govuk-tag--yellow govuk-!-margin-left-1" }) }}{% endif %}
           </p>
-          <p class="govuk-body govuk-!-margin-bottom-2" style="white-space:pre-wrap">{{ message.body }}</p>
+          <p class="govuk-body govuk-!-margin-bottom-2" style="white-space:pre-wrap" dir="auto">{{ message.body }}</p>
           {{ messageActions(message, roomBase, isChannelAdmin, csrfToken, t, urlFor) }}
         </li>
       {% endfor %}

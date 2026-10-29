@@ -47,7 +47,7 @@
       <span class="govuk-caption-xl">{{ group.name }}</span>
       <h1 class="govuk-heading-xl">{{ question.title }}</h1>
       <p class="govuk-body-s">{{ t("govuk_alpha_group_tools.qa.asked_by", { name: question.author.name, date: question.createdAtLabel }) }}</p>
-      <div class="govuk-body app-formatted-text">{{ question.body }}</div>
+      <div class="govuk-body app-formatted-text" dir="auto">{{ question.body }}</div>
       {{ voteForms('question', question.id, question.userVote, question.voteCount, question.title) }}
 
       <h2 class="govuk-heading-l" id="answers">{{ t("govuk_alpha_group_tools.qa.answers_heading", { count: answers.length }) }}</h2>
@@ -60,7 +60,7 @@
               {{ govukTag({ text: t("govuk_alpha_group_tools.qa.accepted_answer"), classes: "govuk-tag--green" }) }}
             {% endif %}
             <p class="govuk-body-s govuk-!-margin-top-2">{{ t("govuk_alpha_group_tools.qa.answered_by", { name: answer.author.name, date: answer.createdAtLabel }) }}</p>
-            <div class="govuk-body app-formatted-text">{{ answer.body }}</div>
+            <div class="govuk-body app-formatted-text" dir="auto">{{ answer.body }}</div>
             {{ voteForms('answer', answer.id, answer.userVote, answer.voteCount, t("govuk_alpha_group_tools.qa.answered_by", { name: answer.author.name, date: answer.createdAtLabel })) }}
             {% if canAccept and not answer.isAccepted %}
               <form method="post" action="{{ urlFor(questionPath + '/answers/' + (answer.id | string) + '/accept') }}" novalidate>

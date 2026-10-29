@@ -19,7 +19,7 @@
         <time datetime="{{ comment.createdAt }}">{{ comment.createdAt | formatDate }}</time>
       {% endif %}
     </p>
-    <p class="govuk-body govuk-!-margin-bottom-2">{{ comment.body }}</p>
+    <p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ comment.body }}</p>
 
     {% if comment.id %}
       <div class="nexus-alpha-reactions govuk-!-margin-bottom-2">

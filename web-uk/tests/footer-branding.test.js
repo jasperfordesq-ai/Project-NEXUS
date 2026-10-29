@@ -348,6 +348,7 @@ describe('footer branding markup', () => {
     const newTabs = html.match(/target="_blank"/g) || [];
 
     expect(newTabs).toHaveLength(1);
-    expect(html).toContain('Documentation (opens in a new tab)');
+    // GOV.UK puts the warning in the visible link text, not an aria-label (29 Oct 2026).
+    expect(html).toMatch(/>Documentation \(opens in new tab\)<\/a>/);
   });
 });

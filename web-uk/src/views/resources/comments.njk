@@ -14,7 +14,7 @@
       <strong>{{ comment.authorName }}</strong>
       {% if comment.createdAt %} &middot; {{ comment.createdAt }}{% endif %}
     </p>
-    <p class="govuk-body govuk-!-margin-bottom-2">{{ comment.content }}</p>
+    <p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ comment.content }}</p>
 
     {% if currentUserId and comment.userId == currentUserId %}
       <form method="post" action="{{ urlFor('/resources/' + (resourceId | string) + '/comments/' + (comment.id | string) + '/delete') }}" class="govuk-!-display-inline" novalidate>

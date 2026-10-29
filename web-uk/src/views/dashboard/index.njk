@@ -117,7 +117,7 @@
         <h2 class="govuk-notification-banner__title" id="dashboard-reviews-title">{{ t("dashboard.pending_reviews_title") }}</h2>
       </div>
       <div class="govuk-notification-banner__content">
-        <p class="govuk-notification-banner__heading">{{ exchangeAttention.body }}</p>
+        <p class="govuk-notification-banner__heading" dir="auto">{{ exchangeAttention.body }}</p>
         <p class="govuk-body">
           <a class="govuk-notification-banner__link" href="{{ urlFor('/exchanges') }}">{{ t("dashboard.pending_reviews_link") }}</a>
         </p>
@@ -255,7 +255,7 @@
               </h3>
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("feed.posted_by", { name: item.authorName }) }}</p>
               {% if item.content %}
-                <p class="govuk-body">{{ item.content }}</p>
+                <p class="govuk-body" dir="auto">{{ item.content }}</p>
               {% endif %}
               {% if item.imageUrl %}
                 <img class="nexus-alpha-card-thumb" src="{{ item.imageUrl }}" alt="{{ t('feed.image_alt', { title: item.title }) }}" width="120" height="90" loading="lazy" decoding="async">
@@ -280,7 +280,7 @@
                 <a class="govuk-link" href="{{ urlFor('/listings/' ~ listing.id) }}">{{ listing.title }}</a>
               </h3>
               {% if listing.description %}
-                <p class="govuk-body">{{ listing.description }}</p>
+                <p class="govuk-body" dir="auto">{{ listing.description }}</p>
               {% endif %}
               {% if listing.imageUrl %}
                 <img class="nexus-alpha-card-thumb" src="{{ listing.imageUrl }}" alt="{{ t('listings.image_alt', { title: listing.title }) }}" width="120" height="90" loading="lazy" decoding="async">

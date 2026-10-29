@@ -25,7 +25,7 @@
           </div>
 
           {% if coupon.description %}
-            <p class="govuk-body govuk-!-margin-bottom-2">{{ coupon.description | truncate(200) }}</p>
+            <p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ coupon.description | truncate(200) }}</p>
           {% endif %}
 
           {% if coupon.code %}

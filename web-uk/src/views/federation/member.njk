@@ -54,7 +54,7 @@
 
   {% if member.bio %}
     <h2 class="govuk-heading-l">{{ t("federation.member.about_label") }}</h2>
-    <div class="govuk-body">{{ member.bio | nl2br | safe }}</div>
+    <div class="govuk-body" dir="auto">{{ member.bio | nl2br | safe }}</div>
   {% endif %}
 
   <dl class="govuk-summary-list">

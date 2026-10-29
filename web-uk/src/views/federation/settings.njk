@@ -50,7 +50,7 @@
             {% for approval in debitApprovals %}
               <li class="nexus-alpha-card">
                 <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ approval.summary }}</p>
-                {% if approval.description %}<p class="govuk-body govuk-!-margin-bottom-1">{{ approval.description }}</p>{% endif %}
+                {% if approval.description %}<p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ approval.description }}</p>{% endif %}
                 {% if approval.expires %}<p class="govuk-body-s nexus-alpha-meta">{{ approval.expires }}</p>{% endif %}
                 <form method="post" action="{{ urlFor('/federation/settings/debit-approvals/' ~ approval.id ~ '/decision') }}" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">

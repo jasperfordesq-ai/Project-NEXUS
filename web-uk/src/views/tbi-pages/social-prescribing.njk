@@ -26,7 +26,7 @@
             <dt class="govuk-summary-list__key">{{ outcome.label }}</dt>
             <dd class="govuk-summary-list__value">
               <p class="govuk-heading-m govuk-!-margin-bottom-1">{{ outcome.value }}</p>
-              <p class="govuk-body govuk-!-margin-bottom-0">{{ outcome.description }}</p>
+              <p class="govuk-body govuk-!-margin-bottom-0" dir="auto">{{ outcome.description }}</p>
             </dd>
           </div>
         {% endfor %}
@@ -55,7 +55,7 @@
         {% for step in steps %}
           <li>
             <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ step.title }}</h3>
-            <p class="govuk-body">{{ step.description }}</p>
+            <p class="govuk-body" dir="auto">{{ step.description }}</p>
           </li>
         {% endfor %}
       </ol>

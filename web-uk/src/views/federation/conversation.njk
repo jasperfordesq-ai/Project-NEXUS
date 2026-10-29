@@ -58,7 +58,7 @@
         </p>
 
         <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ message.subject or t("fed2.messages.no_subject") }}</h2>
-        <p class="govuk-body govuk-!-margin-bottom-1">{{ message.body | nl2br | safe }}</p>
+        <p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ message.body | nl2br | safe }}</p>
 
         {% if message.createdAt %}
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">

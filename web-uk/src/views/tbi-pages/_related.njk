@@ -11,7 +11,7 @@
       {% for link in related %}
         <li>
           <a class="govuk-link" href="{{ urlFor(link.href) }}">{{ link.label }}</a>
-          <span class="govuk-body-s govuk-!-display-block govuk-!-margin-bottom-0">{{ link.description }}</span>
+          <span class="govuk-body-s govuk-!-display-block govuk-!-margin-bottom-0" dir="auto">{{ link.description }}</span>
         </li>
       {% endfor %}
     </ul>

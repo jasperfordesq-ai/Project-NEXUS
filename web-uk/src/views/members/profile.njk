@@ -60,7 +60,7 @@
             {% if identityVerified %}{{ govukTag({ text: t("profile.verified"), classes: "govuk-tag--green" }) }}{% endif %}
             {{ govukTag({ text: t("profile.profile_type_" + profileType), classes: "govuk-tag--grey" }) }}
           </div>
-          {% if user.tagline %}<p class="govuk-body-l govuk-!-margin-top-2">{{ user.tagline }}</p>{% endif %}
+          {% if user.tagline %}<p class="govuk-body-l govuk-!-margin-top-2" dir="auto">{{ user.tagline }}</p>{% endif %}
           <p class="govuk-body govuk-!-margin-top-2"><a class="govuk-link" href="{{ urlFor('/members/' + (user.id | string) + '/insights') }}">{{ t("govuk_alpha_members.nav.reputation") }}</a></p>
 
           {% if isOwnProfile %}
@@ -70,16 +70,16 @@
             <div class="govuk-button-group govuk-!-margin-top-4">
             {% if directMessagingEnabled %}<a href="{{ urlFor('/messages/new/' + (user.id | string)) }}" class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button">{{ t("actions.send_message") }}</a>{% endif %}
             {% if connectionState == 'none' %}
-              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="connect"><button class="govuk-button">{{ t("profile.connection.connect") }}</button></form>
+              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="connect"><button class="govuk-button" data-module="govuk-button">{{ t("profile.connection.connect") }}</button></form>
             {% elif connectionState == 'pending_sent' %}
               {{ govukTag({ text: t("profile.connection.request_sent"), classes: "govuk-tag--yellow" }) }}
-              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="cancel"><button class="govuk-button govuk-button--secondary">{{ t("profile.connection.cancel_request") }}</button></form>
+              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="cancel"><button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("profile.connection.cancel_request") }}</button></form>
             {% elif connectionState == 'pending_received' %}
-              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="accept"><button class="govuk-button">{{ t("profile.connection.accept") }}</button></form>
-              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="decline"><button class="govuk-button govuk-button--warning">{{ t("profile.connection.decline") }}</button></form>
+              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="accept"><button class="govuk-button" data-module="govuk-button">{{ t("profile.connection.accept") }}</button></form>
+              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="decline"><button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("profile.connection.decline") }}</button></form>
             {% elif connectionState == 'connected' %}
               {{ govukTag({ text: t("profile.connection.connected"), classes: "govuk-tag--green" }) }}
-              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="remove"><button class="govuk-button govuk-button--warning">{{ t("profile.connection.remove") }}</button></form>
+              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="remove"><button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("profile.connection.remove") }}</button></form>
             {% endif %}
             </div>
           {% endif %}
@@ -117,16 +117,16 @@
           <a class="govuk-link" href="{{ urlFor('/members/' + (user.id | string) + '/report') }}">{{ t("govuk_alpha_members.concern_report.link_member") }}</a>
         </p>
         {% if isBlocked %}
-          <div class="govuk-inset-text govuk-!-margin-top-4"><p class="govuk-body govuk-!-margin-bottom-2">{{ t("profile.block.is_blocked", { name: displayName }) }}</p><form method="post" action="{{ urlFor('/members/' + (user.id | string) + '/unblock') }}" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-button--secondary">{{ t("profile.block.unblock") }}</button></form></div>
+          <div class="govuk-inset-text govuk-!-margin-top-4"><p class="govuk-body govuk-!-margin-bottom-2">{{ t("profile.block.is_blocked", { name: displayName }) }}</p><form method="post" action="{{ urlFor('/members/' + (user.id | string) + '/unblock') }}" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("profile.block.unblock") }}</button></form></div>
         {% else %}
-          <details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details"><summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("profile.block.toggle") }}</span></summary><div class="govuk-details__text"><p class="govuk-body">{{ t("profile.block.explain") }}</p><form method="post" action="{{ urlFor('/members/' + (user.id | string) + '/block') }}" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-button--warning">{{ t("profile.block.block") }}</button></form></div></details>
+          <details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details"><summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("profile.block.toggle") }}</span></summary><div class="govuk-details__text"><p class="govuk-body">{{ t("profile.block.explain") }}</p><form method="post" action="{{ urlFor('/members/' + (user.id | string) + '/block') }}" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("profile.block.block") }}</button></form></div></details>
         {% endif %}
       {% endif %}
 
       <div class="govuk-grid-row govuk-!-margin-top-7">
         <div class="govuk-grid-column-two-thirds">
           <h2 class="govuk-heading-l">{{ t("profile.about_title") }}</h2>
-          {% if user.bio %}<p class="govuk-body">{{ user.bio }}</p>{% else %}<div class="govuk-inset-text">{{ t("profile.empty_bio") }}</div>{% endif %}
+          {% if user.bio %}<p class="govuk-body" dir="auto">{{ user.bio }}</p>{% else %}<div class="govuk-inset-text">{{ t("profile.empty_bio") }}</div>{% endif %}
 
           <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.skills_title") }}</h2>
           {% if profileSkills.length %}
@@ -141,7 +141,7 @@
                   {% if not isOwnProfile %}
                     <form method="post" action="{{ urlFor('/members/' + (user.id | string) + '/endorse') }}" class="govuk-!-margin-top-1" novalidate>
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="skill_name" value="{{ skill.name }}"><input type="hidden" name="action" value="{{ 'remove' if endorsement.viewerEndorsed else 'endorse' }}">
-                      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0">{{ t("profile.remove_endorsement") if endorsement.viewerEndorsed else t("profile.endorse") }}<span class="govuk-visually-hidden"> {{ skill.name }}</span></button>
+                      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("profile.remove_endorsement") if endorsement.viewerEndorsed else t("profile.endorse") }}<span class="govuk-visually-hidden"> {{ skill.name }}</span></button>
                     </form>
                   {% endif %}
                 </li>
@@ -154,7 +154,7 @@
             <div class="nexus-alpha-card-list">
               {% for listing in profileListings %}
                 {% set listingType = 'request' if listing.type == 'request' else 'offer' %}
-                <article class="nexus-alpha-card"><h3 class="govuk-heading-m govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ listing.title }}</a></h3>{{ govukTag({ text: t("listings." + listingType), classes: ('govuk-tag--purple' if listingType == 'request' else 'govuk-tag--blue') }) }}{% if listing.description %}<p class="govuk-body govuk-!-margin-top-3">{{ listing.description | truncate(180) }}</p>{% endif %}</article>
+                <article class="nexus-alpha-card"><h3 class="govuk-heading-m govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ listing.title }}</a></h3>{{ govukTag({ text: t("listings." + listingType), classes: ('govuk-tag--purple' if listingType == 'request' else 'govuk-tag--blue') }) }}{% if listing.description %}<p class="govuk-body govuk-!-margin-top-3" dir="auto">{{ listing.description | truncate(180) }}</p>{% endif %}</article>
               {% endfor %}
             </div>
             <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/listings?user_id=' + (user.id | string)) }}">{{ t("profile.view_all_listings") }}</a></p>
@@ -168,7 +168,7 @@
           <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.recent_activity_title") }}</h2>
           {% if profileActivity.length %}
             <ol class="govuk-list nexus-alpha-timeline">
-              {% for activity in profileActivity %}<li class="govuk-!-margin-bottom-3">{{ govukTag({ text: activity.label, classes: (activity.tagClass) }) }}{% if activity.description %} <span class="govuk-body">{{ activity.description }}</span>{% endif %}{% if activity.date %} <span class="govuk-body-s nexus-alpha-meta">{{ activity.date }}</span>{% endif %}</li>{% endfor %}
+              {% for activity in profileActivity %}<li class="govuk-!-margin-bottom-3">{{ govukTag({ text: activity.label, classes: (activity.tagClass) }) }}{% if activity.description %} <span class="govuk-body" dir="auto">{{ activity.description }}</span>{% endif %}{% if activity.date %} <span class="govuk-body-s nexus-alpha-meta">{{ activity.date }}</span>{% endif %}</li>{% endfor %}
             </ol>
           {% else %}<div class="govuk-inset-text">{{ t("profile.empty_activity") }}</div>{% endif %}
         </div>

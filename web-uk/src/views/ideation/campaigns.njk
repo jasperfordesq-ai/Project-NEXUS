@@ -57,7 +57,7 @@
             {{ govukTag({ text: t("govuk_alpha_ideation.campaigns.status_" ~ campaign.status), classes: (campaignStatusClasses[campaign.status]) }) }}
           </div>
           {% if campaign.description %}
-            <p class="govuk-body govuk-!-margin-bottom-1">{{ campaign.description }}</p>
+            <p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ campaign.description }}</p>
           {% endif %}
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">
             {{ tc("govuk_alpha_ideation.campaigns.challenge_count", campaign.challengeCount, { count: campaign.challengeCount }) }}

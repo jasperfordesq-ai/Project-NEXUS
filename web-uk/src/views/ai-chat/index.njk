@@ -108,7 +108,7 @@
                   {{ govukTag({ text: t("govuk_alpha_aichat.assistant"), classes: "govuk-tag--green" }) }}
                 {% endif %}
               </p>
-              <div class="govuk-body govuk-!-margin-bottom-0">{{ message.content | nl2br | safe }}</div>
+              <div class="govuk-body govuk-!-margin-bottom-0" dir="auto">{{ message.content | nl2br | safe }}</div>
             </li>
           {% endfor %}
         </ol>

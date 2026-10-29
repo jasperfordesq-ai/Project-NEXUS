@@ -60,10 +60,10 @@
             <strong class="govuk-tag {% if collection.isPublic %}govuk-tag--blue{% else %}govuk-tag--grey{% endif %} govuk-!-margin-left-1">{% if collection.isPublic %}{{ t("govuk_alpha_saved.collections.public_tag") }}{% else %}{{ t("govuk_alpha_saved.collections.private_tag") }}{% endif %}</strong>
           </p>
           {% if collection.description %}
-            <p class="govuk-body">{{ collection.description }}</p>
+            <p class="govuk-body" dir="auto">{{ collection.description }}</p>
           {% endif %}
           <p class="govuk-body govuk-!-margin-bottom-0">
-            <a class="govuk-link" href="{{ urlFor('/me/collections/' + (collection.id | string)) }}">{{ t("govuk_alpha_saved.collections.view") }}</a>
+            <a class="govuk-link" href="{{ urlFor('/me/collections/' + (collection.id | string)) }}">{{ t("govuk_alpha_saved.collections.view") }}<span class="govuk-visually-hidden"> {{ collection.name }}</span></a>
           </p>
         </li>
       {% endfor %}

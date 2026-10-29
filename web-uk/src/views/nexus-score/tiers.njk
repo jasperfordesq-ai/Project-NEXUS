@@ -28,11 +28,11 @@
       <p class="govuk-body">{{ t("govuk_alpha_gamification.tiers.unavailable") }}</p>
     </div>
   {% else %}
-    <div class="govuk-panel govuk-panel--confirmation nexus-alpha-panel govuk-!-margin-bottom-6">
-      <div class="govuk-panel__body">
+    <div class="govuk-inset-text govuk-!-margin-bottom-6">
+      <p class="govuk-body-l govuk-!-margin-bottom-0">
         {{ tierScore.scoreLabel }}
         {% if tierScore.currentTierLabel %}<br>{{ tierScore.currentTierLabel }}{% endif %}
-      </div>
+      </p>
     </div>
 
     <div class="govuk-inset-text">{{ tierScore.nextTierLabel }}</div>

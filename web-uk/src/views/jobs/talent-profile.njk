@@ -50,7 +50,7 @@
 
   {% if candidate.bio %}
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.talent.about_heading") }}</h2>
-    <div class="govuk-body govuk-!-margin-bottom-6">{{ candidate.bio | nl2br | safe }}</div>
+    <div class="govuk-body govuk-!-margin-bottom-6" dir="auto">{{ candidate.bio | nl2br | safe }}</div>
   {% endif %}
     </div>
   </div>

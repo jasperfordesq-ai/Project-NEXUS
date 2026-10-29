@@ -81,7 +81,7 @@
           </div>
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("matches.by_label", { name: match.userName }) }}{% if match.category %} - {{ match.category }}{% endif %}</p>
           {% if match.description %}
-            <p class="govuk-body govuk-!-margin-bottom-2">{{ match.description }}</p>
+            <p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ match.description }}</p>
           {% endif %}
           <p class="govuk-body govuk-!-margin-bottom-2">{{ govukTag({ text: t("matches.match_label", { percent: match.pct }), classes: "govuk-tag--green" }) }}</p>
           {% if match.reasons.length %}

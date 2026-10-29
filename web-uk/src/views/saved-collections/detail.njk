@@ -53,7 +53,7 @@
     <strong class="govuk-tag {% if collection.isPublic %}govuk-tag--blue{% else %}govuk-tag--grey{% endif %} govuk-!-margin-left-1">{% if collection.isPublic %}{{ t("govuk_alpha_saved.detail.public_tag") }}{% else %}{{ t("govuk_alpha_saved.detail.private_tag") }}{% endif %}</strong>
   </p>
   {% if collection.description %}
-    <p class="govuk-body-l">{{ collection.description }}</p>
+    <p class="govuk-body-l" dir="auto">{{ collection.description }}</p>
   {% endif %}
 
   {% if items and items.length %}

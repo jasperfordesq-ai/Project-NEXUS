@@ -41,7 +41,7 @@
             {% if member.memberSince %} &middot; {{ t("govuk_alpha_gamification.spotlight.member_since", { date: member.memberSince }) }}{% endif %}
           </p>
           {% if member.bio %}
-            <p class="govuk-body">{{ member.bio }}</p>
+            <p class="govuk-body" dir="auto">{{ member.bio }}</p>
           {% endif %}
           {% if member.recentActivity %}
             <p class="govuk-body-s">{{ member.recentActivity }}</p>

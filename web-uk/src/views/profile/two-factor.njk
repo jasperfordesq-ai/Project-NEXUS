@@ -68,13 +68,13 @@
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <div class="govuk-form-group">
             <label class="govuk-label" for="recovery-code">{{ t('mfa_recovery.code') }}</label>
-            <input class="govuk-input govuk-input--width-10" id="recovery-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6">
+            <input class="govuk-input govuk-input--width-10" id="recovery-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" spellcheck="false">
           </div>
-          <button class="govuk-button">{{ t('mfa_recovery.replace') }}</button>
+          <button class="govuk-button" data-module="govuk-button">{{ t('mfa_recovery.replace') }}</button>
         </form>
         <form method="post" action="{{ urlFor('/profile/two-factor/revoke-devices') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-          <button class="govuk-button govuk-button--secondary">{{ t('mfa_recovery.revoke') }}</button>
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t('mfa_recovery.revoke') }}</button>
         </form>
 
         {% if enforcementRequired %}<p class="govuk-inset-text">{{ t('mandatory_2fa.required') }}</p>{% else %}
@@ -90,7 +90,7 @@
           <div class="govuk-form-group">
             <label class="govuk-label" for="disable-code">{{ t("security_2fa.code_label") }}</label>
             <div id="disable-code-hint" class="govuk-hint">{{ t("security_2fa.code_hint") }}</div>
-            <input class="govuk-input govuk-input--width-10" id="disable-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" aria-describedby="disable-code-hint">
+            <input class="govuk-input govuk-input--width-10" id="disable-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" aria-describedby="disable-code-hint" spellcheck="false">
           </div>
           <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("security_2fa.disable_button") }}</button>
         </form>
@@ -117,7 +117,7 @@
           <div class="govuk-form-group">
             <label class="govuk-label govuk-label--m" for="code">{{ t("security_2fa.code_label") }}</label>
             <div id="code-hint" class="govuk-hint">{{ t("security_2fa.code_hint") }}</div>
-            <input class="govuk-input govuk-input--width-10" id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" aria-describedby="code-hint">
+            <input class="govuk-input govuk-input--width-10" id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" aria-describedby="code-hint" spellcheck="false">
           </div>
           <button class="govuk-button" data-module="govuk-button">{{ t("security_2fa.verify_button") }}</button>
         </form>

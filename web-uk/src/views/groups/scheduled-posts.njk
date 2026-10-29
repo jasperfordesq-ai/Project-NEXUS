@@ -53,7 +53,7 @@
         <article class="nexus-alpha-card">
           <p class="govuk-body-s govuk-!-margin-bottom-1">{{ govukTag({ text: t("govuk_alpha_groups.scheduled.type_" + post.postType), classes: "govuk-tag--blue" if post.postType == "announcement" else "govuk-tag--grey" }) }}</p>
           <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ post.title }}</h3>
-          {% if post.content %}<p class="govuk-body">{{ post.content | truncate(240) }}</p>{% endif %}
+          {% if post.content %}<p class="govuk-body" dir="auto">{{ post.content | truncate(240) }}</p>{% endif %}
           {{ govukSummaryList({
             classes: "govuk-summary-list--no-border govuk-!-margin-bottom-2",
             rows: [
