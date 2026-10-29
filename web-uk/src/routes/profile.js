@@ -1752,7 +1752,7 @@ router.post('/settings/privacy', asyncRoute(async (req, res) => {
     if (redirectOnAuthError(error, res)) return undefined;
     return redirectTo(res, profileSettingsRedirect('privacy-update-failed'));
   }
-  return redirectTo(res, profileSettingsRedirect('privacy-updated', '#privacy-heading'));
+  return redirectTo(res, profileSettingsRedirect('privacy-updated'));
 }));
 
 router.post('/email', asyncRoute(async (req, res) => {

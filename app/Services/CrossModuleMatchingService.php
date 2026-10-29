@@ -36,13 +36,38 @@ class CrossModuleMatchingService
      *
      * @return array{matches: array, meta: array}
      */
+    /**
+     * Keep only the match sources this community has switched on (29 Oct 2026):
+     * group, volunteering and event matches were offered even where those
+     * features were off, so both websites could show a "join this group" card in
+     * a community without groups.
+     *
+     * @param  list<string> $requested
+     * @return list<string>
+     */
+    public static function enabledModules(array $requested): array
+    {
+        $switchedOn = [
+            'listings' => TenantContext::hasModule('listings'),
+            'groups' => (bool) TenantContext::hasFeature('groups'),
+            'volunteering' => (bool) TenantContext::hasFeature('volunteering'),
+            'events' => (bool) TenantContext::hasFeature('events'),
+            'jobs' => (bool) TenantContext::hasFeature('job_vacancies'),
+        ];
+
+        return array_values(array_filter(
+            $requested,
+            static fn ($module): bool => is_string($module) && ($switchedOn[$module] ?? false)
+        ));
+    }
+
     public function getAllMatches(int $userId, array $options = []): array
     {
         $tenantId = TenantContext::getId();
         $limit = $options['limit'] ?? 20;
         $minScore = $options['min_score'] ?? 30;
         $debug = $options['debug'] ?? false;
-        $modules = $options['modules'] ?? ['listings', 'groups', 'volunteering', 'events'];
+        $modules = self::enabledModules($options['modules'] ?? ['listings', 'groups', 'volunteering', 'events']);
 
         $allMatches = [];
         $engineMeta = null;

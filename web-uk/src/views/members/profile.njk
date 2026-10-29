@@ -161,9 +161,11 @@
 
           {% else %}<div class="govuk-inset-text">{{ t("profile.empty_listings") }}</div>{% endif %}
 
+          {% if feedEnabled %}
           <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("feed.types.posts") }}</h2>
           {# React's profile Posts tab: this member's feed posts, paged. #}
           <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/feed?type=posts&user_id=' + (user.id | string)) }}">{{ t("feed.types.posts") }}<span class="govuk-visually-hidden">: {{ user.name or '' }}</span></a></p>
+          {% endif %}
 
           <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.recent_activity_title") }}</h2>
           {% if profileActivity.length %}

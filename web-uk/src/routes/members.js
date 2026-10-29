@@ -1145,6 +1145,8 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
 
   const tenant = req.accessibleRouting?.tenant || res.locals.tenant || {};
   const listingsEnabled = flagEnabled(tenant, 'listings', 'modules', true);
+  // The Posts link leads to the feed, so it follows the feed switch (29 Oct 2026).
+  const feedEnabled = flagEnabled(tenant, 'feed', 'modules', true);
   // A profile's content sections each fall back to empty on failure. Record when
   // one actually failed (rather than being genuinely empty) so the page can show a
   // single "we could not load this" banner instead of, say, a real member looking
@@ -1236,6 +1238,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const flashedError = req.flash ? req.flash('error')[0] : null;
 
   res.render('members/profile', {
+    feedEnabled,
     title: displayName,
     user,
     displayName,

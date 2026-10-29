@@ -33096,7 +33096,7 @@ describe('shared accessible frontend shell', () => {
       privacy_profile: 'members',
       privacy_search: 'on'
     });
-    expect(privacyResponse.headers.location).toBe('/profile/settings?status=privacy-updated#privacy-heading');
+    expect(privacyResponse.headers.location).toBe('/profile/settings?status=privacy-updated');
     api.callUserSettingsApi.mockRejectedValueOnce(new api.ApiError('Invalid', 422, {}));
     const privacyFailed = await post('/profile/settings/privacy', { privacy_profile: 'members' });
     expect(privacyFailed.headers.location).toBe('/profile/settings?status=privacy-update-failed');
