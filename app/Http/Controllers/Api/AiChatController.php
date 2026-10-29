@@ -402,7 +402,8 @@ TXT;
         $limit = min($this->queryInt('limit', 50, 1, 100), 100);
         $offset = $this->queryInt('offset', 0, 0);
 
-        $conversations = AiConversation::getByUserId($userId, $this->getTenantId());
+        // limit/offset were read and echoed back but never applied (29 Oct 2026).
+        $conversations = AiConversation::getByUserId($userId, $this->getTenantId(), $limit, $offset);
         $total = AiConversation::countByUserId($userId, $this->getTenantId());
 
         return $this->respondWithData($conversations, [

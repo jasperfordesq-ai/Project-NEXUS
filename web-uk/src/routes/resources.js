@@ -196,9 +196,11 @@ async function walkResourcePages(token, { targetId = null } = {}) {
   throw new ApiError('Resource catalogue exceeded the safe pagination limit', 503);
 }
 
+// Laravel filters the list by `resource_id` (ResourcePublicController::index),
+// so one request finds the resource instead of walking up to 100 pages.
 async function findResourceById(token, id) {
-  const result = await walkResourcePages(token, { targetId: id });
-  return result.resource;
+  const result = await getResources(token, { resource_id: id, per_page: 1 });
+  return resourceItemsFrom(result).find((item) => positiveInteger(item && item.id) === id) || null;
 }
 
 async function getAllResources(token) {
@@ -897,8 +899,13 @@ router.post('/upload', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectAuthIfNeeded(error, req, res)) return undefined;
     if (isForbidden(error)) throw error;
+    // File too large, type not allowed (Laravel inspects the content, which this
+    // page cannot predict): show Laravel's reason against the file field.
+    const status = Number(error && error.status);
+    const first = Array.isArray(error?.data?.errors) ? error.data.errors[0] : null;
+    const reason = status >= 400 && status < 500 && first && typeof first.message === 'string' ? first.message.trim().slice(0, 300) : '';
     rememberResourceUpload(req, values, {
-      file: res.locals.t('govuk_alpha_resources.upload.error_upload_failed')
+      file: reason || res.locals.t('govuk_alpha_resources.upload.error_upload_failed')
     });
     return redirectTo(res, '/resources/upload');
   } finally {

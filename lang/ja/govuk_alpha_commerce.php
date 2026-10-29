@@ -83,6 +83,7 @@ return [
         'detail_offer' => 'オファーをする',
         'detail_ask_to_borrow' => '借りたいと伝える',
         'detail_save' => 'このアイテムを保存する',
+        'detail_unsave' => '保存済みから削除',
         'detail_report' => 'このアイテムを報告する',
     ],
     'listing_form' => [
@@ -194,6 +195,8 @@ return [
         'listings_heading' => '販売商品',
         'empty' => 'この販売者にはアクティブな出品がありません。',
         'rating_label' => '販売者の評価',
+        'seller_type_business' => 'ビジネス',
+        'seller_type_private' => '個人セラー',
     ],
     'buy' => [
         'title' => '購入を確認する',

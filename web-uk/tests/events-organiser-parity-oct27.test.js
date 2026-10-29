@@ -224,6 +224,31 @@ describe('2. "Repeat this event" follows the recurrence capabilities', () => {
   });
 });
 
+describe('2b. weekdays, yearly and every-two-weeks without JavaScript (29 Oct parity)', () => {
+  const capabilities = [/^GET \/recurrence-capabilities$/, () => ({ data: { supported_frequencies: ['daily', 'weekly', 'monthly', 'yearly'], supported_end_types: ['after_count', 'on_date'] } })];
+
+  it('offers weekday choices and yearly when the community allows them', async () => {
+    routeApi([capabilities]);
+    const res = await request(app).get('/new');
+    expect(res.text).toContain('id="freq-yearly"');
+    expect(res.text).toContain('name="recurrence_days" type="checkbox" value="MO"');
+    expect(res.text).toContain('id="freq-biweekly" name="recurrence_frequency" type="radio" value="biweekly"');
+  });
+
+  it('sends chosen weekdays, and every two weeks as weekly with interval 2, with no hidden-field help', async () => {
+    let sent = null;
+    routeApi([capabilities, [/^POST \/recurring$/, (body) => { sent = body; return { data: { id: 900 } }; }]]);
+    await request(app).post('/new').type('form').send({
+      title: 'Walk', description: 'A walk', start_time: '2027-07-01T10:00', is_recurring: '1',
+      recurrence_frequency: 'biweekly', recurrence_interval: '1', recurrence_days: ['WE', 'MO', 'xx'],
+      recurrence_ends_type: 'after_count', recurrence_ends_after_count: '400',
+    });
+    expect(sent).toEqual(expect.objectContaining({
+      recurrence_frequency: 'weekly', recurrence_interval: 2, recurrence_days: 'MO,WE', recurrence_ends_after_count: 366,
+    }));
+  });
+});
+
 describe('3. reminders switched off in the community', () => {
   it('explains instead of rendering a Forbidden page', async () => {
     routeApi([
@@ -534,5 +559,32 @@ describe('9. registration answers can be changed after they are sent (React amen
     const escaped = t('govuk_alpha_events.registration.answers_already_sent').replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     expect(escaped).not.toContain('govuk_alpha_events.registration');
     expect(res.text).toContain(escaped);
+  });
+});
+
+describe('events by month (29 Oct parity)', () => {
+  it('asks for the month by from/to and lists events under their day', async () => {
+    let asked = '';
+    routeApi([[/^GET \/calendar\?/, () => ({ data: [
+      { id: 71, title: 'Repair cafe', starts_at: '2027-03-06T11:00:00+00:00', timezone: 'Europe/Dublin', all_day: false, operational_status: 'scheduled' },
+      { id: 72, title: 'Seed swap', starts_at: '2027-03-20', timezone: 'Europe/Dublin', all_day: true, operational_status: 'cancelled' }
+    ] })]]);
+    api.callEventApi.mockImplementationOnce(async (token, method, apiPath) => {
+      asked = apiPath;
+      return { data: [
+        { id: 71, title: 'Repair cafe', starts_at: '2027-03-06T11:00:00+00:00', timezone: 'Europe/Dublin', all_day: false, operational_status: 'scheduled' },
+        { id: 72, title: 'Seed swap', starts_at: '2027-03-20', timezone: 'Europe/Dublin', all_day: true, operational_status: 'cancelled' }
+      ] };
+    });
+    const res = await request(app).get('/month?month=2027-03');
+    expect(res.status).toBe(200);
+    expect(asked).toBe('/calendar?from=2027-03-01&to=2027-04-01');
+    expect(res.text).toContain('href="/events/71"');
+    // Two days, one heading each (the harness stubs the date formatter).
+    expect((res.text.match(/<h2 class="govuk-heading-m govuk-!-margin-top-6">/g) || []).length).toBe(2);
+    expect(res.text).toContain('href="/events/72"');
+    expect(res.text).toContain('href="/events/month?month=2027-02"');
+    expect(res.text).toContain('href="/events/month?month=2027-04"');
+    expect(res.text).toContain(t('govuk_alpha.events.month_cancelled'));
   });
 });

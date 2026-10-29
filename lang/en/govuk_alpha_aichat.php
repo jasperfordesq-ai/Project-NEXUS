@@ -20,6 +20,11 @@ return [
     'you' => 'You',
     'assistant' => 'Assistant',
     'unavailable_reply' => 'Sorry, the assistant is unavailable right now. Please try again later.',
+    'rate_limited' => 'You have reached your usage limit for now. Please try again later.',
+    'left_today' => ':count left today',
+    'delete_link' => 'Delete conversation ":title"',
+    'delete_button' => 'Yes, delete it',
+    'delete_failed' => 'Could not delete the conversation. Please try again.',
     'disabled_notice' => 'The AI assistant is not available at the moment.',
     'status_empty' => 'Enter a message to send.',
 ];

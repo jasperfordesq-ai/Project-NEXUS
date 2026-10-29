@@ -11,20 +11,33 @@
       <h1 class="govuk-heading-xl">{{ t("faq.title") if t else title }}</h1>
       <p class="govuk-body-l">{{ t("faq.intro") }}</p>
 
-      <div class="govuk-accordion" data-module="govuk-accordion" id="faq-accordion">
-        {% for faq in faqs %}
-          <div class="govuk-accordion__section">
-            <div class="govuk-accordion__section-header">
-              <h2 class="govuk-accordion__section-heading">
-                <span class="govuk-accordion__section-button" id="faq-heading-{{ loop.index }}">{{ faq.question }}</span>
-              </h2>
+      {% for category in faqCategories %}
+        <h2 class="govuk-heading-l govuk-!-margin-top-7" id="faq-{{ category.id }}">{{ category.title }}</h2>
+        <div class="govuk-accordion" data-module="govuk-accordion" id="faq-accordion-{{ category.id }}">
+          {% for faq in category.items %}
+            <div class="govuk-accordion__section">
+              <div class="govuk-accordion__section-header">
+                <h3 class="govuk-accordion__section-heading">
+                  <span class="govuk-accordion__section-button" id="faq-heading-{{ faq.id }}">{{ faq.question }}</span>
+                </h3>
+              </div>
+              <div id="faq-content-{{ faq.id }}" class="govuk-accordion__section-content">
+                {% for block in faq.blocks %}
+                  {% if block.type == "p" %}
+                    <p class="govuk-body">{{ block.text }}</p>
+                  {% elif block.type == "ul" %}
+                    <ul class="govuk-list govuk-list--bullet">
+                      {% for item in block.items %}<li>{% if item.bold %}<strong>{{ item.bold }}</strong> — {% endif %}{{ item.text }}</li>{% endfor %}
+                    </ul>
+                  {% elif block.type == "link" %}
+                    <p class="govuk-body">{{ block.before }}<a class="govuk-link" href="{{ urlFor(block.href) }}">{{ block.text }}</a>{{ block.after }}</p>
+                  {% endif %}
+                {% endfor %}
+              </div>
             </div>
-            <div id="faq-content-{{ loop.index }}" class="govuk-accordion__section-content">
-              <p class="govuk-body">{{ faq.answer }}</p>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
     </div>
   </div>
 {% endblock %}

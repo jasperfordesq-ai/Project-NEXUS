@@ -19,6 +19,9 @@ const { humanizeLabel } = require('../lib/humanize-label');
 const { formatRequestList } = require('../lib/list-format');
 
 const router = express.Router();
+// Show Laravel's reason for a refused marketplace action on the page it
+// redirected to (lib/api-refusal.js); React shows the same message.
+router.use(require('../lib/api-refusal').exposePageRefusal('/marketplace'));
 // 🔴 Pinned to English ON PURPOSE, and only for the `translate = fallbackTranslator`
 // default parameters below, which callers override with res.locals.t. Anything that
 // formats a value for display must use translateForRequest() instead — this translator
@@ -559,7 +562,8 @@ function objectValue(value) {
   return {};
 }
 
-const MAX_BUY_QUANTITY = 999;
+// MarketplaceOrderController validates quantity 1-100.
+const MAX_BUY_QUANTITY = 100;
 
 /** A confirmed quantity for the purchase page: a positive whole number, capped. */
 function buyQuantity(fromQuery, fromReplay) {
@@ -730,6 +734,9 @@ function decorateListing(listing) {
       && ((priceType === 'fixed' && money > 0) || priceType === 'free' || credits > 0),
     // The API refuses offers on a lend listing (422), so do not show the button.
     canOffer: priceType !== 'lend',
+    // Laravel says whether this member has saved it (MarketplaceListingService),
+    // so the page offers Save or Remove from saved, as React does.
+    isSaved: row.is_saved === true,
     condition,
     conditionLabel: condition ? (CONDITION_KEYS[condition] ? translateForRequest(CONDITION_KEYS[condition]) : condition) : '',
     deliveryMethod,
@@ -761,7 +768,11 @@ function decorateSeller(seller, translate = fallbackTranslator) {
   const averageRating = Number(row.avg_rating ?? row.average_rating ?? 0);
   const totalSales = positiveInteger(row.total_sales) || 0;
   const createdAt = formatMonthYearLabel(row.member_since || row.created_at || user.created_at);
-  const verified = booleanValue(row.identity_verified || row.id_verified);
+  // MarketplaceSellerService::getMemberProfile sends business_verified and
+  // is_community_endorsed; React shows "verified" for either. The old keys
+  // (identity_verified / id_verified) are never sent, so the badge never showed.
+  const verified = booleanValue(row.business_verified || row.is_community_endorsed || row.identity_verified || row.id_verified);
+  const sellerType = trimmed(row.seller_type) === 'business' ? 'business' : (trimmed(row.seller_type) === 'private' ? 'private' : '');
   const averageRatingLabel = Number.isFinite(averageRating)
     ? averageRating.toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 })
     : (0).toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -772,6 +783,10 @@ function decorateSeller(seller, translate = fallbackTranslator) {
     name,
     avatarUrl: safeRelativeOrAbsoluteUrl(row.avatar_url || user.avatar_url),
     verified,
+    bio: stripHtml(row.bio || ''),
+    businessName: sellerType === 'business' ? trimmed(row.business_name) : '',
+    sellerTypeLabel: sellerType ? translate(`govuk_alpha_commerce.seller.seller_type_${sellerType}`) : '',
+    location: trimmed(row.location),
     createdAt,
     averageRating: Number.isFinite(averageRating) ? averageRating : 0,
     averageRatingLabel,
@@ -2755,7 +2770,7 @@ router.get('/:id(\\d+)/offer', asyncRoute(async (req, res) => {
       titleKey: 'govuk_alpha_commerce.offer.title',
       activeNav: 'explore',
       item: listing,
-      offerErrors: status?.type === 'error' ? [status.message] : [],
+      offerErrors: status?.type === 'error' ? [res.locals.apiRefusal || status.message] : [],
       oldInput: replay || {}
     });
   } catch (error) {
@@ -2797,7 +2812,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     let sellerListings = [];
     if (listing.sellerId) {
       try {
-        const result = await callMarketplace(token, 'GET', `/sellers/${encodeURIComponent(listing.sellerId)}/listings?limit=4`);
+        const result = await callMarketplace(token, 'GET', `/sellers/${encodeURIComponent(listing.sellerId)}/listings?per_page=5`);
         sellerListings = rowsFrom(result).map(decorateListing).filter((item) => item.id && item.id !== listing.id).slice(0, 4);
       } catch (error) {
         if (isAuthError(error)) throw error;

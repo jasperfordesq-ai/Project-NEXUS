@@ -441,6 +441,12 @@ async function handleTwoFactorPost(req, res) {
       tenantSlug: pendingTenantSlug
     });
 
+    // A backup code was used and few remain (TotpController returns
+    // codes_remaining): take the member to make new ones before they run out.
+    const codesRemaining = Number(result.codes_remaining);
+    if (!returnTo && checkboxValue(req.body.use_backup_code) && Number.isFinite(codesRemaining) && codesRemaining <= 3) {
+      return redirectTo(res, '/profile/two-factor?status=backup-codes-low');
+    }
     return redirectTo(res, returnTo || '/dashboard');
   } catch (error) {
     if (error instanceof ApiOfflineError) {
@@ -617,7 +623,10 @@ function safeRegistrationValues(body = {}, tenantSlug = '') {
     invite_code: String(body.invite_code || '').trim().toUpperCase(),
     terms_accepted: checkboxValue(body.terms_accepted),
     newsletter_opt_in: checkboxValue(body.newsletter_opt_in),
-    tenant_slug: String(tenantSlug || body.tenant_slug || '').trim()
+    tenant_slug: String(tenantSlug || body.tenant_slug || '').trim(),
+    // Where the person was going before they were asked to sign up. Allow-listed
+    // like the sign-in return path (29 Oct 2026, React parity).
+    return_to: safeLoginReturnPath(body.return_to)
   };
 }
 
@@ -774,7 +783,11 @@ router.get('/register', asyncRoute(async (req, res) => {
   return res.render('register', {
     title: translate(req, registrationClosed ? 'auth.registration_closed_title' : 'auth.register_title'),
     ...errorState,
-    values: { ...rememberedValues, tenant_slug: tenantSlug },
+    values: {
+      ...rememberedValues,
+      tenant_slug: tenantSlug,
+      return_to: safeLoginReturnPath(req.query.return_to) || safeLoginReturnPath(rememberedValues.return_to)
+    },
     tenantSlug,
     registrationClosed,
     requiresInviteCode,
@@ -862,6 +875,8 @@ router.post('/register', asyncRoute(async (req, res) => {
     tenant_slug: tenantSlug,
     website: ''
   };
+  // Laravel carries it into the verification email link, as React's sign-up does.
+  if (values.return_to) payload.return_to = values.return_to;
   if (profileType === 'organisation') payload.organization_name = values.organization_name;
   if (requiresInviteCode) payload.invite_code = values.invite_code;
   if (validation.latitude !== undefined) payload.latitude = validation.latitude;
@@ -880,6 +895,7 @@ router.post('/register', asyncRoute(async (req, res) => {
     } else if (outcome.requires_approval) {
       next.set('next', 'approval');
     }
+    if (values.return_to) next.set('return_to', values.return_to);
     return redirectTo(res, `/login?${next.toString()}`);
   } catch (error) {
     if (error instanceof ApiOfflineError) {
@@ -896,7 +912,19 @@ router.post('/register', asyncRoute(async (req, res) => {
     const status = error instanceof ApiError ? registrationErrorStatus(error) : 'register-failed';
     const message = translate(req, registrationErrorKey(error));
     const field = registrationErrorField(error, status);
-    rememberRegistrationAttempt(req, values, field && field !== 'main-content' ? { [field]: message } : {});
+    const fieldErrors = field && field !== 'main-content' ? { [field]: message } : {};
+    // Laravel returns every failed field at once (RegistrationController);
+    // show each against its own field, not only the first. Its messages are
+    // already in the member's language.
+    const apiErrors = error instanceof ApiError && Array.isArray(error.data?.errors) ? error.data.errors : [];
+    apiErrors.slice(1).forEach((item) => {
+      const otherField = String(item?.field || '').trim();
+      const otherMessage = String(item?.message || '').trim().slice(0, 300);
+      if (REGISTRATION_INPUT_FIELDS.has(otherField) && otherMessage && !fieldErrors[otherField]) {
+        fieldErrors[otherField] = otherMessage;
+      }
+    });
+    rememberRegistrationAttempt(req, values, fieldErrors);
     return redirectTo(res, `/register?status=${status}`);
   }
 }));

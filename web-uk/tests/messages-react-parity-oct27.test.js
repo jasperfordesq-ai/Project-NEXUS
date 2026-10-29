@@ -46,6 +46,7 @@ jest.mock('../src/lib/api', () => {
     callVolunteeringApi: jest.fn(),
     getEvent: jest.fn(),
     getProfile: jest.fn(),
+    getUser: jest.fn(),
   }, {
     get: (target, prop) => (prop in target ? target[prop] : jest.fn().mockResolvedValue({ data: [] })),
   });
@@ -102,7 +103,7 @@ const t = createTranslator('en');
 
 function conversation({ messages = [], safeguarding = null, reactions = {} } = {}) {
   api.callMessageApi.mockImplementation(async (token, method, apiPath) => {
-    if (apiPath === '/restriction-status') return { data: {} };
+    if (String(apiPath).startsWith('/restriction-status')) return { data: {} };
     if (String(apiPath).startsWith('/reactions/batch')) return { data: { reactions } };
     if (method === 'GET') {
       return {
@@ -160,6 +161,9 @@ describe('10. delete a whole conversation for me or for everyone', () => {
     conversation();
     const page = await request(app).get(`/messages/${OTHER}`);
     expect(page.text).toContain(`href="/messages/${OTHER}/delete"`);
+    // The name comes from the member's profile, so the confirmation page does
+    // not mark the conversation read.
+    api.getUser.mockResolvedValueOnce({ data: { id: OTHER, name: 'Bea Smith' } });
     const confirm = await request(app).get(`/messages/${OTHER}/delete`);
     expect(confirm.status).toBe(200);
     expect(confirm.text).toContain('name="scope" type="radio" value="self"');

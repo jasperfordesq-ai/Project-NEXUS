@@ -4,7 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
-const { sendAiChat, getAiConversations, getAiConversation, getAiProviders, ApiError } = require('../lib/api');
+const { sendAiChat, getAiConversations, getAiConversation, getAiProviders, getAiLimits, deleteAiConversation, ApiError } = require('../lib/api');
+const { confirmFirst } = require('../lib/confirm-action');
+const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 const { asyncRoute } = require('../lib/routeHelpers');
 
 const router = express.Router();
@@ -122,6 +124,18 @@ router.get('/', asyncRoute(async (req, res) => {
     if (isAuthError(error)) throw error;
   }
 
+  // How many questions are left today (React shows the allowance from
+  // GET /v2/ai/limits). Optional: a failure only hides the line.
+  let leftToday = null;
+  try {
+    const limitsResult = await getAiLimits(token);
+    const limits = ((limitsResult && limitsResult.data) || limitsResult || {}).limits || {};
+    const remaining = Number(limits.daily_remaining);
+    if (Number.isFinite(remaining) && Number(limits.daily_limit) > 0) leftToday = Math.max(0, remaining);
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+  }
+
   return res.render('ai-chat/index', {
     title: 'AI assistant',
     titleKey: 'govuk_alpha_aichat.title',
@@ -131,6 +145,9 @@ router.get('/', asyncRoute(async (req, res) => {
     messages,
     selectedId: currentConversationId,
     status: String(req.query.status || ''),
+    // Out of allowance, assistant switched off for members...: Laravel's words.
+    apiRefusal: String(req.query.status || '') === 'failed' ? consumeApiRefusal(req, 'ai-chat') : '',
+    leftToday,
     apiError
   });
 }));
@@ -160,6 +177,7 @@ router.post('/', asyncRoute(async (req, res) => {
     nextConversationId = conversationIdFrom(result) || nextConversationId;
   } catch (error) {
     if (isAuthError(error)) throw error;
+    rememberClientRefusal(req, 'ai-chat', error);
     status = 'failed';
   }
 
@@ -170,6 +188,27 @@ router.post('/', asyncRoute(async (req, res) => {
   query.set('status', status);
 
   return redirectTo(res, `/chat?${query.toString()}`);
+}));
+
+// Delete a conversation (React AiChatHistory: DELETE /v2/ai/conversations/{id}),
+// after a confirmation page because it cannot be undone.
+router.post('/:id(\\d+)/delete', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) {
+    return redirectTo(res, '/login?status=auth-required');
+  }
+  const id = normaliseConversationId(req.params.id);
+  if (id === null) return redirectTo(res, '/chat');
+  if (confirmFirst(req, res, 'delete_ai_conversation', { cancelHref: `/chat?c=${id}`, button: 'govuk_alpha_aichat.delete_button' })) return undefined;
+
+  let status = 'deleted';
+  try {
+    await deleteAiConversation(token, id);
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    status = 'delete-failed';
+  }
+  return redirectTo(res, `/chat?status=${status}`);
 }));
 
 module.exports = router;

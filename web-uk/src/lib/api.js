@@ -875,6 +875,11 @@ async function getVolunteeringOpportunities(params = {}, token = '') {
   if (params.search) query.set('search', params.search);
   if (params.category_id) query.set('category_id', params.category_id);
   if (params.is_remote) query.set('is_remote', params.is_remote);
+  if (params.near_lat !== undefined && params.near_lng !== undefined) {
+    query.set('near_lat', String(params.near_lat));
+    query.set('near_lng', String(params.near_lng));
+    if (params.radius_km) query.set('radius_km', String(params.radius_km));
+  }
   if (params.per_page) query.set('per_page', params.per_page);
   if (params.cursor) query.set('cursor', params.cursor);
 
@@ -900,17 +905,24 @@ async function getVolunteerOpportunity(id, token = '') {
   return request(`/api/v2/volunteering/opportunities/${encodeURIComponent(id)}`, options);
 }
 
-async function getOrganisationOpportunities(organisationId, params = {}) {
+// Both reads sit inside Laravel's auth:sanctum group, so without the member's
+// token they always answered 401 and the organisation page showed no
+// opportunities, no reviews and no review form.
+async function getOrganisationOpportunities(organisationId, params = {}, token = '') {
   const query = new URLSearchParams();
   query.set('organization_id', organisationId);
   if (params.per_page) query.set('per_page', params.per_page);
   if (params.cursor) query.set('cursor', params.cursor);
 
-  return request(`/api/v2/volunteering/opportunities?${query.toString()}`);
+  return request(`/api/v2/volunteering/opportunities?${query.toString()}`, token
+    ? { headers: { Authorization: `Bearer ${token}` } }
+    : {});
 }
 
-async function getOrganisationReviews(organisationId) {
-  return request(`/api/v2/volunteering/reviews/organization/${encodeURIComponent(organisationId)}`);
+async function getOrganisationReviews(organisationId, token = '') {
+  return request(`/api/v2/volunteering/reviews/organization/${encodeURIComponent(organisationId)}`, token
+    ? { headers: { Authorization: `Bearer ${token}` } }
+    : {});
 }
 
 async function getKnowledgeBaseArticles(token = '', params = {}) {
@@ -921,7 +933,9 @@ async function getKnowledgeBaseArticles(token = '', params = {}) {
 
   if (params.q) {
     query.set('q', params.q);
-    if (params.limit) query.set('limit', params.limit);
+    if (params.per_page) query.set('per_page', params.per_page);
+    else if (params.limit) query.set('limit', params.limit);
+    if (params.cursor) query.set('cursor', params.cursor);
     return request(`/api/v2/kb/search?${query.toString()}`, options);
   }
 
@@ -1729,7 +1743,9 @@ async function getOrganisationJobs(organisationId, token, params = {}) {
   const query = new URLSearchParams();
   query.set('organization_id', organisationId);
   query.set('status', params.status || 'open');
-  if (params.limit) query.set('limit', params.limit);
+  // Laravel's job list reads per_page, not limit (JobVacanciesController::index).
+  const perPage = params.per_page || params.limit;
+  if (perPage) query.set('per_page', perPage);
   if (params.cursor) query.set('cursor', params.cursor);
 
   const endpoint = `/api/v2/jobs?${query.toString()}`;
@@ -1927,6 +1943,7 @@ async function getResources(token, params = {}) {
   if (params.category_id) query.set('category_id', params.category_id);
   if (params.cursor) query.set('cursor', params.cursor);
   if (params.per_page) query.set('per_page', params.per_page);
+  if (params.resource_id) query.set('resource_id', params.resource_id);
 
   const queryString = query.toString();
   const endpoint = `/api/v2/resources${queryString ? `?${queryString}` : ''}`;
@@ -2493,6 +2510,9 @@ async function uploadMessageAttachments(token, data) {
     form.append('context_type', String(data.context_type));
   }
 
+  if (data.idempotency_key) {
+    form.append('idempotency_key', String(data.idempotency_key));
+  }
   if (data.context_id !== undefined && data.context_id !== null && data.context_id !== '') {
     form.append('context_id', String(data.context_id));
   }
@@ -2612,6 +2632,7 @@ async function getConversations(token, params = {}) {
   if (params.per_page) query.set('per_page', params.per_page);
   if (params.cursor) query.set('cursor', params.cursor);
   if (params.archived !== undefined) query.set('archived', params.archived ? 'true' : 'false');
+  if (params.q) query.set('q', params.q);
   const suffix = query.size ? `?${query.toString()}` : '';
   return request(`/api/v2/messages${suffix}`, {
     headers: { Authorization: `Bearer ${token}` }
@@ -3094,6 +3115,7 @@ async function getGroupMembers(token, groupId, params = {}) {
   if (perPage) query.set('per_page', perPage);
   if (params.cursor) query.set('cursor', params.cursor);
   if (params.role) query.set('role', params.role);
+  if (params.q) query.set('q', params.q);
 
   const queryString = query.toString();
   const endpoint = `/api/v2/groups/${encodeURIComponent(groupId)}/members${queryString ? `?${queryString}` : ''}`;

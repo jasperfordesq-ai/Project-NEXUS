@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
@@ -179,7 +180,7 @@
     </form>
   {% endif %}
 
-  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.expenses.list_title") }}</h2>
+  <h2 class="govuk-heading-l" id="expense-history">{{ t("govuk_alpha_volunteering.expenses.list_title") }}</h2>
   {% if dashboard.expenses.length %}
     <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_volunteering.expenses.list_title') }}">
     <table class="govuk-table">
@@ -211,6 +212,7 @@
       </tbody>
     </table>
     </div>
+    {% if expensesNextHref %}{{ loadMoreNext(urlFor(expensesNextHref), t("actions.load_more")) }}{% endif %}
   {% else %}
     <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.expenses.empty") }}</div>
   {% endif %}

@@ -21,6 +21,7 @@ const {
   updateProfile,
   getMyGuardians,
   getSupportActions,
+  getGroups,
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
@@ -339,13 +340,6 @@ function normalizeConnectionSuggestions(result, tc = (key) => key) {
     .slice(0, 5);
 }
 
-function isGoingEvent(event) {
-  const rsvp = event && (event.my_rsvp || event.myRsvp);
-  if (!rsvp) return true;
-  if (typeof rsvp === 'string') return rsvp.toLowerCase() === 'going';
-  return String(rsvp.status || '').toLowerCase() === 'going';
-}
-
 // The "Where are you based?" reminder and its outcome messages. The reminder is
 // shown whenever the API says the member's location is empty (a literal `true`),
 // whether or not onboarding is finished: a community that switches the wizard off or
@@ -413,7 +407,8 @@ router.get('/', asyncRoute(async (req, res) => {
     connections: flagEnabled(tenant, 'connections', 'features', true),
     events: flagEnabled(tenant, 'events', 'features', true),
     volunteering: flagEnabled(tenant, 'volunteering', 'features', true),
-    exchangeWorkflow: flagEnabled(tenant, 'exchange_workflow', 'features', true)
+    exchangeWorkflow: flagEnabled(tenant, 'exchange_workflow', 'features', true),
+    groups: flagEnabled(tenant, 'groups', 'features', true)
   };
   // Each dashboard card loads independently and falls back to an empty/zero shape on
   // failure. `track` keeps that resilience (one broken card never blanks the whole page)
@@ -471,7 +466,7 @@ router.get('/', asyncRoute(async (req, res) => {
   // Also absorbs a synchronous throw, so no panel can take the page down.
   const guarded = (read) => Promise.resolve().then(read).catch(quiet);
   const sidePanelsOn = dashboardFeatures.feed;
-  const [exchangeAttentionData, endorsementsData, sidebarData, topEndorsedData, suggestionsData, guardiansData, supportActionsData] = await Promise.all([
+  const [exchangeAttentionData, endorsementsData, sidebarData, topEndorsedData, suggestionsData, guardiansData, supportActionsData, myGroupsData] = await Promise.all([
     dashboardFeatures.listings && dashboardFeatures.exchangeWorkflow
       ? getExchangeAttentionCount(req.token).catch(track({ data: { count: 0, items: [] } }))
       : Promise.resolve({ data: { count: 0, items: [] } }),
@@ -488,7 +483,11 @@ router.get('/', asyncRoute(async (req, res) => {
     // React's dashboard prompts (GuardianConsentPrompt, SupportActionPrompt):
     // both read `pending_count` and stay silent when the read fails.
     guarded(() => getMyGuardians(req.token)),
-    guarded(() => getSupportActions(req.token))
+    guarded(() => getSupportActions(req.token)),
+    // React's "My groups" panel: GET /v2/groups?user_id={me}&per_page=3.
+    dashboardFeatures.groups && currentProfileId
+      ? guarded(() => getGroups(req.token, { user_id: currentProfileId, per_page: 3 }))
+      : Promise.resolve(null)
   ]);
   const pendingCount = (result) => {
     const value = Number((result && (dataFrom(result) || {}).pending_count) ?? 0);
@@ -506,6 +505,11 @@ router.get('/', asyncRoute(async (req, res) => {
   };
 
   res.render('dashboard/index', {
+    myGroups: myGroupsData
+      ? collectionFrom(myGroupsData).slice(0, 3)
+        .map((group) => ({ id: Number(group && group.id) || null, name: String((group && group.name) || '').trim() }))
+        .filter((group) => group.id && group.name)
+      : null,
     guardiansPending: pendingCount(guardiansData) > 0,
     supportActionsPending: pendingCount(supportActionsData) > 0,
     title: t('dashboard.title'),
@@ -526,7 +530,9 @@ router.get('/', asyncRoute(async (req, res) => {
     badges,
     listings: collectionFrom(listingsData).slice(0, 5).map((listing) => normalizeListing(listing, t)),
     feedItems: collectionFrom(feedData).slice(0, 5).map((item) => normalizeFeedItem(item, t)),
-    upcomingEvents: collectionFrom(eventsData).filter(Boolean).filter(isGoingEvent).slice(0, 3).map((event) => normalizeEvent(event, t)),
+    // React lists the next three community events (when=upcoming), not only
+    // ones the member is going to, which left this panel short or empty.
+    upcomingEvents: collectionFrom(eventsData).filter(Boolean).slice(0, 3).map((event) => normalizeEvent(event, t)),
     communityName: res.locals.tenantName || res.locals.serviceName || 'Project NEXUS Accessible',
     dashboardFeatures,
     sidePanels,

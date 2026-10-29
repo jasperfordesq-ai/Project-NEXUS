@@ -199,7 +199,10 @@ router.get('/tiers', asyncRoute(async (req, res) => {
   let scorePayload;
   let loadError = '';
   try {
-    scorePayload = await callGamificationApi(token, 'GET', '/nexus-score');
+    // "Refresh" recalculates rather than reading the cached score (React sends
+    // force=true; GamificationV2Controller honours it).
+    const force = String(req.query.refresh || '') === '1';
+    scorePayload = await callGamificationApi(token, 'GET', force ? '/nexus-score?force=true' : '/nexus-score');
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
     loadError = res.locals.t('states.load_error');

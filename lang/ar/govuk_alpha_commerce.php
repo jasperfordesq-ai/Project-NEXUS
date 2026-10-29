@@ -83,6 +83,7 @@ return [
         'detail_offer' => 'تقديم عرض',
         'detail_ask_to_borrow' => 'اطلب الاستعارة',
         'detail_save' => 'احفظ هذا العنصر',
+        'detail_unsave' => 'إزالة من المحفوظات',
         'detail_report' => 'الإبلاغ عن هذا العنصر',
     ],
     'listing_form' => [
@@ -194,6 +195,8 @@ return [
         'listings_heading' => 'سلع للبيع',
         'empty' => 'هذا البائع ليس لديه قوائم نشطة.',
         'rating_label' => 'تقييم البائع',
+        'seller_type_business' => 'تجاري',
+        'seller_type_private' => 'بائع خاص',
     ],
     'buy' => [
         'title' => 'قم بتأكيد عملية الشراء',

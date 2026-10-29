@@ -20,6 +20,11 @@ return [
     'you' => 'Tú',
     'assistant' => 'Cúntóir',
     'unavailable_reply' => 'Tá brón orainn, níl an cúntóir ar fáil faoi láthair. Bain triail eile as ar ball.',
+    'rate_limited' => 'Tá do theorainn úsáide bainte amach agat faoi láthair. Bain triail eile as níos déanaí le do thoil.',
+    'left_today' => ':count fágtha inniu',
+    'delete_link' => 'Scrios an comhrá ":title"',
+    'delete_button' => 'Is ea, scrios é',
+    'delete_failed' => 'Níorbh fhéidir an comhrá a scriosadh. Bain triail eile as.',
     'disabled_notice' => 'Níl an cúntóir AI ar fáil faoi láthair.',
     'status_empty' => 'Cuir isteach teachtaireacht le seoladh.',
 ];

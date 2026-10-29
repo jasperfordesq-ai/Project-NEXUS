@@ -30,7 +30,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
+const { rememberClientRefusal, consumeApiRefusal, exposePageRefusal, rememberRefusalForPage } = require('../lib/api-refusal');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { audit } = require('../lib/auditLogger');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
@@ -38,6 +38,9 @@ const { getRequestProfile } = require('../lib/request-profile');
 const { resolveBackendMediaUrl, flagEnabled } = require('../lib/accessible-shell');
 
 const router = express.Router();
+// Laravel's reason for a refused listing action (renew limit, not expired yet,
+// favourites switched off...) on the page it redirected to, as React shows it.
+router.use(exposePageRefusal('/listings'));
 
 const LISTING_CONFIG_DEFAULTS = Object.freeze({
   'listing.allow_offers': true,
@@ -678,6 +681,7 @@ async function runListingAction(req, res, method, path, data, successRedirect, f
     return redirectTo(res, successRedirect);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberRefusalForPage(req, failureRedirect, error);
     return redirectTo(res, failureRedirect);
   }
 }
@@ -716,7 +720,7 @@ function listingReportStatus(status, t) {
   const messages = {
     'report-invalid': t('polish_listings.report_reason_required'),
     'report-failed': t('polish_listings.status_listing_report_failed'),
-    'already-reported': 'You have already reported this listing.'
+    'already-reported': t('polish_listings.status_listing_already_reported')
   };
   const message = messages[trimmed(status)];
   return message ? { type: 'error', message } : null;
@@ -1337,13 +1341,17 @@ router.get('/', asyncRoute(async (req, res) => {
   const posted = ['any', '1', '7', '30'].includes(String(req.query.posted || 'any')) ? String(req.query.posted || 'any') : 'any';
   const sort = ['newest', 'recommended'].includes(String(req.query.sort || 'newest')) ? String(req.query.sort || 'newest') : 'newest';
   const near = ['any', '5', '10', '25', '50'].includes(String(req.query.near || 'any')) ? String(req.query.near || 'any') : 'any';
+  // One member's listings (the profile's "View all listings"); Laravel filters by
+  // user_id (ListingsController::index), as React's profile link does.
+  const ownerId = positiveInteger(req.query.user_id);
   const cursor = trimmed(req.query.cursor);
   const params = {
     limit: 12,
     ...(search ? { q: search } : {}),
     ...(type ? { type } : {}),
     ...(categoryId ? { category_id: categoryId } : {}),
-    ...(cursor ? { cursor } : {})
+    ...(cursor ? { cursor } : {}),
+    ...(ownerId ? { user_id: ownerId } : {})
   };
   const hoursMap = {
     quick: { max_hours: 1 },
@@ -1414,6 +1422,7 @@ router.get('/', asyncRoute(async (req, res) => {
   if (near !== 'any') nextQuery.set('near', near);
   if (posted !== 'any') nextQuery.set('posted', posted);
   if (sort !== 'newest') nextQuery.set('sort', sort);
+  if (ownerId) nextQuery.set('user_id', String(ownerId));
   if (pagination.cursor) nextQuery.set('cursor', pagination.cursor);
 
   res.render('listings/index', {

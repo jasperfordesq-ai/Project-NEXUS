@@ -230,6 +230,24 @@ describe('Laravel registration contract', () => {
     expect(approval.headers.location).toBe('/acme/accessible/login?status=register-created&next=approval');
   });
 
+  it('keeps where the person was going through sign-up, and drops anything off the allowlist', async () => {
+    const invite = '/groups/invite/' + 'a'.repeat(40);
+    const page = await request(createApp()).get('/acme/accessible/register?return_to=' + encodeURIComponent(invite));
+    expect(page.body.locals.values.return_to).toBe(invite);
+
+    api.register.mockResolvedValueOnce({ data: { user: { id: 3 } } });
+    const created = await request(createApp()).post('/acme/accessible/register').type('form')
+      .send(completeBody({ email: 'joiner@example.test', return_to: invite }));
+    expect(created.headers.location).toBe('/acme/accessible/login?status=register-created&return_to=' + encodeURIComponent(invite));
+    expect(api.register).toHaveBeenLastCalledWith(expect.objectContaining({ return_to: invite }), 'acme');
+
+    api.register.mockResolvedValueOnce({ data: { user: { id: 4 } } });
+    const hostile = await request(createApp()).post('/acme/accessible/register').type('form')
+      .send(completeBody({ email: 'other2@example.test', return_to: '//evil.example' }));
+    expect(hostile.headers.location).toBe('/acme/accessible/login?status=register-created');
+    expect(api.register.mock.calls.at(-1)[0]).not.toHaveProperty('return_to');
+  });
+
   it('sends the exact v2 payload under mounted tenant authority and never auto-logs in', async () => {
     const response = await request(createApp())
       .post('/acme/accessible/register')

@@ -83,6 +83,7 @@ return [
         'detail_offer' => 'Machen Sie ein Angebot',
         'detail_ask_to_borrow' => 'Ausleihe anfragen',
         'detail_save' => 'Speichern Sie diesen Artikel',
+        'detail_unsave' => 'Aus gespeicherten Artikeln entfernen',
         'detail_report' => 'Melden Sie diesen Artikel',
     ],
     'listing_form' => [
@@ -194,6 +195,8 @@ return [
         'listings_heading' => 'Artikel zum Verkauf',
         'empty' => 'Dieser Verkäufer hat keine aktiven Angebote.',
         'rating_label' => 'Verkäuferbewertung',
+        'seller_type_business' => 'Gewerblich',
+        'seller_type_private' => 'Privater Verkäufer',
     ],
     'buy' => [
         'title' => 'Bestätigen Sie Ihren Kauf',

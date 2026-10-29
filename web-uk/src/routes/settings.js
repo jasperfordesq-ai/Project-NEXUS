@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const { randomUUID } = require('crypto');
+const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 const express = require('express');
 const {
   callUserSettingsApi,
@@ -835,7 +836,9 @@ router.get('/data-export', asyncRoute(async (req, res) => {
   return res.render('settings/data-export', {
     title: res.locals.t('govuk_alpha_settings.data_export.title'),
     activeNav: 'account',
-    errorMessage: DATA_EXPORT_ERRORS[status] ? res.locals.t(DATA_EXPORT_ERRORS[status]) : '',
+    errorMessage: DATA_EXPORT_ERRORS[status]
+      ? ((status === 'export-failed' && consumeApiRefusal(req, 'data-export')) || res.locals.t(DATA_EXPORT_ERRORS[status]))
+      : '',
     pageHasErrors: Boolean(DATA_EXPORT_ERRORS[status]),
     formats: DATA_EXPORT_FORMATS.map((format) => ({
       value: format,
@@ -864,6 +867,9 @@ router.post('/data-export', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     const status = error instanceof ApiError && error.status === 429 ? 'export-rate-limited' : 'export-failed';
+    // An export already being built (409) or refused while someone else is
+    // signed in as this member (403): Laravel says which (MemberDataExportController).
+    if (status === 'export-failed') rememberClientRefusal(req, 'data-export', error);
     return redirectTo(res, settingsStatusRedirect('/settings/data-export', status, '#download'));
   }
 

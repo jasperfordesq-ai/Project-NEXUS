@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
@@ -38,6 +39,7 @@
 
   <form method="post" action="{{ urlFor('/volunteering/certificates/generate') }}" class="govuk-!-margin-bottom-7" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
     <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha.vol_depth.certificate_generate") }}</button>
   </form>
 
@@ -104,5 +106,6 @@
         </article>
       {% endfor %}
     </div>
+    {% if nextHref %}{{ loadMoreNext(urlFor(nextHref), t("actions.load_more")) }}{% endif %}
   {% endif %}
 {% endblock %}

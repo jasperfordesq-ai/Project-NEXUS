@@ -285,6 +285,18 @@
         </select>
       </div>
 
+      {% if isAuthenticated %}
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="near">{{ t("near_me.label") }}</label>
+        <select class="govuk-select" id="near" name="near"{% if nearNoLocation %} aria-describedby="volunteering-near-hint"{% endif %}>
+          {% for option in ["any", "5", "10", "25", "50"] %}
+            <option value="{{ option }}"{% if near == option %} selected{% endif %}>{{ t("near_me.options." + option) }}</option>
+          {% endfor %}
+        </select>
+        {% if nearNoLocation %}<p id="volunteering-near-hint" class="govuk-hint govuk-!-margin-top-1">{{ t("near_me.no_location") }}</p>{% endif %}
+      </div>
+      {% endif %}
+
       <div class="govuk-form-group">
         <div class="govuk-checkboxes" data-module="govuk-checkboxes">
           <div class="govuk-checkboxes__item">
@@ -296,7 +308,7 @@
 
       <div class="govuk-button-group">
         <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("actions.search") }}</button>
-        {% if volunteeringQuery or categoryId or isRemote %}
+        {% if volunteeringQuery or categoryId or isRemote or (near and near != 'any') %}
           <a class="govuk-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.clear_filters") }}</a>
         {% endif %}
       </div>

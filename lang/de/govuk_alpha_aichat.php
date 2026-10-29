@@ -20,6 +20,11 @@ return [
     'you' => 'Sie',
     'assistant' => 'Assistent',
     'unavailable_reply' => 'Entschuldigung, der Assistent ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.',
+    'rate_limited' => 'Sie haben Ihr Nutzungslimit erreicht. Bitte versuchen Sie es später erneut.',
+    'left_today' => ':count heute übrig',
+    'delete_link' => 'Unterhaltung „:title“ löschen',
+    'delete_button' => 'Ja, löschen',
+    'delete_failed' => 'Die Unterhaltung konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.',
     'disabled_notice' => 'Der KI-Assistent ist derzeit nicht verfügbar.',
     'status_empty' => 'Geben Sie eine Nachricht zum Senden ein.',
 ];

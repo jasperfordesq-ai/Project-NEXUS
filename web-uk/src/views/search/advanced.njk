@@ -42,7 +42,7 @@
       <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
       <div class="govuk-error-summary__body">
         <ul class="govuk-list govuk-error-summary__list">
-          <li><a href="#q">{{ t("govuk_alpha_search.states.error") }}</a></li>
+          <li><a href="#q">{{ t("auth.password_strength.too_short", { min: 2 }) if searchTooShort else t("govuk_alpha_search.states.error") }}</a></li>
         </ul>
         <p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ tryAgainHref }}">{{ t("govuk_alpha_search.states.try_again") }}</a></p>
       </div>

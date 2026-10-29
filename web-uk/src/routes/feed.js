@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+const { consumeApiRefusal } = require('../lib/api-refusal');
 const express = require('express');
 const {
   getFeedPosts,
@@ -77,13 +78,16 @@ function plainParagraphs(value) {
   return text.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean);
 }
 
-function feedMedia(row) {
+// The list shows the first four photos with "+N more"; the post's own page shows
+// all of them (a post can carry up to 10), as React's carousel does — photos 5-10
+// could not be seen at all before.
+function feedMedia(row, limit = 4) {
   const media = Array.isArray(row && row.media) ? row.media : [];
   const rows = media.length > 0
     ? media
     : (row && row.image_url ? [{ file_url: row.image_url, thumbnail_url: row.image_url, alt_text: null }] : []);
 
-  return rows.slice(0, 4).map((item) => {
+  return rows.slice(0, limit).map((item) => {
     const fileUrl = resolveBackendMediaUrl(item && (item.file_url || item.url));
     const thumbnailUrl = resolveBackendMediaUrl(item && (item.thumbnail_url || item.thumbnailUrl)) || fileUrl;
     return {
@@ -333,7 +337,7 @@ function feedCommentRows(result) {
   return rows.map(project);
 }
 
-function feedNextHref(meta, perPage, selectedType, selectedMode, selectedSubtype) {
+function feedNextHref(meta, perPage, selectedType, selectedMode, selectedSubtype, authorId = null) {
   const cursor = trimmed(meta && meta.cursor, 500);
   if (!meta || meta.has_more !== true || cursor === '') return '';
 
@@ -344,7 +348,16 @@ function feedNextHref(meta, perPage, selectedType, selectedMode, selectedSubtype
   });
   if (selectedMode === 'recent') query.set('mode', 'recent');
   if (selectedSubtype) query.set('subtype', selectedSubtype);
+  if (authorId) query.set('user_id', String(authorId));
   return `/feed?${query.toString()}`;
+}
+
+// A refused post, comment or poll vote carries Laravel's reason (feed-actions.js
+// stashes it); show it in place of the generic failure line.
+function withFeedRefusal(req, message) {
+  if (!message || message.type !== 'error') return message;
+  const refusal = consumeApiRefusal(req, 'feed-action');
+  return refusal ? { ...message, text: refusal } : message;
 }
 
 function feedIndexStatusMessage(status, t) {
@@ -459,6 +472,8 @@ router.get('/posts/:id(\\d+)', asyncRoute(withTokenRefresh(async (req, res) => {
   try {
     const result = await getFeedPostV2(token, id);
     item = normalizeFeedPost(dataFrom(result));
+    item.media = feedMedia(dataFrom(result), 10);
+    item.mediaExtra = 0;
   } catch (error) {
     if (!token && error instanceof ApiError && error.status === 401) {
       // Laravel's Blade permalink is public, but the current v2 permalink API
@@ -501,7 +516,7 @@ router.get('/posts/:id(\\d+)', asyncRoute(withTokenRefresh(async (req, res) => {
     translation,
     returnTo: `/feed/posts/${id}`,
     requiresAuth: !token,
-    statusMessage: feedIndexStatusMessage(trimmed(req.query.status), req.t || res.locals.t),
+    statusMessage: withFeedRefusal(req, feedIndexStatusMessage(trimmed(req.query.status), req.t || res.locals.t)),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }), { notFoundTitle: 'Post not found' }));
@@ -686,7 +701,7 @@ router.get('/hashtag/:tag([A-Za-z0-9_]{1,100})', asyncRoute(async (req, res) => 
     requiresAuth: !tokenFrom(req),
     currentUserId,
     returnTo: `/feed/hashtag/${tag}`,
-    statusMessage: feedIndexStatusMessage(trimmed(req.query.status), req.t || res.locals.t),
+    statusMessage: withFeedRefusal(req, feedIndexStatusMessage(trimmed(req.query.status), req.t || res.locals.t)),
     errorMessage,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -763,13 +778,18 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
     : '';
   const perPage = positiveInteger(req.query.per_page, 10, 1, 50);
   const cursor = trimmed(req.query.cursor, 500);
+  // Laravel ranks or not by `personalised` (SocialController::feedV2 ignores
+  // `mode`), which is what React's sort toggle sends.
   const feedParams = {
     per_page: perPage,
     type: selectedType,
-    mode: selectedMode === 'recent' ? 'recent' : 'ranked'
+    personalised: selectedMode !== 'recent'
   };
   if (selectedSubtype) feedParams.subtype = selectedSubtype;
   if (cursor) feedParams.cursor = cursor;
+  // One member's posts (React's profile Posts tab: GET /v2/feed?user_id=).
+  const authorFilter = positiveInteger(req.query.user_id, null, 1, Number.MAX_SAFE_INTEGER);
+  if (authorFilter) feedParams.user_id = authorFilter;
   let feedErrorMessage = null;
 
   const feedResult = token
@@ -796,7 +816,7 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
   const meta = collectionMeta(feedResult);
   const tenant = req.accessibleRouting?.tenant || res.locals.tenant || {};
   const status = trimmed(req.query.status);
-  const statusMessage = feedIndexStatusMessage(status, req.t || res.locals.t);
+  const statusMessage = withFeedRefusal(req, feedIndexStatusMessage(status, req.t || res.locals.t));
 
   res.render('feed/index', {
     title: res.locals.t('govuk_alpha.feed.title'),
@@ -819,7 +839,7 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
     requiresAuth: !token,
     listingsEnabled: flagEnabled(tenant, 'listings', 'modules', true),
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community',
-    nextHref: feedNextHref(meta, perPage, selectedType, selectedMode, selectedSubtype),
+    nextHref: feedNextHref(meta, perPage, selectedType, selectedMode, selectedSubtype, authorFilter),
     csrfToken: req.csrfToken ? req.csrfToken() : '',
     statusMessage,
     feedLoadError: feedErrorMessage

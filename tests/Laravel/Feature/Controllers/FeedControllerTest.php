@@ -184,6 +184,43 @@ class FeedControllerTest extends TestCase
         $this->assertContains($response->getStatusCode(), [200, 201]);
     }
 
+    /**
+     * A post can be photos only, as both web composers allow: the photos arrive as
+     * media[] and are attached after the post exists, so the "content or image
+     * required" check must count them (29 Oct 2026).
+     */
+    public function test_create_post_accepts_photos_without_text(): void
+    {
+        $user = $this->authenticatedUser();
+        $file = \Illuminate\Http\UploadedFile::fake()->image('only-photo.jpg', 64, 64);
+        $postId = null;
+
+        try {
+            $response = $this->post('/api/v2/feed/posts', ['media' => [$file]], $this->withTenantHeader());
+
+            $this->assertContains($response->getStatusCode(), [200, 201], (string) $response->getContent());
+            $postId = (int) DB::table('feed_posts')
+                ->where('tenant_id', $this->testTenantId)
+                ->where('user_id', $user->id)
+                ->max('id');
+            $this->assertGreaterThan(0, $postId);
+            $this->assertSame(1, DB::table('post_media')->where('post_id', $postId)->count());
+        } finally {
+            if ($postId) {
+                \Illuminate\Support\Facades\File::deleteDirectory(
+                    base_path("httpdocs/uploads/posts/{$this->testTenantId}/{$postId}")
+                );
+            }
+        }
+    }
+
+    public function test_create_post_still_refuses_an_empty_post(): void
+    {
+        $this->authenticatedUser();
+
+        $this->apiPost('/v2/feed/posts', ['body' => '   '])->assertStatus(422);
+    }
+
     public function test_create_post_rejects_non_member_private_group(): void
     {
         $owner = User::factory()->forTenant($this->testTenantId)->create([

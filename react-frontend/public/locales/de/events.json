@@ -571,7 +571,7 @@
         "waitlist": "Warteliste",
         "attendance": "Anwesenheit"
       },
-      "history_change": "{{from}}zu{{to}}",
+      "history_change": "von {{from}} zu {{to}}",
       "system_actor": "Systemeinstellung",
       "version": "Version{{version}}",
       "close_history": "Geschichte schließen",

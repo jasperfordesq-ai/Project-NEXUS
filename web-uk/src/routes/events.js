@@ -31,6 +31,7 @@ const {
   getEventCategories,
   uploadEventImage,
   callUgcTranslateApi,
+  getUser,
   ApiError
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
@@ -42,7 +43,7 @@ const { getRequestProfile } = require('../lib/request-profile');
 const { resolveCanCreateEvents } = require('../lib/event-create-permission');
 const { loadTargetComments, socialStatusFrom } = require('../lib/target-comments');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
-const { wallClockToOffsetIso, wallClockToUtc } = require('../lib/event-wall-clock');
+const { wallClockToOffsetIso, wallClockToUtc, wallClockInZone } = require('../lib/event-wall-clock');
 const { rememberApiRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 
 const router = express.Router();
@@ -591,7 +592,7 @@ function eventPollDetailFrom(item, eventId, t = (key) => key) {
 async function eventPollDetails(token, eventId, t) {
   if (!token) return [];
   try {
-    const summaries = collectionFrom(await getPolls(token, { event_id: eventId, limit: 20 }));
+    const summaries = collectionFrom(await getPolls(token, { event_id: eventId, limit: 50, status: 'all' }));
     const details = await Promise.all(summaries.map(async (summary) => {
       const pollId = positiveInteger(summary?.id);
       if (pollId === null) return null;
@@ -1024,6 +1025,10 @@ async function runEventAction(req, res, method, path, data, successRedirect, fai
     return redirectTo(res, successRedirect);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    // A failure that returns to the event page carries Laravel's own reason
+    // (React's explainedApiError), e.g. an expired or already-used waitlist offer.
+    const detail = String(failureRedirect || '').match(/^\/events\/(\d+)(?:[?#]|$)/);
+    if (detail) rememberEventRefusal(req, Number(detail[1]), 'detail', error, { requireReason: false });
     return redirectTo(res, failureRedirect);
   }
 }
@@ -1186,12 +1191,88 @@ router.get('/:id(\\d+)/people', requireAuth, asyncRoute(async (req, res) => {
     query,
     filters: PEOPLE_FILTERS,
     status: trimmed(req.query.status),
+    exportHref: eventPath(id, `/people/export.csv?${peopleExportParameters(query).toString()}`),
     updated: Math.max(0, Number.parseInt(req.query.updated, 10) || 0),
     failed: Math.max(0, Number.parseInt(req.query.failed, 10) || 0),
     idempotencyKey: randomUUID(),
     csrfToken: req.csrfToken ? req.csrfToken() : '',
     previousHref: query.page > 1 ? eventPeoplePath(id, query, query.page - 1) : '',
     nextHref: query.page < totalPages ? eventPeoplePath(id, query, query.page + 1) : ''
+  });
+}, { notFoundTitle: 'Event not found' }));
+
+// The people CSV carries the current filters, never the page (Laravel exports
+// every matching person: EventRegistrationController::exportPeople accepts only
+// search, the four states, sort and direction). React's People workspace offers it.
+const PEOPLE_EXPORT_KEYS = ['search', 'registration_state', 'waitlist_state', 'attendance_state', 'engagement_state', 'sort', 'direction'];
+
+function peopleExportParameters(query) {
+  const parameters = new URLSearchParams();
+  PEOPLE_EXPORT_KEYS.forEach((key) => {
+    if (query[key] !== '' && query[key] !== undefined && query[key] !== null) parameters.set(key, String(query[key]));
+  });
+  return parameters;
+}
+
+router.get('/:id(\\d+)/people/export.csv', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const query = eventPeopleQuery(req.query);
+  const exportPath = `/${encodeURIComponent(id)}/people/export.csv?${peopleExportParameters(query).toString()}`;
+  const download = await downloadEventApi(tokenFrom(req), exportPath);
+  if ((download.status || 200) >= 400) {
+    const urlFor = typeof res.locals.urlFor === 'function' ? res.locals.urlFor : (value) => value;
+    return res.redirect(urlFor(`${eventPeoplePath(id, query, 1)}&status=export-failed`));
+  }
+  res.status(download.status || 200);
+  res.set('Content-Type', download.headers['content-type'] || 'text/csv; charset=UTF-8');
+  res.set('Content-Disposition', download.headers['content-disposition'] || `attachment; filename="event-${id}-people.csv"`);
+  res.set('Cache-Control', 'private, no-store');
+  res.set('Pragma', 'no-cache');
+  res.set('X-Content-Type-Options', 'nosniff');
+  return res.send(download.body);
+}));
+
+// One person's registration, waitlist and attendance changes for this event
+// (GET /v2/events/{id}/people/{userId}/history), as React's History panel shows.
+router.get('/:id(\\d+)/people/:userId(\\d+)/history', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const userId = Number(req.params.userId);
+  const token = tokenFrom(req);
+  const page = boundedPositiveInteger(req.query.page, 1);
+  const t = res.locals.t;
+  const historyPath = `/${encodeURIComponent(id)}/people/${encodeURIComponent(userId)}/history?${new URLSearchParams({ page: String(page), per_page: '50' }).toString()}`;
+  const [eventResult, historyResult, memberResult] = await Promise.all([
+    callApi(token, 'GET', `/${encodeURIComponent(id)}`),
+    callApi(token, 'GET', historyPath).catch((error) => {
+      if (isAuthError(error) || (error instanceof ApiError && [403, 404].includes(error.status))) throw error;
+      return null;
+    }),
+    getUser(token, userId).catch(() => null)
+  ]);
+  const event = eventFrom(eventResult);
+  const member = dataFrom(memberResult) || {};
+  const name = trimmed(member.name || `${trimmed(member.first_name)} ${trimmed(member.last_name)}`) || t('govuk_alpha.members.unknown_member');
+  const axisLabel = { registration: t('govuk_alpha.events.people_registration'), waitlist: t('govuk_alpha.events.people_waitlist'), attendance: t('govuk_alpha.events.people_attendance') };
+  const stateLabel = (state) => t(`govuk_alpha.events.people_states.${trimmed(state) || 'none'}`);
+  const entries = historyResult && Array.isArray(historyResult.data) ? historyResult.data : [];
+  const meta = historyResult && historyResult.meta && typeof historyResult.meta === 'object' ? historyResult.meta : {};
+  const totalPages = Math.max(0, Number.parseInt(meta.total_pages, 10) || 0);
+  const basePath = `/events/${id}/people/${userId}/history`;
+
+  return res.render('events/person-history', {
+    title: t('govuk_alpha.events.people_history_title', { name }),
+    activeNav: 'events',
+    event: { id, title: trimmed(event.title) },
+    name,
+    loadFailed: historyResult === null,
+    entries: entries.map((entry) => ({
+      heading: `${axisLabel[trimmed(entry.axis)] || trimmed(entry.axis)} · ${t('govuk_alpha.events.people_history_change', { from: stateLabel(entry.from_state), to: stateLabel(entry.to_state) })}`,
+      actor: trimmed(entry.actor && entry.actor.display_name) || t('govuk_alpha.events.people_system_actor'),
+      createdAt: trimmed(entry.created_at),
+      reason: trimmed(entry.reason)
+    })),
+    previousHref: page > 1 ? `${basePath}?page=${page - 1}` : '',
+    nextHref: page < totalPages ? `${basePath}?page=${page + 1}` : ''
   });
 }, { notFoundTitle: 'Event not found' }));
 
@@ -1339,7 +1420,7 @@ router.get('/:id(\\d+)/polls', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const [eventResult, pollsResult, currentUser] = await Promise.all([
     callApi(token, 'GET', `/${encodeURIComponent(id)}`),
-    getPolls(token, { mine: true, limit: 100 }),
+    getPolls(token, { mine: true, limit: 100, status: 'all' }),
     getRequestProfile(req, token)
   ]);
   const event = eventFrom(eventResult);
@@ -1528,7 +1609,7 @@ function recurringRevisionPatch(body, event) {
  * an organiser fill it in for a Forbidden page. If the capabilities cannot be read the
  * section is hidden too: offering what might be refused is the defect being fixed.
  */
-const RECURRENCE_FORM_FREQUENCIES = ['daily', 'weekly', 'monthly'];
+const RECURRENCE_FORM_FREQUENCIES = ['daily', 'weekly', 'monthly', 'yearly'];
 const RECURRENCE_FORM_END_TYPES = ['after_count', 'on_date'];
 
 async function recurrenceOffer(token) {
@@ -1544,17 +1625,30 @@ async function recurrenceOffer(token) {
   }
 }
 
+// RFC 5545 weekday codes, Monday first, as EventRecurrenceService reads them.
+const RECURRENCE_WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+// EventRecurrenceService::maxOccurrences() (config events.recurrence.max_occurrences).
+const RECURRENCE_MAX_OCCURRENCES = 366;
+
 function recurrencePayload(body) {
-  const frequency = ['daily', 'weekly', 'monthly'].includes(trimmed(body.recurrence_frequency))
-    ? trimmed(body.recurrence_frequency)
-    : 'weekly';
+  const raw = trimmed(body.recurrence_frequency);
+  // "Every two weeks" posts its own value, so it works without JavaScript; it
+  // is weekly with an interval of 2 to Laravel.
+  const biweekly = raw === 'biweekly';
+  const frequency = biweekly ? 'weekly' : (['daily', 'weekly', 'monthly', 'yearly'].includes(raw) ? raw : 'weekly');
   const endsType = trimmed(body.recurrence_ends_type) === 'on_date' ? 'on_date' : 'after_count';
+  const chosenDays = (Array.isArray(body.recurrence_days) ? body.recurrence_days : [body.recurrence_days])
+    .map((day) => trimmed(day).toUpperCase())
+    .filter((day) => RECURRENCE_WEEKDAYS.includes(day));
+  const days = RECURRENCE_WEEKDAYS.filter((day) => chosenDays.includes(day));
 
   return {
     recurrence_frequency: frequency,
-    recurrence_interval: boundedPositiveInteger(body.recurrence_interval, 1),
+    recurrence_interval: biweekly ? 2 : boundedPositiveInteger(body.recurrence_interval, 1),
+    // No days chosen: Laravel repeats on the start date's weekday.
+    ...(frequency === 'weekly' && days.length ? { recurrence_days: days.join(',') } : {}),
     recurrence_ends_type: endsType,
-    recurrence_ends_after_count: boundedPositiveInteger(body.recurrence_ends_after_count, 10, 52),
+    recurrence_ends_after_count: boundedPositiveInteger(body.recurrence_ends_after_count, 10, RECURRENCE_MAX_OCCURRENCES),
     recurrence_ends_on_date: readDate(body, 'recurrence_ends_on_date').value
   };
 }
@@ -1744,6 +1838,7 @@ router.post('/:id(\\d+)/waitlist', asyncRoute(async (req, res) => {
       : ((code.startsWith('SAFEGUARDING_') || code === 'VETTING_REQUIRED')
         ? 'waitlist-vetting-required'
         : 'waitlist-failed');
+    if (failureStatus === 'waitlist-failed') rememberEventRefusal(req, id, 'detail', error, { requireReason: false });
     return redirectTo(res, eventRedirect(id, failureStatus));
   }
 }));
@@ -1764,6 +1859,7 @@ router.post('/:id(\\d+)/waitlist/leave', asyncRoute(async (req, res) => {
     if (code === 'WAITLIST_ENTRY_INACTIVE' || (error instanceof ApiError && error.status === 404)) {
       return redirectTo(res, eventRedirect(id, 'waitlist-left'));
     }
+    rememberEventRefusal(req, id, 'detail', error, { requireReason: false });
     return redirectTo(res, eventRedirect(id, 'waitlist-failed'));
   }
 }));
@@ -2567,7 +2663,7 @@ router.get('/:id(\\d+)/tickets', requireAuth, asyncRoute(async (req, res) => {
   return res.render('events/tickets', {
     title: res.locals.t('event_tickets.title'), activeNav: 'events', event: { id, title: trimmed(event.title) },
     catalogue, ticketNames: Object.fromEntries(collectionFrom({ data: catalogue.ticket_types || [] }).map((ticket) => [ticket.id, ticket])),
-    status: trimmed(req.query.status), idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : ''
+    status: trimmed(req.query.status), apiReason: trimmed(req.query.status) === 'allocate-failed' ? consumeEventRefusal(req, id, 'tickets') : '', idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { notFoundTitle: 'Event not found' }));
 
@@ -2582,7 +2678,11 @@ router.post('/:id(\\d+)/tickets/:ticketTypeId(\\d+)/allocate', requireAuth, asyn
     return redirectTo(res, eventPath(id, '/tickets?status=allocated'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/tickets?status=allocate-failed'));
+    if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) {
+      // Allocation used up, per-member limit, sales window... (EventTicketController).
+      rememberEventRefusal(req, id, 'tickets', error, { requireReason: false });
+      return redirectTo(res, eventPath(id, '/tickets?status=allocate-failed'));
+    }
     throw error;
   }
 }));
@@ -2706,6 +2806,73 @@ async function streamCalendar(req, res, path, fallbackName) {
 }
 
 router.get('/:id(\\d+)/calendar.ics', requireAuth, asyncRoute(async (req, res) => streamCalendar(req, res, `/${Number(req.params.id)}/calendar.ics`, `event-${Number(req.params.id)}.ics`)));
+// Events by month (React EventCalendarViews "Month"): GET /v2/events/calendar
+// with from = the first of the month and to = the first of the next. A list by
+// day rather than a grid, so it reads in order without JavaScript.
+router.get('/month', requireAuth, asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  const requested = /^(\d{4})-(\d{2})$/.exec(trimmed(req.query.month));
+  const now = new Date();
+  let year = now.getUTCFullYear();
+  let month = now.getUTCMonth() + 1;
+  if (requested && Number(requested[2]) >= 1 && Number(requested[2]) <= 12) {
+    year = Number(requested[1]);
+    month = Number(requested[2]);
+  }
+  const pad = (value) => String(value).padStart(2, '0');
+  const monthKey = (y, m) => `${y}-${pad(m)}`;
+  const from = `${monthKey(year, month)}-01`;
+  const nextYear = month === 12 ? year + 1 : year;
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const previousYear = month === 1 ? year - 1 : year;
+  const previousMonth = month === 1 ? 12 : month - 1;
+  const to = `${monthKey(nextYear, nextMonth)}-01`;
+
+  let items = [];
+  let loadFailed = false;
+  try {
+    const params = new URLSearchParams({ from, to });
+    items = collectionFrom(await callApi(token, 'GET', `/calendar?${params.toString()}`));
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    loadFailed = true;
+  }
+
+  const formatDate = typeof res.locals.formatLocaleDate === 'function' ? res.locals.formatLocaleDate : (value) => String(value);
+  const days = new Map();
+  for (const item of items) {
+    const startsAt = trimmed(item && item.starts_at);
+    if (!startsAt) continue;
+    const allDay = item.all_day === true;
+    const timezone = trimmed(item.timezone) || 'UTC';
+    const start = new Date(allDay ? `${startsAt.slice(0, 10)}T12:00:00Z` : startsAt);
+    if (Number.isNaN(start.getTime())) continue;
+    const dayZone = allDay ? 'UTC' : timezone;
+    // The calendar day in the event's own zone (all-day events are dates already).
+    const dayKey = allDay ? startsAt.slice(0, 10) : wallClockInZone(start.toISOString(), dayZone).slice(0, 10);
+    if (!dayKey.startsWith(monthKey(year, month))) continue;
+    if (!days.has(dayKey)) {
+      days.set(dayKey, { key: dayKey, label: formatDate(start, { weekday: 'long', day: 'numeric', month: 'long', year: undefined, timeZone: dayZone }), events: [] });
+    }
+    days.get(dayKey).events.push({
+      id: positiveInteger(item.id),
+      title: trimmed(item.title),
+      time: allDay ? '' : formatDate(start, { day: undefined, month: undefined, year: undefined, hour: 'numeric', minute: '2-digit', timeZone: timezone, timeZoneName: 'short' }),
+      allDay,
+      cancelled: trimmed(item.operational_status) === 'cancelled'
+    });
+  }
+
+  return res.render('events/month', {
+    title: res.locals.t('govuk_alpha.events.events_in_month', { month: formatDate(new Date(Date.UTC(year, month - 1, 15)), { day: undefined, month: 'long', year: 'numeric', timeZone: 'UTC' }) }),
+    activeNav: 'events',
+    days: [...days.values()].sort((a, b) => a.key.localeCompare(b.key)),
+    loadFailed,
+    previousHref: `/events/month?month=${monthKey(previousYear, previousMonth)}`,
+    nextHref: `/events/month?month=${monthKey(nextYear, nextMonth)}`
+  });
+}));
+
 router.get('/calendar.ics', requireAuth, asyncRoute(async (req, res) => streamCalendar(req, res, '/calendar/feed.ics', 'events.ics')));
 
 async function calendarTokens(token) {
@@ -3837,7 +4004,7 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
     const result = checked(is_recurring)
       ? await callApi(req.token, 'POST', '/recurring', {
         ...eventData,
-        ...recurrencePayload({ recurrence_frequency, recurrence_interval, recurrence_ends_type, recurrence_ends_after_count, recurrence_ends_on_date })
+        ...recurrencePayload({ recurrence_frequency, recurrence_interval, recurrence_days: req.body.recurrence_days, recurrence_ends_type, recurrence_ends_after_count, recurrence_ends_on_date })
       })
       : await createEvent(req.token, eventData);
     const eventId = resultEventId(result);
@@ -3981,12 +4148,30 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     : '';
 
   const scheduleLabels = eventScheduleLabels(event, res.locals.formatLocaleDate);
+  // Other dates in the same named series (React EventDetailPage: GET
+  // /v2/events/series/{id}). Optional: a failure only hides the section.
+  let seriesEvents = [];
+  const seriesId = positiveInteger(event.series?.named?.id || event.series_id);
+  if (seriesId) {
+    try {
+      const seriesData = dataFrom(await callApi(token, 'GET', `/series/${encodeURIComponent(seriesId)}`)) || {};
+      const rows = Array.isArray(seriesData.occurrences) ? seriesData.occurrences : (Array.isArray(seriesData.events) ? seriesData.events : []);
+      seriesEvents = rows
+        .map((row) => ({ id: positiveInteger(row && row.id), title: trimmed(row && row.title), start_time: row && (row.start_at || row.start_time), all_day: false, timezone: event.timezone }))
+        .filter((row) => row.id && row.id !== Number(id))
+        .slice(0, 20)
+        .map((row) => ({ ...row, startLabel: eventScheduleLabels(row, res.locals.formatLocaleDate).startLabel }));
+    } catch (error) {
+      if (isAuthError(error)) throw error;
+    }
+  }
   // Comments and likes, as React's SocialInteractionPanel offers on this page.
   const eventComments = await loadTargetComments(token, 'event', Number(id));
 
   res.render('events/detail', {
     title: event.title,
     event,
+    seriesEvents,
     remindersAvailable,
     eventComments,
     socialStatus: socialStatusFrom(req.query.social),

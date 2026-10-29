@@ -292,6 +292,20 @@
     </div>
   </div>
 
+  {% if dashboardFeatures.groups and myGroups %}
+    <section aria-labelledby="dashboard-my-groups-title" class="govuk-!-margin-top-7">
+      <h2 class="govuk-heading-l" id="dashboard-my-groups-title">{{ t("dashboard.my_groups_title") }}</h2>
+      {% if myGroups.length %}
+        <ul class="govuk-list govuk-list--spaced">
+          {% for group in myGroups %}<li><a class="govuk-link" href="{{ urlFor('/groups/' ~ group.id) }}">{{ group.name }}</a></li>{% endfor %}
+        </ul>
+      {% else %}
+        <p class="govuk-body">{{ t("dashboard.my_groups_empty") }}</p>
+      {% endif %}
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/groups') }}">{{ t("dashboard.my_groups_discover") }}</a></p>
+    </section>
+  {% endif %}
+
   {# Panels from the React feed side panel (FeedSidebar.tsx). Each is hidden when
      React would hide it, or when its read failed or came back empty. #}
   {% if sidePanels %}

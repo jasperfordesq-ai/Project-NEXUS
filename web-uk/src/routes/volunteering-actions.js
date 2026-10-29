@@ -303,7 +303,7 @@ async function callApi(token, method, path, data = undefined) {
   return callVolunteeringApi(token, method, path, data);
 }
 
-async function runAction(req, res, method, path, data, successRedirect, failureRedirect) {
+async function runAction(req, res, method, path, data, successRedirect, failureRedirect, options = {}) {
   const token = tokenFrom(req);
   if (!token) {
     return redirectTo(res, loginRedirect());
@@ -322,6 +322,10 @@ async function runAction(req, res, method, path, data, successRedirect, failureR
     const redirect = typeof failureRedirect === 'function'
       ? failureRedirect(error)
       : failureRedirect;
+    if (options.refusalKey) {
+      const status = Number(error && error.status);
+      if (status >= 400 && status < 500) rememberApiRefusal(req, options.refusalKey, error);
+    }
     return redirectTo(res, redirect);
   }
 }
@@ -479,7 +483,10 @@ function monthLabel(value) {
   }).format(date);
 }
 
-function certificateStatus(status, t = null) {
+function certificateStatus(status, t = null, refusal = '') {
+  if (status === 'certificate-no-hours' && refusal) {
+    return { type: 'error', message: refusal };
+  }
   if (status === 'certificate-generated') {
     return {
       type: 'success',
@@ -2525,9 +2532,21 @@ router.get('/certificates', asyncRoute(async (req, res) => {
 
   let certificates = [];
   let loadError = null;
+  let nextHref = '';
   try {
-    certificates = collectionFrom(await callApi(token, 'GET', '/certificates'))
+    // Laravel pages certificates by cursor (VolunteerCertificateController::
+    // myCertificates returns { items, cursor, has_more }); only the newest 20
+    // were reachable before.
+    const listParams = new URLSearchParams({ per_page: '50' });
+    const cursor = trimmed(req.query.cursor).slice(0, 200);
+    if (cursor) listParams.set('cursor', cursor);
+    const listResult = await callApi(token, 'GET', `/certificates?${listParams.toString()}`);
+    certificates = collectionFrom(listResult)
       .map((certificate) => normalizeCertificate(certificate, res.locals.t));
+    const listData = dataFrom(listResult) || {};
+    if (listData.has_more === true && listData.cursor) {
+      nextHref = `/volunteering/certificates?${new URLSearchParams({ cursor: String(listData.cursor) }).toString()}`;
+    }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     loadError = res.locals.t('govuk_alpha.vol_depth.certificates_error');
@@ -2537,8 +2556,11 @@ router.get('/certificates', asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha.vol_depth.certificates_title'),
     activeNav: 'volunteering',
     certificates,
+    nextHref,
     loadError,
-    status: certificateStatus(trimmed(req.query.status), res.locals.t),
+    status: certificateStatus(trimmed(req.query.status), res.locals.t,
+      trimmed(req.query.status) === 'certificate-no-hours' ? consumeApiRefusal(req, 'certificate-generate') : ''),
+    idempotencyKey: randomUUID(),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: loginRedirect() }));
@@ -2550,11 +2572,23 @@ router.get('/certificates/:code([A-Za-z0-9]+)/download', asyncRoute(async (req, 
   }
 
   const code = trimmed(req.params.code);
-  const certificates = collectionFrom(await callApi(token, 'GET', '/certificates'));
-  const ownsCertificate = certificates.some((certificate) => (
-    trimmed(certificate?.verification_code ?? certificate?.verificationCode) === code
-    && !(certificate?.revoked_at ?? certificate?.revokedAt)
-  ));
+  // Laravel's /certificates/{code}/html does not check who owns the certificate,
+  // so this ownership check stays — but across every page of the member's
+  // certificates, not just the newest 20 (older ones answered 404).
+  let ownsCertificate = false;
+  let listCursor = '';
+  for (let page = 0; page < 20 && !ownsCertificate; page += 1) {
+    const params = new URLSearchParams({ per_page: '50' });
+    if (listCursor) params.set('cursor', listCursor);
+    const pageResult = await callApi(token, 'GET', `/certificates?${params.toString()}`);
+    ownsCertificate = collectionFrom(pageResult).some((certificate) => (
+      trimmed(certificate?.verification_code ?? certificate?.verificationCode) === code
+      && !(certificate?.revoked_at ?? certificate?.revokedAt)
+    ));
+    const pageData = dataFrom(pageResult) || {};
+    listCursor = pageData.has_more === true && pageData.cursor ? String(pageData.cursor) : '';
+    if (!listCursor) break;
+  }
 
   if (!ownsCertificate) {
     return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
@@ -3705,8 +3739,17 @@ router.get('/expenses', asyncRoute(async (req, res) => {
 
   let dashboard = normalizeExpenseDashboard({}, {}, res.locals.t);
   let loadError = null;
+  let expensesNextHref = '';
   try {
-    const expenses = await callApi(token, 'GET', '/expenses?per_page=50');
+    // Laravel pages expense claims by cursor, 50 at most (VolunteerExpenseController).
+    const expenseParams = new URLSearchParams({ per_page: '50' });
+    const expenseCursor = trimmed(req.query.cursor).slice(0, 200);
+    if (expenseCursor) expenseParams.set('cursor', expenseCursor);
+    const expenses = await callApi(token, 'GET', `/expenses?${expenseParams.toString()}`);
+    const expenseMeta = dataFrom(expenses) || {};
+    if (expenseMeta.has_more === true && expenseMeta.cursor) {
+      expensesNextHref = `/volunteering/expenses?${new URLSearchParams({ cursor: String(expenseMeta.cursor) }).toString()}#expense-history`;
+    }
     const organizations = await callApi(token, 'GET', '/my-organisations?per_page=50');
     const applications = collectionFrom(
       await callApi(token, 'GET', '/applications?status=approved&per_page=50')
@@ -3727,6 +3770,7 @@ router.get('/expenses', asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha_volunteering.expenses.title'),
     activeNav: 'volunteering',
     dashboard,
+    expensesNextHref,
     applicationsTabEnabled: volunteeringSections(req.accessibleRouting?.tenant).enabled('applications'),
     loadError,
     expenseForm: consumeFormReplay(req, 'volunteering', 'expenses'),
@@ -3870,6 +3914,9 @@ router.post('/opportunities/:id(\\d+)/shifts/:shiftId(\\d+)/signup', asyncRoute(
     successStatus: switching ? 'shift-switched' : 'shift-signed-up',
     codeStatuses: { DECISION_CONFLICT: 'shift-switch-conflict' },
     failureStatus: 'shift-signup-failed',
+    // Approved application required, shift started or full, opportunity closed
+    // (VolunteerService::signUpForShift): Laravel's words, as React shows them.
+    refusal: { codes: ['FORBIDDEN', 'VALIDATION_ERROR', 'NOT_FOUND'], key: `shift-${id}`, status: 'shift-signup-refused' },
     restrictedStatus: 'shift-safeguarding-restricted',
     unavailableStatus: 'shift-safeguarding-unavailable'
   });
@@ -3908,6 +3955,7 @@ router.post('/opportunities/:id(\\d+)/shifts/:shiftId(\\d+)/cancel', asyncRoute(
     opportunityId: id,
     successStatus: 'shift-cancelled',
     failureStatus: 'shift-cancel-failed',
+    refusal: { codes: ['FORBIDDEN', 'VALIDATION_ERROR', 'NOT_FOUND'], key: `shift-${id}`, status: 'shift-cancel-refused' },
     restrictedStatus: 'shift-safeguarding-restricted',
     unavailableStatus: 'shift-safeguarding-unavailable'
   });
@@ -4019,15 +4067,23 @@ router.post('/accessibility', asyncRoute(async (req, res) => {
   );
 }));
 
-router.post('/certificates/generate', asyncRoute(async (req, res) => runAction(
-  req,
-  res,
-  'POST',
-  '/certificates',
-  undefined,
-  '/volunteering/certificates?status=certificate-generated',
-  '/volunteering/certificates?status=certificate-no-hours'
-)));
+// The form carries an idempotency key so a double submit cannot make two
+// certificates (VolunteerCertificateController::generateCertificate reads it).
+// A refusal shows Laravel's reason: only "no approved hours" is that message;
+// a rate limit or conflict used to be reported as "no approved hours" too.
+router.post('/certificates/generate', asyncRoute(async (req, res) => {
+  const idempotencyKey = trimmed(req.body && req.body.idempotency_key).slice(0, 100);
+  return runAction(
+    req,
+    res,
+    'POST',
+    '/certificates',
+    idempotencyKey ? { idempotency_key: idempotencyKey } : undefined,
+    '/volunteering/certificates?status=certificate-generated',
+    '/volunteering/certificates?status=certificate-no-hours',
+    { refusalKey: 'certificate-generate' }
+  );
+}));
 
 router.post('/waitlist/:shiftId(\\d+)/leave', asyncRoute(async (req, res) => {
   const shiftId = Number(req.params.shiftId);

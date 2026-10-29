@@ -1,0 +1,32 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string) + '/people') }}">{{ t("govuk_alpha.events.people_title") }}</a>
+{% endblock %}
+
+{% block content %}
+  <span class="govuk-caption-xl">{{ event.title }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.events.people_history_title", { name: name }) }}</h1>
+
+  {% if loadFailed %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha.events.people_history_error") }}</p></div>
+  {% elif not entries.length %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha.events.people_history_empty") }}</p></div>
+  {% else %}
+    <ol class="govuk-list">
+      {% for entry in entries %}
+        <li class="nexus-alpha-card govuk-!-margin-bottom-3">
+          <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ entry.heading }}</p>
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ entry.actor }}{% if entry.createdAt %}<span aria-hidden="true"> · </span><time datetime="{{ entry.createdAt }}">{{ formatLocaleDate(entry.createdAt) if formatLocaleDate else entry.createdAt }}</time>{% endif %}</p>
+          {% if entry.reason %}<p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ entry.reason }}</p>{% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+
+  {% if previousHref or nextHref %}<nav class="govuk-pagination" aria-label="{{ t('govuk_alpha.events.people_pagination') }}">{% if previousHref %}<div class="govuk-pagination__prev"><a class="govuk-link govuk-pagination__link" rel="prev" href="{{ urlFor(previousHref) }}">{{ t("govuk_alpha.events.people_previous") }}</a></div>{% endif %}{% if nextHref %}<div class="govuk-pagination__next"><a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor(nextHref) }}">{{ t("govuk_alpha.events.people_next") }}</a></div>{% endif %}</nav>{% endif %}
+{% endblock %}

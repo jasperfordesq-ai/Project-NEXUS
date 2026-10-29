@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+const { rememberRefusalForPage, refusalMessageOf } = require('../lib/api-refusal');
 const express = require('express');
 const { confirmFirst } = require('../lib/confirm-action');
 const fs = require('fs/promises');
@@ -185,6 +186,7 @@ async function runAction(req, res, method, path, data, successRedirect, failureR
     return redirectTo(res, redirect);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberRefusalForPage(req, failureRedirect, error);
     return redirectTo(res, failureRedirect);
   }
 }
@@ -872,9 +874,12 @@ router.post('/:id(\\d+)/buy', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
   const id = Number(req.params.id);
-  const fail = (messageKey, target) => {
+  const fail = (messageKey, target, message = '') => {
     req.session[directBuyErrorSessionKey(id)] = {
       messageKey,
+      // Laravel's own reason for a refused order (not enough credits, sold out,
+      // safeguarding...), shown instead of the generic line as React does.
+      message,
       target,
       oldInput: {
         quantity: trimmed(req.body.quantity, 20),
@@ -894,7 +899,8 @@ router.post('/:id(\\d+)/buy', asyncRoute(async (req, res) => {
   // Quantity is a text box, so "abc", 0 or 5000 can arrive. A purchase must never quietly
   // become a purchase of 1: a blank box means 1, anything typed must be a whole number 1-999.
   const typedQuantity = trimmed(req.body.quantity);
-  if (typedQuantity !== '' && (positiveInteger(typedQuantity) === null || positiveInteger(typedQuantity) > 999)) {
+  // MarketplaceOrderController accepts 1-100.
+  if (typedQuantity !== '' && (positiveInteger(typedQuantity) === null || positiveInteger(typedQuantity) > 100)) {
     return fail('govuk_alpha_commerce.buy.error_generic', 'quantity');
   }
 
@@ -994,7 +1000,9 @@ router.post('/:id(\\d+)/buy', asyncRoute(async (req, res) => {
     return redirectTo(res, '/marketplace/orders?status=ordered');
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    return fail('govuk_alpha_commerce.buy.error_generic', 'quantity');
+    const status = Number(error && error.status);
+    const reason = status >= 400 && status < 500 ? refusalMessageOf(error) : '';
+    return fail('govuk_alpha_commerce.buy.error_generic', 'quantity', reason);
   }
 }));
 
@@ -1083,7 +1091,9 @@ router.post('/offers/:id(\\d+)/buy', asyncRoute(async (req, res) => {
     return redirectTo(res, '/marketplace/orders?status=ordered');
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    return fail('govuk_alpha_commerce.buy.error_generic', 'quantity');
+    const status = Number(error && error.status);
+    const reason = status >= 400 && status < 500 ? refusalMessageOf(error) : '';
+    return fail('govuk_alpha_commerce.buy.error_generic', 'quantity', reason);
   }
 }));
 
@@ -1114,6 +1124,7 @@ router.post('/:id(\\d+)/offer', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     req.session[offerFormSessionKey(id)] = oldInput;
+    rememberRefusalForPage(req, `/marketplace/${id}/offer`, error);
     return redirectTo(res, `/marketplace/${id}/offer?status=offer-failed`);
   }
 }));

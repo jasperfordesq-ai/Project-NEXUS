@@ -17,6 +17,7 @@
     </div>
   {% endif %}
   <p class="govuk-body-l">{{ t("nexus_score.description") }}</p>
+  <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/nexus-score?refresh=1') }}">{{ t("nexus_score.refresh") }}</a></p>
 
   <nav class="govuk-!-margin-bottom-6" aria-label="{{ t("nexus_score.title") }}">
     <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("nexus_score.title") }}</h2>

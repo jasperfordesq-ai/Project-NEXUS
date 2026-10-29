@@ -1295,10 +1295,13 @@ export const eventsApi = {
     id: number | string,
     expectedRevision: number,
   ): Promise<ApiResponse<EventReminderPreferences>> {
-    const endpoint = `/v2/events/${id}/reminders${queryString({ expected_revision: expectedRevision })}`;
+    // In the JSON body, not the query string: EventsController::deleteReminders
+    // requires an integer, and a query value always arrives as a string, so
+    // "Reset reminders" was refused with 422 every time.
+    const endpoint = `/v2/events/${id}/reminders`;
     return parseResponse(
       endpoint,
-      await api.delete(endpoint, withContract()),
+      await api.delete(endpoint, withContract({ body: { expected_revision: expectedRevision } })),
       eventReminderPreferencesSchema,
     );
   },

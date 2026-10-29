@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 const express = require('express');
 const { randomUUID } = require('node:crypto');
 const {
@@ -376,7 +377,11 @@ async function safeGamificationCall(token, pathValue, fallback, onError) {
   }
 }
 
-function statusMessages(status, t) {
+// Not enough XP, out of stock, already owned, challenge not finished, reward
+// already claimed: Laravel says which (GamificationV2Controller); React shows it.
+const ACHIEVEMENT_REFUSAL_KEY = 'achievements-action';
+
+function statusMessages(status, t, refusal = '') {
   return {
     dailyRewardStatus: status,
     challengeStatus: status,
@@ -384,10 +389,10 @@ function statusMessages(status, t) {
       ? t('polish_gamify.daily_reward_success', { xp: 0 })
       : '',
     dailyError: status === 'daily-reward-failed'
-      ? t('polish_gamify.daily_reward_failed')
+      ? (refusal || t('polish_gamify.daily_reward_failed'))
       : '',
     challengeSuccess: status === 'challenge-claimed' ? t('polish_gamify.challenge_claim_success') : '',
-    challengeError: status === 'challenge-claim-failed' ? t('polish_gamify.challenge_claim_failed') : ''
+    challengeError: status === 'challenge-claim-failed' ? (refusal || t('polish_gamify.challenge_claim_failed')) : ''
   };
 }
 
@@ -433,7 +438,9 @@ router.get('/', asyncRoute(async (req, res) => {
 
   const earnedBadges = normalizeBadges(badgesPayload);
   const dailyReward = normalizeDailyReward(dailyPayload);
-  const status = statusMessages(textFrom(req.query.status), res.locals.t);
+  const statusValue = textFrom(req.query.status);
+  const status = statusMessages(statusValue, res.locals.t,
+    ['daily-reward-failed', 'challenge-claim-failed'].includes(statusValue) ? consumeApiRefusal(req, ACHIEVEMENT_REFUSAL_KEY) : '');
 
   return res.render('achievements/index', {
     title: res.locals.t('achievements.title'),
@@ -484,7 +491,7 @@ router.get('/shop', asyncRoute(async (req, res) => {
         ? res.locals.t('govuk_alpha_gamification.shop.states.purchased')
         : '',
       errorMessage: status === 'purchase-failed'
-        ? res.locals.t('govuk_alpha_gamification.shop.states.purchase-failed')
+        ? (consumeApiRefusal(req, ACHIEVEMENT_REFUSAL_KEY) || res.locals.t('govuk_alpha_gamification.shop.states.purchase-failed'))
         : ''
     }
   });
@@ -597,6 +604,7 @@ router.post('/daily-reward', asyncRoute(async (req, res) => {
     await claimDailyReward(token);
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    rememberClientRefusal(req, ACHIEVEMENT_REFUSAL_KEY, error);
     status = 'daily-reward-failed';
   }
 
@@ -614,6 +622,7 @@ router.post('/challenges/:id(\\d+)/claim', asyncRoute(async (req, res) => {
     await claimGamificationChallenge(token, Number(req.params.id));
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    rememberClientRefusal(req, ACHIEVEMENT_REFUSAL_KEY, error);
     status = 'challenge-claim-failed';
   }
 
@@ -635,6 +644,7 @@ router.post('/shop/purchase', asyncRoute(async (req, res) => {
       status = 'purchased';
     } catch (error) {
       if (redirectAuthIfNeeded(error, res)) return undefined;
+      rememberClientRefusal(req, ACHIEVEMENT_REFUSAL_KEY, error);
     }
   }
 

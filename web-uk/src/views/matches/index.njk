@@ -44,6 +44,15 @@
     </ul>
   </nav>
 
+  <p class="govuk-body">{% if mutualOnly %}<a class="govuk-link" href="{{ urlFor('/matches?source=' + activeSource) }}">{{ t("polish_listings.matches_source_all") }}</a>{% else %}<a class="govuk-link" href="{{ urlFor('/matches?source=' + activeSource + '&mutual=1') }}">{{ t("matches.filter_mutual_only") }}</a>{% endif %}</p>
+
+  {% if noCoordinates and not errorMessage %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("matches.no_location_title") }}</h2>
+      <p class="govuk-body">{{ t("matches.no_location_desc") }} <a class="govuk-link" href="{{ urlFor('/profile/settings#location') }}">{{ t("matches.set_location_cta") }}</a></p>
+    </div>
+  {% endif %}
+
   {% if errorMessage %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -64,6 +73,7 @@
                 {{ match.title }}
               {% endif %}
             </h2>
+            {% if match.isMutual %}{{ govukTag({ text: t("matches.mutual_tag"), classes: "govuk-tag--green" }) }}{% endif %}
             {{ govukTag({ text: match.moduleLabel, classes: "govuk-tag--grey" }) }}
             {% if match.module == 'listing' %}
               <strong class="govuk-tag {% if match.type == 'request' %}govuk-tag--purple{% else %}govuk-tag--blue{% endif %}">{{ match.typeLabel }}</strong>
@@ -84,6 +94,17 @@
           {% endif %}
           {# React MatchCard hides listing AND group matches. #}
           {% if match.module == 'listing' and match.listingId %}{% set dismissPath = '/matches/' + (match.listingId | string) + '/dismiss' %}{% elif match.module == 'group' and match.groupId %}{% set dismissPath = '/matches/group/' + (match.groupId | string) + '/dismiss' %}{% else %}{% set dismissPath = '' %}{% endif %}
+          {% if match.module == 'listing' and match.listingId %}
+            <form method="post" action="{{ urlFor('/matches/listing/' + (match.listingId | string) + '/save') }}" class="govuk-!-margin-top-2" novalidate>
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("matches.card_save") }}<span class="govuk-visually-hidden">: {{ match.title }}</span></button>
+            </form>
+          {% elif match.module == 'group' and match.groupId %}
+            <form method="post" action="{{ urlFor('/matches/group/' + (match.groupId | string) + '/join') }}" class="govuk-!-margin-top-2" novalidate>
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("matches.card_join") }}<span class="govuk-visually-hidden">: {{ match.title }}</span></button>
+            </form>
+          {% endif %}
           {% if dismissPath %}
             <form method="post" action="{{ urlFor(dismissPath) }}" class="govuk-!-margin-top-2" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -96,6 +117,9 @@
     </div>
   {% elif safeguardingDegraded %}
     {% set variant = "empty" %}{% include "matches/_safeguarding-notice.njk" %}
+  {% elif noActiveListings and activeSource in ["all", "listing"] %}
+    <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("matches.no_listings_title") }}</h2><p class="govuk-body">{{ t("matches.no_listings_description") }}</p></div>
+    <a class="govuk-button" href="{{ urlFor('/listings/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("matches.add_listing") }}</a>
   {% else %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>{{ t("matches.empty") }}</div>
     <a class="govuk-button" href="{{ urlFor('/listings/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("matches.add_listing") }}</a>

@@ -83,6 +83,7 @@ return [
         'detail_offer' => 'Faire une offre',
         'detail_ask_to_borrow' => 'Demander à emprunter',
         'detail_save' => 'Enregistrez cet article',
+        'detail_unsave' => 'Retirer des favoris',
         'detail_report' => 'Signaler cet article',
     ],
     'listing_form' => [
@@ -194,6 +195,8 @@ return [
         'listings_heading' => 'Articles à vendre',
         'empty' => 'Ce vendeur n\'a aucune annonce active.',
         'rating_label' => 'Évaluation du vendeur',
+        'seller_type_business' => 'Professionnel',
+        'seller_type_private' => 'Vendeur privé',
     ],
     'buy' => [
         'title' => 'Confirmez votre achat',

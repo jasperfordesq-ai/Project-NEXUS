@@ -9,7 +9,7 @@
       <div role="alert">
         <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
         <div class="govuk-error-summary__body">
-          <p class="govuk-body">{{ status.message }}</p>
+          <p class="govuk-body">{{ apiRefusal or status.message }}</p>
         </div>
       </div>
     </div>

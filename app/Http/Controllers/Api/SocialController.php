@@ -478,6 +478,14 @@ class SocialController extends BaseApiController
             $data['image_url'] = $imageUrl;
         }
 
+        // Photos sent as media[] / image_N are attached after the post exists, so
+        // tell FeedService::createPost about them: a photos-only post was refused
+        // as "content or image required" although it had photos (both sites).
+        $mediaFiles = $this->collectMediaFiles();
+        if (! empty($mediaFiles)) {
+            $data['has_media'] = true;
+        }
+
         try {
             $creation = $identity === null
                 ? ['post' => $this->feedService->createPost($userId, $data), 'replayed' => false]
@@ -514,8 +522,7 @@ class SocialController extends BaseApiController
 
         $postId = (int) ($postObj->id ?? $postObj);
 
-        // Handle multi-image uploads (media[] or image_0, image_1, etc.)
-        $mediaFiles = $this->collectMediaFiles();
+        // Handle multi-image uploads (media[] or image_0, image_1, etc.), collected above.
         if (! $creation['replayed'] && !empty($mediaFiles)) {
             $altTexts = request()->input('alt_texts', []);
             $this->postMediaService->attachMedia($postId, $mediaFiles, is_array($altTexts) ? $altTexts : []);

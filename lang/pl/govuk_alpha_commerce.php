@@ -83,6 +83,7 @@ return [
         'detail_offer' => 'Złóż ofertę',
         'detail_ask_to_borrow' => 'Poproś o wypożyczenie',
         'detail_save' => 'Zapisz ten element',
+        'detail_unsave' => 'Usuń z zapisanych',
         'detail_report' => 'Zgłoś ten przedmiot',
     ],
     'listing_form' => [
@@ -194,6 +195,8 @@ return [
         'listings_heading' => 'Przedmioty na sprzedaż',
         'empty' => 'Ten sprzedawca nie ma aktywnych aukcji.',
         'rating_label' => 'Ocena sprzedawcy',
+        'seller_type_business' => 'Firma',
+        'seller_type_private' => 'Sprzedawca prywatny',
     ],
     'buy' => [
         'title' => 'Potwierdź swój zakup',

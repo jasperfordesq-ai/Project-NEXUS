@@ -77,7 +77,10 @@ router.get('/', asyncRoute(async (req, res) => {
   }
 
   const clubsQuery = trimmed(req.query && req.query.q);
-  const params = { per_page: 50 };
+  // Laravel pages clubs (ClubsApiController: page, per_page up to 50,
+  // meta.total_pages); React loads more. The list used to stop at 50.
+  const page = Math.min(Math.max(Number.parseInt(trimmed(req.query && req.query.page), 10) || 1, 1), 1000);
+  const params = { per_page: 50, page };
   if (clubsQuery) {
     params.search = clubsQuery;
   }
@@ -96,11 +99,23 @@ router.get('/', asyncRoute(async (req, res) => {
     }
   }
 
+  const meta = (result && result.meta) || {};
+  const totalPages = Math.max(0, Number.parseInt(meta.total_pages ?? meta.last_page, 10) || 0);
+  const pageHref = (target) => {
+    const params2 = new URLSearchParams();
+    if (clubsQuery) params2.set('q', clubsQuery);
+    if (target > 1) params2.set('page', String(target));
+    const text = params2.toString();
+    return `/clubs${text ? `?${text}` : ''}`;
+  };
+
   return res.render('clubs/index', {
     title: res.locals.t('clubs.title'),
     activeNav: 'explore',
     clubs,
-    clubsQuery
+    clubsQuery,
+    previousHref: page > 1 ? pageHref(page - 1) : '',
+    nextHref: page < totalPages ? pageHref(page + 1) : ''
   });
 }, { notFoundTitle: 'Clubs' }));
 

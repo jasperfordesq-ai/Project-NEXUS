@@ -85,6 +85,7 @@ return [
         'detail_offer' => 'Make an offer',
         'detail_ask_to_borrow' => 'Ask to borrow',
         'detail_save' => 'Save this item',
+        'detail_unsave' => 'Remove from saved',
         'detail_report' => 'Report this item',
     ],
 
@@ -203,6 +204,8 @@ return [
         'listings_heading' => 'Items for sale',
         'empty' => 'This seller has no active listings.',
         'rating_label' => 'Seller rating',
+        'seller_type_business' => 'Business',
+        'seller_type_private' => 'Private Seller',
     ],
 
     'buy' => [

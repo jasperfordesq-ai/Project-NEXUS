@@ -16,7 +16,19 @@
   <span class="govuk-caption-xl">{{ t("govuk_alpha_groups.invite.caption", { group: group.name }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.invite.title") }}</h1>
 
-  {% if statusBanner and statusBanner.type == "success" %}
+  {% if statusBanner and statusBanner.type == "success" and inviteResults and inviteResults.length %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="invite-results-title" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="invite-results-title">{{ statusBanner.title }}</h2></div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("govuk_alpha_groups.invite.results_heading") }}</p>
+        <dl class="govuk-summary-list govuk-!-margin-bottom-0">
+          {% for row in inviteResults %}
+          <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ row.email }}</dt><dd class="govuk-summary-list__value">{{ row.outcome }}</dd></div>
+          {% endfor %}
+        </dl>
+      </div>
+    </div>
+  {% elif statusBanner and statusBanner.type == "success" %}
     {{ govukNotificationBanner({
       type: "success",
       titleText: statusBanner.title,

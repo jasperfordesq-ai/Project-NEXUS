@@ -76,7 +76,13 @@ router.get('/:id(\\d+)/tasks', requireAuth, asyncRoute(async (req, res) => {
   if (!access) return undefined;
   const { group } = access;
   const filter = STATUSES.includes(text(req.query.show)) ? text(req.query.show) : 'all';
-  const query = filter === 'all' ? '' : `?status=${filter}`;
+  // Laravel pages tasks by cursor, 50 at a time (IdeationChallengesController
+  // tasks list); without the cursor a group's list stopped at 50.
+  const listParams = new URLSearchParams({ per_page: '50' });
+  if (filter !== 'all') listParams.set('status', filter);
+  const cursor = text(req.query.cursor).slice(0, 500);
+  if (cursor) listParams.set('cursor', cursor);
+  const query = `?${listParams.toString()}`;
 
   let loadFailed = false;
   const [tasksResult, statsResult] = await Promise.all([
@@ -91,6 +97,11 @@ router.get('/:id(\\d+)/tasks', requireAuth, asyncRoute(async (req, res) => {
     })
   ]);
   const tasks = collectionFrom(tasksResult).map(normalizeTask).filter((task) => task.id !== null);
+  const tasksMeta = (tasksResult && tasksResult.meta) || {};
+  const nextTasksCursor = tasksMeta.has_more === true ? text(tasksMeta.cursor || tasksMeta.next_cursor).slice(0, 500) : '';
+  const nextHref = nextTasksCursor
+    ? `/groups/${encodeURIComponent(group.id)}/tasks?${new URLSearchParams({ ...(filter !== 'all' ? { show: filter } : {}), cursor: nextTasksCursor }).toString()}`
+    : '';
   const statsData = statsResult ? objectFrom(statsResult) : null;
   const stats = statsData
     ? ['total', 'todo', 'in_progress', 'done', 'overdue'].reduce((acc, key) => ({ ...acc, [key]: Number(statsData[key]) || 0 }), {})
@@ -102,6 +113,7 @@ router.get('/:id(\\d+)/tasks', requireAuth, asyncRoute(async (req, res) => {
     activeNav: 'explore',
     group,
     tasks,
+    nextHref,
     stats,
     loadFailed,
     filter,
@@ -115,14 +127,26 @@ router.get('/:id(\\d+)/tasks', requireAuth, asyncRoute(async (req, res) => {
   });
 }, AUTH));
 
+// Every member can be assigned, not just the first page of 100 (Laravel's
+// per-page cap). Bounded at 10 pages so a very large group cannot stall the form.
 async function loadMembers(req, groupId) {
-  const result = await callGroupApi(req.token, 'GET', `/${encodeURIComponent(groupId)}/members?per_page=100`).catch((error) => {
-    if (isAuthError(error)) throw error;
-    return { data: [] };
-  });
-  return collectionFrom(result)
-    .map((member) => ({ id: positiveInteger(member?.id || member?.user_id), name: text(member?.name || member?.display_name) }))
-    .filter((member) => member.id !== null && member.name);
+  const members = [];
+  let cursor = '';
+  for (let page = 0; page < 10; page += 1) {
+    const params = new URLSearchParams({ per_page: '100' });
+    if (cursor) params.set('cursor', cursor);
+    const result = await callGroupApi(req.token, 'GET', `/${encodeURIComponent(groupId)}/members?${params.toString()}`).catch((error) => {
+      if (isAuthError(error)) throw error;
+      return { data: [] };
+    });
+    members.push(...collectionFrom(result)
+      .map((member) => ({ id: positiveInteger(member?.id || member?.user_id), name: text(member?.name || member?.display_name) }))
+      .filter((member) => member.id !== null && member.name));
+    const meta = (result && result.meta) || {};
+    cursor = meta.has_more === true ? text(meta.cursor || meta.next_cursor) : '';
+    if (!cursor) break;
+  }
+  return members;
 }
 
 function renderCreate(res, group, members, values = {}, errors = {}, statusCode = 200, failed = false) {

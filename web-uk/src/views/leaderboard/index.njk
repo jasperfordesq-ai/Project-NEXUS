@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block content %}
   {% set gamificationNavGroup = "leaderboard" %}
@@ -92,6 +93,10 @@
     </fieldset>
   </form>
 
+  {% if leaderboard.hasYourRank %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_gamification.competitive.your_rank", { rank: leaderboard.yourRank }) }}</div>
+  {% endif %}
+
   {% if leaderboard.rows.length %}
     <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('leaderboard.title') }}">
     <table class="govuk-table">
@@ -121,6 +126,10 @@
       </tbody>
     </table>
     </div>
+    {% if leaderboard.hasMore %}
+      {{ loadMoreNext(urlFor('/leaderboard?type=' + leaderboard.type + '&period=' + leaderboard.period + '&limit=' + (leaderboard.nextLimit | string) + '#leaderboard-end'), t("govuk_alpha_gamification.competitive.load_more")) }}
+    {% endif %}
+    <span id="leaderboard-end" tabindex="-1"></span>
   {% else %}
     <div class="govuk-inset-text">
       <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>

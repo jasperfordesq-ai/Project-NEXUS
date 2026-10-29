@@ -631,8 +631,10 @@ export function ResourcesPage() {
     setResources(newResources);
 
     try {
-      const orderedIds = newResources.map((r) => r.id);
-      const response = await api.put('/v2/resources/reorder', { order: orderedIds });
+      // ResourceCategoryController::reorder reads `items: [{ id, sort_order }]`;
+      // sending `order` was refused with 400 every time.
+      const items = newResources.map((r, index) => ({ id: r.id, sort_order: index }));
+      const response = await api.put('/v2/resources/reorder', { items });
       // A failed reorder resolves to { success: false } WITHOUT throwing, so it
       // would skip the catch and leave the optimistic swap on screen as if it
       // saved — a fake-success the admin only notices after a reload reverts it.

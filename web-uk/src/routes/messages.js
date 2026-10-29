@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+const { randomUUID } = require('crypto');
 const express = require('express');
 const fs = require('fs/promises');
 const { requireAuth } = require('../middleware/auth');
@@ -499,7 +500,9 @@ function conversationOtherUser(conversation, fallbackId, t = null) {
     id: positiveInteger(otherUser.id) || positiveInteger(conversation && conversation.other_user_id) || fallbackId,
     name: trimmed(otherUser.name || otherUser.full_name || otherUser.fullName)
       || trimmed(conversation && (conversation.other_user_name || conversation.otherUserName))
-      || (t ? t('govuk_alpha.members.unknown_member') : `Member ${fallbackId}`)
+      || (t ? t('govuk_alpha.members.unknown_member') : `Member ${fallbackId}`),
+    // MessageService sends other_user.is_online; React shows it beside the name.
+    isOnline: checked(otherUser.is_online ?? otherUser.isOnline)
   };
 }
 
@@ -561,6 +564,8 @@ function directConversationFrom(result, userId, currentUserId, t = null) {
       displaySenderName: senderName(message, currentUserId, t, otherUser && otherUser.name),
       isOwn,
       isDeleted,
+      // React MessageBubble shows "Sent" / "Read" on your own messages.
+      isRead: checked(message && message.is_read) || Boolean(message && message.read_at),
       canManage,
       canEdit: canManage && Number.isFinite(createdTime) && createdTime > editCutoff
     };
@@ -669,6 +674,15 @@ async function renderDirectConversation(req, res, userId) {
   const contextRequest = listing ? null : requestedMessageContext(req.query, normalized.messages);
   const messageContext = await loadMessageContext(req.token, contextRequest, res.locals.t);
   const query = trimmed(req.query.q);
+  // "Filter messages in this conversation": Laravel has no message search, so
+  // filter the loaded page and highlight the matches, as the group thread and
+  // React's conversation search do. It used to do nothing.
+  if (query !== '') {
+    const needle = query.toLowerCase();
+    normalized.messages = normalized.messages
+      .filter((message) => !message.isDeleted && String(message.body || '').toLowerCase().includes(needle))
+      .map((message) => ({ ...message, searchSegments: messageSearchSegments(message.body, query) }));
+  }
   const olderParams = new URLSearchParams();
   if (listingId !== null) olderParams.set('listing', String(listingId));
   if (query !== '') olderParams.set('q', query);
@@ -698,6 +712,7 @@ async function renderDirectConversation(req, res, userId) {
     conversation: normalized.conversation,
     messages: normalized.messages,
     meta: normalized.meta,
+    messageIdempotencyKey: randomUUID(),
     olderHref,
     listing,
     listingId,
@@ -805,11 +820,13 @@ router.post('/:id(\\d+)/archive', asyncRoute(async (req, res) => {
  * with scope). "For me" is what the archive button already does; the page asks
  * which, because deleting for everyone cannot be undone.
  */
+// The member's name comes from their profile: reading the conversation here
+// marked it as read just for opening this confirmation page.
 async function conversationPartnerName(req, res, id) {
   try {
-    const result = await callMessage(req.token, 'GET', `/${encodeURIComponent(id)}?per_page=1`);
-    invalidateMessageUnreadCount(req.token);
-    return directConversationFrom(result, id, null, res.locals.t).conversation.otherUser.name;
+    const member = dataFrom(await getUser(req.token, id)) || {};
+    const name = trimmed(member.name || `${trimmed(member.first_name)} ${trimmed(member.last_name)}`);
+    return name || res.locals.t('members.unknown_member');
   } catch (error) {
     if (isAuthError(error)) throw error;
     return res.locals.t('members.unknown_member');
@@ -1405,6 +1422,9 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     getConversations(req.token, {
       per_page: 20,
       archived: showArchived,
+      // The name filter searches every conversation on the server, not just the
+      // twenty on this page (29 Oct 2026).
+      ...(filter ? { q: filter } : {}),
       ...(cursor ? { cursor } : {})
     }),
     // `fresh` on purpose: this page shows the count NEXT TO a live per-conversation
@@ -1489,6 +1509,9 @@ router.post('/:id(\\d+)', requireAuth, audit.messageSend(), asyncRoute(async (re
     return redirectTo(res, messageRedirect(recipientId, 'attachment-invalid'));
   }
 
+  // A resubmitted form (back button, double press) must not send the message
+  // twice: Laravel replays a request with the same key (MessagesController).
+  const idempotencyKey = trimmed(req.body && req.body.idempotency_key, 100);
   try {
     if (attachments.length > 0) {
       const files = await Promise.all(attachments.map(async (file) => ({
@@ -1500,6 +1523,7 @@ router.post('/:id(\\d+)', requireAuth, audit.messageSend(), asyncRoute(async (re
       await uploadMessageAttachments(tokenFrom(req), {
         recipient_id: recipientId,
         body: content,
+        idempotency_key: idempotencyKey || undefined,
         context_type: contextType || undefined,
         context_id: contextId || undefined,
         files
@@ -1508,6 +1532,7 @@ router.post('/:id(\\d+)', requireAuth, audit.messageSend(), asyncRoute(async (re
       await callMessage(req.token, 'POST', '', {
         recipient_id: recipientId,
         body: content,
+        ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}),
         ...(contextType && contextId ? { context_type: contextType, context_id: contextId } : {})
       });
     }

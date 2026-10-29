@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 const express = require('express');
 const {
   getPolls,
@@ -181,6 +182,12 @@ function requirePollAuth(req, res) {
     return '';
   }
   return token;
+}
+
+function withVoteRefusal(req, banner) {
+  if (!banner || banner.type !== 'error' || String(req.query && req.query.status) !== 'vote-failed') return banner;
+  const refusal = consumeApiRefusal(req, 'poll-vote');
+  return refusal ? { ...banner, message: refusal } : banner;
 }
 
 function pollStatusBanner(status, t) {
@@ -477,7 +484,10 @@ router.get('/parity/manage', asyncRoute(async (req, res) => {
   const token = requirePollAuth(req, res);
   if (!token) return undefined;
 
-  const result = await getPolls(token, { mine: true, per_page: 30 });
+  // Laravel lists only open polls unless told otherwise (PollsController
+  // index: status defaults to 'open'), so a member's own closed polls — the ones
+  // to export or delete — never showed here.
+  const result = await getPolls(token, { mine: true, per_page: 100, status: 'all' });
   const polls = asList(dataFrom(result)).map((poll) => normalizePoll(poll, res.locals.t));
   return res.render('polls/manage', {
     title: res.locals.t('govuk_alpha_gamification.poll_manage.title'),
@@ -500,7 +510,7 @@ router.get('/:id(\\d+)/rank', asyncRoute(async (req, res) => {
     resultsVisible: ranked.resultsVisible,
     rankedResults: ranked.rankedResults,
     myRankings: ranked.myRankings,
-    statusBanner: pollStatusBanner(req.query && req.query.status, res.locals.t)
+    statusBanner: withVoteRefusal(req, pollStatusBanner(req.query && req.query.status, res.locals.t))
   });
 }, { notFoundTitle: 'Poll not found' }));
 
@@ -552,7 +562,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     poll,
     comments,
     commentsTotal,
-    statusBanner: pollStatusBanner(req.query && req.query.status, res.locals.t)
+    statusBanner: withVoteRefusal(req, pollStatusBanner(req.query && req.query.status, res.locals.t))
   });
 }, { notFoundTitle: 'Poll not found' }));
 
@@ -562,9 +572,16 @@ router.get('/', asyncRoute(async (req, res) => {
 
   const mine = String((req.query && req.query.mine) || '') === '1';
   const category = trimmed(req.query && req.query.category);
-  const params = { per_page: 30 };
+  // Open, closed or all (React's Open / Closed tabs). Without `status` Laravel
+  // sends open polls only, so the closed section below could never fill.
+  const pollStatus = ['open', 'closed', 'all'].includes(trimmed(req.query && req.query.status_filter))
+    ? trimmed(req.query.status_filter)
+    : 'open';
+  const cursor = trimmed(req.query && req.query.cursor).slice(0, 500);
+  const params = { per_page: 30, status: pollStatus };
   if (mine) params.mine = true;
   if (category) params.category = category;
+  if (cursor) params.cursor = cursor;
 
   const [pollsResult, categoriesResult] = await Promise.all([
     getPolls(token, params),
@@ -581,8 +598,18 @@ router.get('/', asyncRoute(async (req, res) => {
     categories,
     pollsMine: mine,
     pollsCategory: category,
+    pollsStatus: pollStatus,
+    nextHref: (() => {
+      const meta = (pollsResult && pollsResult.meta) || {};
+      if (meta.has_more !== true || !meta.cursor) return '';
+      const next = new URLSearchParams({ status_filter: pollStatus, cursor: String(meta.cursor) });
+      if (mine) next.set('mine', '1');
+      if (category) next.set('category', category);
+      const nextPath = '/polls';
+      return `${nextPath}?${next.toString()}`;
+    })(),
     form: consumePollForm(req, false),
-    statusBanner: pollStatusBanner(req.query && req.query.status, res.locals.t)
+    statusBanner: withVoteRefusal(req, pollStatusBanner(req.query && req.query.status, res.locals.t))
   });
 }));
 
@@ -647,6 +674,8 @@ router.post('/:id(\\d+)/vote', asyncRoute(async (req, res) => {
     await votePoll(token, id, { option_id: optionId });
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    // Already voted, poll closed, safeguarding (PollsController::vote): Laravel's words.
+    rememberClientRefusal(req, 'poll-vote', error);
     status = 'vote-failed';
   }
 

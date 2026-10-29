@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
@@ -31,6 +32,7 @@
 
       <span class="govuk-caption-xl">{{ t("govuk_alpha.messages.title") }}</span>
       <h1 class="govuk-heading-xl">{{ t("govuk_alpha.messages.conversation_title", { name: conversation.otherUser.name }) }}</h1>
+      {% if conversation.otherUser.isOnline %}<p class="govuk-body">{{ govukTag({ text: t("govuk_alpha_messages.conversation.online_badge"), classes: "govuk-tag--turquoise" }) }}</p>{% endif %}
 
       {% if listing %}
         <div class="govuk-inset-text">
@@ -145,13 +147,16 @@
                 <p class="govuk-hint govuk-!-margin-bottom-2">
                   {{ t("govuk_alpha.messages.sent_label") }} {{ (message.created_at or message.createdAt) | formatBladeDateTime }}
                   {% if (message.is_edited or message.isEdited) and not message.isDeleted %} <span class="govuk-!-font-weight-regular">· {{ t("govuk_alpha.messages.edited") }}</span>{% endif %}
+                  {% if message.isOwn and not message.isDeleted %} <span class="govuk-!-font-weight-regular">· {{ t("govuk_alpha.messages.receipt_read") if message.isRead else t("govuk_alpha.messages.receipt_sent") }}</span>{% endif %}
                 </p>
               {% endif %}
 
                 {% if message.isDeleted %}
                   <p class="govuk-body govuk-hint">{{ t("govuk_alpha.messages.deleted_placeholder") }}</p>
                 {% else %}
-                  {% if message.body %}
+                  {% if message.body and message.searchSegments %}
+                    <div class="govuk-body">{% for segment in message.searchSegments %}{% if segment.match %}<mark class="nexus-alpha-search-match">{{ segment.text }}</mark>{% else %}{{ segment.text }}{% endif %}{% endfor %}</div>
+                  {% elif message.body %}
                     <div class="govuk-body">{{ message.body }}</div>
                   {% endif %}
 
@@ -329,6 +334,7 @@
         <h2 class="govuk-heading-m">{{ t("govuk_alpha.actions.reply") }}</h2>
         <form method="post" action="{{ urlFor('/messages/' + (conversation.id | string)) }}" enctype="multipart/form-data" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="idempotency_key" value="{{ messageIdempotencyKey }}">
           {% if listingId %}
             <input type="hidden" name="context_type" value="listing">
             <input type="hidden" name="context_id" value="{{ listingId }}">

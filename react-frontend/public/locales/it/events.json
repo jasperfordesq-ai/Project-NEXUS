@@ -581,7 +581,7 @@
         "waitlist": "Lista d'attesa",
         "attendance": "Partecipazione"
       },
-      "history_change": "{{from}}in{{to}}",
+      "history_change": "da {{from}} a {{to}}",
       "system_actor": "Sistema",
       "version": "Versione {{version}}",
       "close_history": "Chiudi la cronologia",

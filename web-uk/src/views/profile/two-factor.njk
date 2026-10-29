@@ -36,6 +36,9 @@
 
       <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.linked.caption") }}</span>
       <h1 class="govuk-heading-xl">{{ t("security_2fa.title") }}</h1>
+      {% if status == "backup-codes-low" %}
+        <div class="govuk-warning-text"><span class="govuk-warning-text__icon" aria-hidden="true">!</span><strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span> {{ t("security_2fa.backup_codes_low") }}</strong></div>
+      {% endif %}
 
       {% if backupCodes.length %}
         <div class="govuk-panel govuk-panel--confirmation govuk-!-margin-bottom-6">

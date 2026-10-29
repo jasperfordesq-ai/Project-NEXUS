@@ -83,6 +83,7 @@ return [
         'detail_offer' => 'Fai un\'offerta',
         'detail_ask_to_borrow' => 'Chiedi in prestito',
         'detail_save' => 'Salva questo articolo',
+        'detail_unsave' => 'Rimuovi dai salvati',
         'detail_report' => 'Segnala questo elemento',
     ],
     'listing_form' => [
@@ -194,6 +195,8 @@ return [
         'listings_heading' => 'Articoli in vendita',
         'empty' => 'Questo venditore non ha inserzioni attive.',
         'rating_label' => 'Valutazione del venditore',
+        'seller_type_business' => 'Azienda',
+        'seller_type_private' => 'Venditore Privato',
     ],
     'buy' => [
         'title' => 'Conferma il tuo acquisto',

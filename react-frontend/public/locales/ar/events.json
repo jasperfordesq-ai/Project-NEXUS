@@ -615,7 +615,7 @@
         "waitlist": "قائمة الانتظار",
         "attendance": "حضور"
       },
-      "history_change": "{{from}}إلى{{to}}",
+      "history_change": "{{from}} إلى {{to}}",
       "system_actor": "نظام",
       "version": "الإصدار {{version}}",
       "close_history": "إغلاق التاريخ",

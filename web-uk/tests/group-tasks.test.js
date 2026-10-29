@@ -51,7 +51,7 @@ describe('task list', () => {
   it('shows statistics, tasks and per-task actions', async () => {
     const res = await request(app).get('/groups/974/tasks');
     expect(res.status).toBe(200);
-    expect(api.callGroupApi).toHaveBeenCalledWith('token:test', 'GET', '/974/tasks');
+    expect(api.callGroupApi).toHaveBeenCalledWith('token:test', 'GET', '/974/tasks?per_page=50');
     expect(api.callGroupApi).toHaveBeenCalledWith('token:test', 'GET', '/974/task-stats');
     expect(res.text).toContain('Fix the gate');
     expect(res.text).toContain('Bo Kim');
@@ -65,13 +65,13 @@ describe('task list', () => {
 
   it('filters by status with GET', async () => {
     const res = await request(app).get('/groups/974/tasks?show=done');
-    expect(api.callGroupApi).toHaveBeenCalledWith('token:test', 'GET', '/974/tasks?status=done');
+    expect(api.callGroupApi).toHaveBeenCalledWith('token:test', 'GET', '/974/tasks?per_page=50&status=done');
     expect(res.text).toContain('method="get"');
   });
 
   it('ignores an unknown status filter', async () => {
     await request(app).get('/groups/974/tasks?show=bogus');
-    expect(api.callGroupApi).toHaveBeenCalledWith('token:test', 'GET', '/974/tasks');
+    expect(api.callGroupApi).toHaveBeenCalledWith('token:test', 'GET', '/974/tasks?per_page=50');
   });
 
   it('answers 404 when the community switched tasks off', async () => {

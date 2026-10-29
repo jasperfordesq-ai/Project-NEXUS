@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { requireAuth } = require('../middleware/auth');
-const { callMatchesApi, dismissMatch, ApiError } = require('../lib/api');
+const { callMatchesApi, dismissMatch, toggleBookmark, joinGroup, ApiError } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 
 const router = express.Router();
@@ -118,6 +118,8 @@ function normalizeMatch(match = {}, t, board = false, formatRelativeTime = () =>
       ? `govuk_alpha_connections.matches.type_${match.type === 'request' ? 'request' : 'offer'}`
       : `matches.type_${match.type === 'request' ? 'request' : 'offer'}`),
     category: trimmed(match.category_name || match.categoryName || match.category),
+    // CrossModuleMatchingService marks matches that go both ways.
+    isMutual: match.is_mutual === true || match.isMutual === true,
     userName: trimmed(
       match.user_name || match.userName || match.name,
       t(board ? 'govuk_alpha_connections.common.unknown_member' : 'members.unknown_member')
@@ -174,6 +176,12 @@ function statusMessage(status, t) {
   if (status === 'match-dismiss-failed') {
     return { type: 'error', text: t('govuk_alpha_connections.matches_states.dismiss_failed') };
   }
+  // Save a listing match / join a group match from the card (React MatchCard).
+  if (status === 'match-saved') return { type: 'success', text: t('feed_t1.status_save_added') };
+  if (status === 'match-unsaved') return { type: 'success', text: t('feed_t1.status_save_removed') };
+  if (status === 'match-save-failed') return { type: 'error', text: t('feed_t1.status_save_failed') };
+  if (status === 'match-joined') return { type: 'success', text: t('groups.states.group-joined') };
+  if (status === 'match-join-failed') return { type: 'error', text: t('groups.states.group-failed') };
   return null;
 }
 
@@ -202,6 +210,9 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     if (isAuthError(error)) throw error;
     errorMessage = res.locals.t('error_pages.503_body');
   }
+  // React's "Mutual matches only" filter.
+  const mutualOnly = String(req.query.mutual || '') === '1';
+  if (mutualOnly) matches = matches.filter((match) => match.isMutual);
   const stats = statsFor(matches, res.locals.formatLocaleNumber);
 
   res.render('matches/index', {
@@ -214,6 +225,10 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     // React d2ba1b237: the community's safeguarding setup is unfinished, so
     // matches involving protected members are hidden. Explain it; never a CTA.
     safeguardingDegraded: matchMeta.degraded_reason === 'safeguarding_policy_unavailable',
+    // Why there may be nothing to show (React MatchesPage empty variants).
+    noCoordinates: matchMeta.degraded_reason === 'no_coordinates',
+    noActiveListings: matchMeta.has_active_listings === false,
+    mutualOnly,
     errorMessage,
     stats,
     statusMessage: statusMessage(req.query.status, res.locals.t),
@@ -254,6 +269,37 @@ router.get('/board', requireAuth, asyncRoute(async (req, res) => {
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: '/login?status=auth-required' }));
+
+// Save a listing match (a toggle on the bookmarks store, as React's MatchCard).
+router.post('/listing/:listingId(\\d+)/save', requireAuth, asyncRoute(async (req, res) => {
+  let status = 'match-saved';
+  try {
+    const result = await toggleBookmark(req.token, 'listing', Number(req.params.listingId));
+    const data = result && typeof result === 'object' && result.data && typeof result.data === 'object' ? result.data : {};
+    status = data.bookmarked === false ? 'match-unsaved' : 'match-saved';
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    status = 'match-save-failed';
+  }
+  return redirectToMatches(res, status);
+}));
+
+// Join a group match straight from the card (React MatchCard: POST /v2/groups/{id}/join).
+router.post('/group/:groupId(\\d+)/join', requireAuth, asyncRoute(async (req, res) => {
+  let status = 'match-joined';
+  try {
+    await joinGroup(req.token, Number(req.params.groupId));
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    status = 'match-join-failed';
+  }
+  return redirectToMatches(res, status);
+}));
+
+function redirectToMatches(res, status) {
+  const urlFor = typeof res.locals.urlFor === 'function' ? res.locals.urlFor : (value) => value;
+  return res.redirect(urlFor(`/matches?status=${encodeURIComponent(status)}`));
+}
 
 router.post('/:id(\\d+)/dismiss', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);

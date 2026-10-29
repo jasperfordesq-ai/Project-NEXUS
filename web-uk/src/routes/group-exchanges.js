@@ -298,6 +298,7 @@ function previewView(stash, t, tc) {
   };
 }
 
+const GROUP_EXCHANGES_LIST_PATH = '/group-exchanges';
 const GROUP_EXCHANGE_FILTER_STATES = ['draft', 'pending_participants', 'pending_broker', 'active', 'pending_confirmation', 'completed', 'cancelled'];
 
 router.get('/', asyncRoute(async (req, res) => {
@@ -309,12 +310,21 @@ router.get('/', asyncRoute(async (req, res) => {
   const state = GROUP_EXCHANGE_FILTER_STATES.includes(trimmed(req.query.state))
     ? trimmed(req.query.state)
     : '';
-  const query = compactQuery({ limit: 50, status: state });
+  // Laravel pages with limit/offset and says has_more in meta
+  // (GroupExchangeController::index); React loads more, so the list no longer
+  // stops at 50.
+  const PAGE = 50;
+  const offset = Math.min(Math.max(Number.parseInt(trimmed(req.query.offset), 10) || 0, 0), 100000);
+  const query = compactQuery({ limit: PAGE, status: state, offset: offset || undefined });
   const result = await callGroupExchangeApi(token, 'GET', `?${query}`);
   const exchanges = collectionFrom(result)
     .map((exchange) => normalizeExchange(exchange, res.locals.t))
     .filter((exchange) => exchange.id !== null);
   const status = trimmed(req.query.status);
+  const hasMore = result?.meta?.has_more === true;
+  const nextHref = hasMore
+    ? `${GROUP_EXCHANGES_LIST_PATH}?${compactQuery({ state, offset: offset + PAGE })}`
+    : '';
 
   return res.render('group-exchanges/index', {
     title: 'Group exchanges',
@@ -322,6 +332,7 @@ router.get('/', asyncRoute(async (req, res) => {
     activeNav: 'group_exchanges',
     exchanges,
     exchangeState: state,
+    nextHref,
     status,
     successMessage: stateMessage(status, res.locals.t)
   });

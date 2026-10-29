@@ -20,6 +20,11 @@ return [
     'you' => 'あなた',
     'assistant' => 'アシスタント',
     'unavailable_reply' => '申し訳ありません。アシスタントは現在利用できません。後でもう一度お試しください。',
+    'rate_limited' => '現在の使用制限に達しました。後でもう一度お試しください。',
+    'left_today' => '今日の残り :count 回',
+    'delete_link' => '会話「:title」を削除',
+    'delete_button' => 'はい、削除します',
+    'delete_failed' => '会話を削除できませんでした。もう一度お試しください。',
     'disabled_notice' => 'AIアシスタントは現在利用できません。',
     'status_empty' => '送信するメッセージを入力してください。',
 ];

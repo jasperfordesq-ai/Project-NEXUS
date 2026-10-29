@@ -47,9 +47,9 @@ class AiConversation extends Model
     /**
      * Get all conversations for a user (with message count and first message).
      */
-    public static function getByUserId(int $userId, int $tenantId): array
+    public static function getByUserId(int $userId, int $tenantId, ?int $limit = null, int $offset = 0): array
     {
-        $rows = DB::table('ai_conversations as c')
+        $query = DB::table('ai_conversations as c')
             ->select([
                 'c.*',
                 DB::raw('(SELECT COUNT(*) FROM ai_messages WHERE conversation_id = c.id) as message_count'),
@@ -58,8 +58,13 @@ class AiConversation extends Model
             ->where('c.tenant_id', $tenantId)
             ->where('c.user_id', $userId)
             ->orderByDesc('c.updated_at')
-            ->orderByDesc('c.created_at')
-            ->get();
+            ->orderByDesc('c.created_at');
+
+        if ($limit !== null) {
+            $query->limit($limit)->offset($offset);
+        }
+
+        $rows = $query->get();
 
         return $rows->map(fn ($r) => (array) $r)->all();
     }

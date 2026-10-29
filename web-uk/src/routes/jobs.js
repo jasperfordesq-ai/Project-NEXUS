@@ -19,7 +19,7 @@ const {
   uploadJobApplication
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
+const { rememberClientRefusal, consumeApiRefusal, rememberRefusalForPage, refusalForPage } = require('../lib/api-refusal');
 const { readDate, readDateTime, splitDate } = require('../lib/date-input');
 const { createTranslator } = require('../lib/localization');
 const { formatRequestList } = require('../lib/list-format');
@@ -1809,7 +1809,8 @@ function applicationErrorMessage(req, status) {
 function actionErrorMessage(req, status) {
   const refusal = status === 'apply-failed' ? consumeApiRefusal(req, 'job-apply') : '';
   if (refusal) return refusal;
-  return localizedStatusMessage(req, status, JOB_ACTION_ERROR_MESSAGES, JOB_ACTION_ERROR_MESSAGE_KEYS);
+  const message = localizedStatusMessage(req, status, JOB_ACTION_ERROR_MESSAGES, JOB_ACTION_ERROR_MESSAGE_KEYS);
+  return message ? (jobPageRefusal(req) || message) : message;
 }
 
 function jobFieldErrorMap(errors) {
@@ -1857,8 +1858,15 @@ function alertSuccessMessage(req, status) {
   return localizedStatusMessage(req, status, JOB_ALERT_SUCCESS_MESSAGES, JOB_ALERT_MESSAGE_KEYS);
 }
 
+// Laravel's reason for a refused job action, stashed against the page the POST
+// redirected to (lib/api-refusal.js); React shows the same message.
+function jobPageRefusal(req) {
+  return refusalForPage(req, `/jobs${req.path === '/' ? '' : req.path}`);
+}
+
 function alertErrorMessage(req, status) {
-  return localizedStatusMessage(req, status, JOB_ALERT_ERROR_MESSAGES, JOB_ALERT_MESSAGE_KEYS);
+  const message = localizedStatusMessage(req, status, JOB_ALERT_ERROR_MESSAGES, JOB_ALERT_MESSAGE_KEYS);
+  return message ? (jobPageRefusal(req) || message) : message;
 }
 
 function responseSuccessMessage(req, status) {
@@ -1866,7 +1874,8 @@ function responseSuccessMessage(req, status) {
 }
 
 function responseErrorMessage(req, status) {
-  return localizedStatusMessage(req, status, JOB_RESPONSE_ERROR_MESSAGES, JOB_RESPONSE_MESSAGE_KEYS);
+  const message = localizedStatusMessage(req, status, JOB_RESPONSE_ERROR_MESSAGES, JOB_RESPONSE_MESSAGE_KEYS);
+  return message ? (jobPageRefusal(req) || message) : message;
 }
 
 function applicantSuccessMessage(req, status) {
@@ -3096,7 +3105,24 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   };
   const applicationValues = recalledJobApplication(req, decorated.id);
   const savedProfile = !decorated.isOwner && !decorated.hasApplied ? await loadSavedProfile(token) : null;
+  // Other open jobs in the same category (React SimilarJobs): Laravel takes
+  // category, exclude and status. Optional — a failure only hides the section.
+  let similarJobs = [];
+  if (trimmed(job.category) && token) {
+    try {
+      const similarQuery = new URLSearchParams({ category: trimmed(job.category), per_page: '5', exclude: String(job.id), status: 'open' });
+      const similarResult = await callJob(token, 'GET', `?${similarQuery.toString()}`);
+      const rows = dataFrom(similarResult);
+      similarJobs = (Array.isArray(rows) ? rows : (Array.isArray(rows?.items) ? rows.items : []))
+        .filter((row) => row && row.id && Number(row.id) !== Number(job.id))
+        .slice(0, 4)
+        .map((row) => ({ id: row.id, title: trimmed(row.title), organisation: trimmed(row.organization?.name || row.organization_name) }));
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return undefined;
+    }
+  }
   return res.render('jobs/detail', {
+    similarJobs,
     title: decorated.title,
     activeNav: 'explore',
     job: decorated,
@@ -3252,10 +3278,13 @@ router.post('/:id(\\d+)/renew', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   try {
-    await callJob(token, 'POST', `/${encodeURIComponent(id)}/renew`, { days: 30 });
+    // The owner picks how long (React's renew dialog); Laravel accepts 1-90.
+    const days = [7, 14, 30, 60, 90].includes(Number(req.body.days)) ? Number(req.body.days) : 30;
+    await callJob(token, 'POST', `/${encodeURIComponent(id)}/renew`, { days });
     return redirectTo(res, jobRedirect(id, 'renewed'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberRefusalForPage(req, `/jobs/${id}`, error);
     return redirectTo(res, jobRedirect(id, 'renew-failed'));
   }
 }));
@@ -3355,6 +3384,7 @@ router.post('/:id(\\d+)/quick-apply', asyncRoute(async (req, res) => {
     return redirectTo(res, jobRedirect(id, 'applied'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberClientRefusal(req, 'job-apply', error);
     return redirectTo(res, jobRedirect(id, 'apply-failed'));
   }
 }));
@@ -3486,6 +3516,7 @@ router.post('/alerts', asyncRoute(async (req, res) => {
     return redirectTo(res, statusRedirect('/jobs/alerts', 'alert-created'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberRefusalForPage(req, '/jobs/alerts', error);
     return redirectTo(res, statusRedirect('/jobs/alerts', 'alert-failed'));
   }
 }));
@@ -3500,6 +3531,7 @@ router.post('/alerts/:alertId(\\d+)/pause', asyncRoute(async (req, res) => {
     return redirectTo(res, statusRedirect('/jobs/alerts', 'alert-paused'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberRefusalForPage(req, '/jobs/alerts', error);
     return redirectTo(res, statusRedirect('/jobs/alerts', 'alert-failed'));
   }
 }));
@@ -3514,6 +3546,7 @@ router.post('/alerts/:alertId(\\d+)/resume', asyncRoute(async (req, res) => {
     return redirectTo(res, statusRedirect('/jobs/alerts', 'alert-resumed'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberRefusalForPage(req, '/jobs/alerts', error);
     return redirectTo(res, statusRedirect('/jobs/alerts', 'alert-failed'));
   }
 }));
@@ -3528,6 +3561,7 @@ router.post('/alerts/:alertId(\\d+)/delete', asyncRoute(async (req, res) => {
     return redirectTo(res, statusRedirect('/jobs/alerts', 'alert-deleted'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberRefusalForPage(req, '/jobs/alerts', error);
     return redirectTo(res, statusRedirect('/jobs/alerts', 'alert-failed'));
   }
 }));
@@ -3542,6 +3576,7 @@ router.post('/interviews/:interviewId(\\d+)/accept', asyncRoute(async (req, res)
     return redirectTo(res, statusRedirect('/jobs/responses', 'interview-accepted'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberRefusalForPage(req, '/jobs/responses', error);
     return redirectTo(res, statusRedirect('/jobs/responses', 'interview-failed'));
   }
 }));
@@ -3557,6 +3592,7 @@ router.post('/interviews/:interviewId(\\d+)/decline', asyncRoute(async (req, res
     return redirectTo(res, statusRedirect('/jobs/responses', 'interview-declined'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberRefusalForPage(req, '/jobs/responses', error);
     return redirectTo(res, statusRedirect('/jobs/responses', 'interview-failed'));
   }
 }));
@@ -3571,6 +3607,7 @@ router.post('/offers/:offerId(\\d+)/accept', asyncRoute(async (req, res) => {
     return redirectTo(res, statusRedirect('/jobs/responses', 'offer-accepted'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberRefusalForPage(req, '/jobs/responses', error);
     return redirectTo(res, statusRedirect('/jobs/responses', 'offer-failed'));
   }
 }));
@@ -3585,6 +3622,7 @@ router.post('/offers/:offerId(\\d+)/reject', asyncRoute(async (req, res) => {
     return redirectTo(res, statusRedirect('/jobs/responses', 'offer-rejected'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberRefusalForPage(req, '/jobs/responses', error);
     return redirectTo(res, statusRedirect('/jobs/responses', 'offer-failed'));
   }
 }));

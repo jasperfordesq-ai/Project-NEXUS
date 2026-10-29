@@ -55,7 +55,7 @@
 
       {% if error %}
         {% set loginErrorHref = "#email" %}
-        {% if not show2fa and loginStatus in ["email-not-verified", "pending-verification"] %}
+        {% if not show2fa and loginStatus == "email-not-verified" %}
           {% set loginErrorHref = "#resend_email" %}
         {% elseif not show2fa and loginStatus and loginStatus != "login-failed" %}
           {% set loginErrorHref = "#main-content" %}
@@ -131,7 +131,9 @@
         <h1 class="govuk-heading-xl">{{ t("auth.login_title") }}</h1>
         <p class="govuk-body-l">{{ t("auth.login_description", { community: tenantName or serviceName }) }}</p>
 
-        {% if loginStatus in ["email-not-verified", "pending-verification"] %}
+        {# AUTH_PENDING_VERIFICATION is IDENTITY verification, not email: resending
+           the email cannot help, so the form is offered for email only. #}
+        {% if loginStatus == "email-not-verified" %}
           <form method="post" action="{{ urlFor('/login/resend-verification') }}" class="govuk-!-margin-bottom-6" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <div class="govuk-form-group">
@@ -224,7 +226,7 @@
         </form>
 
         <p class="govuk-body govuk-!-margin-top-6">
-          <a href="{{ urlFor('/register') }}" class="govuk-link">{{ t("auth.need_account") }}</a>
+          <a href="{{ urlFor('/register' + ('?return_to=' + (returnTo | urlencode) if returnTo else '')) }}" class="govuk-link">{{ t("auth.need_account") }}</a>
         </p>
       {% endif %}
 

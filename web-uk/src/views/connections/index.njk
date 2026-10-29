@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block content %}
   <span class="govuk-caption-xl" id="connections-top">{{ t("connections.caption", { community: communityName }) }}</span>
@@ -87,6 +88,7 @@
         </article>
       {% endfor %}
       </div>
+      {% if sectionHasMore and sectionHasMore.received %}{{ loadMoreNext(urlFor('/connections/network?tab=pending_received'), t("actions.load_more")) }}{% endif %}
     {% else %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("connections.received_empty") }}</p></div>
     {% endif %}
@@ -122,6 +124,7 @@
         </article>
       {% endfor %}
       </div>
+      {% if sectionHasMore and sectionHasMore.accepted %}{{ loadMoreNext(urlFor('/connections/network?tab=accepted'), t("actions.load_more")) }}{% endif %}
     {% else %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("connections.accepted_empty") }}</p></div>
     {% endif %}
@@ -157,6 +160,7 @@
         </article>
       {% endfor %}
       </div>
+      {% if sectionHasMore and sectionHasMore.sent %}{{ loadMoreNext(urlFor('/connections/network?tab=pending_sent'), t("actions.load_more")) }}{% endif %}
     {% else %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("connections.sent_empty") }}</p></div>
     {% endif %}

@@ -7,6 +7,8 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
+{% from "_load-more.njk" import loadMoreNext %}
+
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ t("groups.back_to_group") }}</a>
 {% endblock %}
@@ -56,9 +58,20 @@
     {% endif %}
   {% endif %}
 
-  <h2 class="govuk-heading-l">{{ t("groups.members_title") }}</h2>
+  <h2 class="govuk-heading-l" id="group-members">{{ t("groups.members_title") }}</h2>
+  <form method="get" action="{{ urlFor('/groups/' + (group.id | string) + '/manage') }}#group-members" class="govuk-!-margin-bottom-6" novalidate>
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="manage-member-q">{{ t("govuk_alpha_groups.members_page.search_label") }}</label>
+      <div id="manage-member-q-hint" class="govuk-hint">{{ t("govuk_alpha_groups.members_page.search_hint") }}</div>
+      <input class="govuk-input govuk-!-width-two-thirds" id="manage-member-q" name="q" type="text" maxlength="100" value="{{ memberQuery }}" aria-describedby="manage-member-q-hint">
+    </div>
+    <div class="govuk-button-group">
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_groups.members_page.search_button") }}</button>
+      {% if memberQuery %}<a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/manage') }}#group-members">{{ t("govuk_alpha_groups.members_page.clear") }}</a>{% endif %}
+    </div>
+  </form>
   {% if not members.length %}
-    <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.manage.members_empty") }}</p></div>
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_groups.members_page.empty_search", { query: memberQuery }) if memberQuery else t("groups.manage.members_empty") }}</p></div>
   {% else %}
     <div class="nexus-alpha-card-list">
       {% for member in members %}
@@ -85,5 +98,6 @@
         </article>
       {% endfor %}
     </div>
+    {% if membersNextHref %}{{ loadMoreNext(urlFor(membersNextHref), t("actions.load_more"), t("groups.members_title")) }}{% endif %}
   {% endif %}
 {% endblock %}

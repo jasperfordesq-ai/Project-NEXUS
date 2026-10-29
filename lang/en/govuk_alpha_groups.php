@@ -21,6 +21,12 @@ return [
     // ---- Invite members -------------------------------------------------
     'invite' => [
         'title' => 'Invite members',
+        'results_heading' => 'What happened to each invitation',
+        'result_sent' => 'Sent',
+        'result_already_member' => 'Already a member',
+        'result_already_invited' => 'Already invited',
+        'result_failed' => 'Could not invite',
+        'result_delivery_failed' => 'Invitation saved, but email delivery failed',
         'caption' => 'Invite people to :group',
         'intro' => 'Invite people to join this group by sharing a link or sending email invitations.',
         'link_heading' => 'Share an invite link',
@@ -155,6 +161,7 @@ return [
         'manage_link'       => 'View files',
         'nav_files'         => 'Files',
         'folder_filter_label' => 'Show files in',
+        'search_label' => 'Search files',
         'folder_filter_all' => 'All folders',
         'pagination_label' => 'File pages',
     ],

@@ -1253,6 +1253,10 @@ app.get('/volunteering', requireAuth, (req, res) => {
     ? req.query.is_remote
     : (typeof req.query.remote === 'string' ? req.query.remote : '');
   const isRemote = ['1', 'true', 'on', 'yes'].includes(String(remoteValue).toLowerCase());
+  // Near me (React VolunteeringPage near_lat / near_lng / radius_km), from the
+  // member's saved location, as the events list does.
+  const near = ['any', '5', '10', '25', '50'].includes(String(req.query.near)) ? String(req.query.near) : 'any';
+  let nearNoLocation = false;
   const filters = { per_page: 20 };
 
   if (volunteeringQuery) {
@@ -1293,6 +1297,7 @@ app.get('/volunteering', requireAuth, (req, res) => {
     if (volunteeringQuery) loadMoreParams.set('q', volunteeringQuery);
     if (categoryId) loadMoreParams.set('category_id', categoryId);
     if (isRemote) loadMoreParams.set('is_remote', '1');
+    if (near !== 'any') loadMoreParams.set('near', near);
     if (nextCursor) loadMoreParams.set('cursor', nextCursor);
     const queryString = loadMoreParams.toString();
 
@@ -1319,7 +1324,22 @@ app.get('/volunteering', requireAuth, (req, res) => {
     ? callVolunteeringApi(token, 'GET', '/community-projects?per_page=20').catch(() => ({ data: [] }))
     : Promise.resolve({ data: [] });
 
-  Promise.all([getVolunteeringOpportunities(filters, token), applicationsPromise, hoursSummaryPromise, organisationsPromise, categoriesPromise, recommendedPromise, communityProjectsPromise])
+  const { getRequestProfile } = require('./lib/request-profile');
+  const opportunitiesPromise = (near !== 'any' && token
+    ? getRequestProfile(req, token).catch(() => null)
+    : Promise.resolve(null)
+  ).then((profile) => {
+    if (near === 'any' || !token) return getVolunteeringOpportunities(filters, token);
+    const latitude = Number(profile?.latitude ?? profile?.location?.latitude);
+    const longitude = Number(profile?.longitude ?? profile?.location?.longitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || (latitude === 0 && longitude === 0)) {
+      nearNoLocation = true;
+      return getVolunteeringOpportunities(filters, token);
+    }
+    return getVolunteeringOpportunities({ ...filters, near_lat: latitude, near_lng: longitude, radius_km: Number(near) }, token);
+  });
+
+  Promise.all([opportunitiesPromise, applicationsPromise, hoursSummaryPromise, organisationsPromise, categoriesPromise, recommendedPromise, communityProjectsPromise])
     .then(([result, applicationsResult, hoursSummaryResult, organisationsResult, categoriesResult, recommendedResult, communityProjectsResult]) => {
       const opportunities = Array.isArray(result?.data)
         ? result.data
@@ -1436,6 +1456,8 @@ app.get('/volunteering', requireAuth, (req, res) => {
         volunteeringQuery,
         categoryId,
         isRemote,
+        near,
+        nearNoLocation,
         error: false,
         hasMore: !!meta.has_more && !!nextCursor,
         loadMoreHref: buildLoadMoreHref(nextCursor),
@@ -1482,6 +1504,8 @@ app.get('/volunteering', requireAuth, (req, res) => {
         volunteeringQuery,
         categoryId,
         isRemote,
+        near,
+        nearNoLocation,
         error: true,
         hasMore: false,
         loadMoreHref: '',
@@ -1679,6 +1703,10 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
         'shift-cancelled': ['success', res.locals.t('govuk_alpha.volunteering.shift_cancelled_detail')],
         'shift-signup-failed': ['error', res.locals.t('govuk_alpha.volunteering.shift_signup_failed')],
         'shift-cancel-failed': ['error', res.locals.t('govuk_alpha.volunteering.shift_cancel_failed')],
+        'shift-signup-refused': ['error', (status === 'shift-signup-refused' && consumeApiRefusal(req, `shift-${Number(req.params.id)}`))
+          || res.locals.t('govuk_alpha.volunteering.shift_signup_failed')],
+        'shift-cancel-refused': ['error', (status === 'shift-cancel-refused' && consumeApiRefusal(req, `shift-${Number(req.params.id)}`))
+          || res.locals.t('govuk_alpha.volunteering.shift_cancel_failed')],
         'shift-safeguarding-restricted': ['error', safeguardingMessage(
           'safeguarding.errors.interaction_not_allowed',
           'The recipient\u2019s community safeguarding policy does not allow this direct interaction. Ask a coordinator for help.'
@@ -1754,7 +1782,7 @@ app.get('/organisations', requireOrganisationAuth, (req, res) => {
         organisationsQuery,
         status,
         values,
-        ...organisationFormErrors(res, status, values.invalidStatus)
+        ...organisationFormErrors(res, status, values.invalidStatus, values.apiRefusal)
       });
     })
     .catch(() => {
@@ -1765,7 +1793,7 @@ app.get('/organisations', requireOrganisationAuth, (req, res) => {
         organisationsQuery,
         status,
         values,
-        ...organisationFormErrors(res, status, values.invalidStatus)
+        ...organisationFormErrors(res, status, values.invalidStatus, values.apiRefusal)
       });
     });
 });
@@ -1976,7 +2004,7 @@ const ORGANISATION_ERROR_FIELDS = {
  *
  * `org-failed` is an API failure, not a field error: it becomes the page-level sentence.
  */
-function organisationFormErrors(res, status, invalidStatus) {
+function organisationFormErrors(res, status, invalidStatus, apiRefusal = null) {
   const t = res.locals.t || ((key) => key);
   const mapped = ORGANISATION_ERROR_FIELDS[invalidStatus];
 
@@ -1995,6 +2023,19 @@ function organisationFormErrors(res, status, invalidStatus) {
   }
 
   if (status === 'org-failed') {
+    // Laravel names the field and why (VolunteerService::createOrganization:
+    // a name already taken, an invalid email or website) — show it against the field.
+    if (apiRefusal && apiRefusal.message) {
+      const field = { name: 'name', description: 'description', contact_email: 'email', website: 'website' }[apiRefusal.field] || '';
+      if (field) {
+        return {
+          errorList: [{ text: apiRefusal.message, href: `#${field}` }],
+          fieldErrors: { [field]: apiRefusal.message },
+          formMessage: ''
+        };
+      }
+      return { errorList: [], fieldErrors: {}, formMessage: apiRefusal.message };
+    }
     return { errorList: [], fieldErrors: {}, formMessage: t('govuk_alpha.organisations.states.org-failed') };
   }
 
@@ -2060,7 +2101,13 @@ async function handleOrganisationRegistrationPost(req, res, options = {}) {
         description: payload.description,
         email: payload.contact_email,
         website: payload.website,
-        agreedTerms: acceptedOrganisationTerms(req.body.agreed_terms)
+        agreedTerms: acceptedOrganisationTerms(req.body.agreed_terms),
+        apiRefusal: (() => {
+          const status = Number(error && error.status);
+          const first = Array.isArray(error?.data?.errors) ? error.data.errors[0] : null;
+          if (!(status >= 400 && status < 500) || status === 401 || !first) return null;
+          return { field: String(first.field || ''), message: String(first.message || '').slice(0, 300) };
+        })()
       };
     }
     const failedRedirect = options.coarseInvalid
@@ -2274,8 +2321,8 @@ app.get('/organisations/:id(\\d+)', requireOrganisationAuth, (req, res) => {
         : '';
       const contactEmail = String(organisation.email ?? organisation.contact_email ?? '').trim();
       const [opportunitiesResult, reviewsResult] = await Promise.allSettled([
-        getOrganisationOpportunities(req.params.id, { per_page: 10 }),
-        getOrganisationReviews(req.params.id)
+        getOrganisationOpportunities(req.params.id, { per_page: 50 }, token),
+        getOrganisationReviews(req.params.id, token)
       ]);
       const opportunitiesPayload = opportunitiesResult.status === 'fulfilled' ? opportunitiesResult.value : null;
       const reviewsPayload = reviewsResult.status === 'fulfilled' ? reviewsResult.value : null;

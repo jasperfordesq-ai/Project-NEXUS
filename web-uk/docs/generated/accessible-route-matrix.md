@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-29T12:39:59.171Z
-Laravel commit SHA: `30ca11d1ba0396ce39ffc4d7947f1a66c76339d6`
-Web UK repository commit SHA: `30ca11d1ba0396ce39ffc4d7947f1a66c76339d6`
+Generated: 2026-10-29T15:43:54.691Z
+Laravel commit SHA: `2d7fb1308eeb5f9b45ada3fa37fedfec4b8175fa`
+Web UK repository commit SHA: `2d7fb1308eeb5f9b45ada3fa37fedfec4b8175fa`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1075 |
+| web-uk routes | 1083 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 365 |
+| Extra web-uk routes | 373 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -33,7 +33,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | blog | 12 | 0 | 0 | 0 |
 | caring | 0 | 0 | 9 | 0 |
 | changelog | 0 | 0 | 2 | 0 |
-| chat | 2 | 0 | 0 | 0 |
+| chat | 2 | 0 | 1 | 0 |
 | child-safety | 0 | 0 | 1 | 0 |
 | clubs | 1 | 0 | 10 | 0 |
 | connections | 5 | 0 | 0 | 0 |
@@ -45,13 +45,13 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | dashboard | 1 | 0 | 1 | 0 |
 | developers | 0 | 0 | 4 | 0 |
 | event-templates | 4 | 0 | 0 | 0 |
-| events | 94 | 0 | 11 | 0 |
+| events | 94 | 0 | 14 | 0 |
 | exchanges | 4 | 0 | 0 | 0 |
 | explore | 1 | 0 | 1 | 0 |
 | faq | 1 | 0 | 0 | 0 |
 | features | 1 | 0 | 0 | 0 |
 | federation | 28 | 0 | 3 | 0 |
-| feed | 22 | 0 | 4 | 0 |
+| feed | 22 | 0 | 6 | 0 |
 | goals | 27 | 0 | 1 | 0 |
 | group-exchanges | 9 | 0 | 1 | 0 |
 | groups | 36 | 0 | 60 | 0 |
@@ -71,7 +71,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | login | 7 | 0 | 4 | 0 |
 | logout | 1 | 0 | 0 | 0 |
 | marketplace | 50 | 0 | 40 | 0 |
-| matches | 4 | 0 | 2 | 0 |
+| matches | 4 | 0 | 4 | 0 |
 | me | 6 | 0 | 4 | 0 |
 | members | 11 | 0 | 3 | 0 |
 | messages | 18 | 0 | 6 | 0 |
@@ -142,6 +142,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/caring/reviews/{param}/decide` | caring | caring/reviews | web-uk/src/routes/caring.js |
 | GET | `/changelog` | changelog | public-info/changelog | web-uk/src/routes/public-info.js |
 | GET | `/changelog/{param}` | changelog | public-info/changelog-release | web-uk/src/routes/public-info.js |
+| POST | `/chat/{param}/delete` | chat |  | web-uk/src/routes/ai-chat.js |
 | GET | `/child-safety` | child-safety | legal/platform-document | web-uk/src/routes/legal.js |
 | GET | `/clubs/{param}/admin/dues` | clubs | verein/admin-dues | web-uk/src/routes/verein.js |
 | GET | `/clubs/{param}/admin/dues/{param}/waive` | clubs | verein/admin-waive | web-uk/src/routes/verein.js |
@@ -168,11 +169,14 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/developers/auth` | developers | developers/auth | web-uk/src/routes/developers.js |
 | GET | `/developers/endpoints` | developers | developers/endpoints | web-uk/src/routes/developers.js |
 | GET | `/developers/webhooks` | developers | developers/webhooks | web-uk/src/routes/developers.js |
+| GET | `/events/{param}/people/{param}/history` | events | events/person-history | web-uk/src/routes/events.js |
+| GET | `/events/{param}/people/export.csv` | events |  | web-uk/src/routes/events.js |
 | GET | `/events/{param}/staff` | events | events/staff | web-uk/src/routes/event-organiser-tools.js |
 | GET | `/events/{param}/staff/{param}/revoke` | events | events/staff-revoke | web-uk/src/routes/event-organiser-tools.js |
 | GET | `/events/{param}/tickets/manage` | events | events/ticket-types | web-uk/src/routes/event-organiser-tools.js |
 | GET | `/events/{param}/tickets/types/{param}/edit` | events |  | web-uk/src/routes/event-organiser-tools.js |
 | GET | `/events/{param}/tickets/types/new` | events |  | web-uk/src/routes/event-organiser-tools.js |
+| GET | `/events/month` | events | events/month | web-uk/src/routes/events.js |
 | GET | `/events/my` | events |  | web-uk/src/server.js |
 | POST | `/events/{param}/rsvp/remove` | events |  | web-uk/src/server.js |
 | POST | `/events/{param}/staff` | events |  | web-uk/src/routes/event-organiser-tools.js |
@@ -186,6 +190,8 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/feed/mentions` | feed | feed/mentions | web-uk/src/routes/feed.js |
 | GET | `/feed/posts/{param}/reactions/{param}` | feed | feed/reactors | web-uk/src/routes/feed.js |
 | GET | `/feed/posts/{param}/stats` | feed |  | web-uk/src/routes/feed.js |
+| POST | `/feed/items/{param}/{param}/save` | feed |  | web-uk/src/routes/feed-actions.js |
+| POST | `/feed/items/{param}/{param}/share` | feed |  | web-uk/src/routes/feed-actions.js |
 | POST | `/feed/posts/{param}/translate` | feed |  | web-uk/src/routes/feed-actions.js |
 | POST | `/goals/{param}/buddy-requests/{param}/{param}` | goals |  | web-uk/src/routes/goals.js |
 | POST | `/group-exchanges/{param}/start` | group-exchanges |  | web-uk/src/routes/group-exchange-actions.js |
@@ -332,6 +338,8 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/marketplace/shipping/{param}/update` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/matches/board/group/{param}/dismiss` | matches |  | web-uk/src/routes/matches.js |
 | POST | `/matches/group/{param}/dismiss` | matches |  | web-uk/src/routes/matches.js |
+| POST | `/matches/group/{param}/join` | matches |  | web-uk/src/routes/matches.js |
+| POST | `/matches/listing/{param}/save` | matches |  | web-uk/src/routes/matches.js |
 | GET | `/me/verein-dues` | me | verein/my-dues | web-uk/src/routes/verein-my-dues.js |
 | GET | `/me/verein-invitations` | me | verein/invitations | web-uk/src/routes/verein-invitations.js |
 | POST | `/me/verein-dues/{param}/pay` | me |  | web-uk/src/routes/verein-my-dues.js |

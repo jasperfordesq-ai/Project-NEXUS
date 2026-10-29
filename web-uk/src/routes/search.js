@@ -484,6 +484,9 @@ router.get('/advanced', asyncRoute(async (req, res) => {
   const podcastsEnabled = podcastsEnabledFor(req);
   const state = advancedSearchState(req.query, { podcastsEnabled });
   const hasSearched = state.searchQuery !== '';
+  // Laravel refuses a query under 2 characters with 400 (SearchController), which
+  // used to show "couldn't load results". Say what is wrong instead.
+  const tooShort = hasSearched && Array.from(state.searchQuery).length < 2;
   let searchResult = { data: [], meta: { search: { total: 0 } } };
   let savedResult = { data: [] };
   let categoriesResult = { data: [] };
@@ -492,15 +495,19 @@ router.get('/advanced', asyncRoute(async (req, res) => {
 
   try {
     const calls = [
-      getSavedSearches(token),
+      // A failed saved-searches read must not take the results down with it.
+      getSavedSearches(token).catch((error) => {
+        if (error instanceof ApiError && error.status === 401) throw error;
+        return { data: [] };
+      }),
       getListingCategories(token).catch(() => ({ data: [] })),
       getPopularListingTags(token, 10).catch(() => ({ data: [] }))
     ];
-    if (hasSearched) {
+    if (hasSearched && !tooShort) {
       calls.unshift(searchV2(token, apiSearchParams(state)));
     }
     const results = await Promise.all(calls);
-    if (hasSearched) {
+    if (hasSearched && !tooShort) {
       [searchResult, savedResult, categoriesResult, popularTagsResult] = results;
     } else {
       [savedResult, categoriesResult, popularTagsResult] = results;
@@ -526,7 +533,8 @@ router.get('/advanced', asyncRoute(async (req, res) => {
     tabHrefs: advancedTabHrefs(state),
     podcastsEnabled,
     hasSearched,
-    searchError,
+    searchError: searchError || tooShort,
+    searchTooShort: tooShort,
     total,
     counts,
     resultCountLabel: resultCountLabel(total, res.locals.tc),

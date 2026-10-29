@@ -593,7 +593,7 @@
         "waitlist": "Lista oczekujących",
         "attendance": "Obecność"
       },
-      "history_change": "{{from}}do{{to}}",
+      "history_change": "z {{from}} do {{to}}",
       "system_actor": "Systemu",
       "version": "Wersja {{version}}",
       "close_history": "Zamknij historię",

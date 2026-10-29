@@ -1,0 +1,38 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/events') }}">{{ t("govuk_alpha.events.title") }}</a>
+{% endblock %}
+
+{% block content %}
+  <h1 class="govuk-heading-xl">{{ title }}</h1>
+
+  <nav class="govuk-pagination govuk-pagination--block" aria-label="{{ t('govuk_alpha.events.month_view') }}">
+    <div class="govuk-pagination__prev"><a class="govuk-link govuk-pagination__link" rel="prev" href="{{ urlFor(previousHref) }}"><span class="govuk-pagination__link-title">{{ t("govuk_alpha.events.month_previous") }}</span></a></div>
+    <div class="govuk-pagination__next"><a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor(nextHref) }}"><span class="govuk-pagination__link-title">{{ t("govuk_alpha.events.month_next") }}</span></a></div>
+  </nav>
+
+  {% if loadFailed %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("states.load_error") }}</p></div>
+  {% elif not days.length %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha.events.month_none") }}</p></div>
+  {% else %}
+    {% for day in days %}
+      <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ day.label }}</h2>
+      <ul class="govuk-list govuk-list--spaced">
+        {% for item in day.events %}
+          <li>
+            {% if item.id %}<a class="govuk-link" href="{{ urlFor('/events/' + (item.id | string)) }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}
+            <span class="govuk-hint govuk-!-display-inline">— {{ t("govuk_alpha.events.month_all_day") if item.allDay else item.time }}</span>
+            {% if item.cancelled %}{{ govukTag({ text: t("govuk_alpha.events.month_cancelled"), classes: "govuk-tag--red" }) }}{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endfor %}
+  {% endif %}
+{% endblock %}

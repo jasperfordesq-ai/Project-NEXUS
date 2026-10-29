@@ -65,7 +65,8 @@ jest.mock('../src/lib/api', () => {
     updateComment: jest.fn(),
     deleteComment: jest.fn(),
     toggleReaction: jest.fn(),
-    toggleFeedLike: jest.fn()
+    toggleFeedLike: jest.fn(),
+    toggleBookmark: jest.fn()
   };
 });
 
@@ -288,6 +289,21 @@ describe('4-5, 7-8. the main feed list', () => {
     api.shareFeedItem.mockResolvedValue({ data: { shared: true } });
     await request(buildApp()).post('/feed/posts/5/share').type('form').send({ comment: 'Worth a read' });
     expect(api.shareFeedItem).toHaveBeenCalledWith('test-token', { type: 'post', id: 5, comment: 'Worth a read' });
+  });
+
+  // 29 Oct 2026: listings, events and jobs in the feed gained Share and Save. The
+  // routes first shipped with '\d+' written as a single-backslash string, which
+  // matched the letter "d" rather than a number, so both answered 404.
+  it('shares and saves a listing in the feed, not just posts', async () => {
+    api.shareFeedItem.mockResolvedValue({ data: { shared: true } });
+    const shared = await request(buildApp()).post('/feed/items/listing/77/share').type('form').send({});
+    expect(shared.status).toBe(302);
+    expect(api.shareFeedItem).toHaveBeenCalledWith('test-token', { type: 'listing', id: 77 });
+
+    api.toggleBookmark.mockResolvedValue({ data: { bookmarked: true } });
+    const saved = await request(buildApp()).post('/feed/items/listing/77/save').type('form').send({});
+    expect(saved.status).toBe(302);
+    expect(api.toggleBookmark).toHaveBeenCalledWith('test-token', 'listing', 77);
   });
 
   it('explains why an item is shown in the ranked feed, using the API reasons', async () => {

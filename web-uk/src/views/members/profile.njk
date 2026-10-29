@@ -157,7 +157,13 @@
                 <article class="nexus-alpha-card"><h3 class="govuk-heading-m govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ listing.title }}</a></h3>{{ govukTag({ text: t("listings." + listingType), classes: ('govuk-tag--purple' if listingType == 'request' else 'govuk-tag--blue') }) }}{% if listing.description %}<p class="govuk-body govuk-!-margin-top-3">{{ listing.description | truncate(180) }}</p>{% endif %}</article>
               {% endfor %}
             </div>
+            <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/listings?user_id=' + (user.id | string)) }}">{{ t("profile.view_all_listings") }}</a></p>
+
           {% else %}<div class="govuk-inset-text">{{ t("profile.empty_listings") }}</div>{% endif %}
+
+          <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("feed.types.posts") }}</h2>
+          {# React's profile Posts tab: this member's feed posts, paged. #}
+          <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/feed?type=posts&user_id=' + (user.id | string)) }}">{{ t("feed.types.posts") }}<span class="govuk-visually-hidden">: {{ user.name or '' }}</span></a></p>
 
           <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.recent_activity_title") }}</h2>
           {% if profileActivity.length %}

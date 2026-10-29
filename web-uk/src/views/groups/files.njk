@@ -34,9 +34,13 @@
 
   <p class="govuk-body">{{ t("govuk_alpha_groups.files.intro") }}</p>
 
+  {# Search and browse by folder without JavaScript: a GET form. #}
+  <form method="get" action="{{ urlFor('/groups/' + (group.id | string) + '/files') }}" class="govuk-!-margin-bottom-6" novalidate>
+    <div class="govuk-form-group govuk-!-margin-bottom-3">
+      <label class="govuk-label govuk-label--s" for="files-q">{{ t("govuk_alpha_groups.files.search_label") }}</label>
+      <input class="govuk-input govuk-!-width-two-thirds" id="files-q" name="q" type="text" maxlength="100" value="{{ fileQuery }}">
+    </div>
   {% if folders and folders.length %}
-    {# Browse by folder without JavaScript: a GET form (27 Oct 2026). #}
-    <form method="get" action="{{ urlFor('/groups/' + (group.id | string) + '/files') }}" class="govuk-!-margin-bottom-6">
       <div class="govuk-form-group govuk-!-margin-bottom-3">
         <label class="govuk-label govuk-label--s" for="files-folder-filter">{{ t("govuk_alpha_groups.files.folder_filter_label") }}</label>
         <select class="govuk-select" id="files-folder-filter" name="folder">
@@ -46,9 +50,9 @@
           {% endfor %}
         </select>
       </div>
-      <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("actions.apply_filters") }}</button>
-    </form>
   {% endif %}
+    <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("actions.apply_filters") }}</button>
+  </form>
 
   {% if not files.length %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("govuk_alpha_groups.files.empty") }}</p></div>

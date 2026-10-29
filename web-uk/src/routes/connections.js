@@ -250,6 +250,7 @@ router.get('/', asyncRoute(async (req, res) => {
   let receivedRequests = [];
   let sentRequests = [];
   let loadError = '';
+  let sectionHasMore = { accepted: false, received: false, sent: false };
 
   try {
     const [countsResult, accepted, received, sent] = await Promise.all([
@@ -259,6 +260,10 @@ router.get('/', asyncRoute(async (req, res) => {
       getConnections(req.token, { status: 'pending_sent', per_page: 50 })
     ]);
     counts = countsFrom(countsResult);
+    // Each section shows 50; when Laravel says there are more, link to the full,
+    // paged list for that section (React loads more per tab).
+    const more = (result) => Boolean(result && result.meta && result.meta.has_more);
+    sectionHasMore = { accepted: more(accepted), received: more(received), sent: more(sent) };
     acceptedConnections = asList(dataFrom(accepted)).map((row) => normaliseConnection(row, t));
     receivedRequests = asList(dataFrom(received)).map((row) => normaliseConnection(row, t));
     sentRequests = asList(dataFrom(sent)).map((row) => normaliseConnection(row, t));
@@ -287,6 +292,7 @@ router.get('/', asyncRoute(async (req, res) => {
       received: formatCount(counts.received),
       sent: formatCount(counts.sent)
     },
+    sectionHasMore,
     connSearch,
     status: actionStatus,
     loadError,

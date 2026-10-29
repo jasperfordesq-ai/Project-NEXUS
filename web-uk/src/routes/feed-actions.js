@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+const { rememberClientRefusal } = require('../lib/api-refusal');
 const express = require('express');
 const fs = require('fs/promises');
 const {
@@ -15,9 +16,7 @@ const {
   muteFeedUser,
   reportFeedItem,
   shareFeedItem,
-  saveSavedItem,
-  checkSavedItem,
-  unsaveSavedItem,
+  toggleBookmark,
   voteFeedPoll,
   createComment,
   updateComment,
@@ -39,6 +38,8 @@ const { readDateTime } = require('../lib/date-input');
 const FEED_POST_REPLAY = 'feedPost';
 const FEED_POST_REPLAY_KEY = 'composer';
 
+// One-shot: the next feed page shows Laravel's reason for the refused action.
+const FEED_REFUSAL_KEY = 'feed-action';
 const router = express.Router();
 const FEED_PATH = '/feed';
 // Every reaction React offers (components/social/reactions.ts): eight on posts and
@@ -192,11 +193,6 @@ function shareStatusFrom(result) {
   return data && data.shared === false ? 'share-removed' : 'share-added';
 }
 
-function savedStatusFrom(result) {
-  const data = dataFrom(result);
-  return data && data.saved ? 'save-removed' : 'save-added';
-}
-
 // React PostTab: up to 10 photos per post (MediaUploader maxFiles, and the API's
 // PostMediaService::MAX_MEDIA_PER_POST), each with its own alt text. Without
 // JavaScript each photo is its own file field: `image` / `image_alt`, then
@@ -289,6 +285,8 @@ router.post('/posts', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectAuthIfNeeded(error, res, req)) return undefined;
     rememberPost();
+    // Too long, safeguarding, legal acceptance...: Laravel's reason (React shows it).
+    rememberClientRefusal(req, FEED_REFUSAL_KEY, error);
     status = 'post-failed';
   } finally {
     await cleanUp();
@@ -524,22 +522,70 @@ router.post('/posts/:id(\\d+)/save', asyncRoute(async (req, res) => {
 
   let status = 'save-failed';
   try {
-    const check = await checkSavedItem(token, 'post', id);
-    status = savedStatusFrom(check);
-    if (status === 'save-removed') {
-      await unsaveSavedItem(token, 'post', id);
-    } else {
-      await saveSavedItem(token, {
-        item_type: 'post',
-        item_id: id
-      });
-    }
+    // The bookmarks store (POST /v2/bookmarks, a toggle), which is what the
+    // feed's is_bookmarked flag, its Saved filter and /saved all read, and what
+    // React's BookmarkButton writes. Saving to /v2/me/saved-items left the post
+    // "saved" somewhere no page ever looked.
+    const result = await toggleBookmark(token, 'post', id);
+    status = dataFrom(result)?.bookmarked === false ? 'save-removed' : 'save-added';
   } catch (error) {
     if (redirectAuthIfNeeded(error, res, req, 'post', id)) return undefined;
     status = 'save-failed';
   }
 
   return redirectTo(res, feedRedirect(req, status, 'post', id));
+}));
+
+// Share and save a non-post feed item (React FeedCard: SHAREABLE_TYPES and
+// BookmarkButton). Shares accept ShareService::VALID_TYPES; saves accept the
+// bookmark types (BookmarkService::VALID_TYPES). Until 29 Oct 2026 these items
+// had only a Like button on the accessible feed.
+const FEED_SHARE_TYPES = new Set(['listing', 'event', 'poll', 'job', 'blog', 'discussion', 'goal', 'challenge', 'volunteer']);
+const FEED_SAVE_TYPES = new Set(['listing', 'event', 'job', 'blog', 'discussion']);
+
+router.post('/items/:type([a-zA-Z0-9_-]+)/:id(\\d+)/share', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  const id = Number(req.params.id);
+  const type = normalizeFeedTargetType(req.params.type);
+  if (!token) {
+    return redirectTo(res, feedRedirect(req, 'auth-required', type, id));
+  }
+  if (!FEED_SHARE_TYPES.has(type)) {
+    return redirectTo(res, feedRedirect(req, 'share-failed', type, id));
+  }
+
+  let status = 'share-failed';
+  try {
+    status = shareStatusFrom(await shareFeedItem(token, { type, id }));
+  } catch (error) {
+    if (redirectAuthIfNeeded(error, res, req, type, id)) return undefined;
+    status = error instanceof ApiError && error.status === 422 ? 'share-own' : 'share-failed';
+  }
+
+  return redirectTo(res, feedRedirect(req, status, type, id));
+}));
+
+router.post('/items/:type([a-zA-Z0-9_-]+)/:id(\\d+)/save', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  const id = Number(req.params.id);
+  const type = normalizeFeedTargetType(req.params.type);
+  if (!token) {
+    return redirectTo(res, feedRedirect(req, 'auth-required', type, id));
+  }
+  if (!FEED_SAVE_TYPES.has(type)) {
+    return redirectTo(res, feedRedirect(req, 'save-failed', type, id));
+  }
+
+  let status = 'save-failed';
+  try {
+    const result = await toggleBookmark(token, type, id);
+    status = dataFrom(result)?.bookmarked === false ? 'save-removed' : 'save-added';
+  } catch (error) {
+    if (redirectAuthIfNeeded(error, res, req, type, id)) return undefined;
+    status = 'save-failed';
+  }
+
+  return redirectTo(res, feedRedirect(req, status, type, id));
 }));
 
 router.post('/items/:type([a-zA-Z0-9_-]+)/:id(\\d+)/like', asyncRoute(async (req, res) => {
@@ -589,6 +635,7 @@ router.post('/items/:type([a-zA-Z0-9_-]+)/:id(\\d+)/comments', asyncRoute(async 
     });
   } catch (error) {
     if (redirectAuthIfNeeded(error, res, req, type, id)) return undefined;
+    rememberClientRefusal(req, FEED_REFUSAL_KEY, error);
     status = 'comment-failed';
   }
 
@@ -712,6 +759,8 @@ router.post('/polls/:id(\\d+)/vote', asyncRoute(async (req, res) => {
     await voteFeedPoll(token, id, { option_id: optionId });
   } catch (error) {
     if (redirectAuthIfNeeded(error, res, req, 'poll', id)) return undefined;
+    // Poll closed, already voted... (SocialController 409s).
+    rememberClientRefusal(req, FEED_REFUSAL_KEY, error);
     status = 'poll-vote-failed';
   }
 

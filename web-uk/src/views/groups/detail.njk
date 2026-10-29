@@ -45,7 +45,7 @@
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
         <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
-        <div class="govuk-error-summary__body"><p class="govuk-body">{% if status == "group-safeguarding-restricted" %}{{ t("safeguarding.errors.interaction_not_allowed") }}{% elif status == "group-safeguarding-unavailable" %}{{ t("safeguarding.errors.policy_unavailable") }}{% else %}{{ t("groups.states." + status) }}{% endif %}</p></div>
+        <div class="govuk-error-summary__body"><p class="govuk-body">{% if status == "group-safeguarding-restricted" %}{{ t("safeguarding.errors.interaction_not_allowed") }}{% elif status == "group-safeguarding-unavailable" %}{{ t("safeguarding.errors.policy_unavailable") }}{% else %}{{ (membershipRefusal if status == "group-failed" else "") or t("groups.states." + status) }}{% endif %}</p></div>
       </div>
     </div>
   {% elif status in groupFeedSuccessStates %}

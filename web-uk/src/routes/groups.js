@@ -44,6 +44,7 @@ const { resolveBackendMediaUrl, flagEnabled } = require('../lib/accessible-shell
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 const { resolveCanCreateEvents } = require('../lib/event-create-permission');
+const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { sectionSwitchedOn: toolSectionOn } = require('../lib/group-tool-access');
 const { sectionSwitchedOn: mediaSectionOn } = require('../lib/group-media-access');
@@ -1028,7 +1029,9 @@ function announcementPayload(body) {
     // 🔴 NOT `|| ''`. The previous `optionalText()` returned NULL for an absent expiry and
     // the API distinguishes the two — an empty string is a value, null clears the field.
     // `readDate().value` is already null when nothing was entered, so pass it through.
-    expires_at: expiresAt.value
+    // A date alone is read by Laravel as 00:00 (strtotime), so the announcement
+    // vanished at the START of the chosen day. Send the end of that day.
+    expires_at: expiresAt.value ? `${expiresAt.value} 23:59:59` : null
   };
 }
 
@@ -1504,6 +1507,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const isPending = membershipStatus === 'pending';
   const sectionLinks = groupSectionLinks(req.accessibleRouting?.tenant || res.locals.tenant || {}, group.id, { isMember, isAdmin });
   res.render('groups/detail', {
+    membershipRefusal: req.query.status === 'group-failed' ? consumeApiRefusal(req, `group-${Number(id)}-membership`) : '',
     title: group.name,
     group,
     sectionLinks,
@@ -1716,7 +1720,9 @@ router.post('/:id(\\d+)/feed/polls', requireAuth, asyncRoute(async (req, res) =>
   }
 
   const payload = { question, options, group_id: id };
-  if (expires.value) payload.expires_at = expires.value;
+  // End of the chosen day: a bare date is 00:00 to PollService, so "today" was
+  // refused as past and "tomorrow" closed the poll as tomorrow began.
+  if (expires.value) payload.expires_at = `${expires.value} 23:59:59`;
   try {
     await createFeedPoll(req.token, payload);
   } catch (error) {
@@ -1898,6 +1904,18 @@ router.get('/:id(\\d+)/invite', requireAuth, asyncRoute(async (req, res) => {
     // The API's link opens the main website; the same token redeems here too.
     accessibleInvitePath: accessibleInvitePath(inviteGeneratedLink(invitesResult)),
     pendingInvites,
+    inviteResults: (() => {
+      const stored = consumeFormReplay(req, 'groupInviteResults', id);
+      const rows = stored && Array.isArray(stored.rows) ? stored.rows : [];
+      const t = res.locals.t;
+      return rows.map((row) => {
+        let key = 'result_failed';
+        if (row.status === 'sent') key = row.delivered === false ? 'result_delivery_failed' : 'result_sent';
+        else if (row.status === 'already_member') key = 'result_already_member';
+        else if (row.status === 'already_invited') key = 'result_already_invited';
+        return { email: row.email, outcome: t(`govuk_alpha_groups.invite.${key}`) };
+      });
+    })(),
     ...inviteStatus(req.query.status, res.locals.t)
   });
 }, { redirectOn401: loginRedirect(), notFoundTitle: 'Group not found' }));
@@ -1951,20 +1969,33 @@ router.get('/:id(\\d+)/announcements', requireAuth, asyncRoute(async (req, res) 
     return renderForbidden(res);
   }
 
-  const announcementsResult = await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/announcements`).catch((error) => {
+  // Laravel pages announcements 20 at a time by cursor, takes `limit` (not
+  // per_page), and hides expired ones unless include_expired is set
+  // (GroupsController::announcements). Admins see expired ones so they can edit them.
+  const isAdmin = isGroupAdmin(group, profile);
+  const listParams = new URLSearchParams({ limit: '20' });
+  const listCursor = trimmed(req.query.cursor, 500);
+  if (listCursor) listParams.set('cursor', listCursor);
+  if (isAdmin) listParams.set('include_expired', '1');
+  const announcementsResult = await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/announcements?${listParams.toString()}`).catch((error) => {
     if (isAuthError(error)) throw error;
     return { data: { items: [] } };
   });
   const announcements = collectionFrom(announcementsResult)
     .map(normalizeAnnouncement)
     .filter((announcement) => announcement.id !== null);
+  const listData = dataFrom(announcementsResult) || {};
+  const nextAnnouncementsCursor = listData.has_more === true ? trimmed(listData.cursor, 500) : '';
 
   return res.render('groups/announcements', {
     title: (res.locals.t ? res.locals.t('govuk_alpha_groups.announcements.title') : 'Announcements'),
     activeNav: 'explore',
     group,
     announcements,
-    isAdmin: isGroupAdmin(group, profile),
+    nextHref: nextAnnouncementsCursor
+      ? `/groups/${encodeURIComponent(id)}/announcements?${new URLSearchParams({ cursor: nextAnnouncementsCursor }).toString()}`
+      : '',
+    isAdmin,
     announcementForm: consumeAnnouncementForm(req, announcementFormKey(id)),
     ...announcementStatus(req.query.status, res.locals.t)
   });
@@ -1977,9 +2008,20 @@ router.get('/:id(\\d+)/announcements/:annId(\\d+)/edit', requireAuth, asyncRoute
     return renderForbidden(res);
   }
 
-  const announcementsResult = await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/announcements`);
-  const announcementData = collectionFrom(announcementsResult)
-    .find((announcement) => String(positiveInteger(announcement?.id)) === String(annId));
+  // There is no single-announcement read, so walk the pages (expired ones
+  // included) until it turns up; it used to look only in the newest 20.
+  let announcementData = null;
+  let lookupCursor = '';
+  for (let page = 0; page < 20 && !announcementData; page += 1) {
+    const params = new URLSearchParams({ limit: '100', include_expired: '1' });
+    if (lookupCursor) params.set('cursor', lookupCursor);
+    const pageResult = await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/announcements?${params.toString()}`);
+    announcementData = collectionFrom(pageResult)
+      .find((announcement) => String(positiveInteger(announcement?.id)) === String(annId)) || null;
+    const pageData = dataFrom(pageResult) || {};
+    lookupCursor = pageData.has_more === true ? trimmed(pageData.cursor, 500) : '';
+    if (!lookupCursor) break;
+  }
   if (!announcementData) {
     return res.status(404).render('errors/404', { title: 'Announcement not found' });
   }
@@ -2137,10 +2179,13 @@ router.get('/:id(\\d+)/files', requireAuth, asyncRoute(async (req, res) => {
   // filters by `folder`; React lists the folders from GET /files/folders.
   const cursor = trimmed(req.query.cursor, 200);
   const selectedFolder = trimmed(req.query.folder, 100);
+  // Name search (GroupFilesController reads `q`), as React's files tab offers.
+  const fileQuery = trimmed(req.query.q, 100);
   const filesQuery = new URLSearchParams();
   filesQuery.set('per_page', '50');
   if (cursor) filesQuery.set('cursor', cursor);
   if (selectedFolder) filesQuery.set('folder', selectedFolder);
+  if (fileQuery) filesQuery.set('q', fileQuery);
 
   let filesResult;
   let foldersResult;
@@ -2181,6 +2226,7 @@ router.get('/:id(\\d+)/files', requireAuth, asyncRoute(async (req, res) => {
   const pageHref = (pageCursor) => {
     const params = new URLSearchParams();
     if (selectedFolder) params.set('folder', selectedFolder);
+    if (fileQuery) params.set('q', fileQuery);
     if (pageCursor) params.set('cursor', pageCursor);
     const query = params.toString();
     return `/groups/${id}/files${query ? `?${query}` : ''}`;
@@ -2193,6 +2239,7 @@ router.get('/:id(\\d+)/files', requireAuth, asyncRoute(async (req, res) => {
     files,
     folders,
     selectedFolder,
+    fileQuery,
     pagination: {
       nextHref: hasMore && nextCursor ? pageHref(nextCursor) : '',
       firstHref: cursor ? pageHref('') : ''
@@ -2215,8 +2262,13 @@ router.get('/:id(\\d+)/manage', requireAuth, asyncRoute(async (req, res) => {
   const visibility = trimmed(group.visibility || 'public') || 'public';
   const isPrivate = checked(group.is_private ?? group.isPrivate) || visibility !== 'public';
 
+  // Laravel caps a page at 100 and pages by cursor with an optional name search
+  // (GroupsController::members); React's members tab searches and loads more,
+  // so admins of a larger group could not reach anyone past the first 100.
+  const memberQuery = trimmed(req.query.q, 100);
+  const memberCursor = trimmed(req.query.cursor, 200);
   const [membersResult, requestsResult] = await Promise.all([
-    getGroupMembers(req.token, id, { per_page: 100 }),
+    getGroupMembers(req.token, id, { per_page: 50, q: memberQuery || undefined, cursor: memberCursor || undefined }),
     callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/requests`).catch((error) => {
       if (isAuthError(error)) throw error;
       return { data: [] };
@@ -2230,11 +2282,20 @@ router.get('/:id(\\d+)/manage', requireAuth, asyncRoute(async (req, res) => {
     .map(normalizeJoinRequest)
     .filter((requestItem) => requestItem.id !== null);
 
+  const membersMeta = membersResult?.meta || dataFrom(membersResult)?.meta || {};
+  const nextMembersCursor = trimmed(membersMeta.cursor || membersMeta.next_cursor || dataFrom(membersResult)?.cursor, 200);
+  const moreMembers = membersMeta.has_more === true || dataFrom(membersResult)?.has_more === true;
+  const membersNextHref = moreMembers && nextMembersCursor
+    ? `/groups/${encodeURIComponent(id)}/manage?${new URLSearchParams({ ...(memberQuery ? { q: memberQuery } : {}), cursor: nextMembersCursor }).toString()}#group-members`
+    : '';
+
   return res.render('groups/manage', {
     title: res.locals.t('groups.manage.title'),
     activeNav: 'explore',
     group,
     members,
+    memberQuery,
+    membersNextHref,
     pendingRequests,
     isPrivate,
     ...manageStatus(req.query.status, res.locals.t)
@@ -2391,7 +2452,10 @@ router.post('/:id(\\d+)/join', requireAuth, audit.groupJoin(), asyncRoute(async 
     joinResult = await joinGroup(req.token, id);
   } catch (error) {
     if (error instanceof ApiError && error.status !== 401) {
-      return res.redirect(groupRedirect(res, id, groupMembershipFailureStatus(error)));
+      const status = groupMembershipFailureStatus(error);
+      // Full, membership limit reached, banned... (GroupsController::join): Laravel's reason.
+      if (status === 'group-failed') rememberClientRefusal(req, `group-${Number(id)}-membership`, error);
+      return res.redirect(groupRedirect(res, id, status));
     }
     throw error;
   }
@@ -2420,6 +2484,8 @@ router.post('/:id(\\d+)/cancel-request', requireAuth, audit.groupLeave(), asyncR
     await leaveGroup(req.token, id);
   } catch (error) {
     if (error instanceof ApiError && error.status !== 401) {
+      // Sole admin, owner cannot leave... (GroupsController): Laravel's reason.
+      rememberClientRefusal(req, `group-${Number(id)}-membership`, error);
       return res.redirect(groupRedirect(res, id, 'group-failed'));
     }
     throw error;
@@ -2436,6 +2502,8 @@ router.post('/:id(\\d+)/leave', requireAuth, audit.groupLeave(), asyncRoute(asyn
     await leaveGroup(req.token, id);
   } catch (error) {
     if (error instanceof ApiError && error.status !== 401) {
+      // Sole admin, owner cannot leave... (GroupsController): Laravel's reason.
+      rememberClientRefusal(req, `group-${Number(id)}-membership`, error);
       return res.redirect(groupRedirect(res, id, 'group-failed'));
     }
     throw error;
@@ -2480,7 +2548,19 @@ router.post('/:id(\\d+)/invite/email', requireAuth, asyncRoute(async (req, res) 
   };
 
   return requireGroupAction(req, res, groupSubpageRedirect(res, id, 'invite', 'invite-email-failed'), async (token) => {
-    await callGroup(token, 'POST', `/${encodeURIComponent(id)}/invites/email`, payload);
+    const result = await callGroup(token, 'POST', `/${encodeURIComponent(id)}/invites/email`, payload);
+    // Laravel answers per address (GroupInviteService::sendEmailInvites):
+    // sent, already a member, already invited, invalid, and whether the email
+    // went out. React lists them; "sent" for everything hid the rest.
+    const rows = (Array.isArray(dataFrom(result)) ? dataFrom(result) : collectionFrom(result))
+      .slice(0, 50)
+      .map((row) => ({
+        email: trimmed(row?.email, 254),
+        status: trimmed(row?.status, 40),
+        delivered: row?.email_delivered === false ? false : (row?.email_delivered === true ? true : null)
+      }))
+      .filter((row) => row.email !== '');
+    rememberFormReplay(req, 'groupInviteResults', id, { rows });
     return res.redirect(groupSubpageRedirect(res, id, 'invite', 'invite-emails-sent'));
   });
 }));

@@ -55,5 +55,6 @@
         </article>
       {% endfor %}
     </div>
+    {% if previousHref or nextHref %}<nav class="govuk-pagination" aria-label="{{ t('clubs.title') }}">{% if previousHref %}<div class="govuk-pagination__prev"><a class="govuk-link govuk-pagination__link" rel="prev" href="{{ urlFor(previousHref) }}">{{ t("govuk_alpha.events.people_previous") }}</a></div>{% endif %}{% if nextHref %}<div class="govuk-pagination__next"><a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor(nextHref) }}">{{ t("govuk_alpha.events.people_next") }}</a></div>{% endif %}</nav>{% endif %}
   {% endif %}
 {% endblock %}

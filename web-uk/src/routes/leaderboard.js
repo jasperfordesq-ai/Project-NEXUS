@@ -538,13 +538,16 @@ router.get('/', asyncRoute(async (req, res) => {
 
   const selectedType = selectedOption(LEADERBOARD_TYPES, textFrom(req.query.type), 'credits_earned');
   const selectedPeriod = selectedOption(LEADERBOARD_PERIODS, textFrom(req.query.period), 'all_time');
+  // Same limit-step paging and "your position" as the competitive board (React
+  // LeaderboardPage reads meta.your_position and has_more); it stopped at 20.
+  const mainLimit = boundedLimit(req.query.limit);
 
   let leaderboardPayload;
   let impactPayload;
   let loadError = '';
   try {
     [leaderboardPayload, impactPayload] = await Promise.all([
-      callGamificationApi(token, 'GET', `/leaderboard?type=${encodeURIComponent(LEADERBOARD_API_TYPES[selectedType] || selectedType)}&period=${encodeURIComponent(selectedPeriod)}&limit=20`),
+      callGamificationApi(token, 'GET', `/leaderboard?type=${encodeURIComponent(LEADERBOARD_API_TYPES[selectedType] || selectedType)}&period=${encodeURIComponent(selectedPeriod)}&limit=${mainLimit}`),
       callGamificationApi(token, 'GET', '/community-dashboard')
     ]);
   } catch (error) {
@@ -565,7 +568,11 @@ router.get('/', asyncRoute(async (req, res) => {
       period: selectedPeriod,
       types: LEADERBOARD_TYPES.map((value) => ({ value, label: res.locals.t(`leaderboard.metrics.${value}`) })),
       periods: LEADERBOARD_PERIODS.map((value) => ({ value, label: res.locals.t(`leaderboard.periods.${value}`) })),
-      impact: normalizeImpact(impactPayload)
+      impact: normalizeImpact(impactPayload),
+      yourRank: intFrom((leaderboardPayload && leaderboardPayload.meta || {}).your_position),
+      hasYourRank: intFrom((leaderboardPayload && leaderboardPayload.meta || {}).your_position) > 0,
+      hasMore: boolFrom((leaderboardPayload && leaderboardPayload.meta || {}).has_more) && mainLimit < 100,
+      nextLimit: Math.min(100, mainLimit + 20)
     }
   });
 }));

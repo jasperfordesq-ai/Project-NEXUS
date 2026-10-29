@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block content %}
   <span class="govuk-caption-xl">{{ t("group_exchanges.caption", { community: tenantName }) }}</span>
@@ -78,6 +79,7 @@
       </tbody>
     </table>
     </div>
+    {% if nextHref %}{{ loadMoreNext(urlFor(nextHref), t("actions.load_more")) }}{% endif %}
   {% else %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.nothing_yet_title") }}</h2>{{ t("group_exchanges.empty") }}</div>
   {% endif %}

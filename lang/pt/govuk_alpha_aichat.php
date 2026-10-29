@@ -20,6 +20,11 @@ return [
     'you' => 'Você',
     'assistant' => 'Assistente',
     'unavailable_reply' => 'Lamentamos, o assistente está indisponível neste momento. Tente novamente mais tarde.',
+    'rate_limited' => 'Atingiu o seu limite de utilização por agora. Por favor, tente novamente mais tarde.',
+    'left_today' => ':count restantes hoje',
+    'delete_link' => 'Eliminar a conversa ":title"',
+    'delete_button' => 'Sim, eliminar',
+    'delete_failed' => 'Não foi possível eliminar a conversa. Tente novamente.',
     'disabled_notice' => 'O assistente de IA não está disponível neste momento.',
     'status_empty' => 'Introduza uma mensagem para enviar.',
 ];

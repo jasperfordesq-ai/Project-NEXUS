@@ -20,6 +20,11 @@ return [
     'you' => 'U',
     'assistant' => 'Assistent',
     'unavailable_reply' => 'Sorry, de assistent is op dit moment niet beschikbaar. Probeer het later opnieuw.',
+    'rate_limited' => 'Je hebt je gebruikslimiet voor nu bereikt. Probeer het later opnieuw.',
+    'left_today' => 'Nog :count over vandaag',
+    'delete_link' => 'Gesprek ":title" verwijderen',
+    'delete_button' => 'Ja, verwijderen',
+    'delete_failed' => 'Het gesprek kon niet worden verwijderd. Probeer het opnieuw.',
     'disabled_notice' => 'De AI-assistent is momenteel niet beschikbaar.',
     'status_empty' => 'Voer een bericht in om te verzenden.',
 ];

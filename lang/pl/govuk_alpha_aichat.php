@@ -20,6 +20,11 @@ return [
     'you' => 'Ty',
     'assistant' => 'Asystent',
     'unavailable_reply' => 'Przepraszamy, asystent jest obecnie niedostępny. Spróbuj ponownie później.',
+    'rate_limited' => 'Osiągnąłeś swój limit użytkowania na teraz. Proszę spróbować później.',
+    'left_today' => 'Pozostało dziś: :count',
+    'delete_link' => 'Usuń rozmowę „:title”',
+    'delete_button' => 'Tak, usuń',
+    'delete_failed' => 'Nie udało się usunąć rozmowy. Spróbuj ponownie.',
     'disabled_notice' => 'Asystent AI jest obecnie niedostępny.',
     'status_empty' => 'Wpisz wiadomość do wysłania.',
 ];

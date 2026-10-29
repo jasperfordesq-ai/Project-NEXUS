@@ -188,6 +188,12 @@
     <div class="govuk-button-group">
       <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/renew') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-form-group govuk-!-margin-bottom-2">
+          <label class="govuk-label" for="renew-days">{{ t("jobs_t3.renew_days_label") }}</label>
+          <select class="govuk-select" id="renew-days" name="days">
+            {% for d in [7, 14, 30, 60, 90] %}<option value="{{ d }}"{% if d == 30 %} selected{% endif %}>{{ d }}</option>{% endfor %}
+          </select>
+        </div>
         <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("jobs_t3.renew_button") }}</button>
       </form>
       {% if job.status == 'open' %}
@@ -251,6 +257,14 @@
       </form>
     {% endif %}
   {% endif %}
+    {% if similarJobs and similarJobs.length %}
+      <h2 class="govuk-heading-m govuk-!-margin-top-8">{{ t("jobs_t3.similar_jobs") }}</h2>
+      <ul class="govuk-list govuk-list--spaced">
+        {% for sj in similarJobs %}
+          <li><a class="govuk-link" href="{{ urlFor('/jobs/' ~ sj.id) }}">{{ sj.title }}</a>{% if sj.organisation %} <span class="govuk-hint govuk-!-display-inline">— {{ sj.organisation }}</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
     </div>
   </div>
 {% endblock %}

@@ -123,9 +123,9 @@
          offers on a lend listing. #}
       {% if item.isLend and item.sellerId %}<a class="govuk-button" href="{{ urlFor('/messages/new/' + (item.sellerId | string)) }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_commerce.nav.detail_ask_to_borrow") }}</a>{% endif %}
       {% if item.canOffer %}<a class="govuk-button govuk-button--secondary" href="{{ urlFor('/marketplace/' + (item.id | string) + '/offer') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_commerce.nav.detail_offer") }}</a>{% endif %}
-      <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/save') }}" novalidate>
+      <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + ('/unsave' if item.isSaved else '/save')) }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-        <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.nav.detail_save") }}</button>
+        <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.nav.detail_unsave") if item.isSaved else t("govuk_alpha_commerce.nav.detail_save") }}</button>
       </form>
       <a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string) + '/add-to-list') }}">{{ t("govuk_alpha_commerce.wish_lists.add_link") }}</a>
       {% if item.sellerId %}

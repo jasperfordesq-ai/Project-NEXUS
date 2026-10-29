@@ -117,6 +117,8 @@ function bookmarkHref(type, id, slug) {
   if (type === 'event' && id) return `/events/${id}`;
   if (type === 'job' && id) return `/jobs/${id}`;
   if (type === 'blog' && slug) return `/blog/${encodeURIComponent(slug)}`;
+  // A saved post opens the post itself (React BookmarksPage), not the feed.
+  if (type === 'post' && id) return `/feed/posts/${id}`;
   if (['post', 'discussion'].includes(type)) return '/feed';
   return '';
 }

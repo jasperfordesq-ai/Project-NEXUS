@@ -97,10 +97,12 @@
         {% endif %}
       </div>
 
-      {% if not searchQuery and meta.hasMore and meta.cursor %}
+      {# Searching keeps the "older messages" link (carrying the search), so a
+         match beyond the newest page can still be reached. #}
+      {% if meta.hasMore and meta.cursor %}
         <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-bottom-4" aria-label="{{ t('govuk_alpha_messages.conversation.older_pagination_label') }}">
           <div class="govuk-pagination__prev">
-            <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/messages/groups/' + (conversation.id | string) + '?cursor=' + (meta.cursor | string)) }}" rel="prev">
+            <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/messages/groups/' + (conversation.id | string) + '?cursor=' + (meta.cursor | string | urlencode) + (('&q=' + (searchQuery | urlencode)) if searchQuery else '')) }}" rel="prev">
               <span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">{{ t("govuk_alpha_messages.conversation.show_older") }}</span>
             </a>
           </div>

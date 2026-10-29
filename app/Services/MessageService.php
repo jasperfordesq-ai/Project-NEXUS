@@ -223,6 +223,29 @@ class MessageService
             $receivedMessages->whereNull('archived_by_receiver');
         }
 
+        // Inbox search by the other person's name (29 Oct 2026): React filters the
+        // conversations it has loaded; the accessible site has no script, so it asks
+        // here. Only names the viewer can already see are matched — surnames are
+        // withheld from members (F-084), so matching them would reveal them.
+        $search = trim((string) ($filters['q'] ?? ''));
+        if ($search !== '') {
+            $like = '%' . addcslashes(mb_substr($search, 0, 100), '%_\\') . '%';
+            $viewerSeesSurnames = MemberProfileVisibility::viewerIsAdmin($userId);
+            $matchingPartners = DB::table('users')
+                ->select('id')
+                ->where('tenant_id', $tenantId)
+                ->where(function ($q) use ($like, $viewerSeesSurnames) {
+                    $q->where('first_name', 'like', $like)
+                        ->orWhere('organization_name', 'like', $like);
+                    if ($viewerSeesSurnames) {
+                        $q->orWhere('last_name', 'like', $like)
+                            ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]);
+                    }
+                });
+            $sentMessages->whereIn('receiver_id', $matchingPartners);
+            $receivedMessages->whereIn('sender_id', clone $matchingPartners);
+        }
+
         $sentMessages->unionAll($receivedMessages);
 
         $latestIds = DB::query()

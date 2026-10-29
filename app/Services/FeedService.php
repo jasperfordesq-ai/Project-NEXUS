@@ -1491,7 +1491,7 @@ class FeedService
         }
         $groupId = !empty($data['group_id']) ? (int) $data['group_id'] : null;
 
-        if (empty($content) && empty($image)) {
+        if (empty($content) && empty($image) && empty($data['has_media'])) {
             return ['error' => __('api_controllers_2.feed.content_or_image_required')];
         }
 

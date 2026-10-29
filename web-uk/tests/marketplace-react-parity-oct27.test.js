@@ -10,7 +10,7 @@
  *   shown only while nothing is being searched or filtered, as React does.
  * - Listing-type (`price_type`) filter on the home page and on advanced search.
  * - Listing detail: the category "Item details" block (`template_data`) and "More from
- *   this seller" (GET sellers/{id}/listings?limit=4, minus the listing itself).
+ *   this seller" (GET sellers/{id}/listings?per_page=5, minus the listing itself).
  * - My listings: the seller's figures from GET seller/dashboard — active, sold, total
  *   views and revenue by currency. Only figures the API returns are shown.
  * - Offers: a seller can make a counter-offer (amount + optional message) on a pending
@@ -179,7 +179,7 @@ describe('listing detail', () => {
   it('shows the item details and more from this seller, without the listing itself', async () => {
     routeApi([
       [['GET', /^\/listings\/9$/], { data: listing }],
-      [['GET', /^\/sellers\/55\/listings\?limit=4$/], { data: [
+      [['GET', /^\/sellers\/55\/listings\?per_page=5$/], { data: [
         { id: 9, title: 'Road bike', price: 120, price_type: 'fixed' },
         { id: 10, title: 'Bike helmet', price: 15, price_type: 'fixed' }
       ] }]

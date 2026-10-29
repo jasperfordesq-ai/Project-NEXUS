@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% macro renderResults(poll) %}
@@ -56,6 +57,19 @@
           </div>
         {% endif %}
         <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("polls.status_legend") }}</legend>
+            <div class="govuk-radios govuk-radios--small govuk-radios--inline" data-module="govuk-radios">
+              {% for option in ["open", "closed", "all"] %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="status-filter-{{ option }}" name="status_filter" type="radio" value="{{ option }}"{% if pollsStatus == option %} checked{% endif %}>
+                <label class="govuk-label govuk-radios__label" for="status-filter-{{ option }}">{{ t("polls.status_" + option) }}</label>
+              </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
+        <div class="govuk-form-group">
           <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
             <div class="govuk-checkboxes__item">
               <input class="govuk-checkboxes__input" id="mine" name="mine" type="checkbox" value="1"{% if pollsMine %} checked{% endif %}>
@@ -98,12 +112,13 @@
       {% if not polls.length %}
         <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("polls.empty") }}</p></div>
       {% else %}
-        <h2 class="govuk-heading-l">{{ t("polls.open_section_title") }}</h2>
         {# Nunjucks selectattr has NO three-argument test form (it filters on
            attribute truthiness only), so partition with a plain loop. #}
         {% set openPolls = [] %}
         {% set closedPolls = [] %}
         {% for poll in polls %}{% if poll.status == "open" %}{% set _ = openPolls.push(poll) %}{% else %}{% set _ = closedPolls.push(poll) %}{% endif %}{% endfor %}
+        {% if pollsStatus != "closed" %}
+        <h2 class="govuk-heading-l">{{ t("polls.open_section_title") }}</h2>
         {% if openPolls.length %}<div class="nexus-alpha-card-list">{% endif %}
         {% for poll in openPolls %}
             <article class="nexus-alpha-card" id="poll-{{ poll.id }}">
@@ -164,6 +179,7 @@
         {% if not openPolls.length %}
           <div class="govuk-inset-text"><p class="govuk-body">{{ t("polls.no_open") }}</p></div>
         {% endif %}
+        {% endif %}
 
         {# The open section above says "there are no open polls" when it is
            empty; this one said nothing, so with no closed polls the member got
@@ -206,6 +222,7 @@
             </article>
         {% endfor %}
         {% if closedPolls.length %}</div>{% endif %}
+        {% if nextHref %}{{ loadMoreNext(urlFor(nextHref), t("actions.load_more")) }}{% endif %}
       {% endif %}
     </div>
   </div>

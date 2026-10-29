@@ -36,6 +36,9 @@ const CATEGORY_COLOURS = Object.freeze({
   safeguarding: 'red',
   security: 'red',
   ideation: 'purple',
+  exchanges: 'green',
+  volunteering: 'turquoise',
+  marketplace: 'orange',
   system: 'grey',
   other: 'grey'
 });
@@ -111,7 +114,12 @@ function normalizeNotifications(rows, t, formatRelativeTime) {
       : (Object.prototype.hasOwnProperty.call(notification, 'is_read')
         ? boolFrom(notification.is_read)
         : Boolean(notification.read_at));
-    const category = categoryFromType(notification.type);
+    // Laravel files each notification under a category (NotificationService)
+    // and sends it; use that, and guess from the type only for older rows.
+    const serverCategory = typeof notification.category === 'string' ? notification.category.trim().toLowerCase() : '';
+    const category = Object.prototype.hasOwnProperty.call(CATEGORY_COLOURS, serverCategory)
+      ? serverCategory
+      : categoryFromType(notification.type);
 
     const rawText = String(notification.message || notification.body || notification.title || '').trim();
     const translatedText = /^[a-z0-9_]+\.[a-z0-9_.]+$/.test(rawText) ? t(rawText) : rawText;

@@ -73,4 +73,48 @@ function rememberClientRefusal(req, key, error) {
   return rememberApiRefusal(req, key, error);
 }
 
-module.exports = { rememberApiRefusal, consumeApiRefusal, refusalMessageOf, firstApiError, rememberClientRefusal };
+/**
+ * Page-keyed variant for areas whose failure redirects go to many different pages
+ * (marketplace, listings, jobs, groups...). The failing POST stashes the refusal
+ * against the page it redirects to (query and fragment ignored); that page's GET
+ * picks it up with `refusalForPage` (or the router middleware below) and shows it
+ * in place of its generic failure message. Only genuine 4xx refusals are kept.
+ */
+function pageKey(path) {
+  return `page:${String(path || '').split(/[?#]/)[0]}`;
+}
+
+function rememberRefusalForPage(req, redirectPath, error) {
+  return rememberClientRefusal(req, pageKey(redirectPath), error);
+}
+
+function refusalForPage(req, path) {
+  return consumeApiRefusal(req, pageKey(path));
+}
+
+/**
+ * Router middleware: on a GET, expose any refusal stashed for this page as
+ * `res.locals.apiRefusal`. `mountPath` is the router's tenant-relative mount
+ * ("/marketplace"), because req.path inside a router is relative to it.
+ */
+function exposePageRefusal(mountPath) {
+  return (req, res, next) => {
+    if (req.method === 'GET' && req.session) {
+      const path = `${mountPath}${req.path === '/' ? '' : req.path}` || '/';
+      const message = refusalForPage(req, path);
+      if (message) res.locals.apiRefusal = message;
+    }
+    next();
+  };
+}
+
+module.exports = {
+  rememberApiRefusal,
+  consumeApiRefusal,
+  refusalMessageOf,
+  firstApiError,
+  rememberClientRefusal,
+  rememberRefusalForPage,
+  refusalForPage,
+  exposePageRefusal
+};

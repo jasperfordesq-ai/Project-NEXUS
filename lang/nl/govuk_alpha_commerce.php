@@ -83,6 +83,7 @@ return [
         'detail_offer' => 'Doe een bod',
         'detail_ask_to_borrow' => 'Vragen om te lenen',
         'detail_save' => 'Bewaar dit artikel',
+        'detail_unsave' => 'Verwijderen uit opgeslagen',
         'detail_report' => 'Rapporteer dit item',
     ],
     'listing_form' => [
@@ -194,6 +195,8 @@ return [
         'listings_heading' => 'Artikelen te koop',
         'empty' => 'Deze verkoper heeft geen actieve aanbiedingen.',
         'rating_label' => 'Verkopersbeoordeling',
+        'seller_type_business' => 'Zakelijk',
+        'seller_type_private' => 'Particuliere verkoper',
     ],
     'buy' => [
         'title' => 'Bevestig uw aankoop',

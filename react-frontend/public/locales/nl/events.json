@@ -571,7 +571,7 @@
         "waitlist": "Wachtlijst",
         "attendance": "Aanwezigheid"
       },
-      "history_change": "{{from}}naar{{to}}",
+      "history_change": "van {{from}} naar {{to}}",
       "system_actor": "Systeem",
       "version": "Versie {{version}}",
       "close_history": "Geschiedenis sluiten",

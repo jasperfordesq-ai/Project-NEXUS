@@ -12,6 +12,8 @@
     "check:features": "node scripts/build-features-catalogue.js --check",
     "build:help": "node scripts/build-help-guides.js",
     "check:help": "node scripts/build-help-guides.js --check",
+    "build:faq": "node scripts/build-faq.js",
+    "check:faq": "node scripts/build-faq.js --check",
     "build:changelog": "node scripts/build-changelog.js",
     "check:changelog": "node scripts/build-changelog.js --check",
     "check:changelog:released": "node scripts/build-changelog.js --check-released",

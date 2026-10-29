@@ -560,7 +560,9 @@ describe('Events v2 API boundary', () => {
       overrides: preferences.overrides,
       rules: preferences.rules,
     }, expect.any(Object));
-    expect(apiMock.delete).toHaveBeenCalledWith('/v2/events/101/reminders?expected_revision=4', expect.any(Object));
+    expect(apiMock.delete).toHaveBeenCalledWith('/v2/events/101/reminders', expect.objectContaining({
+      body: { expected_revision: 4 },
+    }));
   });
 
   it('rejects legacy events instead of silently accepting an ambiguous payload', () => {

@@ -84,6 +84,7 @@ return [
         'detail_offer' => 'Déan tairiscint',
         'detail_ask_to_borrow' => 'Iarr ar iasacht',
         'detail_save' => 'Sábháil an mhír seo',
+        'detail_unsave' => 'Bain de na míreanna sábháilte é',
         'detail_report' => 'Tuairiscigh an mhír seo',
     ],
     'listing_form' => [
@@ -197,6 +198,8 @@ return [
         'listings_heading' => 'Míreanna ar díol',
         'empty' => 'Níl aon liostaí gníomhacha ag an díoltóir seo.',
         'rating_label' => 'Rátáil díoltóra',
+        'seller_type_business' => 'Gnó',
+        'seller_type_private' => 'Díoltóir príobháideach',
     ],
     'buy' => [
         'title' => 'Deimhnigh do cheannachán',

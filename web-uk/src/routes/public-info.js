@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+const FAQ = require('../lib/generated/faq.json');
 const express = require('express');
 const { getContributors } = require('../lib/contributors');
 const { ApiError, callNewsletterApi, getPlatformStats, verifyEmail } = require('../lib/api');
@@ -227,10 +228,9 @@ router.get('/faq', (req, res) => {
     breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('faq.title'), path: '/faq' }]),
     activeNav: 'faq',
     communityName: communityName(res),
-    faqs: ['1', '2', '3', '4', '5'].map((key) => ({
-      question: res.locals.t(`faq.q${key}`),
-      answer: res.locals.t(`faq.a${key}`)
-    }))
+    // React's FAQ (20 questions in 5 groups), generated from its own locale
+    // files by scripts/build-faq.js; English where a language lacks a string.
+    faqCategories: FAQ.locales[res.locals.locale] || FAQ.locales.en
   });
 });
 

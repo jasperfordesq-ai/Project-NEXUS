@@ -206,7 +206,7 @@ describe('group announcements keep what the member typed after a failure', () =>
       }
     });
     api.callGroupApi.mockImplementation(async (token, method, apiPath) => {
-      if (method === 'GET' && /\/announcements$/.test(apiPath)) {
+      if (method === 'GET' && /\/announcements(\?.*)?$/.test(apiPath)) {
         return {
           data: {
             items: [{

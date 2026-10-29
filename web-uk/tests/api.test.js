@@ -2029,7 +2029,7 @@ describe('API Request Functions', () => {
       const result = await api.getOrganisationJobs(42, 'test-token', { limit: 20 });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:5000/api/v2/jobs?organization_id=42&status=open&limit=20',
+        'http://localhost:5000/api/v2/jobs?organization_id=42&status=open&per_page=20',
         expect.objectContaining({
           headers: expect.objectContaining({
             'Content-Type': 'application/json',

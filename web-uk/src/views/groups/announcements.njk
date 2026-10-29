@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_load-more.njk" import loadMoreNext %}
 {% from "_date-input.njk" import nexusDateInput %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
@@ -89,6 +90,7 @@
         </div>
       </div>
     {% endfor %}
+    {% if nextHref %}{{ loadMoreNext(urlFor(nextHref), t("actions.load_more")) }}{% endif %}
   {% endif %}
 
   {% if isAdmin %}

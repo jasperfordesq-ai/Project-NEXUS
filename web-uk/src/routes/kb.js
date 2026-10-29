@@ -123,7 +123,14 @@ function normalizeArticle(result, fallbackId, t) {
 
 function listParams(query) {
   const search = trimmed(query.q);
-  if (search) return { q: search, limit: 20 };
+  // Laravel pages search results only when per_page is sent
+  // (KnowledgeBaseController::search); `limit` capped them at 20 with no "more".
+  if (search) {
+    const searchParams = { q: search, per_page: 20 };
+    const searchCursor = trimmed(query.cursor);
+    if (searchCursor) searchParams.cursor = searchCursor;
+    return searchParams;
+  }
 
   const params = { per_page: 12 };
   const cursor = trimmed(query.cursor);

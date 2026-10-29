@@ -120,6 +120,26 @@ class AiChatControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_list_conversations_applies_limit_and_offset(): void
+    {
+        $user = $this->authenticatedUser();
+        foreach ([1, 2, 3] as $n) {
+            DB::table('ai_conversations')->insert([
+                'tenant_id' => $this->testTenantId,
+                'user_id' => $user->id,
+                'title' => "Chat {$n}",
+                'created_at' => now()->subMinutes(10 - $n),
+                'updated_at' => now()->subMinutes(10 - $n),
+            ]);
+        }
+
+        $response = $this->apiGet('/ai/conversations?limit=2&offset=1');
+
+        $response->assertStatus(200);
+        $this->assertSame(['Chat 2', 'Chat 1'], array_column($response->json('data'), 'title'));
+        $this->assertSame(3, $response->json('meta.total'));
+    }
+
     // ------------------------------------------------------------------
     //  POST /ai/conversations
     // ------------------------------------------------------------------

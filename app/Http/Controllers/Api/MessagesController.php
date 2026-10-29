@@ -53,6 +53,9 @@ class MessagesController extends BaseApiController
         if ($this->query('cursor')) {
             $filters['cursor'] = $this->query('cursor');
         }
+        if (is_string($this->query('q')) && trim($this->query('q')) !== '') {
+            $filters['q'] = $this->query('q');
+        }
 
         $result = $this->messageService->getConversations($userId, $filters);
 

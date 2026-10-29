@@ -110,6 +110,40 @@ class MessagesControllerTest extends TestCase
     // CONVERSATIONS — Authentication required
     // ================================================================
 
+    /**
+     * Inbox search by the other person's name (29 Oct 2026). A member sees only
+     * first names in the inbox (F-084), so a surname must not match.
+     */
+    public function test_conversations_filter_by_visible_name_only(): void
+    {
+        $viewer = $this->authenticatedUser(['role' => 'member']);
+        $aoife = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'first_name' => 'Aoife', 'last_name' => 'Quinnzyx',
+        ]);
+        $brendan = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'first_name' => 'Brendan', 'last_name' => 'Walsh',
+        ]);
+        foreach ([$aoife, $brendan] as $partner) {
+            DB::table('messages')->insert([
+                'tenant_id' => $this->testTenantId,
+                'sender_id' => $partner->id,
+                'receiver_id' => $viewer->id,
+                'body' => 'Hello',
+                'created_at' => now(),
+            ]);
+        }
+
+        $byFirstName = $this->apiGet('/v2/messages?q=aoif');
+        $byFirstName->assertStatus(200);
+        $this->assertSame([$aoife->id], array_column($byFirstName->json('data'), 'partner_id'));
+
+        $bySurname = $this->apiGet('/v2/messages?q=Quinnzyx');
+        $bySurname->assertStatus(200);
+        $this->assertSame([], $bySurname->json('data'));
+
+        $this->assertCount(2, $this->apiGet('/v2/messages')->json('data'));
+    }
+
     public function test_conversations_returns_401_without_auth(): void
     {
         $response = $this->apiGet('/v2/messages');
