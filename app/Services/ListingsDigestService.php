@@ -261,13 +261,18 @@ class ListingsDigestService
     /**
      * Render the email as a given member would get it, without sending or
      * recording anything — the admin preview.
+     *
+     * The viewer is the admin who asked, already authorised for $tenantId by
+     * the caller. They need not be a member of it: a global super admin, or a
+     * tenant super admin managing a community below its own, has its home
+     * elsewhere. Only the viewer's own name, language and preferences are read
+     * from their account; every listing still comes from $tenantId.
      */
     public function preview(int $tenantId, int $viewerId, string $mode = 'all', ?CarbonImmutable $now = null): ?string
     {
         $now ??= CarbonImmutable::now();
         $member = DB::table('users')
             ->where('id', $viewerId)
-            ->where('tenant_id', $tenantId)
             ->first(['id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'preferred_language', 'notification_preferences']);
         if ($member === null) {
             return null;

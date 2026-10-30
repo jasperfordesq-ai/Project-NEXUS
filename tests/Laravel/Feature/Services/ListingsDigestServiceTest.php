@@ -127,6 +127,28 @@ class ListingsDigestServiceTest extends TestCase
         $this->assertStringNotContainsString('Mary Tester', $mail[0]['body']);
     }
 
+    public function test_admin_from_another_community_can_preview_this_communitys_email(): void
+    {
+        // A global super admin's home is the master community, not this one.
+        $poster = $this->member('Mary');
+        $this->listing($poster, 'offer', 'RoundUp visiting preview offer', $this->now->subDays(2));
+        $visitor = $this->member('Visiting');
+        DB::table('users')->where('id', $visitor)->update(['tenant_id' => 1]);
+
+        $html = $this->digest->preview($this->testTenantId, $visitor, 'all', $this->now);
+
+        $this->assertNotNull($html);
+        $this->assertStringContainsString('RoundUp visiting preview offer', $html);
+        $this->assertStringContainsString('Visiting', $html);
+        // Previewing records nothing, for the visitor or anyone else.
+        $this->assertSame(0, DB::table('listings_digest_sends')->where('user_id', $visitor)->count());
+    }
+
+    public function test_preview_for_an_unknown_account_returns_nothing(): void
+    {
+        $this->assertNull($this->digest->preview($this->testTenantId, 2_000_000_000, 'all', $this->now));
+    }
+
     public function test_never_repeats_a_listing_and_sends_nothing_when_nothing_is_new(): void
     {
         $poster = $this->member('Mary');
