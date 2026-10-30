@@ -188,6 +188,29 @@ describe('FeedPage', () => {
     expect(screen.getAllByText('Alice').length).toBeGreaterThan(0);
   });
 
+  it('returns to the saved scroll position on Back once posts have loaded (AWID regression)', async () => {
+    // BrowserRouter's first render is a POP navigation, as a browser Back is.
+    sessionStorage.setItem('feed-scroll', JSON.stringify({ search: window.location.search, y: 1500 }));
+    const scrollSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    mockGet.mockResolvedValue({
+      success: true,
+      data: [
+        {
+          id: 1, content: 'Restored post', author_name: 'Alice', author_id: 10,
+          created_at: '2026-02-21T12:00:00Z', type: 'post', likes_count: 0, comments_count: 0, is_liked: false,
+        },
+      ],
+      meta: { has_more: false },
+    });
+
+    render(<FeedPage />);
+
+    await waitFor(() => {
+      expect(scrollSpy).toHaveBeenCalledWith(0, 1500);
+    });
+    scrollSpy.mockRestore();
+  });
+
   it('shows Load More when has_more is true', async () => {
     mockGet.mockResolvedValue({
       success: true,

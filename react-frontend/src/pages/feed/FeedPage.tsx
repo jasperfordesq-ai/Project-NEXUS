@@ -56,6 +56,7 @@ import { logError } from '@/lib/logger';
 import { isAdminTier } from '@/lib/roles';
 import { resolveAvatarUrl } from '@/lib/helpers';
 import { safeLocalStorageGet, safeLocalStorageSet } from '@/lib/safeStorage';
+import { useRestoreScrollOnBack } from '@/hooks/useRestoreScrollOnBack';
 import { usePageTitle } from '@/hooks';
 import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
@@ -290,6 +291,9 @@ export function FeedPage() {
   tRef.current = t;
   const toastRef = useRef(toast);
   toastRef.current = toast;
+
+  // Back from a post returns the member to where they were in the feed.
+  useRestoreScrollOnBack('feed-scroll', !isLoading && items.length > 0, items.length);
 
   // Stable ref for loadFeed — avoids including it in useEffect deps which causes reset loops
   const loadFeedRef = useRef<(append?: boolean) => Promise<void>>(null!);
