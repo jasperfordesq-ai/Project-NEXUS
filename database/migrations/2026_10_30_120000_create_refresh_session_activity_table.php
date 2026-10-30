@@ -19,6 +19,11 @@ use Illuminate\Support\Facades\Schema;
  * A family with no row (signed in before this table existed) is treated as
  * active from the first time it is seen, so a deploy signs nobody out.
  *
+ * `from_phone_app`: the session was signed in through the phone app. Owner
+ * decision (30 Oct 2026): members expect the app to stay signed in, so these
+ * sessions have no inactivity timeout. Fixed at sign-in; a later request cannot
+ * change it.
+ *
  * A new table: no existing table is altered, so this is safe while the other
  * blue/green colour is serving.
  */
@@ -35,6 +40,7 @@ return new class extends Migration
             $table->integer('tenant_id');
             $table->integer('user_id');
             $table->timestamp('last_activity_at');
+            $table->boolean('from_phone_app')->default(false);
             $table->timestamps();
 
             $table->index(['tenant_id', 'user_id'], 'idx_refresh_activity_tenant_user');

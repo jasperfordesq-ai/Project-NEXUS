@@ -1314,11 +1314,13 @@ class TokenService
         $now = now();
         if ($parentJtiHash === null) {
             // E-119 F-608: a new sign-in is active from the moment it is made.
+            // Whether it came through the phone app is fixed here, at sign-in.
             DB::table('refresh_session_activity')->insertOrIgnore([
                 'family_hash' => $this->hashIdentifier($familyId),
                 'tenant_id' => $tenantId,
                 'user_id' => $userId,
                 'last_activity_at' => $now,
+                'from_phone_app' => $this->isMobileRequest(),
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
@@ -1382,6 +1384,10 @@ class TokenService
      * E-119 F-608: has this session been unused for longer than its
      * community's inactivity timeout?
      *
+     * A session signed in through the phone app never is (owner decision,
+     * 30 Oct 2026: members expect the app to stay signed in). That is decided
+     * once, at sign-in; a request claiming to be the app later changes nothing.
+     *
      * A session with no activity row was signed in before activity was recorded;
      * it is treated as active now (a deploy must not sign everyone out) and
      * gets a row. Null means the check could not run: the caller refuses this
@@ -1395,22 +1401,28 @@ class TokenService
         }
 
         try {
-            $last = DB::table('refresh_session_activity')
+            $activity = DB::table('refresh_session_activity')
                 ->where('family_hash', $familyHash)
-                ->value('last_activity_at');
-            if ($last === null) {
+                ->first(['last_activity_at', 'from_phone_app']);
+            if ($activity === null) {
+                // Signed in before activity was recorded: active from now on,
+                // and its kind is taken from this, its first request since.
                 $now = now();
                 DB::table('refresh_session_activity')->insertOrIgnore([
                     'family_hash' => $familyHash,
                     'tenant_id' => $tenantId,
                     'user_id' => $userId,
                     'last_activity_at' => $now,
+                    'from_phone_app' => $this->isMobileRequest(),
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);
                 return false;
             }
-            $lastAt = strtotime((string) $last);
+            if ((bool) $activity->from_phone_app) {
+                return false;
+            }
+            $lastAt = strtotime((string) $activity->last_activity_at);
 
             return $lastAt === false || time() - $lastAt > $timeout;
         } catch (\Throwable $e) {

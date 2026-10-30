@@ -54,7 +54,7 @@ class IdleSessionTimeoutTest extends TestCase
     }
 
     /** @return array{access: string, refresh: string} */
-    private function signIn(): array
+    private function signIn(array $headers = []): array
     {
         $email = 'e119-idle-' . uniqid() . '@example.test';
         User::factory()->forTenant($this->testTenantId)->create([
@@ -66,7 +66,7 @@ class IdleSessionTimeoutTest extends TestCase
         ]);
         TenantContext::setById($this->testTenantId);
 
-        $response = $this->apiPost('/auth/login', ['email' => $email, 'password' => self::PASSWORD]);
+        $response = $this->withHeaders($headers)->apiPost('/auth/login', ['email' => $email, 'password' => self::PASSWORD]);
         $response->assertStatus(200);
         $access = (string) $response->json('access_token');
         $refresh = (string) $response->json('refresh_token');
@@ -85,9 +85,9 @@ class IdleSessionTimeoutTest extends TestCase
         $this->assertGreaterThan(0, $updated, 'the sign-in must have an activity record');
     }
 
-    private function refresh(string $refreshToken): \Illuminate\Testing\TestResponse
+    private function refresh(string $refreshToken, array $headers = []): \Illuminate\Testing\TestResponse
     {
-        return $this->apiPost('/auth/refresh-token', ['refresh_token' => $refreshToken]);
+        return $this->withHeaders($headers)->apiPost('/auth/refresh-token', ['refresh_token' => $refreshToken]);
     }
 
     private function me(string $accessToken): \Illuminate\Testing\TestResponse
@@ -168,6 +168,31 @@ class IdleSessionTimeoutTest extends TestCase
         DB::table('refresh_session_activity')->where('tenant_id', $this->testTenantId)->delete();
 
         $this->refresh($tokens['refresh'])->assertStatus(200);
+    }
+
+    /**
+     * Owner decision, 30 Oct 2026: members expect the phone app to stay signed
+     * in, so a session signed in through the app has no inactivity timeout.
+     */
+    public function test_a_phone_app_session_is_not_signed_out_for_inactivity(): void
+    {
+        $this->setTimeout('30');
+        $app = ['X-Nexus-Mobile' => '1'];
+        $tokens = $this->signIn($app);
+        $this->idleFor(600);
+
+        $this->refresh($tokens['refresh'], $app)->assertStatus(200);
+    }
+
+    public function test_a_browser_session_cannot_escape_the_timeout_by_claiming_to_be_the_app_later(): void
+    {
+        $this->setTimeout('30');
+        $tokens = $this->signIn();
+        $this->idleFor(31);
+
+        $this->refresh($tokens['refresh'], ['X-Nexus-Mobile' => '1'])
+            ->assertStatus(401)
+            ->assertJsonPath('errors.0.code', 'AUTH_SESSION_IDLE');
     }
 
     public function test_the_sign_in_access_token_belongs_to_its_session(): void

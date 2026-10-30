@@ -17356,6 +17356,7 @@ CREATE TABLE `refresh_session_activity` (
   `tenant_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `last_activity_at` timestamp NOT NULL,
+  `from_phone_app` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`family_hash`),
