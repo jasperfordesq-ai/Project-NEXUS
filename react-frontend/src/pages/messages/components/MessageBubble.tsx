@@ -141,7 +141,14 @@ export const MessageBubble = memo(function MessageBubble({
 
   // A translation belongs to one text in one reader language. When the message
   // is edited or the language changes, drop whatever is shown (AWID audit A4).
-  const translationSubject = `${message.body || message.content || ''}\u0000${(i18n.language || 'en').split('-')[0]}`;
+  // A voice message's transcript is part of what gets translated, so a changed
+  // transcript is a changed source too (AWID re-audit, 30 Oct 2026).
+  const translationSubject = [
+    message.id,
+    message.body || message.content || '',
+    message.transcript || '',
+    (i18n.language || 'en').split('-')[0],
+  ].join('\n');
   const translationSubjectRef = useRef(translationSubject);
   // Whether the shown translation came from auto-translate, so it goes when
   // auto-translate stops supplying it (turned off, or another language).
@@ -152,6 +159,8 @@ export const MessageBubble = memo(function MessageBubble({
     setTranslatedText(null);
     setShowOriginal(false);
     setTranslationError(null);
+    // A request still in flight is for the old source; its reply is ignored.
+    setIsTranslating(false);
     showingAutoRef.current = false;
   }, [translationSubject]);
 
@@ -217,8 +226,10 @@ export const MessageBubble = memo(function MessageBubble({
       return;
     }
 
-    // Check cache first (avoids redundant API calls)
-    const cacheKey = `${message.id}:${userLangBase}`;
+    // Check cache first (avoids redundant API calls). Keyed by the whole source
+    // — message, text, transcript and language — so an edit is fetched afresh.
+    const cacheKey = translationSubject;
+    const isCurrent = () => translationSubjectRef.current === cacheKey;
     const cached = translationCacheRef.current.get(cacheKey);
     if (cached) {
       setTranslatedText(cached);
@@ -232,6 +243,9 @@ export const MessageBubble = memo(function MessageBubble({
       const response = await api.post<{ translated_text: string }>(`/v2/messages/${message.id}/translate`, {
         target_language: userLangBase,
       });
+      // The message was edited, or the language changed, while this was in
+      // flight: the reply is for a source that is no longer on screen.
+      if (!isCurrent()) return;
       // A refused translation resolves rather than throws. Say why, and never
       // cache it as an empty translation (that made the button do nothing).
       if (!response.success) {
@@ -245,11 +259,11 @@ export const MessageBubble = memo(function MessageBubble({
       setTranslatedText(translated);
       setShowOriginal(false);
     } catch {
-      setTranslationError(t('translate.translation_failed'));
+      if (isCurrent()) setTranslationError(t('translate.translation_failed'));
     } finally {
-      setIsTranslating(false);
+      if (isCurrent()) setIsTranslating(false);
     }
-  }, [isTranslating, hasTranslatableContent, translatedText, message.id, userLangBase, t]);
+  }, [isTranslating, hasTranslatableContent, translatedText, translationSubject, message.id, userLangBase, t]);
 
   // Highlight search terms in message body
   function highlightText(text: string): ReactNode {

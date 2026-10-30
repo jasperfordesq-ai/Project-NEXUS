@@ -164,15 +164,17 @@ vi.mock('@/components/verification/VerificationBadge', () => ({
 // can assert on it: body, own-ness, read state, attachment count, edited and
 // deleted flags, and the reaction counts.
 vi.mock('./components/MessageBubble', () => ({
-  MessageBubble: ({ message, isOwn }: {
+  MessageBubble: ({ message, isOwn, autoTranslatedText }: {
     message: {
       id: number; body: string; is_read?: boolean; read_at?: string | null; attachments?: unknown[];
       is_edited?: boolean; is_deleted?: boolean; reactions?: Record<string, number>;
     };
     isOwn: boolean;
+    autoTranslatedText?: string | null;
   }) => (
     <div
       data-testid="message-bubble"
+      data-auto-translation={autoTranslatedText ?? ''}
       data-id={message.id}
       data-own={String(isOwn)}
       data-read={String(Boolean(message.is_read || message.read_at))}
@@ -538,6 +540,35 @@ describe('ConversationPage realtime', () => {
 
       // The cached translation is for the old text; the edited body is fetched afresh.
       await waitFor(() => expect(translateCalls()).toBe(2));
+    } finally {
+      window.localStorage.removeItem('nexus_auto_translate_test');
+    }
+  });
+
+  // AWID re-audit (30 Oct 2026): an edit arriving while that message's
+  // translation is still in flight. The late reply is for the OLD text and must
+  // never be shown for the edited one; the edit is then translated afresh.
+  it('never shows a translation of the old text when the edit lands mid-translation', async () => {
+    window.localStorage.setItem('nexus_auto_translate_test', JSON.stringify({ [String(OTHER_USER_ID)]: 'fr' }));
+    let resolveOld!: (value: unknown) => void;
+    mockApi.post
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveOld = resolve; }))
+      .mockImplementation((url: string) => (url.endsWith('/translate')
+        ? Promise.resolve({ success: true, data: { translated_text: 'Salut Alice ! (modifié)' } })
+        : Promise.resolve({ success: true })));
+    try {
+      await renderLoaded();
+      const translateCalls = () => mockApi.post.mock.calls.filter(([url]) => url === '/v2/messages/2/translate').length;
+      await waitFor(() => expect(translateCalls()).toBe(1));
+
+      act(() => {
+        fakePusher.emitMessageUpdated(updatedEvent(2, 'Hi Alice! (edited)'));
+      });
+      await act(async () => { resolveOld({ success: true, data: { translated_text: 'Salut Alice !' } }); });
+
+      expect(bubble(2).dataset.autoTranslation).not.toBe('Salut Alice !');
+      await waitFor(() => expect(translateCalls()).toBe(2));
+      await waitFor(() => expect(bubble(2).dataset.autoTranslation).toBe('Salut Alice ! (modifié)'));
     } finally {
       window.localStorage.removeItem('nexus_auto_translate_test');
     }

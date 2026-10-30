@@ -322,6 +322,11 @@ function scrollToMessage(messageId: number) {
   }
 }
 
+// Auto-translation cache key: one reader language, one message, one version of
+// its text. The language has no ":"; the text may, so it goes last.
+const autoTranslationKey = (lang: string, id: number, text: string) => `${lang}:${id}:${text}`;
+const messageIdOfKey = (key: string) => key.split(':')[1];
+
 export function ConversationPage() {
   const { t, i18n } = useTranslation('messages');
   const [pageTitle, setPageTitle] = useState(() => t('title'));
@@ -496,12 +501,19 @@ export function ConversationPage() {
   // Set when some messages could not be translated (provider refused or was
   // unreachable), so the banner says so instead of failing silently (AWID A1).
   const [autoTranslateSomeFailed, setAutoTranslateSomeFailed] = useState(false);
-  // Keyed "<language>:<message id>": a translation belongs to one reader
-  // language, so changing language never shows the previous one (AWID A4).
+  // Keyed "<language>:<message id>:<text>": a translation belongs to one reader
+  // language and one version of the text, so neither a language change nor an
+  // edit can ever show a translation of something else (AWID A4 / re-audit).
   const [autoTranslations, setAutoTranslations] = useState<Map<string, string>>(new Map());
   const autoTranslatingRef = useRef(false);
   const autoTranslatingLangRef = useRef<string | null>(null);
   const translatedIdsRef = useRef<Set<string>>(new Set());
+  // Bumped whenever a batch is stopped. A batch applies nothing once its
+  // generation is stale — switched off, conversation changed, language changed.
+  const autoTranslateGenerationRef = useRef(0);
+  // Set when something new arrived while a batch was running, so the batch
+  // re-runs the pass when it finishes instead of the new work being dropped.
+  const autoTranslateRerunRef = useRef(false);
   const autoTranslateLang = (i18n.language || 'en').split('-')[0] || 'en';
   const autoTranslateAbortRef = useRef<AbortController | null>(null);
   // Bumped when an existing message's text changes so the auto-translate effect
@@ -510,13 +522,23 @@ export function ConversationPage() {
 
   // Forget the cached translation of a message whose body changed. The next
   // auto-translate pass then fetches the edited text afresh.
+  // Stop the running auto-translate batch so nothing it returns is applied.
+  const stopAutoTranslateBatch = useCallback(() => {
+    autoTranslateAbortRef.current?.abort();
+    autoTranslateAbortRef.current = null;
+    autoTranslateGenerationRef.current += 1;
+    autoTranslatingRef.current = false;
+    autoTranslatingLangRef.current = null;
+    autoTranslateRerunRef.current = false;
+  }, []);
+
   const invalidateAutoTranslation = useCallback((messageId: number) => {
-    const suffix = `:${messageId}`;
+    const id = String(messageId);
     for (const key of [...translatedIdsRef.current]) {
-      if (key.endsWith(suffix)) translatedIdsRef.current.delete(key);
+      if (messageIdOfKey(key) === id) translatedIdsRef.current.delete(key);
     }
     setAutoTranslations((prev) => {
-      const stale = [...prev.keys()].filter((key) => key.endsWith(suffix));
+      const stale = [...prev.keys()].filter((key) => messageIdOfKey(key) === id);
       if (stale.length === 0) return prev;
       const next = new Map(prev);
       for (const key of stale) next.delete(key);
@@ -550,30 +572,38 @@ export function ConversationPage() {
     const otherUserId = conversation?.meta?.other_user?.id;
     if (!otherUserId) return;
     const targetLang = autoTranslateLang;
-    // A batch for another language is out of date: replace it rather than wait for it.
-    if (autoTranslatingRef.current && autoTranslatingLangRef.current === targetLang) return;
+    if (autoTranslatingRef.current) {
+      if (autoTranslatingLangRef.current === targetLang) {
+        // Same language: let it finish, then run this pass for whatever arrived
+        // meanwhile (a new message or an edit).
+        autoTranslateRerunRef.current = true;
+        return;
+      }
+      // Another language: out of date, so stop it.
+      stopAutoTranslateBatch();
+    }
 
     // Find messages from the other user that haven't been translated or queued yet
-    const keyOf = (id: number) => `${targetLang}:${id}`;
+    const textOf = (msg: { body?: string | null; content?: string | null }) => msg.body || msg.content || '';
+    const keyOf = (msg: { id: number; body?: string | null; content?: string | null }) => autoTranslationKey(targetLang, msg.id, textOf(msg));
     const untranslated = conversation.messages.filter(
       (msg) => msg.sender_id === otherUserId
-        && !autoTranslations.has(keyOf(msg.id))
-        && !translatedIdsRef.current.has(keyOf(msg.id))
-        && (msg.body || msg.content)
+        && textOf(msg) !== ''
+        && !autoTranslations.has(keyOf(msg))
+        && !translatedIdsRef.current.has(keyOf(msg))
     );
     if (untranslated.length === 0) return;
 
     // Mark these as queued immediately to prevent duplicate API calls
     for (const msg of untranslated) {
-      translatedIdsRef.current.add(keyOf(msg.id));
+      translatedIdsRef.current.add(keyOf(msg));
     }
     autoTranslatingRef.current = true;
     autoTranslatingLangRef.current = targetLang;
+    autoTranslateGenerationRef.current += 1;
+    const generation = autoTranslateGenerationRef.current;
+    const isCurrent = () => autoTranslateGenerationRef.current === generation && isMountedRef.current;
 
-    // Abort any previous in-flight translation loop (conversation or language switch)
-    if (autoTranslateAbortRef.current) {
-      autoTranslateAbortRef.current.abort();
-    }
     const controller = new AbortController();
     autoTranslateAbortRef.current = controller;
 
@@ -585,12 +615,12 @@ export function ConversationPage() {
       const translatedNow = new Map<string, string>();
       let failed = false;
       for (const msg of untranslated) {
-        if (controller.signal.aborted || !isMountedRef.current) break;
+        if (!isCurrent()) break;
         try {
           const response = await api.post<{ translated_text: string }>(`/v2/messages/${msg.id}/translate`, {
             target_language: targetLang,
           }, { signal: controller.signal });
-          if (controller.signal.aborted || !isMountedRef.current) break;
+          if (!isCurrent()) break;
           if (!response.success && (response.code === 'RATE_LIMIT' || response.code === 'TRANSLATION_HOURLY_LIMIT')) {
             // The member's AI allowance or the community's hourly translation
             // limit is used up: stop asking, and tell the member.
@@ -599,26 +629,34 @@ export function ConversationPage() {
           }
           const translated = response.success ? response.data?.translated_text : undefined;
           if (translated) {
-            translatedNow.set(keyOf(msg.id), translated);
+            // Keyed by the text that was SENT: if the message was edited
+            // meanwhile, this never matches the new text and is never shown.
+            translatedNow.set(keyOf(msg), translated);
           } else {
             failed = true;
           }
         } catch {
-          if (controller.signal.aborted) break;
+          if (!isCurrent()) break;
           failed = true;
         }
       }
       // Whatever was not translated in this batch may be tried again later.
       for (const msg of untranslated) {
-        if (!translatedNow.has(keyOf(msg.id))) translatedIdsRef.current.delete(keyOf(msg.id));
+        if (!translatedNow.has(keyOf(msg))) translatedIdsRef.current.delete(keyOf(msg));
       }
-      if (controller.signal.aborted || !isMountedRef.current) return;
+      // Stopped (switched off, other conversation or language): apply nothing.
+      if (!isCurrent()) return;
       if (translatedNow.size > 0) {
         setAutoTranslations((prev) => new Map([...prev, ...translatedNow]));
       }
       setAutoTranslateSomeFailed(failed);
       autoTranslatingRef.current = false;
       autoTranslatingLangRef.current = null;
+      autoTranslateAbortRef.current = null;
+      if (autoTranslateRerunRef.current) {
+        autoTranslateRerunRef.current = false;
+        setTranslationRevision((revision) => revision + 1);
+      }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps -- autoTranslateOn + messages length + an edit + language change trigger re-translation
   }, [autoTranslateOn, autoTranslateLimitReached, conversation?.messages?.length, translationRevision, i18n.language]);
@@ -637,7 +675,9 @@ export function ConversationPage() {
       toast.success(t('auto_translate.enabled_toast'));
     } else {
       toast.info(t('auto_translate.disabled_toast'));
-      // Clear auto-translations and dedup set when disabled
+      // Stop the running batch so a late reply cannot bring a translation back,
+      // then clear auto-translations and the dedup set.
+      stopAutoTranslateBatch();
       setAutoTranslations(new Map());
       translatedIdsRef.current.clear();
     }
@@ -1036,13 +1076,9 @@ export function ConversationPage() {
     if (!targetId) return;
 
     // Clear auto-translate state from previous conversation
-    if (autoTranslateAbortRef.current) {
-      autoTranslateAbortRef.current.abort();
-      autoTranslateAbortRef.current = null;
-    }
+    stopAutoTranslateBatch();
     setAutoTranslations(new Map());
     translatedIdsRef.current.clear();
-    autoTranslatingRef.current = false;
 
     try {
       setIsLoading(true);
@@ -1126,19 +1162,16 @@ export function ConversationPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [applySafeguardingMeta, targetId, isNewConversationRoute, loadUserForNewConversation, navigate, tenantPath]);
+  }, [applySafeguardingMeta, targetId, isNewConversationRoute, loadUserForNewConversation, navigate, tenantPath, stopAutoTranslateBatch]);
 
   // Cleanup ref for unmount guard
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
-      if (autoTranslateAbortRef.current) {
-        autoTranslateAbortRef.current.abort();
-        autoTranslateAbortRef.current = null;
-      }
+      stopAutoTranslateBatch();
     };
-  }, []);
+  }, [stopAutoTranslateBatch]);
 
   // Load initial conversation
   useEffect(() => {
@@ -2820,7 +2853,9 @@ export function ConversationPage() {
                       onEditingTextChange={setEditingText}
                       onSaveEdit={saveEdit}
                       onCancelEdit={cancelEditing}
-                      autoTranslatedText={autoTranslations.get(`${autoTranslateLang}:${message.id}`) ?? null} />
+                      autoTranslatedText={autoTranslateOn
+                        ? autoTranslations.get(autoTranslationKey(autoTranslateLang, message.id, message.body || message.content || '')) ?? null
+                        : null} />
                   </Fragment>
                 );
               })}
