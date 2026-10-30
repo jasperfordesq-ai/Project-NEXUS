@@ -1,6 +1,6 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-10-29T03:08:50.510Z",
+  "lastRunAt": "2026-10-30T03:07:48.001Z",
   "issues": {
     "120262618": {
       "title": "RedisException: php_network_getaddresses: getaddrinfo for nexus-php-redis failed: Temporary failure in name resolution",
@@ -654,10 +654,10 @@
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "29 Oct: no new event since 28 Oct 08:05 UTC (fires from the daily 08:05 check). Unchanged: tenant 5 safeguarding jurisdiction is 'unconfigured' while members have vetted-contact selections. Fix is a setting (broker panel -> Vetting -> Jurisdiction), not code.",
+      "note": "30 Oct: fired again 29 Oct 08:05 UTC from the daily check, so the condition is unchanged, not a returning bug. Tenant 5 safeguarding jurisdiction is still 'unconfigured' while members have vetted-contact selections. Fix is a setting (broker panel -> Vetting -> Jurisdiction), not code.",
       "sha": null,
-      "decidedAt": "2026-10-29T03:09:18.881Z",
-      "decidedAtRelease": "nexus-php@17156798322a"
+      "decidedAt": "2026-10-30T03:08:40.096Z",
+      "decidedAtRelease": "nexus-php@538365eb6e34"
     },
     "143797835": {
       "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
@@ -969,10 +969,19 @@
       "title": "Members require vetted contact in communities that have recorded no vetting",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "29 Oct: no new event since 28 Oct 08:05 UTC. Unchanged: tenants 2 and 11 have members asking for vetted-only contact but no vetting recorded. Community action needed (record vetting or move those members to coordinator introductions); tenant 2 part may touch DPO-17.",
+      "note": "30 Oct: fired again 29 Oct 08:05 UTC from the daily check; condition unchanged. Tenants 2 and 11 have members asking for vetted-only contact but no vetting recorded. Community action needed (record vetting or move those members to coordinator introductions); tenant 2 part may touch DPO-17.",
       "sha": null,
-      "decidedAt": "2026-10-29T03:09:19.841Z",
-      "decidedAtRelease": "nexus-php@17156798322a"
+      "decidedAt": "2026-10-30T03:08:40.991Z",
+      "decidedAtRelease": "nexus-php@538365eb6e34"
+    },
+    "157283631": {
+      "title": "ApiOfflineError: The service took too long to respond",
+      "culprit": "GET /blog/:slug([a-zA-Z0-9_-]+)",
+      "decision": "watching",
+      "note": "30 Oct: one event, 02:47 UTC, Chrome 99 client (likely crawler). web-uk /blog/:slug made one GET to the blog API and hit the 15s request timeout; handled as a 503 page. Code path is a single lookup, no defect found. Act only if it repeats or clusters.",
+      "sha": null,
+      "decidedAt": "2026-10-30T03:08:38.823Z",
+      "decidedAtRelease": "nexus-webuk@c67617d963ec"
     }
   }
 }
