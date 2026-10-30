@@ -73,6 +73,22 @@ class AdminCategoriesControllerTest extends TestCase
         $response->assertJsonPath('data.name', 'Test Category');
     }
 
+    public function test_store_keeps_accented_name_and_transliterates_slug(): void
+    {
+        // Regression (AWID, Oct 2026): "Cercanía" became slug "cercan-a".
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost('/v2/admin/categories', [
+            'name' => 'Cercanía Lingüística',
+            'type' => 'listing',
+        ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('data.name', 'Cercanía Lingüística');
+        $response->assertJsonPath('data.slug', 'cercania-linguistica');
+    }
+
     public function test_store_returns_422_when_name_missing(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();

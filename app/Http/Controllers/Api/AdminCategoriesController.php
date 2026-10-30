@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use App\Models\ActivityLog;
 
 /**
@@ -87,7 +88,7 @@ class AdminCategoriesController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.category_name_required'), 'name', 422);
         }
 
-        $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', trim($name)));
+        $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', Str::ascii(trim($name))));
         $slug = trim($slug, '-');
 
         $color = trim($this->input('color', 'blue'));
@@ -185,7 +186,7 @@ class AdminCategoriesController extends BaseApiController
         // Regenerate slug if name changed
         $slug = $category->slug;
         if ($name !== $category->name) {
-            $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', trim($name)));
+            $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', Str::ascii(trim($name))));
             $slug = trim($slug, '-');
         }
 
@@ -302,7 +303,7 @@ class AdminCategoriesController extends BaseApiController
             return [
                 'id' => (int) $row->id,
                 'name' => $row->name ?? '',
-                'slug' => strtolower(preg_replace('/[^a-z0-9]+/i', '-', trim($row->name ?? ''))),
+                'slug' => strtolower(preg_replace('/[^a-z0-9]+/i', '-', Str::ascii(trim($row->name ?? '')))),
                 'type' => $row->input_type ?? 'checkbox',
                 'options' => null,
                 'category_id' => $row->category_id ? (int) $row->category_id : null,
@@ -350,7 +351,7 @@ class AdminCategoriesController extends BaseApiController
         return $this->respondWithData([
             'id' => (int) $id,
             'name' => $name,
-            'slug' => strtolower(preg_replace('/[^a-z0-9]+/i', '-', $name)),
+            'slug' => strtolower(preg_replace('/[^a-z0-9]+/i', '-', Str::ascii($name))),
             'type' => $inputType,
             'options' => null,
             'category_id' => $categoryId,
@@ -396,7 +397,7 @@ class AdminCategoriesController extends BaseApiController
         return $this->respondWithData([
             'id' => (int) $id,
             'name' => $name,
-            'slug' => strtolower(preg_replace('/[^a-z0-9]+/i', '-', $name)),
+            'slug' => strtolower(preg_replace('/[^a-z0-9]+/i', '-', Str::ascii($name))),
             'type' => $inputType,
             'is_active' => (bool) $isActive,
         ]);

@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Support\Members\MemberDirectoryVisibility;
 use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * SkillTaxonomyService — Laravel DI-based service for skill taxonomy.
@@ -571,7 +572,8 @@ class SkillTaxonomyService
 
     private function generateSlug(string $name): string
     {
-        $slug = strtolower(trim($name));
+        // Transliterate first so "Cercanía" becomes "cercania", not "cercana".
+        $slug = strtolower(Str::ascii(trim($name)));
         $slug = preg_replace('/[^a-z0-9\s-]/', '', $slug);
         $slug = preg_replace('/[\s-]+/', '-', $slug);
         return substr($slug, 0, 120);

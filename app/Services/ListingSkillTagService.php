@@ -220,9 +220,10 @@ class ListingSkillTagService
      */
     private function normalizeTag(string $tag): string
     {
-        $tag = strtolower(trim($tag));
-        $tag = preg_replace('/[^a-z0-9\- ]/', '', $tag);
-        $tag = preg_replace('/\s+/', ' ', $tag);
-        return substr(trim($tag), 0, 100);
+        // Unicode-aware: keep letters and digits in every script ("cercanía", "niño").
+        $tag = mb_strtolower(trim($tag), 'UTF-8');
+        $tag = preg_replace('/[^\p{L}\p{M}\p{N}\- ]/u', '', $tag) ?? '';
+        $tag = preg_replace('/\s+/u', ' ', $tag) ?? '';
+        return mb_substr(trim($tag), 0, 100, 'UTF-8');
     }
 }

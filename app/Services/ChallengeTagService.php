@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Models\ChallengeTag;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * ChallengeTagService — Eloquent-based CRUD for challenge tags.
@@ -147,7 +148,8 @@ class ChallengeTagService
 
     private function generateSlug(string $name): string
     {
-        $slug = mb_strtolower($name);
+        // Transliterate first so "Niño" becomes "nino", not "nio".
+        $slug = strtolower(Str::ascii($name));
         $slug = preg_replace('/[^a-z0-9\s-]/', '', $slug);
         $slug = preg_replace('/[\s-]+/', '-', $slug);
         return trim($slug, '-');
