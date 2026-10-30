@@ -1957,6 +1957,8 @@ Route::put('/v2/admin/config/identity/bulk', [\App\Http\Controllers\Api\AdminCon
 Route::get('/v2/admin/config/translation', [\App\Http\Controllers\Api\AdminConfigController::class, 'getTranslationConfig']);
 Route::put('/v2/admin/config/translation', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateTranslationConfig']);
 Route::put('/v2/admin/config/translation/bulk', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateTranslationConfigBulk']);
+Route::put('/v2/admin/config/translation/google-key', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateTranslationGoogleKey']);
+Route::delete('/v2/admin/config/translation/google-key', [\App\Http\Controllers\Api\AdminConfigController::class, 'deleteTranslationGoogleKey']);
 Route::get('/v2/admin/translation/glossary', [\App\Http\Controllers\Api\AdminConfigController::class, 'getGlossary']);
 Route::post('/v2/admin/translation/glossary', [\App\Http\Controllers\Api\AdminConfigController::class, 'createGlossaryEntry']);
 Route::delete('/v2/admin/translation/glossary/{id}', [\App\Http\Controllers\Api\AdminConfigController::class, 'deleteGlossaryEntry']);
@@ -3407,6 +3409,10 @@ Route::put('/v2/admin/super/identity/fee', [\App\Http\Controllers\Api\AdminSuper
 // 🔴 These read a tenant id from the body with no canAccessTenant() check — see
 // reason 2 in the block comment above.
 Route::get('/v2/admin/super/billing/snapshot', [\App\Http\Controllers\Api\AdminSuperController::class, 'getBillingSnapshot']);
+// Platform fallback Google Translate key (global super admin / god only).
+Route::get('/v2/admin/super/translation/google-key', [\App\Http\Controllers\Api\SuperTranslationKeyController::class, 'show']);
+Route::put('/v2/admin/super/translation/google-key', [\App\Http\Controllers\Api\SuperTranslationKeyController::class, 'update']);
+Route::delete('/v2/admin/super/translation/google-key', [\App\Http\Controllers\Api\SuperTranslationKeyController::class, 'destroy']);
 Route::post('/v2/admin/super/billing/assign-plan', [\App\Http\Controllers\Api\AdminSuperController::class, 'assignPlan']);
 Route::get('/v2/admin/super/billing/revenue', [\App\Http\Controllers\Api\AdminSuperController::class, 'getRevenueDashboard']);
 Route::get('/v2/admin/super/billing/export', [\App\Http\Controllers\Api\AdminSuperController::class, 'exportBillingCsv']);

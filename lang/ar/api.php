@@ -796,6 +796,8 @@ return [
     'ai_translation_unavailable' => 'الترجمة غير متاحة حاليًا. يرجى المحاولة مرة أخرى لاحقًا.',
     'translation_switched_off'   => 'الترجمة متوقفة في هذا المجتمع.',
     'translation_hourly_limit'   => 'لقد بلغت حد الترجمة لكل ساعة في هذا المجتمع. يرجى المحاولة مرة أخرى لاحقًا.',
+    'translation_not_set_up'     => 'لم يتم إعداد الترجمة لهذا المجتمع بعد. يرجى إبلاغ مسؤول مجتمعك.',
+    'translation_google_key_invalid' => 'لا يبدو هذا مفتاح API من Google. انسخ المفتاح كاملًا من وحدة تحكم Google Cloud والصقه مرة أخرى.',
     'session_idle_timeout'       => 'تم تسجيل خروجك لأنك كنت غير نشط لفترة طويلة. يرجى تسجيل الدخول مرة أخرى.',
     'message_recipient_required' => 'معرف_المستلم مطلوب',
     'message_body_or_voice_required' => 'مطلوب نص الرسالة أو الرسالة الصوتية',

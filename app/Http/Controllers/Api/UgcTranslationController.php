@@ -10,6 +10,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Services\AI\AiUsageGate;
 use App\Services\TranslationConfigurationService;
+use App\Services\Translation\TranslationEngine;
 use App\Services\UgcTranslationService;
 use Illuminate\Http\JsonResponse;
 
@@ -77,22 +78,13 @@ class UgcTranslationController extends BaseApiController
             );
         }
 
-        // Surface a clear error when the platform / tenant has no AI provider
-        // configured, instead of silently returning the original text or a
-        // generic "Translation failed" toast.
-        // E-035 F-164: a community that has switched AI off is treated the same
-        // way — nothing is sent to the provider.
-        //
-        // Two different causes, two different messages (AWID, Oct 2026): with no
-        // platform key the community administrator can do nothing, so members
-        // must not be sent to them. Status 422 for both: 503 is intercepted by
-        // the frontend api client as maintenance-mode and the body would be
-        // replaced with a generic string before our message reaches the user.
-        if (empty(config('services.openai.api_key'))) {
-            return $this->respondWithError('AI_UNAVAILABLE', __('api.ai_translation_unavailable'), null, 422);
-        }
-        if (!AiUsageGate::aiEnabled()) {
-            return $this->respondWithError('AI_NOT_CONFIGURED', __('api.ai_not_configured'), null, 422);
+        // Google Translate by default, or the community's own AI
+        // (TranslationEngine, owner 30 Oct 2026). Nothing available — no Google
+        // key anywhere and no usable AI — is a set-up problem, not a failure to
+        // retry. Status 422: 503 is intercepted by the frontend api client as
+        // maintenance-mode and the body would be replaced with a generic string.
+        if (!TranslationEngine::available()) {
+            return $this->respondWithError('TRANSLATION_NOT_SET_UP', __('api.translation_not_set_up'), null, 422);
         }
 
         // A cached translation costs nothing, so it does not spend AI budget.
@@ -106,8 +98,8 @@ class UgcTranslationController extends BaseApiController
             return $this->respondWithError('TRANSLATION_HOURLY_LIMIT', __('api.translation_hourly_limit'), null, 429);
         }
 
-        // E-035 F-164: reserve one slot of the member's AI budget before the provider call.
-        $admission = AiUsageGate::admit($userId);
+        // E-035 F-164: AI translation spends the member's AI budget; Google does not.
+        $admission = TranslationEngine::usesAi() ? AiUsageGate::admit($userId) : ['allowed' => true];
         if (!$admission['allowed']) {
             if (($admission['reason'] ?? null) === AiUsageGate::REASON_NO_MEMBER) {
                 // Not the community's switch, so not the community admin's to fix.

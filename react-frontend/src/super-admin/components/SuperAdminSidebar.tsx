@@ -14,6 +14,7 @@ import { useAuth, useTenant } from '@/contexts';
 import { superPanelLevel } from '@/lib/access';
 import { ScrollShadow } from '@/components/ui';
 import { Button, Tooltip } from '@/components/ui';
+import Languages from 'lucide-react/icons/languages';
 import Activity from 'lucide-react/icons/activity';
 import BarChart3 from 'lucide-react/icons/chart-column';
 import Building2 from 'lucide-react/icons/building-2';
@@ -90,6 +91,7 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
         ...(showPlatformSections ? [
           { key: 'pilot-inquiries', label: t('nav.pilot_inquiries'), icon: FileSearch, path: '/super-admin/platform/pilot-inquiries' },
           { key: 'provisioning', label: t('nav.provisioning_queue'), icon: Building2, path: '/super-admin/provisioning-requests' },
+          { key: 'platform-translation', label: t('nav.platform_translation'), icon: Languages, path: '/super-admin/platform/translation' },
         ] : []),
       ],
     },

@@ -38,7 +38,10 @@ class TranslationSettingsWiringTest extends TestCase
             ['setting_value' => '1'],
         );
         AIServiceFactory::clearCache();
+        // Google Translate is the default engine (30 Oct 2026); give it a platform key.
+        app(\App\Services\PlatformSecretStore::class)->set(\App\Services\PlatformSecretStore::GOOGLE_TRANSLATE_KEY, 'platform-google-key-for-tests');
         Http::fake([
+            'translation.googleapis.com/*' => Http::response(['data' => ['translations' => [['translatedText' => 'Hello, how are you?']]]]),
             'api.openai.com/*' => Http::response([
                 'choices' => [['message' => ['content' => 'Hello, how are you?']]],
             ]),
@@ -126,6 +129,6 @@ class TranslationSettingsWiringTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.translation.enabled', false)
             ->assertJsonPath('data.translation.auto_translate_default', true)
-            ->assertJsonPath('data.translation.provider', 'openai');
+            ->assertJsonPath('data.translation.provider', 'google');
     }
 }

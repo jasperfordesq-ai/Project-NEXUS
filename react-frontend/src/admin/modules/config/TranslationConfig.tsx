@@ -6,6 +6,7 @@ import Settings from 'lucide-react/icons/settings';
 import BookOpen from 'lucide-react/icons/book-open';
 import Trash2 from 'lucide-react/icons/trash-2';
 import Plus from 'lucide-react/icons/plus';
+import KeyRound from 'lucide-react/icons/key-round';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { Link } from 'react-router-dom';
@@ -13,6 +14,7 @@ import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { languageDisplayName } from '@/lib/languageDisplayName';
 import { PageHeader } from '../../components/PageHeader';
+import { SecretInput } from '../../components/SecretInput';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -41,10 +43,24 @@ type ConfigValue = string | number | boolean;
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-// The only translation provider the platform has. The page used to offer DeepL
-// and Google as well; nothing ever read that choice (owner check of AWID's
-// settings, 30 Oct 2026), so it now says which provider is used.
-const PROVIDER_LABEL_KEY = 'config.translation_provider_openai';
+// Owner decision, 30 Oct 2026: Google Translate is every community's default,
+// on the community's own Google key or the platform's fallback key. "AI" uses
+// the community's own AI key from AI settings, and falls back to Google without
+// one. DeepL was offered here but never built.
+const ENGINE_OPTIONS = [
+  { key: 'google', labelKey: 'config.translation_engine_google' },
+  { key: 'ai', labelKey: 'config.translation_engine_ai' },
+];
+
+/** What the server says about keys (never the key itself). */
+interface GoogleKeyStatus {
+  engine: 'google' | 'ai';
+  community_key_set: boolean;
+  platform_key_set: boolean;
+  in_use: 'community' | 'platform' | 'ai' | null;
+  own_ai_key_set: boolean;
+  ai_enabled: boolean;
+}
 
 const LANGUAGES = ['en', 'fr', 'de', 'es', 'it', 'pt', 'ga', 'nl', 'pl', 'ja', 'ar'] as const;
 
@@ -88,9 +104,9 @@ export function TranslationConfig() {
   usePageTitle(t('config.translation_settings_title'));
   const toast = useToast();
   const { tenantPath } = useTenant();
-  // Translation runs on the community's AI. When AI is off every translation is
-  // refused, and this page must say so (AWID had AI off, 30 Oct 2026).
-  const [aiEnabled, setAiEnabled] = useState<boolean | null>(null);
+  const [googleKey, setGoogleKey] = useState<GoogleKeyStatus | null>(null);
+  const [newGoogleKey, setNewGoogleKey] = useState('');
+  const [savingKey, setSavingKey] = useState(false);
 
   const meta = (key: string) => {
     const entry = CONFIG_KEYS[key];
@@ -120,10 +136,11 @@ export function TranslationConfig() {
       setLoading(true);
       const response = await api.get<{ config: Record<string, ConfigValue>; defaults: Record<string, ConfigValue> }>('/v2/admin/config/translation');
       // API client already unwraps response.data.data → response.data
-      const payload = response.data as { config?: Record<string, ConfigValue>; defaults?: Record<string, ConfigValue> } | undefined;
+      const payload = response.data as { config?: Record<string, ConfigValue>; defaults?: Record<string, ConfigValue>; google_key?: GoogleKeyStatus } | undefined;
       if (payload) {
         setConfig(payload.config || {});
         setDefaults(payload.defaults || {});
+        setGoogleKey(payload.google_key ?? null);
       }
     } catch {
       toast.error(t('config.translation_load_failed'));
@@ -153,17 +170,6 @@ export function TranslationConfig() {
     loadConfig();
   }, [loadConfig]);
 
-  useEffect(() => {
-    let cancelled = false;
-    api.get<{ ai_enabled?: boolean }>('/v2/admin/config/ai')
-      .then((response) => {
-        const value = (response?.data as { ai_enabled?: unknown } | undefined)?.ai_enabled;
-        if (!cancelled && typeof value === 'boolean') setAiEnabled(value);
-      })
-      .catch(() => undefined);
-    return () => { cancelled = true; };
-  }, []);
-
   const isGlossaryEnabled = config['translation.glossary_enabled'];
 
   useEffect(() => {
@@ -171,6 +177,43 @@ export function TranslationConfig() {
       loadGlossary();
     }
   }, [isGlossaryEnabled, loadGlossary]);
+
+  // ── Community Google key ──────────────────────────────────────────────────
+
+  const saveGoogleKey = async () => {
+    const key = newGoogleKey.trim();
+    if (!key) return;
+    setSavingKey(true);
+    try {
+      const res = await api.put<{ google_key: GoogleKeyStatus }>('/v2/admin/config/translation/google-key', { api_key: key });
+      if (res.success && res.data) {
+        setGoogleKey(res.data.google_key);
+        setNewGoogleKey('');
+        toast.success(t('config.translation_google_key_saved'));
+      } else {
+        toast.error(res.error || t('config.translation_google_key_save_failed'));
+      }
+    } catch {
+      toast.error(t('config.translation_google_key_save_failed'));
+    } finally {
+      setSavingKey(false);
+    }
+  };
+
+  const removeGoogleKey = async () => {
+    setSavingKey(true);
+    try {
+      const res = await api.delete<{ google_key: GoogleKeyStatus }>('/v2/admin/config/translation/google-key');
+      if (res.success && res.data) {
+        setGoogleKey(res.data.google_key);
+        toast.success(t('config.translation_google_key_removed'));
+      }
+    } catch {
+      toast.error(t('config.translation_google_key_save_failed'));
+    } finally {
+      setSavingKey(false);
+    }
+  };
 
   // ── Config save ───────────────────────────────────────────────────────────
 
@@ -262,11 +305,19 @@ export function TranslationConfig() {
       />
 
       <div className="space-y-6">
-        {aiEnabled === false && (
+        {googleKey && googleKey.in_use === null && (
+          <Alert
+            color="danger"
+            title={t('config.translation_not_set_up_title')}
+            description={t('config.translation_not_set_up_desc')}
+          />
+        )}
+
+        {googleKey && googleKey.engine === 'ai' && (!googleKey.own_ai_key_set || !googleKey.ai_enabled) && (
           <Alert
             color="warning"
-            title={t('config.translation_ai_off_title')}
-            description={t('config.translation_ai_off_desc')}
+            title={t('config.translation_ai_unavailable_title')}
+            description={t('config.translation_ai_unavailable_desc')}
             endContent={(
               <Link className="text-sm font-medium text-accent underline" to={tenantPath('/admin/ai-settings')}>
                 {t('config.translation_ai_off_link')}
@@ -296,13 +347,27 @@ export function TranslationConfig() {
               />
             </div>
 
-            {/* Provider: fixed. There is no other provider to choose. */}
+            {/* translation.engine */}
             <div className="flex items-center justify-between py-3">
               <div>
                 <p className="font-medium">{meta('translation.engine').label}</p>
-                <p className="text-sm text-muted">{t('config.translation_provider_fixed_desc')}</p>
+                <p className="text-sm text-muted">{t('config.translation_engine_choice_desc')}</p>
               </div>
-              <p className="font-medium">{t(PROVIDER_LABEL_KEY)}</p>
+              <Select
+                aria-label={t('config.translation_engine_label')}
+                selectedKeys={[String(getValue('translation.engine')) === 'ai' || String(getValue('translation.engine')) === 'openai' ? 'ai' : 'google']}
+                onSelectionChange={(keys) => {
+                  const val = Array.from(keys)[0] as string;
+                  if (val) saveSetting('translation.engine', val);
+                }}
+                className="max-w-[220px]"
+                size="sm"
+                isDisabled={saving === 'translation.engine'}
+              >
+                {ENGINE_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.key} id={opt.key}>{t(opt.labelKey)}</SelectItem>
+                ))}
+              </Select>
             </div>
 
             {/* translation.context_aware */}
@@ -391,6 +456,43 @@ export function TranslationConfig() {
                 isDisabled={saving === 'translation.glossary_enabled'}
                 size="sm"
               />
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* Google Translate key: the community's own, else the platform's */}
+        <Card>
+          <CardHeader className="flex items-center gap-2 px-4 pt-4 pb-0">
+            <KeyRound size={18} className="text-accent" />
+            <h3 className="font-semibold">{t('config.translation_google_key_title')}</h3>
+          </CardHeader>
+          <CardBody className="space-y-3 px-4 pb-4">
+            <p className="text-sm text-muted">{t('config.translation_google_key_desc')}</p>
+            {googleKey && (
+              <p className="text-sm font-medium" role="status">
+                {googleKey.in_use === 'community' && t('config.translation_google_key_using_own')}
+                {googleKey.in_use === 'platform' && t('config.translation_google_key_using_platform')}
+                {googleKey.in_use === 'ai' && t('config.translation_google_key_using_ai')}
+                {googleKey.in_use === null && t('config.translation_google_key_using_none')}
+              </p>
+            )}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+              <SecretInput
+                label={t('config.translation_google_key_label')}
+                value={newGoogleKey}
+                onValueChange={setNewGoogleKey}
+                placeholder={googleKey?.community_key_set ? t('config.translation_google_key_replace_placeholder') : t('config.translation_google_key_placeholder')}
+                className="max-w-md"
+                size="sm"
+              />
+              <Button variant="primary" size="sm" onPress={saveGoogleKey} isDisabled={savingKey || newGoogleKey.trim() === ''}>
+                {t('config.translation_google_key_save')}
+              </Button>
+              {googleKey?.community_key_set && (
+                <Button variant="tertiary" size="sm" onPress={removeGoogleKey} isDisabled={savingKey}>
+                  {t('config.translation_google_key_remove')}
+                </Button>
+              )}
             </div>
           </CardBody>
         </Card>

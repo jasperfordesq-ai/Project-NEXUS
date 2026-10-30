@@ -8,28 +8,51 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use App\Models\User;
 use App\Services\AI\AIServiceFactory;
+use App\Services\PlatformSecretStore;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
 /**
- * Regression (AWID pilot, Oct 2026): "This tenant is not connected to AI.
- * Please contact the administrator." was shown both when the community had
- * switched AI off AND when the platform itself has no AI key. In the second
- * case the community administrator can do nothing, so members were sent to
- * the wrong person.
+ * Regression (AWID pilot, Oct 2026): members were told "This tenant is not
+ * connected to AI. Please contact the administrator." whenever they pressed
+ * Translate. AWID has no AI keys of its own and AI switched off, and every
+ * translation used to need AI.
+ *
+ * Since 30 Oct 2026 Google Translate is the default engine (owner decision),
+ * so a community in AWID's position translates, and the member never sees an
+ * AI message for it. With no Google key anywhere the answer is "not set up",
+ * which is something the community's administrator can fix (their own key).
  */
 class UgcTranslationUnavailableWordingTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        DB::table('ai_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'ai_enabled'],
+            ['setting_value' => '0'],
+        );
+        AIServiceFactory::clearCache();
+        Http::fake([
+            'translation.googleapis.com/*' => Http::response(['data' => ['translations' => [['translatedText' => 'Hello, how are you?']]]]),
+        ]);
+    }
+
+    protected function tearDown(): void
+    {
+        Cache::flush();
+        parent::tearDown();
+    }
+
     private function translate()
     {
-        $user = User::factory()->forTenant($this->testTenantId)->create([
-            'status' => 'active',
-            'is_approved' => true,
-        ]);
+        $user = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
         Sanctum::actingAs($user, ['*']);
 
         return $this->apiPost('/v2/ugc-translate', [
@@ -40,36 +63,23 @@ class UgcTranslationUnavailableWordingTest extends TestCase
         ]);
     }
 
-    private function setAiEnabled(bool $enabled): void
+    public function test_a_community_with_ai_off_and_no_keys_translates_instead_of_being_told_about_ai(): void
     {
-        DB::table('ai_settings')->updateOrInsert(
-            ['tenant_id' => $this->testTenantId, 'setting_key' => 'ai_enabled'],
-            ['setting_value' => $enabled ? '1' : '0'],
-        );
-        AIServiceFactory::clearCache();
-    }
-
-    public function test_platform_without_an_ai_key_does_not_send_members_to_their_community_admin(): void
-    {
-        config(['services.openai.api_key' => '']);
-        $this->setAiEnabled(true);
+        app(PlatformSecretStore::class)->set(PlatformSecretStore::GOOGLE_TRANSLATE_KEY, 'platform-google-key-for-tests');
 
         $response = $this->translate();
 
-        $response->assertStatus(422)
-            ->assertJsonPath('errors.0.code', 'AI_UNAVAILABLE')
-            ->assertJsonPath('errors.0.message', __('api.ai_translation_unavailable'));
-        $this->assertStringNotContainsString('administrator', (string) $response->json('errors.0.message'));
+        $response->assertStatus(200)->assertJsonPath('data.translated_text', 'Hello, how are you?');
+        $this->assertStringNotContainsString('AI', (string) $response->json('data.translated_text'));
     }
 
-    public function test_community_that_switched_ai_off_keeps_the_ask_your_administrator_wording(): void
+    public function test_with_no_google_key_anywhere_members_are_told_it_is_not_set_up_not_about_ai(): void
     {
-        config(['services.openai.api_key' => 'synthetic-test-key']);
-        $this->setAiEnabled(false);
+        $response = $this->translate();
 
-        $this->translate()
-            ->assertStatus(422)
-            ->assertJsonPath('errors.0.code', 'AI_NOT_CONFIGURED')
-            ->assertJsonPath('errors.0.message', __('api.ai_not_configured'));
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'TRANSLATION_NOT_SET_UP')
+            ->assertJsonPath('errors.0.message', __('api.translation_not_set_up'));
+        $this->assertStringNotContainsString('AI', (string) $response->json('errors.0.message'));
     }
 }

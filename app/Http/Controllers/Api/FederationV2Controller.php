@@ -3309,7 +3309,9 @@ class FederationV2Controller extends BaseApiController
         // key is a permanent condition, not a failure to retry. Answer
         // "unavailable" rather than a 500 that says "please try again".
         // E-035 F-164: the community AI master switch counts as unavailable too.
-        if (! TranscriptionService::isConfigured() || ! \App\Services\AI\AiUsageGate::aiEnabled()) {
+        // Since 30 Oct 2026: Google Translate by default, or the community's own
+        // AI (TranslationEngine). Unavailable = no Google key anywhere and no usable AI.
+        if (! \App\Services\Translation\TranslationEngine::available()) {
             return $this->respondWithError(
                 'TRANSLATION_UNAVAILABLE',
                 __('api.message_translation_unavailable'),
@@ -3373,14 +3375,17 @@ class FederationV2Controller extends BaseApiController
         }
 
         // E-035 F-164: reserve one slot of the member's AI budget before the provider call.
-        $admission = \App\Services\AI\AiUsageGate::admit((int) $userId, (int) $tenantId);
+        // AI translation spends the member's AI budget; Google does not.
+        $admission = \App\Services\Translation\TranslationEngine::usesAi()
+            ? \App\Services\AI\AiUsageGate::admit((int) $userId, (int) $tenantId)
+            : ['allowed' => true, 'reason' => null];
         if (! $admission['allowed']) {
             return \App\Services\AI\AiUsageGate::isDisabled($admission)
                 ? $this->respondWithError('TRANSLATION_UNAVAILABLE', __('api.message_translation_unavailable'), null, 503)
                 : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         }
 
-        $translatedText = TranscriptionService::translate($sourceText, 'auto', $targetLanguage, $conversationContext, $glossary);
+        $translatedText = \App\Services\Translation\TranslationEngine::translate($sourceText, 'auto', $targetLanguage, $conversationContext, $glossary);
 
         if ($translatedText === null) {
             return $this->respondWithError('TRANSLATION_FAILED', __('api.message_translation_failed'), null, 500);

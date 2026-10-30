@@ -796,6 +796,8 @@ return [
     'ai_translation_unavailable' => 'Tłumaczenie jest w tej chwili niedostępne. Spróbuj ponownie później.',
     'translation_switched_off'   => 'Tłumaczenie jest wyłączone w tej społeczności.',
     'translation_hourly_limit'   => 'Osiągnięto godzinny limit tłumaczeń w tej społeczności. Spróbuj ponownie później.',
+    'translation_not_set_up'     => 'Tłumaczenie nie jest jeszcze skonfigurowane w tej społeczności. Poinformuj administratora swojej społeczności.',
+    'translation_google_key_invalid' => 'To nie wygląda na klucz API Google. Skopiuj cały klucz z konsoli Google Cloud i wklej go ponownie.',
     'session_idle_timeout'       => 'Wylogowano Cię z powodu zbyt długiej bezczynności. Zaloguj się ponownie.',
     'message_recipient_required' => 'identyfikator_odbiorcy jest wymagany',
     'message_body_or_voice_required' => 'Wymagana jest treść wiadomości lub wiadomość głosowa',

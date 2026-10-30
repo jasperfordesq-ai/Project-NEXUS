@@ -1500,6 +1500,8 @@ return [
     'ai_translation_unavailable'           => 'Translation is not available at the moment. Please try again later.',
     'translation_switched_off'             => 'Translation is switched off in this community.',
     'translation_hourly_limit'             => 'You have reached this community\'s translation limit for the hour. Please try again later.',
+    'translation_not_set_up'               => 'Translation is not set up for this community yet. Please let your community administrator know.',
+    'translation_google_key_invalid'       => 'That does not look like a Google API key. Copy the whole key from the Google Cloud console and paste it again.',
     'session_idle_timeout'                 => 'You were signed out because you were inactive for too long. Please sign in again.',
 
     // ============================================

@@ -137,8 +137,12 @@ class TranscriptionService
         string $toLanguage,
         array $conversationContext = [],
         array $glossary = [],
+        ?string $apiKey = null,
     ): ?string {
-        $apiKey = config('services.openai.api_key');
+        // Translation passes the community's own key (TranslationEngine, 30 Oct
+        // 2026: AI translation never runs on the platform's key). Other callers
+        // keep the platform key.
+        $apiKey = $apiKey ?? config('services.openai.api_key');
         if (empty($apiKey)) {
             Log::warning('TranscriptionService::translate — OpenAI API key not configured');
             return null;

@@ -38,7 +38,7 @@ class TranslationConfigurationService
 
     public const DEFAULTS = [
         self::CONFIG_ENABLED              => true,
-        self::CONFIG_ENGINE               => 'openai',    // 'openai', 'deepl', 'google'
+        self::CONFIG_ENGINE               => 'google',    // 'google' (default) or 'ai' — Translation\TranslationEngine
         self::CONFIG_CONTEXT_AWARE        => false,       // INT7: send conversation history
         self::CONFIG_CONTEXT_MESSAGES     => 5,           // number of preceding messages
         self::CONFIG_AUTO_TRANSLATE_DEFAULT => false,      // INT8: default for new conversations
@@ -105,13 +105,6 @@ class TranslationConfigurationService
     /** Rate-limiter key prefix for the per-member hourly translation limit. */
     public const HOURLY_LIMITER_PREFIX = 'translation-hourly:';
 
-    /**
-     * The only translation provider the platform has. The admin page offered
-     * DeepL and Google too; nothing ever read that choice (owner check of
-     * AWID's settings, 30 Oct 2026), so it now says which one is used.
-     */
-    public const PROVIDER = 'openai';
-
     /** Is translation switched on for the current community ("Enable translation")? */
     public static function isEnabled(): bool
     {
@@ -153,7 +146,8 @@ class TranslationConfigurationService
         return [
             'enabled' => filter_var($value(self::CONFIG_ENABLED), FILTER_VALIDATE_BOOLEAN),
             'auto_translate_default' => filter_var($value(self::CONFIG_AUTO_TRANSLATE_DEFAULT), FILTER_VALIDATE_BOOLEAN),
-            'provider' => self::PROVIDER,
+            // The community's choice: 'google' (default) or 'ai' (its own AI key).
+            'provider' => in_array(strtolower((string) $value(self::CONFIG_ENGINE)), ['ai', 'openai'], true) ? 'ai' : 'google',
         ];
     }
 

@@ -771,6 +771,8 @@ return [
     'ai_translation_unavailable' => 'La traduction n\'est pas disponible pour le moment. Veuillez réessayer plus tard.',
     'translation_switched_off'   => 'La traduction est désactivée dans cette communauté.',
     'translation_hourly_limit'   => 'Vous avez atteint la limite de traductions par heure de cette communauté. Veuillez réessayer plus tard.',
+    'translation_not_set_up'     => 'La traduction n\'est pas encore configurée pour cette communauté. Prévenez l\'administrateur de votre communauté.',
+    'translation_google_key_invalid' => 'Cela ne ressemble pas à une clé d\'API Google. Copiez la clé entière depuis la console Google Cloud et collez-la à nouveau.',
     'session_idle_timeout'       => 'Vous avez été déconnecté après une trop longue période d\'inactivité. Veuillez vous reconnecter.',
     'message_recipient_required' => 'le destinataire_id est requis',
     'message_body_or_voice_required' => 'Le corps du message ou le message vocal est requis',

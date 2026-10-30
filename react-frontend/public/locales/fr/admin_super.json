@@ -1227,5 +1227,22 @@
   "federation": "Fédération",
   "wallet": "Portefeuille",
   "messages": "Messages",
-  "dashboard": "Tableau de bord"
+  "dashboard": "Tableau de bord",
+  "platform_translation": {
+    "title": "Clé de traduction de la plateforme",
+    "description": "Google Traduction est le moteur de traduction par défaut de toutes les communautés. Les communautés qui ont enregistré leur propre clé Google l'utilisent ; les autres utilisent la clé de la plateforme enregistrée ici.",
+    "status_saved": "Une clé Google Traduction de la plateforme est enregistrée et utilisée.",
+    "status_environment": "Aucune clé n'est enregistrée ici ; le réglage serveur GOOGLE_TRANSLATE_API_KEY est utilisé.",
+    "status_none": "Aucune clé Google Traduction de la plateforme n'est enregistrée. Les communautés sans clé propre ne peuvent pas traduire.",
+    "key_heading": "Clé d'API Google Cloud Translation",
+    "key_help": "Créez la clé dans la console Google Cloud (API et services → Identifiants), limitée à l'API Cloud Translation. Elle est stockée chiffrée et n'est plus jamais affichée.",
+    "key_label": "Clé d'API Google Traduction de la plateforme",
+    "placeholder": "Collez la clé depuis la console Google Cloud",
+    "replace_placeholder": "Une clé est enregistrée. Collez-en une nouvelle pour la remplacer",
+    "save": "Enregistrer la clé",
+    "remove": "Retirer la clé",
+    "saved": "Clé de traduction de la plateforme enregistrée",
+    "removed": "Clé de traduction de la plateforme retirée",
+    "save_failed": "La clé n'a pas pu être enregistrée"
+  }
 }

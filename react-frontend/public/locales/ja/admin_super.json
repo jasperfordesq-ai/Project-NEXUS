@@ -1215,5 +1215,22 @@
   "federation": "フェデレーション",
   "wallet": "財布",
   "messages": "メッセージ",
-  "dashboard": "ダッシュボード"
+  "dashboard": "ダッシュボード",
+  "platform_translation": {
+    "title": "プラットフォームの翻訳キー",
+    "description": "Google 翻訳はすべてのコミュニティの既定の翻訳エンジンです。独自の Google キーを保存したコミュニティはそれを使い、それ以外のコミュニティはここに保存したプラットフォームのキーを使います。",
+    "status_saved": "プラットフォームの Google 翻訳キーが保存され、使用中です。",
+    "status_environment": "ここにはキーが保存されていません。サーバー設定 GOOGLE_TRANSLATE_API_KEY を使用中です。",
+    "status_none": "プラットフォームの Google 翻訳キーが保存されていません。独自のキーがないコミュニティは翻訳できません。",
+    "key_heading": "Google Cloud Translation API キー",
+    "key_help": "Google Cloud コンソール（API とサービス → 認証情報）で、Cloud Translation API に制限したキーを作成してください。キーは暗号化して保存され、二度と表示されません。",
+    "key_label": "プラットフォームの Google 翻訳 API キー",
+    "placeholder": "Google Cloud コンソールからキーを貼り付けてください",
+    "replace_placeholder": "キーは保存済みです。置き換えるには新しいキーを貼り付けてください",
+    "save": "キーを保存",
+    "remove": "キーを削除",
+    "saved": "プラットフォームの翻訳キーを保存しました",
+    "removed": "プラットフォームの翻訳キーを削除しました",
+    "save_failed": "キーを保存できませんでした"
+  }
 }

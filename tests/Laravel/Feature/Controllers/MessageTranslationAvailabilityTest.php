@@ -67,6 +67,17 @@ class MessageTranslationAvailabilityTest extends TestCase
     {
         config(['services.openai.api_key' => 'synthetic-test-key']);
         \App\Services\AI\AIServiceFactory::clearCache();
+        // Since 30 Oct 2026 translation is Google by default; AI only when the
+        // community chose it and saved its own OpenAI key (Translation\TranslationEngine).
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'translation.engine'],
+            ['setting_value' => 'ai', 'updated_at' => now()]
+        );
+        DB::table('ai_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'openai_api_key'],
+            ['setting_value' => 'test-community-openai-key', 'updated_at' => now()]
+        );
+
         DB::table('ai_settings')->updateOrInsert(['tenant_id' => $this->testTenantId, 'setting_key' => 'ai_enabled'], ['setting_value' => '1']);
         \App\Services\TranslationConfigurationService::set('translation.context_aware', true);
         \App\Services\TranslationConfigurationService::set('translation.context_messages', 2);

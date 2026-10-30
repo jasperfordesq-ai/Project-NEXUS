@@ -771,6 +771,8 @@ return [
     'ai_translation_unavailable' => 'Níl aistriúchán ar fáil faoi láthair. Bain triail eile as ar ball.',
     'translation_switched_off'   => 'Tá aistriúchán múchta sa phobal seo.',
     'translation_hourly_limit'   => 'Tá teorainn aistriúcháin an phobail seo don uair bainte amach agat. Bain triail eile as ar ball.',
+    'translation_not_set_up'     => 'Níl aistriúchán socraithe don phobal seo fós. Cuir riarthóir do phobail ar an eolas le do thoil.',
+    'translation_google_key_invalid' => 'Ní cosúil gur eochair API Google é sin. Cóipeáil an eochair iomlán ó chonsól Google Cloud agus greamaigh arís í.',
     'session_idle_timeout'       => 'Logáladh amach thú mar bhí tú díomhaoin rófhada. Logáil isteach arís le do thoil.',
     'message_recipient_required' => 'faighteoir_id ag teastáil',
     'message_body_or_voice_required' => 'Tá corp na teachtaireachta nó teachtaireacht ghutha ag teastáil',

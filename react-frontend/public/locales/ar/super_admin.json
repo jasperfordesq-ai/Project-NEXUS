@@ -20,7 +20,8 @@
     "billing_control": "التحكم بالفوترة",
     "revenue_dashboard": "لوحة تحكم الإيرادات",
     "regional_analytics": "التحليلات الإقليمية",
-    "national_dashboard": "لوحة التحكم الوطنية"
+    "national_dashboard": "لوحة التحكم الوطنية",
+    "platform_translation": "مفتاح الترجمة"
   },
   "layout": {
     "loading": "تحميل المشرف المتميز",
@@ -70,7 +71,8 @@
     "subscriptions": "الاشتراكات",
     "aria_label": "فتات الخبز",
     "bulk": "العمليات الجماعية",
-    "audit": "سجل التدقيق"
+    "audit": "سجل التدقيق",
+    "translation": "مفتاح الترجمة"
   },
   "dashboard": {
     "title": "لوحة البنية التحتية",

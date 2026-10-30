@@ -1239,5 +1239,22 @@
   "federation": "Federacja",
   "wallet": "Portfel",
   "messages": "Wiadomości",
-  "dashboard": "Panel"
+  "dashboard": "Panel",
+  "platform_translation": {
+    "title": "Klucz tłumaczenia platformy",
+    "description": "Tłumacz Google to domyślny mechanizm tłumaczenia w każdej społeczności. Społeczności, które zapisały własny klucz Google, używają go; pozostałe używają klucza platformy zapisanego tutaj.",
+    "status_saved": "Klucz Tłumacza Google platformy jest zapisany i używany.",
+    "status_environment": "Nie zapisano tu klucza; używane jest ustawienie serwera GOOGLE_TRANSLATE_API_KEY.",
+    "status_none": "Nie zapisano klucza Tłumacza Google platformy. Społeczności bez własnego klucza nie mogą tłumaczyć.",
+    "key_heading": "Klucz API Google Cloud Translation",
+    "key_help": "Utwórz klucz w konsoli Google Cloud (Interfejsy API i usługi → Dane logowania), ograniczony do Cloud Translation API. Jest przechowywany w postaci zaszyfrowanej i nigdy więcej nie jest wyświetlany.",
+    "key_label": "Klucz API Tłumacza Google platformy",
+    "placeholder": "Wklej klucz z konsoli Google Cloud",
+    "replace_placeholder": "Klucz jest zapisany. Wklej nowy, aby go zastąpić",
+    "save": "Zapisz klucz",
+    "remove": "Usuń klucz",
+    "saved": "Zapisano klucz tłumaczenia platformy",
+    "removed": "Usunięto klucz tłumaczenia platformy",
+    "save_failed": "Nie udało się zapisać klucza"
+  }
 }

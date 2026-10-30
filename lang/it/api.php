@@ -771,6 +771,8 @@ return [
     'ai_translation_unavailable' => 'La traduzione non è disponibile al momento. Riprova più tardi.',
     'translation_switched_off'   => 'La traduzione è disattivata in questa comunità.',
     'translation_hourly_limit'   => 'Hai raggiunto il limite orario di traduzioni di questa comunità. Riprova più tardi.',
+    'translation_not_set_up'     => 'La traduzione non è ancora configurata per questa comunità. Avvisa l\'amministratore della tua comunità.',
+    'translation_google_key_invalid' => 'Non sembra una chiave API di Google. Copia l\'intera chiave dalla console di Google Cloud e incollala di nuovo.',
     'session_idle_timeout'       => 'Sei stato disconnesso perché sei rimasto inattivo troppo a lungo. Accedi di nuovo.',
     'message_recipient_required' => 'recipient_id è obbligatorio',
     'message_body_or_voice_required' => 'Il corpo del messaggio o il messaggio vocale sono obbligatori',

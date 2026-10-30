@@ -20,7 +20,8 @@
     "billing_control": "Controllo fatturazione",
     "revenue_dashboard": "Cruscotto delle entrate",
     "regional_analytics": "Analisi regionale",
-    "national_dashboard": "Cruscotto nazionale"
+    "national_dashboard": "Cruscotto nazionale",
+    "platform_translation": "Chiave di traduzione"
   },
   "layout": {
     "loading": "Caricamento super amministratore",
@@ -70,7 +71,8 @@
     "subscriptions": "Abbonamenti",
     "aria_label": "Pangrattato",
     "bulk": "Operazioni di massa",
-    "audit": "Registro di controllo"
+    "audit": "Registro di controllo",
+    "translation": "Chiave di traduzione"
   },
   "dashboard": {
     "title": "Cruscotto dell'infrastruttura",

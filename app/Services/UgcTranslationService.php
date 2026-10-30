@@ -74,7 +74,7 @@ class UgcTranslationService
         }
 
         try {
-            $translated = TranscriptionService::translate($sourceText, $resolvedSource, $targetLocale);
+            $translated = \App\Services\Translation\TranslationEngine::translate($sourceText, $resolvedSource, $targetLocale);
         } catch (\Throwable $e) {
             Log::warning('UgcTranslationService::translate failed', [
                 'tenant_id'    => TenantContext::getId(),

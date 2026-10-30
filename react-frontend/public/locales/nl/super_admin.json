@@ -20,7 +20,8 @@
     "billing_control": "Factureringscontrole",
     "revenue_dashboard": "Inkomstendashboard",
     "regional_analytics": "Regionale analyse",
-    "national_dashboard": "Nationaal dashboard"
+    "national_dashboard": "Nationaal dashboard",
+    "platform_translation": "Vertaalsleutel"
   },
   "layout": {
     "loading": "Superbeheerder laden",
@@ -70,7 +71,8 @@
     "subscriptions": "Abonnementen",
     "aria_label": "Broodkruimels",
     "bulk": "Grootbewerkingen",
-    "audit": "Auditlog"
+    "audit": "Auditlog",
+    "translation": "Vertaalsleutel"
   },
   "dashboard": {
     "title": "Infrastructuurdashboard",

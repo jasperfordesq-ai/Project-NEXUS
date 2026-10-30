@@ -20,7 +20,8 @@
     "billing_control": "Contrôle de facturation",
     "revenue_dashboard": "Tableau de bord des revenus",
     "regional_analytics": "Analytique régionale",
-    "national_dashboard": "Tableau de bord national"
+    "national_dashboard": "Tableau de bord national",
+    "platform_translation": "Clé de traduction"
   },
   "layout": {
     "loading": "Chargement du super administrateur",
@@ -70,7 +71,8 @@
     "aria_label": "Fil d'Ariane",
     "bulk": "Opérations en masse",
     "audit": "Journal d'audit",
-    "national": "National"
+    "national": "National",
+    "translation": "Clé de traduction"
   },
   "dashboard": {
     "title": "Tableau de bord des infrastructures",

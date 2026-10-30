@@ -66,6 +66,20 @@ final class AiProviderCallGateTest extends TestCase
         DB::table('tenants')->where('id', $this->testTenantId)->update(['features' => json_encode($features)]);
         TenantContext::setById($this->testTenantId);
 
+        // Since 30 Oct 2026 translation uses Google by default and AI only when
+        // the community chose AI and saved its OWN OpenAI key
+        // (Translation\TranslationEngine). The translation entry points here test
+        // the AI path, so this community is set up as an AI-translation
+        // community; the budget and switch assertions are unchanged.
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'translation.engine'],
+            ['setting_value' => 'ai', 'updated_at' => now()]
+        );
+        DB::table('ai_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'openai_api_key'],
+            ['setting_value' => 'sk-e035-own-community-key-fake', 'updated_at' => now()]
+        );
+
         ListingConfigurationService::set(ListingConfigurationService::CONFIG_ENABLE_AI_DESCRIPTIONS, true);
         JobConfigurationService::set(JobConfigurationService::CONFIG_ENABLE_AI_DESCRIPTIONS, true);
         AIServiceFactory::clearCache();

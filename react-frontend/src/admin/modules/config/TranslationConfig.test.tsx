@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ── Hoist mock data ───────────────────────────────────────────────────────────
@@ -120,48 +120,80 @@ describe('TranslationConfig', () => {
     });
   });
 
-  // Owner check of AWID's settings, 30 Oct 2026: translation needs the
-  // community's AI switched on, and the page never said so. AWID had AI off and
-  // every translation was refused.
-  it('warns when AI is switched off, because translation cannot work then', async () => {
+  // Owner decision, 30 Oct 2026: Google Translate is every community's default
+  // engine, on the community's own Google key or the platform's fallback key.
+  // AI translation is optional and uses the community's own AI key.
+  const withGoogleKey = (googleKey: Record<string, unknown>, config: Record<string, unknown> = {}) => {
     mockApi.get.mockImplementation((url: string) => {
       if (url.includes('glossary')) return Promise.resolve(makeGlossaryResponse());
-      if (url.includes('/v2/admin/config/ai')) return Promise.resolve({ data: { ai_enabled: false } });
-      return Promise.resolve(makeConfigResponse());
+      const base = makeConfigResponse(config);
+      return Promise.resolve({ data: { ...base.data, google_key: {
+        engine: 'google', community_key_set: false, platform_key_set: true, in_use: 'platform',
+        own_ai_key_set: false, ai_enabled: false, ...googleKey,
+      } } });
     });
+  };
+
+  it('offers Google Translate and AI as the engines, and no longer DeepL', async () => {
+    withGoogleKey({}, { 'translation.engine': 'google' });
     const { TranslationConfig } = await import('./TranslationConfig');
     render(<TranslationConfig />);
 
-    expect(await screen.findByText('AI is switched off for this community')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Open AI settings' })).toHaveAttribute('href', expect.stringContaining('/admin/ai-settings'));
-  });
-
-  it('shows no AI warning when AI is on', async () => {
-    mockApi.get.mockImplementation((url: string) => {
-      if (url.includes('glossary')) return Promise.resolve(makeGlossaryResponse());
-      if (url.includes('/v2/admin/config/ai')) return Promise.resolve({ data: { ai_enabled: true } });
-      return Promise.resolve(makeConfigResponse());
-    });
-    const { TranslationConfig } = await import('./TranslationConfig');
-    render(<TranslationConfig />);
-
-    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/config/ai'));
-    expect(screen.queryByText('AI is switched off for this community')).not.toBeInTheDocument();
-  });
-
-  // The engine choice (OpenAI / DeepL / Google) was saved and read by nothing:
-  // only OpenAI exists. The page now says which provider is used.
-  it('states the translation provider instead of offering choices that do nothing', async () => {
-    mockApi.get.mockImplementation((url: string) => {
-      if (url.includes('glossary')) return Promise.resolve(makeGlossaryResponse());
-      return Promise.resolve(makeConfigResponse({ 'translation.engine': 'google' }));
-    });
-    const { TranslationConfig } = await import('./TranslationConfig');
-    render(<TranslationConfig />);
-
-    expect(await screen.findByText('OpenAI')).toBeInTheDocument();
-    expect(screen.queryByText('Google Translate')).not.toBeInTheDocument();
+    const engine = await screen.findByRole('combobox', { name: 'Translation engine' });
+    expect(within(engine).getByRole('option', { name: 'Google Translate (default)' })).toBeInTheDocument();
+    expect(within(engine).getByRole('option', { name: 'AI, with your own AI key' })).toBeInTheDocument();
     expect(screen.queryByText('DeepL')).not.toBeInTheDocument();
+  });
+
+  it('says the platform Google key is in use when the community has none', async () => {
+    withGoogleKey({ in_use: 'platform' });
+    const { TranslationConfig } = await import('./TranslationConfig');
+    render(<TranslationConfig />);
+
+    expect(await screen.findByText("Using the platform's Google Translate key.")).toBeInTheDocument();
+  });
+
+  it("saves the community's own Google key without ever showing it back", async () => {
+    withGoogleKey({});
+    mockApi.put.mockResolvedValue({ success: true, data: { google_key: { community_key_set: true, platform_key_set: true, in_use: 'community', engine: 'google', own_ai_key_set: false, ai_enabled: false } } });
+    const { TranslationConfig } = await import('./TranslationConfig');
+    render(<TranslationConfig />);
+
+    const input = await screen.findByLabelText('Your own Google Translate API key');
+    expect(input).toHaveAttribute('type', 'password');
+    fireEvent.change(input, { target: { value: 'AIzaTestCommunityKey0123456789abcdefgh' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save key' }));
+
+    await waitFor(() => expect(mockApi.put).toHaveBeenCalledWith('/v2/admin/config/translation/google-key', { api_key: 'AIzaTestCommunityKey0123456789abcdefgh' }));
+    expect(await screen.findByText("Using your community's own Google Translate key.")).toBeInTheDocument();
+    expect(input).toHaveValue('');
+  });
+
+  it("removes the community's own key", async () => {
+    withGoogleKey({ community_key_set: true, in_use: 'community' });
+    mockApi.delete.mockResolvedValue({ success: true, data: { google_key: { community_key_set: false, platform_key_set: true, in_use: 'platform', engine: 'google', own_ai_key_set: false, ai_enabled: false } } });
+    const { TranslationConfig } = await import('./TranslationConfig');
+    render(<TranslationConfig />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Remove our key' }));
+    await waitFor(() => expect(mockApi.delete).toHaveBeenCalledWith('/v2/admin/config/translation/google-key'));
+  });
+
+  it('warns when no translation can work at all', async () => {
+    withGoogleKey({ platform_key_set: false, in_use: null });
+    const { TranslationConfig } = await import('./TranslationConfig');
+    render(<TranslationConfig />);
+
+    expect(await screen.findByText('Translation is not set up')).toBeInTheDocument();
+  });
+
+  it('explains that AI falls back to Google until the community has its own AI key', async () => {
+    withGoogleKey({ engine: 'ai', own_ai_key_set: false, ai_enabled: false, in_use: 'platform' }, { 'translation.engine': 'ai' });
+    const { TranslationConfig } = await import('./TranslationConfig');
+    render(<TranslationConfig />);
+
+    expect(await screen.findByText('AI translation is not available yet')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open AI settings' })).toHaveAttribute('href', expect.stringContaining('/admin/ai-settings'));
   });
 
   it('shows loading spinner while config is fetching', async () => {

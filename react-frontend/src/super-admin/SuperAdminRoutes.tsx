@@ -34,6 +34,7 @@ const FederationTenantFeatures = lazy(() => import('@/admin/modules/super/Federa
 const BillingControl = lazy(() => import('@/admin/modules/billing/BillingControl'));
 const RevenueDashboard = lazy(() => import('@/admin/modules/billing/RevenueDashboard'));
 const PilotInquiryAdminPage = lazy(() => import('@/admin/modules/super/PilotInquiryAdminPage'));
+const PlatformTranslationKeyPage = lazy(() => import('@/admin/modules/super/PlatformTranslationKeyPage'));
 const ProvisioningRequestsPage = lazy(() => import('@/admin/modules/provisioning/ProvisioningRequestsPage'));
 const NationalKissDashboardPage = lazy(() => import('@/admin/modules/national/NationalKissDashboardPage'));
 const RegionalAnalyticsAdminPage = lazy(() => import('@/admin/modules/regional-analytics/RegionalAnalyticsAdminPage'));
@@ -94,6 +95,7 @@ export function SuperAdminRoutes() {
         <Route path="billing" element={<Lazy><BillingControl /></Lazy>} />
         <Route path="billing/revenue" element={<Lazy><RevenueDashboard /></Lazy>} />
         <Route path="platform/pilot-inquiries" element={<Lazy><PilotInquiryAdminPage /></Lazy>} />
+        <Route path="platform/translation" element={<Lazy><PlatformTranslationKeyPage /></Lazy>} />
         <Route path="provisioning-requests" element={<Lazy><ProvisioningRequestsPage /></Lazy>} />
         <Route path="national/kiss" element={<Lazy><NationalKissDashboardPage /></Lazy>} />
         <Route path="regional-analytics/subscriptions" element={<Lazy><RegionalAnalyticsAdminPage /></Lazy>} />

@@ -1227,5 +1227,22 @@
   "federation": "Federación",
   "wallet": "Billetera",
   "messages": "Mensajes",
-  "dashboard": "Panel"
+  "dashboard": "Panel",
+  "platform_translation": {
+    "title": "Clave de traducción de la plataforma",
+    "description": "Google Translate es el motor de traducción predeterminado de todas las comunidades. Las comunidades que han guardado su propia clave de Google la usan; las demás usan la clave de la plataforma guardada aquí.",
+    "status_saved": "Hay una clave de Google Translate de la plataforma guardada y en uso.",
+    "status_environment": "No hay ninguna clave guardada aquí; se usa el ajuste GOOGLE_TRANSLATE_API_KEY del servidor.",
+    "status_none": "No hay ninguna clave de Google Translate de la plataforma guardada. Las comunidades sin clave propia no pueden traducir.",
+    "key_heading": "Clave de API de Google Cloud Translation",
+    "key_help": "Crea la clave en la consola de Google Cloud (API y servicios → Credenciales), limitada a la API Cloud Translation. Se guarda cifrada y no se vuelve a mostrar.",
+    "key_label": "Clave de API de Google Translate de la plataforma",
+    "placeholder": "Pega la clave desde la consola de Google Cloud",
+    "replace_placeholder": "Hay una clave guardada. Pega otra para sustituirla",
+    "save": "Guardar clave",
+    "remove": "Quitar clave",
+    "saved": "Clave de traducción de la plataforma guardada",
+    "removed": "Clave de traducción de la plataforma quitada",
+    "save_failed": "No se pudo guardar la clave"
+  }
 }

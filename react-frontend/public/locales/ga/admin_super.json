@@ -1251,5 +1251,22 @@
   "federation": "Líonra comhpháirtíochta",
   "wallet": "Sparán",
   "messages": "Teachtaireachtaí",
-  "dashboard": "Deais"
+  "dashboard": "Deais",
+  "platform_translation": {
+    "title": "Eochair aistriúcháin an ardáin",
+    "description": "Is é Google Translate an t-inneall aistriúcháin réamhshocraithe do gach pobal. Úsáideann pobail a shábháil a n-eochair Google féin í; úsáideann gach pobal eile eochair an ardáin a shábháiltear anseo.",
+    "status_saved": "Tá eochair Google Translate an ardáin sábháilte agus in úsáid.",
+    "status_environment": "Níl aon eochair sábháilte anseo; tá socrú freastalaí GOOGLE_TRANSLATE_API_KEY in úsáid.",
+    "status_none": "Níl aon eochair Google Translate an ardáin sábháilte. Ní féidir le pobail gan a n-eochair féin aistriú.",
+    "key_heading": "Eochair API Google Cloud Translation",
+    "key_help": "Cruthaigh an eochair i gconsól Google Cloud (APIs & Services → Credentials), teoranta don Cloud Translation API. Stóráiltear criptithe í agus ní thaispeántar arís í.",
+    "key_label": "Eochair API Google Translate an ardáin",
+    "placeholder": "Greamaigh an eochair ó chonsól Google Cloud",
+    "replace_placeholder": "Tá eochair sábháilte. Greamaigh ceann nua chun í a athsholáthar",
+    "save": "Sábháil an eochair",
+    "remove": "Bain an eochair",
+    "saved": "Eochair aistriúcháin an ardáin sábháilte",
+    "removed": "Eochair aistriúcháin an ardáin bainte",
+    "save_failed": "Níorbh fhéidir an eochair a shábháil"
+  }
 }

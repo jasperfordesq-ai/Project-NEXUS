@@ -32,6 +32,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   revenue: 'breadcrumbs.revenue',
   platform: 'breadcrumbs.platform',
   'pilot-inquiries': 'breadcrumbs.pilot_inquiries',
+  translation: 'breadcrumbs.translation',
   'provisioning-requests': 'breadcrumbs.provisioning_requests',
   national: 'breadcrumbs.national',
   kiss: 'breadcrumbs.kiss',

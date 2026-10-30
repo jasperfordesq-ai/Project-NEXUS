@@ -20,7 +20,8 @@
     "billing_control": "Kontrola rozliczeń",
     "revenue_dashboard": "Panel przychodów",
     "regional_analytics": "Analizy regionalne",
-    "national_dashboard": "Panel krajowy"
+    "national_dashboard": "Panel krajowy",
+    "platform_translation": "Klucz tłumaczenia"
   },
   "layout": {
     "loading": "Ładowanie superadministratora",
@@ -70,7 +71,8 @@
     "subscriptions": "Subskrypcje",
     "aria_label": "Ścieżka nawigacyjna",
     "bulk": "Operacje masowe",
-    "audit": "Dziennik audytu"
+    "audit": "Dziennik audytu",
+    "translation": "Klucz tłumaczenia"
   },
   "dashboard": {
     "title": "Panel infrastruktury",

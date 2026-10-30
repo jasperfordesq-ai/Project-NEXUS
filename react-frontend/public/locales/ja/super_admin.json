@@ -20,7 +20,8 @@
     "billing_control": "請求管理",
     "revenue_dashboard": "収益ダッシュボード",
     "regional_analytics": "地域別分析",
-    "national_dashboard": "全国ダッシュボード"
+    "national_dashboard": "全国ダッシュボード",
+    "platform_translation": "翻訳キー"
   },
   "layout": {
     "loading": "スーパー管理者の読み込み中",
@@ -70,7 +71,8 @@
     "subscriptions": "サブスクリプション",
     "aria_label": "パンくずリスト",
     "bulk": "一括操作",
-    "audit": "監査ログ"
+    "audit": "監査ログ",
+    "translation": "翻訳キー"
   },
   "dashboard": {
     "title": "インフラストラクチャダッシュボード",

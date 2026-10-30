@@ -20,7 +20,8 @@
     "billing_control": "Rialú Bhilleála",
     "revenue_dashboard": "Painéal Tuillimh",
     "regional_analytics": "Anailís Réigiúnach",
-    "national_dashboard": "Painéal Náisiúnta"
+    "national_dashboard": "Painéal Náisiúnta",
+    "platform_translation": "Eochair aistriúcháin"
   },
   "layout": {
     "loading": "Super admin íoslódáil",
@@ -70,7 +71,8 @@
     "subscriptions": "Síntiús",
     "aria_label": "Arán cróicín",
     "bulk": "Oibríochtaí Móra",
-    "audit": "Loga Iniúchta"
+    "audit": "Loga Iniúchta",
+    "translation": "Eochair aistriúcháin"
   },
   "dashboard": {
     "title": "Painéal an Bhonneagair",

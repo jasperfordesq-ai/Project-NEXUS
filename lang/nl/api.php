@@ -796,6 +796,8 @@ return [
     'ai_translation_unavailable' => 'Vertalen is op dit moment niet beschikbaar. Probeer het later opnieuw.',
     'translation_switched_off'   => 'Vertalen is uitgeschakeld in deze gemeenschap.',
     'translation_hourly_limit'   => 'U hebt de vertaallimiet per uur van deze gemeenschap bereikt. Probeer het later opnieuw.',
+    'translation_not_set_up'     => 'Vertalen is nog niet ingesteld voor deze gemeenschap. Laat het de beheerder van uw gemeenschap weten.',
+    'translation_google_key_invalid' => 'Dat lijkt geen Google-API-sleutel. Kopieer de volledige sleutel uit de Google Cloud-console en plak hem opnieuw.',
     'session_idle_timeout'       => 'U bent afgemeld omdat u te lang inactief was. Meld u opnieuw aan.',
     'message_recipient_required' => 'ontvanger_id is vereist',
     'message_body_or_voice_required' => 'Berichttekst of gesproken bericht is vereist',

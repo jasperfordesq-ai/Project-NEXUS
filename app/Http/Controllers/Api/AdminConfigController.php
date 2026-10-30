@@ -3769,7 +3769,39 @@ class AdminConfigController extends BaseApiController
         return $this->respondWithData([
             'config' => $all,
             'defaults' => \App\Services\TranslationConfigurationService::DEFAULTS,
+            // Which Google key and engine are in use. Never the key itself.
+            'google_key' => \App\Services\Translation\TranslationEngine::adminStatus(),
         ]);
+    }
+
+    /**
+     * PUT /api/v2/admin/config/translation/google-key — the community's own
+     * Google Cloud Translation key, stored encrypted. Without one the platform's
+     * fallback key is used (owner, 30 Oct 2026).
+     */
+    public function updateTranslationGoogleKey(): JsonResponse
+    {
+        $adminId = $this->requireAdmin();
+        $key = trim((string) $this->input('api_key', ''));
+        // Google API keys are 39 characters; allow some room, refuse obvious junk.
+        if ($key === '' || strlen($key) < 20 || strlen($key) > 200 || preg_match('/\s/', $key) === 1) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.translation_google_key_invalid'), 'api_key', 422);
+        }
+
+        \App\Services\Translation\TranslationEngine::setCommunityGoogleKey($key);
+        \App\Models\ActivityLog::log($adminId, 'admin_translation_google_key_set', 'Saved the community Google Translate key');
+
+        return $this->respondWithData(['google_key' => \App\Services\Translation\TranslationEngine::adminStatus()]);
+    }
+
+    /** DELETE /api/v2/admin/config/translation/google-key — back to the platform key. */
+    public function deleteTranslationGoogleKey(): JsonResponse
+    {
+        $adminId = $this->requireAdmin();
+        \App\Services\Translation\TranslationEngine::setCommunityGoogleKey(null);
+        \App\Models\ActivityLog::log($adminId, 'admin_translation_google_key_removed', 'Removed the community Google Translate key');
+
+        return $this->respondWithData(['google_key' => \App\Services\Translation\TranslationEngine::adminStatus()]);
     }
 
     /** PUT /api/v2/admin/config/translation */
@@ -3798,6 +3830,10 @@ class AdminConfigController extends BaseApiController
             $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
         } elseif (is_int($defaultValue)) {
             $value = max(1, min(1000, (int) $value));
+        }
+        if ($key === \App\Services\TranslationConfigurationService::CONFIG_ENGINE
+            && !in_array($value, [\App\Services\Translation\TranslationEngine::ENGINE_GOOGLE, \App\Services\Translation\TranslationEngine::ENGINE_AI], true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.configuration_key_unknown', ['key' => (string) $value]), 'value', 422);
         }
 
         \App\Services\TranslationConfigurationService::set($key, $value);

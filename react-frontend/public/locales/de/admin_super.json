@@ -1215,5 +1215,22 @@
   "federation": "Föderation",
   "wallet": "Geldbörse",
   "messages": "Nachrichten",
-  "dashboard": "Dashboard"
+  "dashboard": "Dashboard",
+  "platform_translation": {
+    "title": "Übersetzungsschlüssel der Plattform",
+    "description": "Google Übersetzer ist für jede Community die Standard-Übersetzung. Communities mit eigenem Google-Schlüssel nutzen diesen; alle anderen nutzen den hier gespeicherten Plattform-Schlüssel.",
+    "status_saved": "Ein Google-Übersetzer-Schlüssel der Plattform ist gespeichert und in Verwendung.",
+    "status_environment": "Hier ist kein Schlüssel gespeichert; die Servereinstellung GOOGLE_TRANSLATE_API_KEY wird verwendet.",
+    "status_none": "Es ist kein Google-Übersetzer-Schlüssel der Plattform gespeichert. Communities ohne eigenen Schlüssel können nicht übersetzen.",
+    "key_heading": "Google-Cloud-Translation-API-Schlüssel",
+    "key_help": "Erstellen Sie den Schlüssel in der Google Cloud Console (APIs & Dienste → Anmeldedaten), beschränkt auf die Cloud Translation API. Er wird verschlüsselt gespeichert und nie wieder angezeigt.",
+    "key_label": "Google-Übersetzer-API-Schlüssel der Plattform",
+    "placeholder": "Fügen Sie den Schlüssel aus der Google Cloud Console ein",
+    "replace_placeholder": "Ein Schlüssel ist gespeichert. Fügen Sie einen neuen ein, um ihn zu ersetzen",
+    "save": "Schlüssel speichern",
+    "remove": "Schlüssel entfernen",
+    "saved": "Übersetzungsschlüssel der Plattform gespeichert",
+    "removed": "Übersetzungsschlüssel der Plattform entfernt",
+    "save_failed": "Der Schlüssel konnte nicht gespeichert werden"
+  }
 }

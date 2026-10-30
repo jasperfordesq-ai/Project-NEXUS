@@ -16594,6 +16594,18 @@ CREATE TABLE `platform_capability_overrides` (
   UNIQUE KEY `platform_capability_overrides_capability_unique` (`capability`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `platform_secrets`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `platform_secrets` (
+  `name` varchar(100) NOT NULL,
+  `value` text NOT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `podcast_creation_receipts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -22821,7 +22833,8 @@ INSERT INTO `laravel_migrations` VALUES
 (506,'2026_10_26_160000_make_vetting_history_append_only',170),
 (507,'2026_10_26_170000_correct_caring_community_ai_module_doc',171),
 (508,'2026_10_30_090000_add_image_alt_to_listings',172),
-(509,'2026_10_30_120000_create_refresh_session_activity_table',173);
+(509,'2026_10_30_120000_create_refresh_session_activity_table',173),
+(510,'2026_10_30_150000_create_platform_secrets_table',174);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

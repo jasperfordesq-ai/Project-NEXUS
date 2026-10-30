@@ -1008,7 +1008,9 @@ class MessagesController extends BaseApiController
         // provider call so no request is made at all.
         // E-035 F-164: the community AI master switch is the same permanent
         // "unavailable" condition as a missing key — no provider request.
-        if (! TranscriptionService::isConfigured() || ! AiUsageGate::aiEnabled()) {
+        // Since 30 Oct 2026: Google Translate by default, or the community's own
+        // AI (TranslationEngine). Unavailable = no Google key anywhere and no usable AI.
+        if (! \App\Services\Translation\TranslationEngine::available()) {
             return $this->respondWithError(
                 'TRANSLATION_UNAVAILABLE',
                 __('api.message_translation_unavailable'),
@@ -1076,14 +1078,15 @@ class MessagesController extends BaseApiController
         }
 
         // E-035 F-164: reserve one slot of the member's AI budget before the provider call.
-        $admission = AiUsageGate::admit($userId, (int) $tenantId);
+        // AI translation spends the member's AI budget; Google does not.
+        $admission = \App\Services\Translation\TranslationEngine::usesAi() ? AiUsageGate::admit($userId, (int) $tenantId) : ['allowed' => true];
         if (! $admission['allowed']) {
             return AiUsageGate::isDisabled($admission)
                 ? $this->respondWithError('TRANSLATION_UNAVAILABLE', __('api.message_translation_unavailable'), null, 503)
                 : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         }
 
-        $translatedText = TranscriptionService::translate($sourceText, $fromLanguage, $targetLanguage, $conversationContext, $glossary);
+        $translatedText = \App\Services\Translation\TranslationEngine::translate($sourceText, $fromLanguage, $targetLanguage, $conversationContext, $glossary);
 
         if ($translatedText === null) {
             return $this->respondWithError('TRANSLATION_FAILED', __('api.message_translation_failed'), null, 500);

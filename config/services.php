@@ -31,6 +31,13 @@ return [
         'model' => env('OPENAI_MODEL', 'gpt-4'),
     ],
 
+    // Last-resort fallback for Google Translate, the default translation
+    // engine. A key saved in Super admin -> Translation wins over this, and a
+    // community's own key wins over both (App\Services\Translation\TranslationEngine).
+    'google_translate' => [
+        'api_key' => env('GOOGLE_TRANSLATE_API_KEY'),
+    ],
+
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
         'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),

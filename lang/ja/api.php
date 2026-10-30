@@ -796,6 +796,8 @@ return [
     'ai_translation_unavailable' => '現在、翻訳はご利用いただけません。しばらくしてからもう一度お試しください。',
     'translation_switched_off'   => 'このコミュニティでは翻訳がオフになっています。',
     'translation_hourly_limit'   => 'このコミュニティの1時間あたりの翻訳上限に達しました。しばらくしてからもう一度お試しください。',
+    'translation_not_set_up'     => 'このコミュニティではまだ翻訳が設定されていません。コミュニティの管理者にお知らせください。',
+    'translation_google_key_invalid' => 'Google の API キーではないようです。Google Cloud コンソールからキー全体をコピーして、もう一度貼り付けてください。',
     'session_idle_timeout'       => '操作がない状態が長く続いたため、サインアウトしました。もう一度サインインしてください。',
     'message_recipient_required' => '受信者IDは必須です',
     'message_body_or_voice_required' => 'メッセージ本文または音声メッセージは必須です',

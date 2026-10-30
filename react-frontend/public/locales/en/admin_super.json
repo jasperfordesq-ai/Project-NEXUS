@@ -1215,5 +1215,22 @@
   "federation": "Federation",
   "wallet": "Wallet",
   "messages": "Messages",
-  "dashboard": "Dashboard"
+  "dashboard": "Dashboard",
+  "platform_translation": {
+    "title": "Platform translation key",
+    "description": "Google Translate is every community's default translation engine. Communities that have saved their own Google key use it; every other community uses the platform key saved here.",
+    "status_saved": "A platform Google Translate key is saved and in use.",
+    "status_environment": "No key is saved here; the server's GOOGLE_TRANSLATE_API_KEY setting is in use.",
+    "status_none": "No platform Google Translate key is saved. Communities without their own key cannot translate.",
+    "key_heading": "Google Cloud Translation API key",
+    "key_help": "Create the key in the Google Cloud console (APIs & Services → Credentials), restricted to the Cloud Translation API. It is stored encrypted and never shown again.",
+    "key_label": "Platform Google Translate API key",
+    "placeholder": "Paste the key from the Google Cloud console",
+    "replace_placeholder": "A key is saved. Paste a new one to replace it",
+    "save": "Save key",
+    "remove": "Remove key",
+    "saved": "Platform translation key saved",
+    "removed": "Platform translation key removed",
+    "save_failed": "The key could not be saved"
+  }
 }

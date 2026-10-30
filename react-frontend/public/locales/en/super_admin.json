@@ -20,7 +20,8 @@
     "billing_control": "Billing Control",
     "revenue_dashboard": "Revenue Dashboard",
     "regional_analytics": "Regional Analytics",
-    "national_dashboard": "National Dashboard"
+    "national_dashboard": "National Dashboard",
+    "platform_translation": "Translation key"
   },
   "layout": {
     "loading": "Loading super admin",
@@ -70,7 +71,8 @@
     "kiss": "KISS",
     "regional_analytics": "Regional Analytics",
     "subscriptions": "Subscriptions",
-    "unknown": "{{segment}}"
+    "unknown": "{{segment}}",
+    "translation": "Translation key"
   },
   "dashboard": {
     "title": "Infrastructure Dashboard",

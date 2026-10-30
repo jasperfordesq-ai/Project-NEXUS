@@ -20,7 +20,8 @@
     "revenue_dashboard": "Umsatz-Dashboard",
     "regional_analytics": "Regionale Analysen",
     "national_dashboard": "Nationales Dashboard",
-    "whitelist": "Weiße Liste"
+    "whitelist": "Weiße Liste",
+    "platform_translation": "Übersetzungsschlüssel"
   },
   "layout": {
     "loading": "Super Admin wird geladen",
@@ -70,7 +71,8 @@
     "bulk": "Massenoperationen",
     "audit": "Prüfprotokoll",
     "whitelist": "Weiße Liste",
-    "national": "National"
+    "national": "National",
+    "translation": "Übersetzungsschlüssel"
   },
   "dashboard": {
     "title": "Infrastruktur-Dashboard",

@@ -1215,5 +1215,22 @@
   "federation": "Federatie",
   "wallet": "Portemonnee",
   "messages": "Berichten",
-  "dashboard": "Dashboard"
+  "dashboard": "Dashboard",
+  "platform_translation": {
+    "title": "Vertaalsleutel van het platform",
+    "description": "Google Translate is voor elke gemeenschap de standaardvertaling. Gemeenschappen met een eigen Google-sleutel gebruiken die; alle andere gebruiken de hier opgeslagen platformsleutel.",
+    "status_saved": "Er is een Google Translate-sleutel van het platform opgeslagen en in gebruik.",
+    "status_environment": "Hier is geen sleutel opgeslagen; de serverinstelling GOOGLE_TRANSLATE_API_KEY wordt gebruikt.",
+    "status_none": "Er is geen Google Translate-sleutel van het platform opgeslagen. Gemeenschappen zonder eigen sleutel kunnen niet vertalen.",
+    "key_heading": "Google Cloud Translation-API-sleutel",
+    "key_help": "Maak de sleutel aan in de Google Cloud-console (API's en services → Inloggegevens), beperkt tot de Cloud Translation API. Hij wordt versleuteld opgeslagen en nooit meer getoond.",
+    "key_label": "Google Translate-API-sleutel van het platform",
+    "placeholder": "Plak de sleutel uit de Google Cloud-console",
+    "replace_placeholder": "Er is een sleutel opgeslagen. Plak een nieuwe om die te vervangen",
+    "save": "Sleutel opslaan",
+    "remove": "Sleutel verwijderen",
+    "saved": "Vertaalsleutel van het platform opgeslagen",
+    "removed": "Vertaalsleutel van het platform verwijderd",
+    "save_failed": "De sleutel kon niet worden opgeslagen"
+  }
 }

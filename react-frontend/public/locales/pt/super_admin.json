@@ -20,7 +20,8 @@
     "billing_control": "Controle de Faturamento",
     "revenue_dashboard": "Painel de Receitas",
     "regional_analytics": "Análise Regional",
-    "national_dashboard": "Painel Nacional"
+    "national_dashboard": "Painel Nacional",
+    "platform_translation": "Chave de tradução"
   },
   "layout": {
     "loading": "Carregando superadministrador",
@@ -70,7 +71,8 @@
     "subscriptions": "Assinaturas",
     "aria_label": "Trilha de navegação",
     "bulk": "Operações em massa",
-    "audit": "Registro de auditoria"
+    "audit": "Registro de auditoria",
+    "translation": "Chave de tradução"
   },
   "dashboard": {
     "title": "Painel de infraestrutura",

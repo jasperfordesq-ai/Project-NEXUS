@@ -1227,5 +1227,22 @@
   "federation": "Federazione",
   "wallet": "Portafoglio",
   "messages": "Messaggi",
-  "dashboard": "Pannello di controllo"
+  "dashboard": "Pannello di controllo",
+  "platform_translation": {
+    "title": "Chiave di traduzione della piattaforma",
+    "description": "Google Traduttore è il motore di traduzione predefinito di ogni comunità. Le comunità che hanno salvato una propria chiave Google la usano; tutte le altre usano la chiave della piattaforma salvata qui.",
+    "status_saved": "È salvata ed è in uso una chiave di Google Traduttore della piattaforma.",
+    "status_environment": "Nessuna chiave è salvata qui; è in uso l'impostazione del server GOOGLE_TRANSLATE_API_KEY.",
+    "status_none": "Nessuna chiave di Google Traduttore della piattaforma è salvata. Le comunità senza una propria chiave non possono tradurre.",
+    "key_heading": "Chiave API di Google Cloud Translation",
+    "key_help": "Crea la chiave nella console di Google Cloud (API e servizi → Credenziali), limitata all'API Cloud Translation. Viene salvata cifrata e non viene più mostrata.",
+    "key_label": "Chiave API di Google Traduttore della piattaforma",
+    "placeholder": "Incolla la chiave dalla console di Google Cloud",
+    "replace_placeholder": "È salvata una chiave. Incollane una nuova per sostituirla",
+    "save": "Salva chiave",
+    "remove": "Rimuovi chiave",
+    "saved": "Chiave di traduzione della piattaforma salvata",
+    "removed": "Chiave di traduzione della piattaforma rimossa",
+    "save_failed": "Non è stato possibile salvare la chiave"
+  }
 }
