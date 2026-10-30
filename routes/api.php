@@ -155,15 +155,22 @@ Route::get('/v2/categories', function (\Illuminate\Http\Request $request) {
             'parent_id',
             'sort_order',
             'is_active',
+            'name_translations',
         ])
         ->map(function (\App\Models\Category $category) use ($canonicalType) {
             $category->setAttribute('type', $canonicalType);
 
-            return $category;
-        });
+            return $category->toArray();
+        })
+        ->all();
+    // Names in the reader's language (AWID feedback, 30 Oct 2026). The localizer
+    // also strips `name_translations`, so the published fields stay the list above.
+    $categories = \App\Services\Translation\TaxonomyNameLocalizer::localize('categories', $categories);
     $response = response()->json(['data' => $categories], 200, [], JSON_UNESCAPED_UNICODE);
     $etag = '"' . sha1((string) $response->getContent()) . '"';
     $response->headers->set('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+    // The names depend on the reader's language, so a cache must keep one copy per language.
+    $response->headers->set('Vary', 'Accept-Language');
     $response->headers->set('ETag', $etag);
 
     $ifNoneMatch = $request->headers->get('If-None-Match');

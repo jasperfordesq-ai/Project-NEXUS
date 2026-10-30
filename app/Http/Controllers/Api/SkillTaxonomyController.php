@@ -6,6 +6,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Services\Translation\TaxonomyNameLocalizer;
 use Illuminate\Http\JsonResponse;
 use App\Services\BlockUserService;
 use App\Support\Members\MemberProfileVisibility;
@@ -40,12 +41,13 @@ class SkillTaxonomyController extends BaseApiController
             $categories = $this->skillTaxonomyService->getCategories(
                 $parentId !== null ? (int) $parentId : null
             );
-            return $this->respondWithData($categories);
+            // Names in the reader's language (AWID feedback, 30 Oct 2026).
+            return $this->respondWithData(TaxonomyNameLocalizer::localize('skill_categories', $categories));
         }
 
         $tree = $this->skillTaxonomyService->getTree();
 
-        return $this->respondWithData($tree);
+        return $this->respondWithData(TaxonomyNameLocalizer::localizeTree('skill_categories', $tree));
     }
 
     /** GET /api/v2/skills/categories/{id} */
@@ -57,6 +59,7 @@ class SkillTaxonomyController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.category_not_found'), null, 404);
         }
 
+        $category = TaxonomyNameLocalizer::localize('skill_categories', [$category])[0];
         $category['skills'] = $this->skillTaxonomyService->getCategorySkills((int) $id);
 
         return $this->respondWithData($category);

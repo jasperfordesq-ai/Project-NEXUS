@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Support\Members\MemberDirectoryVisibility;
 use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 /**
@@ -182,6 +183,10 @@ class SkillTaxonomyService
             }
             $updates['name'] = $name;
             $updates['slug'] = $this->generateSlug($name);
+            // Translations of the old name no longer apply (TaxonomyNameLocalizer).
+            if (Schema::hasColumn('skill_categories', 'name_translations')) {
+                $updates['name_translations'] = null;
+            }
         }
 
         if (array_key_exists('parent_id', $data)) {

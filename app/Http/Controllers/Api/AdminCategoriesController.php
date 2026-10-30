@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use App\Models\ActivityLog;
 
@@ -194,6 +195,15 @@ class AdminCategoriesController extends BaseApiController
             "UPDATE categories SET name = ?, slug = ?, color = ?, type = ? WHERE id = ? AND tenant_id = ?",
             [$name, $slug, $color, $type, $id, $tenantId]
         );
+
+        // A renamed category's translations are of the old name: drop them so
+        // the new name is translated afresh (TaxonomyNameLocalizer).
+        if ($name !== $category->name && Schema::hasColumn('categories', 'name_translations')) {
+            DB::update(
+                "UPDATE categories SET name_translations = NULL WHERE id = ? AND tenant_id = ?",
+                [$id, $tenantId]
+            );
+        }
 
         ActivityLog::log($adminId, 'admin_update_category', "Updated category #{$id}: {$name}");
 
