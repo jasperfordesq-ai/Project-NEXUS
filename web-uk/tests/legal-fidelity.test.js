@@ -504,6 +504,32 @@ describe('the accessibility statement', () => {
   });
 });
 
+// Regression (AWID pilot, Oct 2026): any failure fetching the community's own
+// statement (a 5xx, a rate limit, a timeout) showed the generic "Sorry, there
+// is a problem" page instead of the built-in statement every community has.
+describe('the accessibility statement when the community document cannot be read', () => {
+  it.each([
+    ['a server error', () => new api.ApiError('Server error', 500)],
+    ['a rate limit', () => new api.ApiError('Too many requests', 429)],
+    ['the API being unreachable', () => new Error('connect ECONNREFUSED')]
+  ])('still shows the standard statement after %s', async (_label, makeError) => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    api.getLegalDocument.mockImplementation(async () => { throw makeError(); });
+    try {
+      const response = await request(buildApp()).get('/accessibility');
+
+      expect(response.status).toBe(200);
+      expect(response.text).toContain('WCAG 2.2 Level AA');
+      expect(response.text).toContain('Known limitations');
+      expect(warn).toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+      api.getLegalDocument.mockReset();
+      api.getLegalDocument.mockResolvedValue({ data: null });
+    }
+  });
+});
+
 describe('legacy legal paths', () => {
   it('redirects /terms and /privacy permanently to their legal paths', async () => {
     const app = buildApp();

@@ -166,5 +166,6 @@ function asyncRoute(fn, options = {}) {
 
 module.exports = {
   handleApiError,
-  asyncRoute
+  asyncRoute,
+  reportSwallowedFault
 };

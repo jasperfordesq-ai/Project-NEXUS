@@ -14,7 +14,7 @@ const {
 } = require('../lib/api');
 const { sanitizeCmsHtml, sanitizeDiffHtml, withHeadingAnchors } = require('../lib/html-sanitizer');
 const { catalogFor, formatLocaleDate, valueInCatalog } = require('../lib/localization');
-const { asyncRoute } = require('../lib/routeHelpers');
+const { asyncRoute, reportSwallowedFault } = require('../lib/routeHelpers');
 const { legalPageText } = require('../lib/legal-text');
 const {
   PLATFORM_LEGAL_LANGUAGE,
@@ -178,7 +178,18 @@ function documentConfig(res, type, community) {
  */
 router.get('/accessibility', asyncRoute(async (req, res) => {
   const community = communityName(res);
-  const document = await fetchLegalDocument('accessibility', res.locals.t);
+  // Every community has the built-in statement, so failing to read its own one
+  // (a 5xx, a rate limit, the API unreachable) must not cost the member the page.
+  // Until 30 Oct 2026 any such failure showed the generic "Sorry, there is a
+  // problem" page (AWID pilot). It is still logged and reported. A real 404 is
+  // not an error here: fetchLegalDocument already returns null for it.
+  let document = null;
+  try {
+    document = await fetchLegalDocument('accessibility', res.locals.t);
+  } catch (error) {
+    console.warn('Accessibility statement: community document unavailable, showing the built-in statement:', error && error.message);
+    reportSwallowedFault(error, req, 'accessibility-statement-fallback');
+  }
   // The tab title names what the H1 names: the community's own statement title
   // when it has published one, the translated default otherwise.
   const pageTitle = document ? document.title : res.locals.t('accessibility.title');
