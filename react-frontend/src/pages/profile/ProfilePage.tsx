@@ -627,6 +627,9 @@ export function ProfilePage() {
               <Avatar
                 src={profileAvatar ? resolveAvatarUrl(profileAvatar) : undefined}
                 name={profileName}
+                // The member's own description of the photo (AWID report item 6);
+                // without one the photo is named after the member, as before.
+                alt={profile.avatar_alt?.trim() || undefined}
                 showFallback
                 className="w-24 h-24 sm:w-32 sm:h-32 ring-4 ring-theme-default shadow-lg"
               />

@@ -20472,6 +20472,7 @@ CREATE TABLE `users` (
   `resume_summary` text DEFAULT NULL,
   `stripe_customer_id` varchar(255) DEFAULT NULL,
   `geocode_attempted_at` timestamp NULL DEFAULT NULL,
+  `avatar_alt` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_email_tenant` (`email`,`tenant_id`),
   UNIQUE KEY `idx_tenant_username` (`tenant_id`,`username`),

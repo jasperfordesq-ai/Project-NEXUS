@@ -305,7 +305,7 @@ class MemberDataExportService
         $cols = [
             'id', 'first_name', 'last_name', 'name', 'email', 'phone',
             'date_of_birth', 'bio', 'tagline', 'location', 'profile_type',
-            'organization_name', 'avatar_url', 'preferred_language',
+            'organization_name', 'avatar_url', 'avatar_alt', 'preferred_language',
             'preferred_theme', 'role', 'status', 'created_at', 'updated_at',
         ];
 

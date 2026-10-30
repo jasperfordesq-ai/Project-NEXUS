@@ -259,6 +259,7 @@ export function SettingsPage() {
     latitude: undefined,
     longitude: undefined,
     avatar: null,
+    avatar_alt: '',
     profile_type: 'individual',
     organization_name: '',
   });
@@ -547,6 +548,7 @@ export function SettingsPage() {
         latitude: user.latitude ?? undefined,
         longitude: user.longitude ?? undefined,
         avatar: user.avatar_url || user.avatar || null,
+        avatar_alt: user.avatar_alt || '',
         profile_type: user.profile_type || 'individual',
         organization_name: user.organization_name || '',
       };
@@ -623,6 +625,7 @@ export function SettingsPage() {
         location: profileData.location,
         latitude: profileData.latitude,
         longitude: profileData.longitude,
+        avatar_alt: profileData.avatar ? profileData.avatar_alt.trim() : '',
         profile_type: profileData.profile_type,
         organization_name: profileData.profile_type === 'organisation' ? profileData.organization_name : '',
       };
@@ -779,9 +782,10 @@ export function SettingsPage() {
       const response = await api.upload<{ avatar_url: string }>('/v2/users/me/avatar', formData);
 
       if (response.success && response.data) {
-        setProfileData((prev) => ({ ...prev, avatar: response.data!.avatar_url }));
+        // A new photo starts with no description: the server cleared the old one.
+        setProfileData((prev) => ({ ...prev, avatar: response.data!.avatar_url, avatar_alt: '' }));
         if (profileSnapshot.current) {
-          profileSnapshot.current = { ...profileSnapshot.current, avatar: response.data.avatar_url };
+          profileSnapshot.current = { ...profileSnapshot.current, avatar: response.data.avatar_url, avatar_alt: '' };
         }
         if (refreshUser) await refreshUser();
         toast.success(t('toasts.avatar_updated'), t('toasts.avatar_updated_desc'));

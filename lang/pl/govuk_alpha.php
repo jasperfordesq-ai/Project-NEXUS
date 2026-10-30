@@ -4250,6 +4250,8 @@ return [
         'photo_none' => 'Nie dodałeś jeszcze zdjęcia profilowego.',
         'photo_label' => 'Prześlij nowe zdjęcie',
         'photo_remove_label' => 'Usuń moje obecne zdjęcie',
+        'photo_alt_label' => 'Opisz to zdjęcie (opcjonalnie)',
+        'photo_alt_hint' => 'Pomaga osobom korzystającym z czytników ekranu. Napisz w kilku słowach, co przedstawia zdjęcie.',
         'marketing_title' => 'Preferencje poczty e-mail',
         'marketing_hint' => 'Będziemy go używać wyłącznie do wysyłania e-maili na temat tej społeczności.',
         'marketing_label' => 'Wysyłaj mi od czasu do czasu biuletyny i aktualizacje',

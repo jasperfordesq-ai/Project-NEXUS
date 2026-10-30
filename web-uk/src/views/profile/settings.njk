@@ -84,6 +84,12 @@
           </div>
 
           {% if profile.avatar_url %}
+            {# A description of the photo for screen-reader users (AWID report item 6). #}
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="avatar_alt">{{ t("profile_settings.photo_alt_label") }}</label>
+              <div id="avatar_alt-hint" class="govuk-hint">{{ t("profile_settings.photo_alt_hint") }}</div>
+              <input class="govuk-input" id="avatar_alt" name="avatar_alt" type="text" maxlength="255" value="{{ profile.avatar_alt }}" aria-describedby="avatar_alt-hint">
+            </div>
             <div class="govuk-checkboxes govuk-!-margin-bottom-6" data-module="govuk-checkboxes">
               <div class="govuk-checkboxes__item">
                 <input class="govuk-checkboxes__input" id="remove_avatar" name="remove_avatar" type="checkbox" value="1">

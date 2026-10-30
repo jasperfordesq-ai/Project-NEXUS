@@ -5287,6 +5287,8 @@
                 "photo_none": "Vous n'avez pas encore ajouté de photo de profil.",
                 "photo_label": "Téléchargez une nouvelle photo",
                 "photo_remove_label": "Supprimer ma photo actuelle",
+                "photo_alt_label": "Décrivez cette photo (facultatif)",
+                "photo_alt_hint": "Aide les personnes qui utilisent un lecteur d'écran. Dites en quelques mots ce que montre la photo.",
                 "marketing_title": "Préférences de courrier électronique",
                 "marketing_hint": "Nous l'utiliserons uniquement pour vous envoyer des e-mails à propos de cette communauté.",
                 "marketing_label": "Envoyez-moi des newsletters et des mises à jour occasionnelles",

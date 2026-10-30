@@ -256,10 +256,22 @@ class UserService
 
         $allowed = [
             'first_name', 'last_name', 'bio', 'tagline', 'location', 'latitude', 'longitude',
-            'phone', 'avatar_url', 'organization_name', 'profile_type', 'date_of_birth',
+            'phone', 'avatar_url', 'avatar_alt', 'organization_name', 'profile_type', 'date_of_birth',
         ];
 
-        $user->fill(collect($data)->only($allowed)->all());
+        $fields = collect($data)->only($allowed)->all();
+        // An empty photo description is no description: store NULL so the
+        // websites fall back to the member's name (AWID report item 6).
+        if (array_key_exists('avatar_alt', $fields)) {
+            $alt = is_string($fields['avatar_alt']) ? trim($fields['avatar_alt']) : '';
+            $fields['avatar_alt'] = $alt === '' ? null : $alt;
+        }
+        // Removing the photo removes its description with it.
+        if (array_key_exists('avatar_url', $fields) && ($fields['avatar_url'] === null || $fields['avatar_url'] === '')) {
+            $fields['avatar_alt'] = null;
+        }
+
+        $user->fill($fields);
 
         // A changed town is a new question for the background map lookup
         // (members:geocode-pending): forget that the old one was tried.
@@ -401,6 +413,10 @@ class UserService
         }
 
         // bio: optional, max 5000 chars (mb_strlen for multibyte/emoji support)
+        if (isset($data['avatar_alt']) && is_string($data['avatar_alt']) && mb_strlen(trim($data['avatar_alt'])) > 255) {
+            self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.text_too_long'), 'field' => 'avatar_alt'];
+        }
+
         if (isset($data['bio']) && mb_strlen($data['bio']) > 5000) {
             self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => 'Bio must not exceed 5000 characters', 'field' => 'bio'];
         }
@@ -840,6 +856,8 @@ class UserService
             $user = User::withoutGlobalScope(TenantScope::class)->findOrFail($userId);
             $oldAvatarUrl = $user->avatar_url;
             $user->avatar_url = $avatarUrl;
+            // A description of the old photo does not describe the new one.
+            $user->avatar_alt = null;
             $user->save();
             ProfileEditRecorder::record($userId, (int) $user->tenant_id, ['avatar_url']);
 
@@ -894,6 +912,7 @@ class UserService
             $user->tagline    = null;
             $user->phone      = null;
             $user->avatar_url = null;
+            $user->avatar_alt = null;
             $user->location   = null;
             $user->latitude   = null;
             $user->longitude  = null;
@@ -1283,6 +1302,7 @@ class UserService
             'first_name'        => $user->first_name,
             'last_name'         => $user->last_name,
             'avatar_url'        => $user->avatar_url,
+            'avatar_alt'        => $user->avatar_alt ?? null,
             'bio'               => $user->bio,
             'tagline'           => $user->tagline ?? null,
             'location'          => $user->location,

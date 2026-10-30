@@ -48,6 +48,8 @@ export interface ProfileFormData {
   latitude?: number;
   longitude?: number;
   avatar: string | null;
+  /** Description of the profile photo for screen readers (`users.avatar_alt`). */
+  avatar_alt: string;
   profile_type: 'individual' | 'organisation';
   organization_name: string;
 }
@@ -118,6 +120,7 @@ export function ProfileTab({
               key={profileData.avatar || 'no-avatar'}
               src={resolveAvatarUrl(profileData.avatar)}
               name={profileData.first_name || profileData.name}
+              alt={profileData.avatar_alt.trim() || undefined}
               className="w-20 h-20 ring-4 ring-theme-default"
             />
             <input
@@ -166,9 +169,27 @@ export function ProfileTab({
               </DropdownMenu>
             </Dropdown>
           </div>
-          <div>
-            <p className="text-theme-primary font-medium">{t('profile.photo_label')}</p>
-            <p className="text-theme-subtle text-sm">{t('profile.photo_hint')}</p>
+          <div className="w-full flex-1 space-y-3">
+            <div>
+              <p className="text-theme-primary font-medium">{t('profile.photo_label')}</p>
+              <p className="text-theme-subtle text-sm">{t('profile.photo_hint')}</p>
+            </div>
+            {/* AWID accessibility report item 6: a description of the photo for
+                screen-reader users. Only offered once there is a photo. */}
+            {profileData.avatar && (
+              <Input
+                label={t('profile.photo_alt_label')}
+                placeholder={t('profile.photo_alt_placeholder')}
+                description={t('profile.photo_alt_hint')}
+                value={profileData.avatar_alt}
+                onChange={(e) => {
+                  const avatarAlt = e.target.value;
+                  onProfileDataChange((prev) => ({ ...prev, avatar_alt: avatarAlt }));
+                }}
+                classNames={inputClassNames}
+                maxLength={255}
+              />
+            )}
           </div>
         </div>
 

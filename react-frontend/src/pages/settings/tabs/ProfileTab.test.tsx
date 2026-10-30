@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { render, screen } from '@/test/test-utils';
+import { render, screen, fireEvent } from '@/test/test-utils';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ProfileTab } from './ProfileTab';
 import type { ProfileFormData } from './ProfileTab';
@@ -67,6 +67,7 @@ const defaultProfileData: ProfileFormData = {
   latitude: 53.3,
   longitude: -6.26,
   avatar: null,
+  avatar_alt: '',
   profile_type: 'individual',
   organization_name: '',
 };
@@ -100,6 +101,29 @@ describe('ProfileTab', () => {
     const dob = screen.getByLabelText('profile.date_of_birth');
     expect(dob).toHaveAttribute('aria-invalid', 'true');
     expect(screen.getByText('Server: must be 18.')).toBeInTheDocument();
+  });
+
+  // AWID accessibility report item 6 (30 Oct 2026): a member can describe
+  // their profile photo for screen-reader users.
+  it('offers a description field only once there is a photo', () => {
+    const { unmount } = render(<ProfileTab {...defaultProps} />);
+    expect(screen.queryByLabelText('profile.photo_alt_label')).toBeNull();
+    unmount();
+
+    const onProfileDataChange = vi.fn();
+    render(
+      <ProfileTab
+        {...defaultProps}
+        onProfileDataChange={onProfileDataChange}
+        profileData={{ ...defaultProfileData, avatar: '/uploads/a.jpg', avatar_alt: 'Smiling in the garden' }}
+      />,
+    );
+    const field = screen.getByLabelText('profile.photo_alt_label') as HTMLInputElement;
+    expect(field.value).toBe('Smiling in the garden');
+
+    fireEvent.change(field, { target: { value: 'Smiling at the market' } });
+    const update = onProfileDataChange.mock.calls.at(-1)![0] as (prev: ProfileFormData) => ProfileFormData;
+    expect(update(defaultProfileData).avatar_alt).toBe('Smiling at the market');
   });
 
   it('renders profile section title', () => {

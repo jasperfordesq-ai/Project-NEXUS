@@ -41,7 +41,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'first_name', 'last_name', 'email', 'username',
-        'status', 'avatar_url', 'bio', 'tagline', 'location', 'latitude', 'longitude',
+        'status', 'avatar_url', 'avatar_alt', 'bio', 'tagline', 'location', 'latitude', 'longitude',
         'phone', 'is_verified', 'is_approved',
         'onboarding_completed', 'date_of_birth',
         'profile_type', 'organization_name', 'totp_enabled',

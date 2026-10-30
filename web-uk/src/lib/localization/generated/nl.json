@@ -5287,6 +5287,8 @@
                 "photo_none": "Je hebt nog geen profielfoto toegevoegd.",
                 "photo_label": "Upload een nieuwe foto",
                 "photo_remove_label": "Verwijder mijn huidige foto",
+                "photo_alt_label": "Beschrijf deze foto (optioneel)",
+                "photo_alt_hint": "Helpt mensen die een schermlezer gebruiken. Zeg in een paar woorden wat er op de foto staat.",
                 "marketing_title": "E-mailvoorkeuren",
                 "marketing_hint": "We zullen dit alleen gebruiken om u te e-mailen over deze community.",
                 "marketing_label": "Stuur mij af en toe nieuwsbrieven en updates",

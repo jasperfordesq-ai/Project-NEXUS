@@ -553,6 +553,7 @@ function storeProfileSettingsForm(req) {
     tagline: String(req.body.tagline || ''),
     bio: String(req.body.bio || ''),
     location: String(req.body.location || ''),
+    avatar_alt: String(req.body.avatar_alt || ''),
     // Only when the form offered a date of birth (it does not for a verified member).
     date_of_birth: dobOffered(req.body) ? dateParts(req.body, 'date_of_birth') : null
   };
@@ -1200,6 +1201,7 @@ function buildProfileSettingsViewModel(req, data) {
       bio: formValue('bio'),
       location: formValue('location'),
       avatar_url: resolveBackendMediaUrl(profileValue(profile, 'avatar_url')),
+      avatar_alt: formValue('avatar_alt') || '',
       privacy_profile: privacyProfile,
       privacy_search: boolValue(profileValue(profile, 'privacy_search'), true),
       privacy_contact: boolValue(account.privacy_contact, profileValue(profile, 'privacy_contact'), true),
@@ -1633,6 +1635,12 @@ router.post('/settings', asyncRoute(async (req, res) => {
     location: trimmed(req.body.location, 255)
   };
   if (!avatar && checked(req.body.remove_avatar)) profilePayload.avatar_url = null;
+  // The photo's description (AWID accessibility report item 6). Not sent with a new
+  // photo: the API clears the description when the photo changes, and the member
+  // describes the new one on the next visit. Removing the photo removes it too.
+  if (!avatar && !checked(req.body.remove_avatar) && typeof req.body.avatar_alt === 'string') {
+    profilePayload.avatar_alt = trimmed(req.body.avatar_alt, 255);
+  }
 
   if (profilePayload.first_name === '' || profilePayload.last_name === '') {
     await removeUploadedFile(avatar);
@@ -2606,6 +2614,7 @@ router.get('/', requireOwnProfileFeature, requireAuth, asyncRoute(async (req, re
     displayName,
     initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || displayName.charAt(0).toUpperCase(),
     avatarUrl: resolveBackendMediaUrl(profileValue(profile, 'avatar_url')),
+    avatarAlt: trimmed(profileValue(profile, 'avatar_alt'), 255),
     profileType,
     identityVerified: boolValue(profile.id_verified, profile.idVerified),
     profileStats: ownProfileStats(profile, gamificationResult),

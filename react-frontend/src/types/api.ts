@@ -21,6 +21,8 @@ export interface User {
   username?: string;
   avatar?: string | null;
   avatar_url?: string | null;
+  /** Description of the profile photo for screen readers (`users.avatar_alt`). */
+  avatar_alt?: string | null;
   bio?: string;
   tagline?: string;
   location?: string;

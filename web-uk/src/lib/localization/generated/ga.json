@@ -5287,6 +5287,8 @@
                 "photo_none": "Níl grianghraf próifíle curtha agat fós.",
                 "photo_label": "Uaslódáil grianghraf nua",
                 "photo_remove_label": "Bain mo ghrianghraf reatha",
+                "photo_alt_label": "Déan cur síos ar an ngrianghraf seo (roghnach)",
+                "photo_alt_hint": "Cabhraíonn sé seo le daoine a úsáideann léitheoirí scáileáin. Abair i gcúpla focal cad atá sa ghrianghraf.",
                 "marketing_title": "Sainroghanna ríomhphoist",
                 "marketing_hint": "Ní úsáidfimid é seo ach chun ríomhphost a chur chugat faoin bpobal seo.",
                 "marketing_label": "Seol nuachtlitreacha agus nuashonruithe chugam ó am go chéile",

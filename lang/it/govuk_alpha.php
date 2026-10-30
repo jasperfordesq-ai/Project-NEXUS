@@ -4250,6 +4250,8 @@ return [
         'photo_none' => 'Non hai ancora aggiunto una foto del profilo.',
         'photo_label' => 'Carica una nuova foto',
         'photo_remove_label' => 'Rimuovi la mia foto attuale',
+        'photo_alt_label' => 'Descrivi questa foto (facoltativo)',
+        'photo_alt_hint' => 'Aiuta chi usa un lettore di schermo. Di\' in poche parole cosa mostra la foto.',
         'marketing_title' => 'Preferenze e-mail',
         'marketing_hint' => 'Lo useremo solo per inviarti email su questa community.',
         'marketing_label' => 'Inviami newsletter e aggiornamenti occasionali',

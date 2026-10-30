@@ -4250,6 +4250,8 @@ return [
         'photo_none' => 'Sie haben noch kein Profilfoto hinzugefügt.',
         'photo_label' => 'Laden Sie ein neues Foto hoch',
         'photo_remove_label' => 'Mein aktuelles Foto entfernen',
+        'photo_alt_label' => 'Dieses Foto beschreiben (optional)',
+        'photo_alt_hint' => 'Hilft Menschen, die einen Screenreader nutzen. Beschreiben Sie in wenigen Worten, was das Foto zeigt.',
         'marketing_title' => 'E-Mail-Einstellungen',
         'marketing_hint' => 'Wir werden dies nur verwenden, um Ihnen E-Mails über diese Community zu senden.',
         'marketing_label' => 'Schicken Sie mir gelegentlich Newsletter und Updates',

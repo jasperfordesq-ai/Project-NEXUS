@@ -4316,6 +4316,8 @@ return [
         'photo_none' => 'You have not added a profile photo yet.',
         'photo_label' => 'Upload a new photo',
         'photo_remove_label' => 'Remove my current photo',
+        'photo_alt_label' => 'Describe this photo (optional)',
+        'photo_alt_hint' => 'Helps people who use screen readers. Say what the photo shows, in a few words.',
         'marketing_title' => 'Email preferences',
         'marketing_hint' => 'We will only use this to email you about this community.',
         'marketing_label' => 'Send me occasional newsletters and updates',

@@ -387,7 +387,7 @@ class GdprService
         return $this->query(
             "SELECT id, email, first_name, last_name, phone, bio,
                     skills, interests, location, latitude, longitude,
-                    avatar_url, tagline, timezone, preferred_language,
+                    avatar_url, avatar_alt, tagline, timezone, preferred_language,
                     created_at, updated_at, last_login, is_verified
              FROM users WHERE id = ? AND tenant_id = ?",
             [$userId, $this->tenantId]
@@ -1264,6 +1264,7 @@ class GdprService
                     latitude = NULL,
                     longitude = NULL,
                     avatar_url = NULL,
+                    avatar_alt = NULL,
                     tagline = NULL,
                     password_hash = '',
                     password = '',
