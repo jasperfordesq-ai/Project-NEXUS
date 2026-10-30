@@ -1975,6 +1975,10 @@ return [
         'view_listing' => 'Voir l\'annonce',
     ],
     'group_exchanges' => [
+        'how_title' => 'Et ensuite ?',
+        'how_start' => 'La personne qui organise lance l\'échange. Chaque participant est alors invité à confirmer ses heures.',
+        'how_activity' => 'Confirmer signifie que vous êtes d\'accord avec les heures. L\'activité elle-même se déroule comme vous l\'organisez ensemble : en personne, par téléphone ou en appel vidéo. La plateforme ne crée pas de lien de réunion ; convenez des détails par messages.',
+        'how_complete' => 'Quand tout le monde a confirmé, la personne qui organise marque l\'échange comme terminé et les crédits temps passent d\'un portefeuille à l\'autre.',
         'filter_label' => 'Filtrer par statut',
         'filter_all' => 'Tous',
         'title' => 'Échanges de groupe',

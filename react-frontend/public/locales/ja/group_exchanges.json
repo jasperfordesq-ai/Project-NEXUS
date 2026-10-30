@@ -137,7 +137,11 @@
     "participants_heading_other": "参加者 ({{count}})",
     "hours_amount_other": "{{count}}時間",
     "participants_heading_one": "参加者 ({{count}})",
-    "hours_amount_one": "{{count}}時間"
+    "hours_amount_one": "{{count}}時間",
+    "how_title": "この後の流れ",
+    "how_start": "主催者が交換を開始します。その後、参加者全員に時間の確認をお願いします。",
+    "how_activity": "確認とは、時間に同意することです。活動そのものは、対面、電話、ビデオ通話など、皆さんで決めた方法で行います。プラットフォームは会議リンクを作成しないため、詳細はメッセージで決めてください。",
+    "how_complete": "全員が確認すると、主催者が交換を完了にし、時間クレジットがメンバーのウォレット間で移動します。"
   },
   "create": {
     "page_title": "グループ交換を作成",

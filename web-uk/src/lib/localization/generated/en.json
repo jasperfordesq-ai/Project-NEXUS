@@ -3012,6 +3012,10 @@
                 "view_listing": "View listing"
             },
             "group_exchanges": {
+                "how_title": "What happens next",
+                "how_start": "The organiser starts the exchange. Everyone taking part is then asked to confirm their hours.",
+                "how_activity": "Confirming means you agree to the hours. The activity itself happens however you arrange it together: in person, by phone or on a video call. The platform does not create a meeting link, so agree the details in messages.",
+                "how_complete": "When everyone has confirmed, the organiser marks the exchange complete and the time credits move between members' wallets.",
                 "title": "Group exchanges",
                 "caption": ":community",
                 "description": "Exchanges of time between several members at once — for example a group of people sharing or pooling a task.",

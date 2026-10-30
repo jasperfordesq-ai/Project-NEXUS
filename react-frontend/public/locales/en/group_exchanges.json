@@ -137,7 +137,11 @@
     "participants_heading_one": "Participants ({{count}})",
     "participants_heading_other": "Participants ({{count}})",
     "hours_amount_one": "{{count}}h",
-    "hours_amount_other": "{{count}}h"
+    "hours_amount_other": "{{count}}h",
+    "how_title": "What happens next",
+    "how_start": "The organiser starts the exchange. Everyone taking part is then asked to confirm their hours.",
+    "how_activity": "Confirming means you agree to the hours. The activity itself happens however you arrange it together: in person, by phone or on a video call. The platform does not create a meeting link, so agree the details in messages.",
+    "how_complete": "When everyone has confirmed, the organiser marks the exchange complete and the time credits move between members' wallets."
   },
   "create": {
     "page_title": "Create Group Exchange",

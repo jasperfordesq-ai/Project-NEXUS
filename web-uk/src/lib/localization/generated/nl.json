@@ -3012,6 +3012,10 @@
                 "view_listing": "Advertentie bekijken"
             },
             "group_exchanges": {
+                "how_title": "Wat er nu gebeurt",
+                "how_start": "De organisator start de uitwisseling. Iedereen die meedoet, wordt daarna gevraagd zijn uren te bevestigen.",
+                "how_activity": "Bevestigen betekent dat je akkoord gaat met de uren. De activiteit zelf vindt plaats zoals jullie samen afspreken: persoonlijk, telefonisch of via een videogesprek. Het platform maakt geen vergaderlink, dus spreek de details af via berichten.",
+                "how_complete": "Als iedereen heeft bevestigd, markeert de organisator de uitwisseling als voltooid en gaan de tijdtegoeden tussen de portemonnees van de leden.",
                 "filter_label": "Filter op status",
                 "filter_all": "Alles",
                 "title": "Groepsuitwisselingen",

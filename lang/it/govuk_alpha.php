@@ -1975,6 +1975,10 @@ return [
         'view_listing' => 'Visualizza annuncio',
     ],
     'group_exchanges' => [
+        'how_title' => 'Cosa succede dopo',
+        'how_start' => 'Chi organizza avvia lo scambio. A tutti i partecipanti viene poi chiesto di confermare le proprie ore.',
+        'how_activity' => 'Confermare significa accettare le ore. L\'attività vera e propria si svolge come la organizzate insieme: di persona, al telefono o in videochiamata. La piattaforma non crea un link per la riunione, quindi accordatevi sui dettagli tramite messaggi.',
+        'how_complete' => 'Quando tutti hanno confermato, chi organizza segna lo scambio come completato e i crediti di tempo passano tra i portafogli dei membri.',
         'filter_label' => 'Filtra per stato',
         'filter_all' => 'Tutti',
         'title' => 'Scambi di gruppo',

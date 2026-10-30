@@ -1975,6 +1975,10 @@ return [
         'view_listing' => 'Zobacz ogłoszenie',
     ],
     'group_exchanges' => [
+        'how_title' => 'Co dalej',
+        'how_start' => 'Organizator rozpoczyna wymianę. Następnie każdy uczestnik jest proszony o potwierdzenie swoich godzin.',
+        'how_activity' => 'Potwierdzenie oznacza, że zgadzasz się na godziny. Samo działanie odbywa się tak, jak wspólnie ustalicie: osobiście, telefonicznie lub przez rozmowę wideo. Platforma nie tworzy linku do spotkania, więc ustalcie szczegóły w wiadomościach.',
+        'how_complete' => 'Gdy wszyscy potwierdzą, organizator oznacza wymianę jako zakończoną, a kredyty czasu przechodzą między portfelami członków.',
         'filter_label' => 'Filtruj według statusu',
         'filter_all' => 'Wszystko',
         'title' => 'Wymiany grupowe',

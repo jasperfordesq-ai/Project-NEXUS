@@ -140,7 +140,11 @@
     "participants_heading_other": "Partecipanti ({{count}})",
     "hours_amount_many": "{{count}} h",
     "hours_amount_one": "{{count}} h",
-    "hours_amount_other": "{{count}} h"
+    "hours_amount_other": "{{count}} h",
+    "how_title": "Cosa succede dopo",
+    "how_start": "Chi organizza avvia lo scambio. A tutti i partecipanti viene poi chiesto di confermare le proprie ore.",
+    "how_activity": "Confermare significa accettare le ore. L'attività vera e propria si svolge come la organizzate insieme: di persona, al telefono o in videochiamata. La piattaforma non crea un link per la riunione, quindi accordatevi sui dettagli tramite messaggi.",
+    "how_complete": "Quando tutti hanno confermato, chi organizza segna lo scambio come completato e i crediti di tempo passano tra i portafogli dei membri."
   },
   "create": {
     "page_title": "Crea scambio di gruppo",

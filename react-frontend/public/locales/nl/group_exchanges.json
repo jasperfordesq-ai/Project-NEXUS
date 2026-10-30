@@ -137,7 +137,11 @@
     "participants_heading_one": "Deelnemers ({{count}})",
     "participants_heading_other": "Deelnemers ({{count}})",
     "hours_amount_one": "{{count}} u",
-    "hours_amount_other": "{{count}} u"
+    "hours_amount_other": "{{count}} u",
+    "how_title": "Wat er nu gebeurt",
+    "how_start": "De organisator start de uitwisseling. Iedereen die meedoet, wordt daarna gevraagd zijn uren te bevestigen.",
+    "how_activity": "Bevestigen betekent dat je akkoord gaat met de uren. De activiteit zelf vindt plaats zoals jullie samen afspreken: persoonlijk, telefonisch of via een videogesprek. Het platform maakt geen vergaderlink, dus spreek de details af via berichten.",
+    "how_complete": "Als iedereen heeft bevestigd, markeert de organisator de uitwisseling als voltooid en gaan de tijdtegoeden tussen de portemonnees van de leden."
   },
   "create": {
     "page_title": "Creëer Groepsruil",

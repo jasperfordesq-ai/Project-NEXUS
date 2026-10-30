@@ -92,6 +92,16 @@
     </div>
   </dl>
 
+  {# What happens next (AWID accessibility report item 16, 30 Oct 2026). #}
+  {% if exchange.statusKey == "draft" or exchange.statusKey == "pending_confirmation" %}
+    <h2 class="govuk-heading-m">{{ t("group_exchanges.how_title") }}</h2>
+    <ol class="govuk-list govuk-list--number govuk-!-margin-bottom-8">
+      <li>{{ t("group_exchanges.how_start") }}</li>
+      <li>{{ t("group_exchanges.how_activity") }}</li>
+      <li>{{ t("group_exchanges.how_complete") }}</li>
+    </ol>
+  {% endif %}
+
   <h2 class="govuk-heading-l">{{ t("group_exchanges.participants_title") }}</h2>
   {% if participants and participants.length %}
     <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('group_exchanges.participants_title') }}">

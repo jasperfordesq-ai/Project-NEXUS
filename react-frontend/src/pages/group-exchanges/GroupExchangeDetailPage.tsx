@@ -564,6 +564,19 @@ export function GroupExchangeDetailPage() {
           </div>
         )}
 
+        {/* What happens next (AWID accessibility report item 16, 30 Oct 2026:
+            "it isn't explained what happens once everyone has confirmed"). */}
+        {(exchange.status === 'draft' || exchange.status === 'pending_confirmation') && (
+          <section className="rounded-lg bg-theme-elevated/50 p-4 mt-4" aria-labelledby="group-exchange-how-heading">
+            <h3 id="group-exchange-how-heading" className="text-sm font-medium text-theme-primary mb-2">{t('detail.how_title')}</h3>
+            <ol className="list-decimal ps-5 space-y-1 text-sm text-theme-muted">
+              <li>{t('detail.how_start')}</li>
+              <li>{t('detail.how_activity')}</li>
+              <li>{t('detail.how_complete')}</li>
+            </ol>
+          </section>
+        )}
+
         {/* Completed notice */}
         {exchange.status === 'completed' && exchange.completed_at && (
           <div className="bg-emerald-500/10 rounded-lg p-4 mt-4">

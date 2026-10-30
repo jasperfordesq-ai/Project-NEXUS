@@ -3012,6 +3012,10 @@
                 "view_listing": "Ver anúncio"
             },
             "group_exchanges": {
+                "how_title": "O que acontece a seguir",
+                "how_start": "Quem organiza inicia a troca. Todas as pessoas participantes são então convidadas a confirmar as suas horas.",
+                "how_activity": "Confirmar significa que concorda com as horas. A atividade em si acontece da forma que combinarem em conjunto: presencialmente, por telefone ou por videochamada. A plataforma não cria uma ligação para reunião, por isso combinem os detalhes por mensagens.",
+                "how_complete": "Quando todos tiverem confirmado, quem organiza marca a troca como concluída e os créditos de tempo passam entre as carteiras dos membros.",
                 "filter_label": "Filtrar por status",
                 "filter_all": "Todos",
                 "title": "Trocas de grupo",

@@ -1975,6 +1975,10 @@ return [
         'view_listing' => 'Inserat ansehen',
     ],
     'group_exchanges' => [
+        'how_title' => 'Wie es weitergeht',
+        'how_start' => 'Die organisierende Person startet den Austausch. Alle Beteiligten werden dann gebeten, ihre Stunden zu bestätigen.',
+        'how_activity' => 'Mit der Bestätigung stimmst du den Stunden zu. Die Aktivität selbst findet so statt, wie ihr sie gemeinsam vereinbart: persönlich, telefonisch oder per Videoanruf. Die Plattform erstellt keinen Besprechungslink, also klärt die Details per Nachricht.',
+        'how_complete' => 'Wenn alle bestätigt haben, schließt die organisierende Person den Austausch ab und die Zeitguthaben werden zwischen den Wallets der Mitglieder übertragen.',
         'filter_label' => 'Nach Status filtern',
         'filter_all' => 'Alle',
         'title' => 'Gruppentausche',

@@ -1975,6 +1975,10 @@ return [
         'view_listing' => 'Féach ar liostú',
     ],
     'group_exchanges' => [
+        'how_title' => 'Cad a tharlaíonn ina dhiaidh seo',
+        'how_start' => 'Cuireann an t-eagraí tús leis an malartú. Iarrtar ansin ar gach duine atá páirteach a n-uaireanta a dhearbhú.',
+        'how_activity' => 'Ciallaíonn dearbhú go n-aontaíonn tú leis na huaireanta. Tarlaíonn an ghníomhaíocht féin mar a shocraíonn sibh le chéile: duine le duine, ar an bhfón nó ar ghlao físe. Ní chruthaíonn an t-ardán nasc cruinnithe, mar sin socraigh na sonraí i dteachtaireachtaí.',
+        'how_complete' => 'Nuair a bheidh gach duine tar éis dearbhú, marcálann an t-eagraí an malartú mar chríochnaithe agus aistrítear na creidmheasanna ama idir sparáin na mball.',
         'filter_label' => 'Scag de réir stádais',
         'filter_all' => 'Gach',
         'title' => 'Malartuithe grúpa',

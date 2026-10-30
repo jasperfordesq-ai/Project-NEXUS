@@ -1975,6 +1975,10 @@ return [
         'view_listing' => 'Ver anuncio',
     ],
     'group_exchanges' => [
+        'how_title' => 'Qué pasa después',
+        'how_start' => 'La persona organizadora inicia el intercambio. Después se pide a cada participante que confirme sus horas.',
+        'how_activity' => 'Confirmar significa que estás de acuerdo con las horas. La actividad en sí se realiza como la acuerden entre ustedes: en persona, por teléfono o por videollamada. La plataforma no crea un enlace de reunión, así que acuerden los detalles por mensajes.',
+        'how_complete' => 'Cuando todas las personas han confirmado, la persona organizadora marca el intercambio como completado y los créditos de tiempo pasan entre los monederos de las participantes.',
         'filter_label' => 'Filtrar por estado',
         'filter_all' => 'Todos',
         'title' => 'Intercambios grupales',

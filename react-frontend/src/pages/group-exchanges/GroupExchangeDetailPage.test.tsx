@@ -215,6 +215,22 @@ describe('GroupExchangeDetailPage', () => {
     });
   });
 
+  // AWID accessibility report item 16 (30 Oct 2026): it was not explained what
+  // happens once everyone has confirmed, or whether the platform makes a meeting link.
+  it('explains what happens next while the exchange is in progress, and not once it is done', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...mockGroupExchange, status: 'pending_confirmation' } });
+    const { unmount } = render(<GroupExchangeDetailPage />);
+    expect(await screen.findByRole('heading', { name: 'What happens next' })).toBeInTheDocument();
+    expect(screen.getByText(/does not create a meeting link/)).toBeInTheDocument();
+    expect(screen.getByText(/time credits move between members/)).toBeInTheDocument();
+    unmount();
+
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...mockGroupExchange, status: 'completed', completed_at: '2026-10-30T10:00:00Z' } });
+    render(<GroupExchangeDetailPage />);
+    await screen.findAllByText('Community Skills Swap');
+    expect(screen.queryByRole('heading', { name: 'What happens next' })).toBeNull();
+  });
+
   it('shows empty state on API error', async () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Not found'));
     render(<GroupExchangeDetailPage />);
