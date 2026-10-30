@@ -165,7 +165,7 @@
     {% endblock %}
 
     {% block header %}
-      <header class="nexus-alpha-header" role="banner">
+      <header class="nexus-alpha-header" role="banner"{% if headerThemeStyle %} style="{{ headerThemeStyle }}"{% endif %}>
         <div class="govuk-width-container nexus-alpha-header__container">
           {# Structural parity with accessible-frontend/views/layout.blade.php: the
              brand link sits directly in the container. The former

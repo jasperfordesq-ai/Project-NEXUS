@@ -835,6 +835,7 @@ function buildShellLocals(req, isAuthenticated) {
     ? routedTenant.branding
     : {};
   const tenantLogoUrl = resolveBackendAssetUrl(branding.logo_dark_url || branding.logo_url);
+  const headerThemeStyle = buildHeaderThemeStyle(branding);
 
   // ---------------------------------------------------------------------------
   // Footer branding: the community's partner logo and the powered-by badge.
@@ -919,6 +920,7 @@ function buildShellLocals(req, isAuthenticated) {
     tenantSlug,
     tenantLogoUrl,
     tenantLogoShape: normalizeLogoShape(branding.logo_shape),
+    headerThemeStyle,
     accessibleRoutePrefix: routePrefix,
     urlFor,
     htmlLang: currentLocale,
@@ -990,7 +992,50 @@ function buildShellLocals(req, isAuthenticated) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Accessible header colours (Admin → Settings → "Accessible header colour",
+// published by the bootstrap as branding.header_bg_color / header_accent_color).
+// main.scss has always read these custom properties; until 30 Oct 2026 nothing
+// set them, so the admin setting did nothing.
+//
+// Only strict #rrggbb reaches the style attribute, so a stored value can never
+// inject CSS. The text colour is white or GOV.UK near-black, whichever has the
+// higher WCAG contrast against the background (the admin preview uses the same
+// rule, react-frontend/src/admin/modules/system/settings/headerPreview.ts).
+// With no accent chosen the line matches the background, as the preview shows.
+// ---------------------------------------------------------------------------
+const HEX_COLOUR = /^#[0-9a-f]{6}$/;
+
+function hexColour(value) {
+  const colour = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  return HEX_COLOUR.test(colour) ? colour : null;
+}
+
+function readableHeaderText(hex) {
+  const channel = (offset) => {
+    const value = parseInt(hex.slice(offset, offset + 2), 16) / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance = 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
+  return 1.05 / (luminance + 0.05) >= (luminance + 0.05) / 0.05 ? '#ffffff' : '#0b0c0c';
+}
+
+function buildHeaderThemeStyle(branding) {
+  const bg = hexColour(branding.header_bg_color);
+  const accent = hexColour(branding.header_accent_color) || bg;
+  if (!bg && !accent) return '';
+  const declarations = [];
+  if (bg) {
+    const fg = readableHeaderText(bg);
+    declarations.push(`--nexus-alpha-header-bg:${bg}`, `--nexus-alpha-header-fg:${fg}`);
+    if (fg !== '#ffffff') declarations.push(`--nexus-alpha-header-fg-hover:${fg}`);
+  }
+  if (accent) declarations.push(`--nexus-alpha-header-accent:${accent}`);
+  return declarations.join(';');
+}
+
 module.exports = {
+  buildHeaderThemeStyle,
   activeNavForPath,
   buildFooterColumns,
   buildExploreLinks,

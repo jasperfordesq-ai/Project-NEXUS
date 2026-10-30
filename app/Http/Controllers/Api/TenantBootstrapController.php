@@ -863,6 +863,17 @@ class TenantBootstrapController extends BaseApiController
             $branding['primary_color'] = $config['primary_color'];
         }
 
+        // Accessible (web-uk) header colours, set on Admin → Settings → "Accessible
+        // header colour" (AdminConfigController::saveHeaderColors). Published only
+        // as strict #rrggbb so a frontend can put them straight into CSS. Until
+        // 30 Oct 2026 they were saved and never published, so the setting did nothing.
+        foreach (['header_bg_color', 'header_accent_color'] as $headerColorKey) {
+            $headerColor = $config[$headerColorKey] ?? null;
+            if (is_string($headerColor) && preg_match('/^#[0-9a-fA-F]{6}$/', $headerColor) === 1) {
+                $branding[$headerColorKey] = strtolower($headerColor);
+            }
+        }
+
         // Default social sharing image. Two screens set one: the community's
         // own admin on /admin/seo ("Social sharing image", the seo_og_image_url
         // setting) and the super-admin tenant form (tenants.og_image_url). The

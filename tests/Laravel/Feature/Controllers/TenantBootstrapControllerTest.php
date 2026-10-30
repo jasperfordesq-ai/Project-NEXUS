@@ -49,6 +49,50 @@ class TenantBootstrapControllerTest extends TestCase
         ]);
     }
 
+    /**
+     * Regression (AWID pilot, Oct 2026): admins set "Accessible header colour",
+     * the setting was saved to tenants.configuration and nothing ever published
+     * it, so the accessible site's header never changed.
+     */
+    public function test_bootstrap_publishes_the_accessible_header_colours(): void
+    {
+        $original = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');
+        $config = json_decode((string) $original, true) ?: [];
+        $config['header_bg_color'] = '#5b2a86';
+        $config['header_accent_color'] = '#ffffff';
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['configuration' => json_encode($config)]);
+        app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+
+        try {
+            $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug)
+                ->assertOk()
+                ->assertJsonPath('data.branding.header_bg_color', '#5b2a86')
+                ->assertJsonPath('data.branding.header_accent_color', '#ffffff');
+        } finally {
+            app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+        }
+    }
+
+    public function test_bootstrap_never_publishes_a_header_colour_that_is_not_a_hex_value(): void
+    {
+        $original = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');
+        $config = json_decode((string) $original, true) ?: [];
+        $config['header_bg_color'] = 'red;background:url(x)';
+        unset($config['header_accent_color']);
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['configuration' => json_encode($config)]);
+        app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+
+        try {
+            $branding = $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug)
+                ->assertOk()
+                ->json('data.branding') ?? [];
+            $this->assertArrayNotHasKey('header_bg_color', $branding);
+            $this->assertArrayNotHasKey('header_accent_color', $branding);
+        } finally {
+            app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+        }
+    }
+
     public function test_bootstrap_exposes_the_tenant_payment_currency_in_uppercase(): void
     {
         app(TenantSettingsService::class)->set(
