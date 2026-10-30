@@ -153,6 +153,7 @@
     "show_translation": "Vertaling tonen",
     "translating": "Bezig met vertalen...",
     "translation_failed": "Vertaling mislukt. Probeer het opnieuw.",
+    "limit_reached": "U hebt uw vertaallimiet voorlopig bereikt. Probeer het later opnieuw.",
     "translated_label": "Vertaald"
   },
   "translate.translate": "Vertalen",
@@ -170,6 +171,7 @@
     "tooltip_off": "Alle berichten automatisch vertalen",
     "tooltip_on": "Automatisch vertalen staat aan — klik om uit te schakelen",
     "active_banner": "Berichten in dit gesprek worden automatisch naar jouw taal vertaald.",
+    "limit_reached": "U hebt uw vertaallimiet voorlopig bereikt, dus nieuwe berichten worden in hun oorspronkelijke taal getoond. Zet automatisch vertalen later uit en weer aan om verder te gaan.",
     "turn_off": "Uitschakelen",
     "menu_enable": "Vertaal berichten automatisch",
     "menu_disable": "Schakel automatisch vertalen uit"

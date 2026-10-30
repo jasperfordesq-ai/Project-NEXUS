@@ -76,16 +76,17 @@ class UgcTranslationController extends BaseApiController
         // generic "Translation failed" toast.
         // E-035 F-164: a community that has switched AI off is treated the same
         // way — nothing is sent to the provider.
-        if (empty(config('services.openai.api_key')) || !AiUsageGate::aiEnabled()) {
-            // Status 422: 503 is intercepted by the frontend api client as
-            // maintenance-mode and the body would be replaced with a generic
-            // string before our message reaches the user.
-            return $this->respondWithError(
-                'AI_NOT_CONFIGURED',
-                __('api.ai_not_configured'),
-                null,
-                422,
-            );
+        //
+        // Two different causes, two different messages (AWID, Oct 2026): with no
+        // platform key the community administrator can do nothing, so members
+        // must not be sent to them. Status 422 for both: 503 is intercepted by
+        // the frontend api client as maintenance-mode and the body would be
+        // replaced with a generic string before our message reaches the user.
+        if (empty(config('services.openai.api_key'))) {
+            return $this->respondWithError('AI_UNAVAILABLE', __('api.ai_translation_unavailable'), null, 422);
+        }
+        if (!AiUsageGate::aiEnabled()) {
+            return $this->respondWithError('AI_NOT_CONFIGURED', __('api.ai_not_configured'), null, 422);
         }
 
         // A cached translation costs nothing, so it does not spend AI budget.
@@ -97,6 +98,10 @@ class UgcTranslationController extends BaseApiController
         // E-035 F-164: reserve one slot of the member's AI budget before the provider call.
         $admission = AiUsageGate::admit($userId);
         if (!$admission['allowed']) {
+            if (($admission['reason'] ?? null) === AiUsageGate::REASON_NO_MEMBER) {
+                // Not the community's switch, so not the community admin's to fix.
+                return $this->respondWithError('AI_UNAVAILABLE', __('api.ai_translation_unavailable'), null, 422);
+            }
             return AiUsageGate::isDisabled($admission)
                 ? $this->respondWithError('AI_NOT_CONFIGURED', __('api.ai_not_configured'), null, 422)
                 : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);

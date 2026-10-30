@@ -211,6 +211,14 @@ export const MessageBubble = memo(function MessageBubble({
       const response = await api.post<{ translated_text: string }>(`/v2/messages/${message.id}/translate`, {
         target_language: userLangBase,
       });
+      // A refused translation resolves rather than throws. Say why, and never
+      // cache it as an empty translation (that made the button do nothing).
+      if (!response.success) {
+        setTranslationError(response.code === 'RATE_LIMIT'
+          ? t('translate.limit_reached')
+          : (response.error?.trim() || t('translate.translation_failed')));
+        return;
+      }
       const translated = response.data?.translated_text ?? '';
       translationCacheRef.current.set(cacheKey, translated);
       setTranslatedText(translated);

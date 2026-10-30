@@ -153,6 +153,7 @@
     "show_translation": "翻訳を表示",
     "translating": "翻訳中...",
     "translation_failed": "翻訳に失敗しました。もう一度お試しください。",
+    "limit_reached": "現在、翻訳の利用上限に達しています。しばらくしてからもう一度お試しください。",
     "translated_label": "翻訳済み"
   },
   "translate.translate": "翻訳",
@@ -170,6 +171,7 @@
     "tooltip_off": "すべてのメッセージを自動的に翻訳",
     "tooltip_on": "自動翻訳はオンです — クリックでオフにします",
     "active_banner": "この会話のメッセージは、あなたの言語に自動的に翻訳されています。",
+    "limit_reached": "現在、翻訳の利用上限に達しているため、新しいメッセージは元の言語で表示されます。後で自動翻訳をオフにしてから再びオンにすると再開できます。",
     "turn_off": "オフにする",
     "menu_enable": "メッセージを自動的に翻訳する",
     "menu_disable": "自動翻訳をオフにする"

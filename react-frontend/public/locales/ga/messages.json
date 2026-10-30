@@ -153,6 +153,7 @@
     "show_translation": "Taispeáin an t-aistriúchán",
     "translating": "Á aistriú...",
     "translation_failed": "Theip ar an aistriúchán. Bain triail eile as.",
+    "limit_reached": "Tá do theorainn aistriúcháin bainte amach agat faoi láthair. Bain triail eile as ar ball.",
     "translated_label": "Aistrithe"
   },
   "translate.translate": "Aistrigh",
@@ -170,6 +171,7 @@
     "tooltip_off": "Aistrigh gach teachtaireacht go huathoibríoch",
     "tooltip_on": "Tá uathaistriú ar siúl — cliceáil chun é a mhúchadh",
     "active_banner": "Tá teachtaireachtaí sa chomhrá seo á n-aistriú go huathoibríoch i do theanga.",
+    "limit_reached": "Tá do theorainn aistriúcháin bainte amach agat faoi láthair, mar sin taispeántar teachtaireachtaí nua ina mbunteanga. Níos déanaí, múch agus las an t-aistriúchán uathoibríoch arís chun leanúint ar aghaidh.",
     "turn_off": "Múch",
     "menu_enable": "Aistrigh teachtaireachtaí go huathoibríoch",
     "menu_disable": "Múch uathaistriúchán"

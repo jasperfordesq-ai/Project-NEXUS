@@ -1496,7 +1496,8 @@ return [
     'ai_rate_limit'                        => 'Usage limit reached',
     'ai_original_message_required'         => 'Original message is required',
     'ai_error_generic'                     => 'AI service encountered an error. Please try again.',
-    'ai_not_configured'                    => 'This tenant is not connected to AI. Please contact the administrator.',
+    'ai_not_configured'                    => 'AI features are switched off in this community. Please contact your community administrator.',
+    'ai_translation_unavailable'           => 'Translation is not available at the moment. Please try again later.',
 
     // ============================================
     // USER-FACING — MESSAGES (additional)

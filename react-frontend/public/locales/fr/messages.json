@@ -153,6 +153,7 @@
     "show_translation": "Afficher la traduction",
     "translating": "Traduction en cours...",
     "translation_failed": "La traduction a échoué. Veuillez réessayer.",
+    "limit_reached": "Vous avez atteint votre limite de traductions pour le moment. Veuillez réessayer plus tard.",
     "translated_label": "Traduit"
   },
   "translate.translate": "Traduire",
@@ -170,6 +171,7 @@
     "tooltip_off": "Traduire automatiquement tous les messages",
     "tooltip_on": "La traduction automatique est activée — cliquez pour la désactiver",
     "active_banner": "Les messages de cette conversation sont automatiquement traduits dans votre langue.",
+    "limit_reached": "Vous avez atteint votre limite de traductions pour le moment : les nouveaux messages s'affichent dans leur langue d'origine. Plus tard, désactivez puis réactivez la traduction automatique pour reprendre.",
     "turn_off": "Désactiver",
     "menu_enable": "Traduire automatiquement les messages",
     "menu_disable": "Désactiver la traduction automatique"

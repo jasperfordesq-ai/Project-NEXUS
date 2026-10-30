@@ -385,6 +385,23 @@ describe('ConversationPage', () => {
     expect(screen.getByText(/common:verification\.badge\.id_verified/)).toBeDefined();
   });
 
+  it('tells the member when auto-translate stops because their AI allowance is used up (AWID regression)', async () => {
+    // Auto-translate already on for Bob (user 20) in this community.
+    localStorage.setItem('nexus_auto_translate_test', JSON.stringify({ '20': 'en' }));
+    mockApi.get.mockResolvedValue(mockConversationResponse);
+    mockApi.put.mockResolvedValue({ success: true });
+    mockApi.post.mockResolvedValue({ success: false, code: 'RATE_LIMIT', error: 'Usage limit reached' });
+
+    try {
+      render(<ConversationPage />);
+
+      await waitFor(() => expect(screen.getByText('auto_translate.limit_reached')).toBeDefined());
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/messages/2/translate', expect.anything(), expect.anything());
+    } finally {
+      localStorage.removeItem('nexus_auto_translate_test');
+    }
+  });
+
   it('dismisses both safeguarding notices from the phone pill X', async () => {
     mockApi.get.mockResolvedValue(mockConversationResponse);
     mockApi.put.mockResolvedValue({ success: true });

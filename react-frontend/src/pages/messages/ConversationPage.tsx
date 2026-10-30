@@ -482,6 +482,9 @@ export function ConversationPage() {
   }
 
   const [autoTranslateOn, setAutoTranslateOn] = useState(false);
+  // Set when the member's AI allowance is used up (API 429 RATE_LIMIT), so the
+  // banner can say why messages stopped being translated.
+  const [autoTranslateLimitReached, setAutoTranslateLimitReached] = useState(false);
   const [autoTranslations, setAutoTranslations] = useState<Map<number, string>>(new Map());
   const autoTranslatingRef = useRef(false);
   const translatedIdsRef = useRef<Set<number>>(new Set());
@@ -524,7 +527,7 @@ export function ConversationPage() {
 
   // Auto-translate effect: translate untranslated messages from the other user
   useEffect(() => {
-    if (!autoTranslateOn || !conversation?.messages?.length || autoTranslatingRef.current) return;
+    if (!autoTranslateOn || autoTranslateLimitReached || !conversation?.messages?.length || autoTranslatingRef.current) return;
     const otherUserId = conversation?.meta?.other_user?.id;
     if (!otherUserId) return;
     const targetLang = (i18n.language || 'en').split('-')[0] || 'en';
@@ -561,6 +564,13 @@ export function ConversationPage() {
             target_language: targetLang,
           }, { signal: controller.signal });
           if (controller.signal.aborted || !isMountedRef.current) return;
+          if (!response.success && response.code === 'RATE_LIMIT') {
+            // Allowance used up: stop asking, and tell the member. The rest of
+            // this batch stays untranslated and may be retried after a reset.
+            for (const pending of untranslated) translatedIdsRef.current.delete(pending.id);
+            setAutoTranslateLimitReached(true);
+            break;
+          }
           const translated = response.data?.translated_text;
           if (translated) {
             newTranslations.set(msg.id, translated);
@@ -575,7 +585,7 @@ export function ConversationPage() {
       autoTranslatingRef.current = false;
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps -- autoTranslateOn + messages length + an edit + language change trigger re-translation
-  }, [autoTranslateOn, conversation?.messages?.length, translationRevision, i18n.language]);
+  }, [autoTranslateOn, autoTranslateLimitReached, conversation?.messages?.length, translationRevision, i18n.language]);
 
   function handleAutoTranslateToggle() {
     const otherUser = conversation?.meta?.other_user;
@@ -583,6 +593,8 @@ export function ConversationPage() {
     const targetLang = (i18n.language || 'en').split('-')[0] || 'en';
     const nowEnabled = toggleAutoTranslate(otherUser.id, targetLang);
     setAutoTranslateOn(nowEnabled);
+    // Turning it off and on again is how a member retries after a reset.
+    setAutoTranslateLimitReached(false);
 
     if (nowEnabled) {
       toast.success(t('auto_translate.enabled_toast'));
@@ -2634,7 +2646,7 @@ export function ConversationPage() {
         <div className="flex shrink-0 items-center gap-2 rounded-lg bg-accent/10 px-3 py-2" role="status">
           <Languages className="w-4 h-4 text-accent flex-shrink-0" aria-hidden="true" />
           <p className="text-xs text-accent dark:text-accent flex-1">
-            {t('auto_translate.active_banner')}
+            {autoTranslateLimitReached ? t('auto_translate.limit_reached') : t('auto_translate.active_banner')}
           </p>
           <Button
             size="sm"
