@@ -36,6 +36,9 @@ class ApiErrorCodes
     /** Token signature is invalid or token is malformed */
     public const AUTH_TOKEN_INVALID = 'AUTH_TOKEN_INVALID';
 
+    /** The session was unused for longer than the community's inactivity timeout and has ended (E-119 F-608) */
+    public const AUTH_SESSION_IDLE = 'AUTH_SESSION_IDLE';
+
     /** No authentication token/session provided */
     public const AUTH_TOKEN_MISSING = 'AUTH_TOKEN_MISSING';
 
@@ -269,6 +272,7 @@ class ApiErrorCodes
             // 401 Unauthorized
             self::AUTH_TOKEN_EXPIRED,
             self::AUTH_TOKEN_INVALID,
+            self::AUTH_SESSION_IDLE,
             self::AUTH_TOKEN_MISSING,
             self::AUTH_REFRESH_REQUIRED,
             self::AUTH_INVALID_CREDENTIALS,

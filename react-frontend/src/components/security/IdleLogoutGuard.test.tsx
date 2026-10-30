@@ -6,8 +6,8 @@
 /**
  * Tests for IdleLogoutGuard
  *
- * The component is a pure side-effect wrapper: it calls useIdleLogout() and
- * returns null. There is no JSX output of its own.
+ * With no warning due, the component is a pure side-effect wrapper: it calls
+ * useIdleLogout() and renders nothing.
  *
  * Test objectives:
  *   (a) The component mounts and returns null (renders nothing to the DOM).
@@ -45,6 +45,9 @@ import { IdleLogoutGuard } from './IdleLogoutGuard';
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // No warning due: the guard renders nothing. (The warning itself is covered
+  // by __tests__/IdleLogoutGuard.test.tsx, E-119 F-608.)
+  mockUseIdleLogout.mockReturnValue({ warningOpen: false, secondsLeft: 0, staySignedIn: vi.fn(), signOutNow: vi.fn() });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

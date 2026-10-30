@@ -769,6 +769,7 @@ return [
     'ai_error_generic' => 'O serviço de IA encontrou um erro. Por favor, tente novamente.',
     'ai_not_configured' => 'As funcionalidades de IA estão desativadas nesta comunidade. Contacte a administração da sua comunidade.',
     'ai_translation_unavailable' => 'A tradução não está disponível neste momento. Tente novamente mais tarde.',
+    'session_idle_timeout'       => 'A sua sessão foi terminada porque esteve inativo demasiado tempo. Inicie sessão novamente.',
     'message_recipient_required' => 'destinatário_id é obrigatório',
     'message_body_or_voice_required' => 'O corpo da mensagem ou a mensagem de voz são obrigatórios',
     'message_too_long' => 'A mensagem é muito longa (máximo de 10.000 caracteres)',

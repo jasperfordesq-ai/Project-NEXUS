@@ -52,6 +52,10 @@
   "dismiss": "تجاهل",
   "idle_logout_title": "تم تسجيل الخروج بسبب عدم النشاط",
   "idle_logout_message": "تم تسجيل خروجك تلقائيًا بعد فترة من عدم النشاط. يرجى تسجيل الدخول مرة أخرى للمتابعة.",
+  "idle_warning_title": "سيتم تسجيل خروجك قريبًا",
+  "idle_warning_message": "لم تقم بأي نشاط منذ فترة. لحماية حسابك، سيتم تسجيل خروجك خلال {{minutes}}:{{seconds}}. سيضيع كل ما لم تحفظه.",
+  "idle_warning_stay": "البقاء مسجّلًا",
+  "idle_warning_sign_out": "تسجيل الخروج الآن",
   "api": {
     "request_failed_title": "فشل الطلب",
     "request_failed": "لم يمكن إتمام الطلب.",

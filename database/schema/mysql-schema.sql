@@ -17348,6 +17348,23 @@ CREATE TABLE `referral_tracking` (
   KEY `idx_tenant` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `refresh_session_activity`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `refresh_session_activity` (
+  `family_hash` char(64) NOT NULL,
+  `tenant_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `last_activity_at` timestamp NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`family_hash`),
+  KEY `idx_refresh_activity_tenant_user` (`tenant_id`,`user_id`),
+  KEY `fk_refresh_activity_user_tenant` (`user_id`,`tenant_id`),
+  CONSTRAINT `fk_refresh_activity_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_refresh_activity_user_tenant` FOREIGN KEY (`user_id`, `tenant_id`) REFERENCES `users` (`id`, `tenant_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `refresh_token_sessions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -22802,7 +22819,8 @@ INSERT INTO `laravel_migrations` VALUES
 (505,'2026_10_26_150000_add_category_and_snapshot_to_reports',169),
 (506,'2026_10_26_160000_make_vetting_history_append_only',170),
 (507,'2026_10_26_170000_correct_caring_community_ai_module_doc',171),
-(508,'2026_10_30_090000_add_image_alt_to_listings',172);
+(508,'2026_10_30_090000_add_image_alt_to_listings',172),
+(509,'2026_10_30_120000_create_refresh_session_activity_table',173);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

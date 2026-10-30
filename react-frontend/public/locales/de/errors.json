@@ -52,6 +52,10 @@
   "dismiss": "Schließen",
   "idle_logout_title": "Wegen Inaktivität abgemeldet",
   "idle_logout_message": "Sie wurden nach einer Phase der Inaktivität automatisch abgemeldet. Bitte melden Sie sich erneut an, um fortzufahren.",
+  "idle_warning_title": "Sie werden bald abgemeldet",
+  "idle_warning_message": "Sie waren eine Weile nicht aktiv. Zum Schutz Ihres Kontos werden Sie in {{minutes}}:{{seconds}} abgemeldet. Alles, was Sie nicht gespeichert haben, geht verloren.",
+  "idle_warning_stay": "Angemeldet bleiben",
+  "idle_warning_sign_out": "Jetzt abmelden",
   "api": {
     "request_failed_title": "Anforderung fehlgeschlagen",
     "request_failed": "Die Anfrage konnte nicht abgeschlossen werden.",

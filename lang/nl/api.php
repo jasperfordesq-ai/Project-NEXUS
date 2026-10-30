@@ -794,6 +794,7 @@ return [
     'ai_error_generic' => 'Er is een fout opgetreden in de AI-service. Probeer het opnieuw.',
     'ai_not_configured' => 'AI-functies zijn uitgeschakeld in deze gemeenschap. Neem contact op met de beheerder van uw gemeenschap.',
     'ai_translation_unavailable' => 'Vertalen is op dit moment niet beschikbaar. Probeer het later opnieuw.',
+    'session_idle_timeout'       => 'U bent afgemeld omdat u te lang inactief was. Meld u opnieuw aan.',
     'message_recipient_required' => 'ontvanger_id is vereist',
     'message_body_or_voice_required' => 'Berichttekst of gesproken bericht is vereist',
     'message_too_long' => 'Bericht is te lang (max. 10.000 tekens)',

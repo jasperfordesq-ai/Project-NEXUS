@@ -52,6 +52,10 @@
   "dismiss": "Chiudi",
   "idle_logout_title": "Disconnessione per inattività",
   "idle_logout_message": "È stato disconnesso automaticamente dopo un periodo di inattività. Acceda di nuovo per continuare.",
+  "idle_warning_title": "Stai per essere disconnesso",
+  "idle_warning_message": "Non hai fatto nulla per un po'. Per proteggere il tuo account, verrai disconnesso tra {{minutes}}:{{seconds}}. Tutto ciò che non hai salvato andrà perso.",
+  "idle_warning_stay": "Resta connesso",
+  "idle_warning_sign_out": "Esci ora",
   "api": {
     "request_failed_title": "Richiesta fallita",
     "request_failed": "La richiesta non può essere completata.",

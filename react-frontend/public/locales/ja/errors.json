@@ -52,6 +52,10 @@
   "dismiss": "閉じる",
   "idle_logout_title": "無操作のためサインアウトしました",
   "idle_logout_message": "一定時間操作がなかったため、自動的にサインアウトされました。続行するには再度ログインしてください。",
+  "idle_warning_title": "まもなくサインアウトします",
+  "idle_warning_message": "しばらく操作がありません。アカウントを守るため、{{minutes}}:{{seconds}} 後にサインアウトします。保存していない内容は失われます。",
+  "idle_warning_stay": "サインインしたままにする",
+  "idle_warning_sign_out": "今すぐサインアウト",
   "api": {
     "request_failed_title": "リクエストに失敗しました",
     "request_failed": "リクエストを完了できませんでした。",

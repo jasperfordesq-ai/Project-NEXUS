@@ -8016,6 +8016,19 @@ describe('API Request Functions', () => {
   });
 
 
+  // E-119 F-608: "the member is still here", for the main server's inactivity timeout.
+  describe('recordSessionActivity', () => {
+    it('posts to /api/v2/auth/activity with the bearer token', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true, status: 204, headers: { get: () => null }, text: async () => '' });
+
+      await api.recordSessionActivity('test-token');
+
+      expect(mockFetch.mock.calls[0][0]).toBe('http://localhost:5000/api/v2/auth/activity');
+      expect(mockFetch.mock.calls[0][1].method).toBe('POST');
+      expect(mockFetch.mock.calls[0][1].headers.Authorization).toBe('Bearer test-token');
+    });
+  });
+
   describe('Laravel cookie consent helper', () => {
     function jsonOnce(body) {
       mockFetch.mockResolvedValueOnce({

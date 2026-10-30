@@ -355,11 +355,20 @@ class TwoFactorController extends BaseApiController
                         }
 
                         $isMobile = $this->tokenService->isMobileRequest();
+                        $refreshToken = $this->tokenService->generateRefreshToken(
+                            (int) $userRow->id,
+                            $tenantId,
+                            $isMobile,
+                            \App\Services\TwoFactorPolicy::claims('totp')
+                        );
                         $accessToken = $this->tokenService->generateToken(
                             (int) $userRow->id,
                             $tenantId,
                             [
                                 ...\App\Services\TwoFactorPolicy::claims('totp'),
+                                // E-119 F-608: bound to its session, so its use counts as activity
+                                // and the community's inactivity timeout applies from the start.
+                                'refresh_family_id' => $this->tokenService->refreshFamilyIdOf($refreshToken),
                                 'role' => $userRow->role,
                                 'email' => $userRow->email,
                                 'is_super_admin' => !empty($userRow->is_super_admin),
@@ -367,12 +376,6 @@ class TwoFactorController extends BaseApiController
                                 'is_god' => !empty($userRow->is_god),
                             ],
                             $isMobile
-                        );
-                        $refreshToken = $this->tokenService->generateRefreshToken(
-                            (int) $userRow->id,
-                            $tenantId,
-                            $isMobile,
-                            \App\Services\TwoFactorPolicy::claims('totp')
                         );
 
                         return [

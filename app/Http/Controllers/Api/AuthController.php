@@ -403,11 +403,20 @@ class AuthController extends BaseApiController
                     return ['status' => 'gate_blocked', 'gate' => $lockedGateBlock];
                 }
 
+                $refreshToken = $this->tokenService->generateRefreshToken(
+                    (int) $lockedUser['id'],
+                    (int) $lockedUser['tenant_id'],
+                    $isMobile,
+                    $trustedAssurance ?? []
+                );
                 $accessToken = $this->tokenService->generateToken(
                     (int) $lockedUser['id'],
                     (int) $lockedUser['tenant_id'],
                     [
                         ...($trustedAssurance ?? []),
+                        // E-119 F-608: bound to its session, so its use counts as activity
+                        // and the community's inactivity timeout applies from the start.
+                        'refresh_family_id' => $this->tokenService->refreshFamilyIdOf($refreshToken),
                         'role' => $lockedUser['role'],
                         'email' => $lockedUser['email'],
                         'is_super_admin' => !empty($lockedUser['is_super_admin']),
@@ -415,12 +424,6 @@ class AuthController extends BaseApiController
                         'is_god' => !empty($lockedUser['is_god']),
                     ],
                     $isMobile
-                );
-                $refreshToken = $this->tokenService->generateRefreshToken(
-                    (int) $lockedUser['id'],
-                    (int) $lockedUser['tenant_id'],
-                    $isMobile,
-                    $trustedAssurance ?? []
                 );
 
                 DB::table('users')
@@ -509,6 +512,21 @@ class AuthController extends BaseApiController
             ApiErrorCodes::AUTH_INVALID_CREDENTIALS,
             401
         );
+    }
+
+    /**
+     * POST /api/v2/auth/activity
+     *
+     * E-119 F-608: "the member is still here". A member who reads, types or
+     * scrolls without the page calling the API would otherwise look idle to the
+     * server. Authenticating this request records the activity (TokenService);
+     * there is nothing else to do. 204 with no body.
+     */
+    public function recordActivity(): \Illuminate\Http\Response
+    {
+        $this->requireAuth();
+
+        return response()->noContent();
     }
 
     /**
@@ -772,6 +790,9 @@ class AuthController extends BaseApiController
             if ($rotation === null) {
                 return ['status' => 'rotation_failed'];
             }
+            if (($rotation['outcome'] ?? null) === TokenService::REFRESH_ROTATION_OUTCOME_IDLE) {
+                return ['status' => 'session_idle'];
+            }
             if (
                 ($rotation['outcome'] ?? null)
                 === TokenService::REFRESH_ROTATION_OUTCOME_RECENTLY_CONSUMED
@@ -840,6 +861,14 @@ class AuthController extends BaseApiController
                 $gateBlock['code'],
                 403,
                 $gateBlock['extra']
+            );
+        }
+        if (($issuance['status'] ?? null) === 'session_idle') {
+            // E-119 F-608: ended for inactivity; the member must sign in again.
+            return $this->authError(
+                __('api.session_idle_timeout'),
+                ApiErrorCodes::AUTH_SESSION_IDLE,
+                401
             );
         }
         if (($issuance['status'] ?? null) === 'refresh_superseded') {

@@ -52,6 +52,10 @@
   "dismiss": "Sluiten",
   "idle_logout_title": "Afgemeld wegens inactiviteit",
   "idle_logout_message": "U bent automatisch afgemeld na een periode van inactiviteit. Meld u opnieuw aan om door te gaan.",
+  "idle_warning_title": "U wordt binnenkort afgemeld",
+  "idle_warning_message": "U hebt een tijdje niets gedaan. Om uw account te beschermen, wordt u over {{minutes}}:{{seconds}} afgemeld. Alles wat u niet hebt opgeslagen, gaat verloren.",
+  "idle_warning_stay": "Aangemeld blijven",
+  "idle_warning_sign_out": "Nu afmelden",
   "api": {
     "request_failed_title": "Verzoek mislukt",
     "request_failed": "Het verzoek kon niet worden voltooid.",

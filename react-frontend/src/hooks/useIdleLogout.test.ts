@@ -7,6 +7,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useIdleLogout, parseIdleTimeoutMs } from './useIdleLogout';
 
+const { mockPost } = vi.hoisted(() => ({ mockPost: vi.fn() }));
+vi.mock('@/lib/api', () => ({ api: { post: mockPost } }));
+
 vi.mock('@/contexts', () => ({
   useAuth: vi.fn(),
   useTenant: vi.fn(),
@@ -121,6 +124,69 @@ describe('useIdleLogout', () => {
       vi.advanceTimersByTime(60 * 60_000);
     });
 
+    expect(logout).not.toHaveBeenCalled();
+  });
+
+  // E-119 F-608: reloading the page used to restart the clock, so a member who
+  // left and came back long after the timeout was still signed in.
+  it('does not restart the clock when the page is reloaded after a long idle', async () => {
+    const { logout } = setup({ timeoutMinutes: '30', user: { id: 1 } });
+    localStorage.setItem('nexus_last_activity', String(Date.now() - 31 * 60_000));
+    renderHook(() => useIdleLogout());
+
+    await act(async () => {
+      vi.advanceTimersByTime(31_000);
+    });
+
+    expect(logout).toHaveBeenCalledTimes(1);
+  });
+
+  // E-119 F-608: the server now enforces the timeout too, so a member who is
+  // reading or typing (no API calls) must tell it they are still here.
+  it('tells the server the member is still here while they are active, not while idle', async () => {
+    mockPost.mockResolvedValue({ success: true });
+    setup({ timeoutMinutes: '30', user: { id: 1 } });
+    renderHook(() => useIdleLogout());
+
+    await act(async () => {
+      window.dispatchEvent(new Event('pointerdown'));
+    });
+    expect(mockPost).toHaveBeenCalledWith('/v2/auth/activity', {});
+
+    mockPost.mockClear();
+    await act(async () => {
+      window.dispatchEvent(new Event('keydown'));
+    });
+    expect(mockPost).not.toHaveBeenCalled(); // throttled
+
+    await act(async () => {
+      vi.advanceTimersByTime(20 * 60_000); // idle: no events
+    });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('opens a warning before signing out, and staying signed in restarts the clock', async () => {
+    mockPost.mockResolvedValue({ success: true });
+    const { logout } = setup({ timeoutMinutes: '30', user: { id: 1 } });
+    const { result } = renderHook(() => useIdleLogout());
+
+    expect(result.current.warningOpen).toBe(false);
+    await act(async () => {
+      vi.advanceTimersByTime(25 * 60_000 + 31_000);
+    });
+    expect(result.current.warningOpen).toBe(true);
+    expect(result.current.secondsLeft).toBeGreaterThan(0);
+    expect(logout).not.toHaveBeenCalled();
+
+    await act(async () => {
+      result.current.staySignedIn();
+    });
+    expect(result.current.warningOpen).toBe(false);
+    expect(mockPost).toHaveBeenCalledWith('/v2/auth/activity', {});
+
+    await act(async () => {
+      vi.advanceTimersByTime(20 * 60_000);
+    });
     expect(logout).not.toHaveBeenCalled();
   });
 

@@ -584,6 +584,37 @@ describe('API Client', () => {
       })]);
     });
 
+    it('ends the session for inactivity when the server refuses the renewal as idle (E-119 F-608)', async () => {
+      tokenManager.setAccessToken('expired-access');
+      setTestBinding('old-refresh');
+      const details: unknown[] = [];
+      const listener = (event: Event) => details.push((event as CustomEvent).detail);
+      window.addEventListener('nexus:session_expired', listener);
+      vi.mocked(fetch)
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          headers: new Headers(),
+          json: () => Promise.resolve({ error: 'Unauthorized' }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          headers: new Headers(),
+          json: () => Promise.resolve({
+            success: false,
+            errors: [{ code: 'AUTH_SESSION_IDLE', message: 'Signed out: inactive.' }],
+          }),
+        } as Response);
+
+      const result = await api.get('/v2/users/me');
+
+      window.removeEventListener('nexus:session_expired', listener);
+      expect(result.success).toBe(false);
+      expect(tokenManager.getAccessToken()).toBeNull();
+      expect(details).toEqual([expect.objectContaining({ reason: 'idle' })]);
+    });
+
     it('preserves application-level failure envelopes returned with HTTP 2xx', async () => {
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,

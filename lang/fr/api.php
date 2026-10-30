@@ -769,6 +769,7 @@ return [
     'ai_error_generic' => 'Le service AI a rencontré une erreur. Veuillez réessayer.',
     'ai_not_configured' => 'Les fonctions d\'IA sont désactivées dans cette communauté. Veuillez contacter l\'administrateur de votre communauté.',
     'ai_translation_unavailable' => 'La traduction n\'est pas disponible pour le moment. Veuillez réessayer plus tard.',
+    'session_idle_timeout'       => 'Vous avez été déconnecté après une trop longue période d\'inactivité. Veuillez vous reconnecter.',
     'message_recipient_required' => 'le destinataire_id est requis',
     'message_body_or_voice_required' => 'Le corps du message ou le message vocal est requis',
     'message_too_long' => 'Le message est trop long (maximum 10 000 caractères)',

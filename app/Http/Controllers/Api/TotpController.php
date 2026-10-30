@@ -332,11 +332,20 @@ class TotpController extends BaseApiController
         [$accessToken, $refreshToken] = TenantContext::runForTenant(
             $tenantId,
             function () use ($user, $isMobile, $useBackupCode): array {
+                $refreshToken = $this->tokenService->generateRefreshToken(
+                    (int) $user['id'],
+                    (int) $user['tenant_id'],
+                    $isMobile,
+                    \App\Services\TwoFactorPolicy::claims($useBackupCode ? 'recovery_code' : 'totp')
+                );
                 $accessToken = $this->tokenService->generateToken(
                     (int) $user['id'],
                     (int) $user['tenant_id'],
                     [
                         ...\App\Services\TwoFactorPolicy::claims($useBackupCode ? 'recovery_code' : 'totp'),
+                        // E-119 F-608: bound to its session, so its use counts as activity
+                        // and the community's inactivity timeout applies from the start.
+                        'refresh_family_id' => $this->tokenService->refreshFamilyIdOf($refreshToken),
                         'role' => $user['role'],
                         'email' => $user['email'],
                         'is_super_admin' => !empty($user['is_super_admin']),
@@ -344,12 +353,6 @@ class TotpController extends BaseApiController
                         'is_god' => !empty($user['is_god']),
                     ],
                     $isMobile
-                );
-                $refreshToken = $this->tokenService->generateRefreshToken(
-                    (int) $user['id'],
-                    (int) $user['tenant_id'],
-                    $isMobile,
-                    \App\Services\TwoFactorPolicy::claims($useBackupCode ? 'recovery_code' : 'totp')
                 );
 
                 return [$accessToken, $refreshToken];

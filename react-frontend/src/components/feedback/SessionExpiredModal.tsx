@@ -104,7 +104,7 @@ export function SessionExpiredModal() {
                 id="session-expired-title"
                 className="text-xl font-semibold text-theme-primary"
               >
-                {t(reason === 'mfa_required' ? 'session_mfa_required' : 'session_expired')}
+                {t(reason === 'mfa_required' ? 'session_mfa_required' : reason === 'idle' ? 'idle_logout_title' : 'session_expired')}
               </ModalHeading>
             </ModalHeader>
 
@@ -113,7 +113,7 @@ export function SessionExpiredModal() {
               className="text-center pb-4"
             >
               <p className="text-theme-muted">
-                {t(reason === 'mfa_required' ? 'session_mfa_required_message' : 'session_expired_message')}
+                {t(reason === 'mfa_required' ? 'session_mfa_required_message' : reason === 'idle' ? 'idle_logout_message' : 'session_expired_message')}
               </p>
             </ModalBody>
 

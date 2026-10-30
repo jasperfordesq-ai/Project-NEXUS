@@ -1703,6 +1703,16 @@ async function callUserSettingsApi(token, method, path = '', data = undefined) {
   return request(`/api/v2/users/me${normalizedPath}`, options);
 }
 
+// E-119 F-608: "the member is still here", so the main server's inactivity
+// timeout sees a member who is reading or typing. 204 on success.
+async function recordSessionActivity(token) {
+  return request('/api/v2/auth/activity', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({})
+  });
+}
+
 async function requestAccountDeletion(token, data) {
   return request('/api/gdpr/delete-account', {
     method: 'POST',
@@ -4784,6 +4794,7 @@ module.exports = {
   getLegalVersion,
   compareLegalVersions,
   recordCookieConsent,
+  recordSessionActivity,
   getLegalAcceptanceStatus,
   acceptAllLegalDocuments,
   callNewsletterApi,

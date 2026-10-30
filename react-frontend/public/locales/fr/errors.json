@@ -52,6 +52,10 @@
   "dismiss": "Fermer",
   "idle_logout_title": "Déconnecté pour cause d'inactivité",
   "idle_logout_message": "Vous avez été déconnecté automatiquement après une période d'inactivité. Veuillez vous reconnecter pour continuer.",
+  "idle_warning_title": "Vous allez bientôt être déconnecté",
+  "idle_warning_message": "Vous n'avez rien fait depuis un moment. Pour protéger votre compte, vous serez déconnecté dans {{minutes}}:{{seconds}}. Tout ce que vous n'avez pas enregistré sera perdu.",
+  "idle_warning_stay": "Rester connecté",
+  "idle_warning_sign_out": "Se déconnecter maintenant",
   "api": {
     "request_failed_title": "La requête a échoué",
     "request_failed": "La demande n'a pas pu être complétée.",

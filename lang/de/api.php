@@ -769,6 +769,7 @@ return [
     'ai_error_generic' => 'Beim AI-Dienst ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.',
     'ai_not_configured' => 'KI-Funktionen sind in dieser Community ausgeschaltet. Bitte wenden Sie sich an die Administration Ihrer Community.',
     'ai_translation_unavailable' => 'Die Übersetzung ist im Moment nicht verfügbar. Bitte versuchen Sie es später erneut.',
+    'session_idle_timeout'       => 'Sie wurden abgemeldet, weil Sie zu lange inaktiv waren. Bitte melden Sie sich erneut an.',
     'message_recipient_required' => 'Empfänger_ID ist erforderlich',
     'message_body_or_voice_required' => 'Nachrichtentext oder Sprachnachricht ist erforderlich',
     'message_too_long' => 'Die Nachricht ist zu lang (maximal 10.000 Zeichen)',

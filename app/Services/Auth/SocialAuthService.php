@@ -844,10 +844,14 @@ class SocialAuthService
                 );
             }
 
+            $refreshToken = $this->tokens->generateRefreshToken($userId, $tenantId, false, $assurance);
             $accessToken = $this->tokens->generateToken(
                 $userId,
                 $tenantId,
                 [
+                    // E-119 F-608: bound to its session, so its use counts as activity
+                    // and the community's inactivity timeout applies from the start.
+                    'refresh_family_id' => $this->tokens->refreshFamilyIdOf($refreshToken),
                     'role' => $user['role'],
                     'email' => $user['email'],
                     'is_super_admin' => !empty($user['is_super_admin']),
@@ -857,7 +861,6 @@ class SocialAuthService
                 ],
                 false
             );
-            $refreshToken = $this->tokens->generateRefreshToken($userId, $tenantId, false, $assurance);
 
             return [
                 'status' => 'credentials_issued',

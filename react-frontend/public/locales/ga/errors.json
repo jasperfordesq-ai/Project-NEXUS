@@ -52,6 +52,10 @@
   "dismiss": "Dún",
   "idle_logout_title": "Sínithe amach de bharr neamhghníomhaíochta",
   "idle_logout_message": "Síníodh amach thú go huathoibríoch tar éis tréimhse neamhghníomhaíochta. Logáil isteach arís le leanúint ar aghaidh.",
+  "idle_warning_title": "Logálfar amach thú go luath",
+  "idle_warning_message": "Ní dhearna tú aon rud le tamall. Chun do chuntas a chosaint, logálfar amach thú i gceann {{minutes}}:{{seconds}}. Caillfear aon rud nach bhfuil sábháilte agat.",
+  "idle_warning_stay": "Fan logáilte isteach",
+  "idle_warning_sign_out": "Logáil amach anois",
   "api": {
     "request_failed_title": "Theip ar an iarratas",
     "request_failed": "Níorbh fhéidir an t-iarratas a chríochnú.",

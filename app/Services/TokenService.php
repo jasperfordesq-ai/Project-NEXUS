@@ -35,6 +35,17 @@ class TokenService
 
     public const REFRESH_ROTATION_OUTCOME_ROTATED = 'rotated';
     public const REFRESH_ROTATION_OUTCOME_RECENTLY_CONSUMED = 'recently_consumed';
+    /** E-119 F-608: the session was idle past the community's inactivity timeout and is now revoked. */
+    public const REFRESH_ROTATION_OUTCOME_IDLE = 'idle';
+
+    /** Revocation reason recorded when a session is ended for inactivity. */
+    public const IDLE_REVOCATION_REASON = 'idle_timeout';
+
+    /**
+     * E-119 F-608: how often one session's "last active" time is written. A
+     * signed-in request inside this window counts as activity without a write.
+     */
+    private const ACTIVITY_WRITE_INTERVAL_SECONDS = 60;
 
     /**
      * Get the secret key for signing tokens.
@@ -410,6 +421,21 @@ class TokenService
             if (!$familyIsActive) {
                 return null;
             }
+
+            // E-119 F-608: the community's inactivity timeout, enforced here and
+            // not only by a timer in the open browser tab.
+            $familyHash = $this->hashIdentifier($refreshFamilyId);
+            $tokenUserId = (int) ($payload['user_id'] ?? 0);
+            $tokenTenantId = (int) ($payload['tenant_id'] ?? 0);
+            $idle = $this->sessionIsIdle($familyHash, $tokenUserId, $tokenTenantId);
+            if ($idle === null) {
+                return null;
+            }
+            if ($idle) {
+                $this->revokeRefreshFamily($familyHash, $tokenUserId, $tokenTenantId, self::IDLE_REVOCATION_REASON);
+                return null;
+            }
+            $this->recordSessionActivity($familyHash);
         }
 
         return $payload;
@@ -576,6 +602,21 @@ class TokenService
 
                 if ($session->revoked_at !== null) {
                     return null;
+                }
+
+                // E-119 F-608: an idle session is ended, not renewed.
+                $idle = $this->sessionIsIdle($familyHash, (int) $payload['user_id'], (int) $payload['tenant_id']);
+                if ($idle === null) {
+                    return null;
+                }
+                if ($idle) {
+                    $this->revokeRefreshFamily(
+                        $familyHash,
+                        (int) $payload['user_id'],
+                        (int) $payload['tenant_id'],
+                        self::IDLE_REVOCATION_REASON
+                    );
+                    return ['outcome' => self::REFRESH_ROTATION_OUTCOME_IDLE];
                 }
 
                 $now = time();
@@ -1271,6 +1312,17 @@ class TokenService
         }
 
         $now = now();
+        if ($parentJtiHash === null) {
+            // E-119 F-608: a new sign-in is active from the moment it is made.
+            DB::table('refresh_session_activity')->insertOrIgnore([
+                'family_hash' => $this->hashIdentifier($familyId),
+                'tenant_id' => $tenantId,
+                'user_id' => $userId,
+                'last_activity_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
         DB::table('refresh_token_sessions')->insert([
             'tenant_id' => $tenantId,
             'user_id' => $userId,
@@ -1288,6 +1340,103 @@ class TokenService
         ]);
 
         return $token;
+    }
+
+    /**
+     * The family id inside a refresh token this service issued, so a sign-in can
+     * bind its first access token to the session (E-119 F-608). Null if the
+     * token is not a valid tracked refresh token.
+     */
+    public function refreshFamilyIdOf(string $refreshToken): ?string
+    {
+        $payload = $this->parseTrackedRefreshToken($refreshToken);
+
+        return $payload === null ? null : (string) $payload['family_id'];
+    }
+
+    /**
+     * The community's inactivity timeout in seconds; 0 when it has none.
+     *
+     * Same rules as the admin screen and both websites: 5–480 minutes is a
+     * timeout, 0 (stored, or published as false) or no setting means none.
+     */
+    private function idleTimeoutSeconds(int $tenantId): int
+    {
+        if ($tenantId < 1) {
+            return 0;
+        }
+        $raw = app(\App\Services\TenantSettingsService::class)
+            ->get($tenantId, 'general.inactivity_timeout_minutes');
+        if ($raw === null || is_bool($raw) || $raw === '' || !is_numeric($raw)) {
+            return 0;
+        }
+        $minutes = (int) $raw;
+        if ($minutes < 5) {
+            return 0;
+        }
+
+        return min($minutes, 480) * 60;
+    }
+
+    /**
+     * E-119 F-608: has this session been unused for longer than its
+     * community's inactivity timeout?
+     *
+     * A session with no activity row was signed in before activity was recorded;
+     * it is treated as active now (a deploy must not sign everyone out) and
+     * gets a row. Null means the check could not run: the caller refuses this
+     * one request (fail closed) but does not end the session over a glitch.
+     */
+    private function sessionIsIdle(string $familyHash, int $userId, int $tenantId): ?bool
+    {
+        $timeout = $this->idleTimeoutSeconds($tenantId);
+        if ($timeout === 0) {
+            return false;
+        }
+
+        try {
+            $last = DB::table('refresh_session_activity')
+                ->where('family_hash', $familyHash)
+                ->value('last_activity_at');
+            if ($last === null) {
+                $now = now();
+                DB::table('refresh_session_activity')->insertOrIgnore([
+                    'family_hash' => $familyHash,
+                    'tenant_id' => $tenantId,
+                    'user_id' => $userId,
+                    'last_activity_at' => $now,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+                return false;
+            }
+            $lastAt = strtotime((string) $last);
+
+            return $lastAt === false || time() - $lastAt > $timeout;
+        } catch (\Throwable $e) {
+            Log::error('[TokenService] Session inactivity check failed', [
+                'user_id' => $userId,
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Record that the session was used now. At most one write per session per
+     * ACTIVITY_WRITE_INTERVAL_SECONDS; a failed write never fails the request.
+     */
+    private function recordSessionActivity(string $familyHash): void
+    {
+        try {
+            DB::table('refresh_session_activity')
+                ->where('family_hash', $familyHash)
+                ->where('last_activity_at', '<', now()->subSeconds(self::ACTIVITY_WRITE_INTERVAL_SECONDS))
+                ->update(['last_activity_at' => now(), 'updated_at' => now()]);
+        } catch (\Throwable $e) {
+            Log::warning('[TokenService] Could not record session activity', ['error' => $e->getMessage()]);
+        }
     }
 
     private function revokeRefreshFamily(

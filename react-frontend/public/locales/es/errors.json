@@ -52,6 +52,10 @@
   "dismiss": "Cerrar",
   "idle_logout_title": "Sesión cerrada por inactividad",
   "idle_logout_message": "Su sesión se cerró automáticamente tras un período de inactividad. Inicie sesión de nuevo para continuar.",
+  "idle_warning_title": "Pronto se cerrará tu sesión",
+  "idle_warning_message": "Llevas un rato sin actividad. Para proteger tu cuenta, tu sesión se cerrará en {{minutes}}:{{seconds}}. Se perderá todo lo que no hayas guardado.",
+  "idle_warning_stay": "Seguir conectado",
+  "idle_warning_sign_out": "Cerrar sesión ahora",
   "api": {
     "request_failed_title": "La solicitud falló",
     "request_failed": "No se pudo completar la solicitud.",

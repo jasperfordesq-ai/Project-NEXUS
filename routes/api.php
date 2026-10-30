@@ -3666,6 +3666,8 @@ Route::post('/auth/admin-session', [\App\Http\Controllers\Api\AuthController::cl
 Route::get('/auth/admin-session', [\App\Http\Controllers\Api\AuthController::class, 'adminSession']);
 Route::get('/v2/auth/verification-status', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'getVerificationStatus']);
 Route::post('/v2/auth/start-verification', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'startVerification'])->middleware('throttle:nexus-route-10-per-1m');
+// E-119 F-608: "still here" signal so the server-side inactivity timeout sees a reading member.
+Route::post('/v2/auth/activity', [\App\Http\Controllers\Api\AuthController::class, 'recordActivity'])->middleware('throttle:nexus-route-30-per-1m');
 
 // Optional identity verification (for active users wanting an ID Verified badge)
 Route::get('/v2/identity/status', [\App\Http\Controllers\Api\OptionalIdentityVerificationController::class, 'getStatus']);

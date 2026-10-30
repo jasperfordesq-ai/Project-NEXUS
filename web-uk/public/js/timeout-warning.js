@@ -48,7 +48,6 @@
   // session window rolls alongside the local one. Local activity (scrolling,
   // typing) does not otherwise reach the server, and the express session
   // carries state (language choice, sign-in flow) that must not die mid-use.
-  var KEEP_ALIVE_INTERVAL_MS = 5 * 60 * 1000;
   // Cross-tab activity broadcast. Activity in one tab extends the session for
   // every tab sharing it, so another tab must not count down to a sign-out the
   // server no longer intends. localStorage is per-origin, and so is the
@@ -84,6 +83,10 @@
   var COUNTDOWN_SECONDS = WARNING_BEFORE_MINUTES * 60;
 
   var sessionTimeoutMs = SESSION_TIMEOUT_MINUTES * 60 * 1000;
+  // How often activity may ping /session/touch. E-119 F-608: the main server
+  // now ends a session idle past the community's timeout, so a ping must land
+  // well inside the shortest one (5 minutes) — it was a fixed 5 minutes.
+  var KEEP_ALIVE_INTERVAL_MS = Math.max(60 * 1000, Math.min(5 * 60 * 1000, Math.floor(sessionTimeoutMs / 3)));
   var warningLeadMs = COUNTDOWN_SECONDS * 1000;
 
   // Absolute wall-clock deadline for the session, and the single scheduling
@@ -389,6 +392,12 @@
       headers: {
         'Content-Type': 'application/json',
         'x-csrf-token': csrfToken
+      }
+    }).then(function(response) {
+      // E-119 F-608: the session has already ended (for example for
+      // inactivity); do not leave the member on a page that looks signed in.
+      if (response.status === 401) {
+        redirectToLogin();
       }
     }).catch(function() {
       // Allow a retry sooner than the full interval after a failure.

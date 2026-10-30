@@ -300,6 +300,8 @@ async function ensureAuthSession(req, res) {
     if (underMinimumAge || refreshFailureClearsSession(req, error)) {
       delete req.signedCookies.refresh_token;
       clearAuthCookies(res);
+      // E-119 F-608: lets /session/touch tell the timeout warning the truth.
+      req.authSessionEnded = true;
     }
   }
 }

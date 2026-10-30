@@ -52,6 +52,10 @@
   "dismiss": "Zamknij",
   "idle_logout_title": "Wylogowano z powodu bezczynności",
   "idle_logout_message": "Po okresie bezczynności nastąpiło automatyczne wylogowanie. Zaloguj się ponownie, aby kontynuować.",
+  "idle_warning_title": "Wkrótce nastąpi wylogowanie",
+  "idle_warning_message": "Od jakiegoś czasu nic nie robisz. Aby chronić Twoje konto, zostaniesz wylogowany za {{minutes}}:{{seconds}}. Wszystko, czego nie zapisano, zostanie utracone.",
+  "idle_warning_stay": "Pozostań zalogowany",
+  "idle_warning_sign_out": "Wyloguj teraz",
   "api": {
     "request_failed_title": "Żądanie nie powiodło się",
     "request_failed": "Nie można było zakończyć żądania.",

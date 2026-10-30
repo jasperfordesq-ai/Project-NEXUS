@@ -52,6 +52,10 @@
   "dismiss": "Fechar",
   "idle_logout_title": "Sessão terminada por inatividade",
   "idle_logout_message": "A sua sessão foi terminada automaticamente após um período de inatividade. Inicie sessão novamente para continuar.",
+  "idle_warning_title": "A sua sessão vai terminar em breve",
+  "idle_warning_message": "Não fez nada durante algum tempo. Para proteger a sua conta, a sessão vai terminar dentro de {{minutes}}:{{seconds}}. Tudo o que não guardou será perdido.",
+  "idle_warning_stay": "Continuar com sessão iniciada",
+  "idle_warning_sign_out": "Terminar sessão agora",
   "api": {
     "request_failed_title": "Falha na solicitação",
     "request_failed": "A solicitação não pôde ser concluída.",

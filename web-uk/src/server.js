@@ -164,6 +164,7 @@ const { legalGate } = require('./middleware/legal-gate');
 const { recordCookieConsent } = require('./lib/api');
 const { tenantRouting } = require('./middleware/tenant-routing');
 const { applyTenantSessionTimeout } = require('./lib/session-timeout');
+const { handleSessionTouch } = require('./lib/session-touch');
 const { requestTenantContext } = require('./middleware/request-tenant-context');
 const { requestClientContext } = require('./middleware/request-client-context');
 const { isValidEmail } = require('./lib/inputValidator');
@@ -1076,18 +1077,13 @@ app.get('/', async (req, res, next) => {
 // Session touch endpoint - called by timeout-warning.js to extend the session.
 // With rolling:true the session middleware re-sends the cookie on any request;
 // marking the session dirty here also forces a store save.
-app.post('/session/touch', doubleCsrfProtection, (req, res) => {
-  // 🔴 Never assign to req.session.touch — that property name shadows
-  // express-session's own Session.prototype.touch() METHOD, which the library
-  // itself calls when the response ends. With a number stored there, every
-  // /session/touch response threw "req.session.touch is not a function" and
-  // never completed, so the timeout modal's extend request failed and
-  // redirected the member to the login page instead of extending the session.
-  // Regression test: tests/session-touch.test.js.
-  if (req.session) {
-    req.session.lastTouchedAt = Date.now();
-  }
-  res.json({ ok: true });
+// 🔴 Never assign to req.session.touch — that property name shadows
+// express-session's own Session.prototype.touch() METHOD, which the library
+// itself calls when the response ends (tests/session-touch.test.js). The
+// handler also reports the activity to the main server (E-119 F-608):
+// src/lib/session-touch.js.
+app.post('/session/touch', doubleCsrfProtection, (req, res, next) => {
+  handleSessionTouch(req, res).catch(next);
 });
 
 app.get('/cookies', (req, res) => {

@@ -915,11 +915,20 @@ class WebAuthnController extends BaseApiController
                     ->where('tenant_id', $tenantId)
                     ->update(['last_login_at' => now()]);
 
+                $refreshToken = $this->tokenService->generateRefreshToken(
+                    (int) $credential['user_id'],
+                    (int) $credential['user_tenant_id'],
+                    $isMobile,
+                    \App\Services\TwoFactorPolicy::claims('passkey')
+                );
                 $accessToken = $this->tokenService->generateToken(
                     (int) $credential['user_id'],
                     (int) $credential['user_tenant_id'],
                     [
                         ...\App\Services\TwoFactorPolicy::claims('passkey'),
+                        // E-119 F-608: bound to its session, so its use counts as activity
+                        // and the community's inactivity timeout applies from the start.
+                        'refresh_family_id' => $this->tokenService->refreshFamilyIdOf($refreshToken),
                         'role' => $credential['role'],
                         'email' => $credential['email'],
                         'is_super_admin' => !empty($credential['is_super_admin']),
@@ -930,12 +939,6 @@ class WebAuthnController extends BaseApiController
                         'credential_ref' => $this->credentialReference($credentialId),
                     ],
                     $isMobile
-                );
-                $refreshToken = $this->tokenService->generateRefreshToken(
-                    (int) $credential['user_id'],
-                    (int) $credential['user_tenant_id'],
-                    $isMobile,
-                    \App\Services\TwoFactorPolicy::claims('passkey')
                 );
                 $securityConfirmationToken = $this->tokenService->generateSecurityConfirmationToken(
                     (int) $credential['user_id'],

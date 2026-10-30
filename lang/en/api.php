@@ -1498,6 +1498,7 @@ return [
     'ai_error_generic'                     => 'AI service encountered an error. Please try again.',
     'ai_not_configured'                    => 'AI features are switched off in this community. Please contact your community administrator.',
     'ai_translation_unavailable'           => 'Translation is not available at the moment. Please try again later.',
+    'session_idle_timeout'                 => 'You were signed out because you were inactive for too long. Please sign in again.',
 
     // ============================================
     // USER-FACING — MESSAGES (additional)

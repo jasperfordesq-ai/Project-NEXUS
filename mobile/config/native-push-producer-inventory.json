@@ -940,9 +940,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/TwoFactorController.php:515:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/TwoFactorController.php:518:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/TwoFactorController.php",
-            "line": 515,
+            "line": 518,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -992,9 +992,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/WebAuthnController.php:1257:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/WebAuthnController.php:1260:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/WebAuthnController.php",
-            "line": 1257,
+            "line": 1260,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -1005,9 +1005,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/WebAuthnController.php:1421:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/WebAuthnController.php:1424:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/WebAuthnController.php",
-            "line": 1421,
+            "line": 1424,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",

@@ -87,7 +87,8 @@ export const COMMUNITY_CHANGED_EVENT = 'nexus:community_changed';
  * or the account being under the platform's minimum age (adults-only decision
  * 2026-09-25) — which no sign-in can fix.
  */
-export type SessionEndReason = 'expired' | 'mfa_required' | 'under_minimum_age';
+/** `idle`: the server ended the session under the community's inactivity timeout (E-119 F-608). */
+export type SessionEndReason = 'expired' | 'mfa_required' | 'under_minimum_age' | 'idle';
 export interface SessionExpiredDetail {
   reason: SessionEndReason;
   sessionGeneration?: string | null;
@@ -866,6 +867,9 @@ export class ApiClient {
    * request(), which hands the caller the refusal instead of "expired".
    */
   private minimumAgeRefusal: { message?: string } | null = null;
+  // E-119 F-608: the last refresh was refused because the session sat idle
+  // past the community's inactivity timeout (401 AUTH_SESSION_IDLE).
+  private idleRefusal = false;
   private pendingRefreshWaiters = new Set<PendingRefreshWaiter>();
 
   // Request deduplication: track in-flight GET requests
@@ -1233,6 +1237,7 @@ export class ApiClient {
    */
   private async refreshAccessToken(signal?: AbortSignal): Promise<TokenRefreshOutcome> {
     this.minimumAgeRefusal = null;
+    this.idleRefusal = false;
     const logoutGenerationAtStart = localStorage.getItem(ApiClient.LOGOUT_GENERATION_KEY);
     const authContextAtStart = this.captureAuthContext();
     if (this.isLogoutInProgress(authContextAtStart.sessionGeneration)) {
@@ -1281,6 +1286,12 @@ export class ApiClient {
             // the locally stored credentials; cross-tab generation checks stop
             // queued Web Lock owners from presenting the old token again.
             return 'transient';
+          }
+        }
+        if (response.status === 401) {
+          const refusal = await response.json().catch(() => null) as { errors?: ApiErrorDetail[] } | null;
+          if (hasApiErrorCode(refusal, 'AUTH_SESSION_IDLE')) {
+            this.idleRefusal = true;
           }
         }
         if (response.status === 403) {
@@ -1547,6 +1558,8 @@ export class ApiClient {
         const refusal = this.minimumAgeRefusal;
         if (refusal) {
           this.expireSession('under_minimum_age', generationAtQueueTime.sessionGeneration, refusal.message);
+        } else if (this.idleRefusal) {
+          this.expireSession('idle', generationAtQueueTime.sessionGeneration);
         } else {
           this.expireSession('expired', generationAtQueueTime.sessionGeneration);
         }
