@@ -191,14 +191,14 @@
           <div>
             <p class="govuk-body govuk-!-margin-bottom-1">
               <strong>{{ listingAuthor.name }}</strong>
-              {% if listingAuthorVerified %}{{ govukTag({ text: t("members.verified"), classes: "govuk-tag--green govuk-!-margin-left-1" }) }}{% endif %}
+              {% if identityVerificationEnabled and listingAuthorVerified %}{{ govukTag({ text: t("members.verified"), classes: "govuk-tag--green govuk-!-margin-left-1" }) }}{% endif %}
             </p>
             {% if listingAuthor.tagline %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2" dir="auto">{{ listingAuthor.tagline }}</p>{% endif %}
-            {% if listingVerificationBadges.length %}
+            {% if identityVerificationEnabled %}{% if listingVerificationBadges.length %}
               <ul class="govuk-list nexus-alpha-actions govuk-!-margin-bottom-2" aria-label="{{ t('govuk_alpha_listings.detail.author_badges_heading') }}">
                 {% for badge in listingVerificationBadges %}<li>{{ govukTag({ text: badge.label, classes: "govuk-tag--green" }) }}</li>{% endfor %}
               </ul>
-            {% endif %}
+            {% endif %}{% endif %}
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">
               {% if listingAuthor.rating %}<span>{{ t("members.rating", { rating: listingAuthor.rating }) }}</span><span aria-hidden="true"> · </span>{% endif %}
               <span>{{ tc("listings.author_reviews", listingAuthor.reviewsCount, { count: listingAuthor.reviewsCount }) }}</span>

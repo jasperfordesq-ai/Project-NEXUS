@@ -76,7 +76,7 @@
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
                       <a class="govuk-link" href="{{ urlFor('/members/' + (member.id | string)) }}">{{ member.name }}</a>
                     </h3>
-                    {% if member.isVerified %}
+                    {% if identityVerificationEnabled and member.isVerified %}
                       {{ govukTag({ text: t("members.verified"), classes: "govuk-tag--green" }) }}
                     {% endif %}
                     {% if member.levelLabel %}

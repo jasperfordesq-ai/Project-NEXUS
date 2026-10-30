@@ -20,6 +20,16 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { Chip } from '@/components/ui';
+import { useTenant } from '@/contexts';
+
+/**
+ * Verification badges follow the community's `identity_verification` switch,
+ * as the navbar always did. A community that turned verification off shows
+ * no "Verified" / "Not ID verified" badges anywhere (AWID pilot, Oct 2026).
+ */
+function useVerificationBadgesEnabled(): boolean {
+  return useTenant().hasFeature('identity_verification');
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -120,10 +130,12 @@ export function useVerificationBadges(
   userId?: number,
   propBadges?: VerificationBadgeData[]
 ): { badges: VerificationBadgeData[]; isLoaded: boolean } {
+  const enabled = useVerificationBadgesEnabled();
   const [badges, setBadges] = useState<VerificationBadgeData[]>(normalizeBadges(propBadges || []));
   const [isLoaded, setIsLoaded] = useState(!!propBadges);
 
   useEffect(() => {
+    if (!enabled) return;
     if (propBadges) {
       setBadges(normalizeBadges(propBadges));
       setIsLoaded(true);
@@ -145,9 +157,10 @@ export function useVerificationBadges(
       }
     };
     loadBadges();
-  }, [userId, propBadges]);
+  }, [enabled, userId, propBadges]);
 
-  return { badges, isLoaded };
+  // Switched off: report "loaded, nothing to show" so no caller waits or renders.
+  return enabled ? { badges, isLoaded } : { badges: [], isLoaded: true };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -162,7 +175,8 @@ export function VerificationBadgeIcon({
   size?: 'sm' | 'md' | 'lg';
 }) {
   const { t } = useTranslation('common');
-  if (!PUBLIC_VERIFICATION_BADGE_TYPES.has(badge.type || badge.badge_type || '')) {
+  const enabled = useVerificationBadgesEnabled();
+  if (!enabled || !PUBLIC_VERIFICATION_BADGE_TYPES.has(badge.type || badge.badge_type || '')) {
     return null;
   }
   const badgeConfig = getBadgeConfig(t);
@@ -201,9 +215,10 @@ export function VerificationBadgeRow({
 }) {
   const { t } = useTranslation('common');
   const badgeConfig = getBadgeConfig(t);
+  const enabled = useVerificationBadgesEnabled();
   const { badges, isLoaded } = useVerificationBadges(userId, propBadges);
 
-  if (!isLoaded) return null;
+  if (!enabled || !isLoaded) return null;
 
   const hasIdVerified = badges.some((b) => b.type === 'id_verified');
   const unverifiedConfig = {
@@ -271,10 +286,12 @@ export function VerificationBadgeSummary({
 }) {
   const { t } = useTranslation('common');
   const badgeConfig = getBadgeConfig(t);
+  const enabled = useVerificationBadgesEnabled();
   const [badges, setBadges] = useState<VerificationBadgeData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!enabled) return;
     const loadBadges = async () => {
       try {
         const response = await api.get<VerificationBadgeData[]>(`/v2/users/${userId}/verification-badges`);
@@ -288,9 +305,9 @@ export function VerificationBadgeSummary({
       }
     };
     loadBadges();
-  }, [userId]);
+  }, [enabled, userId]);
 
-  if (isLoading) return null;
+  if (!enabled || isLoading) return null;
 
   return (
     <div className="space-y-3">

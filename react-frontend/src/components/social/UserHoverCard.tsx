@@ -332,7 +332,8 @@ export const UserHoverCard = memo(function UserHoverCard({
                   className="font-semibold text-sm text-[var(--text-primary)] hover:text-[var(--color-primary)] transition-colors truncate block"
                 >
                   {displayName}
-                  {userData.is_verified && (
+                  {/* is_verified follows the community's identity-verification switch, like every other badge. */}
+                  {userData.is_verified && hasFeature('identity_verification') && (
                     <span className="ml-1 text-[var(--color-primary)]" title={t('verified')}>
                       <Check className="inline h-3.5 w-3.5" aria-hidden="true" />
                     </span>

@@ -94,6 +94,8 @@
         </div>
       </dl>
 
+      {# Follows the community's identity-verification switch (AWID, Oct 2026). #}
+      {% if identityVerificationEnabled %}
       <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_members.insights.verification_title") }}</h2>
       <p class="govuk-body">{{ t("govuk_alpha_members.insights.verification_intro") }}</p>
       {% if not verificationBadges or not verificationBadges.length %}
@@ -109,6 +111,7 @@
             </li>
           {% endfor %}
         </ul>
+      {% endif %}
       {% endif %}
 
       <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_members.insights.badges_title") }}</h2>

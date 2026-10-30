@@ -22,6 +22,10 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 
+// The badges follow the community's identity_verification switch; on here.
+// The switched-off case is VerificationBadge.featureOff.test.tsx.
+vi.mock('@/contexts', async () => (await import('@/test/mock-contexts')).createMockContexts());
+
 vi.mock('@/lib/logger', () => ({
   logError: vi.fn(),
 }));

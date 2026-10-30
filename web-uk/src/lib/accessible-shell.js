@@ -921,6 +921,9 @@ function buildShellLocals(req, isAuthenticated) {
     tenantLogoUrl,
     tenantLogoShape: normalizeLogoShape(branding.logo_shape),
     headerThemeStyle,
+    // Verification badges follow the community's identity-verification switch,
+    // as React's do (AWID pilot, Oct 2026).
+    identityVerificationEnabled: flagEnabled(routedTenant, 'identity_verification', 'features', true),
     accessibleRoutePrefix: routePrefix,
     urlFor,
     htmlLang: currentLocale,

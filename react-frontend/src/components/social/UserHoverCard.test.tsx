@@ -22,6 +22,7 @@ const MOCK_USER_DATA = vi.hoisted(() => ({
   stats: { total_hours_given: 10, connections_count: 5, listings_count: 2 },
 }));
 const mockAuthState = vi.hoisted(() => ({ isAuthenticated: true, viewerId: 10 }));
+const mockFeatures = vi.hoisted(() => ({ identityVerification: true }));
 
 // ── mock @/lib/api ────────────────────────────────────────────────────────────
 
@@ -74,7 +75,7 @@ vi.mock('@/contexts', () =>
     useTenant: () => ({
       tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
-      hasFeature: vi.fn(() => true),
+      hasFeature: vi.fn((key: string) => key !== 'identity_verification' || mockFeatures.identityVerification),
       hasModule: vi.fn(() => true),
     }),
   }),
@@ -179,6 +180,25 @@ describe('UserHoverCard', () => {
       // The visible profile link and screen-reader heading both carry the name.
       expect(screen.getAllByText('Alice Smith').length).toBeGreaterThanOrEqual(1);
     });
+  });
+
+  it('shows no "verified" tick when the community has identity verification off (AWID regression)', async () => {
+    mockFeatures.identityVerification = false;
+    clearUserHoverCardCache();
+    mockApiObj.get.mockResolvedValue({ success: true, data: { ...MOCK_USER_DATA, is_verified: true } });
+    try {
+      render(
+        <UserHoverCard userId={99}>
+          <span data-testid="trigger">Alice</span>
+        </UserHoverCard>,
+      );
+      await userEvent.hover(screen.getByTestId('trigger').parentElement!);
+      await waitFor(() => expect(screen.getAllByText('Alice Smith').length).toBeGreaterThanOrEqual(1));
+      expect(screen.queryByTitle(/verified/i)).not.toBeInTheDocument();
+    } finally {
+      mockFeatures.identityVerification = true;
+      clearUserHoverCardCache();
+    }
   });
 
   it('shows tagline in popover', async () => {
