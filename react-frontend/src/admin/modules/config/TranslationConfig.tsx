@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader, Spinner, Button, Input, Select, SelectItem, Switch, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
+import { Alert, Card, CardBody, CardHeader, Spinner, Button, Input, Select, SelectItem, Switch, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
 import { useState, useCallback, useEffect } from 'react';
 
 import { Separator } from '@/components/ui';
@@ -8,7 +8,8 @@ import Trash2 from 'lucide-react/icons/trash-2';
 import Plus from 'lucide-react/icons/plus';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
-import { useToast } from '@/contexts';
+import { Link } from 'react-router-dom';
+import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { languageDisplayName } from '@/lib/languageDisplayName';
 import { PageHeader } from '../../components/PageHeader';
@@ -40,11 +41,10 @@ type ConfigValue = string | number | boolean;
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ENGINE_OPTIONS = [
-  { key: 'openai', labelKey: 'config.translation_provider_openai' },
-  { key: 'deepl', labelKey: 'config.translation_provider_deepl' },
-  { key: 'google', labelKey: 'config.translation_provider_google' },
-];
+// The only translation provider the platform has. The page used to offer DeepL
+// and Google as well; nothing ever read that choice (owner check of AWID's
+// settings, 30 Oct 2026), so it now says which provider is used.
+const PROVIDER_LABEL_KEY = 'config.translation_provider_openai';
 
 const LANGUAGES = ['en', 'fr', 'de', 'es', 'it', 'pt', 'ga', 'nl', 'pl', 'ja', 'ar'] as const;
 
@@ -87,6 +87,10 @@ export function TranslationConfig() {
   const { t, i18n } = useTranslation('admin_config');
   usePageTitle(t('config.translation_settings_title'));
   const toast = useToast();
+  const { tenantPath } = useTenant();
+  // Translation runs on the community's AI. When AI is off every translation is
+  // refused, and this page must say so (AWID had AI off, 30 Oct 2026).
+  const [aiEnabled, setAiEnabled] = useState<boolean | null>(null);
 
   const meta = (key: string) => {
     const entry = CONFIG_KEYS[key];
@@ -148,6 +152,17 @@ export function TranslationConfig() {
   useEffect(() => {
     loadConfig();
   }, [loadConfig]);
+
+  useEffect(() => {
+    let cancelled = false;
+    api.get<{ ai_enabled?: boolean }>('/v2/admin/config/ai')
+      .then((response) => {
+        const value = (response?.data as { ai_enabled?: unknown } | undefined)?.ai_enabled;
+        if (!cancelled && typeof value === 'boolean') setAiEnabled(value);
+      })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, []);
 
   const isGlossaryEnabled = config['translation.glossary_enabled'];
 
@@ -247,6 +262,19 @@ export function TranslationConfig() {
       />
 
       <div className="space-y-6">
+        {aiEnabled === false && (
+          <Alert
+            color="warning"
+            title={t('config.translation_ai_off_title')}
+            description={t('config.translation_ai_off_desc')}
+            endContent={(
+              <Link className="text-sm font-medium text-accent underline" to={tenantPath('/admin/ai-settings')}>
+                {t('config.translation_ai_off_link')}
+              </Link>
+            )}
+          />
+        )}
+
         {/* General Settings */}
         <Card >
           <CardHeader className="flex items-center gap-2 px-4 pt-4 pb-0">
@@ -268,27 +296,13 @@ export function TranslationConfig() {
               />
             </div>
 
-            {/* translation.engine */}
+            {/* Provider: fixed. There is no other provider to choose. */}
             <div className="flex items-center justify-between py-3">
               <div>
                 <p className="font-medium">{meta('translation.engine').label}</p>
-                <p className="text-sm text-muted">{meta('translation.engine').description}</p>
+                <p className="text-sm text-muted">{t('config.translation_provider_fixed_desc')}</p>
               </div>
-              <Select
-                aria-label={t('config.translation_engine_label')}
-                selectedKeys={[String(getValue('translation.engine') || 'openai')]}
-                onSelectionChange={(keys) => {
-                  const val = Array.from(keys)[0] as string;
-                  if (val) saveSetting('translation.engine', val);
-                }}
-                className="max-w-[180px]"
-                size="sm"
-                isDisabled={saving === 'translation.engine'}
-              >
-                {ENGINE_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.key} id={opt.key}>{t(opt.labelKey)}</SelectItem>
-                ))}
-              </Select>
+              <p className="font-medium">{t(PROVIDER_LABEL_KEY)}</p>
             </div>
 
             {/* translation.context_aware */}

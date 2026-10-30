@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 
 /**
  * TranslationConfigurationService — typed config for translation module settings.
@@ -99,6 +100,61 @@ class TranslationConfigurationService
             ]);
             throw $e;
         }
+    }
+
+    /** Rate-limiter key prefix for the per-member hourly translation limit. */
+    public const HOURLY_LIMITER_PREFIX = 'translation-hourly:';
+
+    /**
+     * The only translation provider the platform has. The admin page offered
+     * DeepL and Google too; nothing ever read that choice (owner check of
+     * AWID's settings, 30 Oct 2026), so it now says which one is used.
+     */
+    public const PROVIDER = 'openai';
+
+    /** Is translation switched on for the current community ("Enable translation")? */
+    public static function isEnabled(): bool
+    {
+        return filter_var(self::get(self::CONFIG_ENABLED, true), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * Count one translation against the member's hourly limit
+     * ("Max translations per user per hour"). False when the limit is reached.
+     * Call only for a translation that will reach the provider.
+     */
+    public static function admitHourly(int $userId): bool
+    {
+        $limit = (int) self::get(self::CONFIG_MAX_PER_USER_PER_HOUR, self::DEFAULTS[self::CONFIG_MAX_PER_USER_PER_HOUR]);
+        if ($limit < 1) {
+            return true;
+        }
+        $key = self::HOURLY_LIMITER_PREFIX . (int) TenantContext::getId() . ':' . $userId;
+        if (RateLimiter::tooManyAttempts($key, $limit)) {
+            return false;
+        }
+        RateLimiter::hit($key, 3600);
+
+        return true;
+    }
+
+    /**
+     * What the websites need to know, for the tenant bootstrap: whether
+     * translation is on, whether new conversations auto-translate, and which
+     * provider is used.
+     *
+     * @return array{enabled: bool, auto_translate_default: bool, provider: string}
+     */
+    public static function publicSettingsForTenant(int $tenantId): array
+    {
+        $stored = self::getStoredValues($tenantId);
+        $value = fn (string $key) => array_key_exists($key, $stored) ? $stored[$key] : self::DEFAULTS[$key];
+
+        return [
+            'enabled' => filter_var($value(self::CONFIG_ENABLED), FILTER_VALIDATE_BOOLEAN),
+            'auto_translate_default' => filter_var($value(self::CONFIG_AUTO_TRANSLATE_DEFAULT), FILTER_VALIDATE_BOOLEAN),
+            'provider' => self::PROVIDER,
+        ];
     }
 
     /**

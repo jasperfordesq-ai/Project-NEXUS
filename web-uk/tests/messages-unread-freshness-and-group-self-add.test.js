@@ -214,6 +214,18 @@ describe('an unavailable translation provider is not reported as a failure', () 
     expect(res.headers.location).not.toContain('status=translate-failed');
   });
 
+  // 30 Oct 2026: the community "Enable translation" switch and the AI master
+  // switch are permanent conditions too, not something to try again later.
+  it.each([
+    ['TRANSLATION_DISABLED', 403],
+    ['AI_NOT_CONFIGURED', 422],
+    ['AI_UNAVAILABLE', 422]
+  ])('sends %s to the "not available" message', async (code, status) => {
+    refuse(code, status);
+    const res = await request(app).post(`/${900015}/m/543/translate`).type('form').send({ target_language: 'de' });
+    expect(res.headers.location).toContain('status=translate-unavailable');
+  });
+
   it('still reports a genuine provider failure as a failure', async () => {
     refuse('TRANSLATION_FAILED', 500);
     const res = await request(app).post(`/${900015}/m/543/translate`).type('form').send({ target_language: 'de' });

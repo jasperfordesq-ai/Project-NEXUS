@@ -17,6 +17,7 @@ const stableMocks = vi.hoisted(() => ({
   toastError: vi.fn(),
   tenantPath: vi.fn((p: string) => `/t/test${p}`),
   t: vi.fn((key: string) => key),
+  tenant: { id: 2, translation: { enabled: true, auto_translate_default: false, provider: 'openai' } } as Record<string, unknown>,
 }));
 
 vi.mock('@/lib/api', () => ({
@@ -46,6 +47,7 @@ vi.mock('@/contexts', () => ({
     hasFeature: stableMocks.hasFeature,
     hasModule: stableMocks.hasModule,
     tenantSlug: 'test',
+    tenant: stableMocks.tenant,
   }),
   usePusherOptional: () => null,
   usePresenceOptional: () => null,
@@ -399,6 +401,37 @@ describe('ConversationPage', () => {
       expect(mockApi.post).toHaveBeenCalledWith('/v2/messages/2/translate', expect.anything(), expect.anything());
     } finally {
       localStorage.removeItem('nexus_auto_translate_test');
+    }
+  });
+
+  // Owner check of Admin → Translation settings (30 Oct 2026): "Auto-translate
+  // new conversations" was saved and read by nothing.
+  it('auto-translates a conversation by default when the community chose that', async () => {
+    localStorage.removeItem('nexus_auto_translate_test');
+    stableMocks.tenant = { id: 2, translation: { enabled: true, auto_translate_default: true, provider: 'openai' } };
+    mockApi.get.mockResolvedValue(mockConversationResponse);
+    mockApi.put.mockResolvedValue({ success: true });
+    mockApi.post.mockResolvedValue({ success: true, data: { translated_text: 'Hi Alice! (en)' } });
+    try {
+      render(<ConversationPage />);
+      await waitFor(() => expect(mockApi.post).toHaveBeenCalledWith('/v2/messages/2/translate', expect.anything(), expect.anything()));
+    } finally {
+      stableMocks.tenant = { id: 2, translation: { enabled: true, auto_translate_default: false, provider: 'openai' } };
+    }
+  });
+
+  it('respects a member who turned auto-translate off even when the community default is on', async () => {
+    localStorage.setItem('nexus_auto_translate_test', JSON.stringify({ '20': '' }));
+    stableMocks.tenant = { id: 2, translation: { enabled: true, auto_translate_default: true, provider: 'openai' } };
+    mockApi.get.mockResolvedValue(mockConversationResponse);
+    mockApi.put.mockResolvedValue({ success: true });
+    try {
+      render(<ConversationPage />);
+      await waitFor(() => expect(screen.getByText('Bob')).toBeDefined());
+      expect(mockApi.post).not.toHaveBeenCalledWith('/v2/messages/2/translate', expect.anything(), expect.anything());
+    } finally {
+      localStorage.removeItem('nexus_auto_translate_test');
+      stableMocks.tenant = { id: 2, translation: { enabled: true, auto_translate_default: false, provider: 'openai' } };
     }
   });
 

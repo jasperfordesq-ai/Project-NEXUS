@@ -1365,6 +1365,16 @@ export interface TenantConfig {
   features: Partial<TenantFeatures>;
   modules?: Partial<TenantModules>;
   branding?: Partial<TenantBranding>;
+  /**
+   * Admin → Translation settings, from the tenant bootstrap: whether
+   * translation is on, whether new conversations auto-translate, and the
+   * provider (only OpenAI exists).
+   */
+  translation?: {
+    enabled: boolean;
+    auto_translate_default: boolean;
+    provider: string;
+  };
   contact?: {
     email?: string;
     phone?: string;

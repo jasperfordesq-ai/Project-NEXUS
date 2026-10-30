@@ -769,6 +769,8 @@ return [
     'ai_error_generic' => 'Il servizio AI ha riscontrato un errore. Per favore riprova.',
     'ai_not_configured' => 'Le funzioni di IA sono disattivate in questa comunità. Contatta l\'amministratore della tua comunità.',
     'ai_translation_unavailable' => 'La traduzione non è disponibile al momento. Riprova più tardi.',
+    'translation_switched_off'   => 'La traduzione è disattivata in questa comunità.',
+    'translation_hourly_limit'   => 'Hai raggiunto il limite orario di traduzioni di questa comunità. Riprova più tardi.',
     'session_idle_timeout'       => 'Sei stato disconnesso perché sei rimasto inattivo troppo a lungo. Accedi di nuovo.',
     'message_recipient_required' => 'recipient_id è obbligatorio',
     'message_body_or_voice_required' => 'Il corpo del messaggio o il messaggio vocale sono obbligatori',

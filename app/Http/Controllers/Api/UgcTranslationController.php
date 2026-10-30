@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Services\AI\AiUsageGate;
+use App\Services\TranslationConfigurationService;
 use App\Services\UgcTranslationService;
 use Illuminate\Http\JsonResponse;
 
@@ -61,6 +62,11 @@ class UgcTranslationController extends BaseApiController
             );
         }
 
+        // The community's "Enable translation" switch (Admin → Translation settings).
+        if (!TranslationConfigurationService::isEnabled()) {
+            return $this->respondWithError('TRANSLATION_DISABLED', __('api.translation_switched_off'), null, 403);
+        }
+
         // Hard cap — protect against abuse / OpenAI cost runaway.
         if (strlen($sourceText) > 8000) {
             return $this->respondWithError(
@@ -93,6 +99,11 @@ class UgcTranslationController extends BaseApiController
         $cached = $this->ugcTranslationService->getCached($sourceText, $sourceLocale, $targetLocale);
         if ($cached !== null) {
             return $this->respondWithData($cached);
+        }
+
+        // The community's per-member hourly limit, counted only for real provider calls.
+        if (!TranslationConfigurationService::admitHourly($userId)) {
+            return $this->respondWithError('TRANSLATION_HOURLY_LIMIT', __('api.translation_hourly_limit'), null, 429);
         }
 
         // E-035 F-164: reserve one slot of the member's AI budget before the provider call.

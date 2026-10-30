@@ -435,6 +435,9 @@ class TenantBootstrapController extends BaseApiController
 
         $data['default_layout'] = $tenant['default_layout'] ?? 'modern';
         $data['branding'] = $this->buildBrandingData($tenant, $config);
+        // Admin → Translation settings: whether translation is on, the
+        // auto-translate default for new conversations, and the provider.
+        $data['translation'] = \App\Services\TranslationConfigurationService::publicSettingsForTenant((int) $tenant['id']);
         $data['features'] = $this->buildFeaturesData($features);
         $data['features']['biometric_login'] = ($data['features']['biometric_login'] ?? true)
             && (bool) config('webauthn.authentication_enabled', true);

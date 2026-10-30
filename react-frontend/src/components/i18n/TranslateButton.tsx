@@ -17,7 +17,7 @@ import { useCallback, useEffect, useState } from 'react';import Languages from '
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { Button } from '@/components/ui';
 
 interface TranslateButtonProps {
@@ -50,6 +50,7 @@ export function TranslateButton({
 }: TranslateButtonProps) {
   const { t, i18n } = useTranslation('common');
   const toast = useToast();
+  const translationSwitchedOff = useTenant().tenant?.translation?.enabled === false;
 
   const userLocale = (i18n.resolvedLanguage || i18n.language || 'en').slice(0, 2);
   const normalisedSource = (sourceLocale || '').slice(0, 2).toLowerCase();
@@ -103,6 +104,8 @@ export function TranslateButton({
 
   // Skip rendering when sourceLocale already matches the user's locale.
   if (hidden) return null;
+  // The community switched translation off (Admin → Translation settings).
+  if (translationSwitchedOff) return null;
   if (normalisedSource && normalisedSource === userLocale) return null;
   if (!sourceText || !sourceText.trim()) return null;
 

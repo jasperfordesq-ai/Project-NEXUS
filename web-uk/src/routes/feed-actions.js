@@ -697,6 +697,9 @@ router.post('/items/:type([a-zA-Z0-9_-]+)/:id(\\d+)/react', asyncRoute(async (re
 function translateFailureStatus(error) {
   const code = String(error?.data?.code || error?.data?.errors?.[0]?.code || '').toUpperCase();
   if (code === 'TRANSLATION_UNAVAILABLE' || code.includes('FEATURE_DISABLED')) return 'translate-unavailable';
+  // The community switched translation off, or AI is off / not set up on the
+  // platform: also permanent, not "try again later" (30 Oct 2026).
+  if (['TRANSLATION_DISABLED', 'AI_NOT_CONFIGURED', 'AI_UNAVAILABLE'].includes(code)) return 'translate-unavailable';
   return 'translate-failed';
 }
 

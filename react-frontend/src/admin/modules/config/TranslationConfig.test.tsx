@@ -120,6 +120,50 @@ describe('TranslationConfig', () => {
     });
   });
 
+  // Owner check of AWID's settings, 30 Oct 2026: translation needs the
+  // community's AI switched on, and the page never said so. AWID had AI off and
+  // every translation was refused.
+  it('warns when AI is switched off, because translation cannot work then', async () => {
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('glossary')) return Promise.resolve(makeGlossaryResponse());
+      if (url.includes('/v2/admin/config/ai')) return Promise.resolve({ data: { ai_enabled: false } });
+      return Promise.resolve(makeConfigResponse());
+    });
+    const { TranslationConfig } = await import('./TranslationConfig');
+    render(<TranslationConfig />);
+
+    expect(await screen.findByText('AI is switched off for this community')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open AI settings' })).toHaveAttribute('href', expect.stringContaining('/admin/ai-settings'));
+  });
+
+  it('shows no AI warning when AI is on', async () => {
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('glossary')) return Promise.resolve(makeGlossaryResponse());
+      if (url.includes('/v2/admin/config/ai')) return Promise.resolve({ data: { ai_enabled: true } });
+      return Promise.resolve(makeConfigResponse());
+    });
+    const { TranslationConfig } = await import('./TranslationConfig');
+    render(<TranslationConfig />);
+
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/config/ai'));
+    expect(screen.queryByText('AI is switched off for this community')).not.toBeInTheDocument();
+  });
+
+  // The engine choice (OpenAI / DeepL / Google) was saved and read by nothing:
+  // only OpenAI exists. The page now says which provider is used.
+  it('states the translation provider instead of offering choices that do nothing', async () => {
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('glossary')) return Promise.resolve(makeGlossaryResponse());
+      return Promise.resolve(makeConfigResponse({ 'translation.engine': 'google' }));
+    });
+    const { TranslationConfig } = await import('./TranslationConfig');
+    render(<TranslationConfig />);
+
+    expect(await screen.findByText('OpenAI')).toBeInTheDocument();
+    expect(screen.queryByText('Google Translate')).not.toBeInTheDocument();
+    expect(screen.queryByText('DeepL')).not.toBeInTheDocument();
+  });
+
   it('shows loading spinner while config is fetching', async () => {
     mockApi.get.mockImplementationOnce(() => new Promise(() => {}));
     const { TranslationConfig } = await import('./TranslationConfig');

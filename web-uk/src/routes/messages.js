@@ -25,6 +25,7 @@ const {
 } = require('../lib/api');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
+const { translationAvailable } = require('../lib/translation-available');
 const { audit } = require('../lib/auditLogger');
 const { getRequestProfile } = require('../lib/request-profile');
 const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
@@ -745,7 +746,7 @@ async function renderDirectConversation(req, res, userId) {
     ownMessagesShared: Boolean(restriction.own_messages_shared),
     linkedAccountsHref: `${req.accessibleRouting?.prefix || ''}/settings/linked-accounts`,
     canSend: directMessagingEnabled && !restricted && !safeguardingRestricted,
-    translationEnabled: tenantFeatureEnabled(req, 'message_translation', true),
+    translationEnabled: translationAvailable(req),
     translation: messageTranslationFromFlash(req),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -793,6 +794,9 @@ function translateFailureStatus(error) {
   // installation — a permanent condition. Reporting it as a failure told the
   // member "please try again later" about something that will never work.
   if (code === 'TRANSLATION_UNAVAILABLE') return 'translate-unavailable';
+  // The community switched translation off, or AI is off / not set up on the
+  // platform: also permanent, not "try again later" (30 Oct 2026).
+  if (['TRANSLATION_DISABLED', 'AI_NOT_CONFIGURED', 'AI_UNAVAILABLE'].includes(code)) return 'translate-unavailable';
   if (code.includes('FEATURE_DISABLED')) return 'translate-unavailable';
   if (code.includes('NO_CONTENT')) return 'translate-empty';
   return 'translate-failed';
@@ -1027,7 +1031,7 @@ router.post('/:userId(\\d+)/m/:messageId(\\d+)/translate', asyncRoute(async (req
 
   const userId = Number(req.params.userId);
   const messageId = Number(req.params.messageId);
-  if (!tenantFeatureEnabled(req, 'message_translation', true)) {
+  if (!translationAvailable(req)) {
     return redirectTo(res, messageRedirect(userId, 'translate-unavailable', `#m-${messageId}`));
   }
 

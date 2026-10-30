@@ -13,18 +13,13 @@ const {
   getUserBlockStatus
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
+const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
+const { translationAvailable } = require('../lib/translation-available');
 
 const router = express.Router();
 
 function tokenFrom(req) {
   return (req.signedCookies && req.signedCookies.token) || '';
-}
-
-function tenantFeatureEnabled(req, key, fallback = true) {
-  const tenant = req.accessibleRouting?.tenant;
-  if (!tenant || typeof tenant !== 'object') return fallback;
-  return flagEnabled(tenant, key, 'features', fallback);
 }
 
 function redirectTo(res, pathname) {
@@ -1683,7 +1678,7 @@ router.get('/messages/conversation/:partnerId(\\d+)', asyncRoute(async (req, res
     conversation,
     translation,
     canReply: optedIn && bool(settings.messaging_enabled_federated),
-    translateEnabled: tenantFeatureEnabled(req, 'message_translation', true),
+    translateEnabled: translationAvailable(req),
     statusBanner: messagesStatusBanner(req.query.status, res.locals.t)
   });
 }));

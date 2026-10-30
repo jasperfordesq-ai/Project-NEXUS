@@ -769,6 +769,8 @@ return [
     'ai_error_generic' => 'El servicio de IA encontró un error. Por favor inténtalo de nuevo.',
     'ai_not_configured' => 'Las funciones de IA están desactivadas en esta comunidad. Ponte en contacto con la administración de tu comunidad.',
     'ai_translation_unavailable' => 'La traducción no está disponible en este momento. Inténtalo de nuevo más tarde.',
+    'translation_switched_off'   => 'La traducción está desactivada en esta comunidad.',
+    'translation_hourly_limit'   => 'Has alcanzado el límite de traducciones por hora de esta comunidad. Inténtalo de nuevo más tarde.',
     'session_idle_timeout'       => 'Se ha cerrado tu sesión porque has estado inactivo demasiado tiempo. Vuelve a iniciar sesión.',
     'message_recipient_required' => 'Se requiere ID_destinatario',
     'message_body_or_voice_required' => 'Se requiere el cuerpo del mensaje o el mensaje de voz.',

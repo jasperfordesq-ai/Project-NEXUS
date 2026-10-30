@@ -6,7 +6,7 @@
 const express = require('express');
 const { confirmFirst } = require('../lib/confirm-action');
 const { callFederationApi, blockMember, unblockMember, ApiError } = require('../lib/api');
-const { flagEnabled } = require('../lib/accessible-shell');
+const { translationAvailable } = require('../lib/translation-available');
 const { asyncRoute } = require('../lib/routeHelpers');
 
 const router = express.Router();
@@ -37,12 +37,6 @@ function loginRedirect() {
 function redirectTo(res, pathname) {
   const urlFor = typeof res.locals.urlFor === 'function' ? res.locals.urlFor : (value) => value;
   return res.redirect(urlFor(pathname));
-}
-
-function tenantFeatureEnabled(req, key, fallback = true) {
-  const tenant = req.accessibleRouting?.tenant;
-  if (!tenant || typeof tenant !== 'object') return fallback;
-  return flagEnabled(tenant, key, 'features', fallback);
 }
 
 function trimmed(value, limit = null) {
@@ -308,7 +302,7 @@ router.post('/messages/translate/:id(\\d+)', asyncRoute(async (req, res) => {
     : conversationRedirect(partnerId, partnerTenantId, 'translate-failed', `#message-${id}`);
 
   if (partnerId === null || partnerTenantId === null) return redirectTo(res, back);
-  if (!tenantFeatureEnabled(req, 'message_translation', true)) {
+  if (!translationAvailable(req)) {
     return redirectTo(res, conversationRedirect(partnerId, partnerTenantId, 'translate-unavailable', `#message-${id}`));
   }
 

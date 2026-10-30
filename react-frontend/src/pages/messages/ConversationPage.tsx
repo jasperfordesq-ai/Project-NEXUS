@@ -334,7 +334,7 @@ export function ConversationPage() {
   const { refreshCounts } = useNotifications();
   const pusher = usePusherOptional();
   const presence = usePresenceOptional();
-  const { hasFeature, hasModule, tenantPath, tenantSlug } = useTenant();
+  const { hasFeature, hasModule, tenantPath, tenantSlug, tenant } = useTenant();
   const isDirectMessagingEnabled = hasFeature('direct_messaging');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -448,7 +448,8 @@ export function ConversationPage() {
   // ── Translation hint banner (dismissed per-user, scoped to tenant) ──
   const tenantScope = tenantSlug || 'default';
   const TRANSLATION_HINT_KEY = `nexus_translation_hint_dismissed_${tenantScope}`;
-  const translationFeatureEnabled = hasFeature('message_translation');
+  // Also off when the community switched translation off (Admin → Translation settings).
+  const translationFeatureEnabled = hasFeature('message_translation') && tenant?.translation?.enabled !== false;
   const [translationHintDismissed, setTranslationHintDismissed] = useState(() =>
     safeLocalStorageGet(TRANSLATION_HINT_KEY) === '1'
   );
@@ -464,14 +465,21 @@ export function ConversationPage() {
     return safeLocalStorageGetJSON<Record<string, string>>(STORAGE_KEY, {});
   }
 
+  // A member's own choice for a conversation wins; with none, the community's
+  // "Auto-translate new conversations" default applies (Admin → Translation
+  // settings, wired 30 Oct 2026). Turning it off is stored as '' so the
+  // default cannot switch it back on.
   function isAutoTranslateEnabled(otherUserId: number): boolean {
-    return !!getAutoTranslatePrefs()[String(otherUserId)];
+    const prefs = getAutoTranslatePrefs();
+    const key = String(otherUserId);
+    if (Object.prototype.hasOwnProperty.call(prefs, key)) return !!prefs[key];
+    return tenant?.translation?.auto_translate_default === true;
   }
 
   function toggleAutoTranslate(otherUserId: number, targetLang: string): boolean {
     const prefs = getAutoTranslatePrefs();
-    if (prefs[String(otherUserId)]) {
-      delete prefs[String(otherUserId)];
+    if (isAutoTranslateEnabled(otherUserId)) {
+      prefs[String(otherUserId)] = '';
       safeLocalStorageSetJSON(STORAGE_KEY, prefs);
       return false;
     } else {
@@ -509,7 +517,7 @@ export function ConversationPage() {
   // Sync autoTranslateOn from localStorage when the other user changes
   useEffect(() => {
     if (conversation?.meta?.other_user?.id) {
-      setAutoTranslateOn(isAutoTranslateEnabled(conversation.meta.other_user.id));
+      setAutoTranslateOn(translationFeatureEnabled && isAutoTranslateEnabled(conversation.meta.other_user.id));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-check when other_user changes
   }, [conversation?.meta?.other_user?.id]);

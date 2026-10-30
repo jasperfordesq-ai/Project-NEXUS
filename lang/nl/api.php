@@ -794,6 +794,8 @@ return [
     'ai_error_generic' => 'Er is een fout opgetreden in de AI-service. Probeer het opnieuw.',
     'ai_not_configured' => 'AI-functies zijn uitgeschakeld in deze gemeenschap. Neem contact op met de beheerder van uw gemeenschap.',
     'ai_translation_unavailable' => 'Vertalen is op dit moment niet beschikbaar. Probeer het later opnieuw.',
+    'translation_switched_off'   => 'Vertalen is uitgeschakeld in deze gemeenschap.',
+    'translation_hourly_limit'   => 'U hebt de vertaallimiet per uur van deze gemeenschap bereikt. Probeer het later opnieuw.',
     'session_idle_timeout'       => 'U bent afgemeld omdat u te lang inactief was. Meld u opnieuw aan.',
     'message_recipient_required' => 'ontvanger_id is vereist',
     'message_body_or_voice_required' => 'Berichttekst of gesproken bericht is vereist',

@@ -794,6 +794,8 @@ return [
     'ai_error_generic' => 'Usługa AI napotkała błąd. Spróbuj ponownie.',
     'ai_not_configured' => 'Funkcje AI są wyłączone w tej społeczności. Skontaktuj się z administratorem swojej społeczności.',
     'ai_translation_unavailable' => 'Tłumaczenie jest w tej chwili niedostępne. Spróbuj ponownie później.',
+    'translation_switched_off'   => 'Tłumaczenie jest wyłączone w tej społeczności.',
+    'translation_hourly_limit'   => 'Osiągnięto godzinny limit tłumaczeń w tej społeczności. Spróbuj ponownie później.',
     'session_idle_timeout'       => 'Wylogowano Cię z powodu zbyt długiej bezczynności. Zaloguj się ponownie.',
     'message_recipient_required' => 'identyfikator_odbiorcy jest wymagany',
     'message_body_or_voice_required' => 'Wymagana jest treść wiadomości lub wiadomość głosowa',

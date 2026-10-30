@@ -121,9 +121,10 @@ export const MessageBubble = memo(function MessageBubble({
   autoTranslatedText,
 }: MessageBubbleProps) {
   const { t, i18n } = useTranslation('messages');
-  const { hasFeature } = useTenant();
+  const { hasFeature, tenant } = useTenant();
   const { showToast } = useToast();
-  const translationEnabled = hasFeature('message_translation');
+  // Also off when the community switched translation off (Admin → Translation settings).
+  const translationEnabled = hasFeature('message_translation') && tenant?.translation?.enabled !== false;
   // Phones get one unified bottom action sheet (long-press or the ⋮ button)
   // instead of the desktop hover buttons + floating pickers.
   const isMobileSheet = useMediaQuery('(max-width: 639px)');

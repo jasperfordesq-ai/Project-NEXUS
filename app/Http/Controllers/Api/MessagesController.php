@@ -947,6 +947,10 @@ class MessagesController extends BaseApiController
         if (!\App\Core\TenantContext::hasFeature('message_translation')) {
             return $this->respondWithError('FEATURE_DISABLED', __('api.feature_disabled'), null, 403);
         }
+        // The community's "Enable translation" switch (Admin → Translation settings).
+        if (!TranslationConfigurationService::isEnabled()) {
+            return $this->respondWithError('TRANSLATION_DISABLED', __('api.translation_switched_off'), null, 403);
+        }
 
         $this->rateLimit('messages_translate', 20, 60);
 
@@ -1064,6 +1068,11 @@ class MessagesController extends BaseApiController
             foreach ($glossaryRows as $row) {
                 $glossary[$row->source_term] = $row->target_term;
             }
+        }
+
+        // The community's per-member hourly limit, counted only for real provider calls.
+        if (!TranslationConfigurationService::admitHourly($userId)) {
+            return $this->respondWithError('TRANSLATION_HOURLY_LIMIT', __('api.translation_hourly_limit'), null, 429);
         }
 
         // E-035 F-164: reserve one slot of the member's AI budget before the provider call.
