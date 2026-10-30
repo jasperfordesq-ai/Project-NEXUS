@@ -58,6 +58,8 @@ describe('useIdleLogout', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     localStorage.clear();
+    // Activity now also pings the server (E-119 F-608); api.post returns a promise.
+    mockPost.mockResolvedValue({ success: true });
   });
 
   afterEach(() => {
