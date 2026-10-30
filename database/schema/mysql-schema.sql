@@ -13498,6 +13498,7 @@ CREATE TABLE `listings` (
   `reviewed_by` int(10) unsigned DEFAULT NULL,
   `reviewed_at` datetime DEFAULT NULL,
   `rejection_reason` text DEFAULT NULL,
+  `image_alt` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `tenant_id` (`tenant_id`),
   KEY `user_id` (`user_id`),
@@ -22800,7 +22801,8 @@ INSERT INTO `laravel_migrations` VALUES
 (504,'2026_10_26_120000_add_stripe_checkout_session_id_to_card_payment_records',168),
 (505,'2026_10_26_150000_add_category_and_snapshot_to_reports',169),
 (506,'2026_10_26_160000_make_vetting_history_append_only',170),
-(507,'2026_10_26_170000_correct_caring_community_ai_module_doc',171);
+(507,'2026_10_26_170000_correct_caring_community_ai_module_doc',171),
+(508,'2026_10_30_090000_add_image_alt_to_listings',172);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

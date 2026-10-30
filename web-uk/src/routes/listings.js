@@ -242,6 +242,8 @@ function listingFormValues(source = {}, listing = null) {
       : (base.hours_available ?? ''),
     service_type: values.service_type !== undefined ? values.service_type : (base.service_type || 'physical_only'),
     location: values.location !== undefined ? values.location : (base.location || ''),
+    // Alt text for the listing photo (`listings.image_alt`), as React ListingForm.
+    image_alt: values.image_alt !== undefined ? values.image_alt : (base.image_alt || ''),
     skill_tags: skillTags,
     // Optional service details (React ListingForm). Not stored as fields: they are
     // appended to the description on save, so they always start blank.
@@ -290,6 +292,7 @@ function boundedListingFormValues(source = {}) {
     hours_available: trimmed(values.hours_available, 32),
     service_type: trimmed(values.service_type, 64),
     location: trimmed(values.location, 255),
+    image_alt: trimmed(values.image_alt, 255),
     skill_tags: trimmed(values.skill_tags, 600),
     experience_level: trimmed(values.experience_level, 32),
     equipment_provided: trimmed(values.equipment_provided, 32),
@@ -315,7 +318,7 @@ function consumeListingFormReplay(req, listingId) {
 
 // `hoursAvailableSubmitted`: only a form that offered the "hours available" field may
 // set or clear the cap. A post without the field leaves the stored cap alone.
-function listingPayloadFrom(values, { hoursAvailableSubmitted = false, t = null } = {}) {
+function listingPayloadFrom(values, { hoursAvailableSubmitted = false, imageAltSubmitted = false, t = null } = {}) {
   const hours = trimmed(values.hours_estimate);
   const payload = {
     title: trimmed(values.title),
@@ -333,7 +336,15 @@ function listingPayloadFrom(values, { hoursAvailableSubmitted = false, t = null 
     // API and read as "no hours left" (the reason React sends null).
     payload.hours_available = trimmed(values.hours_available) === '' ? null : Number(trimmed(values.hours_available));
   }
+  if (imageAltSubmitted) {
+    // Blank means no description; the pages then fall back to the listing title.
+    payload.image_alt = trimmed(values.image_alt, 255) || null;
+  }
   return payload;
+}
+
+function imageAltSubmitted(req) {
+  return Boolean(req.body) && Object.prototype.hasOwnProperty.call(req.body, 'image_alt');
 }
 
 function hoursAvailableSubmitted(req) {
@@ -1552,7 +1563,10 @@ router.post('/new', requireAuth, audit.listingCreate(), asyncRoute(async (req, r
   }
 
   try {
-    const result = await createListing(req.token, listingPayloadFrom(values, { hoursAvailableSubmitted: hoursAvailableSubmitted(req), t: res.locals.t }));
+    const createPayload = listingPayloadFrom(values, { hoursAvailableSubmitted: hoursAvailableSubmitted(req), imageAltSubmitted: imageAltSubmitted(req), t: res.locals.t });
+    // The description belongs to a photo: none is kept without one.
+    if (!image && Object.prototype.hasOwnProperty.call(createPayload, 'image_alt')) createPayload.image_alt = null;
+    const result = await createListing(req.token, createPayload);
     const listingId = positiveInteger(listingFrom(result).id);
     if (listingId === null) {
       if (req.flash) {
@@ -1710,7 +1724,7 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.listingUpdate(), asyncRoute(as
   }
 
   try {
-    await updateListing(req.token, id, listingPayloadFrom(values, { hoursAvailableSubmitted: hoursAvailableSubmitted(req), t: res.locals.t }));
+    await updateListing(req.token, id, listingPayloadFrom(values, { hoursAvailableSubmitted: hoursAvailableSubmitted(req), imageAltSubmitted: imageAltSubmitted(req), t: res.locals.t }));
     const secondaryFailures = [];
     try {
       await setListingSkillTags(req.token, id, skillTagsFrom(values.skill_tags));

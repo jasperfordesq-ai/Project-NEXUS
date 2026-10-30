@@ -11348,7 +11348,9 @@
                 "hours_available_range": "Caithfidh na huaireanta atá ar fáil a bheith 0.5 ar a laghad.",
                 "hours_available_below_estimate": "Ní féidir leis na huaireanta atá ar fáil a bheith níos lú ná na huaireanta measta.",
                 "remove_image_label": "Bain an grianghraf reatha",
-                "remove_image_failed": "níorbh fhéidir an grianghraf a bhaint"
+                "remove_image_failed": "níorbh fhéidir an grianghraf a bhaint",
+                "image_alt_label": "Déan cur síos ar an ngrianghraf (roghnach)",
+                "image_alt_hint": "Má chuireann tú grianghraf leis, abair i gcúpla focal cad atá ann. Léann léitheoirí scáileáin an téacs seo."
             },
             "nav": {
                 "view_analytics": "Féach ar anailísíocht liostála"

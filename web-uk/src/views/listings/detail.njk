@@ -106,7 +106,7 @@
 
       {% if listingImageUrl %}
         <figure class="nexus-alpha-detail-hero">
-          <img src="{{ listingImageUrl }}" alt="{{ t('listings.image_alt', { title: listing.title }) }}" width="640" height="360" decoding="async">
+          <img src="{{ listingImageUrl }}" alt="{{ listing.image_alt or t('listings.image_alt', { title: listing.title }) }}" width="640" height="360" decoding="async">
         </figure>
       {% endif %}
 

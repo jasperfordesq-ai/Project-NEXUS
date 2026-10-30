@@ -212,6 +212,39 @@ describe('ListingsPage', () => {
     });
   });
 
+  describe('listing card photo', () => {
+    it("uses the member's photo description as the alt text (AWID regression)", async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/listings')
+            ? {
+                success: true,
+                meta: {},
+                data: [
+                  {
+                    id: 1,
+                    title: 'Basic carpentry',
+                    description: 'I would love some basic carpentry advice.',
+                    type: 'request',
+                    status: 'active',
+                    created_at: '2026-08-01T00:00:00Z',
+                    updated_at: '2026-08-01T00:00:00Z',
+                    image_url: '/uploads/listings/saw.jpg',
+                    image_alt: 'A hand saw on a workbench',
+                    user: { id: 9, name: 'Aoife Nolan' },
+                  },
+                ],
+              }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+
+      render(<ListingsPage />);
+
+      expect((await screen.findAllByAltText('A hand saw on a workbench')).length).toBeGreaterThan(0);
+    });
+  });
+
   describe('phone layout', () => {
     beforeEach(() => {
       isPhoneViewport = true;

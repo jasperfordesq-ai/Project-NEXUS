@@ -19,6 +19,8 @@ return [
         'hours_available_below_estimate' => 'Hours available cannot be less than the estimated hours.',
         'remove_image_label' => 'Remove the current photo',
         'remove_image_failed' => 'the photo could not be removed',
+        'image_alt_label' => 'Describe the photo (optional)',
+        'image_alt_hint' => 'If you add a photo, say in a few words what it shows. Screen readers read this out.',
     ],
     // Gap #12 — owner-only listing analytics panel.
     'analytics' => [

@@ -847,7 +847,8 @@ class ListingsController extends BaseApiController
             return $this->respondWithError('FORBIDDEN', __('api.listing_modify_forbidden'), null, 403);
         }
 
-        $this->listingService->update($id, ['image_url' => null]);
+        // The description belonged to the removed photo.
+        $this->listingService->update($id, ['image_url' => null, 'image_alt' => null]);
         $this->auditStaffListingEdit($listing, $userId, 'image_removed');
 
         return $this->respondWithData(['image_url' => null]);

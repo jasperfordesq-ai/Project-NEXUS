@@ -1227,7 +1227,8 @@ const ListingCard = memo(function ListingCard({ listing, viewMode, isSaving, onT
     : resolveAvatarUrl(null);
   const isFavorited = listing.is_favorited === true;
   const fallbackUserName = t('user_fallback');
-  const imageAlt = listing.title || t('listing_image_alt');
+  // The member's own description of the photo first, then the title.
+  const imageAlt = listing.image_alt?.trim() || listing.title || t('listing_image_alt');
   // Read both author fields: the list endpoint historically sent only `user.name`,
   // so keying on `author_name` alone showed the generic fallback on every card.
   const authorName = listing.author_name || listing.user?.name || fallbackUserName;

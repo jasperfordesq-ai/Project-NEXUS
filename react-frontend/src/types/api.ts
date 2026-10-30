@@ -293,6 +293,8 @@ export interface Listing {
   latitude?: number | null;
   longitude?: number | null;
   image_url?: string | null;
+  /** Member-written alt text for image_url; null when none was given. */
+  image_alt?: string | null;
   gallery?: string[];
   images?: Array<{ id: number; url: string; sort_order: number; alt_text?: string | null }>;
   availability?: {

@@ -531,7 +531,7 @@ export function ListingDetailPage() {
                 widths: [640, 960, 1200],
                 sizes: '(max-width: 768px) 100vw, 72vw',
               })}
-              alt={t('detail_image_alt', { title: listing.title })}
+              alt={listing.image_alt?.trim() || t('detail_image_alt', { title: listing.title })}
               className="h-64 w-full object-cover sm:h-80 lg:h-[24rem]"
               loading="lazy"
               decoding="async"

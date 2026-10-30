@@ -14,6 +14,8 @@ return [
         'hours_available_below_estimate' => 'Beschikbare uren mogen niet lager zijn dan de geschatte uren.',
         'remove_image_label' => 'Huidige foto verwijderen',
         'remove_image_failed' => 'de foto kon niet worden verwijderd',
+        'image_alt_label' => 'Beschrijf de foto (optioneel)',
+        'image_alt_hint' => 'Als u een foto toevoegt, zeg dan in een paar woorden wat erop staat. Schermlezers lezen deze tekst voor.',
     ],
     'nav' => [
         'view_analytics' => 'Bekijk advertentieanalyses',

@@ -37,6 +37,8 @@ class Listing extends Model
         'status',
         'moderation_status',
         'image_url',
+        // Alt text for image_url, written by the member (NULL = none).
+        'image_alt',
         'sdg_goals',
         'price',
         'subcategory_id',

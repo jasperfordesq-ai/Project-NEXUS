@@ -14,6 +14,8 @@ return [
         'hours_available_below_estimate' => '提供可能な時間を想定時間より少なく設定することはできません。',
         'remove_image_label' => '現在の写真を削除する',
         'remove_image_failed' => '写真を削除できませんでした',
+        'image_alt_label' => '写真の説明（任意）',
+        'image_alt_hint' => '写真を追加する場合は、何が写っているかを短く書いてください。スクリーンリーダーがこの文を読み上げます。',
     ],
     'nav' => [
         'view_analytics' => 'リスティング分析を表示する',

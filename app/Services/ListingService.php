@@ -1321,6 +1321,7 @@ class ListingService
                 'type'                  => $data['type'] ?? 'offer',
                 'category_id'           => $data['category_id'] ?? null,
                 'image_url'             => $data['image_url'] ?? null,
+                'image_alt'             => self::cleanImageAlt($data['image_alt'] ?? null),
                 'location'              => $data['location'] ?? null,
                 'latitude'              => $data['latitude'] ?? null,
                 'longitude'             => $data['longitude'] ?? null,
@@ -1454,7 +1455,7 @@ class ListingService
         }
 
         $allowed = [
-            'title', 'description', 'type', 'category_id', 'image_url',
+            'title', 'description', 'type', 'category_id', 'image_url', 'image_alt',
             'location', 'latitude', 'longitude', 'hours_estimate', 'hours_available',
             'service_type', 'federated_visibility', 'status', 'sdg_goals', 'availability',
         ];
@@ -1476,6 +1477,10 @@ class ListingService
         // F-568 (E-093): the description box is a plain text box — markup is stored as words.
         if (isset($updates['description']) && is_string($updates['description'])) {
             $updates['description'] = \App\Helpers\HtmlSanitizer::toPlainText($updates['description']);
+        }
+
+        if (array_key_exists('image_alt', $updates)) {
+            $updates['image_alt'] = self::cleanImageAlt($updates['image_alt']);
         }
 
         // Clearing the cap field must remove the cap. Without this an empty
@@ -1795,6 +1800,19 @@ class ListingService
      *
      * @throws ValidationException
      */
+    /**
+     * Alt text is plain words: strip markup, collapse whitespace, and store
+     * NULL for an empty box so the websites fall back to the listing title.
+     */
+    private static function cleanImageAlt(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+        $text = trim((string) preg_replace('/\s+/u', ' ', \App\Helpers\HtmlSanitizer::toPlainText($value)));
+        return $text === '' ? null : mb_substr($text, 0, 255);
+    }
+
     private static function validateData(array $data, bool $isUpdate = false): void
     {
         $rules = [];
@@ -1845,6 +1863,8 @@ class ListingService
         $hoursRules[] = 'min:0.5';
         $hoursRules[] = 'max:2000';
 
+        // Alt text for the listing photo, read aloud by screen readers.
+        $rules['image_alt']            = 'sometimes|nullable|string|max:255';
         $rules['category_id']          = $categoryRules;
         $rules['service_type']         = 'sometimes|in:physical_only,remote_only,hybrid,location_dependent';
         $rules['federated_visibility'] = 'sometimes|in:none,listed,bookable';

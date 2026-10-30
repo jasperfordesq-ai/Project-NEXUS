@@ -296,6 +296,16 @@
           {% endif %}
           <input class="govuk-file-upload{% if fieldErrors.image %} govuk-file-upload--error{% endif %}" id="image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="image-hint{% if fieldErrors.image %} image-error{% endif %}">
         </div>
+        {# React ListingForm: a description of the photo, read by screen readers. #}
+        {{ govukInput({
+          label: { text: t("govuk_alpha_listings.create.image_alt_label") },
+          hint: { text: t("govuk_alpha_listings.create.image_alt_hint") },
+          id: "image_alt",
+          name: "image_alt",
+          value: values.image_alt if values else (listing.image_alt if listing else ""),
+          attributes: { maxlength: "255" },
+          spellcheck: true
+        }) }}
         {% if listingImageUrl and listing and listing.id %}
           {# React ListingForm: remove the current photo without choosing a new one.
              Ignored when a new photo is chosen — that replaces it instead. #}

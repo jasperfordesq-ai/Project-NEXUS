@@ -14,6 +14,8 @@ return [
         'hours_available_below_estimate' => 'Dostępne godziny nie mogą być mniejsze niż szacowane godziny.',
         'remove_image_label' => 'Usuń obecne zdjęcie',
         'remove_image_failed' => 'nie udało się usunąć zdjęcia',
+        'image_alt_label' => 'Opisz zdjęcie (opcjonalnie)',
+        'image_alt_hint' => 'Jeśli dodajesz zdjęcie, napisz w kilku słowach, co przedstawia. Czytniki ekranu odczytują ten tekst.',
     ],
     'nav' => [
         'view_analytics' => 'Wyświetl statystyki aukcji',

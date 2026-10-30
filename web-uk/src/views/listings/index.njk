@@ -78,7 +78,7 @@
           {% for listing in listings %}
             {% set listingType = "request" if listing.type == "request" else "offer" %}
             <article class="nexus-alpha-card nexus-alpha-card--clickable"><div class="nexus-alpha-listing-row">
-              {% if listing.imageUrl %}<div class="nexus-alpha-listing-row__media"><img class="nexus-alpha-card-thumb" src="{{ listing.imageUrl }}" alt="{{ t('listings.image_alt', { title: listing.title }) }}" width="120" height="90" loading="lazy" decoding="async"></div>{% endif %}
+              {% if listing.imageUrl %}<div class="nexus-alpha-listing-row__media"><img class="nexus-alpha-card-thumb" src="{{ listing.imageUrl }}" alt="{{ listing.image_alt or t('listings.image_alt', { title: listing.title }) }}" width="120" height="90" loading="lazy" decoding="async"></div>{% endif %}
               <div class="nexus-alpha-listing-row__body">
                 {{ govukTag({ text: t("listings." + listingType), classes: ('govuk-tag--purple' if listingType == 'request' else 'govuk-tag--blue') }) }}
                 {% if listing.is_featured %}{{ govukTag({ text: t("listings.featured"), classes: "govuk-tag--yellow" }) }}{% endif %}

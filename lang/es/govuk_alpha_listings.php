@@ -14,6 +14,8 @@ return [
         'hours_available_below_estimate' => 'Las horas disponibles no pueden ser inferiores a las horas estimadas.',
         'remove_image_label' => 'Eliminar la foto actual',
         'remove_image_failed' => 'no se pudo eliminar la foto',
+        'image_alt_label' => 'Describe la foto (opcional)',
+        'image_alt_hint' => 'Si añades una foto, di en pocas palabras qué muestra. Los lectores de pantalla leen este texto.',
     ],
     'nav' => [
         'view_analytics' => 'Ver análisis de listado',

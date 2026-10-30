@@ -264,6 +264,8 @@ export function ListingForm({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  // Alt text for the photo, read aloud by screen readers (`listings.image_alt`).
+  const [imageAlt, setImageAlt] = useState('');
   // Set when editing an existing listing. Staff (admin/broker/coordinator)
   // may edit a member's listing; its place then stays the member's, not the
   // editor's profile location the form would otherwise fill in.
@@ -360,6 +362,7 @@ export function ListingForm({
           setListingOwner({ id: listing.user_id, location: listing.location ?? '' });
           if (listing.image_url) {
             setExistingImageUrl(listing.image_url);
+            setImageAlt(listing.image_alt ?? '');
           }
         }
       } catch (error) {
@@ -497,6 +500,8 @@ export function ListingForm({
           ? null
           : parseFloat(formData.hours_available),
         service_type: formData.service_type,
+        // The description belongs to the photo: none without one.
+        image_alt: previewImageSource ? (imageAlt.trim() || null) : null,
       };
 
       // api.put/api.post resolve { success: false } on 4xx WITHOUT throwing (the
@@ -1064,23 +1069,39 @@ export function ListingForm({
           <p className="mt-1 text-sm text-theme-muted">{t('form.media_section_hint')}</p>
         </div>
         {previewImageSource ? (
-          <div className="relative inline-block">
-            <img
-              src={previewImageSource}
-              alt={t('form.image_preview_alt')}
-              className={`${isSheet ? 'h-40' : 'h-56'} w-full max-w-md rounded-xl border border-theme-default object-cover`}
+          <>
+            <div className="relative inline-block">
+              <img
+                src={previewImageSource}
+                alt={imageAlt.trim() || t('form.image_preview_alt')}
+                className={`${isSheet ? 'h-40' : 'h-56'} w-full max-w-md rounded-xl border border-theme-default object-cover`}
+              />
+              <Button
+                isIconOnly
+                size="sm"
+                variant="tertiary"
+                onPress={() => { setImageFile(null); setImagePreview(null); setImageAlt(''); if (existingImageUrl) setRemoveExistingImage(true); setExistingImageUrl(null); }}
+                className="absolute right-2 top-2 min-h-8 min-w-8 rounded-full bg-black/60 p-1.5 text-white transition-colors hover:bg-black/80"
+                aria-label={t('form.aria_remove_image')}
+              >
+                <X className="w-4 h-4" aria-hidden="true" />
+              </Button>
+            </div>
+            <Input
+              label={t('form.image_alt_label')}
+              placeholder={t('form.image_alt_placeholder')}
+              value={imageAlt}
+              onChange={(e) => setImageAlt(e.target.value)}
+              maxLength={255}
+              description={t('form.image_alt_hint')}
+              classNames={{
+                input: 'bg-transparent text-theme-primary',
+                inputWrapper: 'bg-theme-elevated border-theme-default',
+                label: 'text-theme-muted',
+                description: 'text-theme-subtle',
+              }}
             />
-            <Button
-              isIconOnly
-              size="sm"
-              variant="tertiary"
-              onPress={() => { setImageFile(null); setImagePreview(null); if (existingImageUrl) setRemoveExistingImage(true); setExistingImageUrl(null); }}
-              className="absolute right-2 top-2 min-h-8 min-w-8 rounded-full bg-black/60 p-1.5 text-white transition-colors hover:bg-black/80"
-              aria-label={t('form.aria_remove_image')}
-            >
-              <X className="w-4 h-4" aria-hidden="true" />
-            </Button>
-          </div>
+          </>
         ) : (
           <label className={`flex ${isSheet ? 'h-32' : 'h-44'} w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-theme-default bg-theme-elevated transition-colors hover:border-teal-500/60 hover:bg-theme-hover focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/30`}>
             <ImagePlus className="mb-2 h-8 w-8 text-theme-subtle" aria-hidden="true" />

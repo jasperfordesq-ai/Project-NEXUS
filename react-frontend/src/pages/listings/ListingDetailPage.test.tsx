@@ -297,6 +297,19 @@ describe('ListingDetailPage', () => {
     expect(screen.queryByAltText(/Image for Web Design Help/i)).not.toBeInTheDocument();
   });
 
+  it("reads the member's photo description as the image alt text (AWID regression)", async () => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.includes('/config')) return Promise.resolve({ success: true, data: { exchange_workflow_enabled: true } });
+      if (url.includes('/check')) return Promise.resolve({ success: true, data: null });
+      return Promise.resolve({
+        success: true,
+        data: { ...mockListing, image_url: '/uploads/listings/photo.jpg', image_alt: 'A laptop showing a website design' },
+      });
+    });
+    render(<ListingDetailPage />);
+    expect(await screen.findByAltText('A laptop showing a website design')).toBeInTheDocument();
+  });
+
   it('renders location text when provided', async () => {
     render(<ListingDetailPage />);
     await waitFor(() => {
