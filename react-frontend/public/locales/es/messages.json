@@ -172,6 +172,7 @@
     "tooltip_on": "La traducción automática está activada — haz clic para desactivarla",
     "active_banner": "Los mensajes de esta conversación se están traduciendo automáticamente a tu idioma.",
     "limit_reached": "Has alcanzado tu límite de traducciones por ahora, así que los mensajes nuevos se muestran en su idioma original. Más tarde, desactiva y vuelve a activar la traducción automática para continuar.",
+    "some_failed": "Algunos mensajes no se pudieron traducir, así que se muestran en su idioma original. Se volverá a intentar cuando llegue un mensaje nuevo.",
     "turn_off": "Desactivar",
     "menu_enable": "Traducir mensajes automáticamente",
     "menu_disable": "Desactivar la traducción automática"

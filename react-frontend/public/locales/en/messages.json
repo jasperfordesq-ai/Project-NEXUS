@@ -172,6 +172,7 @@
     "tooltip_on": "Auto-translate is on — click to turn off",
     "active_banner": "Messages in this conversation are being automatically translated into your language.",
     "limit_reached": "You have reached your translation limit for now, so new messages are shown in their original language. Turn auto-translate off and on again later to resume.",
+    "some_failed": "Some messages could not be translated, so they are shown in their original language. They will be tried again when a new message arrives.",
     "turn_off": "Turn off",
     "menu_enable": "Translate messages automatically",
     "menu_disable": "Turn off auto-translate"

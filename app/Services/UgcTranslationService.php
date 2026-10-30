@@ -39,7 +39,7 @@ class UgcTranslationService
      * @param string          $sourceText    the text to translate
      * @param string|null     $sourceLocale  ISO 639-1 code, or null to fall back to tenant default
      * @param string          $targetLocale  ISO 639-1 code (required)
-     * @return array{translated_text:string,source_locale:string,target_locale:string,cached:bool}
+     * @return array{translated_text:string,source_locale:string,target_locale:string,cached:bool,failed?:true}
      */
     public function translate(
         string $contentType,
@@ -86,12 +86,16 @@ class UgcTranslationService
         }
 
         if (!is_string($translated) || $translated === '') {
-            // Fall back to source so callers always get a usable string.
+            // The engine refused or could not be reached. The original text is
+            // still returned so a caller can keep showing it, but `failed` says
+            // so: reported as a translation, it left the original words on screen
+            // under "Show original" (AWID audit A2, 30 Oct 2026). Never cached.
             return [
                 'translated_text' => $sourceText,
                 'source_locale'   => $resolvedSource,
                 'target_locale'   => $targetLocale,
                 'cached'          => false,
+                'failed'          => true,
             ];
         }
 

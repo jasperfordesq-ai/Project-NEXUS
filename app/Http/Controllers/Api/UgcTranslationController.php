@@ -118,6 +118,13 @@ class UgcTranslationController extends BaseApiController
             $targetLocale,
         );
 
+        // Google refused (bad key, quota) or was unreachable. Saying so lets the
+        // button stay on "Translate" and show the error, instead of claiming a
+        // translation over the original words. 422, not 503: see above.
+        if ($result['failed'] ?? false) {
+            return $this->respondWithError('TRANSLATION_FAILED', __('api.message_translation_failed'), null, 422);
+        }
+
         return $this->respondWithData($result);
     }
 }

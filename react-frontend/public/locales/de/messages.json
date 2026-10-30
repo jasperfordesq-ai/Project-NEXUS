@@ -172,6 +172,7 @@
     "tooltip_on": "Automatische Übersetzung ist aktiv — zum Ausschalten klicken",
     "active_banner": "Nachrichten in dieser Unterhaltung werden automatisch in Ihre Sprache übersetzt.",
     "limit_reached": "Sie haben Ihr Übersetzungslimit vorerst erreicht, daher werden neue Nachrichten in ihrer Originalsprache angezeigt. Schalten Sie die automatische Übersetzung später aus und wieder ein, um fortzufahren.",
+    "some_failed": "Einige Nachrichten konnten nicht übersetzt werden und werden daher in ihrer Originalsprache angezeigt. Sobald eine neue Nachricht eingeht, wird es erneut versucht.",
     "turn_off": "Ausschalten",
     "menu_enable": "Nachrichten automatisch übersetzen",
     "menu_disable": "Deaktivieren Sie die automatische Übersetzung"

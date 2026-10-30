@@ -172,6 +172,7 @@
     "tooltip_on": "Automatisch vertalen staat aan — klik om uit te schakelen",
     "active_banner": "Berichten in dit gesprek worden automatisch naar jouw taal vertaald.",
     "limit_reached": "U hebt uw vertaallimiet voorlopig bereikt, dus nieuwe berichten worden in hun oorspronkelijke taal getoond. Zet automatisch vertalen later uit en weer aan om verder te gaan.",
+    "some_failed": "Sommige berichten konden niet worden vertaald en worden daarom in de oorspronkelijke taal getoond. Er wordt opnieuw geprobeerd zodra er een nieuw bericht binnenkomt.",
     "turn_off": "Uitschakelen",
     "menu_enable": "Vertaal berichten automatisch",
     "menu_disable": "Schakel automatisch vertalen uit"

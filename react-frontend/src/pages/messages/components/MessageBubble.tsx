@@ -139,11 +139,31 @@ export const MessageBubble = memo(function MessageBubble({
   const reactionPickerRef = useRef<HTMLDivElement>(null);
   const messageMenuRef = useRef<HTMLDivElement>(null);
 
+  // A translation belongs to one text in one reader language. When the message
+  // is edited or the language changes, drop whatever is shown (AWID audit A4).
+  const translationSubject = `${message.body || message.content || ''}\u0000${(i18n.language || 'en').split('-')[0]}`;
+  const translationSubjectRef = useRef(translationSubject);
+  // Whether the shown translation came from auto-translate, so it goes when
+  // auto-translate stops supplying it (turned off, or another language).
+  const showingAutoRef = useRef(false);
+  useEffect(() => {
+    if (translationSubjectRef.current === translationSubject) return;
+    translationSubjectRef.current = translationSubject;
+    setTranslatedText(null);
+    setShowOriginal(false);
+    setTranslationError(null);
+    showingAutoRef.current = false;
+  }, [translationSubject]);
+
   // When auto-translate provides a translation from the parent, populate internal state
   useEffect(() => {
     if (autoTranslatedText) {
       setTranslatedText(autoTranslatedText);
       setShowOriginal(false);
+      showingAutoRef.current = true;
+    } else if (showingAutoRef.current) {
+      setTranslatedText(null);
+      showingAutoRef.current = false;
     }
   }, [autoTranslatedText]);
   const isVoiceMessage = message.is_voice || message.audio_url;

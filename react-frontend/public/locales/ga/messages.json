@@ -172,6 +172,7 @@
     "tooltip_on": "Tá uathaistriú ar siúl — cliceáil chun é a mhúchadh",
     "active_banner": "Tá teachtaireachtaí sa chomhrá seo á n-aistriú go huathoibríoch i do theanga.",
     "limit_reached": "Tá do theorainn aistriúcháin bainte amach agat faoi láthair, mar sin taispeántar teachtaireachtaí nua ina mbunteanga. Níos déanaí, múch agus las an t-aistriúchán uathoibríoch arís chun leanúint ar aghaidh.",
+    "some_failed": "Níorbh fhéidir roinnt teachtaireachtaí a aistriú, mar sin taispeántar iad ina mbunteanga. Déanfar iarracht arís nuair a thagann teachtaireacht nua.",
     "turn_off": "Múch",
     "menu_enable": "Aistrigh teachtaireachtaí go huathoibríoch",
     "menu_disable": "Múch uathaistriúchán"

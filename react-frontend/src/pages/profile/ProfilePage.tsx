@@ -1025,7 +1025,9 @@ export function ProfilePage() {
                     contentType="profile_bio"
                     contentId={profile.id ?? 0}
                     sourceText={profile.bio}
-                    sourceLocale={(profile as { preferred_language?: string | null }).preferred_language ?? null}
+                    // Not preferred_language: that is the member's interface
+                    // language, not the bio's. Unknown, so the server detects it.
+                    sourceLocale={null}
                     onTextChange={(text, isTranslated) => setTranslatedBio(isTranslated ? text : null)}
                     className="mt-1"
                   />

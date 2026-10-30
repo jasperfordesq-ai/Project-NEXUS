@@ -172,6 +172,7 @@
     "tooltip_on": "La traduzione automatica è attiva — fai clic per disattivarla",
     "active_banner": "I messaggi in questa conversazione vengono tradotti automaticamente nella tua lingua.",
     "limit_reached": "Hai raggiunto il limite di traduzioni per ora, quindi i nuovi messaggi sono mostrati nella lingua originale. Più tardi, disattiva e riattiva la traduzione automatica per riprendere.",
+    "some_failed": "Alcuni messaggi non sono stati tradotti e vengono quindi mostrati nella lingua originale. Verranno ritentati all'arrivo di un nuovo messaggio.",
     "turn_off": "Disattiva",
     "menu_enable": "Traduci i messaggi automaticamente",
     "menu_disable": "Disattiva la traduzione automatica"

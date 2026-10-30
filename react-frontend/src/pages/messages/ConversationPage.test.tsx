@@ -404,6 +404,37 @@ describe('ConversationPage', () => {
     }
   });
 
+  // AWID audit A1 (30 Oct 2026): the community's hourly translation limit
+  // answers TRANSLATION_HOURLY_LIMIT, which the page did not recognise — so
+  // messages silently stayed untranslated with no explanation.
+  it('explains the community hourly translation limit, not just the AI allowance', async () => {
+    localStorage.setItem('nexus_auto_translate_test', JSON.stringify({ '20': 'en' }));
+    mockApi.get.mockResolvedValue(mockConversationResponse);
+    mockApi.put.mockResolvedValue({ success: true });
+    mockApi.post.mockResolvedValue({ success: false, code: 'TRANSLATION_HOURLY_LIMIT', error: 'Limit' });
+    try {
+      render(<ConversationPage />);
+      await waitFor(() => expect(screen.getByText('auto_translate.limit_reached')).toBeDefined());
+    } finally {
+      localStorage.removeItem('nexus_auto_translate_test');
+    }
+  });
+
+  it('says when messages could not be translated instead of failing silently', async () => {
+    localStorage.setItem('nexus_auto_translate_test', JSON.stringify({ '20': 'en' }));
+    mockApi.get.mockResolvedValue(mockConversationResponse);
+    mockApi.put.mockResolvedValue({ success: true });
+    mockApi.post.mockResolvedValue({ success: false, code: 'TRANSLATION_FAILED', error: 'Translation failed' });
+    try {
+      render(<ConversationPage />);
+      await waitFor(() => expect(screen.getByText('auto_translate.some_failed')).toBeDefined());
+      // The original message is still shown.
+      expect(screen.getAllByText(/Hi Alice/).length).toBeGreaterThan(0);
+    } finally {
+      localStorage.removeItem('nexus_auto_translate_test');
+    }
+  });
+
   // Owner check of Admin → Translation settings (30 Oct 2026): "Auto-translate
   // new conversations" was saved and read by nothing.
   it('auto-translates a conversation by default when the community chose that', async () => {

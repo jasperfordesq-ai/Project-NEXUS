@@ -172,6 +172,7 @@
     "tooltip_on": "Automatyczne tłumaczenie jest włączone — kliknij, aby wyłączyć",
     "active_banner": "Wiadomości w tej rozmowie są automatycznie tłumaczone na Twój język.",
     "limit_reached": "Na razie wykorzystano Twój limit tłumaczeń, więc nowe wiadomości są wyświetlane w oryginalnym języku. Później wyłącz i ponownie włącz automatyczne tłumaczenie, aby kontynuować.",
+    "some_failed": "Niektórych wiadomości nie udało się przetłumaczyć, dlatego są wyświetlane w oryginalnym języku. Ponowna próba nastąpi, gdy nadejdzie nowa wiadomość.",
     "turn_off": "Wyłącz",
     "menu_enable": "Tłumacz wiadomości automatycznie",
     "menu_disable": "Wyłącz automatyczne tłumaczenie"

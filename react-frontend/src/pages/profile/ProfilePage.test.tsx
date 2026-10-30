@@ -218,6 +218,18 @@ describe('ProfilePage', () => {
     expect(mockApiGet).toHaveBeenCalledWith('/v2/users/42/block-status');
   });
 
+  // AWID audit A5 (30 Oct 2026): the member's interface language was passed as
+  // the BIO's language, so an English interface hid Translate on a Spanish bio.
+  it('offers Translate on a bio even when the member reads the site in the reader\'s language', async () => {
+    const base = mockApiGet.getMockImplementation()!;
+    mockApiGet.mockImplementation((url: string) => (url.includes('/v2/users/') && !url.includes('block-status')
+      ? base(url).then((res: { data: Record<string, unknown> }) => ({ ...res, data: { ...res.data, bio: 'Me encanta la jardinería', preferred_language: 'en' } }))
+      : base(url)));
+    render(<ProfilePage />);
+    await screen.findByText('Me encanta la jardinería');
+    expect(screen.getByRole('button', { name: /^translate/i })).toBeInTheDocument();
+  });
+
   it('hides direct message creation when direct messaging is disabled', async () => {
     mockUseFeature.mockImplementation((feature: string) => feature !== 'direct_messaging');
     render(<ProfilePage />);

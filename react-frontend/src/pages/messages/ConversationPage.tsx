@@ -493,9 +493,16 @@ export function ConversationPage() {
   // Set when the member's AI allowance is used up (API 429 RATE_LIMIT), so the
   // banner can say why messages stopped being translated.
   const [autoTranslateLimitReached, setAutoTranslateLimitReached] = useState(false);
-  const [autoTranslations, setAutoTranslations] = useState<Map<number, string>>(new Map());
+  // Set when some messages could not be translated (provider refused or was
+  // unreachable), so the banner says so instead of failing silently (AWID A1).
+  const [autoTranslateSomeFailed, setAutoTranslateSomeFailed] = useState(false);
+  // Keyed "<language>:<message id>": a translation belongs to one reader
+  // language, so changing language never shows the previous one (AWID A4).
+  const [autoTranslations, setAutoTranslations] = useState<Map<string, string>>(new Map());
   const autoTranslatingRef = useRef(false);
-  const translatedIdsRef = useRef<Set<number>>(new Set());
+  const autoTranslatingLangRef = useRef<string | null>(null);
+  const translatedIdsRef = useRef<Set<string>>(new Set());
+  const autoTranslateLang = (i18n.language || 'en').split('-')[0] || 'en';
   const autoTranslateAbortRef = useRef<AbortController | null>(null);
   // Bumped when an existing message's text changes so the auto-translate effect
   // re-runs; its other trigger is the message COUNT, which an edit leaves alone.
@@ -504,11 +511,15 @@ export function ConversationPage() {
   // Forget the cached translation of a message whose body changed. The next
   // auto-translate pass then fetches the edited text afresh.
   const invalidateAutoTranslation = useCallback((messageId: number) => {
-    translatedIdsRef.current.delete(messageId);
+    const suffix = `:${messageId}`;
+    for (const key of [...translatedIdsRef.current]) {
+      if (key.endsWith(suffix)) translatedIdsRef.current.delete(key);
+    }
     setAutoTranslations((prev) => {
-      if (!prev.has(messageId)) return prev;
+      const stale = [...prev.keys()].filter((key) => key.endsWith(suffix));
+      if (stale.length === 0) return prev;
       const next = new Map(prev);
-      next.delete(messageId);
+      for (const key of stale) next.delete(key);
       return next;
     });
     setTranslationRevision((revision) => revision + 1);
@@ -535,62 +546,79 @@ export function ConversationPage() {
 
   // Auto-translate effect: translate untranslated messages from the other user
   useEffect(() => {
-    if (!autoTranslateOn || autoTranslateLimitReached || !conversation?.messages?.length || autoTranslatingRef.current) return;
+    if (!autoTranslateOn || autoTranslateLimitReached || !conversation?.messages?.length) return;
     const otherUserId = conversation?.meta?.other_user?.id;
     if (!otherUserId) return;
-    const targetLang = (i18n.language || 'en').split('-')[0] || 'en';
+    const targetLang = autoTranslateLang;
+    // A batch for another language is out of date: replace it rather than wait for it.
+    if (autoTranslatingRef.current && autoTranslatingLangRef.current === targetLang) return;
 
     // Find messages from the other user that haven't been translated or queued yet
+    const keyOf = (id: number) => `${targetLang}:${id}`;
     const untranslated = conversation.messages.filter(
       (msg) => msg.sender_id === otherUserId
-        && !autoTranslations.has(msg.id)
-        && !translatedIdsRef.current.has(msg.id)
+        && !autoTranslations.has(keyOf(msg.id))
+        && !translatedIdsRef.current.has(keyOf(msg.id))
         && (msg.body || msg.content)
     );
     if (untranslated.length === 0) return;
 
     // Mark these as queued immediately to prevent duplicate API calls
     for (const msg of untranslated) {
-      translatedIdsRef.current.add(msg.id);
+      translatedIdsRef.current.add(keyOf(msg.id));
     }
     autoTranslatingRef.current = true;
+    autoTranslatingLangRef.current = targetLang;
 
-    // Abort any previous in-flight translation loop (e.g., conversation switch)
+    // Abort any previous in-flight translation loop (conversation or language switch)
     if (autoTranslateAbortRef.current) {
       autoTranslateAbortRef.current.abort();
     }
     const controller = new AbortController();
     autoTranslateAbortRef.current = controller;
 
-    // Translate each message sequentially to avoid overwhelming the API
+    // Translate each message sequentially to avoid overwhelming the API.
+    // A message that fails is released so it is tried again on the NEXT trigger
+    // (a new message, an edit, a language change, or turning it off and on) —
+    // never in a loop, which would spend provider requests for ever.
     (async () => {
-      const newTranslations = new Map(autoTranslations);
+      const translatedNow = new Map<string, string>();
+      let failed = false;
       for (const msg of untranslated) {
-        if (controller.signal.aborted || !isMountedRef.current) return;
+        if (controller.signal.aborted || !isMountedRef.current) break;
         try {
           const response = await api.post<{ translated_text: string }>(`/v2/messages/${msg.id}/translate`, {
             target_language: targetLang,
           }, { signal: controller.signal });
-          if (controller.signal.aborted || !isMountedRef.current) return;
-          if (!response.success && response.code === 'RATE_LIMIT') {
-            // Allowance used up: stop asking, and tell the member. The rest of
-            // this batch stays untranslated and may be retried after a reset.
-            for (const pending of untranslated) translatedIdsRef.current.delete(pending.id);
+          if (controller.signal.aborted || !isMountedRef.current) break;
+          if (!response.success && (response.code === 'RATE_LIMIT' || response.code === 'TRANSLATION_HOURLY_LIMIT')) {
+            // The member's AI allowance or the community's hourly translation
+            // limit is used up: stop asking, and tell the member.
             setAutoTranslateLimitReached(true);
             break;
           }
-          const translated = response.data?.translated_text;
+          const translated = response.success ? response.data?.translated_text : undefined;
           if (translated) {
-            newTranslations.set(msg.id, translated);
+            translatedNow.set(keyOf(msg.id), translated);
+          } else {
+            failed = true;
           }
         } catch {
-          // Remove from dedup set so retry is possible on next cycle
-          translatedIdsRef.current.delete(msg.id);
+          if (controller.signal.aborted) break;
+          failed = true;
         }
       }
+      // Whatever was not translated in this batch may be tried again later.
+      for (const msg of untranslated) {
+        if (!translatedNow.has(keyOf(msg.id))) translatedIdsRef.current.delete(keyOf(msg.id));
+      }
       if (controller.signal.aborted || !isMountedRef.current) return;
-      setAutoTranslations(newTranslations);
+      if (translatedNow.size > 0) {
+        setAutoTranslations((prev) => new Map([...prev, ...translatedNow]));
+      }
+      setAutoTranslateSomeFailed(failed);
       autoTranslatingRef.current = false;
+      autoTranslatingLangRef.current = null;
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps -- autoTranslateOn + messages length + an edit + language change trigger re-translation
   }, [autoTranslateOn, autoTranslateLimitReached, conversation?.messages?.length, translationRevision, i18n.language]);
@@ -603,6 +631,7 @@ export function ConversationPage() {
     setAutoTranslateOn(nowEnabled);
     // Turning it off and on again is how a member retries after a reset.
     setAutoTranslateLimitReached(false);
+    setAutoTranslateSomeFailed(false);
 
     if (nowEnabled) {
       toast.success(t('auto_translate.enabled_toast'));
@@ -2654,7 +2683,9 @@ export function ConversationPage() {
         <div className="flex shrink-0 items-center gap-2 rounded-lg bg-accent/10 px-3 py-2" role="status">
           <Languages className="w-4 h-4 text-accent flex-shrink-0" aria-hidden="true" />
           <p className="text-xs text-accent dark:text-accent flex-1">
-            {autoTranslateLimitReached ? t('auto_translate.limit_reached') : t('auto_translate.active_banner')}
+            {autoTranslateLimitReached
+              ? t('auto_translate.limit_reached')
+              : autoTranslateSomeFailed ? t('auto_translate.some_failed') : t('auto_translate.active_banner')}
           </p>
           <Button
             size="sm"
@@ -2789,7 +2820,7 @@ export function ConversationPage() {
                       onEditingTextChange={setEditingText}
                       onSaveEdit={saveEdit}
                       onCancelEdit={cancelEditing}
-                      autoTranslatedText={autoTranslations.get(message.id) ?? null} />
+                      autoTranslatedText={autoTranslations.get(`${autoTranslateLang}:${message.id}`) ?? null} />
                   </Fragment>
                 );
               })}
