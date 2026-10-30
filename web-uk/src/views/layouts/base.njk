@@ -381,7 +381,7 @@
         only under the same isAuthenticated check, so on a signed-out page it
         was a download that did nothing.
       #}
-      {% if isAuthenticated %}<script src="/js/timeout-warning.js"></script>{% endif %}
+      {% if isAuthenticated and not sessionTimeoutDisabled %}<script src="/js/timeout-warning.js"></script>{% endif %}
     {% endblock %}
   </body>
 </html>

@@ -731,7 +731,7 @@ configured `ACCESSIBLE_TENANT_SLUG`, then legacy `TENANT_ID`.
 | Security Headers | Helmet.js with CSP |
 | Rate Limiting | 100 req/15min (general), 10 req/15min (auth) |
 | Cookie Security | HTTP-only, signed, SameSite=Lax |
-| Session Timeout | 30 minutes |
+| Session Timeout | The community's "Inactivity timeout" setting (5–480 min, 0 = off); 30 minutes when unset — `src/lib/session-timeout.js` |
 | Input Validation | Server-side with GOV.UK error patterns |
 
 ## Docker Commands Reference

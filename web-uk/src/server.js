@@ -163,6 +163,7 @@ const { tenantFeatureGate } = require('./middleware/tenant-feature-gates');
 const { legalGate } = require('./middleware/legal-gate');
 const { recordCookieConsent } = require('./lib/api');
 const { tenantRouting } = require('./middleware/tenant-routing');
+const { applyTenantSessionTimeout } = require('./lib/session-timeout');
 const { requestTenantContext } = require('./middleware/request-tenant-context');
 const { requestClientContext } = require('./middleware/request-client-context');
 const { isValidEmail } = require('./lib/inputValidator');
@@ -626,12 +627,19 @@ app.use(session({
   cookie: {
     secure: NODE_ENV === 'production',
     httpOnly: true,
+    // The default; applyTenantSessionTimeout (below) replaces it per request
+    // with the community's inactivity timeout.
     maxAge: 30 * 60 * 1000, // 30 minutes
     sameSite: 'lax'
   },
   // `__Host-nexus.sid` in production (F-208) — Secure, Path=/, no Domain.
   name: sessionCookieName()
 }));
+
+// Idle sign-out follows the community's "Inactivity timeout" setting, as the main
+// website does (src/lib/session-timeout.js). After the session (it sets the
+// rolling cookie's lifetime) and after tenantRouting (it reads the tenant).
+app.use(applyTenantSessionTimeout);
 
 // Flash messages
 app.use(flash());
@@ -710,11 +718,8 @@ app.use(async (req, res, next) => {
   // Make CSRF token available to all views
   res.locals.csrfToken = req.csrfToken ? req.csrfToken() : '';
 
-  // Session timeout warning
-  if (req.session && req.session.cookie) {
-    const maxAge = req.session.cookie.maxAge;
-    res.locals.sessionTimeout = maxAge ? Math.floor(maxAge / 1000 / 60) : null;
-  }
+  // Session timeout warning: res.locals.sessionTimeout / sessionTimeoutDisabled
+  // are set by applyTenantSessionTimeout from the community's setting.
 
   // The access-token refresh (refreshAuthSession, above) already found an
   // under-18 account and cleared its cookies; tell the member why.
