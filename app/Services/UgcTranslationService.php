@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Log;
  *
  * Thin wrapper around {@see TranscriptionService::translate()} that adds:
  *   - 30-day Redis cache keyed by sha256(text:source:target)
- *   - source-locale fallback (tenant.default_language → 'auto')
+ *   - an unstated source language is detected by the engine ('auto')
  *   - tenant-scoped logging context
  *
  * Re-uses the LLM call in TranscriptionService — does NOT reimplement.
@@ -143,30 +143,18 @@ class UgcTranslationService
     }
 
     /**
-     * Resolve the source locale: caller value → tenant default → 'auto'.
+     * Resolve the source locale: the caller's value, otherwise 'auto'.
+     *
+     * Never the community's default language. Posts, listings and comments carry
+     * no language of their own, and members write in whatever they speak: on AWID
+     * (default "en") a Spanish post was taken to be English, matched an English
+     * reader, and came back untranslated (owner, 30 Oct 2026). Both engines
+     * detect the language themselves when told 'auto'.
      */
     private function resolveSourceLocale(?string $sourceLocale): string
     {
         $sourceLocale = $sourceLocale ? strtolower(trim($sourceLocale)) : '';
-        if ($sourceLocale !== '') {
-            return $sourceLocale;
-        }
 
-        $tenantId = TenantContext::getId();
-        if ($tenantId) {
-            try {
-                // Tenant default language lives in the `configuration` JSON column.
-                $configuration = DB::table('tenants')->where('id', $tenantId)->value('configuration');
-                $config = is_string($configuration) ? json_decode($configuration, true) : null;
-                $default = is_array($config) ? ($config['default_language'] ?? null) : null;
-                if (is_string($default) && $default !== '') {
-                    return strtolower($default);
-                }
-            } catch (\Throwable) {
-                // ignore — fall through to 'auto'
-            }
-        }
-
-        return 'auto';
+        return $sourceLocale !== '' ? $sourceLocale : 'auto';
     }
 }

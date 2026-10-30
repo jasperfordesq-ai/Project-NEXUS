@@ -70,4 +70,36 @@ class UgcTranslationTest extends TestCase
         $this->assertFalse($r['cached']);
         Http::assertNothingSent();
     }
+
+    /**
+     * Owner, 30 Oct 2026 (AWID): a Spanish post in an English-default community
+     * came back untranslated. Posts carry no language, so the community default
+     * ("en") was taken as the source, matched the reader's "en", and the original
+     * was returned. With no stated source, Google must detect it.
+     */
+    public function test_unstated_source_is_detected_not_assumed_to_be_the_community_default(): void
+    {
+        $tenantId = \App\Core\TenantContext::getId();
+        $original = \Illuminate\Support\Facades\DB::table('tenants')->where('id', $tenantId)->value('configuration');
+        $config = json_decode((string) $original, true) ?: [];
+        $config['default_language'] = 'en';
+        \Illuminate\Support\Facades\DB::table('tenants')->where('id', $tenantId)
+            ->update(['configuration' => json_encode($config)]);
+
+        Http::fake([
+            'translation.googleapis.com/*' => Http::response([
+                'data' => ['translations' => [['translatedText' => 'help with gardening']]],
+            ], 200),
+        ]);
+
+        try {
+            $r = (new UgcTranslationService())->translate('feed_post', 1, 'ayuda con jardinería', null, 'en');
+        } finally {
+            \Illuminate\Support\Facades\DB::table('tenants')->where('id', $tenantId)
+                ->update(['configuration' => $original]);
+        }
+
+        $this->assertSame('help with gardening', $r['translated_text']);
+        Http::assertSent(fn ($request) => !array_key_exists('source', $request->data()));
+    }
 }
