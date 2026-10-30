@@ -7,19 +7,39 @@
    instead of the feed (feed-actions.js socialReturnPath allowlists it). #}
 {% from "feed/_reactions.njk" import COMMENT_REACTIONS, reactionForms %}
 
-{% macro commentList(comments, depth, item, requiresAuth, currentUserId, csrfToken, urlFor, t, returnTo) %}
+{# `translate` (optional): { postId, translation } on the single-post page — every
+   comment and reply gets a Translate button (React CommentsSection, AWID feedback
+   30 Oct 2026), and `translation` ({ commentId, text, locale }) is shown once under
+   the comment it belongs to. #}
+{% macro commentList(comments, depth, item, requiresAuth, currentUserId, csrfToken, urlFor, t, returnTo, translate) %}
   <ol class="govuk-list nexus-alpha-comments-list{% if depth > 0 %} nexus-alpha-comments-list--nested{% endif %}">
     {% for comment in comments %}
       {% set commentAuthorId = comment.author.id or comment.author_id or comment.user_id %}
       {% set authorName = comment.author.name or comment.author_name or t("feed.unknown_author") %}
       {% set ownComment = currentUserId and commentAuthorId == currentUserId and comment.id %}
-      <li class="nexus-alpha-comment">
+      <li class="nexus-alpha-comment"{% if comment.id %} id="comment-{{ comment.id }}"{% endif %}>
         <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
           {% if comment.author.avatarAssetUrl %}<img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ comment.author.avatarAssetUrl | thumb(64, 64) }}" alt="" loading="lazy" decoding="async" width="32" height="32">{% endif %}
           <strong>{{ authorName }}</strong>
           {% if comment.created_at %}<span aria-hidden="true"> | </span><span class="govuk-visually-hidden">{{ t("feed.comment_posted_on_prefix") }}</span><time datetime="{{ comment.created_at }}">{{ comment.created_at | formatDate }}</time>{% endif %}
         </p>
         <p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ comment.content or comment.body }}</p>
+
+        {% if translate and comment.id %}
+          {% if translate.translation and translate.translation.commentId == comment.id %}
+            <div class="govuk-inset-text govuk-!-margin-top-0">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_feed.translate.heading") }}</h3>
+              <p class="govuk-hint govuk-!-margin-bottom-2">{{ t("govuk_alpha_feed.translate.original_above_hint") }}</p>
+              <p class="govuk-body govuk-!-margin-bottom-0" lang="{{ translate.translation.locale }}">{{ translate.translation.text }}</p>
+            </div>
+          {% elif not requiresAuth and (comment.content or comment.body) %}
+            <form method="post" action="{{ urlFor('/feed/comments/' + (comment.id | string) + '/translate') }}" class="govuk-!-margin-bottom-2" novalidate>
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <input type="hidden" name="post_id" value="{{ translate.postId }}">
+              <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_feed.translate.comment_button") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_feed.translate.comment_by", { name: authorName }) }}</span></button>
+            </form>
+          {% endif %}
+        {% endif %}
 
         {% if not requiresAuth and comment.id %}
           {# The six comment reactions React offers (useSocialInteractions AVAILABLE_REACTIONS). #}
@@ -49,7 +69,7 @@
           </div>
         {% endif %}
 
-        {% if comment.replies and comment.replies.length %}{{ commentList(comment.replies, depth + 1, item, requiresAuth, currentUserId, csrfToken, urlFor, t, returnTo) }}{% endif %}
+        {% if comment.replies and comment.replies.length %}{{ commentList(comment.replies, depth + 1, item, requiresAuth, currentUserId, csrfToken, urlFor, t, returnTo, translate) }}{% endif %}
       </li>
     {% endfor %}
   </ol>

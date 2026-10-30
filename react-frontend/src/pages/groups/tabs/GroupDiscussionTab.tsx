@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/Textarea';
  * Thread-based discussions with expand/collapse and inline replies.
  */
 
-import { Fragment } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from '@/lib/motion';
 
 import MessageSquare from 'lucide-react/icons/message-square';
@@ -24,11 +24,48 @@ import Clock from 'lucide-react/icons/clock';
 import ChevronDown from 'lucide-react/icons/chevron-down';
 import ChevronUp from 'lucide-react/icons/chevron-up';
 import { SafeHtml } from '@/components/ui/SafeHtml';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
+import { htmlToPlainText } from '@/lib/sanitize';
 import { EmptyState } from '@/components/feedback';
 import { SocialInteractionPanel } from '@/components/social/SocialInteractionPanel';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts';
 import { resolveAvatarUrl, formatRelativeTime } from '@/lib/helpers';
+
+/**
+ * Discussion text with the shared Translate button (AWID feedback, 30 Oct 2026:
+ * group discussions could not be translated). The stored text is rich text; it
+ * is translated as words, and the translation is shown as plain text until
+ * "Show original" brings the formatting back.
+ */
+function TranslatableDiscussionText({ contentType, contentId, content, className, as }: {
+  contentType: string;
+  contentId: number;
+  content: string;
+  className: string;
+  as?: 'div';
+}) {
+  const [translated, setTranslated] = useState<string | null>(null);
+  const onTextChange = useCallback((text: string, isTranslated: boolean) => {
+    setTranslated(isTranslated ? text : null);
+  }, []);
+
+  return (
+    <>
+      {translated !== null
+        ? <div className={className}>{translated}</div>
+        : <SafeHtml content={content} className={className} as={as} />}
+      <TranslateButton
+        contentType={contentType}
+        contentId={contentId}
+        sourceText={htmlToPlainText(content)}
+        sourceLocale={null}
+        onTextChange={onTextChange}
+        className="mt-1"
+      />
+    </>
+  );
+}
 
 export interface Discussion {
   id: number;
@@ -235,7 +272,13 @@ export function GroupDiscussionTab({
                           <>
                             {/* Original discussion content */}
                             <div className="p-3 rounded-lg bg-theme-elevated/50">
-                              <SafeHtml content={expandedDiscussion.content ?? ''} className="text-sm text-theme-muted whitespace-pre-wrap" as="div" />
+                              <TranslatableDiscussionText
+                                contentType="group_discussion"
+                                contentId={discussion.id}
+                                content={expandedDiscussion.content ?? ''}
+                                className="text-sm text-theme-muted whitespace-pre-wrap"
+                                as="div"
+                              />
                             </div>
 
                             <SocialInteractionPanel
@@ -282,7 +325,9 @@ export function GroupDiscussionTab({
                                           {formatRelativeTime(msg.created_at)}
                                         </time>
                                       </div>
-                                      <SafeHtml
+                                      <TranslatableDiscussionText
+                                        contentType="group_discussion_reply"
+                                        contentId={msg.id}
                                         content={msg.content}
                                         className="text-sm text-theme-muted mt-1 whitespace-pre-wrap prose prose-sm max-w-none dark:prose-invert"
                                       />

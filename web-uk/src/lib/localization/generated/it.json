@@ -9155,7 +9155,17 @@
                 "failed": "Spiacenti, non è stato possibile tradurre questo post. Riprova più tardi.",
                 "unavailable": "La traduzione non è disponibile in questa comunità.",
                 "same": "Questo post è già nella tua lingua.",
-                "empty": "Questo post non contiene testo da tradurre."
+                "empty": "Questo post non contiene testo da tradurre.",
+                "comment_button": "Traduci questo commento",
+                "comment_by": "(commento di :name)",
+                "discussion_button": "Traduci questa discussione",
+                "reply_button": "Traduci questa risposta",
+                "reply_by": "(risposta di :name)",
+                "original_above_hint": "Tradotto automaticamente. L'originale è mostrato sopra.",
+                "text_done": "La traduzione è mostrata sotto l'originale.",
+                "text_failed": "Spiacenti, non è stato possibile tradurre questo testo. Riprova più tardi.",
+                "text_same": "Questo testo è già nella tua lingua.",
+                "text_empty": "Non c'è testo da tradurre."
             },
             "why_shown": {
                 "label": "Perché vedo questo?",

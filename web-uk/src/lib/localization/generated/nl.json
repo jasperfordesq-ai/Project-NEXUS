@@ -9155,7 +9155,17 @@
                 "failed": "Sorry, we konden dit bericht niet vertalen. Probeer het later opnieuw.",
                 "unavailable": "Vertalen is niet beschikbaar in deze gemeenschap.",
                 "same": "Dit bericht is al in uw taal.",
-                "empty": "Dit bericht bevat geen tekst om te vertalen."
+                "empty": "Dit bericht bevat geen tekst om te vertalen.",
+                "comment_button": "Deze reactie vertalen",
+                "comment_by": "(reactie van :name)",
+                "discussion_button": "Deze discussie vertalen",
+                "reply_button": "Dit antwoord vertalen",
+                "reply_by": "(antwoord van :name)",
+                "original_above_hint": "Automatisch vertaald. Het origineel staat hierboven.",
+                "text_done": "De vertaling staat onder het origineel.",
+                "text_failed": "Sorry, we konden dit niet vertalen. Probeer het later opnieuw.",
+                "text_same": "Dit is al in jouw taal.",
+                "text_empty": "Er is geen tekst om te vertalen."
             },
             "why_shown": {
                 "label": "Waarom zie ik dit?",

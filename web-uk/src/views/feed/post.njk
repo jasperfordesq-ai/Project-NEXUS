@@ -154,7 +154,7 @@
 
         <h2 class="govuk-heading-m govuk-!-margin-top-4">{{ t("feed.comments_summary") }}</h2>
         {% if comments and comments.length %}
-          {{ commentList(comments, 0, item, requiresAuth, currentUserId, csrfToken, urlFor, t, returnTo) }}
+          {{ commentList(comments, 0, item, requiresAuth, currentUserId, csrfToken, urlFor, t, returnTo, { postId: item.id, translation: commentTranslation }) }}
         {% else %}
           <p class="govuk-body">{{ t("feed.no_comments") }}</p>
         {% endif %}

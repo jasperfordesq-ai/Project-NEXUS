@@ -31,6 +31,7 @@ import type { MentionUser } from '@/hooks/useSocialInteractions';
 import { MentionRenderer } from './MentionRenderer';
 import { UserHoverCard } from './UserHoverCard';
 import { memberPlainText } from '@/components/ui/MemberPlainText';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { Button, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tooltip, Skeleton } from '@/components/ui';
 
 /* ─── Props ─────────────────────────────────────────────────── */
@@ -110,6 +111,11 @@ function CommentItemInner({
 
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
+  // Shown in place of the comment while "Translate" is on (AWID, 30 Oct 2026).
+  const [translatedContent, setTranslatedContent] = useState<string | null>(null);
+  const onTranslatedText = useCallback((text: string, isTranslated: boolean) => {
+    setTranslatedContent(isTranslated ? text : null);
+  }, []);
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -226,7 +232,11 @@ function CommentItemInner({
           ) : (
             <p className="text-xs text-[var(--text-secondary)] mt-0.5 whitespace-pre-wrap leading-relaxed">
               {/* F-568 (E-093): the comment box is a plain text box — what was typed is shown as words, never as markup. */}
-              <MentionRenderer text={memberPlainText(comment.content)} showUserCard={false} />
+              {/* A translation is shown as plain words: the translator may alter @mention markup,
+                  so names are not links until "Show original" brings the original back. */}
+              {translatedContent !== null
+                ? translatedContent
+                : <MentionRenderer text={memberPlainText(comment.content)} showUserCard={false} />}
             </p>
           )}
         </div>
@@ -260,6 +270,15 @@ function CommentItemInner({
               >
                 {tr('react', 'React')}
               </Button>
+
+              <TranslateButton
+                contentType="comment"
+                contentId={comment.id}
+                sourceText={memberPlainText(comment.content)}
+                sourceLocale={null}
+                onTextChange={onTranslatedText}
+                className="min-h-[24px] px-0 py-0 text-[10px]"
+              />
 
               {isOwn && (
                 <>

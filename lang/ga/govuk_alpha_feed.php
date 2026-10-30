@@ -142,6 +142,16 @@ return [
         'unavailable' => 'Níl aistriúchán ar fáil sa phobal seo.',
         'same' => 'Tá an phostáil seo i do theanga cheana féin.',
         'empty' => 'Níl aon téacs le haistriú sa phostáil seo.',
+        'comment_button' => 'Aistrigh an trácht seo',
+        'comment_by' => '(trácht le :name)',
+        'discussion_button' => 'Aistrigh an plé seo',
+        'reply_button' => 'Aistrigh an freagra seo',
+        'reply_by' => '(freagra le :name)',
+        'original_above_hint' => 'Aistrithe go huathoibríoch. Taispeántar an bunleagan thuas.',
+        'text_done' => 'Taispeántar an t-aistriúchán faoin mbunleagan.',
+        'text_failed' => 'Ár leithscéal, níorbh fhéidir linn é seo a aistriú. Bain triail eile as ar ball.',
+        'text_same' => 'Tá sé seo i do theanga cheana féin.',
+        'text_empty' => 'Níl aon téacs le haistriú.',
     ],
 
     // ---- "Why am I seeing this?" in the ranked feed (React WhyShown) ----

@@ -26,6 +26,7 @@ const {
   createFeedPoll,
   toggleFeedLike,
   toggleReaction,
+  callUgcTranslateApi,
   hideFeedItem,
   muteFeedUser,
   reportFeedItem,
@@ -859,8 +860,27 @@ function announcementStatus(status, t = (key) => key) {
   return { statusBanner: null };
 }
 
+// Outcomes of translating a discussion or reply (POST …/translate below).
+const DISCUSSION_TRANSLATE_MESSAGES = {
+  'translate-done': { type: 'success', key: 'govuk_alpha_feed.translate.text_done' },
+  'translate-failed': { type: 'error', key: 'govuk_alpha_feed.translate.text_failed' },
+  'translate-unavailable': { type: 'error', key: 'govuk_alpha_feed.translate.unavailable' },
+  'translate-same': { type: 'error', key: 'govuk_alpha_feed.translate.text_same' },
+  'translate-empty': { type: 'error', key: 'govuk_alpha_feed.translate.text_empty' }
+};
+
 function discussionStatus(status, t = (key) => key, { createPage = false } = {}) {
   const value = trimmed(status);
+  if (Object.prototype.hasOwnProperty.call(DISCUSSION_TRANSLATE_MESSAGES, value)) {
+    const { type, key } = DISCUSSION_TRANSLATE_MESSAGES[value];
+    return {
+      statusBanner: {
+        type,
+        title: t(type === 'success' ? 'states.success_title' : 'states.error_title'),
+        message: t(key)
+      }
+    };
+  }
   if (Object.prototype.hasOwnProperty.call(GROUP_DISCUSSION_SUCCESS_MESSAGES, value)) {
     return {
       statusBanner: {
@@ -2123,6 +2143,21 @@ router.get('/:id(\\d+)/discussions/:discussionId(\\d+)', requireAuth, asyncRoute
     .filter((message) => message.id !== null);
   const replay = consumeDiscussionForm(req, id, discussionId);
 
+  // A translation made on the previous request (POST …/translate) is shown once,
+  // under the discussion or the reply it belongs to, then forgotten.
+  let translation = null;
+  if (req.session && req.session.discussionTranslation) {
+    const stored = req.session.discussionTranslation;
+    delete req.session.discussionTranslation;
+    if (stored && Number(stored.discussionId) === Number(discussionId) && trimmed(stored.text)) {
+      translation = {
+        messageId: positiveInteger(stored.messageId),
+        text: trimmed(stored.text, 10000),
+        locale: trimmed(stored.locale, 10) || 'en'
+      };
+    }
+  }
+
   return res.render('groups/discussion-detail', {
     title: discussion.title,
     activeNav: 'explore',
@@ -2134,9 +2169,72 @@ router.get('/:id(\\d+)/discussions/:discussionId(\\d+)', requireAuth, asyncRoute
       : '',
     replyValues: replay.values,
     fieldErrors: replay.errors,
+    translation,
+    currentCursor: trimmed(req.query.cursor, 500),
     ...discussionStatus(req.query.status, res.locals.t)
   });
 }, { redirectOn401: loginRedirect(), notFoundTitle: 'Discussion not found' }));
+
+/**
+ * Translate a group discussion, or one reply in it (React GroupDiscussionTab's
+ * Translate, AWID feedback 30 Oct 2026). The text is read from the API — the
+ * same page of the thread the member was on — never taken from the form.
+ */
+router.post('/:id(\\d+)/discussions/:discussionId(\\d+)/translate', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const discussionId = Number(req.params.discussionId);
+  const messageId = positiveInteger(req.body.message_id);
+  const cursor = trimmed(req.body.cursor, 500);
+  const back = `/groups/${id}/discussions/${discussionId}${cursor ? `?${new URLSearchParams({ cursor }).toString()}` : ''}`;
+  const redirectWith = (status, fragment = '') => {
+    const separator = back.includes('?') ? '&' : '?';
+    return res.redirect(`${urlFor(res, back)}${separator}status=${encodeURIComponent(status)}${fragment}`);
+  };
+
+  const requestedLocale = trimmed(req.locale || res.locals.locale || 'en', 10);
+  const targetLocale = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/.test(requestedLocale) ? requestedLocale : 'en';
+
+  let status = 'translate-done';
+  try {
+    const params = new URLSearchParams({ per_page: '50' });
+    if (cursor) params.set('cursor', cursor);
+    const data = dataFrom(await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/discussions/${encodeURIComponent(discussionId)}?${params.toString()}`)) || {};
+    const source = messageId === null
+      ? (data.discussion || data.thread || data)
+      : (Array.isArray(data.messages) ? data.messages : []).find((message) => Number(message?.id) === messageId);
+    const sourceText = htmlToPlainText(source?.content || '').slice(0, 8000).trim();
+    if (sourceText === '') {
+      status = 'translate-empty';
+    } else {
+      const result = await callUgcTranslateApi(req.token, {
+        content_type: messageId === null ? 'group_discussion' : 'group_discussion_reply',
+        content_id: messageId === null ? discussionId : messageId,
+        source_text: sourceText,
+        target_locale: targetLocale
+      });
+      const translated = trimmed(dataFrom(result)?.translated_text, 10000);
+      if (translated === '') {
+        status = 'translate-unavailable';
+      } else if (translated === sourceText) {
+        status = 'translate-same';
+      } else if (req.session) {
+        req.session.discussionTranslation = { discussionId, messageId, text: translated, locale: targetLocale };
+      }
+    }
+  } catch (error) {
+    if (isAuthError(error)) return res.redirect(urlFor(res, loginRedirect()));
+    const code = String(error?.data?.code || error?.data?.errors?.[0]?.code || '').toUpperCase();
+    status = ['TRANSLATION_UNAVAILABLE', 'TRANSLATION_DISABLED', 'AI_NOT_CONFIGURED', 'AI_UNAVAILABLE'].includes(code)
+      || code.includes('FEATURE_DISABLED')
+      ? 'translate-unavailable'
+      : 'translate-failed';
+  }
+
+  const fragment = status === 'translate-done'
+    ? (messageId === null ? '#discussion-translation' : `#reply-${messageId}`)
+    : '';
+  return redirectWith(status, fragment);
+}));
 
 router.get('/:id(\\d+)/files/:fileId(\\d+)/download', requireAuth, asyncRoute(async (req, res) => {
   const { id, fileId } = req.params;

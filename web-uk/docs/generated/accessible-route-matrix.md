@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-30T11:24:20.716Z
-Laravel commit SHA: `60373623fc01c88da07bfe94803dff03f5e5786a`
-Web UK repository commit SHA: `60373623fc01c88da07bfe94803dff03f5e5786a`
+Generated: 2026-10-30T20:32:08.513Z
+Laravel commit SHA: `0d76a8c49e7d2e80ce8e91ce1de53e9c7fa5e1f6`
+Web UK repository commit SHA: `0d76a8c49e7d2e80ce8e91ce1de53e9c7fa5e1f6`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1084 |
+| web-uk routes | 1086 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 374 |
+| Extra web-uk routes | 376 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -51,10 +51,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | faq | 1 | 0 | 0 | 0 |
 | features | 1 | 0 | 0 | 0 |
 | federation | 28 | 0 | 3 | 0 |
-| feed | 22 | 0 | 6 | 0 |
+| feed | 22 | 0 | 7 | 0 |
 | goals | 27 | 0 | 1 | 0 |
 | group-exchanges | 9 | 0 | 1 | 0 |
-| groups | 36 | 0 | 60 | 0 |
+| groups | 36 | 0 | 61 | 0 |
 | guide | 1 | 0 | 0 | 0 |
 | health | 0 | 0 | 0 | 1 |
 | help | 1 | 0 | 3 | 0 |
@@ -190,6 +190,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/feed/mentions` | feed | feed/mentions | web-uk/src/routes/feed.js |
 | GET | `/feed/posts/{param}/reactions/{param}` | feed | feed/reactors | web-uk/src/routes/feed.js |
 | GET | `/feed/posts/{param}/stats` | feed |  | web-uk/src/routes/feed.js |
+| POST | `/feed/comments/{param}/translate` | feed |  | web-uk/src/routes/feed-actions.js |
 | POST | `/feed/items/{param}/{param}/save` | feed |  | web-uk/src/routes/feed-actions.js |
 | POST | `/feed/items/{param}/{param}/share` | feed |  | web-uk/src/routes/feed-actions.js |
 | POST | `/feed/posts/{param}/translate` | feed |  | web-uk/src/routes/feed-actions.js |
@@ -235,6 +236,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/groups/{param}/channels/{param}/messages/{param}/pin` | groups |  | web-uk/src/routes/group-channels.js |
 | POST | `/groups/{param}/channels/{param}/messages/{param}/unpin` | groups |  | web-uk/src/routes/group-channels.js |
 | POST | `/groups/{param}/data-export` | groups |  | web-uk/src/routes/group-analytics.js |
+| POST | `/groups/{param}/discussions/{param}/translate` | groups |  | web-uk/src/routes/groups.js |
 | POST | `/groups/{param}/feed/polls` | groups |  | web-uk/src/routes/groups.js |
 | POST | `/groups/{param}/feed/polls/{param}/vote` | groups |  | web-uk/src/routes/groups.js |
 | POST | `/groups/{param}/feed/posts/{param}/delete` | groups |  | web-uk/src/routes/groups.js |

@@ -9155,7 +9155,17 @@
                 "failed": "Sorry, we could not translate this post. Try again later.",
                 "unavailable": "Translation is not available in this community.",
                 "same": "This post is already in your language.",
-                "empty": "This post has no text to translate."
+                "empty": "This post has no text to translate.",
+                "comment_button": "Translate this comment",
+                "comment_by": "(comment by :name)",
+                "discussion_button": "Translate this discussion",
+                "reply_button": "Translate this reply",
+                "reply_by": "(reply by :name)",
+                "original_above_hint": "Translated automatically. The original is shown above.",
+                "text_done": "The translation is shown below the original.",
+                "text_failed": "Sorry, we could not translate this. Try again later.",
+                "text_same": "This is already in your language.",
+                "text_empty": "There is no text to translate."
             },
             "why_shown": {
                 "label": "Why am I seeing this?",

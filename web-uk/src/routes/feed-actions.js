@@ -24,6 +24,7 @@ const {
   toggleReaction,
   toggleFeedLike,
   getFeedPostV2,
+  getComments,
   callUgcTranslateApi,
   ApiError
 } = require('../lib/api');
@@ -742,6 +743,68 @@ router.post('/posts/:id(\\d+)/translate', asyncRoute(async (req, res) => {
   }
 
   const anchor = status === 'translate-done' ? '#post-translation' : '';
+  return redirectTo(res, `${postPath}?status=${encodeURIComponent(status)}${anchor}`);
+}));
+
+/**
+ * Translate one comment or reply on a post (React CommentsSection's Translate,
+ * AWID feedback 30 Oct 2026). Like the post route above, the text is read from
+ * the API — the comment found in that post's thread — never taken from the form.
+ * The result is shown once, under that comment, on the post page.
+ */
+function findComment(rows, id) {
+  for (const row of Array.isArray(rows) ? rows : []) {
+    if (Number(row?.id) === id) return row;
+    const nested = findComment(row?.replies, id);
+    if (nested) return nested;
+  }
+  return null;
+}
+
+router.post('/comments/:id(\\d+)/translate', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  const commentId = Number(req.params.id);
+  const postId = positiveInteger(req.body.post_id);
+  if (postId === null) return redirectTo(res, FEED_PATH);
+  const postPath = `${FEED_PATH}/posts/${postId}`;
+  if (!token) {
+    return redirectTo(res, `${postPath}?status=auth-required`);
+  }
+
+  const requestedLocale = trimmed(req.locale || res.locals.locale || 'en', 10);
+  const targetLocale = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/.test(requestedLocale) ? requestedLocale : 'en';
+
+  let status = 'comment-translate-done';
+  try {
+    const thread = dataFrom(await getComments(token, { target_type: 'post', target_id: postId }));
+    const rows = Array.isArray(thread) ? thread : (thread && Array.isArray(thread.comments) ? thread.comments : []);
+    const comment = findComment(rows, commentId);
+    const sourceText = htmlToPlainText(comment?.content || comment?.body || '').slice(0, 8000).trim();
+    if (sourceText === '') {
+      status = 'comment-translate-empty';
+    } else {
+      const result = await callUgcTranslateApi(token, {
+        content_type: 'comment',
+        content_id: commentId,
+        source_text: sourceText,
+        target_locale: targetLocale
+      });
+      const translated = trimmed(dataFrom(result)?.translated_text, 10000);
+      if (translated === '') {
+        status = 'translate-unavailable';
+      } else if (translated === sourceText) {
+        status = 'comment-translate-same';
+      } else if (req.session) {
+        req.session.feedCommentTranslation = { postId, commentId, text: translated, locale: targetLocale };
+      }
+    }
+  } catch (error) {
+    if (isAuthError(error)) return redirectTo(res, `${postPath}?status=auth-required`);
+    const failure = translateFailureStatus(error);
+    status = failure === 'translate-failed' ? 'comment-translate-failed' : failure;
+  }
+
+  const anchor = status === 'comment-translate-done' ? `#comment-${commentId}` : '';
   return redirectTo(res, `${postPath}?status=${encodeURIComponent(status)}${anchor}`);
 }));
 

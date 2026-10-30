@@ -142,6 +142,16 @@ return [
         'unavailable' => 'このコミュニティでは翻訳を利用できません。',
         'same' => 'この投稿はすでにあなたの言語です。',
         'empty' => 'この投稿には翻訳するテキストがありません。',
+        'comment_button' => 'このコメントを翻訳する',
+        'comment_by' => '（:name さんのコメント）',
+        'discussion_button' => 'このディスカッションを翻訳する',
+        'reply_button' => 'この返信を翻訳する',
+        'reply_by' => '（:name さんの返信）',
+        'original_above_hint' => '自動翻訳です。原文は上に表示されています。',
+        'text_done' => '翻訳は原文の下に表示されています。',
+        'text_failed' => '申し訳ありませんが、翻訳できませんでした。後でもう一度お試しください。',
+        'text_same' => 'これはすでにあなたの言語です。',
+        'text_empty' => '翻訳するテキストがありません。',
     ],
 
     // ---- "Why am I seeing this?" in the ranked feed (React WhyShown) ----

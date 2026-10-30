@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-30T11:24:20.716Z",
+  "generatedAt": "2026-10-30T20:32:08.513Z",
   "provenance": {
-    "generatedAt": "2026-10-30T11:24:20.716Z",
+    "generatedAt": "2026-10-30T20:32:08.513Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "60373623fc01c88da07bfe94803dff03f5e5786a",
+    "laravelCommitSha": "0d76a8c49e7d2e80ce8e91ce1de53e9c7fa5e1f6",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "60373623fc01c88da07bfe94803dff03f5e5786a",
+    "webUkRepositoryCommitSha": "0d76a8c49e7d2e80ce8e91ce1de53e9c7fa5e1f6",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-30T11:24:20.716Z",
+    "generatedAt": "2026-10-30T20:32:08.513Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 1084,
+    "webUkRoutes": 1086,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 374,
+    "extraWebUkRoutes": 376,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -115,7 +115,7 @@
       "feed": {
         "matched": 22,
         "missing": 0,
-        "extraWebUk": 6,
+        "extraWebUk": 7,
         "ignoredInfrastructure": 0
       },
       "goals": {
@@ -133,7 +133,7 @@
       "groups": {
         "matched": 36,
         "missing": 0,
-        "extraWebUk": 60,
+        "extraWebUk": 61,
         "ignoredInfrastructure": 0
       },
       "help": {
@@ -1914,6 +1914,27 @@
     },
     {
       "method": "POST",
+      "path": "/feed/comments/{param}/translate",
+      "family": "feed",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/feed/comments/{param}/translate",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/feed-actions.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
       "path": "/feed/items/{param}/{param}/save",
       "family": "feed",
       "status": "extra-web-uk",
@@ -2855,6 +2876,27 @@
       "webUkPath": "/groups/{param}/data-export",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/group-analytics.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/groups/{param}/discussions/{param}/translate",
+      "family": "groups",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/groups/{param}/discussions/{param}/translate",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/groups.js",
       "webUkRouteKind": ""
     },
     {

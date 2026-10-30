@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "_load-more.njk" import loadMoreNext %}
 
@@ -12,6 +13,25 @@
 {% endblock %}
 
 {% block mainContent %}
+{# Translate for the discussion and each reply (React GroupDiscussionTab, AWID
+   feedback 30 Oct 2026). A translation made on the previous request is shown
+   once, under the text it belongs to. #}
+{% macro translateBlock(messageId, buttonKey, byName, anchorId) %}
+  {% if translation and translation.messageId == messageId %}
+    <div class="govuk-inset-text govuk-!-margin-bottom-0" id="{{ anchorId }}">
+      <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_feed.translate.heading") }}</h3>
+      <p class="govuk-hint govuk-!-margin-bottom-2">{{ t("govuk_alpha_feed.translate.original_above_hint") }}</p>
+      <p class="govuk-body govuk-!-margin-bottom-0" lang="{{ translation.locale }}">{{ translation.text }}</p>
+    </div>
+  {% else %}
+    <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/discussions/' + (discussion.id | string) + '/translate') }}" class="govuk-!-margin-top-2 govuk-!-margin-bottom-0" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      {% if messageId %}<input type="hidden" name="message_id" value="{{ messageId }}">{% endif %}
+      {% if currentCursor %}<input type="hidden" name="cursor" value="{{ currentCursor }}">{% endif %}
+      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t(buttonKey) }}{% if byName %}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_feed.translate.reply_by", { name: byName }) }}</span>{% endif %}</button>
+    </form>
+  {% endif %}
+{% endmacro %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
   {% if statusBanner and statusBanner.type == "success" %}
@@ -48,6 +68,7 @@
       </p>
     {% endif %}
     <div class="govuk-body" dir="auto">{{ discussion.content | striptags | nl2br | safe }}</div>
+    {% if discussion.content %}{{ translateBlock(null, "govuk_alpha_feed.translate.discussion_button", "", "discussion-translation") }}{% endif %}
   </article>
 
   <h2 class="govuk-heading-l" id="discussion-replies">{{ tc("groups.discussions.replies_count", (discussion.replyCount or messages.length), { count: (discussion.replyCount or messages.length) }) }}</h2>
@@ -57,13 +78,14 @@
   {% else %}
     <div class="nexus-alpha-card-list">
     {% for message in messages %}
-      <article class="nexus-alpha-card">
+      <article class="nexus-alpha-card" id="reply-{{ message.id }}">
         {% if message.authorName %}
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
             {{ t("polish_groups.reply_posted_by", { name: message.authorName }) }}{% if message.createdAtLabel %}<span aria-hidden="true"> · </span><time datetime="{{ message.createdAt }}">{{ message.createdAtLabel }}</time>{% endif %}
           </p>
         {% endif %}
         <div class="govuk-body govuk-!-margin-bottom-0" dir="auto">{{ message.content | striptags | nl2br | safe }}</div>
+        {% if message.content %}{{ translateBlock(message.id, "govuk_alpha_feed.translate.reply_button", message.authorName or "", "reply-translation-" + (message.id | string)) }}{% endif %}
       </article>
     {% endfor %}
     </div>

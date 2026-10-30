@@ -142,6 +142,16 @@ return [
         'unavailable' => 'A tradução não está disponível nesta comunidade.',
         'same' => 'Esta publicação já está no seu idioma.',
         'empty' => 'Esta publicação não tem texto para traduzir.',
+        'comment_button' => 'Traduzir este comentário',
+        'comment_by' => '(comentário de :name)',
+        'discussion_button' => 'Traduzir esta discussão',
+        'reply_button' => 'Traduzir esta resposta',
+        'reply_by' => '(resposta de :name)',
+        'original_above_hint' => 'Traduzido automaticamente. O original é mostrado acima.',
+        'text_done' => 'A tradução é mostrada abaixo do original.',
+        'text_failed' => 'Lamentamos, não foi possível traduzir isto. Tente novamente mais tarde.',
+        'text_same' => 'Isto já está no seu idioma.',
+        'text_empty' => 'Não há texto para traduzir.',
     ],
 
     // ---- "Why am I seeing this?" in the ranked feed (React WhyShown) ----

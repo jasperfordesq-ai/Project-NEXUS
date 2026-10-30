@@ -142,6 +142,16 @@ return [
         'unavailable' => 'الترجمة غير متاحة في هذا المجتمع.',
         'same' => 'هذا المنشور بلغتك بالفعل.',
         'empty' => 'لا يحتوي هذا المنشور على نص للترجمة.',
+        'comment_button' => 'ترجمة هذا التعليق',
+        'comment_by' => '(تعليق من :name)',
+        'discussion_button' => 'ترجمة هذه المناقشة',
+        'reply_button' => 'ترجمة هذا الرد',
+        'reply_by' => '(رد من :name)',
+        'original_above_hint' => 'تُرجم تلقائيًا. يظهر النص الأصلي أعلاه.',
+        'text_done' => 'تظهر الترجمة أسفل النص الأصلي.',
+        'text_failed' => 'عذرًا، تعذّرت ترجمة هذا. حاول مرة أخرى لاحقًا.',
+        'text_same' => 'هذا مكتوب بلغتك بالفعل.',
+        'text_empty' => 'لا يوجد نص لترجمته.',
     ],
 
     // ---- "Why am I seeing this?" in the ranked feed (React WhyShown) ----

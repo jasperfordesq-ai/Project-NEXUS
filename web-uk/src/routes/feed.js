@@ -405,10 +405,15 @@ function feedIndexStatusMessage(status, t) {
     'translate-failed': 'govuk_alpha_feed.translate.failed',
     'translate-unavailable': 'govuk_alpha_feed.translate.unavailable',
     'translate-same': 'govuk_alpha_feed.translate.same',
-    'translate-empty': 'govuk_alpha_feed.translate.empty'
+    'translate-empty': 'govuk_alpha_feed.translate.empty',
+    'comment-translate-done': 'govuk_alpha_feed.translate.text_done',
+    'comment-translate-failed': 'govuk_alpha_feed.translate.text_failed',
+    'comment-translate-same': 'govuk_alpha_feed.translate.text_same',
+    'comment-translate-empty': 'govuk_alpha_feed.translate.text_empty'
   };
   const errorStatuses = new Set([
     'translate-failed', 'translate-unavailable', 'translate-same', 'translate-empty',
+    'comment-translate-failed', 'comment-translate-same', 'comment-translate-empty',
     'post-empty', 'post-failed', 'post-image-invalid', 'post-schedule-invalid', 'post-update-failed', 'post-delete-failed',
     'like-failed', 'comment-empty', 'comment-too-long', 'comment-failed',
     'comment-update-failed', 'comment-delete-failed', 'moderation-failed',
@@ -502,6 +507,19 @@ router.get('/posts/:id(\\d+)', asyncRoute(withTokenRefresh(async (req, res) => {
       translation = { text: trimmed(stored.text, 10000), locale: trimmed(stored.locale, 10) || 'en' };
     }
   }
+  // The same for one comment or reply (POST /feed/comments/:id/translate).
+  let commentTranslation = null;
+  if (req.session && req.session.feedCommentTranslation) {
+    const stored = req.session.feedCommentTranslation;
+    delete req.session.feedCommentTranslation;
+    if (stored && Number(stored.postId) === id && trimmed(stored.text)) {
+      commentTranslation = {
+        commentId: Number(stored.commentId),
+        text: trimmed(stored.text, 10000),
+        locale: trimmed(stored.locale, 10) || 'en'
+      };
+    }
+  }
 
   res.render('feed/post', {
     title: (res.locals.t ? res.locals.t('govuk_alpha.actions.post') : 'Post'),
@@ -514,6 +532,7 @@ router.get('/posts/:id(\\d+)', asyncRoute(withTokenRefresh(async (req, res) => {
     currentUserId,
     isOwn: currentUserId !== null && item.authorId === currentUserId,
     translation,
+    commentTranslation,
     returnTo: `/feed/posts/${id}`,
     requiresAuth: !token,
     statusMessage: withFeedRefusal(req, feedIndexStatusMessage(trimmed(req.query.status), req.t || res.locals.t)),

@@ -9155,7 +9155,17 @@
                 "failed": "Dieser Beitrag konnte leider nicht übersetzt werden. Versuchen Sie es später erneut.",
                 "unavailable": "In dieser Gemeinschaft ist keine Übersetzung verfügbar.",
                 "same": "Dieser Beitrag ist bereits in Ihrer Sprache.",
-                "empty": "Dieser Beitrag enthält keinen Text zum Übersetzen."
+                "empty": "Dieser Beitrag enthält keinen Text zum Übersetzen.",
+                "comment_button": "Diesen Kommentar übersetzen",
+                "comment_by": "(Kommentar von :name)",
+                "discussion_button": "Diese Diskussion übersetzen",
+                "reply_button": "Diese Antwort übersetzen",
+                "reply_by": "(Antwort von :name)",
+                "original_above_hint": "Automatisch übersetzt. Das Original wird oben angezeigt.",
+                "text_done": "Die Übersetzung wird unter dem Original angezeigt.",
+                "text_failed": "Leider konnten wir dies nicht übersetzen. Bitte versuche es später erneut.",
+                "text_same": "Dies ist bereits in deiner Sprache.",
+                "text_empty": "Es gibt keinen Text zum Übersetzen."
             },
             "why_shown": {
                 "label": "Warum sehe ich das?",
