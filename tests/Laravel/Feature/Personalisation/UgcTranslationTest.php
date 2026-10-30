@@ -17,8 +17,9 @@ use Tests\Laravel\TestCase;
  * AG38 — UGC translation service + endpoint tests.
  *
  * Asserts the cache contract: identical (text, source, target) tuples hit the
- * cache on the second request and never re-call OpenAI. Also asserts the
- * 30/min rate limit on the public endpoint.
+ * cache on the second request and never re-call the translation engine.
+ * Google Translate is the default engine (owner, 30 Oct 2026), so the upstream
+ * call faked here is Google's.
  */
 class UgcTranslationTest extends TestCase
 {
@@ -26,16 +27,16 @@ class UgcTranslationTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
-        // Force a deterministic OpenAI key so TranscriptionService::translate doesn't short-circuit.
-        config(['services.openai.api_key' => 'test-key']);
+        // A platform Google key, so the default engine is available.
+        config(['services.google_translate.api_key' => 'test-google-key']);
     }
 
-    public function test_service_caches_result_and_only_calls_openai_once(): void
+    public function test_service_caches_result_and_only_calls_the_engine_once(): void
     {
         Http::fake([
-            'api.openai.com/*' => Http::response([
-                'choices' => [
-                    ['message' => ['content' => 'Bonjour le monde']],
+            'translation.googleapis.com/*' => Http::response([
+                'data' => [
+                    'translations' => [['translatedText' => 'Bonjour le monde']],
                 ],
             ], 200),
         ]);

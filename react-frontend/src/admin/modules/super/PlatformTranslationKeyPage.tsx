@@ -62,7 +62,7 @@ export default function PlatformTranslationKeyPage() {
         setNewKey('');
         toast.success(t('saved'));
       } else {
-        toast.error(res.error || t('save_failed'));
+        toast.error(t('save_failed'));
       }
     } catch {
       toast.error(t('save_failed'));

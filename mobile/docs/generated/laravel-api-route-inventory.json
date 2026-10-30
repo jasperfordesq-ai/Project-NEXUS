@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2821,
-  "api_route_rows": 2786,
-  "distinct_api_paths": 2325,
+  "total_registered_routes": 2827,
+  "api_route_rows": 2792,
+  "distinct_api_paths": 2328,
   "route_source_fingerprint": {
-    "digest": "d56dd7638ec0e5760bdf32a74a66dd14d9db543edfd5692373f7758e93b9f18a",
+    "digest": "8c59e51671f19ffcf2eef8dd16ae3a09cdda9ae5f7335a780df16b7dd847878e",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "04076c38c1447f8f504d9fade3119bc5267960cca53bdc24162a7279c576813c"
+        "sha256": "0b4566bc0768c44696978afff14b4a8295f6d7bdf6a2ffd913d3d79179b220a9"
       },
       {
         "file": "routes/channels.php",
@@ -1304,6 +1304,10 @@
       "PUT"
     ],
     "/api/v2/admin/config/translation/bulk": [
+      "PUT"
+    ],
+    "/api/v2/admin/config/translation/google-key": [
+      "DELETE",
       "PUT"
     ],
     "/api/v2/admin/config/volunteering": [
@@ -3118,6 +3122,11 @@
     "/api/v2/admin/super/tenants/{id}/toggle-hub": [
       "POST"
     ],
+    "/api/v2/admin/super/translation/google-key": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
     "/api/v2/admin/super/users": [
       "GET",
       "POST"
@@ -3577,6 +3586,9 @@
       "POST"
     ],
     "/api/v2/auth/2fa/verify": [
+      "POST"
+    ],
+    "/api/v2/auth/activity": [
       "POST"
     ],
     "/api/v2/auth/impersonate/end": [

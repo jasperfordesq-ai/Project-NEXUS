@@ -191,7 +191,7 @@ export function TranslationConfig() {
         setNewGoogleKey('');
         toast.success(t('config.translation_google_key_saved'));
       } else {
-        toast.error(res.error || t('config.translation_google_key_save_failed'));
+        toast.error(t('config.translation_google_key_save_failed'));
       }
     } catch {
       toast.error(t('config.translation_google_key_save_failed'));
