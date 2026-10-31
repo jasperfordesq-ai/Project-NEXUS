@@ -44,6 +44,7 @@ import Users from 'lucide-react/icons/users';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { MemberPlainText } from '@/components/ui/MemberPlainText';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
@@ -134,6 +135,12 @@ export function IdeaDetailPage() {
   const [isConvertOpen, setIsConvertOpen] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
   const [groupForm, setGroupForm] = useState({ name: '', description: '', visibility: 'public' });
+
+  // Reader-requested translation of the idea's title and description (31 Oct 2026).
+  const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
+  const onTranslatedText = useCallback((text: string, isTranslated: boolean) => setTranslatedDesc(isTranslated ? text : null), []);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedTitle(fields?.title ?? null), []);
 
   const isAdmin = user?.role && ['admin', 'tenant_admin', 'tenant_super_admin', 'super_admin'].includes(user.role);
   const isOwner = user?.id === idea?.user_id;
@@ -472,7 +479,7 @@ export function IdeaDetailPage() {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-2xl font-bold text-[var(--color-text)]">
-                {idea.title}
+                {translatedTitle ?? idea.title}
               </h1>
               {idea.status !== 'submitted' && (
                 <Chip
@@ -499,7 +506,19 @@ export function IdeaDetailPage() {
             </div>
 
             {/* Description */}
-            <MemberPlainText content={idea.description} className="text-[var(--color-text-secondary)] whitespace-pre-wrap" as="div" />
+            <MemberPlainText content={translatedDesc ?? idea.description} className="text-[var(--color-text-secondary)] whitespace-pre-wrap" as="div" />
+            {idea.description && (
+              <TranslateButton
+                contentType="ideation_idea"
+                contentId={idea.id}
+                sourceText={idea.description}
+                sourceLocale={null}
+                onTextChange={onTranslatedText}
+                extraFields={{ title: idea.title }}
+                onFieldsChange={onTranslatedFields}
+                className="mt-1"
+              />
+            )}
 
             {/* Convert to Group Button */}
             {canConvertToGroup && (

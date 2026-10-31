@@ -199,6 +199,9 @@ export function ProfilePage() {
   const [showAllSkills, setShowAllSkills] = useState(false);
   const [bioExpanded, setBioExpanded] = useState(false);
   const [translatedBio, setTranslatedBio] = useState<string | null>(null);
+  // The tagline is translated with the bio, on the same press (31 Oct 2026).
+  const [translatedTagline, setTranslatedTagline] = useState<string | null>(null);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedTagline(fields?.tagline ?? null), []);
 
   // Reviews state
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -676,7 +679,7 @@ export function ProfilePage() {
                 </div>
               </div>
               {taglineText && (
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-theme-muted sm:text-base sm:leading-7 line-clamp-2">{taglineText}</p>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-theme-muted sm:text-base sm:leading-7 line-clamp-2">{translatedTagline ?? taglineText}</p>
               )}
 
               {/* Meta */}
@@ -1032,6 +1035,8 @@ export function ProfilePage() {
                     // language, not the bio's. Unknown, so the server detects it.
                     sourceLocale={null}
                     onTextChange={(text, isTranslated) => setTranslatedBio(isTranslated ? text : null)}
+                    extraFields={{ tagline: taglineText }}
+                    onFieldsChange={onTranslatedFields}
                     className="mt-1"
                   />
                 </div>

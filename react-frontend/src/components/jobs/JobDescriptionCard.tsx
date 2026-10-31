@@ -6,7 +6,7 @@
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Target from 'lucide-react/icons/target';
 import Sparkles from 'lucide-react/icons/sparkles';
 import Building2 from 'lucide-react/icons/building-2';
@@ -26,6 +26,10 @@ interface JobDescriptionCardProps {
   matchResult: MatchResult | null;
   qualificationData: QualificationData | null;
   onCheckQualification: () => void;
+  /** The description as shown — the reader's translation while one is on (31 Oct 2026). */
+  displayDescription?: string | null;
+  /** The Translate button, placed under the description. */
+  translateButton?: ReactNode;
 }
 
 export function JobDescriptionCard({
@@ -35,6 +39,8 @@ export function JobDescriptionCard({
   matchResult,
   qualificationData,
   onCheckQualification,
+  displayDescription,
+  translateButton,
 }: JobDescriptionCardProps) {
   const { t } = useTranslation('jobs');
   const [qualOpen, setQualOpen] = useState(false);
@@ -47,7 +53,8 @@ export function JobDescriptionCard({
       {/* Description */}
       <GlassCard className="p-6">
         <h2 className="text-lg font-semibold text-theme-primary mb-4">{t('detail.about')}</h2>
-        <MemberPlainText content={vacancy.description} className="text-theme-secondary whitespace-pre-wrap" as="div" />
+        <MemberPlainText content={displayDescription ?? vacancy.description} className="text-theme-secondary whitespace-pre-wrap" as="div" />
+        {translateButton}
       </GlassCard>
 
       {/* Match Explanation Card — "Why You Match" */}

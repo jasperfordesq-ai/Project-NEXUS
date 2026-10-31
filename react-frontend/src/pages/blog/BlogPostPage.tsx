@@ -20,7 +20,8 @@ import Clock from 'lucide-react/icons/clock';
 import Eye from 'lucide-react/icons/eye';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import MessageCircle from 'lucide-react/icons/message-circle';
-import { sanitizeRichText } from '@/lib/sanitize';
+import { htmlToPlainText, sanitizeRichText } from '@/lib/sanitize';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
@@ -124,6 +125,21 @@ const categoryColorMap: Record<string, string> = {
   yellow: 'bg-amber-500/10 text-[var(--color-warning)]',
 };
 
+const POST_CONTENT_CLASSES = `prose prose-sm sm:prose dark:prose-invert max-w-none
+                text-theme-primary
+                [&_h2]:text-theme-primary [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4
+                [&_h3]:text-theme-primary [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-3
+                [&_p]:text-theme-muted [&_p]:leading-relaxed [&_p]:mb-4
+                [&_a]:text-[var(--color-info)] [&_a]:hover:text-blue-600
+                [&_ul]:text-theme-muted [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4
+                [&_ol]:text-theme-muted [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4
+                [&_li]:mb-1
+                [&_blockquote]:border-l-4 [&_blockquote]:border-blue-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-theme-subtle
+                [&_img]:rounded-xl [&_img]:my-6
+                [&_code]:bg-theme-elevated [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm
+                [&_pre]:bg-theme-elevated [&_pre]:p-4 [&_pre]:rounded-xl [&_pre]:overflow-x-auto
+              `;
+
 export function BlogPostPage() {
   const { t } = useTranslation('blog');
   const { slug } = useParams<{ slug: string }>();
@@ -134,6 +150,11 @@ export function BlogPostPage() {
   const [error, setError] = useState<string | null>(null);
   // The server said the post does not exist (not merely that loading failed).
   const [missing, setMissing] = useState(false);
+  // Reader-requested translation of the post's title and body (31 Oct 2026).
+  const [translatedContent, setTranslatedContent] = useState<string | null>(null);
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
+  const onTranslatedText = useCallback((text: string, isTranslated: boolean) => setTranslatedContent(isTranslated ? text : null), []);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedTitle(fields?.title ?? null), []);
   usePrerenderReady(!isLoading && error === null && post !== null);
 
   // AbortController refs to cancel stale requests
@@ -318,7 +339,7 @@ export function BlogPostPage() {
           )}
 
           <h1 className="text-3xl font-bold text-theme-primary mb-4">
-            {post.title}
+            {translatedTitle ?? post.title}
           </h1>
 
           {/* Meta */}
@@ -358,22 +379,24 @@ export function BlogPostPage() {
           transition={{ delay: 0.2 }}
         >
           <GlassCard className="p-6 sm:p-8">
-            <div
-              className="prose prose-sm sm:prose dark:prose-invert max-w-none
-                text-theme-primary
-                [&_h2]:text-theme-primary [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4
-                [&_h3]:text-theme-primary [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-3
-                [&_p]:text-theme-muted [&_p]:leading-relaxed [&_p]:mb-4
-                [&_a]:text-[var(--color-info)] [&_a]:hover:text-blue-600
-                [&_ul]:text-theme-muted [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4
-                [&_ol]:text-theme-muted [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4
-                [&_li]:mb-1
-                [&_blockquote]:border-l-4 [&_blockquote]:border-blue-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-theme-subtle
-                [&_img]:rounded-xl [&_img]:my-6
-                [&_code]:bg-theme-elevated [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm
-                [&_pre]:bg-theme-elevated [&_pre]:p-4 [&_pre]:rounded-xl [&_pre]:overflow-x-auto
-              "
-              dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.content) }}
+            {translatedContent !== null ? (
+              // A translation is plain words; the formatted original returns on "Show original".
+              <div className={`${POST_CONTENT_CLASSES} whitespace-pre-wrap`}>{translatedContent}</div>
+            ) : (
+              <div
+                className={POST_CONTENT_CLASSES}
+                dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.content) }}
+              />
+            )}
+            <TranslateButton
+              contentType="blog_post"
+              contentId={post.id}
+              sourceText={htmlToPlainText(post.content)}
+              sourceLocale={null}
+              onTextChange={onTranslatedText}
+              extraFields={{ title: post.title }}
+              onFieldsChange={onTranslatedFields}
+              className="mt-4"
             />
           </GlassCard>
         </motion.div>

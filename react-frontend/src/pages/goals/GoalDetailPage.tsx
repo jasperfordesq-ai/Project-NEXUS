@@ -35,6 +35,7 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { EmptyState } from '@/components/feedback';
 import { PageMeta } from '@/components/seo';
 import { SocialInteractionPanel } from '@/components/social/SocialInteractionPanel';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { useAuth, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
@@ -85,6 +86,11 @@ export function GoalDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [forbidden, setForbidden] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  // Reader-requested translation of the goal's title and description (31 Oct 2026).
+  const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
+  const onTranslatedText = useCallback((text: string, isTranslated: boolean) => setTranslatedDesc(isTranslated ? text : null), []);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedTitle(fields?.title ?? null), []);
 
   usePageTitle(goal?.title ?? t('goals.page_title'));
 
@@ -232,7 +238,7 @@ export function GoalDetailPage() {
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-theme-primary flex items-start gap-3">
             <Target className="w-7 h-7 text-emerald-400 flex-shrink-0 mt-1" aria-hidden="true" />
-            <span className="break-words">{goal.title}</span>
+            <span className="break-words">{translatedTitle ?? goal.title}</span>
           </h1>
           <div className="flex items-center gap-2 flex-wrap">
             {isCompleted ? (
@@ -265,7 +271,17 @@ export function GoalDetailPage() {
         {goal.description && (
           <div>
             <h2 className="text-sm font-semibold text-theme-primary mb-1">{t('goals.detail.description')}</h2>
-            <p className="text-sm text-theme-muted whitespace-pre-wrap">{goal.description}</p>
+            <p className="text-sm text-theme-muted whitespace-pre-wrap">{translatedDesc ?? goal.description}</p>
+            <TranslateButton
+              contentType="goal"
+              contentId={goal.id}
+              sourceText={goal.description}
+              sourceLocale={null}
+              onTextChange={onTranslatedText}
+              extraFields={{ title: goal.title }}
+              onFieldsChange={onTranslatedFields}
+              className="mt-1"
+            />
           </div>
         )}
 

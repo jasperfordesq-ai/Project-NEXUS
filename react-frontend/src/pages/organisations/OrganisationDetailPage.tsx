@@ -45,6 +45,7 @@ import { Breadcrumbs } from '@/components/navigation';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -113,6 +114,11 @@ export function OrganisationDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [canManage, setCanManage] = useState(false);
+  // Member-written name + description, translated together on one press (31 Oct 2026).
+  const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
+  const [translatedName, setTranslatedName] = useState<string | null>(null);
+  const onTranslatedText = useCallback((text: string, isTranslated: boolean) => setTranslatedDesc(isTranslated ? text : null), []);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedName(fields?.name ?? null), []);
 
   // Apply modal
   const applyModal = useDisclosure();
@@ -348,10 +354,22 @@ export function OrganisationDetailPage() {
             className="w-20 h-20 flex-shrink-0"
           />
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-theme-primary">{organisation.name}</h1>
+            <h1 className="text-2xl font-bold text-theme-primary">{translatedName ?? organisation.name}</h1>
 
             {organisation.description && (
-              <p className="text-theme-muted mt-3">{organisation.description}</p>
+              <>
+                <p className="text-theme-muted mt-3">{translatedDesc ?? organisation.description}</p>
+                <TranslateButton
+                  contentType="organisation"
+                  contentId={organisation.id}
+                  sourceText={organisation.description}
+                  sourceLocale={null}
+                  onTextChange={onTranslatedText}
+                  extraFields={{ name: organisation.name }}
+                  onFieldsChange={onTranslatedFields}
+                  className="mt-1"
+                />
+              </>
             )}
 
             {/* Action Buttons */}

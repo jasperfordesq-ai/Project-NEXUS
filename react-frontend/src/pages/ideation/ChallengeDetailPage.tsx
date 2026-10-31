@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { Input } from '@/components/ui/Input';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Select, SelectItem } from '@/components/ui/Select';
@@ -260,6 +261,11 @@ export function ChallengeDetailPage() {
   const { isOpen: isCampaignOpen, onOpen: onCampaignOpen, onClose: onCampaignClose } = useDisclosure();
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>('');
   const [isLinkingCampaign, setIsLinkingCampaign] = useState(false);
+  // Reader-requested translation of the challenge's title and description (31 Oct 2026).
+  const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
+  const onTranslatedText = useCallback((text: string, isTranslated: boolean) => setTranslatedDesc(isTranslated ? text : null), []);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedTitle(fields?.title ?? null), []);
 
   const isAdmin = user?.role && ['admin', 'tenant_admin', 'tenant_super_admin', 'super_admin'].includes(user.role);
 
@@ -853,7 +859,7 @@ export function ChallengeDetailPage() {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2 flex-wrap">
               <h1 className="text-2xl font-bold text-[var(--color-text)]">
-                {challenge.title}
+                {translatedTitle ?? challenge.title}
               </h1>
               <Chip
                 size="sm"
@@ -941,8 +947,20 @@ export function ChallengeDetailPage() {
 
         {/* Description */}
         <p className="text-[var(--color-text-secondary)] whitespace-pre-wrap mb-4">
-          {challenge.description}
+          {translatedDesc ?? challenge.description}
         </p>
+        {challenge.description && (
+          <TranslateButton
+            contentType="ideation_challenge"
+            contentId={challenge.id}
+            sourceText={challenge.description}
+            sourceLocale={null}
+            onTextChange={onTranslatedText}
+            extraFields={{ title: challenge.title }}
+            onFieldsChange={onTranslatedFields}
+            className="-mt-2 mb-4"
+          />
+        )}
 
         {/* Tags */}
         {Array.isArray(challenge.tags) && challenge.tags.length > 0 && (

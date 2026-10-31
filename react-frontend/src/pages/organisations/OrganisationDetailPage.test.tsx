@@ -20,6 +20,8 @@ vi.mock('@/lib/motion', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
+    // The shared Translate button reads the reader's language.
+    i18n: { language: 'en' },
     t: (key: string, opts?: Record<string, unknown>) => {
       if (opts?.fallbackValue) return opts.fallbackValue as string;
       if (opts?.ns) return `${String(opts.ns)}:${key}`;

@@ -58,6 +58,8 @@ interface JobDetailHeaderProps {
   onRenewOpen: () => void;
   onDeleteOpen: () => void;
   onCopyLink: () => void;
+  /** The title as shown — the reader's translation while one is on (31 Oct 2026). */
+  displayTitle?: string | null;
 }
 
 export function JobDetailHeader({
@@ -74,6 +76,7 @@ export function JobDetailHeader({
   onRenewOpen,
   onDeleteOpen,
   onCopyLink,
+  displayTitle,
 }: JobDetailHeaderProps) {
   const { t } = useTranslation('jobs');
   const TypeIcon = TYPE_ICONS[vacancy.type] ?? Briefcase;
@@ -85,7 +88,7 @@ export function JobDetailHeader({
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap mb-2">
-            <h1 className="text-2xl font-bold text-theme-primary">{vacancy.title}</h1>
+            <h1 className="text-2xl font-bold text-theme-primary">{displayTitle ?? vacancy.title}</h1>
             {vacancy.is_featured && (
               <Chip size="sm" variant="tertiary" color="warning">
                 <Star className="w-3 h-3" aria-hidden="true" />

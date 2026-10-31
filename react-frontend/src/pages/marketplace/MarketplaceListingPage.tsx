@@ -55,6 +55,7 @@ import {
 } from '@/components/marketplace/LoyaltyRedemptionCard';
 import { MarketplaceListingDetailSkeleton } from '@/components/marketplace/MarketplaceListingDetailSkeleton';
 import { ShippingSelector } from '@/components/marketplace/ShippingSelector';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useTenant } from '@/contexts/TenantContext';
@@ -389,6 +390,11 @@ export function MarketplaceListingPage() {
   const [selectedShippingOption, setSelectedShippingOption] = useState<MarketplaceShippingOption | null | undefined>(undefined);
   const [loyaltyRedemption, setLoyaltyRedemption] = useState<LoyaltyRedemptionSelection | null>(null);
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState<'cash' | 'time_credits'>('cash');
+  // Reader-requested translation of the seller's title and description (31 Oct 2026).
+  const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
+  const onTranslatedText = useCallback((text: string, isTranslated: boolean) => setTranslatedDesc(isTranslated ? text : null), []);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedTitle(fields?.title ?? null), []);
   const sellerId = listing?.user?.id;
 
   // Load listing
@@ -693,7 +699,7 @@ export function MarketplaceListingPage() {
                 </div>
               </div>
 
-              <h1 className="text-xl font-semibold text-foreground">{listing.title}</h1>
+              <h1 className="text-xl font-semibold text-foreground">{translatedTitle ?? listing.title}</h1>
 
               <div className="flex items-center gap-2 flex-wrap">
                 {listing.condition && (
@@ -935,8 +941,20 @@ export function MarketplaceListingPage() {
         <GlassCard className="p-6 space-y-4">
           <h2 className="text-lg font-semibold text-foreground">{t('listing.description')}</h2>
           <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 whitespace-pre-wrap">
-            {listing.description}
+            {translatedDesc ?? listing.description}
           </div>
+          {listing.description && (
+            <TranslateButton
+              contentType="marketplace_listing"
+              contentId={listing.id}
+              sourceText={listing.description}
+              sourceLocale={null}
+              onTextChange={onTranslatedText}
+              extraFields={{ title: listing.title }}
+              onFieldsChange={onTranslatedFields}
+              className="mt-1"
+            />
+          )}
 
           {/* Template fields */}
           {listing.template_data && Object.keys(listing.template_data).length > 0 && (

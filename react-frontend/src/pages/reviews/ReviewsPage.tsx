@@ -27,6 +27,7 @@ import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { PageMeta } from '@/components/seo';
 import { ReviewModal } from '@/components/reviews/ReviewModal';
 import { SocialInteractionPanel } from '@/components/social/SocialInteractionPanel';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { Button, Chip, Avatar, Tabs, Tab, Skeleton, useConfirm } from '@/components/ui';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -101,6 +102,9 @@ function ReviewCard({
   const [deleting, setDeleting] = useState(false);
   const toast = useToast();
   const confirm = useConfirm();
+  // Reader-requested translation of the review text (31 Oct 2026).
+  const [translatedComment, setTranslatedComment] = useState<string | null>(null);
+  const onTranslatedText = useCallback((text: string, isTranslated: boolean) => setTranslatedComment(isTranslated ? text : null), []);
 
   const handleDelete = useCallback(async () => {
     const ok = await confirm({
@@ -158,7 +162,17 @@ function ReviewCard({
           </div>
         </div>
         {review.comment && (
-          <p className="mt-1.5 text-sm text-[var(--color-text-muted)] leading-relaxed">{review.comment}</p>
+          <>
+            <p className="mt-1.5 text-sm text-[var(--color-text-muted)] leading-relaxed">{translatedComment ?? review.comment}</p>
+            <TranslateButton
+              contentType="review"
+              contentId={review.id}
+              sourceText={review.comment}
+              sourceLocale={null}
+              onTextChange={onTranslatedText}
+              className="mt-1"
+            />
+          </>
         )}
         <SocialInteractionPanel
           targetType="review"

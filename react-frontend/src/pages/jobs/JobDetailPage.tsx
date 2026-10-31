@@ -37,6 +37,7 @@ import { useTranslation } from 'react-i18next';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { EmptyState } from '@/components/feedback';
 import { SocialInteractionPanel } from '@/components/social/SocialInteractionPanel';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -201,6 +202,11 @@ export function JobDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showApplications, setShowApplications] = useState(true);
   const [isLoadingApps, setIsLoadingApps] = useState(false);
+  // Member-written title + description, translated together on one press (31 Oct 2026).
+  const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
+  const onTranslatedText = useCallback((text: string, isTranslated: boolean) => setTranslatedDesc(isTranslated ? text : null), []);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedTitle(fields?.title ?? null), []);
 
   // CV Upload state
   const [cvFile, setCvFile] = useState<File | null>(null);
@@ -797,6 +803,7 @@ export function JobDetailPage() {
           onToggleSave={handleToggleSave}
           onRenewOpen={renewModal.onOpen}
           onDeleteOpen={deleteModal.onOpen}
+          displayTitle={translatedTitle}
           onCopyLink={async () => {
             const jobUrl = window.location.origin + tenantPath(`/jobs/${vacancy.id}`);
             await navigator.clipboard.writeText(jobUrl);
@@ -845,6 +852,19 @@ export function JobDetailPage() {
               matchResult={matchResult}
               qualificationData={qualificationData}
               onCheckQualification={handleCheckQualification}
+              displayDescription={translatedDesc}
+              translateButton={vacancy.description ? (
+                <TranslateButton
+                  contentType="job"
+                  contentId={vacancy.id}
+                  sourceText={vacancy.description}
+                  sourceLocale={null}
+                  onTextChange={onTranslatedText}
+                  extraFields={{ title: vacancy.title }}
+                  onFieldsChange={onTranslatedFields}
+                  className="mt-1"
+                />
+              ) : null}
             />
 
             <GlassCard className="p-4 sm:p-5">

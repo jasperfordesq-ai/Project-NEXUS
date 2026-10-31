@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Spinner } from '@/components/ui/Spinner';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Users from 'lucide-react/icons/users';
@@ -24,6 +25,7 @@ import XCircle from 'lucide-react/icons/circle-x';
 import Trash2 from 'lucide-react/icons/trash-2';
 import Megaphone from 'lucide-react/icons/megaphone';
 import { MemberPlainText } from '@/components/ui/MemberPlainText';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { LocationMapCard } from '@/components/location/LocationMapCard';
 import { resolveAvatarUrl, responsiveThumbnailProps, formatDateValue, formatRelativeTime } from '@/lib/helpers';
 import type { Group } from '@/types/api';
@@ -100,6 +102,11 @@ export function GroupHeader({
   onJoinRequest,
 }: GroupHeaderProps) {
   const { t } = useTranslation('groups');
+  // Member-written name + description, translated together on one press (31 Oct 2026).
+  const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
+  const [translatedName, setTranslatedName] = useState<string | null>(null);
+  const onTranslatedText = useCallback((text: string, isTranslated: boolean) => setTranslatedDesc(isTranslated ? text : null), []);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedName(fields?.name ?? null), []);
   const createdDateLabel = formatDateValue(group.created_at);
   const coverImage = group.cover_image_url || group.cover_image || null;
   const coverImageProps = coverImage
@@ -174,7 +181,7 @@ export function GroupHeader({
             <div className="min-w-0 pb-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="min-w-0 max-w-full break-words text-2xl font-bold leading-tight text-theme-primary sm:text-3xl">
-                  {group.name}
+                  {translatedName ?? group.name}
                 </h1>
                 <Chip
                   size="sm"
@@ -282,10 +289,22 @@ export function GroupHeader({
 
       {/* Description */}
       <MemberPlainText
-        content={group.description || t('detail.no_description')}
+        content={translatedDesc ?? (group.description || t('detail.no_description'))}
         className="mt-5 text-theme-muted [&_*]:break-words"
         as="div"
       />
+      {group.description && (
+        <TranslateButton
+          contentType="group"
+          contentId={group.id}
+          sourceText={group.description}
+          sourceLocale={null}
+          onTextChange={onTranslatedText}
+          extraFields={{ name: group.name }}
+          onFieldsChange={onTranslatedFields}
+          className="mt-1"
+        />
+      )}
 
       {/* Quick Stats */}
       <div className="mt-6 grid gap-3 text-sm sm:grid-cols-3">

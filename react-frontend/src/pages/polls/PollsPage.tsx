@@ -56,6 +56,7 @@ import Filter from 'lucide-react/icons/filter';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
 import { SocialInteractionPanel } from '@/components/social/SocialInteractionPanel';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
@@ -142,6 +143,18 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
   // Open poll, member has voted, counts withheld until it closes: show their
   // choice rather than falling back to vote buttons (which invited a re-vote).
   const votedWhileHidden = hasVoted && !showResults && poll.poll_type !== 'ranked';
+
+  // Reader-requested translation (31 Oct 2026): one press translates the
+  // question, the description and every option label.
+  const [translatedQuestion, setTranslatedQuestion] = useState<string | null>(null);
+  const [translatedFields, setTranslatedFields] = useState<Record<string, string> | null>(null);
+  const onTranslatedText = useCallback((text: string, isTranslated: boolean) => setTranslatedQuestion(isTranslated ? text : null), []);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedFields(fields), []);
+  const translatableFields: Record<string, string | null> = { description: poll.description };
+  poll.options.forEach((option) => { translatableFields[`option_${option.id}`] = option.label; });
+  const question = translatedQuestion ?? poll.question;
+  const description = translatedFields?.description ?? poll.description;
+  const optionLabel = (option: PollOption) => translatedFields?.[`option_${option.id}`] ?? option.label;
 
   const timeRemaining = poll.expires_at ? getTimeRemaining(poll.expires_at) : null;
   const isExpired = poll.expires_at ? new Date(poll.expires_at) <= new Date() : false;
@@ -264,9 +277,9 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
         </div>
 
         {/* Question */}
-        <h3 className="text-base font-semibold text-[var(--text-primary)] mb-1">{poll.question}</h3>
-        {poll.description && (
-          <p className="text-sm text-[var(--text-secondary)] mb-3 whitespace-pre-wrap break-words">{poll.description}</p>
+        <h3 className="text-base font-semibold text-[var(--text-primary)] mb-1">{question}</h3>
+        {description && (
+          <p className="text-sm text-[var(--text-secondary)] mb-3 whitespace-pre-wrap break-words">{description}</p>
         )}
 
         {/* Options */}
@@ -282,7 +295,7 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
                     <div className="flex items-center justify-between mb-1">
                       <span className={`text-sm ${isVotedOption ? 'font-semibold text-[var(--color-primary)]' : 'text-[var(--text-primary)]'}`}>
                         {isVotedOption && <Check className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" aria-hidden="true" />}
-                        {option.label}
+                        {optionLabel(option)}
                       </span>
                       <span className={`text-xs font-medium ml-2 ${isVotedOption ? 'text-[var(--color-primary)]' : 'text-[var(--text-muted)]'}`}>
                         {option.percentage !== null ? `${option.percentage}%` : '—'}
@@ -296,7 +309,7 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
                         track: 'bg-[var(--surface-hover)]',
                         indicator: isVotedOption ? 'bg-gradient-to-r from-accent to-accent-gradient-end' : '',
                       }}
-                      aria-label={`${option.label}: ${option.percentage !== null ? `${option.percentage}%` : '—'}`}
+                      aria-label={`${optionLabel(option)}: ${option.percentage !== null ? `${option.percentage}%` : '—'}`}
                     />
                   </div>
                 ) : votedWhileHidden ? (
@@ -306,14 +319,14 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
                     {...(isVotedOption ? { 'data-voted-option': '' } : {})}
                   >
                     {isVotedOption && <Check className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
-                    <span>{option.label}</span>
+                    <span>{optionLabel(option)}</span>
                     {isVotedOption && <span className="sr-only">{t('voted')}</span>}
                   </div>
                 ) : poll.poll_type === 'ranked' ? (
                   /* P1 - Ranked poll: show label only (voting done in modal) */
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--surface-hover)]/50">
                     <GripVertical className="w-3.5 h-3.5 text-[var(--text-subtle)]" aria-hidden="true" />
-                    <span className="text-sm text-[var(--text-primary)]">{option.label}</span>
+                    <span className="text-sm text-[var(--text-primary)]">{optionLabel(option)}</span>
                   </div>
                 ) : (
                   /* Standard vote button */
@@ -322,15 +335,26 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
                     size="sm"
                     className="w-full justify-start text-[var(--text-primary)] border-[var(--border-default)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-all"
                     onPress={() => onVote(poll.id, option.id)}
-                    aria-label={t('vote_for_option', { option: option.label, question: poll.question })}
+                    aria-label={t('vote_for_option', { option: optionLabel(option), question })}
                   >
-                    {option.label}
+                    {optionLabel(option)}
                   </Button>
                 )}
               </div>
             );
           })}
         </div>
+
+        <TranslateButton
+          contentType="poll"
+          contentId={poll.id}
+          sourceText={poll.question}
+          sourceLocale={null}
+          onTextChange={onTranslatedText}
+          extraFields={translatableFields}
+          onFieldsChange={onTranslatedFields}
+          className="mb-3"
+        />
 
         {votedWhileHidden && (
           <p className="text-xs text-[var(--text-muted)] mb-3">{t('results_hidden_until_close')}</p>

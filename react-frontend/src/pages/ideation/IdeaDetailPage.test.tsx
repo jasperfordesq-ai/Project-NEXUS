@@ -28,6 +28,8 @@ vi.mock('react-i18next', () => ({
 
       return translations[key] ?? (opts?.fallbackValue as string | undefined) ?? key;
     },
+    // The shared Translate button reads the reader's language.
+    i18n: { language: 'en', resolvedLanguage: 'en' },
   }),
 }));
 

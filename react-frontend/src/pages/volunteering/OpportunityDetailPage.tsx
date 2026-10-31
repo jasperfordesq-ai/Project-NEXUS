@@ -59,6 +59,7 @@ import { PageMeta } from '@/components/seo';
 import { LoadingScreen } from '@/components/feedback';
 import { Breadcrumbs } from '@/components/navigation';
 import { SocialInteractionPanel } from '@/components/social/SocialInteractionPanel';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { useAuth, useTenant } from '@/contexts';
 import { useToast } from '@/contexts';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
@@ -878,6 +879,11 @@ export function OpportunityDetailPage() {
   const [isChangingStatus, setIsChangingStatus] = useState(false);
   const cancelModal = useDisclosure();
   const [isCancelling, setIsCancelling] = useState(false);
+  // Member-written title + description, translated together on one press (31 Oct 2026).
+  const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
+  const onTranslatedText = useCallback((text: string, isTranslated: boolean) => setTranslatedDesc(isTranslated ? text : null), []);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedTitle(fields?.title ?? null), []);
 
   // Apply modal
   const applyModal = useDisclosure();
@@ -1161,7 +1167,7 @@ export function OpportunityDetailPage() {
               className="flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-theme-primary">{opp.title}</h1>
+              <h1 className="text-2xl font-bold text-theme-primary">{translatedTitle ?? opp.title}</h1>
               <Link
                 to={tenantPath(`/organisations/${opp.organization.id}`)}
                 className="text-accent hover:underline text-sm flex items-center gap-1 mt-1"
@@ -1234,8 +1240,20 @@ export function OpportunityDetailPage() {
 
           {/* Description */}
           {opp.description && (
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              <p className="text-theme-secondary whitespace-pre-wrap">{opp.description}</p>
+            <div>
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <p className="text-theme-secondary whitespace-pre-wrap">{translatedDesc ?? opp.description}</p>
+              </div>
+              <TranslateButton
+                contentType="vol_opportunity"
+                contentId={opp.id}
+                sourceText={opp.description}
+                sourceLocale={null}
+                onTextChange={onTranslatedText}
+                extraFields={{ title: opp.title }}
+                onFieldsChange={onTranslatedFields}
+                className="mt-1"
+              />
             </div>
           )}
 
