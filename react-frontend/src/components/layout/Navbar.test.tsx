@@ -229,6 +229,7 @@ const i18nMap: Record<string, string> = {
   'report_problem.trigger': 'Report a problem',
   'user_menu.log_out': 'Log Out',
   'flyout.bell_aria': 'Notifications',
+  'install.menu_cta': 'Get the app',
 };
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -507,6 +508,26 @@ describe('Navbar', () => {
   });
 
   describe('Utility bar', () => {
+    // Owner, 31 Oct 2026: the iPhone app went live, and the install page is
+    // linked from the utility bar for members and visitors alike.
+    it('links Get the app to the install page for a signed-out visitor', () => {
+      setupDefaultMocks();
+      render(<Navbar />);
+      const link = screen.getByTestId('utility-bar-get-app');
+      expect(link).toHaveAttribute('href', '/install-app');
+      expect(link).toHaveAccessibleName('Get the app');
+    });
+
+    it('links Get the app to the install page for a signed-in member', () => {
+      setupDefaultMocks({
+        auth: { user: { id: 1, first_name: 'A', last_name: 'B', email: 'a@b.com', role: 'member' }, isAuthenticated: true },
+      });
+      render(<Navbar />);
+      const link = screen.getByTestId('utility-bar-get-app');
+      expect(link).toHaveAttribute('href', '/install-app');
+      expect(link).toHaveAccessibleName('Get the app');
+    });
+
     it('renders child tenants in the utility switcher and opens the resolved tenant URL', async () => {
       const user = userEvent.setup();
       const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);

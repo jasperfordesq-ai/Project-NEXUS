@@ -34,6 +34,7 @@ import ShieldCheck from 'lucide-react/icons/shield-check';
 import BadgeCheck from 'lucide-react/icons/badge-check';
 import ExternalLink from 'lucide-react/icons/external-link';
 import Download from 'lucide-react/icons/download';
+import Smartphone from 'lucide-react/icons/smartphone';
 import LifeBuoy from 'lucide-react/icons/life-buoy';
 import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import { useTranslation } from 'react-i18next';
@@ -574,6 +575,20 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                   </a>
                 </Tooltip>
               )}
+              {/* Get the app — for members and visitors alike. Links to the
+                  install page (App Store / Google Play badges and QR codes);
+                  it never fires a browser install prompt itself. */}
+              {accessibleFrontendUrl && <span className={utilityBarDividerClass}>|</span>}
+              <Link
+                to={tenantPath('/install-app')}
+                className={utilityBarActionClass}
+                aria-label={t('install.menu_cta')}
+                data-testid="utility-bar-get-app"
+              >
+                <Smartphone className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span className="hidden md:inline" aria-hidden="true">{t('install.menu_cta')}</span>
+              </Link>
+              <span className={utilityBarDividerClass}>|</span>
               {/* Donate — only when the community has the Donations & Support
                   engine (member_premium) switched on. /premium is a protected
                   route, so a guest is sent to sign in first and returned. */}
