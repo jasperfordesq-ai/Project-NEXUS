@@ -62,6 +62,7 @@ async function mentionUsernameFor(token, member) {
 }
 const { requireAuth, withTokenRefresh } = require('../middleware/auth');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
+const { translationNeeded } = require('../lib/text-language');
 const { rememberClientRefusal, consumeApiRefusal, firstApiError } = require('../lib/api-refusal');
 const { PLATFORM_MAX_TRANSFER, walletMaxTransfer } = require('../lib/wallet-limits');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
@@ -1259,7 +1260,8 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   res.render('members/profile', {
     profileTranslation,
     translationFailed: req.query.status === 'translate-unavailable' ? 'unavailable' : req.query.status === 'translate-failed',
-    translationAvailable: tenant?.translation?.enabled !== false && Boolean(user.bio || user.tagline),
+    translationAvailable: tenant?.translation?.enabled !== false && Boolean(user.bio || user.tagline)
+      && translationNeeded([user.tagline, user.bio], req.locale || res.locals.locale),
     feedEnabled,
     title: displayName,
     user,

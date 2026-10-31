@@ -16,7 +16,7 @@
 {# Translate for the discussion and each reply (React GroupDiscussionTab, AWID
    feedback 30 Oct 2026). A translation made on the previous request is shown
    once, under the text it belongs to. #}
-{% macro translateBlock(messageId, buttonKey, byName, anchorId, cached) %}
+{% macro translateBlock(messageId, buttonKey, byName, anchorId, cached, text) %}
   {% set displayed = {text: cached.fields.body, locale: cached.locale} if cached else null %}
   {% if translation and translation.messageId == messageId %}{% set displayed = translation %}{% endif %}
   {% if displayed %}
@@ -26,7 +26,7 @@
       <p class="govuk-body govuk-!-margin-bottom-0" lang="{{ displayed.locale }}">{{ displayed.text }}</p>
       <a class="govuk-link" href="{{ urlFor('/groups/' + group.id + '/discussions/' + discussion.id + '?translation=original') }}">{{ t("ugc_translation.show_original") }}</a>
     </div>
-  {% else %}
+  {% elif needsTranslation([text], locale or t.locale) %}
     <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/discussions/' + (discussion.id | string) + '/translate') }}" class="govuk-!-margin-top-2 govuk-!-margin-bottom-0" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       {% if messageId %}<input type="hidden" name="message_id" value="{{ messageId }}">{% endif %}
@@ -71,7 +71,7 @@
       </p>
     {% endif %}
     <div class="govuk-body" dir="auto">{{ discussion.content | striptags | nl2br | safe }}</div>
-    {% if discussion.content %}{{ translateBlock(null, "govuk_alpha_feed.translate.discussion_button", "", "discussion-translation", discussion.cachedTranslation) }}{% endif %}
+    {% if discussion.content %}{{ translateBlock(null, "govuk_alpha_feed.translate.discussion_button", "", "discussion-translation", discussion.cachedTranslation, discussion.content) }}{% endif %}
   </article>
 
   <h2 class="govuk-heading-l" id="discussion-replies">{{ tc("groups.discussions.replies_count", (discussion.replyCount or messages.length), { count: (discussion.replyCount or messages.length) }) }}</h2>
@@ -88,7 +88,7 @@
           </p>
         {% endif %}
         <div class="govuk-body govuk-!-margin-bottom-0" dir="auto">{{ message.content | striptags | nl2br | safe }}</div>
-        {% if message.content %}{{ translateBlock(message.id, "govuk_alpha_feed.translate.reply_button", message.authorName or "", "reply-translation-" + (message.id | string), message.cachedTranslation) }}{% endif %}
+        {% if message.content %}{{ translateBlock(message.id, "govuk_alpha_feed.translate.reply_button", message.authorName or "", "reply-translation-" + (message.id | string), message.cachedTranslation, message.content) }}{% endif %}
       </article>
     {% endfor %}
     </div>

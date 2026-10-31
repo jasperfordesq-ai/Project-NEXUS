@@ -105,10 +105,10 @@ const mockApiGet = vi.mocked(api.get);
 
 const mockPost = {
   id: 1,
-  title: 'How Timebanking Works',
+  title: 'Cómo funciona el banco de tiempo',
   slug: 'my-test-post',
   excerpt: 'A guide to timebanking.',
-  content: '<p>Timebanking is a way of exchanging time.</p>',
+  content: '<p>El banco de tiempo es una forma de intercambiar tiempo.</p>',
   featured_image: null,
   published_at: '2026-01-15T10:00:00Z',
   created_at: '2026-01-15T10:00:00Z',
@@ -130,7 +130,7 @@ describe('BlogPostPage — Translate', () => {
     vi.clearAllMocks();
     mockApiGet.mockImplementation((url: string) => {
       if (url.includes('/v2/blog/')) {
-        return Promise.resolve({ success: true, data: { ...mockPost, content: '<p>Timebanking is a <strong>way</strong> of exchanging time.</p>' } });
+        return Promise.resolve({ success: true, data: { ...mockPost, content: '<p>El banco de tiempo es una <strong>forma</strong> de intercambiar tiempo.</p>' } });
       }
       return Promise.resolve({ success: true, data: null });
     });
@@ -146,7 +146,7 @@ describe('BlogPostPage — Translate', () => {
 
   it('translates the title and the body together, then restores the formatted original', async () => {
     render(<BlogPostPage />);
-    await screen.findByRole('heading', { level: 1, name: 'How Timebanking Works' });
+    await screen.findByRole('heading', { level: 1, name: 'Cómo funciona el banco de tiempo' });
 
     fireEvent.click(screen.getByRole('button', { name: /^translate$/i }));
 
@@ -155,16 +155,16 @@ describe('BlogPostPage — Translate', () => {
     expect(mockApiPost).toHaveBeenCalledWith('/v2/ugc-translate', expect.objectContaining({
       content_type: 'blog_post',
       content_id: 1,
-      source_text: 'Timebanking is a way of exchanging time.',
+      source_text: 'El banco de tiempo es una forma de intercambiar tiempo.',
     }));
     expect(mockApiPost).toHaveBeenCalledWith('/v2/ugc-translate', expect.objectContaining({
       content_type: 'blog_post_title',
       content_id: 1,
-      source_text: 'How Timebanking Works',
+      source_text: 'Cómo funciona el banco de tiempo',
     }));
 
     fireEvent.click(screen.getByRole('button', { name: /show original/i }));
-    await waitFor(() => expect(screen.getByText('way').tagName).toBe('STRONG'));
-    expect(screen.getByRole('heading', { level: 1, name: 'How Timebanking Works' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('forma').tagName).toBe('STRONG'));
+    expect(screen.getByRole('heading', { level: 1, name: 'Cómo funciona el banco de tiempo' })).toBeInTheDocument();
   });
 });

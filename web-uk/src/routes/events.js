@@ -36,6 +36,7 @@ const {
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { translationNeeded } = require('../lib/text-language');
 const { translationFailureStatus } = require('../lib/translate-failure');
 const { readDate, splitDate, readDateTime, splitDateTime } = require('../lib/date-input');
 const { audit } = require('../lib/auditLogger');
@@ -4206,7 +4207,8 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const contentTranslation = await translateFields(req, res, token, { type: 'event', id: Number(id), fields: { title: event.title, body: event.description || '' } });
   res.render('events/detail', {
     contentTranslation,
-    translationAvailable: Boolean(token) && (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false,
+    translationAvailable: Boolean(token) && (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false
+      && translationNeeded([event.title, event.description], req.locale || res.locals.locale),
     translationFailed: req.query.status === 'translate-unavailable' ? 'unavailable' : req.query.status === 'translate-failed',
     title: event.title,
     event,

@@ -52,6 +52,8 @@ import { resolveAvatarUrl, formatRelativeTime, getFormattingLocale } from '@/lib
 import { logError } from '@/lib/logger';
 import { safeLocalStorageGetJSON, safeLocalStorageSetJSON } from '@/lib/safeStorage';
 import type { FederatedMessage } from '@/types/api';
+import { isClearlyWrittenIn } from '@/lib/textLanguage/textLanguage';
+import { useReaderVocabulary } from '@/lib/textLanguage/useReaderVocabulary';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -224,6 +226,7 @@ export function FederationMessagesPage() {
   const translatedIdsRef = useRef<Set<number>>(new Set());
 
   const userLangBase = (i18n.language || 'en').split('-')[0] ?? 'en';
+  const readerVocabulary = useReaderVocabulary(userLangBase);
   const userLangName = LANG_NAMES[userLangBase] ?? userLangBase;
 
   // ── Refs ──
@@ -1177,7 +1180,7 @@ export function FederationMessagesPage() {
                                           : msg.body}
                                       </p>
 
-                                      {translationEnabled && msg.body && (
+                                      {translationEnabled && msg.body && (translatedText || !isClearlyWrittenIn(msg.body, userLangBase, readerVocabulary)) && (
                                         <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                                           <Button
                                             size="sm"

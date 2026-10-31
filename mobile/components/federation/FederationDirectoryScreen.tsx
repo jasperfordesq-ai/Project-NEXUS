@@ -60,6 +60,7 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { responsiveActionStyle } from '@/lib/layout/responsiveActions';
 import { appResolvedMember, rememberAppResolvedMember } from '@/lib/federation/appResolvedMembers';
+import { alreadyInReaderLanguage } from '@/lib/textLanguage/readerVocabulary';
 import {
   completeFederationMessageCreationOperation,
   reserveFederationMessageCreationOperation,
@@ -1490,7 +1491,7 @@ function MessageThreadView({
                     <Chip.Label>{t('directory.messages.translatedLabel')}</Chip.Label>
                   </Chip>
                 ) : null}
-                {!outbound && canTranslate ? (
+                {!outbound && canTranslate && (translated || !alreadyInReaderLanguage([message.body], targetLanguage)) ? (
                   <View className="mt-2 gap-1">
                     <HeroButton
                       size="sm"

@@ -13,7 +13,7 @@
  * Renders nothing if `sourceLocale` is already the user's current i18n locale.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Languages from 'lucide-react/icons/languages';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,8 @@ import { api } from '@/lib/api';
 import { useTenant, useToast } from '@/contexts';
 import { Button } from '@/components/ui';
 import { useUgcTranslationPreferences } from '@/contexts/UgcTranslationPreferencesContext';
+import { isClearlyWrittenIn } from '@/lib/textLanguage/textLanguage';
+import { useReaderVocabulary } from '@/lib/textLanguage/useReaderVocabulary';
 
 interface TranslateButtonProps {
   contentType: string;
@@ -84,7 +86,16 @@ export function TranslateButton({
   const current = result?.subject === subject ? result : null;
   const showing = current && originalFor !== subject ? 'translated' : 'original';
   const loading = loadingFor === subject;
-  const enabled = !hidden && !translationSwitchedOff && normalisedSource !== userLocale
+  // No button when everything shown (title and body together) is, beyond
+  // reasonable doubt, already in the reader's language. Doubt keeps it.
+  const vocabulary = useReaderVocabulary(userLocale);
+  const alreadyInReaderLanguage = useMemo(
+    () => !normalisedSource && isClearlyWrittenIn([sourceText, ...fieldEntries.map(([, value]) => value)], userLocale, vocabulary),
+    // fieldsKey stands for fieldEntries' contents.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [normalisedSource, sourceText, fieldsKey, userLocale, vocabulary],
+  );
+  const enabled = !hidden && !translationSwitchedOff && normalisedSource !== userLocale && !alreadyInReaderLanguage
     && (Boolean(sourceText.trim()) || fieldEntries.length > 0);
 
   useEffect(() => () => { generation.current++; }, []);

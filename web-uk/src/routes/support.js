@@ -8,6 +8,7 @@ const express = require('express');
 const { getExchangeConfig, getHelpFaqs } = require('../lib/api');
 const { catalogFor, valueInCatalog } = require('../lib/localization');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { translationNeeded } = require('../lib/text-language');
 const { accessibleHelpLink } = require('../lib/help-guide-links');
 const {
   AUDIENCES: HELP_AUDIENCES,
@@ -177,7 +178,8 @@ async function renderHelpHome(req, res, audience) {
 
   const token = req.token || req.signedCookies?.token;
   await Promise.all(faqGroups.flatMap(group => group.faqs.map(async faq => {
-    faq.translationAvailable = Boolean(token) && (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false;
+    faq.translationAvailable = Boolean(token) && (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false
+      && translationNeeded(Object.values(faqTranslationSpec(faq, group.category).fields), req.locale || res.locals.locale);
     faq.translationFailed = req.query.translationStatus === 'failed' && String(req.query.faqId) === String(faq.id);
     faq.translation = await translateFields(req, res, token, faqTranslationSpec(faq, group.category));
   })));

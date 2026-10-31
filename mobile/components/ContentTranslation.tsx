@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/NativeButton';
@@ -12,6 +12,7 @@ import { useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useUgcTranslationPreferences } from '@/lib/context/UgcTranslationPreferencesContext';
 import { toPlainText } from '@/lib/utils/plainText';
+import { alreadyInReaderLanguage } from '@/lib/textLanguage/readerVocabulary';
 
 type Props = { contentType: string; contentId: string | number; fields: Record<string, string | null | undefined>; disabled?: boolean };
 type Result = { key: string; fields: Record<string, string>; partial: boolean };
@@ -28,7 +29,13 @@ export default function ContentTranslation({ contentType, contentId, fields, dis
   const entries = Object.entries(fields)
     .map(([field, value]): [string, unknown] => [field, typeof value === 'string' ? toPlainText(value) : value])
     .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && Boolean(entry[1].trim()));
-  const enabled = !disabled && tenant?.translation?.enabled !== false && entries.length > 0;
+  // No control when everything shown is, beyond doubt, the reader's language
+  // already (the website's own rule; doubt keeps it).
+  const inReaderLanguage = useMemo(() => alreadyInReaderLanguage(entries.map(([, text]) => text), locale),
+    // The serialised entries stand for their contents.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(entries), locale]);
+  const enabled = !disabled && tenant?.translation?.enabled !== false && entries.length > 0 && !inReaderLanguage;
   const key = JSON.stringify([tenant?.id, preferences.identity, preferences.automatic, i18n?.language, locale, contentType, contentId, entries, enabled]);
   const currentKey = useRef(key); currentKey.current = key;
   const generation = useRef(0);

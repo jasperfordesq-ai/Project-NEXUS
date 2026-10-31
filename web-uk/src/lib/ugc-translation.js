@@ -7,6 +7,7 @@
 const { createHash } = require('node:crypto');
 const { callUserSettingsApi, callUgcTranslateApi } = require('./api');
 const { isPermanentTranslationFailure } = require('./translate-failure');
+const { translationNeeded } = require('./text-language');
 const preferencesKey = Symbol('ugcTranslationPreferences');
 const locales = new Set(['en', 'ga', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'pl', 'ja', 'ar']);
 
@@ -77,10 +78,13 @@ function registerDetailTranslation(router, config) {
 
 async function detailTranslationLocals(req, res, token, item, config) {
   const href = config.href(item, req);
+  const spec = config.spec(item);
   return {
-    contentTranslation: await translateFields(req, res, token, config.spec(item)),
+    contentTranslation: await translateFields(req, res, token, spec),
     translationAction: `${href}/translate`, translationOriginal: href,
-    translationAvailable: Boolean(token) && (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false,
+    translationAvailable: Boolean(token) && (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false
+      // No button when everything shown is, beyond doubt, the reader's language already.
+      && translationNeeded(Object.values(spec.fields), req.locale || res.locals.locale),
     translationFailed: req.query?.translationStatus === 'unavailable' ? 'unavailable' : req.query?.translationStatus === 'failed'
   };
 }

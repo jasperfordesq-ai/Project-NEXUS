@@ -113,8 +113,8 @@ const mockChallenge = {
   id: 3,
   tenant_id: 2,
   user_id: 5,
-  title: 'Zero-Waste Living Challenge',
-  description: 'Share your best zero-waste living tips with the community.',
+  title: 'Reto de vida sin residuos',
+  description: 'Comparte con la comunidad tus mejores consejos para vivir sin residuos.',
   category: 'Environment',
   status: 'open' as const,
   ideas_count: 7,
@@ -197,7 +197,7 @@ describe('ChallengeDetailPage — Translate', () => {
 
   it('translates the description and title together, then restores the original', async () => {
     render(<ChallengeDetailPage />);
-    await screen.findByRole('heading', { level: 1, name: 'Zero-Waste Living Challenge' });
+    await screen.findByRole('heading', { level: 1, name: 'Reto de vida sin residuos' });
 
     fireEvent.click(screen.getByRole('button', { name: 'translate.translate' }));
 
@@ -206,16 +206,16 @@ describe('ChallengeDetailPage — Translate', () => {
     expect(api.post).toHaveBeenCalledWith('/v2/ugc-translate', expect.objectContaining({
       content_type: 'ideation_challenge',
       content_id: 3,
-      source_text: 'Share your best zero-waste living tips with the community.',
+      source_text: 'Comparte con la comunidad tus mejores consejos para vivir sin residuos.',
     }));
     expect(api.post).toHaveBeenCalledWith('/v2/ugc-translate', expect.objectContaining({
       content_type: 'ideation_challenge_title',
       content_id: 3,
-      source_text: 'Zero-Waste Living Challenge',
+      source_text: 'Reto de vida sin residuos',
     }));
 
     fireEvent.click(screen.getByRole('button', { name: 'translate.show_original' }));
-    await waitFor(() => expect(screen.getByRole('heading', { level: 1, name: 'Zero-Waste Living Challenge' })).toBeInTheDocument());
-    expect(screen.getByText('Share your best zero-waste living tips with the community.')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1, name: 'Reto de vida sin residuos' })).toBeInTheDocument());
+    expect(screen.getByText('Comparte con la comunidad tus mejores consejos para vivir sin residuos.')).toBeInTheDocument();
   });
 });

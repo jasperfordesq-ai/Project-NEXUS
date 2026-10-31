@@ -5,6 +5,7 @@
 
 const { splitDate } = require('./date-input');
 const { resolveBackendThumbnailUrl } = require('./accessible-shell');
+const { translationNeeded } = require('./text-language');
 
 /**
  * Filters that TEMPLATES DEPEND ON, registered from one place.
@@ -21,6 +22,14 @@ const { resolveBackendThumbnailUrl } = require('./accessible-shell');
  */
 function registerTemplateFilters(env) {
   if (!env || typeof env.addFilter !== 'function') return env;
+
+  // Offer "Translate" only when the text is not, beyond doubt, already in the
+  // reader's language (owner, 31 Oct 2026). Usable everywhere, imported macros
+  // included: {% if needsTranslation([title, body], locale or t.locale) %}.
+  // Without a language it answers true: the button stays.
+  if (typeof env.addGlobal === 'function') {
+    env.addGlobal('needsTranslation', (parts, locale) => translationNeeded(parts, locale));
+  }
 
   // Split a stored 'YYYY-MM-DD' into the day/month/year parts the GOV.UK date input needs:
   //   {{ nexusDateInput({ name: "deadline", value: job.deadline | dateParts }, t) }}

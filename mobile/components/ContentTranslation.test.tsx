@@ -90,3 +90,11 @@ test('formatted descriptions are translated as the plain text the reader sees', 
   await screen.findByText('Hola');
   expect(api.post).toHaveBeenCalledWith('/api/v2/ugc-translate', expect.objectContaining({ source_text: 'Hello there' }));
 });
+// Owner, 31 Oct 2026: no control where the text is already the reader's language.
+test('no translation control for English text read in English, one for Spanish', async () => {
+  jest.mocked(getUserPreferences).mockResolvedValue({});
+  const english = render(<ContentTranslation contentType="post" contentId={1} fields={{ body: 'Please remember to log your hours after each exchange so the balance stays accurate.' }} />);
+  expect(english.queryByLabelText('ugcTranslation.translate')).toBeNull();
+  const spanish = render(<ContentTranslation contentType="post" contentId={2} fields={{ body: 'Mi vecina mayor estaría encantada de recibir una llamada cada semana, ¿alguien tiene veinte minutos?' }} />);
+  expect(spanish.getByLabelText('ugcTranslation.translate')).toBeTruthy();
+});

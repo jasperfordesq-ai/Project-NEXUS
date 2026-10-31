@@ -35,7 +35,7 @@
               <p class="govuk-body govuk-!-margin-bottom-0" lang="{{ displayedTranslation.locale }}">{{ displayedTranslation.text }}</p>
               <a class="govuk-link" href="{{ urlFor(returnTo + '?translation=original') }}">{{ t('ugc_translation.show_original') }}</a>
             </div>
-          {% elif not requiresAuth and (comment.content or comment.body) %}
+          {% elif not requiresAuth and (comment.content or comment.body) and needsTranslation([comment.content or comment.body], t.locale) %}
             <form method="post" action="{{ urlFor('/feed/comments/' + (comment.id | string) + '/translate') }}" class="govuk-!-margin-bottom-2" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               {% if translate.postId %}<input type="hidden" name="post_id" value="{{ translate.postId }}">{% else %}<input type="hidden" name="item_type" value="{{ translate.itemType }}"><input type="hidden" name="item_id" value="{{ translate.itemId }}"><input type="hidden" name="return_to" value="{{ translate.returnTo }}">{% endif %}

@@ -80,7 +80,7 @@
             <p class="govuk-body govuk-!-margin-bottom-1">{{ translation.text | nl2br | safe }}</p>
             <p class="govuk-body-s govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor('/federation/messages/conversation/' + conversation.partnerId + '?tenant_id=' + conversation.partnerTenantId) }}">{{ t("fed2.messages.view_original") }}</a></p>
           </div>
-        {% elif not message.outbound and translateEnabled %}
+        {% elif not message.outbound and translateEnabled and needsTranslation([message.body], locale or t.locale) %}
           <form method="post" action="{{ urlFor('/federation/messages/translate/' + (message.id | string)) }}" class="govuk-!-margin-top-2" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <input type="hidden" name="partner_id" value="{{ conversation.partnerId }}">

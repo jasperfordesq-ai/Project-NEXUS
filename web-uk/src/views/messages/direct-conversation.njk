@@ -205,7 +205,7 @@
                       <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ t("govuk_alpha_messages.translate.translated_label") }}</p>
                       <p class="govuk-body govuk-!-margin-bottom-0">{{ translation.text }}</p>
                     </div>
-                  {% elseif translationEnabled and message.id and (message.body | trim) %}
+                  {% elseif translationEnabled and message.id and (message.body | trim) and needsTranslation([message.body], locale or t.locale) %}
                     <form method="post" action="{{ urlFor('/messages/' + (conversation.id | string) + '/m/' + (message.id | string) + '/translate') }}" class="govuk-!-margin-top-2" novalidate>
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                       <input type="hidden" name="target_language" value="{{ locale }}">

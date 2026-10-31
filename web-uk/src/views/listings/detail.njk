@@ -131,7 +131,7 @@
             <a class="govuk-link" href="{{ urlFor('/listings/' + listing.id + '?translation=original') }}">{{ t("ugc_translation.show_original") }}</a>
           </div>
         </div>
-      {% elif isAuthenticated and (listing.description or listing.title) %}
+      {% elif isAuthenticated and (listing.description or listing.title) and needsTranslation([listing.title or listing.name, listing.description], locale or t.locale) %}
         <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/translate') }}" class="govuk-!-margin-bottom-6" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_feed.translate.listing_button") }}</button>

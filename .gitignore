@@ -78,6 +78,8 @@ CLAUDE.md
 !/scripts/check-help-staleness.mjs
 !/scripts/check-backend-json-locales.mjs
 !/scripts/sync-member-badge-copy.mjs
+!/scripts/sync-text-language.mjs
+!/scripts/build-text-language-markers.mjs
 !/scripts/check-seed-credentials.mjs
 !/scripts/check-duplicate-security-headers.mjs
 !/scripts/uptime-check.mjs

@@ -63,7 +63,7 @@
 
 {# "Translate this post" (React FeedCard TranslateButton). #}
 {% macro translateForm(item, csrfToken, urlFor, t) %}
-  {% if item.type == "post" and item.id and item.content %}
+  {% if item.type == "post" and item.id and item.content and needsTranslation([item.content], t.locale) %}
     <form method="post" action="{{ urlFor('/feed/posts/' + (item.id | string) + '/translate') }}" class="govuk-!-margin-bottom-3" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_feed.translate.button") }}</button>

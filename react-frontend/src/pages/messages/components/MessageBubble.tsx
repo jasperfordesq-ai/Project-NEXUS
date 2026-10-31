@@ -31,6 +31,8 @@ import { useTenant } from '@/contexts/TenantContext';
 import type { Message } from '@/types/api';
 import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 import { MessageLinkPreview } from './MessageLinkPreview';
+import { isClearlyWrittenIn } from '@/lib/textLanguage/textLanguage';
+import { useReaderVocabulary } from '@/lib/textLanguage/useReaderVocabulary';
 
 // Available reaction emojis
 const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
@@ -215,7 +217,11 @@ export const MessageBubble = memo(function MessageBubble({
   const userLangBase = (i18n.language || 'en').split('-')[0] ?? 'en';
   const userLangName = LANG_NAMES[userLangBase] ?? userLangBase;
   // For voice messages, we know the source language — skip translate if it matches user's UI language
-  const isAlreadyInUserLanguage = isVoiceMessage && message.transcript_language === userLangBase;
+  // Otherwise only when the words themselves are, beyond doubt, the reader's language.
+  const vocabulary = useReaderVocabulary(userLangBase);
+  const isAlreadyInUserLanguage = isVoiceMessage
+    ? message.transcript_language === userLangBase
+    : isClearlyWrittenIn(messageText, userLangBase, vocabulary);
 
   const handleTranslate = useCallback(async () => {
     if (isTranslating || !hasTranslatableContent) return;
@@ -401,7 +407,7 @@ export const MessageBubble = memo(function MessageBubble({
                 <span className="text-[10px] opacity-40 ml-1">{t('message_edited_indicator')}</span>
               )}
               {/* Translate button for text messages */}
-              {translationEnabled && !isDeleted && (message.body || message.content) && (
+              {translationEnabled && !isDeleted && (message.body || message.content) && (translatedText || !isAlreadyInUserLanguage) && (
                 <div className="mt-1 flex items-center gap-1.5">
                   <Button
                     size="sm"

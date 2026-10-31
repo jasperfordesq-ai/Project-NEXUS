@@ -7,6 +7,9 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { useAuth, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { SUPPORTED_LOCALE_CODES } from '@/i18n';
+import { useTranslation } from 'react-i18next';
+import { vocabularyCode } from '@/lib/textLanguage/textLanguage';
+import { loadVocabulary } from '@/lib/textLanguage/useReaderVocabulary';
 
 export const UGC_PREFERENCES_CHANGED = 'nexus:ugc-preferences-changed';
 type Preference = { auto_translate_ugc?: boolean; auto_translate_target_locale?: string | null };
@@ -43,6 +46,15 @@ export function UgcTranslationPreferencesProvider({ children }: { children: Reac
     window.addEventListener(UGC_PREFERENCES_CHANGED, refresh);
     return () => { cancelled = true; window.removeEventListener(UGC_PREFERENCES_CHANGED, refresh); };
   }, [identity]);
+
+  // Fetch the reader's everyday word list as soon as their language is known, so
+  // Translate buttons decide once, without appearing and then going away.
+  const { i18n } = useTranslation();
+  const readerLanguage = value.automatic && value.target ? value.target : (i18n.resolvedLanguage || i18n.language || 'en');
+  useEffect(() => {
+    const code = vocabularyCode(readerLanguage);
+    if (code) void loadVocabulary(code);
+  }, [readerLanguage]);
 
   // Never expose the previous account's preferences while the next request loads.
   return <Context.Provider value={value.identity === identity ? value : { ...empty, identity }}>{children}</Context.Provider>;

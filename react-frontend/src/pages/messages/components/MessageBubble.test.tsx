@@ -247,9 +247,21 @@ describe('MessageBubble — read receipts', () => {
 });
 
 describe('MessageBubble — mobile action sheet (<640px)', () => {
+  // The app loads the reader's word list when it learns their language
+  // (UgcTranslationPreferencesProvider), before any message is on screen.
+  beforeAll(async () => { await (await import('@/lib/textLanguage/useReaderVocabulary')).loadVocabulary('eng'); });
   beforeEach(() => {
     vi.clearAllMocks();
     mockViewport(true);
+  });
+
+  it('keeps the action sheet open when the message re-renders', async () => {
+    const user = (await import('@testing-library/user-event')).default.setup();
+    const { rerender } = render(<MessageBubble {...defaultProps} />);
+    await user.click(screen.getByRole('button', { name: 'aria_message_options' }));
+    expect(screen.getAllByRole('button', { name: 'aria_react_with' })).toHaveLength(6);
+    rerender(<MessageBubble {...defaultProps} message={{ ...defaultProps.message } as Message} />);
+    expect(screen.getAllByRole('button', { name: 'aria_react_with' })).toHaveLength(6);
   });
 
   afterEach(() => {

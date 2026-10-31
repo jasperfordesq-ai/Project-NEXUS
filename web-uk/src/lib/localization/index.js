@@ -149,7 +149,11 @@ function translateChoice(locale, key, count, replacements = {}) {
 }
 
 function createTranslator(locale) {
-  return (key, replacements = {}) => translate(locale, key, replacements);
+  const t = (key, replacements = {}) => translate(locale, key, replacements);
+  // Imported template macros receive `t` but not the page's `locale`; this lets
+  // them ask, for example, needsTranslation(text, t.locale).
+  t.locale = locale;
+  return t;
 }
 
 function createChoiceTranslator(locale) {
