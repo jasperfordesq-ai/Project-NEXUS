@@ -2,20 +2,20 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-30T20:32:08.513Z
-Laravel commit SHA: `0d76a8c49e7d2e80ce8e91ce1de53e9c7fa5e1f6`
-Web UK repository commit SHA: `0d76a8c49e7d2e80ce8e91ce1de53e9c7fa5e1f6`
-Laravel working tree dirty: yes
-Web UK repository working tree dirty: yes
-Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
+Generated: 2026-10-31T11:37:53.613Z
+Laravel commit SHA: `91f6af8fe05bef165fc204844daa7c57c7c06698`
+Web UK repository commit SHA: `91f6af8fe05bef165fc204844daa7c57c7c06698`
+Laravel working tree dirty: no
+Web UK repository working tree dirty: no
+Provenance caveat: Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs.
 
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1086 |
+| web-uk routes | 1087 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 376 |
+| Extra web-uk routes | 377 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -67,7 +67,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | leaderboard | 5 | 0 | 0 | 0 |
 | legal | 6 | 0 | 3 | 0 |
 | legal-acceptance | 0 | 0 | 2 | 0 |
-| listings | 19 | 0 | 2 | 0 |
+| listings | 19 | 0 | 3 | 0 |
 | login | 7 | 0 | 4 | 0 |
 | logout | 1 | 0 | 0 | 0 |
 | marketplace | 50 | 0 | 40 | 0 |
@@ -294,6 +294,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/legal/{param}/versions/compare` | legal | legal/compare | web-uk/src/routes/legal.js |
 | GET | `/listings/{param}/delete` | listings |  | web-uk/src/server.js |
 | GET | `/listings/mine` | listings | listings/mine | web-uk/src/routes/listings.js |
+| POST | `/listings/{param}/translate` | listings |  | web-uk/src/routes/listings.js |
 | GET | `/login/two-factor/setup` | login |  | web-uk/src/server.js |
 | POST | `/login/two-factor/setup` | login |  | web-uk/src/server.js |
 | POST | `/login/two-factor/setup/complete` | login |  | web-uk/src/server.js |

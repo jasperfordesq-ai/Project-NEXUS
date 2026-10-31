@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-30T20:32:08.513Z",
+  "generatedAt": "2026-10-31T11:37:53.613Z",
   "provenance": {
-    "generatedAt": "2026-10-30T20:32:08.513Z",
+    "generatedAt": "2026-10-31T11:37:53.613Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "0d76a8c49e7d2e80ce8e91ce1de53e9c7fa5e1f6",
-    "laravelWorkingTreeDirty": true,
+    "laravelCommitSha": "91f6af8fe05bef165fc204844daa7c57c7c06698",
+    "laravelWorkingTreeDirty": false,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "0d76a8c49e7d2e80ce8e91ce1de53e9c7fa5e1f6",
-    "webUkRepositoryWorkingTreeDirty": true,
-    "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
+    "webUkRepositoryCommitSha": "91f6af8fe05bef165fc204844daa7c57c7c06698",
+    "webUkRepositoryWorkingTreeDirty": false,
+    "caveat": "Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs."
   },
   "summary": {
-    "generatedAt": "2026-10-30T20:32:08.513Z",
+    "generatedAt": "2026-10-31T11:37:53.613Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 1086,
+    "webUkRoutes": 1087,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 376,
+    "extraWebUkRoutes": 377,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -181,7 +181,7 @@
       "listings": {
         "matched": 19,
         "missing": 0,
-        "extraWebUk": 2,
+        "extraWebUk": 3,
         "ignoredInfrastructure": 0
       },
       "login": {
@@ -4093,6 +4093,27 @@
       "apiNeeds": "",
       "webUkPath": "/listings/mine",
       "webUkView": "listings/mine",
+      "webUkFile": "web-uk/src/routes/listings.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/listings/{param}/translate",
+      "family": "listings",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/listings/{param}/translate",
+      "webUkView": "",
       "webUkFile": "web-uk/src/routes/listings.js",
       "webUkRouteKind": ""
     },
