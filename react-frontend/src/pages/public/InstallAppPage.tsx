@@ -6,16 +6,21 @@
 /**
  * Install app page ("Get the app").
  *
- * Replaces the two install affordances that used to fire a browser prompt or a
- * modal straight away: the dismissible Layout banner (withdrawn 2026-08-12) and
- * the profile-menu / mobile-drawer item, which now link here.
+ * The native app (Expo, mobile/) is published as one all-communities app,
+ * "Timebank Global", on Google Play (since 2026-08-26) and on Apple's App
+ * Store (since 2026-10-31). This page leads with the two official store
+ * badges, then offers QR codes for visitors on a computer, then the website as
+ * the always-available alternative and the home-screen (PWA) steps.
  *
- * Why a page and not a prompt: install works today on Android Chrome and on
- * Windows Chrome/Edge, and is unreliable on Apple devices. A one-tap prompt
- * cannot say that, so a large share of members were being offered something
- * that would not work for them. This page explains the options in plain
- * English, states what is broken, and only offers the native prompt on a
- * browser that has actually given us one.
+ * 🔴 The early-release notice must stay above the store badges in reading
+ * order: the owner asked for it to remain while these are early versions, and
+ * a test pins the order.
+ *
+ * Store badges are the official artwork, served locally from
+ * public/images/store-badges/ in every language Apple and Google publish one
+ * for. Both companies' guidelines forbid altering the artwork, so the badges
+ * are only ever scaled — never recoloured, cropped or redrawn — and the
+ * trademark attribution at the foot of the page is required by both.
  */
 
 import { useMemo, useState } from 'react';
@@ -23,20 +28,24 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from '@/lib/motion';
 import AlertTriangle from 'lucide-react/icons/alert-triangle';
-import Apple from 'lucide-react/icons/apple';
-import ArrowDownToLine from 'lucide-react/icons/arrow-down-to-line';
+import Bell from 'lucide-react/icons/bell';
+import Camera from 'lucide-react/icons/camera';
 import CheckCircle2 from 'lucide-react/icons/check-circle-2';
 import Download from 'lucide-react/icons/download';
 import Globe from 'lucide-react/icons/globe';
 import HelpCircle from 'lucide-react/icons/help-circle';
 import Laptop from 'lucide-react/icons/laptop';
 import LifeBuoy from 'lucide-react/icons/life-buoy';
+import MessageSquareHeart from 'lucide-react/icons/message-square-heart';
+import QrCode from 'lucide-react/icons/qr-code';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import Smartphone from 'lucide-react/icons/smartphone';
-import Store from 'lucide-react/icons/store';
+import Users from 'lucide-react/icons/users';
+import Zap from 'lucide-react/icons/zap';
 // Imported from the focused modules rather than the '@/components/ui' barrel:
 // public route surfaces are performance-critical and the barrel would pull every
 // primitive into this chunk (enforced by scripts/check-bundle-budget.mjs).
+import { Accordion, AccordionItem } from '@/components/ui/Accordion';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
@@ -47,9 +56,14 @@ import { QrCodeImage } from '@/components/volunteering/QrCodeImage';
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { useInstallPrompt } from '@/lib/installPrompt';
-import { ANDROID_PLAY_STORE_URL } from '@/config/externalLinks';
+import {
+  ANDROID_PLAY_STORE_URL,
+  IOS_APP_STORE_URL,
+  NATIVE_APP_STORE_NAME,
+} from '@/config/externalLinks';
 
 type DeviceKey = 'android' | 'iphone' | 'windows' | 'mac';
+type StoreKey = 'apple' | 'google';
 
 /**
  * Which device tab to open on. `BrowserKind` already tells us iOS vs Android
@@ -68,6 +82,19 @@ function detectDevice(browser: string): DeviceKey {
     return 'mac';
   }
   return 'windows';
+}
+
+/**
+ * Languages with an official localised badge. Apple publishes none in Irish
+ * and Google none in Irish, so `ga` (and anything unknown) gets the English
+ * artwork; the link text around it is still translated.
+ */
+const APPLE_BADGE_LANGS = new Set(['en', 'ar', 'de', 'es', 'fr', 'it', 'ja', 'nl', 'pl', 'pt']);
+const GOOGLE_BADGE_LANGS = APPLE_BADGE_LANGS;
+
+function badgeLang(language: string | undefined, available: Set<string>): string {
+  const base = (language ?? 'en').toLowerCase().split('-')[0] ?? 'en';
+  return available.has(base) ? base : 'en';
 }
 
 const DEVICE_STEPS: Record<DeviceKey, { steps: string[]; noteKey?: string; isApple: boolean }> = {
@@ -101,8 +128,47 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+interface StoreBadgeProps {
+  store: StoreKey;
+  language: string | undefined;
+  label: string;
+  testId: string;
+}
+
+/**
+ * One official store badge as a link. The two artworks are drawn differently:
+ * Apple's SVG is the badge alone (40 units tall), while Google's PNG carries
+ * transparent clear space on every side (the badge is 167 of its 250 pixels
+ * tall). Scaling Google's image to 1.5x the height and pulling the spare space
+ * back with negative margin makes the two visible badges the same height,
+ * without touching the artwork itself.
+ */
+function StoreBadge({ store, language, label, testId }: StoreBadgeProps) {
+  const isApple = store === 'apple';
+  const lang = badgeLang(language, isApple ? APPLE_BADGE_LANGS : GOOGLE_BADGE_LANGS);
+  const src = isApple
+    ? `/images/store-badges/app-store-${lang}.svg`
+    : `/images/store-badges/google-play-${lang}.png`;
+
+  return (
+    <a
+      href={isApple ? IOS_APP_STORE_URL : ANDROID_PLAY_STORE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex shrink-0 items-center rounded-lg transition-transform hover:scale-[1.03] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent motion-reduce:transition-none motion-reduce:hover:scale-100"
+      data-testid={testId}
+    >
+      {isApple ? (
+        <img src={src} alt={label} width={150} height={50} className="h-[50px] w-auto" />
+      ) : (
+        <img src={src} alt={label} width={194} height={75} className="-mx-[12px] -my-[12.5px] h-[75px] w-auto max-w-none" />
+      )}
+    </a>
+  );
+}
+
 export function InstallAppPage() {
-  const { t } = useTranslation('public');
+  const { t, i18n } = useTranslation('public');
   const { branding, tenantPath } = useTenant();
   const install = useInstallPrompt();
 
@@ -115,6 +181,11 @@ export function InstallAppPage() {
   const detected = useMemo(() => detectDevice(install.browser), [install.browser]);
   const [device, setDevice] = useState<DeviceKey>(detected);
 
+  // An Android visitor sees Google Play first; everyone else sees Apple first.
+  const storeOrder: StoreKey[] = detected === 'android' ? ['google', 'apple'] : ['apple', 'google'];
+  const badgeLabel = (store: StoreKey) =>
+    store === 'apple' ? t('install_app.badge_apple_alt') : t('install_app.badge_google_alt');
+
   const deviceTabs: Array<{ key: DeviceKey; label: string; icon: typeof Smartphone }> = [
     { key: 'android', label: t('install_app.steps_tab_android'), icon: Smartphone },
     { key: 'iphone', label: t('install_app.steps_tab_iphone'), icon: Smartphone },
@@ -122,74 +193,21 @@ export function InstallAppPage() {
     { key: 'mac', label: t('install_app.steps_tab_mac'), icon: Laptop },
   ];
 
-  const appTypes = [
-    {
-      id: 'browser',
-      icon: Globe,
-      tone: 'text-sky-500',
-      toneBg: 'from-sky-500/20 to-sky-500/5',
-      title: t('install_app.type_browser_title'),
-      tag: t('install_app.type_browser_tag'),
-      tagColor: 'default' as const,
-      body: t('install_app.type_browser_body', { name: appName }),
-      points: [
-        t('install_app.type_browser_point_1'),
-        t('install_app.type_browser_point_2'),
-        t('install_app.type_browser_point_3'),
-      ],
-    },
-    {
-      id: 'pwa',
-      icon: ArrowDownToLine,
-      tone: 'text-emerald-500',
-      toneBg: 'from-emerald-500/20 to-emerald-500/5',
-      title: t('install_app.type_pwa_title'),
-      tag: t('install_app.type_pwa_tag'),
-      tagColor: 'success' as const,
-      body: t('install_app.type_pwa_body', { name: appName }),
-      points: [
-        t('install_app.type_pwa_point_1'),
-        t('install_app.type_pwa_point_2'),
-        t('install_app.type_pwa_point_3'),
-        t('install_app.type_pwa_point_4'),
-        t('install_app.type_pwa_point_5'),
-      ],
-    },
-    {
-      // The Expo/React Native app in mobile/ — one codebase targeting both
-      // platforms (iOS bundleIdentifier + Android package are both configured in
-      // mobile/app.json). Deliberately described as "the proper app" rather than
-      // by platform: Android's release path is set up (EAS website/production
-      // profiles, managed keystore, FCM) while iOS still needs an Apple
-      // developer account and App Store review, which is what type_native_status
-      // says. This is the sole native app for Android and iOS.
-      id: 'native',
-      // Third of three cards in a two-column grid, so it spans the full row
-      // rather than leaving a hole beside it — and it is the longest card.
-      wide: true,
-      icon: Store,
-      tone: 'text-violet-500',
-      toneBg: 'from-violet-500/20 to-violet-500/5',
-      title: t('install_app.type_native_title'),
-      tag: t('install_app.type_native_tag'),
-      tagColor: 'warning' as const,
-      body: t('install_app.type_native_body'),
-      points: [
-        t('install_app.type_native_point_1'),
-        t('install_app.type_native_point_2'),
-        t('install_app.type_native_point_3'),
-        t('install_app.type_native_point_4'),
-      ],
-      note: t('install_app.type_native_status'),
-    },
+  const features = [
+    { key: 'notifications', icon: Bell, tone: 'text-amber-500', toneBg: 'from-amber-500/20 to-amber-500/5' },
+    { key: 'camera', icon: Camera, tone: 'text-sky-500', toneBg: 'from-sky-500/20 to-sky-500/5' },
+    { key: 'speed', icon: Zap, tone: 'text-violet-500', toneBg: 'from-violet-500/20 to-violet-500/5' },
+    { key: 'communities', icon: Users, tone: 'text-emerald-500', toneBg: 'from-emerald-500/20 to-emerald-500/5' },
   ];
+
+  const faqs = ['free', 'account', 'name', 'early', 'devices', 'website', 'pwa'];
 
   return (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="mx-auto max-w-4xl space-y-8 px-1 py-4 sm:px-4 sm:py-8"
+      className="mx-auto max-w-5xl space-y-8 px-1 py-4 sm:space-y-10 sm:px-4 sm:py-8"
       data-testid="install-app-page"
     >
       <PageMeta
@@ -197,132 +215,185 @@ export function InstallAppPage() {
         description={t('install_app.meta_description', { name: appName })}
       />
 
-      {/* Hero */}
-      <motion.header variants={itemVariants} className="text-center">
-        <div className="mb-4 inline-flex rounded-2xl bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 p-4">
-          <Download className="h-9 w-9 text-accent" aria-hidden="true" />
-        </div>
-        <h1 className="mb-3 text-3xl font-bold text-theme-primary sm:text-4xl">
-          {t('install_app.heading')}
-        </h1>
-        <p className="mx-auto max-w-2xl text-base text-theme-secondary sm:text-lg">
-          {t('install_app.subheading', { name: appName })}
-        </p>
-      </motion.header>
-
-      {/* The Android app went live on Google Play on 2026-08-26 and is the best
-          option for anyone on Android, so it sits above the PWA prompt rather
-          than inside the "kinds of app" grid further down. The QR code reuses
-          QrCodeImage, which lazy-loads the generator into its own chunk and
-          degrades to a plain link if that chunk fails — so this section cannot
-          become a dead end on a stale deploy. */}
-      <motion.section variants={itemVariants} aria-labelledby="install-play-heading">
-        <GlassCard className="p-5 sm:p-6" data-testid="install-play-live">
-          <div className="mb-4 flex flex-wrap items-center gap-3">
-            <div className="inline-flex rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 p-2.5">
-              <Store className="h-5 w-5 text-emerald-500" aria-hidden="true" />
-            </div>
-            <h2
-              id="install-play-heading"
-              className="text-xl font-semibold text-theme-primary sm:text-2xl"
-            >
-              {t('install_app.play_live_title')}
-            </h2>
-            <Chip size="sm" variant="flat" color="warning">
-              {t('install_app.play_live_tag')}
-            </Chip>
-          </div>
-
-          {/* Sits directly under the heading, before the download button, so
-              nobody reaches the store link without reading that the app is
-              still in development. It used to follow the QR code, where it
-              read as small print. */}
+      {/* Hero — heading, the early-release notice, then the two store badges. */}
+      <motion.section variants={itemVariants} aria-labelledby="install-hero-heading">
+        <GlassCard className="relative overflow-hidden p-6 text-center sm:p-10">
           <div
-            className="mb-5 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4"
-            data-testid="install-play-early-notice"
-          >
-            <p className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-theme-warning">
-              <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {t('install_app.play_live_early_title')}
+            className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent/15 via-transparent to-accent-gradient-end/15"
+            aria-hidden="true"
+          />
+          <div className="relative flex flex-col items-center">
+            <Chip size="sm" variant="flat" color="success" className="mb-4">
+              {t('install_app.hero_tag')}
+            </Chip>
+            <div className="mb-4 inline-flex rounded-2xl bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 p-4">
+              <Smartphone className="h-9 w-9 text-accent" aria-hidden="true" />
+            </div>
+            <h1
+              id="install-hero-heading"
+              className="mb-3 text-3xl font-bold text-theme-primary sm:text-5xl"
+            >
+              {t('install_app.heading')}
+            </h1>
+            <p className="mx-auto mb-6 max-w-2xl text-base text-theme-secondary sm:text-lg">
+              {t('install_app.subheading', { name: appName, app: NATIVE_APP_STORE_NAME })}
             </p>
-            <p className="text-sm leading-relaxed text-theme-secondary">
-              {t('install_app.play_live_early_body')}
-            </p>
-          </div>
 
-          <div className="grid items-start gap-6 sm:grid-cols-[1fr_auto]">
-            <div className="space-y-4">
-              <p className="text-sm leading-relaxed text-theme-secondary sm:text-base">
-                {t('install_app.play_live_body')}
+            {/* Sits directly above the store badges so nobody reaches a store
+                link without reading that the app is still in development. */}
+            <div
+              className="mb-6 max-w-2xl rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-start"
+              data-testid="install-early-notice"
+              role="note"
+            >
+              <p className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-theme-warning">
+                <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {t('install_app.early_title')}
               </p>
-
-              <Button
-                as="a"
-                href={ANDROID_PLAY_STORE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                size="lg"
-                className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto sm:px-8"
-                startContent={<Store className="h-5 w-5" aria-hidden="true" />}
-                data-testid="install-play-cta"
-              >
-                {t('install_app.play_live_cta')}
-              </Button>
-
-              <p className="text-sm text-theme-muted">
-                {t('install_app.play_live_requirement')}
+              <p className="text-sm leading-relaxed text-theme-secondary">
+                {t('install_app.early_body')}
               </p>
             </div>
 
-            {/* Deliberately not hidden on small screens: someone reading this on
-                a laptop is the person who needs the code, but someone reading on
-                a tablet may well want to scan it with their phone. */}
-            <figure className="mx-auto flex flex-col items-center gap-2 sm:mx-0">
-              <div className="rounded-xl bg-white p-3">
-                <QrCodeImage
-                  value={ANDROID_PLAY_STORE_URL}
-                  alt={t('install_app.play_live_qr_alt')}
-                  size={148}
-                />
-              </div>
-              <figcaption className="max-w-[10rem] text-center text-xs text-theme-muted">
-                {t('install_app.play_live_qr_caption')}
-              </figcaption>
-            </figure>
-          </div>
-
-          <div className="mt-5 rounded-xl bg-accent/10 p-4">
-            <p className="mb-1.5 text-sm font-semibold text-theme-primary">
-              {t('install_app.play_live_feedback_title')}
-            </p>
-            <p className="mb-3 text-sm leading-relaxed text-theme-secondary">
-              {t('install_app.play_live_feedback_body')}
-            </p>
-            <Button
-              as={Link}
-              to={tenantPath('/contact')}
-              variant="flat"
-              size="sm"
-              className="bg-theme-elevated text-theme-primary"
-              data-testid="install-play-feedback-cta"
+            <div
+              className="flex flex-wrap items-center justify-center gap-4"
+              data-testid="install-store-badges"
             >
-              {t('install_app.play_live_feedback_cta')}
-            </Button>
-          </div>
+              {storeOrder.map((store) => (
+                <StoreBadge
+                  key={store}
+                  store={store}
+                  language={i18n.language}
+                  label={badgeLabel(store)}
+                  testId={`install-badge-${store}`}
+                />
+              ))}
+            </div>
 
-          <p className="mt-4 flex items-start gap-2 text-sm leading-relaxed text-theme-secondary">
-            <Apple className="mt-0.5 h-4 w-4 shrink-0 text-theme-secondary" aria-hidden="true" />
-            <span>{t('install_app.play_live_apple_next')}</span>
-          </p>
+            <ul className="mt-5 flex flex-col items-center gap-1.5 text-sm text-theme-muted sm:flex-row sm:gap-5">
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" />
+                {t('install_app.fact_free')}
+              </li>
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" />
+                {t('install_app.fact_ios')}
+              </li>
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" />
+                {t('install_app.fact_android')}
+              </li>
+            </ul>
+          </div>
         </GlassCard>
       </motion.section>
 
-      {/* The web version is the recommendation for phones: it IS the website,
-          so it is always current and it is the surface we maintain first. The
-          native app above is an early release, so this says plainly which of
-          the two is the stable choice. Shown on every device; only the action
-          at the bottom varies (one-tap install where the browser offered a
-          prompt, a confirmation if already installed, otherwise the steps). */}
+      {/* QR codes for visitors on a computer. Hidden on phone-sized screens,
+          where scanning a code on your own screen is impossible and the badges
+          above already open the store app; kept on tablets and up. Each code
+          reuses QrCodeImage, which lazy-loads the generator and degrades to a
+          plain link, so this can never become a dead end on a stale deploy. */}
+      <motion.section
+        variants={itemVariants}
+        aria-labelledby="install-qr-heading"
+        className="hidden sm:block"
+        data-testid="install-qr-section"
+      >
+        <div className="mb-4 flex items-center gap-3">
+          <div className="inline-flex rounded-xl bg-accent/10 p-2.5">
+            <QrCode className="h-5 w-5 text-accent" aria-hidden="true" />
+          </div>
+          <div>
+            <h2 id="install-qr-heading" className="text-2xl font-bold text-theme-primary">
+              {t('install_app.qr_title')}
+            </h2>
+            <p className="text-sm text-theme-secondary">{t('install_app.qr_intro')}</p>
+          </div>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {(['apple', 'google'] as StoreKey[]).map((store) => (
+            <GlassCard key={store} className="flex flex-col items-center gap-4 p-6 text-center">
+              <h3 className="text-lg font-semibold text-theme-primary">
+                {t(store === 'apple' ? 'install_app.qr_apple_title' : 'install_app.qr_google_title')}
+              </h3>
+              <div className="rounded-2xl bg-white p-3 shadow-sm">
+                <QrCodeImage
+                  value={store === 'apple' ? IOS_APP_STORE_URL : ANDROID_PLAY_STORE_URL}
+                  alt={t(store === 'apple' ? 'install_app.qr_apple_alt' : 'install_app.qr_google_alt')}
+                  size={168}
+                />
+              </div>
+              <StoreBadge
+                store={store}
+                language={i18n.language}
+                label={badgeLabel(store)}
+                testId={`install-qr-badge-${store}`}
+              />
+            </GlassCard>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* What the app gives you over the website. */}
+      <motion.section variants={itemVariants} aria-labelledby="install-features-heading">
+        <h2 id="install-features-heading" className="mb-2 text-2xl font-bold text-theme-primary">
+          {t('install_app.features_title')}
+        </h2>
+        <p className="mb-5 text-sm text-theme-secondary sm:text-base">
+          {t('install_app.features_intro', { name: appName })}
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {features.map((feature) => {
+            const Icon = feature.icon;
+            return (
+              <GlassCard key={feature.key} className="flex h-full flex-row items-start gap-4 p-5">
+                <div className={`inline-flex shrink-0 rounded-xl bg-gradient-to-br ${feature.toneBg} p-2.5`}>
+                  <Icon className={`h-5 w-5 ${feature.tone}`} aria-hidden="true" />
+                </div>
+                <div>
+                  <h3 className="mb-1 text-base font-semibold text-theme-primary">
+                    {t(`install_app.feature_${feature.key}_title`)}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-theme-secondary">
+                    {t(`install_app.feature_${feature.key}_body`, { name: appName })}
+                  </p>
+                </div>
+              </GlassCard>
+            );
+          })}
+        </div>
+      </motion.section>
+
+      {/* Early feedback invitation — the reason this is framed as an early release. */}
+      <motion.section variants={itemVariants} aria-labelledby="install-feedback-heading">
+        <GlassCard className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+          <div className="inline-flex h-fit shrink-0 self-start rounded-xl bg-accent/10 p-3">
+            <MessageSquareHeart className="h-6 w-6 text-accent" aria-hidden="true" />
+          </div>
+          <div className="flex-1">
+            <h2 id="install-feedback-heading" className="mb-1.5 text-lg font-semibold text-theme-primary">
+              {t('install_app.feedback_title')}
+            </h2>
+            <p className="text-sm leading-relaxed text-theme-secondary">
+              {t('install_app.feedback_body')}
+            </p>
+          </div>
+          <Button
+            as={Link}
+            to={tenantPath('/contact')}
+            variant="flat"
+            className="w-full shrink-0 bg-accent/10 text-accent hover:bg-accent/20 sm:w-auto"
+            data-testid="install-feedback-cta"
+          >
+            {t('install_app.feedback_cta')}
+          </Button>
+        </GlassCard>
+      </motion.section>
+
+      {/* The website: always available, and the most stable option while the
+          apps are early releases. Only the action at the bottom varies (one-tap
+          install where the browser offered a prompt, a confirmation if already
+          installed, otherwise the steps further down). */}
       <motion.section variants={itemVariants} aria-labelledby="install-web-stable-heading">
         <GlassCard
           className="!border-2 !border-emerald-500/50 p-5 sm:p-6"
@@ -330,10 +401,13 @@ export function InstallAppPage() {
         >
           <div className="mb-3 flex flex-wrap items-center gap-3">
             <div className="inline-flex rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 p-2.5">
-              <ShieldCheck className="h-5 w-5 text-emerald-500" aria-hidden="true" />
+              <Globe className="h-5 w-5 text-emerald-500" aria-hidden="true" />
             </div>
             <Chip size="sm" variant="flat" color="success">
-              {t('install_app.web_stable_tag')}
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                {t('install_app.web_stable_tag')}
+              </span>
             </Chip>
           </div>
           <h2
@@ -342,11 +416,11 @@ export function InstallAppPage() {
           >
             {t('install_app.web_stable_title', { name: appName })}
           </h2>
-          <p className="mb-4 text-base font-medium leading-relaxed text-theme-primary">
+          <p className="mb-4 text-base leading-relaxed text-theme-primary">
             {t('install_app.web_stable_lead')}
           </p>
           <ul className="mb-4 space-y-2">
-            {['web_stable_point_1', 'web_stable_point_2', 'web_stable_point_3'].map((key) => (
+            {['web_stable_point_2', 'web_stable_point_3'].map((key) => (
               <li key={key} className="flex items-start gap-2 text-sm text-theme-secondary sm:text-base">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" />
                 <span>{t(`install_app.${key}`)}</span>
@@ -390,154 +464,27 @@ export function InstallAppPage() {
         </GlassCard>
       </motion.section>
 
-      {/* Honest status — what works, what does not. */}
-      <motion.section variants={itemVariants} aria-labelledby="install-status-heading">
-        <GlassCard className="p-5 sm:p-6">
-          <h2
-            id="install-status-heading"
-            className="mb-4 text-xl font-semibold text-theme-primary"
-          >
-            {t('install_app.status_title')}
-          </h2>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4">
-              <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-theme-success">
-                <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-                {t('install_app.status_working_label')}
-              </p>
-              <ul className="space-y-1.5 text-sm text-theme-secondary">
-                <li>{t('install_app.status_working_android')}</li>
-                <li>{t('install_app.status_working_windows')}</li>
-              </ul>
-            </div>
-
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
-              <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-theme-warning">
-                <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
-                {t('install_app.status_issues_label')}
-              </p>
-              <p className="text-sm text-theme-secondary">
-                {t('install_app.status_issues_apple', { name: appName })}
-              </p>
-            </div>
-          </div>
-
-          <p className="mt-4 text-sm text-theme-secondary">
-            {t('install_app.status_meanwhile', { name: appName })}
-          </p>
-          <p className="mt-2 text-sm font-medium text-theme-primary">
-            {t('install_app.status_updates')}
-          </p>
-        </GlassCard>
-      </motion.section>
-
-      {/* Why Apple is the awkward one. Members were being told "it does not work
-          on Apple" with no reason, which reads as our fault. These three points
-          are Apple's own platform rules, not a defect we introduced. */}
-      <motion.section variants={itemVariants} aria-labelledby="install-apple-heading">
-        <GlassCard className="p-5 sm:p-6">
-          <h2
-            id="install-apple-heading"
-            className="mb-2 flex items-center gap-2 text-xl font-semibold text-theme-primary"
-          >
-            <Apple className="h-5 w-5 shrink-0 text-theme-secondary" aria-hidden="true" />
-            {t('install_app.apple_why_title')}
-          </h2>
-          <p className="mb-4 text-sm text-theme-secondary">
-            {t('install_app.apple_why_intro', { name: appName })}
-          </p>
-          <ol className="space-y-3">
-            {['apple_why_1', 'apple_why_2', 'apple_why_3'].map((key, index) => (
-              <li key={key} className="flex items-start gap-3">
-                <span
-                  className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-theme-elevated text-xs font-semibold text-theme-secondary"
-                  aria-hidden="true"
-                >
-                  {index + 1}
-                </span>
-                <span className="text-sm leading-relaxed text-theme-secondary">
-                  {t(`install_app.${key}`)}
-                </span>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-4 rounded-lg bg-accent/10 p-3 text-sm font-medium text-theme-primary">
-            {t('install_app.apple_why_outcome')}
-          </p>
-        </GlassCard>
-      </motion.section>
-
-      {/* The four kinds of app */}
-      <motion.section variants={itemVariants} aria-labelledby="install-types-heading">
-        <h2
-          id="install-types-heading"
-          className="mb-2 text-2xl font-bold text-theme-primary"
-        >
-          {t('install_app.types_title')}
+      {/* Frequently asked questions. */}
+      <motion.section variants={itemVariants} aria-labelledby="install-faq-heading">
+        <h2 id="install-faq-heading" className="mb-4 flex items-center gap-2 text-2xl font-bold text-theme-primary">
+          <HelpCircle className="h-6 w-6 shrink-0 text-accent" aria-hidden="true" />
+          {t('install_app.faq_title')}
         </h2>
-        <p className="mb-5 text-sm text-theme-secondary sm:text-base">
-          {t('install_app.types_intro', { name: appName })}
-        </p>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          {appTypes.map((type) => {
-            const Icon = type.icon;
+        <Accordion variant="splitted" selectionMode="multiple" data-testid="install-faq">
+          {faqs.map((key) => {
+            const question = t(`install_app.faq_${key}_q`, { app: NATIVE_APP_STORE_NAME });
             return (
-              <GlassCard
-                key={type.id}
-                className={`flex h-full flex-col gap-3 p-5 ${'wide' in type && type.wide ? 'sm:col-span-2' : ''}`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className={`inline-flex rounded-xl bg-gradient-to-br ${type.toneBg} p-2.5`}>
-                    <Icon className={`h-5 w-5 ${type.tone}`} aria-hidden="true" />
-                  </div>
-                  <Chip size="sm" variant="flat" color={type.tagColor}>
-                    {type.tag}
-                  </Chip>
-                </div>
-
-                <h3 className="text-lg font-semibold text-theme-primary">{type.title}</h3>
-                <p className="text-sm leading-relaxed text-theme-secondary">{type.body}</p>
-
-                {type.points ? (
-                  <ul className="space-y-1.5">
-                    {type.points.map((point) => (
-                      <li key={point} className="flex items-start gap-2 text-sm text-theme-secondary">
-                        <CheckCircle2
-                          className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500"
-                          aria-hidden="true"
-                        />
-                        <span>{point}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-
-                {type.note ? (
-                  <p className="mt-auto rounded-lg bg-theme-elevated p-3 text-sm text-theme-muted">
-                    {type.note}
-                  </p>
-                ) : null}
-
-                {type.id === 'pwa' ? (
-                  <Button
-                    as="a"
-                    href="#install-steps"
-                    variant="flat"
-                    size="sm"
-                    className="mt-3 w-full bg-accent/10 text-accent hover:bg-accent/20"
-                  >
-                    {t('install_app.type_pwa_cta')}
-                  </Button>
-                ) : null}
-              </GlassCard>
+              <AccordionItem key={key} id={key} aria-label={question} title={question}>
+                <p className="text-sm leading-relaxed text-theme-secondary">
+                  {t(`install_app.faq_${key}_a`, { name: appName, app: NATIVE_APP_STORE_NAME })}
+                </p>
+              </AccordionItem>
             );
           })}
-        </div>
+        </Accordion>
       </motion.section>
 
-      {/* Per-device steps */}
+      {/* Home-screen (PWA) steps, per device. */}
       <motion.section
         variants={itemVariants}
         id="install-steps"
@@ -657,6 +604,11 @@ export function InstallAppPage() {
           </div>
         </GlassCard>
       </motion.section>
+
+      {/* Required by Apple's and Google's badge guidelines. */}
+      <p className="px-2 text-center text-xs leading-relaxed text-theme-muted" data-testid="install-trademarks">
+        {t('install_app.trademarks')}
+      </p>
     </motion.div>
   );
 }

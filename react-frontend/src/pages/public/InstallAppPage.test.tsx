@@ -106,82 +106,124 @@ function promptState(overrides: Record<string, unknown> = {}) {
 
 import { InstallAppPage } from './InstallAppPage';
 
+const APP_STORE_URL = 'https://apps.apple.com/app/timebank-global/id6823712395';
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=ie.project.nexus';
+
 describe('InstallAppPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseInstallPrompt.mockReturnValue(promptState());
   });
 
-  it('renders the heading and the honest device-support status', () => {
+  it('links both official store badges to the real store pages', () => {
     render(<InstallAppPage />);
 
     expect(screen.getByRole('heading', { level: 1, name: 'Get the app' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 2, name: 'Where things stand right now' })).toBeInTheDocument();
-    // "Available now" is deliberately used twice — as the status label here and
-    // as the chip on the home-screen card, so the two agree.
-    expect(screen.getAllByText('Available now')).toHaveLength(2);
-    expect(screen.getByText('Android phones and tablets, using Chrome')).toBeInTheDocument();
-    expect(screen.getByText('Windows computers, using Chrome or Edge')).toBeInTheDocument();
-    // The Apple caveat is the whole reason the banner was withdrawn — it must
-    // be on the page, not buried.
-    expect(screen.getByText('Not working properly yet')).toBeInTheDocument();
-    expect(screen.getByText(/Saving Test Community to an Apple device does not work properly/)).toBeInTheDocument();
-    expect(screen.getByText(/We will keep this page up to date/)).toBeInTheDocument();
+    expect(screen.getByText('Now on the App Store and Google Play')).toBeInTheDocument();
+
+    // Assert the real URLs, not just that a badge exists: a badge pointing
+    // nowhere would still satisfy a name-only assertion.
+    const apple = screen.getByTestId('install-badge-apple');
+    expect(apple).toHaveAttribute('href', APP_STORE_URL);
+    expect(apple).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    expect(screen.getAllByRole('img', { name: 'Download on the App Store' })[0]).toHaveAttribute(
+      'src',
+      '/images/store-badges/app-store-en.svg',
+    );
+
+    const google = screen.getByTestId('install-badge-google');
+    expect(google).toHaveAttribute('href', PLAY_STORE_URL);
+    expect(google).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    expect(screen.getAllByRole('img', { name: 'Get it on Google Play' })[0]).toHaveAttribute(
+      'src',
+      '/images/store-badges/google-play-en.png',
+    );
+
+    expect(screen.getByText('iPhone: iOS 15.1 or later (also runs on iPad)')).toBeInTheDocument();
+    expect(screen.getByText('Android 7.0 or later')).toBeInTheDocument();
   });
 
-  it('offers the live Google Play release with a working link, a QR code and an early-release warning', () => {
+  it('keeps the early-release notice above the store badges', () => {
     render(<InstallAppPage />);
 
-    expect(
-      screen.getByRole('heading', { level: 2, name: 'The Android app is live on Google Play' }),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Early release — still in development')).toBeInTheDocument();
+    expect(screen.getByText(/These are early versions of the app/)).toBeInTheDocument();
+    // The owner asked for the notice to stay while these are early versions.
+    // It must come BEFORE the badges in reading order, so it cannot be skipped
+    // on the way to a store link.
+    const notice = screen.getByTestId('install-early-notice');
+    for (const badge of [screen.getByTestId('install-badge-apple'), screen.getByTestId('install-badge-google')]) {
+      expect(notice.compareDocumentPosition(badge) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  });
 
-    // The link is the point of the section: assert the real store URL rather
-    // than just that a button exists, because a button pointing nowhere would
-    // still satisfy a name-only assertion.
-    const cta = screen.getByTestId('install-play-cta');
-    expect(cta).toHaveAttribute('href', 'https://play.google.com/store/apps/details?id=ie.project.nexus');
-    expect(cta).toHaveAttribute('rel', expect.stringContaining('noopener'));
+  it('puts the App Store first for iPhone visitors and Google Play first for Android visitors', () => {
+    mockUseInstallPrompt.mockReturnValue(promptState({ isIos: true, isIosSafari: true, browser: 'ios-safari' }));
+    const { unmount } = render(<InstallAppPage />);
+    let links = screen.getByTestId('install-store-badges').querySelectorAll('a');
+    expect(links[0]).toHaveAttribute('href', APP_STORE_URL);
+    unmount();
+
+    mockUseInstallPrompt.mockReturnValue(promptState({ browser: 'chrome-android' }));
+    render(<InstallAppPage />);
+    links = screen.getByTestId('install-store-badges').querySelectorAll('a');
+    expect(links[0]).toHaveAttribute('href', PLAY_STORE_URL);
+  });
+
+  it('offers a QR code for each store, for visitors on a computer', () => {
+    render(<InstallAppPage />);
 
     // QrCodeImage renders an aria-labelled placeholder until its generator
     // chunk resolves, so the accessible name is present either way.
     expect(
+      screen.getByRole('img', { name: 'QR code that opens the App Store page for the app' }),
+    ).toBeInTheDocument();
+    expect(
       screen.getByRole('img', { name: 'QR code that opens the Google Play page for the app' }),
     ).toBeInTheDocument();
-
-    // Early-release honesty and the invitation to give feedback both have to
-    // survive: they are the reason this is framed as an early release at all.
-    expect(screen.getByText('Early release · in development')).toBeInTheDocument();
-    expect(screen.getByText('Early release — still in development')).toBeInTheDocument();
-    expect(screen.getByText(/The core of the app is solid/)).toBeInTheDocument();
-    expect(screen.getByText(/some less common situations may not work quite right yet/)).toBeInTheDocument();
-    // The notice must come BEFORE the download button in reading order, so it
-    // cannot be skipped on the way to the store link.
-    const notice = screen.getByTestId('install-play-early-notice');
-    expect(
-      notice.compareDocumentPosition(cta) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(screen.getByText(/Be one of the first/)).toBeInTheDocument();
-    expect(screen.getByTestId('install-play-feedback-cta')).toHaveAttribute('href', '/test/contact');
-
-    // iPhone/iPad is stated as nearly ready but deliberately without a date.
-    expect(screen.getByText(/An iPhone and iPad version is built from the same app/)).toBeInTheDocument();
+    expect(screen.getByTestId('install-qr-badge-apple')).toHaveAttribute('href', APP_STORE_URL);
+    expect(screen.getByTestId('install-qr-badge-google')).toHaveAttribute('href', PLAY_STORE_URL);
   });
 
-  it('recommends the web version as the most stable way to use the platform on a phone', () => {
+  it('no longer says the iPhone app is still to come', () => {
+    render(<InstallAppPage />);
+
+    // Guards the specific regression this rewrite replaced: the page said the
+    // iPhone version was "very nearly ready" after it had shipped.
+    expect(screen.queryByText(/very nearly ready/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/We will add a link here/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Not working properly yet/)).not.toBeInTheDocument();
+  });
+
+  it('invites early feedback through the tenant contact page', () => {
+    render(<InstallAppPage />);
+
+    expect(screen.getByText(/Be one of the first/)).toBeInTheDocument();
+    expect(screen.getByTestId('install-feedback-cta')).toHaveAttribute('href', '/test/contact');
+  });
+
+  it('answers the common questions, naming the app as published', () => {
+    render(<InstallAppPage />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Common questions' })).toBeInTheDocument();
+    expect(screen.getByText('Does the app cost anything?')).toBeInTheDocument();
+    expect(screen.getByText('Do I need a new account?')).toBeInTheDocument();
+    // The store name is a brand and must reach the reader intact.
+    expect(screen.getByText('Why is the app called Timebank Global?')).toBeInTheDocument();
+    expect(screen.getByText('What does "early release" mean?')).toBeInTheDocument();
+  });
+
+  it('recommends the website as the most stable way to use the platform', () => {
     render(<InstallAppPage />);
 
     expect(
       screen.getByRole('heading', {
         level: 2,
-        name: 'The most stable way to use Test Community on your phone',
+        name: 'The website: the most stable way to use Test Community',
       }),
     ).toBeInTheDocument();
     expect(screen.getByText('Most stable')).toBeInTheDocument();
-    expect(screen.getByText(/exactly the same as the full website/)).toBeInTheDocument();
-    expect(screen.getByText(/the most reliable option we offer today/)).toBeInTheDocument();
-    // The Apple limitation is restated here, not only further down.
-    expect(screen.getByText(/saving it as an app icon is not reliable yet/)).toBeInTheDocument();
+    expect(screen.getByText(/On iPhone and iPad that is not reliable/)).toBeInTheDocument();
     // With no browser prompt available, the section still gives an action.
     expect(screen.getByTestId('install-web-stable-steps')).toHaveAttribute('href', '#install-steps');
   });
@@ -195,57 +237,19 @@ describe('InstallAppPage', () => {
     expect(screen.queryByTestId('install-web-stable-steps')).toBeNull();
   });
 
-  it('no longer claims there is no download link, now that Android has shipped', () => {
-    render(<InstallAppPage />);
-
-    // Guards the specific regression this section replaced: the native-app card
-    // used to end with "There is no download link here yet", which contradicted
-    // the store link above it the moment Android went live.
-    expect(screen.queryByText(/no download link here yet/)).not.toBeInTheDocument();
-    expect(screen.getByText(/Android is live, and the download link and QR code are at the top/)).toBeInTheDocument();
-  });
-
-  it('explains why Apple devices are the awkward ones, in Apple-rule terms', () => {
-    render(<InstallAppPage />);
-
-    expect(
-      screen.getByRole('heading', { level: 2, name: /Why is it harder on Apple devices/ }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/There is no one-tap install/)).toBeInTheDocument();
-    expect(screen.getByText(/only works in Safari/)).toBeInTheDocument();
-    expect(screen.getByText(/opens logged out and you have to sign in again/)).toBeInTheDocument();
-    // The reader is pointed at the option that does work on Apple.
-    expect(screen.getByText(/None of that applies to the proper app/)).toBeInTheDocument();
-  });
-
-  it('distinguishes the home-screen version from a proper native app', () => {
-    render(<InstallAppPage />);
-
-    expect(screen.getByRole('heading', { level: 3, name: 'Just use your browser' })).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 3, name: 'The website saved to your home screen' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 3, name: 'The proper app, from the app store' }),
-    ).toBeInTheDocument();
-    // Both bits of jargon are named and then defined in the same sentence.
-    expect(screen.getByText(/short for Progressive Web App/)).toBeInTheDocument();
-    expect(screen.getByText(/Developers call this a native app/)).toBeInTheDocument();
-    // One app covers both platforms, and the ordering is stated honestly.
-    // 🔴 This used to assert "Android is closest" and "no download link here
-    // yet". Android shipped on 2026-08-26, so both sentences became false and
-    // the second one contradicted the store link now at the top of the page.
-    // The assertions moved with the copy rather than being deleted.
-    expect(screen.getByText('One app for both Android and iPhone or iPad')).toBeInTheDocument();
-    expect(screen.getByText(/Android is live/)).toBeInTheDocument();
-    expect(screen.getByText(/We will add a link here the moment it is available/)).toBeInTheDocument();
-  });
-
   it('interpolates the tenant brand name instead of leaving the placeholder', () => {
     render(<InstallAppPage />);
 
-    expect(screen.getByText(/You can use Test Community in any web browser/)).toBeInTheDocument();
+    expect(screen.getByText(/the account you already use for Test Community/)).toBeInTheDocument();
     expect(screen.queryByText(/\{\{name\}\}/)).toBeNull();
+    expect(screen.queryByText(/\{\{app\}\}/)).toBeNull();
+  });
+
+  it('shows the trademark attribution the store badge guidelines require', () => {
+    render(<InstallAppPage />);
+
+    expect(screen.getByTestId('install-trademarks')).toHaveTextContent(/App Store is a service mark of Apple Inc\./);
+    expect(screen.getByTestId('install-trademarks')).toHaveTextContent(/Google Play and the Google Play logo are trademarks of Google LLC\./);
   });
 
   it('opens on the Windows steps for a desktop Chrome visitor', () => {
@@ -255,20 +259,17 @@ describe('InstallAppPage', () => {
     expect(screen.getByText('Open this page in Chrome or Edge.')).toBeInTheDocument();
   });
 
-  it('opens on the iPhone steps and shows the Apple warning on iOS Safari', () => {
+  it('opens on the iPhone steps and points Apple users at the App Store app', () => {
     mockUseInstallPrompt.mockReturnValue(
       promptState({ isIos: true, isIosSafari: true, browser: 'ios-safari' }),
     );
     render(<InstallAppPage />);
 
     expect(screen.getByRole('heading', { level: 3, name: 'iPhone or iPad' })).toBeInTheDocument();
-    expect(screen.getByText(/unreliable on Apple devices at the moment/)).toBeInTheDocument();
+    expect(screen.getByText(/we recommend the app from the App Store instead/)).toBeInTheDocument();
   });
 
-  it('still renders on Chrome for iOS, where installing is impossible', () => {
-    // The old menu gate hid the install entry entirely for these users. They
-    // are exactly the people who need telling that Apple only allows it in
-    // Safari.
+  it('still renders on Chrome for iOS, where saving the website is impossible', () => {
     mockUseInstallPrompt.mockReturnValue(
       promptState({ isIos: true, browser: 'ios-other' }),
     );

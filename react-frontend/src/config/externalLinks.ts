@@ -29,11 +29,26 @@ export const PROJECT_NEXUS_DOCS_URL = 'https://docs.project-nexus.ie/';
  * so this URL is deliberately NOT derived from tenant branding. The same
  * package id is quoted in the Play compliance pages' copy; keep them in step.
  *
- * There is no App Store equivalent yet. Do not add one speculatively: the
- * install page reads the presence of a URL as "this store has the app", and a
- * dead link there is worse than the honest "not yet" it renders instead.
  */
 export const ANDROID_APP_PACKAGE_ID = 'ie.project.nexus';
 
 export const ANDROID_PLAY_STORE_URL =
   `https://play.google.com/store/apps/details?id=${ANDROID_APP_PACKAGE_ID}`;
+
+/**
+ * The same app on Apple's App Store (iPhone and iPad), approved and released
+ * on 2026-10-31 as version 1.12.0. App Store Connect app id 6823712395, bundle
+ * id `ie.project.nexus` — the same single all-communities app as the Android
+ * one above.
+ *
+ * Deliberately has no country segment (`/ie/`, `/us/`): apps.apple.com
+ * redirects to the visitor's own storefront, and on an iPhone or iPad the link
+ * opens the App Store app directly.
+ */
+export const IOS_APP_STORE_ID = '6823712395';
+
+export const IOS_APP_STORE_URL =
+  `https://apps.apple.com/app/timebank-global/id${IOS_APP_STORE_ID}`;
+
+/** The store name of the app, shown as published. A brand name — never translated. */
+export const NATIVE_APP_STORE_NAME = 'Timebank Global';
