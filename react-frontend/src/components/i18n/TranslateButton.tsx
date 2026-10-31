@@ -31,6 +31,14 @@ interface TranslateButtonProps {
   /** Hide the button entirely (used when caller is rendering an inline status pill instead). */
   hidden?: boolean;
   className?: string;
+  /**
+   * Other parts of the same item translated with the same press — a listing's
+   * title, a group's name (31 Oct 2026: only the body could be translated).
+   * Keyed by field name; each is sent as content type `<contentType>_<field>`.
+   */
+  extraFields?: Record<string, string | null | undefined>;
+  /** Receives the translated extra fields while the translation is shown, and null for the original. */
+  onFieldsChange?: (fields: Record<string, string> | null) => void;
 }
 
 interface UgcTranslateResponse {
@@ -48,6 +56,8 @@ export function TranslateButton({
   onTextChange,
   hidden = false,
   className,
+  extraFields,
+  onFieldsChange,
 }: TranslateButtonProps) {
   const { t, i18n } = useTranslation('common');
   const toast = useToast();
@@ -57,17 +67,24 @@ export function TranslateButton({
   const normalisedSource = (sourceLocale || '').slice(0, 2).toLowerCase();
 
   const [translated, setTranslated] = useState<string | null>(null);
+  const [translatedFields, setTranslatedFields] = useState<Record<string, string> | null>(null);
+  // Only non-empty extra fields, in a stable order.
+  const fieldEntries = Object.entries(extraFields ?? {})
+    .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].trim() !== '')
+    .sort(([a], [b]) => a.localeCompare(b));
+  const fieldsKey = JSON.stringify(fieldEntries);
   const [showing, setShowing] = useState<'original' | 'translated'>('original');
   const [loading, setLoading] = useState(false);
   // What the current translation (or request) is of. A translation belongs to
   // one text, one item and one reader language; when any of them changes it is
   // dropped, and a reply to an earlier request is ignored (AWID audit A4).
-  const subject = `${contentType}\u0000${contentId}\u0000${userLocale}\u0000${sourceText}`;
+  const subject = `${contentType}\u0000${contentId}\u0000${userLocale}\u0000${sourceText}\u0000${fieldsKey}`;
   const subjectRef = useRef(subject);
   useEffect(() => {
     if (subjectRef.current === subject) return;
     subjectRef.current = subject;
     setTranslated(null);
+    setTranslatedFields(null);
     setShowing('original');
     setLoading(false);
   }, [subject]);
@@ -82,6 +99,11 @@ export function TranslateButton({
     }
   }, [showing, translated, sourceText, onTextChange]);
 
+  useEffect(() => {
+    if (!onFieldsChange) return;
+    onFieldsChange(showing === 'translated' && translated ? translatedFields : null);
+  }, [showing, translated, translatedFields, onFieldsChange]);
+
   const handleClick = useCallback(async () => {
     if (showing === 'translated') {
       setShowing('original');
@@ -95,15 +117,26 @@ export function TranslateButton({
     const requestedFor = subject;
     setLoading(true);
     try {
-      const resp = await api.post<UgcTranslateResponse>('/v2/ugc-translate', {
-        content_type: contentType,
+      const translateText = (type: string, text: string) => api.post<UgcTranslateResponse>('/v2/ugc-translate', {
+        content_type: type,
         content_id: contentId,
-        source_text: sourceText,
+        source_text: text,
         source_locale: normalisedSource || undefined,
         target_locale: userLocale,
       });
+      const [resp, ...fieldResponses] = await Promise.all([
+        translateText(contentType, sourceText),
+        ...fieldEntries.map(([key, value]) => translateText(`${contentType}_${key}`, value)),
+      ]);
       if (subjectRef.current !== requestedFor) return;
       if (resp.success && resp.data) {
+        // A field that could not be translated keeps its original wording.
+        const fields: Record<string, string> = {};
+        fieldEntries.forEach(([key, value], index) => {
+          const fieldResp = fieldResponses[index];
+          fields[key] = fieldResp?.success && fieldResp.data?.translated_text ? fieldResp.data.translated_text : value;
+        });
+        setTranslatedFields(fields);
         setTranslated(resp.data.translated_text);
         setShowing('translated');
       } else {
@@ -116,7 +149,9 @@ export function TranslateButton({
     } finally {
       if (subjectRef.current === requestedFor) setLoading(false);
     }
-  }, [showing, translated, sourceText, contentType, contentId, normalisedSource, userLocale, subject, toast, t]);
+  // fieldsKey stands for fieldEntries' contents.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showing, translated, sourceText, contentType, contentId, normalisedSource, userLocale, subject, fieldsKey, toast, t]);
 
   // Skip rendering when sourceLocale already matches the user's locale.
   if (hidden) return null;

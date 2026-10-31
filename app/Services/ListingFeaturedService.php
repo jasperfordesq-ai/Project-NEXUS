@@ -119,7 +119,12 @@ class ListingFeaturedService
     {
         $tenantId = tenant_id();
 
-        return array_map(fn($r) => (array) $r, DB::select(
+        // Category names in the reader's language (TaxonomyNameLocalizer).
+        return array_map(function ($r) {
+            $row = (array) $r;
+            $row['category_name'] = \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $row['category_id'] ?? null, $row['category_name'] ?? null);
+            return $row;
+        }, DB::select(
             "SELECT l.id, l.title, l.description, l.type, l.category_id, l.image_url,
                     l.location, l.status, l.is_featured, l.featured_until,
                     l.created_at, l.user_id, l.view_count,

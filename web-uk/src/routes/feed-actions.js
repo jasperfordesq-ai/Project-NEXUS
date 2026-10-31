@@ -761,11 +761,19 @@ function findComment(rows, id) {
   return null;
 }
 
+// The non-feed targets whose comment threads can be translated, with the page
+// each returns to (31 Oct 2026). Only these shapes: not an open redirect.
+const TRANSLATABLE_COMMENT_TARGETS = {
+  event: { path: /^\/events\/\d+$/, param: 'social', fragment: '#comments' },
+  volunteer: { path: /^\/volunteering\/opportunities\/\d+\/comments$/, param: 'social', fragment: '#comments' },
+  listing: { path: /^\/listings\/\d+\/comments$/, param: 'status', fragment: '' }
+};
+
 router.post('/comments/:id(\\d+)/translate', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   const commentId = Number(req.params.id);
   const postId = positiveInteger(req.body.post_id);
-  if (postId === null) return redirectTo(res, FEED_PATH);
+  if (postId === null) return translateTargetComment(req, res, token, commentId);
   const postPath = `${FEED_PATH}/posts/${postId}`;
   if (!token) {
     return redirectTo(res, `${postPath}?status=auth-required`);
@@ -807,6 +815,58 @@ router.post('/comments/:id(\\d+)/translate', asyncRoute(async (req, res) => {
   const anchor = status === 'comment-translate-done' ? `#comment-${commentId}` : '';
   return redirectTo(res, `${postPath}?status=${encodeURIComponent(status)}${anchor}`);
 }));
+
+/**
+ * The same for a comment on an event or a volunteering opportunity (the shared
+ * target-social section). The thread is read from the API for that target; the
+ * result is shown once under the comment on the page it came from.
+ */
+async function translateTargetComment(req, res, token, commentId) {
+  const targetType = trimmed(req.body.item_type, 30);
+  const targetId = positiveInteger(req.body.item_id);
+  const returnTo = trimmed(req.body.return_to, 200);
+  const target = Object.prototype.hasOwnProperty.call(TRANSLATABLE_COMMENT_TARGETS, targetType)
+    ? TRANSLATABLE_COMMENT_TARGETS[targetType]
+    : null;
+  if (!target || targetId === null || !target.path.test(returnTo)) return redirectTo(res, FEED_PATH);
+  if (!token) return redirectTo(res, `${returnTo}?${target.param}=auth-required${target.fragment}`);
+
+  const requestedLocale = trimmed(req.locale || res.locals.locale || 'en', 10);
+  const targetLocale = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/.test(requestedLocale) ? requestedLocale : 'en';
+
+  let status = 'comment-translate-done';
+  try {
+    const thread = dataFrom(await getComments(token, { target_type: targetType, target_id: targetId }));
+    const rows = Array.isArray(thread) ? thread : (thread && Array.isArray(thread.comments) ? thread.comments : []);
+    const comment = findComment(rows, commentId);
+    const sourceText = htmlToPlainText(comment?.content || comment?.body || '').slice(0, 8000).trim();
+    if (sourceText === '') {
+      status = 'comment-translate-empty';
+    } else {
+      const result = await callUgcTranslateApi(token, {
+        content_type: 'comment',
+        content_id: commentId,
+        source_text: sourceText,
+        target_locale: targetLocale
+      });
+      const translated = trimmed(dataFrom(result)?.translated_text, 10000);
+      if (translated === '') {
+        status = 'translate-unavailable';
+      } else if (translated === sourceText) {
+        status = 'comment-translate-same';
+      } else if (req.session) {
+        req.session.targetCommentTranslation = { targetType, targetId, commentId, text: translated, locale: targetLocale };
+      }
+    }
+  } catch (error) {
+    if (isAuthError(error)) return redirectTo(res, `${returnTo}?${target.param}=auth-required${target.fragment}`);
+    const failure = translateFailureStatus(error);
+    status = failure === 'translate-failed' ? 'comment-translate-failed' : failure;
+  }
+
+  const anchor = status === 'comment-translate-done' ? `#comment-${commentId}` : target.fragment;
+  return redirectTo(res, `${returnTo}?${target.param}=${encodeURIComponent(status)}${anchor}`);
+}
 
 router.post('/polls/:id(\\d+)/vote', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);

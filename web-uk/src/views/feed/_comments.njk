@@ -35,7 +35,7 @@
           {% elif not requiresAuth and (comment.content or comment.body) %}
             <form method="post" action="{{ urlFor('/feed/comments/' + (comment.id | string) + '/translate') }}" class="govuk-!-margin-bottom-2" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-              <input type="hidden" name="post_id" value="{{ translate.postId }}">
+              {% if translate.postId %}<input type="hidden" name="post_id" value="{{ translate.postId }}">{% else %}<input type="hidden" name="item_type" value="{{ translate.itemType }}"><input type="hidden" name="item_id" value="{{ translate.itemId }}"><input type="hidden" name="return_to" value="{{ translate.returnTo }}">{% endif %}
               <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_feed.translate.comment_button") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_feed.translate.comment_by", { name: authorName }) }}</span></button>
             </form>
           {% endif %}

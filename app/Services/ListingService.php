@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Services\Translation\TaxonomyNameLocalizer;
 use App\Core\EmailTemplateBuilder;
 use App\Core\Mailer;
 use App\Core\TenantContext;
@@ -572,7 +573,7 @@ class ListingService
         // the category() BelongsTo relation via magic __get. Read the eager-loaded
         // relation explicitly.
         $cat = $listing->relationLoaded('category') ? $listing->getRelation('category') : null;
-        $data['category_name']  = $cat?->name;
+        $data['category_name'] = $cat ? TaxonomyNameLocalizer::nameFor('categories', $cat->id, $cat->name) : null;
         $data['category_color'] = $cat?->color;
         $data['category_slug']  = $cat?->slug;
 
@@ -880,7 +881,7 @@ class ListingService
 
         // Category — `category` column on listings shadows the relation, read it explicitly.
         $cat = $listing->relationLoaded('category') ? $listing->getRelation('category') : null;
-        $data['category_name'] = $cat?->name;
+        $data['category_name'] = $cat ? TaxonomyNameLocalizer::nameFor('categories', $cat->id, $cat->name) : null;
         $data['category_color'] = $cat?->color;
         $data['category_slug'] = $cat?->slug;
 
@@ -1074,7 +1075,7 @@ class ListingService
                 'avatar_url' => $user->avatar_url,
             ] : null;
             $cat = $listing->relationLoaded('category') ? $listing->getRelation('category') : null;
-            $data['category_name'] = $cat?->name;
+            $data['category_name'] = $cat ? TaxonomyNameLocalizer::nameFor('categories', $cat->id, $cat->name) : null;
             $data['category_color'] = $cat?->color;
             $data['distance_km'] = round((float) $listing->distance_km, 2);
             $data['is_favorited'] = isset($savedIds[$listing->id]);
@@ -1130,7 +1131,7 @@ class ListingService
                     : UserDisplayName::resolve($user);
                 $data['author_avatar'] = $user->avatar_url ?? null;
                 $cat = $listing->relationLoaded('category') ? $listing->getRelation('category') : null;
-                $data['category_name'] = $cat?->name;
+                $data['category_name'] = $cat ? TaxonomyNameLocalizer::nameFor('categories', $cat->id, $cat->name) : null;
                 $data['category_color'] = $cat?->color;
                 return $data;
             })

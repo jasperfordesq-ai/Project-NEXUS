@@ -558,6 +558,10 @@ async function request<T>(
 
   const headers: Record<string, string> = {
     Accept: 'application/json',
+    // The member's app language, so the API answers in it — category names,
+    // messages and errors (31 Oct 2026: the app sent none, so public endpoints
+    // answered in the community's language). A caller may still override it.
+    'Accept-Language': (i18n.language || 'en').split('-')[0] || 'en',
     'X-Nexus-Mobile': '1',
     'X-Nexus-Mobile-Version': APP_VERSION,
     ...options.headers,

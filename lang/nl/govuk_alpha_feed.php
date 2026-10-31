@@ -142,6 +142,7 @@ return [
         'unavailable' => 'Vertalen is niet beschikbaar in deze gemeenschap.',
         'same' => 'Dit bericht is al in uw taal.',
         'empty' => 'Dit bericht bevat geen tekst om te vertalen.',
+        'listing_button' => 'Deze advertentie vertalen',
         'comment_button' => 'Deze reactie vertalen',
         'comment_by' => '(reactie van :name)',
         'discussion_button' => 'Deze discussie vertalen',

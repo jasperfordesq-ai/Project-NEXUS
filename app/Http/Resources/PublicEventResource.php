@@ -83,7 +83,7 @@ final class PublicEventResource
     {
         $category = is_array($event['category'] ?? null) ? $event['category'] : [];
         $id = self::nullableInt($event['category_id'] ?? $category['id'] ?? null);
-        $name = self::nullableString($event['category_name'] ?? $category['name'] ?? null);
+        $name = \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $id, self::nullableString($event['category_name'] ?? $category['name'] ?? null));
         $slug = self::nullableString($event['category_slug'] ?? $category['slug'] ?? null);
 
         if ($id === null && $name === null && $slug === null) {

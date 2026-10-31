@@ -490,7 +490,7 @@ class ListingsDigestService
             })
             ->where('u.status', 'active')
             ->select([
-                'l.id', 'l.user_id', 'l.type', 'l.title', 'l.description', 'l.image_url', 'l.hours_estimate',
+                'l.id', 'l.user_id', 'l.type', 'l.title', 'l.description', 'l.image_url', 'l.hours_estimate', 'l.category_id',
                 'l.is_featured', 'l.featured_until', 'l.created_at',
                 'c.name as category_name',
                 'u.first_name', 'u.profile_type', 'u.organization_name',
@@ -652,7 +652,10 @@ class ListingsDigestService
             'id' => (int) $row->id,
             'type' => (string) $row->type,
             'title' => (string) $row->title,
-            'category' => $row->category_name !== null ? (string) $row->category_name : null,
+            // In this member's language: items are rendered per member inside LocaleContext.
+            'category' => $row->category_name !== null
+                ? \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $row->category_id ?? null, (string) $row->category_name)
+                : null,
             'author' => $author,
             'hours' => $hours,
             'url' => self::url('/listings/' . (int) $row->id),

@@ -193,7 +193,8 @@ class FeedSidebarController extends BaseApiController
                 ->orderByDesc('count')
                 ->limit(8)
                 ->get()
-                ->map(fn ($r) => (array) $r)
+                // Shown in the reader's language (names are translated ahead of time).
+                ->map(fn ($r) => ['name' => \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $r->id, $r->name)] + (array) $r)
                 ->all();
         } catch (\Throwable $e) {
             $data['top_categories'] = [];

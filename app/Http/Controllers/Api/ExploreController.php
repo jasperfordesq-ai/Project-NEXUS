@@ -6,6 +6,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Services\Translation\TaxonomyNameLocalizer;
 use App\Core\TenantContext;
 use App\Services\ExploreService;
 use App\Services\MatchLearningService;
@@ -41,6 +42,8 @@ class ExploreController extends BaseApiController
     {
         $userId = $this->requireAuth();
         $data = $this->exploreService->getExploreData($userId);
+        // Category names in the reader's language (cached sections hold the stored names).
+        $data = is_array($data) ? TaxonomyNameLocalizer::localizePayload($data) : $data;
 
         return $this->respondWithData($data);
     }
@@ -57,6 +60,8 @@ class ExploreController extends BaseApiController
         $perPage = $this->queryInt('per_page', 20, 1, 50);
 
         $result = $this->exploreService->getForYouFeed($tenantId, $userId, $page, $perPage);
+        // Category names in the reader's language (cached sections hold the stored names).
+        $result = is_array($result) ? TaxonomyNameLocalizer::localizePayload($result) : $result;
 
         return $this->respondWithPaginatedCollection(
             $result['items'],
@@ -97,6 +102,8 @@ class ExploreController extends BaseApiController
         $perPage = $this->queryInt('per_page', 20, 1, 100);
 
         $result = $this->exploreService->getPopularListingsPaginated($tenantId, $page, $perPage);
+        // Category names in the reader's language (cached sections hold the stored names).
+        $result = is_array($result) ? TaxonomyNameLocalizer::localizePayload($result) : $result;
 
         return $this->respondWithPaginatedCollection(
             $result['items'],
@@ -117,6 +124,8 @@ class ExploreController extends BaseApiController
         $perPage = $this->queryInt('per_page', 20, 1, 100);
 
         $result = $this->exploreService->getListingsByCategory($tenantId, $slug, $page, $perPage);
+        // Category names in the reader's language (cached sections hold the stored names).
+        $result = is_array($result) ? TaxonomyNameLocalizer::localizePayload($result) : $result;
 
         if ($result['category'] === null) {
             return $this->respondWithError('CATEGORY_NOT_FOUND', __('api.category_not_found'), null, 404);

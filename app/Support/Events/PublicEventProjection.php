@@ -80,7 +80,7 @@ final class PublicEventProjection
             'image_url' => $event['image_url'] ?? null,
             'category' => $category === [] ? null : [
                 'id' => (int) ($category['id'] ?? 0),
-                'name' => $category['name'] ?? null,
+                'name' => \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $category['id'] ?? null, $category['name'] ?? null),
                 'slug' => $category['slug'] ?? null,
                 'color' => $category['color'] ?? null,
             ],

@@ -525,7 +525,8 @@ final class EventContractMapper
             ? $facts['category']
             : (is_array($event['category'] ?? null) ? $event['category'] : []);
         $id = self::nullableInt($source['id'] ?? $event['category_id'] ?? null);
-        $name = self::nullableString($source['name'] ?? $event['category_name'] ?? null);
+        // Shown in the reader's language (names are translated ahead of time).
+        $name = \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $id, self::nullableString($source['name'] ?? $event['category_name'] ?? null));
         $slug = self::nullableString($source['slug'] ?? $event['category_slug'] ?? null);
         $colour = self::nullableString(
             $source['colour']

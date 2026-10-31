@@ -104,6 +104,14 @@ class SearchController extends BaseApiController
         }
 
         $result = $this->searchService->unifiedSearch($query, $userId, $filters);
+        // Listing category names in the reader's language. Only listing items:
+        // marketplace items carry ids from another category table.
+        $result['items'] = array_map(static function ($item) {
+            if (is_array($item) && ($item['type'] ?? null) === 'listing' && isset($item['category_id'], $item['category_name'])) {
+                $item['category_name'] = \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $item['category_id'], $item['category_name']);
+            }
+            return $item;
+        }, $result['items'] ?? []);
 
         return $this->respondWithData($result['items'], [
             'pagination' => [

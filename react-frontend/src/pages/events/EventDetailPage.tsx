@@ -139,6 +139,9 @@ export function EventDetailPage() {
   // Reflect the loaded event name in the tab/title; falls back to the static label while loading.
   usePageTitle(event?.title ?? t('title'));
   const [translatedEventDesc, setTranslatedEventDesc] = useState<string | null>(null);
+  // The title is translated with the description (31 Oct 2026).
+  const [translatedEventTitle, setTranslatedEventTitle] = useState<string | null>(null);
+  const onTranslatedEventFields = useCallback((fields: Record<string, string> | null) => setTranslatedEventTitle(fields?.title ?? null), []);
   const [attendees, setAttendees] = useState<EventRosterMember[]>([]);
   const [isRosterLoading, setIsRosterLoading] = useState(false);
   const [rosterLoadError, setRosterLoadError] = useState(false);
@@ -1103,7 +1106,7 @@ export function EventDetailPage() {
                 <span className="text-4xl font-bold leading-none">{startDayLabel}</span>
               </div>
               <h1 className="max-w-3xl text-3xl font-bold leading-tight text-white sm:text-5xl">
-                {event.title}
+                {translatedEventTitle ?? event.title}
               </h1>
               {event.series.named && (
                 <Link to={tenantPath(`/events?series=${event.series.named.id}`)} className="mt-4 inline-flex max-w-full items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-sm text-white backdrop-blur-md transition-opacity hover:opacity-90">
@@ -1396,6 +1399,8 @@ export function EventDetailPage() {
                     sourceText={event.description}
                     sourceLocale={null}
                     onTextChange={(text, isTranslated) => setTranslatedEventDesc(isTranslated ? text : null)}
+                    extraFields={{ title: event.title }}
+                    onFieldsChange={onTranslatedEventFields}
                     className="mt-1"
                   />
                 )}

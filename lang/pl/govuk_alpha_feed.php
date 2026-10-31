@@ -142,6 +142,7 @@ return [
         'unavailable' => 'Tłumaczenie nie jest dostępne w tej społeczności.',
         'same' => 'Ten post jest już w Twoim języku.',
         'empty' => 'Ten post nie zawiera tekstu do przetłumaczenia.',
+        'listing_button' => 'Przetłumacz to ogłoszenie',
         'comment_button' => 'Przetłumacz ten komentarz',
         'comment_by' => '(komentarz od :name)',
         'discussion_button' => 'Przetłumacz tę dyskusję',

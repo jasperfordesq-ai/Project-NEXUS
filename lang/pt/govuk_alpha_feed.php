@@ -142,6 +142,7 @@ return [
         'unavailable' => 'A tradução não está disponível nesta comunidade.',
         'same' => 'Esta publicação já está no seu idioma.',
         'empty' => 'Esta publicação não tem texto para traduzir.',
+        'listing_button' => 'Traduzir este anúncio',
         'comment_button' => 'Traduzir este comentário',
         'comment_by' => '(comentário de :name)',
         'discussion_button' => 'Traduzir esta discussão',

@@ -206,6 +206,12 @@ class VolunteerService
             if (isset($data['creator']) && is_array($data['creator'])) {
                 unset($data['creator']['id']);
             }
+            if (isset($data['category']) && is_array($data['category'])) {
+                // Shown in the reader's language (names are translated ahead of time).
+                $data['category']['name'] = \App\Services\Translation\TaxonomyNameLocalizer::nameFor(
+                    'categories', $data['category']['id'] ?? null, $data['category']['name'] ?? null,
+                );
+            }
             $data['is_remote'] = (bool) ($opp->is_remote ?? false);
             $data['has_applied'] = in_array((int) $opp->id, $appliedOpportunityIds, true);
             if (isset($opp->distance_km)) {
@@ -3547,7 +3553,7 @@ class VolunteerService
             'is_remote'     => (bool) ($opp['is_remote'] ?? false),
             'latitude'      => isset($opp['latitude']) ? (float) $opp['latitude'] : null,
             'longitude'     => isset($opp['longitude']) ? (float) $opp['longitude'] : null,
-            'category'      => $opp['category_name'] ?? null,
+            'category'      => \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $opp['category_id'] ?? null, $opp['category_name'] ?? null),
             // The id, so clients match the category without comparing names
             // (names are shown in the reader's language since 30 Oct 2026).
             'category_id'   => isset($opp['category_id']) ? (int) $opp['category_id'] : null,

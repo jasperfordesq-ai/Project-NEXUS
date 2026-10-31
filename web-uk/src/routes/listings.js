@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+const { takeCommentTranslation } = require('../lib/target-comments');
 const express = require('express');
 const fs = require('fs/promises');
 const { randomUUID, timingSafeEqual } = require('node:crypto');
@@ -11,6 +12,7 @@ const {
   getListings,
   getMyListings,
   getListing,
+  callUgcTranslateApi,
   createListing,
   updateListing,
   deleteListing,
@@ -899,7 +901,13 @@ function listingCommentsStatus(status, t) {
     'comment-added': { type: 'success', title: t('states.success_title'), message: t('govuk_alpha_listings.comments.states.comment-added') },
     'reply-added': { type: 'success', title: t('states.success_title'), message: t('govuk_alpha_listings.comments.states.reply-added') },
     'comment-invalid': { type: 'error', title: t('states.error_title'), message: t('govuk_alpha_listings.comments.states.comment-invalid'), anchor: 'body' },
-    'comment-failed': { type: 'error', title: t('states.error_title'), message: t('govuk_alpha_listings.comments.states.comment-failed'), anchor: 'body' }
+    'comment-failed': { type: 'error', title: t('states.error_title'), message: t('govuk_alpha_listings.comments.states.comment-failed'), anchor: 'body' },
+    // Translating one comment (31 Oct 2026).
+    'comment-translate-done': { type: 'success', title: t('states.success_title'), message: t('govuk_alpha_feed.translate.text_done') },
+    'comment-translate-failed': { type: 'error', title: t('states.error_title'), message: t('govuk_alpha_feed.translate.text_failed') },
+    'comment-translate-same': { type: 'error', title: t('states.error_title'), message: t('govuk_alpha_feed.translate.text_same') },
+    'comment-translate-empty': { type: 'error', title: t('states.error_title'), message: t('govuk_alpha_feed.translate.text_empty') },
+    'translate-unavailable': { type: 'error', title: t('states.error_title'), message: t('govuk_alpha_feed.translate.unavailable') }
   };
   return states[trimmed(status)] || null;
 }
@@ -1280,6 +1288,7 @@ router.get('/:id(\\d+)/comments', asyncRoute(async (req, res) => {
     listingTitle: trimmed(listing.title || listing.name) || 'Comments',
     comments: commentData.comments,
     commentsCount: commentData.count,
+    commentTranslation: takeCommentTranslation(req, 'listing', id),
     status: listingCommentsStatus(req.query.status, res.locals.t),
     commentForm: consumeFormReplay(req, 'listingComment', id),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
@@ -1613,8 +1622,65 @@ router.post('/new', requireAuth, audit.listingCreate(), asyncRoute(async (req, r
 }, { redirectOn401: loginRedirect(), notFoundTitle: 'Listing not found' }));
 
 // View listing detail
+/**
+ * Translate a listing's title and description into the member's language
+ * (31 Oct 2026: the accessible site could translate posts and comments, not
+ * listings). Read from the API, never from the form; shown once on the page.
+ */
+router.post('/:id(\\d+)/translate', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  const id = Number(req.params.id);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const requestedLocale = trimmed(req.locale || res.locals.locale || 'en', 10);
+  const targetLocale = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/.test(requestedLocale) ? requestedLocale : 'en';
+
+  let status = 'translate-done';
+  try {
+    const listing = listingFrom(await getListing(token, id));
+    const title = trimmed(listing.title || listing.name, 255);
+    const description = String(listing.description || '').slice(0, 8000).trim();
+    if (title === '' && description === '') {
+      status = 'translate-empty';
+    } else {
+      const translate = (contentType, text) => (text === ''
+        ? Promise.resolve('')
+        : callUgcTranslateApi(token, { content_type: contentType, content_id: id, source_text: text, target_locale: targetLocale })
+          .then((result) => trimmed(dataFrom(result)?.translated_text, 10000)));
+      const [translatedDescription, translatedTitle] = await Promise.all([
+        translate('listing', description),
+        translate('listing_title', title)
+      ]);
+      if ((description !== '' && translatedDescription === '') || (title !== '' && translatedTitle === '')) {
+        status = 'translate-unavailable';
+      } else if (translatedDescription === description && translatedTitle === title) {
+        status = 'translate-same';
+      } else if (req.session) {
+        req.session.listingTranslation = { id, title: translatedTitle, description: translatedDescription, locale: targetLocale };
+      }
+    }
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    const code = String(error?.data?.code || error?.data?.errors?.[0]?.code || '').toUpperCase();
+    status = ['TRANSLATION_UNAVAILABLE', 'TRANSLATION_DISABLED', 'AI_NOT_CONFIGURED', 'AI_UNAVAILABLE'].includes(code)
+      || code.includes('FEATURE_DISABLED') ? 'translate-unavailable' : 'translate-failed';
+  }
+
+  const anchor = status === 'translate-done' ? '#listing-translation' : '';
+  return redirectTo(res, `/listings/${id}?status=${encodeURIComponent(status)}${anchor}`);
+}));
+
 router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
+  // A translation made on the previous request (POST /listings/:id/translate), shown once.
+  let listingTranslation = null;
+  if (req.session && req.session.listingTranslation) {
+    const stored = req.session.listingTranslation;
+    delete req.session.listingTranslation;
+    if (stored && Number(stored.id) === Number(req.params.id)) {
+      listingTranslation = { title: trimmed(stored.title, 255), description: String(stored.description || ''), locale: trimmed(stored.locale, 10) || 'en' };
+    }
+  }
   const [listingResult, currentUserResult] = await Promise.all([
     getListing(token, req.params.id),
     token ? getRequestProfile(req, token).catch(() => null) : Promise.resolve(null)
@@ -1652,6 +1718,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   }
 
   res.render('listings/detail', {
+    listingTranslation,
     title: listing.title || listing.name || 'Listing details',
     listing: { ...listing, can_edit },
     listingImageUrl: resolveBackendMediaUrl(listing.image_url || listing.imageUrl),

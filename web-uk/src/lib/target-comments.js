@@ -50,7 +50,10 @@ async function loadTargetComments(token, targetType, targetId) {
 const SOCIAL_STATUSES = new Set([
   'comment-created', 'comment-updated', 'comment-deleted', 'like-added', 'like-removed',
   'reaction-added', 'reaction-removed', 'comment-empty', 'comment-failed', 'comment-update-failed',
-  'comment-delete-failed', 'like-failed', 'reaction-failed', 'auth-required'
+  'comment-delete-failed', 'like-failed', 'reaction-failed', 'auth-required',
+  // Translating one comment (POST /feed/comments/:id/translate, 31 Oct 2026).
+  'comment-translate-done', 'comment-translate-failed', 'comment-translate-same',
+  'comment-translate-empty', 'translate-unavailable'
 ]);
 
 function socialStatusFrom(value) {
@@ -58,4 +61,18 @@ function socialStatusFrom(value) {
   return SOCIAL_STATUSES.has(status) ? status : '';
 }
 
-module.exports = { loadTargetComments, commentRows, socialStatusFrom };
+/**
+ * A comment translation made on the previous request for this target, shown
+ * once under its comment, then forgotten (feed-actions.js stores it).
+ */
+function takeCommentTranslation(req, targetType, targetId) {
+  const stored = req?.session?.targetCommentTranslation;
+  if (!stored) return null;
+  delete req.session.targetCommentTranslation;
+  if (stored.targetType !== targetType || Number(stored.targetId) !== Number(targetId)) return null;
+  const text = String(stored.text || '').trim();
+  if (!text) return null;
+  return { commentId: Number(stored.commentId), text, locale: String(stored.locale || 'en').slice(0, 10) };
+}
+
+module.exports = { loadTargetComments, commentRows, socialStatusFrom, takeCommentTranslation };

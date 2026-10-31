@@ -148,7 +148,7 @@ class ResourcePublicController extends BaseApiController
                 ],
                 'category' => $row->category_name ? [
                     'id'    => (int) $row->category_id,
-                    'name'  => $row->category_name,
+                    'name'  => \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $row->category_id, $row->category_name),
                     'color' => $row->category_color ?? 'blue',
                 ] : null,
             ];
@@ -180,7 +180,8 @@ class ResourcePublicController extends BaseApiController
             ->map(function ($row) {
                 return [
                     'id'             => (int) $row->id,
-                    'name'           => $row->name,
+                    // Shown in the reader's language (names are translated ahead of time).
+                    'name'           => \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $row->id, $row->name),
                     'slug'           => $row->slug ?? '',
                     'color'          => $row->color ?? 'blue',
                     'resource_count' => (int) $row->resource_count,

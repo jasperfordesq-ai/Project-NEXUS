@@ -122,6 +122,105 @@ class TaxonomyNameLocalizer
         return $row;
     }
 
+    /** @var array<string, array{at: int, names: array<int, string>}> */
+    private static array $nameMaps = [];
+
+    /**
+     * A category's name for DISPLAY, in the reader's language, from the stored
+     * translations only (no provider call — names are filled ahead of time).
+     * Falls back to the stored name. Use it where a name is shown; never where
+     * names are compared, grouped, searched or saved — those keep the stored name.
+     */
+    public static function nameFor(string $table, mixed $id, ?string $storedName): ?string
+    {
+        $id = is_numeric($id) ? (int) $id : 0;
+        if ($id <= 0 || $storedName === null || $storedName === '' || ! in_array($table, self::TABLES, true)) {
+            return $storedName;
+        }
+        $target = self::readerLanguage();
+        if ($target === self::communityLanguage()) {
+            return $storedName;
+        }
+
+        return self::nameMap($table, $target)[$id] ?? $storedName;
+    }
+
+    /**
+     * id => translated name for one table and language, for the current
+     * community. Held for a minute so a long-running worker sees an admin's
+     * correction soon after it is made.
+     *
+     * @return array<int, string>
+     */
+    private static function nameMap(string $table, string $language): array
+    {
+        $tenantId = (int) TenantContext::getId();
+        $key = $table . '|' . $tenantId . '|' . $language;
+        $cached = self::$nameMaps[$key] ?? null;
+        if ($cached !== null && $cached['at'] > time() - 60) {
+            return $cached['names'];
+        }
+
+        $names = [];
+        if ($tenantId > 0) {
+            $rows = DB::table($table)->where('tenant_id', $tenantId)->whereNotNull('name_translations')
+                ->get(['id', 'name_translations']);
+            foreach ($rows as $row) {
+                $stored = self::decode($row->name_translations);
+                if (isset($stored[$language]) && is_string($stored[$language]) && trim($stored[$language]) !== '') {
+                    $names[(int) $row->id] = $stored[$language];
+                }
+            }
+        }
+        self::$nameMaps[$key] = ['at' => time(), 'names' => $names];
+
+        return $names;
+    }
+
+    /**
+     * Translate every `categories` name inside a response payload: rows with
+     * `category_id` + `category_name`, nested `category` {id, name}, and a
+     * `categories` list of {id, name}. Use ONLY on payloads whose categories all
+     * come from the `categories` table (marketplace, course and resource-library
+     * categories are other tables with their own ids).
+     *
+     * @param array<mixed> $payload
+     * @return array<mixed>
+     */
+    public static function localizePayload(array $payload): array
+    {
+        if (isset($payload['category_id'], $payload['category_name']) && is_string($payload['category_name'])) {
+            $payload['category_name'] = self::nameFor('categories', $payload['category_id'], $payload['category_name']);
+        }
+        if (isset($payload['category']) && is_array($payload['category'])
+            && isset($payload['category']['id'], $payload['category']['name']) && is_string($payload['category']['name'])) {
+            $payload['category']['name'] = self::nameFor('categories', $payload['category']['id'], $payload['category']['name']);
+        }
+        foreach ($payload as $key => $value) {
+            if (! is_array($value)) {
+                continue;
+            }
+            if ($key === 'categories' && array_is_list($value)) {
+                $payload[$key] = array_map(fn ($row) => is_array($row) && isset($row['id'], $row['name']) && is_string($row['name'])
+                    ? ['name' => self::nameFor('categories', $row['id'], $row['name'])] + $row
+                    : $row, $value);
+                continue;
+            }
+            if ($key !== 'category') {
+                $payload[$key] = self::localizePayload($value);
+            }
+        }
+
+        return $payload;
+    }
+
+    /** For tests: forget the held name maps. */
+    public static function flushNameMaps(): void
+    {
+        self::$nameMaps = [];
+        self::$communityLanguages = [];
+    }
+
     /**
      * The languages every name is translated into ahead of time: the platform's
      * whole language list, so no reader anywhere waits for a translation or sees
@@ -287,9 +386,24 @@ class TaxonomyNameLocalizer
     }
 
     /** The language the community's admins write in: its default language, else English. */
+    /** @var array<int, array{at: int, language: string}> */
+    private static array $communityLanguages = [];
+
     private static function communityLanguage(): string
     {
-        $tenantId = TenantContext::getId();
+        $tenantId = (int) TenantContext::getId();
+        $cached = self::$communityLanguages[$tenantId] ?? null;
+        if ($cached !== null && $cached['at'] > time() - 60) {
+            return $cached['language'];
+        }
+        $language = self::lookUpCommunityLanguage($tenantId);
+        self::$communityLanguages[$tenantId] = ['at' => time(), 'language' => $language];
+
+        return $language;
+    }
+
+    private static function lookUpCommunityLanguage(int $tenantId): string
+    {
         if ($tenantId) {
             $configuration = DB::table('tenants')->where('id', $tenantId)->value('configuration');
             $config = is_string($configuration) ? json_decode($configuration, true) : null;

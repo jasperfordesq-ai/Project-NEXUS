@@ -41,7 +41,7 @@ const { audit } = require('../lib/auditLogger');
 const { flagEnabled, localeOptions, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { getRequestProfile } = require('../lib/request-profile');
 const { resolveCanCreateEvents } = require('../lib/event-create-permission');
-const { loadTargetComments, socialStatusFrom } = require('../lib/target-comments');
+const { loadTargetComments, socialStatusFrom, takeCommentTranslation } = require('../lib/target-comments');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { wallClockToOffsetIso, wallClockToUtc, wallClockInZone } = require('../lib/event-wall-clock');
 const { rememberApiRefusal, consumeApiRefusal } = require('../lib/api-refusal');
@@ -4197,6 +4197,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     seriesEvents,
     remindersAvailable,
     eventComments,
+    commentTranslation: takeCommentTranslation(req, 'event', Number(id)),
     socialStatus: socialStatusFrom(req.query.social),
     currentUserId,
     myRsvp,

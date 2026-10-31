@@ -17,8 +17,10 @@
 
 {% macro targetSocial(params, csrfToken, urlFor, t) %}
   {% set P = "govuk_alpha_events.social." %}
-  {% set successStatuses = ["comment-created", "comment-updated", "comment-deleted", "like-added", "like-removed", "reaction-added", "reaction-removed"] %}
-  {% set errorStatuses = ["comment-empty", "comment-failed", "comment-update-failed", "comment-delete-failed", "like-failed", "reaction-failed", "auth-required"] %}
+  {% set successStatuses = ["comment-created", "comment-updated", "comment-deleted", "like-added", "like-removed", "reaction-added", "reaction-removed", "comment-translate-done"] %}
+  {% set errorStatuses = ["comment-empty", "comment-failed", "comment-update-failed", "comment-delete-failed", "like-failed", "reaction-failed", "auth-required", "comment-translate-failed", "comment-translate-same", "comment-translate-empty", "translate-unavailable"] %}
+  {# Translation outcomes use the shared translate wording. #}
+  {% set translateKeys = { "comment-translate-done": "govuk_alpha_feed.translate.text_done", "comment-translate-failed": "govuk_alpha_feed.translate.text_failed", "comment-translate-same": "govuk_alpha_feed.translate.text_same", "comment-translate-empty": "govuk_alpha_feed.translate.text_empty", "translate-unavailable": "govuk_alpha_feed.translate.unavailable" } %}
   <section class="{{ '' if params.asPage else 'govuk-!-margin-top-8' }}" aria-labelledby="comments">
     {% if params.asPage %}
       <h1 class="govuk-heading-xl" id="comments" tabindex="-1">{{ t(P ~ "heading") }}</h1>
@@ -29,13 +31,13 @@
     {% if params.socialStatus in successStatuses %}
       <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="social-status-title" data-module="govuk-notification-banner">
         <div class="govuk-notification-banner__header"><h3 class="govuk-notification-banner__title" id="social-status-title">{{ t("govuk_alpha_events.common.success_title") }}</h3></div>
-        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t(P ~ "status." ~ (params.socialStatus | replace("-", "_"))) }}</p></div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t(translateKeys[params.socialStatus] or (P ~ "status." ~ (params.socialStatus | replace("-", "_")))) }}</p></div>
       </div>
     {% elif params.socialStatus in errorStatuses %}
       <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
         <div role="alert">
           <h3 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h3>
-          <div class="govuk-error-summary__body"><p class="govuk-body">{{ t(P ~ "status." ~ (params.socialStatus | replace("-", "_"))) }}</p></div>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ t(translateKeys[params.socialStatus] or (P ~ "status." ~ (params.socialStatus | replace("-", "_")))) }}</p></div>
         </div>
       </div>
     {% endif %}
@@ -48,7 +50,8 @@
     </form>
 
     {% if params.comments and params.comments.length %}
-      {{ commentList(params.comments, 0, params.item, false, params.currentUserId, csrfToken, urlFor, t, params.returnTo) }}
+      {# Every comment can be translated (31 Oct 2026); the result shows once under it. #}
+      {{ commentList(params.comments, 0, params.item, false, params.currentUserId, csrfToken, urlFor, t, params.returnTo, { itemType: params.item.type, itemId: params.item.id, returnTo: params.returnTo, translation: params.commentTranslation }) }}
     {% else %}
       <p class="govuk-body">{{ t("govuk_alpha_feed.item.no_comments") }}</p>
     {% endif %}

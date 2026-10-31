@@ -9162,6 +9162,7 @@
                 "unavailable": "Translation is not available in this community.",
                 "same": "This post is already in your language.",
                 "empty": "This post has no text to translate.",
+                "listing_button": "Translate this listing",
                 "comment_button": "Translate this comment",
                 "comment_by": "(comment by :name)",
                 "discussion_button": "Translate this discussion",

@@ -3,8 +3,24 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 
-<li class="nexus-alpha-comment">
+<li class="nexus-alpha-comment"{% if comment.id %} id="comment-{{ comment.id }}"{% endif %}>
   <p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ comment.content }}</p>
+  {# Translate (31 Oct 2026): the result is shown once under this comment. #}
+  {% if commentTranslation and commentTranslation.commentId == comment.id %}
+    <div class="govuk-inset-text govuk-!-margin-top-0">
+      <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_feed.translate.heading") }}</h3>
+      <p class="govuk-hint govuk-!-margin-bottom-2">{{ t("govuk_alpha_feed.translate.original_above_hint") }}</p>
+      <p class="govuk-body govuk-!-margin-bottom-0" lang="{{ commentTranslation.locale }}">{{ commentTranslation.text }}</p>
+    </div>
+  {% elif comment.id and comment.content %}
+    <form method="post" action="{{ urlFor('/feed/comments/' + (comment.id | string) + '/translate') }}" class="govuk-!-margin-bottom-2" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="item_type" value="listing">
+      <input type="hidden" name="item_id" value="{{ listing.id }}">
+      <input type="hidden" name="return_to" value="/listings/{{ listing.id }}/comments">
+      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_feed.translate.comment_button") }}{% if comment.authorName %}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_feed.translate.comment_by", { name: comment.authorName }) }}</span>{% endif %}</button>
+    </form>
+  {% endif %}
   {% set meta = [] %}
   {% if comment.authorName %}{% set meta = meta.concat([comment.authorName]) %}{% endif %}
   {% if comment.createdAtLabel %}{% set meta = meta.concat([comment.createdAtLabel]) %}{% endif %}

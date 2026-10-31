@@ -51,12 +51,17 @@
       {% set listingActionSuccessKeys = {
         "listing-saved": "polish_listings.status_listing_saved",
         "listing-unsaved": "polish_listings.status_listing_unsaved",
-        "listing-renewed": "polish_listings.status_listing_renewed"
+        "listing-renewed": "polish_listings.status_listing_renewed",
+        "translate-done": "govuk_alpha_feed.translate.text_done"
       } %}
       {% set listingActionErrorKeys = {
         "save-failed": "polish_listings.status_listing_save_failed",
         "unsave-failed": "polish_listings.status_listing_save_failed",
-        "renew-failed": "polish_listings.status_listing_renew_failed"
+        "renew-failed": "polish_listings.status_listing_renew_failed",
+        "translate-failed": "govuk_alpha_feed.translate.text_failed",
+        "translate-unavailable": "govuk_alpha_feed.translate.unavailable",
+        "translate-same": "govuk_alpha_feed.translate.text_same",
+        "translate-empty": "govuk_alpha_feed.translate.text_empty"
       } %}
       {% if listingActionSuccessKeys[status] %}
         <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="listing-action-status-title">
@@ -115,6 +120,22 @@
          before inserting <br>, so it is the escaping step. Without it Nunjucks
          re-escaped that output and every line break showed as a literal "<br>". #}
       <div class="govuk-body" dir="auto">{{ listing.description | nl2br | safe }}</div>
+      {# Translate the title and description (31 Oct 2026); shown once, under the original. #}
+      {% if listingTranslation %}
+        <div class="govuk-inset-text" id="listing-translation">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_feed.translate.heading") }}</h3>
+          <p class="govuk-hint govuk-!-margin-bottom-2">{{ t("govuk_alpha_feed.translate.original_above_hint") }}</p>
+          <div lang="{{ listingTranslation.locale }}">
+            {% if listingTranslation.title %}<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ listingTranslation.title }}</p>{% endif %}
+            {% if listingTranslation.description %}<div class="govuk-body govuk-!-margin-bottom-0">{{ listingTranslation.description | nl2br | safe }}</div>{% endif %}
+          </div>
+        </div>
+      {% elif isAuthenticated and (listing.description or listing.title) %}
+        <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/translate') }}" class="govuk-!-margin-bottom-6" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_feed.translate.listing_button") }}</button>
+        </form>
+      {% endif %}
 
       {% if listingGallery.length %}
         <h2 class="govuk-heading-m">{{ t("listings.gallery_title") }}</h2>

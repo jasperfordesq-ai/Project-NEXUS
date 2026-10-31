@@ -43,6 +43,7 @@ class CategoryNamesInReaderLanguageTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
+        TaxonomyNameLocalizer::flushNameMaps();
         DB::table('ai_settings')->updateOrInsert(
             ['tenant_id' => $this->testTenantId, 'setting_key' => 'ai_enabled'],
             ['setting_value' => '0'],

@@ -16,7 +16,7 @@ const express = require('express');
 const { getVolunteerOpportunity, ApiError } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestProfile } = require('../lib/request-profile');
-const { loadTargetComments, socialStatusFrom } = require('../lib/target-comments');
+const { loadTargetComments, socialStatusFrom, takeCommentTranslation } = require('../lib/target-comments');
 
 const router = express.Router();
 
@@ -46,6 +46,7 @@ router.get('/opportunities/:id(\\d+)/comments', asyncRoute(async (req, res) => {
     activeNav: 'volunteering',
     opportunity: { id, title: String(opportunity.title || '').trim() },
     comments,
+    commentTranslation: takeCommentTranslation(req, 'volunteer', id),
     currentUserId: positiveInteger(profileData.id),
     socialStatus: socialStatusFrom(req.query.social)
   });

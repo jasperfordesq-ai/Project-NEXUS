@@ -142,6 +142,7 @@ return [
         'unavailable' => 'In dieser Gemeinschaft ist keine Übersetzung verfügbar.',
         'same' => 'Dieser Beitrag ist bereits in Ihrer Sprache.',
         'empty' => 'Dieser Beitrag enthält keinen Text zum Übersetzen.',
+        'listing_button' => 'Dieses Angebot übersetzen',
         'comment_button' => 'Diesen Kommentar übersetzen',
         'comment_by' => '(Kommentar von :name)',
         'discussion_button' => 'Diese Diskussion übersetzen',

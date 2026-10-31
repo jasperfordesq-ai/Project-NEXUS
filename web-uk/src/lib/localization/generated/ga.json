@@ -9162,6 +9162,7 @@
                 "unavailable": "Níl aistriúchán ar fáil sa phobal seo.",
                 "same": "Tá an phostáil seo i do theanga cheana féin.",
                 "empty": "Níl aon téacs le haistriú sa phostáil seo.",
+                "listing_button": "Aistrigh an liostú seo",
                 "comment_button": "Aistrigh an trácht seo",
                 "comment_by": "(trácht le :name)",
                 "discussion_button": "Aistrigh an plé seo",

@@ -232,3 +232,61 @@ describe('translate a group discussion or reply', () => {
     expect(page.text).toContain(t('govuk_alpha_feed.translate.text_failed'));
   });
 });
+
+describe('translate a comment on an event or a volunteering opportunity (31 Oct 2026)', () => {
+  it('reads the thread for that target, returns to its page and keeps the result for it', async () => {
+    api.callUgcTranslateApi.mockResolvedValue({ data: { translated_text: 'Thank you, very useful' } });
+    const session = {};
+    const app = express();
+    app.use(express.urlencoded({ extended: true }));
+    app.use((req, res, next) => { req.session = session; next(); });
+    app.use('/feed', (req, res, next) => {
+      req.signedCookies = { token: 'test-token' };
+      req.token = 'test-token';
+      req.locale = 'en';
+      res.locals.urlFor = (value) => String(value || '/');
+      next();
+    }, require('../src/routes/feed-actions'));
+
+    const res = await request(app).post('/feed/comments/12/translate').type('form')
+      .send({ item_type: 'event', item_id: '44', return_to: '/events/44' });
+
+    expect(api.getComments).toHaveBeenCalledWith('test-token', { target_type: 'event', target_id: 44 });
+    expect(res.headers.location).toBe('/events/44?social=comment-translate-done#comment-12');
+    expect(session.targetCommentTranslation).toEqual(expect.objectContaining({ targetType: 'event', targetId: 44, commentId: 12, text: 'Thank you, very useful' }));
+  });
+
+  it("refuses a return page that is not the target's own page", async () => {
+    const res = await request(feedApp()).post('/feed/comments/12/translate').type('form')
+      .send({ item_type: 'event', item_id: '44', return_to: 'https://evil.example/' });
+    expect(res.headers.location).toBe('/feed');
+    expect(api.callUgcTranslateApi).not.toHaveBeenCalled();
+  });
+
+  it('shows the translation once under its comment and offers Translate on the others', () => {
+    const { takeCommentTranslation } = require('../src/lib/target-comments');
+    const req = { session: { targetCommentTranslation: { targetType: 'event', targetId: 44, commentId: 12, text: 'Thank you, very useful', locale: 'en' } } };
+    const translation = takeCommentTranslation(req, 'event', 44);
+    expect(takeCommentTranslation(req, 'event', 44)).toBeNull();
+
+    const env = nunjucks.configure([VIEWS, GOVUK], { autoescape: true, watch: false });
+    registerTemplateFilters(env);
+    env.addFilter('formatDate', (value) => String(value || ''));
+    const html = env.renderString(
+      '{% from "partials/target-social.njk" import targetSocial %}{{ targetSocial(params, "csrf", urlFor, t) }}',
+      {
+        params: { item: { type: 'event', id: 44 }, comments: thread.data.comments, currentUserId: 1, returnTo: '/events/44', socialStatus: 'comment-translate-done', commentTranslation: translation },
+        urlFor: (v) => v,
+        t
+      }
+    );
+
+    expect(html).toContain('Thank you, very useful');
+    expect(html).toContain(t('govuk_alpha_feed.translate.text_done'));
+    expect(html).toContain('action="/feed/comments/11/translate"');
+    expect(html).not.toContain('action="/feed/comments/12/translate"');
+    expect(html).toContain('name="item_type" value="event"');
+    expect(html).toContain('name="return_to" value="/events/44"');
+  });
+});
+

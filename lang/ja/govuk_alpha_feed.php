@@ -142,6 +142,7 @@ return [
         'unavailable' => 'このコミュニティでは翻訳を利用できません。',
         'same' => 'この投稿はすでにあなたの言語です。',
         'empty' => 'この投稿には翻訳するテキストがありません。',
+        'listing_button' => 'この掲載を翻訳する',
         'comment_button' => 'このコメントを翻訳する',
         'comment_by' => '（:name さんのコメント）',
         'discussion_button' => 'このディスカッションを翻訳する',

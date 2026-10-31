@@ -343,7 +343,8 @@ class SkillTaxonomyService
             )
             ->orderBy('us.skill_name')
             ->get()
-            ->map(fn ($r) => (array) $r)
+            // The category name in the reader's language (names are translated ahead of time).
+            ->map(fn ($r) => ['category_name' => \App\Services\Translation\TaxonomyNameLocalizer::nameFor('skill_categories', $r->category_id, $r->category_name)] + (array) $r)
             ->all();
     }
 

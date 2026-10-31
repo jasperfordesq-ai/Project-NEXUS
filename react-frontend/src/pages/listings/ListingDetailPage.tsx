@@ -179,6 +179,9 @@ export function ListingDetailPage() {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
+  // The title is translated with the description (31 Oct 2026: only the description was).
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedTitle(fields?.title ?? null), []);
   const [isReported, setIsReported] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -574,7 +577,7 @@ export function ListingDetailPage() {
               {listing.type === 'offer' ? t('detail_offer_eyebrow') : t('detail_request_eyebrow')}
             </p>
             <h1 className="text-2xl font-bold leading-tight text-theme-primary wrap-break-word sm:text-4xl">
-              {listing.title}
+              {translatedTitle ?? listing.title}
             </h1>
           </div>
 
@@ -762,6 +765,8 @@ export function ListingDetailPage() {
                       sourceText={listing.description}
                       sourceLocale={(listing as { locale?: string | null }).locale ?? null}
                       onTextChange={(text, isTranslated) => setTranslatedDesc(isTranslated ? text : null)}
+                      extraFields={{ title: listing.title }}
+                      onFieldsChange={onTranslatedFields}
                       className="mt-1"
                     />
                   )}

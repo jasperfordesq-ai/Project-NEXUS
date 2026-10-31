@@ -208,7 +208,7 @@ class BlogService
             'noindex'          => (bool) ($seo?->noindex ?? false),
             'category'         => $post->category ? [
                 'id'    => $post->category->id,
-                'name'  => $post->category->name,
+                'name'  => \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $post->category->id, $post->category->name),
                 'color' => $post->category->color ?? 'blue',
             ] : null,
         ];
@@ -265,7 +265,7 @@ class BlogService
             'meta_description' => $seo?->meta_description ?: null,
             'category'       => $post->category ? [
                 'id'    => $post->category->id,
-                'name'  => $post->category->name,
+                'name'  => \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $post->category->id, $post->category->name),
                 'color' => $post->category->color ?? 'blue',
             ] : null,
         ];

@@ -266,6 +266,22 @@ describe('api.get', () => {
     expect(result).toEqual({ data: [1, 2, 3] });
   });
 
+  // 31 Oct 2026: the app sent no language, so public endpoints answered in the
+  // community's language instead of the member's.
+  it("sends the member's app language", async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ data: [] }));
+    const original = Object.getOwnPropertyDescriptor(i18n, 'language');
+    Object.defineProperty(i18n, 'language', { value: 'es-ES', configurable: true });
+    try {
+      await api.get('/api/v2/categories');
+    } finally {
+      if (original) Object.defineProperty(i18n, 'language', original);
+      else delete (i18n as unknown as Record<string, unknown>).language;
+    }
+
+    expect(fetchMock.mock.calls[0][1].headers['Accept-Language']).toBe('es');
+  });
+
   it('appends query params to the URL', async () => {
     fetchMock.mockResolvedValueOnce(mockResponse({ results: [] }));
 
