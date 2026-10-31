@@ -1889,9 +1889,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/GamificationService.php:527:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/GamificationService.php:532:NotificationDispatcher::fanOutPush",
             "file": "app/Services/GamificationService.php",
-            "line": 527,
+            "line": 532,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -1902,9 +1902,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/GamificationService.php:695:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/GamificationService.php:702:NotificationDispatcher::fanOutPush",
             "file": "app/Services/GamificationService.php",
-            "line": 695,
+            "line": 702,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",

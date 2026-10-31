@@ -200,9 +200,10 @@ function HelpFaqsScreen() {
                           <Text className="text-base leading-6" style={{ color: theme.textSecondary }}>
                             {toPlainText(faq.answer)}
                           </Text>
+                          {/* Only an opened answer offers (or shows) a translation. */}
+                          <ContentTranslation contentType="faq" contentId={faq.id} fields={{ question: faq.question, body: toPlainText(faq.answer), category: group.category }} />
                         </View>
                       ) : null}
-                      <View className="px-4 pb-4"><ContentTranslation contentType="faq" contentId={faq.id} fields={{ question: faq.question, body: toPlainText(faq.answer), category: group.category }} /></View>
                     </HeroCard.Body>
                   </HeroCard>
                 );

@@ -111,6 +111,20 @@ describe('HelpFaqsRoute', () => {
     expect(queryByText(/<p>/)).toBeNull();
   });
 
+  // 31 Oct re-audit: the translation control sat outside the open answer, so
+  // every collapsed question carried a Translate button (and, with automatic
+  // translation, showed a translated answer while the original stayed hidden).
+  it('offers translation only inside an opened answer', async () => {
+    const { getByText, queryAllByLabelText } = await renderScreen();
+    const translateLabel = /^(Translate|ugcTranslation\.translate)$/;
+
+    await waitFor(() => expect(getByText('Where is my balance?')).toBeTruthy());
+    expect(queryAllByLabelText(translateLabel)).toHaveLength(0);
+
+    fireEvent.press(getByText('Where is my balance?'));
+    expect(queryAllByLabelText(translateLabel)).toHaveLength(1);
+  });
+
   it('collapses an answer again when the question is pressed twice', async () => {
     const { getByText, queryByText } = await renderScreen();
 

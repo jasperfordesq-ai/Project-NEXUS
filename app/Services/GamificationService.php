@@ -495,11 +495,16 @@ class GamificationService
             return false;
         }
 
+        // The stored name is the canonical one (English, or the community's own
+        // wording): definitions are now localised in the CALLER's language, and
+        // reports group by this column. Readers localise it again on display.
+        $storedName = LocaleContext::withLocale('en', fn () => BadgeCopy::localize($badge)['name']);
+
         try {
             UserBadge::create([
                 'user_id'   => $userId,
                 'badge_key' => $badge['key'],
-                'name'      => $badge['name'],
+                'name'      => $storedName,
                 'icon'      => $badge['icon'],
             ]);
         } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
@@ -531,7 +536,9 @@ class GamificationService
 
         // Broadcast badge earned event
         try {
-            app(GamificationRealtimeService::class)->broadcastBadgeEarned($userId, $badge);
+            // The live "badge earned" pop-up is the recipient's, in their language.
+            LocaleContext::withLocale($recipient, fn () => app(GamificationRealtimeService::class)
+                ->broadcastBadgeEarned($userId, BadgeCopy::localize($badge)));
         } catch (\Throwable $e) {
             Log::debug('Gamification broadcast failed', ['error' => $e->getMessage()]);
         }

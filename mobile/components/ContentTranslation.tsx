@@ -11,6 +11,7 @@ import { API_V2 } from '@/lib/constants';
 import { useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useUgcTranslationPreferences } from '@/lib/context/UgcTranslationPreferencesContext';
+import { toPlainText } from '@/lib/utils/plainText';
 
 type Props = { contentType: string; contentId: string | number; fields: Record<string, string | null | undefined>; disabled?: boolean };
 type Result = { key: string; fields: Record<string, string>; partial: boolean };
@@ -22,7 +23,11 @@ export default function ContentTranslation({ contentType, contentId, fields, dis
   const { tenant } = useTenant();
   const preferences = useUgcTranslationPreferences();
   const locale = preferences.automatic && preferences.target ? preferences.target : (i18n?.language || 'en').slice(0, 2);
-  const entries = Object.entries(fields).filter((entry): entry is [string, string] => typeof entry[1] === 'string' && Boolean(entry[1].trim()));
+  // Translate the plain text a reader sees: stored descriptions are HTML, and
+  // the web clients send plain text, so this also shares their cached results.
+  const entries = Object.entries(fields)
+    .map(([field, value]): [string, unknown] => [field, typeof value === 'string' ? toPlainText(value) : value])
+    .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && Boolean(entry[1].trim()));
   const enabled = !disabled && tenant?.translation?.enabled !== false && entries.length > 0;
   const key = JSON.stringify([tenant?.id, preferences.identity, preferences.automatic, i18n?.language, locale, contentType, contentId, entries, enabled]);
   const currentKey = useRef(key); currentKey.current = key;

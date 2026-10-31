@@ -82,3 +82,11 @@ test('title-only translation skips an empty body and provider failure remains re
   fireEvent.press(screen.getByLabelText('ugcTranslation.translate'));
   await screen.findByText('Hola');
 });
+// 31 Oct re-audit: several screens pass a stored description, which is HTML.
+// Sent as-is, a translation could come back with literal tags on screen, and
+// it would not share the cache with the web clients, which send plain text.
+test('formatted descriptions are translated as the plain text the reader sees', async () => {
+  const screen = render(view('<p>Hello <strong>there</strong></p>'));
+  await screen.findByText('Hola');
+  expect(api.post).toHaveBeenCalledWith('/api/v2/ugc-translate', expect.objectContaining({ source_text: 'Hello there' }));
+});

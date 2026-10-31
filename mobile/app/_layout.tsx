@@ -3,8 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { UgcTranslationPreferencesProvider } from '@/lib/context/UgcTranslationPreferencesContext';
 import '@/global.css'; // Tailwind v4 + HeroUI Native styles — must be first
+import { UgcTranslationPreferencesProvider } from '@/lib/context/UgcTranslationPreferencesContext';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { LogBox, View } from 'react-native';
