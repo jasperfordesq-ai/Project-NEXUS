@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-31T11:37:53.613Z
-Laravel commit SHA: `91f6af8fe05bef165fc204844daa7c57c7c06698`
-Web UK repository commit SHA: `91f6af8fe05bef165fc204844daa7c57c7c06698`
+Generated: 2026-10-31T13:51:43.832Z
+Laravel commit SHA: `903cf509086283d8a7b8381cf4a6d97d79cac75b`
+Web UK repository commit SHA: `903cf509086283d8a7b8381cf4a6d97d79cac75b`
 Laravel working tree dirty: no
 Web UK repository working tree dirty: no
 Provenance caveat: Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs.
@@ -12,10 +12,10 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1087 |
+| web-uk routes | 1091 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 377 |
+| Extra web-uk routes | 381 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -45,7 +45,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | dashboard | 1 | 0 | 1 | 0 |
 | developers | 0 | 0 | 4 | 0 |
 | event-templates | 4 | 0 | 0 | 0 |
-| events | 94 | 0 | 14 | 0 |
+| events | 94 | 0 | 15 | 0 |
 | exchanges | 4 | 0 | 0 | 0 |
 | explore | 1 | 0 | 1 | 0 |
 | faq | 1 | 0 | 0 | 0 |
@@ -54,10 +54,10 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | feed | 22 | 0 | 7 | 0 |
 | goals | 27 | 0 | 1 | 0 |
 | group-exchanges | 9 | 0 | 1 | 0 |
-| groups | 36 | 0 | 61 | 0 |
+| groups | 36 | 0 | 62 | 0 |
 | guide | 1 | 0 | 0 | 0 |
 | health | 0 | 0 | 0 | 1 |
-| help | 1 | 0 | 3 | 0 |
+| help | 1 | 0 | 4 | 0 |
 | home | 2 | 0 | 0 | 0 |
 | ideation | 34 | 0 | 0 | 0 |
 | impact-report | 0 | 0 | 1 | 0 |
@@ -73,7 +73,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | marketplace | 50 | 0 | 40 | 0 |
 | matches | 4 | 0 | 4 | 0 |
 | me | 6 | 0 | 4 | 0 |
-| members | 11 | 0 | 3 | 0 |
+| members | 11 | 0 | 4 | 0 |
 | messages | 18 | 0 | 6 | 0 |
 | municipality-calendar | 0 | 0 | 1 | 0 |
 | newsletter | 1 | 0 | 1 | 0 |
@@ -183,6 +183,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | POST | `/events/{param}/staff/{param}/revoke` | events |  | web-uk/src/routes/event-organiser-tools.js |
 | POST | `/events/{param}/tickets/types/{param}/edit` | events |  | web-uk/src/routes/event-organiser-tools.js |
 | POST | `/events/{param}/tickets/types/new` | events |  | web-uk/src/routes/event-organiser-tools.js |
+| POST | `/events/{param}/translate-content` | events |  | web-uk/src/routes/events.js |
 | POST | `/explore/dismiss` | explore |  | web-uk/src/routes/explore.js |
 | POST | `/federation/members/{param}/block` | federation |  | web-uk/src/routes/federation-actions.js |
 | POST | `/federation/members/{param}/unblock` | federation |  | web-uk/src/routes/federation-actions.js |
@@ -252,6 +253,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | POST | `/groups/{param}/tasks/{param}/delete` | groups |  | web-uk/src/routes/group-tasks.js |
 | POST | `/groups/{param}/tasks/{param}/status` | groups |  | web-uk/src/routes/group-tasks.js |
 | POST | `/groups/{param}/tasks/new` | groups |  | web-uk/src/routes/group-tasks.js |
+| POST | `/groups/{param}/translate` | groups |  | web-uk/src/routes/groups.js |
 | POST | `/groups/{param}/webhooks/{param}/delete` | groups |  | web-uk/src/routes/group-webhooks.js |
 | POST | `/groups/{param}/webhooks/{param}/toggle` | groups |  | web-uk/src/routes/group-webhooks.js |
 | POST | `/groups/{param}/webhooks/new` | groups |  | web-uk/src/routes/group-webhooks.js |
@@ -260,6 +262,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | GET | `/help/{param}` | help |  | web-uk/src/routes/support.js |
 | GET | `/help/{param}/{param}` | help | support/help-section | web-uk/src/routes/support.js |
 | GET | `/help/{param}/{param}/{param}` | help | support/help-article | web-uk/src/routes/support.js |
+| POST | `/help/faqs/{param}/translate` | help |  | web-uk/src/routes/support.js |
 | GET | `/impact-report` | impact-report | tbi-pages/impact-report | web-uk/src/routes/tbi-pages.js |
 | GET | `/impact-summary` | impact-summary | tbi-pages/impact-summary | web-uk/src/routes/tbi-pages.js |
 | GET | `/jobs/{param}/activity` | jobs | jobs/hiring-activity | web-uk/src/routes/jobs.js |
@@ -350,6 +353,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | GET | `/members/{param}/report` | members |  | web-uk/src/routes/members.js |
 | POST | `/members/{param}/connect` | members |  | web-uk/src/server.js |
 | POST | `/members/{param}/report` | members |  | web-uk/src/routes/members.js |
+| POST | `/members/{param}/translate` | members |  | web-uk/src/routes/members.js |
 | GET | `/messages/{param}/delete` | messages |  | web-uk/src/routes/messages.js |
 | GET | `/messages/{param}/m/{param}/report` | messages |  | web-uk/src/routes/messages.js |
 | POST | `/messages/{param}/delete` | messages |  | web-uk/src/routes/messages.js |
