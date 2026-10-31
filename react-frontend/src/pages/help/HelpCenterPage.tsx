@@ -52,7 +52,9 @@ function isAudience(value: string | undefined): value is HelpAudience {
 export function HelpCenterPage() {
   const params = useParams<{ audience?: string }>();
   const { branding, tenantPath, tenant } = useTenant();
-  const { i18n } = useTranslation('help');
+  // Only the language is needed here. A 'help' namespace does not exist, and
+  // asking for one left the page on its loading screen for ever (31 Oct 2026).
+  const { i18n } = useTranslation();
   const [faqTranslations, setFaqTranslations] = useState<Record<string, Record<string, string>>>({});
   const faqKey = useCallback((faq: Faq, category: string) => JSON.stringify([tenant?.id, i18n.language, faq.id, faq.question, faq.answer, category]), [tenant?.id, i18n.language]);
   const updateFaq = (key: string, patch: Record<string, string>) => setFaqTranslations(previous => {

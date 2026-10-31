@@ -333,7 +333,7 @@ describe('NewExchangeModal', () => {
       service_type: 'hybrid',
     }), 'listing-op-1'));
     expect(mockSetExchangeTags).toHaveBeenCalledWith(9, ['gardening', 'pruning']);
-    expect(mockUploadExchangeImage).toHaveBeenCalledWith(9, 'file:///tmp/listing.jpg');
+    expect(mockUploadExchangeImage).toHaveBeenCalledWith(9, 'file:///tmp/listing.jpg', null);
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/exchange-detail', params: { id: '9' } }));
   });
 
@@ -352,7 +352,7 @@ describe('NewExchangeModal', () => {
     await waitFor(() => expect(mockLaunchImageLibraryAsync).toHaveBeenCalled());
     fireEvent.press(getByText('Post Offer'));
 
-    await waitFor(() => expect(mockUploadExchangeImage).toHaveBeenCalledWith(9, 'file:///tmp/listing.jpg'));
+    await waitFor(() => expect(mockUploadExchangeImage).toHaveBeenCalledWith(9, 'file:///tmp/listing.jpg', null));
     await waitFor(() => expect(getByTestId('listing-partial-save')).toBeTruthy());
     expect(getByText('The photo could not be saved.')).toBeTruthy();
     expect(queryByText('The skills could not be saved.')).toBeNull();
