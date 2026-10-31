@@ -32,6 +32,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { translationFailureStatus } = require('../lib/translate-failure');
 const { rememberClientRefusal, consumeApiRefusal, exposePageRefusal, rememberRefusalForPage } = require('../lib/api-refusal');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { audit } = require('../lib/auditLogger');
@@ -1390,7 +1391,6 @@ router.get('/', asyncRoute(async (req, res) => {
   if (sort === 'newest') params.sort = 'newest';
   params.personalised = sort === 'recommended';
   const currentUserResult = token ? await getRequestProfile(req, token).catch(() => null) : null;
-  if (listingTranslation && !await validSavedTranslation(req, res, token, savedListingTranslation, 'listing', Number(req.params.id), { title: trimmed(listing.title || listing.name, 255), body: String(listing.description || '').slice(0, 8000).trim() })) listingTranslation = null;
   const currentUser = profileFrom(currentUserResult);
   const latitude = Number(currentUser.latitude);
   const longitude = Number(currentUser.longitude);
@@ -1663,9 +1663,7 @@ router.post('/:id(\\d+)/translate', asyncRoute(async (req, res) => {
     }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    const code = String(error?.data?.code || error?.data?.errors?.[0]?.code || '').toUpperCase();
-    status = ['TRANSLATION_UNAVAILABLE', 'TRANSLATION_DISABLED', 'AI_NOT_CONFIGURED', 'AI_UNAVAILABLE'].includes(code)
-      || code.includes('FEATURE_DISABLED') ? 'translate-unavailable' : 'translate-failed';
+    status = translationFailureStatus(error);
   }
 
   const anchor = status === 'translate-done' ? '#listing-translation' : '';
@@ -1691,6 +1689,8 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const listing = listingFrom(listingResult);
   const currentUser = profileFrom(currentUserResult);
   const ownerId = listingOwnerId(listing);
+  // A saved translation is shown only while it still matches the listing's text.
+  if (listingTranslation && !await validSavedTranslation(req, res, token, savedListingTranslation, 'listing', Number(req.params.id), { title: trimmed(listing.title || listing.name, 255), body: String(listing.description || '').slice(0, 8000).trim() })) listingTranslation = null;
   const currentUserId = positiveInteger(currentUser.id);
   const can_edit = ownerId !== null && currentUserId !== null && ownerId === currentUserId;
   const status = trimmed(req.query.status);

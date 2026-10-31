@@ -3,7 +3,8 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% macro ugcTranslation(result, action, originalUrl, available, failed=false, anchor='content-translation') %}
-  {% if failed %}<p class="govuk-error-message" role="alert">{{ t("govuk_alpha_feed.translate.text_failed") }}</p>{% endif %}
+  {% if failed == 'unavailable' %}<p class="govuk-error-message" role="alert">{{ t("govuk_alpha_feed.translate.unavailable") }}</p>
+  {% elif failed %}<p class="govuk-error-message" role="alert">{{ t("govuk_alpha_feed.translate.text_failed") }}</p>{% endif %}
   {% if result %}
     <div class="govuk-inset-text" id="{{ anchor }}">
       <h3 class="govuk-heading-s">{{ t("govuk_alpha_feed.translate.heading") }}</h3>

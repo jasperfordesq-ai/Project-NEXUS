@@ -100,6 +100,14 @@ describe('translate a listing', () => {
     expect(res.headers.location).toBe('/listings/9?status=translate-failed');
   });
 
+  // Found on the 31 Oct walkthrough: a community with no translation key got
+  // "try again later", which never helps. The API says TRANSLATION_NOT_SET_UP.
+  it('says translation is not available when the community has not set it up', async () => {
+    api.callUgcTranslateApi.mockRejectedValue(new api.ApiError('not set up', 422, { errors: [{ code: 'TRANSLATION_NOT_SET_UP' }] }));
+    const res = await request(createApp({})).post('/listings/9/translate').type('form').send({});
+    expect(res.headers.location).toBe('/listings/9?status=translate-unavailable');
+  });
+
   it('shows the translation under the description, or the button when there is none', () => {
     const source = fs.readFileSync(path.join(viewsDir, 'listings/detail.njk'), 'utf8');
     const start = source.indexOf('{# Translate the title and description');

@@ -16,7 +16,7 @@ const router = express.Router();
 const detailTranslation = {
   load: async (req, res, token) => normalizeChallenge({ id: Number(req.params.id), ...itemFrom(await callIdeationApi(token, 'GET', `/ideation-challenges/${Number(req.params.id)}`)) }),
   spec: item => ({ type: 'ideation_challenge', id: item.id, fields: { title: item.title || '', body: htmlToTranslationText(item.description || '') } }),
-  href: item => `/ideation/${item.id}`,
+  href: item => `/ideation/${encodeURIComponent(item.id)}`,
 };
 registerDetailTranslation(router, detailTranslation);
 const ideaTranslation = {

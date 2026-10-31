@@ -82,9 +82,12 @@ class CategoryNamesShownEverywhereTest extends TestCase
             'user_id' => $owner->id, 'category_id' => $categoryId, 'status' => 'active',
         ]);
 
+        // The detail also carries the whole category; the website's listing page
+        // reads its name first (found on the 31 Oct signed-in walkthrough).
         $this->apiGet("/v2/listings/{$listing->id}", ['Accept-Language' => 'es'])
             ->assertOk()
-            ->assertJsonPath('data.category_name', 'Hogar y jardín');
+            ->assertJsonPath('data.category_name', 'Hogar y jardín')
+            ->assertJsonPath('data.category.name', 'Hogar y jardín');
 
         TaxonomyNameLocalizer::flushNameMaps();
         $english = $this->apiGet("/v2/listings/{$listing->id}", ['Accept-Language' => 'en'])->assertOk();

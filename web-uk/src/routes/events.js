@@ -36,6 +36,7 @@ const {
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { translationFailureStatus } = require('../lib/translate-failure');
 const { readDate, splitDate, readDateTime, splitDateTime } = require('../lib/date-input');
 const { audit } = require('../lib/auditLogger');
 const { flagEnabled, localeOptions, resolveBackendMediaUrl } = require('../lib/accessible-shell');
@@ -3751,7 +3752,7 @@ router.post('/:id(\\d+)/translate', asyncRoute(async (req, res) => {
     return redirectTo(res, eventPath(id, '/translate?status=translate-done'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    return redirectTo(res, eventPath(id, '/translate?status=translate-failed'));
+    return redirectTo(res, eventPath(id, `/translate?status=${translationFailureStatus(error)}`));
   }
 }));
 
@@ -3761,7 +3762,8 @@ router.post('/:id(\\d+)/translate-content', asyncRoute(async (req, res) => {
   const event = eventFrom(await callApi(token, 'GET', `/${Number(req.params.id)}`));
   const result = await translateFields(req, res, token, { type: 'event', id: Number(req.params.id), fields: { title: event.title, body: event.description || '' } }, true);
   if (req.session && result) req.session.ugcTranslation = result;
-  return redirectTo(res, `/events/${Number(req.params.id)}?status=${result ? 'translate-done' : 'translate-failed'}#content-translation`);
+  const failure = req.translationUnavailable ? 'translate-unavailable' : 'translate-failed';
+  return redirectTo(res, `/events/${Number(req.params.id)}?status=${result ? 'translate-done' : failure}#content-translation`);
 }));
 
 // List events
@@ -4205,7 +4207,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   res.render('events/detail', {
     contentTranslation,
     translationAvailable: Boolean(token) && (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false,
-    translationFailed: req.query.status === 'translate-failed',
+    translationFailed: req.query.status === 'translate-unavailable' ? 'unavailable' : req.query.status === 'translate-failed',
     title: event.title,
     event,
     seriesEvents,

@@ -574,6 +574,10 @@ class ListingService
         // relation explicitly.
         $cat = $listing->relationLoaded('category') ? $listing->getRelation('category') : null;
         $data['category_name'] = $cat ? TaxonomyNameLocalizer::nameFor('categories', $cat->id, $cat->name) : null;
+        if (isset($data['category']) && is_array($data['category']) && $data['category_name'] !== null) {
+            // The whole category rides along too, and clients read its name first.
+            $data['category']['name'] = $data['category_name'];
+        }
         $data['category_color'] = $cat?->color;
         $data['category_slug']  = $cat?->slug;
 
@@ -882,6 +886,10 @@ class ListingService
         // Category — `category` column on listings shadows the relation, read it explicitly.
         $cat = $listing->relationLoaded('category') ? $listing->getRelation('category') : null;
         $data['category_name'] = $cat ? TaxonomyNameLocalizer::nameFor('categories', $cat->id, $cat->name) : null;
+        if (isset($data['category']) && is_array($data['category']) && $data['category_name'] !== null) {
+            // The whole category rides along too, and clients read its name first.
+            $data['category']['name'] = $data['category_name'];
+        }
         $data['category_color'] = $cat?->color;
         $data['category_slug'] = $cat?->slug;
 
@@ -1076,6 +1084,10 @@ class ListingService
             ] : null;
             $cat = $listing->relationLoaded('category') ? $listing->getRelation('category') : null;
             $data['category_name'] = $cat ? TaxonomyNameLocalizer::nameFor('categories', $cat->id, $cat->name) : null;
+            if (isset($data['category']) && is_array($data['category']) && $data['category_name'] !== null) {
+                // The whole category rides along too, and clients read its name first.
+                $data['category']['name'] = $data['category_name'];
+            }
             $data['category_color'] = $cat?->color;
             $data['distance_km'] = round((float) $listing->distance_km, 2);
             $data['is_favorited'] = isset($savedIds[$listing->id]);
@@ -1132,6 +1144,10 @@ class ListingService
                 $data['author_avatar'] = $user->avatar_url ?? null;
                 $cat = $listing->relationLoaded('category') ? $listing->getRelation('category') : null;
                 $data['category_name'] = $cat ? TaxonomyNameLocalizer::nameFor('categories', $cat->id, $cat->name) : null;
+                if (isset($data['category']) && is_array($data['category']) && $data['category_name'] !== null) {
+                    // The whole category rides along too, and clients read its name first.
+                    $data['category']['name'] = $data['category_name'];
+                }
                 $data['category_color'] = $cat?->color;
                 return $data;
             })

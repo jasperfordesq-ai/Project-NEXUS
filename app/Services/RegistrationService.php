@@ -484,6 +484,11 @@ class RegistrationService
                     $user->organization_name = $data['organization_name'];
                 }
 
+                // The language they signed up in. Without it the column default
+                // ('en') applied to everyone, so a member who registered in
+                // Spanish got English at sign-in and in every email.
+                $user->preferred_language = $this->registrationLanguage($data, $tenantId);
+
                 $user->save();
 
                 // The successful invite redemption, account and staff-email intent
@@ -844,5 +849,40 @@ class RegistrationService
         $user->update(['verification_token' => $token]);
 
         return $token;
+    }
+
+    /**
+     * The language a new member is saved with: an explicit choice on the form,
+     * else the language they registered in (the client's Accept-Language),
+     * else the community's own language. Never the bare column default.
+     */
+    private function registrationLanguage(array $data, int $tenantId): string
+    {
+        $supported = \App\Http\Middleware\SetLocale::SUPPORTED_LOCALES;
+        $pick = static function ($value) use ($supported): ?string {
+            $code = strtolower(substr(trim((string) $value), 0, 2));
+
+            return in_array($code, $supported, true) ? $code : null;
+        };
+
+        $explicit = $pick($data['preferred_language'] ?? null);
+        if ($explicit !== null) {
+            return $explicit;
+        }
+
+        $header = (string) request()->header('Accept-Language', '');
+        if ($header !== '') {
+            foreach (explode(',', $header) as $part) {
+                $code = $pick(explode(';', $part)[0]);
+                if ($code !== null) {
+                    return $code;
+                }
+            }
+        }
+
+        $configuration = DB::table('tenants')->where('id', $tenantId)->value('configuration');
+        $config = is_string($configuration) ? json_decode($configuration, true) : null;
+
+        return $pick(is_array($config) ? ($config['default_language'] ?? null) : null) ?? 'en';
     }
 }

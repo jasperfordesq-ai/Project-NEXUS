@@ -1152,7 +1152,8 @@ router.post('/:id(\\d+)/translate', requireAuth, asyncRoute(async (req, res) => 
     result = await translateFields(req, res, req.token, profileTranslationSpec(user, req.params.id), true);
   }
   if (req.session && result) req.session.ugcTranslation = result;
-  return redirectTo(res, `/members/${Number(req.params.id)}?status=${result ? 'translate-done' : 'translate-failed'}#content-translation`);
+  const failure = req.translationUnavailable ? 'translate-unavailable' : 'translate-failed';
+  return redirectTo(res, `/members/${Number(req.params.id)}?status=${result ? 'translate-done' : failure}#content-translation`);
 }));
 
 // View single user profile
@@ -1257,7 +1258,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const profileTranslation = await translateFields(req, res, req.token, profileTranslationSpec(user, id));
   res.render('members/profile', {
     profileTranslation,
-    translationFailed: req.query.status === 'translate-failed',
+    translationFailed: req.query.status === 'translate-unavailable' ? 'unavailable' : req.query.status === 'translate-failed',
     translationAvailable: tenant?.translation?.enabled !== false && Boolean(user.bio || user.tagline),
     feedEnabled,
     title: displayName,

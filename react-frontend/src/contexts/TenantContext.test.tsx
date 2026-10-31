@@ -183,6 +183,38 @@ describe('TenantContext', () => {
     vi.mocked(tokenManager.getTenantId).mockReturnValue(null);
   });
 
+  // Found on the 31 Oct AWID walkthrough: a signed-in member who chose English
+  // was switched to the community's Spanish whenever the community re-loaded.
+  describe('community language', () => {
+    const spanishCommunity = { ...mockTenantConfig, default_language: 'es' };
+
+    it('applies the community language to a signed-out visitor', async () => {
+      const i18n = (await import('@/i18n')).default;
+      await i18n.changeLanguage('en');
+      localStorage.removeItem('nexus_language_user_chosen');
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(false);
+      mockApiGet.mockResolvedValue({ success: true, data: spanishCommunity });
+
+      render(<TenantProvider><TestConsumer /></TenantProvider>);
+
+      await waitFor(() => expect(i18n.language).toBe('es'));
+    });
+
+    it("leaves a signed-in member's own language alone", async () => {
+      const i18n = (await import('@/i18n')).default;
+      await i18n.changeLanguage('en');
+      localStorage.removeItem('nexus_language_user_chosen');
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+      mockApiGet.mockResolvedValue({ success: true, data: spanishCommunity });
+
+      render(<TenantProvider><TestConsumer /></TenantProvider>);
+
+      await waitFor(() => expect(tokenManager.setTenantId).toHaveBeenCalledWith(2));
+      expect(i18n.language).toBe('en');
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(false);
+    });
+  });
+
   it('silent refresh keeps the current tenant on screen while re-fetching', async () => {
     mockApiGet.mockResolvedValueOnce({ success: true, data: mockTenantConfig });
     render(<TenantProvider><TestConsumer /></TenantProvider>);

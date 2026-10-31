@@ -8,6 +8,7 @@ const { confirmFirst } = require('../lib/confirm-action');
 const { callFederationApi, blockMember, unblockMember, ApiError } = require('../lib/api');
 const { translationAvailable } = require('../lib/translation-available');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { translationFailureStatus } = require('../lib/translate-failure');
 
 const router = express.Router();
 
@@ -317,7 +318,7 @@ router.post('/messages/translate/:id(\\d+)', asyncRoute(async (req, res) => {
     if (req.session) req.session.federationTranslation = { id, text: translatedText, partnerId, partnerTenantId };
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    status = 'translate-failed';
+    status = translationFailureStatus(error);
   }
 
   return redirectTo(res, conversationRedirect(partnerId, partnerTenantId, status, `#message-${id}`));

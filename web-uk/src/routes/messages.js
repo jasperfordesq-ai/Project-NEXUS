@@ -24,6 +24,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
+const { isPermanentTranslationFailure } = require('../lib/translate-failure');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { translationAvailable } = require('../lib/translation-available');
 const { audit } = require('../lib/auditLogger');
@@ -793,11 +794,8 @@ function translateFailureStatus(error) {
   // TRANSLATION_UNAVAILABLE means the provider is not configured for this
   // installation — a permanent condition. Reporting it as a failure told the
   // member "please try again later" about something that will never work.
-  if (code === 'TRANSLATION_UNAVAILABLE') return 'translate-unavailable';
-  // The community switched translation off, or AI is off / not set up on the
-  // platform: also permanent, not "try again later" (30 Oct 2026).
-  if (['TRANSLATION_DISABLED', 'AI_NOT_CONFIGURED', 'AI_UNAVAILABLE'].includes(code)) return 'translate-unavailable';
-  if (code.includes('FEATURE_DISABLED')) return 'translate-unavailable';
+  // Same for a community with translation off or not set up (shared rule).
+  if (isPermanentTranslationFailure(error)) return 'translate-unavailable';
   if (code.includes('NO_CONTENT')) return 'translate-empty';
   return 'translate-failed';
 }

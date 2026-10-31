@@ -728,6 +728,11 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
   useEffect(() => {
     if (!state.tenant) return;
 
+    // A signed-in member's own saved language is applied by AuthContext and wins:
+    // this effect re-runs on every tenant refresh and used to switch a member who
+    // chose English back to the community's language.
+    if (tokenManager.hasAccessToken()) return;
+
     const tenantDefault = state.tenant.default_language ?? 'en';
     const userExplicitlyChose = localStorage.getItem('nexus_language_user_chosen');
 

@@ -6,6 +6,7 @@
 
 const { createHash } = require('node:crypto');
 const { callUserSettingsApi, callUgcTranslateApi } = require('./api');
+const { isPermanentTranslationFailure } = require('./translate-failure');
 const preferencesKey = Symbol('ugcTranslationPreferences');
 const locales = new Set(['en', 'ga', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'pl', 'ja', 'ar']);
 
@@ -50,7 +51,13 @@ async function translateFields(req, res, token, spec, manual = false) {
     const text = result.status === 'fulfilled' ? result.value?.data?.translated_text : null;
     if (typeof text === 'string' && text) fields[entries[index][0]] = text;
   });
-  if (!Object.keys(fields).length) return null;
+  if (!Object.keys(fields).length) {
+    // Tell the caller it is permanent (no key, switched off), not "try again".
+    if (manual && results.some((result) => result.status === 'rejected' && isPermanentTranslationFailure(result.reason))) {
+      req.translationUnavailable = true;
+    }
+    return null;
+  }
   return { fields, locale: preference.locale, signature, partial: Object.keys(fields).length !== entries.length };
 }
 
@@ -63,7 +70,8 @@ function registerDetailTranslation(router, config) {
     const item = await config.load(req, res, token);
     const result = await translateFields(req, res, token, config.spec(item), true);
     if (req.session && result) req.session.ugcTranslation = result;
-    return res.redirect(res.locals.urlFor(`${config.href(item, req)}?translationStatus=${result ? 'done' : 'failed'}#content-translation`));
+    const status = result ? 'done' : (req.translationUnavailable ? 'unavailable' : 'failed');
+    return res.redirect(res.locals.urlFor(`${config.href(item, req)}?translationStatus=${status}#content-translation`));
   }));
 }
 
@@ -73,7 +81,7 @@ async function detailTranslationLocals(req, res, token, item, config) {
     contentTranslation: await translateFields(req, res, token, config.spec(item)),
     translationAction: `${href}/translate`, translationOriginal: href,
     translationAvailable: Boolean(token) && (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false,
-    translationFailed: req.query?.translationStatus === 'failed'
+    translationFailed: req.query?.translationStatus === 'unavailable' ? 'unavailable' : req.query?.translationStatus === 'failed'
   };
 }
 

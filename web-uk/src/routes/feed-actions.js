@@ -32,6 +32,7 @@ const {
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 const { POST_REACTION_TYPES, COMMENT_REACTION_TYPES } = require('../lib/feed-reactions');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { translationFailureStatus: sharedTranslationFailureStatus } = require('../lib/translate-failure');
 const { rememberFormReplay } = require('../lib/form-replay');
 const { readDateTime } = require('../lib/date-input');
 
@@ -697,12 +698,7 @@ router.post('/items/:type([a-zA-Z0-9_-]+)/:id(\\d+)/react', asyncRoute(async (re
  * translated is the post itself. The result is shown once on the post page.
  */
 function translateFailureStatus(error) {
-  const code = String(error?.data?.code || error?.data?.errors?.[0]?.code || '').toUpperCase();
-  if (code === 'TRANSLATION_UNAVAILABLE' || code.includes('FEATURE_DISABLED')) return 'translate-unavailable';
-  // The community switched translation off, or AI is off / not set up on the
-  // platform: also permanent, not "try again later" (30 Oct 2026).
-  if (['TRANSLATION_DISABLED', 'AI_NOT_CONFIGURED', 'AI_UNAVAILABLE'].includes(code)) return 'translate-unavailable';
-  return 'translate-failed';
+  return sharedTranslationFailureStatus(error);
 }
 
 router.post('/posts/:id(\\d+)/translate', asyncRoute(async (req, res) => {

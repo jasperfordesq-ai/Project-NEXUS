@@ -38,6 +38,7 @@ const {
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { translationFailureStatus } = require('../lib/translate-failure');
 const { readDate, splitDate, readDateTime, splitDateTime } = require('../lib/date-input');
 const { POST_REACTION_TYPES } = require('../lib/feed-reactions');
 const { audit } = require('../lib/auditLogger');
@@ -2238,11 +2239,7 @@ router.post('/:id(\\d+)/discussions/:discussionId(\\d+)/translate', requireAuth,
     }
   } catch (error) {
     if (isAuthError(error)) return res.redirect(urlFor(res, loginRedirect()));
-    const code = String(error?.data?.code || error?.data?.errors?.[0]?.code || '').toUpperCase();
-    status = ['TRANSLATION_UNAVAILABLE', 'TRANSLATION_DISABLED', 'AI_NOT_CONFIGURED', 'AI_UNAVAILABLE'].includes(code)
-      || code.includes('FEATURE_DISABLED')
-      ? 'translate-unavailable'
-      : 'translate-failed';
+    status = translationFailureStatus(error);
   }
 
   const fragment = status === 'translate-done'

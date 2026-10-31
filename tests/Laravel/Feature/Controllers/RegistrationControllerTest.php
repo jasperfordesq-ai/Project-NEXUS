@@ -307,6 +307,55 @@ class RegistrationControllerTest extends TestCase
         ]);
     }
 
+    /**
+     * Found on the 31 Oct AWID walkthrough: registration never stored a language,
+     * so every new member was saved as English (the column default). A Spanish
+     * speaker who signed up in Spanish then got English at sign-in and in email.
+     */
+    private function registerWithHeaders(string $email, array $headers, array $extra = []): string
+    {
+        $response = $this->apiPost('/v2/auth/register', array_merge([
+            'first_name' => 'Lang',
+            'last_name' => 'Test',
+            'email' => $email,
+            'location' => 'Toronto, Canada',
+            'phone' => '+15551234567',
+            'password' => 'CoffeeMugSundayMorningPhpUnitTest2026',
+            'password_confirmation' => 'CoffeeMugSundayMorningPhpUnitTest2026',
+            'terms_accepted' => true,
+            'form_started_at' => (int) (microtime(true) * 1000) - 6000,
+            'latitude' => 43.6532,
+            'longitude' => -79.3832,
+        ], $extra), $headers);
+        $this->assertContains($response->getStatusCode(), [200, 201], 'Response body: ' . $response->getContent());
+
+        return (string) DB::table('users')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('email', $email)
+            ->value('preferred_language');
+    }
+
+    public function test_a_new_member_keeps_the_language_they_registered_in(): void
+    {
+        $this->assertSame('es', $this->registerWithHeaders('lang-es-' . uniqid() . '@gmail.com', ['Accept-Language' => 'es']));
+    }
+
+    public function test_an_explicit_language_choice_wins_over_the_browser(): void
+    {
+        $this->assertSame('fr', $this->registerWithHeaders('lang-fr-' . uniqid() . '@gmail.com', ['Accept-Language' => 'es'], ['preferred_language' => 'fr']));
+    }
+
+    public function test_without_any_language_a_new_member_gets_the_community_language(): void
+    {
+        $tenant = DB::table('tenants')->where('id', $this->testTenantId)->first(['configuration']);
+        $config = json_decode((string) ($tenant->configuration ?? '{}'), true) ?: [];
+        $config['default_language'] = 'es';
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['configuration' => json_encode($config)]);
+        \App\Core\TenantContext::setById($this->testTenantId);
+
+        $this->assertSame('es', $this->registerWithHeaders('lang-none-' . uniqid() . '@gmail.com', ['Accept-Language' => '']));
+    }
+
     public function test_register_still_succeeds_when_the_tenant_has_no_legal_documents(): void
     {
         // No version exists to pin, so nothing is recorded — that is the honest
