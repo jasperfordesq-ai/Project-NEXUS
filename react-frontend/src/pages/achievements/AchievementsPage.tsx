@@ -868,7 +868,10 @@ export function EngagementTab() {
   const historyMap = new Map(history.map((h) => [h.year_month, h]));
 
   for (let i = 11; i >= 0; i--) {
+    // Count back from the 1st: from the 31st, setMonth() into a 30-day month
+    // rolls forward again, so months were doubled and others went missing.
     const d = new Date();
+    d.setDate(1);
     d.setMonth(d.getMonth() - i);
     const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     const label = d.toLocaleDateString(getFormattingLocale(), { month: 'short', year: '2-digit' });

@@ -38,10 +38,10 @@ vi.mock('@/lib/api', () => ({
 
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
-vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
-  ...(await importOriginal()),
+vi.mock('@/lib/helpers', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/helpers')>()),
   cn: (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(' '),
-  resolveAvatarUrl: (url: string | null) => url ?? '',
+  resolveAvatarUrl: (url?: string | null) => url ?? '',
   resolveAssetUrl: (url: string) => url,
   formatDate: (value: string) => new Date(value).toDateString(),
 }));

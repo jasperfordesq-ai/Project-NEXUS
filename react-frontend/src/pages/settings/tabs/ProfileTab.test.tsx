@@ -122,7 +122,8 @@ describe('ProfileTab', () => {
     expect(field.value).toBe('Smiling in the garden');
 
     fireEvent.change(field, { target: { value: 'Smiling at the market' } });
-    const update = onProfileDataChange.mock.calls.at(-1)![0] as (prev: ProfileFormData) => ProfileFormData;
+    const calls = onProfileDataChange.mock.calls;
+    const update = calls[calls.length - 1]![0] as (prev: ProfileFormData) => ProfileFormData;
     expect(update(defaultProfileData).avatar_alt).toBe('Smiling at the market');
   });
 

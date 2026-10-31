@@ -97,7 +97,9 @@ describe('MessageBubble — manual translation follows the current source', () =
 
   it('ignores a pending manual response after its source message changes', async () => {
     let resolve!: (value: unknown) => void;
-    vi.mocked(api.post).mockReturnValueOnce(new Promise(r => { resolve = r; }));
+    vi.mocked(api.post).mockReturnValueOnce(
+      new Promise((r) => { resolve = r as (value: unknown) => void; }) as ReturnType<typeof api.post>,
+    );
     const { rerender } = render(bubble(message, null));
     translate();
     expect(api.post).toHaveBeenCalledTimes(1);

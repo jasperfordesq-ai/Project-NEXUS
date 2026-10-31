@@ -272,7 +272,8 @@ final class AiChatBudgetEnforcementTest extends TestCase
             ->where('user_id', $user->id)
             ->update([
                 'last_reset_daily' => now()->subDay()->toDateString(),
-                'last_reset_monthly' => now()->subMonth()->toDateString(),
+                // NoOverflow: on 31 Oct, subMonth() lands on "31 Sep" = 1 Oct, still this month.
+                'last_reset_monthly' => now()->subMonthNoOverflow()->toDateString(),
             ]);
 
         $result = AiUserLimit::admitRequest((int) $user->id, $this->testTenantId);

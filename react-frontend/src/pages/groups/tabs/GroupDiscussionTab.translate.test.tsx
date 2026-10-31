@@ -27,7 +27,6 @@ vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 vi.mock('@/contexts', () =>
   createMockContexts({
-    useAuth: () => ({ user: { id: 1, name: 'Member User' }, isAuthenticated: true }),
     useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), showToast: vi.fn() }),
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
