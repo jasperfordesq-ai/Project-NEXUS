@@ -80,23 +80,23 @@
     "check:spa-shell": "node scripts/test/test-spa-shell-fallback.mjs"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.3",
-    "@playwright/test": "^1.59.1",
-    "dotenv": "^17.4.2",
-    "govuk-frontend": "^6.1.0",
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "dotenv": "^18.0.9",
+    "govuk-frontend": "^6.6.0",
     "js-yaml": "^4.3.2",
     "minimatch": "^10.2.6",
     "picocolors": "^1.1.1",
-    "prisma": "^5.22.0",
-    "sass": "^1.99.0",
+    "prisma": "^7.10.1",
+    "sass": "^1.106.1",
     "semver": "^7.8.5",
     "sharp": "^0.35.5",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.7"
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
-    "accessible-autocomplete": "^3.0.1"
+    "@prisma/client": "^7.10.1",
+    "accessible-autocomplete": "^3.0.2"
   },
   "overrides": {
     "@xmldom/xmldom": ">=0.9.12",
