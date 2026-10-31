@@ -8,14 +8,19 @@ declare(strict_types=1);
 
 namespace Tests\Laravel\Feature\Translation;
 
+use App\Jobs\FillCategoryNameTranslations;
+use App\Models\User;
 use App\Services\AI\AIServiceFactory;
 use App\Services\PlatformSecretStore;
 use App\Services\SkillTaxonomyService;
 use App\Services\TranslationConfigurationService;
+use App\Services\Translation\TaxonomyNameLocalizer;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
 /**
@@ -190,5 +195,76 @@ class CategoryNamesInReaderLanguageTest extends TestCase
         app(SkillTaxonomyService::class)->updateCategory($id, ['name' => 'Baking AWID']);
 
         $this->assertNull(DB::table('skill_categories')->where('id', $id)->value('name_translations'));
+    }
+
+    // ------------------------------------------------------------------
+    // Every language up front (owner, 31 Oct 2026: "this needs to work for
+    // everyone, wherever they are and whatever language they speak")
+    // ------------------------------------------------------------------
+
+    public function test_a_category_is_translated_into_every_platform_language_at_once(): void
+    {
+        $id = $this->seedCategory('Gardening AWID');
+        Http::fake(['translation.googleapis.com/*' => function ($request) {
+            return Http::response(['data' => ['translations' => [['translatedText' => 'Gardening-' . $request->data()['target']]]]], 200);
+        }]);
+
+        $result = TaxonomyNameLocalizer::fillMissing('categories', $id);
+
+        $expected = array_values(array_diff(TaxonomyNameLocalizer::platformLanguages(), ['en']));
+        $this->assertSame(count($expected), $result['filled']);
+        $stored = json_decode((string) DB::table('categories')->where('id', $id)->value('name_translations'), true);
+        $this->assertEqualsCanonicalizing($expected, array_keys($stored));
+        $this->assertSame('Gardening-ja', $stored['ja']);
+    }
+
+    public function test_filling_never_overwrites_an_existing_translation(): void
+    {
+        $id = $this->seedCategory('Gardening AWID');
+        DB::table('categories')->where('id', $id)->update(['name_translations' => json_encode(['fr' => 'Jardinage (corrigé)'])]);
+        Http::fake(['translation.googleapis.com/*' => Http::response(['data' => ['translations' => [['translatedText' => 'machine']]]], 200)]);
+
+        TaxonomyNameLocalizer::fillMissing('categories', $id);
+
+        $stored = json_decode((string) DB::table('categories')->where('id', $id)->value('name_translations'), true);
+        $this->assertSame('Jardinage (corrigé)', $stored['fr']);
+        Http::assertNotSent(fn ($request) => ($request->data()['target'] ?? null) === 'fr');
+    }
+
+    public function test_the_nightly_command_fills_every_category_of_a_community(): void
+    {
+        $id = $this->seedCategory('Transport AWID');
+        Http::fake(['translation.googleapis.com/*' => Http::response(['data' => ['translations' => [['translatedText' => 'Transporte']]]], 200)]);
+
+        $this->artisan('taxonomy:translate-names', ['--tenant' => $this->testTenantId])->assertExitCode(0);
+
+        $stored = json_decode((string) DB::table('categories')->where('id', $id)->value('name_translations'), true);
+        $this->assertSame('Transporte', $stored['es']);
+    }
+
+    public function test_an_admin_corrects_a_translation_and_an_empty_box_removes_it(): void
+    {
+        $id = $this->seedCategory('Care practices AWID');
+        DB::table('categories')->where('id', $id)->update(['name_translations' => json_encode(['fr' => 'pratiques de soins', 'de' => 'Pflegepraxis'])]);
+        Bus::fake();
+        Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->admin()->create());
+
+        $this->apiPut("/v2/admin/categories/{$id}", [
+            'name' => 'Care practices AWID',
+            'name_translations' => ['fr' => 'Pratiques de soin', 'de' => '', 'xx' => 'ignored'],
+        ])->assertOk();
+
+        $stored = json_decode((string) DB::table('categories')->where('id', $id)->value('name_translations'), true);
+        $this->assertSame(['fr' => 'Pratiques de soin'], $stored);
+    }
+
+    public function test_creating_a_category_fills_every_language_in_the_background(): void
+    {
+        Bus::fake([FillCategoryNameTranslations::class]);
+        Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->admin()->create());
+
+        $this->apiPost('/v2/admin/categories', ['name' => 'Repair cafe AWID', 'type' => 'listing'])->assertSuccessful();
+
+        Bus::assertDispatched(FillCategoryNameTranslations::class, fn ($job) => $job->table === 'categories' && $job->tenantId === $this->testTenantId);
     }
 }

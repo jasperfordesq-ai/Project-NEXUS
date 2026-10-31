@@ -122,6 +122,128 @@ class TaxonomyNameLocalizer
         return $row;
     }
 
+    /**
+     * The languages every name is translated into ahead of time: the platform's
+     * whole language list, so no reader anywhere waits for a translation or sees
+     * the admin's language instead of their own.
+     *
+     * @return list<string>
+     */
+    public static function platformLanguages(): array
+    {
+        return \App\Http\Middleware\SetLocale::SUPPORTED_LOCALES;
+    }
+
+    /**
+     * Translate one category's name into every platform language it lacks, and
+     * save. An existing translation is never overwritten, so an admin's
+     * correction stays. Uses the current community (TenantContext).
+     *
+     * @return array{filled: int, failed: int}
+     */
+    public static function fillMissing(string $table, int $id): array
+    {
+        $result = ['filled' => 0, 'failed' => 0];
+        $tenantId = TenantContext::getId();
+        if (! in_array($table, self::TABLES, true) || ! $tenantId || ! self::canTranslate()) {
+            return $result;
+        }
+
+        $row = DB::table($table)->where('id', $id)->where('tenant_id', $tenantId)
+            ->first(['id', 'name', 'name_translations']);
+        $name = $row && is_string($row->name) ? trim($row->name) : '';
+        if ($name === '') {
+            return $result;
+        }
+
+        $source = self::communityLanguage();
+        $stored = self::decode($row->name_translations);
+        foreach (self::platformLanguages() as $language) {
+            if ($language === $source || (isset($stored[$language]) && trim((string) $stored[$language]) !== '')) {
+                continue;
+            }
+            try {
+                $translated = TranslationEngine::translate($name, $source, $language);
+            } catch (\Throwable $e) {
+                $translated = null;
+            }
+            if (! is_string($translated) || trim($translated) === '') {
+                $result['failed']++;
+                continue;
+            }
+            $stored[$language] = mb_substr(trim($translated), 0, 255);
+            $result['filled']++;
+        }
+
+        if ($result['filled'] > 0) {
+            self::save($table, $id, $stored);
+        }
+        if ($result['failed'] > 0) {
+            Log::warning('TaxonomyNameLocalizer: some languages not filled', ['table' => $table, 'id' => $id] + $result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Fill every category and skill category of the current community.
+     *
+     * @return array{rows: int, filled: int, failed: int}
+     */
+    public static function fillCommunity(): array
+    {
+        $totals = ['rows' => 0, 'filled' => 0, 'failed' => 0];
+        $tenantId = TenantContext::getId();
+        if (! $tenantId || ! self::canTranslate()) {
+            return $totals;
+        }
+
+        foreach (self::TABLES as $table) {
+            $ids = DB::table($table)->where('tenant_id', $tenantId)->pluck('id');
+            foreach ($ids as $id) {
+                $one = self::fillMissing($table, (int) $id);
+                $totals['rows']++;
+                $totals['filled'] += $one['filled'];
+                $totals['failed'] += $one['failed'];
+            }
+        }
+
+        return $totals;
+    }
+
+    /**
+     * An admin's edited translations merged over the stored ones. Only platform
+     * languages are kept; an empty value removes that language (the nightly sweep
+     * then translates it again). Returns null when a value is longer than 255.
+     *
+     * @param array<string, mixed> $current
+     * @return array<string, string>|null
+     */
+    public static function sanitizeTranslations(mixed $submitted, array $current): ?array
+    {
+        $result = array_filter($current, fn ($v, $k) => is_string($k) && is_string($v) && trim($v) !== ''
+            && in_array($k, self::platformLanguages(), true), ARRAY_FILTER_USE_BOTH);
+        if (! is_array($submitted)) {
+            return $result;
+        }
+        foreach ($submitted as $language => $value) {
+            if (! is_string($language) || ! in_array($language, self::platformLanguages(), true)) {
+                continue;
+            }
+            $value = is_string($value) ? trim($value) : '';
+            if ($value === '') {
+                unset($result[$language]);
+                continue;
+            }
+            if (mb_strlen($value) > 255) {
+                return null;
+            }
+            $result[$language] = $value;
+        }
+
+        return $result;
+    }
+
     private static function canTranslate(): bool
     {
         return TranslationConfigurationService::isEnabled() && TranslationEngine::available();

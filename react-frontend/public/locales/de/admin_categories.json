@@ -121,6 +121,9 @@
     "color_fuchsia": "Fuchsia",
     "color_indigo": "Indigo",
     "color_orange": "Orange",
-    "color_slate": "Schiefer"
+    "color_slate": "Schiefer",
+    "translations_heading": "Name in anderen Sprachen",
+    "translations_hint": "Automatisch in jede Sprache übersetzt, die die Plattform unterstützt. Korrigiere hier jede Übersetzung; deine Änderung bleibt erhalten. Lass ein Feld leer, damit es neu übersetzt wird.",
+    "translations_after_rename": "Du benennst diese Kategorie um. Speichere zuerst: Der neue Name wird dann in jede Sprache übersetzt, und du kannst die Übersetzungen hier prüfen."
   }
 }

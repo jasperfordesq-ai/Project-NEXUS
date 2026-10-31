@@ -121,6 +121,9 @@
     "color_unknown": "Colore sconosciuto",
     "color_yellow": "Giallo",
     "failed_to_save_category": "Impossibile salvare la categoria",
-    "placeholder_name": "Esempio: Arti e mestieri"
+    "placeholder_name": "Esempio: Arti e mestieri",
+    "translations_heading": "Nome in altre lingue",
+    "translations_hint": "Tradotto automaticamente in tutte le lingue supportate dalla piattaforma. Correggi qui qualsiasi traduzione; la tua modifica viene mantenuta. Lascia una casella vuota per farla tradurre di nuovo.",
+    "translations_after_rename": "Stai rinominando questa categoria. Salva prima: il nuovo nome verrà poi tradotto in tutte le lingue e potrai controllare le traduzioni qui."
   }
 }

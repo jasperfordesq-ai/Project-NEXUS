@@ -121,6 +121,9 @@
     "color_unknown": "不明な色",
     "color_yellow": "黄",
     "failed_to_save_category": "カテゴリの保存に失敗しました",
-    "placeholder_name": "例：アート＆クラフト"
+    "placeholder_name": "例：アート＆クラフト",
+    "translations_heading": "他の言語での名前",
+    "translations_hint": "プラットフォームが対応するすべての言語に自動で翻訳されます。ここで翻訳を修正できます。変更は保持されます。空欄にすると再度翻訳されます。",
+    "translations_after_rename": "このカテゴリーの名前を変更しています。先に保存してください。新しい名前がすべての言語に翻訳され、ここで翻訳を確認できます。"
   }
 }

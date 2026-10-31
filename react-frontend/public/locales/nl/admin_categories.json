@@ -121,6 +121,9 @@
     "failed_to_save_category": "Kan categorie niet opslaan",
     "placeholder_name": "bijv. Kunst & Ambacht",
     "color_fuchsia": "Fuchsia",
-    "color_indigo": "Indigo"
+    "color_indigo": "Indigo",
+    "translations_heading": "Naam in andere talen",
+    "translations_hint": "Automatisch vertaald in elke taal die het platform ondersteunt. Corrigeer hier een vertaling; je wijziging blijft bewaard. Laat een vak leeg om het opnieuw te laten vertalen.",
+    "translations_after_rename": "Je geeft deze categorie een nieuwe naam. Sla eerst op: de nieuwe naam wordt dan in elke taal vertaald en je kunt de vertalingen hier controleren."
   }
 }

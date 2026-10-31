@@ -21,7 +21,7 @@ import FolderOpen from 'lucide-react/icons/folder-open';
 import Tag from 'lucide-react/icons/tag';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { useAdminPageMeta } from '../../AdminMetaContext';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { adminCategories } from '../../api/adminApi';
 import { DataTable, type Column } from '../../components/DataTable';
 import { PageHeader } from '../../components/PageHeader';
@@ -43,6 +43,31 @@ const TYPE_COLORS: Record<string, 'primary' | 'success' | 'warning' | 'secondary
   resource: 'primary',
   vol_opportunity: 'secondary',
 };
+
+/** The platform languages a category name is translated into (SetLocale::SUPPORTED_LOCALES). */
+const TRANSLATION_LANGUAGES = ['en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar'] as const;
+
+/** A language's name in the admin's own language, from the browser (no strings to translate). */
+function languageName(code: string, displayLocale: string): string {
+  try {
+    const names = new Intl.DisplayNames([displayLocale, 'en'], { type: 'language' });
+    return names.of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
+/** The API sends name_translations as JSON text; tolerate an object or nothing. */
+function parseTranslations(value: AdminCategory['name_translations']): Record<string, string> {
+  if (!value) return {};
+  if (typeof value === 'object') return { ...value };
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return parsed && typeof parsed === 'object' ? { ...(parsed as Record<string, string>) } : {};
+  } catch {
+    return {};
+  }
+}
 
 const COLOR_OPTIONS = [
   'blue', 'red', 'green', 'orange', 'purple', 'pink',
@@ -96,7 +121,9 @@ function CategoryActionsMenu({ category, t, openEditModal, setDeleteTarget }: Ca
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function CategoriesAdmin() {
-  const { t } = useTranslation('admin_categories');
+  const { t, i18n } = useTranslation('admin_categories');
+  // The community's own language is the name itself, so it is not listed below.
+  const { defaultLanguage } = useTenant();
   useAdminPageMeta({ title: t('categories.page_title') });
   const toast = useToast();
 
@@ -120,6 +147,9 @@ export function CategoriesAdmin() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
   const [formData, setFormData] = useState({ name: '', color: 'blue', type: 'listing' });
+  // The name in other languages, for the admin to check and correct (AWID
+  // feedback, 30 Oct 2026). Filled automatically; an edit here is kept.
+  const [translations, setTranslations] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
   // Delete confirm state
@@ -173,6 +203,7 @@ export function CategoriesAdmin() {
       color: category.color || 'blue',
       type: category.type || 'listing',
     });
+    setTranslations(parseTranslations(category.name_translations));
     setModalOpen(true);
   };
 
@@ -192,10 +223,13 @@ export function CategoriesAdmin() {
 
     if (editingCategory) {
       // Update
+      const renamed = formData.name.trim() !== editingCategory.name;
       const res = await adminCategories.update(editingCategory.id, {
         name: formData.name.trim(),
         color: formData.color,
         type: formData.type,
+        // A rename translates the new name afresh, so edits to the old one are not sent.
+        ...(renamed ? {} : { name_translations: translations }),
       });
 
       if (res.success) {
@@ -439,6 +473,30 @@ export function CategoriesAdmin() {
                 </SelectItem>
               ))}
             </Select>
+            {editingCategory && (
+              <fieldset className="space-y-3 rounded-lg border border-theme-default p-3">
+                <legend className="px-1 text-sm font-medium text-theme-primary">{t('categories.translations_heading')}</legend>
+                {formData.name.trim() !== editingCategory.name ? (
+                  <p className="text-sm text-theme-muted">{t('categories.translations_after_rename')}</p>
+                ) : (
+                  <>
+                    <p className="text-sm text-theme-muted">{t('categories.translations_hint')}</p>
+                    {TRANSLATION_LANGUAGES.filter((code) => code !== (defaultLanguage || 'en').slice(0, 2)).map((code) => (
+                      <Input
+                        key={code}
+                        label={languageName(code, i18n.language)}
+                        value={translations[code] ?? ''}
+                        onValueChange={(v) => setTranslations((prev) => ({ ...prev, [code]: v }))}
+                        maxLength={255}
+                        variant="secondary"
+                        lang={code}
+                        dir={code === 'ar' ? 'rtl' : undefined}
+                      />
+                    ))}
+                  </>
+                )}
+              </fieldset>
+            )}
           </ModalBody>
           <ModalFooter>
             <Button variant="tertiary" onPress={closeModal} isDisabled={saving}>

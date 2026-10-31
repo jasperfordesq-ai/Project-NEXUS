@@ -121,6 +121,9 @@
     "color_cyan": "Cyan",
     "color_fuchsia": "Fuchsia",
     "color_indigo": "Indigo",
-    "color_orange": "Orange"
+    "color_orange": "Orange",
+    "translations_heading": "Nom dans d'autres langues",
+    "translations_hint": "Traduit automatiquement dans toutes les langues prises en charge par la plateforme. Corrigez ici n'importe quelle traduction ; votre modification est conservée. Laissez une case vide pour qu'elle soit traduite à nouveau.",
+    "translations_after_rename": "Vous renommez cette catégorie. Enregistrez d'abord : le nouveau nom sera alors traduit dans toutes les langues, et vous pourrez vérifier les traductions ici."
   }
 }

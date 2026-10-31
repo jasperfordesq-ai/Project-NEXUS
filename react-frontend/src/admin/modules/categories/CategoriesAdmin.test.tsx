@@ -265,3 +265,51 @@ describe('CategoriesAdmin — delete category', () => {
     expect(adminCategoriesMock.list).toHaveBeenCalled();
   });
 });
+
+// AWID feedback (30 Oct 2026): a category's name is translated automatically into
+// every platform language; the admin can check and correct each translation.
+describe('CategoriesAdmin — names in other languages', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  async function openEdit() {
+    render(<CategoriesAdmin />);
+    await screen.findByText('Gardening');
+    await userEvent.click(screen.getAllByRole('button', { name: /category actions/i })[0]!);
+    await userEvent.click(await screen.findByRole('menuitem', { name: /edit/i }));
+  }
+
+  it('shows each translation and sends a correction with the save', async () => {
+    successList([{ ...MOCK_CATEGORY, name_translations: JSON.stringify({ fr: 'jardinage', es: 'Jardinería' }) }]);
+    adminCategoriesMock.update.mockResolvedValue({ success: true, data: MOCK_CATEGORY });
+    await openEdit();
+
+    const french = await screen.findByDisplayValue('jardinage');
+    expect(screen.getByDisplayValue('Jardinería')).toBeInTheDocument();
+    await userEvent.clear(french);
+    await userEvent.type(french, 'Jardinage');
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    await waitFor(() => expect(adminCategoriesMock.update).toHaveBeenCalledWith(1, expect.objectContaining({
+      name: 'Gardening',
+      name_translations: expect.objectContaining({ fr: 'Jardinage', es: 'Jardinería' }),
+    })));
+  });
+
+  it('does not send old-name translations when the category is renamed', async () => {
+    successList([{ ...MOCK_CATEGORY, name_translations: JSON.stringify({ fr: 'jardinage' }) }]);
+    adminCategoriesMock.update.mockResolvedValue({ success: true, data: MOCK_CATEGORY });
+    await openEdit();
+
+    const name = await screen.findByDisplayValue('Gardening');
+    await userEvent.clear(name);
+    await userEvent.type(name, 'Growing food');
+    expect(screen.queryByDisplayValue('jardinage')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    await waitFor(() => expect(adminCategoriesMock.update).toHaveBeenCalled());
+    expect(adminCategoriesMock.update.mock.calls[0]![1]).not.toHaveProperty('name_translations');
+  });
+});
+

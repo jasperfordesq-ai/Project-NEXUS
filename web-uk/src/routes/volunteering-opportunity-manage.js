@@ -167,7 +167,11 @@ function formFromOpportunity(opportunity, categories) {
   const categoryName = trimmed(typeof opportunity.category === 'string'
     ? opportunity.category
     : opportunity.category?.name);
-  const match = categories.find((category) => category.name === categoryName);
+  // Match on the id: the category list is in the reader's language, the
+  // opportunity's own category name is not (31 Oct 2026). Name is the fallback
+  // for an API that does not send the id.
+  const categoryId = positiveInteger(opportunity.category_id ?? opportunity.category?.id);
+  const match = categories.find((category) => (categoryId ? category.id === categoryId : category.name === categoryName));
   return {
     title: trimmed(opportunity.title, 255),
     description: String(opportunity.description ?? ''),

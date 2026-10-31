@@ -121,6 +121,9 @@
     "color_unknown": "Cor desconhecida",
     "color_yellow": "Amarelo",
     "failed_to_save_category": "Falha ao salvar categoria",
-    "placeholder_name": "ex. Artes e Ofícios"
+    "placeholder_name": "ex. Artes e Ofícios",
+    "translations_heading": "Nome noutras línguas",
+    "translations_hint": "Traduzido automaticamente para todas as línguas suportadas pela plataforma. Corrija aqui qualquer tradução; a sua alteração é mantida. Deixe uma caixa vazia para que seja traduzida novamente.",
+    "translations_after_rename": "Está a mudar o nome desta categoria. Guarde primeiro: o novo nome será então traduzido para todas as línguas e poderá verificar as traduções aqui."
   }
 }

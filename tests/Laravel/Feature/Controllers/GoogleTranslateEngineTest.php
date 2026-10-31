@@ -147,6 +147,64 @@ class GoogleTranslateEngineTest extends TestCase
             ->assertJsonPath('data.translated_text', 'Hello from Google');
     }
 
+    /**
+     * Owner, 31 Oct 2026 (coverage audit): group-chat messages are stored with
+     * receiver_id = 0, so only the SENDER could translate one — every other
+     * member of the chat got 404 from the Translate button.
+     */
+    private function groupChatMessage(User $sender, array $members, bool $leftChat = false): int
+    {
+        $conversationId = (int) DB::table('conversations')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'is_group' => 1, 'group_name' => 'Garden helpers',
+            'created_by' => $sender->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        foreach (array_merge([$sender], $members) as $index => $member) {
+            DB::table('conversation_participants')->insert([
+                'tenant_id' => $this->testTenantId, 'conversation_id' => $conversationId, 'user_id' => $member->id,
+                'role' => $index === 0 ? 'admin' : 'member', 'joined_at' => now(),
+                'left_at' => ($leftChat && $index > 0) ? now() : null,
+            ]);
+        }
+
+        return (int) DB::table('messages')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'conversation_id' => $conversationId, 'sender_id' => $sender->id,
+            'receiver_id' => 0, 'body' => 'Hola a todas', 'is_read' => 0, 'is_deleted' => 0, 'created_at' => now(),
+        ]);
+    }
+
+    public function test_a_member_of_a_group_chat_can_translate_another_members_message(): void
+    {
+        app(PlatformSecretStore::class)->set(PlatformSecretStore::GOOGLE_TRANSLATE_KEY, self::PLATFORM_GOOGLE_KEY);
+        $me = $this->member();
+        $sender = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $id = $this->groupChatMessage($sender, [$me]);
+
+        $this->apiPost("/v2/messages/{$id}/translate", ['target_language' => 'en'])
+            ->assertStatus(200)
+            ->assertJsonPath('data.translated_text', 'Hello from Google');
+    }
+
+    public function test_someone_outside_the_group_chat_cannot_translate_its_messages(): void
+    {
+        app(PlatformSecretStore::class)->set(PlatformSecretStore::GOOGLE_TRANSLATE_KEY, self::PLATFORM_GOOGLE_KEY);
+        $sender = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $insider = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $id = $this->groupChatMessage($sender, [$insider]);
+        $this->member();
+
+        $this->apiPost("/v2/messages/{$id}/translate", ['target_language' => 'en'])->assertStatus(404);
+    }
+
+    public function test_a_member_who_left_the_group_chat_cannot_translate_its_messages(): void
+    {
+        app(PlatformSecretStore::class)->set(PlatformSecretStore::GOOGLE_TRANSLATE_KEY, self::PLATFORM_GOOGLE_KEY);
+        $me = $this->member();
+        $sender = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $id = $this->groupChatMessage($sender, [$me], leftChat: true);
+
+        $this->apiPost("/v2/messages/{$id}/translate", ['target_language' => 'en'])->assertStatus(404);
+    }
+
     public function test_ai_translation_uses_only_the_communitys_own_ai_key(): void
     {
         app(PlatformSecretStore::class)->set(PlatformSecretStore::GOOGLE_TRANSLATE_KEY, self::PLATFORM_GOOGLE_KEY);

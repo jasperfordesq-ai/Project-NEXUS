@@ -3548,6 +3548,9 @@ class VolunteerService
             'latitude'      => isset($opp['latitude']) ? (float) $opp['latitude'] : null,
             'longitude'     => isset($opp['longitude']) ? (float) $opp['longitude'] : null,
             'category'      => $opp['category_name'] ?? null,
+            // The id, so clients match the category without comparing names
+            // (names are shown in the reader's language since 30 Oct 2026).
+            'category_id'   => isset($opp['category_id']) ? (int) $opp['category_id'] : null,
             'organization'  => [
                 'id'       => (int) $opp['organization_id'],
                 'name'     => $opp['org_name'],

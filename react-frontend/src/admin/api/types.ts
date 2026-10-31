@@ -325,6 +325,8 @@ export interface AdminCategory {
   type: 'listing' | 'event' | 'blog' | 'vol_opportunity';
   listing_count: number;
   created_at: string;
+  /** The name in other languages, language code => name (JSON text from the API). */
+  name_translations?: string | Record<string, string> | null;
 }
 
 export interface AdminAttribute {

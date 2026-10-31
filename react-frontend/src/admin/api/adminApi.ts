@@ -772,7 +772,7 @@ export const adminCategories = {
   create: (data: { name: string; color?: string; type?: string }) =>
     api.post<AdminCategory>('/v2/admin/categories', data),
 
-  update: (id: number, data: { name?: string; color?: string; type?: string }) =>
+  update: (id: number, data: { name?: string; color?: string; type?: string; name_translations?: Record<string, string> }) =>
     api.put<AdminCategory>(`/v2/admin/categories/${id}`, data),
 
   delete: (id: number) =>

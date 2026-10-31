@@ -973,9 +973,24 @@ class MessagesController extends BaseApiController
             })
             ->whereRaw('NOT (sender_id = ? AND is_deleted_sender = 1)', [$userId])
             ->whereRaw('NOT (receiver_id = ? AND is_deleted_receiver = 1)', [$userId])
-            ->where(function ($q) use ($userId) {
+            ->where(function ($q) use ($userId, $tenantId) {
                 $q->where('sender_id', $userId)
-                  ->orWhere('receiver_id', $userId);
+                  ->orWhere('receiver_id', $userId)
+                  // A group-chat message has no single receiver (receiver_id = 0):
+                  // any current member of that chat may translate it (coverage
+                  // audit, 31 Oct 2026 — only its sender could).
+                  ->orWhere(function ($group) use ($userId, $tenantId) {
+                      $group->where('receiver_id', 0)
+                          ->whereNotNull('conversation_id')
+                          ->whereExists(function ($member) use ($userId, $tenantId) {
+                              $member->select(DB::raw(1))
+                                  ->from('conversation_participants')
+                                  ->whereColumn('conversation_participants.conversation_id', 'messages.conversation_id')
+                                  ->where('conversation_participants.tenant_id', $tenantId)
+                                  ->where('conversation_participants.user_id', $userId)
+                                  ->whereNull('conversation_participants.left_at');
+                          });
+                  });
             })
             ->first();
 

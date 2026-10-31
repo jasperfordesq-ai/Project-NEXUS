@@ -285,6 +285,18 @@ describe('changing the details', () => {
     expect(body.longitude).toBeNull();
   });
 
+  // 31 Oct 2026: the category list now comes in the reader's language while the
+  // opportunity's own category name does not, so matching by name selected nothing
+  // for a Spanish reader. The id decides.
+  it('selects the current category by id when the list is in another language', async () => {
+    mockApi({ opportunity: { ...OPPORTUNITY, category: 'Food', category_id: 7 } });
+    api.getVolunteeringCategories.mockResolvedValue([{ id: 5, name: 'Medio ambiente' }, { id: 7, name: 'Alimentación' }]);
+
+    const res = await request(createApp()).get(`${MOUNT}/opportunities/131/edit`);
+
+    expect(res.text).toContain('<option value="7" selected>Alimentación</option>');
+  });
+
   it('keeps a category it cannot match rather than wiping it', async () => {
     mockApi({ opportunity: { ...OPPORTUNITY, category: 'Heritage' } });
 

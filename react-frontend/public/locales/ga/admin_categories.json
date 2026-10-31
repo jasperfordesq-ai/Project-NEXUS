@@ -121,6 +121,9 @@
     "placeholder_name": "m.sh. Ealaíona & Ceardaíocht",
     "color_fuchsia": "Fiúise",
     "color_indigo": "Indeagó",
-    "type_vol_opportunity": "Deis Vol"
+    "type_vol_opportunity": "Deis Vol",
+    "translations_heading": "Ainm i dteangacha eile",
+    "translations_hint": "Aistrithe go huathoibríoch go gach teanga a dtacaíonn an t-ardán léi. Ceartaigh aon aistriúchán anseo; coinneofar d'athrú. Fág bosca folamh chun é a aistriú arís.",
+    "translations_after_rename": "Tá tú ag athainmniú na catagóire seo. Sábháil ar dtús: aistreofar an t-ainm nua ansin go gach teanga, agus is féidir leat na haistriúcháin a sheiceáil anseo."
   }
 }

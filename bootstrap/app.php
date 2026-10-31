@@ -92,6 +92,16 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->runInBackground()
             ->name('seo-probe');
 
+        // Category and skill-category names in every platform language
+        // (AWID feedback, 30 Oct 2026). Fills only what is missing — a repeat
+        // run sends nothing to the provider.
+        $schedule->command('taxonomy:translate-names')
+            ->dailyAt('03:40')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground()
+            ->name('taxonomy-translate-names');
+
         $schedule->command('slo:check')
             ->dailyAt('07:30')
             ->withoutOverlapping()

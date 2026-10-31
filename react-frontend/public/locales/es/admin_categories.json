@@ -121,6 +121,9 @@
     "color_unknown": "Color desconocido",
     "color_yellow": "Amarillo",
     "failed_to_save_category": "Error al guardar la categoría",
-    "placeholder_name": "por ejemplo, Artes y Manualidades"
+    "placeholder_name": "por ejemplo, Artes y Manualidades",
+    "translations_heading": "Nombre en otros idiomas",
+    "translations_hint": "Traducido automáticamente a todos los idiomas que admite la plataforma. Corrige aquí cualquier traducción; tu cambio se conserva. Deja una casilla vacía para que se vuelva a traducir.",
+    "translations_after_rename": "Estás cambiando el nombre de esta categoría. Guarda primero: el nuevo nombre se traducirá entonces a todos los idiomas y podrás revisar las traducciones aquí."
   }
 }

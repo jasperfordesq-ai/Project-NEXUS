@@ -121,6 +121,9 @@
     "type_listing": "Listing",
     "type_resource": "Resource",
     "type_vol_opportunity": "Vol Opportunity",
-    "tabs_aria": "Category type filter"
+    "tabs_aria": "Category type filter",
+    "translations_heading": "Name in other languages",
+    "translations_hint": "Translated automatically into every language the platform supports. Correct any translation here; your change is kept. Leave a box empty to have it translated again.",
+    "translations_after_rename": "You are renaming this category. Save first: the new name is then translated into every language, and you can check the translations here."
   }
 }

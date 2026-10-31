@@ -121,6 +121,9 @@
     "color_unknown": "Nieznany kolor",
     "color_yellow": "Żółty",
     "failed_to_save_category": "Nie udało się zapisać kategorii",
-    "placeholder_name": "np. Sztuka i rzemiosło"
+    "placeholder_name": "np. Sztuka i rzemiosło",
+    "translations_heading": "Nazwa w innych językach",
+    "translations_hint": "Przetłumaczono automatycznie na wszystkie języki obsługiwane przez platformę. Popraw tutaj dowolne tłumaczenie; Twoja zmiana zostanie zachowana. Zostaw pole puste, aby przetłumaczyć je ponownie.",
+    "translations_after_rename": "Zmieniasz nazwę tej kategorii. Najpierw zapisz: nowa nazwa zostanie wtedy przetłumaczona na wszystkie języki, a tłumaczenia sprawdzisz tutaj."
   }
 }

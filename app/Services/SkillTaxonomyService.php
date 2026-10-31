@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Jobs\FillCategoryNameTranslations;
 use App\Support\Members\MemberDirectoryVisibility;
 use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
@@ -143,7 +144,7 @@ class SkillTaxonomyService
             $slug .= '-' . time();
         }
 
-        return DB::table('skill_categories')->insertGetId([
+        $id = DB::table('skill_categories')->insertGetId([
             'tenant_id'     => $tenantId,
             'name'          => $name,
             'slug'          => $slug,
@@ -153,6 +154,10 @@ class SkillTaxonomyService
             'display_order' => (int) ($data['display_order'] ?? 0),
             'is_active'     => 1,
         ]);
+        // Its name in every platform language, in the background.
+        FillCategoryNameTranslations::dispatch((int) $tenantId, 'skill_categories', (int) $id)->afterResponse();
+
+        return $id;
     }
 
     /**
@@ -229,6 +234,11 @@ class SkillTaxonomyService
             ->where('id', $id)
             ->where('tenant_id', $tenantId)
             ->update($updates);
+
+        if (array_key_exists('name', $updates)) {
+            // The new name in every platform language, in the background.
+            FillCategoryNameTranslations::dispatch((int) $tenantId, 'skill_categories', $id)->afterResponse();
+        }
 
         return true;
     }

@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use App\Models\ActivityLog;
+use App\Jobs\FillCategoryNameTranslations;
+use App\Services\Translation\TaxonomyNameLocalizer;
 
 /**
  * AdminCategoriesController -- Admin category and attribute management.
@@ -124,6 +126,8 @@ class AdminCategoriesController extends BaseApiController
         ]);
 
         ActivityLog::log($adminId, 'admin_create_category', "Created category #{$newId}: {$name} (type: {$type})");
+        // Its name in every platform language, in the background.
+        FillCategoryNameTranslations::dispatch((int) $tenantId, 'categories', (int) $newId)->afterResponse();
 
         return $this->respondWithData([
             'id' => (int) $newId,
@@ -196,6 +200,23 @@ class AdminCategoriesController extends BaseApiController
             [$name, $slug, $color, $type, $id, $tenantId]
         );
 
+        // An admin's corrections to the name in other languages (AWID feedback,
+        // 30 Oct 2026: machine translations must be correctable). Applied only
+        // when the name itself is unchanged — a rename starts the translations afresh.
+        if ($name === $category->name && isset($data['name_translations']) && Schema::hasColumn('categories', 'name_translations')) {
+            $translations = TaxonomyNameLocalizer::sanitizeTranslations(
+                $data['name_translations'],
+                json_decode((string) ($category->name_translations ?? ''), true) ?: [],
+            );
+            if ($translations === null) {
+                return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.text_too_long'), 'name_translations', 422);
+            }
+            DB::update(
+                "UPDATE categories SET name_translations = ? WHERE id = ? AND tenant_id = ?",
+                [json_encode($translations, JSON_UNESCAPED_UNICODE), $id, $tenantId]
+            );
+        }
+
         // A renamed category's translations are of the old name: drop them so
         // the new name is translated afresh (TaxonomyNameLocalizer).
         if ($name !== $category->name && Schema::hasColumn('categories', 'name_translations')) {
@@ -203,6 +224,7 @@ class AdminCategoriesController extends BaseApiController
                 "UPDATE categories SET name_translations = NULL WHERE id = ? AND tenant_id = ?",
                 [$id, $tenantId]
             );
+            FillCategoryNameTranslations::dispatch((int) $tenantId, 'categories', $id)->afterResponse();
         }
 
         ActivityLog::log($adminId, 'admin_update_category', "Updated category #{$id}: {$name}");
