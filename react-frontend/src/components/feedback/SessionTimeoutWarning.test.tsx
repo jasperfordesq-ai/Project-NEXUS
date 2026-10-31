@@ -74,6 +74,9 @@ vi.mock('@/lib/api', () => ({
   SESSION_EXPIRING_EVENT: 'nexus:session_expiring',
   tokenManager: {
     getRefreshToken: vi.fn(() => null),
+    // false = a session that cannot renew itself (an impersonation tab); the
+    // only kind this warning is for. See the "renewable session" cases below.
+    hasRefreshToken: vi.fn(() => false),
     getAccessToken: vi.fn(() => null),
     getTenantId: vi.fn(() => null),
     setAccessToken: vi.fn(),
@@ -487,5 +490,62 @@ describe('SessionTimeoutWarning — restored and refreshed token scheduling', ()
 
     expect(scheduleSessionWarningSpy).toHaveBeenCalledTimes(2);
     expect(scheduleSessionWarningSpy.mock.calls[1][0]).toBeGreaterThanOrEqual(234);
+  });
+});
+
+// ─── Owner, 31 Oct 2026 (AWID): no pop-up for a session that renews itself ────
+//
+// The access token lasts 15 minutes and the API client renews it silently from
+// the 30-day sign-in. This warning used to open 30 seconds before every access
+// token expired — every ~15 minutes, even for a member who was busy — and its
+// countdown signed them out. A renewable session must never see it: the only
+// real end of such a session is the community's inactivity timeout, which
+// IdleLogoutGuard warns about.
+
+describe('SessionTimeoutWarning — renewable session', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(tokenManager.hasRefreshToken).mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    vi.mocked(tokenManager.hasRefreshToken).mockReturnValue(false);
+    vi.mocked(tokenManager.getAccessToken).mockReturnValue(null);
+    vi.useRealTimers();
+  });
+
+  it('does not open when the access token is about to expire', async () => {
+    render(<SessionTimeoutWarning />);
+
+    await act(async () => {
+      dispatchExpiringEvent();
+    });
+
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(logoutSpy).not.toHaveBeenCalled();
+  });
+
+  it('neither opens nor schedules a warning for a short-lived restored token', async () => {
+    vi.mocked(tokenManager.getAccessToken).mockReturnValue(jwtExpiringIn(20));
+
+    render(<SessionTimeoutWarning />);
+    await act(async () => {});
+
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(scheduleSessionWarningSpy).not.toHaveBeenCalled();
+  });
+
+  it('never signs the member out when an access token runs out', async () => {
+    vi.useFakeTimers();
+    vi.mocked(tokenManager.getAccessToken).mockReturnValue(jwtExpiringIn(10));
+
+    render(<SessionTimeoutWarning />);
+    await act(async () => {
+      dispatchExpiringEvent();
+      await vi.advanceTimersByTimeAsync(60_000);
+    });
+
+    expect(logoutSpy).not.toHaveBeenCalled();
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
   });
 });

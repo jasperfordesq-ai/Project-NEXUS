@@ -7,8 +7,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useIdleLogout, parseIdleTimeoutMs } from './useIdleLogout';
 
-const { mockPost } = vi.hoisted(() => ({ mockPost: vi.fn() }));
-vi.mock('@/lib/api', () => ({ api: { post: mockPost } }));
+const { mockPost, mockSessionBinding } = vi.hoisted(() => ({
+  mockPost: vi.fn(),
+  mockSessionBinding: vi.fn(() => 'session-a' as string | null),
+}));
+vi.mock('@/lib/api', () => ({
+  api: { post: mockPost },
+  tokenManager: { getSessionBinding: mockSessionBinding },
+}));
+
+/** What a tab of the sign-in `session` writes when the member is active. */
+function storeActivity(at: number, session: string | null = 'session-a') {
+  localStorage.setItem('nexus_last_activity', JSON.stringify({ at, session }));
+}
 
 vi.mock('@/contexts', () => ({
   useAuth: vi.fn(),
@@ -100,7 +111,7 @@ describe('useIdleLogout', () => {
     await act(async () => {
       vi.advanceTimersByTime(4 * 60_000);
       // Another tab records fresh activity
-      localStorage.setItem('nexus_last_activity', String(Date.now()));
+      storeActivity(Date.now());
       vi.advanceTimersByTime(2 * 60_000);
     });
 
@@ -133,11 +144,54 @@ describe('useIdleLogout', () => {
   // left and came back long after the timeout was still signed in.
   it('does not restart the clock when the page is reloaded after a long idle', async () => {
     const { logout } = setup({ timeoutMinutes: '30', user: { id: 1 } });
-    localStorage.setItem('nexus_last_activity', String(Date.now() - 31 * 60_000));
+    storeActivity(Date.now() - 31 * 60_000);
     renderHook(() => useIdleLogout());
 
     await act(async () => {
       vi.advanceTimersByTime(31_000);
+    });
+
+    expect(logout).toHaveBeenCalledTimes(1);
+  });
+
+  // Owner, 31 Oct 2026 (AWID): the last activity of an EARLIER sign-in stayed
+  // in the browser (only an inactivity sign-out cleared it), so signing in
+  // again started the clock at that old time — the "you will be signed out"
+  // warning, or the sign-out itself, came straight after signing in.
+  it('ignores activity recorded by an earlier sign-in', async () => {
+    const { logout } = setup({ timeoutMinutes: '5', user: { id: 1 } });
+    storeActivity(Date.now() - 4 * 60_000, 'old-session');
+    const { result } = renderHook(() => useIdleLogout());
+
+    await act(async () => {
+      vi.advanceTimersByTime(60_000);
+    });
+
+    expect(result.current.warningOpen).toBe(false);
+    expect(logout).not.toHaveBeenCalled();
+  });
+
+  it('ignores a last-activity time written in the old format', async () => {
+    const { logout } = setup({ timeoutMinutes: '5', user: { id: 1 } });
+    localStorage.setItem('nexus_last_activity', String(Date.now() - 6 * 60_000));
+    const { result } = renderHook(() => useIdleLogout());
+
+    await act(async () => {
+      vi.advanceTimersByTime(31_000);
+    });
+
+    expect(result.current.warningOpen).toBe(false);
+    expect(logout).not.toHaveBeenCalled();
+  });
+
+  it('ignores activity from another sign-in in a sibling tab', async () => {
+    const { logout } = setup({ timeoutMinutes: '5', user: { id: 1 } });
+    renderHook(() => useIdleLogout());
+
+    await act(async () => {
+      vi.advanceTimersByTime(4 * 60_000);
+      storeActivity(Date.now(), 'someone-else');
+      vi.advanceTimersByTime(2 * 60_000);
     });
 
     expect(logout).toHaveBeenCalledTimes(1);

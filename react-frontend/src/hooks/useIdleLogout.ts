@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useTenant, useToast } from '@/contexts';
-import { api } from '@/lib/api';
+import { api, tokenManager } from '@/lib/api';
 
 /**
  * Auto-logout after a tenant-configurable period of user inactivity.
@@ -64,11 +64,33 @@ function serverPingIntervalMs(timeoutMs: number): number {
   return Math.max(60_000, Math.min(5 * 60_000, Math.floor(timeoutMs / 3)));
 }
 
+/*
+ * The stored activity names the sign-in it belongs to (the session binding,
+ * which stays the same while the sign-in renews its tokens). Owner, 31 Oct 2026
+ * (AWID): it used to be a bare time that only an inactivity sign-out removed,
+ * so after any other sign-out the NEXT sign-in started its clock at that old
+ * time and the "you will be signed out" warning — or the sign-out — came
+ * straight away. Activity from another sign-in, or in the old format, is
+ * ignored.
+ */
+function currentSession(): string | null {
+  try {
+    return tokenManager.getSessionBinding();
+  } catch {
+    return null;
+  }
+}
+
 function readPersistedActivity(): number {
   try {
     const raw = localStorage.getItem(LAST_ACTIVITY_KEY);
-    const ts = raw === null ? NaN : Number(raw);
-    return Number.isFinite(ts) ? ts : 0;
+    if (raw === null) return 0;
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== 'object' || parsed === null) return 0;
+    const { at, session } = parsed as { at?: unknown; session?: unknown };
+    if (session !== currentSession()) return 0;
+    // A time in the future cannot be real activity (clock change, tampering).
+    return typeof at === 'number' && Number.isFinite(at) && at > 0 && at <= Date.now() ? at : 0;
   } catch {
     return 0;
   }
@@ -76,7 +98,7 @@ function readPersistedActivity(): number {
 
 function persistActivity(at: number): void {
   try {
-    localStorage.setItem(LAST_ACTIVITY_KEY, String(at));
+    localStorage.setItem(LAST_ACTIVITY_KEY, JSON.stringify({ at, session: currentSession() }));
   } catch {
     // Storage unavailable (private mode / quota) — in-tab tracking still works
   }

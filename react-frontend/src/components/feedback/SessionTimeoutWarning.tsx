@@ -19,6 +19,15 @@
  * hidden tab could show "30 seconds" long after the JWT actually expired.
  * Timers only decide how often we LOOK at the clock; visibilitychange/focus
  * reconcile a re-activated tab with reality immediately.
+ *
+ * 🔴 Only for a session that CANNOT renew itself (an impersonation tab, which
+ * has no refresh credential). A normal sign-in renews its 15-minute access
+ * token silently (the API client refreshes on 401 from the 30-day sign-in), so
+ * an access token running out is not the session ending. Until 31 Oct 2026
+ * this dialog opened 30 seconds before EVERY access token expired — every ~15
+ * minutes, busy or not — and its countdown signed members out (AWID). A
+ * renewable session's real end is the community's inactivity timeout, which
+ * IdleLogoutGuard warns about.
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -38,6 +47,11 @@ import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 // How long to count down in the warning (seconds shown to user)
 const COUNTDOWN_SECONDS = 30;
 const TOKEN_CHECK_INTERVAL_MS = 5000;
+
+/** True when an expiring access token will be renewed without the member. */
+function sessionRenewsItself(): boolean {
+  return tokenManager.hasRefreshToken();
+}
 
 function getTokenSecondsUntilExpiry(token: string | null): number | null {
   if (!token) return null;
@@ -169,6 +183,7 @@ export function SessionTimeoutWarning() {
     const handleExpiring = (event: Event) => {
       // Only show if user is currently authenticated
       if (!isAuthenticatedRef.current) return;
+      if (sessionRenewsItself()) return;
       const requestedSeconds = event instanceof CustomEvent
         && typeof event.detail?.secondsRemaining === 'number'
         ? event.detail.secondsRemaining
@@ -211,6 +226,7 @@ export function SessionTimeoutWarning() {
     }
 
     const syncAccessTokenExpiry = () => {
+      if (sessionRenewsItself()) return;
       const accessToken = tokenManager.getAccessToken();
       if (!accessToken || accessToken === observedAccessTokenRef.current) return;
 
