@@ -7,9 +7,17 @@
   ],
   "bundle": {
     "howMeasured": "node scripts/check-startup-budget.mjs — runs node node_modules/expo/bin/cli export --platform android and takes the size in bytes of the single .hbc under _expo/static/js/android",
-    "measuredBytes": 18901225,
-    "measuredOn": "2026-10-24",
+    "measuredBytes": 19071077,
+    "measuredOn": "2026-10-31",
     "$measuredNote": [
+      "Measured by the same script, in CI: the Android Native Release Gate of ci.yml run",
+      "41229749181 on 7fbd5efff3, artefact index-fc6bbb6ddffa8ab6d775b8e2ad26a8b0.hbc, after the",
+      "Translate-button word lists moved out of the bundle into bundled .txt files.",
+      "Owner decision 2026-10-31: the app starts quickly on the owner's own phone, and the",
+      "1% ceiling of 2026-10-24 was tighter than needed; raise to measured + 15%.",
+      "🔴 Still NOT measured: a cold start of a store-distributed build (see startup below).",
+      "The owner's phone was running the store build, not this bundle.",
+      "Previous: 18,901,225 bytes measured 2026-10-24, ceiling 19,090,237 (measured + 1%):",
       "Measured by the same script, in CI: the Android Native Release Gate of ci.yml run",
       "40122930143 on 832804022, artefact index-a423a4a32e653d0493a6aa1d9f4f4db8.hbc.",
       "That run failed the gate by 6,943 bytes. The tipping change was the E-113 security fix",
@@ -24,8 +32,8 @@
       "Previous: 17,176,620 bytes measured 2026-09-21 (run 35651400195), ceiling 18,894,282.",
       "Before that: 15,590,798 bytes measured 2026-08-30, ceiling 17,148,793."
     ],
-    "ceilingBytes": 19090237,
-    "$ceilingNote": "measured + 1% (owner-approved 2026-10-24), NOT the usual +10% — see $measuredNote. The gate fails above this and warns within 5% of it.",
+    "ceilingBytes": 21931739,
+    "$ceilingNote": "measured + 15% (owner-approved 2026-10-31) — see $measuredNote. The gate fails above this and warns within 5% of it.",
     "shippedApkComparison": {
       "$comment": [
         "NOT comparable with the figure above, and the difference is not a defect.",
