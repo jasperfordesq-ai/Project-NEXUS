@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 jest.mock('expo/metro-config', () => ({
-  getDefaultConfig: () => ({ resolver: { blockList: /expo-default-exclusion/ }, transformer: {} }),
+  getDefaultConfig: () => ({ resolver: { blockList: /expo-default-exclusion/, assetExts: ['png'] }, transformer: {} }),
 }));
 jest.mock('uniwind/metro', () => ({ withUniwindConfig: (config) => config }));
 jest.mock('@sentry/react-native/metro', () => jest.requireActual('@sentry/react-native/metro'));
@@ -13,6 +13,10 @@ const config = require('./metro.config');
 const excluded = (file) => config.resolver.blockList.some((pattern) => pattern.test(file));
 
 describe('Metro native build exclusions', () => {
+  it('ships the Translate-button word lists as files, keeping the default asset types', () => {
+    expect(config.resolver.assetExts).toEqual(['png', 'txt']);
+  });
+
   it.each(['android', 'ios'])('keeps browser replay excluded on %s through the actual Sentry wrapper', (platform) => {
     const resolveRequest = jest.fn();
     const context = { resolveRequest, mainFields: ['main', 'module'] };
