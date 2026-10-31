@@ -11,7 +11,7 @@
  */
 
 import corpus from './__fixtures__/corpus.json';
-import { alreadyInReaderLanguage, readerVocabulary } from './readerVocabulary';
+import { alreadyInReaderLanguage, loadReaderVocabulary, readerVocabulary } from './readerVocabulary';
 
 const READERS = ['en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar'] as const;
 type Corpus = Record<(typeof READERS)[number], string[]> & { _other: Array<[string, string]> };
@@ -20,6 +20,11 @@ const ENGLISH = 'Please remember to log your hours after each exchange so the ba
 const SPANISH = 'Mi vecina mayor estaría encantada de recibir una llamada cada semana, ¿alguien tiene veinte minutos?';
 
 describe('alreadyInReaderLanguage (app)', () => {
+  // The lists are bundled files, read on first use (asynchronously).
+  beforeAll(async () => {
+    for (const reader of READERS) await loadReaderVocabulary(reader);
+  });
+
   it('never hides the control wrongly on the shared corpus', () => {
     const wrong: string[] = [];
     for (const language of READERS) {
@@ -47,5 +52,16 @@ describe('alreadyInReaderLanguage (app)', () => {
     }
     expect(readerVocabulary('ja')).toBeNull();
     expect(readerVocabulary('sv')).toBeNull();
+  });
+});
+
+describe('before the word lists are read', () => {
+  it('keeps the control: no list, no decision', () => {
+    jest.isolateModules(() => {
+      // A fresh copy of the loader has read nothing yet.
+      const fresh = require('./readerVocabulary') as typeof import('./readerVocabulary');
+      expect(fresh.readerVocabulary('en')).toBeNull();
+      expect(fresh.alreadyInReaderLanguage([ENGLISH], 'en')).toBe(false);
+    });
   });
 });

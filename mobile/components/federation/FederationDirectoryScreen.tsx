@@ -60,7 +60,7 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { responsiveActionStyle } from '@/lib/layout/responsiveActions';
 import { appResolvedMember, rememberAppResolvedMember } from '@/lib/federation/appResolvedMembers';
-import { alreadyInReaderLanguage } from '@/lib/textLanguage/readerVocabulary';
+import { alreadyInReaderLanguage, useReaderVocabulary } from '@/lib/textLanguage/readerVocabulary';
 import {
   completeFederationMessageCreationOperation,
   reserveFederationMessageCreationOperation,
@@ -1380,6 +1380,8 @@ function MessageThreadView({
   const [showOriginalIds, setShowOriginalIds] = useState<Record<string, boolean>>({});
   const canSend = reply.trim().length > 0 && !isSending;
   const targetLanguage = (i18n.language || 'en').split('-')[0] || 'en';
+  // Re-renders once the reader's word list is read, so alreadyInReaderLanguage() below can decide.
+  useReaderVocabulary(targetLanguage);
 
   // State alone cannot stop two presses in the same frame; each would send a message.
   const replySendingRef = useRef(false);

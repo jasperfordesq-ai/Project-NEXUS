@@ -12,6 +12,11 @@ module.exports = {
   // components work without HeroUINativeProvider in the test tree.
   resolver: '<rootDir>/jest-resolver.js',
 
+  // Bundled .txt files (the Translate-button word lists) load as their text.
+  transform: {
+    '\\.txt$': '<rootDir>/jest-text-transform.js',
+  },
+
   // Map react-native-reanimated to a self-contained manual mock so the native
   // react-native-worklets initialisation (NativeWorklets) is never invoked in tests.
   moduleNameMapper: {

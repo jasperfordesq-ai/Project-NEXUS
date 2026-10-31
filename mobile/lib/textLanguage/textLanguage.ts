@@ -28,7 +28,7 @@
  * phone app and the accessible site; edit it here and run that script.
  */
 
-import markers from './markers.json';
+import { markers } from './onDeviceData';
 
 const WORDS: Readonly<Record<string, string>> = (markers as { words: Record<string, string> }).words;
 

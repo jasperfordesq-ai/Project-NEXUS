@@ -94,7 +94,8 @@ test('formatted descriptions are translated as the plain text the reader sees', 
 test('no translation control for English text read in English, one for Spanish', async () => {
   jest.mocked(getUserPreferences).mockResolvedValue({});
   const english = render(<ContentTranslation contentType="post" contentId={1} fields={{ body: 'Please remember to log your hours after each exchange so the balance stays accurate.' }} />);
-  expect(english.queryByLabelText('ugcTranslation.translate')).toBeNull();
+  // The word lists are read on first use; the control goes once they are in.
+  await waitFor(() => expect(english.queryByLabelText('ugcTranslation.translate')).toBeNull());
   const spanish = render(<ContentTranslation contentType="post" contentId={2} fields={{ body: 'Mi vecina mayor estaría encantada de recibir una llamada cada semana, ¿alguien tiene veinte minutos?' }} />);
   expect(spanish.getByLabelText('ugcTranslation.translate')).toBeTruthy();
 });

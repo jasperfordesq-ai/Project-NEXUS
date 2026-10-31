@@ -84,6 +84,10 @@ config.transformer.getTransformOptions = async () => ({
   },
 });
 
+// The Translate-button detector's word lists ship as files read on first use
+// (lib/textLanguage/data/*.txt), not as ~0.85 MB of start-up JavaScript.
+config.resolver.assetExts = [...config.resolver.assetExts, 'txt'];
+
 // Per-community accent themes must be REGISTERED at build time: uniwind compiles the
 // CSS variables into the bundle and offers no runtime setter for an arbitrary colour,
 // so `Uniwind.setTheme()` can only reach themes named here. The names are derived from

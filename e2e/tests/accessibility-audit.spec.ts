@@ -280,8 +280,12 @@ test.describe('real-browser accessibility gate', () => {
       await setThemeProfile(page, { theme: 'light' });
       await visit(page, 'dashboard');
 
-      const restoreTarget = page.locator('button:visible').first();
-      await restoreTarget.evaluate((element) => { element.id = 'a11y-search-restore-target'; });
+      // Tag one button, then use the tag: re-resolving "the first visible
+      // button" can land on a different one that rendered in between (the
+      // utility bar's Verify Identity arrives after a request), so focus was
+      // restored correctly to a button this test was not checking.
+      await page.locator('button:visible').first().evaluate((element) => { element.id = 'a11y-search-restore-target'; });
+      const restoreTarget = page.locator('#a11y-search-restore-target');
       await restoreTarget.focus();
       await page.keyboard.press('Control+KeyK');
 

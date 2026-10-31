@@ -248,3 +248,9 @@ jest.mock('@/components/ui/Skeleton', () => {
   const actual = jest.requireActual('@/components/ui/Skeleton');
   return Object.fromEntries(Object.keys(actual).map((name) => [name, () => null]));
 });
+
+// The Translate-button word lists are bundled files in the app; under Jest a
+// require('./x.txt') is already the file's text (jest-text-transform.js).
+jest.mock('@/lib/textLanguage/bundledText', () => ({
+  readBundledText: (module: unknown) => Promise.resolve(module as string),
+}));

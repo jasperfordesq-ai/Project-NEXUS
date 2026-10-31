@@ -44,15 +44,35 @@ function toCommonJs(source) {
   return outputText;
 }
 
+/*
+ * The phone app ships the word lists as bundled files (data/*.txt, read on
+ * first use by readerVocabulary.ts), not as JavaScript: compiled into the
+ * Hermes bundle they cost ~0.85 MB of start-up weight and broke the app's
+ * bundle budget. So its copy of textLanguage.ts takes markers from
+ * onDeviceData.ts, which the loader fills.
+ */
+const MARKERS_IMPORT = "import markers from './markers.json';\n";
+const MOBILE_MARKERS_IMPORT = "import { markers } from './onDeviceData';\n";
+
+function forMobile(source) {
+  if (!source.includes(MARKERS_IMPORT)) throw new Error('textLanguage.ts no longer imports markers.json the way the phone copy expects');
+  return source.replace(MARKERS_IMPORT, MOBILE_MARKERS_IMPORT);
+}
+
+/** vocabulary/eng.json → data/eng.txt; markers.json → data/markers.txt */
+function mobileDataPath(rel) {
+  return path.join(MOBILE, 'data', `${path.basename(rel, '.json')}.txt`);
+}
+
 function sourceFiles() {
   const files = new Map();
   const code = fs.readFileSync(path.join(SOURCE, 'textLanguage.ts'), 'utf8').replace(/\r\n/g, '\n');
   const data = ['markers.json', ...fs.readdirSync(path.join(SOURCE, 'vocabulary')).sort().map((f) => `vocabulary/${f}`), '__fixtures__/corpus.json'];
-  files.set(path.join(MOBILE, 'textLanguage.ts'), withNote(code));
+  files.set(path.join(MOBILE, 'textLanguage.ts'), withNote(forMobile(code)));
   files.set(path.join(WEBUK, 'textLanguage.js'), withNote(toCommonJs(code)));
   for (const rel of data) {
     const content = fs.readFileSync(path.join(SOURCE, rel), 'utf8').replace(/\r\n/g, '\n');
-    files.set(path.join(MOBILE, rel), content);
+    files.set(rel.startsWith('__fixtures__/') ? path.join(MOBILE, rel) : mobileDataPath(rel), content);
     files.set(path.join(WEBUK, rel), content);
   }
   return files;
@@ -70,7 +90,7 @@ for (const [file, content] of wanted) {
   }
 }
 // A copy that no longer exists at the source is stale too.
-for (const dir of [path.join(MOBILE, 'vocabulary'), path.join(WEBUK, 'vocabulary')]) {
+for (const dir of [path.join(MOBILE, 'data'), path.join(MOBILE, 'vocabulary'), path.join(WEBUK, 'vocabulary')]) {
   if (!fs.existsSync(dir)) continue;
   for (const name of fs.readdirSync(dir)) {
     const file = path.join(dir, name);
@@ -78,6 +98,12 @@ for (const dir of [path.join(MOBILE, 'vocabulary'), path.join(WEBUK, 'vocabulary
     if (check) problems.push(`${path.relative(ROOT, file)} (no longer in the source)`);
     else fs.rmSync(file);
   }
+}
+// The phone app's lists used to be JavaScript modules; they are data/*.txt now.
+const oldMobileMarkers = path.join(MOBILE, 'markers.json');
+if (fs.existsSync(oldMobileMarkers)) {
+  if (check) problems.push(`${path.relative(ROOT, oldMobileMarkers)} (the app reads data/markers.txt)`);
+  else fs.rmSync(oldMobileMarkers);
 }
 
 if (check) {
