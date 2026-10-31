@@ -12,6 +12,7 @@ import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 interface AvatarProps {
   uri: string | null | undefined;
   name: string | null | undefined;
+  alt?: string | null;
   size?: number;
   /**
    * Hide this avatar from a screen reader. Use it wherever the person's name is read out
@@ -35,7 +36,7 @@ function getInitials(name: string | null | undefined): string {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 }
 
-export default function Avatar({ uri, name, size = 40, showOnline = false, decorative = false }: AvatarProps) {
+export default function Avatar({ uri, name, alt, size = 40, showOnline = false, decorative = false }: AvatarProps) {
   const sizeToken = sizeToToken(size);
   const initials = getInitials(name);
   const resolvedUri = resolveImageUrl(uri);
@@ -66,7 +67,7 @@ export default function Avatar({ uri, name, size = 40, showOnline = false, decor
       <HeroAvatar
         size={sizeToken}
         alt=""
-        accessibilityLabel={decorative ? undefined : (name ?? undefined)}
+        accessibilityLabel={decorative ? undefined : (alt?.trim() || name || undefined)}
       >
         {resolvedUri ? (
           <HeroAvatar.Image source={{ uri: resolvedUri }} />

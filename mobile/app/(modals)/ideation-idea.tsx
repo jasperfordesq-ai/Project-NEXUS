@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -284,6 +285,7 @@ function IdeationIdeaScreen() {
                     <View className="flex-row flex-wrap gap-2"><Chip size="sm" variant="secondary"><Chip.Label>{t(`ideation:ideaStatus.${idea.status}`)}</Chip.Label></Chip><Chip size="sm" variant="secondary"><Chip.Label>{t('ideation:votesCount', { count: idea.votes_count ?? 0 })}</Chip.Label></Chip></View>
                     {idea.creator?.name ? <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('ideation:idea_detail.submitted_by', { name: idea.creator.name })}</Text> : null}
                     <Text className="text-base leading-7" style={{ color: theme.textSecondary }}>{stripHtml(idea.description)}</Text>
+            <ContentTranslation contentType="ideation_idea" contentId={idea.id} fields={{ title: idea.title, body: idea.description }} />
                     <View className="flex-row gap-2">
                       <HeroButton className="flex-1" variant={idea.has_voted ? 'primary' : 'secondary'} isDisabled={isVoting} onPress={() => void vote()}><HeroButton.Label>{idea.has_voted ? t('ideation:voted') : t('ideation:vote')}</HeroButton.Label></HeroButton>
                       {isOwner ? <HeroButton className="flex-1" variant="secondary" onPress={() => setIsEditing(true)}><HeroButton.Label>{t('ideation:ideas.edit')}</HeroButton.Label></HeroButton> : null}

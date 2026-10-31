@@ -25,6 +25,7 @@ const { getRequestProfile } = require('../lib/request-profile');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 
+const { translateFields, validSavedTranslation, translateCommentTree } = require('../lib/ugc-translation');
 const router = express.Router();
 const COMMENTABLE_FEED_TYPES = new Set([
   'post', 'listing', 'event', 'goal', 'poll', 'review', 'volunteer',
@@ -503,7 +504,7 @@ router.get('/posts/:id(\\d+)', asyncRoute(withTokenRefresh(async (req, res) => {
   if (req.session && req.session.feedTranslation) {
     const stored = req.session.feedTranslation;
     delete req.session.feedTranslation;
-    if (stored && Number(stored.postId) === id && trimmed(stored.text)) {
+    if (stored && Number(stored.postId) === id && trimmed(stored.text) && await validSavedTranslation(req, res, token, stored, 'feed_post', id, { body: htmlToPlainText(item.content || '').slice(0, 8000).trim() })) {
       translation = { text: trimmed(stored.text, 10000), locale: trimmed(stored.locale, 10) || 'en' };
     }
   }
@@ -512,7 +513,9 @@ router.get('/posts/:id(\\d+)', asyncRoute(withTokenRefresh(async (req, res) => {
   if (req.session && req.session.feedCommentTranslation) {
     const stored = req.session.feedCommentTranslation;
     delete req.session.feedCommentTranslation;
-    if (stored && Number(stored.postId) === id && trimmed(stored.text)) {
+    const find = rows => rows.flatMap(row => [row, ...find(row.replies || [])]);
+    const source = find(comments).find(row => Number(row.id) === Number(stored.commentId));
+    if (source && Number(stored.postId) === id && trimmed(stored.text) && await validSavedTranslation(req, res, token, stored, 'comment', source.id, { body: htmlToPlainText(source.content || source.body || '').slice(0, 8000).trim() })) {
       commentTranslation = {
         commentId: Number(stored.commentId),
         text: trimmed(stored.text, 10000),
@@ -521,6 +524,9 @@ router.get('/posts/:id(\\d+)', asyncRoute(withTokenRefresh(async (req, res) => {
     }
   }
 
+  await translateCommentTree(req, res, token, comments);
+  const cachedTranslation = !itemUnavailable ? await translateFields(req, res, token, { type: 'feed_post', id, fields: { body: htmlToPlainText(item.content || '').slice(0, 8000).trim() } }) : null;
+  if (!translation && cachedTranslation) translation = { text: cachedTranslation.fields.body, locale: cachedTranslation.locale };
   res.render('feed/post', {
     title: (res.locals.t ? res.locals.t('govuk_alpha.actions.post') : 'Post'),
     activeNav: 'feed',
@@ -837,6 +843,9 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
   const status = trimmed(req.query.status);
   const statusMessage = withFeedRefusal(req, feedIndexStatusMessage(status, req.t || res.locals.t));
 
+  await Promise.all(posts.map(async post => {
+    if (post.type === 'post') post.cachedTranslation = await translateFields(req, res, token, { type: 'feed_post', id: post.id, fields: { body: htmlToPlainText(post.content || '').slice(0, 8000).trim() } });
+  }));
   res.render('feed/index', {
     title: res.locals.t('govuk_alpha.feed.title'),
     posts,

@@ -257,5 +257,11 @@
   "member_reports.details_required": "Opisz, co się stało.",
   "member_reports.details_too_long": "Opis może mieć najwyżej {{max}} znaków.",
   "member_reports.already_reported": "To zgłoszenie zostało już wysłane. Koordynatorzy Twojej społeczności się nim zajmą.",
-  "onboarding.safeguarding_required": "Zanim skończysz, odpowiedz na pytanie dotyczące ochrony. Jeśli żadna opcja Cię nie dotyczy, wybierz „Żadna z tych sytuacji mnie nie dotyczy”."
+  "onboarding.safeguarding_required": "Zanim skończysz, odpowiedz na pytanie dotyczące ochrony. Jeśli żadna opcja Cię nie dotyczy, wybierz „Żadna z tych sytuacji mnie nie dotyczy”.",
+  "courses": {
+    "order_changed": "Kolejność elementów kursu uległa zmianie. Odśwież kurs, zanim ponownie przeniesiesz elementy.",
+    "order_invalid": "Kolejność musi zawierać każdy element tej części kursu dokładnie raz.",
+    "price_changed": "Cena kursu uległa zmianie. Odśwież kurs i potwierdź aktualną cenę przed zapisaniem się.",
+    "quiz_pass_required": "Zalicz quiz i poczekaj na ewentualną ocenę prowadzącego, zanim ukończysz tę lekcję lub otrzymasz certyfikat."
+  }
 }

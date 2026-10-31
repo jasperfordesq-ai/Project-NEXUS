@@ -33,6 +33,7 @@ export interface ListingExtras {
   tags: string[] | null;
   /** A newly chosen photo to upload, or null. */
   imageUri: string | null;
+  imageAlt?: string | null;
   /** Remove the listing's existing photo. Ignored when `imageUri` is set. */
   removeImage: boolean;
 }
@@ -74,7 +75,8 @@ export async function saveListingExtras(
   // Deliberately not an `else if` on the tag result: the two are independent.
   if (extras.imageUri) {
     try {
-      await uploadExchangeImage(listingId, extras.imageUri);
+      if (extras.imageAlt === undefined) await uploadExchangeImage(listingId, extras.imageUri);
+      else await uploadExchangeImage(listingId, extras.imageUri, extras.imageAlt);
     } catch (err) {
       result.imageFailed = true;
       result.imageError = err;
@@ -99,6 +101,7 @@ export function remainingListingExtras(
   return {
     tags: result.tagsFailed ? extras.tags : null,
     imageUri: result.imageFailed ? extras.imageUri : null,
+    ...(extras.imageAlt !== undefined ? { imageAlt: extras.imageAlt } : {}),
     removeImage: result.imageFailed ? extras.removeImage : false,
   };
 }

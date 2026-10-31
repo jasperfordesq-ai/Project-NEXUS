@@ -128,6 +128,7 @@
           <div lang="{{ listingTranslation.locale }}">
             {% if listingTranslation.title %}<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ listingTranslation.title }}</p>{% endif %}
             {% if listingTranslation.description %}<div class="govuk-body govuk-!-margin-bottom-0">{{ listingTranslation.description | nl2br | safe }}</div>{% endif %}
+            <a class="govuk-link" href="{{ urlFor('/listings/' + listing.id + '?translation=original') }}">{{ t("ugc_translation.show_original") }}</a>
           </div>
         </div>
       {% elif isAuthenticated and (listing.description or listing.title) %}

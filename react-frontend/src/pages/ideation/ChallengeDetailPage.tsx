@@ -949,18 +949,16 @@ export function ChallengeDetailPage() {
         <p className="text-[var(--color-text-secondary)] whitespace-pre-wrap mb-4">
           {translatedDesc ?? challenge.description}
         </p>
-        {challenge.description && (
-          <TranslateButton
+        <TranslateButton
             contentType="ideation_challenge"
             contentId={challenge.id}
-            sourceText={challenge.description}
+            sourceText={challenge.description ?? ''}
             sourceLocale={null}
             onTextChange={onTranslatedText}
             extraFields={{ title: challenge.title }}
             onFieldsChange={onTranslatedFields}
             className="-mt-2 mb-4"
           />
-        )}
 
         {/* Tags */}
         {Array.isArray(challenge.tags) && challenge.tags.length > 0 && (

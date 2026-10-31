@@ -418,6 +418,7 @@ class GamificationEmailService
         if (!empty($digest['badges_earned'])) {
             $badgeItems = [];
             foreach ($digest['badges_earned'] as $badge) {
+                $badge = array_merge($badge, GamificationService::getBadgeByKey((string) ($badge['badge_key'] ?? '')) ?? []);
                 $icon = $badge['icon'] ?? '';
                 $badgeName = htmlspecialchars($badge['name'] ?? $badge['badge_key'] ?? __('emails.gamification_digest.badge_fallback'), ENT_QUOTES, 'UTF-8');
                 $badgeItems[] = ['text' => trim("{$icon} {$badgeName}"), 'color' => '#8b5cf6'];
@@ -456,6 +457,11 @@ class GamificationEmailService
                 break;
 
             case 'badge_earned':
+                $definition = GamificationService::getBadgeByKey((string) ($data['badge_key'] ?? ''));
+                if ($definition) {
+                    $data['badge_name'] = $definition['name'];
+                    $data['description'] = $definition['description'] ?? $definition['msg'] ?? null;
+                }
                 $badgeNameRaw = (string) ($data['badge_name'] ?? $data['name'] ?? __('emails.gamification_milestone.badge_fallback'));
                 $badgeName = htmlspecialchars($badgeNameRaw, ENT_QUOTES, 'UTF-8');
                 $badgeIcon = $data['icon'] ?? '';

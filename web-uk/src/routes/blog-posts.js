@@ -23,7 +23,16 @@ const { asyncRoute } = require('../lib/routeHelpers');
 const { breadcrumbJsonLdFor, pageDescription, toJsonLd } = require('../lib/seo-meta');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 
+const { registerDetailTranslation, detailTranslationLocals } = require('../lib/ugc-translation');
+const { htmlToPlainText: htmlToTranslationText } = require('../lib/html-sanitizer');
 const router = express.Router();
+const detailTranslation = {
+  load: async (req, res, token) => normalizePost(await blogPostFromSlug(token, req.params.slug)),
+  spec: item => ({ type: 'blog_post', id: item.id, fields: { title: item.title || '', body: htmlToTranslationText(item.content || '') } }),
+  href: item => `/blog/${item.slug}`,
+  path: '/:slug([a-zA-Z0-9_-]+)/translate',
+};
+registerDetailTranslation(router, detailTranslation);
 const BLOG_REACTIONS = new Set(['like', 'love', 'laugh', 'wow', 'sad', 'celebrate']);
 const BLOG_REACTION_EMOJI = {
   like: '\u{1F44D}',
@@ -447,6 +456,7 @@ router.get('/:slug([a-zA-Z0-9_-]+)', asyncRoute(async (req, res) => {
   const postTitle = post.title || post.metaTitle || res.locals.t('blog.title');
 
   return res.render('blog/detail', {
+    ...await detailTranslationLocals(req, res, token, post, detailTranslation),
     title: post.metaTitle || post.title || res.locals.t('blog.title'),
     activeNav: 'blog',
     post,

@@ -45,9 +45,9 @@ class BadgeDefinitionService
         $tenantId = $tenantId ?? TenantContext::getId();
         $cacheKey = self::CACHE_PREFIX . $tenantId;
 
-        return Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($tenantId) {
+        return array_map([BadgeCopy::class, 'localize'], Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($tenantId) {
             return self::loadEnabledBadges($tenantId);
-        });
+        }));
     }
 
     /**

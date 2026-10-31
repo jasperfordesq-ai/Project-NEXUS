@@ -5,6 +5,7 @@
 
 const { rememberClientRefusal } = require('../lib/api-refusal');
 const express = require('express');
+const { preferences, translationBinding } = require('../lib/ugc-translation');
 const fs = require('fs/promises');
 const {
   createFeedPostV2,
@@ -712,8 +713,7 @@ router.post('/posts/:id(\\d+)/translate', asyncRoute(async (req, res) => {
     return redirectTo(res, `${postPath}?status=auth-required`);
   }
 
-  const requestedLocale = trimmed(req.locale || res.locals.locale || 'en', 10);
-  const targetLocale = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/.test(requestedLocale) ? requestedLocale : 'en';
+  const targetLocale = (await preferences(req, res, token)).locale;
 
   let status = 'translate-done';
   try {
@@ -734,7 +734,7 @@ router.post('/posts/:id(\\d+)/translate', asyncRoute(async (req, res) => {
       } else if (translated === sourceText) {
         status = 'translate-same';
       } else if (req.session) {
-        req.session.feedTranslation = { postId: id, text: translated, locale: targetLocale };
+        req.session.feedTranslation = { postId: id, text: translated, locale: targetLocale, binding: await translationBinding(req, res, token, 'feed_post', id, { body: sourceText }) };
       }
     }
   } catch (error) {
@@ -779,8 +779,7 @@ router.post('/comments/:id(\\d+)/translate', asyncRoute(async (req, res) => {
     return redirectTo(res, `${postPath}?status=auth-required`);
   }
 
-  const requestedLocale = trimmed(req.locale || res.locals.locale || 'en', 10);
-  const targetLocale = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/.test(requestedLocale) ? requestedLocale : 'en';
+  const targetLocale = (await preferences(req, res, token)).locale;
 
   let status = 'comment-translate-done';
   try {
@@ -803,7 +802,7 @@ router.post('/comments/:id(\\d+)/translate', asyncRoute(async (req, res) => {
       } else if (translated === sourceText) {
         status = 'comment-translate-same';
       } else if (req.session) {
-        req.session.feedCommentTranslation = { postId, commentId, text: translated, locale: targetLocale };
+        req.session.feedCommentTranslation = { postId, commentId, text: translated, locale: targetLocale, binding: await translationBinding(req, res, token, 'comment', commentId, { body: sourceText }) };
       }
     }
   } catch (error) {
@@ -831,8 +830,7 @@ async function translateTargetComment(req, res, token, commentId) {
   if (!target || targetId === null || !target.path.test(returnTo)) return redirectTo(res, FEED_PATH);
   if (!token) return redirectTo(res, `${returnTo}?${target.param}=auth-required${target.fragment}`);
 
-  const requestedLocale = trimmed(req.locale || res.locals.locale || 'en', 10);
-  const targetLocale = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/.test(requestedLocale) ? requestedLocale : 'en';
+  const targetLocale = (await preferences(req, res, token)).locale;
 
   let status = 'comment-translate-done';
   try {
@@ -855,7 +853,7 @@ async function translateTargetComment(req, res, token, commentId) {
       } else if (translated === sourceText) {
         status = 'comment-translate-same';
       } else if (req.session) {
-        req.session.targetCommentTranslation = { targetType, targetId, commentId, text: translated, locale: targetLocale };
+        req.session.targetCommentTranslation = { targetType, targetId, commentId, text: translated, locale: targetLocale, binding: await translationBinding(req, res, token, 'comment', commentId, { body: sourceText }) };
       }
     }
   } catch (error) {

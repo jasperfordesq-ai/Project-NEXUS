@@ -37,10 +37,11 @@ function commentRows(result) {
   return rows.map(projectComment);
 }
 
-async function loadTargetComments(token, targetType, targetId) {
+async function loadTargetComments(token, targetType, targetId, req, res) {
   if (!token) return [];
   try {
-    return commentRows(await getComments(token, { target_type: targetType, target_id: targetId }));
+    const rows = commentRows(await getComments(token, { target_type: targetType, target_id: targetId }));
+    return req && res ? require('./ugc-translation').translateCommentTree(req, res, token, rows) : rows;
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
     return [];
@@ -65,11 +66,14 @@ function socialStatusFrom(value) {
  * A comment translation made on the previous request for this target, shown
  * once under its comment, then forgotten (feed-actions.js stores it).
  */
-function takeCommentTranslation(req, targetType, targetId) {
+async function takeCommentTranslation(req, targetType, targetId, res, token, rows = []) {
   const stored = req?.session?.targetCommentTranslation;
   if (!stored) return null;
   delete req.session.targetCommentTranslation;
   if (stored.targetType !== targetType || Number(stored.targetId) !== Number(targetId)) return null;
+  const find = list => list.flatMap(row => [row, ...find(row.replies || [])]);
+  const source = find(rows).find(row => Number(row.id) === Number(stored.commentId));
+  if (!source || !res || !await require('./ugc-translation').validSavedTranslation(req, res, token, stored, 'comment', source.id, { body: require('./html-sanitizer').htmlToPlainText(source.content || source.body || '').slice(0, 8000).trim() })) return null;
   const text = String(stored.text || '').trim();
   if (!text) return null;
   return { commentId: Number(stored.commentId), text, locale: String(stored.locale || 'en').slice(0, 10) };

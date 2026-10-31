@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import { useEffect, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Share, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -660,6 +661,7 @@ function EventDetailScreenInner() {
                 {stripHtml(event.description)}
               </HeroCard.Description>
             ) : null}
+            <ContentTranslation contentType="event" contentId={event.id} fields={{ title: event.title, body: stripHtml(event.description ?? '') }} />
           </HeroCard.Body>
         </HeroCard>
 

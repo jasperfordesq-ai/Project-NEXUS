@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import { formatDecimal, parseDecimalInput } from '@/lib/utils/decimal';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
@@ -291,7 +292,7 @@ function ExchangeDetailModalInner() {
         altText: image.alt_text ?? null,
       }))
       .filter((image): image is { id: number; url: string; altText: string | null } => typeof image.url === 'string' && image.url.length > 0),
-    ...(listing.image_url ? [{ id: 0, url: resolveImageUrl(listing.image_url), altText: null }] : []),
+    ...(listing.image_url ? [{ id: 0, url: resolveImageUrl(listing.image_url), altText: listing.image_alt || null }] : []),
   ]
     .filter((image): image is { id: number; url: string; altText: string | null } => typeof image.url === 'string' && image.url.length > 0)
     .filter((image, index, images) => images.findIndex((candidate) => candidate.url === image.url) === index);
@@ -651,6 +652,7 @@ function ExchangeDetailModalInner() {
                 {stripHtml(exchange.description)}
               </HeroCard.Description>
             ) : null}
+            <ContentTranslation contentType="listing" contentId={exchange.id} fields={{ title: exchange.title, body: stripHtml(exchange.description) }} />
           </HeroCard.Body>
         </HeroCard>
 

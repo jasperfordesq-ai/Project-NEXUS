@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "partials/ugc-translation.njk" import ugcTranslation with context %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
@@ -66,6 +67,7 @@
     <p class="govuk-body-l" dir="auto">{{ group.description }}</p>
   {% endif %}
 
+  {{ ugcTranslation(contentTranslation, "/groups/" + (group.id | string) + "/translate", "/groups/" + (group.id | string), translationAvailable, translationFailed) }}
   <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-6">
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">{{ t("polish_groups.meta_visibility_label") }}</dt>

@@ -745,9 +745,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/ListingsController.php:1085:NotificationDispatcher::notifyModerationAdmins",
+            "id": "app/Http/Controllers/Api/ListingsController.php:1095:NotificationDispatcher::notifyModerationAdmins",
             "file": "app/Http/Controllers/Api/ListingsController.php",
-            "line": 1085,
+            "line": 1095,
             "transport": "NotificationDispatcher::notifyModerationAdmins",
             "role": "producer",
             "recipient_expression": null,
@@ -1889,9 +1889,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/GamificationService.php:526:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/GamificationService.php:527:NotificationDispatcher::fanOutPush",
             "file": "app/Services/GamificationService.php",
-            "line": 526,
+            "line": 527,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -1902,9 +1902,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/GamificationService.php:694:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/GamificationService.php:695:NotificationDispatcher::fanOutPush",
             "file": "app/Services/GamificationService.php",
-            "line": 694,
+            "line": 695,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",

@@ -507,18 +507,16 @@ export function IdeaDetailPage() {
 
             {/* Description */}
             <MemberPlainText content={translatedDesc ?? idea.description} className="text-[var(--color-text-secondary)] whitespace-pre-wrap" as="div" />
-            {idea.description && (
-              <TranslateButton
+            <TranslateButton
                 contentType="ideation_idea"
                 contentId={idea.id}
-                sourceText={idea.description}
+                sourceText={idea.description ?? ''}
                 sourceLocale={null}
                 onTextChange={onTranslatedText}
                 extraFields={{ title: idea.title }}
                 onFieldsChange={onTranslatedFields}
                 className="mt-1"
               />
-            )}
 
             {/* Convert to Group Button */}
             {canConvertToGroup && (

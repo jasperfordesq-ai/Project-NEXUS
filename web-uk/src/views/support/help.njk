@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "partials/ugc-translation.njk" import ugcTranslation with context %}
 
 {# Help Centre home (/help) and an audience's guides (/help/brokers, /help/admins).
    Guide text comes from the React Help Centre via scripts/build-help-guides.js;
@@ -107,6 +108,7 @@
                 </div>
                 <div id="help-{{ loop.parent.index0 }}-{{ loop.index0 }}-content" class="govuk-accordion__section-content">
                   <div class="govuk-body">{{ faq.answer | safe }}</div>
+                  {{ ugcTranslation(faq.translation, "/help/faqs/" + (faq.id | string) + "/translate", "/help", faq.translationAvailable, faq.translationFailed, "faq-translation-" + (faq.id | string)) }}
                 </div>
               </div>
             {% endfor %}

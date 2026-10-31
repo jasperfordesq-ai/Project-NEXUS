@@ -12,7 +12,9 @@
  * its admins (Admin → Help FAQs, loaded from /v2/help/faqs).
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import HelpCircle from 'lucide-react/icons/circle-help';
 import Star from 'lucide-react/icons/star';
@@ -49,7 +51,14 @@ function isAudience(value: string | undefined): value is HelpAudience {
 
 export function HelpCenterPage() {
   const params = useParams<{ audience?: string }>();
-  const { branding, tenantPath } = useTenant();
+  const { branding, tenantPath, tenant } = useTenant();
+  const { i18n } = useTranslation('help');
+  const [faqTranslations, setFaqTranslations] = useState<Record<string, Record<string, string>>>({});
+  const faqKey = useCallback((faq: Faq, category: string) => JSON.stringify([tenant?.id, i18n.language, faq.id, faq.question, faq.answer, category]), [tenant?.id, i18n.language]);
+  const updateFaq = (key: string, patch: Record<string, string>) => setFaqTranslations(previous => {
+    const value = { ...previous[key], ...patch };
+    return JSON.stringify(previous[key]) === JSON.stringify(value) ? previous : { ...previous, [key]: value };
+  });
   const { t, guideText, sectionsFor, search } = useHelpGuides();
   usePageTitle(t('page_title'));
 
@@ -87,9 +96,9 @@ export function HelpCenterPage() {
   const faqSearchText = useMemo(
     () => new Map(faqGroups.flatMap((group) => group.faqs.map((faq) => [
       faq.id,
-      foldText(`${faq.question} ${faqAnswerText(faq.answer)} ${group.category}`),
+      foldText(`${faqTranslations[faqKey(faq, group.category)]?.question || faq.question} ${faqTranslations[faqKey(faq, group.category)]?.body || faqAnswerText(faq.answer)} ${faqTranslations[faqKey(faq, group.category)]?.category || group.category}`),
     ] as const))),
-    [faqGroups],
+    [faqGroups, faqTranslations, faqKey],
   );
 
   // One threshold for guides and questions, so a single letter filters neither.
@@ -255,8 +264,13 @@ export function HelpCenterPage() {
             <Accordion variant="light" selectionMode="multiple">
               {matchingFaqGroups.flatMap((group) =>
                 group.faqs.map((faq) => (
-                  <AccordionItem key={String(faq.id)} id={String(faq.id)} aria-label={faq.question} title={faq.question} subtitle={group.category}>
-                    <SafeHtml content={faq.answer} className="text-sm leading-relaxed text-theme-muted" />
+                  <AccordionItem key={String(faq.id)} id={String(faq.id)} aria-label={faqTranslations[faqKey(faq, group.category)]?.question || faq.question} title={faqTranslations[faqKey(faq, group.category)]?.question || faq.question} subtitle={faqTranslations[faqKey(faq, group.category)]?.category || group.category}>
+                    {faqTranslations[faqKey(faq, group.category)]?.body
+                      ? <p className="text-sm leading-relaxed text-theme-muted whitespace-pre-wrap" dir="auto">{faqTranslations[faqKey(faq, group.category)]?.body}</p>
+                      : <SafeHtml content={faq.answer} className="text-sm leading-relaxed text-theme-muted" />}
+                    <TranslateButton contentType="faq" contentId={faq.id} sourceText={faqAnswerText(faq.answer)} extraFields={{ question: faq.question, category: group.category }}
+                      onTextChange={(text, translated) => updateFaq(faqKey(faq, group.category), { body: translated ? text : '' })}
+                      onFieldsChange={(fields) => updateFaq(faqKey(faq, group.category), { question: fields?.question || '', category: fields?.category || '' })} />
                   </AccordionItem>
                 )),
               )}

@@ -293,18 +293,16 @@ export function GroupHeader({
         className="mt-5 text-theme-muted [&_*]:break-words"
         as="div"
       />
-      {group.description && (
-        <TranslateButton
+      <TranslateButton
           contentType="group"
           contentId={group.id}
-          sourceText={group.description}
+          sourceText={group.description ?? ''}
           sourceLocale={null}
           onTextChange={onTranslatedText}
           extraFields={{ name: group.name }}
           onFieldsChange={onTranslatedFields}
           className="mt-1"
         />
-      )}
 
       {/* Quick Stats */}
       <div className="mt-6 grid gap-3 text-sm sm:grid-cols-3">

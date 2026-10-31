@@ -175,7 +175,7 @@ export default function MoreScreen() {
           <View className="h-1.5" style={{ backgroundColor: primary }} />
           <HeroCard.Body className="gap-5 p-4">
             <View className="flex-row items-start gap-4">
-              <Avatar uri={user.avatar_url} name={displayName} size={72} showOnline />
+              <Avatar uri={user.avatar_url} alt={user.avatar_alt} name={displayName} size={72} showOnline />
               <View className="min-w-0 flex-1 gap-2">
                 <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
                   {t('hubEyebrow')}

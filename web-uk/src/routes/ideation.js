@@ -4,13 +4,33 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
-const { callIdeationApi } = require('../lib/api');
+const { callIdeationApi, ApiError } = require('../lib/api');
 const { getRequestProfile } = require('../lib/request-profile');
 const { translateForRequest } = require('../lib/request-translator');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { isValidationFailureStatus } = require('../lib/validation-status');
 
+const { registerDetailTranslation, detailTranslationLocals } = require('../lib/ugc-translation');
+const { htmlToPlainText: htmlToTranslationText } = require('../lib/html-sanitizer');
 const router = express.Router();
+const detailTranslation = {
+  load: async (req, res, token) => normalizeChallenge({ id: Number(req.params.id), ...itemFrom(await callIdeationApi(token, 'GET', `/ideation-challenges/${Number(req.params.id)}`)) }),
+  spec: item => ({ type: 'ideation_challenge', id: item.id, fields: { title: item.title || '', body: htmlToTranslationText(item.description || '') } }),
+  href: item => `/ideation/${item.id}`,
+};
+registerDetailTranslation(router, detailTranslation);
+const ideaTranslation = {
+  path: '/:id(\\d+)/ideas/:ideaId(\\d+)/translate',
+  load: async (req, res, token) => {
+    const idea = itemFrom(await callIdeationApi(token, 'GET', `/ideation-ideas/${Number(req.params.ideaId)}`));
+    if (Number(idea.challenge_id) !== Number(req.params.id)) throw new ApiError('Not found', 404);
+    return idea;
+  },
+  spec: item => ({ type: 'ideation_idea', id: item.id, fields: { title: item.title || '', body: htmlToTranslationText(item.description || '') } }),
+  href: (item, req) => `/ideation/${Number(req.params.id)}/ideas/${item.id}`,
+};
+registerDetailTranslation(router, ideaTranslation);
+
 
 function tokenFrom(req) {
   return (req.signedCookies && req.signedCookies.token) || req.token || '';
@@ -848,6 +868,7 @@ router.get('/:id(\\d+)/ideas/:ideaId(\\d+)', asyncRoute(async (req, res) => {
   const status = trimmed(req.query.status);
 
   return res.render('ideation/idea-detail', {
+    ...await detailTranslationLocals(req, res, token, idea, ideaTranslation),
     title: idea.title,
     activeNav: 'explore',
     challenge,
@@ -933,6 +954,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   };
 
   return res.render('ideation/detail', {
+    ...await detailTranslationLocals(req, res, token, challenge, detailTranslation),
     title: challenge.title,
     activeNav: 'explore',
     challenge,

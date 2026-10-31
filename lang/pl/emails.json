@@ -704,5 +704,14 @@
   "account_invitation": {
     "cta": "Ustaw hasło",
     "expiry": "Ten link wygasa po {{days}} dniach."
+  },
+  "policy_publication": {
+    "changes": "Co się zmieniło",
+    "intro": "Społeczność :community opublikowała dokument :document w wersji :version. Przeczytaj zasady, aby zrozumieć, jak Cię dotyczą.",
+    "no_summary": "Te zasady zostały opublikowane. Szczegóły znajdziesz w pełnym dokumencie.",
+    "read": "Przeczytaj zasady",
+    "service_notice": "To wiadomość informacyjna dotycząca zasad Twojej społeczności. Preferencje subskrypcji newslettera nie mają zastosowania do tych powiadomień.",
+    "subject": ":community: opublikowano :document",
+    "title": "Opublikowano zasady"
   }
 }

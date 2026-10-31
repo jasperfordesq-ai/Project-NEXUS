@@ -5337,4 +5337,8 @@ return [
         'withdraw_urgent' => 'Weet je zeker dat je dit dringende verzoek wilt intrekken?',
         'cannot_undo' => 'Je kunt dit niet ongedaan maken.',
     ],
+    'ugc_translation' => [
+        'translate' => 'Vertalen',
+        'show_original' => 'Origineel tonen',
+    ],
 ];

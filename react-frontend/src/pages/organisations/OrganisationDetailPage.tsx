@@ -356,21 +356,17 @@ export function OrganisationDetailPage() {
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-bold text-theme-primary">{translatedName ?? organisation.name}</h1>
 
-            {organisation.description && (
-              <>
-                <p className="text-theme-muted mt-3">{translatedDesc ?? organisation.description}</p>
+            {organisation.description && <p className="text-theme-muted mt-3">{translatedDesc ?? organisation.description}</p>}
                 <TranslateButton
                   contentType="organisation"
                   contentId={organisation.id}
-                  sourceText={organisation.description}
+                  sourceText={organisation.description ?? ''}
                   sourceLocale={null}
                   onTextChange={onTranslatedText}
                   extraFields={{ name: organisation.name }}
                   onFieldsChange={onTranslatedFields}
                   className="mt-1"
                 />
-              </>
-            )}
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 mt-4">

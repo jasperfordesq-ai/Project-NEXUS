@@ -5339,4 +5339,8 @@ return [
         'withdraw_urgent' => 'An bhfuil tú cinnte gur mian leat an t-iarratas práinneach seo a tharraingt siar?',
         'cannot_undo' => 'Ní féidir é seo a chealú.',
     ],
+    'ugc_translation' => [
+        'translate' => 'Aistrigh',
+        'show_original' => 'Taispeáin an bunleagan',
+    ],
 ];

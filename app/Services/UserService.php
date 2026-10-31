@@ -1184,6 +1184,7 @@ class UserService
                     $badgesByUser[$uid][] = [
                         'badge_key' => $row->badge_key,
                         'name'      => $def['name'] ?? $row->name ?? $row->badge_key,
+                        'name_code' => $def['name_code'] ?? null,
                         'icon'      => $def['icon'] ?? $row->icon ?? '',
                     ];
                 }

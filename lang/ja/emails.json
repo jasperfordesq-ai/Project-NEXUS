@@ -704,5 +704,14 @@
   "account_invitation": {
     "cta": "パスワードを設定する",
     "expiry": "このリンクは {{days}} 日後に期限切れとなります。"
+  },
+  "policy_publication": {
+    "changes": "変更内容",
+    "intro": ":community が :document のバージョン :version を公開しました。この方針がご自身にどのように適用されるかをご確認ください。",
+    "no_summary": "この方針が公開されました。詳細は文書全文をご確認ください。",
+    "read": "方針を読む",
+    "service_notice": "これはコミュニティの方針に関するサービス上のお知らせです。ニュースレターの購読設定は、これらのお知らせには適用されません。",
+    "subject": ":community：:document が公開されました",
+    "title": "方針が公開されました"
   }
 }

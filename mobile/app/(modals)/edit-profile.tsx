@@ -62,12 +62,14 @@ function EditProfileScreenInner() {
   const [firstName, setFirstName] = useState(fullUser?.first_name ?? '');
   const [lastName, setLastName] = useState(fullUser?.last_name ?? '');
   const [bio, setBio] = useState(fullUser?.bio ?? '');
+  const [avatarAlt, setAvatarAlt] = useState(fullUser?.avatar_alt ?? '');
   const [location, setLocation] = useState(fullUser?.location ?? '');
   const [phone, setPhone] = useState(fullUser?.phone ?? '');
   const [baselineProfile, setBaselineProfile] = useState({
     firstName: fullUser?.first_name ?? '',
     lastName: fullUser?.last_name ?? '',
     bio: fullUser?.bio ?? '',
+    avatarAlt: fullUser?.avatar_alt ?? '',
     location: fullUser?.location ?? '',
     phone: fullUser?.phone ?? '',
   });
@@ -97,6 +99,7 @@ function EditProfileScreenInner() {
     firstName !== baselineProfile.firstName ||
     lastName !== baselineProfile.lastName ||
     bio !== baselineProfile.bio ||
+    avatarAlt !== baselineProfile.avatarAlt ||
     location !== baselineProfile.location ||
     phone !== baselineProfile.phone;
 
@@ -108,12 +111,14 @@ function EditProfileScreenInner() {
       firstName: profile.first_name ?? '',
       lastName: profile.last_name ?? '',
       bio: decodeHtmlEntities(profile.bio ?? ''),
+      avatarAlt: profile.avatar_alt ?? '',
       location: profile.location ?? '',
       phone: profile.phone ?? '',
     };
     setFirstName(nextProfile.firstName);
     setLastName(nextProfile.lastName);
     setBio(nextProfile.bio);
+    setAvatarAlt(nextProfile.avatarAlt);
     setLocation(nextProfile.location);
     setPhone(nextProfile.phone);
     setBaselineProfile(nextProfile);
@@ -141,12 +146,14 @@ function EditProfileScreenInner() {
       if (!isMountedRef.current) return;
       const nextAvatarUrl = withImageVersion(response.data.avatar_url);
       avatarUpdatedLocallyRef.current = true;
+      setAvatarAlt('');
+      setBaselineProfile(previous => ({ ...previous, avatarAlt: '' }));
       latestAvatarUriRef.current = nextAvatarUrl;
       if (isMountedRef.current) setAvatarUri(nextAvatarUrl);
 
       const currentUser = latestUserRef.current;
       if (currentUser) {
-        const updatedUser = { ...currentUser, avatar_url: nextAvatarUrl };
+        const updatedUser = { ...currentUser, avatar_url: nextAvatarUrl, avatar_alt: null };
         latestUserRef.current = updatedUser;
         refreshUser(updatedUser);
         // The upload is already committed. A failed local cache refresh must not report
@@ -177,7 +184,7 @@ function EditProfileScreenInner() {
         const response = await getMe();
         if (!isMounted) return;
         const nextUser = avatarUpdatedLocallyRef.current
-          ? { ...response.data, avatar_url: latestAvatarUriRef.current }
+          ? { ...response.data, avatar_url: latestAvatarUriRef.current, avatar_alt: null }
           : response.data;
         if (draftRevisionRef.current === startingDraftRevision) {
           applyProfileData(nextUser);
@@ -255,6 +262,7 @@ function EditProfileScreenInner() {
         ...(firstName !== baselineProfile.firstName ? { first_name: firstName.trim() } : {}),
         ...(lastName !== baselineProfile.lastName ? { last_name: lastName.trim() } : {}),
         ...(bio !== baselineProfile.bio ? { bio: bio.trim() } : {}),
+        ...(avatarAlt !== baselineProfile.avatarAlt ? { avatar_alt: avatarAlt.trim() || null } : {}),
         ...(location !== baselineProfile.location ? { location: location.trim() } : {}),
         ...(phone !== baselineProfile.phone ? { phone: phone.trim() } : {}),
       };
@@ -270,6 +278,7 @@ function EditProfileScreenInner() {
         firstName: response.data.first_name ?? '',
         lastName: response.data.last_name ?? '',
         bio: decodeHtmlEntities(response.data.bio ?? ''),
+        avatarAlt: response.data.avatar_alt ?? '',
         location: response.data.location ?? '',
         phone: response.data.phone ?? '',
       });
@@ -318,6 +327,7 @@ function EditProfileScreenInner() {
               <View className="flex-row items-center gap-3">
                 <Avatar
                   uri={avatarUri}
+                  alt={avatarAlt}
                   name={`${firstName} ${lastName}`.trim() || t('myProfile')}
                   size={58}
                 />
@@ -350,6 +360,8 @@ function EditProfileScreenInner() {
               </View>
             </HeroCard.Body>
           </HeroCard>
+
+          {avatarUri ? <ProfileField theme={theme} editable={!saving && !uploadingAvatar} label={t('common:imageDescription.label')} value={avatarAlt} onChangeText={(value) => { draftRevisionRef.current += 1; setAvatarAlt(value.slice(0, 255)); }} /> : null}
 
           <HeroCard variant="secondary">
             <HeroCard.Body className="gap-4 px-4 py-4">

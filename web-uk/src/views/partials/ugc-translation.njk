@@ -1,0 +1,22 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% macro ugcTranslation(result, action, originalUrl, available, failed=false, anchor='content-translation') %}
+  {% if failed %}<p class="govuk-error-message" role="alert">{{ t("govuk_alpha_feed.translate.text_failed") }}</p>{% endif %}
+  {% if result %}
+    <div class="govuk-inset-text" id="{{ anchor }}">
+      <h3 class="govuk-heading-s">{{ t("govuk_alpha_feed.translate.heading") }}</h3>
+      <p class="govuk-hint">{{ t("govuk_alpha_feed.translate.original_above_hint") }}</p>
+      {% for key, text in result.fields %}<div class="govuk-body" lang="{{ result.locale }}" dir="auto">{{ text | nl2br | safe }}</div>{% endfor %}
+      {% if result.partial %}<p class="govuk-hint">{{ t("govuk_alpha_feed.translate.text_failed") }}</p>{% endif %}
+      <a class="govuk-link" href="{{ urlFor(originalUrl + '?translation=original') }}">{{ t("ugc_translation.show_original") }}</a>
+    </div>
+  {% endif %}
+  {% if available and (not result or result.partial) %}
+    <form method="post" action="{{ urlFor(action) }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("ugc_translation.translate") }}</button>
+    </form>
+  {% endif %}
+{% endmacro %}

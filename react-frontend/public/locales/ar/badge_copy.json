@@ -1,0 +1,268 @@
+{
+  "badges": {
+    "vol_1h": {
+      "name": "الخطوات الأولى",
+      "description": "سجّل ساعتك التطوعية الأولى"
+    },
+    "vol_10h": {
+      "name": "اليد المساعدة",
+      "description": "تطوع 10 ساعات"
+    },
+    "vol_50h": {
+      "name": "صانع التغيير",
+      "description": "تطوع 50 ساعة"
+    },
+    "vol_100h": {
+      "name": "أسطورة بنك الوقت",
+      "description": "تطوع 100 ساعة"
+    },
+    "vol_250h": {
+      "name": "بطل التطوع",
+      "description": "تطوع لمدة 250 ساعة"
+    },
+    "vol_500h": {
+      "name": "بطل التطوع",
+      "description": "تطوع لمدة 500 ساعة"
+    },
+    "offer_1": {
+      "name": "أول عرض",
+      "description": "انشر عرضك الأول"
+    },
+    "offer_5": {
+      "name": "روح كريمة",
+      "description": "انشر 5 عروض"
+    },
+    "offer_10": {
+      "name": "مُهدي الهدايا",
+      "description": "انشر 10 عروض"
+    },
+    "offer_25": {
+      "name": "سيد العروض",
+      "description": "انشر 25 عرضًا"
+    },
+    "request_1": {
+      "name": "الطلب الأول",
+      "description": "انشر طلبك الأول"
+    },
+    "request_5": {
+      "name": "باحث عن المجتمع",
+      "description": "قم بإرسال 5 طلبات"
+    },
+    "request_10": {
+      "name": "طالب نشط",
+      "description": "قم بإرسال 10 طلبات"
+    },
+    "earn_1": {
+      "name": "أول كسب",
+      "description": "اكسب أول رصيد وقت لك"
+    },
+    "earn_10": {
+      "name": "مجازف",
+      "description": "اكسب 10 أرصدة وقت"
+    },
+    "earn_50": {
+      "name": "منشئ الائتمان",
+      "description": "اكسب 50 رصيدًا زمنيًا"
+    },
+    "earn_100": {
+      "name": "المئة",
+      "description": "اكسب 100 رصيد زمني"
+    },
+    "earn_250": {
+      "name": "سيد الائتمان",
+      "description": "اكسب 250 رصيدًا زمنيًا"
+    },
+    "spend_1": {
+      "name": "أول عملية إنفاق",
+      "description": "أنفق رصيد وقتك الأول"
+    },
+    "spend_10": {
+      "name": "منفق نشط",
+      "description": "أنفق 10 أرصدة وقت"
+    },
+    "spend_50": {
+      "name": "منفق كريم",
+      "description": "أنفق 50 رصيد وقت"
+    },
+    "transaction_1": {
+      "name": "أول تبادل",
+      "description": "أكمل معاملتك الأولى"
+    },
+    "transaction_10": {
+      "name": "تاجر نشط",
+      "description": "إتمام 10 معاملات"
+    },
+    "transaction_50": {
+      "name": "ماهر في التبادل",
+      "description": "إتمام 50 معاملة"
+    },
+    "diversity_3": {
+      "name": "مساعد المجتمع",
+      "description": "مساعدة 3 أشخاص مختلفين"
+    },
+    "diversity_10": {
+      "name": "معطاء متنوع",
+      "description": "ساعد 10 أشخاص مختلفين"
+    },
+    "diversity_25": {
+      "name": "ركيزة المجتمع",
+      "description": "ساعد 25 شخصًا مختلفًا"
+    },
+    "connect_1": {
+      "name": "الصديق الأول",
+      "description": "قم بإجراء اتصالك الأول"
+    },
+    "connect_10": {
+      "name": "فراشة اجتماعية",
+      "description": "قم بإجراء 10 اتصالات"
+    },
+    "connect_25": {
+      "name": "باني الشبكات",
+      "description": "قم بإجراء 25 اتصالًا"
+    },
+    "connect_50": {
+      "name": "موصل المجتمع",
+      "description": "قم بإجراء 50 اتصالًا"
+    },
+    "msg_1": {
+      "name": "مفتتح المحادثة",
+      "description": "أرسل رسالتك الأولى"
+    },
+    "msg_50": {
+      "name": "مراسل نشط",
+      "description": "أرسل 50 رسالة"
+    },
+    "msg_200": {
+      "name": "محترف الاتصال",
+      "description": "أرسل 200 رسالة"
+    },
+    "review_1": {
+      "name": "أول تعليق",
+      "description": "اترك تقييمك الأول"
+    },
+    "review_10": {
+      "name": "مراجع موثوق",
+      "description": "اترك 10 تقييمات"
+    },
+    "review_25": {
+      "name": "خبير المراجعات",
+      "description": "اترك 25 مراجعة"
+    },
+    "5star_1": {
+      "name": "أول تقييم بخمس نجوم",
+      "description": "تلقَّ تقييمك الأول بخمس نجوم"
+    },
+    "5star_10": {
+      "name": "مصنّف عاليًا",
+      "description": "تلقَّ 10 تقييمات بخمس نجوم"
+    },
+    "5star_25": {
+      "name": "جائزة التميز",
+      "description": "احصل على 25 تقييمًا بخمس نجوم"
+    },
+    "event_attend_1": {
+      "name": "أول حدث",
+      "description": "احضر أول حدث لك"
+    },
+    "event_attend_10": {
+      "name": "منتظم في الأحداث",
+      "description": "احضر 10 أحداث"
+    },
+    "event_attend_25": {
+      "name": "عاشق الأحداث",
+      "description": "احضر 25 حدثًا"
+    },
+    "event_host_1": {
+      "name": "مضيف الحدث",
+      "description": "استضف حدثك الأول"
+    },
+    "event_host_5": {
+      "name": "منظم الحدث",
+      "description": "استضف 5 أحداث"
+    },
+    "group_join_1": {
+      "name": "لاعب الفريق",
+      "description": "انضم إلى مجموعتك الأولى"
+    },
+    "group_join_5": {
+      "name": "عضو المجتمع",
+      "description": "انضم إلى 5 مجموعات"
+    },
+    "group_create": {
+      "name": "مؤسس المجموعة",
+      "description": "أنشئ مجموعتك الأولى"
+    },
+    "post_1": {
+      "name": "أول منشور",
+      "description": "أنشئ منشورك الأول"
+    },
+    "post_25": {
+      "name": "منشئ المحتوى",
+      "description": "أنشئ 25 منشورًا"
+    },
+    "post_100": {
+      "name": "الكاتب النشيط",
+      "description": "إنشاء 100 منشور"
+    },
+    "likes_50": {
+      "name": "الظهور للآخرين",
+      "description": "الحصول على 50 إعجاب"
+    },
+    "likes_200": {
+      "name": "الصوت الشعبي",
+      "description": "الحصول على 200 إعجاب"
+    },
+    "profile_complete": {
+      "name": "المحترف في الملف الشخصي",
+      "description": "أكمل ملفك الشخصي"
+    },
+    "member_30d": {
+      "name": "عضو شهري",
+      "description": "كن عضوا لمدة 30 يومًا"
+    },
+    "member_180d": {
+      "name": "عضو فصلي",
+      "description": "كن عضوا لمدة 6 أشهر"
+    },
+    "member_365d": {
+      "name": "عضو سنوي",
+      "description": "كن عضوا لمدة سنة واحدة"
+    },
+    "streak_7d": {
+      "name": "محارب الأسبوع",
+      "description": "حافظ على سلسلة لمدة 7 أيام"
+    },
+    "streak_30d": {
+      "name": "التفاني الشهري",
+      "description": "حافظ على سلسلة لمدة 30 يومًا"
+    },
+    "streak_100d": {
+      "name": "ماستر السلسلة",
+      "description": "حافظ على سلسلة لمدة 100 يوم"
+    },
+    "streak_365d": {
+      "name": "أسطورة العام بالكامل",
+      "description": "حافظ على سلسلة لمدة 365 يومًا"
+    },
+    "level_5": {
+      "name": "نجم صاعد",
+      "description": "الوصول إلى المستوى 5"
+    },
+    "level_10": {
+      "name": "بطل المجتمع",
+      "description": "الوصول إلى المستوى 10"
+    },
+    "early_adopter": {
+      "name": "المتبني المبكر",
+      "description": "كن من المتبنين الأوائل للمنصة"
+    },
+    "verified": {
+      "name": "عضو موثوق",
+      "description": "إكمال التحقق من الهوية"
+    },
+    "volunteer_org": {
+      "name": "شريك منظمة",
+      "description": "إنشاء منظمة تطوعية"
+    }
+  }
+}

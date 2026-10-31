@@ -31,6 +31,8 @@ jest.mock('../src/lib/api', () => {
     ApiError,
     ApiOfflineError: class ApiOfflineError extends Error {},
     getUser: jest.fn(),
+    callUserSettingsApi: jest.fn(),
+    callUgcTranslateApi: jest.fn(),
     getProfile: jest.fn(),
     searchMentionUsers: jest.fn(),
     getMemberConnectionStatus: jest.fn(),
@@ -108,5 +110,32 @@ describe('a member profile shows the username to @mention them', () => {
     api.getProfile.mockResolvedValue({ data: { id: 7, name: 'Ann' } });
     await request(app).get(`${PREFIX}/members/7`);
     expect(api.searchMentionUsers).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('accessible member translation uses the authorised profile', () => {
+  beforeEach(() => {
+    api.callUserSettingsApi.mockResolvedValue({ data: { translation: { auto_translate_ugc: false } } });
+    api.callUgcTranslateApi.mockResolvedValue({ data: { translated_text: 'Translated profile' } });
+    api.getUser.mockResolvedValue({ data: { id: 7, name: 'Ann', tagline: 'Community gardener', bio: '' } });
+  });
+  it('translates a tagline-only profile through a plain form and displays the result once', async () => {
+    const agent = request.agent(app);
+    const response = await agent.post(`${PREFIX}/members/7/translate`).type('form').send({ source_text: 'Tampered' });
+    expect(response.status).toBe(302);
+    expect(api.callUgcTranslateApi).toHaveBeenCalledWith('test-token', expect.objectContaining({ source_text: 'Community gardener', content_type: 'profile_bio_tagline' }));
+    const page = await agent.get(response.headers.location);
+    expect(page.text).toContain('Translated profile');
+    expect(page.text).toContain('Community gardener');
+    expect(page.text).toContain('?translation=original');
+  });
+  it('does not show a result after the profile was edited between submit and redirect', async () => {
+    const agent = request.agent(app);
+    const response = await agent.post(`${PREFIX}/members/7/translate`).type('form').send({});
+    api.getUser.mockResolvedValue({ data: { id: 7, name: 'Ann', tagline: 'Edited tagline', bio: '' } });
+    const page = await agent.get(response.headers.location);
+    expect(page.text).not.toContain('Translated profile');
+    expect(page.text).toContain('Edited tagline');
   });
 });

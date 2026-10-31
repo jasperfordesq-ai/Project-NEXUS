@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "partials/ugc-translation.njk" import ugcTranslation with context %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
@@ -260,6 +261,7 @@
                 {% for paragraph in post.contentParagraphs %}
                   <p class="govuk-body">{{ paragraph }}</p>
                 {% endfor %}
+                {{ ugcTranslation(post.cachedTranslation, "", "/feed/posts/" + (post.id | string), false, false, "post-translation-" + (post.id | string)) }}
                 {% if post.media.length > 0 %}
                   <ul class="nexus-alpha-feed-media" data-count="{{ post.media.length }}">
                     {% for media in post.media %}

@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   RefreshControl,
@@ -1002,6 +1003,7 @@ function VolunteeringDetailScreenInner() {
             <Text className="text-sm leading-6" style={{ color: theme.text }}>
               {stripHtml(opportunity.description) || t('noDescription')}
             </Text>
+            <ContentTranslation contentType="vol_opportunity" contentId={opportunity.id} fields={{ title: opportunity.title, body: opportunity.description }} />
           </HeroCard.Body>
         </HeroCard>
 

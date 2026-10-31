@@ -1,0 +1,268 @@
+{
+  "badges": {
+    "vol_1h": {
+      "name": "Primeiros Passos",
+      "description": "Registre sua primeira hora de voluntariado"
+    },
+    "vol_10h": {
+      "name": "Mão Amiga",
+      "description": "Voluntário 10 horas"
+    },
+    "vol_50h": {
+      "name": "Agente de Mudança",
+      "description": "Voluntário 50 horas"
+    },
+    "vol_100h": {
+      "name": "Lenda do Banco de Tempo",
+      "description": "Voluntário 100 horas"
+    },
+    "vol_250h": {
+      "name": "Herói Voluntário",
+      "description": "Voluntário 250 horas"
+    },
+    "vol_500h": {
+      "name": "Campeão Voluntário",
+      "description": "Voluntário 500 horas"
+    },
+    "offer_1": {
+      "name": "Primeira Oferta",
+      "description": "Publique sua primeira oferta"
+    },
+    "offer_5": {
+      "name": "Alma Generosa",
+      "description": "Publique 5 ofertas"
+    },
+    "offer_10": {
+      "name": "Doador de Presentes",
+      "description": "Publique 10 ofertas"
+    },
+    "offer_25": {
+      "name": "Mestre das Ofertas",
+      "description": "Publique 25 ofertas"
+    },
+    "request_1": {
+      "name": "Primeira Solicitação",
+      "description": "Publique sua primeira solicitação"
+    },
+    "request_5": {
+      "name": "Buscador da Comunidade",
+      "description": "Faça 5 solicitações"
+    },
+    "request_10": {
+      "name": "Solicitante Ativo",
+      "description": "Faça 10 solicitações"
+    },
+    "earn_1": {
+      "name": "Primeiro Ganho",
+      "description": "Ganhe seu primeiro crédito de tempo"
+    },
+    "earn_10": {
+      "name": "Determinante",
+      "description": "Ganhe 10 créditos de tempo"
+    },
+    "earn_50": {
+      "name": "Construtor de Créditos",
+      "description": "Ganhe 50 créditos de tempo"
+    },
+    "earn_100": {
+      "name": "Centurião",
+      "description": "Ganhe 100 créditos de tempo"
+    },
+    "earn_250": {
+      "name": "Mestre de Créditos",
+      "description": "Ganhe 250 créditos de tempo"
+    },
+    "spend_1": {
+      "name": "Primeira Gasto",
+      "description": "Gaste seu primeiro crédito de tempo"
+    },
+    "spend_10": {
+      "name": "Gastador Ativo",
+      "description": "Gaste 10 créditos de tempo"
+    },
+    "spend_50": {
+      "name": "Gastador Generoso",
+      "description": "Gaste 50 créditos de tempo"
+    },
+    "transaction_1": {
+      "name": "Primeira Troca",
+      "description": "Complete sua primeira transação"
+    },
+    "transaction_10": {
+      "name": "Comerciante Ativo",
+      "description": "Complete 10 transações"
+    },
+    "transaction_50": {
+      "name": "Mestre de Trocas",
+      "description": "Complete 50 transações"
+    },
+    "diversity_3": {
+      "name": "Ajudante da Comunidade",
+      "description": "Ajude 3 pessoas diferentes"
+    },
+    "diversity_10": {
+      "name": "Doador Diversificado",
+      "description": "Ajude 10 pessoas diferentes"
+    },
+    "diversity_25": {
+      "name": "Pilar da Comunidade",
+      "description": "Ajude 25 pessoas diferentes"
+    },
+    "connect_1": {
+      "name": "Primeiro Amigo",
+      "description": "Faça sua primeira conexão"
+    },
+    "connect_10": {
+      "name": "Borboleta Social",
+      "description": "Faça 10 conexões"
+    },
+    "connect_25": {
+      "name": "Construtor de Rede",
+      "description": "Faça 25 conexões"
+    },
+    "connect_50": {
+      "name": "Conector da Comunidade",
+      "description": "Faça 50 conexões"
+    },
+    "msg_1": {
+      "name": "Iniciador de Conversa",
+      "description": "Envie sua primeira mensagem"
+    },
+    "msg_50": {
+      "name": "Comunicador Ativo",
+      "description": "Envie 50 mensagens"
+    },
+    "msg_200": {
+      "name": "Profissional da Comunicação",
+      "description": "Envie 200 mensagens"
+    },
+    "review_1": {
+      "name": "Primeiro Feedback",
+      "description": "Deixe sua primeira avaliação"
+    },
+    "review_10": {
+      "name": "Revisor Confiável",
+      "description": "Deixe 10 avaliações"
+    },
+    "review_25": {
+      "name": "Especialista em Avaliações",
+      "description": "Deixe 25 avaliações"
+    },
+    "5star_1": {
+      "name": "Primeira 5 Estrelas",
+      "description": "Receba sua primeira avaliação 5 estrelas"
+    },
+    "5star_10": {
+      "name": "Altamente Avaliado",
+      "description": "Receba 10 avaliações 5 estrelas"
+    },
+    "5star_25": {
+      "name": "Prêmio de Excelência",
+      "description": "Receba 25 avaliações 5 estrelas"
+    },
+    "event_attend_1": {
+      "name": "Primeiro Evento",
+      "description": "Participe do seu primeiro evento"
+    },
+    "event_attend_10": {
+      "name": "Frequentador de Evento",
+      "description": "Participe de 10 eventos"
+    },
+    "event_attend_25": {
+      "name": "Entusiasta de Evento",
+      "description": "Participe de 25 eventos"
+    },
+    "event_host_1": {
+      "name": "Anfitrião de Evento",
+      "description": "Organize seu primeiro evento"
+    },
+    "event_host_5": {
+      "name": "Organizador de Eventos",
+      "description": "Organize 5 eventos"
+    },
+    "group_join_1": {
+      "name": "Jogador em Equipe",
+      "description": "Participe do seu primeiro grupo"
+    },
+    "group_join_5": {
+      "name": "Membro da Comunidade",
+      "description": "Participe de 5 grupos"
+    },
+    "group_create": {
+      "name": "Fundador de Grupo",
+      "description": "Crie seu primeiro grupo"
+    },
+    "post_1": {
+      "name": "Primeira postagem",
+      "description": "Crie sua primeira postagem"
+    },
+    "post_25": {
+      "name": "Criador de conteúdo",
+      "description": "Crie 25 postagens"
+    },
+    "post_100": {
+      "name": "Postador prolífico",
+      "description": "Crie 100 postagens"
+    },
+    "likes_50": {
+      "name": "Chamando Atenção",
+      "description": "Receba 50 curtidas"
+    },
+    "likes_200": {
+      "name": "Voz Popular",
+      "description": "Receba 200 curtidas"
+    },
+    "profile_complete": {
+      "name": "Perfil Profissional",
+      "description": "Complete seu perfil"
+    },
+    "member_30d": {
+      "name": "Membro Mensal",
+      "description": "Seja membro por 30 dias"
+    },
+    "member_180d": {
+      "name": "Membro do Semestre",
+      "description": "Seja membro por 6 meses"
+    },
+    "member_365d": {
+      "name": "Membro Anual",
+      "description": "Seja membro por um ano"
+    },
+    "streak_7d": {
+      "name": "Guerreiro da Semana",
+      "description": "Mantenha uma sequência de 7 dias"
+    },
+    "streak_30d": {
+      "name": "Dedicação Mensal",
+      "description": "Mantenha uma sequência de 30 dias"
+    },
+    "streak_100d": {
+      "name": "Mestre da Sequência",
+      "description": "Mantenha uma sequência de 100 dias"
+    },
+    "streak_365d": {
+      "name": "Lenda de um Ano",
+      "description": "Mantenha uma sequência de 365 dias"
+    },
+    "level_5": {
+      "name": "Estrela em Ascensão",
+      "description": "Alcançar o nível 5"
+    },
+    "level_10": {
+      "name": "Campeão da Comunidade",
+      "description": "Alcançar o nível 10"
+    },
+    "early_adopter": {
+      "name": "Adotante Inicial",
+      "description": "Seja um adotante inicial da plataforma"
+    },
+    "verified": {
+      "name": "Membro Verificado",
+      "description": "Complete a verificação de identidade"
+    },
+    "volunteer_org": {
+      "name": "Parceiro da Organização",
+      "description": "Criar uma organização voluntária"
+    }
+  }
+}

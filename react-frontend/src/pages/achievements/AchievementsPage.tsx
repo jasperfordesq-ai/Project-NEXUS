@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { BadgeTranslation } from '@/components/i18n/BadgeTranslation';
 import { getFormattingLocale } from '@/lib/helpers';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -42,6 +43,7 @@ import Package from 'lucide-react/icons/package';
 import Route from 'lucide-react/icons/route';
 import Calendar from 'lucide-react/icons/calendar';
 import { useTranslation } from 'react-i18next';
+import { useBadgeCopy } from '@/hooks/useBadgeCopy';
 import { EmptyState } from '@/components/feedback';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
@@ -73,6 +75,8 @@ interface GamificationProfile {
 }
 
 interface BadgeEntry {
+  name_code?: string | null;
+  description_code?: string | null;
   badge_key: string;
   name: string;
   description: string;
@@ -581,6 +585,7 @@ function ChallengesTab() {
 
 function JourneysTab() {
   const { t } = useTranslation('gamification');
+  const { badgeName } = useBadgeCopy();
   const toast = useToast();
   const [collections, setCollections] = useState<BadgeCollection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -722,7 +727,7 @@ function JourneysTab() {
                         ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20'
                         : 'bg-theme-hover opacity-40'
                     }`}
-                    title={badge.name}
+                    title={badgeName(badge)}
                   >
                     {badge.icon || (
                       badge.earned
@@ -1191,6 +1196,8 @@ function XpShopTab({ userXp }: { userXp: number }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface BadgeDetail {
+  name_code?: string | null;
+  description_code?: string | null;
   key: string;
   name: string;
   description: string;
@@ -1214,6 +1221,7 @@ interface BadgeDetailModalProps {
 
 function BadgeDetailModal({ isOpen, onClose, badgeKey }: BadgeDetailModalProps) {
   const { t } = useTranslation('gamification');
+  const { badgeName, badgeDescription } = useBadgeCopy();
   const [badge, setBadge] = useState<BadgeDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -1312,12 +1320,14 @@ function BadgeDetailModal({ isOpen, onClose, badgeKey }: BadgeDetailModalProps) 
                 </motion.div>
 
                 {/* Badge Name */}
-                <h2 className="text-xl font-bold text-theme-primary mb-2">{badge.name}</h2>
+                <h2 className="text-xl font-bold text-theme-primary mb-2">{badgeName(badge)}</h2>
 
                 {/* Description */}
                 <p className="text-theme-muted text-sm max-w-md mb-5 leading-relaxed">
-                  {badge.description}
+                  {badgeDescription(badge)}
                 </p>
+
+                <BadgeTranslation key={JSON.stringify(badge)} id={badge.key} badge={badge} />
 
                 {/* Earned Status */}
                 {badge.earned && badge.earned_at ? (
@@ -1399,6 +1409,7 @@ interface ShowcaseModalProps {
 
 function ShowcaseModal({ isOpen, onClose, badges, onSave, isSaving }: ShowcaseModalProps) {
   const { t } = useTranslation('gamification');
+  const { badgeName, badgeDescription } = useBadgeCopy();
   const earnedBadges = badges.filter((b) => b.earned_at || b.earned !== false);
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
     new Set(badges.filter((b) => b.is_showcased).map((b) => b.badge_key))
@@ -1461,7 +1472,7 @@ function ShowcaseModal({ isOpen, onClose, badges, onSave, isSaving }: ShowcaseMo
                     isSelected={isSelected}
                     isDisabled={isDisabled}
                     onValueChange={() => toggleBadge(badge.badge_key)}
-                    aria-label={t('achievements.showcase.showcase_badge', { name: badge.name })}
+                    aria-label={t('achievements.showcase.showcase_badge', { name: badgeName(badge) })}
                     className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors ${
                       isSelected
                         ? 'border-amber-400/50 bg-amber-500/10'
@@ -1479,12 +1490,12 @@ function ShowcaseModal({ isOpen, onClose, badges, onSave, isSaving }: ShowcaseMo
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-theme-primary truncate">
-                        {badge.name}
+                        {badgeName(badge)}
                         {isSelected && (
                           <Star className="w-3 h-3 inline ml-1 text-amber-400" aria-hidden="true" />
                         )}
                       </p>
-                      <p className="text-xs text-theme-subtle truncate">{badge.description}</p>
+                      <p className="text-xs text-theme-subtle truncate">{badgeDescription(badge)}</p>
                     </div>
                   </Checkbox>
                 );
@@ -1522,6 +1533,7 @@ function ShowcaseModal({ isOpen, onClose, badges, onSave, isSaving }: ShowcaseMo
 
 export function AchievementsPage() {
   const { t } = useTranslation('gamification');
+  const { badgeName, badgeDescription } = useBadgeCopy();
   usePageTitle(t('achievements.page_title'));
   const toast = useToast();
   const [profile, setProfile] = useState<GamificationProfile | null>(null);
@@ -1863,13 +1875,13 @@ export function AchievementsPage() {
                               !badge.earned_at && badge.earned === false ? 'opacity-40' : ''
                             }`}
                             onClick={() => setSelectedBadgeKey(badge.badge_key)}
-                            aria-label={badge.name}
+                            aria-label={badgeName(badge)}
                           >
                             <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center text-2xl">
                               {badge.icon || <Medal className="w-7 h-7 text-amber-400" aria-hidden="true" />}
                             </div>
-                            <h3 className="font-semibold text-theme-primary text-sm mb-1 line-clamp-2">{badge.name}</h3>
-                            <p className="text-xs text-theme-muted line-clamp-2">{badge.description}</p>
+                            <h3 className="font-semibold text-theme-primary text-sm mb-1 line-clamp-2">{badgeName(badge)}</h3>
+                            <p className="text-xs text-theme-muted line-clamp-2">{badgeDescription(badge)}</p>
                             {!!badge.is_showcased && (
                               <Chip size="sm" color="warning" variant="flat" className="mt-2">
                                 <Star className="w-3 h-3" aria-hidden="true" />

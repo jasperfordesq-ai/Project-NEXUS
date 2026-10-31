@@ -6367,6 +6367,10 @@
                 "cancel_shift": "هل أنت متأكد من أنك تريد إلغاء مكانك في هذه المناوبة؟",
                 "withdraw_urgent": "هل أنت متأكد من أنك تريد سحب هذا الطلب العاجل؟",
                 "cannot_undo": "لا يمكنك التراجع عن هذا الإجراء."
+            },
+            "ugc_translation": {
+                "translate": "ترجمة",
+                "show_original": "عرض النص الأصلي"
             }
         },
         "govuk_alpha_activity": {

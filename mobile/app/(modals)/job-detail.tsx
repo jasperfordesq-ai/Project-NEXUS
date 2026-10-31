@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import ErrorState from '@/components/ui/ErrorState';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { buildWebUrl } from '@/lib/utils/webUrl';
@@ -559,6 +560,7 @@ function JobDetailContent() {
           </DetailSection>
         ) : null}
 
+            <ContentTranslation contentType="job" contentId={job.id} fields={{ title: job.title, body: job.description }} />
         {job.description ? (
           <DetailSection title={t('detail.description')} theme={theme}>
             <Text className="text-sm leading-6" style={{ color: theme.text }}>

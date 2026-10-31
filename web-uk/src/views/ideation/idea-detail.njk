@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "partials/ugc-translation.njk" import ugcTranslation with context %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
@@ -50,6 +51,8 @@
   {% else %}
     <p class="govuk-body">{{ t("govuk_alpha_ideation.idea.no_description") }}</p>
   {% endif %}
+  {{ ugcTranslation(contentTranslation, translationAction, translationOriginal, translationAvailable, translationFailed) }}
+
 
   {% if idea.canVote or idea.hasVoted %}
     <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/toggle-vote') }}" class="govuk-!-margin-bottom-4" novalidate>

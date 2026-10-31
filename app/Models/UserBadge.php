@@ -60,7 +60,7 @@ class UserBadge extends Model
 
         return $query->orderByDesc('awarded_at')
             ->get()
-            ->map(fn ($r) => (array) $r)
+            ->map(fn ($r) => array_merge((array) $r, \App\Services\GamificationService::getBadgeByKey($r->badge_key) ?? []))
             ->all();
     }
 
@@ -106,7 +106,7 @@ class UserBadge extends Model
         return $query->orderBy('showcase_order')
             ->limit(5)
             ->get()
-            ->map(fn ($r) => (array) $r)
+            ->map(fn ($r) => array_merge((array) $r, \App\Services\GamificationService::getBadgeByKey($r->badge_key) ?? []))
             ->all();
     }
 }

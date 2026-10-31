@@ -24,7 +24,15 @@ const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 const { composeDate, splitDate, dateParts } = require('../lib/date-input');
 
+const { registerDetailTranslation, detailTranslationLocals } = require('../lib/ugc-translation');
+const { htmlToPlainText: htmlToTranslationText } = require('../lib/html-sanitizer');
 const router = express.Router();
+const detailTranslation = {
+  load: async (req, res, token) => normalizeGoal(normalizeResponse(dataFrom(await getGoal(token, req.params.id))), res.locals.t),
+  spec: item => ({ type: 'goal', id: item.id, fields: { title: item.title || '', body: htmlToTranslationText(item.description || '') } }),
+  href: item => `/goals/${item.id}`,
+};
+registerDetailTranslation(router, detailTranslation);
 
 const GOALS_PATH = '/goals';
 const GOAL_CHECKIN_MOODS = ['great', 'good', 'neutral', 'okay', 'struggling', 'stuck', 'motivated', 'grateful'];
@@ -1483,6 +1491,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     : [];
 
   return res.render('goals/detail', {
+    ...await detailTranslationLocals(req, res, token, goal, detailTranslation),
     title: goal.title,
     activeNav: 'explore',
     goal,

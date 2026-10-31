@@ -39,6 +39,7 @@ const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 const { resolveBackendMediaUrl, flagEnabled } = require('../lib/accessible-shell');
 
+const { translateFields, preferences, translationBinding, validSavedTranslation, translateCommentTree } = require('../lib/ugc-translation');
 const router = express.Router();
 // Laravel's reason for a refused listing action (renew limit, not expired yet,
 // favourites switched off...) on the page it redirected to, as React shows it.
@@ -1282,13 +1283,14 @@ router.get('/:id(\\d+)/comments', asyncRoute(async (req, res) => {
 
   const listing = dataFrom(listingResult) || {};
   const commentData = commentsPayload(commentsResult);
+  await translateCommentTree(req, res, token, commentData.comments);
   return res.render('listings/comments', {
     title: res.locals.t('govuk_alpha_listings.comments.title'),
     listing: { ...listing, id },
     listingTitle: trimmed(listing.title || listing.name) || 'Comments',
     comments: commentData.comments,
     commentsCount: commentData.count,
-    commentTranslation: takeCommentTranslation(req, 'listing', id),
+    commentTranslation: await takeCommentTranslation(req, 'listing', id, res, token, commentData.comments),
     status: listingCommentsStatus(req.query.status, res.locals.t),
     commentForm: consumeFormReplay(req, 'listingComment', id),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
@@ -1388,6 +1390,7 @@ router.get('/', asyncRoute(async (req, res) => {
   if (sort === 'newest') params.sort = 'newest';
   params.personalised = sort === 'recommended';
   const currentUserResult = token ? await getRequestProfile(req, token).catch(() => null) : null;
+  if (listingTranslation && !await validSavedTranslation(req, res, token, savedListingTranslation, 'listing', Number(req.params.id), { title: trimmed(listing.title || listing.name, 255), body: String(listing.description || '').slice(0, 8000).trim() })) listingTranslation = null;
   const currentUser = profileFrom(currentUserResult);
   const latitude = Number(currentUser.latitude);
   const longitude = Number(currentUser.longitude);
@@ -1632,8 +1635,7 @@ router.post('/:id(\\d+)/translate', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   if (!token) return redirectTo(res, loginRedirect());
 
-  const requestedLocale = trimmed(req.locale || res.locals.locale || 'en', 10);
-  const targetLocale = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/.test(requestedLocale) ? requestedLocale : 'en';
+  const targetLocale = (await preferences(req, res, token)).locale;
 
   let status = 'translate-done';
   try {
@@ -1656,7 +1658,7 @@ router.post('/:id(\\d+)/translate', asyncRoute(async (req, res) => {
       } else if (translatedDescription === description && translatedTitle === title) {
         status = 'translate-same';
       } else if (req.session) {
-        req.session.listingTranslation = { id, title: translatedTitle, description: translatedDescription, locale: targetLocale };
+        req.session.listingTranslation = { id, title: translatedTitle, description: translatedDescription, locale: targetLocale, binding: await translationBinding(req, res, token, 'listing', id, { title, body: description }) };
       }
     }
   } catch (error) {
@@ -1674,6 +1676,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   // A translation made on the previous request (POST /listings/:id/translate), shown once.
   let listingTranslation = null;
+  const savedListingTranslation = req.session?.listingTranslation;
   if (req.session && req.session.listingTranslation) {
     const stored = req.session.listingTranslation;
     delete req.session.listingTranslation;
@@ -1694,7 +1697,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   if (req.flash) req.flash('success');
   const flashedError = req.flash ? req.flash('error')[0] : null;
   const tenant = req.accessibleRouting?.tenant || {};
-  const verificationBadges = ownerId === null
+  const verificationBadges = ownerId === null || !flagEnabled(tenant, 'identity_verification', 'features', true)
     ? []
     : listingVerificationBadgesFrom(
       await Promise.resolve(getMemberVerificationBadges(token, ownerId)).catch(() => ({ data: [] })),
@@ -1717,6 +1720,8 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     }
   }
 
+  const cachedTranslation = await translateFields(req, res, token, { type: 'listing', id: Number(req.params.id), fields: { title: listing.title || listing.name || '', body: listing.description || '' } });
+  if (!listingTranslation && cachedTranslation) listingTranslation = { title: cachedTranslation.fields.title, description: cachedTranslation.fields.body, locale: cachedTranslation.locale };
   res.render('listings/detail', {
     listingTranslation,
     title: listing.title || listing.name || 'Listing details',

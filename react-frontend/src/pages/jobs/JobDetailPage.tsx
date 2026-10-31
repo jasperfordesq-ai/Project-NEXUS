@@ -853,18 +853,18 @@ export function JobDetailPage() {
               qualificationData={qualificationData}
               onCheckQualification={handleCheckQualification}
               displayDescription={translatedDesc}
-              translateButton={vacancy.description ? (
+              translateButton={(
                 <TranslateButton
                   contentType="job"
                   contentId={vacancy.id}
-                  sourceText={vacancy.description}
+                  sourceText={vacancy.description ?? ''}
                   sourceLocale={null}
                   onTextChange={onTranslatedText}
                   extraFields={{ title: vacancy.title }}
                   onFieldsChange={onTranslatedFields}
                   className="mt-1"
                 />
-              ) : null}
+              )}
             />
 
             <GlassCard className="p-4 sm:p-5">

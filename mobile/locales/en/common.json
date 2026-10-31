@@ -225,5 +225,15 @@
     "sent": "Thank you. Your report has been sent to your community's coordinators.",
     "already": "You have already reported this.",
     "failed": "Your report could not be sent. Please try again."
+  },
+  "ugcTranslation": {
+    "translate": "Translate",
+    "showOriginal": "Show original",
+    "translating": "Translating…",
+    "failed": "Translation is unavailable. Try again later.",
+    "originalAbove": "Translation. The original remains on this page."
+  },
+  "imageDescription": {
+    "label": "Photo description (for screen readers)"
   }
 }

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "partials/ugc-translation.njk" import ugcTranslation with context %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
@@ -127,6 +128,7 @@
         <div class="govuk-grid-column-two-thirds">
           <h2 class="govuk-heading-l">{{ t("profile.about_title") }}</h2>
           {% if user.bio %}<p class="govuk-body" dir="auto">{{ user.bio }}</p>{% else %}<div class="govuk-inset-text">{{ t("profile.empty_bio") }}</div>{% endif %}
+          {{ ugcTranslation(profileTranslation, "/members/" + (user.id | string) + "/translate", "/members/" + (user.id | string), translationAvailable, translationFailed) }}
 
           <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.skills_title") }}</h2>
           {% if profileSkills.length %}

@@ -5337,4 +5337,8 @@ return [
         'withdraw_urgent' => 'Czy na pewno chcesz wycofać tę pilną prośbę?',
         'cannot_undo' => 'Tej czynności nie można cofnąć.',
     ],
+    'ugc_translation' => [
+        'translate' => 'Przetłumacz',
+        'show_original' => 'Pokaż oryginał',
+    ],
 ];

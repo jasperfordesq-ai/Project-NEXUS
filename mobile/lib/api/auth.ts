@@ -20,6 +20,7 @@ export interface User {
   first_name: string | null;
   last_name: string | null;
   email: string;
+  avatar_alt?: string | null;
   avatar_url: string | null;
   bio: string | null;
   location: string | null;
@@ -75,6 +76,7 @@ export interface LoginUser {
   last_name: string | null;
   email: string;
   avatar_url: string | null;
+  avatar_alt?: string | null;
   tenant_id: number;
   role: string;
   is_admin: boolean;

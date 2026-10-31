@@ -577,7 +577,7 @@
   },
   "billing_upgrade_request": {
     "subject": "Solicitud de actualización de plan — :tenant",
-    "body": "Solicitud de actualización del inquilino: :tenant (ID: :tenant_id)\n\nSolicitado por: :email\n\nMensaje: :message",
+    "body": "Solicitud de actualización de la comunidad: :tenant (ID: :tenant_id)\n\nSolicitado por: :email\n\nMensaje: :message",
     "unknown_email": "desconocido",
     "no_message": "(ninguno)"
   },
@@ -704,5 +704,14 @@
   "account_invitation": {
     "cta": "Establecer su contraseña",
     "expiry": "Este enlace caduca en {{days}} días."
+  },
+  "policy_publication": {
+    "changes": "Qué ha cambiado",
+    "intro": ":community ha publicado :document, versión :version. Lee la política para comprender cómo se aplica a ti.",
+    "no_summary": "Se ha publicado esta política. Lee el documento completo para conocer los detalles.",
+    "read": "Leer la política",
+    "service_notice": "Este es un correo informativo de servicio sobre las políticas de tu comunidad. Las preferencias de suscripción al boletín no afectan a estos avisos.",
+    "subject": ":community: se ha publicado :document",
+    "title": "Se ha publicado una política"
   }
 }

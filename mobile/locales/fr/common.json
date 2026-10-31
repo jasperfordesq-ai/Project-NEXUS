@@ -225,5 +225,15 @@
     "sent": "Merci. Votre signalement a été envoyé aux coordinateurs de votre communauté.",
     "already": "Vous avez déjà fait ce signalement.",
     "failed": "Votre signalement n’a pas pu être envoyé. Veuillez réessayer."
+  },
+  "ugcTranslation": {
+    "translate": "Traduire",
+    "showOriginal": "Afficher l’original",
+    "translating": "Traduction…",
+    "failed": "La traduction est indisponible. Réessayez plus tard.",
+    "originalAbove": "Traduction. L’original reste sur cette page."
+  },
+  "imageDescription": {
+    "label": "Description de la photo (pour les lecteurs d’écran)"
   }
 }

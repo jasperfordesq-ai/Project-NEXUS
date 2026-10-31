@@ -22,6 +22,7 @@ import Target from 'lucide-react/icons/target';
 import TrendingUp from 'lucide-react/icons/trending-up';
 import Milestone from 'lucide-react/icons/milestone';
 import { useTranslation } from 'react-i18next';
+import { useBadgeCopy } from '@/hooks/useBadgeCopy';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 
@@ -32,6 +33,8 @@ interface MonthlyActivity {
 }
 
 interface BadgeEntry {
+  name_code?: string | null;
+  description_code?: string | null;
   badge_key: string;
   name: string;
   icon: string;
@@ -65,6 +68,7 @@ interface JourneyData {
 
 export default function PersonalJourneyTab() {
   const { t } = useTranslation('gamification');
+  const { badgeName } = useBadgeCopy();
   const [data, setData] = useState<JourneyData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -231,7 +235,7 @@ export default function PersonalJourneyTab() {
               >
                 <span className="text-xl">{badge.icon}</span>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">{badge.name}</p>
+                  <p className="text-sm font-medium">{badgeName(badge)}</p>
                   {badge.earned_at && (
                     <p className="text-xs text-muted">{badge.earned_at}</p>
                   )}

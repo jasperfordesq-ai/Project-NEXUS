@@ -327,7 +327,7 @@ class GamificationService
     public static function getStaticBadgeDefinitions(): array
     {
         if (self::$badgeDefinitionsCache !== null) {
-            return self::$badgeDefinitionsCache;
+            return array_map([BadgeCopy::class, 'localize'], self::$badgeDefinitionsCache);
         }
 
         self::$badgeDefinitionsCache = [
@@ -442,7 +442,7 @@ class GamificationService
             'description_code' => 'badges.' . $badge['key'] . '.description',
         ], self::$badgeDefinitionsCache);
 
-        return self::$badgeDefinitionsCache;
+        return array_map([BadgeCopy::class, 'localize'], self::$badgeDefinitionsCache);
     }
 
     /**
@@ -514,6 +514,7 @@ class GamificationService
             ->find($userId);
 
         LocaleContext::withLocale($recipient, function () use ($userId, $badge) {
+            $badge = BadgeCopy::localize($badge);
             // Route through createNotification() so the bell's tenant_id is forced to
             // the recipient's users.tenant_id (cross-tenant write guard).
             Notification::createNotification(

@@ -38,6 +38,7 @@ export type GroupTabKey =
 export type GroupTabConfig = Partial<Record<GroupTabKey, boolean>>;
 
 export interface TenantConfig {
+  translation?: { enabled?: boolean };
   /**
    * The community's numeric id.
    *

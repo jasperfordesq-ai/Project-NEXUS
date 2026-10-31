@@ -111,7 +111,7 @@ describe('translate a listing', () => {
     expect(withButton).toContain('action="/listings/9/translate"');
     expect(withButton).toContain(t('govuk_alpha_feed.translate.listing_button'));
 
-    const translated = env.renderString(block, { t, listing, isAuthenticated: true, listingTranslation: { title: 'Help', description: 'Hello', locale: 'en' } });
+    const translated = env.renderString(block, { t, listing, urlFor: v => v, isAuthenticated: true, listingTranslation: { title: 'Help', description: 'Hello', locale: 'en' } });
     expect(translated).toContain('Help');
     expect(translated).toContain('id="listing-translation"');
     expect(translated).not.toContain('/translate"');
@@ -124,6 +124,7 @@ describe('translate a comment on a listing', () => {
     api.getComments.mockResolvedValue({ data: { comments: [{ id: 21, content: '¿Cuándo?', author: { name: 'Luis' }, replies: [] }], count: 1 } });
     const session = { targetCommentTranslation: { targetType: 'listing', targetId: 9, commentId: 21, text: 'When?', locale: 'en' } };
 
+    session.targetCommentTranslation.binding = await require('../src/lib/ugc-translation').translationBinding({ locale: 'en' }, { locals: {} }, 'test-token', 'comment', 21, { body: '¿Cuándo?' });
     const page = await request(createApp(session)).get('/listings/9/comments?status=comment-translate-done');
     expect(page.body.locals.commentTranslation).toEqual(expect.objectContaining({ commentId: 21, text: 'When?' }));
     expect(page.body.locals.status.message).toBe(t('govuk_alpha_feed.translate.text_done'));

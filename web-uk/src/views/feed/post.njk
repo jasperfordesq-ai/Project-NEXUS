@@ -82,6 +82,7 @@
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_feed.translate.heading") }}</h2>
             <p class="govuk-hint govuk-!-margin-bottom-2">{{ t("govuk_alpha_feed.translate.hint") }}</p>
             <p class="govuk-body govuk-!-margin-bottom-0" lang="{{ translation.locale }}">{{ translation.text }}</p>
+            <a class="govuk-link" href="{{ urlFor('/feed/posts/' + item.id + '?translation=original') }}">{{ t("ugc_translation.show_original") }}</a>
           </div>
         {% endif %}
 

@@ -1518,6 +1518,23 @@ app.get('/volunteering', requireAuth, (req, res) => {
     });
 });
 
+const { registerDetailTranslation, detailTranslationLocals } = require('./lib/ugc-translation');
+const { htmlToPlainText: translationPlainText } = require('./lib/html-sanitizer');
+const opportunityTranslation = {
+  path: '/volunteering/opportunities/:id(\\d+)/translate',
+  load: async (req, res, token) => (await require('./lib/api').getVolunteerOpportunity(req.params.id, token)).data,
+  spec: item => ({ type: 'vol_opportunity', id: item.id, fields: { title: item.title || '', body: translationPlainText(item.description || '') } }),
+  href: item => `/volunteering/opportunities/${item.id}`,
+};
+const organisationTranslation = {
+  path: '/organisations/:id(\\d+)/translate',
+  load: async (req, res, token) => (await require('./lib/api').getVolunteerOrganisation(req.params.id, token)).data,
+  spec: item => ({ type: 'organisation', id: item.id, fields: { name: item.name || '', body: translationPlainText(item.description || '') } }),
+  href: item => `/organisations/${item.id}`,
+};
+registerDetailTranslation(app, opportunityTranslation);
+registerDetailTranslation(app, organisationTranslation);
+
 app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
   const token = req.signedCookies.token || '';
   const { ApiError, getVolunteerOpportunity, callVolunteeringApi } = require('./lib/api');
@@ -1721,6 +1738,7 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
       }[status] || null;
 
       res.render('volunteer-opportunity', {
+        ...await detailTranslationLocals(req, res, token, opportunity, opportunityTranslation),
         title: opportunity.title || res.locals.t('govuk_alpha.volunteering.detail_title'),
         activeNav: 'volunteering',
         opportunity,
@@ -2348,6 +2366,7 @@ app.get('/organisations/:id(\\d+)', requireOrganisationAuth, (req, res) => {
       const averageRating = Number(stats.average_rating || 0);
 
       res.render('organisation-detail', {
+        ...await detailTranslationLocals(req, res, token, organisation, organisationTranslation),
         title: organisation.name,
         activeNav: 'explore',
         organisation,

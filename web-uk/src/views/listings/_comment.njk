@@ -6,11 +6,14 @@
 <li class="nexus-alpha-comment"{% if comment.id %} id="comment-{{ comment.id }}"{% endif %}>
   <p class="govuk-body govuk-!-margin-bottom-1" dir="auto">{{ comment.content }}</p>
   {# Translate (31 Oct 2026): the result is shown once under this comment. #}
-  {% if commentTranslation and commentTranslation.commentId == comment.id %}
+  {% set displayedTranslation = comment.cachedTranslation %}
+  {% if commentTranslation and commentTranslation.commentId == comment.id %}{% set displayedTranslation = commentTranslation %}{% endif %}
+  {% if displayedTranslation %}
     <div class="govuk-inset-text govuk-!-margin-top-0">
       <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_feed.translate.heading") }}</h3>
       <p class="govuk-hint govuk-!-margin-bottom-2">{{ t("govuk_alpha_feed.translate.original_above_hint") }}</p>
-      <p class="govuk-body govuk-!-margin-bottom-0" lang="{{ commentTranslation.locale }}">{{ commentTranslation.text }}</p>
+      <p class="govuk-body govuk-!-margin-bottom-0" lang="{{ displayedTranslation.locale }}">{{ displayedTranslation.text }}</p>
+      <a class="govuk-link" href="{{ urlFor('/listings/' + listing.id + '/comments?translation=original') }}">{{ t("ugc_translation.show_original") }}</a>
     </div>
   {% elif comment.id and comment.content %}
     <form method="post" action="{{ urlFor('/feed/comments/' + (comment.id | string) + '/translate') }}" class="govuk-!-margin-bottom-2" novalidate>

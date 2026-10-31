@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import { formatDecimal , parseDecimalInput } from '@/lib/utils/decimal';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Share, Text, View } from 'react-native';
@@ -634,7 +635,7 @@ function MemberProfileScreenInner() {
           <HeroCard variant="default" className="overflow-hidden">
             <View className="h-1 w-full" style={{ backgroundColor: primary }} />
             <HeroCard.Body className="items-center gap-4 px-5 py-6">
-              <Avatar uri={member.avatar_url ?? member.avatar ?? null} name={displayName} size={96} />
+              <Avatar uri={member.avatar_url ?? member.avatar ?? null} alt={'avatar_alt' in member ? String(member.avatar_alt || '') : undefined} name={displayName} size={96} />
               {isFederatedProfile ? (
                 <Chip size="sm" variant="soft" color="accent">
                   <Ionicons name="globe-outline" size={12} color={primary} />
@@ -680,6 +681,7 @@ function MemberProfileScreenInner() {
                   {isOwnProfile ? t('profile.noBioOwn') : t('profile.noBio')}
                 </Text>
               )}
+              <ContentTranslation contentType="profile_bio" contentId={member.id} disabled={isFederatedProfile} fields={{ body: bio, tagline: 'tagline' in member ? String(member.tagline || '') : '' }} />
             </HeroCard.Body>
           </HeroCard>
 

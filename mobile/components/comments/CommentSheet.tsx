@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 import { BottomSheetFlatList, BottomSheetFooter, type BottomSheetFooterProps } from '@gorhom/bottom-sheet';
@@ -727,6 +728,7 @@ function CommentRow({
               <Text className="text-sm leading-5 text-muted-foreground">
                 {stripHtml(comment.content)}
               </Text>
+              <ContentTranslation contentType="comment" contentId={comment.id} fields={{ body: stripHtml(comment.content) }} />
               <View className="mt-1 flex-row items-center gap-4">
                 <Pressable
                   onPress={() => onToggleLike(comment)}

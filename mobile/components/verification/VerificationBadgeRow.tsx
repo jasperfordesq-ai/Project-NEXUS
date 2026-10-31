@@ -10,6 +10,7 @@ import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 
 import { getUserVerificationBadges, type VerificationBadge } from '@/lib/api/verification';
+import { useOptionalTenantContext } from '@/lib/context/TenantContext';
 import { useTheme } from '@/lib/hooks/useTheme';
 
 type BadgeSize = 'sm' | 'md';
@@ -59,13 +60,15 @@ export default function VerificationBadgeRow({
 }: VerificationBadgeRowProps) {
   const { t } = useTranslation('common');
   const theme = useTheme();
+  const featureDisabled = useOptionalTenantContext()?.tenant?.features?.identity_verification === false;
+  const inactive = disabled || featureDisabled;
   const numericUserId = typeof userId === 'string' ? Number(userId) : userId;
   const [badges, setBadges] = useState<VerificationBadge[]>(propBadges ?? []);
   const [loaded, setLoaded] = useState(Boolean(propBadges) || disabled || !numericUserId);
   const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
-    if (disabled) {
+    if (inactive) {
       setLoaded(true);
       return;
     }
@@ -107,7 +110,7 @@ export default function VerificationBadgeRow({
     return () => {
       cancelled = true;
     };
-  }, [disabled, numericUserId, propBadges]);
+  }, [inactive, numericUserId, propBadges]);
 
   const visibleBadges = useMemo(() => {
     const normalized = badges.map((badge) => ({ ...badge, type: normalizeBadgeType(badge) })).filter((badge) => badge.type);
@@ -120,7 +123,7 @@ export default function VerificationBadgeRow({
     return normalized;
   }, [badges, showUnverified, loadFailed, t]);
 
-  if (!loaded || visibleBadges.length === 0) {
+  if (inactive || !loaded || visibleBadges.length === 0) {
     return null;
   }
 

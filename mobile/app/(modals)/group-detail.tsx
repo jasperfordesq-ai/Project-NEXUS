@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import { downloadAuthenticatedFile, SHARING_UNAVAILABLE } from '@/lib/volunteering/authenticatedFileDownload';
 import { pickGroupFile } from '@/lib/media/pickGroupFile';
 import {
@@ -1298,6 +1299,7 @@ function GroupDetailScreenInner() {
             ) : (
               <EmptyCard icon="document-text-outline" message={t('detail.emptyAbout')} />
             )}
+            <ContentTranslation contentType="group" contentId={group.id} fields={{ name: group.name, body: stripHtml(displayDescription) }} />
 
             {loadedGroup.tags && loadedGroup.tags.length > 0 ? (
               <HeroCard className="rounded-panel p-0">

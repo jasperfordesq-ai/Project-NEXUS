@@ -225,5 +225,15 @@
     "sent": "Danke. Deine Meldung wurde an die Koordinatoren deiner Gemeinschaft gesendet.",
     "already": "Du hast das bereits gemeldet.",
     "failed": "Deine Meldung konnte nicht gesendet werden. Bitte versuche es erneut."
+  },
+  "ugcTranslation": {
+    "translate": "Übersetzen",
+    "showOriginal": "Original anzeigen",
+    "translating": "Wird übersetzt…",
+    "failed": "Die Übersetzung ist nicht verfügbar. Versuchen Sie es später erneut.",
+    "originalAbove": "Übersetzung. Das Original bleibt auf dieser Seite."
+  },
+  "imageDescription": {
+    "label": "Fotobeschreibung (für Screenreader)"
   }
 }

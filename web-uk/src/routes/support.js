@@ -22,10 +22,14 @@ const {
   sectionText,
   visibleSections
 } = require('../lib/help-guides');
-const { sanitizeCmsHtml } = require('../lib/html-sanitizer');
+const { sanitizeCmsHtml, htmlToPlainText } = require('../lib/html-sanitizer');
 const { breadcrumbJsonLdFor, pageDescription } = require('../lib/seo-meta');
 
+const { translateFields } = require('../lib/ugc-translation');
 const router = express.Router();
+function faqTranslationSpec(faq, category) {
+  return { type: 'faq', id: Number(faq.id), fields: { question: faq.question, body: htmlToPlainText(faq.answer), category } };
+}
 
 const TRUST_SAFETY_SECTION_KEYS = Object.freeze([
   'how_exchanges', 'what_we_do', 'what_we_dont', 'precautions',
@@ -171,6 +175,12 @@ async function renderHelpHome(req, res, audience) {
     faqGroups = normalizeFaqGroups(await getHelpFaqs(searchQuery ? { q: searchQuery } : {}), res.locals.t);
   }
 
+  const token = req.token || req.signedCookies?.token;
+  await Promise.all(faqGroups.flatMap(group => group.faqs.map(async faq => {
+    faq.translationAvailable = Boolean(token) && (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false;
+    faq.translationFailed = req.query.translationStatus === 'failed' && String(req.query.faqId) === String(faq.id);
+    faq.translation = await translateFields(req, res, token, faqTranslationSpec(faq, group.category));
+  })));
   const sections = visibleSections(audience, ctx);
   const sectionCards = sections.map((section) => {
     const text = sectionText(locale, audience, section.id);
@@ -231,6 +241,19 @@ async function renderHelpHome(req, res, audience) {
     faqGroups
   });
 }
+
+router.post('/help/faqs/:id(\\d+)/translate', asyncRoute(async (req, res) => {
+  const token = req.token || req.signedCookies?.token;
+  if (!token) return res.redirect(res.locals.urlFor('/login?status=auth-required'));
+  const groups = normalizeFaqGroups(await getHelpFaqs({}), res.locals.t);
+  let result = null;
+  for (const group of groups) {
+    const faq = group.faqs.find(row => Number(row.id) === Number(req.params.id));
+    if (faq) { result = await translateFields(req, res, token, faqTranslationSpec(faq, group.category), true); break; }
+  }
+  if (req.session && result) req.session.ugcTranslation = result;
+  return res.redirect(res.locals.urlFor(`/help?faqId=${Number(req.params.id)}&translationStatus=${result ? 'done' : 'failed'}#faq-translation-${Number(req.params.id)}`));
+}));
 
 router.get('/help', asyncRoute(async (req, res) => renderHelpHome(req, res, 'members')));
 

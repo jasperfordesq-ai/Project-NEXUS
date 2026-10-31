@@ -57,6 +57,7 @@ import { AvailabilityGrid } from '@/components/availability/AvailabilityGrid';
 import { StoryHighlights } from '@/components/stories/StoryHighlights';
 import VereinCrossInvitationButton from '@/pages/vereine/VereinCrossInvitationButton';
 import { useTranslation } from 'react-i18next';
+import { useBadgeCopy } from '@/hooks/useBadgeCopy';
 import { useAuth, useFeature, useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
@@ -140,6 +141,7 @@ const itemVariants = {
 
 export function ProfilePage() {
   const { t } = useTranslation('profile');
+  const { badgeName, badgeDescription } = useBadgeCopy();
   const { id } = useParams<{ id: string }>();
   const { user: currentUser, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { tenantPath, hasModule } = useTenant();
@@ -1027,10 +1029,18 @@ export function ProfilePage() {
                       {bioExpanded ? t('read_less') : t('read_more')}
                     </Button>
                   )}
+
+                </div>
+              ) : (
+                <div className="rounded-lg border border-dashed border-theme-default bg-theme-elevated/50 p-4">
+                  <p className="text-sm text-theme-subtle">{t('about.no_bio')}</p>
+                </div>
+              )}
+
                   <TranslateButton
                     contentType="profile_bio"
                     contentId={profile.id ?? 0}
-                    sourceText={profile.bio}
+                    sourceText={profile.bio ?? ''}
                     // Not preferred_language: that is the member's interface
                     // language, not the bio's. Unknown, so the server detects it.
                     sourceLocale={null}
@@ -1039,12 +1049,6 @@ export function ProfilePage() {
                     onFieldsChange={onTranslatedFields}
                     className="mt-1"
                   />
-                </div>
-              ) : (
-                <div className="rounded-lg border border-dashed border-theme-default bg-theme-elevated/50 p-4">
-                  <p className="text-sm text-theme-subtle">{t('about.no_bio')}</p>
-                </div>
-              )}
 
               <div className="mt-6">
                 <h3 className="text-sm font-medium text-theme-muted mb-3">{t('about.skills')}</h3>
@@ -1349,10 +1353,10 @@ export function ProfilePage() {
                             <Trophy className="h-7 w-7 text-[var(--color-warning)]" aria-hidden="true" />
                           )}
                         </div>
-                        <Tooltip content={badge.name}>
-                          <p className="truncate text-sm font-medium text-theme-primary">{badge.name}</p>
+                        <Tooltip content={badgeName(badge)}>
+                          <p className="truncate text-sm font-medium text-theme-primary">{badgeName(badge)}</p>
                         </Tooltip>
-                        <p className="text-xs text-theme-subtle mt-1 line-clamp-2">{badge.description}</p>
+                        <p className="text-xs text-theme-subtle mt-1 line-clamp-2">{badgeDescription(badge)}</p>
                         {badge.earned ? (
                           <span className="inline-block mt-2 text-xs text-theme-success font-medium">{t('achievements.badge_earned')}</span>
                         ) : (

@@ -55,6 +55,7 @@ import TrendingUp from 'lucide-react/icons/trending-up';
 import BadgeCheck from 'lucide-react/icons/badge-check';
 import UserCircle from 'lucide-react/icons/circle-user';
 import { useTranslation } from 'react-i18next';
+import { useBadgeCopy } from '@/hooks/useBadgeCopy';
 import { PresenceIndicator } from '@/components/social/PresenceIndicator';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
@@ -1113,6 +1114,7 @@ interface MemberCardProps {
 
 const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: MemberCardProps) {
   const { t } = useTranslation('common');
+  const { badgeName } = useBadgeCopy();
   const { tenantPath } = useTenant();
   const hasGamification = useFeature('gamification');
 
@@ -1171,8 +1173,8 @@ const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: Member
                   {hasGamification && showcasedBadges.length > 0 && (
                     <span className="flex items-center gap-0.5 ml-1" role="group" aria-label={t('members.showcased_badges')}>
                       {showcasedBadges.map((badge) => (
-                        <Tooltip key={badge.badge_key} content={badge.name}>
-                          <span className="text-base leading-none cursor-default" role="img" aria-label={badge.name}>{badge.icon || '🏆'}</span>
+                        <Tooltip key={badge.badge_key} content={badgeName(badge)}>
+                          <span className="text-base leading-none cursor-default" role="img" aria-label={badgeName(badge)}>{badge.icon || '🏆'}</span>
                         </Tooltip>
                       ))}
                     </span>
@@ -1259,8 +1261,8 @@ const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: Member
           {hasGamification && showcasedBadges.length > 0 && (
             <div className="flex items-center justify-center gap-1 mt-1.5" role="group" aria-label={t('members.showcased_badges')}>
               {showcasedBadges.map((badge) => (
-                <Tooltip key={badge.badge_key} content={badge.name}>
-                  <span className="text-lg leading-none cursor-default" role="img" aria-label={badge.name}>{badge.icon || '🏆'}</span>
+                <Tooltip key={badge.badge_key} content={badgeName(badge)}>
+                  <span className="text-lg leading-none cursor-default" role="img" aria-label={badgeName(badge)}>{badge.icon || '🏆'}</span>
                 </Tooltip>
               ))}
             </div>

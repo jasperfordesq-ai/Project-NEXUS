@@ -1,0 +1,268 @@
+{
+  "badges": {
+    "vol_1h": {
+      "name": "最初のステップ",
+      "description": "最初のボランティア時間を記録する"
+    },
+    "vol_10h": {
+      "name": "助けの手",
+      "description": "ボランティア10時間"
+    },
+    "vol_50h": {
+      "name": "変革者",
+      "description": "ボランティア50時間"
+    },
+    "vol_100h": {
+      "name": "タイムバンクの伝説",
+      "description": "ボランティア100時間"
+    },
+    "vol_250h": {
+      "name": "ボランティアヒーロー",
+      "description": "ボランティア250時間"
+    },
+    "vol_500h": {
+      "name": "ボランティアチャンピオン",
+      "description": "ボランティア500時間"
+    },
+    "offer_1": {
+      "name": "最初のオファー",
+      "description": "最初のオファーを投稿する"
+    },
+    "offer_5": {
+      "name": "寛大な心",
+      "description": "5つのオファーを投稿する"
+    },
+    "offer_10": {
+      "name": "ギフト提供者",
+      "description": "10件のオファーを投稿"
+    },
+    "offer_25": {
+      "name": "オファーマスター",
+      "description": "25件のオファーを投稿"
+    },
+    "request_1": {
+      "name": "最初のリクエスト",
+      "description": "最初のリクエストを投稿する"
+    },
+    "request_5": {
+      "name": "コミュニティシーカー",
+      "description": "5件のリクエストを作成する"
+    },
+    "request_10": {
+      "name": "アクティブリクエスター",
+      "description": "10件のリクエストを作成する"
+    },
+    "earn_1": {
+      "name": "初めての稼ぎ",
+      "description": "初めての時間クレジットを稼ぐ"
+    },
+    "earn_10": {
+      "name": "ゴーゲッター",
+      "description": "10時間のクレジットを稼ぐ"
+    },
+    "earn_50": {
+      "name": "クレジットビルダー",
+      "description": "50タイムクレジットを獲得"
+    },
+    "earn_100": {
+      "name": "センチュリオン",
+      "description": "100タイムクレジットを獲得"
+    },
+    "earn_250": {
+      "name": "クレジットマスター",
+      "description": "250タイムクレジットを獲得"
+    },
+    "spend_1": {
+      "name": "初回使用",
+      "description": "初めてタイムクレジットを使う"
+    },
+    "spend_10": {
+      "name": "アクティブな支出者",
+      "description": "10タイムクレジットを使う"
+    },
+    "spend_50": {
+      "name": "寛大な支出者",
+      "description": "50タイムクレジットを使う"
+    },
+    "transaction_1": {
+      "name": "初めての取引",
+      "description": "初めての取引を完了する"
+    },
+    "transaction_10": {
+      "name": "アクティブトレーダー",
+      "description": "10回の取引を完了する"
+    },
+    "transaction_50": {
+      "name": "交換マスター",
+      "description": "50回の取引を完了する"
+    },
+    "diversity_3": {
+      "name": "コミュニティヘルパー",
+      "description": "異なる3人を助ける"
+    },
+    "diversity_10": {
+      "name": "多様な寄付者",
+      "description": "10人の異なる人を助ける"
+    },
+    "diversity_25": {
+      "name": "コミュニティの柱",
+      "description": "25人の異なる人を助ける"
+    },
+    "connect_1": {
+      "name": "最初の友達",
+      "description": "最初のつながりを作る"
+    },
+    "connect_10": {
+      "name": "社交的な蝶",
+      "description": "10人とつながる"
+    },
+    "connect_25": {
+      "name": "ネットワークビルダー",
+      "description": "25のコネクションを作る"
+    },
+    "connect_50": {
+      "name": "コミュニティコネクター",
+      "description": "50のコネクションを作る"
+    },
+    "msg_1": {
+      "name": "会話の始め手",
+      "description": "最初のメッセージを送信する"
+    },
+    "msg_50": {
+      "name": "アクティブコミュニケーター",
+      "description": "50メッセージを送信する"
+    },
+    "msg_200": {
+      "name": "コミュニケーションプロ",
+      "description": "200メッセージを送信する"
+    },
+    "review_1": {
+      "name": "最初のフィードバック",
+      "description": "最初のレビューを残す"
+    },
+    "review_10": {
+      "name": "信頼されるレビュアー",
+      "description": "10件のレビューを残す"
+    },
+    "review_25": {
+      "name": "レビューエキスパート",
+      "description": "25件のレビューを残す"
+    },
+    "5star_1": {
+      "name": "初めての5つ星",
+      "description": "初めての5つ星レビューを受け取る"
+    },
+    "5star_10": {
+      "name": "高評価",
+      "description": "5つ星レビューを10件受け取る"
+    },
+    "5star_25": {
+      "name": "優秀賞",
+      "description": "五星レビューを25件受け取る"
+    },
+    "event_attend_1": {
+      "name": "初めてのイベント",
+      "description": "初めてのイベントに参加する"
+    },
+    "event_attend_10": {
+      "name": "イベント常連",
+      "description": "10回のイベントに参加する"
+    },
+    "event_attend_25": {
+      "name": "イベント愛好家",
+      "description": "25回のイベントに参加する"
+    },
+    "event_host_1": {
+      "name": "イベントホスト",
+      "description": "初めてのイベントを開催する"
+    },
+    "event_host_5": {
+      "name": "イベントオーガナイザー",
+      "description": "5回イベントを開催する"
+    },
+    "group_join_1": {
+      "name": "チームプレイヤー",
+      "description": "初めてグループに参加する"
+    },
+    "group_join_5": {
+      "name": "コミュニティメンバー",
+      "description": "5つのグループに参加する"
+    },
+    "group_create": {
+      "name": "グループ創設者",
+      "description": "最初のグループを作成する"
+    },
+    "post_1": {
+      "name": "最初の投稿",
+      "description": "最初の投稿を作成する"
+    },
+    "post_25": {
+      "name": "コンテンツクリエイター",
+      "description": "25件の投稿を作成する"
+    },
+    "post_100": {
+      "name": "多作な投稿者",
+      "description": "100件の投稿を作成する"
+    },
+    "likes_50": {
+      "name": "注目される",
+      "description": "50件のいいねを受け取る"
+    },
+    "likes_200": {
+      "name": "人気の声",
+      "description": "200件のいいねを受け取る"
+    },
+    "profile_complete": {
+      "name": "プロフィールの達人",
+      "description": "プロフィールを完成させる"
+    },
+    "member_30d": {
+      "name": "月間メンバー",
+      "description": "30日間メンバーである"
+    },
+    "member_180d": {
+      "name": "学期メンバー",
+      "description": "6ヶ月間メンバーである"
+    },
+    "member_365d": {
+      "name": "年間メンバー",
+      "description": "1年間メンバーである"
+    },
+    "streak_7d": {
+      "name": "週の戦士",
+      "description": "7日間連続を維持する"
+    },
+    "streak_30d": {
+      "name": "月間の献身",
+      "description": "30日間連続を維持する"
+    },
+    "streak_100d": {
+      "name": "連続マスター",
+      "description": "100日間連続を維持する"
+    },
+    "streak_365d": {
+      "name": "1年続く伝説",
+      "description": "365日間の連続記録を維持する"
+    },
+    "level_5": {
+      "name": "ライジングスター",
+      "description": "レベル5に到達する"
+    },
+    "level_10": {
+      "name": "コミュニティチャンピオン",
+      "description": "レベル10に到達する"
+    },
+    "early_adopter": {
+      "name": "アーリーアダプター",
+      "description": "プラットフォームのアーリーアダプターになる"
+    },
+    "verified": {
+      "name": "認証済みメンバー",
+      "description": "本人確認の完了"
+    },
+    "volunteer_org": {
+      "name": "組織パートナー",
+      "description": "ボランティア組織を作成"
+    }
+  }
+}

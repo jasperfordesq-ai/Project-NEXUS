@@ -5337,4 +5337,8 @@ return [
         'withdraw_urgent' => 'この緊急リクエストを取り下げてもよろしいですか？',
         'cannot_undo' => 'この操作は元に戻せません。',
     ],
+    'ugc_translation' => [
+        'translate' => '翻訳',
+        'show_original' => '原文を表示',
+    ],
 ];

@@ -156,7 +156,7 @@ jest.mock('@/components/ui/useConfirm', () => ({
 jest.mock('@/components/OfflineBanner', () => () => null);
 jest.mock('@/components/ui/Input', () => {
   const { View, Text, TextInput: RNTextInput } = require('react-native');
-  return function MockInput(props: { value?: string; placeholder?: string; onChangeText?: (t: string) => void; error?: string; editable?: boolean }) {
+  return function MockInput(props: { value?: string; placeholder?: string; onChangeText?: (t: string) => void; error?: string; editable?: boolean; accessibilityLabel?: string }) {
     return (
       <View>
         <RNTextInput
@@ -164,6 +164,7 @@ jest.mock('@/components/ui/Input', () => {
           placeholder={props.placeholder}
           onChangeText={props.onChangeText}
           editable={props.editable}
+          accessibilityLabel={props.accessibilityLabel}
           testID={props.placeholder}
         />
         {props.error ? <Text>{props.error}</Text> : null}
@@ -527,4 +528,13 @@ describe('EditProfileScreen', () => {
     await waitFor(() => expect(screen.queryByTestId('profile-load-error')).toBeNull());
     expect(screen.getByDisplayValue(editDraft ? 'Unsaved local bio' : 'Fresh server bio')).toBeTruthy();
   });
+  it('saves an edited avatar description without overwriting other profile fields', async () => {
+    (getMe as jest.Mock).mockResolvedValueOnce({ data: { ...defaultProfileResponse.data, avatar_url: '/uploads/avatar.jpg' } });
+    const screen = render(<EditProfileScreen />);
+    await waitFor(() => expect(storage.setJson).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByLabelText('common:imageDescription.label'), 'Jane beside a tree');
+    fireEvent.press(screen.getByText('Save Changes'));
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ avatar_alt: 'Jane beside a tree' }));
+  });
+
 });

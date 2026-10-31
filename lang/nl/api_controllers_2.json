@@ -257,5 +257,11 @@
   "member_reports.details_required": "Beschrijf wat er is gebeurd.",
   "member_reports.details_too_long": "Houd je beschrijving op maximaal {{max}} tekens.",
   "member_reports.already_reported": "Je hebt dit al gemeld. De coördinatoren van je gemeenschap kijken ernaar.",
-  "onboarding.safeguarding_required": "Beantwoord de vraag over veiligheid voordat je afrondt. Is geen van de opties op jou van toepassing, kies dan \"Geen van deze situaties is op mij van toepassing\"."
+  "onboarding.safeguarding_required": "Beantwoord de vraag over veiligheid voordat je afrondt. Is geen van de opties op jou van toepassing, kies dan \"Geen van deze situaties is op mij van toepassing\".",
+  "courses": {
+    "order_changed": "De volgorde van de cursus is gewijzigd. Vernieuw de cursus voordat u opnieuw onderdelen verplaatst.",
+    "order_invalid": "De volgorde moet elk onderdeel van dit cursusgedeelte precies één keer bevatten.",
+    "price_changed": "De cursusprijs is gewijzigd. Vernieuw de cursus en bevestig de huidige prijs voordat u zich inschrijft.",
+    "quiz_pass_required": "Slaag voor de quiz en wacht op eventuele beoordeling door de docent voordat u deze les afrondt of een certificaat ontvangt."
+  }
 }

@@ -225,5 +225,15 @@
     "sent": "Gracias. Tu denuncia se ha enviado a los coordinadores de tu comunidad.",
     "already": "Ya has denunciado esto.",
     "failed": "No se pudo enviar tu denuncia. Inténtalo de nuevo."
+  },
+  "ugcTranslation": {
+    "translate": "Traducir",
+    "showOriginal": "Mostrar original",
+    "translating": "Traduciendo…",
+    "failed": "La traducción no está disponible. Inténtalo de nuevo más tarde.",
+    "originalAbove": "Traducción. El original permanece en esta página."
+  },
+  "imageDescription": {
+    "label": "Descripción de la foto (para lectores de pantalla)"
   }
 }

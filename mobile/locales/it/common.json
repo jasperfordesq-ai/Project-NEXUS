@@ -225,5 +225,15 @@
     "sent": "Grazie. La tua segnalazione è stata inviata ai coordinatori della tua comunità.",
     "already": "Hai già fatto questa segnalazione.",
     "failed": "Non è stato possibile inviare la segnalazione. Riprova."
+  },
+  "ugcTranslation": {
+    "translate": "Traduci",
+    "showOriginal": "Mostra originale",
+    "translating": "Traduzione…",
+    "failed": "La traduzione non è disponibile. Riprova più tardi.",
+    "originalAbove": "Traduzione. L’originale rimane in questa pagina."
+  },
+  "imageDescription": {
+    "label": "Descrizione della foto (per lettori di schermo)"
   }
 }

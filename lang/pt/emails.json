@@ -704,5 +704,14 @@
   "account_invitation": {
     "cta": "Definir a sua palavra-passe",
     "expiry": "Este link expira em {{days}} dias."
+  },
+  "policy_publication": {
+    "changes": "O que mudou",
+    "intro": ":community publicou :document, versão :version. Leia a política para compreender como se aplica a si.",
+    "no_summary": "Esta política foi publicada. Leia o documento completo para conhecer os detalhes.",
+    "read": "Ler a política",
+    "service_notice": "Este é um email informativo de serviço sobre as políticas da sua comunidade. As preferências de subscrição da newsletter não se aplicam a estes avisos.",
+    "subject": ":community: publicação de :document",
+    "title": "Foi publicada uma política"
   }
 }

@@ -181,6 +181,13 @@ describe('exchange images', () => {
     expect(result.data.image_url).toBe('/uploads/listings/image.jpg');
   });
 
+  it.each(['A blue guitar', ''])('uploads the photo and its description together: %s', async imageAlt => {
+    (api.upload as jest.Mock).mockResolvedValue({ data: { image_url: '/uploads/listings/new.jpg' } });
+    await uploadExchangeImage(5, 'file:///tmp/new.jpg', imageAlt);
+    const form = (api.upload as jest.Mock).mock.calls[0][1];
+    expect(form.get('image_alt')).toBe(imageAlt);
+  });
+
   it('normalizes a flat listing image upload response', async () => {
     (api.upload as jest.Mock).mockResolvedValue({ image_url: '/uploads/listings/flat.webp' });
 

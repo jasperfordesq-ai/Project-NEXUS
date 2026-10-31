@@ -120,6 +120,7 @@ function EditExchangeModalInner() {
   const [showServiceDetails, setShowServiceDetails] = useState(false);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
+  const [imageAlt, setImageAlt] = useState('');
   const [removeExistingImage, setRemoveExistingImage] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [generatingDescription, setGeneratingDescription] = useState(false);
@@ -176,6 +177,7 @@ function EditExchangeModalInner() {
     setCategoryId(listing.category_id ?? null);
     setSelectedImageUri(null);
     setRemoveExistingImage(false);
+    setImageAlt(listing.image_alt ?? '');
     setHydratedListingId(listing.id);
     // Same field order as `formSnapshot` below, from the same source values.
     setBaseline(JSON.stringify({
@@ -192,12 +194,13 @@ function EditExchangeModalInner() {
       categoryId: listing.category_id ?? null,
       selectedImageUri: null,
       removeExistingImage: false,
+      imageAlt: listing.image_alt ?? '',
     }));
   }, [hydratedListingId, listing, profileLocation, t]);
 
   const formSnapshot = JSON.stringify({
     title, description, experienceLevel, equipmentProvided, accessibilityNotes, type, hours,
-    serviceType, listingLocation, skillTags, categoryId, selectedImageUri, removeExistingImage,
+    serviceType, listingLocation, skillTags, categoryId, selectedImageUri, removeExistingImage, imageAlt,
   });
   const isDirty = baseline !== null && formSnapshot !== baseline;
   // 🔴 Same guard as new-exchange and edit-profile (audit 2026-09-05, F05).
@@ -223,6 +226,7 @@ function EditExchangeModalInner() {
       const prepared = await prepareImageForUpload(result.assets[0]);
       if (!isMountedRef.current) return;
       setSelectedImageUri(prepared.uri);
+      setImageAlt('');
       setRemoveExistingImage(false);
     } catch (err) {
       showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.imagePickFailed')), variant: 'danger' });
@@ -296,6 +300,7 @@ function EditExchangeModalInner() {
     savingRef.current = true;
     setSaving(true);
     const listingPayload = {
+        ...(!selectedImageUri ? { image_alt: removeExistingImage ? null : imageAlt.trim() || null } : {}),
         title: trimmedTitle,
         description: buildListingDescription(trimmedDescription, {
           experience: experienceLevel,
@@ -340,6 +345,7 @@ function EditExchangeModalInner() {
       const extras: ListingExtras = {
         tags: skillTags.split(',').map((tag) => tag.trim()).filter(Boolean),
         imageUri: selectedImageUri,
+          imageAlt: imageAlt.trim() || null,
         removeImage: removeExistingImage && Boolean(listing?.image_url),
       };
       const result = await saveListingExtras(safeListingId, extras);
@@ -616,6 +622,7 @@ function EditExchangeModalInner() {
                       onPress={() => {
                         setSelectedImageUri(null);
                         setRemoveExistingImage(true);
+                        setImageAlt('');
                       }}
                     >
                       <Ionicons name="trash-outline" size={17} color={theme.error} />
@@ -629,6 +636,7 @@ function EditExchangeModalInner() {
                   <HeroButton.Label>{t('form.addImage')}</HeroButton.Label>
                 </HeroButton>
               )}
+            {selectedImageUri || (listing.image_url && !removeExistingImage) ? <Input label={t('common:imageDescription.label')} value={imageAlt} onChangeText={setImageAlt} maxLength={255} /> : null}
           </FormSection>
 
           <FormSection title={t('form.organiseTitle')} icon="albums-outline" primary={primary} theme={theme}>

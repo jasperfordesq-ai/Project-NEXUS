@@ -5337,4 +5337,8 @@ return [
         'withdraw_urgent' => '¿Seguro que quieres retirar esta solicitud urgente?',
         'cannot_undo' => 'No podrás deshacer esta acción.',
     ],
+    'ugc_translation' => [
+        'translate' => 'Traducir',
+        'show_original' => 'Mostrar original',
+    ],
 ];

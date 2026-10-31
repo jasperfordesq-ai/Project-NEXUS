@@ -33,6 +33,7 @@ export interface ExchangeImage {
 }
 
 export interface Exchange {
+  image_alt?: string | null;
   id: number;
   title: string;
   description: string;
@@ -106,6 +107,7 @@ export interface ExchangeListResponse {
 }
 
 export interface CreateExchangePayload {
+  image_alt?: string | null;
   title: string;
   description: string;
   type: ExchangeType;
@@ -351,9 +353,10 @@ async function appendExchangeImageFile(formData: FormData, uri: string): Promise
   formData.append('image', { uri, name: filename, type } as unknown as Blob);
 }
 
-export async function uploadExchangeImage(id: number, uri: string): Promise<{ data: { image_url: string } }> {
+export async function uploadExchangeImage(id: number, uri: string, imageAlt?: string | null): Promise<{ data: { image_url: string } }> {
   const formData = new FormData();
   await appendExchangeImageFile(formData, uri);
+  if (imageAlt !== undefined) formData.append('image_alt', imageAlt ?? '');
 
   const response = await api.upload<UploadExchangeImageResponse>(`${API_V2}/listings/${id}/image`, formData);
   const imageUrl = response.data?.image_url ?? response.image_url ?? null;

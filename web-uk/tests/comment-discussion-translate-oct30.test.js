@@ -263,11 +263,14 @@ describe('translate a comment on an event or a volunteering opportunity (31 Oct 
     expect(api.callUgcTranslateApi).not.toHaveBeenCalled();
   });
 
-  it('shows the translation once under its comment and offers Translate on the others', () => {
+  it('shows the translation once under its comment and offers Translate on the others', async () => {
     const { takeCommentTranslation } = require('../src/lib/target-comments');
     const req = { session: { targetCommentTranslation: { targetType: 'event', targetId: 44, commentId: 12, text: 'Thank you, very useful', locale: 'en' } } };
-    const translation = takeCommentTranslation(req, 'event', 44);
-    expect(takeCommentTranslation(req, 'event', 44)).toBeNull();
+    const res = { locals: { locale: 'en' } };
+    const source = thread.data.comments[0].replies[0];
+    req.session.targetCommentTranslation.binding = await require('../src/lib/ugc-translation').translationBinding(req, res, 'test-token', 'comment', source.id, { body: source.content });
+    const translation = await takeCommentTranslation(req, 'event', 44, res, 'test-token', thread.data.comments);
+    expect(await takeCommentTranslation(req, 'event', 44, res, 'test-token', thread.data.comments)).toBeNull();
 
     const env = nunjucks.configure([VIEWS, GOVUK], { autoescape: true, watch: false });
     registerTemplateFilters(env);

@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import { useEffect, useRef } from 'react';
 import {
   RefreshControl,
@@ -279,6 +280,7 @@ function OrganisationDetailContent({ safeId }: { safeId: number }) {
                 </View>
               </View>
 
+              <ContentTranslation contentType="organisation" contentId={organisation.id} fields={{ name: organisation.name, body: organisation.description }} />
               <View testID="organisation-detail-actions" className={`${isLargeText ? 'gap-2' : 'flex-row flex-wrap gap-2'}`}>
                 {organisation.website ? (
                   <ActionPill

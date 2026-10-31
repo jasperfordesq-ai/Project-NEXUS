@@ -704,5 +704,14 @@
   "account_invitation": {
     "cta": "Passwort festlegen",
     "expiry": "Dieser Link läuft in {{days}} Tagen ab."
+  },
+  "policy_publication": {
+    "changes": "Was sich geändert hat",
+    "intro": ":community hat :document, Version :version, veröffentlicht. Lesen Sie die Richtlinie, um zu erfahren, wie sie für Sie gilt.",
+    "no_summary": "Diese Richtlinie wurde veröffentlicht. Einzelheiten finden Sie im vollständigen Dokument.",
+    "read": "Richtlinie lesen",
+    "service_notice": "Dies ist eine Service-E-Mail mit Informationen zu den Richtlinien Ihrer Gemeinschaft. Einstellungen zum Newsletter-Abonnement gelten nicht für diese Mitteilungen.",
+    "subject": ":community: :document veröffentlicht",
+    "title": "Eine Richtlinie wurde veröffentlicht"
   }
 }

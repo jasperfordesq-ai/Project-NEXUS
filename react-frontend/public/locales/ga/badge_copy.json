@@ -1,0 +1,268 @@
+{
+  "badges": {
+    "vol_1h": {
+      "name": "Céimeanna Tosaigh",
+      "description": "Logáil do chéad uair de chuid uaireanta deonacha"
+    },
+    "vol_10h": {
+      "name": "Lámh Chabhrach",
+      "description": "Deonaithe 10 huaire"
+    },
+    "vol_50h": {
+      "name": "Cruthaitheoir Athraithe",
+      "description": "Deonaithe 50 uair"
+    },
+    "vol_100h": {
+      "name": "Finscéal TimeBank",
+      "description": "Deonaithe 100 uair"
+    },
+    "vol_250h": {
+      "name": "Laoch Deonach",
+      "description": "Deonaithe 250 uair"
+    },
+    "vol_500h": {
+      "name": "Seaimpí Seirbhíse",
+      "description": "500 uair an chloig de sheirbhís"
+    },
+    "offer_1": {
+      "name": "Láithreach Tosaigh",
+      "description": "Cuir isteach do chéad tairiscint"
+    },
+    "offer_5": {
+      "name": "Anam Fial",
+      "description": "Cuir isteach 5 tairiscint"
+    },
+    "offer_10": {
+      "name": "Bronntóir",
+      "description": "Foilseáin 10 tairiscint"
+    },
+    "offer_25": {
+      "name": "Máistir Tairisceana",
+      "description": "Foilseáin 25 tairiscint"
+    },
+    "request_1": {
+      "name": "An chéad iarraidh",
+      "description": "Foilsigh do chéad iarraidh"
+    },
+    "request_5": {
+      "name": "Labhraí Pobail",
+      "description": "Déan 5 iarraidh"
+    },
+    "request_10": {
+      "name": "Iarrthóir Gníomhach",
+      "description": "Déan 10 n-iarratas"
+    },
+    "earn_1": {
+      "name": "Ar an gcéad uair",
+      "description": "Faigh do chéad chreidmheas ama"
+    },
+    "earn_10": {
+      "name": "Tóirteoir",
+      "description": "Faigh 10 gcreidmheas ama"
+    },
+    "earn_50": {
+      "name": "Tógálaí Creidmheasa",
+      "description": "Faigh 50 creidmheas ama"
+    },
+    "earn_100": {
+      "name": "Centiún",
+      "description": "Faigh 100 creidmheas ama"
+    },
+    "earn_250": {
+      "name": "Máistir Creidmheasa",
+      "description": "Faigh 250 creidmheas ama"
+    },
+    "spend_1": {
+      "name": "Céad Caiteachais",
+      "description": "Caithe do chéad chreidmheas ama"
+    },
+    "spend_10": {
+      "name": "Caiteoir Gníomhach",
+      "description": "Caith 10 creidmheas ama"
+    },
+    "spend_50": {
+      "name": "Caiteoir Flúirseach",
+      "description": "Caith 50 creidmheas ama"
+    },
+    "transaction_1": {
+      "name": "Malartú Ar an gcéad uair",
+      "description": "Críochnigh do chéad idirbheart"
+    },
+    "transaction_10": {
+      "name": "Trádálaí Gníomhach",
+      "description": "Críochnigh 10 idirbheart"
+    },
+    "transaction_50": {
+      "name": "Máistir Malartaithe",
+      "description": "Déan 50 idirbheart"
+    },
+    "diversity_3": {
+      "name": "Cuidiúir Pobail",
+      "description": "Cuidigh le 3 dhuine éagsúla"
+    },
+    "diversity_10": {
+      "name": "Tabhachtach Éagsúil",
+      "description": "Cuidigh le 10 nduine éagsúla"
+    },
+    "diversity_25": {
+      "name": "Pílar an Phobail",
+      "description": "Cabhraigh le 25 duine éagsúla"
+    },
+    "connect_1": {
+      "name": "Céad Chara",
+      "description": "Déan do chéad nasc"
+    },
+    "connect_10": {
+      "name": "Coinín Sóisialta",
+      "description": "Déan 10 nasc"
+    },
+    "connect_25": {
+      "name": "Tógálaí Líonra",
+      "description": "Déan 25 nasc"
+    },
+    "connect_50": {
+      "name": "Ceanglóir Pobail",
+      "description": "Déan 50 nasc"
+    },
+    "msg_1": {
+      "name": "Tús Cainte",
+      "description": "Seol do chéad teachtaireacht"
+    },
+    "msg_50": {
+      "name": "Cumarsáideoir Gníomhach",
+      "description": "Seol 50 teachtaireacht"
+    },
+    "msg_200": {
+      "name": "Saoránach Cumarsáide",
+      "description": "Seol 200 teachtaireachtaí"
+    },
+    "review_1": {
+      "name": "Aiseolas Chéad",
+      "description": "Fág do chéad léirmheas"
+    },
+    "review_10": {
+      "name": "Léirmheastóir Iontaofa",
+      "description": "Fág 10 léirmheas"
+    },
+    "review_25": {
+      "name": "Saineolaí Léirmheas",
+      "description": "Fág 25 léirmheas"
+    },
+    "5star_1": {
+      "name": "Céad 5-Réalt",
+      "description": "Faigh do chéad léirmheas 5-réalt"
+    },
+    "5star_10": {
+      "name": "Rátáil Ard",
+      "description": "Faigh 10 léirmheas cúig-réalt"
+    },
+    "5star_25": {
+      "name": "Gradam Den Scoth",
+      "description": "Faigh 25 léirmheas cúig-réalt"
+    },
+    "event_attend_1": {
+      "name": "Céad Ócáid",
+      "description": "Freastal ar do chéad imeacht"
+    },
+    "event_attend_10": {
+      "name": "Gnáthchónaí Imeachta",
+      "description": "Freastal ar 10 imeacht"
+    },
+    "event_attend_25": {
+      "name": "Grámhar Imeachtaí",
+      "description": "Freastal ar 25 imeacht"
+    },
+    "event_host_1": {
+      "name": "Óstach Imeachta",
+      "description": "Óstáil do chéad imeacht"
+    },
+    "event_host_5": {
+      "name": "Eagraí Imeachtaí",
+      "description": "Óstáil 5 imeacht"
+    },
+    "group_join_1": {
+      "name": "Imreoir Foirne",
+      "description": "Bí páirteach sa chéad ghrúpa agat"
+    },
+    "group_join_5": {
+      "name": "Ball Pobail",
+      "description": "Bí páirteach i 5 ghrúpa"
+    },
+    "group_create": {
+      "name": "Bunaitheoir Grúpa",
+      "description": "Cruthaigh do chéad ghrúpa"
+    },
+    "post_1": {
+      "name": "Posta Thosaigh",
+      "description": "Cruthaigh do chéad phost"
+    },
+    "post_25": {
+      "name": "Cruthaitheoir Ábhar",
+      "description": "Cruthaigh 25 post"
+    },
+    "post_100": {
+      "name": "Posta Líofa",
+      "description": "Cruthaigh 100 post"
+    },
+    "likes_50": {
+      "name": "Ag Faighte Aird",
+      "description": "Faigh 50 maith"
+    },
+    "likes_200": {
+      "name": "Guth Coitianta",
+      "description": "Faigh 200 maith"
+    },
+    "profile_complete": {
+      "name": "Póstaer Phróifíle",
+      "description": "Críochnaigh do phróifíl"
+    },
+    "member_30d": {
+      "name": "Ball Míosúil",
+      "description": "Bí i do bhall ar feadh 30 lá"
+    },
+    "member_180d": {
+      "name": "Ball Ré Dheireadh Fómhair",
+      "description": "Bí i do bhall ar feadh 6 mhí"
+    },
+    "member_365d": {
+      "name": "Ball Bliantúil",
+      "description": "Bí i do bhall ar feadh bliain amháin"
+    },
+    "streak_7d": {
+      "name": "Laoch Seachtaine",
+      "description": "Coinnigh slabhra 7 lá"
+    },
+    "streak_30d": {
+      "name": "Tiomantas Míosúil",
+      "description": "Coimeád ar sruth 30-lá"
+    },
+    "streak_100d": {
+      "name": "Máistir Srutha",
+      "description": "Coimeád ar sruth 100-lá"
+    },
+    "streak_365d": {
+      "name": "Finscéal Bhlianúil",
+      "description": "Coimeád ar sruth 365-lá"
+    },
+    "level_5": {
+      "name": "Réalt ag Éirí",
+      "description": "Bain leibhéal 5 amach"
+    },
+    "level_10": {
+      "name": "Laoch Pobal",
+      "description": "Bain leibhéal 10 amach"
+    },
+    "early_adopter": {
+      "name": "Tosaitheoir Luath",
+      "description": "Bí i do thosaitheoir luath ar an ardán"
+    },
+    "verified": {
+      "name": "Comhalta Fíoraithe",
+      "description": "Déan fíorú aitheantais"
+    },
+    "volunteer_org": {
+      "name": "Comhpháirtí Eagraíochta",
+      "description": "Cruthaigh eagraíocht dheonach"
+    }
+  }
+}

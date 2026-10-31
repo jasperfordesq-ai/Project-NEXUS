@@ -943,18 +943,16 @@ export function MarketplaceListingPage() {
           <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 whitespace-pre-wrap">
             {translatedDesc ?? listing.description}
           </div>
-          {listing.description && (
-            <TranslateButton
+          <TranslateButton
               contentType="marketplace_listing"
               contentId={listing.id}
-              sourceText={listing.description}
+              sourceText={listing.description ?? ''}
               sourceLocale={null}
               onTextChange={onTranslatedText}
               extraFields={{ title: listing.title }}
               onFieldsChange={onTranslatedFields}
               className="mt-1"
             />
-          )}
 
           {/* Template fields */}
           {listing.template_data && Object.keys(listing.template_data).length > 0 && (

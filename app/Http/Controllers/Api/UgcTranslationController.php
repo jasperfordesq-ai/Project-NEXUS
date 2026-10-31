@@ -42,9 +42,11 @@ class UgcTranslationController extends BaseApiController
     public function translate(): JsonResponse
     {
         $userId = $this->requireAuth();
-        $this->rateLimit('ugc_translate', 30, 60);
-
         $data = $this->getAllInput();
+        // Automatic display reads existing translations only: it must never
+        // consume provider quota or require a configured provider.
+        $cacheOnly = ($data['cache_only'] ?? false) === true;
+        $this->rateLimit($cacheOnly ? 'ugc_translate_cache' : 'ugc_translate', $cacheOnly ? 300 : 30, 60);
 
         $contentType = (string) ($data['content_type'] ?? '');
         $contentId = $data['content_id'] ?? null;
@@ -78,6 +80,11 @@ class UgcTranslationController extends BaseApiController
             );
         }
 
+        $cached = $this->ugcTranslationService->getCached($sourceText, $sourceLocale, $targetLocale);
+        if ($cacheOnly || $cached !== null) {
+            return $this->respondWithData($cached);
+        }
+
         // Google Translate by default, or the community's own AI
         // (TranslationEngine, owner 30 Oct 2026). Nothing available — no Google
         // key anywhere and no usable AI — is a set-up problem, not a failure to
@@ -85,12 +92,6 @@ class UgcTranslationController extends BaseApiController
         // maintenance-mode and the body would be replaced with a generic string.
         if (!TranslationEngine::available()) {
             return $this->respondWithError('TRANSLATION_NOT_SET_UP', __('api.translation_not_set_up'), null, 422);
-        }
-
-        // A cached translation costs nothing, so it does not spend AI budget.
-        $cached = $this->ugcTranslationService->getCached($sourceText, $sourceLocale, $targetLocale);
-        if ($cached !== null) {
-            return $this->respondWithData($cached);
         }
 
         // The community's per-member hourly limit, counted only for real provider calls.

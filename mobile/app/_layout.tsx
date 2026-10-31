@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { UgcTranslationPreferencesProvider } from '@/lib/context/UgcTranslationPreferencesContext';
 import '@/global.css'; // Tailwind v4 + HeroUI Native styles — must be first
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -221,6 +222,7 @@ function RootLayout() {
             <ErrorBoundary>
               <TenantProvider>
                 <AuthProvider>
+                  <UgcTranslationPreferencesProvider>
                   {/*
                     Holds the app back when start-up could NOT reach the server to check a
                     stored session — offering a retry rather than a login form the member
@@ -240,6 +242,7 @@ function RootLayout() {
                     </BiometricLockGate>
                     </RealtimeProvider>
                   </SessionRestoreGate>
+                </UgcTranslationPreferencesProvider>
                 </AuthProvider>
               </TenantProvider>
             </ErrorBoundary>

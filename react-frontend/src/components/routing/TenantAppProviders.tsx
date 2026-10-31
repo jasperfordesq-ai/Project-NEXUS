@@ -10,6 +10,7 @@ import { MenuProvider } from '@/contexts/MenuContext';
 import { PresenceProvider } from '@/contexts/PresenceContext';
 import { PodcastPlayerProvider } from '@/contexts/PodcastPlayerContext';
 import { IdleLogoutGuard } from '@/components/security/IdleLogoutGuard';
+import { UgcTranslationPreferencesProvider } from '@/contexts/UgcTranslationPreferencesContext';
 
 export default function TenantAppProviders({ children }: { children: ReactNode }) {
   return (
@@ -18,7 +19,7 @@ export default function TenantAppProviders({ children }: { children: ReactNode }
         <PresenceProvider>
           <MenuProvider>
             <PodcastPlayerProvider>
-              {children}
+              <UgcTranslationPreferencesProvider>{children}</UgcTranslationPreferencesProvider>
             </PodcastPlayerProvider>
             <IdleLogoutGuard />
           </MenuProvider>

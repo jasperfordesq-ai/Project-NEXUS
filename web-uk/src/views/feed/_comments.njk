@@ -26,11 +26,14 @@
         <p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ comment.content or comment.body }}</p>
 
         {% if translate and comment.id %}
-          {% if translate.translation and translate.translation.commentId == comment.id %}
+          {% set displayedTranslation = comment.cachedTranslation %}
+          {% if translate.translation and translate.translation.commentId == comment.id %}{% set displayedTranslation = translate.translation %}{% endif %}
+          {% if displayedTranslation %}
             <div class="govuk-inset-text govuk-!-margin-top-0">
               <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_feed.translate.heading") }}</h3>
               <p class="govuk-hint govuk-!-margin-bottom-2">{{ t("govuk_alpha_feed.translate.original_above_hint") }}</p>
-              <p class="govuk-body govuk-!-margin-bottom-0" lang="{{ translate.translation.locale }}">{{ translate.translation.text }}</p>
+              <p class="govuk-body govuk-!-margin-bottom-0" lang="{{ displayedTranslation.locale }}">{{ displayedTranslation.text }}</p>
+              <a class="govuk-link" href="{{ urlFor(returnTo + '?translation=original') }}">{{ t('ugc_translation.show_original') }}</a>
             </div>
           {% elif not requiresAuth and (comment.content or comment.body) %}
             <form method="post" action="{{ urlFor('/feed/comments/' + (comment.id | string) + '/translate') }}" class="govuk-!-margin-bottom-2" novalidate>

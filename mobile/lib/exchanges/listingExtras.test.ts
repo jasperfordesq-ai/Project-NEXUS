@@ -80,6 +80,15 @@ describe('saveListingExtras', () => {
     expect(mockSetExchangeTags).toHaveBeenCalledWith(7, ['gardening']);
   });
 
+  it('retains the new photo description when retrying a failed photo upload', async () => {
+    const extras = { tags: ['music'], imageUri: 'file://new.jpg', imageAlt: 'A blue guitar', removeImage: false };
+    mockUploadExchangeImage.mockRejectedValueOnce(new Error('offline'));
+    const result = await saveListingExtras(7, extras);
+    await saveListingExtras(7, remainingListingExtras(extras, result));
+    expect(mockUploadExchangeImage).toHaveBeenNthCalledWith(2, 7, 'file://new.jpg', 'A blue guitar');
+    expect(mockSetExchangeTags).toHaveBeenCalledTimes(1);
+  });
+
   it('deletes the existing image when that is what was asked for', async () => {
     const result = await saveListingExtras(7, { tags: null, imageUri: null, removeImage: true });
 

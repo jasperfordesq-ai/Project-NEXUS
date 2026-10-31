@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -262,6 +263,7 @@ function IdeationDetailScreen() {
                   <Text className="text-base leading-7" style={{ color: theme.textSecondary }}>
                     {stripHtml(challenge.description)}
                   </Text>
+                  <ContentTranslation contentType="ideation_challenge" contentId={challenge.id} fields={{ title: challenge.title, body: stripHtml(challenge.description) }} />
                   {isAdmin ? <HeroButton variant="secondary" onPress={() => router.push({ pathname: '/(modals)/new-challenge', params: { id: String(challenge.id), mode: 'edit' } } as unknown as Href)}><HeroButton.Label>{t('ideation:admin.edit_challenge')}</HeroButton.Label></HeroButton> : null}
                 </HeroCard.Body>
               </HeroCard>

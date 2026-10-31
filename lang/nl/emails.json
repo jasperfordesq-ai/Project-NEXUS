@@ -704,5 +704,14 @@
   "account_invitation": {
     "cta": "Wachtwoord instellen",
     "expiry": "Deze link verloopt over {{days}} dagen."
+  },
+  "policy_publication": {
+    "changes": "Wat er is veranderd",
+    "intro": ":community heeft :document, versie :version, gepubliceerd. Lees het beleid om te begrijpen hoe het op u van toepassing is.",
+    "no_summary": "Dit beleid is gepubliceerd. Lees het volledige document voor de details.",
+    "read": "Beleid lezen",
+    "service_notice": "Dit is een informatieve servicemail over het beleid van uw gemeenschap. Voorkeuren voor nieuwsbriefabonnementen gelden niet voor deze berichten.",
+    "subject": ":community: :document gepubliceerd",
+    "title": "Er is beleid gepubliceerd"
   }
 }

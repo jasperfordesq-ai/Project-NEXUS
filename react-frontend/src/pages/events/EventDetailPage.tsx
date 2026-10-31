@@ -1392,18 +1392,16 @@ export function EventDetailPage() {
                 <div className="prose prose-invert max-w-none">
                   <MemberPlainText content={translatedEventDesc ?? event.description ?? ''} className="text-theme-muted whitespace-pre-wrap" as="div" />
                 </div>
-                {event.description && (
-                  <TranslateButton
+                <TranslateButton
                     contentType="event"
                     contentId={event.id}
-                    sourceText={event.description}
+                    sourceText={event.description ?? ''}
                     sourceLocale={null}
                     onTextChange={(text, isTranslated) => setTranslatedEventDesc(isTranslated ? text : null)}
                     extraFields={{ title: event.title }}
                     onFieldsChange={onTranslatedEventFields}
                     className="mt-1"
                   />
-                )}
               </div>
 
               {/* Organizer */}

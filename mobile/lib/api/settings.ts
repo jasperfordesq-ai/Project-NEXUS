@@ -5,6 +5,7 @@
 
 import { api } from '@/lib/api/client';
 import { downloadAuthenticatedFile } from '@/lib/volunteering/authenticatedFileDownload';
+import { refreshUgcPreferences } from '@/lib/ugcPreferencesEvents';
 import { API_V2 } from '@/lib/constants';
 
 type ApiEnvelope<T> = { success?: boolean; data?: T } | T;
@@ -154,7 +155,7 @@ export async function getUserPreferences(): Promise<UserPreferences> {
 }
 
 export function saveUserPreferences(preferences: UserPreferences): Promise<unknown> {
-  return api.put<unknown>(`${API_V2}/users/me/preferences`, preferences);
+  return api.put<unknown>(`${API_V2}/users/me/preferences`, preferences).then(result => { refreshUgcPreferences(); return result; });
 }
 
 export async function getManagedSubAccounts(): Promise<SubAccountRelationship[]> {

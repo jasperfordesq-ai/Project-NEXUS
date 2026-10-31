@@ -5337,4 +5337,8 @@ return [
         'withdraw_urgent' => 'هل أنت متأكد من أنك تريد سحب هذا الطلب العاجل؟',
         'cannot_undo' => 'لا يمكنك التراجع عن هذا الإجراء.',
     ],
+    'ugc_translation' => [
+        'translate' => 'ترجمة',
+        'show_original' => 'عرض النص الأصلي',
+    ],
 ];

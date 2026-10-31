@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "partials/ugc-translation.njk" import ugcTranslation with context %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
@@ -52,6 +53,8 @@
   {% if challenge.description %}
     <div class="govuk-body-l" dir="auto">{{ challenge.description | nl2br | safe }}</div>
   {% endif %}
+  {{ ugcTranslation(contentTranslation, translationAction, translationOriginal, translationAvailable, translationFailed) }}
+
 
   <div class="govuk-button-group">
     <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/favorite') }}" novalidate>

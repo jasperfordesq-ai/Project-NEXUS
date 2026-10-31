@@ -970,6 +970,11 @@ class ListingsController extends BaseApiController
             return $this->respondWithError('FORBIDDEN', __('api.listing_modify_forbidden'), null, 403);
         }
 
+        $imageAlt = request()->input('image_alt');
+        if ($imageAlt !== null && (!is_string($imageAlt) || mb_strlen($imageAlt) > 255)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.text_too_long'), 'image_alt', 422);
+        }
+
         $file = request()->file('image');
         if (!$file || !$file->isValid()) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.listing_no_image_uploaded'), 'image', 400);
@@ -992,8 +997,13 @@ class ListingsController extends BaseApiController
 
             $imageUrl = \App\Core\ImageUploader::upload($fileArray);
 
-            // Update listing with new image
-            $this->listingService->update($id, ['image_url' => $imageUrl]);
+            // Mobile sends the description with the replacement photo. Keep the
+            // existing description untouched until the new upload has succeeded.
+            $imageUpdates = ['image_url' => $imageUrl];
+            if (request()->has('image_alt')) {
+                $imageUpdates['image_alt'] = request()->input('image_alt');
+            }
+            $this->listingService->update($id, $imageUpdates);
             $this->auditStaffListingEdit($listing, $userId, 'image_added');
 
             return $this->respondWithData(['image_url' => $imageUrl]);

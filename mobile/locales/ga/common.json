@@ -228,5 +228,15 @@
     "sent": "Go raibh maith agat. Seoladh do thuairisc chuig comhordaitheoirí do phobail.",
     "already": "Tá sé seo tuairiscithe agat cheana.",
     "failed": "Níorbh fhéidir do thuairisc a sheoladh. Bain triail eile as."
+  },
+  "ugcTranslation": {
+    "translate": "Aistrigh",
+    "showOriginal": "Taispeáin an bunleagan",
+    "translating": "Á aistriú…",
+    "failed": "Níl an t-aistriúchán ar fáil. Bain triail eile as ar ball.",
+    "originalAbove": "Aistriúchán. Fanann an bunleagan ar an leathanach seo."
+  },
+  "imageDescription": {
+    "label": "Cur síos ar an ngrianghraf (do léitheoirí scáileáin)"
   }
 }

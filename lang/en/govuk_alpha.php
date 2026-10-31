@@ -5482,4 +5482,8 @@ return [
         'withdraw_urgent' => 'Are you sure you want to withdraw this urgent request?',
         'cannot_undo' => 'You cannot undo this.',
     ],
+    'ugc_translation' => [
+        'translate' => 'Translate',
+        'show_original' => 'Show original',
+    ],
 ];

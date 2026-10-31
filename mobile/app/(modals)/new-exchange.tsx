@@ -141,6 +141,7 @@ function NewExchangeModalInner() {
   const [accessibilityNotes, setAccessibilityNotes] = useState('');
   const [showServiceDetails, setShowServiceDetails] = useState(false);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
+  const [imageAlt, setImageAlt] = useState('');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [generatingDescription, setGeneratingDescription] = useState(false);
@@ -187,6 +188,7 @@ function NewExchangeModalInner() {
       const prepared = await prepareImageForUpload(result.assets[0]);
       if (!isMountedRef.current) return;
       setSelectedImageUri(prepared.uri);
+      setImageAlt('');
     } catch {
       if (!isMountedRef.current) return;
       setError(t('detail.imagePickFailed'));
@@ -305,6 +307,7 @@ function NewExchangeModalInner() {
         const extras: ListingExtras = {
           tags: tags.length > 0 ? tags : null,
           imageUri: selectedImageUri,
+          imageAlt: imageAlt.trim() || null,
           removeImage: false,
         };
         const result = await saveListingExtras(listingId, extras);
@@ -584,7 +587,7 @@ function NewExchangeModalInner() {
                     <Ionicons name="image-outline" size={17} color={primary} />
                     <HeroButton.Label>{t('form.replaceImage')}</HeroButton.Label>
                   </HeroButton>
-                  <HeroButton className="flex-1" variant="danger-soft" onPress={() => setSelectedImageUri(null)}>
+                  <HeroButton className="flex-1" variant="danger-soft" onPress={() => { setSelectedImageUri(null); setImageAlt(''); }}>
                     <Ionicons name="trash-outline" size={17} color={theme.error} />
                     <HeroButton.Label>{t('form.removeImage')}</HeroButton.Label>
                   </HeroButton>
@@ -596,6 +599,7 @@ function NewExchangeModalInner() {
                 <HeroButton.Label>{t('form.addImage')}</HeroButton.Label>
               </HeroButton>
             )}
+            {selectedImageUri ? <Input label={t('common:imageDescription.label')} value={imageAlt} onChangeText={setImageAlt} maxLength={255} /> : null}
           </FormSection>
 
           <FormSection title={t('form.organiseTitle')} icon="albums-outline" primary={primary} theme={theme}>

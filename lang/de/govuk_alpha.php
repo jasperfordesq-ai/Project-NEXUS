@@ -5337,4 +5337,8 @@ return [
         'withdraw_urgent' => 'Möchten Sie diese dringende Anfrage wirklich zurückziehen?',
         'cannot_undo' => 'Dies kann nicht rückgängig gemacht werden.',
     ],
+    'ugc_translation' => [
+        'translate' => 'Übersetzen',
+        'show_original' => 'Original anzeigen',
+    ],
 ];

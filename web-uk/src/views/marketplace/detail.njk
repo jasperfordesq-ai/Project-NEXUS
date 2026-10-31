@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "partials/ugc-translation.njk" import ugcTranslation with context %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
@@ -54,6 +55,8 @@
     <h2 class="govuk-heading-l">{{ t("marketplace.about_label") }}</h2>
     <div class="govuk-body" dir="auto">{{ item.description | nl2br | safe }}</div>
   {% endif %}
+  {{ ugcTranslation(contentTranslation, translationAction, translationOriginal, translationAvailable, translationFailed) }}
+
 
   {% if item.videoUrl %}
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_commerce.listing_video.label") }}</h2>

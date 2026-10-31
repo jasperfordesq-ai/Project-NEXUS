@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import ErrorState from '@/components/ui/ErrorState';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { buildWebUrl } from '@/lib/utils/webUrl';
@@ -309,6 +310,7 @@ function BlogPostContent({ slug }: { slug: string }) {
           <HeroCard className="overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.1) }}>
             <HeroCard.Body className="gap-4 p-5">
               <SectionTitle icon="document-text-outline" label={t('detail.article')} primary={primary} theme={theme} />
+            <ContentTranslation contentType="blog_post" contentId={post.id} fields={{ title: post.title, body: stripHtml(post.content || post.excerpt || '') }} />
               {post.content ? (
                 <Text className="text-base leading-7" style={{ color: theme.text }}>
                   {stripHtml(post.content)}

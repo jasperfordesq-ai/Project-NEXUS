@@ -20,6 +20,7 @@ use Tests\Laravel\TestCase;
 class LegalPublicationDeliveryTest extends TestCase
 {
     use DatabaseTransactions;
+    use \Tests\Laravel\Concerns\LoadsCurrentJsonTranslations;
 
     private function draft(string $summary = 'Updated privacy contact and retention information.'): int
     {
@@ -38,6 +39,7 @@ class LegalPublicationDeliveryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->loadCurrentJsonTranslations();
         DB::table('legal_documents')->where('tenant_id', $this->testTenantId)->where('document_type', 'acceptable_use')->delete();
         // Isolate the worker from other fixtures and pending developer work.
         DB::table('legal_publication_deliveries')->delete();
@@ -67,10 +69,21 @@ class LegalPublicationDeliveryTest extends TestCase
         $this->assertDatabaseMissing('legal_publication_deliveries', ['version_id' => $version]);
     }
 
-    public function test_worker_renders_summary_link_and_does_not_resend(): void
+    public static function policyLocales(): array
     {
-        $user = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active', 'email' => 'policy-reader@example.org', 'preferred_language' => 'de']);
-        app('translator')->addLines(['emails.policy_publication.subject' => 'DE :document'], 'de');
+        return [
+            ['ar', 'نُشرت سياسة'], ['de', 'Eine Richtlinie wurde veröffentlicht'],
+            ['es', 'Se ha publicado una política'], ['fr', 'Une politique a été publiée'],
+            ['ga', 'Tá beartas foilsithe'], ['it', 'È stata pubblicata un’informativa'],
+            ['ja', '方針が公開されました'], ['nl', 'Er is beleid gepubliceerd'],
+            ['pl', 'Opublikowano zasady'], ['pt', 'Foi publicada uma política'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('policyLocales')]
+    public function test_worker_renders_summary_link_and_does_not_resend(string $locale, string $expectedTitle): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active', 'email' => 'policy-reader@example.org', 'preferred_language' => $locale]);
         DB::table('email_suppression')->insert(['email' => $user->email, 'reason' => 'unsubscribe', 'suppressed_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
         $version = $this->draft('Changed <script>unsafe</script> contact details.');
         LegalDocumentService::publishVersion($version);
@@ -90,7 +103,12 @@ class LegalPublicationDeliveryTest extends TestCase
         $service->processBatch();
         $service->processBatch();
         $this->assertSame($user->email, $captured['to']);
-        $this->assertSame('DE Policy test', $captured['subject']);
+        $this->assertStringContainsString('Policy test', $captured['subject']);
+        $this->assertStringNotContainsString(' published', $captured['subject']);
+        $this->assertStringContainsString($expectedTitle, html_entity_decode($captured['html'], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $this->assertStringNotContainsString(':community', $captured['html']);
+        $this->assertStringNotContainsString(':document', $captured['html']);
+        $this->assertStringNotContainsString(':version', $captured['html']);
         $this->assertStringContainsString('contact details.', $captured['html']);
         $this->assertStringNotContainsString('<script>', $captured['html']);
         $this->assertStringContainsString('/v2/legal-publication/click/', $captured['html']);

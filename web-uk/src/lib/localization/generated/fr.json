@@ -6367,6 +6367,10 @@
                 "cancel_shift": "Voulez-vous vraiment annuler votre place sur ce créneau ?",
                 "withdraw_urgent": "Voulez-vous vraiment retirer cette demande urgente ?",
                 "cannot_undo": "Cette action est irréversible."
+            },
+            "ugc_translation": {
+                "translate": "Traduire",
+                "show_original": "Afficher l’original"
             }
         },
         "govuk_alpha_activity": {

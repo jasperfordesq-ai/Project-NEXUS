@@ -1,0 +1,268 @@
+{
+  "badges": {
+    "vol_1h": {
+      "name": "Eerste stappen",
+      "description": "Registreer je eerste vrijwilligersuur"
+    },
+    "vol_10h": {
+      "name": "Helpende hand",
+      "description": "Vrijwilliger 10 uur"
+    },
+    "vol_50h": {
+      "name": "Veranderaar",
+      "description": "Vrijwilliger 50 uur"
+    },
+    "vol_100h": {
+      "name": "TimeBank Legende",
+      "description": "Vrijwilliger 100 uur"
+    },
+    "vol_250h": {
+      "name": "Vrijwilliger Held",
+      "description": "Vrijwilliger 250 uur"
+    },
+    "vol_500h": {
+      "name": "Vrijwilliger Kampioen",
+      "description": "Vrijwilliger 500 uur"
+    },
+    "offer_1": {
+      "name": "Eerste Aanbieding",
+      "description": "Plaats je eerste aanbieding"
+    },
+    "offer_5": {
+      "name": "Gulhartige Ziel",
+      "description": "Plaats 5 aanbiedingen"
+    },
+    "offer_10": {
+      "name": "Geschenkgever",
+      "description": "Plaats 10 aanbiedingen"
+    },
+    "offer_25": {
+      "name": "Aanbieding Meester",
+      "description": "Plaats 25 aanbiedingen"
+    },
+    "request_1": {
+      "name": "Eerste Verzoek",
+      "description": "Plaats je eerste verzoek"
+    },
+    "request_5": {
+      "name": "Gemeenschapszoeker",
+      "description": "Doe 5 verzoeken"
+    },
+    "request_10": {
+      "name": "Actieve Aanvrager",
+      "description": "Doe 10 verzoeken"
+    },
+    "earn_1": {
+      "name": "Eerst Verdienen",
+      "description": "Verdien je eerste tijdskrediet"
+    },
+    "earn_10": {
+      "name": "Doordouwer",
+      "description": "Verdien 10 tijdskredieten"
+    },
+    "earn_50": {
+      "name": "Kredietbouwer",
+      "description": "Verdien 50 tijdscredits"
+    },
+    "earn_100": {
+      "name": "Centurio",
+      "description": "Verdien 100 tijdscredits"
+    },
+    "earn_250": {
+      "name": "Creditmeester",
+      "description": "Verdien 250 tijdscredits"
+    },
+    "spend_1": {
+      "name": "Eerste Uitgave",
+      "description": "Geef je eerste tijdscredit uit"
+    },
+    "spend_10": {
+      "name": "Actieve Besteder",
+      "description": "Besteed 10 tijdkredieten"
+    },
+    "spend_50": {
+      "name": "Gulzige Besteder",
+      "description": "Besteed 50 tijdkredieten"
+    },
+    "transaction_1": {
+      "name": "Eerste uitwisseling",
+      "description": "Voltooi je eerste transactie"
+    },
+    "transaction_10": {
+      "name": "Actieve Handelaar",
+      "description": "Voltooi 10 transacties"
+    },
+    "transaction_50": {
+      "name": "Uitwisselingsmeester",
+      "description": "Voltooi 50 transacties"
+    },
+    "diversity_3": {
+      "name": "Gemeenschapshulp",
+      "description": "Help 3 verschillende mensen"
+    },
+    "diversity_10": {
+      "name": "Diverse Gever",
+      "description": "Help 10 verschillende mensen"
+    },
+    "diversity_25": {
+      "name": "Pijler van de gemeenschap",
+      "description": "Help 25 verschillende mensen"
+    },
+    "connect_1": {
+      "name": "Eerste Vriend",
+      "description": "Maak je eerste verbinding"
+    },
+    "connect_10": {
+      "name": "Sociale Vlinder",
+      "description": "Maak 10 verbindingen"
+    },
+    "connect_25": {
+      "name": "Netwerk Bouwer",
+      "description": "Maak 25 verbindingen"
+    },
+    "connect_50": {
+      "name": "Communityverbinder",
+      "description": "Maak 50 verbindingen"
+    },
+    "msg_1": {
+      "name": "Gespreksstarter",
+      "description": "Stuur je eerste bericht"
+    },
+    "msg_50": {
+      "name": "Actieve Communicator",
+      "description": "Stuur 50 berichten"
+    },
+    "msg_200": {
+      "name": "Communicatiepro",
+      "description": "Stuur 200 berichten"
+    },
+    "review_1": {
+      "name": "Eerste feedback",
+      "description": "Laat je eerste beoordeling achter"
+    },
+    "review_10": {
+      "name": "Betrouwbare recensent",
+      "description": "Laat 10 beoordelingen achter"
+    },
+    "review_25": {
+      "name": "Beoordelingsexpert",
+      "description": "Laat 25 beoordelingen achter"
+    },
+    "5star_1": {
+      "name": "Eerste 5-sterren",
+      "description": "Ontvang je eerste 5-sterrenbeoordeling"
+    },
+    "5star_10": {
+      "name": "Hoog beoordeeld",
+      "description": "Ontvang 10 vijfsterrenbeoordelingen"
+    },
+    "5star_25": {
+      "name": "Uitmuntendheid Award",
+      "description": "Ontvang 25 vijfsterrenbeoordelingen"
+    },
+    "event_attend_1": {
+      "name": "Eerste evenement",
+      "description": "Woon je eerste evenement bij"
+    },
+    "event_attend_10": {
+      "name": "Evenement Deelnemer",
+      "description": "Woon 10 evenementen bij"
+    },
+    "event_attend_25": {
+      "name": "Evenement Enthousiasteling",
+      "description": "Woon 25 evenementen bij"
+    },
+    "event_host_1": {
+      "name": "Evenement Gastheer",
+      "description": "Organiseer je eerste evenement"
+    },
+    "event_host_5": {
+      "name": "Evenementorganisator",
+      "description": "Organiseer 5 evenementen"
+    },
+    "group_join_1": {
+      "name": "Teamspeler",
+      "description": "Word lid van je eerste groep"
+    },
+    "group_join_5": {
+      "name": "Communitylid",
+      "description": "Word lid van 5 groepen"
+    },
+    "group_create": {
+      "name": "Oprichter van een groep",
+      "description": "Maak je eerste groep"
+    },
+    "post_1": {
+      "name": "Eerste bericht",
+      "description": "Maak je eerste bericht"
+    },
+    "post_25": {
+      "name": "Contentmaker",
+      "description": "Maak 25 berichten"
+    },
+    "post_100": {
+      "name": "Productieve poster",
+      "description": "Maak 100 berichten"
+    },
+    "likes_50": {
+      "name": "Opgemerkt Worden",
+      "description": "Ontvang 50 likes"
+    },
+    "likes_200": {
+      "name": "Populaire Stem",
+      "description": "Ontvang 200 likes"
+    },
+    "profile_complete": {
+      "name": "Profiel Pro",
+      "description": "Voltooi je profiel"
+    },
+    "member_30d": {
+      "name": "Maandelijks Lid",
+      "description": "Wees 30 dagen lid"
+    },
+    "member_180d": {
+      "name": "Semester Lid",
+      "description": "Wees 6 maanden lid"
+    },
+    "member_365d": {
+      "name": "Jaarlid",
+      "description": "Wees een jaar lid"
+    },
+    "streak_7d": {
+      "name": "Weekstrijder",
+      "description": "Behoud een streak van 7 dagen"
+    },
+    "streak_30d": {
+      "name": "Maandelijkse Toewijding",
+      "description": "Onderhoud een reeks van 30 dagen"
+    },
+    "streak_100d": {
+      "name": "Reeks Meester",
+      "description": "Onderhoud een reeks van 100 dagen"
+    },
+    "streak_365d": {
+      "name": "Jaarlange Legende",
+      "description": "Onderhoud een reeks van 365 dagen"
+    },
+    "level_5": {
+      "name": "Opkomende Ster",
+      "description": "Bereik niveau 5"
+    },
+    "level_10": {
+      "name": "Community Kampioen",
+      "description": "Bereik niveau 10"
+    },
+    "early_adopter": {
+      "name": "Vroege Gebruiker",
+      "description": "Wees een vroege gebruiker van het platform"
+    },
+    "verified": {
+      "name": "Geverifieerd Lid",
+      "description": "Voltooi identiteitsverificatie"
+    },
+    "volunteer_org": {
+      "name": "Organisatiepartner",
+      "description": "Creëer een vrijwilligersorganisatie"
+    }
+  }
+}

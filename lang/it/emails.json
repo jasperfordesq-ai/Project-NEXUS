@@ -704,5 +704,14 @@
   "account_invitation": {
     "cta": "Imposta la password",
     "expiry": "Questo link scade tra {{days}} giorni."
+  },
+  "policy_publication": {
+    "changes": "Cosa è cambiato",
+    "intro": ":community ha pubblicato :document, versione :version. Leggi l’informativa per capire come si applica a te.",
+    "no_summary": "Questa informativa è stata pubblicata. Leggi il documento completo per conoscere i dettagli.",
+    "read": "Leggi l’informativa",
+    "service_notice": "Questa è un’email di servizio che informa sulle politiche della tua comunità. Le preferenze di iscrizione alla newsletter non si applicano a questi avvisi.",
+    "subject": ":community: pubblicazione di :document",
+    "title": "È stata pubblicata un’informativa"
   }
 }

@@ -28,7 +28,15 @@ const { translateForRequest } = require('../lib/request-translator');
 const { getRequestProfile } = require('../lib/request-profile');
 const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 
+const { registerDetailTranslation, detailTranslationLocals } = require('../lib/ugc-translation');
+const { htmlToPlainText: htmlToTranslationText } = require('../lib/html-sanitizer');
 const router = express.Router();
+const detailTranslation = {
+  load: async (req, res, token) => dataFrom(await getJob(token, req.params.id)),
+  spec: item => ({ type: 'job', id: item.id, fields: { title: item.title || '', body: htmlToTranslationText(item.description || '') } }),
+  href: item => `/jobs/${item.id}`,
+};
+registerDetailTranslation(router, detailTranslation);
 const fallbackTranslator = createTranslator('en');
 
 const JOB_TYPES = ['paid', 'volunteer', 'timebank'];
@@ -3122,6 +3130,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     }
   }
   return res.render('jobs/detail', {
+    ...await detailTranslationLocals(req, res, token, job, detailTranslation),
     similarJobs,
     title: decorated.title,
     activeNav: 'explore',

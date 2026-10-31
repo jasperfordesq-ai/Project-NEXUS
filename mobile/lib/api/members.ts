@@ -20,6 +20,7 @@ export interface Member {
   last_name?: string;
   /** List endpoint returns `avatar`; single-user endpoint returns `avatar_url` */
   avatar?: string | null;
+  avatar_alt?: string | null;
   avatar_url?: string | null;
   tagline: string | null;
   location: string | null;

@@ -257,5 +257,11 @@
   "member_reports.details_required": "Veuillez décrire ce qui s’est passé.",
   "member_reports.details_too_long": "Votre description ne doit pas dépasser {{max}} caractères.",
   "member_reports.already_reported": "Vous avez déjà signalé ceci. Les coordinateurs de votre communauté vont l’examiner.",
-  "onboarding.safeguarding_required": "Veuillez répondre à la question de protection avant de terminer. Si aucune option ne vous concerne, choisissez « Aucune de ces situations ne me concerne »."
+  "onboarding.safeguarding_required": "Veuillez répondre à la question de protection avant de terminer. Si aucune option ne vous concerne, choisissez « Aucune de ces situations ne me concerne ».",
+  "courses": {
+    "order_changed": "L’ordre du cours a changé. Actualisez le cours avant de déplacer à nouveau des éléments.",
+    "order_invalid": "L’ordre doit contenir chaque élément de cette partie du cours exactement une fois.",
+    "price_changed": "Le prix du cours a changé. Actualisez le cours et confirmez le prix actuel avant de vous inscrire.",
+    "quiz_pass_required": "Réussissez le questionnaire et attendez toute notation de l’équipe pédagogique avant de terminer cette leçon ou de recevoir un certificat."
+  }
 }

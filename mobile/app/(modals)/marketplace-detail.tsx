@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import ErrorState from '@/components/ui/ErrorState';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
@@ -948,6 +949,7 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
           <HeroCard.Body className="gap-3 p-4">
             <Text className="text-base font-bold" style={{ color: theme.text }}>{t('detail.description')}</Text>
             <Text className="text-sm leading-6" style={{ color: theme.textSecondary }}>{listing.description}</Text>
+            <ContentTranslation contentType="marketplace_listing" contentId={listing.id} fields={{ title: listing.title, body: listing.description }} />
             {templateEntries.length > 0 ? (
               <View className="gap-3 border-t pt-3" style={{ borderColor: theme.border }}>
                 <Text className="text-sm font-bold" style={{ color: theme.text }}>{t('detail.additionalDetails')}</Text>

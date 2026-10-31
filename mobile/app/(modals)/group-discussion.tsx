@@ -19,6 +19,7 @@
  * than the usual "Load more".
  */
 
+import ContentTranslation from '@/components/ContentTranslation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -448,6 +449,7 @@ function GroupDiscussionScreenInner() {
                     {toPlainText(discussion.content)}
                   </Text>
                 ) : null}
+                <ContentTranslation contentType="group_discussion" contentId={discussion.id} fields={{ title: discussion.title, body: toPlainText(discussion.content) }} />
               </HeroCard.Body>
             </HeroCard>
           ) : null}
@@ -500,6 +502,7 @@ function GroupDiscussionScreenInner() {
                 <Text className="text-sm leading-5" style={{ color: theme.text }}>
                   {toPlainText(message.content)}
                 </Text>
+                <ContentTranslation contentType="group_discussion_reply" contentId={message.id} fields={{ body: toPlainText(message.content) }} />
               </HeroCard.Body>
             </HeroCard>
           ))}

@@ -704,5 +704,14 @@
   "account_invitation": {
     "cta": "Définir votre mot de passe",
     "expiry": "Ce lien expire dans {{days}} jours."
+  },
+  "policy_publication": {
+    "changes": "Ce qui a changé",
+    "intro": ":community a publié :document, version :version. Lisez cette politique pour comprendre comment elle s’applique à vous.",
+    "no_summary": "Cette politique a été publiée. Consultez le document complet pour en connaître les détails.",
+    "read": "Lire la politique",
+    "service_notice": "Ce courriel de service vous informe des politiques de votre communauté. Les préférences d’abonnement à la newsletter ne s’appliquent pas à ces avis.",
+    "subject": ":community : publication de :document",
+    "title": "Une politique a été publiée"
   }
 }

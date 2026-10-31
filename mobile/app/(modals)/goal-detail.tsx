@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import ErrorState from '@/components/ui/ErrorState';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -339,6 +340,7 @@ function GoalDetailScreen() {
                   </Chip>
                   <Text className="mt-2 text-2xl font-bold text-foreground">{goal.title}</Text>
                   {goal.description ? <Text className="text-sm leading-5 text-muted-foreground">{goal.description}</Text> : null}
+                  <ContentTranslation contentType="goal" contentId={goal.id} fields={{ title: goal.title, body: goal.description }} />
                 </View>
               </View>
 

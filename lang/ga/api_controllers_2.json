@@ -257,5 +257,11 @@
   "member_reports.details_required": "Déan cur síos ar cad a tharla.",
   "member_reports.details_too_long": "Coinnigh do chur síos faoi {{max}} carachtar nó níos lú.",
   "member_reports.already_reported": "Tá tuairisc déanta agat air seo cheana. Breathnóidh comhordaitheoirí do phobail air.",
-  "onboarding.safeguarding_required": "Freagair an cheist chosanta sula gcríochnaíonn tú. Mura mbaineann aon cheann de na roghanna leat, roghnaigh “Ní bhaineann aon cheann díobh seo liom”."
+  "onboarding.safeguarding_required": "Freagair an cheist chosanta sula gcríochnaíonn tú. Mura mbaineann aon cheann de na roghanna leat, roghnaigh “Ní bhaineann aon cheann díobh seo liom”.",
+  "courses": {
+    "order_changed": "Tá ord an chúrsa athraithe. Athnuaigh an cúrsa sula mbogann tú míreanna arís.",
+    "order_invalid": "Caithfidh gach mír sa chuid seo den chúrsa a bheith san ord uair amháin go díreach.",
+    "price_changed": "Tá praghas an chúrsa athraithe. Athnuaigh an cúrsa agus deimhnigh an praghas reatha sula gcláraíonn tú.",
+    "quiz_pass_required": "Éirigh sa tráth na gceist agus fan le haon mharcáil ón teagascóir sula gcríochnaíonn tú an ceacht seo nó sula bhfaigheann tú teastas."
+  }
 }

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "partials/ugc-translation.njk" import ugcTranslation with context %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% set opportunityTitle = opportunity.title or t("govuk_alpha.volunteering.detail_title") %}
@@ -48,6 +49,8 @@
       {% if opportunity.description %}
         <div class="govuk-body govuk-!-margin-top-5" dir="auto">{{ opportunity.description | nl2br | safe }}</div>
       {% endif %}
+  {{ ugcTranslation(contentTranslation, translationAction, translationOriginal, translationAvailable, translationFailed) }}
+
     </div>
 
     <div class="govuk-grid-column-one-third">

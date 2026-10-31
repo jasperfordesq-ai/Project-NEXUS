@@ -704,5 +704,14 @@
   "account_invitation": {
     "cta": "Socraigh do phasfhocal",
     "expiry": "Éagann an nasc seo i gceann {{days}} lá."
+  },
+  "policy_publication": {
+    "changes": "Cad atá athraithe",
+    "intro": "Tá :document, leagan :version, foilsithe ag :community. Léigh an beartas chun tuiscint a fháil ar an gcaoi a mbaineann sé leat.",
+    "no_summary": "Tá an beartas seo foilsithe. Léigh an doiciméad iomlán le haghaidh na sonraí.",
+    "read": "Léigh an beartas",
+    "service_notice": "Is ríomhphost seirbhíse faisnéiseach é seo faoi bheartais do phobail. Ní bhaineann roghanna síntiúis na nuachtlitreach leis na fógraí seo.",
+    "subject": ":community: :document foilsithe",
+    "title": "Tá beartas foilsithe"
   }
 }

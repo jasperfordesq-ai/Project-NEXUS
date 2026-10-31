@@ -272,18 +272,20 @@ export function GoalDetailPage() {
           <div>
             <h2 className="text-sm font-semibold text-theme-primary mb-1">{t('goals.detail.description')}</h2>
             <p className="text-sm text-theme-muted whitespace-pre-wrap">{translatedDesc ?? goal.description}</p>
+
+          </div>
+        )}
+
             <TranslateButton
               contentType="goal"
               contentId={goal.id}
-              sourceText={goal.description}
+              sourceText={goal.description ?? ''}
               sourceLocale={null}
               onTextChange={onTranslatedText}
               extraFields={{ title: goal.title }}
               onFieldsChange={onTranslatedFields}
               className="mt-1"
             />
-          </div>
-        )}
 
         {/* Progress */}
         <div>

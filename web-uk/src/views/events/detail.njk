@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "partials/ugc-translation.njk" import ugcTranslation with context %}
 {% from "partials/target-social.njk" import targetSocial %}
 {% from "_load-more.njk" import loadMoreNext %}
 
@@ -259,6 +260,7 @@
         </div>
       {% endif %}
 
+      {{ ugcTranslation(contentTranslation, "/events/" + (event.id | string) + "/translate-content", "/events/" + (event.id | string), translationAvailable, translationFailed) }}
       {# Event information #}
       {% set organizer = event.createdBy or event.created_by or event.organizer or event.user %}
       {% set organizerName = event.organizer_name or organizer.display_name or organizer.displayName or organizer.name or (((organizer.firstName or organizer.first_name or "") + " " + (organizer.lastName or organizer.last_name or "")) | trim) if organizer else "" %}

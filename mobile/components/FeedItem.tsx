@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ContentTranslation from '@/components/ContentTranslation';
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Linking, Platform, Pressable, Share, Text, useWindowDimensions, View } from 'react-native';
@@ -962,6 +963,8 @@ function FeedItemInner({
                 ) : null}
               </View>
             ) : null}
+
+            <ContentTranslation contentType={`feed_${item.type ?? 'post'}`} contentId={item.id} fields={{ body: postBody, title: toPlainText(item.title ?? '') }} />
 
             {imageItems && imageItems.length > 0 ? (
               <View className="overflow-hidden rounded-panel-inner">

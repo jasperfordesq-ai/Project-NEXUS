@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "partials/ugc-translation.njk" import ugcTranslation with context %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% set organisationName = organisation.name or t("govuk_alpha.organisations.title") %}
@@ -22,6 +23,8 @@
   {% if organisationDescription %}
     <p class="govuk-body-l">{{ organisationDescription }}</p>
   {% endif %}
+  {{ ugcTranslation(contentTranslation, translationAction, translationOriginal, translationAvailable, translationFailed) }}
+
 
   {% if contactEmail or website %}
     <dl class="govuk-summary-list">

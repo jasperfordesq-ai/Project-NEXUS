@@ -74,6 +74,7 @@ const {
   submitReport: submitConcernReport
 } = require('../lib/member-concern-report');
 
+const { translateFields } = require('../lib/ugc-translation');
 const router = express.Router();
 
 const LOGIN_AUTH_REQUIRED_PATH = '/login?status=auth-required';
@@ -1013,7 +1014,9 @@ router.get('/:id(\\d+)/insights', asyncRoute(async (req, res) => {
     const [viewerResult, profileResult, verificationResult] = await Promise.all([
       getRequestProfile(req, token),
       getUserV2(token, id),
-      getMemberVerificationBadges(token, id).catch(() => ({ data: [] }))
+      flagEnabled(req.accessibleRouting?.tenant || res.locals.tenant || {}, 'identity_verification', 'features', true)
+        ? getMemberVerificationBadges(token, id).catch(() => ({ data: [] }))
+        : Promise.resolve({ data: [] })
     ]);
     const viewer = dataFrom(viewerResult) || {};
     const profile = dataFrom(profileResult) || {};
@@ -1138,6 +1141,20 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
   });
 }, { redirectOn401: LOGIN_AUTH_REQUIRED_PATH })));
 
+function profileTranslationSpec(user, id) {
+  return { type: 'profile_bio', id: Number(id), fields: { tagline: String(user.tagline || ''), body: String(user.bio || '') } };
+}
+
+router.post('/:id(\\d+)/translate', requireAuth, asyncRoute(async (req, res) => {
+  const user = dataFrom(await getUser(req.token, req.params.id));
+  let result = null;
+  if (user && typeof user === 'object') {
+    result = await translateFields(req, res, req.token, profileTranslationSpec(user, req.params.id), true);
+  }
+  if (req.session && result) req.session.ugcTranslation = result;
+  return redirectTo(res, `/members/${Number(req.params.id)}?status=${result ? 'translate-done' : 'translate-failed'}#content-translation`);
+}));
+
 // View single user profile
 router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const { id } = req.params;
@@ -1237,7 +1254,11 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const flashedSuccess = req.flash ? req.flash('success')[0] : null;
   const flashedError = req.flash ? req.flash('error')[0] : null;
 
+  const profileTranslation = await translateFields(req, res, req.token, profileTranslationSpec(user, id));
   res.render('members/profile', {
+    profileTranslation,
+    translationFailed: req.query.status === 'translate-failed',
+    translationAvailable: tenant?.translation?.enabled !== false && Boolean(user.bio || user.tagline),
     feedEnabled,
     title: displayName,
     user,

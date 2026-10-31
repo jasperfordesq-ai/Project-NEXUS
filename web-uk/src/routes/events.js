@@ -46,6 +46,7 @@ const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { wallClockToOffsetIso, wallClockToUtc, wallClockInZone } = require('../lib/event-wall-clock');
 const { rememberApiRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 
+const { translateFields } = require('../lib/ugc-translation');
 const router = express.Router();
 
 function tokenFrom(req) {
@@ -3754,6 +3755,15 @@ router.post('/:id(\\d+)/translate', asyncRoute(async (req, res) => {
   }
 }));
 
+router.post('/:id(\\d+)/translate-content', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const event = eventFrom(await callApi(token, 'GET', `/${Number(req.params.id)}`));
+  const result = await translateFields(req, res, token, { type: 'event', id: Number(req.params.id), fields: { title: event.title, body: event.description || '' } }, true);
+  if (req.session && result) req.session.ugcTranslation = result;
+  return redirectTo(res, `/events/${Number(req.params.id)}?status=${result ? 'translate-done' : 'translate-failed'}#content-translation`);
+}));
+
 // List events
 router.get('/', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
@@ -4189,15 +4199,19 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     }
   }
   // Comments and likes, as React's SocialInteractionPanel offers on this page.
-  const eventComments = await loadTargetComments(token, 'event', Number(id));
+  const eventComments = await loadTargetComments(token, 'event', Number(id), req, res);
 
+  const contentTranslation = await translateFields(req, res, token, { type: 'event', id: Number(id), fields: { title: event.title, body: event.description || '' } });
   res.render('events/detail', {
+    contentTranslation,
+    translationAvailable: Boolean(token) && (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false,
+    translationFailed: req.query.status === 'translate-failed',
     title: event.title,
     event,
     seriesEvents,
     remindersAvailable,
     eventComments,
-    commentTranslation: takeCommentTranslation(req, 'event', Number(id)),
+    commentTranslation: await takeCommentTranslation(req, 'event', Number(id), res, token, eventComments),
     socialStatus: socialStatusFrom(req.query.social),
     currentUserId,
     myRsvp,

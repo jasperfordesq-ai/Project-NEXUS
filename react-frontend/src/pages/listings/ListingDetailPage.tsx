@@ -758,18 +758,16 @@ export function ListingDetailPage() {
                   <div className={isLongDesc && !showFullDesc ? 'line-clamp-6 overflow-hidden' : ''}>
                     <MemberPlainText content={translatedDesc ?? listing.description} className="text-theme-muted whitespace-pre-wrap wrap-break-word" as="div" />
                   </div>
-                  {listing.description && (
-                    <TranslateButton
+                  <TranslateButton
                       contentType="listing"
                       contentId={listing.id}
-                      sourceText={listing.description}
+                      sourceText={listing.description ?? ''}
                       sourceLocale={(listing as { locale?: string | null }).locale ?? null}
                       onTextChange={(text, isTranslated) => setTranslatedDesc(isTranslated ? text : null)}
                       extraFields={{ title: listing.title }}
                       onFieldsChange={onTranslatedFields}
                       className="mt-1"
                     />
-                  )}
                   {isLongDesc && (
                     <Button
                       variant="tertiary"

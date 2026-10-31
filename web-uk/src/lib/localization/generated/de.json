@@ -6367,6 +6367,10 @@
                 "cancel_shift": "Möchten Sie Ihren Platz in dieser Schicht wirklich absagen?",
                 "withdraw_urgent": "Möchten Sie diese dringende Anfrage wirklich zurückziehen?",
                 "cannot_undo": "Dies kann nicht rückgängig gemacht werden."
+            },
+            "ugc_translation": {
+                "translate": "Übersetzen",
+                "show_original": "Original anzeigen"
             }
         },
         "govuk_alpha_activity": {

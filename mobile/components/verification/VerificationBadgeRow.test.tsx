@@ -6,6 +6,8 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
 
+let mockVerificationEnabled = true;
+jest.mock('@/lib/context/TenantContext', () => ({ useOptionalTenantContext: () => ({ tenant: { features: { identity_verification: mockVerificationEnabled } } }) }));
 const mockGetUserVerificationBadges = jest.fn();
 
 jest.mock('@/lib/api/verification', () => ({
@@ -48,6 +50,14 @@ import VerificationBadgeRow from './VerificationBadgeRow';
 describe('VerificationBadgeRow', () => {
   beforeEach(() => {
     mockGetUserVerificationBadges.mockReset();
+    mockVerificationEnabled = true;
+  });
+
+  it('hides all verification wording and avoids fetching when the community switch is off', async () => {
+    mockVerificationEnabled = false;
+    const screen = render(<VerificationBadgeRow userId={42} showUnverified />);
+    expect(screen.queryByLabelText('Verification badges')).toBeNull();
+    expect(mockGetUserVerificationBadges).not.toHaveBeenCalled();
   });
 
   it('does not turn a plain user verification flag into an ID verified label', async () => {

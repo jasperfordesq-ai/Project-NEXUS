@@ -50,6 +50,7 @@ const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { sectionSwitchedOn: toolSectionOn } = require('../lib/group-tool-access');
 const { sectionSwitchedOn: mediaSectionOn } = require('../lib/group-media-access');
 
+const { translateFields, preferences, translationBinding, validSavedTranslation, translateCommentTree } = require('../lib/ugc-translation');
 const router = express.Router();
 
 const GROUP_NOTIFICATION_FREQUENCIES = ['instant', 'digest', 'muted'];
@@ -1435,6 +1436,14 @@ router.post('/new', requireAuth, audit.groupCreate(), asyncRoute(async (req, res
   }
 }));
 
+router.post('/:id(\\d+)/translate', requireAuth, asyncRoute(async (req, res) => {
+  const result = await getGroup(req.token, req.params.id);
+  const group = normalizeGroup(dataFrom(result)?.group || dataFrom(result), Number(req.params.id));
+  const translated = await translateFields(req, res, req.token, { type: 'group', id: group.id, fields: { name: group.name, body: group.description || '' } }, true);
+  if (req.session && translated) req.session.ugcTranslation = translated;
+  return res.redirect(res.locals.urlFor(`/groups/${group.id}?status=${translated ? 'translate-done' : 'translate-failed'}#content-translation`));
+}));
+
 // View group details
 router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const { id } = req.params;
@@ -1526,7 +1535,11 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const isAdmin = isGroupAdmin(group);
   const isPending = membershipStatus === 'pending';
   const sectionLinks = groupSectionLinks(req.accessibleRouting?.tenant || res.locals.tenant || {}, group.id, { isMember, isAdmin });
+  const contentTranslation = await translateFields(req, res, req.token, { type: 'group', id: group.id, fields: { name: group.name, body: group.description || '' } });
   res.render('groups/detail', {
+    contentTranslation,
+    translationAvailable: (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false,
+    translationFailed: req.query.status === 'translate-failed',
     membershipRefusal: req.query.status === 'group-failed' ? consumeApiRefusal(req, `group-${Number(id)}-membership`) : '',
     title: group.name,
     group,
@@ -2149,7 +2162,8 @@ router.get('/:id(\\d+)/discussions/:discussionId(\\d+)', requireAuth, asyncRoute
   if (req.session && req.session.discussionTranslation) {
     const stored = req.session.discussionTranslation;
     delete req.session.discussionTranslation;
-    if (stored && Number(stored.discussionId) === Number(discussionId) && trimmed(stored.text)) {
+    const source = stored.messageId === null ? discussion : messages.find(message => Number(message.id) === Number(stored.messageId));
+    if (source && Number(stored.discussionId) === Number(discussionId) && trimmed(stored.text) && await validSavedTranslation(req, res, req.token, stored, stored.messageId === null ? 'group_discussion' : 'group_discussion_reply', source.id, { body: htmlToPlainText(source.content || '').slice(0, 8000).trim() })) {
       translation = {
         messageId: positiveInteger(stored.messageId),
         text: trimmed(stored.text, 10000),
@@ -2158,6 +2172,8 @@ router.get('/:id(\\d+)/discussions/:discussionId(\\d+)', requireAuth, asyncRoute
     }
   }
 
+  discussion.cachedTranslation = await translateFields(req, res, req.token, { type: 'group_discussion', id: discussion.id, fields: { body: htmlToPlainText(discussion.content || '').slice(0, 8000).trim() } });
+  for (const message of messages) message.cachedTranslation = await translateFields(req, res, req.token, { type: 'group_discussion_reply', id: message.id, fields: { body: htmlToPlainText(message.content || '').slice(0, 8000).trim() } });
   return res.render('groups/discussion-detail', {
     title: discussion.title,
     activeNav: 'explore',
@@ -2191,8 +2207,7 @@ router.post('/:id(\\d+)/discussions/:discussionId(\\d+)/translate', requireAuth,
     return res.redirect(`${urlFor(res, back)}${separator}status=${encodeURIComponent(status)}${fragment}`);
   };
 
-  const requestedLocale = trimmed(req.locale || res.locals.locale || 'en', 10);
-  const targetLocale = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/.test(requestedLocale) ? requestedLocale : 'en';
+  const targetLocale = (await preferences(req, res, req.token)).locale;
 
   let status = 'translate-done';
   try {
@@ -2218,7 +2233,7 @@ router.post('/:id(\\d+)/discussions/:discussionId(\\d+)/translate', requireAuth,
       } else if (translated === sourceText) {
         status = 'translate-same';
       } else if (req.session) {
-        req.session.discussionTranslation = { discussionId, messageId, text: translated, locale: targetLocale };
+        req.session.discussionTranslation = { discussionId, messageId, text: translated, locale: targetLocale, binding: await translationBinding(req, res, req.token, messageId === null ? 'group_discussion' : 'group_discussion_reply', messageId === null ? discussionId : messageId, { body: sourceText }) };
       }
     }
   } catch (error) {

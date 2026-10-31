@@ -18,7 +18,15 @@ const { htmlToPlainText } = require('../lib/html-sanitizer');
 const { humanizeLabel } = require('../lib/humanize-label');
 const { formatRequestList } = require('../lib/list-format');
 
+const { registerDetailTranslation, detailTranslationLocals } = require('../lib/ugc-translation');
+const { htmlToPlainText: htmlToTranslationText } = require('../lib/html-sanitizer');
 const router = express.Router();
+const detailTranslation = {
+  load: async (req, res, token) => await loadListing(token, req.params.id),
+  spec: item => ({ type: 'marketplace_listing', id: item.id, fields: { title: item.title || '', body: htmlToTranslationText(item.description || '') } }),
+  href: item => `/marketplace/${item.id}`,
+};
+registerDetailTranslation(router, detailTranslation);
 // Show Laravel's reason for a refused marketplace action on the page it
 // redirected to (lib/api-refusal.js); React shows the same message.
 router.use(require('../lib/api-refusal').exposePageRefusal('/marketplace'));
@@ -2826,6 +2834,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
       && Object.keys(listing.template_data).length > 0;
     const templateFields = hasDetails ? await loadCategoryTemplate(token, listing.categoryId) : [];
     return res.render('marketplace/detail', {
+    ...await detailTranslationLocals(req, res, token, listing, detailTranslation),
       title: listing.title,
       activeNav: 'explore',
       item: listing,

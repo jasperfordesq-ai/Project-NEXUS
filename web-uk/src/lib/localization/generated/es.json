@@ -6367,6 +6367,10 @@
                 "cancel_shift": "¿Seguro que quieres cancelar tu plaza en este turno?",
                 "withdraw_urgent": "¿Seguro que quieres retirar esta solicitud urgente?",
                 "cannot_undo": "No podrás deshacer esta acción."
+            },
+            "ugc_translation": {
+                "translate": "Traducir",
+                "show_original": "Mostrar original"
             }
         },
         "govuk_alpha_activity": {

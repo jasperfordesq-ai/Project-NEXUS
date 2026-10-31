@@ -30,7 +30,7 @@ router.get('/opportunities/:id(\\d+)/comments', asyncRoute(async (req, res) => {
   const token = req.token || req.signedCookies?.token || '';
   const [opportunityResult, comments, profile] = await Promise.all([
     getVolunteerOpportunity(id, token),
-    loadTargetComments(token, 'volunteer', id),
+    loadTargetComments(token, 'volunteer', id, req, res),
     getRequestProfile(req, token).catch((error) => {
       if (error instanceof ApiError && error.status === 401) throw error;
       return null;
@@ -46,7 +46,7 @@ router.get('/opportunities/:id(\\d+)/comments', asyncRoute(async (req, res) => {
     activeNav: 'volunteering',
     opportunity: { id, title: String(opportunity.title || '').trim() },
     comments,
-    commentTranslation: takeCommentTranslation(req, 'volunteer', id),
+    commentTranslation: await takeCommentTranslation(req, 'volunteer', id, res, token, comments),
     currentUserId: positiveInteger(profileData.id),
     socialStatus: socialStatusFrom(req.query.social)
   });

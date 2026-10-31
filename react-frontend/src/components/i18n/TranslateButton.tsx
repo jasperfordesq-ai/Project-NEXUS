@@ -8,7 +8,7 @@
  *
  * On-demand translator for any UGC string (post body, listing description,
  * profile bio, event description). Calls POST /api/v2/ugc-translate which
- * caches the result for 30 days, so repeat clicks never re-charge OpenAI.
+ * caches results for 30 days. Automatic display reads the cache only.
  *
  * Renders nothing if `sourceLocale` is already the user's current i18n locale.
  */
@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { useTenant, useToast } from '@/contexts';
 import { Button } from '@/components/ui';
+import { useUgcTranslationPreferences } from '@/contexts/UgcTranslationPreferencesContext';
 
 interface TranslateButtonProps {
   contentType: string;
@@ -61,104 +62,101 @@ export function TranslateButton({
 }: TranslateButtonProps) {
   const { t, i18n } = useTranslation('common');
   const toast = useToast();
-  const translationSwitchedOff = useTenant().tenant?.translation?.enabled === false;
-
-  const userLocale = (i18n.resolvedLanguage || i18n.language || 'en').slice(0, 2);
+  const tenant = useTenant().tenant;
+  const preferences = useUgcTranslationPreferences();
+  const translationSwitchedOff = tenant?.translation?.enabled === false;
+  const interfaceLocale = (i18n.resolvedLanguage || i18n.language || 'en').slice(0, 2);
+  const userLocale = preferences.automatic && preferences.target ? preferences.target : interfaceLocale;
   const normalisedSource = (sourceLocale || '').slice(0, 2).toLowerCase();
-
-  const [translated, setTranslated] = useState<string | null>(null);
-  const [translatedFields, setTranslatedFields] = useState<Record<string, string> | null>(null);
-  // Only non-empty extra fields, in a stable order.
   const fieldEntries = Object.entries(extraFields ?? {})
     .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].trim() !== '')
     .sort(([a], [b]) => a.localeCompare(b));
   const fieldsKey = JSON.stringify(fieldEntries);
-  const [showing, setShowing] = useState<'original' | 'translated'>('original');
-  const [loading, setLoading] = useState(false);
-  // What the current translation (or request) is of. A translation belongs to
-  // one text, one item and one reader language; when any of them changes it is
-  // dropped, and a reply to an earlier request is ignored (AWID audit A4).
-  const subject = `${contentType}\u0000${contentId}\u0000${userLocale}\u0000${sourceText}\u0000${fieldsKey}`;
+  const subject = JSON.stringify([tenant?.id, preferences.identity, preferences.automatic, translationSwitchedOff, hidden,
+    interfaceLocale, userLocale, contentType, contentId, sourceText, fieldsKey, normalisedSource]);
+  type Result = { subject: string; text: string; fields: Record<string, string>; bodyTranslated: boolean; partial: boolean };
+  const [result, setResult] = useState<Result | null>(null);
+  const [originalFor, setOriginalFor] = useState<string | null>(null);
+  const [loadingFor, setLoadingFor] = useState<string | null>(null);
+  const generation = useRef(0);
   const subjectRef = useRef(subject);
+  subjectRef.current = subject;
+  const current = result?.subject === subject ? result : null;
+  const showing = current && originalFor !== subject ? 'translated' : 'original';
+  const loading = loadingFor === subject;
+  const enabled = !hidden && !translationSwitchedOff && normalisedSource !== userLocale
+    && (Boolean(sourceText.trim()) || fieldEntries.length > 0);
+
+  useEffect(() => () => { generation.current++; }, []);
   useEffect(() => {
-    if (subjectRef.current === subject) return;
-    subjectRef.current = subject;
-    setTranslated(null);
-    setTranslatedFields(null);
-    setShowing('original');
-    setLoading(false);
+    onTextChange?.(showing === 'translated' ? current!.text : sourceText,
+      showing === 'translated' && current!.bodyTranslated);
+    onFieldsChange?.(showing === 'translated' ? current!.fields : null);
+  }, [showing, current, sourceText, onTextChange, onFieldsChange]);
+
+  const requestTranslation = useCallback(async (cacheOnly: boolean) => {
+    const request = ++generation.current;
+    const requestedFor = subject;
+    if (!cacheOnly) setLoadingFor(subject);
+    const entries: Array<[string, string]> = [
+      ...(sourceText.trim() ? [['', sourceText] as [string, string]] : []),
+      ...fieldEntries,
+    ];
+    try {
+      const responses = await Promise.allSettled(entries.map(([key, text]) =>
+        api.post<UgcTranslateResponse | null>('/v2/ugc-translate', {
+          content_type: key ? `${contentType}_${key}` : contentType,
+          content_id: contentId,
+          source_text: text,
+          source_locale: normalisedSource || undefined,
+          target_locale: userLocale,
+          ...(cacheOnly ? { cache_only: true } : {}),
+        }),
+      ));
+      if (subjectRef.current !== requestedFor || generation.current !== request) return;
+      let text = sourceText;
+      let bodyTranslated = false;
+      let successes = 0;
+      const fields = Object.fromEntries(fieldEntries);
+      responses.forEach((response, index) => {
+        if (response.status !== 'fulfilled' || !response.value?.success || !response.value.data) return;
+        const translated = response.value.data.translated_text;
+        if (!translated) return;
+        successes++;
+        const key = entries[index]![0];
+        if (key) fields[key] = translated;
+        else { text = translated; bodyTranslated = true; }
+      });
+      if (successes > 0) {
+        setResult({ subject: requestedFor, text, fields, bodyTranslated, partial: successes < entries.length });
+        setOriginalFor(null);
+      }
+      if (!cacheOnly && successes < entries.length) {
+        const failure = responses.find((response) => response.status === 'fulfilled' && response.value?.error);
+        if (failure?.status === 'fulfilled' && failure.value.error) toast.error(failure.value.error);
+        else toast.showToast(t('translate.failed'), 'error');
+      }
+    } finally {
+      if (generation.current === request) setLoadingFor(null);
+    }
+  // Stable field serialisation avoids repeating requests for inline extraFields objects.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subject]);
 
-  // Notify parent whenever we toggle so it can swap the displayed body in place.
   useEffect(() => {
-    if (!onTextChange) return;
-    if (showing === 'translated' && translated) {
-      onTextChange(translated, true);
-    } else {
-      onTextChange(sourceText, false);
-    }
-  }, [showing, translated, sourceText, onTextChange]);
+    if (enabled && preferences.automatic) void requestTranslation(true);
+    const requestGeneration = generation;
+    return () => { requestGeneration.current++; };
+  }, [enabled, preferences.automatic, requestTranslation]);
 
-  useEffect(() => {
-    if (!onFieldsChange) return;
-    onFieldsChange(showing === 'translated' && translated ? translatedFields : null);
-  }, [showing, translated, translatedFields, onFieldsChange]);
+  const handleClick = () => {
+    generation.current++; // A late automatic cache read must not undo a manual choice.
+    if (showing === 'translated') setOriginalFor(subject);
+    else if (current && !current.partial) setOriginalFor(null);
+    else void requestTranslation(false);
+  };
 
-  const handleClick = useCallback(async () => {
-    if (showing === 'translated') {
-      setShowing('original');
-      return;
-    }
-    if (translated) {
-      setShowing('translated');
-      return;
-    }
-    if (!sourceText.trim()) return;
-    const requestedFor = subject;
-    setLoading(true);
-    try {
-      const translateText = (type: string, text: string) => api.post<UgcTranslateResponse>('/v2/ugc-translate', {
-        content_type: type,
-        content_id: contentId,
-        source_text: text,
-        source_locale: normalisedSource || undefined,
-        target_locale: userLocale,
-      });
-      const [resp, ...fieldResponses] = await Promise.all([
-        translateText(contentType, sourceText),
-        ...fieldEntries.map(([key, value]) => translateText(`${contentType}_${key}`, value)),
-      ]);
-      if (subjectRef.current !== requestedFor) return;
-      if (resp.success && resp.data) {
-        // A field that could not be translated keeps its original wording.
-        const fields: Record<string, string> = {};
-        fieldEntries.forEach(([key, value], index) => {
-          const fieldResp = fieldResponses[index];
-          fields[key] = fieldResp?.success && fieldResp.data?.translated_text ? fieldResp.data.translated_text : value;
-        });
-        setTranslatedFields(fields);
-        setTranslated(resp.data.translated_text);
-        setShowing('translated');
-      } else {
-        const message = resp.error?.trim() ? resp.error : t('translate.failed');
-        toast.error(message);
-      }
-    } catch {
-      if (subjectRef.current !== requestedFor) return;
-      toast.showToast(t('translate.failed'), 'error');
-    } finally {
-      if (subjectRef.current === requestedFor) setLoading(false);
-    }
-  // fieldsKey stands for fieldEntries' contents.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showing, translated, sourceText, contentType, contentId, normalisedSource, userLocale, subject, fieldsKey, toast, t]);
-
-  // Skip rendering when sourceLocale already matches the user's locale.
-  if (hidden) return null;
-  // The community switched translation off (Admin → Translation settings).
-  if (translationSwitchedOff) return null;
-  if (normalisedSource && normalisedSource === userLocale) return null;
-  if (!sourceText || !sourceText.trim()) return null;
+  if (!enabled) return null;
 
   return (
     <Button

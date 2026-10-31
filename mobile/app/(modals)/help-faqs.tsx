@@ -13,6 +13,7 @@
  * simply failed.
  */
 
+import ContentTranslation from '@/components/ContentTranslation';
 import { useMemo, useState } from 'react';
 import { router, type Href } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
@@ -201,6 +202,7 @@ function HelpFaqsScreen() {
                           </Text>
                         </View>
                       ) : null}
+                      <View className="px-4 pb-4"><ContentTranslation contentType="faq" contentId={faq.id} fields={{ question: faq.question, body: toPlainText(faq.answer), category: group.category }} /></View>
                     </HeroCard.Body>
                   </HeroCard>
                 );

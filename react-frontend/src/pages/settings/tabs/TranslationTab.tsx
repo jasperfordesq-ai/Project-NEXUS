@@ -22,6 +22,7 @@ import Save from 'lucide-react/icons/save';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
+import { UGC_PREFERENCES_CHANGED } from '@/contexts/UgcTranslationPreferencesContext';
 
 const SUPPORTED_LOCALES = ['en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -89,6 +90,7 @@ export function TranslationTab() {
       };
       const resp = await api.put('/v2/users/me/preferences', payload);
       if (resp.success) {
+        window.dispatchEvent(new Event(UGC_PREFERENCES_CHANGED));
         toast.success(t('settings_translation.saved'));
       } else {
         toast.error(t('settings_translation.save_failed'));

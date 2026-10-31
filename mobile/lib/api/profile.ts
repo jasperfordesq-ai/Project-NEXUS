@@ -10,6 +10,7 @@ import { type User } from '@/lib/api/auth';
 import { Platform } from 'react-native';
 
 export interface UpdateProfilePayload {
+  avatar_alt?: string | null;
   first_name?: string;
   last_name?: string;
   bio?: string;
