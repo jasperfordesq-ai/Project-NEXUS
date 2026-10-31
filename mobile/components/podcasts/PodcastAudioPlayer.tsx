@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 import { setAudioModeAsync, type AudioStatus } from 'expo-audio';
 import { Spinner } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
@@ -61,11 +61,15 @@ interface PodcastAudioPlayerProps {
   primaryColor: string;
 }
 
-/** Reset recording mode and enable the native background playback session. */
+/**
+ * Reset recording mode and, on Android, keep playing when the phone locks. iOS has no
+ * background audio mode since App Review rejected it (guideline 2.5.4, 30 Oct 2026),
+ * so there the episode stops with the screen; see plugins/with-ios-no-background-audio.
+ */
 const BACKGROUND_AUDIO_MODE = {
   allowsRecording: false,
   playsInSilentMode: true,
-  shouldPlayInBackground: true,
+  shouldPlayInBackground: Platform.OS !== 'ios',
   interruptionMode: 'duckOthers',
   shouldRouteThroughEarpiece: false,
 } as const;

@@ -476,7 +476,9 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    - 🔴 **A podcast keeps playing when the phone locks, resumes where it stopped, and
      can be moved around inside.** `expo-av` pauses every sound on host pause unless
      `staysActiveInBackground` is set, and it never was; iOS additionally needs
-     `UIBackgroundModes: ["audio"]`, now in `app.json` — **which is why this one needs a
+     `UIBackgroundModes: ["audio"]`, now in `app.json` — 🔴 **withdrawn on iOS on 31 Oct 2026:
+     Apple rejected 1.10.0 (8) under guideline 2.5.4 for that mode, so iOS stops a podcast
+     when the phone locks; see `plugins/with-ios-no-background-audio.js`. Android keeps it.** — **which is why this one needs a
      new store build and cannot go out over the air.** Resume is device-local, because
      `POST /v2/podcasts/episodes/{id}/listen` accepts a position for analytics and the
      API never hands one back. Back 15s / forward 30s, and chapters are jump targets.

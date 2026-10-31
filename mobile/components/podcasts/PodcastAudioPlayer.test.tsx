@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Platform } from 'react-native';
 
 import appConfig from '../../app.json';
 
@@ -117,12 +118,14 @@ describe('PodcastAudioPlayer', () => {
     expect(mockPlay).not.toHaveBeenCalled();
   });
 
-  it('asks for an audio session that survives the phone locking', async () => {
+  it('asks for an audio session that survives the phone locking on Android only', async () => {
+    // The module reads Platform.OS once when it loads; jest-expo's default preset is iOS.
+    expect(Platform.OS).toBe('ios');
     const { getByLabelText } = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} audioUrl="https://audio.example/one.mp3" primaryColor="#06f" />);
     fireEvent.press(getByLabelText('Play'));
     await waitFor(() => expect(mockSetAudioMode).toHaveBeenCalled());
     expect(mockSetAudioMode).toHaveBeenCalledWith(expect.objectContaining({
-      shouldPlayInBackground: true,
+      shouldPlayInBackground: false,
       playsInSilentMode: true,
       // The message thread turns recording on to capture a voice note and never turns it
       // off; on iOS that leaves later playback quiet and on the earpiece.
@@ -130,8 +133,9 @@ describe('PodcastAudioPlayer', () => {
     }));
   });
 
-  it('the app declares the iOS background audio mode a locked phone needs', () => {
-    expect(appConfig.expo.ios.infoPlist.UIBackgroundModes).toContain('audio');
+  it('does not declare the iOS background audio mode App Review rejected', () => {
+    const infoPlist = appConfig.expo.ios.infoPlist as { UIBackgroundModes?: string[] };
+    expect(infoPlist.UIBackgroundModes ?? []).not.toContain('audio');
   });
 
   it('resumes where the member left off instead of restarting the episode', async () => {
