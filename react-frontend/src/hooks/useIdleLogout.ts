@@ -181,8 +181,18 @@ export function useIdleLogout(): IdleLogoutState {
       markActive(false);
     };
 
+    // Activity the ping throttle held back is reported once the interval has
+    // passed, even if the member does nothing more: the server must never think
+    // the session went idle earlier than this page does, or "Stay signed in"
+    // near the end would reach a session the server has already ended.
+    const reportHeldBackActivity = (force: boolean) => {
+      if (lastActivityRef.current <= lastServerPingRef.current) return;
+      pingServer(Date.now(), force);
+    };
+
     const checkIdle = () => {
       if (loggingOutRef.current) return;
+      reportHeldBackActivity(false);
       const effectiveLast = Math.max(lastActivityRef.current, readPersistedActivity());
       const remaining = effectiveLast + timeoutMs - Date.now();
       if (remaining <= 0) {
@@ -202,6 +212,9 @@ export function useIdleLogout(): IdleLogoutState {
       // A tab waking from sleep may be long past the deadline — check at once
       if (document.visibilityState === 'visible') {
         checkIdle();
+      } else {
+        // Leaving the tab: timers slow down from here, so report now.
+        reportHeldBackActivity(true);
       }
     };
 
@@ -215,7 +228,7 @@ export function useIdleLogout(): IdleLogoutState {
       document.removeEventListener('visibilitychange', onVisibilityChange);
       window.clearInterval(interval);
     };
-  }, [isActive, timeoutMs, markActive, signOut]);
+  }, [isActive, timeoutMs, markActive, pingServer, signOut]);
 
   // While the warning is open, count down once a second.
   useEffect(() => {

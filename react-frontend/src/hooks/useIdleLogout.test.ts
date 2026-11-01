@@ -221,6 +221,56 @@ describe('useIdleLogout', () => {
     expect(mockPost).not.toHaveBeenCalled();
   });
 
+  // The server's clock must never fall behind the page's: activity the throttle
+  // held back is reported later, or "Stay signed in" (and any click) near the
+  // end could reach a server that has already ended the session.
+  it('reports activity the throttle held back, without waiting for more activity', async () => {
+    mockPost.mockResolvedValue({ success: true });
+    setup({ timeoutMinutes: '30', user: { id: 1 } });
+    renderHook(() => useIdleLogout());
+
+    await act(async () => {
+      window.dispatchEvent(new Event('pointerdown'));
+    });
+    expect(mockPost).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      vi.advanceTimersByTime(2 * 60_000);
+      window.dispatchEvent(new Event('keydown')); // held back by the throttle
+    });
+    expect(mockPost).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      vi.advanceTimersByTime(9 * 60_000); // idle from here on
+    });
+    expect(mockPost).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      vi.advanceTimersByTime(15 * 60_000); // nothing new to report
+    });
+    expect(mockPost).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports held-back activity at once when the tab is hidden', async () => {
+    mockPost.mockResolvedValue({ success: true });
+    setup({ timeoutMinutes: '30', user: { id: 1 } });
+    renderHook(() => useIdleLogout());
+
+    await act(async () => {
+      window.dispatchEvent(new Event('pointerdown'));
+      vi.advanceTimersByTime(60_000);
+      window.dispatchEvent(new Event('keydown'));
+    });
+    expect(mockPost).toHaveBeenCalledTimes(1);
+
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    visibility.mockRestore();
+    expect(mockPost).toHaveBeenCalledTimes(2);
+  });
+
   it('opens a warning before signing out, and staying signed in restarts the clock', async () => {
     mockPost.mockResolvedValue({ success: true });
     const { logout } = setup({ timeoutMinutes: '30', user: { id: 1 } });

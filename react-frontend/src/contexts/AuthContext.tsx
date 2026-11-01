@@ -199,8 +199,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isLoggingOutRef = useRef(false);
 
   // WCAG 2.2.1 — session expiry warning timer.
-  // Fires SESSION_EXPIRING_EVENT 30 seconds before the access token expires,
-  // giving the user a chance to extend their session before being logged out.
+  // Fires SESSION_EXPIRING_EVENT 30 seconds before the access token expires.
+  // SessionTimeoutWarning ignores it for a session that renews itself (every
+  // normal sign-in); only an impersonation tab, which cannot renew, is warned.
   const sessionWarningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearSessionWarningTimer = useCallback(() => {
