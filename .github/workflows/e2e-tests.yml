@@ -87,10 +87,7 @@ jobs:
     name: E2E Tests
     needs: e2e-preflight
     if: needs.e2e-preflight.outputs.configured == 'true'
-    # Pinned 2026-11-05: ubuntu-latest moved to 26.04 and Playwright 1.59 (root)
-    # refuses it ("does not support chromium on ubuntu26.04-x64"). Unpin after
-    # the root @playwright/test upgrade (>= 1.61, as web-uk already uses).
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
 
     strategy:
@@ -155,8 +152,7 @@ jobs:
   e2e-cross-browser:
     name: Cross-Browser E2E Tests
     needs: e2e-preflight
-    # Pinned 2026-11-05 — see e2e-tests above (Playwright 1.59 vs ubuntu 26.04).
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.e2e-preflight.outputs.configured == 'true'
 

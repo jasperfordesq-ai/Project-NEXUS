@@ -81,7 +81,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.61.1",
     "dotenv": "^17.4.2",
     "govuk-frontend": "^6.1.0",
     "js-yaml": "^4.3.2",
