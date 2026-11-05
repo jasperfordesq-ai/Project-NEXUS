@@ -142,6 +142,44 @@ class ResourcePublicControllerTest extends TestCase
         $response->assertStatus(400);
     }
 
+    public function test_store_rejects_blank_title_without_null_deprecation(): void
+    {
+        $this->authenticatedUser();
+
+        // ConvertEmptyStringsToNull turns '' into null; the controller must
+        // still treat it as a missing title rather than passing null to trim().
+        $response = $this->apiPost('/v2/resources', [
+            'title' => '',
+            'file' => UploadedFile::fake()->createWithContent('notes.txt', 'plain text'),
+        ]);
+
+        $response->assertStatus(400);
+        $response->assertJsonPath('errors.0.code', 'VALIDATION_REQUIRED_FIELD');
+    }
+
+    public function test_store_accepts_blank_description(): void
+    {
+        $this->authenticatedUser();
+        $uploadDir = base_path('httpdocs/uploads/' . $this->testTenantId . '/resources');
+        $before = is_dir($uploadDir) ? glob($uploadDir . '/*') ?: [] : [];
+
+        // The React upload form always sends `description`, even when blank;
+        // ConvertEmptyStringsToNull delivers it to the controller as null.
+        $response = $this->apiPost('/v2/resources', [
+            'title' => 'Resource without description',
+            'description' => '',
+            'file' => UploadedFile::fake()->createWithContent('notes.txt', 'plain text resource body'),
+        ]);
+
+        $after = is_dir($uploadDir) ? glob($uploadDir . '/*') ?: [] : [];
+        foreach (array_diff($after, $before) as $createdFile) {
+            @unlink($createdFile);
+        }
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('data.description', '');
+    }
+
     // ------------------------------------------------------------------
     //  DELETE /v2/resources/{id}
     // ------------------------------------------------------------------
