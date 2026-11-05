@@ -242,6 +242,22 @@ CVE-2023-54404
 # (added 2026-10-28, E-114)
 CVE-2026-93753
 
+# ── glob 13.0.6 CVE-2026-118773 / GHSA-3g3m-2fjr-6pw4 and minimatch 10.2.6
+#    CVE-2026-118764 (MEDIUM) — no fix on the major lines Expo pins ──────────
+# glob: an aborted async walk keeps reading directories after AbortSignal
+# fires. Fixed only in 14.0.2; 13.0.6 is the last 13.x. minimatch: fixed only
+# in 11.0.1; 10.2.6 is the last 10.x. Reachability: mobile/package-lock.json
+# only. glob ^13 is required by @expo/cli, @expo/config, @expo/config-plugins,
+# @expo/fingerprint, @expo/metro-config and expo-updates; minimatch ^10 by
+# glob, @expo/fingerprint and @typescript-eslint. All run at build/lint time on
+# the developer machine or EAS over the project's own files with fixed
+# patterns; no file under mobile/src or mobile/app imports either, so neither
+# ships in the APK/IPA or sees member input, and nothing passes them an
+# AbortSignal. Remove when Expo moves to glob 14 / minimatch 11.
+# (added 2026-11-05, E-120)
+CVE-2026-118773
+CVE-2026-118764
+
 # =============================================================================
 # DELETED at the 2026-08-28 review — kept here as a short record so a future
 # reader does not "rediscover" these and re-add them. Each was removed because
