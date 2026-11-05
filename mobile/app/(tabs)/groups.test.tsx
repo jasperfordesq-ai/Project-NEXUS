@@ -168,6 +168,17 @@ describe('GroupsScreen', () => {
     expect(getByText('No groups found.')).toBeTruthy();
   });
 
+  // Sentry NEXUS-MOBILE-9 (1 Nov 2026): the server sends a group's type as
+  // { id, name, color } (GroupService::formatGroup since 1 Oct); the card
+  // rendered the object itself and the whole Groups tab crashed.
+  it('labels a card with the group type name sent as an object', () => {
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
+      items: [{ ...mockGroup, type: { id: 3, name: 'Gardening', color: '#22c55e' } }] });
+    const { getByText } = render(<GroupsScreen />);
+    expect(getByText('Garden Club')).toBeTruthy();
+    expect(getByText('Gardening')).toBeTruthy();
+  });
+
   it('renders group cards when items are provided', () => {
     mockUsePaginatedApi.mockReturnValueOnce({
       items: [mockGroup],

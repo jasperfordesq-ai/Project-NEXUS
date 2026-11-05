@@ -38,7 +38,8 @@ type ApiGroup = Group & {
   viewer_membership?: { status?: string; role?: string } | null;
   avatar_url?: string | null;
   image_url?: string | null;
-  type?: string | null;
+  /** Sent as { id, name, color } by GroupService::formatGroup (Sentry NEXUS-MOBILE-9). */
+  type?: { id: number; name: string; color: string | null } | string | null;
 };
 
 function extractGroupPage(response: GroupsResponse) {
@@ -47,6 +48,12 @@ function extractGroupPage(response: GroupsResponse) {
     cursor: response.meta.cursor,
     hasMore: response.meta.has_more,
   };
+}
+
+function groupTypeLabel(group: ApiGroup): string | null {
+  const type = group.type;
+  if (typeof type === 'string') return type || null;
+  return type && typeof type.name === 'string' && type.name ? type.name : null;
 }
 
 function isJoined(group: ApiGroup) {
@@ -220,9 +227,9 @@ function GroupCard({
                   <Text className="text-base font-bold" style={{ color: theme.text }} numberOfLines={2}>
                     {item.name}
                   </Text>
-                  {item.type ? (
+                  {groupTypeLabel(item) ? (
                     <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={1}>
-                      {item.type}
+                      {groupTypeLabel(item)}
                     </Text>
                   ) : null}
                 </View>
