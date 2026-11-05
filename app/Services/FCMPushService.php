@@ -9,6 +9,7 @@ namespace App\Services;
 use App\I18n\LocaleContext;
 use App\Jobs\CheckExpoPushReceipts;
 use App\Support\Push\PushCopy;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -163,45 +164,57 @@ class FCMPushService
         try {
             $tenantId = TenantContext::getId();
 
-            $existing = DB::table('fcm_device_tokens')
-                ->where('token', $token)
-                ->first(['id', 'user_id', 'tenant_id']);
+            // Two attempts: the phone app can send two registrations at the same
+            // moment. If the other request inserts between our read and our
+            // insert, the unique key refuses ours; read again once and apply the
+            // same rules to the row it created (Sentry NEXUS-PHP-77).
+            for ($attempt = 1; ; $attempt++) {
+                $existing = DB::table('fcm_device_tokens')
+                    ->where('token', $token)
+                    ->first(['id', 'user_id', 'tenant_id']);
 
-            if ($existing !== null) {
-                if ((int) $existing->tenant_id !== (int) $tenantId) {
-                    Log::warning('FCMPushService::registerDevice cross-tenant reassignment refused', [
-                        'requesting_tenant' => (int) $tenantId,
-                        'existing_tenant' => (int) $existing->tenant_id,
-                    ]);
-                    return false;
+                if ($existing !== null) {
+                    if ((int) $existing->tenant_id !== (int) $tenantId) {
+                        Log::warning('FCMPushService::registerDevice cross-tenant reassignment refused', [
+                            'requesting_tenant' => (int) $tenantId,
+                            'existing_tenant' => (int) $existing->tenant_id,
+                        ]);
+                        return false;
+                    }
+
+                    DB::table('fcm_device_tokens')
+                        ->where('id', (int) $existing->id)
+                        ->update([
+                            'user_id' => $userId,
+                            'tenant_id' => $tenantId,
+                            'platform' => $platform,
+                            'updated_at' => now(),
+                        ]);
+
+                    return true;
                 }
 
-                DB::table('fcm_device_tokens')
-                    ->where('id', (int) $existing->id)
-                    ->update([
+                try {
+                    DB::table('fcm_device_tokens')->insert([
                         'user_id' => $userId,
                         'tenant_id' => $tenantId,
+                        'token' => $token,
                         'platform' => $platform,
+                        'created_at' => now(),
                         'updated_at' => now(),
                     ]);
+                } catch (UniqueConstraintViolationException $race) {
+                    if ($attempt >= 2) {
+                        throw $race;
+                    }
+                    continue;
+                }
 
                 return true;
             }
-
-            DB::table('fcm_device_tokens')->insert([
-                'user_id' => $userId,
-                'tenant_id' => $tenantId,
-                'token' => $token,
-                'platform' => $platform,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            return true;
         } catch (\Throwable $e) {
-            // A concurrent insert can still race the unique index between the
-            // read and the write above; the unique key keeps the row single and
-            // the failure is reported rather than silently overwriting an owner.
+            // Anything else (or a second duplicate in a row) is reported; the
+            // unique key keeps the row single and no owner is silently overwritten.
             Log::error('FCMPushService::registerDevice failed', [
                 'user_id' => $userId,
                 'error' => $e->getMessage(),
