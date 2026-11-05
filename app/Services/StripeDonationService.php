@@ -164,13 +164,32 @@ class StripeDonationService
             $givingDayTitle = (string) $givingDayTitle;
         }
 
+        // The opportunity and community project must belong to this community
+        // too (GHSA-4vw7-mwwm-6xq8): both ids were stored unchecked, so a member
+        // could persist a donation pointing at another community's record.
+        // Checked here, before any Stripe call or donation row.
+        $opportunityId = isset($data['opportunity_id']) ? (int) $data['opportunity_id'] : null;
+        if ($opportunityId !== null && ! DB::table('vol_opportunities')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $opportunityId)
+            ->exists()) {
+            throw new \InvalidArgumentException(__('api.vol_opportunity_not_found'));
+        }
+        $communityProjectId = isset($data['community_project_id']) ? (int) $data['community_project_id'] : null;
+        if ($communityProjectId !== null && ! DB::table('vol_community_projects')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $communityProjectId)
+            ->exists()) {
+            throw new \InvalidArgumentException(__('api.vol_project_not_found'));
+        }
+
         // Which organisation the gift benefits — from the campaign, else the
         // opportunity — resolved server-side and shared with the pledge path so
         // the donation row and the Stripe metadata always agree.
         $organisation = VolunteerDonationService::resolveDonationOrganisation(
             $tenantId,
             $givingDayId,
-            isset($data['opportunity_id']) ? (int) $data['opportunity_id'] : null,
+            $opportunityId,
         );
 
         // Resolve the ACTING user by global id only. $userId is requireAuth()
@@ -245,15 +264,15 @@ class StripeDonationService
         // in between is matched by the donation number (findDonationForIntent).
         $donation = DB::transaction(function () use (
             $tenantId, $userId, $data, $amount, $currency, $user, $tenantStripeAccountId, $paymentRoute,
-            $givingDayId, $organisation, $historyRefs
+            $givingDayId, $opportunityId, $communityProjectId, $organisation, $historyRefs
         ) {
             $giftAid = self::normalizeGiftAidDeclaration($data, $currency);
 
             $attributes = [
                 'tenant_id' => $tenantId,
                 'user_id' => $userId,
-                'opportunity_id' => isset($data['opportunity_id']) ? (int) $data['opportunity_id'] : null,
-                'community_project_id' => isset($data['community_project_id']) ? (int) $data['community_project_id'] : null,
+                'opportunity_id' => $opportunityId,
+                'community_project_id' => $communityProjectId,
                 'giving_day_id' => $givingDayId,
                 'organization_id' => $organisation['id'] ?? null,
                 'fund_code' => self::normalizeFundCode($data['fund_code'] ?? null),
