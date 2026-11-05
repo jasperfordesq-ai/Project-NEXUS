@@ -203,7 +203,7 @@ class ResourcePublicController extends BaseApiController
         $userId = $this->requireAuth();
         $tenantId = $this->getTenantId();
 
-        $title = trim(request()->input('title', ''));
+        $title = trim((string) request()->input('title', ''));
         if (empty($title)) {
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.title_required'), 'title', 400);
         }
@@ -276,7 +276,7 @@ class ResourcePublicController extends BaseApiController
         // Move file to destination
         $file->move($uploadDir, $filename);
 
-        $description = trim(request()->input('description', ''));
+        $description = trim((string) request()->input('description', ''));
         $categoryId = request()->input('category_id');
         $categoryId = ($categoryId !== null && $categoryId !== '') ? (int) $categoryId : null;
 

@@ -455,7 +455,7 @@ class StoryController extends BaseApiController
         $userId = $this->requireAuth();
         $this->rateLimit('stories.reply', 30, 60);
 
-        $body = trim(request()->input('body', ''));
+        $body = trim((string) request()->input('body', ''));
         if (empty($body)) {
             return $this->respondWithError('MISSING_BODY', __('api.story_reply_required'), 'body');
         }

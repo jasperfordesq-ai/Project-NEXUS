@@ -954,7 +954,7 @@ class MessagesController extends BaseApiController
 
         $this->rateLimit('messages_translate', 20, 60);
 
-        $targetLanguage = trim(request()->input('target_language', ''));
+        $targetLanguage = trim((string) request()->input('target_language', ''));
         if (empty($targetLanguage)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.message_target_language_required'), 'target_language', 400);
         }
