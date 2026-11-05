@@ -393,8 +393,8 @@ class AdminSafeguardingController extends BaseApiController
 
         // Support both ID-based and email-based input from the frontend
         if ($request->has('ward_email') || $request->has('guardian_email')) {
-            $wardEmail = trim($request->input('ward_email', ''));
-            $guardianEmail = trim($request->input('guardian_email', ''));
+            $wardEmail = trim((string) $request->input('ward_email', ''));
+            $guardianEmail = trim((string) $request->input('guardian_email', ''));
 
             if (empty($wardEmail) || empty($guardianEmail)) {
                 return $this->respondWithError('VALIDATION_ERROR', __('api.ward_guardian_emails_required'), null, 422);
