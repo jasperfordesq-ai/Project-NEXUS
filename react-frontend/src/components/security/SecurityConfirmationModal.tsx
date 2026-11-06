@@ -15,6 +15,7 @@
 import { useTranslation } from 'react-i18next';
 import { Button, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui';
 import type { WebAuthnSecurityConfirmationInput } from '@/lib/webauthn';
+import { SetPasswordPrompt } from './SetPasswordPrompt';
 
 export type SecurityConfirmationMethod = 'password' | 'totp' | 'backup';
 
@@ -58,8 +59,14 @@ export interface SecurityConfirmationModalProps {
   onCancel: () => void;
   /** Overrides the default (passkey-specific) explanation. */
   description?: string;
-  /** Overrides the default (passkey-specific) text shown when no method is available. */
+  /** Overrides the default text shown when no method is available. */
   noMethodMessage?: string;
+  /**
+   * When the member has no way to confirm and no password, offer "Set a
+   * password" (F-611). Default on. Turn it off where a password would not help:
+   * the staff step-up check needs a second factor, never a password.
+   */
+  offerSetPassword?: boolean;
 }
 
 export function SecurityConfirmationModal({
@@ -77,6 +84,7 @@ export function SecurityConfirmationModal({
   onCancel,
   description,
   noMethodMessage,
+  offerSetPassword = true,
 }: SecurityConfirmationModalProps) {
   const { t } = useTranslation('settings');
   const hasMethod = methods.password || methods.totp;
@@ -94,7 +102,9 @@ export function SecurityConfirmationModal({
                 {description ?? t('passkey_security_confirm_description')}
               </p>
 
-              {!hasMethod ? (
+              {!hasMethod && offerSetPassword && !methods.password ? (
+                <SetPasswordPrompt reason={noMethodMessage} />
+              ) : !hasMethod ? (
                 <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-theme-subtle" role="alert">
                   {noMethodMessage ?? t('passkey_security_confirm_no_method')}
                 </div>

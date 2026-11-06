@@ -30,6 +30,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Description } from '@/components/ui/Description';
 import { Label } from '@/components/ui/Label';
 import { SecurityConfirmationModal } from '@/components/security/SecurityConfirmationModal';
+import { SetPasswordPrompt } from '@/components/security/SetPasswordPrompt';
 import type { TwoFactorEnrolmentController } from './useTwoFactorEnrolment';
 
 export interface TwoFactorEnrolmentProps {
@@ -207,7 +208,9 @@ export function TwoFactorEnrolment({
         <SecurityConfirmationModal
           isOpen={phase === 'confirming'}
           onOpenChange={(open) => { if (!open) enrolment.cancel('confirming'); }}
-          methods={{ password: true, totp: false }}
+          /* F-611: no password → "Set a password" instead of a password box. */
+          methods={{ password: enrolment.hasPassword, totp: false }}
+          noMethodMessage={t('twofa_needs_password')}
           method={enrolment.confirmMethod}
           onMethodChange={enrolment.setConfirmMethod}
           value={enrolment.confirmValue}
@@ -261,6 +264,21 @@ export function TwoFactorEnrolment({
   }
 
   // ── Inline ────────────────────────────────────────────────────────────────
+
+  if (phase === 'confirming' && !enrolment.hasPassword) {
+    // F-611: a member who joined with Google has no password to type here.
+    return (
+      <div className="space-y-4" data-testid="twofa-enrol-confirm">
+        <h3 className="font-semibold text-theme-primary">{t('passkey_security_confirm_title')}</h3>
+        <SetPasswordPrompt reason={t('twofa_needs_password')} />
+        <div className="flex justify-end">
+          <Button variant="tertiary" onPress={() => enrolment.cancel('confirming')}>
+            {t('cancel')}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (phase === 'confirming') {
     return (

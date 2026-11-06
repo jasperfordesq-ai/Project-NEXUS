@@ -22,7 +22,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
-import { confirmWebAuthnSecurity } from '@/lib/webauthn';
+import { confirmWebAuthnSecurity, getWebAuthnStatus } from '@/lib/webauthn';
 import { logError } from '@/lib/logger';
 import { buildSecurityConfirmationInput } from '@/components/security/SecurityConfirmationModal';
 import type { SecurityConfirmationMethod } from '@/components/security/SecurityConfirmationModal';
@@ -48,6 +48,12 @@ export interface UseTwoFactorEnrolmentOptions {
 
 export interface TwoFactorEnrolmentController {
   phase: TwoFactorEnrolmentPhase;
+  /**
+   * Whether the member can confirm with a password. False for a member who
+   * joined with Google and never set one (F-611): the confirmation step then
+   * offers "Set a password" instead of a password box.
+   */
+  hasPassword: boolean;
   // Confirmation step
   confirmMethod: SecurityConfirmationMethod;
   setConfirmMethod: (method: SecurityConfirmationMethod) => void;
@@ -77,6 +83,20 @@ export interface TwoFactorEnrolmentController {
   finish: () => void;
 }
 
+/**
+ * Ask the server whether this member has a password to confirm with. If the
+ * answer cannot be read, assume they do: that is the behaviour before F-611,
+ * and the server still refuses a wrong or missing password either way.
+ */
+async function memberHasPassword(): Promise<boolean> {
+  try {
+    const status = await getWebAuthnStatus();
+    return status?.confirmation_methods?.password !== false;
+  } catch {
+    return true;
+  }
+}
+
 export function useTwoFactorEnrolment(options: UseTwoFactorEnrolmentOptions = {}): TwoFactorEnrolmentController {
   const { onEnrolled } = options;
   const { t } = useTranslation('settings');
@@ -89,6 +109,7 @@ export function useTwoFactorEnrolment(options: UseTwoFactorEnrolmentOptions = {}
     setPhaseState(next);
   }, []);
   const confirmTokenRef = useRef<string | null>(null);
+  const [hasPassword, setHasPassword] = useState(true);
   const [confirmMethod, setConfirmMethod] = useState<SecurityConfirmationMethod>('password');
   const [confirmValue, setConfirmValue] = useState('');
   const [confirmError, setConfirmError] = useState<string | null>(null);
@@ -136,6 +157,8 @@ export function useTwoFactorEnrolment(options: UseTwoFactorEnrolmentOptions = {}
     } catch {
       // Fall through to the explicit confirmation prompt.
     }
+    // F-611 (E-121): a member who joined with Google has no password to type.
+    setHasPassword(await memberHasPassword());
     setPhase('confirming');
   }, [setPhase, startSetup]);
 
@@ -220,6 +243,7 @@ export function useTwoFactorEnrolment(options: UseTwoFactorEnrolmentOptions = {}
 
   return {
     phase,
+    hasPassword,
     confirmMethod,
     setConfirmMethod,
     confirmValue,

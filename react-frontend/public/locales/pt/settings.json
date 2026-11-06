@@ -188,6 +188,15 @@
   "passkey_security_confirm_action": "Confirmar",
   "passkey_security_confirm_failed": "Não foi possível confirmar a sua identidade. Verifique os dados e tente novamente.",
   "passkey_security_confirm_no_method": "Termine a sessão e volte a iniciá-la com a sua chave de acesso antes desta alteração, ou adicione outro método de confirmação.",
+  "set_password_title": "Definir uma senha",
+  "set_password_subtitle": "Você entra com o Google ou outra conta",
+  "set_password_no_password": "Sua conta ainda não tem senha, porque você entra com o Google ou outra conta.",
+  "set_password_why": "Com uma senha, você também pode ativar a autenticação de dois fatores, adicionar uma chave de acesso e excluir sua conta aqui, e entrar no site acessível e no aplicativo do telefone.",
+  "set_password_action": "Enviar-me um link para definir uma senha",
+  "set_password_sent": "Enviamos um link para você definir uma senha. Ao usá-lo, você sairá de todos os dispositivos, então entre novamente depois.",
+  "set_password_failed": "Não foi possível enviar o e-mail. Tente novamente.",
+  "twofa_needs_password": "Para ativar a autenticação de dois fatores, sua conta precisa primeiro de uma senha.",
+  "twofa_disable_needs_password": "Para desativar a autenticação de dois fatores, sua conta precisa primeiro de uma senha.",
   "step_up_description": "Esta é uma ação de alto risco. Introduza um código da sua aplicação de autenticação para confirmar que é você.",
   "step_up_no_method": "A sua conta não tem uma aplicação de autenticação para confirmar. Termine sessão, inicie sessão novamente e tente esta ação outra vez.",
   "passkey_sessions_revoked": "As suas chaves de acesso foram alteradas. Inicie sessão novamente em cada dispositivo.",
@@ -560,7 +569,8 @@
     "type_confirm": "Escreva DELETE para confirmar:",
     "placeholder": "DELETE",
     "submit": "Eliminar a Minha Conta",
-    "aria_label": "Digite DELETE para confirmar"
+    "aria_label": "Digite DELETE para confirmar",
+    "needs_password": "Para excluir sua conta aqui, ela precisa primeiro de uma senha. Você também pode pedir aos organizadores da sua comunidade que a excluam."
   },
   "twofa_qr_alt": "Codigo QR 2FA",
   "toasts": {

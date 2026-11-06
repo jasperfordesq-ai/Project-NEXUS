@@ -1112,22 +1112,16 @@ class WebAuthnController extends BaseApiController
                     && $issuedAt >= time() - 300
                     && $issuedAt <= time() + 30;
 
-                if ($isRecentPasskey) {
-                    $method = 'passkey_uv';
-                }
-
-                $accessToken = request()->user()?->currentAccessToken();
-                $tokenName = strtolower((string) ($accessToken->name ?? ''));
-                $createdAt = $accessToken->created_at ?? null;
-                $isRecentFederated = $createdAt !== null
-                    && $createdAt->greaterThanOrEqualTo(now()->subMinutes(5))
-                    && (str_starts_with($tokenName, 'oauth-')
-                        || str_starts_with($tokenName, 'sso-')
-                        || str_starts_with($tokenName, 'oidc-'));
-                if ($method === null && !$isRecentFederated) {
+                // F-611 (E-121): there is deliberately no "a recent sign-in through
+                // Google or SSO counts" branch. One sat here until 6 Nov 2026, keyed
+                // on Sanctum token names (oauth-/sso-/oidc-) that nothing creates,
+                // so it could never pass, and a member who joined through a provider
+                // had no way to confirm anything. Owner decision: such a member adds
+                // a password first (Settings → "Set a password", the reset email).
+                if (!$isRecentPasskey) {
                     return $this->securityConfirmationFailed();
                 }
-                $method ??= 'federated_login';
+                $method = 'passkey_uv';
             }
 
             $token = $this->tokenService->generateSecurityConfirmationToken(

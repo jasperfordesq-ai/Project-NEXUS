@@ -992,9 +992,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/WebAuthnController.php:1260:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/WebAuthnController.php:1254:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/WebAuthnController.php",
-            "line": 1260,
+            "line": 1254,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -1005,9 +1005,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/WebAuthnController.php:1424:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/WebAuthnController.php:1418:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/WebAuthnController.php",
-            "line": 1424,
+            "line": 1418,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",

@@ -123,6 +123,8 @@ export function StepUpPrompt() {
       onCancel={() => settle(null)}
       description={t('step_up_description')}
       noMethodMessage={t('step_up_no_method')}
+      /* A password is not a second factor, so it never satisfies this check. */
+      offerSetPassword={false}
     />
   );
 }

@@ -25,8 +25,10 @@ use Symfony\Component\HttpFoundation\Response;
  *    window, or
  *  - the request carries a security-confirmation token minted by
  *    POST /api/webauthn/security-confirm from a second factor (TOTP, backup
- *    code, user-verified passkey or a fresh federated sign-in). A password
- *    alone is not a second factor and is refused here.
+ *    code or user-verified passkey). A password alone is not a second factor
+ *    and is refused here, and so is a sign-in through Google or SSO: the
+ *    `federated_login` method this list used to accept could never be minted
+ *    (F-611, E-121) and must not come back as a second factor.
  *
  * Attach it after the route's own admission gate (`admin`, `broker-or-admin`,
  * `super-admin`) so a caller without the role is refused for that reason, not
@@ -39,7 +41,7 @@ class RequireRecentSecondFactor
     public const ERROR_CODE = 'AUTH_STEP_UP_REQUIRED';
 
     /** Confirmation methods that prove a second factor, not just a password. */
-    private const SECOND_FACTOR_CONFIRMATIONS = ['totp', 'backup_code', 'passkey_uv', 'federated_login'];
+    private const SECOND_FACTOR_CONFIRMATIONS = ['totp', 'backup_code', 'passkey_uv'];
 
     public function handle(Request $request, Closure $next, ?string $windowSeconds = null): Response
     {

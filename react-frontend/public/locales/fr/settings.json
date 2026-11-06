@@ -188,6 +188,15 @@
   "passkey_security_confirm_action": "Confirmer",
   "passkey_security_confirm_failed": "Nous n’avons pas pu confirmer votre identité. Vérifiez vos informations et réessayez.",
   "passkey_security_confirm_no_method": "Déconnectez-vous, puis reconnectez-vous avec votre clé d’accès avant cette modification, ou ajoutez une autre méthode de confirmation.",
+  "set_password_title": "Définir un mot de passe",
+  "set_password_subtitle": "Vous vous connectez avec Google ou un autre compte",
+  "set_password_no_password": "Votre compte n’a pas encore de mot de passe, car vous vous connectez avec Google ou un autre compte.",
+  "set_password_why": "Avec un mot de passe, vous pouvez aussi activer l’authentification à deux facteurs, ajouter une clé d’accès et supprimer votre compte ici, et vous connecter au site accessible et à l’application mobile.",
+  "set_password_action": "M’envoyer un lien pour définir un mot de passe",
+  "set_password_sent": "Nous vous avons envoyé un lien pour définir un mot de passe. Son utilisation vous déconnecte partout : reconnectez-vous ensuite.",
+  "set_password_failed": "Nous n’avons pas pu envoyer l’e-mail. Veuillez réessayer.",
+  "twofa_needs_password": "Pour activer l’authentification à deux facteurs, votre compte a d’abord besoin d’un mot de passe.",
+  "twofa_disable_needs_password": "Pour désactiver l’authentification à deux facteurs, votre compte a d’abord besoin d’un mot de passe.",
   "step_up_description": "Il s’agit d’une action à haut risque. Saisissez un code de votre application d’authentification pour confirmer qu’il s’agit bien de vous.",
   "step_up_no_method": "Votre compte ne dispose d’aucune application d’authentification pour confirmer. Déconnectez-vous, reconnectez-vous, puis réessayez cette action.",
   "passkey_sessions_revoked": "Vos clés d’accès ont changé. Reconnectez-vous sur chaque appareil.",
@@ -560,7 +569,8 @@
     "type_confirm": "Tapez DELETE pour confirmer :",
     "placeholder": "DELETE",
     "submit": "Supprimer mon compte",
-    "aria_label": "Tapez DELETE pour confirmer"
+    "aria_label": "Tapez DELETE pour confirmer",
+    "needs_password": "Pour supprimer votre compte ici, il lui faut d’abord un mot de passe. Vous pouvez aussi demander aux organisateurs de votre communauté de le supprimer."
   },
   "twofa_qr_alt": "Code QR 2FA",
   "toasts": {

@@ -193,6 +193,7 @@ vi.mock('@/lib/api', () => ({
 
 vi.mock('@/lib/webauthn', () => ({
   confirmWebAuthnSecurity: vi.fn().mockResolvedValue({ success: false }),
+  getWebAuthnStatus: vi.fn(),
 }));
 
 // Stable references — CRITICAL: useAuth/useTenant/useToast must return the SAME object
@@ -213,6 +214,7 @@ vi.mock('@/contexts', () => {
     profile_type: 'individual',
     organization_name: '',
     has_2fa_enabled: false,
+    email: 'test.user@example.test',
   };
   const mockLogout = vi.fn();
   const mockRefreshUser = vi.fn();
@@ -387,8 +389,17 @@ vi.mock('@/lib/motion', async () => {
 
 import { SettingsPage } from './SettingsPage';
 import { api } from '@/lib/api';
-import { confirmWebAuthnSecurity } from '@/lib/webauthn';
+import { confirmWebAuthnSecurity, getWebAuthnStatus } from '@/lib/webauthn';
 import { useAuth } from '@/contexts';
+
+/** What /webauthn/status says about how this member can confirm it is them. */
+function confirmationMethods(password: boolean) {
+  return {
+    registered: false,
+    count: 0,
+    confirmation_methods: { password, totp: false, passkey: false },
+  } as unknown as Awaited<ReturnType<typeof getWebAuthnStatus>>;
+}
 
 function Wrapper({ children }: { children: ReactNode }) {
   return (
@@ -401,6 +412,7 @@ function Wrapper({ children }: { children: ReactNode }) {
 describe('SettingsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(getWebAuthnStatus).mockResolvedValue(confirmationMethods(true));
     tenantGateMocks.hasFeature.mockReturnValue(true);
     tenantGateMocks.hasModule.mockReturnValue(true);
     vi.mocked(api.get).mockImplementation((url: string) => {
@@ -500,7 +512,7 @@ describe('SettingsPage', () => {
 
   it('asks for a fresh confirmation before enrolling an authenticator and sends its token (E-035 F-170)', async () => {
     vi.mocked(confirmWebAuthnSecurity)
-      // No recent passkey / SSO sign-in: the silent attempt is refused.
+      // No recent passkey sign-in: the silent attempt is refused.
       .mockResolvedValueOnce({ success: false, errorCode: 'SECURITY_CONFIRMATION_REQUIRED' })
       .mockResolvedValueOnce({ success: true, securityConfirmationToken: 'conf-tok', expiresIn: 300 });
     vi.mocked(api.post).mockResolvedValueOnce({
@@ -522,6 +534,55 @@ describe('SettingsPage', () => {
       { security_confirmation_token: 'conf-tok' },
     ));
     expect(confirmWebAuthnSecurity).toHaveBeenLastCalledWith({ current_password: 'CurrentPassword!123' });
+  });
+
+  // F-611 (E-121): a member who joined with Google has no password. Every place
+  // that asked for one now explains and offers "Set a password" (the existing
+  // reset email) instead of a password box they cannot fill in.
+  describe('a member without a password (F-611)', () => {
+    beforeEach(() => {
+      vi.mocked(getWebAuthnStatus).mockResolvedValue(confirmationMethods(false));
+    });
+
+    it('offers "Set a password" instead of a password box when turning on two-factor', async () => {
+      vi.mocked(confirmWebAuthnSecurity)
+        .mockResolvedValueOnce({ success: false, errorCode: 'SECURITY_CONFIRMATION_REQUIRED' });
+      const user = userEvent.setup();
+      render(<SettingsPage />, { wrapper: Wrapper });
+      await user.click(screen.getByRole('tab', { name: 'Security' }));
+      await user.click(await screen.findByRole('button', { name: 'twofa_enable' }));
+
+      expect(await screen.findByText('twofa_needs_password')).toBeInTheDocument();
+      expect(screen.queryByLabelText('passkey_security_confirm_password')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'set_password_action' }));
+      await waitFor(() => expect(api.post).toHaveBeenCalledWith(
+        '/auth/forgot-password',
+        { email: 'test.user@example.test' },
+      ));
+      expect(await screen.findByText('set_password_sent')).toBeInTheDocument();
+      expect(api.post).not.toHaveBeenCalledWith('/v2/auth/2fa/setup', expect.anything());
+    });
+
+    it('offers "Set a password" in place of "Change password"', async () => {
+      const user = userEvent.setup();
+      render(<SettingsPage />, { wrapper: Wrapper });
+      await user.click(screen.getByRole('tab', { name: 'Security' }));
+      expect(await screen.findByText('set_password_title')).toBeInTheDocument();
+      expect(screen.queryByText('change_password')).not.toBeInTheDocument();
+    });
+
+    it('explains that deleting the account here needs a password first', async () => {
+      const user = userEvent.setup();
+      render(<SettingsPage />, { wrapper: Wrapper });
+      await user.click(screen.getByRole('tab', { name: 'Security' }));
+      await screen.findByText('set_password_title');
+      await user.click(screen.getByRole('button', { name: 'delete_account' }));
+
+      expect(await screen.findByText('delete_modal.needs_password')).toBeInTheDocument();
+      expect(screen.queryByLabelText('password.current')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'set_password_action' })).toBeInTheDocument();
+    });
   });
 
   // The enrolment flow moved to the shared TwoFactorEnrolment component

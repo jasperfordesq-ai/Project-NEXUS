@@ -44,6 +44,8 @@ import { AvailabilityGrid } from '@/components/availability/AvailabilityGrid';
 import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
+import { getWebAuthnStatus } from '@/lib/webauthn';
+import { SetPasswordPrompt } from '@/components/security/SetPasswordPrompt';
 import { TwoFactorEnrolment } from '@/components/security/TwoFactorEnrolment';
 import { useTwoFactorEnrolment } from '@/components/security/useTwoFactorEnrolment';
 import { isAvatarFileTooLarge, isSupportedAvatarFile } from '@/lib/avatarUpload';
@@ -220,6 +222,9 @@ export function SettingsPage() {
   // Delete confirmation
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [deletePassword, setDeletePassword] = useState('');
+  // F-611 (E-121): false for a member who joined with Google and has no
+  // password; undefined until known (treated as having one, as before).
+  const [hasPassword, setHasPassword] = useState<boolean | undefined>(undefined);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Error state for notification settings
@@ -498,6 +503,18 @@ export function SettingsPage() {
     }
   }, []);
 
+  // Whether this member has a password to confirm with (F-611). Worked out by
+  // the server in the account's home community (/webauthn/status).
+  const loadPasswordStatus = useCallback(async () => {
+    try {
+      const status = await getWebAuthnStatus();
+      const password = status?.confirmation_methods?.password;
+      if (typeof password === 'boolean') setHasPassword(password);
+    } catch (error) {
+      logError('Failed to load sign-in methods', error);
+    }
+  }, []);
+
   const handleTwoFactorEnrolled = useCallback((codes: string[]) => {
     setTwoFactorEnabled(true);
     if (codes.length > 0) setBackupCodesRemaining(codes.length);
@@ -587,14 +604,14 @@ export function SettingsPage() {
       void loadPrivacySettings();
     } else if (activeTab === 'security' && !loadedTabs.current.has('security')) {
       loadedTabs.current.add('security');
-      void Promise.all([loadTwoFactorStatus(), loadSessions()]);
+      void Promise.all([loadTwoFactorStatus(), loadSessions(), loadPasswordStatus()]);
     }
 
     if (activeTab === 'privacy' && tenant?.compliance?.insurance_enabled && !insuranceLoaded.current) {
       insuranceLoaded.current = true;
       void loadInsuranceCerts();
     }
-  }, [activeTab, loadInsuranceCerts, loadNotificationSettings, loadPrivacySettings, loadSessions, loadTwoFactorStatus, tenant?.compliance?.insurance_enabled, user]);
+  }, [activeTab, loadInsuranceCerts, loadNotificationSettings, loadPasswordStatus, loadPrivacySettings, loadSessions, loadTwoFactorStatus, tenant?.compliance?.insurance_enabled, user]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Save Handlers
@@ -869,6 +886,8 @@ export function SettingsPage() {
   function handleOpenDeleteModal() {
     setDeleteConfirmation('');
     setDeletePassword('');
+    // Opened from the Privacy tab, the Security tab's lookup may not have run.
+    if (hasPassword === undefined) void loadPasswordStatus();
     deleteModal.onOpen();
   }
 
@@ -1271,6 +1290,7 @@ export function SettingsPage() {
             sessionsLoading={sessionsLoading}
             sessionsError={sessionsError}
             onReloadSessions={loadSessions}
+            hasPassword={hasPassword}
             passwordData={passwordData}
             showCurrentPassword={showCurrentPassword}
             showNewPassword={showNewPassword}
@@ -1496,7 +1516,12 @@ export function SettingsPage() {
                   armKey={deleteModal.isOpen}
                 />
               </div>
-              {/* Password re-authentication — required by the backend before erasure. */}
+              {/* Password re-authentication — required by the backend before erasure.
+                  A member with no password (joined with Google) sets one first
+                  (F-611); they can also ask their community's organisers. */}
+              {hasPassword === false ? (
+                <SetPasswordPrompt reason={t('delete_modal.needs_password')} />
+              ) : (
               <Input
                 type="password"
                 label={t('password.current')}
@@ -1510,6 +1535,7 @@ export function SettingsPage() {
                   label: 'text-theme-muted',
                 }}
               />
+              )}
             </div>
           </ModalBody>
           <ModalFooter>

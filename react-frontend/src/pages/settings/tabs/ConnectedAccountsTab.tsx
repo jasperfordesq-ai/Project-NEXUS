@@ -248,9 +248,9 @@ export function ConnectedAccountsTab() {
     try {
       let token = getCachedSecurityConfirmation();
 
-      // Passkey and federated sign-ins carry a short-lived, strong proof. Ask
-      // the server once whether this session is still inside that window
-      // before prompting.
+      // A passkey sign-in carries a short-lived, strong proof. Ask the server
+      // once whether this session is still inside that window before
+      // prompting. (A Google or SSO sign-in is not such a proof — F-611.)
       if (!token && !recentSessionCheckedRef.current) {
         recentSessionCheckedRef.current = true;
         try {

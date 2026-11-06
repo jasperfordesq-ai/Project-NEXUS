@@ -188,6 +188,15 @@
   "passkey_security_confirm_action": "確認",
   "passkey_security_confirm_failed": "本人確認ができませんでした。入力内容を確認して、もう一度お試しください。",
   "passkey_security_confirm_no_method": "この変更を行う前にサインアウトし、パスキーで再度サインインするか、別の確認方法を追加してください。",
+  "set_password_title": "パスワードを設定",
+  "set_password_subtitle": "Google または別のアカウントでサインインしています",
+  "set_password_no_password": "Google または別のアカウントでサインインしているため、アカウントにはまだパスワードがありません。",
+  "set_password_why": "パスワードがあると、ここで二段階認証をオンにしたり、パスキーを追加したり、アカウントを削除したりできるほか、アクセシブルサイトやスマートフォンアプリにもサインインできます。",
+  "set_password_action": "パスワード設定用のリンクをメールで送る",
+  "set_password_sent": "パスワードを設定するためのリンクをメールで送信しました。リンクを使うとすべての場所からサインアウトされるため、その後もう一度サインインしてください。",
+  "set_password_failed": "メールを送信できませんでした。もう一度お試しください。",
+  "twofa_needs_password": "二段階認証をオンにするには、まずアカウントにパスワードが必要です。",
+  "twofa_disable_needs_password": "二段階認証をオフにするには、まずアカウントにパスワードが必要です。",
   "step_up_description": "これはリスクの高い操作です。本人確認のため、認証アプリのコードを入力してください。",
   "step_up_no_method": "このアカウントには確認に使える認証アプリがありません。一度サインアウトして再度サインインしてから、この操作をもう一度お試しください。",
   "passkey_sessions_revoked": "パスキーが変更されました。すべてのデバイスで再度サインインしてください。",
@@ -560,7 +569,8 @@
     "type_confirm": "確認のためにDELETEと入力してください：",
     "placeholder": "DELETE",
     "submit": "アカウントを削除",
-    "aria_label": "アカウント削除の確認のためにDELETEと入力してください"
+    "aria_label": "アカウント削除の確認のためにDELETEと入力してください",
+    "needs_password": "ここでアカウントを削除するには、まずパスワードが必要です。コミュニティの運営者に削除を依頼することもできます。"
   },
   "twofa_qr_alt": "2FA QRコード",
   "toasts": {

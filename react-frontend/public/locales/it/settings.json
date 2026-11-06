@@ -188,6 +188,15 @@
   "passkey_security_confirm_action": "Conferma",
   "passkey_security_confirm_failed": "Non è stato possibile confermare la tua identità. Controlla i dati e riprova.",
   "passkey_security_confirm_no_method": "Esci e accedi di nuovo con la passkey prima di apportare questa modifica, oppure aggiungi un altro metodo di conferma.",
+  "set_password_title": "Imposta una password",
+  "set_password_subtitle": "Accedi con Google o con un altro account",
+  "set_password_no_password": "Il tuo account non ha ancora una password, perché accedi con Google o con un altro account.",
+  "set_password_why": "Con una password puoi anche attivare l'autenticazione a due fattori, aggiungere una passkey ed eliminare il tuo account qui, e accedere al sito accessibile e all'app per telefono.",
+  "set_password_action": "Inviami un link per impostare una password",
+  "set_password_sent": "Ti abbiamo inviato un link per impostare una password. Usandolo verrai disconnesso ovunque, quindi accedi di nuovo dopo.",
+  "set_password_failed": "Non è stato possibile inviare l'email. Riprova.",
+  "twofa_needs_password": "Per attivare l'autenticazione a due fattori, il tuo account ha prima bisogno di una password.",
+  "twofa_disable_needs_password": "Per disattivare l'autenticazione a due fattori, il tuo account ha prima bisogno di una password.",
   "step_up_description": "Questa è un’azione ad alto rischio. Inserisci un codice dalla tua app di autenticazione per confermare che sei tu.",
   "step_up_no_method": "Il tuo account non ha un’app di autenticazione con cui confermare. Esci, accedi di nuovo e riprova questa azione.",
   "passkey_sessions_revoked": "Le tue passkey sono cambiate. Accedi di nuovo su ogni dispositivo.",
@@ -560,7 +569,8 @@
     "type_confirm": "Digita DELETE per confermare:",
     "placeholder": "DELETE",
     "submit": "Elimina il Mio Account",
-    "aria_label": "Digita DELETE per confermare"
+    "aria_label": "Digita DELETE per confermare",
+    "needs_password": "Per eliminare il tuo account qui, serve prima una password. Puoi anche chiedere agli organizzatori della tua comunità di eliminarlo."
   },
   "twofa_qr_alt": "Codice QR 2FA",
   "toasts": {

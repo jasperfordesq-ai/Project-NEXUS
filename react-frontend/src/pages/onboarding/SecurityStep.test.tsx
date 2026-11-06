@@ -35,6 +35,8 @@ vi.mock('@/lib/api', () => ({
 const mockConfirm = vi.fn();
 vi.mock('@/lib/webauthn', () => ({
   confirmWebAuthnSecurity: (...args: unknown[]) => mockConfirm(...args),
+  // The server only offers this step to members with a password.
+  getWebAuthnStatus: () => Promise.resolve({ confirmation_methods: { password: true, totp: false, passkey: false } }),
 }));
 
 const stableToastValue = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };

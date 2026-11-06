@@ -408,9 +408,9 @@ export function BiometricSettings() {
         return;
       }
 
-      // Passkey and federated logins carry a five-minute, UV-backed proof. Ask
-      // the server once whether this session is still inside that window before
-      // showing another prompt.
+      // A passkey sign-in carries a five-minute, UV-backed proof. Ask the server
+      // once whether this session is still inside that window before showing
+      // another prompt. (A Google or SSO sign-in is not such a proof — F-611.)
       if (!recentSessionCheckedRef.current) {
         recentSessionCheckedRef.current = true;
         const recentSession = await confirmWebAuthnSecurity();

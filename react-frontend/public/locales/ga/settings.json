@@ -188,6 +188,15 @@
   "passkey_security_confirm_action": "Deimhnigh",
   "passkey_security_confirm_failed": "Níorbh fhéidir d’aitheantas a dheimhniú. Seiceáil na sonraí agus bain triail eile as.",
   "passkey_security_confirm_no_method": "Sínigh amach agus sínigh isteach arís le do phas-eochair sula ndéanann tú an t-athrú seo, nó cuir modh deimhnithe eile leis.",
+  "set_password_title": "Socraigh pasfhocal",
+  "set_password_subtitle": "Síníonn tú isteach le Google nó le cuntas eile",
+  "set_password_no_password": "Níl pasfhocal ag do chuntas fós, mar go síníonn tú isteach le Google nó le cuntas eile.",
+  "set_password_why": "Le pasfhocal, is féidir leat freisin fíordheimhniú dhá fhachtóir a chur ar siúl, eochair rochtana a chur leis agus do chuntas a scriosadh anseo, agus síniú isteach ar an suíomh inrochtana agus san aip ar an bhfón.",
+  "set_password_action": "Seol nasc chugam chun pasfhocal a shocrú",
+  "set_password_sent": "Sheolamar nasc chugat chun pasfhocal a shocrú. Nuair a úsáideann tú é, sínítear amach thú i ngach áit, mar sin sínigh isteach arís ina dhiaidh sin.",
+  "set_password_failed": "Níorbh fhéidir linn an ríomhphost a sheoladh. Bain triail eile as.",
+  "twofa_needs_password": "Chun fíordheimhniú dhá fhachtóir a chur ar siúl, teastaíonn pasfhocal ó do chuntas ar dtús.",
+  "twofa_disable_needs_password": "Chun fíordheimhniú dhá fhachtóir a mhúchadh, teastaíonn pasfhocal ó do chuntas ar dtús.",
   "step_up_description": "Is gníomh ardriosca é seo. Cuir isteach cód ó d’aip fíordheimhnithe chun a dheimhniú gur tusa atá ann.",
   "step_up_no_method": "Níl aon aip fíordheimhnithe ar do chuntas chun é a dheimhniú. Sínigh amach agus sínigh isteach arís, ansin bain triail as an ngníomh seo arís.",
   "passkey_sessions_revoked": "Athraíodh do phas-eochracha. Sínigh isteach arís ar gach gléas.",
@@ -560,7 +569,8 @@
     "type_confirm": "Clóscríobh DELETE chun deimhniú:",
     "placeholder": "DELETE",
     "submit": "Scrios Mo Chuntas",
-    "aria_label": "Clóscríobh DELETE chun scriosadh an chuntais a dheimhniú"
+    "aria_label": "Clóscríobh DELETE chun scriosadh an chuntais a dheimhniú",
+    "needs_password": "Chun do chuntas a scriosadh anseo, teastaíonn pasfhocal uaidh ar dtús. Is féidir leat iarraidh ar eagraithe do phobail é a scriosadh freisin."
   },
   "twofa_qr_alt": "Cód QR le haghaidh 2FA",
   "toasts": {

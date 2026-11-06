@@ -188,6 +188,15 @@
   "passkey_security_confirm_action": "Confirmar",
   "passkey_security_confirm_failed": "No pudimos confirmar su identidad. Revise los datos e inténtelo de nuevo.",
   "passkey_security_confirm_no_method": "Cierre la sesión y vuelva a iniciarla con su clave de acceso antes de realizar este cambio, o añada otro método de confirmación.",
+  "set_password_title": "Establecer una contraseña",
+  "set_password_subtitle": "Inicias sesión con Google u otra cuenta",
+  "set_password_no_password": "Tu cuenta aún no tiene contraseña, porque inicias sesión con Google u otra cuenta.",
+  "set_password_why": "Con una contraseña también puedes activar la autenticación de dos factores, añadir una llave de acceso y eliminar tu cuenta aquí, e iniciar sesión en el sitio accesible y en la aplicación del teléfono.",
+  "set_password_action": "Envíame un enlace para establecer una contraseña",
+  "set_password_sent": "Te hemos enviado un enlace para establecer una contraseña. Al usarlo se cerrará tu sesión en todas partes, así que vuelve a iniciar sesión después.",
+  "set_password_failed": "No pudimos enviar el correo. Inténtalo de nuevo.",
+  "twofa_needs_password": "Para activar la autenticación de dos factores, tu cuenta necesita primero una contraseña.",
+  "twofa_disable_needs_password": "Para desactivar la autenticación de dos factores, tu cuenta necesita primero una contraseña.",
   "step_up_description": "Esta es una acción de alto riesgo. Introduce un código de tu aplicación de autenticación para confirmar que eres tú.",
   "step_up_no_method": "Tu cuenta no tiene una aplicación de autenticación con la que confirmar. Cierra sesión, vuelve a iniciarla e intenta de nuevo esta acción.",
   "passkey_sessions_revoked": "Sus claves de acceso cambiaron. Vuelva a iniciar sesión en cada dispositivo.",
@@ -560,7 +569,8 @@
     "type_confirm": "Escribe DELETE para confirmar:",
     "placeholder": "DELETE",
     "submit": "Eliminar Mi Cuenta",
-    "aria_label": "Escribe DELETE para confirmar"
+    "aria_label": "Escribe DELETE para confirmar",
+    "needs_password": "Para eliminar tu cuenta aquí, primero necesita una contraseña. También puedes pedir a los organizadores de tu comunidad que la eliminen."
   },
   "twofa_qr_alt": "Codigo QR 2FA",
   "toasts": {

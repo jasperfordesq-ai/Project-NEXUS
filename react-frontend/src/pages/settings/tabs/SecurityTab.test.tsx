@@ -31,6 +31,10 @@ vi.mock('@/components/security/BiometricSettings', () => ({
   BiometricSettings: () => <div data-testid="biometric-settings" />,
 }));
 
+vi.mock('@/components/security/SetPasswordPrompt', () => ({
+  SetPasswordPrompt: ({ reason }: { reason?: string }) => <div data-testid="set-password-prompt">{reason}</div>,
+}));
+
 // Use the shared lightweight UI mock so modal content (which only renders when
 // the overlay is open) is queryable in jsdom and labeled inputs resolve via
 // getByLabelText. The overlay stub returns null when isOpen is false, matching
@@ -98,6 +102,37 @@ describe('SecurityTab', () => {
   it('renders Change Password button', () => {
     render(<SecurityTab {...defaultProps} />);
     expect(screen.getByText('change_password')).toBeDefined();
+  });
+
+  // F-611 (E-121): a member who joined with Google has no password to change or
+  // to confirm with. They are offered "Set a password" (the reset email) instead.
+  describe('a member without a password', () => {
+    it('offers "Set a password" in place of "Change password"', () => {
+      render(<SecurityTab {...defaultProps} hasPassword={false} />);
+      expect(screen.getByText('set_password_title')).toBeInTheDocument();
+      expect(screen.queryByText('change_password')).not.toBeInTheDocument();
+    });
+
+    it('explains how to add one instead of asking for the current password', () => {
+      render(<SecurityTab {...defaultProps} hasPassword={false} passwordModalOpen={true} />);
+      expect(screen.getByTestId('set-password-prompt')).toBeInTheDocument();
+      expect(screen.queryByLabelText('password.current')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'password_modal.submit' })).not.toBeInTheDocument();
+    });
+
+    it('explains that turning two-factor off needs a password first', () => {
+      render(
+        <SecurityTab {...defaultProps} hasPassword={false} twoFactorEnabled={true} twoFactorDisableModalOpen={true} />
+      );
+      expect(screen.getByTestId('set-password-prompt')).toHaveTextContent('twofa_disable_needs_password');
+      expect(screen.queryByLabelText('twofa_confirm_password')).not.toBeInTheDocument();
+    });
+
+    it('keeps the usual password form when the member has one', () => {
+      render(<SecurityTab {...defaultProps} hasPassword={true} passwordModalOpen={true} />);
+      expect(screen.getByLabelText('password.current')).toBeInTheDocument();
+      expect(screen.queryByTestId('set-password-prompt')).not.toBeInTheDocument();
+    });
   });
 
   it('calls passwordModalOnOpen when Change Password clicked', async () => {

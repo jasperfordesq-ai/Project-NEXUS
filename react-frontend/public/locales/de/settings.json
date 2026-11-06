@@ -188,6 +188,15 @@
   "passkey_security_confirm_action": "Bestätigen",
   "passkey_security_confirm_failed": "Ihre Identität konnte nicht bestätigt werden. Prüfen Sie Ihre Angaben und versuchen Sie es erneut.",
   "passkey_security_confirm_no_method": "Melden Sie sich ab und erneut mit Ihrem Passkey an, bevor Sie diese Änderung vornehmen, oder fügen Sie eine andere Bestätigungsmethode hinzu.",
+  "set_password_title": "Passwort festlegen",
+  "set_password_subtitle": "Sie melden sich mit Google oder einem anderen Konto an",
+  "set_password_no_password": "Ihr Konto hat noch kein Passwort, weil Sie sich mit Google oder einem anderen Konto anmelden.",
+  "set_password_why": "Mit einem Passwort können Sie hier außerdem die Zwei-Faktor-Authentifizierung aktivieren, einen Passkey hinzufügen und Ihr Konto löschen sowie sich auf der barrierefreien Website und in der App anmelden.",
+  "set_password_action": "Link zum Festlegen eines Passworts per E-Mail senden",
+  "set_password_sent": "Wir haben Ihnen einen Link zum Festlegen eines Passworts gesendet. Wenn Sie ihn verwenden, werden Sie überall abgemeldet. Melden Sie sich danach bitte erneut an.",
+  "set_password_failed": "Die E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+  "twofa_needs_password": "Um die Zwei-Faktor-Authentifizierung zu aktivieren, benötigt Ihr Konto zuerst ein Passwort.",
+  "twofa_disable_needs_password": "Um die Zwei-Faktor-Authentifizierung zu deaktivieren, benötigt Ihr Konto zuerst ein Passwort.",
   "step_up_description": "Dies ist eine risikoreiche Aktion. Geben Sie einen Code aus Ihrer Authentifizierungs-App ein, um zu bestätigen, dass Sie es sind.",
   "step_up_no_method": "Für Ihr Konto ist keine Authentifizierungs-App zur Bestätigung eingerichtet. Melden Sie sich ab und wieder an und versuchen Sie diese Aktion dann erneut.",
   "passkey_sessions_revoked": "Ihre Passkeys wurden geändert. Melden Sie sich auf jedem Gerät erneut an.",
@@ -560,7 +569,8 @@
     "type_confirm": "Geben Sie DELETE ein, um zu bestätigen:",
     "placeholder": "DELETE",
     "submit": "Mein Konto löschen",
-    "aria_label": "Geben Sie DELETE ein, um die Kontolöschung zu bestätigen"
+    "aria_label": "Geben Sie DELETE ein, um die Kontolöschung zu bestätigen",
+    "needs_password": "Um Ihr Konto hier zu löschen, benötigt es zuerst ein Passwort. Sie können auch die Organisatoren Ihrer Community bitten, es zu löschen."
   },
   "twofa_qr_alt": "2FA QR-Code",
   "toasts": {

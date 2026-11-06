@@ -26,6 +26,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Description } from '@/components/ui/Description';
 import { Label } from '@/components/ui/Label';
 import { BiometricSettings } from '@/components/security/BiometricSettings';
+import { SetPasswordPrompt } from '@/components/security/SetPasswordPrompt';
 import { TwoFactorRecovery } from '@/components/security/TwoFactorRecovery';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts';
@@ -65,6 +66,12 @@ interface SecurityTabProps {
   sessionsError: string | null;
   onReloadSessions: () => void;
   // Password
+  /**
+   * False for a member with no password — one who joined with Google (F-611).
+   * They are offered "Set a password" wherever a password would be asked for.
+   * Undefined (not yet known) behaves as before: a password is assumed.
+   */
+  hasPassword?: boolean;
   passwordData: { current_password: string; new_password: string; confirm_password: string };
   showCurrentPassword: boolean;
   showNewPassword: boolean;
@@ -129,6 +136,7 @@ export function SecurityTab({
   sessionsLoading,
   sessionsError,
   onReloadSessions,
+  hasPassword,
   passwordData,
   showCurrentPassword,
   showNewPassword,
@@ -156,6 +164,7 @@ export function SecurityTab({
   const { t } = useTranslation('settings');
   const { hasFeature } = useTenant();
   const twoFactorEnrollmentAllowed = twoFactorRequired || hasFeature('two_factor_authentication');
+  const noPassword = hasPassword === false;
 
   return (
     <>
@@ -176,8 +185,10 @@ export function SecurityTab({
                   <Lock className="w-5 h-5 text-accent dark:text-accent" aria-hidden="true" />
                 </div>
                 <div className="min-w-0 leading-tight">
-                  <p className="font-medium text-theme-primary">{t('change_password')}</p>
-                  <p className="text-sm text-theme-subtle leading-snug">{t('change_password_subtitle')}</p>
+                  <p className="font-medium text-theme-primary">{noPassword ? t('set_password_title') : t('change_password')}</p>
+                  <p className="text-sm text-theme-subtle leading-snug">
+                    {noPassword ? t('set_password_subtitle') : t('change_password_subtitle')}
+                  </p>
                 </div>
               </div>
             </Button>
@@ -332,11 +343,16 @@ export function SecurityTab({
 
       {/* ─── Modals ─────────────────────────────────────────────────────────── */}
 
-      {/* Change Password Modal */}
+      {/* Change Password Modal — or, for a member with no password, how to set one (F-611). */}
       <Modal isOpen={passwordModalOpen} onClose={passwordModalOnClose} classNames={modalClassNames}>
         <ModalContent>
-          <ModalHeader className="text-theme-primary">{t('password_modal.title')}</ModalHeader>
+          <ModalHeader className="text-theme-primary">
+            {noPassword ? t('set_password_title') : t('password_modal.title')}
+          </ModalHeader>
           <ModalBody>
+            {noPassword ? (
+              <SetPasswordPrompt />
+            ) : (
             <div className="space-y-4">
               <Input
                 type={showCurrentPassword ? 'text' : 'password'}
@@ -390,18 +406,21 @@ export function SecurityTab({
                 classNames={inputClassNames}
               />
             </div>
+            )}
           </ModalBody>
           <ModalFooter>
             <Button variant="tertiary" onPress={passwordModalOnClose}>
               {t('cancel')}
             </Button>
-            <Button
-              variant="primary"
-              onPress={onChangePassword}
-              isLoading={isChangingPassword}
-            >
-              {t('password_modal.submit')}
-            </Button>
+            {!noPassword && (
+              <Button
+                variant="primary"
+                onPress={onChangePassword}
+                isLoading={isChangingPassword}
+              >
+                {t('password_modal.submit')}
+              </Button>
+            )}
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -444,6 +463,12 @@ export function SecurityTab({
                   {t('twofa_disable_desc')}
                 </p>
               </div>
+              {/* Turning it off needs the password AND a current code (E-004);
+                  a member with no password sets one first (F-611). */}
+              {noPassword ? (
+                <SetPasswordPrompt reason={t('twofa_disable_needs_password')} />
+              ) : (
+              <>
               <Input
                 type="password"
                 label={t('twofa_confirm_password')}
@@ -475,20 +500,24 @@ export function SecurityTab({
                 </InputOTP>
                 <Description className="self-start">{t('twofa_code_description')}</Description>
               </div>
+              </>
+              )}
             </div>
           </ModalBody>
           <ModalFooter>
             <Button variant="tertiary" onPress={twoFactorDisableModalOnClose}>
               {t('twofa_cancel')}
             </Button>
-            <Button
-              variant="danger"
-              onPress={onDisable2FA}
-              isLoading={isDisabling2FA}
-              isDisabled={!twoFactorDisablePassword || twoFactorDisableCode.length < 6}
-            >
-              {t('twofa_disable_confirm')}
-            </Button>
+            {!noPassword && (
+              <Button
+                variant="danger"
+                onPress={onDisable2FA}
+                isLoading={isDisabling2FA}
+                isDisabled={!twoFactorDisablePassword || twoFactorDisableCode.length < 6}
+              >
+                {t('twofa_disable_confirm')}
+              </Button>
+            )}
           </ModalFooter>
         </ModalContent>
       </Modal>
