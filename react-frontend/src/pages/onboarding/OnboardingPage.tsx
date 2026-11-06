@@ -17,6 +17,9 @@
  *                   Saved into the member's skills, which matching, Explore and
  *                   the personalised feed use.
  *  - Safeguarding - Only when the community has safeguarding options set up
+ *  - Security     - "Protect your account": an optional offer to turn on
+ *                   two-step sign-in. Only sent by the server to members who
+ *                   can set it up; "Not now" moves on and records nothing.
  *  - Confirm      - Profile preview + summary
  *
  * The "What are you interested in?" step was removed on 2026-10-02: nothing on
@@ -65,6 +68,7 @@ import { AVATAR_UPLOAD_ACCEPT, isAvatarFileTooLarge, isSupportedAvatarFile } fro
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl } from '@/lib/helpers';
 import { SafeguardingStep } from './SafeguardingStep';
+import { SecurityStep } from './SecurityStep';
 import { OnboardingSkillsPicker } from './OnboardingSkillsPicker';
 import { MemberLocationField } from '@/components/location/MemberLocationField';
 import { useLoginRedirect } from '@/hooks/useLoginRedirect';
@@ -1020,6 +1024,17 @@ export function OnboardingPage() {
               onSkip={!isStepRequired('safeguarding') ? goNextAnimated : undefined}
               isRequired={isStepRequired('safeguarding')}
               introText={onboardingConfig.safeguarding_intro_text}
+            />
+          )}
+
+          {/* ─── Protect your account (optional two-step sign-in offer) ─── */}
+          {currentStepSlug === 'security' && (
+            <SecurityStep
+              onNext={goNextAnimated}
+              onBack={goBackAnimated}
+              // Already on, or not allowed: pass through in the direction the
+              // member was travelling, so Back from the next step still works.
+              onUnavailable={slideDirection < 0 ? goBackAnimated : goNextAnimated}
             />
           )}
 

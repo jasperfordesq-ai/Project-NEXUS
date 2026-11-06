@@ -44,12 +44,8 @@ import { AvailabilityGrid } from '@/components/availability/AvailabilityGrid';
 import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
-import { confirmWebAuthnSecurity } from '@/lib/webauthn';
-import {
-  SecurityConfirmationModal,
-  buildSecurityConfirmationInput,
-} from '@/components/security/SecurityConfirmationModal';
-import type { SecurityConfirmationMethod } from '@/components/security/SecurityConfirmationModal';
+import { TwoFactorEnrolment } from '@/components/security/TwoFactorEnrolment';
+import { useTwoFactorEnrolment } from '@/components/security/useTwoFactorEnrolment';
 import { isAvatarFileTooLarge, isSupportedAvatarFile } from '@/lib/avatarUpload';
 import { logError } from '@/lib/logger';
 import { DATE_OF_BIRTH_UNDER_MINIMUM_AGE, serverMessageFor } from '@/lib/minimum-age';
@@ -66,7 +62,7 @@ import type { NotificationSettings } from './tabs/NotificationsTab';
 import { PrivacyTab } from './tabs/PrivacyTab';
 import type { PrivacySettings, UserInsuranceCert } from './tabs/PrivacyTab';
 import { SecurityTab } from './tabs/SecurityTab';
-import type { SessionInfo, TwoFactorSetup } from './tabs/SecurityTab';
+import type { SessionInfo } from './tabs/SecurityTab';
 import { isDeleteConfirmed } from './deleteConfirmation';
 import { DeleteConfirmationField } from './DeleteConfirmationField';
 import { SkillsTab } from './tabs/SkillsTab';
@@ -206,9 +202,7 @@ export function SettingsPage() {
   const passwordModal = useDisclosure();
   const deleteModal = useDisclosure();
   const logoutModal = useDisclosure();
-  const twoFactorSetupModal = useDisclosure();
   const twoFactorDisableModal = useDisclosure();
-  const backupCodesModal = useDisclosure();
   const gdprModal = useDisclosure();
   const marketingConsentModal = useDisclosure();
   const unsavedChangesModal = useDisclosure();
@@ -295,22 +289,12 @@ export function SettingsPage() {
   const [twoFactorRequired, setTwoFactorRequired] = useState(false);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [twoFactorLoading, setTwoFactorLoading] = useState(true);
-  const [twoFactorSetupData, setTwoFactorSetupData] = useState<TwoFactorSetup | null>(null);
-  const [twoFactorVerifyCode, setTwoFactorVerifyCode] = useState('');
-  const [isVerifying2FA, setIsVerifying2FA] = useState(false);
-  // E-035 F-170: enrolling an authenticator on a signed-in session needs a
-  // fresh "confirm it is you" step (same proof passkey management uses). The
-  // token is held only in memory for this enrolment.
-  const twoFactorConfirmModal = useDisclosure();
-  const twoFactorConfirmTokenRef = useRef<string | null>(null);
-  const [twoFactorConfirmMethod, setTwoFactorConfirmMethod] = useState<SecurityConfirmationMethod>('password');
-  const [twoFactorConfirmValue, setTwoFactorConfirmValue] = useState('');
-  const [twoFactorConfirmError, setTwoFactorConfirmError] = useState<string | null>(null);
-  const [isConfirming2FA, setIsConfirming2FA] = useState(false);
+  // Turning two-factor ON (confirm it is you -> QR -> code -> backup codes)
+  // lives in the shared TwoFactorEnrolment component, which the onboarding
+  // wizard also uses. It keeps the E-035 F-170 fresh-confirmation step.
   const [twoFactorDisablePassword, setTwoFactorDisablePassword] = useState('');
   const [twoFactorDisableCode, setTwoFactorDisableCode] = useState('');
   const [isDisabling2FA, setIsDisabling2FA] = useState(false);
-  const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [backupCodesRemaining, setBackupCodesRemaining] = useState(0);
 
   // Sessions state
@@ -513,6 +497,15 @@ export function SettingsPage() {
       setTwoFactorLoading(false);
     }
   }, []);
+
+  const handleTwoFactorEnrolled = useCallback((codes: string[]) => {
+    setTwoFactorEnabled(true);
+    if (codes.length > 0) setBackupCodesRemaining(codes.length);
+    // Refresh 2FA status from server to ensure UI is in sync
+    void loadTwoFactorStatus();
+  }, [loadTwoFactorStatus]);
+
+  const twoFactorEnrolment = useTwoFactorEnrolment({ onEnrolled: handleTwoFactorEnrolled });
 
   const loadSessions = useCallback(async () => {
     try {
@@ -883,109 +876,6 @@ export function SettingsPage() {
   // 2FA Handlers
   // ─────────────────────────────────────────────────────────────────────────
 
-  async function handleSetup2FA() {
-    twoFactorConfirmTokenRef.current = null;
-    setTwoFactorConfirmError(null);
-    setTwoFactorConfirmValue('');
-    setTwoFactorConfirmMethod('password');
-    // A recent passkey / SSO sign-in can confirm silently; otherwise ask.
-    try {
-      const silent = await confirmWebAuthnSecurity({});
-      if (silent.success && silent.securityConfirmationToken) {
-        twoFactorConfirmTokenRef.current = silent.securityConfirmationToken;
-        await startTwoFactorSetup();
-        return;
-      }
-    } catch {
-      // Fall through to the explicit confirmation prompt.
-    }
-    twoFactorConfirmModal.onOpen();
-  }
-
-  async function submitTwoFactorConfirmation() {
-    if (!twoFactorConfirmValue.trim() || isConfirming2FA) return;
-    setIsConfirming2FA(true);
-    setTwoFactorConfirmError(null);
-    try {
-      const result = await confirmWebAuthnSecurity(
-        buildSecurityConfirmationInput(twoFactorConfirmMethod, twoFactorConfirmValue),
-      );
-      if (!result.success || !result.securityConfirmationToken) {
-        setTwoFactorConfirmError(t('passkey_security_confirm_failed'));
-        return;
-      }
-      twoFactorConfirmTokenRef.current = result.securityConfirmationToken;
-      setTwoFactorConfirmValue('');
-      twoFactorConfirmModal.onClose();
-      await startTwoFactorSetup();
-    } catch {
-      setTwoFactorConfirmError(t('passkey_security_confirm_failed'));
-    } finally {
-      setIsConfirming2FA(false);
-    }
-  }
-
-  async function startTwoFactorSetup() {
-    try {
-      setTwoFactorSetupData(null);
-      setTwoFactorVerifyCode('');
-      twoFactorSetupModal.onOpen();
-
-      const response = await api.post<TwoFactorSetup>('/v2/auth/2fa/setup', {
-        security_confirmation_token: twoFactorConfirmTokenRef.current ?? undefined,
-      });
-      if (response.success && response.data) {
-        setTwoFactorSetupData(response.data);
-      } else {
-        toast.error(t('toasts.twofa_setup_failed'), response.error || t('toasts.twofa_setup_failed_desc'));
-        twoFactorSetupModal.onClose();
-      }
-    } catch (error) {
-      logError('Failed to setup 2FA', error);
-      toast.error(t('toasts.twofa_setup_failed'), t('toasts.twofa_setup_failed_desc'));
-      twoFactorSetupModal.onClose();
-    }
-  }
-
-  async function handleVerify2FA() {
-    if (!twoFactorVerifyCode || twoFactorVerifyCode.length < 6) {
-      toast.error(t('toasts.invalid_code'), t('toasts.invalid_code_desc'));
-      return;
-    }
-
-    try {
-      setIsVerifying2FA(true);
-      const response = await api.post<{ backup_codes: string[] }>('/v2/auth/2fa/verify', {
-        code: twoFactorVerifyCode,
-        security_confirmation_token: twoFactorConfirmTokenRef.current ?? undefined,
-      });
-
-      if (response.success) {
-        twoFactorConfirmTokenRef.current = null;
-        setTwoFactorEnabled(true);
-        if (response.data?.backup_codes) {
-          setBackupCodes(response.data.backup_codes);
-          setBackupCodesRemaining(response.data.backup_codes.length);
-        }
-        toast.success(t('toasts.twofa_enabled'), t('toasts.twofa_enabled_desc'));
-        twoFactorSetupModal.onClose();
-        // Refresh 2FA status from server to ensure UI is in sync
-        loadTwoFactorStatus();
-        // Show backup codes
-        if (response.data?.backup_codes?.length) {
-          backupCodesModal.onOpen();
-        }
-      } else {
-        toast.error(t('toasts.verification_failed'), response.error || t('toasts.verification_failed'));
-      }
-    } catch (error) {
-      logError('Failed to verify 2FA', error);
-      toast.error(t('toasts.verification_failed'), t('toasts.verification_failed_desc'));
-    } finally {
-      setIsVerifying2FA(false);
-    }
-  }
-
   async function handleDisable2FA() {
     if (!twoFactorDisablePassword) {
       toast.error(t('toasts.password_required'), t('toasts.password_required_desc'));
@@ -1131,16 +1021,6 @@ export function SettingsPage() {
       toast.error(t('toasts.request_failed'), t('insurance.record_failed_desc'));
     } finally {
       setInsuranceUploading(false);
-    }
-  }
-
-  // Copy backup codes to clipboard
-  async function handleCopyBackupCodes() {
-    try {
-      await navigator.clipboard.writeText(backupCodes.join('\n'));
-      toast.success(t('toasts.copied'), t('toasts.backup_codes_copied_desc'));
-    } catch {
-      toast.error(t('toasts.copy_failed'), t('toasts.copy_failed_desc'));
     }
   }
 
@@ -1383,13 +1263,9 @@ export function SettingsPage() {
             twoFactorRequired={twoFactorRequired}
             twoFactorEnabled={twoFactorEnabled}
             twoFactorLoading={twoFactorLoading}
-            twoFactorSetupData={twoFactorSetupData}
-            twoFactorVerifyCode={twoFactorVerifyCode}
-            isVerifying2FA={isVerifying2FA}
             twoFactorDisablePassword={twoFactorDisablePassword}
             twoFactorDisableCode={twoFactorDisableCode}
             isDisabling2FA={isDisabling2FA}
-            backupCodes={backupCodes}
             backupCodesRemaining={backupCodesRemaining}
             sessions={sessions}
             sessionsLoading={sessionsLoading}
@@ -1406,47 +1282,23 @@ export function SettingsPage() {
             logoutModalOnClose={logoutModal.onClose}
             logoutModalOnOpen={logoutModal.onOpen}
             deleteModalOnOpen={handleOpenDeleteModal}
-            twoFactorSetupModalOpen={twoFactorSetupModal.isOpen}
-            twoFactorSetupModalOnClose={twoFactorSetupModal.onClose}
             twoFactorDisableModalOpen={twoFactorDisableModal.isOpen}
             twoFactorDisableModalOnClose={twoFactorDisableModal.onClose}
             twoFactorDisableModalOnOpen={twoFactorDisableModal.onOpen}
-            backupCodesModalOpen={backupCodesModal.isOpen}
-            backupCodesModalOnClose={backupCodesModal.onClose}
             onPasswordDataChange={setPasswordData}
             onShowCurrentPasswordToggle={() => setShowCurrentPassword(!showCurrentPassword)}
             onShowNewPasswordToggle={() => setShowNewPassword(!showNewPassword)}
             onChangePassword={handleChangePassword}
             onLogout={handleLogout}
-            onSetup2FA={handleSetup2FA}
-            onVerify2FA={handleVerify2FA}
+            onSetup2FA={() => { void twoFactorEnrolment.start(); }}
             onDisable2FA={handleDisable2FA}
-            onTwoFactorVerifyCodeChange={setTwoFactorVerifyCode}
             onTwoFactorDisablePasswordChange={setTwoFactorDisablePassword}
             onTwoFactorDisableCodeChange={setTwoFactorDisableCode}
-            onCopyBackupCodes={handleCopyBackupCodes}
           />
         )}
 
-        {/* E-035 F-170: fresh confirmation before enrolling an authenticator. */}
-        <SecurityConfirmationModal
-          isOpen={twoFactorConfirmModal.isOpen}
-          onOpenChange={(open) => (open ? twoFactorConfirmModal.onOpen() : twoFactorConfirmModal.onClose())}
-          methods={{ password: true, totp: false }}
-          method={twoFactorConfirmMethod}
-          onMethodChange={setTwoFactorConfirmMethod}
-          value={twoFactorConfirmValue}
-          onValueChange={setTwoFactorConfirmValue}
-          error={twoFactorConfirmError}
-          isConfirming={isConfirming2FA}
-          isSubmitDisabled={!twoFactorConfirmValue.trim() || isConfirming2FA}
-          onSubmit={() => { void submitTwoFactorConfirmation(); }}
-          onCancel={() => {
-            setTwoFactorConfirmValue('');
-            setTwoFactorConfirmError(null);
-          }}
-          description={t('twofa_confirm_password')}
-        />
+        {/* Turning two-factor on: confirmation (E-035 F-170), set-up and backup codes. */}
+        <TwoFactorEnrolment enrolment={twoFactorEnrolment} variant="modal" />
 
         {/* SKILLS TAB */}
         {activeTab === 'skills' && <SkillsTab />}

@@ -706,6 +706,8 @@
       "step_profile_desc": "Krok, w którym członkowie wypełniają swoje informacje profilowe",
       "step_safeguarding": "Krok Ochrona",
       "step_safeguarding_desc": "Etap, w którym członkowie wypełniają deklaracje zabezpieczające",
+      "step_security": "Chroń swoje konto (propozycja weryfikacji dwuetapowej)",
+      "step_security_desc": "Proponuje członkom logowanie dwuetapowe z aplikacją uwierzytelniającą. Zawsze opcjonalne dla członków i pokazywane tylko tym, którzy mogą je włączyć.",
       "step_skills": "Umiejętności kroków",
       "step_skills_desc": "Krok, na którym członkowie dodają swoje umiejętności i to, co mogą zaoferować",
       "step_welcome": "Krok Witamy",

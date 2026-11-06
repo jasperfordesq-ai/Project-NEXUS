@@ -6,6 +6,7 @@
   "step_skills": "Competenze",
   "step_confirm": "Conferma",
   "step_safeguarding": "Tutela",
+  "step_security": "Sicurezza",
   "safeguarding_title": "Supporto e protezione",
   "safeguarding_subtitle": "Facci sapere se desideri un supporto aggiuntivo",
   "safeguarding_intro": "La tua sicurezza è importante per noi. Se desideri un supporto aggiuntivo mentre usi questa comunità, faccelo sapere qui sotto. Ogni scelta ti spiega esattamente cosa comporta prima che tu la selezioni. Le tue risposte sono riservate e visibili solo ai coordinatori della comunità, mai sul tuo profilo pubblico.",
@@ -149,5 +150,18 @@
   "bio_char_count_many": "{{count}} caratteri",
   "count_selected_many": "{{count}} selezionata/e",
   "skills_to_offer_count_many": "{{count}} competenza/e da offrire",
-  "skills_needed_count_many": "{{count}} competenza/e richiesta/e"
+  "skills_needed_count_many": "{{count}} competenza/e richiesta/e",
+  "security_title": "Proteggi il tuo account",
+  "security_subtitle": "Facoltativo: aggiungi un secondo controllo all'accesso",
+  "security_intro": "L'accesso in due passaggi protegge il tuo account anche se qualcuno scopre la tua password. Quando accedi, inserisci la password come sempre e poi un codice di 6 cifre generato da un'app di autenticazione sul telefono.",
+  "security_need_title": "Cosa ti serve",
+  "security_need_phone": "Il tuo telefono, con un'app di autenticazione gratuita come Google Authenticator, Microsoft Authenticator o Authy",
+  "security_need_password": "La password che usi per questo account",
+  "security_need_time": "Circa due minuti",
+  "security_optional_note": "È facoltativo. Se preferisci, scegli «Non ora»: potrai attivarlo più tardi in Impostazioni, nella sezione Sicurezza.",
+  "security_set_up": "Attivalo",
+  "security_not_now": "Non ora",
+  "security_continue": "Continua",
+  "security_checking": "Verifica del tuo account in corso",
+  "security_confirm_failed_hint": "Se qui non riesci a confermare con una password, scegli «Non ora» per proseguire. Potrai attivarlo più tardi in Impostazioni, nella sezione Sicurezza."
 }

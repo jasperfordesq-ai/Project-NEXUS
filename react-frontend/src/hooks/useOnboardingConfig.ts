@@ -33,6 +33,12 @@ export interface OnboardingConfig {
   step_skills_required: boolean;
   step_safeguarding_enabled: boolean;
   step_safeguarding_required: boolean;
+  /**
+   * "Protect your account" (optional two-step sign-in offer). Even when on,
+   * the server only lists the `security` step for members who can set it up.
+   * There is no `_required` counterpart: the step is always optional.
+   */
+  step_security_enabled: boolean;
   step_confirm_enabled: boolean;
   avatar_required: boolean;
   bio_required: boolean;
@@ -57,6 +63,7 @@ const DEFAULT_CONFIG: OnboardingConfig = {
   step_skills_required: false,
   step_safeguarding_enabled: true,
   step_safeguarding_required: false,
+  step_security_enabled: true,
   step_confirm_enabled: true,
   avatar_required: true,
   bio_required: true,
@@ -70,6 +77,9 @@ const DEFAULT_CONFIG: OnboardingConfig = {
   country_preset: 'custom',
 };
 
+// 'security' is deliberately absent: these steps are used when the config
+// cannot be read, and only the server knows whether this member can set up
+// two-step sign-in.
 const DEFAULT_STEPS: OnboardingStepConfig[] = [
   { slug: 'welcome', required: false },
   { slug: 'profile', required: true },

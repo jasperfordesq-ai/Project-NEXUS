@@ -700,6 +700,8 @@
       "step_profile_desc": "Schritt, in dem Mitglieder ihre Profilinformationen eingeben",
       "step_safeguarding": "Schritt: Schutzmaßnahmen",
       "step_safeguarding_desc": "Schritt, in dem Mitglieder Schutzerklärungen ausfüllen",
+      "step_security": "Konto schützen (Angebot zur Zwei-Faktor-Anmeldung)",
+      "step_security_desc": "Bietet Mitgliedern die Anmeldung in zwei Schritten mit einer Authenticator-App an. Für Mitglieder immer freiwillig und nur für Mitglieder sichtbar, die sie einrichten können.",
       "step_skills": "Schrittfähigkeiten",
       "step_skills_desc": "Schritt, bei dem Mitglieder ihre Fähigkeiten und ihr Angebot einbringen",
       "step_welcome": "Schritt Willkommen",

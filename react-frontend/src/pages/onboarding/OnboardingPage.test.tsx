@@ -805,6 +805,90 @@ describe('OnboardingPage', () => {
       vi.mocked(useOnboardingConfig).mockImplementation(() => base);
     }
   });
+
+  // "Protect your account" (slug `security`): an optional offer to turn on
+  // two-step sign-in. The server only lists it for members who can set it up.
+  describe('"Protect your account" step', () => {
+    async function withSecurityStep(run: () => Promise<void>) {
+      const { useOnboardingConfig } = await import('@/hooks/useOnboardingConfig');
+      const base = vi.mocked(useOnboardingConfig).getMockImplementation()!();
+      vi.mocked(useOnboardingConfig).mockImplementation(() => ({
+        ...base,
+        config: { ...base.config, step_security_enabled: true },
+        steps: [
+          { slug: 'welcome', required: false },
+          { slug: 'security', required: false },
+          { slug: 'confirm', required: true },
+        ],
+      }));
+      try {
+        await run();
+      } finally {
+        vi.mocked(useOnboardingConfig).mockImplementation(() => base);
+        vi.mocked(api.get).mockReset();
+        vi.mocked(api.get).mockResolvedValue({ success: true, data: [], meta: {} } as never);
+      }
+    }
+
+    function mockTwoFactorStatus(data: Record<string, unknown>) {
+      vi.mocked(api.get).mockImplementation((url: string) => Promise.resolve(
+        url === '/v2/auth/2fa/status'
+          ? { success: true, data: { enabled: false, enrollment_allowed: true, backup_codes_remaining: 0, ...data } }
+          : { success: true, data: [], meta: {} },
+      ) as never);
+    }
+
+    it('"Not now" goes to the next step without finishing onboarding', async () => {
+      mockTwoFactorStatus({});
+      await withSecurityStep(async () => {
+        const { userEvent } = await import('@/test/test-utils');
+        const user = userEvent.setup();
+        render(<OnboardingPage />);
+        await user.click(screen.getByText("Let's Get Started"));
+
+        expect(await screen.findByText('Protect your account')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Step 2: Security \(current\)/ })).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: /Not now/ }));
+
+        await waitFor(() => {
+          expect(screen.getByRole('button', { name: /Step 3: Confirm \(current\)/ })).toBeInTheDocument();
+        });
+        expect(api.post).not.toHaveBeenCalledWith('/v2/onboarding/complete', expect.anything());
+        expect(vi.mocked(api.post).mock.calls.some(([url]) => String(url).includes('/2fa/'))).toBe(false);
+      });
+    });
+
+    it('is passed straight through when two-factor is already on', async () => {
+      mockTwoFactorStatus({ enabled: true });
+      await withSecurityStep(async () => {
+        const { userEvent } = await import('@/test/test-utils');
+        const user = userEvent.setup();
+        render(<OnboardingPage />);
+        await user.click(screen.getByText("Let's Get Started"));
+
+        await waitFor(() => {
+          expect(screen.getByRole('button', { name: /Step 3: Confirm \(current\)/ })).toBeInTheDocument();
+        });
+        expect(screen.queryByText('Protect your account')).not.toBeInTheDocument();
+        expect(api.post).not.toHaveBeenCalledWith('/v2/onboarding/complete', expect.anything());
+      });
+    });
+
+    it('is passed straight through when the community does not allow setting it up', async () => {
+      mockTwoFactorStatus({ enrollment_allowed: false });
+      await withSecurityStep(async () => {
+        const { userEvent } = await import('@/test/test-utils');
+        const user = userEvent.setup();
+        render(<OnboardingPage />);
+        await user.click(screen.getByText("Let's Get Started"));
+
+        await waitFor(() => {
+          expect(screen.getByRole('button', { name: /Step 3: Confirm \(current\)/ })).toBeInTheDocument();
+        });
+        expect(screen.queryByText('Protect your account')).not.toBeInTheDocument();
+      });
+    });
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

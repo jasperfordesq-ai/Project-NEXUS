@@ -719,6 +719,8 @@
       "step_profile_desc": "Step where members fill in their profile information",
       "step_safeguarding": "Step Safeguarding",
       "step_safeguarding_desc": "Step where members complete safeguarding declarations",
+      "step_security": "Protect your account (two-factor offer)",
+      "step_security_desc": "Offers members two-step sign-in with an authenticator app. Always optional for members, and only shown to members who can set it up.",
       "step_skills": "Step Skills",
       "step_skills_desc": "Step where members add their skills and what they can offer",
       "step_welcome": "Step Welcome",

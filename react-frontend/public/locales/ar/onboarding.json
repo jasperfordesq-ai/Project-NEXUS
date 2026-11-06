@@ -6,6 +6,7 @@
   "step_skills": "المهارات",
   "step_confirm": "تأكيد",
   "step_safeguarding": "الحماية",
+  "step_security": "الأمان",
   "safeguarding_title": "الدعم والحماية",
   "safeguarding_subtitle": "أخبرنا إذا كنت بحاجة إلى دعم إضافي",
   "safeguarding_intro": "سلامتك تهمنا. إذا كنت ترغب في دعم إضافي أثناء استخدام هذا المجتمع، فأخبرنا بذلك أدناه. يوضح لك كل خيار ما يفعله بالضبط قبل أن تختاره. إجاباتك سرية ولا يراها إلا منسقو المجتمع، ولا تظهر أبدًا في ملفك الشخصي العام.",
@@ -161,5 +162,18 @@
   "skills_needed_count_few": "{{count}} مهارة(ات) مطلوبة",
   "skills_needed_count_many": "{{count}} مهارة(ات) مطلوبة",
   "skills_needed_count_two": "{{count}} مهارة(ات) مطلوبة",
-  "skills_needed_count_zero": "{{count}} مهارة(ات) مطلوبة"
+  "skills_needed_count_zero": "{{count}} مهارة(ات) مطلوبة",
+  "security_title": "احمِ حسابك",
+  "security_subtitle": "اختياري: أضِف تحققًا ثانيًا عند تسجيل الدخول",
+  "security_intro": "يحمي تسجيل الدخول بخطوتين حسابك حتى لو عرف أحدٌ كلمة مرورك. عند تسجيل الدخول، تُدخل كلمة مرورك كالمعتاد، ثم رمزًا من 6 أرقام من تطبيق مصادقة على هاتفك.",
+  "security_need_title": "ما تحتاج إليه",
+  "security_need_phone": "هاتفك، مع تطبيق مصادقة مجاني مثل Google Authenticator أو Microsoft Authenticator أو Authy",
+  "security_need_password": "كلمة المرور التي تستخدمها لهذا الحساب",
+  "security_need_time": "دقيقتان تقريبًا",
+  "security_optional_note": "هذه الخطوة اختيارية. إن شئت، اختر «ليس الآن»، ويمكنك إعدادها لاحقًا من الإعدادات، ضمن قسم الأمان.",
+  "security_set_up": "إعداده الآن",
+  "security_not_now": "ليس الآن",
+  "security_continue": "متابعة",
+  "security_checking": "جارٍ التحقق من حسابك",
+  "security_confirm_failed_hint": "إذا تعذّر عليك التأكيد بكلمة مرور هنا، فاختر «ليس الآن» للمتابعة. يمكنك إعداده لاحقًا من الإعدادات، ضمن قسم الأمان."
 }

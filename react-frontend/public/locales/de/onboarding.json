@@ -6,6 +6,7 @@
   "step_skills": "Fähigkeiten",
   "step_confirm": "Bestätigen",
   "step_safeguarding": "Schutz",
+  "step_security": "Sicherheit",
   "safeguarding_title": "Unterstützung & Schutz",
   "safeguarding_subtitle": "Teilen Sie uns mit, ob Sie zusätzliche Unterstützung benötigen",
   "safeguarding_intro": "Ihre Sicherheit ist uns wichtig. Wenn Sie sich bei der Nutzung dieser Gemeinschaft zusätzliche Unterstützung wünschen, teilen Sie uns das unten mit. Bei jeder Auswahl steht genau, was sie bewirkt, bevor Sie sie treffen. Ihre Antworten sind vertraulich und nur für die Koordinatoren der Gemeinschaft sichtbar – niemals in Ihrem öffentlichen Profil.",
@@ -145,5 +146,18 @@
   "skills_to_offer_count_one": "{{count}} Fähigkeit(en) zum Anbieten",
   "skills_to_offer_count_other": "{{count}} Fähigkeit(en) zum Anbieten",
   "skills_needed_count_one": "{{count}} Fähigkeit(en) gesucht",
-  "skills_needed_count_other": "{{count}} Fähigkeit(en) gesucht"
+  "skills_needed_count_other": "{{count}} Fähigkeit(en) gesucht",
+  "security_title": "Schützen Sie Ihr Konto",
+  "security_subtitle": "Optional: eine zweite Prüfung bei der Anmeldung",
+  "security_intro": "Die Anmeldung in zwei Schritten schützt Ihr Konto, selbst wenn jemand Ihr Passwort herausfindet. Bei der Anmeldung geben Sie wie gewohnt Ihr Passwort ein und danach einen 6-stelligen Code aus einer Authenticator-App auf Ihrem Handy.",
+  "security_need_title": "Was Sie brauchen",
+  "security_need_phone": "Ihr Handy mit einer kostenlosen Authenticator-App wie Google Authenticator, Microsoft Authenticator oder Authy",
+  "security_need_password": "Das Passwort, das Sie für dieses Konto verwenden",
+  "security_need_time": "Etwa zwei Minuten",
+  "security_optional_note": "Das ist freiwillig. Wenn Sie möchten, wählen Sie „Jetzt nicht“ – Sie können es später in den Einstellungen unter „Sicherheit“ einrichten.",
+  "security_set_up": "Jetzt einrichten",
+  "security_not_now": "Jetzt nicht",
+  "security_continue": "Weiter",
+  "security_checking": "Ihr Konto wird geprüft",
+  "security_confirm_failed_hint": "Wenn Sie sich hier nicht mit einem Passwort bestätigen können, wählen Sie „Jetzt nicht“, um fortzufahren. Sie können es später in den Einstellungen unter „Sicherheit“ einrichten."
 }

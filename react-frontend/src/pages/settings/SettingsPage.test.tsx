@@ -524,6 +524,45 @@ describe('SettingsPage', () => {
     expect(confirmWebAuthnSecurity).toHaveBeenLastCalledWith({ current_password: 'CurrentPassword!123' });
   });
 
+  // The enrolment flow moved to the shared TwoFactorEnrolment component
+  // (also used by the onboarding "Protect your account" step). Settings must
+  // still take a member from confirmation to their backup codes.
+  it('finishes enrolment through the shared flow and shows the backup codes once', async () => {
+    vi.mocked(confirmWebAuthnSecurity)
+      .mockResolvedValueOnce({ success: false, errorCode: 'SECURITY_CONFIRMATION_REQUIRED' })
+      .mockResolvedValueOnce({ success: true, securityConfirmationToken: 'conf-tok', expiresIn: 300 });
+    vi.mocked(api.post).mockImplementation((url: string) => {
+      if (url === '/v2/auth/2fa/setup') {
+        return Promise.resolve({ success: true, data: { secret: 'SECRETKEY123', qr_code_url: 'data:image/png;base64,AAAA' } });
+      }
+      if (url === '/v2/auth/2fa/verify') {
+        return Promise.resolve({ success: true, data: { backup_codes: ['AAAA-1111', 'BBBB-2222'] } });
+      }
+      return Promise.resolve({ success: true });
+    });
+    const user = userEvent.setup();
+    render(<SettingsPage />, { wrapper: Wrapper });
+    await user.click(screen.getByRole('tab', { name: 'Security' }));
+    await user.click(await screen.findByRole('button', { name: 'twofa_enable' }));
+    await user.type(await screen.findByLabelText('passkey_security_confirm_password'), 'CurrentPassword!123');
+    await user.click(screen.getByRole('button', { name: 'passkey_security_confirm_action' }));
+
+    expect(await screen.findByText('SECRETKEY123')).toBeInTheDocument();
+    const codeInput = document.querySelector('input[name="twofa-enrol-code"]');
+    expect(codeInput).not.toBeNull();
+    await user.type(codeInput as HTMLInputElement, '654321');
+    await user.click(screen.getByRole('button', { name: 'twofa_verify_enable' }));
+
+    await waitFor(() => expect(api.post).toHaveBeenCalledWith(
+      '/v2/auth/2fa/verify',
+      { code: '654321', security_confirmation_token: 'conf-tok' },
+    ));
+    expect(await screen.findByText('AAAA-1111')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'backup_codes_copy' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'backup_codes_saved' }));
+    await waitFor(() => expect(screen.queryByText('AAAA-1111')).not.toBeInTheDocument());
+  });
+
   it('hides Profile and Notifications tabs when their modules are disabled', () => {
     tenantGateMocks.hasModule.mockImplementation((module: string) => !['profile', 'notifications'].includes(module));
 

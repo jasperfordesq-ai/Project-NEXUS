@@ -6,6 +6,7 @@
   "step_skills": "Vaardigheden",
   "step_confirm": "Bevestigen",
   "step_safeguarding": "Bescherming",
+  "step_security": "Beveiliging",
   "safeguarding_title": "Ondersteuning & bescherming",
   "safeguarding_subtitle": "Laat ons weten of u extra ondersteuning wenst",
   "safeguarding_intro": "Uw veiligheid is belangrijk voor ons. Als u extra ondersteuning wilt bij het gebruik van deze gemeenschap, laat het ons hieronder weten. Bij elke keuze staat precies wat die doet voordat u hem kiest. Uw antwoorden zijn vertrouwelijk en alleen zichtbaar voor de coördinatoren van de gemeenschap, nooit op uw openbare profiel.",
@@ -145,5 +146,18 @@
   "skills_to_offer_count_one": "{{count}} vaardigheid(en) om aan te bieden",
   "skills_to_offer_count_other": "{{count}} vaardigheid(en) om aan te bieden",
   "skills_needed_count_one": "{{count}} vaardigheid(en) nodig",
-  "skills_needed_count_other": "{{count}} vaardigheid(en) nodig"
+  "skills_needed_count_other": "{{count}} vaardigheid(en) nodig",
+  "security_title": "Bescherm je account",
+  "security_subtitle": "Optioneel: een tweede controle bij het inloggen",
+  "security_intro": "Inloggen in twee stappen houdt je account veilig, zelfs als iemand je wachtwoord te weten komt. Bij het inloggen voer je zoals gewoonlijk je wachtwoord in en daarna een 6-cijferige code uit een authenticator-app op je telefoon.",
+  "security_need_title": "Wat je nodig hebt",
+  "security_need_phone": "Je telefoon, met een gratis authenticator-app zoals Google Authenticator, Microsoft Authenticator of Authy",
+  "security_need_password": "Het wachtwoord dat je voor dit account gebruikt",
+  "security_need_time": "Ongeveer twee minuten",
+  "security_optional_note": "Dit is optioneel. Kies desgewenst ‘Niet nu’ — je kunt het later instellen via Instellingen, onder Beveiliging.",
+  "security_set_up": "Instellen",
+  "security_not_now": "Niet nu",
+  "security_continue": "Doorgaan",
+  "security_checking": "Je account wordt gecontroleerd",
+  "security_confirm_failed_hint": "Kun je hier niet bevestigen met een wachtwoord? Kies dan ‘Niet nu’ om verder te gaan. Je kunt het later instellen via Instellingen, onder Beveiliging."
 }

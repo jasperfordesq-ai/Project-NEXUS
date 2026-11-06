@@ -704,6 +704,8 @@
       "step_profile_desc": "Passaggio in cui i membri inseriscono le informazioni del proprio profilo",
       "step_safeguarding": "Passo Salvaguardia",
       "step_safeguarding_desc": "Fase in cui i membri completano le dichiarazioni di salvaguardia",
+      "step_security": "Proteggi il tuo account (offerta di autenticazione a due fattori)",
+      "step_security_desc": "Offre ai membri l'accesso in due passaggi con un'app di autenticazione. Sempre facoltativo per i membri e mostrato solo a chi può attivarlo.",
       "step_skills": "Abilità del passo",
       "step_skills_desc": "Fase in cui i membri aggiungono le loro competenze e ciò che possono offrire",
       "step_welcome": "Passo Benvenuto",

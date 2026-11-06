@@ -6,6 +6,7 @@
   "step_skills": "Competências",
   "step_confirm": "Confirmar",
   "step_safeguarding": "Proteção",
+  "step_security": "Segurança",
   "safeguarding_title": "Apoio e salvaguarda",
   "safeguarding_subtitle": "Diga-nos se deseja apoio adicional",
   "safeguarding_intro": "A sua segurança é importante para nós. Se quiser apoio adicional ao utilizar esta comunidade, indique-o abaixo. Cada opção explica exatamente o que faz antes de a escolher. As suas respostas são confidenciais e só são visíveis para os coordenadores da comunidade — nunca no seu perfil público.",
@@ -149,5 +150,18 @@
   "bio_char_count_many": "{{count}} caracteres",
   "count_selected_many": "{{count}} selecionados",
   "skills_to_offer_count_many": "{{count}} competência(s) a oferecer",
-  "skills_needed_count_many": "{{count}} competência(s) necessária(s)"
+  "skills_needed_count_many": "{{count}} competência(s) necessária(s)",
+  "security_title": "Proteja a sua conta",
+  "security_subtitle": "Opcional: uma segunda verificação ao iniciar sessão",
+  "security_intro": "O início de sessão em dois passos mantém a sua conta segura mesmo que alguém descubra a sua senha. Ao iniciar sessão, introduz a senha como habitualmente e, depois, um código de 6 dígitos de uma app de autenticação no seu telemóvel.",
+  "security_need_title": "O que precisa",
+  "security_need_phone": "O seu telemóvel, com uma app de autenticação gratuita como o Google Authenticator, o Microsoft Authenticator ou o Authy",
+  "security_need_password": "A senha que utiliza nesta conta",
+  "security_need_time": "Cerca de dois minutos",
+  "security_optional_note": "Isto é opcional. Se preferir, escolha «Agora não» — pode configurá-lo mais tarde em Configurações, na secção Segurança.",
+  "security_set_up": "Configurar",
+  "security_not_now": "Agora não",
+  "security_continue": "Continuar",
+  "security_checking": "A verificar a sua conta",
+  "security_confirm_failed_hint": "Se não conseguir confirmar com uma senha aqui, escolha «Agora não» para continuar. Pode configurá-lo mais tarde em Configurações, na secção Segurança."
 }

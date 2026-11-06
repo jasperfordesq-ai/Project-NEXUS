@@ -711,6 +711,8 @@
       "step_profile_desc": "Étape où les membres remplissent leurs informations de profil",
       "step_safeguarding": "Étape Protection",
       "step_safeguarding_desc": "Étape où les membres remplissent les déclarations de protection",
+      "step_security": "Protéger votre compte (proposition de double authentification)",
+      "step_security_desc": "Propose aux membres la connexion en deux étapes avec une application d'authentification. Toujours facultatif pour les membres, et affiché uniquement à ceux qui peuvent l'activer.",
       "step_skills": "Compétences d'étape",
       "step_skills_desc": "Étape où les membres ajoutent leurs compétences et ce qu'ils peuvent offrir",
       "step_welcome": "Étape Bienvenue",

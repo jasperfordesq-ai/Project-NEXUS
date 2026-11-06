@@ -704,6 +704,8 @@
       "step_profile_desc": "Céim ina líonann baill a gcuid faisnéise próifíle",
       "step_safeguarding": "Cosaint Céime",
       "step_safeguarding_desc": "Céim ina gcomhlánaíonn comhaltaí dearbhuithe cosanta",
+      "step_security": "Cosain do chuntas (tairiscint fíordheimhnithe dhá fhachtóir)",
+      "step_security_desc": "Tairgeann sé síniú isteach dhá chéim le haip fíordheimhnithe do bhaill. Bíonn sé roghnach i gcónaí do bhaill, agus ní thaispeántar é ach do bhaill atá in ann é a shocrú.",
       "step_skills": "Scileanna Céim",
       "step_skills_desc": "Céim ina gcuireann baill a gcuid scileanna agus an méid is féidir leo a thairiscint",
       "step_welcome": "Céim Fáilte",

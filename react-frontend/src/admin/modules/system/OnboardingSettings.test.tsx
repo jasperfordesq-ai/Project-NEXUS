@@ -135,6 +135,7 @@ const MOCK_CONFIG = {
   step_skills_required: false,
   step_safeguarding_enabled: true,
   step_safeguarding_required: false,
+  step_security_enabled: true,
   step_confirm_enabled: true,
   avatar_required: true,
   bio_required: true,
@@ -279,6 +280,36 @@ describe('OnboardingSettings', () => {
         expect.objectContaining({ enabled: false }),
       );
     });
+  });
+
+  // "Protect your account" (optional two-step sign-in offer) has an on/off
+  // switch only: the step is always optional for members, so no "Required".
+  it('saves the "Protect your account" step switch as step_security_enabled', async () => {
+    render(<OnboardingSettings />);
+
+    const label = await screen.findByText('Protect your account (two-factor offer)');
+    expect(screen.getByText(/Always optional for members, and only shown to members who can set it up/)).toBeInTheDocument();
+    const row = label.closest('.justify-between') as HTMLElement;
+    expect(row).toBeTruthy();
+    const switches = row.querySelectorAll('input[type="checkbox"]');
+    expect(switches).toHaveLength(1);
+    const securitySwitch = switches[0] as HTMLInputElement;
+    expect(securitySwitch.checked).toBe(true);
+
+    fireEvent.click(securitySwitch);
+
+    const { userEvent } = await import('@/test/test-utils');
+    const user = userEvent.setup();
+    await user.click(screen.getByText('Save Settings'));
+
+    await waitFor(() => {
+      expect(mockPut).toHaveBeenCalledWith(
+        '/v2/admin/config/onboarding',
+        expect.objectContaining({ step_security_enabled: false }),
+      );
+    });
+    const sent = mockPut.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(sent).not.toHaveProperty('step_security_required');
   });
 
   // ── 4. Save bio min length setting ──────────────────────────────────────

@@ -6,6 +6,7 @@ import Sparkles from 'lucide-react/icons/sparkles';
 import UserCircle from 'lucide-react/icons/circle-user';
 import HandHeart from 'lucide-react/icons/hand-heart';
 import Shield from 'lucide-react/icons/shield';
+import KeyRound from 'lucide-react/icons/key-round';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import Eye from 'lucide-react/icons/eye';
 import FileText from 'lucide-react/icons/file-text';
@@ -51,6 +52,8 @@ interface OnboardingConfig {
   step_skills_required: boolean;
   step_safeguarding_enabled: boolean;
   step_safeguarding_required: boolean;
+  /** "Protect your account" — always optional, so there is no _required key. */
+  step_security_enabled: boolean;
   step_confirm_enabled: boolean;
   avatar_required: boolean;
   bio_required: boolean;
@@ -93,6 +96,7 @@ const STEP_ICONS: Record<string, typeof Sparkles> = {
   profile: UserCircle,
   skills: HandHeart,
   safeguarding: Shield,
+  security: KeyRound,
   confirm: CheckCircle,
 };
 
@@ -101,6 +105,7 @@ const STEPS_CONFIG = [
   { key: 'profile', labelKey: 'system.onboarding.step_profile', descriptionKey: 'system.onboarding.step_profile_desc' },
   { key: 'skills', labelKey: 'system.onboarding.step_skills', descriptionKey: 'system.onboarding.step_skills_desc' },
   { key: 'safeguarding', labelKey: 'system.onboarding.step_safeguarding', descriptionKey: 'system.onboarding.step_safeguarding_desc' },
+  { key: 'security', labelKey: 'system.onboarding.step_security', descriptionKey: 'system.onboarding.step_security_desc' },
   { key: 'confirm', labelKey: 'system.onboarding.step_confirm', descriptionKey: 'system.onboarding.step_confirm_desc' },
 ];
 

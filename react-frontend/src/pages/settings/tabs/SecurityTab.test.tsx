@@ -41,13 +41,9 @@ const defaultProps = {
   // 2FA
   twoFactorEnabled: false,
   twoFactorLoading: false,
-  twoFactorSetupData: null,
-  twoFactorVerifyCode: '',
-  isVerifying2FA: false,
   twoFactorDisablePassword: '',
   twoFactorDisableCode: '',
   isDisabling2FA: false,
-  backupCodes: [],
   backupCodesRemaining: 0,
   // Sessions
   sessions: [],
@@ -67,13 +63,9 @@ const defaultProps = {
   logoutModalOnClose: vi.fn(),
   logoutModalOnOpen: vi.fn(),
   deleteModalOnOpen: vi.fn(),
-  twoFactorSetupModalOpen: false,
-  twoFactorSetupModalOnClose: vi.fn(),
   twoFactorDisableModalOpen: false,
   twoFactorDisableModalOnClose: vi.fn(),
   twoFactorDisableModalOnOpen: vi.fn(),
-  backupCodesModalOpen: false,
-  backupCodesModalOnClose: vi.fn(),
   // Handlers
   onPasswordDataChange: vi.fn(),
   onShowCurrentPasswordToggle: vi.fn(),
@@ -81,12 +73,9 @@ const defaultProps = {
   onChangePassword: vi.fn(),
   onLogout: vi.fn(),
   onSetup2FA: vi.fn(),
-  onVerify2FA: vi.fn(),
   onDisable2FA: vi.fn(),
-  onTwoFactorVerifyCodeChange: vi.fn(),
   onTwoFactorDisablePasswordChange: vi.fn(),
   onTwoFactorDisableCodeChange: vi.fn(),
-  onCopyBackupCodes: vi.fn(),
 };
 
 describe('SecurityTab', () => {

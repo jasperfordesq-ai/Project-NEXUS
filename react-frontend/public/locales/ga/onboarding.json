@@ -6,6 +6,7 @@
   "step_skills": "Scileanna",
   "step_confirm": "Deimhnigh",
   "step_safeguarding": "Cosaint",
+  "step_security": "Slándáil",
   "safeguarding_title": "Tacaíocht & Cosaint",
   "safeguarding_subtitle": "Cuir in iúl dúinn más mian leat tacaíocht bhreise",
   "safeguarding_intro": "Tá do shábháilteacht tábhachtach dúinn. Más mian leat tacaíocht bhreise agus tú ag úsáid an phobail seo, cuir in iúl dúinn thíos. Insíonn gach rogha duit go díreach cad a dhéanann sí sula roghnaíonn tú í. Tá do fhreagraí faoi rún agus ní fheiceann ach comhordaitheoirí an phobail iad — ní bhíonn siad riamh ar do phróifíl phoiblí.",
@@ -157,5 +158,18 @@
   "skills_to_offer_count_two": "{{count}} scil le tairiscint",
   "skills_needed_count_few": "{{count}} scil de dhíth",
   "skills_needed_count_many": "{{count}} scil de dhíth",
-  "skills_needed_count_two": "{{count}} scil de dhíth"
+  "skills_needed_count_two": "{{count}} scil de dhíth",
+  "security_title": "Cosain do chuntas",
+  "security_subtitle": "Roghnach: cuir an dara seiceáil leis nuair a shíníonn tú isteach",
+  "security_intro": "Coinníonn síniú isteach dhá chéim do chuntas slán fiú má fhaigheann duine éigin amach do phasfhocal. Nuair a shíníonn tú isteach, cuireann tú isteach do phasfhocal mar is gnách, agus ansin cód 6 dhigit ó aip fíordheimhnithe ar d'fhón.",
+  "security_need_title": "A bhfuil uait",
+  "security_need_phone": "D'fhón, le haip fíordheimhnithe saor in aisce ar nós Google Authenticator, Microsoft Authenticator nó Authy",
+  "security_need_password": "An pasfhocal a úsáideann tú don chuntas seo",
+  "security_need_time": "Thart ar dhá nóiméad",
+  "security_optional_note": "Tá sé seo roghnach. Más fearr leat, roghnaigh \"Ní anois\" — is féidir leat é a shocrú níos déanaí i Socruithe, faoi Slándáil.",
+  "security_set_up": "Socraigh é",
+  "security_not_now": "Ní anois",
+  "security_continue": "Lean ar aghaidh",
+  "security_checking": "Do chuntas á sheiceáil",
+  "security_confirm_failed_hint": "Mura féidir leat deimhniú le pasfhocal anseo, roghnaigh \"Ní anois\" chun leanúint ar aghaidh. Is féidir leat é a shocrú níos déanaí i Socruithe, faoi Slándáil."
 }

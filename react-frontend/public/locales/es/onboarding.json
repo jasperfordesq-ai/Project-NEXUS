@@ -6,6 +6,7 @@
   "step_skills": "Habilidades",
   "step_confirm": "Confirmar",
   "step_safeguarding": "Protección",
+  "step_security": "Seguridad",
   "safeguarding_title": "Apoyo y protección",
   "safeguarding_subtitle": "Indícanos si deseas apoyo adicional",
   "safeguarding_intro": "Tu seguridad nos importa. Si quieres apoyo adicional mientras usas esta comunidad, indícalo a continuación. Cada opción te explica exactamente lo que hace antes de que la elijas. Tus respuestas son confidenciales y solo las ven los coordinadores de la comunidad, nunca aparecen en tu perfil público.",
@@ -149,5 +150,18 @@
   "bio_char_count_many": "{{count}} caracteres",
   "count_selected_many": "{{count}} seleccionadas",
   "skills_to_offer_count_many": "{{count}} habilidad(es) para ofrecer",
-  "skills_needed_count_many": "{{count}} habilidad(es) necesitadas"
+  "skills_needed_count_many": "{{count}} habilidad(es) necesitadas",
+  "security_title": "Protege tu cuenta",
+  "security_subtitle": "Opcional: añade una segunda comprobación al iniciar sesión",
+  "security_intro": "El inicio de sesión en dos pasos mantiene tu cuenta segura aunque alguien descubra tu contraseña. Al iniciar sesión, introduces tu contraseña como siempre y después un código de 6 dígitos de una aplicación de autenticación en tu teléfono.",
+  "security_need_title": "Lo que necesitas",
+  "security_need_phone": "Tu teléfono, con una aplicación de autenticación gratuita como Google Authenticator, Microsoft Authenticator o Authy",
+  "security_need_password": "La contraseña que usas para esta cuenta",
+  "security_need_time": "Unos dos minutos",
+  "security_optional_note": "Es opcional. Si lo prefieres, elige «Ahora no»: podrás configurarlo más adelante en Configuración, en el apartado Seguridad.",
+  "security_set_up": "Configurarlo",
+  "security_not_now": "Ahora no",
+  "security_continue": "Continuar",
+  "security_checking": "Comprobando tu cuenta",
+  "security_confirm_failed_hint": "Si aquí no puedes confirmar con una contraseña, elige «Ahora no» para continuar. Podrás configurarlo más adelante en Configuración, en el apartado Seguridad."
 }

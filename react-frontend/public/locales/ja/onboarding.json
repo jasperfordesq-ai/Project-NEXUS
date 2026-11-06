@@ -6,6 +6,7 @@
   "step_skills": "スキル",
   "step_confirm": "確認",
   "step_safeguarding": "安全確保",
+  "step_security": "セキュリティ",
   "safeguarding_title": "サポートと安全対策",
   "safeguarding_subtitle": "追加サポートが必要な場合はお知らせください",
   "safeguarding_intro": "あなたの安全は私たちにとって大切です。このコミュニティを利用する際に追加のサポートを希望される場合は、下記でお知らせください。各選択肢には、選ぶ前にその内容が正確に説明されています。回答は非公開で、コミュニティのコーディネーターのみが確認でき、公開プロフィールに表示されることはありません。",
@@ -145,5 +146,18 @@
   "skills_to_offer_count_one": "{{count}} が提供するスキル",
   "skills_to_offer_count_other": "{{count}} のスキルを提供",
   "skills_needed_count_one": "{{count}} 必要なスキル",
-  "skills_needed_count_other": "{{count}} のスキルが必要"
+  "skills_needed_count_other": "{{count}} のスキルが必要",
+  "security_title": "アカウントを守る",
+  "security_subtitle": "任意：サインイン時にもう一段階の確認を追加します",
+  "security_intro": "2段階サインインを使うと、誰かにパスワードを知られてもアカウントを守れます。サインイン時はいつもどおりパスワードを入力し、続けてスマートフォンの認証アプリに表示される6桁のコードを入力します。",
+  "security_need_title": "必要なもの",
+  "security_need_phone": "Google Authenticator、Microsoft Authenticator、Authy などの無料の認証アプリを入れたスマートフォン",
+  "security_need_password": "このアカウントで使っているパスワード",
+  "security_need_time": "約2分",
+  "security_optional_note": "これは任意です。「今はしない」を選んでも構いません。あとで［設定］の［セキュリティ］から設定できます。",
+  "security_set_up": "設定する",
+  "security_not_now": "今はしない",
+  "security_continue": "続ける",
+  "security_checking": "アカウントを確認しています",
+  "security_confirm_failed_hint": "ここでパスワードによる確認ができない場合は、「今はしない」を選んで先に進んでください。あとで［設定］の［セキュリティ］から設定できます。"
 }

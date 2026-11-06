@@ -711,6 +711,8 @@
       "step_profile_desc": "Paso donde los miembros completan la información de su perfil",
       "step_safeguarding": "Paso de protección",
       "step_safeguarding_desc": "Paso donde los miembros completan las declaraciones de protección",
+      "step_security": "Proteger la cuenta (oferta de verificación en dos pasos)",
+      "step_security_desc": "Ofrece a los miembros el inicio de sesión en dos pasos con una aplicación de autenticación. Siempre es opcional para los miembros y solo se muestra a quienes pueden configurarlo.",
       "step_skills": "Habilidades de paso",
       "step_skills_desc": "Paso donde los miembros agregan sus habilidades y lo que pueden ofrecer",
       "step_welcome": "Paso Bienvenido",

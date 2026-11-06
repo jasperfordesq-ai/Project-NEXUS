@@ -6,6 +6,7 @@
   "step_skills": "Compétences",
   "step_confirm": "Confirmer",
   "step_safeguarding": "Protection",
+  "step_security": "Sécurité",
   "safeguarding_title": "Soutien et protection",
   "safeguarding_subtitle": "Indiquez-nous si vous souhaitez un soutien supplémentaire",
   "safeguarding_intro": "Votre sécurité nous importe. Si vous souhaitez un soutien supplémentaire lorsque vous utilisez cette communauté, indiquez-le ci-dessous. Chaque choix vous explique exactement ce qu'il fait avant que vous ne le sélectionniez. Vos réponses sont confidentielles et visibles uniquement par les coordinateurs de la communauté, jamais sur votre profil public.",
@@ -149,5 +150,18 @@
   "bio_char_count_many": "{{count}} caractères",
   "count_selected_many": "{{count}} sélectionnée(s)",
   "skills_to_offer_count_many": "{{count}} compétence(s) à offrir",
-  "skills_needed_count_many": "{{count}} compétence(s) recherchée(s)"
+  "skills_needed_count_many": "{{count}} compétence(s) recherchée(s)",
+  "security_title": "Protégez votre compte",
+  "security_subtitle": "Facultatif : ajoutez une seconde vérification à la connexion",
+  "security_intro": "La connexion en deux étapes protège votre compte même si quelqu'un découvre votre mot de passe. À la connexion, vous saisissez votre mot de passe comme d'habitude, puis un code à 6 chiffres provenant d'une application d'authentification sur votre téléphone.",
+  "security_need_title": "Ce dont vous avez besoin",
+  "security_need_phone": "Votre téléphone, avec une application d'authentification gratuite comme Google Authenticator, Microsoft Authenticator ou Authy",
+  "security_need_password": "Le mot de passe que vous utilisez pour ce compte",
+  "security_need_time": "Environ deux minutes",
+  "security_optional_note": "C'est facultatif. Si vous préférez, choisissez « Pas maintenant » : vous pourrez l'activer plus tard dans les Paramètres, rubrique Sécurité.",
+  "security_set_up": "L'activer",
+  "security_not_now": "Pas maintenant",
+  "security_continue": "Continuer",
+  "security_checking": "Vérification de votre compte",
+  "security_confirm_failed_hint": "Si vous ne pouvez pas confirmer avec un mot de passe ici, choisissez « Pas maintenant » pour continuer. Vous pourrez l'activer plus tard dans les Paramètres, rubrique Sécurité."
 }

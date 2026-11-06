@@ -106,4 +106,41 @@ describe('useOnboardingConfig', () => {
     expect(slugs).toContain('profile');
     expect(slugs).toContain('confirm');
   });
+
+  // The fallback is used when the config cannot be read. Only the server
+  // knows whether this member can set up two-step sign-in, so the fallback
+  // never offers the "Protect your account" step.
+  it('fallback steps never include the security step, even after an API error', async () => {
+    mockGet.mockRejectedValue(new Error('Network error'));
+
+    const { result } = renderHook(() => useOnboardingConfig());
+
+    expect(result.current.steps.map((s) => s.slug)).not.toContain('security');
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+    expect(result.current.steps.map((s) => s.slug)).not.toContain('security');
+    expect(result.current.config.step_security_enabled).toBe(true);
+  });
+
+  it('passes through a security step the server sends', async () => {
+    mockGet.mockResolvedValue({
+      success: true,
+      data: {
+        config: { step_security_enabled: true },
+        steps: [
+          { slug: 'welcome', required: false },
+          { slug: 'security', required: false },
+          { slug: 'confirm', required: true },
+        ],
+      },
+    });
+
+    const { result } = renderHook(() => useOnboardingConfig());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+    expect(result.current.steps).toContainEqual({ slug: 'security', required: false });
+  });
 });

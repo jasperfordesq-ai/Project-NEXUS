@@ -14,11 +14,8 @@ import Eye from 'lucide-react/icons/eye';
 import EyeOff from 'lucide-react/icons/eye-off';
 import Monitor from 'lucide-react/icons/monitor';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
-import QrCode from 'lucide-react/icons/qr-code';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import ShieldOff from 'lucide-react/icons/shield-off';
-import Copy from 'lucide-react/icons/copy';
-import CheckCircle from 'lucide-react/icons/circle-check-big';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -46,11 +43,11 @@ export interface SessionInfo {
   is_current: boolean;
 }
 
-export interface TwoFactorSetup {
-  qr_code_url: string;
-  secret: string;
-  backup_codes: string[];
-}
+/**
+ * Re-exported for older imports: the enrolment flow (QR code, verify, backup
+ * codes) moved to `@/components/security/TwoFactorEnrolment`.
+ */
+export type { TwoFactorSetup } from '@/components/security/useTwoFactorEnrolment';
 
 interface SecurityTabProps {
   // 2FA
@@ -58,13 +55,9 @@ interface SecurityTabProps {
   onRecoveryCodesChanged?: (count: number) => void;
   twoFactorEnabled: boolean;
   twoFactorLoading: boolean;
-  twoFactorSetupData: TwoFactorSetup | null;
-  twoFactorVerifyCode: string;
-  isVerifying2FA: boolean;
   twoFactorDisablePassword: string;
   twoFactorDisableCode: string;
   isDisabling2FA: boolean;
-  backupCodes: string[];
   backupCodesRemaining: number;
   // Sessions
   sessions: SessionInfo[];
@@ -86,26 +79,20 @@ interface SecurityTabProps {
   // Delete Account modal lives at the page level (SettingsPage) so it can also
   // be opened from the Privacy tab; this tab only triggers it.
   deleteModalOnOpen: () => void;
-  twoFactorSetupModalOpen: boolean;
-  twoFactorSetupModalOnClose: () => void;
   twoFactorDisableModalOpen: boolean;
   twoFactorDisableModalOnClose: () => void;
   twoFactorDisableModalOnOpen: () => void;
-  backupCodesModalOpen: boolean;
-  backupCodesModalOnClose: () => void;
-  // Handlers
+  // Handlers. Turning two-factor ON is handled by the page's shared
+  // TwoFactorEnrolment; this tab only starts it (onSetup2FA).
   onPasswordDataChange: (updater: (prev: { current_password: string; new_password: string; confirm_password: string }) => { current_password: string; new_password: string; confirm_password: string }) => void;
   onShowCurrentPasswordToggle: () => void;
   onShowNewPasswordToggle: () => void;
   onChangePassword: () => void;
   onLogout: () => void;
   onSetup2FA: () => void;
-  onVerify2FA: () => void;
   onDisable2FA: () => void;
-  onTwoFactorVerifyCodeChange: (value: string) => void;
   onTwoFactorDisablePasswordChange: (value: string) => void;
   onTwoFactorDisableCodeChange: (value: string) => void;
-  onCopyBackupCodes: () => void;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -134,13 +121,9 @@ export function SecurityTab({
   onRecoveryCodesChanged,
   twoFactorEnabled,
   twoFactorLoading,
-  twoFactorSetupData,
-  twoFactorVerifyCode,
-  isVerifying2FA,
   twoFactorDisablePassword,
   twoFactorDisableCode,
   isDisabling2FA,
-  backupCodes,
   backupCodesRemaining,
   sessions,
   sessionsLoading,
@@ -157,25 +140,18 @@ export function SecurityTab({
   logoutModalOnClose,
   logoutModalOnOpen,
   deleteModalOnOpen,
-  twoFactorSetupModalOpen,
-  twoFactorSetupModalOnClose,
   twoFactorDisableModalOpen,
   twoFactorDisableModalOnClose,
   twoFactorDisableModalOnOpen,
-  backupCodesModalOpen,
-  backupCodesModalOnClose,
   onPasswordDataChange,
   onShowCurrentPasswordToggle,
   onShowNewPasswordToggle,
   onChangePassword,
   onLogout,
   onSetup2FA,
-  onVerify2FA,
   onDisable2FA,
-  onTwoFactorVerifyCodeChange,
   onTwoFactorDisablePasswordChange,
   onTwoFactorDisableCodeChange,
-  onCopyBackupCodes,
 }: SecurityTabProps) {
   const { t } = useTranslation('settings');
   const { hasFeature } = useTenant();
@@ -453,134 +429,6 @@ export function SecurityTab({
         </ModalContent>
       </Modal>
 
-      {/* 2FA Setup Modal */}
-      <Modal
-        isOpen={twoFactorSetupModalOpen}
-        onClose={twoFactorSetupModalOnClose}
-        size="lg"
-        classNames={modalClassNames}
-      >
-        <ModalContent>
-          <ModalHeader className="text-theme-primary flex items-center gap-2">
-            <QrCode className="w-5 h-5 text-emerald-500" aria-hidden="true" />
-            {t('twofa_setup_title')}
-          </ModalHeader>
-          <ModalBody>
-            {!twoFactorSetupData ? (
-              <div className="flex items-center justify-center py-12">
-                <div role="status" aria-busy="true" aria-label={t('twofa_loading_setup')}>
-                  <Spinner size="lg" />
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* What is an authenticator app? */}
-                <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
-                  <p className="text-sm font-medium text-theme-primary mb-2">{t('twofa_what_is')}</p>
-                  <p className="text-xs text-theme-muted mb-3">
-                    {t('twofa_what_is_desc')}
-                  </p>
-                  <p className="text-xs text-theme-muted mb-2">
-                    {t('twofa_download_prompt')}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      as="a"
-                      href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      size="sm"
-                      variant="secondary"
-                      className="min-h-9"
-                    >
-                      {t('twofa_app_google')}
-                    </Button>
-                    <Button
-                      as="a"
-                      href="https://www.microsoft.com/en-us/security/mobile-authenticator-app"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      size="sm"
-                      variant="secondary"
-                      className="min-h-9"
-                    >
-                      {t('twofa_app_microsoft')}
-                    </Button>
-                    <Button
-                      as="a"
-                      href="https://authy.com/download/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      size="sm"
-                      variant="secondary"
-                      className="min-h-9"
-                    >
-                      {t('twofa_app_authy')}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <p className="text-theme-muted mb-4">
-                    {t('twofa_scan_qr')}
-                  </p>
-                  <div className="inline-block p-4 bg-white rounded-xl">
-                    <img
-                      src={twoFactorSetupData.qr_code_url}
-                      alt={t('twofa_qr_alt')}
-                      className="w-48 h-48"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-lg bg-theme-elevated">
-                  <p className="text-xs text-theme-subtle mb-1">{t('twofa_manual_key')}</p>
-                  <p className="font-mono text-sm text-theme-primary break-all select-all">
-                    {twoFactorSetupData.secret}
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2 items-center">
-                  <Label className="self-start text-sm">{t('twofa_verification_code')}</Label>
-                  <InputOTP
-                    maxLength={6}
-                    value={twoFactorVerifyCode}
-                    onChange={(val) => onTwoFactorVerifyCodeChange(val.replace(/\D/g, '').slice(0, 6))}
-                  >
-                    <InputOTP.Group>
-                      <InputOTP.Slot index={0} />
-                      <InputOTP.Slot index={1} />
-                      <InputOTP.Slot index={2} />
-                    </InputOTP.Group>
-                    <InputOTP.Separator />
-                    <InputOTP.Group>
-                      <InputOTP.Slot index={3} />
-                      <InputOTP.Slot index={4} />
-                      <InputOTP.Slot index={5} />
-                    </InputOTP.Group>
-                  </InputOTP>
-                  <Description className="self-start text-xs">{t('twofa_code_description')}</Description>
-                </div>
-              </div>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="tertiary" onPress={twoFactorSetupModalOnClose}>
-              {t('twofa_cancel')}
-            </Button>
-            <Button
-              variant="primary"
-              onPress={onVerify2FA}
-              isLoading={isVerifying2FA}
-              isDisabled={!twoFactorSetupData || twoFactorVerifyCode.length < 6}
-            >
-              {t('twofa_verify_enable')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
       {/* 2FA Disable Modal */}
       <Modal isOpen={twoFactorDisableModalOpen} onClose={twoFactorDisableModalOnClose} classNames={modalClassNames}>
         <ModalContent>
@@ -640,51 +488,6 @@ export function SecurityTab({
               isDisabled={!twoFactorDisablePassword || twoFactorDisableCode.length < 6}
             >
               {t('twofa_disable_confirm')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      {/* Backup Codes Modal */}
-      <Modal isOpen={backupCodesModalOpen} onClose={backupCodesModalOnClose} size="lg" classNames={modalClassNames}>
-        <ModalContent>
-          <ModalHeader className="text-theme-primary flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-emerald-500" aria-hidden="true" />
-            {t('backup_codes_title')}
-          </ModalHeader>
-          <ModalBody>
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <p className="text-theme-warning font-medium">{t('backup_codes_warning')}</p>
-                <p className="text-theme-muted text-sm mt-1">
-                  {t('backup_codes_desc')}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-4 rounded-lg bg-theme-elevated">
-                {backupCodes.map((code) => (
-                  <p key={code} className="font-mono text-sm text-theme-primary text-center py-1">
-                    {code}
-                  </p>
-                ))}
-              </div>
-
-              <Button
-                variant="secondary"
-                className="w-full"
-                startContent={<Copy className="w-4 h-4" aria-hidden="true" />}
-                onPress={onCopyBackupCodes}
-              >
-                {t('backup_codes_copy')}
-              </Button>
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              variant="primary"
-              onPress={backupCodesModalOnClose}
-            >
-              {t('backup_codes_saved')}
             </Button>
           </ModalFooter>
         </ModalContent>

@@ -6,6 +6,7 @@
   "step_skills": "Skills",
   "step_confirm": "Confirm",
   "step_safeguarding": "Safeguarding",
+  "step_security": "Security",
   "safeguarding_title": "Support & Safeguarding",
   "safeguarding_subtitle": "Let us know if you'd like additional support",
   "safeguarding_intro": "Your safety matters to us. If you would like extra support while using this community, let us know below. Each choice tells you exactly what it does before you pick it. Your answers are confidential and only visible to community coordinators — never on your public profile.",
@@ -145,5 +146,18 @@
   "skills_to_offer_count_one": "{{count}} skill(s) to offer",
   "skills_to_offer_count_other": "{{count}} skill(s) to offer",
   "skills_needed_count_one": "{{count}} skill(s) needed",
-  "skills_needed_count_other": "{{count}} skill(s) needed"
+  "skills_needed_count_other": "{{count}} skill(s) needed",
+  "security_title": "Protect your account",
+  "security_subtitle": "Optional: add a second check when you sign in",
+  "security_intro": "Two-step sign-in keeps your account safe even if someone finds out your password. When you sign in, you enter your password as usual, then a 6-digit code from an authenticator app on your phone.",
+  "security_need_title": "What you need",
+  "security_need_phone": "Your phone, with a free authenticator app such as Google Authenticator, Microsoft Authenticator or Authy",
+  "security_need_password": "The password you use for this account",
+  "security_need_time": "About two minutes",
+  "security_optional_note": "This is optional. If you prefer, choose \"Not now\" — you can set it up later in Settings, under Security.",
+  "security_set_up": "Set it up",
+  "security_not_now": "Not now",
+  "security_continue": "Continue",
+  "security_checking": "Checking your account",
+  "security_confirm_failed_hint": "If you can't confirm with a password here, choose \"Not now\" to carry on. You can set this up later in Settings, under Security."
 }

@@ -704,6 +704,8 @@
       "step_profile_desc": "Stap waar leden hun profielgegevens invullen",
       "step_safeguarding": "Beschermingsstap",
       "step_safeguarding_desc": "Stap waar leden veiligheidsverklaringen invullen",
+      "step_security": "Bescherm je account (aanbod voor tweestapsverificatie)",
+      "step_security_desc": "Biedt leden inloggen in twee stappen aan met een authenticator-app. Altijd optioneel voor leden en alleen zichtbaar voor leden die het kunnen instellen.",
       "step_skills": "Stap vaardigheden",
       "step_skills_desc": "Stap waar leden hun vaardigheden toevoegen en wat ze kunnen bieden",
       "step_welcome": "Stap Welkom",

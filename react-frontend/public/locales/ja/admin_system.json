@@ -703,6 +703,8 @@
       "step_profile_desc": "メンバーがプロフィール情報を入力するステップ",
       "step_safeguarding": "段差保護",
       "step_safeguarding_desc": "会員が安全対策宣言を完了するステップ",
+      "step_security": "アカウントを守る（2要素認証のご案内）",
+      "step_security_desc": "認証アプリを使った2段階サインインをメンバーに案内します。メンバーにとっては常に任意で、設定できるメンバーにのみ表示されます。",
       "step_skills": "ステップスキル",
       "step_skills_desc": "メンバーが自分のスキルと提供できるものを追加するステップ",
       "step_welcome": "ステップへようこそ",
