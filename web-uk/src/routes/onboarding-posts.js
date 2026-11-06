@@ -274,10 +274,24 @@ function collectSafeguardingFromBody(body, rawBody) {
   return collectSafeguarding(flat);
 }
 
-function nextStep(step) {
-  const index = DEFAULT_STEPS.indexOf(step);
+// The next step THIS community has. Walking DEFAULT_STEPS instead sent the
+// member to a step the server had left out (Safeguarding with no questions set
+// up, or Skills switched off); that page bounces to /onboarding, which starts
+// again at Welcome — a loop with no way to finish.
+function nextStep(step, slugs = DEFAULT_STEPS) {
+  const index = slugs.indexOf(step);
   if (index === -1) return '/onboarding';
-  return DEFAULT_STEPS[index + 1] ? `/onboarding/${DEFAULT_STEPS[index + 1]}` : '/dashboard?status=onboarding-complete';
+  return slugs[index + 1] ? `/onboarding/${slugs[index + 1]}` : '/dashboard?status=onboarding-complete';
+}
+
+async function communityStepSlugs(token) {
+  try {
+    const configData = asObject(dataFrom(await getOnboardingConfig(token)));
+    return normalizeSteps(configData.steps).map((item) => item.slug);
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return DEFAULT_STEPS;
+  }
 }
 
 function isAuthError(error) {
@@ -586,7 +600,7 @@ router.post('/:step([a-z]+)', asyncRoute(async (req, res) => {
     }
   }
 
-  return redirectTo(res, nextStep(step));
+  return redirectTo(res, nextStep(step, await communityStepSlugs(req.token)));
 }));
 
 module.exports = router;

@@ -182,7 +182,7 @@ describe('onboarding: profile step asks where the member is based', () => {
       .send({ _csrf: 'x', bio: 'Hello there', location: '  Coventry  ' });
 
     expect(res.status).toBe(302);
-    expect(res.headers.location).toBe('/onboarding/skills'); // interests step retired 2026-10-02 (React 8578ce739)
+    expect(res.headers.location).toBe('/onboarding/confirm'); // this community's steps are welcome, profile, confirm
     expect(api.updateProfile).toHaveBeenCalledTimes(1);
     expect(api.updateProfile).toHaveBeenCalledWith('token:test', { bio: 'Hello there', location: 'Coventry' });
   });
@@ -193,7 +193,7 @@ describe('onboarding: profile step asks where the member is based', () => {
       .type('form')
       .send({ _csrf: 'x', bio: 'Hello there' });
 
-    expect(res.headers.location).toBe('/onboarding/skills'); // interests step retired 2026-10-02 (React 8578ce739)
+    expect(res.headers.location).toBe('/onboarding/confirm'); // this community's steps are welcome, profile, confirm
     expect(api.updateProfile).toHaveBeenCalledWith('token:test', { bio: 'Hello there' });
   });
 
