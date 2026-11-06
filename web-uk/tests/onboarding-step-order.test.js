@@ -113,3 +113,25 @@ describe('moving to the next step', () => {
     expect(response.headers.location).toBe('/onboarding/safeguarding');
   });
 });
+
+describe('a step the community no longer lists', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    api.getOnboardingStatus.mockResolvedValue({ data: { onboarding_completed: false } });
+  });
+
+  // Turning two-factor on removes "security" from the member's steps; the
+  // two-factor page then sends them back to /onboarding/security. That must
+  // carry on to the next step, not restart the wizard at Welcome.
+  it('carries on to the next listed step instead of starting again', async () => {
+    api.getOnboardingConfig.mockResolvedValue(config(['welcome', 'profile', 'skills', 'confirm']));
+    const response = await request(buildApp()).get('/onboarding/security');
+    expect(response.headers.location).toBe('/onboarding/confirm');
+  });
+
+  it('still sends an unknown address back to the start', async () => {
+    api.getOnboardingConfig.mockResolvedValue(config(['welcome', 'profile', 'skills', 'confirm']));
+    const response = await request(buildApp()).get('/onboarding/nonsense');
+    expect(response.headers.location).toBe('/onboarding');
+  });
+});

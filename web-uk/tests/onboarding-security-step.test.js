@@ -148,11 +148,11 @@ describe('the "Protect your account" onboarding step', () => {
     expect(response.headers.location).toBe('/onboarding/confirm');
   });
 
-  it('is not shown when the community has not listed it', async () => {
+  it('is skipped, onward to the next listed step, when the community has not listed it', async () => {
     api.getOnboardingConfig.mockResolvedValue(config(['welcome', 'profile', 'confirm']));
     const response = await request(buildApp()).get('/onboarding/security');
     expect(response.status).toBe(302);
-    expect(response.headers.location).toBe('/onboarding');
+    expect(response.headers.location).toBe('/onboarding/confirm');
     expect(api.getTwoFactorStatus).not.toHaveBeenCalled();
   });
 

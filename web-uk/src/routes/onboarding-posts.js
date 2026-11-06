@@ -430,7 +430,12 @@ router.get('/:step([a-z]+)', asyncRoute(async (req, res) => {
     const steps = normalizeSteps(configData.steps);
     const slugs = steps.map((item) => item.slug);
     if (!slugs.includes(step)) {
-      return redirectTo(res, '/onboarding');
+      // A known step this community no longer lists for the member — most
+      // often "security" after they turned two-factor on and the set-up page
+      // sent them back here. Carry on to the next step they do have, in the
+      // wizard's order, instead of restarting at Welcome.
+      const later = DEFAULT_STEPS.slice(DEFAULT_STEPS.indexOf(step) + 1).find((slug) => slugs.includes(slug));
+      return redirectTo(res, DEFAULT_STEPS.includes(step) && later ? `/onboarding/${later}` : '/onboarding');
     }
 
     if (step === 'security' && !(await securityStepApplies(token))) {
