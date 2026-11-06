@@ -117,6 +117,46 @@ class NotifyAdminOfNewRegistration
         ];
     }
 
+    /**
+     * 🔴 Does this registration actually need somebody to act?
+     *
+     * The alert used to be the same either way: subject "New member
+     * registered", body "log in to view their profile", button to that
+     * profile. On a community that requires approval, that is the wrong
+     * message — the member is sitting locked out until a coordinator acts, and
+     * nothing in the alert says so. A real coordinator (Minehead & Coast)
+     * reported receiving "no alert" at all; the records showed the email WAS
+     * delivered and the bell WAS opened. It simply never told her there was a
+     * job to do, so it read as routine noise.
+     *
+     * A caller that fires the event after the account is settled says whether
+     * the member is waiting (provider sign-ups, E-121: they wait according to
+     * the registration mode, which need not match the approval setting) — that
+     * wins. Otherwise the tenant setting decides, on purpose rather than the user
+     * row: during a form sign-up this listener runs while the row's status and
+     * is_approved are still being settled, so reading them would race that.
+     */
+    public static function needsApprovalFor(UserRegistered $event): bool
+    {
+        if ($event->awaitingApproval !== null) {
+            return $event->awaitingApproval;
+        }
+
+        try {
+            return app(\App\Services\TenantSettingsService::class)
+                ->requiresAdminApproval((int) $event->tenantId);
+        } catch (\Throwable $e) {
+            // Fall back to the neutral "registered" wording rather than
+            // claiming an approval is needed when we could not find out.
+            Log::warning('NotifyAdminOfNewRegistration: could not read approval setting', [
+                'tenant_id' => $event->tenantId,
+                'error'     => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
     public function handle(UserRegistered $event): void
     {
         // Legacy events without captured intent still use the cache done key.
@@ -153,35 +193,7 @@ class NotifyAdminOfNewRegistration
             $tenantName = TenantContext::get()['name'] ?? 'Project NEXUS';
             $baseUrl    = TenantContext::getFrontendUrl();
             $basePath   = TenantContext::getSlugPrefix();
-            // 🔴 Does this registration actually need somebody to act?
-            //
-            // The alert used to be the same either way: subject "New member
-            // registered", body "log in to view their profile", button to that
-            // profile. On a community that requires approval, that is the wrong
-            // message — the member is sitting locked out until a coordinator
-            // acts, and nothing in the alert says so. A real coordinator
-            // (Minehead & Coast) reported receiving "no alert" at all; the
-            // records showed the email WAS delivered and the bell WAS opened.
-            // It simply never told her there was a job to do, so it read as
-            // routine noise and she went hunting in the admin panel instead.
-            //
-            // Keyed off the tenant setting rather than the user row on purpose:
-            // this listener runs during registration while the row's status and
-            // is_approved are still being settled, so reading them here races
-            // that. If the community requires approval, a member who just
-            // registered is by definition awaiting it.
-            $needsApproval = false;
-            try {
-                $needsApproval = app(\App\Services\TenantSettingsService::class)
-                    ->requiresAdminApproval((int) $event->tenantId);
-            } catch (\Throwable $e) {
-                // Fall back to the neutral "registered" wording rather than
-                // claiming an approval is needed when we could not find out.
-                Log::warning('NotifyAdminOfNewRegistration: could not read approval setting', [
-                    'tenant_id' => $event->tenantId,
-                    'error'     => $e->getMessage(),
-                ]);
-            }
+            $needsApproval = self::needsApprovalFor($event);
 
             // Where "go and deal with it" should point. Admin-tier recipients
             // get the actual pending-approvals queue; brokers and coordinators

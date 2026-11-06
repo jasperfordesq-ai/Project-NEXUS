@@ -66,7 +66,13 @@
     "active_bullet_connections": "<strong>Nawiąż kontakty</strong> — dotrzyj do ludzi w swojej społeczności",
     "active_bullet_events": "<strong>Odkryj wydarzenia</strong> — znajdź nadchodzące aktywności i spotkania",
     "active_help": "Jeśli masz pytania, nie wahaj się skontaktować. Jesteśmy tutaj, aby pomóc!",
-    "active_button": "Odkryj swoją społeczność"
+    "active_button": "Odkryj swoją społeczność",
+    "awaiting_subject": "Dziękujemy za dołączenie do {{community}}",
+    "awaiting_preview": "Twoje konto będzie wkrótce gotowe.",
+    "awaiting_intro": "Dziękujemy za dołączenie do <strong>{{community}}</strong>.",
+    "awaiting_body": "Twoje konto nie jest jeszcze aktywne, ponieważ ta społeczność sprawdza nowych członków, zanim będą mogli się zalogować. Otrzymasz e-mail, gdy tylko Twoje konto będzie gotowe. Zwykle trwa to kilka dni.",
+    "awaiting_next": "Do tego czasu możesz przeglądać publiczne strony społeczności.",
+    "awaiting_button": "Odwiedź społeczność"
   },
   "verification": {
     "subject": "Zweryfikuj swój adres e-mail",

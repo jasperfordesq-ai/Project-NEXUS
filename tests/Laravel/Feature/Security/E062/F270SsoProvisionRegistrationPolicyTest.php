@@ -6,7 +6,9 @@
 
 namespace Tests\Laravel\Feature\Security\E062;
 
+use App\Events\UserRegistered;
 use App\Http\Controllers\Auth\SsoAuthController;
+use App\Models\User;
 use App\Services\Auth\SocialAuthService;
 use App\Services\Auth\SsoOidcService;
 use App\Services\Identity\RegistrationPolicyService;
@@ -16,6 +18,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Tests\Laravel\TestCase;
 
@@ -127,6 +130,39 @@ class F270SsoProvisionRegistrationPolicyTest extends TestCase
             'user_id' => (int) $row->id,
             'provider' => 'sso:' . $this->testTenantId . ':' . $this->providerKey,
         ]);
+    }
+
+    /**
+     * E-121: an account made by organisation sign-in gets what a form sign-up
+     * gets — UserRegistered once, after commit (welcome email, staff emails and
+     * alerts), saying the member is waiting — and staff are not alerted twice.
+     */
+    public function test_a_new_held_account_gets_the_sign_up_follow_through_once(): void
+    {
+        Event::fake([UserRegistered::class]);
+        $this->seedRegistrationMode('open_with_approval');
+        $staff = User::factory()->forTenant($this->testTenantId)->create([
+            'role' => 'broker',
+            'status' => 'active',
+            'email' => 'f270-staff-' . bin2hex(random_bytes(4)) . '@example.test',
+        ]);
+
+        $email = 'f270-follow-' . bin2hex(random_bytes(4)) . '@example.test';
+        $this->runCallback($email);
+        $row = $this->userRow($email);
+        $this->assertNotNull($row);
+
+        Event::assertDispatchedTimes(UserRegistered::class, 1);
+        Event::assertDispatched(
+            UserRegistered::class,
+            fn (UserRegistered $event): bool => (int) $event->user->id === (int) $row->id
+                && $event->awaitingApproval === true
+        );
+        $this->assertSame(
+            0,
+            DB::table('notifications')->where('user_id', $staff->id)->where('type', 'pending_approval')->count(),
+            'staff hear through the event, not twice'
+        );
     }
 
     public function test_identity_verified_community_marks_the_new_account_pending_verification(): void

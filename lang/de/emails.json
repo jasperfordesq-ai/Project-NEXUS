@@ -66,7 +66,13 @@
     "active_bullet_connections": "<strong>Verbindungen knüpfen</strong> — kontaktieren Sie Menschen in Ihrer Gemeinschaft",
     "active_bullet_events": "<strong>Veranstaltungen entdecken</strong> — finden Sie bevorstehende Aktivitäten und Treffen",
     "active_help": "Falls Sie Fragen haben, zögern Sie nicht, uns zu kontaktieren. Wir sind gerne für Sie da!",
-    "active_button": "Ihre Gemeinschaft erkunden"
+    "active_button": "Ihre Gemeinschaft erkunden",
+    "awaiting_subject": "Danke, dass Sie {{community}} beigetreten sind",
+    "awaiting_preview": "Ihr Konto ist bald bereit.",
+    "awaiting_intro": "Danke, dass Sie <strong>{{community}}</strong> beigetreten sind.",
+    "awaiting_body": "Ihr Konto ist noch nicht aktiv, weil diese Community neue Mitglieder prüft, bevor sie sich anmelden können. Sie erhalten eine E-Mail, sobald Ihr Konto bereit ist. Das dauert in der Regel wenige Tage.",
+    "awaiting_next": "Bis dahin können Sie sich gerne die öffentlichen Seiten der Community ansehen.",
+    "awaiting_button": "Zur Community"
   },
   "verification": {
     "subject": "Bestätigen Sie Ihre E-Mail-Adresse",

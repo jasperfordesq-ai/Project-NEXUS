@@ -41,8 +41,12 @@ class RegistrationOrchestrationService
      *   message: string
      * }
      */
-    public static function processRegistration(int $userId, int $tenantId): array
+    public static function processRegistration(int $userId, int $tenantId, bool $staffAlertedByCaller = false): array
     {
+        // $staffAlertedByCaller (E-121): the caller fires UserRegistered after
+        // commit, whose listener emails and alerts every staff member
+        // (ProviderSignUpFollowThrough). The approval step's own in-app alert is
+        // then skipped, so nobody hears twice.
         $policy = RegistrationPolicyService::getEffectivePolicy($tenantId);
 
         // Log registration start
@@ -63,7 +67,7 @@ class RegistrationOrchestrationService
                 return self::handleOpenRegistration($userId, $tenantId, $policy);
 
             case 'open_with_approval':
-                return self::handleOpenWithApproval($userId, $tenantId, $policy);
+                return self::handleOpenWithApproval($userId, $tenantId, $policy, $staffAlertedByCaller);
 
             case 'verified_identity':
             case 'government_id':
@@ -77,7 +81,7 @@ class RegistrationOrchestrationService
 
             default:
                 // Unknown mode — safe fallback to approval
-                return self::handleOpenWithApproval($userId, $tenantId, $policy);
+                return self::handleOpenWithApproval($userId, $tenantId, $policy, $staffAlertedByCaller);
         }
     }
 
@@ -480,11 +484,29 @@ class RegistrationOrchestrationService
         ];
     }
 
-    private static function handleOpenWithApproval(int $userId, int $tenantId, array $policy): array
+    private static function handleOpenWithApproval(int $userId, int $tenantId, array $policy, bool $staffAlertedByCaller = false): array
     {
         // User stays is_approved=0, admin must approve
 
-        // Notify all tenant admins that a new user requires approval
+        // Notify all tenant admins that a new user requires approval — unless the
+        // caller's UserRegistered does it (E-121), so staff are told once.
+        if (!$staffAlertedByCaller) {
+            self::alertStaffOfPendingApproval($userId, $tenantId);
+        }
+
+        return [
+            'action' => 'pending_approval',
+            'requires_verification' => false,
+            'requires_approval' => true,
+            'verification_session' => null,
+            'next_steps' => ['Your account will be reviewed by a community administrator.'],
+            'message' => __('svc_notifications_2.registration.pending_admin_approval'),
+        ];
+    }
+
+    /** The approval step's own in-app alert and push to staff. Never throws. */
+    private static function alertStaffOfPendingApproval(int $userId, int $tenantId): void
+    {
         try {
             $user = \Illuminate\Support\Facades\DB::table('users')
                 ->where('id', $userId)
@@ -531,15 +553,6 @@ class RegistrationOrchestrationService
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning("[RegistrationOrchestrationService] Failed to notify admins of pending approval for user #{$userId}: " . $e->getMessage());
         }
-
-        return [
-            'action' => 'pending_approval',
-            'requires_verification' => false,
-            'requires_approval' => true,
-            'verification_session' => null,
-            'next_steps' => ['Your account will be reviewed by a community administrator.'],
-            'message' => __('svc_notifications_2.registration.pending_admin_approval'),
-        ];
     }
 
     private static function handleVerifiedIdentity(int $userId, int $tenantId, array $policy): array

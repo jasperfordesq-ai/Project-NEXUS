@@ -39,10 +39,17 @@ class UserRegistered
      *                              to when they signed up (already checked with
      *                              AuthReturnPath::safe()); the verification
      *                              link carries it as ?next=.
+     * @param bool|null $awaitingApproval Whether the new member is waiting for
+     *                              the community to let them in. Set by callers
+     *                              that fire this after the account is settled
+     *                              (provider sign-ups, E-121); null means
+     *                              "unknown", and the staff alert falls back to
+     *                              the community's approval setting.
      */
     public function __construct(
         public readonly User $user,
         public readonly int $tenantId,
         public readonly ?string $returnTo = null,
+        public readonly ?bool $awaitingApproval = null,
     ) {}
 }

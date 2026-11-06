@@ -33,6 +33,7 @@ import { useTenant } from '@/contexts/TenantContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { consumeAuthReturn } from '@/lib/auth-return';
+import { PendingApprovalNotice } from '@/components/auth/PendingApprovalNotice';
 
 interface OAuthExchangeResponse {
   requires_2fa?: boolean;
@@ -47,6 +48,39 @@ interface OAuthExchangeResponse {
   session_binding?: string;
   tenant_id?: number | string;
   message?: string;
+  /** E-121: why the sign-in did not complete — one of REFUSAL_REASONS. */
+  reason?: string;
+  is_new?: boolean;
+}
+
+/**
+ * E-121: the fixed reasons the server can give for a provider sign-in that did
+ * not complete (App\Services\Auth\ProviderSignInRefused). Anything else is a
+ * plain failure, and the wording is always ours (F-196).
+ */
+const REFUSAL_MESSAGES = {
+  pending_approval: null, // the shared waiting panel says it all
+  no_account: { ns: 'common', key: 'oauth.refused_no_account' },
+  registration_closed: { ns: 'common', key: 'oauth.refused_registration_closed' },
+  suspended: { ns: 'common', key: 'oauth.refused_suspended' },
+  email_unverified: { ns: 'common', key: 'oauth.refused_email_unverified' },
+  identity_check_pending: { ns: 'auth', key: 'login.pending_verification' },
+  identity_check_failed: { ns: 'auth', key: 'login.verification_failed' },
+  under_18: { ns: 'auth', key: 'login.under_minimum_age' },
+} as const;
+
+type RefusalReason = keyof typeof REFUSAL_MESSAGES;
+
+function isRefusalReason(value: unknown): value is RefusalReason {
+  return typeof value === 'string' && Object.prototype.hasOwnProperty.call(REFUSAL_MESSAGES, value);
+}
+
+/** The server said why the sign-in did not complete (E-121). */
+class ProviderRefusal extends Error {
+  constructor(readonly reason: RefusalReason) {
+    super(`provider_sign_in_refused:${reason}`);
+    this.name = 'ProviderRefusal';
+  }
 }
 
 /**
@@ -90,8 +124,11 @@ function exchangeOAuthCode(code: string, flow: string | null): Promise<OAuthExch
         if (refused.errors?.some((error) => error?.code === ACCOUNT_UNDER_MINIMUM_AGE)) {
           throw new MinimumAgeRefusal(serverMessageFor(refused.errors, ACCOUNT_UNDER_MINIMUM_AGE));
         }
+        if (isRefusalReason(data.reason)) {
+          throw new ProviderRefusal(data.reason);
+        }
       }
-      throw new Error(data.message || 'oauth_exchange_failed');
+      throw new Error('oauth_exchange_failed');
     }
 
     return data;
@@ -131,6 +168,7 @@ export function OauthCallbackPage() {
   const { beginTwoFactorChallenge } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [refusal, setRefusal] = useState<RefusalReason | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -195,11 +233,18 @@ export function OauthCallbackPage() {
           : consumeAuthReturn(tenantPath('/dashboard'));
       },
       (failure: unknown) => {
-        if (!cancelled) {
-          setError(failure instanceof MinimumAgeRefusal
-            ? failure.serverMessage ?? tAuth('login.under_minimum_age')
-            : t(isLink ? 'oauth.link_failed' : 'oauth.callback_failed'));
+        if (cancelled) return;
+        if (failure instanceof ProviderRefusal && !isLink) {
+          // The server has used the code up; this flow is finished.
+          clearOAuthBrowserVerifier(flow);
+          const message = REFUSAL_MESSAGES[failure.reason];
+          setRefusal(failure.reason);
+          setError(message === null ? '' : (message.ns === 'auth' ? tAuth(message.key) : t(message.key)));
+          return;
         }
+        setError(failure instanceof MinimumAgeRefusal
+          ? failure.serverMessage ?? tAuth('login.under_minimum_age')
+          : t(isLink ? 'oauth.link_failed' : 'oauth.callback_failed'));
       },
     );
 
@@ -207,6 +252,51 @@ export function OauthCallbackPage() {
       cancelled = true;
     };
   }, [params, isLink, tenantPath, t, tAuth, beginTwoFactorChallenge, navigate]);
+
+  if (refusal === 'pending_approval') {
+    // Not a failure: the account exists and is waiting for the community.
+    return (
+      <>
+        <PageMeta title={tAuth('login.pending_approval_title')} noIndex />
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <GlassCard className="p-6 max-w-md w-full">
+            <div role="status" className="p-4 rounded-xl border text-sm bg-emerald-500/10 border-emerald-500/20">
+              <PendingApprovalNotice />
+            </div>
+          </GlassCard>
+        </div>
+      </>
+    );
+  }
+
+  if (refusal !== null && error !== null) {
+    return (
+      <>
+        <PageMeta title={t('oauth.refused_title')} noIndex />
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <GlassCard className="p-6 max-w-md w-full">
+            <h1 className="text-xl font-bold text-theme-primary mb-3">{t('oauth.refused_title')}</h1>
+            <p className="text-theme-muted text-sm mb-6">{error}</p>
+            <div className="flex flex-wrap gap-2">
+              {refusal === 'no_account' && (
+                <Button as={Link} to={tenantPath('/register')} variant="primary">
+                  {t('oauth.sign_up_instead')}
+                </Button>
+              )}
+              <Button
+                as={Link}
+                to={tenantPath('/login')}
+                variant="bordered"
+                startContent={<ArrowLeft className="w-4 h-4" />}
+              >
+                {t('back_to_login')}
+              </Button>
+            </div>
+          </GlassCard>
+        </div>
+      </>
+    );
+  }
 
   if (error) {
     const title = t(isLink ? 'oauth.link_failed_title' : 'oauth.callback_failed');

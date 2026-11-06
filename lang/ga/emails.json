@@ -66,7 +66,13 @@
     "active_bullet_connections": "<strong>Naisc a dhéanamh</strong> — téigh i dteagmháil le daoine i do phobal",
     "active_bullet_events": "<strong>Imeachtaí a iniúchadh</strong> — aimsigh gníomhaíochtaí agus cruinnithe atá le teacht",
     "active_help": "Má tá aon cheisteanna agat, ná bíodh drogall ort teagmháil a dhéanamh. Táimid anseo le cuidiú!",
-    "active_button": "Iniúch Do Phobal"
+    "active_button": "Iniúch Do Phobal",
+    "awaiting_subject": "Go raibh maith agat as páirt a ghlacadh i {{community}}",
+    "awaiting_preview": "Beidh do chuntas réidh go luath.",
+    "awaiting_intro": "Go raibh maith agat as páirt a ghlacadh i <strong>{{community}}</strong>.",
+    "awaiting_body": "Níl do chuntas gníomhach fós, mar go seiceálann an pobal seo baill nua sula bhféadann siad síniú isteach. Gheobhaidh tú ríomhphost a luaithe a bheidh do chuntas réidh. Tarlaíonn sé seo de ghnáth laistigh de chúpla lá.",
+    "awaiting_next": "Idir an dá linn, tá fáilte romhat féachaint ar leathanaigh phoiblí an phobail.",
+    "awaiting_button": "Tabhair cuairt ar an bpobal"
   },
   "verification": {
     "subject": "Fíoraigh do sheoladh ríomhphoist",

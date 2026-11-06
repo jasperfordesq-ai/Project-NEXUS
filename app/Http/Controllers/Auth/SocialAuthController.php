@@ -9,8 +9,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use Illuminate\Routing\Controller;
+use App\Services\Auth\ProviderSignInRefused;
 use App\Services\Auth\SocialAuthService;
 use App\Services\Auth\SsoOidcService;
+use App\Support\Authorization\MinimumAge;
 use App\Services\TokenService;
 use App\Core\TenantContext;
 use Illuminate\Http\JsonResponse;
@@ -120,6 +122,7 @@ class SocialAuthController extends Controller
     public function callback(Request $request, string $provider)
     {
         $frontend = rtrim(TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix(), '/');
+        $stateContext = null;
 
         try {
             $state = (string) ($request->input('state') ?? '');
@@ -172,6 +175,17 @@ class SocialAuthController extends Controller
                     $identityLink
                 );
             }
+            if (($issuance['status'] ?? null) === 'gate_blocked') {
+                // E-121: the account exists but may not sign in (waiting for
+                // approval, suspended …). Say which, instead of "sign-in failed".
+                $refusal = ProviderSignInRefused::fromGate(
+                    is_array($issuance['gate'] ?? null) ? $issuance['gate'] : [],
+                    (bool) $result['is_new']
+                );
+                if ($refusal !== null) {
+                    throw $refusal;
+                }
+            }
             if (($issuance['status'] ?? null) !== 'issued' || empty($issuance['callback_code'])) {
                 throw new \RuntimeException(
                     'OAuth credential issuance rejected: ' . (string) ($issuance['status'] ?? 'unknown')
@@ -186,15 +200,47 @@ class SocialAuthController extends Controller
             $callbackParams['flow'] = $browserChallenge;
             $params = http_build_query($callbackParams);
             return redirect($frontend . '/auth/oauth/callback?' . $params);
+        } catch (ProviderSignInRefused $refused) {
+            // The reason is handed over the same way a sign-in is: a one-time
+            // code only the browser that started the sign-in can exchange.
+            if ($stateContext !== null) {
+                try {
+                    $refusalCode = $this->social->issueRefusalCallbackCode(
+                        (int) $stateContext['tenant_id'],
+                        $provider,
+                        (string) $stateContext['browser_challenge'],
+                        $refused->reason,
+                        $refused->isNewAccount
+                    );
+
+                    return redirect($frontend . '/auth/oauth/callback?' . http_build_query([
+                        'code' => $refusalCode,
+                        'provider' => $provider,
+                        'flow' => (string) $stateContext['browser_challenge'],
+                    ]));
+                } catch (\Throwable $e) {
+                    Log::warning('[SocialAuth] refusal hand-over failed: ' . $e->getMessage());
+                }
+            }
+
+            return $this->callbackFailed($frontend, $provider, 'refused: ' . $refused->reason);
         } catch (\Throwable $e) {
-            Log::warning('[SocialAuth] callback failed: ' . $e->getMessage());
-            $params = http_build_query([
-                'error' => 'oauth_failed',
-                'message' => __('api.social_oauth_link_failed'),
-                'provider' => $provider,
-            ]);
-            return redirect($frontend . '/auth/oauth/callback?' . $params);
+            return $this->callbackFailed($frontend, $provider, $e->getMessage());
         }
+    }
+
+    /**
+     * The generic failure hand-back. Carries only a fixed code: never free text,
+     * which anyone could put in a crafted link to the callback page (F-196).
+     */
+    private function callbackFailed(string $frontend, string $provider, string $logMessage)
+    {
+        Log::warning('[SocialAuth] callback failed: ' . $logMessage);
+
+        return redirect($frontend . '/auth/oauth/callback?' . http_build_query([
+            'error' => 'oauth_failed',
+            'provider' => $provider,
+        ]));
     }
 
     public function exchange(Request $request): JsonResponse
@@ -221,6 +267,21 @@ class SocialAuthController extends Controller
                 'is_new' => $payload['is_new'],
                 'tenant_id' => $payload['tenant_id'],
             ]);
+        } catch (ProviderSignInRefused $refused) {
+            // E-121: why the sign-in did not complete, as a fixed code. The
+            // website supplies the wording; the adults-only refusal keeps its
+            // existing error code and server message, which the website reads.
+            $error = $refused->reason === ProviderSignInRefused::UNDER_18
+                ? MinimumAge::accountRefusal()
+                : ['code' => $refused->reason];
+
+            return response()->json([
+                'success' => false,
+                'error' => 'sign_in_refused',
+                'reason' => $refused->reason,
+                'is_new' => $refused->isNewAccount,
+                'errors' => [$error],
+            ], 403)->header('Cache-Control', 'private, no-store');
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,

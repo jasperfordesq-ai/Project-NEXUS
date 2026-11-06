@@ -1096,9 +1096,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Listeners/NotifyAdminOfNewRegistration.php:236:NotificationDispatcher::fanOutPush",
+            "id": "app/Listeners/NotifyAdminOfNewRegistration.php:248:NotificationDispatcher::fanOutPush",
             "file": "app/Listeners/NotifyAdminOfNewRegistration.php",
-            "line": 236,
+            "line": 248,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $admin->id",
@@ -2084,9 +2084,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Identity/RegistrationOrchestrationService.php:239:NotificationDispatcher::dispatchVerificationCompletedToAdmins",
+            "id": "app/Services/Identity/RegistrationOrchestrationService.php:243:NotificationDispatcher::dispatchVerificationCompletedToAdmins",
             "file": "app/Services/Identity/RegistrationOrchestrationService.php",
-            "line": 239,
+            "line": 243,
             "transport": "NotificationDispatcher::dispatchVerificationCompletedToAdmins",
             "role": "producer",
             "recipient_expression": null,
@@ -2097,9 +2097,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Identity/RegistrationOrchestrationService.php:243:NotificationDispatcher::dispatchVerificationPassed",
+            "id": "app/Services/Identity/RegistrationOrchestrationService.php:247:NotificationDispatcher::dispatchVerificationPassed",
             "file": "app/Services/Identity/RegistrationOrchestrationService.php",
-            "line": 243,
+            "line": 247,
             "transport": "NotificationDispatcher::dispatchVerificationPassed",
             "role": "producer",
             "recipient_expression": "$userId",
@@ -2110,9 +2110,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Identity/RegistrationOrchestrationService.php:306:NotificationDispatcher::dispatchVerificationFailed",
+            "id": "app/Services/Identity/RegistrationOrchestrationService.php:310:NotificationDispatcher::dispatchVerificationFailed",
             "file": "app/Services/Identity/RegistrationOrchestrationService.php",
-            "line": 306,
+            "line": 310,
             "transport": "NotificationDispatcher::dispatchVerificationFailed",
             "role": "producer",
             "recipient_expression": "$userId",
@@ -2123,9 +2123,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Identity/RegistrationOrchestrationService.php:527:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/Identity/RegistrationOrchestrationService.php:549:NotificationDispatcher::fanOutPush",
             "file": "app/Services/Identity/RegistrationOrchestrationService.php",
-            "line": 527,
+            "line": 549,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $admin->id",
@@ -2136,9 +2136,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Identity/RegistrationOrchestrationService.php:698:NotificationDispatcher::dispatchVerificationPassed",
+            "id": "app/Services/Identity/RegistrationOrchestrationService.php:711:NotificationDispatcher::dispatchVerificationPassed",
             "file": "app/Services/Identity/RegistrationOrchestrationService.php",
-            "line": 698,
+            "line": 711,
             "transport": "NotificationDispatcher::dispatchVerificationPassed",
             "role": "producer",
             "recipient_expression": "$userId",
@@ -2149,9 +2149,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Identity/RegistrationOrchestrationService.php:736:NotificationDispatcher::dispatchVerificationFailed",
+            "id": "app/Services/Identity/RegistrationOrchestrationService.php:749:NotificationDispatcher::dispatchVerificationFailed",
             "file": "app/Services/Identity/RegistrationOrchestrationService.php",
-            "line": 736,
+            "line": 749,
             "transport": "NotificationDispatcher::dispatchVerificationFailed",
             "role": "producer",
             "recipient_expression": "$userId",

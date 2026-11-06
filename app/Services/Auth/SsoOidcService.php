@@ -1041,8 +1041,11 @@ class SsoOidcService
             );
 
             // Keep the user, identity and policy-driven account state in one
-            // SQL unit, as the social sign-in path does.
-            RegistrationOrchestrationService::processRegistration($userId, $tenantId);
+            // SQL unit, as the social sign-in path does. Staff are told by
+            // UserRegistered after commit (E-121), and their emails are recorded
+            // here so a lost process can be recovered.
+            RegistrationOrchestrationService::processRegistration($userId, $tenantId, staffAlertedByCaller: true);
+            ProviderSignUpFollowThrough::captureStaffAlertIntent($tenantId, $userId);
 
             return $userId;
         }, 3);
@@ -1054,6 +1057,9 @@ class SsoOidcService
         if ($user === null) {
             throw new \RuntimeException('SSO user creation failed.');
         }
+
+        // Committed: welcome email, staff emails and alerts, starting balance.
+        ProviderSignUpFollowThrough::afterAccountCreated($userId, $tenantId);
 
         return ['user' => $user, 'is_new' => true, 'tenant_id' => $tenantId];
     }

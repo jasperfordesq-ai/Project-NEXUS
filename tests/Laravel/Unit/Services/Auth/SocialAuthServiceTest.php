@@ -732,8 +732,10 @@ class SocialAuthServiceTest extends TestCase
                 self::BROWSER_VERIFIER
             );
             self::fail('A blocked account must fail when pending identity issuance is consumed.');
-        } catch (\RuntimeException $e) {
-            $this->assertSame('OAuth callback code is invalid or expired.', $e->getMessage());
+        } catch (\App\Services\Auth\ProviderSignInRefused $e) {
+            // E-121: still refused and still nothing linked (below), but the
+            // member is now told why instead of "invalid or expired".
+            $this->assertSame(\App\Services\Auth\ProviderSignInRefused::SUSPENDED, $e->reason);
         }
 
         $this->assertSame(

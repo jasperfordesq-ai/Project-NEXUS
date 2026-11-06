@@ -94,6 +94,45 @@ class SendWelcomeNotificationTest extends TestCase
         $listener->handle($event);
     }
 
+    public function test_a_confirmed_member_waiting_for_approval_gets_the_waiting_email_not_a_confirm_link(): void
+    {
+        // E-121: a Google sign-up has a confirmed email but may still be waiting
+        // for the community to let them in. Every pending account used to get
+        // "Verify your email" with a confirm link it did not need.
+        $user = new User();
+        $user->id = 44;
+        $user->first_name = 'Gail';
+        $user->email = 'gail@gmail.com';
+        $user->status = 'pending';
+        $user->email_verified_at = now();
+
+        $event = new UserRegistered($user, $this->testTenantId, null, true);
+
+        $this->notificationAlias->shouldReceive('create')->once();
+
+        Mockery::mock('alias:' . EmailDispatchService::class)
+            ->shouldReceive('sendRaw')
+            ->once()
+            ->with(
+                'gail@gmail.com',
+                Mockery::on(fn ($subject): bool => is_string($subject) && str_contains($subject, 'Thanks for joining')),
+                // A short phrase: the template may join a paragraph's last words
+                // with a non-breaking space.
+                Mockery::on(fn ($html): bool => is_string($html)
+                    && !str_contains($html, 'verify-email')
+                    && str_contains($html, 'checks new members')),
+                null,
+                null,
+                null,
+                'welcome',
+                Mockery::type('array')
+            )
+            ->andReturn(true);
+
+        $listener = new SendWelcomeNotification();
+        $listener->handle($event);
+    }
+
     public function test_handle_skips_email_when_no_email_provided(): void
     {
         // No recipient email → the welcome closure returns right after the in-app

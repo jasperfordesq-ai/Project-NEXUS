@@ -35,13 +35,13 @@ import Building2 from 'lucide-react/icons/building-2';
 import Fingerprint from 'lucide-react/icons/fingerprint';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import ShieldX from 'lucide-react/icons/shield-x';
-import Clock from 'lucide-react/icons/clock';
 import { useTranslation } from 'react-i18next';
 import { buildReturnTarget, clearAuthReturn, explicitAuthReturn, rememberAuthReturn, resolveAuthReturn } from '@/lib/auth-return';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useToast } from '@/contexts/ToastContext';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
+import { PendingApprovalNotice } from '@/components/auth/PendingApprovalNotice';
 import { SsoButtons } from '@/components/auth/SsoButtons';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -629,55 +629,9 @@ export function LoginPage() {
                         single line of red text with no explanation of who approves,
                         how long it takes, or what to do next. This explains it.
                       */}
-                      {isPendingApproval && (
-                        <div className="flex items-start gap-2">
-                          <Clock className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                          <div>
-                            <p className="text-theme-success font-medium">
-                              {t('login.pending_approval_title')}
-                            </p>
-                            <p className="text-theme-success text-xs mt-1">
-                              {t('login.pending_approval')}
-                            </p>
-                            {/*
-                              🔴 A way OUT, not just an explanation. The
-                              coordinator's words were that a waiting member
-                              "would be better ... to be able to see something,
-                              even the home page that they first saw". Until now
-                              this panel explained the wait and then left them
-                              staring at a login form they cannot pass — a dead
-                              end, on what is the normal experience of joining a
-                              community that approves members.
-                              The community home page is a PUBLIC route, so they
-                              could always have gone and looked around; nothing
-                              ever told them so or gave them the link. Home is
-                              listed first because looking around is the thing
-                              most of them will want; contacting a coordinator is
-                              the fallback.
-                            */}
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                as={Link}
-                                to={tenantPath('/')}
-                                className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20"
-                              >
-                                {t('login.back_to_home')}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                as={Link}
-                                to={tenantPath('/contact')}
-                                className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20"
-                              >
-                                {t('login.pending_approval_contact')}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      {/* Shared with the Google sign-in return page (E-121);
+                          see PendingApprovalNotice for why it offers a way out. */}
+                      {isPendingApproval && <PendingApprovalNotice />}
                       {loginErrorCode === 'AUTH_VERIFICATION_FAILED' && (
                         <div className="mt-3 flex items-start gap-2">
                           <ShieldX className="w-4 h-4 text-[var(--color-error)] mt-0.5 flex-shrink-0" aria-hidden="true" />

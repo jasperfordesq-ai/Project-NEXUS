@@ -66,7 +66,13 @@
     "active_bullet_connections": "<strong>つながりを作る</strong> — コミュニティの人々に連絡する",
     "active_bullet_events": "<strong>イベントを探す</strong> — 近日開催の活動や集まりを見つける",
     "active_help": "ご不明な点がございましたら、遠慮なくお問い合わせください。お手伝いします！",
-    "active_button": "コミュニティを探索する"
+    "active_button": "コミュニティを探索する",
+    "awaiting_subject": "{{community}} にご参加いただきありがとうございます",
+    "awaiting_preview": "まもなくアカウントの準備が整います。",
+    "awaiting_intro": "<strong>{{community}}</strong> にご参加いただきありがとうございます。",
+    "awaiting_body": "このコミュニティでは新しいメンバーがサインインできるようになる前に確認を行っているため、アカウントはまだ有効になっていません。アカウントの準備が整い次第、メールでお知らせします。通常は数日以内です。",
+    "awaiting_next": "それまでの間、コミュニティの公開ページをご覧いただけます。",
+    "awaiting_button": "コミュニティを見る"
   },
   "verification": {
     "subject": "メールアドレスの確認",

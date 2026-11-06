@@ -76,7 +76,13 @@
     "active_bullet_connections": "<strong>Make connections</strong> — reach out to people in your community",
     "active_bullet_events": "<strong>Explore events</strong> — find upcoming activities and gatherings",
     "active_help": "If you have any questions, don't hesitate to reach out. We're here to help!",
-    "active_button": "Explore Your Community"
+    "active_button": "Explore Your Community",
+    "awaiting_subject": "Thanks for joining {{community}}",
+    "awaiting_preview": "Your account will be ready soon.",
+    "awaiting_intro": "Thank you for joining <strong>{{community}}</strong>.",
+    "awaiting_body": "Your account isn't active yet, because this community checks new members before they can sign in. You will receive an email as soon as your account is ready. This usually happens within a few days.",
+    "awaiting_next": "Until then, you're welcome to look around the community's public pages.",
+    "awaiting_button": "Visit the community"
   },
   "verification": {
     "subject": "Verify your email address",

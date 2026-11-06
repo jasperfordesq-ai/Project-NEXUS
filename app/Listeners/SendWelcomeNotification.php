@@ -21,9 +21,12 @@ use App\Support\AuthReturnPath;
 /**
  * Sends a welcome notification (email + in-app) when a new user registers.
  *
- * For pending users (awaiting email verification), this sends a combined
- * welcome + verification email with a verify link. For already-active users
- * (e.g. admin-created), it sends a generic welcome.
+ * Fired by the sign-up form (RegistrationService) and, since E-121, by provider
+ * sign-ups (Google, SSO — ProviderSignUpFollowThrough). Three emails:
+ *  - email not confirmed  → combined welcome + confirm-email link;
+ *  - email confirmed, account waiting for the community (approval or an
+ *    identity check) → "thanks for joining, you'll hear when you're in";
+ *  - active             → generic welcome.
  */
 class SendWelcomeNotification
 {
@@ -93,11 +96,35 @@ class SendWelcomeNotification
                 $safeTenantName = htmlspecialchars($tenantName, ENT_QUOTES, 'UTF-8');
                 $safeUserName = htmlspecialchars($userName, ENT_QUOTES, 'UTF-8');
 
-                // For pending users: send combined welcome + verification email
-                $isPending = ($event->user->status ?? '') === 'pending'
-                          || empty($event->user->email_verified_at);
+                // Three cases. Only an unconfirmed email gets the confirm-email
+                // link. A member who signed up through a provider (Google, SSO)
+                // has a confirmed email but may still be waiting for the
+                // community to let them in (E-121): until then every pending
+                // account was sent "Verify your email" with a link it did not need.
+                $emailUnconfirmed = empty($event->user->email_verified_at);
+                $awaitingApproval = !$emailUnconfirmed && ($event->user->status ?? '') === 'pending';
 
-                if ($isPending) {
+                if ($awaitingApproval) {
+                    $html = EmailTemplateBuilder::make()
+                        ->theme('info')
+                        ->title(__('emails.welcome.title', ['community' => $safeTenantName]))
+                        ->previewText(__('emails.welcome.awaiting_preview', ['community' => $safeTenantName]))
+                        ->greeting($safeUserName)
+                        ->paragraph(__('emails.welcome.awaiting_intro', ['community' => $safeTenantName]))
+                        ->paragraph(__('emails.welcome.awaiting_body'))
+                        ->paragraph(__('emails.welcome.awaiting_next'))
+                        ->button(__('emails.welcome.awaiting_button'), EmailTemplateBuilder::tenantUrl('/'))
+                        ->paragraph(__('emails.welcome.pending_ignore'))
+                        ->render();
+
+                    if (!EmailDispatchService::sendRaw($userEmail, __('emails.welcome.awaiting_subject', ['community' => $tenantName]), $html, null, null, null, 'welcome', [
+                        'tenant_id' => $event->tenantId,
+                        'idempotency_key' => 'welcome:' . $event->tenantId . ':' . $event->user->id,
+                    ])) {
+                        Log::warning('SendWelcomeNotification: awaiting-approval welcome email failed to send', ['user_email' => $userEmail, 'tenant_id' => $event->tenantId]);
+                    }
+                } elseif ($emailUnconfirmed) {
+                    // Combined welcome + confirm-email link.
                     $verificationToken = $this->buildVerificationToken();
                     $verifyUrl = $this->buildVerificationUrl($verificationToken['token'], $event->returnTo);
 
@@ -128,7 +155,8 @@ class SendWelcomeNotification
 
                     $this->storeVerificationToken($event->user->id, $event->tenantId, $verificationToken);
                 } else {
-                    // Already active user (admin-created) â€” generic welcome only
+                    // Active, confirmed member (an open community's provider
+                    // sign-up, or admin-created) — generic welcome only
                     $html = EmailTemplateBuilder::make()
                         ->theme('success')
                         ->title(__('emails.welcome.title', ['community' => $safeTenantName]))

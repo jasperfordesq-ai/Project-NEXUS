@@ -176,9 +176,15 @@ class RegisterTermsConsentTest extends TestCase
             'code' => 'provider-code',
         ]), $this->withTenantHeader());
 
-        $location = (string) $response->headers->get('Location');
-        $this->assertSame('', $this->callbackCodeParam($location), 'No sign-in code may be issued.');
-        $this->assertStringContainsString('error=', $location);
+        // Handed over as a refusal (E-121): the exchange says there is no account
+        // here yet and issues no session.
+        $exchange = $this->apiPost('/v2/auth/oauth/exchange', [
+            'code' => substr($this->callbackCodeParam((string) $response->headers->get('Location')), strlen('code=')),
+            'browser_verifier' => 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk',
+        ]);
+        $exchange->assertStatus(403);
+        $exchange->assertJsonPath('reason', 'no_account');
+        $this->assertNull($exchange->json('token'));
         $this->assertFalse(
             DB::table('users')->where('tenant_id', $this->testTenantId)->where('email', $email)->exists(),
             'Without the member\'s tick, no account may be created.'

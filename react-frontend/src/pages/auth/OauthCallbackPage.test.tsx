@@ -690,3 +690,64 @@ describe('OauthCallbackPage', () => {
       .toHaveAttribute('href', '/test/settings?tab=connected-accounts');
   });
 });
+
+// E-121: why a Google sign-in did not complete, in our own words. The server
+// hands a fixed reason over through the exchange step (which only the browser
+// that started the sign-in can complete); a member who has just signed up in a
+// community that approves new members used to be told "Sign-in failed".
+describe('OauthCallbackPage — refusal reasons (E-121)', () => {
+  function refused(reason: string, isNew = false, extra: object = {}): Response {
+    return {
+      ok: false,
+      status: 403,
+      json: () => Promise.resolve({ success: false, error: 'sign_in_refused', reason, is_new: isNew, ...extra }),
+      headers: new Headers(),
+    } as unknown as Response;
+  }
+
+  function startWith(response: Response) {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response));
+    mockSearchParams.mockReturnValue(makeBoundCodeParams('refusal-code'));
+    render(<OauthCallbackPage />);
+  }
+
+  it('tells a new member who is waiting for approval exactly that, not "Sign-in failed"', async () => {
+    startWith(refused('pending_approval', true));
+
+    expect(await screen.findByText('login.pending_approval_title')).toBeInTheDocument();
+    expect(screen.getByText('login.pending_approval')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.queryByText('oauth.callback_failed')).not.toBeInTheDocument();
+    expect(mockAdoptSession).not.toHaveBeenCalled();
+    expect(capturedHref).toBe('');
+  });
+
+  it.each([
+    ['no_account', 'oauth.refused_no_account'],
+    ['registration_closed', 'oauth.refused_registration_closed'],
+    ['suspended', 'oauth.refused_suspended'],
+    ['email_unverified', 'oauth.refused_email_unverified'],
+    ['identity_check_pending', 'login.pending_verification'],
+    ['identity_check_failed', 'login.verification_failed'],
+    ['under_18', 'login.under_minimum_age'],
+  ])('explains "%s" in our own words', async (reason, key) => {
+    startWith(refused(reason));
+
+    expect(await screen.findByText(key)).toBeInTheDocument();
+    expect(screen.queryByText('oauth.callback_failed')).not.toBeInTheDocument();
+    expect(mockAdoptSession).not.toHaveBeenCalled();
+  });
+
+  it('offers the sign-up page when there is no account yet', async () => {
+    startWith(refused('no_account'));
+
+    expect(await screen.findByRole('link', { name: /oauth\.sign_up_instead/ })).toHaveAttribute('href', '/test/register');
+  });
+
+  it('never shows text from the server, and treats an unknown reason as a plain failure', async () => {
+    startWith(refused('something_new', false, { message: 'Words from somewhere else' }));
+
+    expect(await screen.findByText('oauth.callback_failed', { selector: 'p' })).toBeInTheDocument();
+    expect(screen.queryByText('Words from somewhere else')).not.toBeInTheDocument();
+  });
+});

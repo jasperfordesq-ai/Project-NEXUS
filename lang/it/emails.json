@@ -66,7 +66,13 @@
     "active_bullet_connections": "<strong>Creare connessioni</strong> — contatti le persone nella sua comunità",
     "active_bullet_events": "<strong>Esplorare gli eventi</strong> — trovi attività e incontri in programma",
     "active_help": "Se ha domande, non esiti a contattarci. Siamo qui per aiutarla!",
-    "active_button": "Esplora la sua comunità"
+    "active_button": "Esplora la sua comunità",
+    "awaiting_subject": "Grazie per esserti unito a {{community}}",
+    "awaiting_preview": "Il tuo account sarà pronto a breve.",
+    "awaiting_intro": "Grazie per esserti unito a <strong>{{community}}</strong>.",
+    "awaiting_body": "Il tuo account non è ancora attivo, perché questa comunità verifica i nuovi membri prima che possano accedere. Riceverai un'email non appena il tuo account sarà pronto. Di solito richiede pochi giorni.",
+    "awaiting_next": "Nel frattempo, puoi dare un'occhiata alle pagine pubbliche della comunità.",
+    "awaiting_button": "Visita la comunità"
   },
   "verification": {
     "subject": "Verifichi il suo indirizzo e-mail",

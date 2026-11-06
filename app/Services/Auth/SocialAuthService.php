@@ -357,7 +357,10 @@ class SocialAuthService
         }
 
         if (!$allowProvision) {
-            throw new \RuntimeException(
+            // E-121: the member is told there is no account here yet (via the
+            // exchange), not that "sign-in failed".
+            throw new ProviderSignInRefused(
+                ProviderSignInRefused::NO_ACCOUNT,
                 'OAuth login cannot create a new account. Start OAuth registration instead.'
             );
         }
@@ -369,7 +372,10 @@ class SocialAuthService
         if (in_array($registrationMode, ['closed', 'invite_only'], true)) {
             // OAuth supplies no tenant invite proof, so invite-only must be
             // treated exactly like a closed registration path here.
-            throw new \RuntimeException('OAuth registration is not permitted by community policy.');
+            throw new ProviderSignInRefused(
+                ProviderSignInRefused::REGISTRATION_CLOSED,
+                'OAuth registration is not permitted by community policy.'
+            );
         }
         if (!in_array(
             $registrationMode,
@@ -380,7 +386,7 @@ class SocialAuthService
         }
 
         $names = $this->splitName($name, $providerEmail);
-        return DB::transaction(function () use (
+        $result = DB::transaction(function () use (
             $tenantId,
             $provider,
             $providerUserId,
@@ -461,7 +467,11 @@ class SocialAuthService
 
             // Keep the user, identity, and policy-driven account state in one
             // SQL unit. A failure in orchestration rolls back the new identity.
-            RegistrationOrchestrationService::processRegistration((int) $userId, $tenantId);
+            // Staff are told by UserRegistered after commit (E-121), not by the
+            // policy step as well; their emails are recorded here, in the same
+            // unit, so a lost process can be recovered.
+            RegistrationOrchestrationService::processRegistration((int) $userId, $tenantId, staffAlertedByCaller: true);
+            ProviderSignUpFollowThrough::captureStaffAlertIntent($tenantId, (int) $userId);
 
             $user = User::query()
                 ->whereKey((int) $userId)
@@ -473,6 +483,40 @@ class SocialAuthService
 
             return ['user' => $user, 'is_new' => true, 'tenant_id' => $tenantId];
         }, 3);
+
+        if (!empty($result['is_new'])) {
+            // Committed: the welcome email, staff emails and alerts, and (in an
+            // open community) the starting balance, as the sign-up form gives.
+            ProviderSignUpFollowThrough::afterAccountCreated((int) $result['user']->id, $tenantId);
+        }
+
+        return $result;
+    }
+
+    /**
+     * E-121: a refusal the initiating browser reads once, through the exchange
+     * step (which checks its verifier), instead of a generic error in the
+     * address. Only the fixed reasons in ProviderSignInRefused can be issued.
+     */
+    public function issueRefusalCallbackCode(
+        int $tenantId,
+        string $provider,
+        string $browserChallenge,
+        string $reason,
+        bool $isNewAccount
+    ): string {
+        if ($tenantId < 1 || !in_array($reason, ProviderSignInRefused::REASONS, true)) {
+            throw new \InvalidArgumentException('OAuth refusal issuance context is invalid.');
+        }
+
+        return $this->cacheCallbackCode([
+            'kind' => 'refusal',
+            'provider' => $provider,
+            'is_new' => $isNewAccount,
+            'tenant_id' => $tenantId,
+            'browser_challenge' => OAuthBrowserBinding::requireChallenge($browserChallenge),
+            'reason' => $reason,
+        ]);
     }
 
     /**
@@ -1099,6 +1143,11 @@ class SocialAuthService
                 if (!is_array($payload['mfa'] ?? null) || empty($payload['mfa']['two_factor_token'])) {
                     throw new \RuntimeException('OAuth callback code is invalid or expired.');
                 }
+            } elseif ($kind === 'refusal') {
+                if (!in_array($payload['reason'] ?? null, ProviderSignInRefused::REASONS, true)) {
+                    Cache::forget($cacheKey);
+                    throw new \RuntimeException('OAuth callback code is invalid or expired.');
+                }
             } elseif (
                 $kind !== 'pending_identity'
                 || !is_array($pending)
@@ -1122,6 +1171,13 @@ class SocialAuthService
                 $result = $payload['mfa'];
                 return $result;
             }
+            if ($kind === 'refusal') {
+                throw new ProviderSignInRefused(
+                    (string) $payload['reason'],
+                    '',
+                    (bool) ($payload['is_new'] ?? false)
+                );
+            }
             if ($kind === 'pending_identity') {
                 /** @var array<string,mixed> $pending */
                 /** @var array<string,mixed> $identityLink */
@@ -1137,6 +1193,17 @@ class SocialAuthService
                 );
                 if (($issuance['status'] ?? null) === 'mfa_challenge') {
                     return $issuance['mfa'];
+                }
+                if (($issuance['status'] ?? null) === 'gate_blocked') {
+                    // E-121: a first provider sign-in to an existing account is
+                    // checked here, not at the callback; say why it was refused.
+                    $refusal = ProviderSignInRefused::fromGate(
+                        is_array($issuance['gate'] ?? null) ? $issuance['gate'] : [],
+                        (bool) ($payload['is_new'] ?? false)
+                    );
+                    if ($refusal !== null) {
+                        throw $refusal;
+                    }
                 }
                 if (($issuance['status'] ?? null) !== 'credentials_issued') {
                     throw new \RuntimeException('OAuth callback code is invalid or expired.');
