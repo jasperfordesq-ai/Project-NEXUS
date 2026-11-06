@@ -7442,6 +7442,40 @@ describe('API Request Functions', () => {
       });
     });
 
+    // The welcome wizard's "Protect your account" step reads this to skip
+    // itself for a member who already uses an authenticator app, or who may
+    // not set one up.
+    it('should read the two-factor status through the Laravel v2 endpoint', async () => {
+      const statusResponse = { data: { enabled: false, enrollment_allowed: true } };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => statusResponse
+      });
+
+      await expect(api.getTwoFactorStatus('test-token')).resolves.toEqual(statusResponse);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/auth/2fa/status',
+        expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer test-token' }) })
+      );
+      const [, options] = mockFetch.mock.calls[0];
+      expect(options.method).toBeUndefined();
+      expect(options.headers).not.toHaveProperty('X-Tenant-ID');
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ message: 'Unauthenticated.', code: 'UNAUTHENTICATED' })
+      });
+
+      await expect(api.getTwoFactorStatus('expired-token')).rejects.toMatchObject({
+        name: 'ApiError',
+        status: 401
+      });
+    });
+
     it('should update the onboarding profile through Laravel\'s v2 user endpoint', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,

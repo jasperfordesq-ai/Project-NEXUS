@@ -21,7 +21,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import KeyRound from 'lucide-react/icons/key-round';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui';
 import { useAuth } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';

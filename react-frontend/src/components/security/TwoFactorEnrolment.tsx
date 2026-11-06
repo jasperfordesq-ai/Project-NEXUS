@@ -22,11 +22,12 @@ import { useTranslation } from 'react-i18next';
 import QrCode from 'lucide-react/icons/qr-code';
 import Copy from 'lucide-react/icons/copy';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+// Button, Input and Spinner come through the barrel, like the rest of
+// components/security: tests that fake the barrel must reach them here too
+// (src/test/dead-barrel-mocks.baseline.json is shrink-only).
+import { Button, Input, Spinner } from '@/components/ui';
 import { InputOTP } from '@/components/ui/InputOTP';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
-import { Spinner } from '@/components/ui/Spinner';
 import { Description } from '@/components/ui/Description';
 import { Label } from '@/components/ui/Label';
 import { SecurityConfirmationModal } from '@/components/security/SecurityConfirmationModal';

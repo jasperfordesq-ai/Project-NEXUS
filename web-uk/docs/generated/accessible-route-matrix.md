@@ -2,12 +2,12 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-31T13:51:43.832Z
-Laravel commit SHA: `903cf509086283d8a7b8381cf4a6d97d79cac75b`
-Web UK repository commit SHA: `903cf509086283d8a7b8381cf4a6d97d79cac75b`
-Laravel working tree dirty: no
-Web UK repository working tree dirty: no
-Provenance caveat: Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs.
+Generated: 2026-11-06T20:39:49.526Z
+Laravel commit SHA: `8cc63ab6dbb796b029f356d73b5dae7b119c4afc`
+Web UK repository commit SHA: `8cc63ab6dbb796b029f356d73b5dae7b119c4afc`
+Laravel working tree dirty: yes
+Web UK repository working tree dirty: yes
+Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
 
 | Metric | Count |
 | --- | ---: |
