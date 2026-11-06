@@ -43,6 +43,61 @@
   "license": "Licencia",
   "security": "Seguridad",
   "securityHint": "Mantenga el acceso a su cuenta actualizado fecha.",
+  "twoFactor": {
+    "title": "Autenticación en dos pasos",
+    "settingsHint": "Pide un código de una app de autenticación además de tu contraseña.",
+    "settingsHintOff": "Desactivada. Añade un código de una app de autenticación para más protección.",
+    "settingsHintOn": "Activada. Puedes gestionarla en el sitio web.",
+    "cancel": "Cancelar",
+    "copyFailed": "No se pudo copiar. Selecciona el texto y cópialo tú.",
+    "screen": {
+      "intro": "La autenticación en dos pasos pide un código de una app de autenticación de tu teléfono además de tu contraseña al iniciar sesión. Aunque alguien conozca tu contraseña, no podrá entrar en tu cuenta.",
+      "needApp": "Necesitas una app de autenticación, como Google Authenticator, Microsoft Authenticator o Authy.",
+      "onTitle": "La autenticación en dos pasos está activada",
+      "onBody": "Tu cuenta pide un código de tu app de autenticación al iniciar sesión. Para desactivarla u obtener nuevos códigos de respaldo, usa los Ajustes del sitio web.",
+      "notAllowed": "Tu comunidad no ha activado la autenticación en dos pasos.",
+      "loadError": "No pudimos comprobar tu configuración de autenticación en dos pasos.",
+      "success": "La autenticación en dos pasos ya está activada."
+    },
+    "password": {
+      "title": "Confirma que eres tú",
+      "body": "Introduce tu contraseña para continuar.",
+      "label": "Tu contraseña",
+      "continue": "Continuar"
+    },
+    "setup": {
+      "title": "Añade tu cuenta a una app de autenticación",
+      "body": "Toca el botón para añadir tu cuenta a una app de autenticación de este teléfono. O copia la clave y escríbela tú en la app.",
+      "openApp": "Abrir en la app de autenticación",
+      "noAuthenticatorApp": "Ninguna app de autenticación de este teléfono abrió el enlace. Copia la clave y añádela a mano en tu app.",
+      "keyLabel": "Clave de configuración",
+      "copyKey": "Copiar clave",
+      "keyCopied": "Clave copiada.",
+      "qrHint": "¿Tu app de autenticación está en otro dispositivo? Escanea este código con ella.",
+      "qrLabel": "Código QR para tu app de autenticación",
+      "codeLabel": "Código de 6 dígitos de la app",
+      "verify": "Verificar y activar"
+    },
+    "codes": {
+      "title": "Guarda tus códigos de respaldo",
+      "warning": "Guarda estos códigos en un lugar seguro ahora. Cada uno te permite iniciar sesión una vez si pierdes el teléfono. No volverás a verlos.",
+      "none": "No se devolvieron códigos de respaldo. Puedes crear otros nuevos en los Ajustes del sitio web.",
+      "copy": "Copiar códigos",
+      "share": "Compartir códigos",
+      "copied": "Códigos copiados.",
+      "shareTitle": "Mis códigos de respaldo",
+      "done": "Ya los he guardado. Continuar"
+    },
+    "errors": {
+      "passwordWrong": "La contraseña no es correcta. Inténtalo de nuevo.",
+      "confirmExpired": "Por tu seguridad, vuelve a introducir tu contraseña.",
+      "codeWrong": "Ese código no ha funcionado. Introduce el código más reciente de tu app.",
+      "alreadyOn": "La autenticación en dos pasos ya está activada en tu cuenta.",
+      "notAllowed": "Tu comunidad no ha activado la autenticación en dos pasos.",
+      "tooMany": "Demasiados intentos. Espera unos minutos y vuelve a intentarlo.",
+      "generic": "Algo salió mal. Inténtalo de nuevo."
+    }
+  },
   "changePassword": "Cambiar Contraseña",
   "password": {
     "eyebrow": "Seguridad de la cuenta",

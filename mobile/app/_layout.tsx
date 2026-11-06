@@ -1210,6 +1210,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('settings:dataExport.title') }}
       />
       <Stack.Screen
+        name="(modals)/settings-two-factor"
+        options={{ ...modalOptions, headerShown: false, title: t('settings:twoFactor.title') }}
+      />
+      <Stack.Screen
         name="(modals)/settings-delete-account"
         options={{ ...modalOptions, headerShown: false, title: t('settings:deleteAccount.title') }}
       />

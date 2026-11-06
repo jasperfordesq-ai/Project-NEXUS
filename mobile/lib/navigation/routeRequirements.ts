@@ -298,6 +298,7 @@ export const UNGATED_ROUTES: Readonly<Record<string, string>> = {
   'settings-data-export': 'GDPR right of access — must always be reachable.',
   'settings-safeguarding': 'Personal safeguarding choices must always be reachable; React leaves the tab ungated.',
   'settings-delete-account': 'GDPR right of erasure — must always be reachable.',
+  'settings-two-factor': 'Account security is never optional; the screen asks the server whether two-factor is allowed and says so when it is not.',
   'settings-linked-accounts': 'Account relationships are an account surface, not a module.',
   'settings-translation': 'Personal language preference — always available.',
 };

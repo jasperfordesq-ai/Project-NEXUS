@@ -43,6 +43,61 @@
   "license": "License",
   "security": "Security",
   "securityHint": "Keep your account access up to date.",
+  "twoFactor": {
+    "title": "Two-factor authentication",
+    "settingsHint": "Ask for a code from an authenticator app as well as your password.",
+    "settingsHintOff": "Off. Add a code from an authenticator app for extra protection.",
+    "settingsHintOn": "On. You can manage it on the website.",
+    "cancel": "Cancel",
+    "copyFailed": "Could not copy. Select the text and copy it instead.",
+    "screen": {
+      "intro": "Two-factor authentication asks for a code from an authenticator app on your phone as well as your password when you sign in. Someone who learns your password still cannot get into your account.",
+      "needApp": "You need an authenticator app, such as Google Authenticator, Microsoft Authenticator or Authy.",
+      "onTitle": "Two-factor authentication is on",
+      "onBody": "Your account asks for a code from your authenticator app when you sign in. To turn it off or get new backup codes, use Settings on the website.",
+      "notAllowed": "Your community has not switched on two-factor authentication.",
+      "loadError": "We could not check your two-factor settings.",
+      "success": "Two-factor authentication is now on."
+    },
+    "password": {
+      "title": "Confirm it is you",
+      "body": "Enter your password to continue.",
+      "label": "Your password",
+      "continue": "Continue"
+    },
+    "setup": {
+      "title": "Add your account to an authenticator app",
+      "body": "Tap the button to add your account to an authenticator app on this phone. Or copy the key and type it into the app yourself.",
+      "openApp": "Open in authenticator app",
+      "noAuthenticatorApp": "No authenticator app on this phone opened the link. Copy the key and add it in your app by hand.",
+      "keyLabel": "Setup key",
+      "copyKey": "Copy key",
+      "keyCopied": "Key copied.",
+      "qrHint": "Is your authenticator app on another device? Scan this code with it.",
+      "qrLabel": "QR code for your authenticator app",
+      "codeLabel": "6-digit code from the app",
+      "verify": "Verify and turn on"
+    },
+    "codes": {
+      "title": "Save your backup codes",
+      "warning": "Save these codes somewhere safe now. Each one lets you sign in once if you lose your phone. You will not see them again.",
+      "none": "No backup codes were returned. You can create new ones in Settings on the website.",
+      "copy": "Copy codes",
+      "share": "Share codes",
+      "copied": "Codes copied.",
+      "shareTitle": "My backup codes",
+      "done": "I have saved them. Continue"
+    },
+    "errors": {
+      "passwordWrong": "That password is not right. Please try again.",
+      "confirmExpired": "For your security, please enter your password again.",
+      "codeWrong": "That code did not work. Enter the newest code from your app.",
+      "alreadyOn": "Two-factor authentication is already on for your account.",
+      "notAllowed": "Your community has not switched on two-factor authentication.",
+      "tooMany": "Too many attempts. Wait a few minutes and try again.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
   "changePassword": "Change Password",
   "password": {
     "eyebrow": "Account security",

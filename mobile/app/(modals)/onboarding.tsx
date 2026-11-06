@@ -48,6 +48,8 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { storage } from '@/lib/storage';
 import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
+import TwoFactorEnrolment from '@/components/security/TwoFactorEnrolment';
+import { getTwoFactorStatus } from '@/lib/api/twoFactor';
 
 const DEFAULT_STEPS: OnboardingStep[] = [
   { slug: 'welcome', label_code: 'welcome', required: false },
@@ -58,7 +60,13 @@ const DEFAULT_STEPS: OnboardingStep[] = [
   { slug: 'confirm', label_code: 'confirm', required: false },
 ];
 
-const KNOWN_STEPS = new Set<OnboardingStepSlug>(DEFAULT_STEPS.map((step) => step.slug));
+/*
+  🔴 'security' ("Protect your account", November 2026) is known but deliberately NOT in
+  DEFAULT_STEPS. The server only sends it when the community allows two-factor, the setting
+  is on and the member has a password of their own — the fallback list cannot know any of
+  that, so it must never invent the step.
+*/
+const KNOWN_STEPS = new Set<OnboardingStepSlug>([...DEFAULT_STEPS.map((step) => step.slug), 'security']);
 
 function toggleId(values: number[], id: number): number[] {
   return values.includes(id) ? values.filter((value) => value !== id) : [...values, id];
@@ -114,6 +122,11 @@ function OnboardingScreenInner() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // "Protect your account": hidden when two-factor is already on or not allowed here;
+  // `enrolling` shows the set-up inline; `securityDone` once it has been turned on.
+  const [securityHidden, setSecurityHidden] = useState(false);
+  const [securityEnrolling, setSecurityEnrolling] = useState(false);
+  const [securityDone, setSecurityDone] = useState(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -121,9 +134,11 @@ function OnboardingScreenInner() {
   }, []);
 
   const steps = useMemo(() => {
-    const configured = (configuration?.steps ?? []).filter((step) => KNOWN_STEPS.has(step.slug));
+    const configured = (configuration?.steps ?? [])
+      .filter((step) => KNOWN_STEPS.has(step.slug))
+      .filter((step) => !(step.slug === 'security' && securityHidden));
     return configured.length > 0 ? configured : DEFAULT_STEPS;
-  }, [configuration?.steps]);
+  }, [configuration?.steps, securityHidden]);
   const currentStep = steps[Math.min(stepIndex, Math.max(steps.length - 1, 0))];
   const minBioLength = Number(configuration?.config.bio_min_length ?? 10);
   const tenantName = tenant?.name ?? t('community_fallback');
@@ -140,6 +155,15 @@ function OnboardingScreenInner() {
       ]);
       const hasSafeguardingStep = configResult.steps.some((step) => step.slug === 'safeguarding');
       const options = hasSafeguardingStep ? await getSafeguardingOptions() : [];
+      // Ask before showing "Protect your account": a member who already has two-factor on,
+      // or whose community does not allow it, skips straight past. If the check itself
+      // fails the step stays — it is optional, and "Not now" always moves on.
+      const hasSecurityStep = configResult.steps.some((step) => step.slug === 'security');
+      const hideSecurity = hasSecurityStep
+        ? await getTwoFactorStatus()
+          .then((twoFactor) => twoFactor.enabled === true || twoFactor.enrollment_allowed === false)
+          .catch(() => false)
+        : false;
       if (!mountedRef.current) return;
 
       if (status.onboarding_completed) {
@@ -151,6 +175,7 @@ function OnboardingScreenInner() {
         return;
       }
 
+      setSecurityHidden(hideSecurity);
       setConfiguration(configResult);
       setCategories(categoriesResult);
       setSafeguardingOptions(options);
@@ -532,6 +557,29 @@ function OnboardingScreenInner() {
           </HeroCard>
         ) : null}
 
+        {currentStep.slug === 'security' ? (
+          <HeroCard className="rounded-panel">
+            <HeroCard.Body className="gap-4 p-5">
+              <Text accessibilityRole="header" className="text-xl font-bold text-foreground">{t('security_title')}</Text>
+              {securityDone ? (
+                <Text testID="onboarding-security-done" accessibilityLiveRegion="polite" className="text-base font-semibold text-success">{t('security_done')}</Text>
+              ) : securityEnrolling ? (
+                <TwoFactorEnrolment
+                  accountLabel={(profile as Partial<User>)?.email ?? (user as Partial<User> | null)?.email ?? null}
+                  onDone={() => { setSecurityEnrolling(false); setSecurityDone(true); }}
+                  onCancel={() => setSecurityEnrolling(false)}
+                />
+              ) : (
+                <>
+                  <Text className="text-base leading-6 text-muted-foreground">{t('security_intro')}</Text>
+                  <Text className="text-sm leading-5 text-muted-foreground">{t('security_optional')}</Text>
+                  <Button testID="onboarding-security-setup" fullWidth onPress={() => setSecurityEnrolling(true)}>{t('security_set_up')}</Button>
+                </>
+              )}
+            </HeroCard.Body>
+          </HeroCard>
+        ) : null}
+
         {currentStep.slug === 'confirm' ? (
           <HeroCard className="rounded-panel">
             <HeroCard.Body className="gap-4 p-5">
@@ -544,7 +592,7 @@ function OnboardingScreenInner() {
           </HeroCard>
         ) : null}
 
-        {currentStep.slug !== 'confirm' ? (
+        {currentStep.slug !== 'confirm' && !(currentStep.slug === 'security' && securityEnrolling) ? (
           <View className="mt-5 flex-row gap-3">
             {stepIndex > 0 ? <Button variant="outline" onPress={goBack} disabled={busy}>{t('back')}</Button> : null}
             <View className="flex-1">
@@ -558,7 +606,12 @@ function OnboardingScreenInner() {
                 }}
                 isLoading={busy}
               >
-                {currentStep.slug === 'welcome' ? t('lets_get_started') : t('next')}
+                {currentStep.slug === 'welcome'
+                  ? t('lets_get_started')
+                  : currentStep.slug === 'security'
+                    // "Not now" only moves on: it never finishes onboarding or records anything.
+                    ? (securityDone ? t('security_continue') : t('security_not_now'))
+                    : t('next')}
               </Button>
             </View>
           </View>

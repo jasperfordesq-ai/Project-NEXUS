@@ -43,6 +43,61 @@
   "license": "Licenza",
   "security": "Sicurezza",
   "securityHint": "Mantieni aggiornato l'accesso al tuo account.",
+  "twoFactor": {
+    "title": "Autenticazione a due fattori",
+    "settingsHint": "Chiedi un codice da un’app di autenticazione oltre alla password.",
+    "settingsHintOff": "Disattivata. Aggiungi un codice da un’app di autenticazione per una protezione in più.",
+    "settingsHintOn": "Attivata. Puoi gestirla sul sito web.",
+    "cancel": "Annulla",
+    "copyFailed": "Impossibile copiare. Seleziona il testo e copialo tu.",
+    "screen": {
+      "intro": "L’autenticazione a due fattori chiede, all’accesso, un codice da un’app di autenticazione sul tuo telefono oltre alla password. Chi scopre la tua password non può comunque entrare nel tuo account.",
+      "needApp": "Ti serve un’app di autenticazione, come Google Authenticator, Microsoft Authenticator o Authy.",
+      "onTitle": "L’autenticazione a due fattori è attiva",
+      "onBody": "Il tuo account chiede un codice dalla tua app di autenticazione all’accesso. Per disattivarla o ottenere nuovi codici di backup, usa le Impostazioni sul sito web.",
+      "notAllowed": "La tua comunità non ha attivato l’autenticazione a due fattori.",
+      "loadError": "Non siamo riusciti a controllare le tue impostazioni a due fattori.",
+      "success": "L’autenticazione a due fattori ora è attiva."
+    },
+    "password": {
+      "title": "Conferma che sei tu",
+      "body": "Inserisci la password per continuare.",
+      "label": "La tua password",
+      "continue": "Continua"
+    },
+    "setup": {
+      "title": "Aggiungi il tuo account a un’app di autenticazione",
+      "body": "Tocca il pulsante per aggiungere il tuo account a un’app di autenticazione su questo telefono. Oppure copia la chiave e inseriscila tu nell’app.",
+      "openApp": "Apri nell’app di autenticazione",
+      "noAuthenticatorApp": "Nessuna app di autenticazione su questo telefono ha aperto il link. Copia la chiave e aggiungila a mano nella tua app.",
+      "keyLabel": "Chiave di configurazione",
+      "copyKey": "Copia chiave",
+      "keyCopied": "Chiave copiata.",
+      "qrHint": "La tua app di autenticazione è su un altro dispositivo? Scansiona questo codice con essa.",
+      "qrLabel": "Codice QR per la tua app di autenticazione",
+      "codeLabel": "Codice a 6 cifre dall’app",
+      "verify": "Verifica e attiva"
+    },
+    "codes": {
+      "title": "Salva i tuoi codici di backup",
+      "warning": "Conserva subito questi codici in un posto sicuro. Ognuno ti permette di accedere una volta se perdi il telefono. Non li vedrai più.",
+      "none": "Non è stato restituito alcun codice di backup. Puoi crearne di nuovi nelle Impostazioni sul sito web.",
+      "copy": "Copia codici",
+      "share": "Condividi codici",
+      "copied": "Codici copiati.",
+      "shareTitle": "I miei codici di backup",
+      "done": "Li ho salvati. Continua"
+    },
+    "errors": {
+      "passwordWrong": "La password non è corretta. Riprova.",
+      "confirmExpired": "Per la tua sicurezza, inserisci di nuovo la password.",
+      "codeWrong": "Il codice non ha funzionato. Inserisci il codice più recente dalla tua app.",
+      "alreadyOn": "L’autenticazione a due fattori è già attiva sul tuo account.",
+      "notAllowed": "La tua comunità non ha attivato l’autenticazione a due fattori.",
+      "tooMany": "Troppi tentativi. Attendi qualche minuto e riprova.",
+      "generic": "Qualcosa è andato storto. Riprova."
+    }
+  },
   "changePassword": "Cambia Password",
   "password": {
     "eyebrow": "Sicurezza dell'account",

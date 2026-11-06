@@ -10,7 +10,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, type Href } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
 import Constants from 'expo-constants';
@@ -29,6 +29,7 @@ import { API_V2, IDENTITY_VERIFICATION_AVAILABLE_IN_APP } from '@/lib/constants'
 import { withAlpha } from '@/lib/utils/color';
 import { SUPPORTED_LANGUAGES, changeLanguage } from '@/lib/i18n';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { getTwoFactorStatus, type TwoFactorStatus } from '@/lib/api/twoFactor';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Toggle from '@/components/ui/Toggle';
@@ -173,6 +174,23 @@ function SettingsScreen() {
       if (isMountedRef.current) setBiometricBusy(false);
     }
   }
+
+  /*
+    Two-factor authentication (November 2026). Read on every visit, because the member may
+    have just turned it on in the screen this row opens. `null` means "not known": the row
+    still shows, with a neutral description, rather than claiming on or off.
+  */
+  const [twoFactor, setTwoFactor] = useState<TwoFactorStatus | null>(null);
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      void getTwoFactorStatus()
+        .then((next) => { if (!cancelled) setTwoFactor(next); })
+        .catch(() => { if (!cancelled) setTwoFactor(null); });
+      return () => { cancelled = true; };
+    }, []),
+  );
+  const showTwoFactorRow = !(twoFactor && !twoFactor.enabled && !twoFactor.enrollment_allowed);
 
   const { data, isLoading, error: prefsError, refresh: refreshPrefs } = useApi(() => getPrefs());
   const { data: preferencesData, isLoading: isLoadingPreferences, error: preferencesError, refresh: refreshPreferences } = useApi(() => getPreferences());
@@ -391,6 +409,26 @@ function SettingsScreen() {
               }}
               theme={theme}
             />
+            {/*
+              Absent when the community does not allow two-factor and the member does not
+              have it: a row that can only say "not available here" is noise. Turning it
+              off and new backup codes stay on the website for now.
+            */}
+            {showTwoFactorRow ? (
+              <ActionRow
+                label={t('twoFactor.title')}
+                subtitle={twoFactor === null
+                  ? t('twoFactor.settingsHint')
+                  : twoFactor.enabled ? t('twoFactor.settingsHintOn') : t('twoFactor.settingsHintOff')}
+                icon="shield-half-outline"
+                tone={twoFactor?.enabled ? theme.success : primary}
+                onPress={() => {
+                  void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push('/(modals)/settings-two-factor' as Href);
+                }}
+                theme={theme}
+              />
+            ) : null}
             {/*
               🔴 Owner-reported parity gap, 2026-08-25: the web app's settings page has had
               account deletion since before this app existed, and this app had nothing — no

@@ -43,6 +43,61 @@
   "license": "Ceadúnas",
   "security": "Slándáil",
   "securityHint": "Coinnigh rochtain do chuntais cothrom le dáta.",
+  "twoFactor": {
+    "title": "Fíordheimhniú dhá fhachtóir",
+    "settingsHint": "Iarr cód ó aip fíordheimhnithe chomh maith le d’fhocal faire.",
+    "settingsHintOff": "Múchta. Cuir cód ó aip fíordheimhnithe leis le haghaidh cosanta breise.",
+    "settingsHintOn": "Ar siúl. Is féidir leat é a bhainistiú ar an suíomh gréasáin.",
+    "cancel": "Cealaigh",
+    "copyFailed": "Níorbh fhéidir cóip a dhéanamh. Roghnaigh an téacs agus cóipeáil é tú féin.",
+    "screen": {
+      "intro": "Iarrann fíordheimhniú dhá fhachtóir cód ó aip fíordheimhnithe ar do ghuthán chomh maith le d’fhocal faire nuair a shíníonn tú isteach. Fiú má fhaigheann duine eile d’fhocal faire, ní féidir leo dul isteach i do chuntas.",
+      "needApp": "Beidh aip fíordheimhnithe uait, mar shampla Google Authenticator, Microsoft Authenticator nó Authy.",
+      "onTitle": "Tá fíordheimhniú dhá fhachtóir ar siúl",
+      "onBody": "Iarrann do chuntas cód ó d’aip fíordheimhnithe nuair a shíníonn tú isteach. Chun é a mhúchadh nó cóid chúltaca nua a fháil, úsáid na Socruithe ar an suíomh gréasáin.",
+      "notAllowed": "Níor chuir do phobal fíordheimhniú dhá fhachtóir ar siúl.",
+      "loadError": "Níorbh fhéidir linn do shocruithe dhá fhachtóir a sheiceáil.",
+      "success": "Tá fíordheimhniú dhá fhachtóir ar siúl anois."
+    },
+    "password": {
+      "title": "Deimhnigh gur tusa atá ann",
+      "body": "Cuir isteach d’fhocal faire chun leanúint ar aghaidh.",
+      "label": "D’fhocal faire",
+      "continue": "Lean ar aghaidh"
+    },
+    "setup": {
+      "title": "Cuir do chuntas le haip fíordheimhnithe",
+      "body": "Tapáil an cnaipe chun do chuntas a chur le haip fíordheimhnithe ar an nguthán seo. Nó cóipeáil an eochair agus clóscríobh isteach san aip í tú féin.",
+      "openApp": "Oscail san aip fíordheimhnithe",
+      "noAuthenticatorApp": "Níor oscail aon aip fíordheimhnithe ar an nguthán seo an nasc. Cóipeáil an eochair agus cuir isteach de láimh i d’aip í.",
+      "keyLabel": "Eochair shocraithe",
+      "copyKey": "Cóipeáil an eochair",
+      "keyCopied": "Cóipeáladh an eochair.",
+      "qrHint": "An bhfuil d’aip fíordheimhnithe ar ghléas eile? Scan an cód seo léi.",
+      "qrLabel": "Cód QR do d’aip fíordheimhnithe",
+      "codeLabel": "Cód 6 dhigit ón aip",
+      "verify": "Fíoraigh agus cuir ar siúl"
+    },
+    "codes": {
+      "title": "Sábháil do chóid chúltaca",
+      "warning": "Coinnigh na cóid seo in áit shábháilte anois. Ligeann gach ceann acu duit síniú isteach uair amháin má chailleann tú do ghuthán. Ní fheicfidh tú arís iad.",
+      "none": "Níor seoladh aon chóid chúltaca ar ais. Is féidir leat cinn nua a chruthú sna Socruithe ar an suíomh gréasáin.",
+      "copy": "Cóipeáil na cóid",
+      "share": "Comhroinn na cóid",
+      "copied": "Cóipeáladh na cóid.",
+      "shareTitle": "Mo chóid chúltaca",
+      "done": "Shábháil mé iad. Lean ar aghaidh"
+    },
+    "errors": {
+      "passwordWrong": "Níl an focal faire sin ceart. Bain triail eile as.",
+      "confirmExpired": "Ar mhaithe le do shlándáil, cuir isteach d’fhocal faire arís.",
+      "codeWrong": "Níor oibrigh an cód sin. Cuir isteach an cód is déanaí ó d’aip.",
+      "alreadyOn": "Tá fíordheimhniú dhá fhachtóir ar siúl cheana féin ar do chuntas.",
+      "notAllowed": "Níor chuir do phobal fíordheimhniú dhá fhachtóir ar siúl.",
+      "tooMany": "An iomarca iarrachtaí. Fan cúpla nóiméad agus bain triail eile as.",
+      "generic": "Chuaigh rud éigin mícheart. Bain triail eile as."
+    }
+  },
   "changePassword": "Athraigh Pasfhocal",
   "password": {
     "eyebrow": "Slándáil cuntais",

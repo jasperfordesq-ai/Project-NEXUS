@@ -43,6 +43,61 @@
   "license": "Licence",
   "security": "Sécurité",
   "securityHint": "Gardez l'accès à votre compte à jour.",
+  "twoFactor": {
+    "title": "Authentification à deux facteurs",
+    "settingsHint": "Demander un code d’une application d’authentification en plus de votre mot de passe.",
+    "settingsHintOff": "Désactivée. Ajoutez un code d’une application d’authentification pour plus de protection.",
+    "settingsHintOn": "Activée. Vous pouvez la gérer sur le site web.",
+    "cancel": "Annuler",
+    "copyFailed": "Impossible de copier. Sélectionnez le texte et copiez-le vous-même.",
+    "screen": {
+      "intro": "L’authentification à deux facteurs demande, à la connexion, un code d’une application d’authentification sur votre téléphone en plus de votre mot de passe. Une personne qui connaît votre mot de passe ne peut toujours pas accéder à votre compte.",
+      "needApp": "Il vous faut une application d’authentification, comme Google Authenticator, Microsoft Authenticator ou Authy.",
+      "onTitle": "L’authentification à deux facteurs est activée",
+      "onBody": "Votre compte demande un code de votre application d’authentification à la connexion. Pour la désactiver ou obtenir de nouveaux codes de secours, utilisez les Paramètres du site web.",
+      "notAllowed": "Votre communauté n’a pas activé l’authentification à deux facteurs.",
+      "loadError": "Nous n’avons pas pu vérifier vos réglages d’authentification à deux facteurs.",
+      "success": "L’authentification à deux facteurs est maintenant activée."
+    },
+    "password": {
+      "title": "Confirmez votre identité",
+      "body": "Saisissez votre mot de passe pour continuer.",
+      "label": "Votre mot de passe",
+      "continue": "Continuer"
+    },
+    "setup": {
+      "title": "Ajoutez votre compte à une application d’authentification",
+      "body": "Touchez le bouton pour ajouter votre compte à une application d’authentification sur ce téléphone. Ou copiez la clé et saisissez-la vous-même dans l’application.",
+      "openApp": "Ouvrir dans l’application d’authentification",
+      "noAuthenticatorApp": "Aucune application d’authentification de ce téléphone n’a ouvert le lien. Copiez la clé et ajoutez-la à la main dans votre application.",
+      "keyLabel": "Clé de configuration",
+      "copyKey": "Copier la clé",
+      "keyCopied": "Clé copiée.",
+      "qrHint": "Votre application d’authentification est sur un autre appareil ? Scannez ce code avec elle.",
+      "qrLabel": "Code QR pour votre application d’authentification",
+      "codeLabel": "Code à 6 chiffres de l’application",
+      "verify": "Vérifier et activer"
+    },
+    "codes": {
+      "title": "Enregistrez vos codes de secours",
+      "warning": "Conservez ces codes en lieu sûr dès maintenant. Chacun vous permet de vous connecter une fois si vous perdez votre téléphone. Vous ne les reverrez pas.",
+      "none": "Aucun code de secours n’a été renvoyé. Vous pouvez en créer de nouveaux dans les Paramètres du site web.",
+      "copy": "Copier les codes",
+      "share": "Partager les codes",
+      "copied": "Codes copiés.",
+      "shareTitle": "Mes codes de secours",
+      "done": "Je les ai enregistrés. Continuer"
+    },
+    "errors": {
+      "passwordWrong": "Ce mot de passe n’est pas correct. Veuillez réessayer.",
+      "confirmExpired": "Pour votre sécurité, veuillez saisir à nouveau votre mot de passe.",
+      "codeWrong": "Ce code n’a pas fonctionné. Saisissez le code le plus récent de votre application.",
+      "alreadyOn": "L’authentification à deux facteurs est déjà activée sur votre compte.",
+      "notAllowed": "Votre communauté n’a pas activé l’authentification à deux facteurs.",
+      "tooMany": "Trop de tentatives. Attendez quelques minutes et réessayez.",
+      "generic": "Une erreur s’est produite. Veuillez réessayer."
+    }
+  },
   "changePassword": "Changer le mot de passe",
   "password": {
     "eyebrow": "Sécurité du compte",

@@ -43,6 +43,61 @@
   "license": "Lizenz",
   "security": "Sicherheit",
   "securityHint": "Halten Sie Ihren Kontozugriff auf dem neuesten Stand.",
+  "twoFactor": {
+    "title": "Zwei-Faktor-Authentifizierung",
+    "settingsHint": "Zusätzlich zum Passwort einen Code aus einer Authentifizierungs-App abfragen.",
+    "settingsHintOff": "Aus. Füge für mehr Schutz einen Code aus einer Authentifizierungs-App hinzu.",
+    "settingsHintOn": "An. Du kannst sie auf der Website verwalten.",
+    "cancel": "Abbrechen",
+    "copyFailed": "Kopieren fehlgeschlagen. Markiere den Text und kopiere ihn stattdessen.",
+    "screen": {
+      "intro": "Bei der Zwei-Faktor-Authentifizierung wird beim Anmelden zusätzlich zu deinem Passwort ein Code aus einer Authentifizierungs-App auf deinem Telefon abgefragt. Wer dein Passwort kennt, kommt trotzdem nicht in dein Konto.",
+      "needApp": "Du brauchst eine Authentifizierungs-App, zum Beispiel Google Authenticator, Microsoft Authenticator oder Authy.",
+      "onTitle": "Die Zwei-Faktor-Authentifizierung ist aktiviert",
+      "onBody": "Dein Konto fragt beim Anmelden nach einem Code aus deiner Authentifizierungs-App. Um sie auszuschalten oder neue Sicherungscodes zu erhalten, nutze die Einstellungen auf der Website.",
+      "notAllowed": "Deine Gemeinschaft hat die Zwei-Faktor-Authentifizierung nicht eingeschaltet.",
+      "loadError": "Wir konnten deine Zwei-Faktor-Einstellungen nicht abrufen.",
+      "success": "Die Zwei-Faktor-Authentifizierung ist jetzt aktiviert."
+    },
+    "password": {
+      "title": "Bestätige, dass du es bist",
+      "body": "Gib zum Fortfahren dein Passwort ein.",
+      "label": "Dein Passwort",
+      "continue": "Weiter"
+    },
+    "setup": {
+      "title": "Füge dein Konto einer Authentifizierungs-App hinzu",
+      "body": "Tippe auf die Schaltfläche, um dein Konto einer Authentifizierungs-App auf diesem Telefon hinzuzufügen. Oder kopiere den Schlüssel und gib ihn selbst in der App ein.",
+      "openApp": "In Authentifizierungs-App öffnen",
+      "noAuthenticatorApp": "Keine Authentifizierungs-App auf diesem Telefon hat den Link geöffnet. Kopiere den Schlüssel und füge ihn von Hand in deiner App hinzu.",
+      "keyLabel": "Einrichtungsschlüssel",
+      "copyKey": "Schlüssel kopieren",
+      "keyCopied": "Schlüssel kopiert.",
+      "qrHint": "Ist deine Authentifizierungs-App auf einem anderen Gerät? Scanne diesen Code damit.",
+      "qrLabel": "QR-Code für deine Authentifizierungs-App",
+      "codeLabel": "6-stelliger Code aus der App",
+      "verify": "Bestätigen und einschalten"
+    },
+    "codes": {
+      "title": "Speichere deine Sicherungscodes",
+      "warning": "Bewahre diese Codes jetzt an einem sicheren Ort auf. Mit jedem kannst du dich einmal anmelden, falls du dein Telefon verlierst. Du wirst sie nicht noch einmal sehen.",
+      "none": "Es wurden keine Sicherungscodes zurückgegeben. Du kannst in den Einstellungen auf der Website neue erstellen.",
+      "copy": "Codes kopieren",
+      "share": "Codes teilen",
+      "copied": "Codes kopiert.",
+      "shareTitle": "Meine Sicherungscodes",
+      "done": "Ich habe sie gespeichert. Weiter"
+    },
+    "errors": {
+      "passwordWrong": "Das Passwort ist nicht richtig. Bitte versuche es erneut.",
+      "confirmExpired": "Gib zu deiner Sicherheit bitte dein Passwort erneut ein.",
+      "codeWrong": "Dieser Code hat nicht funktioniert. Gib den neuesten Code aus deiner App ein.",
+      "alreadyOn": "Die Zwei-Faktor-Authentifizierung ist für dein Konto bereits aktiviert.",
+      "notAllowed": "Deine Gemeinschaft hat die Zwei-Faktor-Authentifizierung nicht eingeschaltet.",
+      "tooMany": "Zu viele Versuche. Warte ein paar Minuten und versuche es erneut.",
+      "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+    }
+  },
   "changePassword": "Passwort ändern",
   "password": {
     "eyebrow": "Kontosicherheit",

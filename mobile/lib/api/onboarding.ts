@@ -6,7 +6,7 @@
 import { api } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
 
-export type OnboardingStepSlug = 'welcome' | 'profile' | 'interests' | 'skills' | 'safeguarding' | 'confirm';
+export type OnboardingStepSlug = 'welcome' | 'profile' | 'interests' | 'skills' | 'safeguarding' | 'security' | 'confirm';
 
 export interface OnboardingInterest {
   category_id: number;

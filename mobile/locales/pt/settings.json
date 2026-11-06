@@ -43,6 +43,61 @@
   "license": "Licença",
   "security": "Segurança",
   "securityHint": "Mantenha o acesso à sua conta até data.",
+  "twoFactor": {
+    "title": "Autenticação de dois fatores",
+    "settingsHint": "Pedir um código de uma aplicação de autenticação além da palavra-passe.",
+    "settingsHintOff": "Desativada. Adicione um código de uma aplicação de autenticação para mais proteção.",
+    "settingsHintOn": "Ativada. Pode geri-la no site.",
+    "cancel": "Cancelar",
+    "copyFailed": "Não foi possível copiar. Selecione o texto e copie-o manualmente.",
+    "screen": {
+      "intro": "A autenticação de dois fatores pede, ao iniciar sessão, um código de uma aplicação de autenticação no seu telemóvel além da palavra-passe. Quem descobrir a sua palavra-passe continua sem conseguir entrar na sua conta.",
+      "needApp": "Precisa de uma aplicação de autenticação, como o Google Authenticator, o Microsoft Authenticator ou o Authy.",
+      "onTitle": "A autenticação de dois fatores está ativada",
+      "onBody": "A sua conta pede um código da sua aplicação de autenticação ao iniciar sessão. Para a desativar ou obter novos códigos de recuperação, use as Definições no site.",
+      "notAllowed": "A sua comunidade não ativou a autenticação de dois fatores.",
+      "loadError": "Não foi possível verificar as suas definições de dois fatores.",
+      "success": "A autenticação de dois fatores está agora ativada."
+    },
+    "password": {
+      "title": "Confirme que é você",
+      "body": "Introduza a sua palavra-passe para continuar.",
+      "label": "A sua palavra-passe",
+      "continue": "Continuar"
+    },
+    "setup": {
+      "title": "Adicione a sua conta a uma aplicação de autenticação",
+      "body": "Toque no botão para adicionar a sua conta a uma aplicação de autenticação neste telemóvel. Ou copie a chave e escreva-a na aplicação.",
+      "openApp": "Abrir na aplicação de autenticação",
+      "noAuthenticatorApp": "Nenhuma aplicação de autenticação neste telemóvel abriu a ligação. Copie a chave e adicione-a manualmente na sua aplicação.",
+      "keyLabel": "Chave de configuração",
+      "copyKey": "Copiar chave",
+      "keyCopied": "Chave copiada.",
+      "qrHint": "A sua aplicação de autenticação está noutro dispositivo? Leia este código com ela.",
+      "qrLabel": "Código QR para a sua aplicação de autenticação",
+      "codeLabel": "Código de 6 dígitos da aplicação",
+      "verify": "Verificar e ativar"
+    },
+    "codes": {
+      "title": "Guarde os seus códigos de recuperação",
+      "warning": "Guarde já estes códigos num local seguro. Cada um permite iniciar sessão uma vez se perder o telemóvel. Não os voltará a ver.",
+      "none": "Não foram devolvidos códigos de recuperação. Pode criar novos nas Definições do site.",
+      "copy": "Copiar códigos",
+      "share": "Partilhar códigos",
+      "copied": "Códigos copiados.",
+      "shareTitle": "Os meus códigos de recuperação",
+      "done": "Já os guardei. Continuar"
+    },
+    "errors": {
+      "passwordWrong": "A palavra-passe não está correta. Tente novamente.",
+      "confirmExpired": "Para sua segurança, introduza novamente a palavra-passe.",
+      "codeWrong": "Esse código não funcionou. Introduza o código mais recente da sua aplicação.",
+      "alreadyOn": "A autenticação de dois fatores já está ativada na sua conta.",
+      "notAllowed": "A sua comunidade não ativou a autenticação de dois fatores.",
+      "tooMany": "Demasiadas tentativas. Aguarde alguns minutos e tente novamente.",
+      "generic": "Algo correu mal. Tente novamente."
+    }
+  },
   "changePassword": "Alterar Palavra-passe",
   "password": {
     "eyebrow": "Segurança da conta",

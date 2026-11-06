@@ -53,12 +53,25 @@ jest.mock('@/lib/api/onboarding', () => ({
   saveSafeguardingPreferences: jest.fn(),
   completeOnboarding: jest.fn(),
 }));
+jest.mock('@/lib/api/twoFactor', () => ({ getTwoFactorStatus: jest.fn() }));
+// The enrolment flow has its own suite (components/security/TwoFactorEnrolment.test.tsx);
+// here only its two exits matter.
+jest.mock('@/components/security/TwoFactorEnrolment', () => {
+  const { Pressable, Text, View } = require('react-native');
+  return ({ onDone, onCancel }: { onDone: () => void; onCancel?: () => void }) => (
+    <View testID="two-factor-enrolment">
+      <Pressable testID="enrolment-finish" onPress={onDone}><Text>finish</Text></Pressable>
+      {onCancel ? <Pressable testID="enrolment-cancel" onPress={onCancel}><Text>cancel</Text></Pressable> : null}
+    </View>
+  );
+});
 
 import OnboardingScreen from './onboarding';
 import { storage } from '@/lib/storage';
 import { getMe } from '@/lib/api/auth';
 import { ApiResponseError } from '@/lib/api/client';
 import { updateProfile } from '@/lib/api/profile';
+import { getTwoFactorStatus } from '@/lib/api/twoFactor';
 import {
   completeOnboarding,
   getOnboardingCategories,
@@ -394,6 +407,110 @@ describe('OnboardingScreen', () => {
       fireEvent.changeText(getByLabelText('bio_label'), 'I like helping with gardens.');
       fireEvent.press(getByTestId('onboarding-next'));
       await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ bio: 'I like helping with gardens.' }));
+    });
+  });
+
+  describe('the optional "Protect your account" step', () => {
+    const twoFactorStatus = (overrides: Record<string, unknown> = {}) => ({
+      enabled: false,
+      enrollment_allowed: true,
+      enforcement_required: false,
+      setup_required: false,
+      backup_codes_remaining: 0,
+      ...overrides,
+    });
+
+    beforeEach(() => {
+      jest.mocked(getOnboardingConfig).mockResolvedValue({
+        config: { bio_min_length: 10 },
+        steps: [
+          { slug: 'welcome', label_code: 'welcome', required: false },
+          { slug: 'security', label_code: 'security', required: false },
+          { slug: 'confirm', label_code: 'confirm', required: false },
+        ],
+      });
+      jest.mocked(getTwoFactorStatus).mockResolvedValue(twoFactorStatus());
+    });
+
+    async function pastWelcome() {
+      const view = render(<OnboardingScreen />);
+      await waitFor(() => expect(view.getByText('Welcome to Timebank Global!')).toBeTruthy());
+      fireEvent.press(view.getByTestId('onboarding-next'));
+      return view;
+    }
+
+    it('is skipped when two-factor is already on', async () => {
+      jest.mocked(getTwoFactorStatus).mockResolvedValue(twoFactorStatus({ enabled: true }));
+      const view = await pastWelcome();
+      await waitFor(() => expect(view.getByTestId('onboarding-complete')).toBeTruthy());
+      expect(view.queryByText('security_title')).toBeNull();
+      expect(view.getByText('Step 2 of 2 · step_confirm')).toBeTruthy();
+    });
+
+    it('is skipped when the community does not allow two-factor', async () => {
+      jest.mocked(getTwoFactorStatus).mockResolvedValue(twoFactorStatus({ enrollment_allowed: false }));
+      const view = await pastWelcome();
+      await waitFor(() => expect(view.getByTestId('onboarding-complete')).toBeTruthy());
+      expect(view.queryByText('security_title')).toBeNull();
+    });
+
+    it('is never invented when the server did not send it', async () => {
+      jest.mocked(getOnboardingConfig).mockResolvedValue({
+        config: { bio_min_length: 10 },
+        steps: [
+          { slug: 'welcome', label_code: 'welcome', required: false },
+          { slug: 'confirm', label_code: 'confirm', required: false },
+        ],
+      });
+      const view = await pastWelcome();
+      await waitFor(() => expect(view.getByTestId('onboarding-complete')).toBeTruthy());
+      expect(getTwoFactorStatus).not.toHaveBeenCalled();
+    });
+
+    it('"Not now" moves on without finishing onboarding or recording anything', async () => {
+      const view = await pastWelcome();
+      await waitFor(() => expect(view.getByText('security_title')).toBeTruthy());
+      expect(view.getByText('security_not_now')).toBeTruthy();
+
+      fireEvent.press(view.getByTestId('onboarding-next'));
+
+      await waitFor(() => expect(view.getByTestId('onboarding-complete')).toBeTruthy());
+      expect(completeOnboarding).not.toHaveBeenCalled();
+      expect(saveSafeguardingPreferences).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it('stays available when the status check fails, since it is optional', async () => {
+      jest.mocked(getTwoFactorStatus).mockRejectedValue(new Error('offline'));
+      const view = await pastWelcome();
+      await waitFor(() => expect(view.getByText('security_title')).toBeTruthy());
+    });
+
+    it('runs the set-up inline and then continues to the next step', async () => {
+      const view = await pastWelcome();
+      await waitFor(() => expect(view.getByTestId('onboarding-security-setup')).toBeTruthy());
+      fireEvent.press(view.getByTestId('onboarding-security-setup'));
+
+      expect(view.getByTestId('two-factor-enrolment')).toBeTruthy();
+      // While setting up, the wizard's own buttons step aside so "Not now" cannot cut it short.
+      expect(view.queryByTestId('onboarding-next')).toBeNull();
+
+      fireEvent.press(view.getByTestId('enrolment-finish'));
+      expect(view.getByTestId('onboarding-security-done')).toBeTruthy();
+      expect(view.getByText('security_continue')).toBeTruthy();
+
+      fireEvent.press(view.getByTestId('onboarding-next'));
+      await waitFor(() => expect(view.getByTestId('onboarding-complete')).toBeTruthy());
+      expect(completeOnboarding).not.toHaveBeenCalled();
+    });
+
+    it('can back out of the set-up to the step', async () => {
+      const view = await pastWelcome();
+      await waitFor(() => expect(view.getByTestId('onboarding-security-setup')).toBeTruthy());
+      fireEvent.press(view.getByTestId('onboarding-security-setup'));
+      fireEvent.press(view.getByTestId('enrolment-cancel'));
+      expect(view.getByTestId('onboarding-security-setup')).toBeTruthy();
+      expect(view.getByText('security_not_now')).toBeTruthy();
     });
   });
 });

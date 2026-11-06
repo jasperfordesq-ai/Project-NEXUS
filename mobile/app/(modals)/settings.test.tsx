@@ -83,6 +83,10 @@ jest.mock('react-i18next', () => ({
         'appearance.mode.lightHint': 'Always use the light theme',
         'appearance.mode.dark': 'Dark',
         'appearance.mode.darkHint': 'Always use the dark theme',
+        'twoFactor.title': 'Two-factor authentication',
+        'twoFactor.settingsHint': 'Ask for a code from an authenticator app as well as your password.',
+        'twoFactor.settingsHintOff': 'Off. Add a code from an authenticator app for extra protection.',
+        'twoFactor.settingsHintOn': 'On. You can manage it on the website.',
       };
       return map[key] ?? key;
     },
@@ -120,6 +124,11 @@ jest.mock('@/lib/hooks/useTheme', () => ({
     scheme: 'dark',
     setMode: mockSetThemeMode,
   }),
+}));
+
+const mockGetTwoFactorStatus = jest.fn();
+jest.mock('@/lib/api/twoFactor', () => ({
+  getTwoFactorStatus: (...args: unknown[]) => mockGetTwoFactorStatus(...args),
 }));
 
 jest.mock('@/lib/hooks/useApi', () => ({
@@ -210,6 +219,7 @@ const preferencesState = {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockGetTwoFactorStatus.mockReset().mockRejectedValue(new Error('not requested in this test'));
   let call = 0;
   mockUseApi.mockImplementation(() => {
     call += 1;
@@ -378,5 +388,59 @@ describe('SettingsScreen', () => {
 
     fireEvent.press(getByText('Dark'));
     expect(mockSetThemeMode).toHaveBeenCalledWith('dark');
+  });
+
+  describe('two-factor authentication row', () => {
+    const status = (overrides: Record<string, unknown> = {}) => ({
+      enabled: false,
+      enrollment_allowed: true,
+      enforcement_required: false,
+      setup_required: false,
+      backup_codes_remaining: 0,
+      ...overrides,
+    });
+
+    beforeEach(() => {
+      // Run the focus effect as an ordinary effect, so the status is actually read.
+      const { useFocusEffect } = require('expo-router');
+      (useFocusEffect as jest.Mock).mockImplementation((effect: () => void | (() => void)) => {
+        React.useEffect(effect, [effect]);
+      });
+    });
+
+    afterEach(() => {
+      const { useFocusEffect } = require('expo-router');
+      (useFocusEffect as jest.Mock).mockReset();
+    });
+
+    it('says it is off and opens the set-up screen', async () => {
+      mockGetTwoFactorStatus.mockResolvedValue(status());
+      const { router } = require('expo-router');
+      const { findByText, getByText } = render(<SettingsScreen />);
+      expect(await findByText('Off. Add a code from an authenticator app for extra protection.')).toBeTruthy();
+      fireEvent.press(getByText('Two-factor authentication'));
+      expect(router.push).toHaveBeenCalledWith('/(modals)/settings-two-factor');
+    });
+
+    it('says it is on, and where it can be managed', async () => {
+      mockGetTwoFactorStatus.mockResolvedValue(status({ enabled: true }));
+      const { findByText } = render(<SettingsScreen />);
+      expect(await findByText('On. You can manage it on the website.')).toBeTruthy();
+    });
+
+    it('is absent when the community does not allow it and it is off', async () => {
+      mockGetTwoFactorStatus.mockResolvedValue(status({ enrollment_allowed: false }));
+      const { queryByText } = render(<SettingsScreen />);
+      await waitFor(() => expect(mockGetTwoFactorStatus).toHaveBeenCalled());
+      await waitFor(() => expect(queryByText('Two-factor authentication')).toBeNull());
+    });
+
+    it('stays, without claiming on or off, when the status cannot be read', async () => {
+      mockGetTwoFactorStatus.mockRejectedValue(new Error('offline'));
+      const { getByText, queryByText } = render(<SettingsScreen />);
+      await waitFor(() => expect(mockGetTwoFactorStatus).toHaveBeenCalled());
+      expect(getByText('Ask for a code from an authenticator app as well as your password.')).toBeTruthy();
+      expect(queryByText('On. You can manage it on the website.')).toBeNull();
+    });
   });
 });
