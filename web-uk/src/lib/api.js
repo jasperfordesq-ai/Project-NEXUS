@@ -164,6 +164,124 @@ function addRequestClientIpHeader(headers) {
   return headers;
 }
 
+// ---------------------------------------------------------------------------
+// Load protection (6 Nov 2026). Crawlers hit this site in bursts: 454 pages in
+// one minute on 5 Nov and 638 in two minutes on 6 Nov, each page making several
+// API calls. The API container serves the main website and the phone app too,
+// and every web-uk call occupies one of its Apache workers, so a burst here used
+// them all up: pages everywhere stalled and web-uk reported "The service took too
+// long to respond" (Sentry NEXUS-WEBUK-5..8). Two limits, both in this process:
+//
+// 1. At most API_MAX_CONCURRENT_REQUESTS calls are in flight at once; the rest
+//    wait their turn. Waiting counts against the normal request timeout, so a
+//    page that cannot get a slot still fails in the usual way, but the main
+//    site and the phone app keep the rest of the API's capacity.
+// 2. Identical signed-out GETs that are already in flight are shared, not
+//    repeated: during a burst, dozens of visitors ask for the same community
+//    bootstrap, statistics or legal text at the same moment. Each caller gets
+//    its own copy, because callers decorate the result. Nothing is cached
+//    beyond the life of the one request, so nobody sees older data than before.
+// ---------------------------------------------------------------------------
+const DEFAULT_API_MAX_CONCURRENT_REQUESTS = 40;
+
+function apiMaxConcurrentRequests() {
+  const configured = Number.parseInt(process.env.API_MAX_CONCURRENT_REQUESTS || '', 10);
+  if (!Number.isFinite(configured) || configured < 1) return DEFAULT_API_MAX_CONCURRENT_REQUESTS;
+  return configured;
+}
+
+let apiRequestsInFlight = 0;
+const apiRequestQueue = [];
+
+function releaseApiSlot() {
+  while (apiRequestQueue.length > 0) {
+    const next = apiRequestQueue.shift();
+    if (next.settled) continue;
+    next.settled = true;
+    next.resolve();
+    return;
+  }
+  apiRequestsInFlight = Math.max(0, apiRequestsInFlight - 1);
+}
+
+/**
+ * Wait for a free API slot. Resolves to a release function; rejects with the
+ * signal's abort (the request timeout, or the caller giving up) while queued.
+ */
+function acquireApiSlot(signal) {
+  if (apiRequestsInFlight < apiMaxConcurrentRequests()) {
+    apiRequestsInFlight += 1;
+    return Promise.resolve(onceRelease());
+  }
+
+  return new Promise((resolve, reject) => {
+    const entry = { settled: false, resolve: () => resolve(onceRelease()) };
+    const onAbort = () => {
+      if (entry.settled) return;
+      entry.settled = true;
+      const error = new Error('Aborted while waiting for an API slot');
+      error.name = 'AbortError';
+      reject(error);
+    };
+    if (signal) {
+      if (signal.aborted) {
+        onAbort();
+        return;
+      }
+      signal.addEventListener('abort', onAbort, { once: true });
+      const originalResolve = entry.resolve;
+      entry.resolve = () => {
+        signal.removeEventListener('abort', onAbort);
+        originalResolve();
+      };
+    }
+    apiRequestQueue.push(entry);
+  });
+}
+
+function onceRelease() {
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    releaseApiSlot();
+  };
+}
+
+function apiLoadState() {
+  return {
+    inFlight: apiRequestsInFlight,
+    queued: apiRequestQueue.filter((entry) => !entry.settled).length,
+    shared: sharedAnonymousGets.size
+  };
+}
+
+const sharedAnonymousGets = new Map();
+
+function cloneResponseData(value) {
+  return value === null || typeof value !== 'object' ? value : JSON.parse(JSON.stringify(value));
+}
+
+/**
+ * Key under which a call may share an identical in-flight call, or '' when it
+ * must run on its own: only signed-out JSON GETs with no caller-supplied abort
+ * signal. The visitor's address header is left out of the key on purpose — it
+ * only feeds Laravel's per-address rate limits, which public reads do not
+ * depend on — and everything else that can change the answer (path and query,
+ * community, language) is in it.
+ */
+function sharedGetKey(url, options, headers, captureTrustedDevice) {
+  const method = String(options.method || 'GET').toUpperCase();
+  if (method !== 'GET' || options.body !== undefined || options.signal || captureTrustedDevice) return '';
+  if (hasBearerAuth(headers) || hasHeader(headers, 'Cookie')) return '';
+  const keyHeaders = {};
+  for (const name of Object.keys(headers).sort()) {
+    if (name.toLowerCase() === CLIENT_IP_HEADER.toLowerCase()) continue;
+    keyHeaders[name.toLowerCase()] = headers[name];
+  }
+  return `${url}|${JSON.stringify(keyHeaders)}`;
+}
+
 async function request(endpoint, options = {}, captureTrustedDevice = false) {
   const url = `${API_BASE_URL}${endpoint}`;
   const isFormData = typeof globalThis.FormData !== 'undefined' && options.body instanceof globalThis.FormData;
@@ -173,9 +291,29 @@ async function request(endpoint, options = {}, captureTrustedDevice = false) {
     ...options.headers
   })));
 
+  const shareKey = sharedGetKey(url, options, headers, captureTrustedDevice);
+  if (shareKey) {
+    let pending = sharedAnonymousGets.get(shareKey);
+    if (!pending) {
+      pending = performRequest(url, options, headers, false);
+      sharedAnonymousGets.set(shareKey, pending);
+      const forget = () => {
+        if (sharedAnonymousGets.get(shareKey) === pending) sharedAnonymousGets.delete(shareKey);
+      };
+      pending.then(forget, forget);
+    }
+    return cloneResponseData(await pending);
+  }
+
+  return performRequest(url, options, headers, captureTrustedDevice);
+}
+
+async function performRequest(url, options, headers, captureTrustedDevice) {
   const timedRequest = withRequestTimeout(options, headers);
+  let release = null;
 
   try {
+    release = await acquireApiSlot(timedRequest.config.signal);
     const response = await fetch(url, timedRequest.config);
     let data;
     const contentType = response.headers.get('content-type');
@@ -209,6 +347,7 @@ async function request(endpoint, options = {}, captureTrustedDevice = false) {
     if (mappedError) throw mappedError;
     throw error;
   } finally {
+    if (release) release();
     timedRequest.cleanup();
   }
 }
@@ -221,8 +360,10 @@ async function downloadRequest(endpoint, options = {}) {
   })));
 
   const timedRequest = withRequestTimeout(options, headers);
+  let release = null;
 
   try {
+    release = await acquireApiSlot(timedRequest.config.signal);
     const response = await fetch(url, timedRequest.config);
     const contentType = response.headers.get('content-type') || '';
 
@@ -260,6 +401,7 @@ async function downloadRequest(endpoint, options = {}) {
     if (mappedError) throw mappedError;
     throw error;
   } finally {
+    if (release) release();
     timedRequest.cleanup();
   }
 }
@@ -4713,6 +4855,7 @@ async function importVereinMembers(token, organizationId, csv) {
 }
 
 module.exports = {
+  apiLoadState,
   getAlgorithmInfo,
   deleteListingImage,
   setupRequiredTwoFactor,

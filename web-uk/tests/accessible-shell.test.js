@@ -96,6 +96,25 @@ describe('accessible shell tenant gating', () => {
     expect(locals.reportProblemUrl).toBe('/acme/accessible/report-a-problem?return=%2Facme%2Faccessible%2Flistings');
   });
 
+  it('does not nest the contact page inside its own report-a-problem link (crawler URL loop, 6 Nov 2026)', () => {
+    const nested = '/acme/accessible/contact?problem_url=%2Facme%2Faccessible%2Fcontact%3Fproblem_url%3D%252Flistings';
+    const onContact = buildShellLocals({
+      query: {},
+      path: '/contact',
+      originalUrl: nested,
+      accessibleRouting: { tenant, tenantSlug: 'acme', prefix: '/acme/accessible' }
+    }, false);
+    expect(onContact.reportProblemUrl).toBe('/acme/accessible/report-a-problem?return=%2Facme%2Faccessible%2Fcontact');
+
+    const onReport = buildShellLocals({
+      query: {},
+      path: '/report-a-problem',
+      originalUrl: '/acme/accessible/report-a-problem?return=%2Facme%2Faccessible%2Flistings',
+      accessibleRouting: { tenant, tenantSlug: 'acme', prefix: '/acme/accessible' }
+    }, false);
+    expect(onReport.reportProblemUrl).toBe('/acme/accessible/report-a-problem?return=%2Facme%2Faccessible%2Freport-a-problem');
+  });
+
   it('matches Laravel Blade footer platform link gates', () => {
     const columns = buildFooterColumns({ tenant });
 

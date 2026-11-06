@@ -829,6 +829,12 @@ function buildShellLocals(req, isAuthenticated) {
   const visiblePath = req.originalUrl ? req.originalUrl.split('?')[0] : (req.path || '/');
   const currentPath = visiblePath || '/';
   const currentUrl = req.originalUrl || currentPath;
+  // The address the Help & support link reports as "the page you were on".
+  // On the contact and Help & support pages themselves the query string is
+  // dropped: it already carries a reported address, and keeping it nested a
+  // copy of the page inside itself on every visit, giving crawlers an endless
+  // chain of ever-longer URLs (1,149 such requests on 5 Nov 2026).
+  const supportReturnUrl = /\/(contact|report-a-problem)\/?$/.test(currentPath) ? currentPath : currentUrl;
   const urlFor = (pathname) => prefixLocalPath(pathname, routePrefix);
   const tenantSlug = req.accessibleRouting?.tenantSlug || '';
   const branding = routedTenant.branding && typeof routedTenant.branding === 'object'
@@ -964,7 +970,7 @@ function buildShellLocals(req, isAuthenticated) {
     currentPath,
     currentUrl,
     feedbackUrl: resolveFeedbackUrl({ tenantSlug, tenant: routedTenant, urlFor }),
-    reportProblemUrl: `${urlFor('/report-a-problem')}?return=${encodeURIComponent(currentUrl)}`,
+    reportProblemUrl: `${urlFor('/report-a-problem')}?return=${encodeURIComponent(supportReturnUrl)}`,
     cookieSettingsUrl: urlFor('/cookies'),
     mainSiteUrl: process.env.MAIN_FRONTEND_URL || 'https://app.project-nexus.ie',
     sourceCodeUrl,
