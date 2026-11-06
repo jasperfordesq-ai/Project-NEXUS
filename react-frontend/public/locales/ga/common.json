@@ -2263,6 +2263,7 @@
     "continue_with_apple": "Lean ar aghaidh le Apple",
     "continue_with_facebook": "Lean ar aghaidh le Facebook",
     "or_continue_with_email": "Nó lean ar aghaidh le ríomhphost",
+    "terms_required": "Cuir tic sa bhosca chun a dhearbhú go n-aontaíonn tú leis na Téarmaí Seirbhíse agus leis an mBeartas Príobháideachta agus go bhfuil tú 18 mbliana d'aois nó níos sine.",
     "callback_signing_in": "Tú á shíniú isteach…",
     "callback_failed": "Theip ar an síniú isteach. Bain triail eile as.",
     "provider_google": "Google",

@@ -101,12 +101,18 @@ and are unaffected.
 Recorded honestly rather than closed, because each needs a decision or content that is not
 the code's to write.
 
-1. **Social sign-up makes no age declaration.** The Google/Facebook path
-   (`SocialAuthService` → `RegistrationOrchestrationService`) presents no tick-box, by
-   design — recording an acceptance the member never gave would fabricate consent. Those
-   members meet the terms at first login, through the legal acceptance gate. Closing this
-   properly means an age-confirmation step in the social sign-up flow; until then the
-   declaration reaches OAuth members one step later than everyone else.
+1. **Organisation sign-in (SSO) makes no age declaration.** Accounts that organisation
+   sign-in creates are made from a sign-in, with no form and no tick-box, so no
+   acceptance is recorded — recording one the member never gave would fabricate consent.
+   Those members meet the terms at first login, through the legal acceptance gate, which
+   the website now shows before the welcome wizard. Closing this properly means an
+   age-confirmation step in that flow.
+
+   *Closed for Google/Facebook sign-up on 6 November 2026 (E-121).* The web sign-up page
+   now repeats the same "I agree … and I am 18 years of age or older" box beside the
+   provider buttons, the tick travels in the signed sign-in state, the server refuses a
+   provider sign-up without it, and a new account records the acceptance as
+   `registration`. `scripts/check-age-declaration.mjs` checks it as a fourth door.
 2. **Two tenants' terms documents contain no age clause.** Measured 2026-08-25: the
    `timebank-global` terms (46,238 characters) and the `partner-demo` terms have no
    minimum-age wording. The sign-up form states 18+, but the document it points at does

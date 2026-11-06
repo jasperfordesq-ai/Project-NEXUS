@@ -1093,6 +1093,24 @@ export function RegisterPage() {
     );
   };
 
+  // E-121: signing up through Google needs the same tick as this form. The box
+  // is repeated beside the provider buttons — on phones they are on screen 1 and
+  // the form's own box on screen 4 — and both copies share one state, so
+  // ticking either ticks both.
+  const providerSignUpConsent = {
+    accepted: termsAccepted,
+    onChange: setTermsAccepted,
+    label: (
+      <Trans
+        i18nKey="register.terms_agreement"
+        t={t}
+        components={{
+          termsLink: <Link to={tenantPath('/terms')} target="_blank" rel="noopener noreferrer" className="text-accent dark:text-accent hover:underline" />,
+          privacyLink: <Link to={tenantPath('/privacy')} target="_blank" rel="noopener noreferrer" className="text-accent dark:text-accent hover:underline" />,
+        }} />
+    ),
+  };
+
   // Desktop: Show all fields at once
   // Mobile: Show step-by-step
   const renderForm = () => {
@@ -1104,7 +1122,7 @@ export function RegisterPage() {
           {oauthTenantId && (
             <div className="space-y-3">
               <SsoButtons tenantId={oauthTenantId} />
-              <OAuthButtons intent="register" tenantId={oauthTenantId} />
+              <OAuthButtons intent="register" tenantId={oauthTenantId} consent={providerSignUpConsent} />
             </div>
           )}
           {/* Honeypot — single field, off-screen. Multi-field decoys were
@@ -1142,7 +1160,7 @@ export function RegisterPage() {
         {currentStep === 1 && oauthTenantIdMobile && (
           <div className="space-y-3">
             <SsoButtons tenantId={oauthTenantIdMobile} />
-            <OAuthButtons intent="register" tenantId={oauthTenantIdMobile} />
+            <OAuthButtons intent="register" tenantId={oauthTenantIdMobile} consent={providerSignUpConsent} />
           </div>
         )}
         {/* Honeypot — single field, off-screen. See desktop block above. */}

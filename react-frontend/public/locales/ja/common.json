@@ -2227,6 +2227,7 @@
     "continue_with_apple": "Appleで続ける",
     "continue_with_facebook": "Facebookで続ける",
     "or_continue_with_email": "またはメールで続ける",
+    "terms_required": "利用規約とプライバシー ポリシーに同意し、18 歳以上であることを確認するには、チェックボックスにチェックを入れてください。",
     "callback_signing_in": "サインイン中…",
     "callback_failed": "サインインに失敗しました。もう一度お試しください。",
     "provider_google": "グーグル",

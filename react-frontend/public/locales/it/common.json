@@ -2239,6 +2239,7 @@
     "continue_with_apple": "Continua con Apple",
     "continue_with_facebook": "Continua con Facebook",
     "or_continue_with_email": "Oppure continua con l'email",
+    "terms_required": "Spunta la casella per confermare che accetti i Termini di servizio e l'Informativa sulla privacy e che hai almeno 18 anni.",
     "callback_signing_in": "Accesso in corso…",
     "callback_failed": "Accesso non riuscito. Riprova.",
     "provider_google": "Google",

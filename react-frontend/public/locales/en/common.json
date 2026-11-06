@@ -2227,6 +2227,7 @@
     "continue_with_apple": "Continue with Apple",
     "continue_with_facebook": "Continue with Facebook",
     "or_continue_with_email": "Or continue with email",
+    "terms_required": "Tick the box to confirm you agree to the Terms and Privacy Policy and are 18 or older.",
     "callback_signing_in": "Signing you in…",
     "callback_failed": "Sign-in failed. Please try again.",
     "provider_google": "Google",

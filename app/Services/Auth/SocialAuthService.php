@@ -54,13 +54,18 @@ class SocialAuthService
      * Returns ['url' => string, 'state' => string]. The state token is a
      * signed payload encoding tenant id + intent (login|register|link)
      * + a random nonce. Verified on callback.
+     *
+     * $termsAccepted records the member's tick in the sign-up box (E-121); it
+     * is only meaningful for intent=register and only a ticked sign-up may
+     * create an account.
      */
     public function redirectUrl(
         string $provider,
         int $tenantId,
         string $intent = 'login',
         ?int $userId = null,
-        ?string $browserChallenge = null
+        ?string $browserChallenge = null,
+        bool $termsAccepted = false
     ): array {
         $this->assertProviderSupported($provider);
         $this->assertProviderEnabledForTenant($provider, $tenantId);
@@ -70,7 +75,8 @@ class SocialAuthService
             $tenantId,
             $intent,
             $userId,
-            $browserChallenge
+            $browserChallenge,
+            $termsAccepted
         );
 
         if (! class_exists(\Laravel\Socialite\Facades\Socialite::class)) {
@@ -158,18 +164,58 @@ class SocialAuthService
             ];
         }
 
+        // E-121: only a sign-up the member started by ticking the box ("I agree
+        // to the Terms and Privacy Policy, and I am 18 years of age or older")
+        // may create an account. A state signed before the tick existed (valid
+        // for an hour) carries none, so it can still sign an existing member
+        // in but can never create one.
+        $mayCreateAccount = $intent === 'register' && $payload['terms_accepted'];
         $result = $this->findOrCreateFromOauth(
             $provider,
             $providerUser,
             $tenantId,
             $authenticationStartedAt,
-            $intent === 'register'
+            $mayCreateAccount
         );
         if ((int) $result['tenant_id'] !== $tenantId) {
             throw new \RuntimeException('OAuth identity belongs to another community.');
         }
 
+        if (!empty($result['is_new'])) {
+            // The account row is committed by now (findOrCreateFromOauth's own
+            // transaction has returned). A sign-up that signs into an existing
+            // account is not new and records nothing.
+            $this->recordSignUpAcceptance((int) $result['user']->id, $tenantId);
+        }
+
         return $result;
+    }
+
+    /**
+     * Record the terms the member accepted by ticking the sign-up box, pinned
+     * to the versions in force, exactly as the sign-up form does
+     * (RegistrationService). This is the member's own consent — the box is
+     * required before a provider sign-up can start — not a fabricated one.
+     *
+     * Non-fatal by design, like the form's: a community with no active legal
+     * documents records nothing, and a failure here must not undo a valid
+     * account. It is logged at error level because an unrecorded acceptance is
+     * a compliance gap; the legal gate will then still ask at first sign-in.
+     */
+    private function recordSignUpAcceptance(int $userId, int $tenantId): void
+    {
+        try {
+            \App\Core\TenantContext::runForTenant(
+                $tenantId,
+                static fn () => \App\Services\LegalDocumentService::acceptAll($userId, 'registration')
+            );
+        } catch (\Throwable $e) {
+            Log::error('Failed to record provider sign-up terms acceptance', [
+                'user_id' => $userId,
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -181,7 +227,8 @@ class SocialAuthService
      *   tenant_id:int,
      *   authentication_started_at:int,
      *   intent:string,
-     *   browser_challenge:string
+     *   browser_challenge:string,
+     *   terms_accepted:bool
      * }|null
      */
     public function stateContext(string $state): ?array
@@ -194,6 +241,7 @@ class SocialAuthService
                 'authentication_started_at' => $payload['authentication_started_at'],
                 'intent' => $payload['intent'],
                 'browser_challenge' => $payload['browser_challenge'],
+                'terms_accepted' => $payload['terms_accepted'],
             ];
         } catch (\Throwable) {
             return null;
@@ -1189,7 +1237,8 @@ class SocialAuthService
         int $tenantId,
         string $intent,
         ?int $userId,
-        string $browserChallenge
+        string $browserChallenge,
+        bool $termsAccepted = false
     ): string {
         $payload = [
             't' => $tenantId,
@@ -1198,6 +1247,8 @@ class SocialAuthService
             'n' => Str::random(16),
             'x' => now()->timestamp,
             'b' => OAuthBrowserBinding::requireChallenge($browserChallenge),
+            // E-121: the member's tick in the sign-up box. Signed with the rest.
+            'a' => $intent === 'register' && $termsAccepted ? 1 : 0,
         ];
 
         if ($intent === 'link') {
@@ -1218,7 +1269,8 @@ class SocialAuthService
      *   user_id:?int,
      *   state_nonce:string,
      *   authentication_started_at:int,
-     *   browser_challenge:string
+     *   browser_challenge:string,
+     *   terms_accepted:bool
      * }
      */
     private function verifyState(string $state): array
@@ -1258,6 +1310,8 @@ class SocialAuthService
             'state_nonce' => (string) ($decoded['n'] ?? ''),
             'authentication_started_at' => $authenticationStartedAt,
             'browser_challenge' => $browserChallenge,
+            // A state signed before E-121 has no 'a' and so carries no tick.
+            'terms_accepted' => $intent === 'register' && (int) ($decoded['a'] ?? 0) === 1,
         ];
     }
 

@@ -232,7 +232,12 @@ describe('OAuthButtons — click → redirect flow', () => {
       });
     vi.stubGlobal('fetch', fetchSpy);
 
-    render(<OAuthButtons intent="register" />);
+    render(
+      <OAuthButtons
+        intent="register"
+        consent={{ accepted: true, onChange: vi.fn(), label: 'I agree and I am 18 or older' }}
+      />
+    );
     await waitFor(() => expect(screen.getByText('Continue with Google')).toBeInTheDocument());
     fireEvent.click(screen.getByText('Continue with Google'));
 
@@ -304,6 +309,101 @@ describe('OAuthButtons — click → redirect flow', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Sign-in failed. Please try again.');
+    });
+  });
+});
+
+// E-121: signing up through a provider needs the same tick as the sign-up form
+// ("I agree to the Terms and Privacy Policy, and I am 18 years of age or
+// older"). The box sits beside the buttons because on phones the form's own box
+// is on its last screen while the buttons are on the first.
+describe('OAuthButtons — the sign-up tick-box', () => {
+  function providersThenRedirect() {
+    return vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ success: true, providers: ['google'] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ success: true, redirect_url: 'https://accounts.google.com/o/oauth2/auth?state=xyz' }),
+      });
+  }
+
+  it('shows the box beside the buttons when signing up', async () => {
+    vi.stubGlobal('fetch', providersThenRedirect());
+    render(
+      <OAuthButtons
+        intent="register"
+        consent={{ accepted: false, onChange: vi.fn(), label: 'I agree to the terms and I am 18 or older' }}
+      />
+    );
+    expect(await screen.findByRole('checkbox', { name: /I agree to the terms and I am 18 or older/ })).toBeInTheDocument();
+  });
+
+  it('does not start a sign-up until the box is ticked, and says why', async () => {
+    const fetchSpy = providersThenRedirect();
+    vi.stubGlobal('fetch', fetchSpy);
+    render(
+      <OAuthButtons
+        intent="register"
+        consent={{ accepted: false, onChange: vi.fn(), label: 'I agree to the terms and I am 18 or older' }}
+      />
+    );
+    await waitFor(() => expect(screen.getByText('Continue with Google')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('Continue with Google'));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Tick the box to confirm you agree to the Terms and Privacy Policy and are 18 or older.'
+    );
+    expect(fetchSpy).toHaveBeenCalledTimes(1); // only the provider list, no redirect
+    expect(mockCreateOAuthBrowserBinding).not.toHaveBeenCalled();
+    expect(locationMock.href).toBe('');
+  });
+
+  it('sends the tick with the sign-up once the box is ticked', async () => {
+    const fetchSpy = providersThenRedirect();
+    vi.stubGlobal('fetch', fetchSpy);
+    render(
+      <OAuthButtons
+        intent="register"
+        consent={{ accepted: true, onChange: vi.fn(), label: 'I agree to the terms and I am 18 or older' }}
+      />
+    );
+    await waitFor(() => expect(screen.getByText('Continue with Google')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('Continue with Google'));
+
+    await waitFor(() => {
+      const [url] = fetchSpy.mock.calls[1] as [string, ...unknown[]];
+      expect(url).toContain('intent=register');
+      expect(url).toContain('terms_accepted=1');
+    });
+  });
+
+  it('reports a tick back to the sign-up form', async () => {
+    vi.stubGlobal('fetch', providersThenRedirect());
+    const onChange = vi.fn();
+    render(
+      <OAuthButtons
+        intent="register"
+        consent={{ accepted: false, onChange, label: 'I agree to the terms and I am 18 or older' }}
+      />
+    );
+    fireEvent.click(await screen.findByRole('checkbox', { name: /I agree to the terms/ }));
+    expect(onChange).toHaveBeenCalledWith(true);
+  });
+
+  it('shows no box and sends no tick when signing in', async () => {
+    const fetchSpy = providersThenRedirect();
+    vi.stubGlobal('fetch', fetchSpy);
+    render(<OAuthButtons intent="login" />);
+    await waitFor(() => expect(screen.getByText('Continue with Google')).toBeInTheDocument());
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('Continue with Google'));
+
+    await waitFor(() => {
+      const [url] = fetchSpy.mock.calls[1] as [string, ...unknown[]];
+      expect(url).not.toContain('terms_accepted');
     });
   });
 });

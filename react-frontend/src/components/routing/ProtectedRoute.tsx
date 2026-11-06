@@ -29,11 +29,19 @@ interface ProtectedRouteProps {
   children?: React.ReactNode;
 }
 
-/** Path segments that must never be blocked by the legal gate */
+/**
+ * Path segments that must never be blocked by the legal gate: the documents
+ * themselves, so a member can read what they are asked to agree to.
+ *
+ * 🔴 'onboarding' was on this list until E-121 (6 Nov 2026). The welcome wizard
+ * asks for profile details and safeguarding answers, so a member who joined
+ * through a provider — or whose community published new terms — answered all of
+ * it before the terms ever appeared. Do not add it back: the terms come first.
+ */
 const LEGAL_GATE_BYPASS_SEGMENTS = new Set([
   'terms', 'privacy', 'cookies', 'accessibility',
   'community-guidelines', 'acceptable-use', 'account-deletion', 'child-safety',
-  'legal', 'onboarding', 'platform',
+  'legal', 'platform',
   // 🔴 Version history and comparison. This check reads only the LAST path
   // segment, so /terms/versions had a last segment of "versions" and was blocked
   // — meaning a member facing the gate could not read what had changed before
@@ -103,14 +111,6 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
   }
 
-  // Redirect to onboarding only if the flag is not set AND onboarding is
-  // both enabled and mandatory for this tenant. onboarding_completed is the
-  // authoritative source of truth — the backend already requires avatar+bio
-  // before it will set this flag.
-  //
-  // The tenant bootstrap payload includes onboarding settings. When
-  // onboarding.enabled=false or onboarding.mandatory=false, we skip the
-  // redirect entirely so members can use the platform without onboarding.
   // A manager from a community above may look around the member side (owner,
   // 15 Oct 2026: "browse the children so he can see what's going on"). The
   // server refuses every member action it tries; the banner says so. This
@@ -128,27 +128,20 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   const pathSegments = location.pathname.replace(/\/+$/, '').split('/');
   const lastSegment = pathSegments[pathSegments.length - 1] ?? '';
-  const onboardingSettings = tenant?.settings as Record<string, unknown> | undefined;
-  const onboardingEnabled = onboardingSettings?.onboarding_enabled !== false;
-  const onboardingMandatory = onboardingSettings?.onboarding_mandatory !== false;
-  const isGodOrSuperAdmin = user?.is_god || user?.is_super_admin;
-  const needsOnboarding = user && !user.onboarding_completed && onboardingEnabled && onboardingMandatory && !isGodOrSuperAdmin;
-  if (needsOnboarding && lastSegment !== 'onboarding') {
-    // Onboarding first, then on to the page the member asked for (an emailed
-    // link, say) rather than the dashboard.
-    const onboarding = buildReturnTarget(tenantPath('/onboarding'), tenantPath(location.pathname) + location.search + location.hash);
-    return <Navigate to={onboarding.to} state={onboarding.state} replace />;
-  }
-
-  // Legal gate: block protected pages when user has unaccepted legal documents.
-  // Skip the gate on legal/onboarding pages so users can read docs before accepting.
-  const isLegalBypassPath = LEGAL_GATE_BYPASS_SEGMENTS.has(lastSegment);
   const protectedContent = children ? <>{children}</> : <Outlet />;
 
-  if (isLegalBypassPath) {
+  // Order matters (E-121): the documents themselves are always readable, then
+  // any terms still to accept, and only then the welcome wizard.
+  //
+  // 1. A legal document page: the member can read what they are asked to agree
+  //    to, before agreeing and before the wizard.
+  if (LEGAL_GATE_BYPASS_SEGMENTS.has(lastSegment)) {
     return protectedContent;
   }
 
+  // 2. Terms still to accept come before everything else, the wizard included.
+  //    (If the status cannot be read the page stays closed, as every protected
+  //    page already does; a version published mid-wizard shows on the next load.)
   if (legalLoading) {
     return <LoadingScreen message={t('checking_authentication')} />;
   }
@@ -181,6 +174,23 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         />
       </Suspense>
     );
+  }
+
+  // 3. The welcome wizard, only when the community has it switched on AND
+  //    mandatory, and the member has not finished it. The tenant bootstrap
+  //    carries the two settings; when either is off the member uses the platform
+  //    without onboarding. onboarding_completed is the authoritative flag (the
+  //    backend requires avatar + bio before it sets it).
+  const onboardingSettings = tenant?.settings as Record<string, unknown> | undefined;
+  const onboardingEnabled = onboardingSettings?.onboarding_enabled !== false;
+  const onboardingMandatory = onboardingSettings?.onboarding_mandatory !== false;
+  const isGodOrSuperAdmin = user?.is_god || user?.is_super_admin;
+  const needsOnboarding = user && !user.onboarding_completed && onboardingEnabled && onboardingMandatory && !isGodOrSuperAdmin;
+  if (needsOnboarding && lastSegment !== 'onboarding') {
+    // Onboarding first, then on to the page the member asked for (an emailed
+    // link, say) rather than the dashboard.
+    const onboarding = buildReturnTarget(tenantPath('/onboarding'), tenantPath(location.pathname) + location.search + location.hash);
+    return <Navigate to={onboarding.to} state={onboarding.state} replace />;
   }
 
   return protectedContent;

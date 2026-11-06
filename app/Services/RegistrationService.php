@@ -578,12 +578,15 @@ class RegistrationService
         //
         // Scope: this covers the email/password path, which the React app AND the
         // accessible frontend both use (AlphaController::storeRegister delegates
-        // here). It deliberately does NOT cover OAuth signup — that path
-        // (SocialAuthService → RegistrationOrchestrationService) never presents a
-        // terms checkbox, so recording an acceptance there would fabricate consent
-        // the member never gave. Those members are correctly captured at first
-        // login by the legal gate, stamped 'login_prompt'. Do not "fix" the OAuth
-        // path by calling acceptAll() on it.
+        // here). Provider sign-up (Google/Facebook) records its own acceptance in
+        // SocialAuthService::handleCallback: since E-121 (6 Nov 2026) the same box
+        // sits beside the provider buttons, the tick travels in the signed sign-in
+        // state, and only a ticked sign-up may create an account — so that record
+        // is the member's own consent too. Before E-121 that path showed no box,
+        // and this comment rightly forbade recording anything there.
+        // Organisation sign-in (SSO) still shows no box; those members meet the
+        // terms at first login through the legal gate, stamped 'login_prompt'.
+        // Never record an acceptance on a path where the member ticked nothing.
         try {
             LegalDocumentService::acceptAll((int) $user->id, 'registration');
         } catch (\Throwable $e) {

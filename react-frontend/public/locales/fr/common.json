@@ -2239,6 +2239,7 @@
     "continue_with_apple": "Continuer avec Apple",
     "continue_with_facebook": "Continuer avec Facebook",
     "or_continue_with_email": "Ou continuer avec l’e-mail",
+    "terms_required": "Cochez la case pour confirmer que vous acceptez les Conditions d’utilisation et la Politique de confidentialité et que vous avez 18 ans ou plus.",
     "callback_signing_in": "Connexion en cours…",
     "callback_failed": "Échec de la connexion. Veuillez réessayer.",
     "provider_google": "Google",

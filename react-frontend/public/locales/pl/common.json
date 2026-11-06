@@ -2251,6 +2251,7 @@
     "continue_with_apple": "Kontynuuj z Apple",
     "continue_with_facebook": "Kontynuuj z Facebookiem",
     "or_continue_with_email": "Lub kontynuuj z e-mailem",
+    "terms_required": "Zaznacz pole, aby potwierdzić, że akceptujesz Warunki korzystania z usług i Politykę prywatności oraz masz ukończone 18 lat.",
     "callback_signing_in": "Logowanie…",
     "callback_failed": "Logowanie nie powiodło się. Spróbuj ponownie.",
     "provider_google": "Google'a",

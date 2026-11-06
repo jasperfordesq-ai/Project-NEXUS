@@ -131,6 +131,62 @@ describe('ProtectedRoute', () => {
     });
   });
 
+  // E-121: terms still to accept come BEFORE the welcome wizard. The wizard
+  // asks for profile details and safeguarding answers, and a member who joined
+  // through a provider, or whose community published new terms, must agree
+  // first. The wizard page itself used to be on the bypass list, so a new
+  // member answered every question before the terms ever appeared.
+  describe('terms come before the welcome wizard', () => {
+    const newMember = {
+      isAuthenticated: true,
+      isLoading: false,
+      status: 'authenticated',
+      user: { id: 1, first_name: 'New', last_name: 'Member', onboarding_completed: false },
+    };
+    const termsPending = {
+      hasPending: true,
+      pendingDocs: [{ document_id: 1 }],
+      acceptAll: vi.fn(),
+      isAccepting: false,
+      isLoading: false,
+      error: null,
+      refresh: vi.fn(),
+    };
+
+    it('shows the terms instead of sending a new member to the wizard', async () => {
+      mockPathname = '/exchanges/42';
+      mockUseAuth.mockReturnValue(newMember);
+      mockUseLegalGate.mockReturnValue(termsPending);
+      render(<ProtectedRoute />);
+      expect(await screen.findByTestId('legal-acceptance-gate')).toBeInTheDocument();
+      expect(screen.queryByTestId('navigate')).not.toBeInTheDocument();
+    });
+
+    it('does not let the wizard page itself skip the terms', async () => {
+      mockPathname = '/test/onboarding';
+      mockUseAuth.mockReturnValue(newMember);
+      mockUseLegalGate.mockReturnValue(termsPending);
+      render(<ProtectedRoute><div>Welcome wizard</div></ProtectedRoute>);
+      expect(await screen.findByTestId('legal-acceptance-gate')).toBeInTheDocument();
+      expect(screen.queryByText('Welcome wizard')).not.toBeInTheDocument();
+    });
+
+    it('still lets the member read the terms themselves before agreeing', () => {
+      mockPathname = '/test/terms';
+      mockUseAuth.mockReturnValue(newMember);
+      mockUseLegalGate.mockReturnValue(termsPending);
+      render(<ProtectedRoute><div>Terms of Service</div></ProtectedRoute>);
+      expect(screen.getByText('Terms of Service')).toBeInTheDocument();
+    });
+
+    it('opens the wizard once there is nothing to accept', () => {
+      mockPathname = '/test/onboarding';
+      mockUseAuth.mockReturnValue(newMember);
+      render(<ProtectedRoute><div>Welcome wizard</div></ProtectedRoute>);
+      expect(screen.getByText('Welcome wizard')).toBeInTheDocument();
+    });
+  });
+
   describe('a tenant super admin managing a community below its own', () => {
     // Owner, 12 Oct 2026: "If they're allowed to sign in, they're allowed to
     // sign in to manage those communities." The server has already accepted the

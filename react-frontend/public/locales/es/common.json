@@ -2239,6 +2239,7 @@
     "continue_with_apple": "Continuar con Apple",
     "continue_with_facebook": "Continuar con Facebook",
     "or_continue_with_email": "O continúa con email",
+    "terms_required": "Marca la casilla para confirmar que aceptas los Términos de servicio y la Política de privacidad y que tienes 18 años o más.",
     "callback_signing_in": "Iniciando sesión…",
     "callback_failed": "Inicio de sesión fallido. Inténtalo de nuevo.",
     "provider_google": "Google",

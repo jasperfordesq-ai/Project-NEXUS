@@ -2275,6 +2275,7 @@
     "continue_with_apple": "المتابعة باستخدام Apple",
     "continue_with_facebook": "المتابعة باستخدام Facebook",
     "or_continue_with_email": "أو المتابعة بالبريد الإلكتروني",
+    "terms_required": "ضع علامة في المربع لتأكيد موافقتك على شروط الخدمة وسياسة الخصوصية وأن عمرك 18 عامًا أو أكثر.",
     "callback_signing_in": "جارٍ تسجيل دخولك…",
     "callback_failed": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
     "provider_google": "جوجل",

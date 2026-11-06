@@ -68,13 +68,29 @@ class SocialAuthController extends Controller
                 $intent = 'login';
             }
 
+            // E-121: a sign-up through a provider carries the member's own tick
+            // in the same box the sign-up form has ("I agree to the Terms and
+            // Privacy Policy, and I am 18 years of age or older"), exactly as
+            // RegistrationService requires `terms_accepted` of the form. The
+            // tick travels inside the signed state, and only a ticked sign-up
+            // may create an account (SocialAuthService::handleCallback).
+            $termsAccepted = filter_var($request->input('terms_accepted', false), FILTER_VALIDATE_BOOLEAN);
+            if ($intent === 'register' && ! $termsAccepted) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'terms_required',
+                    'message' => __('api.terms_required'),
+                ], 422);
+            }
+
             $requestedBrowserChallenge = $request->input('browser_challenge');
             $result = $this->social->redirectUrl(
                 $provider,
                 $tenantId,
                 $intent,
                 null,
-                is_string($requestedBrowserChallenge) ? $requestedBrowserChallenge : null
+                is_string($requestedBrowserChallenge) ? $requestedBrowserChallenge : null,
+                $termsAccepted
             );
 
             if (! empty($result['error']) && $result['error'] === 'socialite_not_installed') {

@@ -3,11 +3,12 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
 import { FacebookIcon } from '@/components/icons/FacebookIcon';
 import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { API_BASE } from '@/lib/api';
 import {
   clearOAuthBrowserVerifier,
@@ -15,6 +16,21 @@ import {
 } from '@/lib/oauth-browser-binding';
 
 type Provider = 'google' | 'facebook';
+
+/**
+ * Sign-up only (E-121): the member's tick in the same box the sign-up form has
+ * ("I agree to the Terms and Privacy Policy, and I am 18 years of age or older").
+ * It is rendered beside the buttons because on phones the form's own box is on
+ * its last screen while these buttons are on the first. The server refuses a
+ * provider sign-up that does not carry the tick, so a sign-up without this
+ * prop cannot start.
+ */
+export interface OAuthSignUpConsent {
+  accepted: boolean;
+  onChange: (accepted: boolean) => void;
+  /** The box's label: the sign-up form's own words and links. */
+  label: ReactNode;
+}
 
 interface OAuthButtonsProps {
   /**
@@ -29,6 +45,8 @@ interface OAuthButtonsProps {
    * Optional tenant id to forward when no tenant is resolved by host/slug yet.
    */
   tenantId?: string | number;
+  /** Required for intent="register" — see OAuthSignUpConsent. */
+  consent?: OAuthSignUpConsent;
 }
 
 const PROVIDERS: ReadonlyArray<{ id: Provider; Icon: typeof GoogleIcon; key: string }> = [
@@ -36,9 +54,11 @@ const PROVIDERS: ReadonlyArray<{ id: Provider; Icon: typeof GoogleIcon; key: str
   { id: 'facebook', Icon: FacebookIcon, key: 'oauth.continue_with_facebook' },
 ];
 
-export function OAuthButtons({ intent = 'login', enabledProviders, tenantId }: OAuthButtonsProps) {
+export function OAuthButtons({ intent = 'login', enabledProviders, tenantId, consent }: OAuthButtonsProps) {
   const { t } = useTranslation('common');
   const [flowError, setFlowError] = useState<string | null>(null);
+  const [consentMissing, setConsentMissing] = useState(false);
+  const isSignUp = intent === 'register';
 
   // If parent didn't pass enabledProviders, ask the backend which providers are enabled.
   // Backend returns [] when OAUTH_ENABLED is off — buttons hide entirely.
@@ -70,11 +90,17 @@ export function OAuthButtons({ intent = 'login', enabledProviders, tenantId }: O
 
   async function startFlow(provider: Provider) {
     setFlowError(null);
+    if (isSignUp && !consent?.accepted) {
+      // Say why nothing happened rather than leaving a button that does nothing.
+      setConsentMissing(true);
+      return;
+    }
     let challenge: string | null = null;
 
     try {
       ({ challenge } = await createOAuthBrowserBinding());
       const params = new URLSearchParams({ intent, browser_challenge: challenge });
+      if (isSignUp) params.set('terms_accepted', '1');
       if (tenantId) params.set('tenant_id', String(tenantId));
       const response = await fetch(
         `${API_BASE}/v2/auth/oauth/${provider}/redirect?${params.toString()}`,
@@ -105,6 +131,31 @@ export function OAuthButtons({ intent = 'login', enabledProviders, tenantId }: O
       {flowError && (
         <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
           {flowError}
+        </p>
+      )}
+      {isSignUp && consent && (
+        // Same control, size and contrast overrides as the sign-up form's own
+        // terms box (RegisterPage) — a consent control is not the place to shrink.
+        <Checkbox
+          isSelected={consent.accepted}
+          onValueChange={(selected) => {
+            consent.onChange(selected);
+            if (selected) setConsentMissing(false);
+          }}
+          isInvalid={consentMissing}
+          size="lg"
+          color="primary"
+          classNames={{
+            label: 'text-theme-muted text-sm',
+            wrapper: 'border-black/50 dark:border-white/50',
+          }}
+        >
+          <span>{consent.label}</span>
+        </Checkbox>
+      )}
+      {consentMissing && (
+        <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+          {t('oauth.terms_required')}
         </p>
       )}
       {visible.map(({ id, Icon, key }) => (

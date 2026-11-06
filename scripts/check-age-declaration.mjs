@@ -28,11 +28,15 @@
  * tick. It does not grade the translation — that is a human job, and the wording is
  * hand-written for exactly that reason.
  *
- * 🔴 KNOWN GAP, deliberately not asserted here: social sign-up (Google/Facebook, via
- * SocialAuthService → RegistrationOrchestrationService) presents no tick-box at all, so it
- * makes no age declaration. Those members meet the terms at first login through the legal
- * acceptance gate instead. Adding a fourth assertion here would fail on day one and say
- * nothing new; the gap is recorded in docs/PRODUCT-AUDIENCE.md with what closing it needs.
+ * Provider sign-up (Google/Facebook) is the fourth door since E-121 (6 Nov 2026): the web
+ * sign-up page repeats the same box beside the provider buttons, with the same wording key,
+ * and the server refuses a provider sign-up that does not carry the tick. Until then it
+ * presented no box at all and this comment recorded it as a known gap.
+ *
+ * 🔴 STILL A GAP, deliberately not asserted here: organisation sign-in (SSO) creates accounts
+ * from a sign-in and shows no box, so it makes no age declaration. Those members meet the
+ * terms at first login through the legal acceptance gate. Recorded in
+ * docs/PRODUCT-AUDIENCE.md.
  *
  * Usage:
  *   node scripts/check-age-declaration.mjs
@@ -92,6 +96,15 @@ const SCREENS = [
     file: 'react-frontend/src/pages/auth/RegisterPage.tsx',
     shows: /i18nKey="register\.terms_agreement"/,
     requires: /isStep4Valid = termsAccepted/,
+  },
+  {
+    // Same wording key as the web form (checked above); the box is handed to the
+    // provider buttons, and the server is what refuses a sign-up without it.
+    door: 'web-provider',
+    file: 'react-frontend/src/pages/auth/RegisterPage.tsx',
+    shows: /providerSignUpConsent = \{[\s\S]*?i18nKey="register\.terms_agreement"[\s\S]*?consent=\{providerSignUpConsent\}/,
+    requiresFile: 'app/Http/Controllers/Auth/SocialAuthController.php',
+    requires: /if \(\$intent === 'register' && ! \$termsAccepted\)/,
   },
   {
     door: 'mobile',
