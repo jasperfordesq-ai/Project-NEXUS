@@ -35,7 +35,7 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
-use App\Services\RedisCache;
+use Illuminate\Support\Facades\Cache;
 
 // ============================================================
 // Parse arguments
@@ -258,7 +258,12 @@ function processListingRecommendations(int $tenantId, bool $dryRun, bool $rubixA
             $topIds  = computeKnnRecommendations($userVec, $personalised, 20, $rubixAvailable);
 
             $cacheKey = "recs_listings_{$tenantId}_{$userId}";
-            RedisCache::set($cacheKey, $topIds, 86400, $tenantId);
+            // Same store and key the readers use (ExploreService, SmartMatchingEngine,
+            // CollaborativeFilteringService read Cache::get("recs_*_{tenant}_{id}")).
+            // This called the RedisCache service statically - a fatal error for every
+            // member - and that service also prefixes keys with "t{tenant}:", so no
+            // reader would have found the result. The tenant id is already in the key.
+            Cache::put($cacheKey, $topIds, 86400);
             $written++;
         } catch (\Throwable $e) {
             fwrite(STDERR, "  Error user#{$userId} listing recs: " . $e->getMessage() . "\n");
@@ -359,7 +364,12 @@ function processMemberRecommendations(int $tenantId, bool $dryRun, bool $rubixAv
             $topIds = computeKnnRecommendations($userVec, $candidates, 20, $rubixAvailable);
 
             $cacheKey = "recs_members_{$tenantId}_{$userId}";
-            RedisCache::set($cacheKey, $topIds, 86400, $tenantId);
+            // Same store and key the readers use (ExploreService, SmartMatchingEngine,
+            // CollaborativeFilteringService read Cache::get("recs_*_{tenant}_{id}")).
+            // This called the RedisCache service statically - a fatal error for every
+            // member - and that service also prefixes keys with "t{tenant}:", so no
+            // reader would have found the result. The tenant id is already in the key.
+            Cache::put($cacheKey, $topIds, 86400);
             $written++;
         } catch (\Throwable $e) {
             fwrite(STDERR, "  Error user#{$userId} member recs: " . $e->getMessage() . "\n");
