@@ -171,11 +171,11 @@ class OnboardingController extends BaseApiController
     /** GET onboarding/config — tenant onboarding configuration for the frontend */
     public function getConfig(): JsonResponse
     {
-        $this->requireAuth();
+        $userId = $this->requireAuth();
         $tenantId = TenantContext::getId();
 
         $config = OnboardingConfigService::getConfig($tenantId);
-        $steps = OnboardingConfigService::getActiveSteps($tenantId);
+        $steps = OnboardingConfigService::getActiveStepsForMember($tenantId, $userId);
 
         return $this->respondWithData([
             'config' => $config,

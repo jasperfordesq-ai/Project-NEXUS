@@ -39,6 +39,9 @@ class OnboardingConfigService
         'onboarding.step_skills_required' => '0',
         'onboarding.step_safeguarding_enabled' => '1',
         'onboarding.step_safeguarding_required' => '0',
+        // "Protect your account": an optional offer to turn on two-factor,
+        // shown only to a member who could complete it (6 Nov 2026).
+        'onboarding.step_security_enabled' => '1',
         'onboarding.step_confirm_enabled' => '1',
         'onboarding.avatar_required' => '1',
         'onboarding.bio_required' => '1',
@@ -60,6 +63,7 @@ class OnboardingConfigService
         'profile' => ['key' => 'step_profile'],
         'skills' => ['key' => 'step_skills'],
         'safeguarding' => ['key' => 'step_safeguarding'],
+        'security' => ['key' => 'step_security'],
         'confirm' => ['key' => 'step_confirm'],
     ];
 
@@ -99,6 +103,45 @@ class OnboardingConfigService
     }
 
     /**
+     * The steps one member will actually see.
+     *
+     * The "Protect your account" step is removed for a member who could not
+     * complete it or does not need it: two-factor is already on, or they have
+     * no password of their own (social sign-up). Turning two-factor on from a
+     * signed-in session needs a fresh password confirmation (F-170), so for
+     * them the step would be a dead end.
+     */
+    public static function getActiveStepsForMember(?int $tenantId, int $userId): array
+    {
+        $tenantId = $tenantId ?? TenantContext::getId();
+        $steps = self::getActiveSteps($tenantId);
+        if (!in_array('security', array_column($steps, 'slug'), true)) {
+            return $steps;
+        }
+
+        $passwordHash = DB::table('users')
+            ->where('id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->value('password_hash');
+        $offer = is_string($passwordHash) && $passwordHash !== ''
+            && !TotpService::isEnabled($userId, $tenantId);
+
+        return $offer
+            ? $steps
+            : array_values(array_filter($steps, static fn (array $step): bool => $step['slug'] !== 'security'));
+    }
+
+    private static function communityAllowsTwoFactor(int $tenantId): bool
+    {
+        return (int) TenantContext::getId() === $tenantId
+            ? (bool) TenantContext::hasFeature('two_factor_authentication')
+            : (bool) TenantContext::runForTenant(
+                $tenantId,
+                static fn (): bool => (bool) TenantContext::hasFeature('two_factor_authentication')
+            );
+    }
+
+    /**
      * Invalidate the cached config for a tenant. Called by AdminOnboardingConfigController
      * after persisting a settings change.
      */
@@ -126,6 +169,17 @@ class OnboardingConfigService
             // Showing the step anyway put an empty "no options configured"
             // screen in front of every new member.
             if ($slug === 'safeguarding' && !self::hasActiveSafeguardingOptions($tenantId)) {
+                continue;
+            }
+
+            // Two-factor is offered only where the community allows members
+            // to turn it on. The step is never required: compulsion is the
+            // separate two_factor.require_members setting, enforced at sign-in.
+            if ($slug === 'security') {
+                if (!self::communityAllowsTwoFactor($tenantId) || empty($config[$enabledKey])) {
+                    continue;
+                }
+                $steps[] = ['slug' => $slug, 'label_code' => $slug, 'required' => false];
                 continue;
             }
 
@@ -338,6 +392,7 @@ class OnboardingConfigService
             'step_welcome_enabled', 'step_profile_enabled', 'step_profile_required',
             'step_skills_enabled', 'step_skills_required',
             'step_safeguarding_enabled', 'step_safeguarding_required',
+            'step_security_enabled',
             'step_confirm_enabled',
             'avatar_required', 'bio_required',
             'require_completion_for_visibility', 'require_avatar_for_visibility', 'require_bio_for_visibility',
