@@ -276,10 +276,25 @@ describe('OauthCallbackPage', () => {
       setup ? ['totp_setup'] : ['totp'],
       false,
       'test-session',
+      undefined, // no "trust this device" length in this answer
     ));
     expect(mockSetAccessToken).not.toHaveBeenCalled();
     expect(mockSetRefreshToken).not.toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining(setup ? '/auth/two-factor/setup' : '/login'), { replace: true });
+  });
+
+  // E-121: "Trust this device for N days" showed 30 after a Google sign-in
+  // whatever the community had set; the exchange's own number was dropped.
+  it("passes on the community's number of days for trusting a device", async () => {
+    mockSearchParams.mockReturnValue([new URLSearchParams('code=mfa-code&flow=test-flow'), vi.fn()]);
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({
+      success: true, requires_2fa: true, requires_2fa_setup: false,
+      two_factor_token: 'restricted-challenge', methods: ['totp'], allow_trusted_device: true, trusted_device_days: 14,
+    }) }));
+    render(<OauthCallbackPage />);
+    await waitFor(() => expect(mockBeginChallenge).toHaveBeenCalledWith(
+      'restricted-challenge', false, ['totp'], true, 'test-session', 14,
+    ));
   });
   // ── Loading state ──────────────────────────────────────────────────────────
 

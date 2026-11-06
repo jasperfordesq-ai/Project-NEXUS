@@ -110,7 +110,8 @@ interface AuthContextValue extends AuthState {
   refreshUser: () => Promise<void>;
   clearError: () => void;
   cancel2FA: () => void;
-  beginTwoFactorChallenge: (token: string, setup: boolean, methods: string[], trustAllowed: boolean, expectedGeneration: string | null) => void;
+  /** trustedDeviceDays: the community's "trust this device" length, when the challenge came with one (E-121). */
+  beginTwoFactorChallenge: (token: string, setup: boolean, methods: string[], trustAllowed: boolean, expectedGeneration: string | null, trustedDeviceDays?: number) => void;
   /** WCAG 2.2.1 — reschedule the session-expiry warning after a silent token refresh */
   scheduleSessionWarning: (expiresInSeconds: number) => void;
 }
@@ -764,11 +765,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
   }, []);
 
-  const beginTwoFactorChallenge = useCallback((token: string, setup: boolean, methods: string[], trustAllowed: boolean, expectedGeneration: string | null) => {
+  const beginTwoFactorChallenge = useCallback((token: string, setup: boolean, methods: string[], trustAllowed: boolean, expectedGeneration: string | null, trustedDeviceDays?: number) => {
     tokenManager.clearSession(expectedGeneration);
     if (tokenManager.getSessionGeneration() !== expectedGeneration) return;
     setState({ user: null, status: setup ? 'requires_2fa_setup' : 'requires_2fa', error: null,
-      twoFactorToken: token, twoFactorMethods: methods, twoFactorTrustDeviceAllowed: trustAllowed });
+      twoFactorToken: token, twoFactorMethods: methods, twoFactorTrustDeviceAllowed: trustAllowed,
+      // Same fallback as a password sign-in when the server sends none.
+      twoFactorTrustedDeviceDays: trustedDeviceDays ?? 30 });
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────────

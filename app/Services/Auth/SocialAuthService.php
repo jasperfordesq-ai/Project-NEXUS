@@ -959,6 +959,14 @@ class SocialAuthService
                 false
             );
 
+            // E-121: "last signed in", as password sign-in and code entry record
+            // it. Without it a Google member who needs no code counted as never
+            // having signed in (re-invite emails, inactivity lists, streaks).
+            DB::table('users')
+                ->where('id', $userId)
+                ->where('tenant_id', $tenantId)
+                ->update(['last_login_at' => now()]);
+
             return [
                 'status' => 'credentials_issued',
                 'access_token' => $accessToken,

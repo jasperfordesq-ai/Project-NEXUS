@@ -179,6 +179,29 @@ describe('AuthContext', () => {
     expect(api.refreshSession).toHaveBeenCalledTimes(2);
   });
 
+  // E-121: after a Google sign-in, "Trust this device for N days" showed 30
+  // whatever the community had set, because the hand-off carried no days.
+  it("keeps the community's number of days for trusting a device after a provider sign-in", async () => {
+    function ProviderChallengeProbe() {
+      const { beginTwoFactorChallenge, twoFactorTrustedDeviceDays, status } = useAuth();
+      return (
+        <div>
+          <div data-testid="status">{status}</div>
+          <div data-testid="trust-days">{String(twoFactorTrustedDeviceDays)}</div>
+          <button onClick={() => beginTwoFactorChallenge('challenge', false, ['totp'], true, 'test-session', 14)}>
+            Begin
+          </button>
+        </div>
+      );
+    }
+
+    render(<AuthProvider><ProviderChallengeProbe /></AuthProvider>);
+    await userEvent.click(screen.getByRole('button', { name: 'Begin' }));
+
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('requires_2fa'));
+    expect(screen.getByTestId('trust-days')).toHaveTextContent('14');
+  });
+
   it('keeps a required enrollment challenge out of the bearer token store', async () => {
     const { api } = await import('@/lib/api');
     vi.mocked(api.post).mockResolvedValue({ success: true, data: { requires_2fa_setup: true, two_factor_token: 'setup-only' } });

@@ -41,6 +41,8 @@ interface OAuthExchangeResponse {
   two_factor_token?: string;
   methods?: string[];
   allow_trusted_device?: boolean;
+  /** The community's "trust this device" length (E-121: was dropped, so 30 showed). */
+  trusted_device_days?: number;
   success?: boolean;
   token?: string;
   access_token?: string;
@@ -207,6 +209,7 @@ export function OauthCallbackPage() {
             data.methods || ['totp'],
             data.allow_trusted_device === true,
             sessionGenerationAtStart,
+            typeof data.trusted_device_days === 'number' ? data.trusted_device_days : undefined,
           );
           navigate(tenantPath(data.requires_2fa_setup ? '/auth/two-factor/setup' : '/login'), { replace: true });
           return;
