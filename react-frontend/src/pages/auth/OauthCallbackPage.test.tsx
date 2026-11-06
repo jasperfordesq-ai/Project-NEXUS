@@ -179,9 +179,13 @@ vi.mock('@/components/seo', () => ({
 }));
 
 // ─── react-i18next — identity translator ─────────────────────────────────────
+// The prefix stands in for a language that finishes loading after the page
+// first renders (E-121). It is empty in every test that does not set it.
+const translationState = vi.hoisted(() => ({ prefix: '' }));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string) => `${translationState.prefix}${key}`,
     i18n: { language: 'en', changeLanguage: vi.fn() },
   }),
   Trans: ({ i18nKey }: { i18nKey: string }) => i18nKey,
@@ -199,7 +203,7 @@ vi.mock('@/lib/motion', () => ({
 }));
 
 // ─── Component import (after mocks) ──────────────────────────────────────────
-import { OauthCallbackPage } from './OauthCallbackPage';
+import { OauthCallbackPage, resetOAuthCallbackMemoryForTests } from './OauthCallbackPage';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -247,6 +251,10 @@ beforeEach(() => {
 
   // Default: empty params — individual tests override as needed.
   mockSearchParams.mockReturnValue(makeParams(''));
+  translationState.prefix = '';
+  // The page remembers codes it has dealt with for the life of the tab (E-121);
+  // tests reuse codes, so each starts with a clean memory.
+  resetOAuthCallbackMemoryForTests();
   vi.clearAllMocks();
   mockAdoptSession.mockReturnValue('test-session');
   mockGetSessionGeneration.mockReturnValue('test-session');
@@ -720,9 +728,13 @@ describe('OauthCallbackPage — refusal reasons (E-121)', () => {
     } as unknown as Response;
   }
 
+  // Each test uses its own code, as real codes are never reused: a refusal is
+  // kept for its code for the life of the tab (see the rebuild test below).
+  let codeNumber = 0;
   function startWith(response: Response) {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response));
-    mockSearchParams.mockReturnValue(makeBoundCodeParams('refusal-code'));
+    codeNumber += 1;
+    mockSearchParams.mockReturnValue(makeBoundCodeParams(`refusal-code-${codeNumber}`));
     render(<OauthCallbackPage />);
   }
 
@@ -764,5 +776,148 @@ describe('OauthCallbackPage — refusal reasons (E-121)', () => {
 
     expect(await screen.findByText('oauth.callback_failed', { selector: 'p' })).toBeInTheDocument();
     expect(screen.queryByText('Words from somewhere else')).not.toBeInTheDocument();
+  });
+});
+
+// E-121, found in the browser walk-through: the page can be built a second time
+// after the refusal has arrived (the app taking the page away and bringing it
+// back). The code is used up by then, so exchanging again gets "invalid code" and
+// the member saw "Sign-in failed" after all. A refusal is the server's final answer: it is
+// kept for that code, so a rebuilt page shows it again without a second exchange.
+describe('OauthCallbackPage — a refusal survives the page being rebuilt (E-121)', () => {
+  it('shows the same reason again without exchanging the used code a second time', async () => {
+    const fetchSpy = vi.fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        json: () => Promise.resolve({ success: false, error: 'sign_in_refused', reason: 'pending_approval', is_new: true }),
+        headers: new Headers(),
+      })
+      .mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: () => Promise.resolve({ success: false, error: 'invalid_oauth_code' }),
+        headers: new Headers(),
+      });
+    vi.stubGlobal('fetch', fetchSpy);
+    mockSearchParams.mockReturnValue(makeBoundCodeParams('rebuilt-refusal-code'));
+
+    const first = render(<OauthCallbackPage />);
+    expect(await screen.findByText('login.pending_approval_title')).toBeInTheDocument();
+    first.unmount();
+
+    render(<OauthCallbackPage />);
+    expect(await screen.findByText('login.pending_approval_title')).toBeInTheDocument();
+    expect(screen.queryByText('oauth.callback_failed')).not.toBeInTheDocument();
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
+// E-121, found in the browser walk-through: the exchange ran again whenever the
+// page re-rendered with a new translator or navigation function (translations
+// finishing loading). When that happened after a successful exchange, the used
+// code was exchanged again, the server refused it, and the member saw
+// "Sign-in failed" — on a sign-in that had worked. One exchange per code.
+describe('OauthCallbackPage — one exchange per sign-in code (E-121)', () => {
+  it('does not exchange the code again when the page re-renders after a successful sign-in', async () => {
+    const fetchSpy = vi.fn()
+      .mockResolvedValueOnce(makeResponse({ success: true, token: 'tok-once', refresh_token: 'ref-once', tenant_id: 2 }))
+      .mockResolvedValue(makeResponse({ success: false, error: 'invalid_oauth_code' }, false));
+    vi.stubGlobal('fetch', fetchSpy);
+    mockSearchParams.mockReturnValue(makeBoundCodeParams('rerender-success-code'));
+
+    const view = render(<OauthCallbackPage />);
+    await waitFor(() => expect(capturedHref).toContain('/test/dashboard'));
+
+    // The translations finishing loading re-render the page with new functions.
+    view.rerender(<OauthCallbackPage />);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('oauth.callback_failed')).not.toBeInTheDocument();
+  });
+
+  // The app can swap what it shows while it settles, taking this page away and
+  // bringing it back. If the answer arrived while the page was away, the page
+  // that comes back must finish the sign-in with it, not exchange again.
+  it('finishes the sign-in when the page is built again while the code was being exchanged', async () => {
+    let answer: (response: Response) => void = () => {};
+    const fetchSpy = vi.fn()
+      .mockImplementationOnce(() => new Promise<Response>((resolve) => { answer = resolve; }))
+      .mockResolvedValue(makeResponse({ success: false, error: 'invalid_oauth_code' }, false));
+    vi.stubGlobal('fetch', fetchSpy);
+    mockSearchParams.mockReturnValue(makeBoundCodeParams('rebuilt-mid-exchange-code'));
+
+    const first = render(<OauthCallbackPage />);
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+    first.unmount();
+    answer(makeResponse({ success: true, token: 'tok-late', tenant_id: 2, session_binding: 'binding' }));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    render(<OauthCallbackPage />);
+    await waitFor(() => expect(capturedHref).toBe('/test/dashboard'));
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(mockAdoptSession).toHaveBeenCalledTimes(1);
+    expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'tok-late', null, '2', 'binding');
+  });
+
+  // Once one page has signed the member in and sent them on, a page built again
+  // for the same code must not sign in a second time or send them elsewhere
+  // (the place they set out for is read once).
+  it('does not exchange or sign in again when the page is built again after a successful sign-in', async () => {
+    const fetchSpy = vi.fn()
+      .mockResolvedValueOnce(makeResponse({ success: true, token: 'tok-once', tenant_id: 2, session_binding: 'binding' }))
+      .mockResolvedValue(makeResponse({ success: false, error: 'invalid_oauth_code' }, false));
+    vi.stubGlobal('fetch', fetchSpy);
+    mockSearchParams.mockReturnValue(makeBoundCodeParams('rebuilt-after-success-code'));
+
+    const first = render(<OauthCallbackPage />);
+    await waitFor(() => expect(capturedHref).toBe('/test/dashboard'));
+    first.unmount();
+    capturedHref = '';
+
+    render(<OauthCallbackPage />);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(mockAdoptSession).toHaveBeenCalledTimes(1);
+    expect(capturedHref).toBe('');
+    expect(screen.queryByText('oauth.callback_failed')).not.toBeInTheDocument();
+    expect(screen.getByText('oauth.callback_signing_in')).toBeInTheDocument();
+  });
+});
+
+// The page no longer re-runs its work when the translator changes (that re-run
+// exchanged the code twice), so its words are translated as it draws instead.
+describe("OauthCallbackPage — the page's words follow the language once it loads (E-121)", () => {
+  it('shows a failure in the language that finishes loading after it', async () => {
+    vi.stubGlobal('fetch', vi.fn());
+    mockSearchParams.mockReturnValue(makeParams('error=server_error'));
+
+    const view = render(<OauthCallbackPage />);
+    expect(screen.getAllByText('oauth.callback_failed').length).toBeGreaterThanOrEqual(2);
+
+    translationState.prefix = 'ga:';
+    view.rerender(<OauthCallbackPage />);
+
+    expect(screen.getAllByText('ga:oauth.callback_failed').length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('shows a refusal in the language that finishes loading after it', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      json: () => Promise.resolve({ success: false, error: 'sign_in_refused', reason: 'suspended' }),
+      headers: new Headers(),
+    }));
+    mockSearchParams.mockReturnValue(makeBoundCodeParams('late-language-refusal-code'));
+
+    const view = render(<OauthCallbackPage />);
+    expect(await screen.findByText('oauth.refused_suspended')).toBeInTheDocument();
+
+    translationState.prefix = 'ga:';
+    view.rerender(<OauthCallbackPage />);
+
+    expect(await screen.findByText('ga:oauth.refused_suspended')).toBeInTheDocument();
   });
 });

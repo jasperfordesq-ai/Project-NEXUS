@@ -15,8 +15,8 @@
  * otherwise appear under the platform's own heading.
  */
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState, type MutableRefObject } from 'react';
+import { useSearchParams, Link, useNavigate, type NavigateFunction } from 'react-router-dom';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
@@ -96,14 +96,61 @@ class MinimumAgeRefusal extends Error {
   }
 }
 
+/**
+ * Words the page shows. Kept as a translation key and translated as the page
+ * draws (E-121), so a language that finishes loading after the answer arrived
+ * still applies, without re-running the exchange. `text` is the server's own
+ * translated explanation (minimum age).
+ */
+type PageMessage =
+  | { ns: 'common' | 'auth'; key: string }
+  | { text: string };
+
+/** What the page shows for a sign-in code. */
+type CallbackView =
+  | { kind: 'working' } // exchanging, or on the way to the next page
+  | { kind: 'refused'; reason: RefusalReason }
+  | { kind: 'failed'; message: PageMessage };
+
+const WORKING: CallbackView = { kind: 'working' };
+
+function failedView(key: string, ns: 'common' | 'auth' = 'common'): CallbackView {
+  return { kind: 'failed', message: { ns, key } };
+}
+
 // React StrictMode deliberately restarts effects during development. OAuth
 // callback codes are single-use, so every mounted instance in this tab/module
-// must share the same in-flight exchange for an exact code + browser flow.
-// Settled failures are removed so an explicit remount/retry remains possible.
+// must share the same exchange for an exact code + browser flow.
+// Plain failures are removed so an explicit remount/retry remains possible.
+// A successful answer stays until a page acts on it (E-121): a page taken away
+// while the code was being exchanged, and then built again, must still be able
+// to finish the sign-in with it.
 const inFlightOAuthExchanges = new Map<string, Promise<OAuthExchangeResponse>>();
 
+/**
+ * E-121: codes a page in this tab has acted on, with what that page went on to
+ * show. A code works once. A page built again for the same code (a remount, a
+ * re-render) takes this outcome and never exchanges the used code a second
+ * time: the server refuses it, and the member saw "Sign-in failed" on a
+ * sign-in that had worked. It also stops a second page signing in again, or
+ * sending the member somewhere other than where the first page sent them.
+ */
+const finishedOAuthCodes = new Map<string, Promise<CallbackView>>();
+
+function oauthCodeKey(code: string, flow: string | null): string {
+  return JSON.stringify([code, flow]);
+}
+
+/** For test isolation only: in the app this memory lasts as long as the tab. */
+export function resetOAuthCallbackMemoryForTests(): void {
+  if (import.meta.env.MODE === 'test') {
+    inFlightOAuthExchanges.clear();
+    finishedOAuthCodes.clear();
+  }
+}
+
 function exchangeOAuthCode(code: string, flow: string | null): Promise<OAuthExchangeResponse> {
-  const key = JSON.stringify([code, flow]);
+  const key = oauthCodeKey(code, flow);
   const existing = inFlightOAuthExchanges.get(key);
   if (existing) return existing;
 
@@ -142,9 +189,77 @@ function exchangeOAuthCode(code: string, flow: string | null): Promise<OAuthExch
       inFlightOAuthExchanges.delete(key);
     }
   };
-  void exchange.then(removeSettledExchange, removeSettledExchange);
+  void exchange.then(undefined, (failure: unknown) => {
+    // A refusal is the server's final answer and the code is used up (E-121).
+    // Keep it, so a page built again after it arrived (a remount) shows the
+    // same reason instead of re-exchanging the used code and showing
+    // "Sign-in failed". Other failures stay retryable.
+    if (failure instanceof ProviderRefusal || failure instanceof MinimumAgeRefusal) return;
+    removeSettledExchange();
+  });
 
   return exchange;
+}
+
+/** The router and context functions a successful answer needs, at their newest. */
+interface SignInActions {
+  tenantPath: (path: string) => string;
+  navigate: NavigateFunction;
+  beginTwoFactorChallenge: ReturnType<typeof useAuth>['beginTwoFactorChallenge'];
+}
+
+/**
+ * Act on a successful answer: start two-factor, or adopt the session and go
+ * on. Runs once per code (see finishedOAuthCodes).
+ */
+async function completeSignIn(
+  data: OAuthExchangeResponse,
+  flow: string | null,
+  isLink: boolean,
+  sessionGenerationAtStart: string | null,
+  actions: MutableRefObject<SignInActions>,
+): Promise<CallbackView> {
+  if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) {
+    return failedView('oauth.callback_failed');
+  }
+
+  if (data.two_factor_token && (data.requires_2fa || data.requires_2fa_setup)) {
+    clearOAuthBrowserVerifier(flow);
+    actions.current.beginTwoFactorChallenge(
+      data.two_factor_token,
+      !!data.requires_2fa_setup,
+      data.methods || ['totp'],
+      data.allow_trusted_device === true,
+      sessionGenerationAtStart,
+      typeof data.trusted_device_days === 'number' ? data.trusted_device_days : undefined,
+    );
+    actions.current.navigate(
+      actions.current.tenantPath(data.requires_2fa_setup ? '/auth/two-factor/setup' : '/login'),
+      { replace: true },
+    );
+    return WORKING;
+  }
+
+  const adoptedGeneration = await tokenManager.adoptSessionIfCurrent(
+    sessionGenerationAtStart,
+    String(data.access_token || data.token),
+    data.refresh_token ? String(data.refresh_token) : null,
+    data.tenant_id ? String(data.tenant_id) : undefined,
+    data.session_binding,
+  );
+  if (!adoptedGeneration || tokenManager.getSessionGeneration() !== adoptedGeneration) {
+    return failedView('oauth.callback_failed');
+  }
+  clearOAuthBrowserVerifier(flow);
+  const { tenantPath } = actions.current;
+  // A completed link returns the member to the settings tab they started
+  // from, which confirms the link.
+  // A sign-in returns to the page the member set out for (stored by the
+  // login page before leaving for the provider).
+  window.location.href = isLink
+    ? tenantPath('/settings?tab=connected-accounts&linked=1')
+    : consumeAuthReturn(tenantPath('/dashboard'));
+  return WORKING;
 }
 
 /**
@@ -164,99 +279,98 @@ export function OauthCallbackPage() {
   const { t } = useTranslation('common');
   const { t: tAuth } = useTranslation('auth');
   const [params] = useSearchParams();
+  const code = params.get('code');
+  const flow = params.get('flow');
+  const errCode = params.get('error');
   const isLink = params.get('intent') === 'link';
   usePageTitle(t(isLink ? 'oauth.callback_linking' : 'oauth.callback_signing_in'));
   const { tenantPath } = useTenant();
   const { beginTwoFactorChallenge } = useAuth();
   const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(null);
-  const [refusal, setRefusal] = useState<RefusalReason | null>(null);
+  const [view, setView] = useState<CallbackView>(WORKING);
+
+  // The exchange below depends on the address alone (E-121). These functions
+  // change identity while the app settles (translations loading, the session
+  // being adopted); an effect that re-ran on them exchanged the single-use code
+  // again. It reads them from here instead, at their newest.
+  const actions = useRef<SignInActions>({ tenantPath, navigate, beginTwoFactorChallenge });
+  useEffect(() => {
+    actions.current = { tenantPath, navigate, beginTwoFactorChallenge };
+  });
 
   useEffect(() => {
     let cancelled = false;
-    const code = params.get('code');
-    const flow = params.get('flow');
-    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
-    const errCode = params.get('error');
+    const show = (next: CallbackView) => {
+      if (!cancelled) setView(next);
+    };
 
     if (errCode) {
       // The error code (oauth_failed, sso_failed, a provider's access_denied …)
       // only decides THAT sign-in failed; the wording is always ours.
-      setError(errCode === ACCOUNT_UNDER_MINIMUM_AGE
-        ? tAuth('login.under_minimum_age')
-        : t(errorMessageKey(errCode, isLink)));
+      show(errCode === ACCOUNT_UNDER_MINIMUM_AGE
+        ? failedView('login.under_minimum_age', 'auth')
+        : failedView(errorMessageKey(errCode, isLink)));
       return;
     }
 
     if (!code) {
-      setError(t(isLink ? 'oauth.link_failed' : 'oauth.callback_failed'));
+      show(failedView(isLink ? 'oauth.link_failed' : 'oauth.callback_failed'));
       return;
     }
 
+    const key = oauthCodeKey(code, flow);
+    const finished = finishedOAuthCodes.get(key);
+    if (finished) {
+      void finished.then(show);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
     void exchangeOAuthCode(code, flow).then(
-      async (data) => {
+      (data) => {
+        // Nobody is looking at this page any more. The answer stays with the
+        // exchange, so a page built again for this code can still finish.
         if (cancelled) return;
-        if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) {
-          setError(t('oauth.callback_failed'));
-          return;
+        let outcome = finishedOAuthCodes.get(key);
+        if (!outcome) {
+          outcome = completeSignIn(data, flow, isLink, sessionGenerationAtStart, actions)
+            .catch(() => failedView('oauth.callback_failed'));
+          finishedOAuthCodes.set(key, outcome);
+          // The answer has been used: drop the credentials it carried.
+          inFlightOAuthExchanges.delete(key);
         }
-
-        if (data.two_factor_token && (data.requires_2fa || data.requires_2fa_setup)) {
-          clearOAuthBrowserVerifier(flow);
-          beginTwoFactorChallenge(
-            data.two_factor_token,
-            !!data.requires_2fa_setup,
-            data.methods || ['totp'],
-            data.allow_trusted_device === true,
-            sessionGenerationAtStart,
-            typeof data.trusted_device_days === 'number' ? data.trusted_device_days : undefined,
-          );
-          navigate(tenantPath(data.requires_2fa_setup ? '/auth/two-factor/setup' : '/login'), { replace: true });
-          return;
-        }
-
-        const adoptedGeneration = await tokenManager.adoptSessionIfCurrent(
-          sessionGenerationAtStart,
-          String(data.access_token || data.token),
-          data.refresh_token ? String(data.refresh_token) : null,
-          data.tenant_id ? String(data.tenant_id) : undefined,
-          data.session_binding,
-        );
-        if (!adoptedGeneration || tokenManager.getSessionGeneration() !== adoptedGeneration) {
-          setError(t('oauth.callback_failed'));
-          return;
-        }
-        clearOAuthBrowserVerifier(flow);
-        // A completed link returns the member to the settings tab they
-        // started from, which confirms the link.
-        // A sign-in returns to the page the member set out for (stored by
-        // the login page before leaving for the provider).
-        window.location.href = isLink
-          ? tenantPath('/settings?tab=connected-accounts&linked=1')
-          : consumeAuthReturn(tenantPath('/dashboard'));
+        void outcome.then(show);
       },
       (failure: unknown) => {
         if (cancelled) return;
         if (failure instanceof ProviderRefusal && !isLink) {
           // The server has used the code up; this flow is finished.
           clearOAuthBrowserVerifier(flow);
-          const message = REFUSAL_MESSAGES[failure.reason];
-          setRefusal(failure.reason);
-          setError(message === null ? '' : (message.ns === 'auth' ? tAuth(message.key) : t(message.key)));
+          show({ kind: 'refused', reason: failure.reason });
           return;
         }
-        setError(failure instanceof MinimumAgeRefusal
-          ? failure.serverMessage ?? tAuth('login.under_minimum_age')
-          : t(isLink ? 'oauth.link_failed' : 'oauth.callback_failed'));
+        if (failure instanceof MinimumAgeRefusal) {
+          show(failure.serverMessage !== undefined
+            ? { kind: 'failed', message: { text: failure.serverMessage } }
+            : failedView('login.under_minimum_age', 'auth'));
+          return;
+        }
+        show(failedView(isLink ? 'oauth.link_failed' : 'oauth.callback_failed'));
       },
     );
 
     return () => {
       cancelled = true;
     };
-  }, [params, isLink, tenantPath, t, tAuth, beginTwoFactorChallenge, navigate]);
+  }, [code, flow, errCode, isLink]);
 
-  if (refusal === 'pending_approval') {
+  const say = (message: PageMessage): string => ('text' in message
+    ? message.text
+    : (message.ns === 'auth' ? tAuth(message.key) : t(message.key)));
+
+  if (view.kind === 'refused' && view.reason === 'pending_approval') {
     // Not a failure: the account exists and is waiting for the community.
     return (
       <>
@@ -272,16 +386,17 @@ export function OauthCallbackPage() {
     );
   }
 
-  if (refusal !== null && error !== null) {
+  if (view.kind === 'refused') {
+    const message = REFUSAL_MESSAGES[view.reason];
     return (
       <>
         <PageMeta title={t('oauth.refused_title')} noIndex />
         <div className="min-h-screen flex items-center justify-center p-4">
           <GlassCard className="p-6 max-w-md w-full">
             <h1 className="text-xl font-bold text-theme-primary mb-3">{t('oauth.refused_title')}</h1>
-            <p className="text-theme-muted text-sm mb-6">{error}</p>
+            <p className="text-theme-muted text-sm mb-6">{message ? say(message) : null}</p>
             <div className="flex flex-wrap gap-2">
-              {refusal === 'no_account' && (
+              {view.reason === 'no_account' && (
                 <Button as={Link} to={tenantPath('/register')} variant="primary">
                   {t('oauth.sign_up_instead')}
                 </Button>
@@ -301,7 +416,7 @@ export function OauthCallbackPage() {
     );
   }
 
-  if (error) {
+  if (view.kind === 'failed') {
     const title = t(isLink ? 'oauth.link_failed_title' : 'oauth.callback_failed');
     return (
       <>
@@ -309,7 +424,7 @@ export function OauthCallbackPage() {
         <div className="min-h-screen flex items-center justify-center p-4">
           <GlassCard className="p-6 max-w-md w-full">
             <h1 className="text-xl font-bold text-theme-primary mb-3">{title}</h1>
-            <p className="text-theme-muted text-sm mb-6">{error}</p>
+            <p className="text-theme-muted text-sm mb-6">{say(view.message)}</p>
             <Button
               as={Link}
               to={tenantPath(isLink ? '/settings?tab=connected-accounts' : '/login')}
