@@ -3738,6 +3738,16 @@ return [
             'options_legend' => 'Roghanna cosanta',
             'select_none' => 'Dada roghnaithe',
         ],
+        'security' => [
+            'title' => 'Cosain do chuntas',
+            'intro' => 'Cuireann fíordheimhniú dhá fhachtóir seiceáil bhreise leis nuair a shíníonn tú isteach. Chomh maith le do phasfhocal, cuireann tú isteach cód ó aip fíordheimhnitheora ar do ghuthán.',
+            'what_you_need' => 'Beidh aip fíordheimhnitheora ar do ghuthán ag teastáil uait. Iarrfaimid do phasfhocal ort freisin sula dtosaíonn tú.',
+            'optional' => 'Is roghnach é seo. Is féidir leat é a shocrú níos déanaí i socruithe do chuntais.',
+            'set_up' => 'Socraigh fíordheimhniú dhá fhachtóir',
+            'not_now' => 'Ní anois',
+            'back_to_setup' => 'Ar ais chuig socrú do phróifíle',
+            'continue_setup' => 'Lean ar aghaidh ag socrú do phróifíle',
+        ],
         'confirm' => [
             'title' => 'Seiceáil do chuid freagraí',
             'summary_heading' => 'Do chuid sonraí',

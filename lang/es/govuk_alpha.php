@@ -3736,6 +3736,16 @@ return [
             'options_legend' => 'Opciones de protección',
             'select_none' => 'Ninguna seleccionada',
         ],
+        'security' => [
+            'title' => 'Protege tu cuenta',
+            'intro' => 'La autenticación en dos pasos añade una segunda comprobación al iniciar sesión. Además de tu contraseña, introduces un código de una aplicación de autenticación en tu teléfono.',
+            'what_you_need' => 'Necesitarás una aplicación de autenticación en tu teléfono. También te pediremos tu contraseña antes de empezar.',
+            'optional' => 'Es opcional. Puedes configurarla más adelante en los ajustes de tu cuenta.',
+            'set_up' => 'Configurar la autenticación en dos pasos',
+            'not_now' => 'Ahora no',
+            'back_to_setup' => 'Volver a la configuración de tu perfil',
+            'continue_setup' => 'Seguir configurando tu perfil',
+        ],
         'confirm' => [
             'title' => 'Revisa tus respuestas',
             'summary_heading' => 'Tus datos',

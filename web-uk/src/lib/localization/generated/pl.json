@@ -4773,6 +4773,16 @@
                     "options_legend": "Opcje ochrony",
                     "select_none": "Nic nie wybrano"
                 },
+                "security": {
+                    "title": "Chroń swoje konto",
+                    "intro": "Uwierzytelnianie dwuskładnikowe dodaje drugi krok weryfikacji podczas logowania. Oprócz hasła wpisujesz kod z aplikacji uwierzytelniającej na telefonie.",
+                    "what_you_need": "Potrzebna będzie aplikacja uwierzytelniająca na telefonie. Przed rozpoczęciem poprosimy też o Twoje hasło.",
+                    "optional": "To jest opcjonalne. Możesz to skonfigurować później w ustawieniach konta.",
+                    "set_up": "Skonfiguruj uwierzytelnianie dwuskładnikowe",
+                    "not_now": "Nie teraz",
+                    "back_to_setup": "Wróć do konfigurowania profilu",
+                    "continue_setup": "Kontynuuj konfigurowanie profilu"
+                },
                 "confirm": {
                     "title": "Sprawdź swoje odpowiedzi",
                     "summary_heading": "Twoje dane",

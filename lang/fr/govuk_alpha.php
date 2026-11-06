@@ -3736,6 +3736,16 @@ return [
             'options_legend' => 'Options de protection',
             'select_none' => 'Aucune sélection',
         ],
+        'security' => [
+            'title' => 'Protégez votre compte',
+            'intro' => 'L\'authentification à deux facteurs ajoute une seconde vérification lorsque vous vous connectez. En plus de votre mot de passe, vous saisissez un code provenant d\'une application d\'authentification sur votre téléphone.',
+            'what_you_need' => 'Vous aurez besoin d\'une application d\'authentification sur votre téléphone. Nous vous demanderons aussi votre mot de passe avant de commencer.',
+            'optional' => 'Cette étape est facultative. Vous pourrez la configurer plus tard dans les paramètres de votre compte.',
+            'set_up' => 'Configurer l\'authentification à deux facteurs',
+            'not_now' => 'Pas maintenant',
+            'back_to_setup' => 'Retour à la configuration de votre profil',
+            'continue_setup' => 'Continuer la configuration de votre profil',
+        ],
         'confirm' => [
             'title' => 'Vérifiez vos réponses',
             'summary_heading' => 'Vos informations',

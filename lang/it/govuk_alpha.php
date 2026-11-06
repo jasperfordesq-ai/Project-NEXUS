@@ -3736,6 +3736,16 @@ return [
             'options_legend' => 'Opzioni di protezione',
             'select_none' => 'Nessuna selezione',
         ],
+        'security' => [
+            'title' => 'Proteggi il tuo account',
+            'intro' => 'L\'autenticazione a due fattori aggiunge un secondo controllo quando accedi. Oltre alla password, inserisci un codice generato da un\'app di autenticazione sul tuo telefono.',
+            'what_you_need' => 'Ti servirà un\'app di autenticazione sul telefono. Prima di iniziare ti chiederemo anche la password.',
+            'optional' => 'È facoltativo. Puoi configurarla più tardi nelle impostazioni del tuo account.',
+            'set_up' => 'Configura l\'autenticazione a due fattori',
+            'not_now' => 'Non ora',
+            'back_to_setup' => 'Torna alla configurazione del profilo',
+            'continue_setup' => 'Continua a configurare il profilo',
+        ],
         'confirm' => [
             'title' => 'Verifica le tue risposte',
             'summary_heading' => 'I tuoi dati',

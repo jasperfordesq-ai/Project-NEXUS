@@ -261,6 +261,25 @@
           </div>
         </form>
 
+      {% elif step == "security" %}
+        {# Optional "Protect your account" step. Set-up itself is the existing
+           /profile/two-factor flow (password re-confirmed there, F-170), which
+           sends the member back here; "Not now" records nothing. #}
+        <h1 class="govuk-heading-xl">{{ t("govuk_alpha.onboarding.security.title") }}</h1>
+        <p class="govuk-body-l">{{ t("govuk_alpha.onboarding.security.intro") }}</p>
+        <p class="govuk-body">{{ t("govuk_alpha.onboarding.security.what_you_need") }}</p>
+        <p class="govuk-body">{{ t("govuk_alpha.onboarding.security.optional") }}</p>
+        <a class="govuk-button govuk-button--start" data-module="govuk-button" role="button" draggable="false" href="{{ urlFor('/profile/two-factor?return=' ~ (securityReturnPath | urlencode)) }}">
+          {{ t("govuk_alpha.onboarding.security.set_up") }}
+          <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"/>
+          </svg>
+        </a>
+        <form method="post" action="{{ urlFor('/onboarding/security') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha.onboarding.security.not_now") }}</button>
+        </form>
+
       {% else %}
         <h1 class="govuk-heading-xl">{{ t("onboarding.confirm.title") }}</h1>
         <dl class="govuk-summary-list">

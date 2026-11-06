@@ -5,7 +5,12 @@
 {% extends "layouts/base.njk" %}
 
 {% block beforeContent %}
-  <a class="govuk-back-link" href="{{ urlFor('/profile/settings') }}">{{ t("security_2fa.back") }}</a>
+  {% if returnPath %}
+    {# Came from the onboarding wizard: go back there, not to settings. #}
+    <a class="govuk-back-link" href="{{ urlFor(returnPath) }}">{{ t("govuk_alpha.onboarding.security.back_to_setup") }}</a>
+  {% else %}
+    <a class="govuk-back-link" href="{{ urlFor('/profile/settings') }}">{{ t("security_2fa.back") }}</a>
+  {% endif %}
 {% endblock %}
 
 {% block mainContent %}
@@ -57,7 +62,11 @@
             <li><code>{{ code }}</code></li>
           {% endfor %}
         </ul>
-        <a class="govuk-button govuk-!-margin-top-2" data-module="govuk-button" href="{{ urlFor('/profile/settings') }}" role="button" draggable="false">{{ t("security_2fa.done") }}</a>
+        {% if returnPath %}
+          <a class="govuk-button govuk-!-margin-top-2" data-module="govuk-button" href="{{ urlFor(returnPath) }}" role="button" draggable="false">{{ t("govuk_alpha.onboarding.security.continue_setup") }}</a>
+        {% else %}
+          <a class="govuk-button govuk-!-margin-top-2" data-module="govuk-button" href="{{ urlFor('/profile/settings') }}" role="button" draggable="false">{{ t("security_2fa.done") }}</a>
+        {% endif %}
       {% elif enabled %}
         <p class="govuk-body-l">{{ t("security_2fa.is_on") }}</p>
         <p class="govuk-body">{{ backupCodesRemainingLabel }}</p>
@@ -114,6 +123,7 @@
 
         <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/verify') }}" class="govuk-!-margin-top-4" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {% if returnPath %}<input type="hidden" name="return" value="{{ returnPath }}">{% endif %}
           <div class="govuk-form-group">
             <label class="govuk-label govuk-label--m" for="code">{{ t("security_2fa.code_label") }}</label>
             <div id="code-hint" class="govuk-hint">{{ t("security_2fa.code_hint") }}</div>
@@ -129,6 +139,7 @@
         {# F-115: setup generates a new secret, so it starts from a POST, never a GET. #}
         <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/setup') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {% if returnPath %}<input type="hidden" name="return" value="{{ returnPath }}">{% endif %}
           {# E-035 F-170: turning two-step verification on needs your password. #}
           <div class="govuk-form-group">
             <label class="govuk-label" for="setup-password">{{ t("security_2fa.password_label") }}</label>
@@ -138,6 +149,10 @@
         </form>
       {% else %}
         <div class="govuk-inset-text">{{ t("security_2fa.setup_unavailable") }}</div>
+      {% endif %}
+      {% if returnPath and not backupCodes.length and (enabled or not (setup or canStartSetup)) %}
+        {# Already on, or cannot be set up here: let a member from the wizard carry on. #}
+        <p class="govuk-body govuk-!-margin-top-4"><a class="govuk-link" href="{{ urlFor(returnPath) }}">{{ t("govuk_alpha.onboarding.security.continue_setup") }}</a></p>
       {% endif %}
     </div>
   </div>

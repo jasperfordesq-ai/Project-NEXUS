@@ -15,6 +15,7 @@ const {
   getOnboardingSafeguardingOptions,
   saveOnboardingSafeguarding,
   completeOnboarding,
+  getTwoFactorStatus,
   getUserSkills,
   ApiError
 } = require('../lib/api');
@@ -28,7 +29,14 @@ const SESSION_KEY = 'alphaOnboarding';
 // 8578ce739): nothing on the platform read its answers, and the API now accepts
 // and DROPS `interests`. A stale tenant config that still lists the slug is
 // filtered out by normalizeSteps, so a member is never shown it.
-const DEFAULT_STEPS = ['welcome', 'profile', 'skills', 'safeguarding', 'confirm'];
+//
+// "security" ("Protect your account", Nov 2026) is optional and the SERVER
+// decides whether a member gets it: only when the community allows two-factor,
+// the step is switched on, and the member has a password of their own. So it is
+// a known slug (kept by normalizeSteps, accepted by POST) but it is never part
+// of FALLBACK_STEPS, which stand in when the community's list cannot be read.
+const DEFAULT_STEPS = ['welcome', 'profile', 'skills', 'safeguarding', 'security', 'confirm'];
+const FALLBACK_STEPS = DEFAULT_STEPS.filter((slug) => slug !== 'security');
 
 // Mirrors OnboardingService::SKILL_NAME_MAX / SKILLS_PER_DIRECTION_MAX. The
 // server re-normalises; trimming here keeps the session bag small.
@@ -96,7 +104,7 @@ function normalizeSteps(rawSteps) {
 
   return steps.length
     ? steps
-    : DEFAULT_STEPS.map((slug) => ({ slug, label: slug, required: true }));
+    : FALLBACK_STEPS.map((slug) => ({ slug, label: slug, required: true }));
 }
 
 function normalizeCategory(category) {
@@ -278,7 +286,7 @@ function collectSafeguardingFromBody(body, rawBody) {
 // member to a step the server had left out (Safeguarding with no questions set
 // up, or Skills switched off); that page bounces to /onboarding, which starts
 // again at Welcome — a loop with no way to finish.
-function nextStep(step, slugs = DEFAULT_STEPS) {
+function nextStep(step, slugs = FALLBACK_STEPS) {
   const index = slugs.indexOf(step);
   if (index === -1) return '/onboarding';
   return slugs[index + 1] ? `/onboarding/${slugs[index + 1]}` : '/dashboard?status=onboarding-complete';
@@ -290,8 +298,23 @@ async function communityStepSlugs(token) {
     return normalizeSteps(configData.steps).map((item) => item.slug);
   } catch (error) {
     if (isAuthError(error)) throw error;
-    return DEFAULT_STEPS;
+    return FALLBACK_STEPS;
   }
+}
+
+// The "Protect your account" step is shown only to a member who does not have
+// two-factor on yet and is allowed to set it up. When the status cannot be read
+// the step is skipped: it is optional, and offering a set-up that may then be
+// refused helps nobody.
+async function securityStepApplies(token) {
+  let status;
+  try {
+    status = asObject(dataFrom(await getTwoFactorStatus(token)));
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return false;
+  }
+  return status.enabled !== true && status.enrollment_allowed === true;
 }
 
 function isAuthError(error) {
@@ -410,6 +433,10 @@ router.get('/:step([a-z]+)', asyncRoute(async (req, res) => {
       return redirectTo(res, '/onboarding');
     }
 
+    if (step === 'security' && !(await securityStepApplies(token))) {
+      return redirectTo(res, nextStep(step, slugs));
+    }
+
     if (step === 'skills') {
       categories = asArray(dataFrom(await getOnboardingCategories(token))).map(normalizeCategory).filter((item) => item.id && item.name);
     }
@@ -464,7 +491,9 @@ router.get('/:step([a-z]+)', asyncRoute(async (req, res) => {
       skillChoices: step === 'skills' ? skillChoices(categories, getBag(req)) : [],
       safeguardingOptions,
       onboardingUser,
-      statusBanner: banner
+      statusBanner: banner,
+      // Where /profile/two-factor sends the member back to once set-up is done.
+      securityReturnPath: '/onboarding/security'
     });
   } catch (error) {
     if (isAuthError(error)) return redirectTo(res, '/login?status=auth-required');
@@ -578,6 +607,9 @@ router.post('/:step([a-z]+)', asyncRoute(async (req, res) => {
     }
   }
 
+  // "Not now" on the security step: nothing is recorded and onboarding is not
+  // finished — the member simply moves on (the fall-through below).
+
   if (step === 'confirm') {
     try {
       // React sends `skills: {offer, need, replace}` and no interests. Skills
@@ -611,3 +643,4 @@ module.exports.onboardingStatusBanner = statusBanner;
 // Exported for its test (F-253): help links must be https before they reach href.
 module.exports.normalizeSafeguardingOption = normalizeSafeguardingOption;
 module.exports.collectSkillNames = collectSkillNames;
+module.exports.normalizeSteps = normalizeSteps;

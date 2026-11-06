@@ -744,6 +744,15 @@ async function saveOnboardingSafeguarding(token, preferences) {
   });
 }
 
+// Whether the member already uses an authenticator app, and whether they may
+// set one up. The onboarding "Protect your account" step reads it to skip
+// itself for members who have it on or are not allowed to enrol.
+async function getTwoFactorStatus(token) {
+  return request('/api/v2/auth/2fa/status', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 async function completeOnboarding(token, data) {
   return request('/api/v2/onboarding/complete', {
     method: 'POST',
@@ -4896,6 +4905,7 @@ module.exports = {
   getOnboardingSafeguardingOptions,
   saveOnboardingSafeguarding,
   completeOnboarding,
+  getTwoFactorStatus,
   getUsers,
   searchUsers,
   getUser,

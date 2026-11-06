@@ -3803,6 +3803,16 @@ return [
             'options_legend' => 'Safeguarding options',
             'select_none' => 'None selected',
         ],
+        'security' => [
+            'title' => 'Protect your account',
+            'intro' => 'Two-factor authentication adds a second check when you sign in. As well as your password, you enter a code from an authenticator app on your phone.',
+            'what_you_need' => 'You will need an authenticator app on your phone. We will also ask for your password before you start.',
+            'optional' => 'This is optional. You can set it up later in your account settings.',
+            'set_up' => 'Set up two-factor',
+            'not_now' => 'Not now',
+            'back_to_setup' => 'Back to setting up your profile',
+            'continue_setup' => 'Continue setting up your profile',
+        ],
         'confirm' => [
             'title' => 'Check your answers',
             'summary_heading' => 'Your details',

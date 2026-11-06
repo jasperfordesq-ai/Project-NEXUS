@@ -3736,6 +3736,16 @@ return [
             'options_legend' => 'Schutzoptionen',
             'select_none' => 'Keine ausgewählt',
         ],
+        'security' => [
+            'title' => 'Schützen Sie Ihr Konto',
+            'intro' => 'Die Zwei-Faktor-Authentifizierung fügt bei der Anmeldung eine zweite Prüfung hinzu. Zusätzlich zu Ihrem Passwort geben Sie einen Code aus einer Authentifizierungs-App auf Ihrem Telefon ein.',
+            'what_you_need' => 'Sie benötigen eine Authentifizierungs-App auf Ihrem Telefon. Bevor Sie beginnen, fragen wir außerdem nach Ihrem Passwort.',
+            'optional' => 'Dies ist freiwillig. Sie können es später in Ihren Kontoeinstellungen einrichten.',
+            'set_up' => 'Zwei-Faktor einrichten',
+            'not_now' => 'Nicht jetzt',
+            'back_to_setup' => 'Zurück zur Einrichtung Ihres Profils',
+            'continue_setup' => 'Mit der Einrichtung Ihres Profils fortfahren',
+        ],
         'confirm' => [
             'title' => 'Angaben prüfen',
             'summary_heading' => 'Ihre Angaben',

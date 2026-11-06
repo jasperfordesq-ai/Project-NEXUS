@@ -3736,6 +3736,16 @@ return [
             'options_legend' => 'Opções de proteção',
             'select_none' => 'Nenhum selecionado',
         ],
+        'security' => [
+            'title' => 'Proteja a sua conta',
+            'intro' => 'A autenticação de dois fatores acrescenta uma segunda verificação quando inicia sessão. Além da palavra-passe, introduz um código de uma aplicação de autenticação no seu telemóvel.',
+            'what_you_need' => 'Vai precisar de uma aplicação de autenticação no seu telemóvel. Também lhe pediremos a palavra-passe antes de começar.',
+            'optional' => 'Isto é opcional. Pode configurá-lo mais tarde nas definições da sua conta.',
+            'set_up' => 'Configurar dois fatores',
+            'not_now' => 'Agora não',
+            'back_to_setup' => 'Voltar à configuração do seu perfil',
+            'continue_setup' => 'Continuar a configurar o seu perfil',
+        ],
         'confirm' => [
             'title' => 'Verifique as suas respostas',
             'summary_heading' => 'Os seus dados',

@@ -582,8 +582,26 @@ function dobStatusFromApiError(error) {
   return null;
 }
 
-function twoFactorRedirect(status) {
-  return statusRedirect('/profile/two-factor', status);
+// The onboarding wizard's "Protect your account" step sends a member here to set
+// up two-factor and expects them back afterwards. The return address is honoured
+// only when it is EXACTLY one of these internal wizard paths; anything else
+// (another site, a scheme-relative URL, an extra query string) is ignored, so the
+// parameter can never become an open redirect. Paths are tenant-relative and go
+// through res.locals.urlFor like every other link here.
+const TWO_FACTOR_RETURN_PATHS = Object.freeze(['/onboarding/security', '/onboarding/confirm']);
+
+function twoFactorReturnPath(value) {
+  const candidate = typeof value === 'string' ? value : '';
+  return TWO_FACTOR_RETURN_PATHS.includes(candidate) ? candidate : '';
+}
+
+function withTwoFactorReturn(pathname, returnPath) {
+  if (!returnPath) return pathname;
+  return `${pathname}${pathname.includes('?') ? '&' : '?'}return=${encodeURIComponent(returnPath)}`;
+}
+
+function twoFactorRedirect(status, returnPath = '') {
+  return withTwoFactorReturn(statusRedirect('/profile/two-factor', status), returnPath);
 }
 
 function deleteAccountRedirect(status) {
@@ -1460,6 +1478,8 @@ function renderTwoFactor(req, res, twoFactor, status = '', options = {}) {
     backupCodes: twoFactor.backupCodes,
     backupCodesRemaining: twoFactor.backupCodesRemaining,
     backupCodesRemainingLabel: backupCodesRemainingLabel(req, twoFactor.backupCodesRemaining),
+    // Allow-listed wizard path or ''. Empty keeps the page exactly as before.
+    returnPath: twoFactorReturnPath(options.returnPath),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }
@@ -2336,12 +2356,13 @@ router.get('/two-factor', asyncRoute(async (req, res) => {
   }
 
   const status = typeof req.query.status === 'string' ? req.query.status : '';
-  return renderTwoFactor(req, res, twoFactor, status);
+  return renderTwoFactor(req, res, twoFactor, status, { returnPath: twoFactorReturnPath(req.query.return) });
 }));
 
 router.post('/two-factor/setup', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
+  const returnPath = twoFactorReturnPath(req.body.return);
 
   // E-035 F-170: enrolling an authenticator on a signed-in session needs a fresh
   // confirmation (the same proof passkey management uses), so a stolen session
@@ -2349,7 +2370,7 @@ router.post('/two-factor/setup', asyncRoute(async (req, res) => {
   // Passwords are not trimmed: leading/trailing spaces can be part of one.
   const currentPassword = typeof req.body.current_password === 'string' ? req.body.current_password : '';
   if (currentPassword === '') {
-    return redirectTo(res, twoFactorRedirect('2fa-setup-password-required'));
+    return redirectTo(res, twoFactorRedirect('2fa-setup-password-required', returnPath));
   }
 
   let securityConfirmationToken;
@@ -2361,7 +2382,7 @@ router.post('/two-factor/setup', asyncRoute(async (req, res) => {
       return res.status(429).render('errors/500', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });
     }
     if (error instanceof ApiError) {
-      return redirectTo(res, twoFactorRedirect('2fa-setup-confirm-failed'));
+      return redirectTo(res, twoFactorRedirect('2fa-setup-confirm-failed', returnPath));
     }
     throw error;
   }
@@ -2375,27 +2396,27 @@ router.post('/two-factor/setup', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     // Already turned on (for example in another tab): show the enabled state.
-    if (error instanceof ApiError && error.status === 409) return redirectTo(res, '/profile/two-factor');
+    if (error instanceof ApiError && error.status === 409) return redirectTo(res, withTwoFactorReturn('/profile/two-factor', returnPath));
     if (error instanceof ApiError && error.status === 429) {
       return res.status(429).render('errors/500', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });
     }
     if (error instanceof ApiError) {
       forgetPendingTwoFactorSetup(req);
-      return renderTwoFactor(req, res, normalizeTwoFactorPayload({}), '', { setupUnavailable: true });
+      return renderTwoFactor(req, res, normalizeTwoFactorPayload({}), '', { setupUnavailable: true, returnPath });
     }
     throw error;
   }
 
   if (!twoFactor.setup) {
     forgetPendingTwoFactorSetup(req);
-    return renderTwoFactor(req, res, twoFactor, '', { setupUnavailable: true });
+    return renderTwoFactor(req, res, twoFactor, '', { setupUnavailable: true, returnPath });
   }
   // Post/Redirect/Get: a refresh of the next page re-reads the pending setup
   // rather than re-submitting this form and generating yet another secret.
   if (rememberPendingTwoFactorSetup(req, twoFactor.setup, securityConfirmationToken)) {
-    return redirectTo(res, '/profile/two-factor');
+    return redirectTo(res, withTwoFactorReturn('/profile/two-factor', returnPath));
   }
-  return renderTwoFactor(req, res, twoFactor);
+  return renderTwoFactor(req, res, twoFactor, '', { returnPath });
 }));
 
 router.get('/blocked', asyncRoute(async (req, res) => {
@@ -2424,15 +2445,16 @@ router.get('/blocked', asyncRoute(async (req, res) => {
 router.post('/two-factor/verify', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
+  const returnPath = twoFactorReturnPath(req.body.return);
 
   const code = trimmed(req.body.code);
   if (code === '') {
-    return redirectTo(res, twoFactorRedirect('2fa-code-required'));
+    return redirectTo(res, twoFactorRedirect('2fa-code-required', returnPath));
   }
   // Same local shape check as the recovery-code and login-setup forms: only a
   // six-digit authenticator code is ever forwarded.
   if (!/^[0-9]{6}$/.test(code)) {
-    return redirectTo(res, twoFactorRedirect('2fa-code-invalid'));
+    return redirectTo(res, twoFactorRedirect('2fa-code-invalid', returnPath));
   }
 
   try {
@@ -2449,17 +2471,17 @@ router.post('/two-factor/verify', asyncRoute(async (req, res) => {
       enabled: true,
       backup_codes_remaining: arrayFromPayload(verifiedPayload, ['backup_codes', 'backupCodes']).length
     });
-    return renderTwoFactor(req, res, twoFactor, '2fa-enabled');
+    return renderTwoFactor(req, res, twoFactor, '2fa-enabled', { returnPath });
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 400) {
-      return redirectTo(res, twoFactorRedirect('2fa-code-invalid'));
+      return redirectTo(res, twoFactorRedirect('2fa-code-invalid', returnPath));
     }
     // E-035 F-170: the fresh confirmation lapsed (or was never given) — start
     // setup again with the password rather than leave a dead pending secret.
     if (error instanceof ApiError && error.status === 403 && apiErrorCode(error) === 'SECURITY_CONFIRMATION_REQUIRED') {
       forgetPendingTwoFactorSetup(req);
-      return redirectTo(res, twoFactorRedirect('2fa-setup-confirm-failed'));
+      return redirectTo(res, twoFactorRedirect('2fa-setup-confirm-failed', returnPath));
     }
     if (error instanceof ApiError && error.status === 429) {
       return res.status(429).render('errors/500', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });

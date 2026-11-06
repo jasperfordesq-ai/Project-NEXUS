@@ -4773,6 +4773,16 @@
                     "options_legend": "Veiligheidsopties",
                     "select_none": "Geen geselecteerd"
                 },
+                "security": {
+                    "title": "Bescherm uw account",
+                    "intro": "Tweestapsverificatie voegt een tweede controle toe wanneer u inlogt. Naast uw wachtwoord voert u een code in uit een authenticator-app op uw telefoon.",
+                    "what_you_need": "U hebt een authenticator-app op uw telefoon nodig. We vragen ook om uw wachtwoord voordat u begint.",
+                    "optional": "Dit is optioneel. U kunt het later instellen in uw accountinstellingen.",
+                    "set_up": "Tweestapsverificatie instellen",
+                    "not_now": "Niet nu",
+                    "back_to_setup": "Terug naar het instellen van uw profiel",
+                    "continue_setup": "Doorgaan met het instellen van uw profiel"
+                },
                 "confirm": {
                     "title": "Controleer uw antwoorden",
                     "summary_heading": "Uw gegevens",
