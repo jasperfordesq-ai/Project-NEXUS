@@ -554,6 +554,9 @@ describe('SettingsPage', () => {
 
       expect(await screen.findByText('twofa_needs_password')).toBeInTheDocument();
       expect(screen.queryByLabelText('passkey_security_confirm_password')).not.toBeInTheDocument();
+      // Found in the E-121 browser walk-through: the box still said "Confirm
+      // Your Password" above this, to a member who has none.
+      expect(screen.queryByText('twofa_confirm_password')).not.toBeInTheDocument();
 
       await user.click(screen.getByRole('button', { name: 'set_password_action' }));
       await waitFor(() => expect(api.post).toHaveBeenCalledWith(

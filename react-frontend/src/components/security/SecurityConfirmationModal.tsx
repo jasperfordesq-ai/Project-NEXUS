@@ -88,6 +88,7 @@ export function SecurityConfirmationModal({
 }: SecurityConfirmationModalProps) {
   const { t } = useTranslation('settings');
   const hasMethod = methods.password || methods.totp;
+  const offersSetPassword = !hasMethod && offerSetPassword && !methods.password;
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -98,11 +99,15 @@ export function SecurityConfirmationModal({
               {t('passkey_security_confirm_title')}
             </ModalHeader>
             <ModalBody className="space-y-4">
-              <p className="text-sm text-theme-subtle">
-                {description ?? t('passkey_security_confirm_description')}
-              </p>
+              {/* F-611: the "Set a password" prompt says what is needed; a line
+                  such as "Confirm your password" above it would contradict it. */}
+              {!offersSetPassword && (
+                <p className="text-sm text-theme-subtle">
+                  {description ?? t('passkey_security_confirm_description')}
+                </p>
+              )}
 
-              {!hasMethod && offerSetPassword && !methods.password ? (
+              {offersSetPassword ? (
                 <SetPasswordPrompt reason={noMethodMessage} />
               ) : !hasMethod ? (
                 <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-theme-subtle" role="alert">
