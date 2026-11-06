@@ -446,7 +446,12 @@ class SocialAuthService
                 'email' => $providerEmail,
                 'password' => password_hash(Str::random(48), PASSWORD_BCRYPT),
                 'email_verified_at' => now(),
-                'avatar_url' => $avatar,
+                // E-121, owner decision D2: no photo from the provider. A link to
+                // Google's servers is blocked by the website's security rules
+                // (it showed as a broken picture), the wizard then counted the
+                // photo as done, and showing it would tell Google each time the
+                // profile is viewed. The wizard asks for a photo, as for everyone.
+                'avatar_url' => null,
                 'preferred_language' => $this->detectLanguage(),
                 'status' => $isOpen ? 'active' : 'pending',
                 'is_approved' => $isOpen ? 1 : 0,
