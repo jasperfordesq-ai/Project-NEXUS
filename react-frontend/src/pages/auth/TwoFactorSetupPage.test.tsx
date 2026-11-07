@@ -35,10 +35,11 @@ it('keeps the two-factor setup page out of search results', async () => {
 });
 
 it('keeps credentials out of storage until the recovery codes are acknowledged', async () => {
-  mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'manual-key' } });
+  mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'MANUALKEYABCDEFG' } });
   render(<MemoryRouter><TwoFactorSetupPage /></MemoryRouter>);
   const code = await screen.findByRole('textbox', { name: 'Six-digit verification code' });
-  expect(screen.getByText('manual-key')).toBeInTheDocument();
+  // Shown in groups of four, the way authenticator apps show a typed key.
+  expect(screen.getByText('MANU ALKE YABC DEFG')).toBeInTheDocument();
   expect(mocks.post).toHaveBeenCalledWith('/v2/auth/2fa/setup', { two_factor_token: 'restricted-challenge' }, { skipAuth: true });
   mocks.post.mockResolvedValueOnce({ success: true, data: { login_complete: true, backup_codes: ['recovery-one'], access_token: 'access', session_binding: 'binding', expires_in: 900 } });
   fireEvent.change(code, { target: { value: '123456' } });
@@ -96,16 +97,55 @@ it('forgets the challenge on cancel and stores nothing when the challenge has ex
 });
 
 it('preserves the scanned key and allows retry after a rejected verification', async () => {
-  mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'same-key' } });
+  mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'JBSWY3DPEHPK3PXP' } });
   render(<MemoryRouter><TwoFactorSetupPage /></MemoryRouter>);
   const code = await screen.findByRole('textbox', { name: 'Six-digit verification code' });
   mocks.post.mockResolvedValueOnce({ success: false, error: 'Invalid verification code' });
   fireEvent.change(code, { target: { value: '123456' } });
   fireEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
   await screen.findByRole('alert');
-  expect(screen.getByText('same-key')).toBeInTheDocument();
+  expect(screen.getByText('JBSW Y3DP EHPK 3PXP')).toBeInTheDocument();
   expect(mocks.access).not.toHaveBeenCalled();
   expect(mocks.post).toHaveBeenCalledTimes(2);
+});
+
+// 7 Nov 2026, after walking the member version: a phone cannot scan its own screen,
+// and a wrong code was reported at the top of the page, away from the box.
+it('shows the key in groups of four with Copy key, and the authenticator link on touch screens', async () => {
+  const uri = 'otpauth://totp/Project%20NEXUS:admin%40example.org?secret=JBSWY3DPEHPK3PXP&issuer=Project%20NEXUS';
+  mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'JBSWY3DPEHPK3PXP', provisioning_uri: uri } });
+  render(<MemoryRouter><TwoFactorSetupPage /></MemoryRouter>);
+
+  expect(await screen.findByText('JBSW Y3DP EHPK 3PXP')).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /Open in authenticator app/ })).toHaveAttribute('href', uri);
+
+  const writeText = vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+  fireEvent.click(screen.getByRole('button', { name: 'Copy key' }));
+  await waitFor(() => expect(writeText).toHaveBeenCalledWith('JBSWY3DPEHPK3PXP'));
+  expect(await screen.findByRole('button', { name: 'Key copied' })).toBeInTheDocument();
+});
+
+it('offers no authenticator link unless the server sends a genuine otpauth link', async () => {
+  mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'JBSWY3DPEHPK3PXP', provisioning_uri: 'javascript:alert(1)' } });
+  render(<MemoryRouter><TwoFactorSetupPage /></MemoryRouter>);
+  await screen.findByText('JBSW Y3DP EHPK 3PXP');
+  expect(screen.queryByRole('link', { name: /Open in authenticator app/ })).not.toBeInTheDocument();
+});
+
+it('shows a wrong code under the code box and empties it for another try', async () => {
+  mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'JBSWY3DPEHPK3PXP' } });
+  render(<MemoryRouter><TwoFactorSetupPage /></MemoryRouter>);
+  const code = await screen.findByRole('textbox', { name: 'Six-digit verification code' });
+  mocks.post.mockResolvedValueOnce({ success: false, error: 'Invalid verification code' });
+  fireEvent.change(code, { target: { value: '123456' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
+
+  const alert = await screen.findByRole('alert');
+  expect(alert).toHaveTextContent('Invalid verification code');
+  // Drawn after the box, not at the top of the page.
+  expect(code.compareDocumentPosition(alert) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  await waitFor(() => expect(code).toHaveValue(''));
 });
 
 // Recovery codes are shown exactly once, so the enrolment screen is the only place a

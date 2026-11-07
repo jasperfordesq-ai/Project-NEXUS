@@ -25,9 +25,23 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
+/** A box the member types into (not a button, tick box or slider). */
+function isTypingTarget(element: Element | null): boolean {
+  if (!(element instanceof HTMLElement)) return false;
+  if (element.isContentEditable) return true;
+  if (element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) return true;
+  if (element instanceof HTMLInputElement) {
+    return !['button', 'submit', 'reset', 'checkbox', 'radio', 'range', 'color', 'file', 'image', 'hidden'].includes(element.type);
+  }
+  return false;
+}
+
 export function BackToTop() {
   const { t } = useTranslation('common');
   const [isVisible, setIsVisible] = useState(false);
+  // Steps aside while the member is typing: fixed in the corner, it sat over whatever
+  // box scrolled under it, on a phone the last box of the two-factor code (7 Nov 2026).
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
     function handleScroll() {
@@ -38,9 +52,23 @@ export function BackToTop() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    // focusin: the element now focused. focusout: the element focus is moving to
+    // (relatedTarget, or null when nothing takes it). Moving between two boxes so never
+    // flashes the button, and nothing waits for a frame (a background tab pauses those).
+    const onFocusIn = (event: FocusEvent) => setIsTyping(isTypingTarget(event.target as Element | null));
+    const onFocusOut = (event: FocusEvent) => setIsTyping(isTypingTarget(event.relatedTarget as Element | null));
+    document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('focusout', onFocusOut);
+    return () => {
+      document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('focusout', onFocusOut);
+    };
+  }, []);
+
   return (
     <AnimatePresence>
-      {isVisible && (
+      {isVisible && !isTyping && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}

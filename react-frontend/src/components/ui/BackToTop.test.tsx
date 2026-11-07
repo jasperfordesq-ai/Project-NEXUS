@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi } from 'vitest';
-import { fireEvent, render, screen } from '@/test/test-utils';
+import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
 import { BackToTop } from './BackToTop';
 
 // Mock framer-motion
@@ -57,6 +57,32 @@ describe('BackToTop', () => {
     render(<BackToTop />);
     // Button should not be visible since scrollY < 400
     expect(screen.queryByLabelText('Scroll to top')).not.toBeInTheDocument();
+  });
+
+  it('steps aside while the member is typing in a box, and comes back afterwards', async () => {
+    // On a phone it sat over the last box of the two-factor code (7 Nov 2026).
+    render(
+      <>
+        <input aria-label="Code" />
+        <button type="button">Other button</button>
+        <BackToTop />
+      </>
+    );
+    Object.defineProperty(window, 'scrollY', { value: 500, configurable: true });
+    fireEvent.scroll(window);
+    expect(screen.getByLabelText('Scroll to top')).toBeInTheDocument();
+
+    const input = screen.getByLabelText('Code');
+    input.focus();
+    fireEvent.focusIn(input);
+    await waitFor(() => expect(screen.queryByLabelText('Scroll to top')).not.toBeInTheDocument());
+
+    // Focusing a button is not typing: the button comes back.
+    const other = screen.getByRole('button', { name: 'Other button' });
+    other.focus();
+    fireEvent.focusOut(input);
+    fireEvent.focusIn(other);
+    await waitFor(() => expect(screen.getByLabelText('Scroll to top')).toBeInTheDocument());
   });
 
   it('positions the scroll button above the floating report button', () => {

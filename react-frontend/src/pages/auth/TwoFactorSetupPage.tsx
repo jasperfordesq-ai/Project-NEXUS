@@ -20,7 +20,19 @@ import { getFormattingLocale } from '@/lib/helpers';
 import { downloadRecoveryCodes, recoveryCodesFilename } from '@/lib/recoveryCodes';
 import { consumeAuthReturn } from '@/lib/auth-return';
 
-interface Setup { qr_code_url: string; secret: string }
+interface Setup { qr_code_url: string; secret: string; provisioning_uri?: string }
+
+/** The key in groups of four, the way authenticator apps show a typed key. */
+function formatSetupKey(secret: string): string {
+  return secret.replace(/\s+/g, '').toUpperCase().replace(/(.{4})/g, '$1 ').trim();
+}
+
+/** The server's otpauth:// link (what the QR code encodes), or null for anything else. */
+function openInAppHref(setup: Setup): string | null {
+  const uri = setup.provisioning_uri ?? '';
+  return uri.startsWith('otpauth://totp/') ? uri : null;
+}
+
 interface Completion {
   backup_codes: string[]; access_token: string; refresh_token?: string;
   session_binding?: string;
@@ -39,6 +51,9 @@ export default function TwoFactorSetupPage() {
   const [busy, setBusy] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [copied, setCopied] = useState(false);
+  // A refused code is reported under the box, not at the top of the page (7 Nov 2026).
+  const [codeError, setCodeError] = useState('');
+  const [keyCopied, setKeyCopied] = useState(false);
   const completionGenerationRef = useRef<string | null>(null);
   usePageTitle(t('mandatory_setup.title'));
 
@@ -65,6 +80,7 @@ export default function TwoFactorSetupPage() {
     event.preventDefault();
     setBusy(true);
     setError('');
+    setCodeError('');
     const sessionGenerationAtStart = tokenManager.getSessionGeneration();
     try {
       const result = await api.post<Completion>('/v2/auth/2fa/verify', {
@@ -79,9 +95,25 @@ export default function TwoFactorSetupPage() {
         setCompletion(result.data);
         setSetup(null);
         setCode('');
-      } else setError(result.error || t('mandatory_setup.failed'));
-    } catch { setError(t('mandatory_setup.failed')); }
+      } else {
+        // Beside the box, and empty it for the next try.
+        setCodeError(result.error || t('mandatory_setup.failed'));
+        setCode('');
+      }
+    } catch {
+      setCodeError(t('mandatory_setup.failed'));
+    }
     finally { setBusy(false); }
+  }
+
+  async function copyKey() {
+    if (!setup) return;
+    try {
+      await navigator.clipboard.writeText(setup.secret.replace(/\s+/g, ''));
+      setKeyCopied(true);
+    } catch {
+      setError(t('mandatory_setup.key_copy_failed'));
+    }
   }
 
   /**
@@ -174,11 +206,42 @@ export default function TwoFactorSetupPage() {
       </> : setup ? <form onSubmit={verify} className="space-y-5">
         <p>{t('mandatory_setup.scan')}</p>
         <img src={setup.qr_code_url} alt={t('mandatory_setup.qr_alt')} className="h-52 w-52 bg-white p-2" />
-        <p>{t('mandatory_setup.manual')} <code className="break-all select-all">{setup.secret}</code></p>
-        <TextField isRequired name="code" value={code} onChange={setCode}>
+        {openInAppHref(setup) && (
+          // A phone cannot scan its own screen: on touch screens, open the
+          // authenticator app with the key filled in. HeroUI's own button classes,
+          // so this auth surface pulls in nothing new.
+          <div className="hidden pointer-coarse:block">
+            <a href={openInAppHref(setup) ?? undefined} className="button button--secondary button--md">
+              {t('mandatory_setup.open_app')}
+            </a>
+          </div>
+        )}
+        <div className="space-y-2">
+          <p>{t('mandatory_setup.manual')}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <code className="rounded-md bg-theme-elevated px-2 py-1 font-mono tracking-wide break-words">{formatSetupKey(setup.secret)}</code>
+            <Button type="button" variant="secondary" size="sm" onPress={() => void copyKey()}>
+              {t(keyCopied ? 'mandatory_setup.key_copied' : 'mandatory_setup.copy_key')}
+            </Button>
+          </div>
+        </div>
+        <TextField
+          isRequired
+          name="code"
+          value={code}
+          onChange={(value) => { setCode(value); setCodeError(''); }}
+          isInvalid={codeError !== ''}
+        >
           <Label>{t('mandatory_setup.code')}</Label>
-          <Input inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} />
+          <Input
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern="[0-9]{6}"
+            maxLength={6}
+            aria-describedby={codeError ? 'mandatory-code-error' : undefined}
+          />
         </TextField>
+        {codeError && <p id="mandatory-code-error" role="alert" className="text-sm text-danger">{codeError}</p>}
         <Button type="submit" isDisabled={busy || !/^\d{6}$/.test(code)}>{t('mandatory_setup.verify')}</Button>
       </form> : <Button onPress={() => setAttempt(value => value + 1)} isDisabled={busy}>
         {t(busy ? 'mandatory_setup.loading' : 'mandatory_setup.retry')}
