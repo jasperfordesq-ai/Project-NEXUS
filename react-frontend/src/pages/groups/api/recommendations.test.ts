@@ -48,6 +48,32 @@ describe('Groups recommendations API', () => {
     expect(matches.map((match) => match.group_id)).toEqual([1, 2, 3]);
   });
 
+  it('keeps the description written for a recommended group picture', async () => {
+    mockGet.mockResolvedValue({
+      success: true,
+      data: {
+        matches: [
+          { module: 'group', group_id: 1, title: 'Garden Crew', match_score: 88, image_url: '/g.jpg', image_alt: 'Three people planting leeks' },
+          { module: 'group', group_id: 2, title: 'Book Club', match_score: 72, image_url: '/b.jpg', image_alt: null },
+        ],
+      },
+    });
+
+    const matches = await getRecommendedGroups();
+
+    expect(matches[0]?.image_alt).toBe('Three people planting leeks');
+    expect(matches[1]?.image_alt).toBeNull();
+  });
+
+  it('rejects a recommendation whose picture description is not text', async () => {
+    mockGet.mockResolvedValue({
+      success: true,
+      data: { matches: [{ module: 'group', group_id: 1, title: 'Garden Crew', match_score: 88, image_alt: 42 }] },
+    });
+
+    await expect(getRecommendedGroups()).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  });
+
   it('returns an empty list for a valid empty match envelope', async () => {
     mockGet.mockResolvedValue({ success: true, data: { matches: [] } });
 

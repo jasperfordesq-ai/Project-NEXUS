@@ -47,6 +47,7 @@
     "text_placeholder": "Typ je verhaal...",
     "compose_placeholder": "Wat gaat er in je om?",
     "text_overlay": "Voeg tekst toe aan je foto...",
+    "photo_alt_label": "Beschrijf deze foto (optioneel)",
     "poll_question_placeholder": "Stel een vraag...",
     "poll_option_placeholder": "Optie {{number}}",
     "poll_add_option": "Voeg optie toe",

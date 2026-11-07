@@ -30,6 +30,7 @@ import SearchInput from '@/components/ui/SearchInput';
 import { SkeletonBox } from '@/components/ui/Skeleton';
 import { withRouteGate } from '@/components/withRouteGate';
 import RemoteImage from '@/components/ui/RemoteImage';
+import { groupPictureDescription, labelWithImageDescription } from '@/lib/utils/imageDescription';
 
 /** `joined` is "My Groups": the groups the signed-in member belongs to. */
 type FilterValue = 'all' | 'public' | 'private' | 'joined';
@@ -214,7 +215,9 @@ function GroupCard({
     <NativePressable
       className="mx-4 my-2"
       onPress={onPress}
-      accessibilityLabel={item.name ?? ''}
+      // The card is read as one element, so the picture inside it is never reached on its
+      // own: its written description joins the group name, and only when a picture is shown.
+      accessibilityLabel={groupCover(item) ? labelWithImageDescription(item.name ?? '', groupPictureDescription(item)) : item.name ?? ''}
       feedback="highlight"
     >
       <HeroCard className="min-h-[148px] w-full rounded-panel p-0">

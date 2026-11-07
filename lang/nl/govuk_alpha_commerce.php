@@ -1006,6 +1006,14 @@ return [
         'status_remove_failed' => 'Sorry, de foto kon niet worden verwijderd. Probeer het opnieuw.',
         'status_main_failed' => 'Sorry, de hoofdfoto kon niet worden gewijzigd. Probeer het opnieuw.',
         'status_created_photos_failed' => 'Je advertentie is aangemaakt, maar de foto’s konden niet worden geüpload. Probeer ze hieronder opnieuw toe te voegen.',
+        'alt_label' => 'Beschrijf de foto (optioneel)',
+        'alt_hint' => 'Als u één foto toevoegt, zeg dan in een paar woorden wat erop staat. Schermlezers lezen dit voor. Als u er meerdere toevoegt, kunt u elke foto beschrijven zodra die is toegevoegd.',
+        'error_alt_several' => 'Voeg één foto tegelijk toe om een foto bij het toevoegen te beschrijven. U kunt elke foto beschrijven zodra die is toegevoegd.',
+        'photo_alt_label' => 'Beschrijf foto :number',
+        'photo_alt_hint' => 'Zeg in een paar woorden wat er op deze foto staat. Schermlezers lezen dit voor. Laat het leeg als u geen beschrijving wilt.',
+        'save_alt' => 'Beschrijving opslaan',
+        'status_alt_saved' => 'De beschrijving van de foto is opgeslagen.',
+        'status_alt_failed' => 'Sorry, de beschrijving van de foto kon niet worden opgeslagen. Probeer het opnieuw.',
     ],
 
     'shipping' => [

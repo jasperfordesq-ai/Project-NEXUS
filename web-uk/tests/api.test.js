@@ -4701,6 +4701,27 @@ describe('API Request Functions', () => {
       expect(options.body.get('duration')).toBeNull();
     });
 
+    // AWID accessibility report, point 6: a photo's description travels with it.
+    it('sends each photo with its description, aligned with the files', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { id: 13 } })
+      });
+
+      await api.uploadMessageAttachments('test-token', {
+        recipient_id: 77,
+        body: '',
+        files: [
+          { buffer: Buffer.from('jpg'), filename: 'a.jpg', contentType: 'image/jpeg', alt: 'A red bicycle' },
+          { buffer: Buffer.from('%PDF'), filename: 'b.pdf', contentType: 'application/pdf' }
+        ]
+      });
+
+      const [, options] = mockFetch.mock.calls[0];
+      expect(options.body.getAll('attachment_alts[]')).toEqual(['A red bicycle', '']);
+    });
+
     it('should upload message attachments to Laravel with multipart data', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,

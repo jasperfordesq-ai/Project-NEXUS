@@ -253,4 +253,26 @@ describe('StoryCreator', () => {
       expect(onCreated).toHaveBeenCalled();
     });
   });
+
+  // AWID accessibility report, point 6: every photo a member uploads can be described.
+  it('sends the description written for a photo story', async () => {
+    const { compressImage } = await import('@/lib/compress-image');
+    vi.mocked(compressImage).mockImplementation(async (f: File) => f);
+    const { StoryCreator } = await import('./StoryCreator');
+    const { container } = render(<StoryCreator {...defaultProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /photo mode/i }));
+    const fileInput = container.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [new File(['x'], 'IMG_3001.jpg', { type: 'image/jpeg' })] } });
+
+    const description = await screen.findByLabelText('Describe this photo (optional)');
+    fireEvent.change(description, { target: { value: 'Our community garden in bloom' } });
+
+    const shareBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('share'));
+    await userEvent.click(shareBtn!);
+
+    await waitFor(() => expect(mockApi.upload).toHaveBeenCalled());
+    const form = mockApi.upload.mock.calls[0]?.[1] as FormData | undefined;
+    expect(form?.get('media_alt')).toBe('Our community garden in bloom');
+  });
 });

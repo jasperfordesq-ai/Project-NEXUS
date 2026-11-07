@@ -26,6 +26,8 @@ return [
         'error_failed' => 'Your attachment could not be uploaded. Please try again.',
         'error_invalid' => 'That attachment type is not allowed.',
         'photo_alt' => 'Photo sent in this conversation',
+        'alt_label' => 'Describe the photo (optional)',
+        'alt_hint' => 'If you add a photo, say in a few words what it shows. Screen readers read this out. If you attach several photos, describe them all here.',
     ],
     'groups' => [
         'title' => 'Group conversations',

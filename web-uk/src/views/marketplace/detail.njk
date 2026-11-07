@@ -41,12 +41,13 @@
 
   {% if item.images.length == 1 %}
     <div class="nexus-alpha-detail-hero">
-      <img src="{{ item.images[0] }}" alt="{{ t('listings.gallery_image_alt', { number: 1, title: item.title }) }}" loading="lazy" decoding="async">
+      {# The seller's description of the photo (AWID accessibility report, Oct 2026), else "Photo 1 for …". #}
+      <img src="{{ item.images[0] }}" alt="{{ (item.imageAlts and item.imageAlts[0]) or t('listings.gallery_image_alt', { number: 1, title: item.title }) }}" loading="lazy" decoding="async">
     </div>
   {% elseif item.images.length > 1 %}
     <ul class="govuk-list nexus-alpha-image-strip govuk-!-margin-bottom-4">
       {% for image in item.images %}
-        <li><a href="{{ image }}" target="_blank" rel="noopener noreferrer"> {{ t("opens_new_tab") }}<img src="{{ image }}" alt="{{ t('listings.gallery_image_alt', { number: loop.index, title: item.title }) }}" loading="lazy" decoding="async"></a></li>
+        <li><a href="{{ image }}" target="_blank" rel="noopener noreferrer"> {{ t("opens_new_tab") }}<img src="{{ image }}" alt="{{ (item.imageAlts and item.imageAlts[loop.index0]) or t('listings.gallery_image_alt', { number: loop.index, title: item.title }) }}" loading="lazy" decoding="async"></a></li>
       {% endfor %}
     </ul>
   {% endif %}

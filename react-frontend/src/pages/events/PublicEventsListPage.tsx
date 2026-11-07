@@ -115,7 +115,7 @@ export default function PublicEventsListPage() {
                 {event.image_url && (
                   <img
                     src={event.image_url}
-                    alt=""
+                    alt={event.image_alt?.trim() || ''}
                     className="w-full h-40 object-cover rounded-lg"
                     loading="lazy"
                   />

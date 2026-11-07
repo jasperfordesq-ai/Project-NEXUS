@@ -539,6 +539,11 @@ export interface MarketplaceListingPayload {
   seller_type?: 'private' | 'business';
   status?: 'draft' | 'active';
   template_data?: Record<string, string> | null;
+  /**
+   * Update only: descriptions of photos already saved, by photo id, for screen-reader
+   * users (`marketplace_images.alt_text`, max 255). null clears one.
+   */
+  image_alt_texts?: Record<number, string | null>;
 }
 
 function addQueryValue(query: Record<string, string>, key: string, value: unknown): void {
@@ -681,10 +686,22 @@ export function renewMarketplaceListing(id: number): Promise<MarketplaceDataResp
   return api.post<MarketplaceDataResponse<MarketplaceListingDetail>>(`${API_V2}/marketplace/listings/${id}/renew`, { duration_days: 30 });
 }
 
-export async function uploadMarketplaceImages(id: number, uris: string[], operationKey?: string): Promise<MarketplaceDataResponse<MarketplaceImage[]>> {
+/**
+ * `altTexts[i]` describes `uris[i]` for screen-reader users (sent as `alt_texts[i]`,
+ * max 255 characters; blank = no description).
+ */
+export async function uploadMarketplaceImages(
+  id: number,
+  uris: string[],
+  operationKey?: string,
+  altTexts?: string[],
+): Promise<MarketplaceDataResponse<MarketplaceImage[]>> {
   const formData = new FormData();
   if (operationKey) formData.append('idempotency_key', operationKey);
   await Promise.all(uris.map((uri, index) => appendMarketplaceImageFile(formData, uri, index)));
+  if (altTexts?.length) {
+    uris.forEach((_, index) => formData.append(`alt_texts[${index}]`, (altTexts[index] ?? '').trim().slice(0, 255)));
+  }
   return api.upload<MarketplaceDataResponse<MarketplaceImage[]>>(`${API_V2}/marketplace/listings/${id}/images`, formData);
 }
 

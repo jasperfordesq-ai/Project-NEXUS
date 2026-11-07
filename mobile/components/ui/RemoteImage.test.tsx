@@ -64,6 +64,27 @@ describe('RemoteImage', () => {
     expect(getByTestId('listing-photo-fallback', { includeHiddenElements: true })).toBeTruthy();
   });
 
+  /**
+   * expo-image's `accessible` defaults to false, so a label on its own was never focusable:
+   * a screen reader skipped the photo and the description a member wrote was never heard.
+   */
+  it('makes a labelled picture a screen-reader image that reads its description', () => {
+    const { getByTestId } = render(
+      <RemoteImage uri="https://example.test/photo.jpg" testID="photo" accessibilityLabel="Raised vegetable beds" />,
+    );
+
+    const image = getByTestId('photo');
+    expect(image.props.accessible).toBe(true);
+    expect(image.props.accessibilityRole).toBe('image');
+    expect(image.props.accessibilityLabel).toBe('Raised vegetable beds');
+  });
+
+  it('leaves an unlabelled picture out of the screen-reader order', () => {
+    const { getByTestId } = render(<RemoteImage uri="https://example.test/photo.jpg" testID="photo" />);
+
+    expect(getByTestId('photo').props.accessible).toBe(false);
+  });
+
   it('hides the placeholder from a screen reader, because it carries no information', () => {
     const { getByTestId } = render(<RemoteImage uri={null} testID="listing-photo" />);
 

@@ -38,6 +38,8 @@ export interface PublicEvent {
   /** Cancelled/postponed events stay listed but must say so. */
   operational_status: 'scheduled' | 'postponed' | 'cancelled' | 'completed';
   image_url: string | null;
+  /** The organiser's description of the photo; null when none was written. */
+  image_alt?: string | null;
   category: PublicEventCategory | null;
   organizer_name: string | null;
 }

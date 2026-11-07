@@ -1573,12 +1573,19 @@ router.post('/:id(\\d+)', requireAuth, audit.messageSend(), asyncRoute(async (re
   const idempotencyKey = trimmed(req.body && req.body.idempotency_key, 100);
   try {
     if (attachments.length > 0) {
-      const files = await Promise.all(attachments.map(async (file) => ({
-        buffer: await fs.readFile(file.filepath),
-        filename: trimmed(file.originalFilename) || 'attachment',
-        contentType: trimmed(file.mimetype) || 'application/octet-stream',
-        size: file.size
-      })));
+      // One description box for the whole upload: it describes each photo sent
+      // with it, never a document (AWID accessibility report, point 6).
+      const photoDescription = trimmed(req.body.attachment_alt, 255);
+      const files = await Promise.all(attachments.map(async (file) => {
+        const contentType = trimmed(file.mimetype) || 'application/octet-stream';
+        return {
+          buffer: await fs.readFile(file.filepath),
+          filename: trimmed(file.originalFilename) || 'attachment',
+          contentType,
+          size: file.size,
+          alt: contentType.startsWith('image/') ? photoDescription : ''
+        };
+      }));
       await uploadMessageAttachments(tokenFrom(req), {
         recipient_id: recipientId,
         body: content,

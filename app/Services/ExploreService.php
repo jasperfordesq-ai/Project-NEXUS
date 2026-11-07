@@ -340,6 +340,15 @@ class ExploreService
     }
 
     /**
+     * A member-written photo description (image_alt), or null when none was
+     * written, so a card can read it out instead of repeating its title.
+     */
+    private static function imageDescription(mixed $value): ?string
+    {
+        return is_string($value) && trim($value) !== '' ? trim($value) : null;
+    }
+
+    /**
      * Top 8 active listings by view_count in last 30 days.
      */
     private function getPopularListings(int $tenantId): array
@@ -351,6 +360,7 @@ class ExploreService
                     l.title,
                     l.type,
                     l.image_url,
+                    l.image_alt,
                     l.location,
                     l.hours_estimate AS estimated_hours,
                     l.created_at,
@@ -382,6 +392,7 @@ class ExploreService
                 'title' => $row->title,
                 'type' => $row->type,
                 'image_url' => $row->image_url,
+                'image_alt' => self::imageDescription($row->image_alt ?? null),
                 'location' => $row->location,
                 'estimated_hours' => $row->estimated_hours,
                 'created_at' => $row->created_at,
@@ -411,6 +422,7 @@ class ExploreService
                     g.name,
                     g.description,
                     g.image_url,
+                    g.image_alt,
                     g.visibility AS privacy,
                     g.created_at,
                     (SELECT COUNT(*) FROM group_members gm WHERE gm.group_id = g.id AND gm.status = 'active') AS member_count
@@ -427,6 +439,7 @@ class ExploreService
                 'name' => $row->name,
                 'description' => $row->description ? mb_substr($row->description, 0, 120) : null,
                 'image_url' => $row->image_url,
+                'image_alt' => self::imageDescription($row->image_alt ?? null),
                 'privacy' => $row->privacy,
                 'member_count' => (int) $row->member_count,
                 'created_at' => $row->created_at,
@@ -449,6 +462,7 @@ class ExploreService
                     e.title,
                     e.description,
                     e.cover_image AS image_url,
+                    e.image_alt,
                     e.start_time AS start_at,
                     e.end_time AS end_at,
                     e.location,
@@ -479,6 +493,7 @@ class ExploreService
                 'title' => $row->title,
                 'description' => $row->description ? mb_substr($row->description, 0, 120) : null,
                 'image_url' => $row->image_url,
+                'image_alt' => self::imageDescription($row->image_alt ?? null),
                 'start_at' => $row->start_at,
                 'end_at' => $row->end_at,
                 'location' => $row->location,

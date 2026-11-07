@@ -178,9 +178,17 @@ class MessagesController extends BaseApiController
             }
         }
 
+        // A photo's written description for screen-reader users:
+        // attachment_alts[i] describes attachments[i] (AWID report, point 6).
+        $alts = $this->attachmentAlts(request()->input('attachment_alts'), count($files));
+        unset($data['attachment_alts']);
+        if ($alts === null) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.text_too_long'), 'attachment_alts', 422);
+        }
+
         $idempotencyKey = trim((string) (request()->header('Idempotency-Key') ?? ($data['idempotency_key'] ?? '')));
         if ($idempotencyKey !== '') {
-            $requestHash = $this->messageSendRequestHash('message', $recipientId, $body, $data, $files);
+            $requestHash = $this->messageSendRequestHash('message', $recipientId, $body, $data, $files, 0, $alts);
             $data['idempotency_key'] = $idempotencyKey;
             $data['idempotency_request_hash'] = $requestHash;
             $replay = $this->messageService->replaySend($userId, $idempotencyKey, $requestHash);
@@ -197,19 +205,22 @@ class MessagesController extends BaseApiController
         }
 
         $attachments = [];
-        foreach ($files as $file) {
+        foreach ($files as $index => $file) {
             if (!$file || !$file->isValid()) {
                 $this->deleteStagedAttachments($attachments);
                 return $this->respondWithError('VALIDATION_ERROR', __('api.message_attachment_upload_error'), 'attachments', 422);
             }
             try {
-                $attachments[] = MessageAttachmentUploader::upload([
+                $staged = MessageAttachmentUploader::upload([
                     'name'     => $file->getClientOriginalName(),
                     'type'     => $file->getMimeType(),
                     'tmp_name' => $file->getRealPath(),
                     'error'    => UPLOAD_ERR_OK,
                     'size'     => $file->getSize(),
                 ]);
+                // Only a photo is described; a document's name already says what it is.
+                $staged['alt_text'] = ($staged['type'] ?? 'file') === 'image' ? ($alts[$index] ?? null) : null;
+                $attachments[] = $staged;
             } catch (\InvalidArgumentException $e) {
                 $this->deleteStagedAttachments($attachments);
                 return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), 'attachments', 422);
@@ -865,6 +876,32 @@ class MessagesController extends BaseApiController
     }
 
     /** @param list<\Illuminate\Http\UploadedFile> $files */
+    /**
+     * attachment_alts as a list aligned with the uploaded files: each trimmed,
+     * blank as null. Null when one is not text or is longer than 255 characters.
+     *
+     * @return array<int, ?string>|null
+     */
+    private function attachmentAlts(mixed $input, int $fileCount): ?array
+    {
+        $raw = is_array($input) ? array_values($input) : ($input === null || $input === '' ? [] : [$input]);
+        $alts = [];
+        for ($i = 0; $i < $fileCount; $i++) {
+            $value = $raw[$i] ?? null;
+            if ($value !== null && !is_string($value)) {
+                return null;
+            }
+            $value = $value === null ? '' : trim($value);
+            if (mb_strlen($value) > 255) {
+                return null;
+            }
+            $alts[$i] = $value === '' ? null : $value;
+        }
+
+        return $alts;
+    }
+
+    /** @param array<int, ?string> $alts */
     private function messageSendRequestHash(
         string $kind,
         int $recipientId,
@@ -872,6 +909,7 @@ class MessagesController extends BaseApiController
         array $data,
         array $files,
         int $duration = 0,
+        array $alts = [],
     ): string {
         $fileFingerprints = [];
         foreach ($files as $file) {
@@ -888,7 +926,7 @@ class MessagesController extends BaseApiController
             ];
         }
 
-        return hash('sha256', json_encode([
+        $fields = [
             'kind' => $kind,
             'recipient_id' => $recipientId,
             'body' => $body,
@@ -897,7 +935,14 @@ class MessagesController extends BaseApiController
             'context_id' => isset($data['context_id']) ? (int) $data['context_id'] : null,
             'duration' => $duration,
             'files' => $fileFingerprints,
-        ], JSON_THROW_ON_ERROR));
+        ];
+        // Only when a photo is described, so every other send keeps its
+        // existing fingerprint across the deploy.
+        if (array_filter($alts, static fn ($alt) => $alt !== null) !== []) {
+            $fields['alts'] = array_values($alts);
+        }
+
+        return hash('sha256', json_encode($fields, JSON_THROW_ON_ERROR));
     }
 
     /** @param list<array<string, mixed>> $attachments */

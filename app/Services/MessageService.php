@@ -382,7 +382,7 @@ class MessageService
             ->with([
                 'sender:id,first_name,last_name,profile_type,organization_name,avatar_url',
                 'receiver:id,first_name,last_name,profile_type,organization_name,avatar_url',
-                'attachments:id,message_id,file_url,file_name,file_size,mime_type,created_at',
+                'attachments:id,message_id,file_url,file_name,alt_text,file_size,mime_type,created_at',
             ])
             ->betweenUsers($userId, $partnerId);
 
@@ -830,6 +830,9 @@ class MessageService
                     'size' => isset($att['size']) ? (int) $att['size'] : null,
                     'mime' => $mime,
                     'type' => $att['type'] ?? (is_string($mime) && str_starts_with($mime, 'image/') ? 'image' : 'file'),
+                    'alt_text' => isset($att['alt_text']) && is_string($att['alt_text']) && trim($att['alt_text']) !== ''
+                        ? mb_substr(trim($att['alt_text']), 0, 255)
+                        : null,
                 ];
             }
         }
@@ -932,6 +935,7 @@ class MessageService
                         // (created by the 2026_02_07 legacy migration) — must be set.
                         'file_path'  => $att['path'] ?? $att['url'],
                         'file_name'  => $att['name'],
+                        'alt_text'   => ($att['type'] ?? 'file') === 'image' ? ($att['alt_text'] ?? null) : null,
                         'file_type'  => $att['type'] ?? 'file',
                         'file_size'  => $att['size'],
                         'mime_type'  => $att['mime'],

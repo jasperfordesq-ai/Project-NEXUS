@@ -38,7 +38,7 @@
           <div class="nexus-alpha-listing-row">
             {% if event.coverImage %}
               <div class="nexus-alpha-listing-row__media">
-                <img class="nexus-alpha-card-thumb" src="{{ event.coverImage }}" alt="" width="120" height="90" loading="lazy" decoding="async">
+                <img class="nexus-alpha-card-thumb" src="{{ event.coverImage }}" alt="{{ event.coverImageAlt }}" width="120" height="90" loading="lazy" decoding="async">
               </div>
             {% endif %}
             <div class="nexus-alpha-listing-row__body">

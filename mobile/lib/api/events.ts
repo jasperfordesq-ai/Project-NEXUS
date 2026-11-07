@@ -90,7 +90,10 @@ export const eventSchema = z.object({
   description: nullableString,
   primary_image: z.object({
     url: z.string(),
+    // Falls back to the event title on the server, so it cannot say whether the organiser
+    // described the photo. `description` does: it is null when nothing was written.
     alt_text: z.string(),
+    description: nullableString.optional(),
   }).nullable(),
   organizer: z.object({
     id: z.number().int().nonnegative(),

@@ -301,5 +301,8 @@
   "groups_empty": "Je zit nog in geen enkel groepsgesprek.",
   "groups_load_failed": "Je groepsgesprekken konden niet worden geladen.",
   "group_open_aria": "Groepsgesprek {{name}} openen",
-  "aria_download_photo": "Foto downloaden"
+  "aria_download_photo": "Foto downloaden",
+  "aria_download_photo_described": "Foto downloaden: {{description}}",
+  "attachment_alt_label": "Beschrijf deze foto (optioneel)",
+  "attachment_alt_hint": "Helpt mensen die een schermlezer gebruiken. Zeg in een paar woorden wat er op de foto staat."
 }

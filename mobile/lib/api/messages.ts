@@ -102,6 +102,8 @@ export interface MessageAttachment {
   type: 'image' | 'file' | 'audio' | 'video' | string;
   size?: number | null;
   mime_type?: string | null;
+  /** A photo's description for screen-reader users, written by its sender; null when none. */
+  alt_text?: string | null;
 }
 
 export interface ConversationListResponse {
@@ -134,6 +136,8 @@ export interface MessageAttachmentUpload {
   uri: string;
   name?: string | null;
   mimeType?: string | null;
+  /** A photo's description for screen-reader users, written by the sender. */
+  alt?: string | null;
 }
 
 export interface MessagingRestrictionStatus {
@@ -292,6 +296,9 @@ export async function sendMessageWithAttachments(
 
   for (const attachment of attachments) {
     await appendMessageAttachmentFile(formData, attachment);
+    // attachment_alts[i] describes attachments[i]; blank for a document (AWID report, point 6).
+    const type = getMimeType(getUploadFilename(attachment.uri, attachment.name), attachment.mimeType);
+    formData.append('attachment_alts[]', type.startsWith('image/') ? (attachment.alt ?? '').trim() : '');
   }
 
   return uploadWithProgress<{ data: Message }>(`${API_V2}/messages`, formData, {

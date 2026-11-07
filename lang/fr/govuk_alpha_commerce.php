@@ -1006,6 +1006,14 @@ return [
         'status_remove_failed' => 'Désolé, la photo n’a pas pu être retirée. Veuillez réessayer.',
         'status_main_failed' => 'Désolé, la photo principale n’a pas pu être changée. Veuillez réessayer.',
         'status_created_photos_failed' => 'Votre annonce a été créée, mais les photos n’ont pas pu être téléversées. Essayez de les ajouter à nouveau ci-dessous.',
+        'alt_label' => 'Décrivez la photo (facultatif)',
+        'alt_hint' => 'Si vous ajoutez une seule photo, dites en quelques mots ce qu\'elle montre. Les lecteurs d\'écran lisent cette description à voix haute. Si vous en ajoutez plusieurs, vous pourrez décrire chacune une fois ajoutée.',
+        'error_alt_several' => 'Pour décrire une photo au moment de l\'ajouter, ajoutez une photo à la fois. Vous pourrez décrire chaque photo une fois ajoutée.',
+        'photo_alt_label' => 'Décrivez la photo :number',
+        'photo_alt_hint' => 'Dites en quelques mots ce que montre cette photo. Les lecteurs d\'écran lisent cette description à voix haute. Laissez le champ vide pour ne mettre aucune description.',
+        'save_alt' => 'Enregistrer la description',
+        'status_alt_saved' => 'La description de la photo a été enregistrée.',
+        'status_alt_failed' => 'Désolé, la description de la photo n\'a pas pu être enregistrée. Veuillez réessayer.',
     ],
 
     'shipping' => [

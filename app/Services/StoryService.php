@@ -38,7 +38,7 @@ class StoryService
      * Create a new story.
      *
      * @param int $userId
-     * @param array $data {media_type, media_url?, thumbnail_url?, text_content?, text_style?, background_color?, background_gradient?, duration?, poll_question?, poll_options?}
+     * @param array $data {media_type, media_url?, media_alt?, thumbnail_url?, text_content?, text_style?, background_color?, background_gradient?, duration?, poll_question?, poll_options?}
      * @return array The created story
      *
      * @throws \RuntimeException if max active stories exceeded
@@ -94,13 +94,15 @@ class StoryService
             }
 
             DB::insert(
-                'INSERT INTO stories (tenant_id, user_id, media_type, media_url, thumbnail_url, text_content, text_style, background_color, background_gradient, duration, video_duration, poll_question, poll_options, audience, expires_at, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+                'INSERT INTO stories (tenant_id, user_id, media_type, media_url, media_alt, thumbnail_url, text_content, text_style, background_color, background_gradient, duration, video_duration, poll_question, poll_options, audience, expires_at, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
                 [
                     $tenantId,
                     $userId,
                     $mediaType,
                     $data['media_url'] ?? null,
+                    // Only a photo is described (AWID accessibility report, point 6).
+                    $mediaType === 'image' ? ($data['media_alt'] ?? null) : null,
                     $data['thumbnail_url'] ?? null,
                     $data['text_content'] ?? null,
                     $textStyle,
@@ -1437,6 +1439,7 @@ class StoryService
             'user_id' => (int) $story->user_id,
             'media_type' => $story->media_type,
             'media_url' => $story->media_url,
+            'media_alt' => $story->media_alt ?? null,
             'thumbnail_url' => $story->thumbnail_url,
             'text_content' => $story->text_content,
             'text_style' => $story->text_style ? json_decode($story->text_style, true) : null,

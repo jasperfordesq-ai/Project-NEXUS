@@ -32,6 +32,7 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatEventSchedule } from '@/lib/utils/eventDateTime';
 import { withRouteGate } from '@/components/withRouteGate';
 import RemoteImage from '@/components/ui/RemoteImage';
+import { labelWithImageDescription } from '@/lib/utils/imageDescription';
 
 function extractEventsPage(r: CanonicalEventsResponse) {
   return {
@@ -384,7 +385,10 @@ function EventCard({
       onPress={() => {
         onPress();
       }}
-      accessibilityLabel={event.title ?? ''}
+      // The card is read as one element, so the cover inside it is never reached on its own.
+      // The organiser's description joins the title; `primary_image.alt_text` is NOT used,
+      // because it falls back to the title and would read the title twice.
+      accessibilityLabel={coverImage ? labelWithImageDescription(event.title ?? '', event.primary_image?.description) : event.title ?? ''}
       feedback="highlight"
     >
       <HeroCard variant="default" className="w-full overflow-hidden">

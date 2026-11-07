@@ -179,6 +179,22 @@ describe('EventsScreen', () => {
     expect(queryByText(/No .* events\./)).toBeNull();
   });
 
+  it('reads the organiser-written cover description after the event title', () => {
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
+      items: [{ ...mockEvent, primary_image: { url: '/uploads/events/cover.jpg', alt_text: 'Community Bake Sale', description: 'Trays of fresh scones' } }] });
+
+    const { getByLabelText } = render(<EventsScreen />);
+    expect(getByLabelText('Community Bake Sale. Trays of fresh scones')).toBeTruthy();
+  });
+
+  it('does not read the title twice when the cover has no written description', () => {
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
+      items: [{ ...mockEvent, primary_image: { url: '/uploads/events/cover.jpg', alt_text: 'Community Bake Sale', description: null } }] });
+
+    const { getByLabelText } = render(<EventsScreen />);
+    expect(getByLabelText('Community Bake Sale')).toBeTruthy();
+  });
+
   it('renders event cards when events are loaded', () => {
     mockUsePaginatedApi.mockReturnValueOnce({
       items: [mockEvent],

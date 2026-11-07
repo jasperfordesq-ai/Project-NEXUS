@@ -183,6 +183,9 @@
       "retryUpload": "Tentar carregar novamente",
       "permissionTitle": "É necessário acesso à biblioteca de fotografias",
       "permissionMessage": "Permita o acesso à biblioteca de fotografias para partilhar conteúdos multimédia no grupo.",
+      "captionLabel": "Legenda (opcional)",
+      "captionPlaceholder": "Adicione contexto para os membros do grupo",
+      "photoAlt": "Fotografia do grupo",
       "filters": {
         "all": "All",
         "image": "Photos",

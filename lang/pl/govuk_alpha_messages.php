@@ -24,6 +24,8 @@ return [
         'error_failed' => 'Nie udało się przesłać załącznika. Spróbuj ponownie.',
         'error_invalid' => 'Ten typ załącznika jest niedozwolony.',
         'photo_alt' => 'Zdjęcie wysłane w tej rozmowie',
+        'alt_label' => 'Opisz zdjęcie (opcjonalnie)',
+        'alt_hint' => 'Jeśli dodajesz zdjęcie, napisz w kilku słowach, co przedstawia. Czytniki ekranu odczytują ten tekst. Jeśli załączasz kilka zdjęć, opisz je wszystkie tutaj.',
     ],
     'groups' => [
         'title' => 'Rozmowy grupowe',

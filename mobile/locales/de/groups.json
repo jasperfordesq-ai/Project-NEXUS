@@ -183,6 +183,9 @@
       "retryUpload": "Upload erneut versuchen",
       "permissionTitle": "Zugriff auf die Fotomediathek erforderlich",
       "permissionMessage": "Erlaube den Zugriff auf die Fotomediathek, um Gruppenmedien zu teilen.",
+      "captionLabel": "Beschriftung (optional)",
+      "captionPlaceholder": "Kontext für Gruppenmitglieder hinzufügen",
+      "photoAlt": "Gruppenfoto",
       "filters": {
         "all": "All",
         "image": "Photos",

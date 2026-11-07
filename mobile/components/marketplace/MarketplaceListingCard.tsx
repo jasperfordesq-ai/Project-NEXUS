@@ -98,7 +98,13 @@ function MarketplaceListingCardRow({
         <View className="flex-row gap-3">
           <Surface variant="secondary" className="h-24 w-24 items-center justify-center overflow-hidden rounded-panel-inner p-0">
             {imageUrl ? (
-              <RemoteImage uri={imageUrl} className="h-full w-full" fallbackIcon="bag-handle-outline" />
+              <RemoteImage
+                uri={imageUrl}
+                className="h-full w-full"
+                fallbackIcon="bag-handle-outline"
+                // What the seller wrote for screen-reader users, else the listing title.
+                accessibilityLabel={(item.image ? item.image.alt_text : item.images?.[0]?.alt_text)?.trim() || item.title}
+              />
             ) : (
               <Ionicons name="bag-handle-outline" size={30} color={accent} />
             )}

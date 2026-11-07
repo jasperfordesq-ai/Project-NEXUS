@@ -871,7 +871,13 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
             {activeImageUrl || !videoUrl ? (
               <Surface variant="secondary" className="aspect-[4/3] items-center justify-center overflow-hidden rounded-panel-inner p-0">
                 {activeImageUrl ? (
-                  <RemoteImage uri={activeImageUrl} className="h-full w-full" fallbackIcon="bag-handle-outline" />
+                  <RemoteImage
+                    uri={activeImageUrl}
+                    className="h-full w-full"
+                    fallbackIcon="bag-handle-outline"
+                    // The seller's description for screen-reader users (AWID report, Oct 2026).
+                    accessibilityLabel={images[activeImage]?.alt_text?.trim() || undefined}
+                  />
                 ) : (
                   <View className="items-center gap-2">
                     <Ionicons name="bag-handle-outline" size={44} color={accent} />
@@ -891,7 +897,7 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
                       isIconOnly
                       variant={activeImage === index ? 'primary' : 'secondary'}
                       onPress={() => setActiveImage(index)}
-                      accessibilityLabel={t('common:aria.carouselImage', { current: index + 1, total: images.length })}
+                      accessibilityLabel={image.alt_text?.trim() || t('common:aria.carouselImage', { current: index + 1, total: images.length })}
                     >
                       {thumb ? <RemoteImage uri={thumb} className="size-9 rounded-xl" /> : activeImage === index ? <AccentIcon name="image-outline" size={17} /> : <Ionicons name="image-outline" size={17} color={primary} />}
                     </HeroButton>

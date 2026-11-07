@@ -78,6 +78,12 @@ final class PublicEventProjection
             'attendance_mode' => $attendanceMode,
             'operational_status' => $operationalStatus,
             'image_url' => $event['image_url'] ?? null,
+            // The organiser's description of that (already public) photo, for
+            // screen readers. Null when none was written — the page chooses
+            // its own fallback rather than reading the title twice.
+            'image_alt' => is_string($event['image_alt'] ?? null) && trim((string) $event['image_alt']) !== ''
+                ? trim((string) $event['image_alt'])
+                : null,
             'category' => $category === [] ? null : [
                 'id' => (int) ($category['id'] ?? 0),
                 'name' => \App\Services\Translation\TaxonomyNameLocalizer::nameFor('categories', $category['id'] ?? null, $category['name'] ?? null),

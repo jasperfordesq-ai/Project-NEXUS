@@ -125,6 +125,28 @@ describe('browsing the gallery', () => {
   });
 });
 
+// AWID accessibility report, Oct 2026, point 6 (second pass, 7 Nov): a gallery
+// photo is described by its caption, and never by the file name a phone gave it.
+describe('describing a gallery photo', () => {
+  it('reads out the caption the member wrote', async () => {
+    api.callGroupApi.mockResolvedValue({ data: { items: [mediaItem({ original_name: 'IMG_20261104_0931.jpg' })], cursor: null, has_more: false } });
+
+    const res = await request(app).get('/groups/974/gallery');
+
+    expect(res.text).toContain('alt="The new bench"');
+  });
+
+  it('says "photo shared in the group" when there is no caption, never the file name', async () => {
+    api.callGroupApi.mockResolvedValue({ data: { items: [mediaItem({ original_name: 'IMG_20261104_0931.jpg', caption: null })], cursor: null, has_more: false } });
+
+    const res = await request(app).get('/groups/974/gallery');
+
+    expect(res.text).toContain(`alt="${t('govuk_alpha_group_media.gallery.photo_alt_fallback')}"`);
+    // Not as alt text, and not in the delete link's screen-reader text either.
+    expect(res.text).not.toContain('IMG_20261104_0931');
+  });
+});
+
 describe('serving a private media file', () => {
   it('streams the file with the member credentials and safe headers', async () => {
     const bytes = Buffer.from('jpeg-bytes');

@@ -152,6 +152,8 @@
     "add": "Ajouter",
     "remove_image": "Supprimer l'image",
     "image_alt": "Téléverser {{number}}",
+    "image_alt_label": "Décrivez la photo {{number}} (facultatif)",
+    "image_alt_hint": "Aide les personnes qui utilisent un lecteur d'écran. Dites en quelques mots ce que montre la photo.",
     "video": "Vidéo",
     "video_optional": "(facultatif, max. 1 vidéo, 50 Mo)",
     "remove_video": "Supprimer la vidéo",

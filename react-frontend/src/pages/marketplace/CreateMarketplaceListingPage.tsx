@@ -53,6 +53,7 @@ import { userScopedStorageKey } from '@/lib/userScopedStorage';
 import { usePageTitle, useDraftPersistence } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
+import { MarketplacePhotoDescriptions } from '@/components/marketplace/MarketplacePhotoDescriptions';
 import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 import {
   normalizeSupportedMarketplaceCurrency,
@@ -81,6 +82,8 @@ interface ImagePreview {
   id: string;
   file: File;
   url: string;
+  /** What the photo shows, for screen-reader users. Sent as `alt_texts[i]`. */
+  altText: string;
 }
 
 interface MarketplaceListingDraft {
@@ -283,11 +286,16 @@ export function CreateMarketplaceListingPage() {
         id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         file,
         url: URL.createObjectURL(file),
+        altText: '',
       });
     }
 
     setImages((prev) => [...prev, ...newImages]);
   }, [images.length, toast, t])
+
+  const setImageAltText = useCallback((id: string, altText: string) => {
+    setImages((prev) => prev.map((img) => (img.id === id ? { ...img, altText } : img)));
+  }, []);
 
   const removeImage = useCallback((id: string) => {
     setImages((prev) => {
@@ -426,6 +434,8 @@ export function CreateMarketplaceListingPage() {
         const formData = new FormData();
         images.forEach((img, idx) => {
           formData.append(`images[${idx}]`, img.file);
+          // alt_texts[i] describes images[i]; blank means no description.
+          formData.append(`alt_texts[${idx}]`, img.altText.trim());
         });
         const imageResponse = await api.upload(`/v2/marketplace/listings/${listingId}/images`, formData);
         if (!imageResponse.success) {
@@ -542,7 +552,7 @@ export function CreateMarketplaceListingPage() {
                 <div key={img.id} className="relative aspect-square rounded-lg overflow-hidden group">
                   <img
                     src={img.url}
-                    alt={t('create.image_alt', { number: idx + 1 })}
+                    alt={img.altText.trim() || t('create.image_alt', { number: idx + 1 })}
                     className="w-full h-full object-cover"
                   />
                   {idx === 0 && (
@@ -575,6 +585,8 @@ export function CreateMarketplaceListingPage() {
               )}
             </div>
           )}
+
+          <MarketplacePhotoDescriptions photos={images} onChange={setImageAltText} />
         </GlassCard>
 
         {/* Section 1b: Video */}

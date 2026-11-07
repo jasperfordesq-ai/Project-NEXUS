@@ -150,6 +150,8 @@
     "add": "Hinzufügen",
     "remove_image": "Bild entfernen",
     "image_alt": "Hochladen {{number}}",
+    "image_alt_label": "Foto {{number}} beschreiben (optional)",
+    "image_alt_hint": "Hilft Menschen, die einen Screenreader nutzen. Beschreiben Sie in wenigen Worten, was das Foto zeigt.",
     "video": "Video",
     "video_optional": "(optional, max. 1 Video, 50 MB)",
     "remove_video": "Video entfernen",

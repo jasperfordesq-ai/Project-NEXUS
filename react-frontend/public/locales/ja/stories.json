@@ -47,6 +47,7 @@
     "text_placeholder": "あなたのストーリーを入力...",
     "compose_placeholder": "何を考えていますか？",
     "text_overlay": "写真にテキストを追加...",
+    "photo_alt_label": "この写真の説明（任意）",
     "poll_question_placeholder": "質問をする...",
     "poll_option_placeholder": "オプション {{number}}",
     "poll_add_option": "オプションを追加",

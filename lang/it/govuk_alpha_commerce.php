@@ -1006,6 +1006,14 @@ return [
         'status_remove_failed' => 'Spiacenti, non è stato possibile rimuovere la foto. Riprova.',
         'status_main_failed' => 'Spiacenti, non è stato possibile cambiare la foto principale. Riprova.',
         'status_created_photos_failed' => 'Il tuo annuncio è stato creato, ma non è stato possibile caricare le foto. Prova ad aggiungerle di nuovo qui sotto.',
+        'alt_label' => 'Descrivi la foto (facoltativo)',
+        'alt_hint' => 'Se aggiungi una sola foto, di\' in poche parole cosa mostra. I lettori di schermo leggono ad alta voce questa descrizione. Se ne aggiungi più di una, potrai descrivere ciascuna dopo averla aggiunta.',
+        'error_alt_several' => 'Per descrivere una foto mentre la aggiungi, aggiungi una foto alla volta. Potrai descrivere ciascuna foto dopo averla aggiunta.',
+        'photo_alt_label' => 'Descrivi la foto :number',
+        'photo_alt_hint' => 'Di\' in poche parole cosa mostra questa foto. I lettori di schermo leggono ad alta voce questa descrizione. Lascia il campo vuoto per non avere alcuna descrizione.',
+        'save_alt' => 'Salva descrizione',
+        'status_alt_saved' => 'La descrizione della foto è stata salvata.',
+        'status_alt_failed' => 'Spiacenti, non è stato possibile salvare la descrizione della foto. Riprova.',
     ],
 
     'shipping' => [

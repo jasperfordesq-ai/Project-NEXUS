@@ -13,6 +13,8 @@ export interface RecommendedGroupMatch {
   match_score: number;
   match_reasons?: string[];
   image_url?: string | null;
+  /** Member-written description of the group picture; null when none. */
+  image_alt?: string | null;
 }
 
 export interface GroupJoinResult {
@@ -60,6 +62,9 @@ function normalizeMatch(value: unknown): RecommendedGroupMatch | null {
   if (value.image_url !== undefined && value.image_url !== null && typeof value.image_url !== 'string') {
     return invalidRecommendationsResponse();
   }
+  if (value.image_alt !== undefined && value.image_alt !== null && typeof value.image_alt !== 'string') {
+    return invalidRecommendationsResponse();
+  }
 
   return {
     module: value.module,
@@ -68,6 +73,7 @@ function normalizeMatch(value: unknown): RecommendedGroupMatch | null {
     match_score: value.match_score,
     ...(value.match_reasons === undefined ? {} : { match_reasons: value.match_reasons as string[] }),
     ...(value.image_url === undefined ? {} : { image_url: value.image_url as string | null }),
+    ...(value.image_alt === undefined ? {} : { image_alt: value.image_alt as string | null }),
   };
 }
 

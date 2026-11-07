@@ -438,6 +438,36 @@ describe('FeedItem', () => {
     });
   });
 
+  it('reads the description the member wrote for a listing photo instead of a generic label', () => {
+    const item = {
+      id: 505,
+      type: 'listing',
+      title: 'Garden help',
+      content: 'I can help with your garden.',
+      image_url: 'https://example.test/garden.jpg',
+      image_alt: 'Raised vegetable beds beside a shed',
+      user_id: 1,
+      author_name: 'Alice Smith',
+      author_avatar: null,
+      is_liked: false,
+      likes_count: 0,
+      comments_count: 0,
+      created_at: '2026-05-30T10:00:00Z',
+      location: null,
+      rating: null,
+      start_date: null,
+      job_type: null,
+      commitment: null,
+      submission_deadline: null,
+      receiver: null,
+    } as FeedItemType;
+
+    const { getByLabelText, queryByLabelText } = render(<FeedItem item={item} />);
+
+    expect(getByLabelText('Raised vegetable beds beside a shed')).toBeTruthy();
+    expect(queryByLabelText('feedTypes.post')).toBeNull();
+  });
+
   it('opens feed item detail instead of the image viewer when carousel media is pressed', () => {
     const item = {
       id: 504,

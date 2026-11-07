@@ -146,6 +146,20 @@ describe('QuotedPostEmbed', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
+  it('reads out the description the author wrote for the quoted photo', () => {
+    render(<QuotedPostEmbed post={POST_WITH_MEDIA} />);
+    expect(screen.getByRole('img')).toHaveAttribute('alt', 'A media image');
+  });
+
+  it('keeps the generic label when the quoted photo has no description', () => {
+    const noAlt: QuotedPostData = {
+      ...POST_WITH_MEDIA,
+      media: [{ ...POST_WITH_MEDIA.media![0]!, alt_text: '   ' }],
+    };
+    render(<QuotedPostEmbed post={noAlt} />);
+    expect(screen.getByRole('img')).toHaveAttribute('alt', 'Quoted post image');
+  });
+
   it('does not show "Read more" for short content', () => {
     render(<QuotedPostEmbed post={SHORT_POST} />);
     expect(screen.queryByRole('button', { name: /read more/i })).not.toBeInTheDocument();

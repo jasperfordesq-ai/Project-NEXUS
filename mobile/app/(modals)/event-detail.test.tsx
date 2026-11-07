@@ -557,6 +557,30 @@ describe('EventDetailScreen', () => {
     expect(getByText('Community Skill Share Workshop')).toBeTruthy();
   });
 
+  it('reads the organiser-written description for the cover photo', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockEvent, primary_image: { url: '/uploads/events/cover.jpg', alt_text: mockEvent.title, description: 'Neighbours swapping tools at a table' } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByLabelText } = render(<EventDetailScreen />);
+    expect(getByLabelText('Neighbours swapping tools at a table')).toBeTruthy();
+  });
+
+  it('leaves an undescribed cover silent rather than repeating the title beside it', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockEvent, primary_image: { url: '/uploads/events/cover.jpg', alt_text: mockEvent.title, description: null } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId } = render(<EventDetailScreen />);
+    expect(getByTestId('event-detail-cover').props.accessibilityLabel).toBeUndefined();
+  });
+
   it('renders translated all-day inclusive dates in the event IANA timezone', () => {
     mockUseApi.mockReturnValue({
       data: {

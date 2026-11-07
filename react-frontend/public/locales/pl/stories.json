@@ -47,6 +47,7 @@
     "text_placeholder": "Napisz swoją historię...",
     "compose_placeholder": "Co masz na myśli?",
     "text_overlay": "Dodaj tekst do swojego zdjęcia...",
+    "photo_alt_label": "Opisz to zdjęcie (opcjonalnie)",
     "poll_question_placeholder": "Zadaj pytanie...",
     "poll_option_placeholder": "Opcja {{number}}",
     "poll_add_option": "Dodaj opcję",

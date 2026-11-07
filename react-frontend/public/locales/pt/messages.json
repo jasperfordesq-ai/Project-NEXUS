@@ -303,5 +303,8 @@
   "groups_empty": "Ainda não está em nenhuma conversa de grupo.",
   "groups_load_failed": "Não foi possível carregar as suas conversas de grupo.",
   "group_open_aria": "Abrir a conversa de grupo {{name}}",
-  "aria_download_photo": "Transferir a fotografia"
+  "aria_download_photo": "Transferir a fotografia",
+  "aria_download_photo_described": "Transferir a fotografia: {{description}}",
+  "attachment_alt_label": "Descreva esta foto (opcional)",
+  "attachment_alt_hint": "Ajuda quem usa leitores de ecrã. Diga em poucas palavras o que a foto mostra."
 }

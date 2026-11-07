@@ -114,6 +114,13 @@ describe('PopularGroupsWidget', () => {
     expect(img).toHaveAttribute('src', 'https://example.com/group.jpg');
   });
 
+  it('reads out the description written for the group picture', async () => {
+    const { PopularGroupsWidget } = await import('./PopularGroupsWidget');
+    render(<PopularGroupsWidget groups={[makeGroup({ image_url: 'https://example.com/group.jpg', image_alt: 'Three people planting leeks' })]} />);
+    expect(screen.getByRole('img', { name: 'Three people planting leeks' })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: 'Gardening Club' })).toBeNull();
+  });
+
   it('does not render an img element when image_url is absent', async () => {
     const { PopularGroupsWidget } = await import('./PopularGroupsWidget');
     render(<PopularGroupsWidget groups={[makeGroup({ image_url: undefined })]} />);

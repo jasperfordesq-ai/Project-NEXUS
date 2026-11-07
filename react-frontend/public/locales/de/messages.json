@@ -301,5 +301,8 @@
   "groups_empty": "Sie sind noch in keinem Gruppenchat.",
   "groups_load_failed": "Ihre Gruppenchats konnten nicht geladen werden.",
   "group_open_aria": "Gruppenchat {{name}} öffnen",
-  "aria_download_photo": "Foto herunterladen"
+  "aria_download_photo": "Foto herunterladen",
+  "aria_download_photo_described": "Foto herunterladen: {{description}}",
+  "attachment_alt_label": "Dieses Foto beschreiben (optional)",
+  "attachment_alt_hint": "Hilft Menschen, die einen Screenreader nutzen. Beschreiben Sie in wenigen Worten, was das Foto zeigt."
 }

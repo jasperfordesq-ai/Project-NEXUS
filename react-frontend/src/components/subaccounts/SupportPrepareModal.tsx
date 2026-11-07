@@ -242,10 +242,13 @@ export function SupportPrepareModal({
 
     if (tier === 'co_decide') {
       if (extras.imageFile) toast.warning(t('support_actions.photo_after_approval'));
+      // The photo's description stays behind with the photo.
+      const { image_alt: _photoDescription, ...preparedListing } = body;
+      void _photoDescription;
       const res = await api.post('/v2/users/me/support-actions', {
         supported_user_id: supportedUserId,
         action_type: 'listing_create',
-        payload: body,
+        payload: preparedListing,
       });
       return { success: res.success, error: res.error, errors: res.errors };
     }
@@ -261,10 +264,14 @@ export function SupportPrepareModal({
     const newId = res.data?.id;
     if (extras.imageFile && newId) {
       try {
+        // The photo travels with its description for screen-reader users
+        // (listings.image_alt); blank means none.
+        const photo = new FormData();
+        photo.append('image', extras.imageFile);
+        photo.append('image_alt', payload.image_alt?.trim() ?? '');
         await api.upload(
           `/v2/users/me/sub-accounts/${supportedUserId}/listings/${newId}/image`,
-          extras.imageFile,
-          'image',
+          photo,
         );
       } catch (imgErr) {
         // The listing exists and is theirs; only the photo failed. Warn rather

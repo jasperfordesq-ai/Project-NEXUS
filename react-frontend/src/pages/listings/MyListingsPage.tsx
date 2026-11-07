@@ -479,16 +479,25 @@ function OwnedListingRow({ listing, group, isBusy, onRenew, onDelete }: OwnedLis
   const canEdit = group === 'live' || group === 'review' || group === 'expired';
   const canRenew = group === 'expired' || (group === 'live' && expiringSoon);
   const showStats = group === 'live' || group === 'expired';
+  // The member's own description of the photo. Without one the picture is
+  // decorative: the title link below is the accessible way in.
+  const imageDescription = listing.image_url ? listing.image_alt?.trim() || '' : '';
 
   return (
     <GlassCard className="p-4">
       <div className="flex gap-4">
-        {/* Decorative: the title link below is the accessible way in. */}
-        <Link to={detailPath} className="block h-16 w-16 shrink-0 overflow-hidden rounded-lg sm:h-20 sm:w-20" tabIndex={-1} aria-hidden="true">
+        {/* Kept out of the tab order (the title link is the keyboard way in);
+            hidden from screen readers only when there is nothing to read. */}
+        <Link
+          to={detailPath}
+          className="block h-16 w-16 shrink-0 overflow-hidden rounded-lg sm:h-20 sm:w-20"
+          tabIndex={-1}
+          aria-hidden={imageDescription ? undefined : 'true'}
+        >
           {listing.image_url ? (
             <img
               src={resolveThumbnailUrl(listing.image_url, { width: 160, height: 160 })}
-              alt=""
+              alt={imageDescription}
               className="h-full w-full object-cover"
               loading="lazy"
               decoding="async"

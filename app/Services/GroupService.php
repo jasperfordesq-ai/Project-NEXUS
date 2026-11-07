@@ -287,13 +287,14 @@ class GroupService
                         });
                 })
                 ->orderBy('name')
-                ->select(['id', 'name', 'description', 'image_url', 'visibility', 'cached_member_count', 'type_id', 'parent_id'])
+                ->select(['id', 'name', 'description', 'image_url', 'image_alt', 'visibility', 'cached_member_count', 'type_id', 'parent_id'])
                 ->get()
                 ->map(fn($g) => [
                     'id'           => (int) $g->id,
                     'name'         => $g->name,
                     'description'  => $g->description,
                     'image_url'    => $g->image_url,
+                    'image_alt'    => self::cleanImageDescription($g->image_alt),
                     'visibility'   => $g->visibility,
                     'member_count' => (int) ($g->cached_member_count ?? 0),
                     'type_id'      => $g->type_id,

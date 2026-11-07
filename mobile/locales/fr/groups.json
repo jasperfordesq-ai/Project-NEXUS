@@ -183,6 +183,9 @@
       "retryUpload": "Réessayer l’importation",
       "permissionTitle": "Accès à la photothèque requis",
       "permissionMessage": "Autorisez l’accès à la photothèque pour partager des médias avec le groupe.",
+      "captionLabel": "Légende (facultatif)",
+      "captionPlaceholder": "Ajouter du contexte pour les membres du groupe",
+      "photoAlt": "Photo du groupe",
       "filters": {
         "all": "All",
         "image": "Photos",

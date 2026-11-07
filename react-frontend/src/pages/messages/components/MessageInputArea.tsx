@@ -5,6 +5,7 @@
 
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
+import { Input } from '@/components/ui/Input';
 import { useState, type RefObject, type ChangeEvent, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';import Send from 'lucide-react/icons/send';
 import Mic from 'lucide-react/icons/mic';
@@ -24,6 +25,8 @@ export interface AttachmentPreview {
   file: File;
   preview: string;
   type: 'image' | 'file';
+  /** A photo's description for screen-reader users, written by the sender. */
+  alt?: string;
 }
 
 export interface MessageInputAreaProps {
@@ -57,6 +60,8 @@ export interface MessageInputAreaProps {
   fileInputRef: RefObject<HTMLInputElement | null>;
   onFileSelect: (e: ChangeEvent<HTMLInputElement>) => void;
   onRemoveAttachment: (index: number) => void;
+  /** The sender typed a description for the photo at `index`. */
+  onAttachmentAltChange?: (index: number, alt: string) => void;
   // GIF picker
   onGifSelect?: (gifUrl: string) => void;
 }
@@ -96,6 +101,7 @@ export function MessageInputArea({
   fileInputRef,
   onFileSelect,
   onRemoveAttachment,
+  onAttachmentAltChange,
   onGifSelect,
 }: MessageInputAreaProps) {
   const { t } = useTranslation('messages');
@@ -217,11 +223,14 @@ export function MessageInputArea({
       {isDirectMessagingEnabled && !isComposerBlocked && attachmentPreviews.length > 0 && (
         <div className="flex gap-2 mb-3 flex-wrap">
           {attachmentPreviews.map((item, index) => (
-            <div key={item.preview} className="relative group">
+            <div key={item.preview || `${item.file.name}-${index}`} className={item.type === 'image' && onAttachmentAltChange ? 'flex w-full min-w-0 items-start gap-2' : undefined}>
+            <div className="relative group shrink-0">
               {item.type === 'image' ? (
                 <img
                   src={item.preview}
-                  alt={item.file.name}
+                  // Never the file name ("IMG_2041.jpg"): the sender's description, else nothing,
+                  // since the description box sits right beside it (AWID report, point 6).
+                  alt={(item.alt ?? '').trim()}
                   className="w-16 h-16 object-cover rounded-lg border border-theme-default"
                 />
               ) : (
@@ -241,6 +250,18 @@ export function MessageInputArea({
               >
                 <X className="w-3.5 h-3.5 text-white" aria-hidden="true" />
               </Button>
+            </div>
+            {item.type === 'image' && onAttachmentAltChange && (
+              <Input
+                size="sm"
+                className="min-w-0 flex-1"
+                label={t('attachment_alt_label')}
+                description={t('attachment_alt_hint')}
+                value={item.alt ?? ''}
+                maxLength={255}
+                onChange={(e) => onAttachmentAltChange(index, e.target.value)}
+              />
+            )}
             </div>
           ))}
         </div>

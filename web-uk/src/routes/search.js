@@ -314,7 +314,9 @@ function groupedSearchResults(rows) {
         displayListingType: textFrom(coalescedField(item, 'listing_type', 'type')),
         displayHours: coalescedField(item, 'hours_estimate', 'estimated_hours'),
         linkId: positiveId(item.id),
-        imageAssetUrl: resolveBackendMediaUrl(item.image_url || item.imageUrl)
+        imageAssetUrl: resolveBackendMediaUrl(item.image_url || item.imageUrl),
+        // The owner's own description of the photo (listings.image_alt).
+        imageAlt: textFrom(item.image_alt)
       });
     }
     if (type === 'user') {

@@ -141,6 +141,9 @@
       "retryUpload": "Bain triail eile as an uaslódáil",
       "permissionTitle": "Tá rochtain ar an leabharlann grianghraf ag teastáil",
       "permissionMessage": "Ceadaigh rochtain ar an leabharlann grianghraf chun meáin a roinnt leis an ngrúpa.",
+      "captionLabel": "Fotheideal (roghnach)",
+      "captionPlaceholder": "Cuir comhthéacs leis do bhaill an ghrúpa",
+      "photoAlt": "Grianghraf grúpa",
       "filters": {
         "all": "Gach ceann",
         "image": "Grianghraif",

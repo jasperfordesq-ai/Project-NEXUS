@@ -117,7 +117,7 @@ export function QuotedPostEmbed({ post, isPreview = false }: QuotedPostEmbedProp
           <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
             <img
               src={thumbnailUrl}
-              alt={t('quoted_post_image')}
+              alt={firstMedia?.alt_text?.trim() || t('quoted_post_image')}
               className="w-full h-full object-cover"
               loading="lazy"
             />

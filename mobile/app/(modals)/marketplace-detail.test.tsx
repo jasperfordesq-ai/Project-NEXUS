@@ -453,6 +453,27 @@ describe('MarketplaceDetailRoute', () => {
     expect(queryAllByText('Oak dining table')).toHaveLength(1);
   });
 
+  // AWID accessibility report, Oct 2026, point 6: the seller's own words describe each photo.
+  it('reads the seller’s photo description out on the photo and its thumbnail', async () => {
+    (getMarketplaceListing as jest.Mock).mockResolvedValueOnce({
+      data: {
+        ...mockListing,
+        image_count: 2,
+        images: [
+          { id: 1, url: 'https://example.test/table.jpg', thumbnail_url: null, alt_text: 'A round oak table with six chairs' },
+          { id: 2, url: 'https://example.test/legs.jpg', thumbnail_url: null, alt_text: null },
+        ],
+      },
+    });
+
+    const ui = render(<MarketplaceDetailRoute />);
+
+    await waitFor(() => {
+      // The large photo and the first thumbnail.
+      expect(ui.getAllByLabelText('A round oak table with six chairs')).toHaveLength(2);
+    });
+  });
+
   it('renders listing video media without showing the empty image state', async () => {
     (getMarketplaceListing as jest.Mock).mockResolvedValueOnce({
       data: {

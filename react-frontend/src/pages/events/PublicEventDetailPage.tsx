@@ -173,7 +173,8 @@ export default function PublicEventDetailPage() {
       {event.image_url && (
         <img
           src={event.image_url}
-          alt=""
+          // The title sits directly below, so an undescribed photo stays silent.
+          alt={event.image_alt?.trim() || ''}
           // Reserves the picture's space before it loads (no layout shift).
           width={1200}
           height={630}

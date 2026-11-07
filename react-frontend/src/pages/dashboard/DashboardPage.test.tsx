@@ -94,6 +94,13 @@ vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
   resolveAssetUrl: vi.fn((url) => url || ''),
 }));
 
+// The real Avatar paints its picture only after load, which jsdom never does.
+// This stub keeps its alt rule (alt, else the name) so the passed alt is visible.
+vi.mock('@/components/ui/Avatar', () => ({
+  Avatar: ({ src, alt, name }: { src?: string; alt?: string; name?: string | null }) =>
+    src ? <img src={src} alt={alt ?? name ?? ''} /> : <span data-testid="avatar-fallback" />,
+}));
+
 vi.mock('@/components/seo', () => ({
   PageMeta: () => null,
 }));
@@ -330,6 +337,26 @@ describe('DashboardPage', () => {
     // Action chip + footer link from the new exchange-workflow card.
     expect(screen.getByText('Accept')).toBeInTheDocument();
     expect(screen.getByText('View all exchanges')).toBeInTheDocument();
+  });
+
+  it("reads out the description written for each of the member's group pictures", async () => {
+    mockApiGet.mockImplementation((endpoint: string) => {
+      if (endpoint === '/v2/groups?user_id=1&per_page=3') {
+        return Promise.resolve({
+          success: true,
+          data: [
+            { id: 5, name: 'Allotment Friends', image_url: '/g.jpg', image_alt: 'Three people planting leeks', member_count: 4 },
+            { id: 6, name: 'Book Club', image_url: '/b.jpg', image_alt: null, member_count: 2 },
+          ],
+        });
+      }
+      return Promise.resolve(buildApiResponse(endpoint));
+    });
+    render(<DashboardPage />);
+
+    expect(await screen.findByRole('img', { name: 'Three people planting leeks' })).toBeInTheDocument();
+    // Nothing written: the Avatar keeps its usual label, the group name.
+    expect(screen.getByRole('img', { name: 'Book Club' })).toBeInTheDocument();
   });
 
   it('falls back to 0% when gamification progress is missing', async () => {

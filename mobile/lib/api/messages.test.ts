@@ -283,6 +283,20 @@ describe('sendMessageWithAttachments', () => {
     expect(api.upload).not.toHaveBeenCalled();
   });
 
+  // AWID accessibility report, point 6: attachment_alts[i] describes attachments[i].
+  it('sends each photo with its description, aligned with the files', async () => {
+    await sendMessageWithAttachments(2, '', [
+      { uri: 'file:///tmp/a.jpg', name: 'a.jpg', mimeType: 'image/jpeg', alt: '  A red bicycle  ' },
+      { uri: 'file:///tmp/b.pdf', name: 'b.pdf', mimeType: 'application/pdf', alt: 'ignored' },
+    ]);
+
+    const form = jest.mocked(uploadWithProgress).mock.calls[0][1] as FormData & { _parts?: [string, unknown][]; getAll?: (k: string) => unknown[] };
+    const alts = typeof form.getAll === 'function' && !form._parts
+      ? form.getAll('attachment_alts[]')
+      : (form._parts ?? []).filter(([key]) => key === 'attachment_alts[]').map(([, value]) => value);
+    expect(alts).toEqual(['A red bicycle', '']);
+  });
+
   it("passes the caller's progress callback and abort handle straight through", async () => {
     const onProgress = jest.fn();
     const controller = new AbortController();

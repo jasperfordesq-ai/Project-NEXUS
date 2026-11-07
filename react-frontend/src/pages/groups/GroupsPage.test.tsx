@@ -302,6 +302,43 @@ describe('GroupsPage', () => {
     expect(screen.getByText('Featured')).toBeInTheDocument();
   });
 
+  it('reads out the description written for the picture the card shows', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 42, name: 'Garden Crew', description: null, visibility: 'public', member_count: 12,
+          image_url: '/uploads/groups/garden.jpg', image_alt: 'The group logo, a green leaf',
+          cover_image_url: '/uploads/groups/cover.jpg', cover_image_alt: 'Volunteers weeding a long bed',
+          created_at: '2026-01-01T00:00:00Z',
+        },
+        {
+          id: 43, name: 'Book Club', description: null, visibility: 'public', member_count: 3,
+          image_url: '/uploads/groups/books.jpg', image_alt: 'A stack of library books',
+          created_at: '2026-01-01T00:00:00Z',
+        },
+        {
+          id: 44, name: 'Walkers', description: null, visibility: 'public', member_count: 2,
+          image_url: '/uploads/groups/walk.jpg', image_alt: null,
+          created_at: '2026-01-01T00:00:00Z',
+        },
+      ],
+      meta: { has_more: false, total_items: 3, per_page: 20 },
+    });
+
+    const { container } = render(<GroupsPage />);
+    await screen.findByText('Garden Crew');
+
+    // The card is one link with its own label, so the description joins that label.
+    expect(screen.getByRole('link', { name: /Garden Crew .*Volunteers weeding a long bed/ })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /green leaf/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Book Club .*A stack of library books/ })).toBeInTheDocument();
+    expect(container.querySelector('img[src*="cover.jpg"]')).toHaveAttribute('alt', 'Volunteers weeding a long bed');
+    // Nothing written: the label is unchanged and the picture stays decorative.
+    expect(screen.getByRole('link', { name: /^Walkers - Public group - 2 members$/i })).toBeInTheDocument();
+    expect(container.querySelector('img[src*="walk.jpg"]')).toHaveAttribute('alt', '');
+  });
+
   it('deduplicates appended IDs and ignores a second in-flight load-more request', async () => {
     let resolveSecondPage!: (value: {
       success: boolean;

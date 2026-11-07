@@ -240,6 +240,25 @@ describe('PublicEventDetailPage', () => {
     });
   });
 
+  it("reads out the organiser's description of the photo, and keeps an undescribed photo decorative", async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: { ...DETAIL, image_url: '/uploads/wassail.jpg', image_alt: 'Lanterns hanging from apple trees at dusk' },
+    });
+    const { unmount } = render(<PublicEventDetailPage />);
+    expect(await screen.findByRole('img', { name: 'Lanterns hanging from apple trees at dusk' })).toBeInTheDocument();
+    unmount();
+
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: { ...DETAIL, image_url: '/uploads/wassail.jpg', image_alt: null },
+    });
+    const { container } = render(<PublicEventDetailPage />);
+    await screen.findByRole('heading', { name: 'Wassail in the Orchard' });
+    // The title is directly below, so an undescribed photo stays silent.
+    expect(container.querySelector('img[src*="wassail"]')).toHaveAttribute('alt', '');
+  });
+
   it('offers sign-in rather than a booking control', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: DETAIL });
 

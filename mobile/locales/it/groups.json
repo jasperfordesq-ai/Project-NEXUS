@@ -183,6 +183,9 @@
       "retryUpload": "Riprova il caricamento",
       "permissionTitle": "È necessario accedere alla libreria foto",
       "permissionMessage": "Consenti l’accesso alla libreria foto per condividere contenuti multimediali nel gruppo.",
+      "captionLabel": "Didascalia (facoltativa)",
+      "captionPlaceholder": "Aggiungi informazioni per i membri del gruppo",
+      "photoAlt": "Foto del gruppo",
       "filters": {
         "all": "All",
         "image": "Photos",

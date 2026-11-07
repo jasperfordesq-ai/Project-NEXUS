@@ -258,7 +258,7 @@
                 <p class="govuk-body" dir="auto">{{ item.content }}</p>
               {% endif %}
               {% if item.imageUrl %}
-                <img class="nexus-alpha-card-thumb" src="{{ item.imageUrl }}" alt="{{ t('feed.image_alt', { title: item.title }) }}" width="120" height="90" loading="lazy" decoding="async">
+                <img class="nexus-alpha-card-thumb" src="{{ item.imageUrl }}" alt="{{ item.imageAlt or t('feed.image_alt', { title: item.title }) }}" width="120" height="90" loading="lazy" decoding="async">
               {% endif %}
             </article>
           {% endfor %}

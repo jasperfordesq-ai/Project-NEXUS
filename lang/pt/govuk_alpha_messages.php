@@ -24,6 +24,8 @@ return [
         'error_failed' => 'Não foi possível carregar o seu anexo. Tente novamente.',
         'error_invalid' => 'Esse tipo de anexo não é permitido.',
         'photo_alt' => 'Fotografia enviada nesta conversa',
+        'alt_label' => 'Descreva a foto (opcional)',
+        'alt_hint' => 'Se adicionar uma foto, diga em poucas palavras o que ela mostra. Os leitores de ecrã leem este texto. Se anexar várias fotografias, descreva-as todas aqui.',
     ],
     'groups' => [
         'title' => 'Conversas em grupo',

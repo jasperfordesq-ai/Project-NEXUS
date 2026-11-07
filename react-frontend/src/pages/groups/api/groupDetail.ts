@@ -92,6 +92,8 @@ export interface GroupInvitePreview {
     id: number;
     name: string;
     image_url?: string | null;
+    /** Member-written description of the group picture; null when none. */
+    image_alt?: string | null;
     visibility: 'public' | 'private';
     member_count: number;
   };

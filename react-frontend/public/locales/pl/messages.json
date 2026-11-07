@@ -305,5 +305,8 @@
   "groups_empty": "Nie należysz jeszcze do żadnego czatu grupowego.",
   "groups_load_failed": "Nie udało się wczytać Twoich czatów grupowych.",
   "group_open_aria": "Otwórz czat grupowy {{name}}",
-  "aria_download_photo": "Pobierz zdjęcie"
+  "aria_download_photo": "Pobierz zdjęcie",
+  "aria_download_photo_described": "Pobierz zdjęcie: {{description}}",
+  "attachment_alt_label": "Opisz to zdjęcie (opcjonalnie)",
+  "attachment_alt_hint": "Pomaga osobom korzystającym z czytników ekranu. Napisz w kilku słowach, co przedstawia zdjęcie."
 }

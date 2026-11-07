@@ -255,7 +255,7 @@
           {% for listing in displayGrouped.listings %}
             <article class="nexus-alpha-card">
               {% set listingTitle = listing.displayTitle or t("govuk_alpha_search.results.section_listings") %}
-              {% if listing.imageAssetUrl %}<img class="nexus-alpha-card-thumb" src="{{ listing.imageAssetUrl }}" alt="{{ t('govuk_alpha_search.results.image_alt', { title: listingTitle }) }}" width="120" height="90" loading="lazy" decoding="async">{% endif %}
+              {% if listing.imageAssetUrl %}<img class="nexus-alpha-card-thumb" src="{{ listing.imageAssetUrl }}" alt="{{ listing.imageAlt or t('govuk_alpha_search.results.image_alt', { title: listingTitle }) }}" width="120" height="90" loading="lazy" decoding="async">{% endif %}
               <div class="nexus-alpha-module-row">
                 <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{% if listing.linkId %}<a class="govuk-link" href="{{ urlFor('/listings/' + (listing.linkId | string)) }}">{{ listingTitle }}</a>{% else %}{{ listingTitle }}{% endif %}</h3>
                 {% if listing.displayListingType == 'offer' %}{{ govukTag({ text: t("govuk_alpha_search.results.listing_offering"), classes: "govuk-tag--green" }) }}{% elif listing.displayListingType == 'request' %}{{ govukTag({ text: t("govuk_alpha_search.results.listing_requesting"), classes: "govuk-tag--orange" }) }}{% endif %}

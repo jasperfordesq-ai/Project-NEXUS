@@ -1973,6 +1973,138 @@ describe('GroupDetailScreen', () => {
     expect(ImagePicker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
   });
 
+  it('sends the caption a member types with a photo upload, as the website does', async () => {
+    jest.mocked(getGroupMedia).mockResolvedValue({
+      data: { items: [], cursor: null, has_more: false },
+    });
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByText, getByLabelText } = render(<GroupDetailScreen />);
+
+    fireEvent.press(getByText('Media'));
+    await waitFor(() => expect(loadGroupContentCreationOperation).toHaveBeenCalledWith(1, 'gallery-media'));
+    await act(async () => {});
+    fireEvent.changeText(getByLabelText('detail.media.captionLabel'), 'Planting day at the allotment');
+    await act(async () => {
+      fireEvent.press(getByText('Upload photo'));
+    });
+
+    await waitFor(() => {
+      expect(reserveGroupContentCreationOperation).toHaveBeenCalledWith(1, 'gallery-media', expect.objectContaining({
+        caption: 'Planting day at the allotment',
+      }));
+      expect(uploadGroupMedia).toHaveBeenCalledWith(1, expect.objectContaining({
+        caption: 'Planting day at the allotment',
+      }), expect.any(String));
+    });
+  });
+
+  it('retries a restored upload with the caption that was saved with it', async () => {
+    const pending = {
+      storageKey: 'saved-group-content',
+      key: 'restored-gallery-key',
+      groupId: 1,
+      kind: 'gallery-media' as const,
+      intent: 'saved-gallery-intent',
+      payload: {
+        type: 'image' as const,
+        uri: 'file:///documents/group-media-operations-v1/saved-photo.jpg',
+        fileName: 'saved-photo.jpg',
+        mimeType: 'image/jpeg',
+        size: 456,
+        md5: 'b'.repeat(32),
+        caption: 'Harvest table',
+      },
+      createdAt: 1,
+    };
+    jest.mocked(loadGroupContentCreationOperation).mockImplementation(async (_groupId, kind) => (
+      kind === 'gallery-media' ? pending : null
+    ) as never);
+    jest.mocked(getGroupMedia).mockResolvedValue({ data: { items: [], cursor: null, has_more: false } });
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Media'));
+    await screen.findByText('An unfinished media upload was restored. Retry it before selecting another file.');
+    fireEvent.press(screen.getByText('Retry upload'));
+
+    await waitFor(() => expect(uploadGroupMedia).toHaveBeenCalledWith(1, expect.objectContaining({
+      uri: pending.payload.uri,
+      caption: 'Harvest table',
+    }), pending.key));
+  });
+
+  it('reads a gallery photo by its caption, or a generic label, and never by its file name', async () => {
+    jest.mocked(getGroupMedia).mockResolvedValue({
+      data: {
+        items: [
+          {
+            id: 81,
+            url: 'https://cdn.example.test/garden.jpg',
+            thumbnail_url: null,
+            type: 'image',
+            caption: 'Spring garden',
+            original_name: 'IMG_0001.jpg',
+            file_size: 2048,
+            uploaded_by: 10,
+            uploader_name: 'Alice Admin',
+            created_at: '2026-06-01T00:00:00Z',
+          },
+          {
+            id: 82,
+            url: 'https://cdn.example.test/unnamed.jpg',
+            thumbnail_url: null,
+            type: 'image',
+            caption: null,
+            original_name: 'IMG_0002.jpg',
+            file_size: 2048,
+            uploaded_by: 10,
+            uploader_name: 'Alice Admin',
+            created_at: '2026-06-01T00:00:00Z',
+          },
+        ],
+        cursor: null,
+        has_more: false,
+      },
+    });
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { findByTestId, getByTestId, queryByLabelText, getByText } = render(<GroupDetailScreen />);
+    fireEvent.press(getByText('Media'));
+
+    expect((await findByTestId('group-media-image-81')).props.accessibilityLabel).toBe('Spring garden');
+    expect(getByTestId('group-media-image-82').props.accessibilityLabel).toBe('detail.media.photoAlt');
+    expect(queryByLabelText('IMG_0001.jpg')).toBeNull();
+    expect(queryByLabelText('IMG_0002.jpg')).toBeNull();
+  });
+
+  it('reads the description written for the group picture at the top of the page', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, image_url: '/uploads/groups/garden.jpg', image_alt: 'Volunteers planting seedlings' } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByLabelText } = render(<GroupDetailScreen />);
+    expect(getByLabelText('Volunteers planting seedlings')).toBeTruthy();
+  });
+
   it('restores an unfinished gallery upload and retries its exact managed snapshot and key', async () => {
     const pending = {
       storageKey: 'saved-group-content',

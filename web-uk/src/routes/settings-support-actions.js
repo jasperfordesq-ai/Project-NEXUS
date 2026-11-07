@@ -644,7 +644,9 @@ router.post('/prepare/:userId(\\d+)/listing/:listingId(\\d+)/photo', asyncRoute(
     await uploadSupportedMemberListingImage(req.token, supported.userId, listingId, {
       buffer,
       filename: text(image.originalFilename) || 'listing-image',
-      contentType: text(image.mimetype) || 'application/octet-stream'
+      contentType: text(image.mimetype) || 'application/octet-stream',
+      // The photo's description for screen-reader users (listings.image_alt); blank = none.
+      altText: String((req.body && req.body.image_alt) || '').replace(/\s+/g, ' ').trim().slice(0, 255)
     });
   } catch (error) {
     if (error?.status === 401) throw error;

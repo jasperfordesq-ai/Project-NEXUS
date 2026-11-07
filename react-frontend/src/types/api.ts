@@ -558,6 +558,8 @@ export interface MessageAttachment {
   type: 'image' | 'file';
   name: string;
   size: number;
+  /** A photo's description for screen-reader users, written by its sender; null when none. */
+  alt_text?: string | null;
 }
 
 export interface SendMessageRequest {

@@ -469,6 +469,40 @@ describe('group media helpers', () => {
     const formData = (api.upload as jest.Mock).mock.calls[0][1] as FormData;
     expect(formData.get('idempotency_key')).toBe('group-media-abc123');
   });
+
+  // Same field the website sends (react-frontend GroupMediaTab → api/media.ts): the caption
+  // is what a screen reader reads for the photo, so the app must be able to send one too.
+  it('sends a trimmed caption with a group media upload', async () => {
+    (api.upload as jest.Mock).mockResolvedValue({
+      data: { id: 83, url: '/uploads/groups/media.jpg', type: 'image', uploaded_by: 10, created_at: '2026-06-01T00:00:00Z' },
+    });
+
+    await uploadGroupMedia(7, {
+      uri: 'file:///tmp/group-media.jpg',
+      fileName: 'group-media.jpg',
+      mimeType: 'image/jpeg',
+      caption: '  Planting day  ',
+    });
+
+    const formData = (api.upload as jest.Mock).mock.calls[0][1] as FormData;
+    expect(formData.get('caption')).toBe('Planting day');
+  });
+
+  it('sends no caption field when the caption is blank', async () => {
+    (api.upload as jest.Mock).mockResolvedValue({
+      data: { id: 84, url: '/uploads/groups/media.jpg', type: 'image', uploaded_by: 10, created_at: '2026-06-01T00:00:00Z' },
+    });
+
+    await uploadGroupMedia(7, {
+      uri: 'file:///tmp/group-media.jpg',
+      fileName: 'group-media.jpg',
+      mimeType: 'image/jpeg',
+      caption: '   ',
+    });
+
+    const formData = (api.upload as jest.Mock).mock.calls[0][1] as FormData;
+    expect(formData.get('caption')).toBeNull();
+  });
 });
 
 describe('group analytics helpers', () => {

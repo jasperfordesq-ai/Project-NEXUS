@@ -47,6 +47,7 @@
     "text_placeholder": "Schreiben Sie Ihre Story...",
     "compose_placeholder": "Was beschäftigt Sie?",
     "text_overlay": "Text zu Ihrem Foto hinzufügen...",
+    "photo_alt_label": "Dieses Foto beschreiben (optional)",
     "poll_question_placeholder": "Stellen Sie eine Frage...",
     "poll_option_placeholder": "Option {{number}}",
     "poll_add_option": "Option hinzufügen",

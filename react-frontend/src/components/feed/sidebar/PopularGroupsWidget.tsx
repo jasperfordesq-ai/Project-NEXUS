@@ -18,6 +18,8 @@ export interface PopularGroup {
   id: number;
   name: string;
   image_url?: string;
+  /** Member-written description of the group picture; null when none. */
+  image_alt?: string | null;
   member_count: number;
 }
 
@@ -60,7 +62,7 @@ export function PopularGroupsWidget({ groups }: PopularGroupsWidgetProps) {
               {group.image_url ? (
                 <img
                   src={resolveThumbnailUrl(group.image_url, { width: 96, height: 96 })}
-                  alt={group.name}
+                  alt={group.image_alt?.trim() || group.name}
                   className="w-full h-full object-cover"
                   width={36}
                   height={36}

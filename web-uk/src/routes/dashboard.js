@@ -191,6 +191,8 @@ function normalizeFeedItem(item, t = (key) => key) {
   const type = String(item && item.type ? item.type : 'post').toLowerCase();
   const id = Number(item && item.id);
   const typeLabel = feedItemType(item, t);
+  const firstMedia = item && Array.isArray(item.media) && item.media[0] ? item.media[0] : null;
+  const ownImage = item && (item.image_url || item.imageUrl);
   return {
     id: item && item.id,
     href: type === 'post' && Number.isInteger(id) && id > 0 ? `/feed/posts/${id}` : '/feed',
@@ -198,7 +200,10 @@ function normalizeFeedItem(item, t = (key) => key) {
     title: String(item && (item.title || item.heading || typeLabel)).trim(),
     content: stripTags(item && (item.content || item.body)),
     authorName: String(item && ((item.author && item.author.name) || item.author_name || item.authorName || t('feed.unknown_author'))).trim(),
-    imageUrl: resolveBackendMediaUrl(item && (item.image_url || item.imageUrl || (item.media && item.media[0] && (item.media[0].thumbnail_url || item.media[0].file_url))))
+    imageUrl: resolveBackendMediaUrl(ownImage || (firstMedia && (firstMedia.thumbnail_url || firstMedia.file_url))),
+    // The words the member wrote for the photo shown (AWID report, Oct 2026): a
+    // listing's or event's own image_alt, or the post photo's alt_text.
+    imageAlt: String((item && item.image_alt) || (firstMedia && firstMedia.alt_text) || '').trim()
   };
 }
 

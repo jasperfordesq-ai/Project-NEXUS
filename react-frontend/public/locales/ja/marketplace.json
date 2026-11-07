@@ -150,6 +150,8 @@
     "add": "追加",
     "remove_image": "画像を削除",
     "image_alt": "アップロード {{number}}",
+    "image_alt_label": "写真{{number}}の説明（任意）",
+    "image_alt_hint": "スクリーンリーダーを使う方の助けになります。写真に何が写っているかを短く書いてください。",
     "video": "動画",
     "video_optional": "（任意、最大1本、50MB）",
     "remove_video": "動画を削除",

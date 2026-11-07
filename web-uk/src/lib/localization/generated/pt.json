@@ -7713,7 +7713,15 @@
                 "status_main": "A fotografia principal foi alterada.",
                 "status_remove_failed": "Lamentamos, não foi possível remover a fotografia. Tente novamente.",
                 "status_main_failed": "Lamentamos, não foi possível alterar a fotografia principal. Tente novamente.",
-                "status_created_photos_failed": "O seu anúncio foi criado, mas não foi possível carregar as fotografias. Tente adicioná-las novamente abaixo."
+                "status_created_photos_failed": "O seu anúncio foi criado, mas não foi possível carregar as fotografias. Tente adicioná-las novamente abaixo.",
+                "alt_label": "Descreva a foto (opcional)",
+                "alt_hint": "Se adicionar uma só foto, diga em poucas palavras o que mostra. Os leitores de ecrã leem esta descrição em voz alta. Se adicionar várias, pode descrever cada uma depois de adicionada.",
+                "error_alt_several": "Para descrever uma foto ao adicioná-la, adicione uma foto de cada vez. Pode descrever cada foto depois de adicionada.",
+                "photo_alt_label": "Descreva a foto :number",
+                "photo_alt_hint": "Diga em poucas palavras o que esta foto mostra. Os leitores de ecrã leem esta descrição em voz alta. Deixe vazio se não quiser descrição.",
+                "save_alt": "Guardar descrição",
+                "status_alt_saved": "A descrição da foto foi guardada.",
+                "status_alt_failed": "Lamentamos, não foi possível guardar a descrição da foto. Tente novamente."
             },
             "shipping": {
                 "title": "Opções de envio",
@@ -11698,7 +11706,9 @@
                 "error_too_many": "Pode anexar até 5 ficheiros.",
                 "error_failed": "Não foi possível carregar o seu anexo. Tente novamente.",
                 "error_invalid": "Esse tipo de anexo não é permitido.",
-                "photo_alt": "Fotografia enviada nesta conversa"
+                "photo_alt": "Fotografia enviada nesta conversa",
+                "alt_label": "Descreva a foto (opcional)",
+                "alt_hint": "Se adicionar uma foto, diga em poucas palavras o que ela mostra. Os leitores de ecrã leem este texto. Se anexar várias fotografias, descreva-as todas aqui."
             },
             "groups": {
                 "title": "Conversas em grupo",

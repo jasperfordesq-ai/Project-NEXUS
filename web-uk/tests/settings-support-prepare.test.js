@@ -330,6 +330,26 @@ describe('preparing a listing', () => {
     expect(response.headers.location).toContain('status=support-done');
   });
 
+  // AWID accessibility report, Oct 2026, point 6: the supporter describes the photo.
+  it('represent: sends the photo with the description the supporter wrote', async () => {
+    api.getChildAccounts.mockResolvedValue({ data: [child({ listings: 'represent' })] });
+    api.uploadSupportedMemberListingImage.mockResolvedValue({ data: {} });
+    const fs = require('fs');
+    const os = require('os');
+    const path = require('path');
+    const filepath = path.join(os.tmpdir(), `support-photo-alt-${Date.now()}.jpg`);
+    fs.writeFileSync(filepath, 'img');
+
+    await request(testApp({
+      photoUploads: true,
+      files: { image: { filepath, originalFilename: 'IMG_0042.jpg', mimetype: 'image/jpeg', size: 3 } }
+    })).post('/settings/support-actions/prepare/77/listing/31/photo').type('form').send({ image_alt: '  Mary’s dog on a lead  ' });
+
+    expect(api.uploadSupportedMemberListingImage).toHaveBeenCalledWith('test-token', 77, 31, expect.objectContaining({
+      altText: 'Mary’s dog on a lead'
+    }));
+  });
+
   it('a failed photo is reported as the photo failing, not the listing', async () => {
     api.getChildAccounts.mockResolvedValue({ data: [child({ listings: 'represent' })] });
     api.uploadSupportedMemberListingImage.mockRejectedValue(new api.ApiError('bad', 422));

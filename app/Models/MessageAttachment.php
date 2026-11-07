@@ -28,6 +28,8 @@ class MessageAttachment extends Model
         'file_url',
         'file_path',
         'file_name',
+        // A photo's written description for screen-reader users; null when none.
+        'alt_text',
         'file_type',
         'file_size',
         'mime_type',

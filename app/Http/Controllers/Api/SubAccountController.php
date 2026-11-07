@@ -395,11 +395,18 @@ class SubAccountController extends BaseApiController
         $userId = $this->requireAuth();
         $this->rateLimit('sub_account_listing_image', 10, 60);
 
+        // A description of the photo for screen-reader users (listings.image_alt),
+        // checked before anything is stored. Left out = keep what the listing
+        // already has (React sends it with the listing itself); empty = none.
+        request()->validate(['image_alt' => 'nullable|string|max:255']);
+        $imageAlt = request()->has('image_alt') ? (string) request()->input('image_alt', '') : null;
+
         $imageUrl = $this->subAccountService->attachListingImageForChild(
             $userId,
             (int) $childId,
             (int) $listingId,
             request()->file('image'),
+            $imageAlt,
         );
 
         if ($imageUrl === null) {

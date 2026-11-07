@@ -301,5 +301,8 @@
   "groups_empty": "まだどのグループチャットにも参加していません。",
   "groups_load_failed": "グループチャットを読み込めませんでした。",
   "group_open_aria": "グループチャット「{{name}}」を開く",
-  "aria_download_photo": "写真をダウンロード"
+  "aria_download_photo": "写真をダウンロード",
+  "aria_download_photo_described": "写真をダウンロード：{{description}}",
+  "attachment_alt_label": "この写真の説明（任意）",
+  "attachment_alt_hint": "スクリーンリーダーを使う方の助けになります。写真に何が写っているかを短く書いてください。"
 }

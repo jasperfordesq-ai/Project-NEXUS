@@ -24,6 +24,8 @@ return [
         'error_failed' => 'Votre pièce jointe n\'a pas pu être téléversée. Veuillez réessayer.',
         'error_invalid' => 'Ce type de pièce jointe n\'est pas autorisé.',
         'photo_alt' => 'Photo envoyée dans cette conversation',
+        'alt_label' => 'Décrivez la photo (facultatif)',
+        'alt_hint' => 'Si vous ajoutez une photo, dites en quelques mots ce qu\'elle montre. Les lecteurs d\'écran lisent ce texte. Si vous joignez plusieurs photos, décrivez-les toutes ici.',
     ],
     'groups' => [
         'title' => 'Conversations de groupe',

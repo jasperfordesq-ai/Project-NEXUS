@@ -179,6 +179,20 @@ describe('GroupsScreen', () => {
     expect(getByText('Gardening')).toBeTruthy();
   });
 
+  it('reads the description written for the group picture after the group name', () => {
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
+      items: [{ ...mockGroup, image_url: '/uploads/groups/garden.jpg', image_alt: 'Volunteers planting seedlings' }] });
+    const { getByLabelText } = render(<GroupsScreen />);
+    expect(getByLabelText('Garden Club. Volunteers planting seedlings')).toBeTruthy();
+  });
+
+  it('keeps the group name alone when the picture has no description', () => {
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
+      items: [{ ...mockGroup, image_url: '/uploads/groups/garden.jpg', image_alt: null }] });
+    const { getByLabelText } = render(<GroupsScreen />);
+    expect(getByLabelText('Garden Club')).toBeTruthy();
+  });
+
   it('renders group cards when items are provided', () => {
     mockUsePaginatedApi.mockReturnValueOnce({
       items: [mockGroup],

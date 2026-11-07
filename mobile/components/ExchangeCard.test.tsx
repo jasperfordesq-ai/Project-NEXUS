@@ -96,6 +96,22 @@ describe('ExchangeCard', () => {
     });
   });
 
+  it('reads the photo description the member wrote after the listing title', () => {
+    const { getByLabelText } = render(
+      <ExchangeCard exchange={{ ...exchange, image_url: '/uploads/listings/garden.jpg', image_alt: 'Raised vegetable beds' }} />,
+    );
+
+    expect(getByLabelText('Garden help. Raised vegetable beds')).toBeTruthy();
+  });
+
+  it('keeps the title alone when the photo has no description', () => {
+    const { getByLabelText } = render(
+      <ExchangeCard exchange={{ ...exchange, image_url: '/uploads/listings/garden.jpg', image_alt: null }} />,
+    );
+
+    expect(getByLabelText('Garden help')).toBeTruthy();
+  });
+
   it('shows distance returned by nearby listing searches', () => {
     const { getByText } = render(<ExchangeCard exchange={exchange} />);
 

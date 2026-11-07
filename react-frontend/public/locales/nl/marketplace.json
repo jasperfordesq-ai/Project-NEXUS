@@ -150,6 +150,8 @@
     "add": "Toevoegen",
     "remove_image": "Verwijder afbeelding",
     "image_alt": "Uploaden {{number}}",
+    "image_alt_label": "Beschrijf foto {{number}} (optioneel)",
+    "image_alt_hint": "Helpt mensen die een schermlezer gebruiken. Zeg in een paar woorden wat er op de foto staat.",
     "video": "Video",
     "video_optional": "(optioneel, max. 1 video, 50 MB)",
     "remove_video": "Video verwijderen",

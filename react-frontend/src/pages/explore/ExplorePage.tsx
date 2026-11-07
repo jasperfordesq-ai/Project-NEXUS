@@ -78,6 +78,8 @@ interface PopularListing {
   title: string;
   type: string;
   image_url: string | null;
+  /** Member-written photo description; null when none was written. */
+  image_alt?: string | null;
   location: string | null;
   estimated_hours: number | null;
   created_at: string;
@@ -95,6 +97,8 @@ interface ActiveGroup {
   name: string;
   description: string | null;
   image_url: string | null;
+  /** Member-written description of the group picture; null when none. */
+  image_alt?: string | null;
   privacy: string;
   member_count: number;
   created_at: string;
@@ -105,6 +109,8 @@ interface UpcomingEvent {
   title: string;
   description: string | null;
   image_url: string | null;
+  /** Organiser-written cover description; null when none was written. */
+  image_alt?: string | null;
   start_at: string;
   end_at: string | null;
   location: string | null;
@@ -884,7 +890,7 @@ export default function ExplorePage() {
                             height: 240,
                             sizes: '(min-width: 1024px) 23vw, (min-width: 640px) 45vw, 92vw',
                           })}
-                          alt={listing.title}
+                          alt={listing.image_alt?.trim() || listing.title}
                           className="w-full h-32 object-cover rounded-lg"
                           loading="lazy"
                         />
@@ -980,7 +986,7 @@ export default function ExplorePage() {
                             height: 240,
                             sizes: '(min-width: 1024px) 300px, 80vw',
                           })}
-                          alt={event.title}
+                          alt={event.image_alt?.trim() || event.title}
                           className="w-full h-28 object-cover rounded-lg"
                           loading="lazy"
                         />
@@ -1046,6 +1052,7 @@ export default function ExplorePage() {
                       <div className="flex items-center gap-3">
                         <Avatar
                           src={group.image_url ? resolveAvatarUrl(group.image_url) : undefined}
+                          alt={group.image_alt?.trim() || undefined}
                           name={group.name}
                           size="md"
                           className="shrink-0"

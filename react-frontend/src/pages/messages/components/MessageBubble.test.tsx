@@ -351,4 +351,18 @@ describe('MessageBubble — report message', () => {
     expect(screen.queryByRole('button', { name: 'IMG_2034.jpg' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'rota.pdf' })).toBeInTheDocument();
   });
+
+  // AWID accessibility report, point 6: a photo the sender described is read out with that description.
+  it('reads a described photo out with its description', () => {
+    const message = {
+      ...mockMessage,
+      attachments: [
+        { id: 1, url: '/api/v2/messages/attachments/1', type: 'image', name: 'IMG_2034.jpg', size: 1000, alt_text: 'A red bicycle' },
+      ],
+    } as unknown as Message;
+    render(<MessageBubble {...defaultProps} message={message} />);
+
+    expect(screen.getByRole('button', { name: 'aria_download_photo_described' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'aria_download_photo' })).not.toBeInTheDocument();
+  });
 });

@@ -939,6 +939,60 @@ class MarketplaceListingService
     }
 
     /**
+     * A photo description is plain words, read aloud by screen readers: strip
+     * markup, collapse whitespace, and store NULL for an empty box so the pages
+     * fall back to their own wording ("Photo 1 for …"). Same rule as
+     * ListingService's listings.image_alt.
+     */
+    public static function cleanAltText(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+        $text = trim((string) preg_replace('/\s+/u', ' ', \App\Helpers\HtmlSanitizer::toPlainText($value)));
+
+        return $text === '' ? null : mb_substr($text, 0, 255);
+    }
+
+    /**
+     * Describe (or clear the description of) existing photos of one listing.
+     *
+     * Every id must be a photo of THIS listing: the caller has already proved it
+     * owns the listing, and that proof must not reach a photo on another one.
+     *
+     * @param array<int|string, mixed> $altTexts photo id => description (empty clears)
+     * @throws \InvalidArgumentException when an id is not one of this listing's photos
+     */
+    public static function setImageAltTexts(MarketplaceListing $listing, array $altTexts): void
+    {
+        $wanted = [];
+        foreach ($altTexts as $imageId => $text) {
+            if (! is_int($imageId) && ! (is_string($imageId) && ctype_digit($imageId))) {
+                throw new \InvalidArgumentException(__('api_controllers_2.marketplace_listing.image_not_found'));
+            }
+            $wanted[(int) $imageId] = self::cleanAltText($text);
+        }
+        if ($wanted === []) {
+            return;
+        }
+
+        $images = MarketplaceImage::query()
+            ->where('marketplace_listing_id', $listing->id)
+            ->where('tenant_id', $listing->tenant_id)
+            ->whereIn('id', array_keys($wanted))
+            ->lockForUpdate()
+            ->get();
+        if ($images->count() !== count($wanted)) {
+            throw new \InvalidArgumentException(__('api_controllers_2.marketplace_listing.image_not_found'));
+        }
+
+        foreach ($images as $image) {
+            $image->alt_text = $wanted[(int) $image->id];
+            $image->save();
+        }
+    }
+
+    /**
      * Reorder images for a listing.
      *
      * @param MarketplaceListing $listing

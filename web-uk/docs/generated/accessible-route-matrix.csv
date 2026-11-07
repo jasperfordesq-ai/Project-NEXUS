@@ -198,6 +198,7 @@ extra-web-uk,GET,/marketplace/shipping/{param}/delete,marketplace,,,,,,,,,confir
 extra-web-uk,GET,/marketplace/shipping/{param}/edit,marketplace,,,,,,,,,marketplace/shipping-form,,,,web-uk/src/routes/marketplace-member-tools.js,
 extra-web-uk,POST,/marketplace/{param}/add-to-list,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-member-tools.js,
 extra-web-uk,POST,/marketplace/{param}/photos,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-member-tools.js,
+extra-web-uk,POST,/marketplace/{param}/photos/{param}/description,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-member-tools.js,
 extra-web-uk,POST,/marketplace/{param}/photos/{param}/main,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-member-tools.js,
 extra-web-uk,POST,/marketplace/{param}/photos/{param}/remove,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-member-tools.js,
 extra-web-uk,POST,/marketplace/{param}/video,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-member-tools.js,

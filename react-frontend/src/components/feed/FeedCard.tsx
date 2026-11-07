@@ -499,6 +499,8 @@ const FeedCardInner = React.memo(function FeedCardInner({
   const imageUrl = item.type === 'podcast_show' || item.type === 'podcast_episode'
     ? safePodcastArtworkUrl(item.image_url)
     : item.image_url;
+  // What the member wrote about this picture (listings, events), else the generic label.
+  const imageDescription = item.image_alt?.trim() || null;
   // Volunteer-hours activity is system-generated, so its stored title is a
   // non-localised fallback; render a localised title from the hours instead.
   const displayTitle = item.type === 'volunteer_hours' && item.hours != null
@@ -1157,7 +1159,7 @@ const FeedCardInner = React.memo(function FeedCardInner({
               <Link to={tenantPath(detailPath)} onClick={doubleTapHandler}>
                 <img
                   src={resolveThumbnailUrl(imageUrl, { width: 960, height: 540 })}
-                  alt={t('card.image_alt', { type: typeLabel ?? t('card.type_post'), name: author.name })}
+                  alt={imageDescription || t('card.image_alt', { type: typeLabel ?? t('card.type_post'), name: author.name })}
                   className="w-full max-h-[28rem] object-cover group-hover:scale-[1.02] transition-transform duration-500"
                   loading="lazy"
                   width={800}
@@ -1168,7 +1170,7 @@ const FeedCardInner = React.memo(function FeedCardInner({
             ) : (
               <img
                 src={resolveThumbnailUrl(imageUrl, { width: 960, height: 540 })}
-                alt={t('card.image_alt', { type: t('card.type_post'), name: author.name })}
+                alt={imageDescription || t('card.image_alt', { type: t('card.type_post'), name: author.name })}
                 className="w-full max-h-[28rem] object-cover group-hover:scale-[1.02] transition-transform duration-500"
                 loading="lazy"
                 width={800}

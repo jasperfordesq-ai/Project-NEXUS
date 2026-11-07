@@ -1411,15 +1411,24 @@ async function callCouponApi(token, method, path = '', data = undefined) {
 async function uploadMarketplaceListingImages(token, listingId, data) {
   const form = new globalThis.FormData();
   const files = Array.isArray(data.files) ? data.files : [data.file || data.image].filter(Boolean);
+  // A description per photo for screen-reader users: alt_texts[i] belongs to the
+  // i-th file sent (MarketplaceListingController::uploadImages). Blank = none.
+  const altTexts = Array.isArray(data.altTexts) ? data.altTexts : [];
+  let sent = 0;
   // `images[]`, not `image`: Laravel keeps only the LAST of several same-named
   // `image` parts, so a seller choosing three photos used to get one.
-  for (const file of files) {
-    if (!file || !file.buffer) continue;
+  files.forEach((file, index) => {
+    if (!file || !file.buffer) return;
     const blob = new globalThis.Blob([file.buffer], {
       type: file.contentType || 'application/octet-stream'
     });
     form.append('images[]', blob, file.filename || 'marketplace-image');
-  }
+    if (altTexts.length > 0) {
+      const value = typeof altTexts[index] === 'string' ? altTexts[index].trim().slice(0, 255) : '';
+      form.append(`alt_texts[${sent}]`, value);
+    }
+    sent += 1;
+  });
   if (typeof data.idempotencyKey === 'string' && data.idempotencyKey !== '') {
     form.append('idempotency_key', data.idempotencyKey.slice(0, 128));
   }
@@ -2723,6 +2732,8 @@ async function uploadMessageAttachments(token, data) {
       type: file.contentType || 'application/octet-stream'
     });
     form.append('attachments[]', blob, file.filename || 'attachment');
+    // attachment_alts[i] describes attachments[i] (AWID report, point 6); blank when none.
+    form.append('attachment_alts[]', typeof file.alt === 'string' ? file.alt : '');
   });
 
   return request('/api/v2/messages', {
@@ -3566,6 +3577,11 @@ async function uploadSupportedMemberListingImage(token, childUserId, listingId, 
   if (file && file.buffer) {
     const blob = new globalThis.Blob([file.buffer], { type: file.contentType || 'application/octet-stream' });
     form.append('image', blob, file.filename || 'listing-image');
+  }
+  // The photo's description for screen-reader users (listings.image_alt). Sent only
+  // when the form offered the box; blank clears it, absent leaves it alone.
+  if (file && typeof file.altText === 'string') {
+    form.append('image_alt', file.altText.trim().slice(0, 255));
   }
   return request(
     `/api/v2/users/me/sub-accounts/${encodeURIComponent(childUserId)}/listings/${encodeURIComponent(listingId)}/image`,

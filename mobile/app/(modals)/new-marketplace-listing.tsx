@@ -76,6 +76,8 @@ function priceTypeHasNoPrice(priceType: MarketplacePriceType): boolean {
 }
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 const MAX_IMAGES = 20;
+/** A photo description's limit, as the API's `max:255`. */
+const IMAGE_ALT_MAX = 255;
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
 function toNumber(value: string): number | null {
@@ -154,6 +156,13 @@ export function MarketplaceListingForm() {
   const [existingImages, setExistingImages] = useState<MarketplaceImage[]>([]);
   const [removedImageIds, setRemovedImageIds] = useState<number[]>([]);
   const [imageUris, setImageUris] = useState<string[]>([]);
+  /*
+    AWID accessibility report, Oct 2026, point 6: a description of each photo for screen-reader
+    users. Saved photos by id (sent as `image_alt_texts` with the update), new ones by uri
+    (sent as `alt_texts[0]` with that photo's upload).
+  */
+  const [existingImageAlts, setExistingImageAlts] = useState<Record<number, string>>({});
+  const [newImageAlts, setNewImageAlts] = useState<Record<string, string>>({});
   const [videoAsset, setVideoAsset] = useState<MarketplaceVideoUpload | null>(null);
   const [existingVideoUrl, setExistingVideoUrl] = useState<string | null>(null);
   const [removeExistingVideo, setRemoveExistingVideo] = useState(false);
@@ -259,8 +268,12 @@ export function MarketplaceListingForm() {
         setDeliveryMethod((listing.delivery_method as MarketplaceDeliveryMethod) ?? 'pickup');
         setSellerType(listing.seller_type === 'business' ? 'business' : 'private');
         setExistingImages(listing.images ?? []);
+        setExistingImageAlts(Object.fromEntries(
+          (listing.images ?? []).filter((image) => image.id).map((image) => [image.id as number, image.alt_text ?? '']),
+        ));
         setRemovedImageIds([]);
         setImageUris([]);
+        setNewImageAlts({});
         setExistingVideoUrl(listing.video_url ?? null);
         setVideoAsset(null);
         setRemoveExistingVideo(false);
@@ -388,6 +401,14 @@ export function MarketplaceListingForm() {
       if (Object.keys(filledTemplateFields).length > 0) {
         payload.template_data = filledTemplateFields;
       }
+      if (isEditing) {
+        // Descriptions of the photos already saved (blank clears one).
+        const savedPhotoAlts: Record<number, string | null> = {};
+        existingImages.forEach((image) => {
+          if (image.id) savedPhotoAlts[image.id] = (existingImageAlts[image.id] ?? '').trim() || null;
+        });
+        if (Object.keys(savedPhotoAlts).length > 0) payload.image_alt_texts = savedPhotoAlts;
+      }
       const creationOperation = isEditing
         ? null
         : await reserveMarketplaceListingOperation(JSON.stringify(payload));
@@ -400,7 +421,10 @@ export function MarketplaceListingForm() {
       if (isEditing) removedImageIds.forEach(imageId => tasks.push(() => deleteMarketplaceListingImage(response.data.id, imageId)));
       imageUris.forEach(uri => {
         const operationKey = randomUUID();
-        tasks.push(() => uploadMarketplaceImages(response.data.id, [uri], operationKey));
+        const altText = (newImageAlts[uri] ?? '').trim();
+        tasks.push(() => (altText
+          ? uploadMarketplaceImages(response.data.id, [uri], operationKey, [altText])
+          : uploadMarketplaceImages(response.data.id, [uri], operationKey)));
       });
       if (isEditing && removeExistingVideo && !videoAsset) tasks.push(() => deleteMarketplaceVideo(response.data.id));
       if (videoAsset) tasks.push(() => uploadMarketplaceVideo(response.data.id, videoAsset));
@@ -738,7 +762,7 @@ export function MarketplaceListingForm() {
                     <View key={`existing-${image.id ?? image.url}-${index}`} className="relative">
                       <Image
                         source={{ uri: resolveImageUrl(image.thumbnail_url || image.url) ?? image.url }}
-                        accessibilityLabel={t('forms.imageAlt', { number: index + 1 })}
+                        accessibilityLabel={(image.id ? existingImageAlts[image.id] ?? '' : '').trim() || t('forms.imageAlt', { number: index + 1 })}
                         className="size-20 rounded-panel-inner"
                         resizeMode="cover"
                       />
@@ -763,7 +787,7 @@ export function MarketplaceListingForm() {
                     <View key={`${uri}-${index}`} className="relative">
                       <Image
                         source={{ uri }}
-                        accessibilityLabel={t('forms.imageAlt', { number: existingImages.length + index + 1 })}
+                        accessibilityLabel={(newImageAlts[uri] ?? '').trim() || t('forms.imageAlt', { number: existingImages.length + index + 1 })}
                         className="size-20 rounded-panel-inner"
                         resizeMode="cover"
                       />
@@ -785,6 +809,31 @@ export function MarketplaceListingForm() {
                     </View>
                   ))}
                 </ScrollView>
+              ) : null}
+              {totalImageCount > 0 ? (
+                <View className="gap-3">
+                  <Text className="text-xs leading-5" style={{ color: theme.textMuted }}>{t('forms.imageAltHint')}</Text>
+                  {existingImages.map((image, index) => (image.id ? (
+                    <FormField
+                      key={`alt-existing-${image.id}`}
+                      label={t('forms.imageAltLabel', { number: index + 1 })}
+                      value={existingImageAlts[image.id] ?? ''}
+                      onChangeText={(value) => setExistingImageAlts((current) => ({ ...current, [image.id as number]: value }))}
+                      placeholder={t('forms.imageAltPlaceholder')}
+                      maxLength={IMAGE_ALT_MAX}
+                    />
+                  ) : null))}
+                  {imageUris.map((uri, index) => (
+                    <FormField
+                      key={`alt-new-${uri}-${index}`}
+                      label={t('forms.imageAltLabel', { number: existingImages.length + index + 1 })}
+                      value={newImageAlts[uri] ?? ''}
+                      onChangeText={(value) => setNewImageAlts((current) => ({ ...current, [uri]: value }))}
+                      placeholder={t('forms.imageAltPlaceholder')}
+                      maxLength={IMAGE_ALT_MAX}
+                    />
+                  ))}
+                </View>
               ) : null}
               <View className="gap-2 rounded-panel-inner p-3" style={{ borderWidth: 1, borderColor: theme.border, backgroundColor: withAlpha(primary, 0.05) }}>
                 <View className="flex-row items-center justify-between gap-3">

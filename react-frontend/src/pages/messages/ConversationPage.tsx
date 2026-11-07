@@ -70,6 +70,7 @@ import { MessageBubble } from './components/MessageBubble';
 import { ReportConcernModal } from '@/components/safety/ReportConcernModal';
 import { MessageInputArea } from './components/MessageInputArea';
 import type { AttachmentPreview } from './components/MessageInputArea';
+import { appendAttachments } from './attachmentFormData';
 
 interface OtherUser {
   id: number;
@@ -1870,6 +1871,7 @@ export function ConversationPage() {
         file,
         preview: isImage ? URL.createObjectURL(file) : '',
         type: isImage ? 'image' as const : 'file' as const,
+        alt: '',
       };
     });
 
@@ -1894,6 +1896,11 @@ export function ConversationPage() {
     setAttachmentPreviews((prev) => prev.filter((_, i) => i !== index));
   }
 
+  /** The sender typed a description for the photo at `index` (AWID report, point 6). */
+  function changeAttachmentAlt(index: number, alt: string) {
+    setAttachmentPreviews((prev) => prev.map((item, i) => (i === index ? { ...item, alt } : item)));
+  }
+
   /**
    * Send message with attachments
    */
@@ -1914,9 +1921,7 @@ export function ConversationPage() {
         const formData = new FormData();
         formData.append('recipient_id', targetId);
         formData.append('body', newMessage.trim());
-        attachments.forEach((file) => {
-          formData.append('attachments[]', file);
-        });
+        appendAttachments(formData, attachmentPreviews);
 
         // Include listing ID if this is the first message in conversation
         if (listingId && isNewConversation) {
@@ -2942,6 +2947,7 @@ export function ConversationPage() {
           fileInputRef={fileInputRef}
           onFileSelect={handleFileSelect}
           onRemoveAttachment={removeAttachment}
+          onAttachmentAltChange={changeAttachmentAlt}
           onGifSelect={handleGifSelect} />
       </GlassCard>
 

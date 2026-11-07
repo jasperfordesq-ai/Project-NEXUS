@@ -91,6 +91,8 @@ export function StoryCreator({ onClose, onCreated }: StoryCreatorProps) {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [photoText, setPhotoText] = useState('');
+  // The photo's description for screen-reader users (AWID report, point 6).
+  const [photoAlt, setPhotoAlt] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Video mode state
@@ -474,6 +476,9 @@ export function StoryCreator({ onClose, onCreated }: StoryCreatorProps) {
         if (photoText.trim()) {
           formData.append('text_content', photoText.trim());
         }
+        if (photoAlt.trim()) {
+          formData.append('media_alt', photoAlt.trim());
+        }
         formData.append('duration', '5');
         formData.append('audience', audience);
 
@@ -544,6 +549,7 @@ export function StoryCreator({ onClose, onCreated }: StoryCreatorProps) {
       setSelectedImage(null);
       setImagePreview(null);
       setPhotoText('');
+      setPhotoAlt('');
       return;
     }
     if (mode === 'video' && selectedVideo) {
@@ -714,6 +720,23 @@ export function StoryCreator({ onClose, onCreated }: StoryCreatorProps) {
                       maxLength={200}
                     />
                   </div>
+                </div>
+                {/* What the photo shows, for screen-reader users (AWID report, point 6) */}
+                <div className="w-full max-w-sm">
+                  <Input
+                    value={photoAlt}
+                    onValueChange={setPhotoAlt}
+                    label={t('creator.photo_alt_label')}
+                    aria-label={t('creator.photo_alt_label')}
+                    variant="secondary"
+                    size="sm"
+                    classNames={{
+                      label: 'text-white/70',
+                      input: 'text-white placeholder:text-white/50',
+                      inputWrapper: 'border-white/30 bg-white/10',
+                    }}
+                    maxLength={255}
+                  />
                 </div>
                 {/* Image filters */}
                 <div className="w-full max-w-sm">

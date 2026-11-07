@@ -343,6 +343,24 @@ describe('MarketplaceListingPage', () => {
     });
   });
 
+  // AWID accessibility report, Oct 2026, point 6: the seller's own words describe each photo.
+  it('describes the photo and its thumbnail with what the seller wrote', async () => {
+    setupMocks({
+      images: [
+        { id: 1, url: 'https://example.com/chair.jpg', thumbnail_url: 'https://example.com/chair-thumb.jpg', alt_text: 'A green velvet armchair', is_primary: true },
+        { id: 2, url: 'https://example.com/back.jpg', thumbnail_url: 'https://example.com/back-thumb.jpg', alt_text: null, is_primary: false },
+      ],
+    });
+    const { MarketplaceListingPage } = await import('./MarketplaceListingPage');
+    render(<MarketplaceListingPage />);
+
+    await waitFor(() => expect(screen.getByText('Cosy Armchair')).toBeInTheDocument());
+    // Main photo and its thumbnail.
+    expect(screen.getAllByAltText('A green velvet armchair')).toHaveLength(2);
+    // No description: the numbered fallback.
+    expect(screen.getByAltText('listing.thumbnail_alt')).toBeInTheDocument();
+  });
+
   it('renders price display for fixed-price listing', async () => {
     const { MarketplaceListingPage } = await import('./MarketplaceListingPage');
     render(<MarketplaceListingPage />);

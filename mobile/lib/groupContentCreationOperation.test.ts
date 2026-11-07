@@ -122,6 +122,42 @@ describe('group content creation operation', () => {
     })).rejects.toThrow('pending group gallery-media');
   });
 
+  it('keeps a gallery caption with the pending upload so a retry sends it again', async () => {
+    const media = {
+      type: 'image' as const,
+      uri: 'file:///documents/group-media-operations-v1/photo.jpg',
+      fileName: 'photo.jpg',
+      mimeType: 'image/jpeg',
+      size: 123,
+      md5: null,
+      caption: '  Planting day at the community garden  ',
+    };
+    const operation = await reserveGroupContentCreationOperation(9, 'gallery-media', media);
+    expect(operation.payload.caption).toBe('Planting day at the community garden');
+
+    jest.mocked(loadCreationDraft).mockResolvedValue(operation);
+    const restored = await loadGroupContentCreationOperation(9, 'gallery-media');
+    expect(restored?.payload.caption).toBe('Planting day at the community garden');
+  });
+
+  it('still restores a pending upload saved before captions existed', async () => {
+    const media = {
+      type: 'image' as const,
+      uri: 'file:///documents/group-media-operations-v1/photo.jpg',
+      fileName: 'photo.jpg',
+      mimeType: 'image/jpeg',
+      size: 123,
+      md5: null,
+    };
+    // A blank caption is the same upload as no caption, so the saved intent is unchanged.
+    const operation = await reserveGroupContentCreationOperation(9, 'gallery-media', { ...media, caption: '   ' });
+    expect(operation.intent).toBe(JSON.stringify(media));
+    expect('caption' in operation.payload).toBe(false);
+
+    jest.mocked(loadCreationDraft).mockResolvedValue({ ...operation, intent: JSON.stringify(media), payload: media });
+    await expect(loadGroupContentCreationOperation(9, 'gallery-media')).resolves.toMatchObject({ payload: media });
+  });
+
   it('blocks transport when encrypted persistence fails', async () => {
     jest.mocked(saveCreationDraft).mockResolvedValueOnce(false);
     await expect(reserveGroupContentCreationOperation(9, 'discussion', discussion))

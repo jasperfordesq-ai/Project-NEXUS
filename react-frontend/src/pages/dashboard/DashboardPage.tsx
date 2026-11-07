@@ -621,7 +621,7 @@ export function DashboardPage() {
                     {stats.myGroups.map((group) => (
                       <Link key={group.id} to={tenantPath(`/groups/${group.id}`)} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0 group">
                         {group.image_url ? (
-                          <Avatar src={resolveAvatarUrl(group.image_url)} name={group.name} size="sm" radius="sm" className="shrink-0" />
+                          <Avatar src={resolveAvatarUrl(group.image_url)} alt={group.image_alt?.trim() || undefined} name={group.name} size="sm" radius="sm" className="shrink-0" />
                         ) : (
                           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500/20 to-emerald-500/20 flex items-center justify-center shrink-0">
                             <span className="text-sm font-bold text-teal-600 dark:text-teal-400">{group.name.charAt(0).toUpperCase()}</span>

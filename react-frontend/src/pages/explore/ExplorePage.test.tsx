@@ -25,6 +25,14 @@ const { mockApi } = vi.hoisted(() => ({
 vi.mock('@/lib/api', () => ({ api: mockApi, default: mockApi }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
+// The real Avatar only paints its picture after the image loads, which jsdom
+// never does. This stub keeps its alt rule (alt, else the name) so a test can
+// see which description the page handed it.
+vi.mock('@/components/ui/Avatar', () => ({
+  Avatar: ({ src, alt, name }: { src?: string; alt?: string; name?: string | null }) =>
+    src ? <img src={src} alt={alt ?? name ?? ''} /> : <span data-testid="avatar-fallback" />,
+}));
+
 // ─── Toast / Auth / Tenant ────────────────────────────────────────────────────
 const mockToast = {
   success: vi.fn(),
@@ -454,5 +462,46 @@ describe('ExplorePage', () => {
     } finally {
       window.history.pushState({}, '', originalUrl);
     }
+  });
+
+  it('reads out the descriptions members wrote for listing, event and group pictures', async () => {
+    const base = makeExploreData();
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/v2/explore/for-you')) {
+        return Promise.resolve({ success: true, data: [], meta: { per_page: 15, total: 0, has_more: false } });
+      }
+      if (url.includes('/v2/explore')) {
+        return Promise.resolve({
+          success: true,
+          data: {
+            ...base,
+            popular_listings: [
+              { ...base.popular_listings[0], image_url: '/patch.jpg', image_alt: 'A freshly dug vegetable patch' },
+              { ...base.popular_listings[0], id: 2, title: 'Quiet Listing', image_url: '/quiet.jpg', image_alt: null },
+            ],
+            upcoming_events: [{
+              id: 7, title: 'Seed swap', description: null, image_url: '/seeds.jpg',
+              image_alt: 'Seed packets on a trestle table', start_at: '2026-12-01T10:00:00Z', end_at: null,
+              location: 'Hall', is_online: false, max_attendees: null, rsvp_count: 0,
+            }],
+            active_groups: [{
+              id: 9, name: 'Allotment Friends', description: null, image_url: '/group.jpg',
+              image_alt: 'Three people planting leeks', privacy: 'public', member_count: 4,
+              created_at: '2026-01-01T00:00:00Z',
+            }],
+          },
+        });
+      }
+      return Promise.resolve({ success: true, data: null });
+    });
+
+    const { default: ExplorePage } = await import('./ExplorePage');
+    render(<ExplorePage />);
+
+    expect(await screen.findByAltText('A freshly dug vegetable patch')).toBeInTheDocument();
+    expect(screen.getByAltText('Seed packets on a trestle table')).toBeInTheDocument();
+    expect(screen.getByAltText('Three people planting leeks')).toBeInTheDocument();
+    // No description: the current fallback (the card's title) stays.
+    expect(screen.getByAltText('Quiet Listing')).toBeInTheDocument();
   });
 });

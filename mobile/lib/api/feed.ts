@@ -87,6 +87,12 @@ export interface FeedItem {
   title: string | null;
   content: string | null;
   image_url: string | null;
+  /**
+   * The description a member wrote for the photo of a listing or event in the feed
+   * (listings.image_alt / events.image_alt). Null when none was written, and for posts,
+   * whose photos carry their own `media[].alt_text`.
+   */
+  image_alt?: string | null;
   user_id?: number;
   author_id?: number;
   author_name?: string | null;

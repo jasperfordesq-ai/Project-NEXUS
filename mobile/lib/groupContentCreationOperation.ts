@@ -29,6 +29,12 @@ export interface GroupContentCreationPayloads {
     mimeType: string | null;
     size: number;
     md5: string | null;
+    /**
+     * Optional, and only present when non-blank: it is what a screen reader reads for the
+     * photo. Absent rather than null so a pending upload saved before captions existed
+     * still normalises to the exact intent it was saved with.
+     */
+    caption?: string;
   };
   'chatroom-message': { chatroomId: number; body: string };
   chatroom: { name: string };
@@ -122,6 +128,7 @@ function normalizePayload<K extends GroupContentCreationKind>(
         mimeType,
         size,
         md5,
+        ...(typeof raw.caption === 'string' && raw.caption.trim() ? { caption: raw.caption.trim() } : {}),
       };
       break;
     }

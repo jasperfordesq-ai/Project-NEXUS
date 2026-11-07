@@ -47,6 +47,7 @@
     "text_placeholder": "Écrivez votre story...",
     "compose_placeholder": "À quoi pensez-vous ?",
     "text_overlay": "Ajouter du texte à votre photo...",
+    "photo_alt_label": "Décrivez cette photo (facultatif)",
     "poll_question_placeholder": "Posez une question...",
     "poll_option_placeholder": "Option {{number}}",
     "poll_add_option": "Ajouter une option",

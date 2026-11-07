@@ -205,6 +205,30 @@ class PublicEventsTest extends TestCase
         );
     }
 
+    public function test_the_organisers_photo_description_is_published_with_the_photo(): void
+    {
+        $organiser = $this->organiser();
+        $described = $this->event($organiser, ['image_url' => '/uploads/events/orchard.jpg'], [
+            'image_alt' => 'Lanterns hanging from apple trees at dusk',
+        ]);
+        $plain = $this->event($organiser, [
+            'title' => 'Apple pressing',
+            'image_url' => '/uploads/events/press.jpg',
+        ]);
+
+        $detail = $this->apiGet('/v2/public/events/' . $described->id)->json('data');
+        $list = collect($this->apiGet('/v2/public/events')->json('data') ?? []);
+
+        $this->assertSame('Lanterns hanging from apple trees at dusk', $detail['image_alt']);
+        $this->assertSame(
+            'Lanterns hanging from apple trees at dusk',
+            $list->firstWhere('id', (int) $described->id)['image_alt'] ?? 'missing',
+        );
+        // No description is null — the pages decide the fallback, never a title copy.
+        $this->assertArrayHasKey('image_alt', $list->firstWhere('id', (int) $plain->id) ?? []);
+        $this->assertNull($list->firstWhere('id', (int) $plain->id)['image_alt']);
+    }
+
     // ── Audience ────────────────────────────────────────────────────────
 
     public function test_draft_and_archived_events_are_not_public(): void

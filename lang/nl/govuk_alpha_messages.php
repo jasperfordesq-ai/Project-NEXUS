@@ -24,6 +24,8 @@ return [
         'error_failed' => 'Uw bijlage kon niet worden geüpload. Probeer het opnieuw.',
         'error_invalid' => 'Dat type bijlage is niet toegestaan.',
         'photo_alt' => 'Foto verstuurd in dit gesprek',
+        'alt_label' => 'Beschrijf de foto (optioneel)',
+        'alt_hint' => 'Als u een foto toevoegt, zeg dan in een paar woorden wat erop staat. Schermlezers lezen deze tekst voor. Voegt u meerdere foto\'s toe, beschrijf ze dan hier allemaal.',
     ],
     'groups' => [
         'title' => 'Groepsgesprekken',

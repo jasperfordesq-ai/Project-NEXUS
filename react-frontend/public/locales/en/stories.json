@@ -47,6 +47,7 @@
     "text_placeholder": "Type your story...",
     "compose_placeholder": "What's on your mind?",
     "text_overlay": "Add text to your photo...",
+    "photo_alt_label": "Describe this photo (optional)",
     "poll_question_placeholder": "Ask a question...",
     "poll_option_placeholder": "Option {{number}}",
     "poll_add_option": "Add option",

@@ -183,6 +183,9 @@
       "retryUpload": "Retry upload",
       "permissionTitle": "Photo library access needed",
       "permissionMessage": "Allow photo library access to share group media.",
+      "captionLabel": "Caption (optional)",
+      "captionPlaceholder": "Add context for group members",
+      "photoAlt": "Group photo",
       "filters": {
         "all": "All",
         "image": "Photos",

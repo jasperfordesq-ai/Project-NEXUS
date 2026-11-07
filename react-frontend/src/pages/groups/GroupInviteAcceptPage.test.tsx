@@ -86,6 +86,25 @@ describe('GroupInviteAcceptPage', () => {
     expect(await screen.findByRole('heading', { name: 'Invitation Accepted' })).toBeInTheDocument();
   });
 
+  it('reads out the description written for the group picture', async () => {
+    mocks.preview.mockResolvedValue({
+      ...preview,
+      group: { ...preview.group, image_url: '/uploads/groups/garden.jpg', image_alt: 'Three people planting leeks' },
+    });
+    render(<GroupInviteAcceptPage />);
+    expect(await screen.findByRole('img', { name: 'Three people planting leeks' })).toBeInTheDocument();
+  });
+
+  it('keeps an undescribed group picture decorative beside the group name', async () => {
+    mocks.preview.mockResolvedValue({
+      ...preview,
+      group: { ...preview.group, image_url: '/uploads/groups/garden.jpg', image_alt: null },
+    });
+    const { container } = render(<GroupInviteAcceptPage />);
+    await screen.findByRole('heading', { name: 'Garden Crew' });
+    expect(container.querySelector('img[src*="garden"]')).toHaveAttribute('alt', '');
+  });
+
   it('takes an existing member straight to the group without accepting again', async () => {
     mocks.preview.mockResolvedValue({
       ...preview,

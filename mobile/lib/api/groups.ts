@@ -21,6 +21,10 @@ export interface Group {
   visibility: 'public' | 'private';
   cover_image: string | null;
   image_url?: string | null;
+  /** Screen-reader description of the group picture (image_url); null when none was written. */
+  image_alt?: string | null;
+  /** Screen-reader description of the cover photo; null when none was written. */
+  cover_image_alt?: string | null;
   is_featured: boolean;
   member_count: number;
   posts_count: number;
@@ -333,6 +337,11 @@ export interface GroupMediaItem {
   type: GroupMediaType;
   thumbnail_url?: string | null;
   caption?: string | null;
+  /**
+   * The uploader's file name. Sent by the server but never used as a screen-reader label —
+   * "IMG_0042.jpg" describes nothing. The caption, or a generic label, is read instead.
+   */
+  original_name?: string | null;
   file_size?: number | null;
   uploaded_by: number | null;
   uploader_name?: string | null;
@@ -659,10 +668,15 @@ export interface GroupFileUploadAsset {
   mimeType?: string | null;
 }
 
+/** Matches GroupMediaController::MAX_CAPTION_LENGTH and the website's caption field. */
+export const GROUP_MEDIA_CAPTION_MAX_LENGTH = 2000;
+
 export interface GroupMediaUploadAsset {
   uri: string;
   fileName?: string | null;
   mimeType?: string | null;
+  /** Optional caption; it is also what a screen reader reads for the photo. */
+  caption?: string | null;
 }
 
 function getUploadFilename(uri: string, fallback = 'group.jpg'): string {
@@ -1070,6 +1084,9 @@ export function deleteGroupMedia(id: number, mediaId: number): Promise<{ data: {
 export async function uploadGroupMedia(id: number, asset: GroupMediaUploadAsset, idempotencyKey?: string): Promise<{ data: GroupMediaItem }> {
   const formData = new FormData();
   await appendGroupMediaFile(formData, asset);
+  // Same field and trimming as the website's upload (react-frontend groups/api/media.ts).
+  const caption = asset.caption?.trim();
+  if (caption) formData.append('caption', caption);
   if (idempotencyKey) formData.append('idempotency_key', idempotencyKey);
   const response = await api.upload<UploadGroupMediaResponse>(
     `${API_V2}/groups/${id}/media`,

@@ -82,8 +82,17 @@ class StoryController extends BaseApiController
             $audience = 'everyone';
         }
 
+        // A photo story's written description for screen-reader users (AWID
+        // accessibility report, point 6). Only a photo is described.
+        $mediaAlt = $request->input('media_alt');
+        if ($mediaAlt !== null && (!is_string($mediaAlt) || mb_strlen(trim($mediaAlt)) > 255)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.text_too_long'), 'media_alt', 422);
+        }
+        $mediaAlt = $mediaType === 'image' && is_string($mediaAlt) && trim($mediaAlt) !== '' ? trim($mediaAlt) : null;
+
         $data = [
             'media_type' => $mediaType,
+            'media_alt' => $mediaAlt,
             'text_content' => $request->input('text_content'),
             'background_color' => $request->input('background_color'),
             'background_gradient' => $request->input('background_gradient'),

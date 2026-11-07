@@ -245,13 +245,20 @@ class FeedSidebarController extends BaseApiController
                             });
                     }
                 })
-                ->select('g.id', 'g.name', 'g.description', 'g.image_url', DB::raw('COUNT(gm.id) as member_count'))
-                ->groupBy('g.id', 'g.name', 'g.description', 'g.image_url')
+                // image_alt: the member-written description of the group picture,
+                // so the widget can read it out (null when none was written).
+                ->select('g.id', 'g.name', 'g.description', 'g.image_url', 'g.image_alt', DB::raw('COUNT(gm.id) as member_count'))
+                ->groupBy('g.id', 'g.name', 'g.description', 'g.image_url', 'g.image_alt')
                 ->orderByDesc('member_count')
                 ->orderByDesc('g.created_at')
                 ->limit(3)
                 ->get()
-                ->map(fn ($r) => (array) $r)
+                ->map(function ($r) {
+                    $row = (array) $r;
+                    $row['image_alt'] = \App\Services\GroupService::cleanImageDescription($row['image_alt'] ?? null);
+
+                    return $row;
+                })
                 ->all();
         } catch (\Throwable $e) {
             $data['popular_groups'] = [];

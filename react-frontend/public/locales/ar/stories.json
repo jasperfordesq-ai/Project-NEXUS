@@ -47,6 +47,7 @@
     "text_placeholder": "اكتب قصتك...",
     "compose_placeholder": "ما الذي يدور في ذهنك؟",
     "text_overlay": "أضف نصًا إلى صورتك...",
+    "photo_alt_label": "صف هذه الصورة (اختياري)",
     "poll_question_placeholder": "اسأل سؤالاً...",
     "poll_option_placeholder": "الخيار {{number}}",
     "poll_add_option": "أضف خيارًا",

@@ -43,6 +43,8 @@ interface Story {
   user_id: number;
   media_type: 'image' | 'text' | 'poll' | 'video';
   media_url?: string | null;
+  /** The photo's description, written by its author; null when none. */
+  media_alt?: string | null;
   thumbnail_url?: string | null;
   text_content?: string | null;
   text_style?: { fontFamily?: string; fontSize?: string } | null;
@@ -619,7 +621,8 @@ export function StoryViewer({ storyUsers, initialUserIndex, onClose }: StoryView
                   <div className="w-full h-full bg-black">
                     <img
                       src={resolveThumbnailUrl(currentStory.media_url, { width: 1080, height: 1920 })}
-                      alt={t('viewer.story_from', { name: currentUserStory.name })}
+                      // The author's own description, else "Story from {name}" (AWID report, point 6).
+                      alt={currentStory.media_alt?.trim() || t('viewer.story_from', { name: currentUserStory.name })}
                       className="w-full h-full object-cover"
                       loading="eager"
                       decoding="async"

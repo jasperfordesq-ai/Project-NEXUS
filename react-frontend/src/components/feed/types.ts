@@ -47,6 +47,12 @@ export interface FeedItem {
   is_shared?: boolean;
   is_bookmarked?: boolean;
   image_url?: string;
+  /**
+   * Listing/event items: the member-written description of image_url, for
+   * screen readers. Null when none was written. Posts carry theirs per
+   * picture in media[].alt_text.
+   */
+  image_alt?: string | null;
   /** Multi-image media attachments (carousel). */
   media?: PostMedia[];
   poll_data?: PollData;

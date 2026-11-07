@@ -56,6 +56,12 @@ vi.mock('@/contexts/TenantContext', () => ({
 }));
 
 vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
+// The real Avatar paints its picture only after load, which jsdom never does.
+// This stub keeps its alt rule (alt, else the name) so the passed alt is visible.
+vi.mock('@/components/ui/Avatar', () => ({
+  Avatar: ({ src, alt, name }: { src?: string; alt?: string; name?: string | null }) =>
+    src ? <img src={src} alt={alt ?? name ?? ''} /> : <span data-testid="avatar-fallback" />,
+}));
 
 import { RecommendedGroups } from './RecommendedGroups';
 
@@ -113,6 +119,23 @@ describe('RecommendedGroups', () => {
       '/v2/matches/all?modules=groups&limit=3&min_score=50',
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
+  });
+
+  it('reads out the description written for a recommended group picture', async () => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: {
+        matches: [
+          { module: 'group', group_id: 1, title: 'Garden Crew', match_score: 82, image_url: '/g.jpg', image_alt: 'Three people planting leeks' },
+          { module: 'group', group_id: 2, title: 'Book Club', match_score: 71, image_url: '/b.jpg', image_alt: null },
+        ],
+      },
+    });
+    render(<RecommendedGroups />);
+
+    expect(await screen.findByRole('img', { name: 'Three people planting leeks' })).toBeInTheDocument();
+    // Nothing written: the Avatar keeps its usual label, the group name.
+    expect(screen.getByRole('img', { name: 'Book Club' })).toBeInTheDocument();
   });
 
   it('marks a recommendation joined only after a truthful join response', async () => {

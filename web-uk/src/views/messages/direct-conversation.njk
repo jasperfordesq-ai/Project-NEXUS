@@ -187,7 +187,8 @@
                           {% if attachmentHref %}
                             {% if attachmentMime.startsWith('image/') %}
                               <a class="govuk-link" href="{{ attachmentHref }}" target="_blank" rel="noopener"> {{ t("opens_new_tab") }}
-                                <img src="{{ attachmentHref }}" alt="{{ t('govuk_alpha_messages.attachments.photo_alt') }}" width="220" loading="lazy" decoding="async">
+                                {# The sender's own description, else the generic wording; never the file name (AWID report, point 6). #}
+                                <img src="{{ attachmentHref }}" alt="{{ attachment.alt_text or t('govuk_alpha_messages.attachments.photo_alt') }}" width="220" loading="lazy" decoding="async">
                               </a>
                             {% else %}
                               <a class="govuk-link" href="{{ attachmentHref }}" download>{{ attachmentName }}</a>
@@ -354,6 +355,13 @@
             <div id="attachments-hint" class="govuk-hint">{{ t("govuk_alpha_messages.attachments.hint") }}</div>
             <input class="govuk-file-upload" id="attachments" name="attachments[]" type="file" multiple aria-describedby="attachments-hint" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx">
           </div>
+          {{ govukInput({
+            label: { text: t("govuk_alpha_messages.attachments.alt_label"), classes: "govuk-label--s" },
+            hint: { text: t("govuk_alpha_messages.attachments.alt_hint") },
+            id: "attachment_alt",
+            name: "attachment_alt",
+            attributes: { maxlength: "255" }
+          }) }}
           {{ govukButton({ text: t("govuk_alpha.actions.reply") }) }}
         </form>
 

@@ -371,10 +371,25 @@ class MarketplaceListingController extends BaseApiController
             'seller_type'        => 'nullable|string|in:private,business',
             'status'             => 'nullable|string|in:draft,active',
             'template_data'      => 'nullable|array',
+            // { "<photo id>": "description" | null } — describe this listing's
+            // existing photos for screen-reader users. Empty clears it.
+            'image_alt_texts'    => 'sometimes|array|max:20',
+            'image_alt_texts.*'  => 'nullable|string|max:255',
         ]);
 
+        $imageAltTexts = $data['image_alt_texts'] ?? null;
+        unset($data['image_alt_texts']);
+
         try {
-            MarketplaceListingService::update($listing, $data);
+            DB::transaction(static function () use ($listing, $data, $imageAltTexts): void {
+                if (is_array($imageAltTexts)) {
+                    MarketplaceListingService::setImageAltTexts($listing, $imageAltTexts);
+                }
+                MarketplaceListingService::update($listing, $data);
+            });
+            if (is_array($imageAltTexts) && $imageAltTexts !== []) {
+                $this->refreshListingSnapshots($listing);
+            }
         } catch (\DomainException $e) {
             if ($e->getMessage() === 'SELLER_SUSPENDED') {
                 return $this->respondWithError('SELLER_SUSPENDED', __('api_controllers_2.marketplace_listing.seller_suspended'), null, 403);
@@ -434,9 +449,19 @@ class MarketplaceListingController extends BaseApiController
         $listing = $this->findListingOrFail($id);
         $this->ensureOwner($listing, $userId);
 
-        $validated = request()->validate(['idempotency_key' => ['nullable', 'string', 'max:128']]);
+        $validated = request()->validate([
+            'idempotency_key' => ['nullable', 'string', 'max:128'],
+            // A description per photo, read aloud by screen readers: alt_texts[i]
+            // describes the i-th file sent. Same limit as listings.image_alt.
+            'alt_texts' => ['nullable', 'array', 'max:20'],
+            'alt_texts.*' => ['nullable', 'string', 'max:255'],
+        ]);
         $operationKey = $validated['idempotency_key'] ?? null;
         $operationHash = $operationKey !== null && $operationKey !== '' ? hash('sha256', $operationKey) : null;
+        $altTexts = array_values(array_map(
+            static fn ($value): ?string => MarketplaceListingService::cleanAltText($value),
+            $validated['alt_texts'] ?? [],
+        ));
         $fileHashes = [];
         foreach (\Illuminate\Support\Arr::flatten(request()->allFiles()) as $file) {
             if (!$file->isValid()) {
@@ -444,11 +469,13 @@ class MarketplaceListingController extends BaseApiController
             }
             $fileHashes[] = [hash_file('sha256', $file->getRealPath()), strtolower($file->getClientOriginalExtension())];
         }
-        $payloadHash = hash('sha256', json_encode($fileHashes, JSON_THROW_ON_ERROR));
+        // The descriptions are part of the operation: a retry that changes one is
+        // a different upload, not a replay.
+        $payloadHash = hash('sha256', json_encode($altTexts === [] ? $fileHashes : [$fileHashes, $altTexts], JSON_THROW_ON_ERROR));
 
         // Serialize writes for this listing, including unkeyed clients, so capacity
         // checks and the upload receipt commit with the image rows they describe.
-        return DB::transaction(function () use ($id, $userId, $operationHash, $payloadHash): JsonResponse {
+        return DB::transaction(function () use ($id, $userId, $operationHash, $payloadHash, $altTexts): JsonResponse {
             $listing = MarketplaceListing::where('id', $id)->lockForUpdate()->firstOrFail();
             $this->ensureOwner($listing, $userId);
             if ($operationHash !== null) {
@@ -465,7 +492,7 @@ class MarketplaceListingController extends BaseApiController
                 }
             }
 
-            $response = $this->uploadImagesForListing($listing);
+            $response = $this->uploadImagesForListing($listing, $altTexts);
             if ($operationHash !== null && $response->getStatusCode() === 201) {
                 DB::table('marketplace_image_upload_receipts')->insert([
                     'tenant_id' => $listing->tenant_id,
@@ -481,7 +508,10 @@ class MarketplaceListingController extends BaseApiController
         });
     }
 
-    private function uploadImagesForListing(MarketplaceListing $listing): JsonResponse
+    /**
+     * @param list<string|null> $altTexts Cleaned descriptions; index i belongs to the i-th file sent.
+     */
+    private function uploadImagesForListing(MarketplaceListing $listing, array $altTexts = []): JsonResponse
     {
         $id = (int) $listing->id;
         // Check existing image count against tenant config
@@ -544,7 +574,10 @@ class MarketplaceListingController extends BaseApiController
             'gif'  => 'image/gif',
         ];
 
-        foreach ($files as $file) {
+        // $files keeps the order the files were sent in, so position $index is
+        // also the position of that file's description in alt_texts — even when
+        // a file before it is skipped below.
+        foreach (array_values($files) as $index => $file) {
             // Reject files whose detected MIME isn't whitelisted OR doesn't match extension
             $detectedMime = $file->getMimeType();
             $ext = strtolower($file->getClientOriginalExtension());
@@ -571,8 +604,9 @@ class MarketplaceListingController extends BaseApiController
                 $uploadedImages[] = [
                     'url'           => $result['url'],
                     'thumbnail_url' => $result['thumbnail_url'] ?? null,
-                    // Never the file name: a screen reader read it out (AWID report, Oct 2026).
-                    'alt_text'      => null,
+                    // What the seller wrote, never the file name: a screen reader
+                    // read that out (AWID report, Oct 2026). NULL = no description.
+                    'alt_text'      => $altTexts[$index] ?? null,
                 ];
             } catch (\InvalidArgumentException $e) {
                 // Skip invalid files but continue with valid ones

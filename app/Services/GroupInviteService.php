@@ -819,6 +819,7 @@ final class GroupInviteService
                 'id' => (int) $group->id,
                 'name' => (string) $group->name,
                 'image_url' => $group->image_url,
+                'image_alt' => GroupService::cleanImageDescription($group->image_alt),
                 'visibility' => (string) $group->visibility,
                 'member_count' => (int) $group->cached_member_count,
             ],

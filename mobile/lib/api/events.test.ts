@@ -147,6 +147,22 @@ describe('Events v2 shared contract fixtures', () => {
     expect(eventAgendaSchema.parse(eventAgendaFixture).agenda_version).toBe(3);
   });
 
+  // primary_image.alt_text falls back to the title; only `description` says whether the
+  // organiser wrote one. z.object strips unknown keys, so it must be declared to survive.
+  it('keeps the organiser-written cover description', () => {
+    const withDescription = {
+      ...JSON.parse(JSON.stringify(eventDetailFixture)),
+      primary_image: { url: '/uploads/events/cover.jpg', alt_text: 'Picnic in the park', description: 'Families on picnic blankets' },
+    };
+    expect(eventSchema.parse(withDescription).primary_image?.description).toBe('Families on picnic blankets');
+
+    const withoutDescription = {
+      ...JSON.parse(JSON.stringify(eventDetailFixture)),
+      primary_image: { url: '/uploads/events/cover.jpg', alt_text: 'Picnic in the park' },
+    };
+    expect(eventSchema.parse(withoutDescription).primary_image?.description ?? null).toBeNull();
+  });
+
   it('rejects agenda resource URLs that are not credential-free HTTPS', () => {
     const unsafeScheme = JSON.parse(JSON.stringify(eventAgendaFixture)) as {
       sessions: { resources: { url: string | null }[] }[];

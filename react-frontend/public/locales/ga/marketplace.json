@@ -156,6 +156,8 @@
     "add": "Cuir leis",
     "remove_image": "Bain íomhá",
     "image_alt": "Uaslódáil {{number}}",
+    "image_alt_label": "Déan cur síos ar ghrianghraf {{number}} (roghnach)",
+    "image_alt_hint": "Cabhraíonn sé seo le daoine a úsáideann léitheoirí scáileáin. Abair i gcúpla focal cad atá sa ghrianghraf.",
     "video": "Físeán",
     "video_optional": "(roghnach, físeán amháin ar a mhéad, 50 MB)",
     "remove_video": "Bain físeán",

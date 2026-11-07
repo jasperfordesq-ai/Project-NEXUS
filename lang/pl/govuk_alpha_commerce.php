@@ -1006,6 +1006,14 @@ return [
         'status_remove_failed' => 'Niestety nie udało się usunąć zdjęcia. Spróbuj ponownie.',
         'status_main_failed' => 'Niestety nie udało się zmienić zdjęcia głównego. Spróbuj ponownie.',
         'status_created_photos_failed' => 'Ogłoszenie zostało utworzone, ale nie udało się przesłać zdjęć. Spróbuj dodać je ponownie poniżej.',
+        'alt_label' => 'Opisz zdjęcie (opcjonalnie)',
+        'alt_hint' => 'Jeśli dodajesz jedno zdjęcie, napisz w kilku słowach, co przedstawia. Czytniki ekranu odczytują ten opis na głos. Jeśli dodajesz kilka zdjęć, każde z nich możesz opisać po dodaniu.',
+        'error_alt_several' => 'Aby opisać zdjęcie podczas dodawania, dodawaj zdjęcia pojedynczo. Każde zdjęcie możesz opisać po jego dodaniu.',
+        'photo_alt_label' => 'Opisz zdjęcie :number',
+        'photo_alt_hint' => 'Napisz w kilku słowach, co przedstawia to zdjęcie. Czytniki ekranu odczytują ten opis na głos. Pozostaw puste, jeśli nie chcesz opisu.',
+        'save_alt' => 'Zapisz opis',
+        'status_alt_saved' => 'Opis zdjęcia został zapisany.',
+        'status_alt_failed' => 'Niestety nie udało się zapisać opisu zdjęcia. Spróbuj ponownie.',
     ],
 
     'shipping' => [

@@ -291,6 +291,67 @@ describe('EditMarketplaceListingPage', () => {
     }
   });
 
+  /**
+   * AWID accessibility report, Oct 2026, point 6: the seller can describe each
+   * photo for blind members — a saved photo's description goes back with the
+   * listing (`image_alt_texts`, by photo id), a new photo's with its upload.
+   */
+  it('loads a saved photo description and saves the change by photo id', async () => {
+    setupMocks({ images: [{ id: 1, url: 'https://example.com/lamp.jpg', is_primary: true, alt_text: 'A brass lamp' }] });
+    mockApi.put.mockResolvedValue({ success: true });
+    const { EditMarketplaceListingPage } = await import('./EditMarketplaceListingPage');
+    render(<EditMarketplaceListingPage />);
+
+    const box = await screen.findByDisplayValue('A brass lamp');
+    expect(box).toHaveAccessibleName('create.image_alt_label');
+    fireEvent.change(box, { target: { value: 'A brass lamp with a green shade' } });
+
+    const saveBtn = screen.getAllByRole('button').find(
+      (button) => button.textContent?.toLowerCase().includes('save'),
+    );
+    if (saveBtn) fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(mockApi.put).toHaveBeenCalledWith(
+        '/v2/marketplace/listings/77',
+        expect.objectContaining({ image_alt_texts: { '1': 'A brass lamp with a green shade' } }),
+      );
+    });
+  });
+
+  it('uploads a new photo with its description', async () => {
+    mockApi.put.mockResolvedValue({ success: true });
+    mockApi.upload.mockResolvedValue({ success: true });
+    if (!URL.createObjectURL) {
+      Object.defineProperty(URL, 'createObjectURL', { value: () => 'blob:mock', configurable: true });
+    }
+    if (!URL.revokeObjectURL) {
+      Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), configurable: true });
+    }
+    const { EditMarketplaceListingPage } = await import('./EditMarketplaceListingPage');
+    render(<EditMarketplaceListingPage />);
+    await waitFor(() => screen.getByDisplayValue('Vintage Lamp'));
+
+    const imageInput = document.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
+    fireEvent.change(imageInput, {
+      target: { files: [new File(['shade'], 'shade.jpg', { type: 'image/jpeg' })] },
+    });
+    const boxes = await screen.findAllByLabelText('create.image_alt_label');
+    expect(boxes).toHaveLength(2);
+    fireEvent.change(boxes[1] as HTMLElement, { target: { value: 'The lamp shade on its own' } });
+
+    const saveBtn = screen.getAllByRole('button').find(
+      (button) => button.textContent?.toLowerCase().includes('save'),
+    );
+    if (saveBtn) fireEvent.click(saveBtn);
+
+    await waitFor(() => expect(mockApi.upload).toHaveBeenCalled());
+    const formData = mockApi.upload.mock.calls[0]?.[1] as FormData;
+    expect(formData.get('alt_texts[0]')).toBe('The lamp shade on its own');
+    // The saved photo had no description; it is sent as "none", not left out.
+    expect(mockApi.put.mock.calls[0]?.[1]).toMatchObject({ image_alt_texts: { '1': null } });
+  });
+
   it('uses the tenant currency when a legacy listing omitted its currency', async () => {
     mockTenantState.currency = 'JPY';
     setupMocks({ price_currency: null });

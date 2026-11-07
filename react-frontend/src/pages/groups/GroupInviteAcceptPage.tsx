@@ -109,7 +109,9 @@ export default function GroupInviteAcceptPage() {
               {group.image_url ? (
                 <img
                   src={resolveAssetUrl(group.image_url)}
-                  alt=""
+                  // The group name is the heading right below; without a
+                  // written description the picture stays decorative.
+                  alt={group.image_alt?.trim() || ''}
                   className="mx-auto h-20 w-20 rounded-2xl object-cover"
                 />
               ) : (

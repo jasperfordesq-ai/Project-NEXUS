@@ -103,6 +103,7 @@ export function RecommendedGroups() {
               <div className="flex items-center gap-2 min-w-0">
                 <Avatar
                   src={resolveThumbnailUrl(group.image_url, { width: 96, height: 96 })}
+                  alt={group.image_alt?.trim() || undefined}
                   name={group.title}
                   size="sm"
                   className="w-8 h-8"

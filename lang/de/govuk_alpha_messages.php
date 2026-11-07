@@ -24,6 +24,8 @@ return [
         'error_failed' => 'Ihr Anhang konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.',
         'error_invalid' => 'Dieser Anhangstyp ist nicht zulässig.',
         'photo_alt' => 'In dieser Unterhaltung gesendetes Foto',
+        'alt_label' => 'Foto beschreiben (optional)',
+        'alt_hint' => 'Wenn Sie ein Foto hinzufügen, beschreiben Sie in wenigen Worten, was es zeigt. Screenreader lesen diesen Text vor. Wenn Sie mehrere Fotos anhängen, beschreiben Sie sie hier alle zusammen.',
     ],
     'groups' => [
         'title' => 'Gruppengespräche',

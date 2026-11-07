@@ -154,6 +154,8 @@
     "add": "Dodaj",
     "remove_image": "Usuń obraz",
     "image_alt": "Prześlij {{number}}",
+    "image_alt_label": "Opisz zdjęcie {{number}} (opcjonalnie)",
+    "image_alt_hint": "Pomaga osobom korzystającym z czytników ekranu. Napisz w kilku słowach, co przedstawia zdjęcie.",
     "video": "Wideo",
     "video_optional": "(opcjonalnie, maks. 1 wideo, 50 MB)",
     "remove_video": "Usuń wideo",

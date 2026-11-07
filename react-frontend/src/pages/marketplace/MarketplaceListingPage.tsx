@@ -343,7 +343,7 @@ function ImageGallery({ images, videoUrl }: { images: ListingDetail['images']; v
             >
               <img
                 src={resolveThumbnailUrl(img.thumbnail_url || img.url, { width: 128, height: 128 })}
-                alt={t('listing.thumbnail_alt', { number: idx + 1 })}
+                alt={img.alt_text || t('listing.thumbnail_alt', { number: idx + 1 })}
                 className="w-full h-full object-cover"
                 loading="lazy"
                 decoding="async"

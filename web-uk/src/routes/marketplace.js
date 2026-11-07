@@ -673,21 +673,38 @@ function cardImageUrl(row) {
 }
 
 function imageUrls(row) {
-  const urls = [];
+  return imageEntries(row).map((entry) => entry.url);
+}
+
+// Each photo's description, in the same order as imageUrls ('' = none). The seller
+// writes it for screen-reader users (AWID accessibility report, Oct 2026, point 6);
+// the templates fall back to "Photo N for <title>".
+function imageAltTexts(row) {
+  return imageEntries(row).map((entry) => entry.alt);
+}
+
+function imageEntries(row) {
+  const entries = [];
   const images = Array.isArray(row.images) ? row.images : [];
   images.forEach((image) => {
     const value = typeof image === 'string' ? image : (image && (image.url || image.thumbnail_url));
     const url = safeRelativeOrAbsoluteUrl(value);
-    if (url) urls.push(url);
+    const alt = image && typeof image === 'object' && typeof image.alt_text === 'string' ? trimmed(image.alt_text, 255) : '';
+    if (url) entries.push({ url, alt });
   });
 
   const single = row.image && typeof row.image === 'object'
     ? (row.image.url || row.image.thumbnail_url)
     : row.image;
   const singleUrl = safeRelativeOrAbsoluteUrl(single);
-  if (singleUrl && !urls.includes(singleUrl)) urls.push(singleUrl);
+  if (singleUrl && !entries.some((entry) => entry.url === singleUrl)) {
+    const singleAlt = row.image && typeof row.image === 'object' && typeof row.image.alt_text === 'string'
+      ? trimmed(row.image.alt_text, 255)
+      : '';
+    entries.push({ url: singleUrl, alt: singleAlt });
+  }
 
-  return urls;
+  return entries;
 }
 
 function decorateCategory(category) {
@@ -757,6 +774,8 @@ function decorateListing(listing) {
     sellerId,
     sellerName,
     images,
+    // imageAlts[i] describes images[i] ('' = none: the template says "Photo N for …").
+    imageAlts: imageAltTexts(row),
     primaryImage: images[0] || '',
     cardImage: cardImageUrl(row),
     // Resolved like an image: Laravel stores `/storage/...`, served by the API host.
@@ -1993,6 +2012,8 @@ const LISTING_ERROR_FIELDS = {
   'govuk_alpha_commerce.photos.error_too_many': 'images',
   'govuk_alpha_commerce.photos.error_type': 'images',
   'govuk_alpha_commerce.photos.error_size': 'images',
+  // A description given for several photos at once (photo descriptions, Nov 2026).
+  'govuk_alpha_commerce.photos.error_alt_several': 'photo_alt',
   // Optional video on the create form (27 Oct 2026).
   'govuk_alpha_commerce.listing_video.error_type': 'video',
   'govuk_alpha_commerce.listing_video.error_size': 'video'

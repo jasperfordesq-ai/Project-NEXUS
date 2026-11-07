@@ -24,6 +24,8 @@ return [
         'error_failed' => 'No se pudo subir tu archivo adjunto. Inténtalo de nuevo.',
         'error_invalid' => 'Ese tipo de archivo adjunto no está permitido.',
         'photo_alt' => 'Foto enviada en esta conversación',
+        'alt_label' => 'Describe la foto (opcional)',
+        'alt_hint' => 'Si añades una foto, di en pocas palabras qué muestra. Los lectores de pantalla leen este texto. Si adjuntas varias fotos, descríbelas todas aquí.',
     ],
     'groups' => [
         'title' => 'Conversaciones grupales',

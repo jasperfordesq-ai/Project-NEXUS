@@ -86,7 +86,9 @@ function feedMedia(row, limit = 4) {
   const media = Array.isArray(row && row.media) ? row.media : [];
   const rows = media.length > 0
     ? media
-    : (row && row.image_url ? [{ file_url: row.image_url, thumbnail_url: row.image_url, alt_text: null }] : []);
+    // A listing or event in the feed carries one photo, plus the words its owner
+    // wrote for it (listings.image_alt / events.image_alt, AWID report Oct 2026).
+    : (row && row.image_url ? [{ file_url: row.image_url, thumbnail_url: row.image_url, alt_text: row.image_alt || null }] : []);
 
   return rows.slice(0, limit).map((item) => {
     const fileUrl = resolveBackendMediaUrl(item && (item.file_url || item.url));

@@ -140,7 +140,7 @@ class GroupMatchingService
             try {
                 $rows = DB::select(
                     "SELECT gmc.group_id, gmc.match_score, gmc.match_reasons, gmc.created_at as matched_at,
-                            g.name, g.description, g.image_url, g.visibility,
+                            g.name, g.description, g.image_url, g.image_alt, g.visibility,
                             (SELECT COUNT(*) FROM group_members gm
                               WHERE gm.group_id = g.id AND gm.status = 'active') as member_count
                      FROM group_match_cache gmc
@@ -192,6 +192,7 @@ class GroupMatchingService
                 'name' => $group['name'] ?? '',
                 'description' => $group['description'] ?? '',
                 'image_url' => $group['image_url'] ?? null,
+                'image_alt' => $group['image_alt'] ?? null,
                 'visibility' => $group['visibility'] ?? 'public',
                 'member_count' => (int) ($group['member_count'] ?? 0),
             ]);
@@ -238,6 +239,7 @@ class GroupMatchingService
             'title' => (string) ($row['name'] ?? ''),
             'description' => mb_substr((string) ($row['description'] ?? ''), 0, 200),
             'image_url' => $row['image_url'] ?? null,
+            'image_alt' => GroupService::cleanImageDescription($row['image_alt'] ?? null),
             'member_count' => (int) ($row['member_count'] ?? 0),
             'visibility' => (string) ($row['visibility'] ?? 'public'),
             'match_score' => (float) ($row['match_score'] ?? 0),

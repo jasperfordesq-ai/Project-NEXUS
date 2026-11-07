@@ -609,6 +609,89 @@ describe('NewMarketplaceListingRoute', () => {
     expect(calls[0][2]).not.toBe(calls[1][2]);
   });
 
+  /*
+    AWID accessibility report, Oct 2026, point 6: blind members could not be told what a
+    marketplace photo shows. Each photo now has its own description box; a new photo's
+    description travels with its upload, a saved photo's with the listing update.
+  */
+  it('sends each new photo with the description written for it', async () => {
+    jest.mocked(ImagePicker.requestMediaLibraryPermissionsAsync).mockResolvedValue({ granted: true } as never);
+    jest.mocked(ImagePicker.launchImageLibraryAsync).mockResolvedValueOnce({ canceled: false, assets: [
+      { uri: 'file:///tmp/one.jpg' }, { uri: 'file:///tmp/two.jpg' },
+    ] } as never);
+    jest.mocked(createMarketplaceListing).mockResolvedValue({ data: { id: 78 } } as never);
+    jest.mocked(uploadMarketplaceImages).mockResolvedValue({ data: [] } as never);
+    const ui = render(<NewMarketplaceListingRoute />);
+    fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Garden shears');
+    fireEvent.changeText(ui.getByPlaceholderText('Details'), 'Description');
+    fireEvent.press(ui.getByText('Fixed price'));
+    fireEvent.changeText(ui.getByPlaceholderText('0.00'), '12');
+    fireEvent.press(ui.getByText('Add images'));
+    await waitFor(() => expect(ui.getAllByLabelText('forms.imageAltLabel')).toHaveLength(2));
+    fireEvent.changeText(ui.getAllByLabelText('forms.imageAltLabel')[0], '  Shears with red handles  ');
+    // The preview is described by what the seller wrote.
+    expect(ui.getByLabelText('Shears with red handles')).toBeTruthy();
+    fireEvent.press(ui.getByText('Publish'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalled());
+    expect(jest.mocked(uploadMarketplaceImages).mock.calls).toEqual([
+      [78, ['file:///tmp/one.jpg'], expect.any(String), ['Shears with red handles']],
+      [78, ['file:///tmp/two.jpg'], expect.any(String)],
+    ]);
+  });
+
+  it('loads a saved photo description and sends the change with the update', async () => {
+    mockParams = { id: '42' };
+    jest.mocked(getMarketplaceListing).mockResolvedValue({
+      data: {
+        id: 42,
+        title: 'Garden shears',
+        tagline: null,
+        description: 'Lightly used shears with clean blades.',
+        price: 12.5,
+        price_currency: 'EUR',
+        price_type: 'fixed',
+        time_credit_price: null,
+        condition: 'good',
+        quantity: 1,
+        location: null,
+        delivery_method: 'pickup',
+        seller_type: 'private',
+        status: 'active',
+        image: null,
+        image_count: 2,
+        images: [
+          { id: 5, url: 'https://example.test/shears.jpg', thumbnail_url: null, alt_text: 'Old words' },
+          { id: 6, url: 'https://example.test/blades.jpg', thumbnail_url: null, alt_text: null },
+        ],
+        video_url: null,
+        category: null,
+        user: null,
+        is_saved: false,
+        is_own: true,
+        is_promoted: false,
+        views_count: 0,
+        saves_count: 0,
+        created_at: '2026-05-01T00:00:00Z',
+        latitude: null,
+        longitude: null,
+        shipping_available: false,
+        local_pickup: true,
+        template_data: null,
+      },
+    } as never);
+    jest.mocked(updateMarketplaceListing).mockResolvedValue({ data: { id: 42 } } as never);
+
+    const ui = render(<NewMarketplaceListingRoute />);
+    fireEvent.changeText(await ui.findByDisplayValue('Old words'), 'Shears with red handles');
+    fireEvent.press(ui.getByText('Update'));
+
+    await waitFor(() => {
+      expect(updateMarketplaceListing).toHaveBeenCalledWith(42, expect.objectContaining({
+        image_alt_texts: { 5: 'Shears with red handles', 6: null },
+      }));
+    });
+  });
+
   it('keeps existing edit photos visible and deletes removed server images', async () => {
     mockParams = { id: '42' };
     jest.mocked(getMarketplaceListing).mockResolvedValue({

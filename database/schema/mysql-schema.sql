@@ -15072,6 +15072,7 @@ CREATE TABLE `message_attachments` (
   `mime_type` varchar(100) DEFAULT NULL COMMENT 'MIME type',
   `file_size` int(10) unsigned DEFAULT 0 COMMENT 'Size in bytes',
   `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `alt_text` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_message_id` (`message_id`),
   KEY `idx_tenant_id` (`tenant_id`)
@@ -18407,6 +18408,7 @@ CREATE TABLE `stories` (
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `expires_at` timestamp NOT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `media_alt` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_tenant_user` (`tenant_id`,`user_id`),
   KEY `idx_active_expires` (`tenant_id`,`is_active`,`expires_at`),

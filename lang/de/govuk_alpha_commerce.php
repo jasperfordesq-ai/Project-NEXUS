@@ -1006,6 +1006,14 @@ return [
         'status_remove_failed' => 'Das Foto konnte leider nicht entfernt werden. Bitte versuchen Sie es erneut.',
         'status_main_failed' => 'Das Hauptfoto konnte leider nicht geändert werden. Bitte versuchen Sie es erneut.',
         'status_created_photos_failed' => 'Ihr Angebot wurde erstellt, aber die Fotos konnten nicht hochgeladen werden. Versuchen Sie unten, sie erneut hinzuzufügen.',
+        'alt_label' => 'Foto beschreiben (optional)',
+        'alt_hint' => 'Wenn Sie ein Foto hinzufügen, beschreiben Sie in wenigen Worten, was es zeigt. Screenreader lesen diese Beschreibung vor. Wenn Sie mehrere hinzufügen, können Sie jedes beschreiben, sobald es hinzugefügt wurde.',
+        'error_alt_several' => 'Um ein Foto beim Hinzufügen zu beschreiben, fügen Sie jeweils nur ein Foto hinzu. Sie können jedes Foto beschreiben, sobald es hinzugefügt wurde.',
+        'photo_alt_label' => 'Foto :number beschreiben',
+        'photo_alt_hint' => 'Beschreiben Sie in wenigen Worten, was dieses Foto zeigt. Screenreader lesen diese Beschreibung vor. Lassen Sie das Feld leer, wenn es keine Beschreibung geben soll.',
+        'save_alt' => 'Beschreibung speichern',
+        'status_alt_saved' => 'Die Fotobeschreibung wurde gespeichert.',
+        'status_alt_failed' => 'Die Fotobeschreibung konnte leider nicht gespeichert werden. Bitte versuchen Sie es erneut.',
     ],
 
     'shipping' => [

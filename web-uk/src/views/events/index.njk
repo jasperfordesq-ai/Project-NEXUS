@@ -222,7 +222,9 @@
           <div class="nexus-alpha-listing-row">
             {% if coverImage %}
               <div class="nexus-alpha-listing-row__media">
-                <img class="nexus-alpha-card-thumb" src="{{ coverImage }}" alt="{{ t('events.image_alt', { title: event.title }) }}" width="120" height="90" loading="lazy" decoding="async">
+                {#- The organiser's own words first (events.image_alt, served as primary_image.description), as detail.njk. -#}
+                {% set coverAlt = (event.primary_image.description if event.primary_image else '') or event.image_alt %}
+                <img class="nexus-alpha-card-thumb" src="{{ coverImage }}" alt="{{ coverAlt or t('events.image_alt', { title: event.title }) }}" width="120" height="90" loading="lazy" decoding="async">
               </div>
             {% endif %}
             <div class="nexus-alpha-listing-row__body">

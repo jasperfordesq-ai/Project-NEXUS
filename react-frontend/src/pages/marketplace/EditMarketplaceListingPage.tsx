@@ -53,6 +53,7 @@ import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
+import { MarketplacePhotoDescriptions } from '@/components/marketplace/MarketplacePhotoDescriptions';
 import type { MarketplaceListingDetail } from '@/types/marketplace';
 import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 import {
@@ -85,6 +86,11 @@ interface ImagePreview {
   /** Existing image id from the server */
   serverId?: number;
   isExisting: boolean;
+  /**
+   * What the photo shows, for screen-reader users. A new photo sends it as
+   * `alt_texts[i]`; a saved one in `image_alt_texts[serverId]` with the listing.
+   */
+  altText: string;
 }
 
 const CONDITIONS = [
@@ -272,6 +278,7 @@ export function EditMarketplaceListingPage() {
               url: img.url,
               serverId: img.id,
               isExisting: true,
+              altText: img.alt_text ?? '',
             }))
           );
         }
@@ -381,11 +388,16 @@ export function EditMarketplaceListingPage() {
         file,
         url: URL.createObjectURL(file),
         isExisting: false,
+        altText: '',
       });
     }
 
     setImages((prev) => [...prev, ...newImages]);
   }, [images.length, toast, t])
+
+  const setImageAltText = useCallback((imgId: string, altText: string) => {
+    setImages((prev) => prev.map((img) => (img.id === imgId ? { ...img, altText } : img)));
+  }, []);
 
   const removeImage = useCallback((imgId: string) => {
     setImages((prev) => {
@@ -503,6 +515,17 @@ export function EditMarketplaceListingPage() {
         body.template_data = filledTemplateFields;
       }
 
+      // Descriptions of the photos already saved, by photo id (blank clears one).
+      const savedPhotoAltTexts: Record<string, string | null> = {};
+      images.forEach((img) => {
+        if (img.isExisting && img.serverId) {
+          savedPhotoAltTexts[String(img.serverId)] = img.altText.trim() || null;
+        }
+      });
+      if (Object.keys(savedPhotoAltTexts).length > 0) {
+        body.image_alt_texts = savedPhotoAltTexts;
+      }
+
       const response = await api.put(`/v2/marketplace/listings/${id}`, body);
       if (response.success) {
         for (const removedId of removedImageIds) {
@@ -518,6 +541,8 @@ export function EditMarketplaceListingPage() {
           const formData = new FormData();
           newImageFiles.forEach((img, idx) => {
             formData.append(`images[${idx}]`, img.file!);
+            // alt_texts[i] describes images[i]; blank means no description.
+            formData.append(`alt_texts[${idx}]`, img.altText.trim());
           });
           const uploadResponse = await api.upload(
             `/v2/marketplace/listings/${id}/images`,
@@ -649,7 +674,7 @@ export function EditMarketplaceListingPage() {
                 <div key={img.id} className="relative aspect-square rounded-lg overflow-hidden group">
                   <img
                     src={img.url}
-                    alt={t('create.image_alt', { number: idx + 1 })}
+                    alt={img.altText.trim() || t('create.image_alt', { number: idx + 1 })}
                     className="w-full h-full object-cover"
                   />
                   {idx === 0 && (
@@ -682,6 +707,8 @@ export function EditMarketplaceListingPage() {
               )}
             </div>
           )}
+
+          <MarketplacePhotoDescriptions photos={images} onChange={setImageAltText} />
         </GlassCard>
 
         {/* Section 2: Details */}

@@ -1039,6 +1039,14 @@ return [
         'status_remove_failed' => 'Sorry, the photo could not be removed. Please try again.',
         'status_main_failed' => 'Sorry, the main photo could not be changed. Please try again.',
         'status_created_photos_failed' => 'Your listing was created, but the photos could not be uploaded. Try adding them again below.',
+        'alt_label' => 'Describe the photo (optional)',
+        'alt_hint' => 'If you add one photo, say in a few words what it shows. Screen readers read this out. If you add several, you can describe each one once it has been added.',
+        'error_alt_several' => 'To describe a photo as you add it, add one photo at a time. You can describe each photo once it has been added.',
+        'photo_alt_label' => 'Describe photo :number',
+        'photo_alt_hint' => 'Say in a few words what this photo shows. Screen readers read this out. Leave it empty for no description.',
+        'save_alt' => 'Save description',
+        'status_alt_saved' => 'The photo description was saved.',
+        'status_alt_failed' => 'Sorry, the photo description could not be saved. Please try again.',
     ],
 
     'shipping' => [

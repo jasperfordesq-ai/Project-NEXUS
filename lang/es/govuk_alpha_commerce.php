@@ -1006,6 +1006,14 @@ return [
         'status_remove_failed' => 'Lo sentimos, no se ha podido quitar la foto. Inténtalo de nuevo.',
         'status_main_failed' => 'Lo sentimos, no se ha podido cambiar la foto principal. Inténtalo de nuevo.',
         'status_created_photos_failed' => 'Tu anuncio se ha creado, pero no se han podido subir las fotos. Prueba a añadirlas de nuevo más abajo.',
+        'alt_label' => 'Describe la foto (opcional)',
+        'alt_hint' => 'Si añades una sola foto, di en pocas palabras qué muestra. Los lectores de pantalla leen esta descripción en voz alta. Si añades varias, puedes describir cada una cuando ya se haya añadido.',
+        'error_alt_several' => 'Para describir una foto al añadirla, añade las fotos de una en una. Puedes describir cada foto cuando ya se haya añadido.',
+        'photo_alt_label' => 'Describe la foto :number',
+        'photo_alt_hint' => 'Di en pocas palabras qué muestra esta foto. Los lectores de pantalla leen esta descripción en voz alta. Déjalo vacío si no quieres ninguna descripción.',
+        'save_alt' => 'Guardar descripción',
+        'status_alt_saved' => 'Se ha guardado la descripción de la foto.',
+        'status_alt_failed' => 'Lo sentimos, no se ha podido guardar la descripción de la foto. Inténtalo de nuevo.',
     ],
 
     'shipping' => [

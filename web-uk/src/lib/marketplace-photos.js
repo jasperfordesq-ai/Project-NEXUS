@@ -21,6 +21,8 @@ const { uploadMarketplaceListingImages } = require('./api');
 
 const MAX_PHOTOS_PER_UPLOAD = 10;
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+// A photo's description for screen-reader users; Laravel's limit (alt_texts.*: max:255).
+const MAX_PHOTO_ALT_LENGTH = 255;
 
 // Extension -> the one type Laravel will accept for it.
 const EXTENSION_TYPES = {
@@ -50,14 +52,26 @@ function isAcceptedPhoto(file) {
 }
 
 /**
+ * The "describe the photo" box beside the file field (AWID accessibility report, Oct
+ * 2026, point 6). One box, because a no-JavaScript file field cannot say which of
+ * several chosen files is which: it describes a photo only when one is added.
+ */
+function photoAltFrom(body) {
+  const value = body && typeof body.photo_alt === 'string' ? body.photo_alt : '';
+  return value.replace(/\s+/g, ' ').trim().slice(0, MAX_PHOTO_ALT_LENGTH);
+}
+
+/**
  * Check the chosen files before anything is sent.
  * Returns '' when they are fine, or the translation key of the problem.
  */
-function photoProblem(files) {
+function photoProblem(files, altText = '') {
   if (files.length === 0) return 'govuk_alpha_commerce.photos.error_none';
   if (files.length > MAX_PHOTOS_PER_UPLOAD) return 'govuk_alpha_commerce.photos.error_too_many';
   if (files.some((file) => !isAcceptedPhoto(file))) return 'govuk_alpha_commerce.photos.error_type';
   if (files.some((file) => Number(file.size) > MAX_PHOTO_BYTES)) return 'govuk_alpha_commerce.photos.error_size';
+  // One description cannot say which of several photos it belongs to.
+  if (altText && files.length > 1) return 'govuk_alpha_commerce.photos.error_alt_several';
   return '';
 }
 
@@ -65,8 +79,11 @@ async function removeFiles(files) {
   await Promise.all(files.map((file) => fs.unlink(file.filepath).catch(() => {})));
 }
 
-/** Send the photos to Laravel in one request. Throws whatever the API throws. */
-async function uploadListingPhotos(token, listingId, files) {
+/**
+ * Send the photos to Laravel in one request. Throws whatever the API throws.
+ * `altText` describes the photo when exactly one is sent (see photoAltFrom).
+ */
+async function uploadListingPhotos(token, listingId, files, altText = '') {
   try {
     const payload = await Promise.all(files.map(async (file) => ({
       buffer: await fs.readFile(file.filepath),
@@ -76,6 +93,7 @@ async function uploadListingPhotos(token, listingId, files) {
     })));
     return await uploadMarketplaceListingImages(token, listingId, {
       files: payload,
+      ...(altText && files.length === 1 ? { altTexts: [altText] } : {}),
       idempotencyKey: `accessible-marketplace-photos-${randomUUID()}`
     });
   } finally {
@@ -86,7 +104,9 @@ async function uploadListingPhotos(token, listingId, files) {
 module.exports = {
   MAX_PHOTOS_PER_UPLOAD,
   MAX_PHOTO_BYTES,
+  MAX_PHOTO_ALT_LENGTH,
   filesFrom,
+  photoAltFrom,
   photoProblem,
   removeFiles,
   uploadListingPhotos

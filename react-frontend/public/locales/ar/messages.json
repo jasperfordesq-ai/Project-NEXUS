@@ -309,5 +309,8 @@
   "groups_empty": "لست في أي محادثة جماعية بعد.",
   "groups_load_failed": "تعذّر تحميل محادثاتك الجماعية.",
   "group_open_aria": "فتح المحادثة الجماعية {{name}}",
-  "aria_download_photo": "تنزيل الصورة"
+  "aria_download_photo": "تنزيل الصورة",
+  "aria_download_photo_described": "تنزيل الصورة: {{description}}",
+  "attachment_alt_label": "صف هذه الصورة (اختياري)",
+  "attachment_alt_hint": "يساعد من يستخدمون قارئات الشاشة. اذكر بكلمات قليلة ما تُظهره الصورة."
 }

@@ -208,6 +208,8 @@ export interface ListingSubmitPayload {
   /** null = no cap on the total hours offered. */
   hours_available: number | null;
   service_type: string;
+  /** Description of the chosen photo for screen readers; null without a photo. */
+  image_alt?: string | null;
 }
 
 export interface ListingSubmitResult {

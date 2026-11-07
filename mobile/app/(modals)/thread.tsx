@@ -926,6 +926,7 @@ function ThreadScreenInner() {
       type: 'image',
       size: attachment.size ?? null,
       mime_type: attachment.mimeType ?? null,
+      alt_text: attachment.alt?.trim() || null,
     }));
     const optimistic: Message = {
       id: Date.now(),
@@ -1196,6 +1197,16 @@ function ThreadScreenInner() {
       const next = current.filter((attachment) => attachment.id !== id);
       attachmentsRef.current = next;
       if (removed) void removeMessageDraftMedia(removed.uri).catch(() => null);
+      return next;
+    });
+  }, []);
+
+  /** The sender typed a description for one attached photo (AWID report, point 6). */
+  const changePendingAttachmentAlt = useCallback((id: string, alt: string) => {
+    draftChangedRef.current = true;
+    setPendingAttachments((current) => {
+      const next = current.map((attachment) => (attachment.id === id ? { ...attachment, alt } : attachment));
+      attachmentsRef.current = next;
       return next;
     });
   }, []);
@@ -1736,25 +1747,39 @@ function ThreadScreenInner() {
             </View>
           ) : null}
           {pendingAttachments.length > 0 ? (
-            <View className="mb-2 flex-row flex-wrap gap-2">
+            <View className="mb-2 gap-2">
               {pendingAttachments.map((attachment) => (
-                <HeroCard key={attachment.id} variant="secondary" className="w-[96px] overflow-hidden rounded-panel-inner p-0">
-                  <Image source={{ uri: attachment.uri }} className="h-[64px] w-full" resizeMode="cover" />
-                  <HeroCard.Body className="gap-1 px-2 py-1.5">
-                    <Text className="text-[11px] font-medium" style={{ color: theme.text }} numberOfLines={1}>
-                      {attachment.name}
-                    </Text>
-                    <HeroButton
-                      size="sm"
-                      variant="ghost"
-                      accessibilityLabel={t('thread.attachments.remove', { name: attachment.name })}
-                      className="min-h-0 justify-start px-0 py-0"
-                      onPress={() => removePendingAttachment(attachment.id)}
-                    >
-                      <HeroButton.Label className="text-[11px]">{t('thread.attachments.removeLabel')}</HeroButton.Label>
-                    </HeroButton>
-                  </HeroCard.Body>
-                </HeroCard>
+                <View key={attachment.id} className="flex-row items-start gap-2">
+                  <HeroCard variant="secondary" className="w-[96px] overflow-hidden rounded-panel-inner p-0">
+                    <Image source={{ uri: attachment.uri }} className="h-[64px] w-full" resizeMode="cover" />
+                    <HeroCard.Body className="gap-1 px-2 py-1.5">
+                      <Text className="text-[11px] font-medium" style={{ color: theme.text }} numberOfLines={1}>
+                        {attachment.name}
+                      </Text>
+                      <HeroButton
+                        size="sm"
+                        variant="ghost"
+                        accessibilityLabel={t('thread.attachments.remove', { name: attachment.name })}
+                        className="min-h-0 justify-start px-0 py-0"
+                        onPress={() => removePendingAttachment(attachment.id)}
+                      >
+                        <HeroButton.Label className="text-[11px]">{t('thread.attachments.removeLabel')}</HeroButton.Label>
+                      </HeroButton>
+                    </HeroCard.Body>
+                  </HeroCard>
+                  {/* AWID accessibility report, point 6: every photo a member sends can be described. */}
+                  <Input
+                    containerClassName="mb-0 flex-1"
+                    inputClassName="min-h-[44px] rounded-panel-inner border border-border px-3 py-2 text-[14px]"
+                    style={{ color: theme.text, backgroundColor: theme.bg }}
+                    value={attachment.alt ?? ''}
+                    onChangeText={(value) => changePendingAttachmentAlt(attachment.id, value)}
+                    placeholder={t('thread.attachments.altLabel')}
+                    placeholderTextColor={theme.textMuted}
+                    maxLength={255}
+                    accessibilityLabel={t('thread.attachments.altLabel')}
+                  />
+                </View>
               ))}
             </View>
           ) : null}
@@ -2122,11 +2147,20 @@ function MessageBubble({
               {item.attachments.map((attachment) => {
                 const isImage = attachment.type === 'image' || attachment.mime_type?.startsWith('image/');
                 const attachmentLabel = attachment.name || t('thread.attachments.file');
+                // A photo is never announced by its file name; its sender's description
+                // when there is one (AWID accessibility report, point 6). A document keeps
+                // its name, which is what tells it apart.
+                const description = (attachment.alt_text ?? '').trim();
+                const openLabel = !isImage
+                  ? t('thread.attachments.open', { name: attachmentLabel })
+                  : description
+                    ? t('thread.attachments.openPhotoDescribed', { description })
+                    : t('thread.attachments.openPhoto');
                 return (
                   <HeroButton
                     key={String(attachment.id)}
                     variant="ghost"
-                    accessibilityLabel={t('thread.attachments.open', { name: attachmentLabel })}
+                    accessibilityLabel={openLabel}
                     className="self-start rounded-panel-inner p-0"
                     onPress={() => {
                       if (!attachment.url) return;

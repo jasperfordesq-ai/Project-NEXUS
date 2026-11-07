@@ -408,6 +408,53 @@ describe('CreateMarketplaceListingPage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/test/marketplace/77/edit');
   });
 
+  /**
+   * AWID accessibility report, Oct 2026, point 6: a marketplace photo could not
+   * be described for blind members. Each chosen photo gets its own box, and
+   * its description travels with it as `alt_texts[i]`.
+   */
+  it('sends each photo with the description written for it', async () => {
+    const { CreateMarketplaceListingPage } = await import('./CreateMarketplaceListingPage');
+    render(<CreateMarketplaceListingPage />);
+    await waitFor(() => mockApi.get.mock.calls.length > 0);
+
+    const textboxes = screen.getAllByRole('textbox');
+    await userEvent.type(textboxes[0] as HTMLElement, 'Kettle and teapot');
+    const description = textboxes.find((element) => element.tagName === 'TEXTAREA');
+    if (description) await userEvent.type(description, 'A kettle and a matching teapot, both working.');
+    const freeRadio = screen.queryAllByRole('radio').find(
+      (element) => (element as HTMLInputElement).value === 'free',
+    );
+    if (freeRadio) await userEvent.click(freeRadio);
+
+    const imageInput = document.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
+    fireEvent.change(imageInput, {
+      target: {
+        files: [
+          new File(['kettle'], 'IMG_0001.jpg', { type: 'image/jpeg' }),
+          new File(['teapot'], 'IMG_0002.jpg', { type: 'image/jpeg' }),
+        ],
+      },
+    });
+
+    await userEvent.type(await screen.findByLabelText('Describe photo 1 (optional)'), 'A red kettle on a wooden table');
+    expect(screen.getByLabelText('Describe photo 2 (optional)')).toHaveValue('');
+    // The preview is described by what the seller wrote, never by the file name.
+    expect(screen.getByAltText('A red kettle on a wooden table')).toBeInTheDocument();
+
+    const publishButton = screen.getAllByRole('button').find(
+      (button) => button.getAttribute('data-disabled') !== 'true'
+        && /publish|submit/i.test(button.textContent ?? ''),
+    );
+    if (publishButton) await userEvent.click(publishButton);
+
+    await waitFor(() => expect(mockApi.upload).toHaveBeenCalled());
+    const [url, formData] = mockApi.upload.mock.calls[0] as [string, FormData];
+    expect(url).toBe('/v2/marketplace/listings/77/images');
+    expect(formData.get('alt_texts[0]')).toBe('A red kettle on a wooden table');
+    expect(formData.get('alt_texts[1]')).toBe('');
+  });
+
   it('shows error toast when API POST fails', async () => {
     mockApi.post.mockResolvedValue({ success: false, error: 'Forbidden' });
     const { CreateMarketplaceListingPage } = await import('./CreateMarketplaceListingPage');

@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ t("govuk_alpha_commerce.common.back_to_listing") }}</a>
@@ -18,7 +19,7 @@
           <div role="alert">
             <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
             <div class="govuk-error-summary__body">
-              <ul class="govuk-list govuk-error-summary__list"><li><a href="#images">{{ fieldError }}</a></li></ul>
+              <ul class="govuk-list govuk-error-summary__list"><li><a href="#{{ fieldErrorField or 'images' }}">{{ fieldError }}</a></li></ul>
             </div>
           </div>
         </div>
@@ -37,8 +38,23 @@
         <ul class="govuk-list">
           {% for photo in photos %}
             <li class="govuk-!-margin-bottom-6">
-              <img src="{{ photo.url }}" alt="{{ t('listings.gallery_image_alt', { number: photo.number, title: item.title }) }}" width="240" loading="lazy" decoding="async" class="govuk-!-display-block govuk-!-margin-bottom-2">
+              {# The seller's own description is what a screen reader hears; else "Photo N for …". #}
+              <img src="{{ photo.url }}" alt="{{ photo.altText or t('listings.gallery_image_alt', { number: photo.number, title: item.title }) }}" width="240" loading="lazy" decoding="async" class="govuk-!-display-block govuk-!-margin-bottom-2">
               {% if photo.isPrimary %}{{ govukTag({ text: t("govuk_alpha_commerce.photos.main_tag"), classes: "govuk-tag--green" }) }}{% endif %}
+              {# AWID accessibility report, Oct 2026, point 6: describe each photo for blind members. #}
+              <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/photos/' + (photo.id | string) + '/description') }}" class="govuk-!-margin-top-3" novalidate>
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                {{ govukInput({
+                  label: { text: t("govuk_alpha_commerce.photos.photo_alt_label", { number: photo.number }), classes: "govuk-label--s" },
+                  hint: { text: t("govuk_alpha_commerce.photos.photo_alt_hint") },
+                  id: "alt_text-" + (photo.id | string),
+                  name: "alt_text",
+                  value: photo.altText,
+                  attributes: { maxlength: "255" },
+                  spellcheck: true
+                }) }}
+                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.photos.save_alt") }}<span class="govuk-visually-hidden"> — {{ t('listings.gallery_image_alt', { number: photo.number, title: item.title }) }}</span></button>
+              </form>
               <div class="govuk-button-group govuk-!-margin-top-2 govuk-!-margin-bottom-0">
                 {% if not photo.isPrimary %}
                   <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/photos/' + (photo.id | string) + '/main') }}" novalidate>
@@ -55,12 +71,24 @@
 
       <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/photos') }}" enctype="multipart/form-data" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-        <div class="govuk-form-group{% if fieldError %} govuk-form-group--error{% endif %}">
+        {% set imagesError = fieldError and fieldErrorField != 'photo_alt' %}
+        <div class="govuk-form-group{% if imagesError %} govuk-form-group--error{% endif %}">
           <label class="govuk-label govuk-label--m" for="images">{{ t("govuk_alpha_commerce.photos.upload_label") }}</label>
           <div id="images-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.photos.upload_hint", { count: maxPerUpload }) }}</div>
-          {% if fieldError %}<p id="images-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldError }}</p>{% endif %}
-          <input class="govuk-file-upload{% if fieldError %} govuk-file-upload--error{% endif %}" id="images" name="images" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" aria-describedby="images-hint{% if fieldError %} images-error{% endif %}">
+          {% if imagesError %}<p id="images-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldError }}</p>{% endif %}
+          <input class="govuk-file-upload{% if imagesError %} govuk-file-upload--error{% endif %}" id="images" name="images" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" aria-describedby="images-hint{% if imagesError %} images-error{% endif %}">
         </div>
+        {# A description for a single photo as it is added; several are described above once added. #}
+        {{ govukInput({
+          label: { text: t("govuk_alpha_commerce.photos.alt_label") },
+          hint: { text: t("govuk_alpha_commerce.photos.alt_hint") },
+          id: "photo_alt",
+          name: "photo_alt",
+          value: photoAltValue,
+          errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldError } if (fieldError and fieldErrorField == 'photo_alt') else undefined,
+          attributes: { maxlength: "255" },
+          spellcheck: true
+        }) }}
         <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.photos.upload_submit") }}</button>
       </form>
     </div>

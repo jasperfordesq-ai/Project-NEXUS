@@ -1011,6 +1011,14 @@ return [
         'status_remove_failed' => 'Ár leithscéal, níorbh fhéidir an grianghraf a bhaint. Bain triail eile as.',
         'status_main_failed' => 'Ár leithscéal, níorbh fhéidir an príomhghrianghraf a athrú. Bain triail eile as.',
         'status_created_photos_failed' => 'Cruthaíodh d’fhógra, ach níorbh fhéidir na grianghraif a uaslódáil. Bain triail as iad a chur leis arís thíos.',
+        'alt_label' => 'Déan cur síos ar an ngrianghraf (roghnach)',
+        'alt_hint' => 'Má chuireann tú grianghraf amháin leis, abair i gcúpla focal cad atá ann. Léann léitheoirí scáileáin é seo os ard. Má chuireann tú roinnt leis, is féidir leat cur síos a dhéanamh ar gach ceann acu nuair a bheidh sé curtha leis.',
+        'error_alt_several' => 'Chun cur síos a dhéanamh ar ghrianghraf agus é á chur leis, cuir grianghraf amháin leis ag an am. Is féidir leat cur síos a dhéanamh ar gach grianghraf nuair a bheidh sé curtha leis.',
+        'photo_alt_label' => 'Déan cur síos ar ghrianghraf :number',
+        'photo_alt_hint' => 'Abair i gcúpla focal cad atá sa ghrianghraf seo. Léann léitheoirí scáileáin é seo os ard. Fág folamh é mura bhfuil cur síos uait.',
+        'save_alt' => 'Sábháil an cur síos',
+        'status_alt_saved' => 'Sábháladh cur síos an ghrianghraif.',
+        'status_alt_failed' => 'Ár leithscéal, níorbh fhéidir cur síos an ghrianghraif a shábháil. Bain triail eile as.',
     ],
 
     'shipping' => [

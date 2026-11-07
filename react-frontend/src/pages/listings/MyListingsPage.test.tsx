@@ -110,6 +110,22 @@ describe('MyListingsPage', () => {
     expect(screen.queryByRole('button', { name: /Extend/ })).not.toBeInTheDocument();
   });
 
+  it('reads out the photo description the member wrote, and keeps an undescribed photo decorative', async () => {
+    serve({
+      live: [
+        listing({ id: 1, image_url: '/dog.jpg', image_alt: 'A brown spaniel on a lead', expires_at: inDays(40) }),
+        listing({ id: 2, title: 'Cat sitting', image_url: '/cat.jpg', image_alt: null, expires_at: inDays(40) }),
+      ],
+    }, { live: 2 });
+    const { container } = render(<MyListingsPage />);
+
+    expect(await screen.findByRole('img', { name: 'A brown spaniel on a lead' })).toBeInTheDocument();
+    const undescribed = container.querySelector('img[src*="cat"]');
+    expect(undescribed).toHaveAttribute('alt', '');
+    // Never a file name.
+    expect(screen.queryByRole('img', { name: /cat\.jpg/ })).not.toBeInTheDocument();
+  });
+
   it('only shows tabs for states the member actually has, plus Live and Expired', async () => {
     serve({ live: [listing({})] }, { live: 1, review: 2 });
     render(<MyListingsPage />);

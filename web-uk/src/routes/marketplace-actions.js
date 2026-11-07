@@ -11,7 +11,7 @@ const { timingSafeEqual } = require('node:crypto');
 const { ApiError, callMarketplaceApi, callMerchantOnboardingApi, uploadMerchantOnboardingImage } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { readDate, readDateTime, parseTime } = require('../lib/date-input');
-const { filesFrom, photoProblem, removeFiles, uploadListingPhotos } = require('../lib/marketplace-photos');
+const { filesFrom, photoAltFrom, photoProblem, removeFiles, uploadListingPhotos } = require('../lib/marketplace-photos');
 const { helpers: marketplaceHelpers } = require('./marketplace');
 
 const router = express.Router();
@@ -53,6 +53,8 @@ function listingFormValues(body, defaultCurrency) {
     deliveryMethod: allowed(body.delivery_method, DELIVERY_METHODS, 'pickup'),
     location: String(body.location || '').slice(0, 255),
     quantity: positiveInteger(body.quantity) || 1,
+    // The photo's description (create form only), kept if the form comes back.
+    photoAlt: photoAltFrom(body),
     // Category-specific answers, replayed into whichever category's fields are drawn.
     templateValues: marketplaceHelpers.postedTemplateValues(body)
   };
@@ -703,7 +705,9 @@ router.post('/create', asyncRoute(async (req, res) => {
     return redirectTo(res, '/marketplace/create#template-fields');
   }
 
-  const photoError = photos.length > 0 ? photoProblem(photos) : '';
+  // A description of the photo for screen-reader users; it describes one photo only.
+  const photoAlt = photoAltFrom(req.body);
+  const photoError = photos.length > 0 ? photoProblem(photos, photoAlt) : '';
   if (photoError) validationErrors.push(photoError);
   const videoError = video ? marketplaceHelpers.videoProblem(video) : '';
   if (videoError) validationErrors.push(videoError);
@@ -735,7 +739,7 @@ router.post('/create', asyncRoute(async (req, res) => {
     const pendingModeration = Boolean(result && result.meta && result.meta.notice);
     if (id && photos.length > 0) {
       try {
-        await uploadListingPhotos(token, id, photos);
+        await uploadListingPhotos(token, id, photos, photoAlt);
       } catch (uploadError) {
         if (redirectOnAuthError(uploadError, res)) return undefined;
         // The listing exists; only the photos failed. Send the seller to the photos

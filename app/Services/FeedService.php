@@ -599,6 +599,7 @@ class FeedService
         // but historical data gaps let them slip through — they surface as "Post not found"
         // when a user tries to share/react. Hide them from the feed entirely.
         $items = $this->filterOutOrphanedItems($items, $tenantId, $currentUserId);
+        $items = $this->attachImageDescriptions($items, $tenantId);
 
         // Enrich review receivers with names
         if (!empty($receiverIds)) {
@@ -1097,6 +1098,42 @@ class FeedService
     private static function excludeFinishedEvents(QueryBuilder $query, string $table): void
     {
         $query->whereRaw("COALESCE({$table}.end_time, {$table}.start_time) >= ?", [now()]);
+    }
+
+    /**
+     * The member-written description of a listing or event photo (image_alt),
+     * so a feed card can read it out instead of a generic "image by" label.
+     * Posts carry theirs per picture in media[].alt_text. Every item gets the
+     * key; null means nothing was written and the client keeps its fallback.
+     */
+    private function attachImageDescriptions(array $items, int $tenantId): array
+    {
+        $tables = ['listing' => 'listings', 'event' => 'events'];
+        $idsByType = [];
+        foreach ($items as $item) {
+            if (isset($tables[$item['type']]) && !empty($item['image_url'])) {
+                $idsByType[$item['type']][] = (int) $item['id'];
+            }
+        }
+
+        $descriptions = [];
+        foreach ($idsByType as $type => $ids) {
+            $table = $tables[$type];
+            $descriptions[$type] = DB::table($table)
+                ->where('tenant_id', $tenantId)
+                ->whereIn('id', array_unique($ids))
+                ->whereNotNull('image_alt')
+                ->pluck('image_alt', 'id')
+                ->all();
+        }
+
+        foreach ($items as &$item) {
+            $alt = $descriptions[$item['type']][(int) $item['id']] ?? null;
+            $item['image_alt'] = is_string($alt) && trim($alt) !== '' ? trim($alt) : null;
+        }
+        unset($item);
+
+        return $items;
     }
 
     private function filterOutOrphanedItems(array $items, int $tenantId, ?int $currentUserId = null): array

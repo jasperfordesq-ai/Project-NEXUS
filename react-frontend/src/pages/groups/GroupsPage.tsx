@@ -674,7 +674,14 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
   const privacyLabel = group.visibility === 'private' || group.visibility === 'secret'
     ? t('private_title')
     : t('public_title');
+  const showsCover = Boolean(group.cover_image_url || group.cover_image);
   const groupImageSource = group.cover_image_url || group.cover_image || group.image_url;
+  // What a member wrote about the picture this card shows (cover, else the
+  // group picture). The card is one link with its own label, so the
+  // description joins that label; without one the picture stays decorative.
+  const imageDescription = groupImageSource
+    ? (showsCover ? group.cover_image_alt : group.image_alt)?.trim() || ''
+    : '';
   const imageProps = groupImageSource
     ? responsiveThumbnailProps(groupImageSource, {
         width: 360,
@@ -684,14 +691,14 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
     : null;
 
   return (
-    <Link to={tenantPath(`/groups/${group.id}`)} aria-label={`${group.name} - ${privacyLabel} - ${t('members', { count: memberCount })}`} className="block h-full">
+    <Link to={tenantPath(`/groups/${group.id}`)} aria-label={`${group.name} - ${privacyLabel} - ${t('members', { count: memberCount })}${imageDescription ? ` - ${imageDescription}` : ''}`} className="block h-full">
       <article className="h-full">
         <GlassCard className={`overflow-hidden hover:scale-[1.01] transition-transform h-full flex flex-col${featured ? ' ring-1 ring-amber-500/30' : ''}`}>
           <div className="relative h-24 bg-theme-elevated">
             {imageProps ? (
               <img
                 {...imageProps}
-                alt=""
+                alt={imageDescription}
                 className="h-full w-full object-cover"
                 loading="lazy"
                 decoding="async"

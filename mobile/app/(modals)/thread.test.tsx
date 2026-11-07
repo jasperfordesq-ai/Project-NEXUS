@@ -142,6 +142,9 @@ jest.mock('react-i18next', () => ({
         'thread.attachments.draftStorageWarning': 'The photo is attached, but it may not survive if the app closes.',
         'thread.attachments.removeLabel': 'Remove',
         'thread.attachments.open': `Open ${String(options?.name ?? '')}`,
+        'thread.attachments.openPhoto': 'Open photo',
+        'thread.attachments.openPhotoDescribed': `Open photo: ${String(options?.description ?? '')}`,
+        'thread.attachments.altLabel': 'Describe this photo (optional)',
         'thread.attachments.file': 'Attachment',
         'thread.attachments.permissionTitle': 'Photo access needed',
         'thread.attachments.permissionMessage': 'Allow photo access to attach images.',
@@ -1366,9 +1369,62 @@ describe('ThreadScreen', () => {
       refresh: jest.fn(),
     });
 
+    const { getByLabelText, queryByLabelText } = render(<ThreadScreen />);
+
+    // AWID accessibility report: a photo is never announced by its file name.
+    expect(getByLabelText('Open photo')).toBeTruthy();
+    expect(queryByLabelText('Open photo.jpg')).toBeNull();
+  });
+
+  // AWID accessibility report, point 6: the sender's description is read out with the photo.
+  it('reads a described photo out with its description', () => {
+    mockUseApi.mockReturnValue({
+      data: {
+        data: [{
+          ...mockMessages[0],
+          attachments: [{ id: 8, name: 'IMG_2041.jpg', url: 'https://example.test/p.jpg', type: 'image', size: 2048, alt_text: 'A red bicycle' }],
+        }],
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
     const { getByLabelText } = render(<ThreadScreen />);
 
-    expect(getByLabelText('Open photo.jpg')).toBeTruthy();
+    expect(getByLabelText('Open photo: A red bicycle')).toBeTruthy();
+  });
+
+  it('keeps a document\'s name, which is what tells it apart', () => {
+    mockUseApi.mockReturnValue({
+      data: {
+        data: [{
+          ...mockMessages[0],
+          attachments: [{ id: 9, name: 'rota.pdf', url: 'https://example.test/rota.pdf', type: 'file', size: 2048 }],
+        }],
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByLabelText } = render(<ThreadScreen />);
+
+    expect(getByLabelText('Open rota.pdf')).toBeTruthy();
+  });
+
+  it('sends the description written for an attached photo', async () => {
+    const screen = await attachAPhoto();
+    fireEvent.changeText(screen.getByLabelText('Describe this photo (optional)'), 'Two cups of tea');
+    fireEvent.press(screen.getByLabelText('Send'));
+
+    await waitFor(() => expect(mockSendMessageWithAttachments).toHaveBeenCalledWith(
+      42,
+      '',
+      [expect.objectContaining({ name: 'photo.jpg', alt: 'Two cups of tea' })],
+      undefined,
+      expect.anything(),
+    ));
   });
 
   it('records and sends a voice message through the voice upload helper', async () => {

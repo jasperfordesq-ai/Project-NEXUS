@@ -40,6 +40,13 @@
           <div id="image-hint" class="govuk-hint">{{ t("listings.create.image_hint") }}</div>
           <input class="govuk-file-upload{% if photoError %} govuk-file-upload--error{% endif %}" id="image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="image-hint">
         </div>
+        {# AWID accessibility report, Oct 2026, point 6: the photo's description for screen
+           readers (listings.image_alt), as on the member's own listing form. #}
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="image_alt">{{ t("govuk_alpha_listings.create.image_alt_label") }}</label>
+          <div id="image_alt-hint" class="govuk-hint">{{ t("govuk_alpha_listings.create.image_alt_hint") }}</div>
+          <input class="govuk-input" id="image_alt" name="image_alt" type="text" maxlength="255" spellcheck="true" aria-describedby="image_alt-hint">
+        </div>
         <div class="govuk-button-group">
           <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("govuk_alpha_settings.support_prepare.photo_submit") }}</button>
           <a class="govuk-link" href="{{ urlFor('/settings/support-actions') }}?status=support-done">{{ t("govuk_alpha_settings.support_prepare.photo_skip") }}</a>

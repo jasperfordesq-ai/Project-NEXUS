@@ -24,6 +24,8 @@ return [
         'error_failed' => 'Níorbh fhéidir do cheangaltán a uaslódáil. Bain triail eile as le do thoil.',
         'error_invalid' => 'Níl an cineál ceangaltáin sin ceadaithe.',
         'photo_alt' => 'Grianghraf a seoladh sa chomhrá seo',
+        'alt_label' => 'Déan cur síos ar an ngrianghraf (roghnach)',
+        'alt_hint' => 'Má chuireann tú grianghraf leis, abair i gcúpla focal cad atá ann. Léann léitheoirí scáileáin an téacs seo. Má cheanglaíonn tú níos mó ná grianghraf amháin, déan cur síos orthu go léir anseo.',
     ],
     'groups' => [
         'title' => 'Comhráite grúpa',

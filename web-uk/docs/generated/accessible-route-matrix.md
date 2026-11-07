@@ -2,20 +2,20 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-11-07T16:51:00.237Z
-Laravel commit SHA: `164d9fba388c359a73d15634924d23aec7066e02`
-Web UK repository commit SHA: `164d9fba388c359a73d15634924d23aec7066e02`
-Laravel working tree dirty: no
-Web UK repository working tree dirty: no
-Provenance caveat: Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs.
+Generated: 2026-11-07T20:16:29.920Z
+Laravel commit SHA: `5a212d9a75b2430c7962c373f57eb6c9b8bebe42`
+Web UK repository commit SHA: `5a212d9a75b2430c7962c373f57eb6c9b8bebe42`
+Laravel working tree dirty: yes
+Web UK repository working tree dirty: yes
+Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
 
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1093 |
+| web-uk routes | 1094 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 383 |
+| Extra web-uk routes | 384 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -70,7 +70,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | listings | 19 | 0 | 3 | 0 |
 | login | 7 | 0 | 4 | 0 |
 | logout | 1 | 0 | 0 | 0 |
-| marketplace | 50 | 0 | 40 | 0 |
+| marketplace | 50 | 0 | 41 | 0 |
 | matches | 4 | 0 | 4 | 0 |
 | me | 6 | 0 | 4 | 0 |
 | members | 11 | 0 | 4 | 0 |
@@ -326,6 +326,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | GET | `/marketplace/shipping/{param}/edit` | marketplace | marketplace/shipping-form | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/{param}/add-to-list` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/{param}/photos` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/{param}/photos/{param}/description` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/{param}/photos/{param}/main` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/{param}/photos/{param}/remove` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/{param}/video` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |

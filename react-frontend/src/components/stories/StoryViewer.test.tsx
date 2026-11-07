@@ -240,7 +240,24 @@ describe('StoryViewer', () => {
     expect(await screen.findByRole('img', { name: 'Story from Alice Example' })).toBeInTheDocument();
     const source = (await import('./StoryViewer.tsx?raw')).default;
     expect(source).not.toContain('`Story from ');
-    expect(source).toContain("alt={t('viewer.story_from'");
+    expect(source).toContain("t('viewer.story_from'");
+  });
+
+  // AWID accessibility report, point 6: the author's own description is read out.
+  it('reads a photo story out with the description its author wrote', async () => {
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: [{ ...makeStory({ media_type: 'image', text_content: null }), media_url: '/uploads/stories/1.jpg', media_alt: 'Our community garden in bloom' }],
+    });
+    const { StoryViewer } = await import('./StoryViewer');
+    render(
+      <StoryViewer
+        storyUsers={[makeStoryUser()]}
+        initialUserIndex={0}
+        onClose={onClose}
+      />
+    );
+    expect(await screen.findByRole('img', { name: 'Our community garden in bloom' })).toBeInTheDocument();
   });
 
   it('displays text story content after loading', async () => {

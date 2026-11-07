@@ -65,6 +65,21 @@ describe('PublicEventsListPage', () => {
     expect(screen.getByText(/Marie/)).toBeInTheDocument();
   });
 
+  it("reads out the organiser's description of an event photo", async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: [
+        { ...EVENT, image_url: '/uploads/wassail.jpg', image_alt: 'Lanterns hanging from apple trees at dusk' },
+        { ...EVENT, id: 99, title: 'Apple pressing', image_url: '/uploads/press.jpg', image_alt: null },
+      ],
+    });
+    const { container } = render(<PublicEventsListPage />);
+
+    expect(await screen.findByRole('img', { name: 'Lanterns hanging from apple trees at dusk' })).toBeInTheDocument();
+    // No description: the card title names it, so the photo stays decorative.
+    expect(container.querySelector('img[src*="press"]')).toHaveAttribute('alt', '');
+  });
+
   it('links each event to its public detail page, not the member one', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: [EVENT] });
 

@@ -19,6 +19,7 @@ import { type Exchange } from '@/lib/api/exchanges';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
+import { labelWithImageDescription } from '@/lib/utils/imageDescription';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
 import Avatar from '@/components/ui/Avatar';
 import NativePressable from '@/components/ui/NativePressable';
@@ -69,7 +70,9 @@ function ExchangeCardRow({ exchange, onToggleSave }: ExchangeCardProps) {
     <NativePressable
       className="mx-4 my-2"
       onPress={openDetail}
-      accessibilityLabel={exchange.title ?? ''}
+      // The card is read as one element, so the photo inside it is never reached on its
+      // own: its written description joins the title, and only when the photo is shown.
+      accessibilityLabel={imageUrl ? labelWithImageDescription(exchange.title ?? '', exchange.image_alt) : exchange.title ?? ''}
       feedback="highlight"
     >
       <HeroCard variant="default" className="w-full overflow-hidden">

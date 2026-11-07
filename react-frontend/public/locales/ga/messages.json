@@ -307,5 +307,8 @@
   "groups_empty": "Níl tú in aon chomhrá grúpa fós.",
   "groups_load_failed": "Níorbh fhéidir do chomhráite grúpa a lódáil.",
   "group_open_aria": "Oscail an comhrá grúpa {{name}}",
-  "aria_download_photo": "Íoslódáil an grianghraf"
+  "aria_download_photo": "Íoslódáil an grianghraf",
+  "aria_download_photo_described": "Íoslódáil an grianghraf: {{description}}",
+  "attachment_alt_label": "Déan cur síos ar an ngrianghraf seo (roghnach)",
+  "attachment_alt_hint": "Cabhraíonn sé seo le daoine a úsáideann léitheoirí scáileáin. Abair i gcúpla focal cad atá sa ghrianghraf."
 }

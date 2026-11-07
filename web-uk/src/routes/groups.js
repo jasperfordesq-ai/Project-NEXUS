@@ -135,6 +135,16 @@ function optionalText(value, limit = null) {
   return text === '' ? null : text;
 }
 
+/**
+ * The organiser's own description of an event's cover photo (events.image_alt,
+ * AWID report Oct 2026). The events contract serves it as
+ * primary_image.description; primary_image.alt_text is NOT used because it falls
+ * back to the title, which the card already shows beside the photo.
+ */
+function eventCoverAlt(event) {
+  return trimmed(event?.primary_image?.description || event?.image_alt, 255);
+}
+
 function positiveInteger(value) {
   const number = Number(value);
   return Number.isInteger(number) && number > 0 ? number : null;
@@ -1507,7 +1517,8 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
       id: positiveInteger(event?.id),
       title: trimmed(event?.title),
       startsAt: event?.start_time || event?.start_date || event?.starts_at || event?.startsAt || '',
-      coverImage: resolveBackendMediaUrl(event?.cover_image || event?.cover_image_url || event?.coverImage || event?.coverImageUrl)
+      coverImage: resolveBackendMediaUrl(event?.cover_image || event?.cover_image_url || event?.coverImage || event?.coverImageUrl),
+      coverImageAlt: eventCoverAlt(event)
     }))
     .filter((event) => event.id !== null && event.title !== '');
   const groupFeed = collectionFrom(feedResult)
@@ -1532,6 +1543,8 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
       name: trimmed(subGroup?.name),
       description: trimmed(subGroup?.description),
       imageUrl: resolveBackendMediaUrl(subGroup?.image_url || subGroup?.imageUrl),
+      // What the sub-group's organisers wrote for its picture (groups.image_alt).
+      imageAlt: trimmed(subGroup?.image_alt, 255),
       memberCount: Number(subGroup?.member_count ?? subGroup?.memberCount ?? 0) || 0,
       isPrivate: trimmed(subGroup?.visibility || 'public') !== 'public'
     }))
@@ -1871,7 +1884,8 @@ router.get('/:id(\\d+)/events', requireAuth, asyncRoute(async (req, res) => {
       title: trimmed(event?.title),
       location: trimmed(event?.location),
       startsAt: event?.start_time || event?.start_date || event?.starts_at || event?.startsAt || '',
-      coverImage: resolveBackendMediaUrl(event?.cover_image || event?.cover_image_url || event?.coverImage || event?.coverImageUrl)
+      coverImage: resolveBackendMediaUrl(event?.cover_image || event?.cover_image_url || event?.coverImage || event?.coverImageUrl),
+      coverImageAlt: eventCoverAlt(event)
     }))
     .filter((event) => event.id !== null && event.title !== '');
   const meta = eventsResult?.meta || {};

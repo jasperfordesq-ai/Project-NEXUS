@@ -64,6 +64,11 @@ export default function RemoteImage({
     );
   }
 
+  // expo-image's `accessible` defaults to false, so a label alone was never focusable and a
+  // screen reader skipped the photo — the description a member wrote was never heard. A
+  // labelled picture is an image element; an unlabelled one stays out of the reading order.
+  const labelled = Boolean(accessibilityLabel);
+
   return (
     <Image
       source={{ uri }}
@@ -71,6 +76,8 @@ export default function RemoteImage({
       className={className}
       contentFit={contentFit}
       onError={() => setFailedUri(uri ?? null)}
+      accessible={labelled}
+      accessibilityRole={labelled ? 'image' : undefined}
       accessibilityLabel={accessibilityLabel}
       testID={testID}
     />

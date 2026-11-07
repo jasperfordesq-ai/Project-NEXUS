@@ -150,6 +150,8 @@
     "add": "Add",
     "remove_image": "Remove image",
     "image_alt": "Upload {{number}}",
+    "image_alt_label": "Describe photo {{number}} (optional)",
+    "image_alt_hint": "Helps people who use screen readers. Say what the photo shows, in a few words.",
     "video": "Video",
     "video_optional": "(optional, max 1 video, 50MB)",
     "remove_video": "Remove video",

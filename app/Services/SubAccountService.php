@@ -1319,6 +1319,9 @@ class SubAccountService
      * ownership: the listing must belong to THIS supported member, so an active
      * relationship cannot be turned into a way to alter arbitrary listings.
      *
+     * $imageAlt is the photo's description for screen-reader users
+     * (listings.image_alt): null leaves the stored one alone, '' clears it.
+     *
      * @return string|null The stored image URL, or null with $this->errors set.
      */
     public function attachListingImageForChild(
@@ -1326,6 +1329,7 @@ class SubAccountService
         int $childUserId,
         int $listingId,
         mixed $file,
+        ?string $imageAlt = null,
     ): ?string {
         $this->errors = [];
 
@@ -1366,7 +1370,12 @@ class SubAccountService
                 'size'     => $file->getSize(),
             ]);
 
-            ListingService::update($listingId, ['image_url' => $imageUrl]);
+            $updates = ['image_url' => $imageUrl];
+            if ($imageAlt !== null) {
+                // ListingService cleans it: plain words, NULL when empty.
+                $updates['image_alt'] = $imageAlt;
+            }
+            ListingService::update($listingId, $updates);
         } catch (\Throwable $e) {
             Log::error('Proxy listing image upload failed', [
                 'listing_id' => $listingId,

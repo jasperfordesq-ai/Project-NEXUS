@@ -303,5 +303,8 @@
   "groups_empty": "Vous ne faites encore partie d’aucune discussion de groupe.",
   "groups_load_failed": "Impossible de charger vos discussions de groupe.",
   "group_open_aria": "Ouvrir la discussion de groupe {{name}}",
-  "aria_download_photo": "Télécharger la photo"
+  "aria_download_photo": "Télécharger la photo",
+  "aria_download_photo_described": "Télécharger la photo : {{description}}",
+  "attachment_alt_label": "Décrivez cette photo (facultatif)",
+  "attachment_alt_hint": "Aide les personnes qui utilisent un lecteur d'écran. Dites en quelques mots ce que montre la photo."
 }

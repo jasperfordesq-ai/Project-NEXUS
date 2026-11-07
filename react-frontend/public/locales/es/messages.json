@@ -303,5 +303,8 @@
   "groups_empty": "Todavía no estás en ningún chat de grupo.",
   "groups_load_failed": "No se pudieron cargar tus chats de grupo.",
   "group_open_aria": "Abrir el chat de grupo {{name}}",
-  "aria_download_photo": "Descargar la foto"
+  "aria_download_photo": "Descargar la foto",
+  "aria_download_photo_described": "Descargar la foto: {{description}}",
+  "attachment_alt_label": "Describe esta foto (opcional)",
+  "attachment_alt_hint": "Ayuda a quienes usan lectores de pantalla. Di qué muestra la foto, en pocas palabras."
 }

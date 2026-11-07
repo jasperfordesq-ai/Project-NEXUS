@@ -145,7 +145,7 @@ export function MarketplaceImageGallery({ images }: MarketplaceImageGalleryProps
             >
               <img
                 src={resolveThumbnailUrl(image.thumbnail_url || image.url, { width: 160, height: 160 })}
-                alt={t('gallery.thumbnail_alt', { number: index + 1 })}
+                alt={image.alt_text || t('gallery.thumbnail_alt', { number: index + 1 })}
                 className="w-full h-full object-cover"
                 loading="lazy"
               />

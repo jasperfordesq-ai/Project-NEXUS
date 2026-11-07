@@ -169,7 +169,7 @@ class MessageSent implements ShouldBroadcast, ShouldRescue
      * tenant context — a lazy load there would silently return nothing or the
      * wrong tenant's rows. `MessageDeliveryOutboxService` loads them.
      *
-     * @return list<array{id: int, url: string, type: string, name: string, size: int, mime_type: ?string}>
+     * @return list<array{id: int, url: string, type: string, name: string, alt_text: ?string, size: int, mime_type: ?string}>
      */
     private function attachmentSummaries(): array
     {
@@ -186,6 +186,7 @@ class MessageSent implements ShouldBroadcast, ShouldRescue
                 'url'       => $attachment->url,
                 'type'      => $attachment->type,
                 'name'      => $attachment->name,
+                'alt_text'  => $attachment->alt_text,
                 'size'      => $attachment->size,
                 'mime_type' => $attachment->mime_type,
             ])

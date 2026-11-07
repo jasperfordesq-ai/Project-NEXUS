@@ -153,10 +153,10 @@ describe('MessageInputArea', () => {
     const previews = [
       { file: new File(['img'], 'photo.jpg', { type: 'image/jpeg' }), preview: 'data:image/jpeg;base64,abc', type: 'image' as const },
     ];
-    render(<MessageInputArea {...defaultProps} attachments={[previews[0].file]} attachmentPreviews={previews} />);
-    // Should render preview images
-    const imgs = screen.getAllByRole('img');
-    expect(imgs.length).toBeGreaterThan(0);
+    const { container } = render(<MessageInputArea {...defaultProps} attachments={[previews[0].file]} attachmentPreviews={previews} />);
+    // The preview is shown; with no description yet it is not announced by its
+    // file name (AWID report, point 6), so it is found by its source.
+    expect(container.querySelector('img[src="data:image/jpeg;base64,abc"]')).not.toBeNull();
   });
 
   it('replaces text, attachment, and voice controls when safeguarding denies contact', () => {
@@ -223,5 +223,56 @@ describe('MessageInputArea — mobile compose-tools collapse (<640px)', () => {
 
     await user.click(screen.getByLabelText('aria_show_compose_tools'));
     expect(screen.getByLabelText('aria_add_attachment')).toBeInTheDocument();
+  });
+});
+
+// AWID accessibility report, point 6: every photo a member sends can carry a description.
+describe('MessageInputArea photo descriptions', () => {
+  const photo = new File(['x'], 'IMG_2041.jpg', { type: 'image/jpeg' });
+  const doc = new File(['x'], 'rota.pdf', { type: 'application/pdf' });
+
+  it('offers a description box for each photo, and none for a document', () => {
+    render(
+      <MessageInputArea
+        {...defaultProps}
+        attachments={[photo, doc]}
+        attachmentPreviews={[
+          { file: photo, preview: 'blob:photo', type: 'image', alt: '' },
+          { file: doc, preview: '', type: 'file', alt: '' },
+        ]}
+        onAttachmentAltChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByRole('textbox', { name: 'attachment_alt_label' })).toHaveLength(1);
+  });
+
+  it('never reads the photo preview out by its file name', () => {
+    render(
+      <MessageInputArea
+        {...defaultProps}
+        attachments={[photo]}
+        attachmentPreviews={[{ file: photo, preview: 'blob:photo', type: 'image', alt: '' }]}
+        onAttachmentAltChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByAltText('IMG_2041.jpg')).not.toBeInTheDocument();
+  });
+
+  it('reports what the member types for that photo', async () => {
+    const user = (await import('@testing-library/user-event')).default.setup();
+    const onAttachmentAltChange = vi.fn();
+    render(
+      <MessageInputArea
+        {...defaultProps}
+        attachments={[photo]}
+        attachmentPreviews={[{ file: photo, preview: 'blob:photo', type: 'image', alt: '' }]}
+        onAttachmentAltChange={onAttachmentAltChange}
+      />,
+    );
+
+    await user.type(screen.getByRole('textbox', { name: 'attachment_alt_label' }), 'A');
+    expect(onAttachmentAltChange).toHaveBeenLastCalledWith(0, 'A');
   });
 });

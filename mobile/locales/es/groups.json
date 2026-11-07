@@ -183,6 +183,9 @@
       "retryUpload": "Reintentar carga",
       "permissionTitle": "Se necesita acceso a la fototeca",
       "permissionMessage": "Permite el acceso a la fototeca para compartir contenido multimedia con el grupo.",
+      "captionLabel": "Descripción (opcional)",
+      "captionPlaceholder": "Añade contexto para los miembros del grupo",
+      "photoAlt": "Foto del grupo",
       "filters": {
         "all": "All",
         "image": "Photos",

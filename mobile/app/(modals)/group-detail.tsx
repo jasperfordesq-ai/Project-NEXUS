@@ -95,6 +95,7 @@ import {
   uploadGroupFile,
   uploadGroupMedia,
   voteGroupQA,
+  GROUP_MEDIA_CAPTION_MAX_LENGTH,
   type GroupAnnouncement,
   type GroupAnalyticsComparative,
   type GroupAnalyticsDashboard,
@@ -168,6 +169,7 @@ import { formatDecimal } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 import RemoteImage from '@/components/ui/RemoteImage';
+import { groupPictureDescription } from '@/lib/utils/imageDescription';
 
 const CARD_MIN_HEIGHT = 118;
 
@@ -1175,7 +1177,9 @@ function GroupDetailScreenInner() {
       >
         <HeroCard className="overflow-hidden rounded-panel p-0">
           {image ? (
-            <RemoteImage uri={image} className="h-44 w-full bg-surface-secondary" fallbackIcon="people-outline" />
+            // The group name sits right under the picture, so an undescribed picture stays
+            // silent; a written description is read.
+            <RemoteImage uri={image} className="h-44 w-full bg-surface-secondary" fallbackIcon="people-outline" accessibilityLabel={groupPictureDescription(loadedGroup) ?? undefined} />
           ) : (
             <View className="h-28 items-center justify-center" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
               <Ionicons name="people-outline" size={42} color={primary} />
@@ -2236,6 +2240,10 @@ function GroupMediaPanel({
   const [isRestoringUpload, setIsRestoringUpload] = useState(false);
   const [uploadRecoveryError, setUploadRecoveryError] = useState<string | null>(null);
   const [pendingUploadOperation, setPendingUploadOperation] = useState<GroupContentCreationOperation<'gallery-media'> | null>(null);
+  /* The caption is sent with the next upload, the same field the website sends; it is also
+     what a screen reader reads for the photo. It travels inside the saved upload operation,
+     so a retried upload carries the caption it was started with. */
+  const [uploadCaption, setUploadCaption] = useState('');
   /* 🔴 The gallery showed the first twenty items and stopped, though the endpoint has
      always answered with a cursor. Audit 2026-09-07. */
   const [cursor, setCursor] = useState<string | null>(null);
@@ -2360,6 +2368,7 @@ function GroupMediaPanel({
       uri: operation.payload.uri,
       fileName: operation.payload.fileName,
       mimeType: operation.payload.mimeType ?? undefined,
+      ...(operation.payload.caption ? { caption: operation.payload.caption } : {}),
     }, operation.key);
     await completeGroupContentCreationOperation(operation);
     if (isMountedRef.current) setPendingUploadOperation(null);
@@ -2419,10 +2428,15 @@ function GroupMediaPanel({
         mimeType: asset.mimeType,
       });
       retainedUri = retained.uri;
-      operation = await reserveGroupContentCreationOperation(groupId, 'gallery-media', retained);
+      const caption = uploadCaption.trim();
+      operation = await reserveGroupContentCreationOperation(groupId, 'gallery-media', {
+        ...retained,
+        ...(caption ? { caption } : {}),
+      });
       if (!isMountedRef.current) return;
       setPendingUploadOperation(operation);
       await performMediaUpload(operation);
+      if (isMountedRef.current) setUploadCaption('');
     } catch (err) {
       if (retainedUri && !operation) await removeGroupMediaDraftAsset(retainedUri).catch(() => undefined);
       await handleMediaUploadError(err, operation);
@@ -2477,6 +2491,15 @@ function GroupMediaPanel({
               </HeroButton>
             ))}
           </View>
+          <Input
+            label={t('detail.media.captionLabel')}
+            placeholder={t('detail.media.captionPlaceholder')}
+            value={uploadCaption}
+            onChangeText={setUploadCaption}
+            maxLength={GROUP_MEDIA_CAPTION_MAX_LENGTH}
+            multiline
+            editable={uploadingMediaType === null && !pendingUploadOperation}
+          />
           <View className="flex-row flex-wrap gap-2">
             <HeroButton size="sm" variant="secondary" isDisabled={uploadingMediaType !== null || isRestoringUpload || Boolean(uploadRecoveryError) || Boolean(pendingUploadOperation)} onPress={() => void pickMedia('image')}>
               {uploadingMediaType === 'image' ? <Spinner size="sm" /> : <Ionicons name="image-outline" size={16} color={primary} />}
@@ -2528,7 +2551,8 @@ function GroupMediaPanel({
               <HeroCard key={item.id} className="w-[47%] rounded-panel p-0">
                 <HeroCard.Body className="gap-2 p-3">
                   {item.type === 'image' && sourceUrl ? (
-                    <RemoteImage uri={sourceUrl} className="h-28 w-full rounded-panel-inner" fallbackIcon="image-outline" />
+                    // Caption, else a generic label — never `original_name`, the file name.
+                    <RemoteImage uri={sourceUrl} className="h-28 w-full rounded-panel-inner" fallbackIcon="image-outline" accessibilityLabel={item.caption?.trim() || t('detail.media.photoAlt')} testID={`group-media-image-${item.id}`} />
                   ) : (
                     <View className="h-28 w-full items-center justify-center rounded-panel-inner" style={{ backgroundColor: withAlpha(primary, 0.12) }}>
                       <Ionicons name={item.type === 'video' ? 'film-outline' : 'image-outline'} size={28} color={primary} />

@@ -35,6 +35,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
+import { imageDescription } from '@/lib/utils/imageDescription';
 import Avatar from '@/components/ui/Avatar';
 import ImageCarousel from '@/components/ui/ImageCarousel';
 import ActionSheet from '@/components/ui/ActionSheet';
@@ -973,7 +974,9 @@ function FeedItemInner({
             ) : imageUrl ? (
               <Pressable
                 onPress={handleFeedImagePress}
-                accessibilityLabel={t('feedTypes.post')}
+                // The member's own description of a listing or event photo when they wrote
+                // one; otherwise the generic label this image always had.
+                accessibilityLabel={imageDescription(item.image_alt) ?? t('feedTypes.post')}
                 accessibilityRole="imagebutton"
               >
                 <RemoteImage uri={imageUrl} style={{ width: '100%', height: 210, borderRadius: 14 }} testID="feed-item-image" />

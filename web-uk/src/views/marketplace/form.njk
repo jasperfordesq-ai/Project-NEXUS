@@ -78,6 +78,16 @@
           <input class="govuk-file-upload{% if fieldErrors.images %} govuk-file-upload--error{% endif %}" id="images" name="images" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" aria-describedby="images-hint{% if fieldErrors.images %} images-error{% endif %}">
         </div>
 
+        {# AWID accessibility report, Oct 2026, point 6: a description of the photo, read out
+           by screen readers. One box describes one photo; several are described on the
+           listing's photos page once added (React has a box per photo). #}
+        <div class="govuk-form-group{% if fieldErrors.photo_alt %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="photo_alt">{{ t("govuk_alpha_commerce.photos.alt_label") }}</label>
+          <div id="photo_alt-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.photos.alt_hint") }}</div>
+          {% if fieldErrors.photo_alt %}<p id="photo_alt-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.photo_alt }}</p>{% endif %}
+          <input class="govuk-input{% if fieldErrors.photo_alt %} govuk-input--error{% endif %}" id="photo_alt" name="photo_alt" type="text" maxlength="255" spellcheck="true" value="{{ listing.photoAlt }}" aria-describedby="photo_alt-hint{% if fieldErrors.photo_alt %} photo_alt-error{% endif %}">
+        </div>
+
         {# React CreateMarketplaceListingPage: one optional video, uploaded once the listing exists. #}
         <div class="govuk-form-group{% if fieldErrors.video %} govuk-form-group--error{% endif %}">
           <label class="govuk-label govuk-label--s" for="video">{{ t("govuk_alpha_commerce.listing_video.label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>

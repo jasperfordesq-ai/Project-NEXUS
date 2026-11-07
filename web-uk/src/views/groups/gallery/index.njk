@@ -42,7 +42,10 @@
   {% else %}
     <ul class="govuk-list nexus-alpha-card-list">
       {% for item in items %}
-        {% set itemLabel = item.caption or item.name %}
+        {#- A photo is described by its caption, else generically — never by the
+            file name a phone gave it (AWID report, Oct 2026). A video already shows
+            its file name in its visible heading, so its hidden link text may too. -#}
+        {% set itemLabel = item.caption or (item.name if item.type == "video" else t("govuk_alpha_group_media.gallery.photo_alt_fallback")) %}
         <li class="nexus-alpha-card">
           {% if item.type == "video" %}
             <h2 class="govuk-heading-s govuk-!-margin-bottom-2">{{ t("govuk_alpha_group_media.gallery.video_label") }}{% if item.name %}: {{ item.name }}{% endif %}</h2>
@@ -52,7 +55,7 @@
             <p class="govuk-body govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor(item.fileUrl) }}">{{ t("govuk_alpha_group_media.gallery.open_video") }}<span class="govuk-visually-hidden"> {{ itemLabel }}</span></a></p>
           {% else %}
             <a class="govuk-link" href="{{ urlFor(item.fileUrl) }}">
-              <img src="{{ urlFor(item.fileUrl) }}" alt="{{ itemLabel or t('govuk_alpha_group_media.gallery.photo_alt_fallback') }}" loading="lazy" style="max-width:100%;height:auto">
+              <img src="{{ urlFor(item.fileUrl) }}" alt="{{ itemLabel }}" loading="lazy" style="max-width:100%;height:auto">
               <span class="govuk-visually-hidden">{{ t("govuk_alpha_group_media.gallery.open_full") }}</span>
             </a>
           {% endif %}

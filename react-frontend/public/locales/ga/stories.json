@@ -47,6 +47,7 @@
     "text_placeholder": "Clóscríobh do scéal...",
     "compose_placeholder": "Cad atá ar d'intinn?",
     "text_overlay": "Cuir téacs le do ghrianghraf...",
+    "photo_alt_label": "Déan cur síos ar an ngrianghraf seo (roghnach)",
     "poll_question_placeholder": "Cuir ceist...",
     "poll_option_placeholder": "Rogha {{number}}",
     "poll_add_option": "Cuir rogha leis",

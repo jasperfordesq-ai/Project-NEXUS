@@ -184,6 +184,37 @@ describe('FeedCard', () => {
     expect(img).toHaveAttribute('loading', 'lazy');
   });
 
+  it('reads out the description the member wrote for a listing photo', () => {
+    const item: FeedItem = {
+      ...baseFeedItem,
+      id: 41,
+      type: 'listing',
+      image_url: '/listing.jpg',
+      image_alt: 'A freshly dug vegetable patch',
+    };
+    render(<FeedCard {...defaultProps} item={item} />);
+    expect(screen.getByAltText('A freshly dug vegetable patch')).toBeInTheDocument();
+    expect(screen.queryByAltText(/image by Jane Doe/)).not.toBeInTheDocument();
+  });
+
+  it('reads out the description the organiser wrote for an event cover', () => {
+    const item: FeedItem = {
+      ...baseFeedItem,
+      id: 42,
+      type: 'event',
+      image_url: '/event.jpg',
+      image_alt: 'Seed packets on a trestle table',
+    };
+    render(<FeedCard {...defaultProps} item={item} />);
+    expect(screen.getByAltText('Seed packets on a trestle table')).toBeInTheDocument();
+  });
+
+  it('keeps the generic label when no description was written', () => {
+    const item: FeedItem = { ...baseFeedItem, image_url: '/test-image.jpg', image_alt: '  ' };
+    render(<FeedCard {...defaultProps} item={item} />);
+    expect(screen.getByAltText('Post image by Jane Doe')).toBeInTheDocument();
+  });
+
   it('calls onToggleLike when Like button pressed', async () => {
     const user = userEvent.setup();
     render(<FeedCard {...defaultProps} />);

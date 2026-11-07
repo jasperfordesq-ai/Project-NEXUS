@@ -32,7 +32,9 @@ const { asyncRoute } = require('../lib/routeHelpers');
 const { translateForRequest } = require('../lib/request-translator');
 const {
   MAX_PHOTOS_PER_UPLOAD,
+  MAX_PHOTO_ALT_LENGTH,
   filesFrom,
+  photoAltFrom,
   photoProblem,
   removeFiles,
   uploadListingPhotos
@@ -65,6 +67,8 @@ const PHOTO_STATUS = {
   'main-changed': { type: 'success', key: 'govuk_alpha_commerce.photos.status_main' },
   'remove-failed': { type: 'error', key: 'govuk_alpha_commerce.photos.status_remove_failed' },
   'main-failed': { type: 'error', key: 'govuk_alpha_commerce.photos.status_main_failed' },
+  'alt-saved': { type: 'success', key: 'govuk_alpha_commerce.photos.status_alt_saved' },
+  'alt-failed': { type: 'error', key: 'govuk_alpha_commerce.photos.status_alt_failed' },
   'created-photos-failed': { type: 'error', key: 'govuk_alpha_commerce.photos.status_created_photos_failed' }
 };
 const SHIPPING_STATUS = {
@@ -186,6 +190,8 @@ async function loadOwnListing(token, id) {
       url: resolveBackendMediaUrl(image && (image.thumbnail_url || image.url)),
       fullUrl: resolveBackendMediaUrl(image && (image.url || image.thumbnail_url)),
       isPrimary: Boolean(image && (image.is_primary === true || image.is_primary === 1 || image.is_primary === '1')),
+      // What the seller wrote for screen-reader users ('' = none yet).
+      altText: trimmed(image && typeof image.alt_text === 'string' ? image.alt_text : '', MAX_PHOTO_ALT_LENGTH),
       number: index + 1
     }))
     .filter((photo) => photo.id && photo.url);
@@ -216,6 +222,9 @@ router.get('/:id(\\d+)/photos', asyncRoute(async (req, res) => {
       photos,
       maxPerUpload: MAX_PHOTOS_PER_UPLOAD,
       fieldError,
+      // Which field the error belongs to: the file field, or the description beside it.
+      fieldErrorField: stashed && stashed.field === 'photo_alt' ? 'photo_alt' : 'images',
+      photoAltValue: stashed && typeof stashed.photoAlt === 'string' ? stashed.photoAlt : '',
       status: fieldError ? null : statusFrom(res, PHOTO_STATUS, req.query.status)
     });
   } catch (error) {
@@ -231,14 +240,17 @@ router.post('/:id(\\d+)/photos', asyncRoute(async (req, res) => {
     return redirectTo(res, '/login?status=auth-required');
   }
   const id = Number(req.params.id);
-  const problem = photoProblem(files);
+  const photoAlt = photoAltFrom(req.body);
+  const problem = photoProblem(files, photoAlt);
   if (problem) {
     await removeFiles(files);
-    sessionPut(req, photoErrorSessionKey(req, id), { key: problem });
+    sessionPut(req, photoErrorSessionKey(req, id), problem === 'govuk_alpha_commerce.photos.error_alt_several'
+      ? { key: problem, field: 'photo_alt', photoAlt }
+      : { key: problem, photoAlt });
     return redirectTo(res, `/marketplace/${id}/photos`);
   }
   try {
-    await uploadListingPhotos(token, id, files);
+    await uploadListingPhotos(token, id, files, photoAlt);
     return redirectTo(res, `/marketplace/${id}/photos?status=uploaded`);
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
@@ -283,6 +295,27 @@ router.post('/:id(\\d+)/photos/:imageId(\\d+)/remove', asyncRoute(async (req, re
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
     return redirectTo(res, `/marketplace/${id}/photos?status=remove-failed`);
+  }
+}));
+
+// Describe one photo for screen-reader users (AWID accessibility report, Oct 2026,
+// point 6). Saved through the listing update, as React's edit page does:
+// PUT /v2/marketplace/listings/{id} with image_alt_texts { photoId: text | null }.
+// Laravel checks the listing is the member's and the photo is on it.
+router.post('/:id(\\d+)/photos/:imageId(\\d+)/description', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const id = Number(req.params.id);
+  const imageId = Number(req.params.imageId);
+  const altText = String((req.body && req.body.alt_text) || '').replace(/\s+/g, ' ').trim().slice(0, MAX_PHOTO_ALT_LENGTH);
+  try {
+    await callMarketplaceApi(token, 'PUT', `/listings/${encodeURIComponent(id)}`, {
+      image_alt_texts: { [imageId]: altText || null }
+    });
+    return redirectTo(res, `/marketplace/${id}/photos?status=alt-saved`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    return redirectTo(res, `/marketplace/${id}/photos?status=alt-failed`);
   }
 }));
 

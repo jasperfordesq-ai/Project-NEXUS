@@ -81,6 +81,7 @@ import {
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 import RemoteImage from '@/components/ui/RemoteImage';
+import { imageDescription } from '@/lib/utils/imageDescription';
 
 const REMINDER_OPTIONS = [60, 1440, 10080] as const;
 
@@ -629,7 +630,9 @@ function EventDetailScreenInner() {
       >
         <HeroCard variant="default" className="overflow-hidden">
           <View className="h-1 w-full" style={{ backgroundColor: accent }} />
-          {coverImage ? <RemoteImage uri={coverImage} style={{ width: '100%', height: 180 }} contentFit="cover" fallbackIcon="calendar-outline" /> : null}
+          {/* The title sits right under the cover, so an undescribed cover stays silent rather
+              than repeating it (primary_image.alt_text is that title fallback). */}
+          {coverImage ? <RemoteImage uri={coverImage} style={{ width: '100%', height: 180 }} contentFit="cover" fallbackIcon="calendar-outline" accessibilityLabel={imageDescription(event.primary_image?.description) ?? undefined} testID="event-detail-cover" /> : null}
           <HeroCard.Body className="gap-4 px-4 py-4">
             <View className="flex-row flex-wrap gap-2">
               {event.category ? (
