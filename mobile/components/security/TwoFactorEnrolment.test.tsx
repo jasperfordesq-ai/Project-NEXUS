@@ -256,6 +256,25 @@ it('says when the password box gets focus, so the screen can bring Continue into
   expect(onFieldFocus).toHaveBeenCalledTimes(1);
 });
 
+it('says when the password box is tapped again, so Continue comes back into view', () => {
+  // Close the keyboard, tap the box again: it still had focus, so onFocus never fired and
+  // the keyboard came back over Continue (emulator, 7 November 2026).
+  const onFieldFocus = jest.fn();
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} onFieldFocus={onFieldFocus} />);
+  fireEvent.press(view.getByTestId('two-factor-password'));
+  expect(onFieldFocus).toHaveBeenCalledTimes(1);
+});
+
+it('says when the code box is tapped again, so the message and Verify come back into view', async () => {
+  // After a wrong code: close the number pad, tap the box again, and the pad covered the
+  // error line and Verify (emulator, 7 November 2026).
+  const onFieldFocus = jest.fn();
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} onFieldFocus={onFieldFocus} />);
+  await reachSetup(view);
+  fireEvent.press(view.getByTestId('two-factor-code'));
+  expect(onFieldFocus).toHaveBeenCalledTimes(1);
+});
+
 it('asks for the code box and Verify to be shown again after a wrong code', async () => {
   // The error line under the box pushed Verify half behind the keyboard, and the box
   // never lost focus, so nothing scrolled it back (emulator, 7 November 2026).

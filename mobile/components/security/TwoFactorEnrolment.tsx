@@ -57,9 +57,11 @@ export interface TwoFactorEnrolmentProps {
    */
   onStageChange?: (stage: TwoFactorEnrolmentStage) => void;
   /**
-   * The password or code box got focus, or the code box is back after a wrong code with
-   * an error line under it: the screen around it can scroll the button below into view
-   * (Continue or Verify sat behind the keyboard; emulator, 7 Nov 2026).
+   * The password or code box got focus or was tapped, or the code box is back after a
+   * wrong code with an error line under it: the screen around it can scroll the button
+   * below into view (Continue or Verify sat behind the keyboard; emulator, 7 Nov 2026).
+   * A tap counts on its own because a box keeps focus when the keyboard is closed, so
+   * tapping it again brings the keyboard back without a focus event.
    */
   onFieldFocus?: () => void;
 }
@@ -239,6 +241,7 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel, onS
             textContentType="password"
             editable={!busy}
             onFocus={() => onFieldFocus?.()}
+            onPress={() => onFieldFocus?.()}
             onSubmitEditing={() => void confirmPassword()}
             containerClassName="mb-0"
           />
@@ -282,6 +285,7 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel, onS
             value={code}
             onChangeText={(value) => { setCode(value.replace(/\D/g, '').slice(0, 6)); setError(''); }}
             onFocus={() => onFieldFocus?.()}
+            onPress={() => onFieldFocus?.()}
             keyboardType="number-pad"
             autoComplete="one-time-code"
             textContentType="oneTimeCode"
