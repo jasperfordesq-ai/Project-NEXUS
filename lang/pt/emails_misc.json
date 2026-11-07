@@ -568,7 +568,9 @@
     "self_deletion_title": "Conta eliminada",
     "self_deletion_greeting": "Olá {{name}},",
     "self_deletion_body": "A sua conta em <strong>{{community}}</strong> foi eliminada permanentemente e os seus dados pessoais foram anonimizados.",
-    "self_deletion_body_contact": "Se não solicitou esta ação ou considera que se trata de um erro, contacte o administrador da sua comunidade."
+    "self_deletion_body_contact": "Se não solicitou esta ação ou considera que se trata de um erro, contacte o administrador da sua comunidade.",
+    "welcome_invitation_body": "Bem-vindo/a a <strong>{{community}}</strong>! Foi criada uma conta para si. Escolha a sua senha com o botão abaixo e depois inicie sessão para começar a ligar-se à sua comunidade, explorar os serviços disponíveis e oferecer as suas próprias competências.",
+    "welcome_invitation_signin_email": "O seu endereço de e-mail para iniciar sessão: <strong>{{email}}</strong>"
   },
   "newsletter": {
     "unsubscribed_subject": "Subscrição cancelada — {{community}}",

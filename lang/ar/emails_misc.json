@@ -568,7 +568,9 @@
     "self_deletion_title": "تم حذف الحساب",
     "self_deletion_greeting": "مرحبًا {{name}}،",
     "self_deletion_body": "تم حذف حسابك في <strong>{{community}}</strong> نهائيًا وتمت إخفاء هوية بياناتك الشخصية.",
-    "self_deletion_body_contact": "إذا لم تطلب ذلك أو كنت تعتقد أنه خطأ، يرجى التواصل مع مسؤول مجتمعك."
+    "self_deletion_body_contact": "إذا لم تطلب ذلك أو كنت تعتقد أنه خطأ، يرجى التواصل مع مسؤول مجتمعك.",
+    "welcome_invitation_body": "مرحبًا بك في <strong>{{community}}</strong>! تم إنشاء حساب لك. اختر كلمة المرور باستخدام الزر أدناه، ثم سجّل الدخول لتبدأ التواصل مع مجتمعك وتصفّح الخدمات المتاحة وتقديم مهاراتك.",
+    "welcome_invitation_signin_email": "بريدك الإلكتروني لتسجيل الدخول: <strong>{{email}}</strong>"
   },
   "newsletter": {
     "unsubscribed_subject": "تم إلغاء اشتراكك — {{community}}",

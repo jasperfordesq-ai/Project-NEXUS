@@ -568,7 +568,9 @@
     "self_deletion_title": "Account eliminato",
     "self_deletion_greeting": "Ciao {{name}},",
     "self_deletion_body": "Il tuo account su <strong>{{community}}</strong> è stato eliminato permanentemente e i tuoi dati personali sono stati resi anonimi.",
-    "self_deletion_body_contact": "Se non hai richiesto questa operazione o ritieni che si tratti di un errore, contatta l'amministratore della tua community."
+    "self_deletion_body_contact": "Se non hai richiesto questa operazione o ritieni che si tratti di un errore, contatta l'amministratore della tua community.",
+    "welcome_invitation_body": "Benvenuto/a su <strong>{{community}}</strong>! È stato creato un account per te. Scegli la tua password con il pulsante qui sotto, poi accedi per iniziare a connetterti con la tua comunità, esplorare i servizi disponibili e offrire le tue competenze.",
+    "welcome_invitation_signin_email": "Il tuo indirizzo email per l'accesso: <strong>{{email}}</strong>"
   },
   "newsletter": {
     "unsubscribed_subject": "Sei stato disiscritto — {{community}}",

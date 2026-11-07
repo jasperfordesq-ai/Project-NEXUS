@@ -74,11 +74,20 @@ class WelcomeInvitationMailer
 
                 $firstName = htmlspecialchars($user['first_name'] ?? '', ENT_QUOTES, 'UTF-8');
 
+                // A member who is being sent a set-password link has no password
+                // yet, so the standard wording must not tell them to "log in"
+                // (AWID focus group, Oct 2026: "it is not clear how you will get
+                // the initial information").
+                $standardBodyKey = $withPasswordLink
+                    ? 'emails_misc.admin_actions.welcome_invitation_body'
+                    : 'emails_misc.admin_actions.welcome_resend_body';
+                $standardMessage = '<p>' . __('emails_misc.admin_actions.welcome_resend_greeting', ['name' => $firstName]) . '</p>'
+                    . '<p>' . __($standardBodyKey, ['community' => $tenantNameSafe]) . '</p>';
+
                 if (!empty($welcomeConfig['body'])) {
                     $mainMessage = $welcomeConfig['body'];
                 } else {
-                    $mainMessage = '<p>' . __('emails_misc.admin_actions.welcome_resend_greeting', ['name' => $firstName]) . '</p>'
-                        . '<p>' . __('emails_misc.admin_actions.welcome_resend_body', ['community' => $tenantNameSafe]) . '</p>';
+                    $mainMessage = $standardMessage;
                 }
 
                 $loginLink = $resolvedTenant['frontend_url'] . $resolvedTenant['slug_prefix'] . "/login";
@@ -91,13 +100,14 @@ class WelcomeInvitationMailer
                     // A community's full-HTML welcome template has nowhere to put
                     // the link, so the standard wording is used for this member.
                     if ($isFullHtml) {
-                        $mainMessage = '<p>' . __('emails_misc.admin_actions.welcome_resend_greeting', ['name' => $firstName]) . '</p>'
-                            . '<p>' . __('emails_misc.admin_actions.welcome_resend_body', ['community' => $tenantNameSafe]) . '</p>';
+                        $mainMessage = $standardMessage;
                     }
+                    $emailSafe = htmlspecialchars((string) $user['email'], ENT_QUOTES, 'UTF-8');
                     $html = EmailTemplateBuilder::make()
                         ->theme('brand')
                         ->title(__('emails_misc.admin_actions.welcome_resend_title'))
                         ->paragraph($mainMessage)
+                        ->paragraph(__('emails_misc.admin_actions.welcome_invitation_signin_email', ['email' => $emailSafe]))
                         ->paragraph(__('emails.account_invitation.expiry', ['days' => PasswordResetTokens::INVITATION_TTL_DAYS]))
                         ->button(__('emails.account_invitation.cta'), $setPasswordLink)
                         ->render();

@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2827,
-  "api_route_rows": 2792,
-  "distinct_api_paths": 2328,
+  "total_registered_routes": 2828,
+  "api_route_rows": 2793,
+  "distinct_api_paths": 2329,
   "route_source_fingerprint": {
-    "digest": "442da2dd777686e9fb2e958bb7981d393027d26632dcf71d8203be81890d9c7b",
+    "digest": "653e35e5debd6dd885513d52be4d28f1b652a4fa0ad663609403343b75b8e6f5",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "d3bbac93f5f815483843c3c16071d934caaae5c8fdf6c8a6e831582a0957414f"
+        "sha256": "f377f2b63dcd6e330cc72c7ea9ef8d3c23037addb9fa2454e4a3138b6a6e0685"
       },
       {
         "file": "routes/channels.php",
@@ -128,6 +128,9 @@
       "POST"
     ],
     "/api/auth/reset-password": [
+      "POST"
+    ],
+    "/api/auth/reset-password/check": [
       "POST"
     ],
     "/api/auth/restore-session": [

@@ -547,6 +547,14 @@ return [
         'reset_mismatch' => 'The passwords you entered do not match',
         'reset_failed' => 'Your password could not be reset. Try again, or request a new link.',
         'reset_rate_limited' => 'Too many attempts. Please wait a while and try again.',
+        'reset_link_dead_title' => 'This link no longer works',
+        'reset_link_dead_detail' => 'Links in our emails work only once, and they stop working after a while. Ask for a new one and we will email it to you.',
+        'reset_link_dead_invitation_hint' => 'If this was your invitation to join, the new link does the same job: it lets you choose your password.',
+        'reset_send_new_link' => 'Send me a new link',
+        'invitation_title' => 'Set up your account',
+        'invitation_description' => 'Choose a password. You will sign in with your email address and this password. It must be at least 12 characters.',
+        'invitation_submit' => 'Create password',
+        'password_set' => 'Your password is set. Sign in with your email address and your new password.',
         // Inline client-side-style validation errors rendered server-side on the
         // forgot-password and reset-password forms (were hardcoded English).
         'forgot_code_required' => 'Enter your community code',

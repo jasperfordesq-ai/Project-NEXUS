@@ -1,0 +1,41 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Shown instead of the set-password form when the emailed link is expired,
+  already used, from another community, or missing its token. Laravel says so
+  before the member types anything (POST /api/auth/reset-password/check).
+  AWID focus group, Oct 2026: "the link on the invite didn't work".
+#}
+
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}{{ t("auth.reset_link_dead_title") }} - {{ seoSiteName or serviceName }}{% endblock %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/login') }}">{{ t("auth.back_to_sign_in") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t("auth.reset_link_dead_title") }}</h1>
+
+      <p class="govuk-body">{{ t("auth.reset_link_dead_detail") }}</p>
+      <p class="govuk-body">{{ t("auth.reset_link_dead_invitation_hint") }}</p>
+
+      {{ govukButton({
+        text: t("auth.reset_send_new_link"),
+        href: urlFor('/login/forgot-password')
+      }) }}
+
+      <p class="govuk-body">
+        <a href="{{ urlFor('/login') }}" class="govuk-link">{{ t("auth.back_to_sign_in") }}</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

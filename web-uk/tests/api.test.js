@@ -2443,6 +2443,27 @@ describe('API Request Functions', () => {
     });
   });
 
+  describe('checkResetLink', () => {
+    it('should ask the read-only Laravel link check about the token', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { valid: true, kind: 'invitation' } })
+      });
+
+      const result = await api.checkResetLink('reset-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/auth/reset-password/check',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ token: 'reset-token' })
+        })
+      );
+      expect(result.data.kind).toBe('invitation');
+    });
+  });
+
   describe('resendVerification', () => {
     it('should call the Laravel resend-verification-by-email endpoint', async () => {
       mockFetch.mockResolvedValueOnce({

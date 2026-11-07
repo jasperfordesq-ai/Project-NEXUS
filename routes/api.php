@@ -3552,6 +3552,9 @@ Route::middleware('throttle:nexus-route-5-per-1m')->group(function () {
     Route::post('/auth/forgot-password', [\App\Http\Controllers\Api\PasswordResetController::class, 'forgotPassword']);
     Route::post('/auth/reset-password', [\App\Http\Controllers\Api\PasswordResetController::class, 'resetPassword']);
 });
+// Read-only "is this emailed link still usable?" — asked once when the set-password page opens.
+Route::post('/auth/reset-password/check', [\App\Http\Controllers\Api\PasswordResetController::class, 'checkResetLink'])
+    ->middleware('throttle:nexus-route-20-per-1m');
 Route::middleware('throttle:nexus-route-30-per-1m')->group(function () {
     Route::post('/auth/verify-email', [\App\Http\Controllers\Api\EmailVerificationController::class, 'verifyEmail']);
     Route::post('/auth/resend-verification', [\App\Http\Controllers\Api\EmailVerificationController::class, 'resendVerification']);

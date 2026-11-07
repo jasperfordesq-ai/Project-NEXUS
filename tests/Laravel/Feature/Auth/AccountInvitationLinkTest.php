@@ -183,6 +183,25 @@ class AccountInvitationLinkTest extends TestCase
         $this->assertStringContainsString('Set your password', $body);
     }
 
+    /**
+     * AWID focus group, Oct 2026: "it is not clear how you will get the
+     * initial information". The welcome email told a member with no password
+     * to "Log in", and never said which address to sign in with.
+     */
+    public function test_a_welcome_email_with_a_password_link_says_how_to_sign_in(): void
+    {
+        $this->admin();
+        $email = $this->email('resend-how');
+        $member = $this->member($email, ['last_login_at' => null]);
+
+        $this->apiPost("/v2/admin/users/{$member->id}/send-welcome-email")->assertStatus(200);
+
+        $body = $this->mailer->bodyFor($email);
+        $this->assertStringContainsString($email, $body, 'the email must name the address to sign in with');
+        $this->assertStringContainsString('Choose your password with the button below', $body);
+        $this->assertStringNotContainsString('Log in to start', $body);
+    }
+
     public function test_resend_welcome_to_a_member_who_has_signed_in_sends_no_password_link(): void
     {
         $this->admin();

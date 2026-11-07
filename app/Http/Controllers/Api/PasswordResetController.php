@@ -108,6 +108,63 @@ class PasswordResetController extends BaseApiController
         ]);
     }
 
+    /**
+     * POST auth/reset-password/check — is this emailed link still usable?
+     *
+     * Both websites used to show the full "Set new password" form for a dead
+     * link and only say so after the member had typed a password, with no
+     * way to ask for a new one (AWID focus group, Oct 2026: "the link on the
+     * invite didn't work"). The page now asks first.
+     *
+     * Read-only: the link is never consumed, and the address it belongs to is
+     * never returned. `kind` tells an account invitation (which carries an
+     * explicit expires_at — see PasswordResetTokens) from a forgot-password
+     * link, so the page can say "set up your account" rather than "reset".
+     * The same community and live-account rules as resetPassword() apply, and
+     * every refusal is the same `valid: false`, so the answer reveals nothing
+     * a 256-bit random token could not already be guessed to mean.
+     */
+    public function checkResetLink(): JsonResponse
+    {
+        $this->rateLimit('reset_password_check', 20, 900);
+
+        $token = $this->input('token');
+        if (!is_string($token) || $token === '') {
+            return $this->respondWithError(
+                ApiErrorCodes::VALIDATION_REQUIRED_FIELD,
+                __('api.reset_token_required'),
+                'token',
+                400
+            );
+        }
+
+        $invalid = fn (): JsonResponse => $this->respondWithData(['valid' => false, 'kind' => null]);
+
+        $record = $this->findResetTokenCandidate($token);
+        if (!$record || !isset($record['tenant_id'])) {
+            return $invalid();
+        }
+
+        $requestTenantId = (int) TenantContext::getId();
+        if ($requestTenantId > 0 && $requestTenantId !== (int) $record['tenant_id']) {
+            return $invalid();
+        }
+
+        $accountExists = DB::table('users')
+            ->where('email', (string) $record['email'])
+            ->where('tenant_id', (int) $record['tenant_id'])
+            ->whereNull('deleted_at')
+            ->exists();
+        if (!$accountExists) {
+            return $invalid();
+        }
+
+        return $this->respondWithData([
+            'valid' => true,
+            'kind' => ($record['expires_at'] ?? null) !== null ? 'invitation' : 'reset',
+        ]);
+    }
+
     /** POST auth/reset-password */
     public function resetPassword(): JsonResponse
     {

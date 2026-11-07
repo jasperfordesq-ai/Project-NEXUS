@@ -568,7 +568,9 @@
     "self_deletion_title": "Cuntas Scriosta",
     "self_deletion_greeting": "Dia duit {{name}},",
     "self_deletion_body": "Tá do chuntas ar <strong>{{community}}</strong> scriosta go buan agus tá do shonraí pearsanta anainmnithe.",
-    "self_deletion_body_contact": "Mura n-iarr tú é seo nó má cheapann tú gur botún é, déan teagmháil le riarthóir do phobail."
+    "self_deletion_body_contact": "Mura n-iarr tú é seo nó má cheapann tú gur botún é, déan teagmháil le riarthóir do phobail.",
+    "welcome_invitation_body": "Fáilte chuig <strong>{{community}}</strong>! Cruthaíodh cuntas duit. Roghnaigh do phasfhocal leis an gcnaipe thíos, ansin sínigh isteach chun tús a chur le ceangal le do phobal, brabhsáil na seirbhísí atá ar fáil, agus do scileanna féin a thairiscint.",
+    "welcome_invitation_signin_email": "An seoladh ríomhphoist a úsáidfidh tú chun síniú isteach: <strong>{{email}}</strong>"
   },
   "newsletter": {
     "unsubscribed_subject": "Díshíntíodh tú — {{community}}",

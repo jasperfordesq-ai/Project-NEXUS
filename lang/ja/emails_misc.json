@@ -568,7 +568,9 @@
     "self_deletion_title": "アカウント削除済み",
     "self_deletion_greeting": "こんにちは{{name}}さん、",
     "self_deletion_body": "<strong>{{community}}</strong>のアカウントは恒久的に削除され、個人データは匿名化されました。",
-    "self_deletion_body_contact": "ご自身で依頼していない、または誤りだとお考えの場合は、コミュニティ管理者までご連絡ください。"
+    "self_deletion_body_contact": "ご自身で依頼していない、または誤りだとお考えの場合は、コミュニティ管理者までご連絡ください。",
+    "welcome_invitation_body": "<strong>{{community}}</strong>へようこそ！あなたのアカウントが作成されました。下のボタンからパスワードを決めてからログインし、コミュニティとつながったり、利用できるサービスを探したり、あなたのスキルを提供したりしましょう。",
+    "welcome_invitation_signin_email": "ログインに使うメールアドレス: <strong>{{email}}</strong>"
   },
   "newsletter": {
     "unsubscribed_subject": "配信停止が完了しました — {{community}}",

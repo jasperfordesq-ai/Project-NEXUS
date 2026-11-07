@@ -568,7 +568,9 @@
     "self_deletion_title": "Account Deleted",
     "self_deletion_greeting": "Hi {{name}},",
     "self_deletion_body": "Your account on <strong>{{community}}</strong> has been permanently deleted and your personal data has been anonymised.",
-    "self_deletion_body_contact": "If you did not request this or believe this was an error, please contact your community administrator."
+    "self_deletion_body_contact": "If you did not request this or believe this was an error, please contact your community administrator.",
+    "welcome_invitation_body": "Welcome to <strong>{{community}}</strong>! An account has been created for you. Choose your password with the button below, then sign in to start connecting with your community, browse available services, and offer your own skills.",
+    "welcome_invitation_signin_email": "Your sign-in email address: <strong>{{email}}</strong>"
   },
   "newsletter": {
     "unsubscribed_subject": "You have been unsubscribed — {{community}}",

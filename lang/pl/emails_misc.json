@@ -568,7 +568,9 @@
     "self_deletion_title": "Konto usunięte",
     "self_deletion_greeting": "Cześć {{name}},",
     "self_deletion_body": "Twoje konto w <strong>{{community}}</strong> zostało trwale usunięte, a Twoje dane osobowe zostały zanonimizowane.",
-    "self_deletion_body_contact": "Jeśli o to nie prosiłeś/aś lub uważasz, że to pomyłka, skontaktuj się z administratorem swojej społeczności."
+    "self_deletion_body_contact": "Jeśli o to nie prosiłeś/aś lub uważasz, że to pomyłka, skontaktuj się z administratorem swojej społeczności.",
+    "welcome_invitation_body": "Witamy w <strong>{{community}}</strong>! Utworzyliśmy dla Ciebie konto. Wybierz hasło za pomocą przycisku poniżej, a następnie zaloguj się, aby nawiązać kontakt ze swoją społecznością, przeglądać dostępne usługi i oferować własne umiejętności.",
+    "welcome_invitation_signin_email": "Twój adres e-mail do logowania: <strong>{{email}}</strong>"
   },
   "newsletter": {
     "unsubscribed_subject": "Zrezygnowano z subskrypcji — {{community}}",

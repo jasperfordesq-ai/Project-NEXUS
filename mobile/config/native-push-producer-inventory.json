@@ -849,9 +849,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/PasswordResetController.php:414:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/PasswordResetController.php:471:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/PasswordResetController.php",
-            "line": 414,
+            "line": 471,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $user['id']",

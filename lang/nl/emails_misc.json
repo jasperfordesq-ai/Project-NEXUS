@@ -568,7 +568,9 @@
     "self_deletion_title": "Account verwijderd",
     "self_deletion_greeting": "Hallo {{name}},",
     "self_deletion_body": "Je account op <strong>{{community}}</strong> is permanent verwijderd en je persoonsgegevens zijn geanonimiseerd.",
-    "self_deletion_body_contact": "Als je dit niet hebt aangevraagd of denkt dat dit een fout was, neem dan contact op met de beheerder van je community."
+    "self_deletion_body_contact": "Als je dit niet hebt aangevraagd of denkt dat dit een fout was, neem dan contact op met de beheerder van je community.",
+    "welcome_invitation_body": "Welkom bij <strong>{{community}}</strong>! Er is een account voor je aangemaakt. Kies je wachtwoord met de knop hieronder en log daarna in om contact te maken met je gemeenschap, beschikbare diensten te bekijken en je eigen vaardigheden aan te bieden.",
+    "welcome_invitation_signin_email": "Je e-mailadres om in te loggen: <strong>{{email}}</strong>"
   },
   "newsletter": {
     "unsubscribed_subject": "Je bent uitgeschreven — {{community}}",

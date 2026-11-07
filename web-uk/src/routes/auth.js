@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
-const { setupRequiredTwoFactor, login, register, getRegistrationInfo, getTenantBootstrap, logout, forgotPassword, resetPassword, resendVerification, verify2fa, invalidateUserCache, ApiError, ApiOfflineError } = require('../lib/api');
+const { setupRequiredTwoFactor, login, register, getRegistrationInfo, getTenantBootstrap, logout, forgotPassword, resetPassword, checkResetLink, resendVerification, verify2fa, invalidateUserCache, ApiError, ApiOfflineError } = require('../lib/api');
 const { setAuthCookies, clearAuthCookies } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { safeLoginReturnPath } = require('../lib/login-return');
@@ -23,6 +23,7 @@ const fallbackTranslator = createTranslator('en');
 const LOGIN_SUCCESS_STATUS_KEYS = Object.freeze({
   'verification-resent': 'auth.verification_resent',
   'password-reset': 'auth.password_reset',
+  'password-set': 'auth.password_set',
   'register-created': 'auth.register_created',
   'signed-out': 'auth.signed_out',
   'password-changed': 'profile_settings.password_changed',
@@ -1058,27 +1059,68 @@ async function handleForgotPasswordPost(req, res) {
 
 router.post('/login/forgot-password', asyncRoute(handleForgotPasswordPost));
 
-// Reset password (with token from email)
-function renderResetPassword(req, res) {
-  const token = typeof req.query.token === 'string' ? req.query.token : '';
-
-  const statusError = statusMessage(req, req.query.status, RESET_ERROR_STATUS_KEYS);
-  res.render('reset-password', {
-    title: translate(req, 'auth.reset_title'),
+// Reset password (with token from email).
+//
+// The same page serves a forgot-password link and an account invitation (the
+// set-password link an administrator's new member is emailed). It asks Laravel
+// first whether the link still works — read-only, the link is not used up — so
+// a dead link is said plainly, with a way to get a new one, before anyone types
+// a password, and an invitation reads as "Set up your account". AWID focus
+// group, Oct 2026: "the link on the invite didn't work". If the check cannot be
+// made, the form shows as before and the reset itself answers for the link.
+function resetFormLocals(req, { token, isInvitation, errors = [], fieldErrors = {} }) {
+  return {
+    title: translate(req, isInvitation ? 'auth.invitation_title' : 'auth.reset_title'),
+    isInvitation: Boolean(isInvitation),
     resetToken: token,
-    errors: statusError ? [{ text: statusError }] : [],
+    errors,
+    fieldErrors,
     formAction: '/password/reset',
     csrfToken: req.csrfToken ? req.csrfToken() : ''
+  };
+}
+
+function renderDeadResetLink(req, res) {
+  return res.render('reset-link-dead', {
+    title: translate(req, 'auth.reset_link_dead_title')
   });
 }
 
-router.get('/password/reset', renderResetPassword);
+async function renderResetPassword(req, res) {
+  const token = typeof req.query.token === 'string' ? req.query.token : '';
+  if (!token) {
+    return renderDeadResetLink(req, res);
+  }
+
+  let isInvitation = false;
+  try {
+    const result = await checkResetLink(token);
+    const data = result && typeof result === 'object' ? result.data : null;
+    if (data && data.valid === false) {
+      return renderDeadResetLink(req, res);
+    }
+    isInvitation = Boolean(data && data.kind === 'invitation');
+  } catch (error) {
+    // The check is a courtesy. Never log the token; the path alone is enough.
+    console.warn('Reset link check unavailable:', error && error.message ? error.message : 'unknown error');
+  }
+
+  const statusError = statusMessage(req, req.query.status, RESET_ERROR_STATUS_KEYS);
+  return res.render('reset-password', resetFormLocals(req, {
+    token,
+    isInvitation,
+    errors: statusError ? [{ text: statusError }] : []
+  }));
+}
+
+router.get('/password/reset', asyncRoute(renderResetPassword));
 
 async function handleResetPasswordPost(req, res) {
   const token = req.body.token;
   const password = req.body.password;
   const confirmPassword = req.body.password_confirmation || req.body.confirm_password;
-  const formAction = '/password/reset';
+  // Only changes the wording ("Set up your account"); Laravel decides the link.
+  const isInvitation = req.body.kind === 'invitation';
 
   const errors = [];
   const fieldErrors = {};
@@ -1107,20 +1149,13 @@ async function handleResetPasswordPost(req, res) {
   }
 
   if (errors.length > 0) {
-    return res.render('reset-password', {
-      title: translate(req, 'auth.reset_title'),
-      errors,
-      fieldErrors,
-      resetToken: token,
-      formAction,
-      csrfToken: req.csrfToken ? req.csrfToken() : ''
-    });
+    return res.render('reset-password', resetFormLocals(req, { token, isInvitation, errors, fieldErrors }));
   }
 
   try {
     await resetPassword(token, password, confirmPassword);
 
-    setAuthStatus(req, 'password-reset');
+    setAuthStatus(req, isInvitation ? 'password-set' : 'password-reset');
     return redirectTo(res, '/login');
   } catch (error) {
     // Handle ApiOfflineError specially for 503
@@ -1134,26 +1169,21 @@ async function handleResetPasswordPost(req, res) {
     const firstError = Array.isArray(error?.data?.errors) ? error.data.errors[0] : null;
     if (firstError && firstError.field === 'password' && error.status !== 429) {
       const message = String(firstError.message || '').trim() || translate(req, 'auth.reset_failed');
-      return res.render('reset-password', {
-        title: translate(req, 'auth.reset_title'),
+      return res.render('reset-password', resetFormLocals(req, {
+        token,
+        isInvitation,
         errors: [{ text: message, href: '#password' }],
-        fieldErrors: { password: message },
-        resetToken: token,
-        formAction,
-        csrfToken: req.csrfToken ? req.csrfToken() : ''
-      });
+        fieldErrors: { password: message }
+      }));
     }
 
     const errorMessage = translate(req, resetErrorKey(error));
 
-    res.render('reset-password', {
-      title: translate(req, 'auth.reset_title'),
-      errors: [{ text: errorMessage }],
-      fieldErrors: {},
-      resetToken: token,
-      formAction,
-      csrfToken: req.csrfToken ? req.csrfToken() : ''
-    });
+    res.render('reset-password', resetFormLocals(req, {
+      token,
+      isInvitation,
+      errors: [{ text: errorMessage }]
+    }));
   }
 }
 

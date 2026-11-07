@@ -654,6 +654,18 @@ async function resetPassword(token, password, passwordConfirmation = password) {
   });
 }
 
+/**
+ * Read-only: is this emailed set-password link still usable, and is it an
+ * account invitation or a forgot-password link? Never consumes the link.
+ * Answers `{ data: { valid: boolean, kind: 'invitation' | 'reset' | null } }`.
+ */
+async function checkResetLink(token) {
+  return request('/api/auth/reset-password/check', {
+    method: 'POST',
+    body: JSON.stringify({ token })
+  });
+}
+
 async function resendVerification(email, tenantSlug) {
   return request('/api/auth/resend-verification-by-email', {
     method: 'POST',
@@ -4890,6 +4902,7 @@ module.exports = {
   getPlatformStats,
   forgotPassword,
   resetPassword,
+  checkResetLink,
   resendVerification,
   verifyEmail,
   changePassword,

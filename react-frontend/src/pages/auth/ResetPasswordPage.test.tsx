@@ -77,15 +77,69 @@ import { ResetPasswordPage } from './ResetPasswordPage';
 describe('ResetPasswordPage', () => {
   beforeEach(() => { vi.clearAllMocks(); });
 
-  it('renders without crashing', () => {
+  it('renders without crashing', async () => {
     render(<ResetPasswordPage />);
-    expect(screen.getByText('Set new password')).toBeInTheDocument();
+    expect(await screen.findByText('Set new password')).toBeInTheDocument();
   });
 
-  it('shows password inputs', () => {
+  it('shows password inputs', async () => {
     render(<ResetPasswordPage />);
-    expect(screen.getByPlaceholderText('Enter a strong password')).toBeInTheDocument();
+    expect(await screen.findByPlaceholderText('Enter a strong password')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Re-enter your password')).toBeInTheDocument();
+  });
+});
+
+/**
+ * AWID focus group, Oct 2026: "the link on the invite didn't work". The page
+ * used to show the form for a dead link and only say so after the member had
+ * typed a password, with no way to ask for a new link. It now asks the server
+ * first (read-only) and words an invitation as "Set up your account".
+ */
+describe('ResetPasswordPage checks the link before showing the form', () => {
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  function answerCheckWith(data: { valid: boolean; kind: 'invitation' | 'reset' | null }) {
+    vi.mocked(api.post).mockImplementation(async (url: string) => (
+      url === '/auth/reset-password/check'
+        ? { success: true, data }
+        : { success: true }
+    ) as never);
+  }
+
+  it('asks the server about the token from the email', async () => {
+    answerCheckWith({ valid: true, kind: 'reset' });
+    render(<ResetPasswordPage />);
+    await screen.findByText('Set new password');
+    expect(api.post).toHaveBeenCalledWith('/auth/reset-password/check', { token: 'test-token' });
+  });
+
+  it('shows a dead link plainly, with a button for a new one and no form', async () => {
+    answerCheckWith({ valid: false, kind: null });
+    render(<ResetPasswordPage />);
+
+    expect(await screen.findByRole('heading', { name: 'This link no longer works' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Send me a new link' })).toHaveAttribute('href', '/test/password/forgot');
+    expect(screen.queryByPlaceholderText('Enter a strong password')).not.toBeInTheDocument();
+  });
+
+  it('words an invitation as setting up an account', async () => {
+    answerCheckWith({ valid: true, kind: 'invitation' });
+    render(<ResetPasswordPage />);
+
+    expect(await screen.findByRole('heading', { name: 'Set up your account' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Create password' })).toBeInTheDocument();
+    expect(screen.queryByText('Set new password')).not.toBeInTheDocument();
+  });
+
+  it('still shows the form when the check itself cannot be made', async () => {
+    vi.mocked(api.post).mockImplementation(async (url: string) => (
+      url === '/auth/reset-password/check'
+        ? { success: false, error: 'Network error' }
+        : { success: true }
+    ) as never);
+    render(<ResetPasswordPage />);
+
+    expect(await screen.findByPlaceholderText('Enter a strong password')).toBeInTheDocument();
   });
 });
 
@@ -109,6 +163,7 @@ describe('ResetPasswordPage when the breach check hangs', () => {
 
   it('cannot be submitted while the check is still running', async () => {
     render(<ResetPasswordPage />);
+    await act(async () => { await Promise.resolve(); });
     fillBothFields('reset-page-still-checking-1');
     await act(async () => {
       await vi.advanceTimersByTimeAsync(350 + 1000);
@@ -116,12 +171,13 @@ describe('ResetPasswordPage when the breach check hangs', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Reset Password' }));
 
-    expect(api.post).not.toHaveBeenCalled();
+    expect(api.post).not.toHaveBeenCalledWith('/auth/reset-password', expect.anything());
     expect(screen.getByRole('alert')).toHaveTextContent('Checking against known data breaches');
   });
 
   it('becomes submittable once the time limit passes, leaving the server to check', async () => {
     render(<ResetPasswordPage />);
+    await act(async () => { await Promise.resolve(); });
     const password = 'reset-page-hanging-check-2';
     fillBothFields(password);
     await act(async () => {

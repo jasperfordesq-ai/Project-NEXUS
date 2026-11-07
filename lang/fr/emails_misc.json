@@ -568,7 +568,9 @@
     "self_deletion_title": "Compte supprimé",
     "self_deletion_greeting": "Bonjour {{name}},",
     "self_deletion_body": "Votre compte sur <strong>{{community}}</strong> a été définitivement supprimé et vos données personnelles ont été anonymisées.",
-    "self_deletion_body_contact": "Si vous n'êtes pas à l'origine de cette demande ou pensez qu'il s'agit d'une erreur, veuillez contacter l'administrateur de votre communauté."
+    "self_deletion_body_contact": "Si vous n'êtes pas à l'origine de cette demande ou pensez qu'il s'agit d'une erreur, veuillez contacter l'administrateur de votre communauté.",
+    "welcome_invitation_body": "Bienvenue sur <strong>{{community}}</strong> ! Un compte a été créé pour vous. Choisissez votre mot de passe avec le bouton ci-dessous, puis connectez-vous pour commencer à échanger avec votre communauté, parcourir les services disponibles et proposer vos propres compétences.",
+    "welcome_invitation_signin_email": "Votre adresse e-mail de connexion : <strong>{{email}}</strong>"
   },
   "newsletter": {
     "unsubscribed_subject": "Vous êtes désabonné — {{community}}",
