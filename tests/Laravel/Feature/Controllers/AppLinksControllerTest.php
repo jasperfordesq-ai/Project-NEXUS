@@ -55,6 +55,25 @@ class AppLinksControllerTest extends TestCase
         $this->assertStringContainsString('https://apps.apple.com/app/timebank-global/id6823712395', $body);
     }
 
+    /**
+     * Found walking the email on the test environment (7 Nov): the store links
+     * were wrapped in <a> tags that the email builder only allows for the
+     * community's own site, so members saw the markup as text.
+     */
+    public function test_the_store_links_never_show_as_raw_markup(): void
+    {
+        $member = User::factory()->forTenant($this->testTenantId)->create([
+            'email' => 'app-links-' . uniqid() . '@example.test', 'status' => 'active', 'is_approved' => true,
+        ]);
+        Sanctum::actingAs($member, ['*']);
+
+        $this->apiPost('/v2/app-links/email')->assertStatus(200);
+
+        $body = $this->mailer->sent[0]['body'];
+        $this->assertStringNotContainsString('&lt;a', $body);
+        $this->assertStringNotContainsString('&lt;/a', $body);
+    }
+
     public function test_signing_in_is_required(): void
     {
         $response = $this->apiPost('/v2/app-links/email');

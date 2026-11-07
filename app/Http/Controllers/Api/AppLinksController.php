@@ -53,8 +53,11 @@ class AppLinksController extends BaseApiController
         $sent = LocaleContext::withLocale($user, function () use ($user, $community, $tenantId): bool {
             $communitySafe = htmlspecialchars($community, ENT_QUOTES, 'UTF-8');
             $nameSafe = htmlspecialchars((string) ($user->first_name ?? ''), ENT_QUOTES, 'UTF-8');
-            $iosLink = '<a href="' . self::IOS_APP_STORE_URL . '">' . self::IOS_APP_STORE_URL . '</a>';
-            $androidLink = '<a href="' . self::ANDROID_PLAY_STORE_URL . '">' . self::ANDROID_PLAY_STORE_URL . '</a>';
+            // Plain addresses: mail apps make them tappable. An <a> tag here was
+            // shown to members as text, because the email builder keeps links
+            // only to the community's own site (F-038).
+            $iosLink = htmlspecialchars(self::IOS_APP_STORE_URL, ENT_QUOTES, 'UTF-8');
+            $androidLink = htmlspecialchars(self::ANDROID_PLAY_STORE_URL, ENT_QUOTES, 'UTF-8');
 
             $html = EmailTemplateBuilder::make()
                 ->theme('brand')
