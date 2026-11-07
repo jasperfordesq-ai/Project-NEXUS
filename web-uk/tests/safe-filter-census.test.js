@@ -68,6 +68,10 @@ const REVIEWED_RAW_SITES = {
     why: CMS,
     guard: ['src/routes/support.js', 'answer: sanitizeCmsHtml(faq && faq.answer)'],
   },
+  'public-info/faq.njk {{ faq.answer | safe }}': {
+    why: CMS,
+    guard: ['src/routes/public-info.js', 'answer: sanitizeCmsHtml(faq && faq.answer)'],
+  },
   'legal/document.njk {{ document.content | safe }}': {
     why: CMS,
     guard: ['src/routes/legal.js', 'withHeadingAnchors(sanitizeCmsHtml(row.content))'],

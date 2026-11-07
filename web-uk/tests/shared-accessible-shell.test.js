@@ -7040,12 +7040,15 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toMatch(/<input[^>]*id="password_confirmation"[^>]*spellcheck="false"[^>]*>/);
   });
 
-  it('renders Laravel\'s reset-password form when the token query is absent', async () => {
+  it('says a reset link with no token no longer works, instead of showing a form', async () => {
+    // Since 7 Nov 2026 (AWID focus group): a missing token is a dead link, the
+    // same as an expired or used one, so nobody types a password for nothing.
     const response = await request(app).get('/password/reset');
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain('Choose a new password');
-    expect(response.text).toContain('name="token" value=""');
+    expect(response.text).toContain('This link no longer works');
+    expect(response.text).toContain('href="/login/forgot-password"');
+    expect(response.text).not.toContain('name="token"');
     expect(response.headers.location).toBeUndefined();
   });
 
@@ -26165,7 +26168,9 @@ describe('shared accessible frontend shell', () => {
         filename: 'garden.webp',
         contentType: 'image/webp',
         buffer: Buffer.from('fake event image', 'utf8')
-      })
+      }),
+      // No description typed on the form (AWID report, Oct 2026: it is optional).
+      image_alt: ''
     });
   });
 
@@ -27672,7 +27677,8 @@ describe('shared accessible frontend shell', () => {
         filename: 'updated-garden.webp',
         contentType: 'image/webp',
         buffer: Buffer.from('updated event image', 'utf8')
-      })
+      }),
+      image_alt: ''
     });
   });
 
@@ -31177,7 +31183,8 @@ describe('shared accessible frontend shell', () => {
     expect(source).not.toContain('redirectOnAuthError(error, res)');
     // 15 since 27 Oct 2026: delete a whole conversation, ask a coordinator for help,
     // and react to a one-to-one message each handle a 401 the same way.
-    expect(source.match(/if \(redirectOnAuthError\(error, req, res\)\)/g)).toHaveLength(15);
+    // 16 since 7 Nov 2026: translating a group-chat message does too.
+    expect(source.match(/if \(redirectOnAuthError\(error, req, res\)\)/g)).toHaveLength(16);
     expect(source).toContain('handleApiError(error, req, res, { redirectOn401: loginRedirect() })');
   });
 
@@ -31892,7 +31899,9 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('guide.pdf');
     expect(response.text).toContain(`href="${getApiBaseUrl()}/uploads/guide.pdf" download`);
     expect(response.text).toContain(`href="${getApiBaseUrl()}/uploads/tools.jpg" target="_blank" rel="noopener"`);
-    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/tools.jpg" alt="Spare tools" width="220" loading="lazy" decoding="async"`);
+    // The attachment name is the uploaded file name, which a screen reader read
+    // aloud (AWID report, Oct 2026); the photo now has a plain description.
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/tools.jpg" alt="Photo sent in this conversation" width="220" loading="lazy" decoding="async"`);
     expect(response.text).toContain('Search messages');
     expect(response.text).toContain('value="tools"');
     expect(response.text).toContain('id="conv-search"');
