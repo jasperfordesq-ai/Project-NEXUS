@@ -38,6 +38,7 @@ class EmailTriggerAuditService
             ['module' => 'registration', 'event' => 'welcome_or_activation', 'category' => 'welcome', 'critical' => true, 'source_table' => 'users'],
             ['module' => 'registration', 'event' => 'welcome_or_activation', 'category' => 'activation', 'critical' => true, 'source_table' => 'email_log'],
             ['module' => 'admin_users', 'event' => 'admin_welcome_or_activation', 'category' => 'admin_welcome', 'critical' => true, 'source_table' => 'users'],
+            ['module' => 'app_links', 'event' => 'member_requested_store_links', 'category' => 'app_links', 'critical' => false, 'source_table' => 'email_log'],
             ['module' => 'security', 'event' => 'two_factor_or_passkey_changed', 'category' => 'security_alert', 'critical' => true, 'source_table' => 'users'],
             ['module' => 'groups', 'event' => 'group_email_invite', 'category' => 'group_invite', 'critical' => true, 'source_table' => 'group_invites'],
             ['module' => 'groups', 'event' => 'membership_or_role_change', 'category' => 'group', 'critical' => false, 'source_table' => 'group_members'],
