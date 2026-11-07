@@ -12468,6 +12468,79 @@
         ]
       }
     },
+    "/api/v2/events/{id}/image-description": {
+      "put": {
+        "summary": "PUT /api/v2/events/{id}/image-description",
+        "description": "Maintained Events operation served by EventsController@imageDescription. Sets or clears the screen-reader description of the event cover photo (same permission as changing the cover).",
+        "operationId": "Events_imageDescription",
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image_alt": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "nullable": true,
+                    "description": "Empty or null clears the description"
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "single",
+                      "all"
+                    ],
+                    "description": "Required for an occurrence of a recurring series, as when changing the cover"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Description saved, or cleared when empty"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation failure (longer than 255 characters)"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\EventsController@imageDescription",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
     "/api/v2/exchanges/config": {
       "get": {
         "summary": "GET /api/v2/exchanges/config",
@@ -13135,6 +13208,76 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/groups/{id}/image-description": {
+      "put": {
+        "summary": "PUT /api/v2/groups/{id}/image-description",
+        "description": "Sets or clears the screen-reader description of the group picture or cover (same permission as changing the image).",
+        "tags": [
+          "Groups"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "avatar",
+                      "cover"
+                    ]
+                  },
+                  "image_alt": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "nullable": true,
+                    "description": "Empty or null clears the description"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Description saved, or cleared when empty"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation failure (longer than 255 characters)"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
             }
           }
         ]
