@@ -6,11 +6,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
+  BackHandler,
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { Card as HeroCard } from 'heroui-native';
@@ -48,7 +53,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { storage } from '@/lib/storage';
 import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
-import TwoFactorEnrolment from '@/components/security/TwoFactorEnrolment';
+import TwoFactorEnrolment, { type TwoFactorEnrolmentStage } from '@/components/security/TwoFactorEnrolment';
 import { getTwoFactorStatus } from '@/lib/api/twoFactor';
 
 const DEFAULT_STEPS: OnboardingStep[] = [
@@ -224,6 +229,52 @@ function OnboardingScreenInner() {
 
   const goBack = useCallback(() => {
     setStepIndex((value) => Math.max(value - 1, 0));
+  }, []);
+
+  // Android's Back button. Left alone it closed the wizard, and the app then reopened it
+  // from the start (emulator walk, 7 November 2026). Now it leaves the two-factor set-up
+  // if that is open, otherwise steps back; on the first step it stays put.
+  const securityEnrollingRef = useRef(false);
+  useEffect(() => { securityEnrollingRef.current = securityEnrolling; }, [securityEnrolling]);
+  // Which stage the two-factor set-up is on. On 'codes' two-factor is already on and the
+  // backup codes are shown once, so Back must not drop them: "I have saved them" moves on.
+  const securityStageRef = useRef<TwoFactorEnrolmentStage>('password');
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (busy) return true;
+      if (securityEnrollingRef.current) {
+        if (securityStageRef.current !== 'codes') setSecurityEnrolling(false);
+        return true;
+      }
+      goBack();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [busy, goBack]);
+
+  // When the two-factor code box gets focus the keyboard opens over the Verify button
+  // below it (emulator, 7 Nov 2026). Once the keyboard is up and the view has shrunk,
+  // scroll to the end, where the set-up's buttons are.
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollToEndOnKeyboardRef = useRef(false);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const subscription = Keyboard.addListener('keyboardDidShow', () => {
+      if (!scrollToEndOnKeyboardRef.current) return;
+      scrollToEndOnKeyboardRef.current = false;
+      timer = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
+    });
+    return () => {
+      subscription.remove();
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
+  const bringSetupButtonsIntoView = useCallback(() => {
+    if (Keyboard.isVisible()) {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    } else {
+      scrollToEndOnKeyboardRef.current = true;
+    }
   }, []);
 
   const pickAvatar = useCallback(async () => {
@@ -419,10 +470,20 @@ function OnboardingScreenInner() {
   const progressLabel = t('aria_step_progress', { step: stepIndex + 1, total: steps.length });
 
   return (
-    <View className="flex-1 bg-background" style={{ backgroundColor: theme.bg }}>
+    // The screen has no header (fullScreenModal), so without the top inset the "Get
+    // Started" heading sat under the status bar on every step (emulator, 7 Nov 2026).
+    // `className` does nothing on this app's SafeAreaView: style only.
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: theme.bg }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        // Android only. The manifest's adjustResize no longer resizes an edge-to-edge
+        // window (Android 15+), so the keyboard covered the two-factor code box and its
+        // button. iOS is handled by the ScrollView's automaticallyAdjustKeyboardInsets.
+        behavior={Platform.OS === 'android' ? 'height' : undefined}
+        enabled={Platform.OS === 'android'}
+      >
       <ScrollView
-        // iOS only: without it the keyboard covers the fields below. Android is already
-        // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+        ref={scrollRef}
         automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 20, paddingBottom: 48 }} keyboardShouldPersistTaps="handled">
         <View className="mb-5 gap-2">
           <Text accessibilityRole="header" className="text-center text-2xl font-bold text-foreground">{t('page_title')}</Text>
@@ -566,12 +627,18 @@ function OnboardingScreenInner() {
               ) : securityEnrolling ? (
                 <TwoFactorEnrolment
                   accountLabel={(profile as Partial<User>)?.email ?? (user as Partial<User> | null)?.email ?? null}
-                  onDone={() => { setSecurityEnrolling(false); setSecurityDone(true); }}
+                  // Straight on to the next step, as the website does; it took a second
+                  // Continue on a "now on" card. Back still shows that card.
+                  onDone={() => { setSecurityEnrolling(false); setSecurityDone(true); goNext(); }}
                   onCancel={() => setSecurityEnrolling(false)}
+                  onStageChange={(stage) => { securityStageRef.current = stage; }}
+                  onCodeFocus={bringSetupButtonsIntoView}
                 />
               ) : (
                 <>
                   <Text className="text-base leading-6 text-muted-foreground">{t('security_intro')}</Text>
+                  {/* Name the kind of app before they start, not only at the key screen. */}
+                  <Text className="text-sm leading-5 text-muted-foreground">{t('settings:twoFactor.screen.needApp')}</Text>
                   <Text className="text-sm leading-5 text-muted-foreground">{t('security_optional')}</Text>
                   <Button testID="onboarding-security-setup" fullWidth onPress={() => setSecurityEnrolling(true)}>{t('security_set_up')}</Button>
                 </>
@@ -588,6 +655,10 @@ function OnboardingScreenInner() {
               <Summary title={t('summary_offers')} values={offers} categories={categories} empty={t('none_selected')} />
               <Summary title={t('summary_needs')} values={needs} categories={categories} empty={t('none_selected')} />
               <Button testID="onboarding-complete" fullWidth onPress={() => void finish()} isLoading={busy}>{t('complete_setup')}</Button>
+              {/* The last step had no way back except Android's own Back button. */}
+              {stepIndex > 0 ? (
+                <Button testID="onboarding-confirm-back" fullWidth variant="outline" onPress={goBack} disabled={busy}>{t('back')}</Button>
+              ) : null}
             </HeroCard.Body>
           </HeroCard>
         ) : null}
@@ -599,6 +670,9 @@ function OnboardingScreenInner() {
               <Button
                 testID="onboarding-next"
                 fullWidth
+                // "Not now" is the quiet choice: two full blue buttons made it look like
+                // the main one (it is wider than "Set it up").
+                variant={currentStep.slug === 'security' && !securityDone ? 'outline' : undefined}
                 onPress={() => {
                   if (currentStep.slug === 'profile') void saveProfile();
                   else if (currentStep.slug === 'safeguarding') void saveSafeguarding();
@@ -617,7 +691,8 @@ function OnboardingScreenInner() {
           </View>
         ) : null}
       </ScrollView>
-    </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

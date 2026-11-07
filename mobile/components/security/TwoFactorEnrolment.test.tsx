@@ -119,6 +119,118 @@ it('says plainly when the code is wrong and keeps the key on screen', async () =
   expect(view.getByTestId('two-factor-secret')).toBeTruthy();
 });
 
+/** testIDs in the order they are drawn, top to bottom. */
+function testIdsInOrder(view: ReturnType<typeof render>): string[] {
+  const ids: string[] = [];
+  const walk = (node: unknown): void => {
+    if (!node) return;
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (typeof node !== 'object') return;
+    const element = node as { props?: { testID?: string }; children?: unknown[] | null };
+    if (element.props?.testID) ids.push(element.props.testID);
+    (element.children ?? []).forEach(walk);
+  };
+  walk(view.toJSON());
+  return ids;
+}
+
+function drawnInOrder(view: ReturnType<typeof render>, expected: string[]): boolean {
+  const ids = testIdsInOrder(view);
+  const positions = expected.map((id) => ids.indexOf(id));
+  return positions.every((position, index) => position >= 0 && (index === 0 || position > positions[index - 1]!));
+}
+
+// Found on the Android emulator, 7 November 2026: a message drawn at the top of the
+// card was off-screen while the member looked at the box it was about.
+it('shows a refused password right under the password box, and empties the box', async () => {
+  mockConfirm.mockRejectedValueOnce(new ApiResponseError(403, 'Validation failed', undefined, 'SECURITY_CONFIRMATION_REQUIRED'));
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} />);
+  fireEvent.changeText(view.getByTestId('two-factor-password'), 'wrong');
+  fireEvent.press(view.getByTestId('two-factor-password-continue'));
+  await view.findByTestId('two-factor-error');
+
+  expect(view.getByTestId('two-factor-password').props.value).toBe('');
+  expect(drawnInOrder(view, ['two-factor-password', 'two-factor-error', 'two-factor-password-continue'])).toBe(true);
+});
+
+it('shows a wrong code right under the code box', async () => {
+  mockVerify.mockRejectedValueOnce(new ApiResponseError(400, 'Invalid verification code', undefined, 'VERIFICATION_FAILED', 'code'));
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} />);
+  await reachSetup(view);
+  fireEvent.changeText(view.getByTestId('two-factor-code'), '000000');
+  fireEvent.press(view.getByTestId('two-factor-verify'));
+  await view.findByTestId('two-factor-error');
+
+  expect(drawnInOrder(view, ['two-factor-secret', 'two-factor-code', 'two-factor-error', 'two-factor-verify'])).toBe(true);
+});
+
+it('shows the "no authenticator app" note beside the button, above the QR code', async () => {
+  const view = render(<TwoFactorEnrolment accountLabel="alex@example.org" onDone={jest.fn()} />);
+  await reachSetup(view);
+  mockOpen.mockResolvedValueOnce('unopenable');
+  await act(async () => { fireEvent.press(view.getByTestId('two-factor-open-authenticator')); });
+
+  expect(drawnInOrder(view, ['two-factor-open-authenticator', 'two-factor-notice', 'two-factor-qr'])).toBe(true);
+});
+
+it('does not carry "Key copied." onto the backup codes', async () => {
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} />);
+  await reachSetup(view);
+  await act(async () => { fireEvent.press(view.getByText('Copy key')); });
+  expect(view.getByText('Key copied.')).toBeTruthy();
+
+  fireEvent.changeText(view.getByTestId('two-factor-code'), '123456');
+  fireEvent.press(view.getByTestId('two-factor-verify'));
+  await view.findByText('AAAA-1111');
+
+  expect(view.queryByText('Key copied.')).toBeNull();
+});
+
+it('tells the screen around it which stage it is on, so Back can protect the backup codes', async () => {
+  const onStageChange = jest.fn();
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} onStageChange={onStageChange} />);
+  expect(onStageChange).toHaveBeenLastCalledWith('password');
+
+  await reachSetup(view);
+  expect(onStageChange).toHaveBeenLastCalledWith('setup');
+
+  fireEvent.changeText(view.getByTestId('two-factor-code'), '123456');
+  fireEvent.press(view.getByTestId('two-factor-verify'));
+  await view.findByText('AAAA-1111');
+  expect(onStageChange).toHaveBeenLastCalledWith('codes');
+});
+
+it('clears a refused-password message as soon as the member types again', async () => {
+  mockConfirm.mockRejectedValueOnce(new ApiResponseError(403, 'Validation failed', undefined, 'SECURITY_CONFIRMATION_REQUIRED'));
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} />);
+  fireEvent.changeText(view.getByTestId('two-factor-password'), 'wrong');
+  fireEvent.press(view.getByTestId('two-factor-password-continue'));
+  await view.findByTestId('two-factor-error');
+
+  fireEvent.changeText(view.getByTestId('two-factor-password'), 'c');
+  expect(view.queryByTestId('two-factor-error')).toBeNull();
+});
+
+it('clears a wrong-code message as soon as the member types again', async () => {
+  mockVerify.mockRejectedValueOnce(new ApiResponseError(400, 'Invalid verification code', undefined, 'VERIFICATION_FAILED', 'code'));
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} />);
+  await reachSetup(view);
+  fireEvent.changeText(view.getByTestId('two-factor-code'), '000000');
+  fireEvent.press(view.getByTestId('two-factor-verify'));
+  await view.findByTestId('two-factor-error');
+
+  fireEvent.changeText(view.getByTestId('two-factor-code'), '1');
+  expect(view.queryByTestId('two-factor-error')).toBeNull();
+});
+
+it('says when the code box gets focus, so the screen can bring the Verify button into view', async () => {
+  const onCodeFocus = jest.fn();
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} onCodeFocus={onCodeFocus} />);
+  await reachSetup(view);
+  fireEvent(view.getByTestId('two-factor-code'), 'focus');
+  expect(onCodeFocus).toHaveBeenCalledTimes(1);
+});
+
 it('copies and shares the backup codes', async () => {
   const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' } as never);
   const view = render(<TwoFactorEnrolment onDone={jest.fn()} />);

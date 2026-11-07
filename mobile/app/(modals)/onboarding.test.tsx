@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import { BackHandler } from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockReplace = jest.fn();
@@ -58,10 +59,16 @@ jest.mock('@/lib/api/twoFactor', () => ({ getTwoFactorStatus: jest.fn() }));
 // here only its two exits matter.
 jest.mock('@/components/security/TwoFactorEnrolment', () => {
   const { Pressable, Text, View } = require('react-native');
-  return ({ onDone, onCancel }: { onDone: () => void; onCancel?: () => void }) => (
+  return ({ onDone, onCancel, onStageChange }: {
+    onDone: () => void;
+    onCancel?: () => void;
+    onStageChange?: (stage: string) => void;
+  }) => (
     <View testID="two-factor-enrolment">
       <Pressable testID="enrolment-finish" onPress={onDone}><Text>finish</Text></Pressable>
       {onCancel ? <Pressable testID="enrolment-cancel" onPress={onCancel}><Text>cancel</Text></Pressable> : null}
+      {/* Stands in for a verified code: the backup codes are on screen and two-factor is on. */}
+      <Pressable testID="enrolment-show-codes" onPress={() => onStageChange?.('codes')}><Text>codes</Text></Pressable>
     </View>
   );
 });
@@ -486,7 +493,7 @@ describe('OnboardingScreen', () => {
       await waitFor(() => expect(view.getByText('security_title')).toBeTruthy());
     });
 
-    it('runs the set-up inline and then continues to the next step', async () => {
+    it('runs the set-up inline, then goes straight on; Back from the last step shows it is on', async () => {
       const view = await pastWelcome();
       await waitFor(() => expect(view.getByTestId('onboarding-security-setup')).toBeTruthy());
       fireEvent.press(view.getByTestId('onboarding-security-setup'));
@@ -495,13 +502,80 @@ describe('OnboardingScreen', () => {
       // While setting up, the wizard's own buttons step aside so "Not now" cannot cut it short.
       expect(view.queryByTestId('onboarding-next')).toBeNull();
 
+      // One tap: the backup codes' Continue moves on (it took two, found on the emulator).
       fireEvent.press(view.getByTestId('enrolment-finish'));
-      expect(view.getByTestId('onboarding-security-done')).toBeTruthy();
-      expect(view.getByText('security_continue')).toBeTruthy();
-
-      fireEvent.press(view.getByTestId('onboarding-next'));
       await waitFor(() => expect(view.getByTestId('onboarding-complete')).toBeTruthy());
       expect(completeOnboarding).not.toHaveBeenCalled();
+
+      // The last step had no way back except the phone's own Back button.
+      fireEvent.press(view.getByTestId('onboarding-confirm-back'));
+      await waitFor(() => expect(view.getByTestId('onboarding-security-done')).toBeTruthy());
+      expect(view.getByText('security_continue')).toBeTruthy();
+    });
+
+    it('names the kind of app the member needs before they start', async () => {
+      const view = await pastWelcome();
+      await waitFor(() => expect(view.getByText('security_title')).toBeTruthy());
+      expect(view.getByText('settings:twoFactor.screen.needApp')).toBeTruthy();
+    });
+
+    it("Android's Back button leaves the set-up, then steps back, and never closes the wizard", async () => {
+      // Closing it only made the app reopen the wizard from the start (emulator, 7 Nov 2026).
+      type BackPress = () => boolean | null | undefined;
+      const handlers: BackPress[] = [];
+      const spy = jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_event, handler) => {
+        handlers.push(handler);
+        return { remove: () => { const at = handlers.indexOf(handler); if (at >= 0) handlers.splice(at, 1); } };
+      });
+      const pressBack = () => {
+        let handled: boolean | null | undefined = false;
+        act(() => { handled = handlers[handlers.length - 1]?.(); });
+        return handled;
+      };
+      try {
+        const view = await pastWelcome();
+        await waitFor(() => expect(view.getByTestId('onboarding-security-setup')).toBeTruthy());
+        fireEvent.press(view.getByTestId('onboarding-security-setup'));
+        expect(view.getByTestId('two-factor-enrolment')).toBeTruthy();
+
+        expect(pressBack()).toBe(true);
+        expect(view.queryByTestId('two-factor-enrolment')).toBeNull();
+        expect(view.getByTestId('onboarding-security-setup')).toBeTruthy();
+
+        expect(pressBack()).toBe(true);
+        await waitFor(() => expect(view.getByText('Welcome to Timebank Global!')).toBeTruthy());
+
+        expect(pressBack()).toBe(true);
+        expect(view.getByText('Welcome to Timebank Global!')).toBeTruthy();
+        expect(mockReplace).not.toHaveBeenCalled();
+      } finally {
+        spy.mockRestore();
+      }
+    });
+
+    it("Android's Back on the backup codes keeps them on screen", async () => {
+      // Two-factor is already on by then and the codes are shown once: Back used to
+      // throw them away and offer "Set it up" again, which then said "already on".
+      type BackPress = () => boolean | null | undefined;
+      const handlers: BackPress[] = [];
+      const spy = jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_event, handler) => {
+        handlers.push(handler);
+        return { remove: () => { const at = handlers.indexOf(handler); if (at >= 0) handlers.splice(at, 1); } };
+      });
+      try {
+        const view = await pastWelcome();
+        await waitFor(() => expect(view.getByTestId('onboarding-security-setup')).toBeTruthy());
+        fireEvent.press(view.getByTestId('onboarding-security-setup'));
+        fireEvent.press(view.getByTestId('enrolment-show-codes'));
+
+        let handled: boolean | null | undefined = false;
+        act(() => { handled = handlers[handlers.length - 1]?.(); });
+        expect(handled).toBe(true);
+        expect(view.getByTestId('two-factor-enrolment')).toBeTruthy();
+        expect(view.queryByTestId('onboarding-security-setup')).toBeNull();
+      } finally {
+        spy.mockRestore();
+      }
     });
 
     it('can back out of the set-up to the step', async () => {

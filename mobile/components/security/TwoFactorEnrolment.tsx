@@ -23,7 +23,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { Share, Text, View } from 'react-native';
+import { Share, Text, View, type TextInput } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import { useTranslation } from 'react-i18next';
@@ -41,7 +41,8 @@ import {
 } from '@/lib/api/twoFactor';
 import { openExternalUrl } from '@/lib/utils/openExternalUrl';
 
-type Stage = 'password' | 'setup' | 'codes';
+export type TwoFactorEnrolmentStage = 'password' | 'setup' | 'codes';
+type Stage = TwoFactorEnrolmentStage;
 
 export interface TwoFactorEnrolmentProps {
   /** Shown in the authenticator app beside the issuer; the server uses the email. */
@@ -50,9 +51,16 @@ export interface TwoFactorEnrolmentProps {
   onDone: () => void;
   /** Optional "Cancel" before the codes are shown. */
   onCancel?: () => void;
+  /**
+   * Told the stage each time it changes. By 'codes' two-factor is already on and the
+   * backup codes are shown once, so a screen handling Android's Back must not drop them.
+   */
+  onStageChange?: (stage: TwoFactorEnrolmentStage) => void;
+  /** The code box got focus: the screen around it can scroll the Verify button into view. */
+  onCodeFocus?: () => void;
 }
 
-export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel }: TwoFactorEnrolmentProps) {
+export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel, onStageChange, onCodeFocus }: TwoFactorEnrolmentProps) {
   const { t } = useTranslation('settings');
   const [stage, setStage] = useState<Stage>('password');
   const [password, setPassword] = useState('');
@@ -70,6 +78,21 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel }: T
     mounted.current = true;
     return () => { mounted.current = false; };
   }, []);
+
+  const onStageChangeRef = useRef(onStageChange);
+  useEffect(() => { onStageChangeRef.current = onStageChange; }, [onStageChange]);
+  useEffect(() => { onStageChangeRef.current?.(stage); }, [stage]);
+
+  // After a wrong code the box is emptied; put the cursor back in it once it can take
+  // typing again, so the keyboard stays up for the next try (emulator, 7 Nov 2026).
+  const codeInputRef = useRef<TextInput>(null);
+  const refocusCodeRef = useRef(false);
+  useEffect(() => {
+    if (!busy && refocusCodeRef.current) {
+      refocusCodeRef.current = false;
+      codeInputRef.current?.focus();
+    }
+  }, [busy]);
 
   /** Our own translated words for the refusals we can name; the server's otherwise. */
   function explain(reason: unknown, fallbackKey: string): string {
@@ -107,10 +130,13 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel }: T
       setPassword('');
       setConfirmation(token);
       setSecret(setup.secret);
+      setNotice('');
       setStage('setup');
     } catch (reason) {
       if (!mounted.current) return;
       if (reason instanceof ApiResponseError && reason.code === 'SECURITY_CONFIRMATION_REQUIRED') {
+        // Empty the box for the next try, as sign-in does.
+        setPassword('');
         setError(t('twoFactor.errors.passwordWrong'));
       } else {
         setError(explain(reason, 'twoFactor.errors.generic'));
@@ -133,6 +159,8 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel }: T
       setSecret('');
       setCode('');
       setBackupCodes(result.backup_codes);
+      // "Key copied." belongs to the previous screen.
+      setNotice('');
       setStage('codes');
     } catch (reason) {
       if (!mounted.current) return;
@@ -142,6 +170,7 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel }: T
       } else {
         setCode('');
         setError(explain(reason, 'twoFactor.errors.generic'));
+        refocusCodeRef.current = true;
       }
     } finally {
       inFlight.current = false;
@@ -173,14 +202,16 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel }: T
     }
   }
 
+  // Drawn right under the box it is about: at the top of the card it was off-screen
+  // while the member looked at the box (Android emulator, 7 November 2026).
+  const errorText = error ? (
+    <Text testID="two-factor-error" accessibilityRole="alert" accessibilityLiveRegion="polite" className="text-sm text-danger">
+      {error}
+    </Text>
+  ) : null;
+
   return (
     <View className="gap-4" testID="two-factor-enrolment">
-      {error ? (
-        <Text testID="two-factor-error" accessibilityRole="alert" accessibilityLiveRegion="polite" className="text-sm text-danger">
-          {error}
-        </Text>
-      ) : null}
-
       {stage === 'password' ? (
         <>
           <Text accessibilityRole="header" className="text-lg font-bold text-foreground">{t('twoFactor.password.title')}</Text>
@@ -190,7 +221,8 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel }: T
             label={t('twoFactor.password.label')}
             accessibilityLabel={t('twoFactor.password.label')}
             value={password}
-            onChangeText={setPassword}
+            // A complaint about the last try goes as soon as the member types again.
+            onChangeText={(value) => { setPassword(value); setError(''); }}
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
@@ -200,6 +232,7 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel }: T
             onSubmitEditing={() => void confirmPassword()}
             containerClassName="mb-0"
           />
+          {errorText}
           <Button testID="two-factor-password-continue" fullWidth isLoading={busy} disabled={password === ''} onPress={() => void confirmPassword()}>
             {t('twoFactor.password.continue')}
           </Button>
@@ -219,23 +252,26 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel }: T
             <Text testID="two-factor-secret" selectable className="text-xl font-bold tracking-wider text-foreground" style={{ fontFamily: 'monospace' }}>
               {formatSetupKey(secret)}
             </Text>
-            <Button variant="ghost" size="sm" onPress={() => void copy(secret, t('twoFactor.setup.keyCopied'))}>
+            <Button variant="outline" size="sm" onPress={() => void copy(secret, t('twoFactor.setup.keyCopied'))}>
               {t('twoFactor.setup.copyKey')}
             </Button>
           </View>
+          {/* Beside the two buttons it answers; below the QR code it fell off the screen. */}
+          {notice ? <Text testID="two-factor-notice" accessibilityLiveRegion="polite" className="text-sm text-muted-foreground">{notice}</Text> : null}
           <View className="items-center gap-2">
             <Text className="text-center text-xs leading-5 text-muted-foreground">{t('twoFactor.setup.qrHint')}</Text>
             <View className="rounded-panel-inner bg-white p-3" accessible accessibilityLabel={t('twoFactor.setup.qrLabel')}>
               <QRCode value={buildOtpAuthUri(secret, accountLabel)} size={160} />
             </View>
           </View>
-          {notice ? <Text testID="two-factor-notice" accessibilityLiveRegion="polite" className="text-sm text-muted-foreground">{notice}</Text> : null}
           <Input
+            ref={codeInputRef}
             testID="two-factor-code"
             label={t('twoFactor.setup.codeLabel')}
             accessibilityLabel={t('twoFactor.setup.codeLabel')}
             value={code}
-            onChangeText={(value) => setCode(value.replace(/\D/g, '').slice(0, 6))}
+            onChangeText={(value) => { setCode(value.replace(/\D/g, '').slice(0, 6)); setError(''); }}
+            onFocus={() => onCodeFocus?.()}
             keyboardType="number-pad"
             autoComplete="one-time-code"
             textContentType="oneTimeCode"
@@ -244,6 +280,7 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel }: T
             onSubmitEditing={() => void verify()}
             containerClassName="mb-0"
           />
+          {errorText}
           <Button testID="two-factor-verify" fullWidth isLoading={busy} disabled={!/^\d{6}$/.test(code)} onPress={() => void verify()}>
             {t('twoFactor.setup.verify')}
           </Button>
