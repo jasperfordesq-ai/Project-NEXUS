@@ -48,6 +48,8 @@ export function ResetPasswordPage() {
   const [linkKind, setLinkKind] = useState<LinkKind>('reset');
   const isInvitation = linkKind === 'invitation';
   usePageTitle(t(isInvitation ? 'reset_password.invitation_title' : 'reset_password.page_title'));
+  // PageMeta sets the browser tab too, so an invitation must not say "Reset password" there.
+  const metaTitle = t(isInvitation ? 'reset_password.invitation_title' : 'page_meta.reset_password.title');
 
   useEffect(() => {
     if (!token) {
@@ -166,7 +168,7 @@ export function ResetPasswordPage() {
   if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <PageMeta title={t('page_meta.reset_password.title')} noIndex />
+        <PageMeta title={metaTitle} noIndex />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -191,7 +193,7 @@ export function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <PageMeta title={t('page_meta.reset_password.title')} noIndex />
+      <PageMeta title={metaTitle} noIndex />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

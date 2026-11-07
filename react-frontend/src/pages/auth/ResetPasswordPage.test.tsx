@@ -60,6 +60,11 @@ vi.mock('@/contexts/TenantContext', () => ({
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
+// The page imports PageMeta by its direct path; render the title so the
+// browser-tab wording can be asserted.
+vi.mock('@/components/seo/PageMeta', () => ({
+  PageMeta: ({ title }: { title: string }) => <span data-testid="page-meta-title">{title}</span>,
+}));
 vi.mock('@/lib/motion', () => ({
   motion: {
     div: ({ children, ...props }: Record<string, unknown>) => {
@@ -129,6 +134,8 @@ describe('ResetPasswordPage checks the link before showing the form', () => {
     expect(await screen.findByRole('heading', { name: 'Set up your account' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Create password' })).toBeInTheDocument();
     expect(screen.queryByText('Set new password')).not.toBeInTheDocument();
+    // The browser tab (read first by a screen reader) says the same, not "Reset password".
+    expect(screen.getByTestId('page-meta-title')).toHaveTextContent('Set up your account');
   });
 
   it('still shows the form when the check itself cannot be made', async () => {
