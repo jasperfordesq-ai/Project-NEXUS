@@ -3,9 +3,10 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import ErrorState from '@/components/ui/ErrorState';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { Platform, ScrollView, Text, View } from 'react-native';
 import { useScrollToFirstError } from '@/lib/hooks/useScrollToFirstError';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';

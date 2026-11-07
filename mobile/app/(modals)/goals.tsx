@@ -3,13 +3,13 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import ErrorState from '@/components/ui/ErrorState';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AppState,
   FlatList,
-  KeyboardAvoidingView,
   Platform,
   RefreshControl,
   Text,

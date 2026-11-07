@@ -4,11 +4,12 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useRef, useState } from 'react';
-import { AppState, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { AppState, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';

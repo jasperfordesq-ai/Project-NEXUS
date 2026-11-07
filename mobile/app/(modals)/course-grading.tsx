@@ -16,10 +16,11 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
+import { Platform, RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Card as HeroCard, Text } from 'heroui-native';
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 

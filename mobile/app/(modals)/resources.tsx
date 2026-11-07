@@ -4,9 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import { Ionicons } from '@/components/ui/Icon';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Card as HeroCard, Surface } from 'heroui-native';

@@ -3,12 +3,12 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
 import {
   FlatList,
-  KeyboardAvoidingView,
   Platform,
   Text,
   View,

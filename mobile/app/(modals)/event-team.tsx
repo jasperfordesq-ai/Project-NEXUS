@@ -3,13 +3,14 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AppState, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, View } from 'react-native';
+import { AppState, Platform, RefreshControl, ScrollView, View } from 'react-native';
 import { Card, Text } from 'heroui-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import { useLocalSearchParams, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';

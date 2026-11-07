@@ -8,11 +8,11 @@ import {
   View,
   Text,
   ScrollView,
-  KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import { Ionicons } from '@/components/ui/Icon';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from '@/lib/haptics';

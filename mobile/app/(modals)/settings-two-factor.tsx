@@ -17,9 +17,10 @@
  * this app does not hand members to the website (see docs/MOBILE_HANDOFF.md).
  */
 
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import ErrorState from '@/components/ui/ErrorState';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';

@@ -24,10 +24,11 @@
  * and does not promise the member their community can already see it.
  */
 
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AppState, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { AppState, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
 import { Card as HeroCard, Text } from 'heroui-native';

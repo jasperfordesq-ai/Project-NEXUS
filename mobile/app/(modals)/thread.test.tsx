@@ -380,6 +380,7 @@ jest.mock('@/components/ui/useConfirm', () => ({
 
 import ThreadScreen from './thread';
 import { useAppToast } from '@/components/ui/AppToast';
+import AppKeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import { sendMessage } from '@/lib/api/messages';
 
 const mockMessages = [
@@ -715,7 +716,10 @@ describe('ThreadScreen', () => {
     });
 
     const { UNSAFE_getByType } = render(<ThreadScreen />);
-    const keyboardFrame = UNSAFE_getByType(KeyboardAvoidingView);
+    // What the screen asks the app's wrapper for. The wrapper turns Android "height" into
+    // "padding" for React Native's own, which looks the same here and leaves no gap once
+    // the keyboard closes (components/ui/KeyboardAvoidingView.test.tsx).
+    const keyboardFrame = UNSAFE_getByType(AppKeyboardAvoidingView);
 
     expect(keyboardFrame.props.behavior).toBe('height');
     expect(keyboardFrame.props.keyboardVerticalOffset).toBe(0);

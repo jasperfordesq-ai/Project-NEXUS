@@ -4,9 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, View } from 'react-native';
+import { Keyboard, Platform, ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import { Ionicons } from '@/components/ui/Icon';
 import { Card as HeroCard, Spinner, Surface, Text } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';

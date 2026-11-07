@@ -27,8 +27,9 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import { Ionicons } from '@/components/ui/Icon';
 import { Card as HeroCard, Surface, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';

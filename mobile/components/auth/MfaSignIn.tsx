@@ -4,9 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { Platform, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import { beginMfaSetup, verifyMfa, type LoginChallenge, type MfaSession } from '@/lib/api/auth';
 import { ApiResponseError } from '@/lib/api/client';
 import { describeApiError } from '@/lib/api/describeApiError';

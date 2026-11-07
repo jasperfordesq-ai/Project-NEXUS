@@ -19,9 +19,10 @@
  * than the usual "Load more".
  */
 
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import ContentTranslation from '@/components/ContentTranslation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Card as HeroCard, Spinner } from 'heroui-native';

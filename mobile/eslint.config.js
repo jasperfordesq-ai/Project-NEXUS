@@ -63,4 +63,21 @@ module.exports = defineConfig([
       "import/no-named-as-default-member": "off",
     },
   },
+  {
+    // React Native 0.83's KeyboardAvoidingView leaves a band the height of the status bar
+    // at the bottom of an Android screen once the keyboard closes (it reads the close
+    // event's screenY, which Android 11+ reports wrongly). The app's wrapper fixes that,
+    // so screens must use it (7 November 2026). Tests may import the original to inspect it.
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    ignores: ["**/*.test.{js,jsx,ts,tsx}", "components/ui/KeyboardAvoidingView.tsx"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        paths: [{
+          name: "react-native",
+          importNames: ["KeyboardAvoidingView"],
+          message: "Use KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView': React Native's own leaves a gap on Android after the keyboard closes.",
+        }],
+      }],
+    },
+  },
 ]);

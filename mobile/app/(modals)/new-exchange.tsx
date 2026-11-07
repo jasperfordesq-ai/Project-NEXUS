@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, type TextInput, View } from 'react-native';
+import { Platform, ScrollView, Text, type TextInput, View } from 'react-native';
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import { useScrollToFirstError } from '@/lib/hooks/useScrollToFirstError';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';

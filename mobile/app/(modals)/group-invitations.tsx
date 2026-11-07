@@ -4,11 +4,12 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Share, Text, View } from 'react-native';
+import { Platform, RefreshControl, ScrollView, Share, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Card } from 'heroui-native';
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';

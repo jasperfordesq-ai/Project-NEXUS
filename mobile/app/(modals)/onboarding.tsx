@@ -8,7 +8,6 @@ import {
   AccessibilityInfo,
   BackHandler,
   Image,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   Text,
@@ -20,6 +19,7 @@ import { router } from 'expo-router';
 import { Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
+import KeyboardAvoidingView from '@/components/ui/KeyboardAvoidingView';
 import Button from '@/components/ui/Button';
 import Checkbox from '@/components/ui/Checkbox';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';

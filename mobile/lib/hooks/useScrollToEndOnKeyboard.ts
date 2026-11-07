@@ -15,9 +15,10 @@ import { Keyboard, type ScrollView } from 'react-native';
  * (and a moment for the view to shrink), and fires once for that focus only — a keyboard
  * opened by some other box leaves the screen where it is.
  *
- * 🔴 On Android the view only shrinks if the screen wraps the ScrollView in a
- * KeyboardAvoidingView: the manifest's adjustResize no longer resizes an edge-to-edge
- * window (Android 15+). Without it, the end of the content stays under the keyboard.
+ * 🔴 On Android the view only shrinks if the screen wraps the ScrollView in the app's
+ * `@/components/ui/KeyboardAvoidingView`: the manifest's adjustResize no longer resizes an
+ * edge-to-edge window (Android 15+). Without it, the end of the content stays under the
+ * keyboard.
  * One implementation for both screens that need it (the welcome wizard and Settings →
  * Two-factor), so the next one does not grow a slightly different copy.
  */
