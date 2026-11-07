@@ -1,4 +1,4 @@
-import { CardBody, Card, Button, Chip, Spinner, Switch, Tabs, Tab } from '@/components/ui';
+import { CardBody, Card, Button, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner, Switch, Tabs, Tab, Textarea } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -12,6 +12,7 @@ import { useState, useCallback, useEffect } from 'react';
 
 import Award from 'lucide-react/icons/award';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
+import Pencil from 'lucide-react/icons/pencil';
 import Shield from 'lucide-react/icons/shield';
 import Star from 'lucide-react/icons/star';
 import Gem from 'lucide-react/icons/gem';
@@ -90,6 +91,37 @@ export function BadgeConfiguration() {
       toast.error(t('gamification.failed_to_update_badge'));
     }
     setUpdating(null);
+  };
+
+  // A community's own medal wording (AWID focus group, Oct 2026: "Can we
+  // customise the text … in medals?"). Empty means the standard, translated text.
+  const [wordingFor, setWordingFor] = useState<BadgeConfigEntry | null>(null);
+  const [wordingName, setWordingName] = useState('');
+  const [wordingDescription, setWordingDescription] = useState('');
+  const [savingWording, setSavingWording] = useState(false);
+
+  const openWording = (badge: BadgeConfigEntry) => {
+    setWordingFor(badge);
+    // Only what the community wrote; the standard wording shows as the placeholder.
+    setWordingName(badge.has_override && !badge.name_code ? badge.name : '');
+    setWordingDescription(badge.has_override && !badge.description_code ? badge.description : '');
+  };
+
+  const saveWording = async () => {
+    if (!wordingFor) return;
+    setSavingWording(true);
+    const res = await adminGamification.updateBadgeConfig(wordingFor.key, {
+      custom_name: wordingName.trim(),
+      custom_description: wordingDescription.trim(),
+    });
+    setSavingWording(false);
+    if (res.success) {
+      toast.success(t('gamification.wording_saved'));
+      setWordingFor(null);
+      loadBadges();
+    } else {
+      toast.error(t('gamification.wording_save_failed'));
+    }
   };
 
   const handleReset = async (badge: BadgeConfigEntry) => {
@@ -219,18 +251,28 @@ export function BadgeConfiguration() {
                             </Chip>
                           )}
                         </div>
-                        {badge.has_override && (
+                        <div className="flex flex-wrap justify-end gap-2">
                           <Button
                             size="sm"
-                            variant="danger"
-                            startContent={<RotateCcw size={14} />}
-                            isLoading={isUpdating}
-                            onPress={() => handleReset(badge)}
-                            className="self-end"
+                            variant="secondary"
+                            startContent={<Pencil size={14} aria-hidden="true" />}
+                            onPress={() => openWording(badge)}
+                            aria-label={`${t('gamification.edit_wording')}: ${displayName}`}
                           >
-                            {t('gamification.reset_to_default')}
+                            {t('gamification.edit_wording')}
                           </Button>
-                        )}
+                          {badge.has_override && (
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              startContent={<RotateCcw size={14} />}
+                              isLoading={isUpdating}
+                              onPress={() => handleReset(badge)}
+                            >
+                              {t('gamification.reset_to_default')}
+                            </Button>
+                          )}
+                        </div>
                       </CardBody>
                     </Card>
                   );
@@ -239,6 +281,37 @@ export function BadgeConfiguration() {
             </div>
           ))
       )}
+
+      <Modal isOpen={wordingFor !== null} onClose={() => setWordingFor(null)} size="lg">
+        <ModalContent>
+          <ModalHeader>{t('gamification.edit_wording_title')}</ModalHeader>
+          <ModalBody className="gap-4">
+            <p className="text-sm text-muted">{t('gamification.wording_hint')}</p>
+            <Input
+              label={t('gamification.wording_name_label')}
+              placeholder={wordingFor ? badgeDisplayName(t, { ...wordingFor, name: wordingFor.name }) : ''}
+              value={wordingName}
+              onValueChange={setWordingName}
+              maxLength={200}
+            />
+            <Textarea
+              label={t('gamification.wording_description_label')}
+              placeholder={wordingFor ? badgeDisplayDescription(t, wordingFor) : ''}
+              value={wordingDescription}
+              onValueChange={setWordingDescription}
+              maxLength={255}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="tertiary" onPress={() => setWordingFor(null)} isDisabled={savingWording}>
+              {t('gamification.cancel')}
+            </Button>
+            <Button onPress={() => void saveWording()} isLoading={savingWording}>
+              {t('gamification.save_changes')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

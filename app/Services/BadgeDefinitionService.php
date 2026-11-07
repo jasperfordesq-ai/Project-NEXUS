@@ -168,10 +168,16 @@ class BadgeDefinitionService
         $data = array_filter([
             'is_enabled' => $overrides['is_enabled'] ?? null,
             'custom_threshold' => $overrides['custom_threshold'] ?? null,
-            'custom_name' => $overrides['custom_name'] ?? null,
-            'custom_description' => $overrides['custom_description'] ?? null,
             'custom_icon' => $overrides['custom_icon'] ?? null,
         ], fn ($v) => $v !== null);
+        // A community's own medal wording (AWID focus group, Oct 2026). Sent
+        // empty, it is cleared, so the built-in translated wording returns.
+        foreach (['custom_name', 'custom_description'] as $field) {
+            if (array_key_exists($field, $overrides)) {
+                $value = is_string($overrides[$field]) ? trim($overrides[$field]) : null;
+                $data[$field] = $value === '' ? null : $value;
+            }
+        }
 
         TenantBadgeOverride::updateOrCreate(
             ['tenant_id' => $tenantId, 'badge_key' => $badgeKey],

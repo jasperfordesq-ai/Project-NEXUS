@@ -388,4 +388,21 @@ describe('BadgeConfiguration', () => {
       // Skip if i18n returns different key — not a failure
     }
   });
+  // AWID focus group, Oct 2026: "Can we customise the text ... in medals?"
+  it('lets an admin rename a medal in their own words', async () => {
+    vi.mocked(adminGamification.getBadgeConfig).mockResolvedValue({ success: true, data: ALL_BADGES });
+    vi.mocked(adminGamification.updateBadgeConfig).mockResolvedValue({ success: true, data: { success: true } });
+    const user = userEvent.setup();
+    render(<BadgeConfiguration />);
+    await screen.findByText('Active Giver');
+
+    await user.click(screen.getByRole('button', { name: /Edit wording: Active Giver/ }));
+    await user.type(await screen.findByLabelText('Name'), 'Persona generosa');
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    await waitFor(() => expect(adminGamification.updateBadgeConfig).toHaveBeenCalledWith('tpl_active_giver', {
+      custom_name: 'Persona generosa',
+      custom_description: '',
+    }));
+  });
 });

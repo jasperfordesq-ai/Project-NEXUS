@@ -22,6 +22,56 @@ class AdminGamificationControllerTest extends TestCase
     use DatabaseTransactions;
 
     // ================================================================
+    // MEDAL NAMES — PUT /v2/admin/gamification/badge-config/{key}
+    // AWID focus group, Oct 2026: "Can we customise the text … in medals?"
+    // The API could, but the admin screen offered only on/off and reset.
+    // ================================================================
+
+    private function seedBadge(string $key): void
+    {
+        DB::table('badges')->insert([
+            'tenant_id' => $this->testTenantId, 'badge_key' => $key, 'name' => 'First Exchange',
+            'description' => 'Complete your first exchange.', 'icon' => 'award', 'badge_tier' => 'template',
+            'is_enabled' => 1, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
+    public function test_an_admin_renames_a_medal_and_clears_the_name_again(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $key = 'awid_rename_' . uniqid();
+        $this->seedBadge($key);
+
+        $this->apiPut("/v2/admin/gamification/badge-config/{$key}", [
+            'custom_name' => '  Primer intercambio  ',
+            'custom_description' => 'Completaste tu primer intercambio.',
+        ])->assertStatus(200);
+
+        $row = DB::table('tenant_badge_overrides')->where('tenant_id', $this->testTenantId)->where('badge_key', $key)->first();
+        $this->assertSame('Primer intercambio', $row->custom_name);
+        $this->assertSame('Completaste tu primer intercambio.', $row->custom_description);
+
+        // Emptying the name returns it to the built-in wording.
+        $this->apiPut("/v2/admin/gamification/badge-config/{$key}", ['custom_name' => '', 'custom_description' => ''])
+            ->assertStatus(200);
+        $row = DB::table('tenant_badge_overrides')->where('tenant_id', $this->testTenantId)->where('badge_key', $key)->first();
+        $this->assertNull($row->custom_name);
+        $this->assertNull($row->custom_description);
+    }
+
+    public function test_a_medal_name_longer_than_the_column_is_refused(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $key = 'awid_long_' . uniqid();
+        $this->seedBadge($key);
+
+        $this->apiPut("/v2/admin/gamification/badge-config/{$key}", ['custom_name' => str_repeat('a', 201)])
+            ->assertStatus(422);
+    }
+
+    // ================================================================
     // STATS — GET /v2/admin/gamification/stats
     // ================================================================
 

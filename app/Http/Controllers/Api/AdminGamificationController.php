@@ -615,6 +615,11 @@ class AdminGamificationController extends BaseApiController
         $this->requireAdmin();
         $tenantId = $this->getTenantId();
         $data = request()->only(['is_enabled', 'custom_threshold', 'custom_name', 'custom_description', 'custom_icon']);
+        foreach (['custom_name' => 200, 'custom_description' => 255] as $field => $max) {
+            if (isset($data[$field]) && is_string($data[$field]) && mb_strlen(trim($data[$field])) > $max) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.text_too_long'), $field, 422);
+            }
+        }
 
         $success = BadgeDefinitionService::updateTenantOverride($tenantId, $badgeKey, $data);
 
