@@ -6,7 +6,9 @@
 const FAQ = require('../lib/generated/faq.json');
 const express = require('express');
 const { getContributors } = require('../lib/contributors');
-const { ApiError, callNewsletterApi, getPlatformStats, verifyEmail } = require('../lib/api');
+const { ApiError, callNewsletterApi, getHelpFaqs, getPlatformStats, verifyEmail } = require('../lib/api');
+const { centreText } = require('../lib/help-guides');
+const { sanitizeCmsHtml } = require('../lib/html-sanitizer');
 const { flagEnabled } = require('../lib/accessible-shell');
 const { catalogFor, valueInCatalog } = require('../lib/localization');
 const {
@@ -220,8 +222,45 @@ router.get('/changelog/:slug', (req, res, next) => {
   });
 });
 
-router.get('/faq', (req, res) => {
+/**
+ * The community's own questions (Admin -> Help FAQs), shown above the standard
+ * ones. AWID focus group, Oct 2026: "Can we customise the text in places like
+ * FAQ?" They appeared only in the Help Centre. A failure shows the page
+ * without them; it never hides the standard questions.
+ */
+async function communityFaqGroups() {
+  try {
+    const result = await getHelpFaqs({});
+    const rows = result && typeof result === 'object' && result.data !== undefined ? result.data : result;
+    return (Array.isArray(rows) ? rows : [])
+      .map((group) => ({
+        category: String((group && group.category) || '').trim(),
+        faqs: (Array.isArray(group && group.faqs) ? group.faqs : [])
+          .map((faq) => ({
+            id: faq && faq.id,
+            question: String((faq && faq.question) || '').trim(),
+            answer: sanitizeCmsHtml(faq && faq.answer)
+          }))
+          .filter((faq) => faq.question)
+      }))
+      .filter((group) => group.faqs.length > 0);
+  } catch {
+    return [];
+  }
+}
+
+router.get('/faq', async (req, res, next) => {
+  let communityFaqs = [];
+  try {
+    communityFaqs = await communityFaqGroups();
+  } catch (error) {
+    return next(error);
+  }
+  const locale = res.locals.locale || 'en';
   res.render('public-info/faq', {
+    communityFaqs,
+    communityFaqsHeading: centreText(locale, 'community_faqs_heading'),
+    communityFaqsDescription: centreText(locale, 'community_faqs_description', { name: communityName(res) }),
     title: res.locals.t('faq.title'),
     titleKey: 'faq.title',
     metaDescription: pageDescription(res.locals.t('faq.intro')),

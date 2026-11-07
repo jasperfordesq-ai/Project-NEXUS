@@ -140,4 +140,18 @@ describe('FaqPage', () => {
       );
     });
   });
+  // AWID focus group, Oct 2026: "Can we customise the text in places like FAQ?"
+  it('shows the community’s own questions above the standard ones', async () => {
+    const { api } = await import('@/lib/api');
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: [{ category: 'Joining', faqs: [{ id: 7, question: '¿Cómo me uno al mercado?', answer: '<p>Escribe a la coordinación.</p>' }] }],
+    } as never);
+
+    render(<FaqPage />);
+
+    expect(await screen.findByText('¿Cómo me uno al mercado?')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Questions from your community' })).toBeInTheDocument();
+    expect(api.get).toHaveBeenCalledWith('/v2/help/faqs');
+  });
 });

@@ -10,6 +10,13 @@
  */
 
 const express = require('express');
+
+// The community's own questions come from Laravel; never call it from a test.
+jest.mock('../src/lib/api', () => {
+  const actual = jest.requireActual('../src/lib/api');
+  return { ...actual, getHelpFaqs: jest.fn().mockResolvedValue({ data: [] }) };
+});
+const api = require('../src/lib/api');
 const nunjucks = require('nunjucks');
 const path = require('path');
 const request = require('supertest');
@@ -65,5 +72,25 @@ describe('accessible FAQ follows React', () => {
     const res = await request(buildApp('ga')).get('/faq');
     expect(res.status).toBe(200);
     expect(res.text).toContain('An féidir liom mo chreidmheasanna a bhronnadh?');
+  });
+  // AWID focus group, Oct 2026: "Can we customise the text in places like FAQ?"
+  it('shows the community own questions above the standard ones', async () => {
+    api.getHelpFaqs.mockResolvedValueOnce({ data: [{ category: 'Joining', faqs: [{ id: 7, question: 'How do I join the market?', answer: '<p>Write to the coordinators.</p>' }] }] });
+
+    const res = await request(buildApp()).get('/faq');
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('How do I join the market?');
+    expect(res.text).toContain('Write to the coordinators.');
+    expect(res.text.indexOf('How do I join the market?')).toBeLessThan(res.text.indexOf('id="faq-getting_started"'));
+  });
+
+  it('still shows the standard questions when the community questions cannot be read', async () => {
+    api.getHelpFaqs.mockRejectedValueOnce(new Error('down'));
+
+    const res = await request(buildApp()).get('/faq');
+
+    expect(res.status).toBe(200);
+    expect((res.text.match(/class="govuk-accordion__section-button"/g) || []).length).toBe(20);
   });
 });

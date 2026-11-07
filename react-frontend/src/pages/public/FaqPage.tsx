@@ -27,6 +27,7 @@ import { Accordion, AccordionItem } from '@/components/ui/Accordion';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SearchField } from '@/components/ui/SearchField';
 import { toJsonLd } from '@/lib/json-ld';
+import { CommunityFaqs } from '@/components/help/CommunityFaqs';
 
 interface FaqItem {
   question: string;
@@ -419,6 +420,11 @@ export function FaqPage() {
               }}
             />
           </GlassCard>
+        </motion.div>
+
+        {/* The community's own questions first (Admin -> Help FAQs; AWID, Oct 2026). */}
+        <motion.div variants={itemVariants}>
+          <CommunityFaqs />
         </motion.div>
 
         {/* Categories */}

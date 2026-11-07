@@ -11,6 +11,28 @@
       <h1 class="govuk-heading-xl">{{ t("faq.title") if t else title }}</h1>
       <p class="govuk-body-l">{{ t("faq.intro") }}</p>
 
+      {% if communityFaqs and communityFaqs.length %}
+        <h2 class="govuk-heading-l govuk-!-margin-top-7" id="faq-community">{{ communityFaqsHeading }}</h2>
+        <p class="govuk-body">{{ communityFaqsDescription }}</p>
+        {% for group in communityFaqs %}
+          {% if group.category %}<h3 class="govuk-heading-m">{{ group.category }}</h3>{% endif %}
+          <div class="govuk-accordion" data-module="govuk-accordion" id="faq-community-accordion-{{ loop.index0 }}">
+            {% for faq in group.faqs %}
+              <div class="govuk-accordion__section">
+                <div class="govuk-accordion__section-header">
+                  <h4 class="govuk-accordion__section-heading">
+                    <span class="govuk-accordion__section-button" id="faq-community-{{ loop.parent.index0 }}-{{ loop.index0 }}-heading">{{ faq.question }}</span>
+                  </h4>
+                </div>
+                <div id="faq-community-{{ loop.parent.index0 }}-{{ loop.index0 }}-content" class="govuk-accordion__section-content">
+                  <div class="govuk-body">{{ faq.answer | safe }}</div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      {% endif %}
+
       {% for category in faqCategories %}
         <h2 class="govuk-heading-l govuk-!-margin-top-7" id="faq-{{ category.id }}">{{ category.title }}</h2>
         <div class="govuk-accordion" data-module="govuk-accordion" id="faq-accordion-{{ category.id }}">
