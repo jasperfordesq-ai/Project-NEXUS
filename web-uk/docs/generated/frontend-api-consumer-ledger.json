@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-11-07T14:25:23.275Z",
+  "generatedAt": "2026-11-07T16:51:01.208Z",
   "provenance": {
-    "generatedAt": "2026-11-07T14:25:23.275Z",
+    "generatedAt": "2026-11-07T16:51:01.208Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "4c35af62eff16a390cf1fc86b9da4a8ad52e5f11",
+    "laravelCommitSha": "164d9fba388c359a73d15634924d23aec7066e02",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "4c35af62eff16a390cf1fc86b9da4a8ad52e5f11",
+    "webUkRepositoryCommitSha": "164d9fba388c359a73d15634924d23aec7066e02",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -16,20 +16,20 @@
     "api": "src/lib/api.js",
     "apiSha256": "de87a114031b84355334d290638c19861b5bab54b618727133b41d57e04647b8",
     "laravelOpenApi": "C:\\platforms\\htdocs\\staging\\openapi.json",
-    "laravelOpenApiSha256": "0d504293710ab285525850d5a4d38bc14a8167c50730d8ed72edde463a563fd4",
+    "laravelOpenApiSha256": "556df20ac037142d51985d9fd9c35aba64e5e13af7f41e9da1634ac813be52f9",
     "laravelApiRoutes": "C:\\platforms\\htdocs\\staging\\routes\\api.php",
     "laravelApiRouteFiles": [
       "routes/api.php",
       "routes/api-volunteering-qualifications.php",
       "routes/api-marketplace-admin.php"
     ],
-    "laravelApiRoutesSha256": "e865a415064cab89829ba46f3c9054828272e3210a57bd1016e6eb5d80b551dc"
+    "laravelApiRoutesSha256": "ad4e107ade79bb527003b5de1fbea3ab07b67b0f078e17aa3ac134936f92f9ec"
   },
   "summary": {
     "contracts": 978,
-    "matchedOpenApi": 527,
-    "missingOpenApi": 450,
-    "routeDeclaredOpenApiOmissions": 448,
+    "matchedOpenApi": 529,
+    "missingOpenApi": 448,
+    "routeDeclaredOpenApiOmissions": 446,
     "withoutLaravelRouteDeclaration": 2,
     "dynamicUnresolved": 1,
     "stateChanging": 543,
@@ -6497,19 +6497,28 @@
       "source": "src/lib/api.js:1490",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
-      "requestShape": "JSON object: image_alt",
-      "responseShape": "JSON/text response via ApiError-aware request",
-      "statusCodes": [],
+      "requestShape": "path:id; application/json object",
+      "responseShape": "successful Laravel response envelope",
+      "statusCodes": [
+        "200",
+        "401",
+        "403",
+        "404",
+        "422",
+        "429"
+      ],
       "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
       "redirects": "consumer-controlled: src/routes/events.js",
       "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
       "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
       "laravel": {
-        "status": "route-declared-openapi-omission",
+        "status": "matched-openapi",
         "path": "/api/v2/events/{id}/image-description",
-        "operationId": "",
-        "controllerAction": "",
-        "tags": []
+        "operationId": "Events_imageDescription",
+        "controllerAction": "App\\Http\\Controllers\\Api\\EventsController@imageDescription",
+        "tags": [
+          "Events"
+        ]
       },
       "frontendConsumers": [
         "src/routes/events.js"
@@ -16118,19 +16127,28 @@
       "source": "src/lib/api.js:1499",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
-      "requestShape": "JSON object: type, image_alt",
-      "responseShape": "JSON/text response via ApiError-aware request",
-      "statusCodes": [],
+      "requestShape": "path:id; application/json object",
+      "responseShape": "successful Laravel response envelope",
+      "statusCodes": [
+        "200",
+        "401",
+        "403",
+        "404",
+        "422",
+        "429"
+      ],
       "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
       "redirects": "consumer-controlled: src/routes/groups.js",
       "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
       "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
       "laravel": {
-        "status": "route-declared-openapi-omission",
+        "status": "matched-openapi",
         "path": "/api/v2/groups/{id}/image-description",
         "operationId": "",
         "controllerAction": "",
-        "tags": []
+        "tags": [
+          "Groups"
+        ]
       },
       "frontendConsumers": [
         "src/routes/groups.js"
@@ -18371,7 +18389,7 @@
         "200"
       ],
       "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
-      "redirects": "consumer-controlled: src/routes/support.js",
+      "redirects": "consumer-controlled: src/routes/public-info.js, src/routes/support.js",
       "sideEffects": "read-only by HTTP method",
       "cleanup": "not applicable",
       "laravel": {
@@ -18384,11 +18402,13 @@
         ]
       },
       "frontendConsumers": [
+        "src/routes/public-info.js",
         "src/routes/support.js"
       ],
       "tests": [
         "tests/api.test.js",
         "tests/developers-pages.test.js",
+        "tests/faq.test.js",
         "tests/help-guides.test.js",
         "tests/platform-legal-pages.test.js",
         "tests/seo-accessible-primary-sitemap.test.js",
@@ -28729,7 +28749,7 @@
       "method": "POST",
       "path": "/api/v2/newsletter/unsubscribe",
       "apiHelper": "callNewsletterApi",
-      "source": "src/routes/public-info.js:288",
+      "source": "src/routes/public-info.js:327",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "guest-capable; request tenant context still applies",
       "requestShape": "JSON object: token",
