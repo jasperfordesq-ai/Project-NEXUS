@@ -276,7 +276,9 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel, onS
             autoComplete="one-time-code"
             textContentType="oneTimeCode"
             maxLength={6}
-            editable={!busy}
+            // Stays editable while the code is checked (inFlight stops a second
+            // submit): made read-only, Android moved focus to the key text below
+            // and, after a wrong code, typing went nowhere (emulator, 7 Nov 2026).
             onSubmitEditing={() => void verify()}
             containerClassName="mb-0"
           />

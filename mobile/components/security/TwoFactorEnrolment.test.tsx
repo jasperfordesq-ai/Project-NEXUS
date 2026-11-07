@@ -223,6 +223,23 @@ it('clears a wrong-code message as soon as the member types again', async () => 
   expect(view.queryByTestId('two-factor-error')).toBeNull();
 });
 
+it('keeps the code box editable while the code is checked, so Android keeps the cursor in it', async () => {
+  // Made read-only during the check, Android moved focus to the key text below;
+  // after a wrong code, typing went nowhere (emulator, 7 November 2026).
+  let refuse: (reason: unknown) => void = () => {};
+  mockVerify.mockImplementationOnce(() => new Promise((_resolve, reject) => { refuse = reject; }));
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} />);
+  await reachSetup(view);
+  fireEvent.changeText(view.getByTestId('two-factor-code'), '000000');
+  fireEvent.press(view.getByTestId('two-factor-verify'));
+
+  expect(view.getByTestId('two-factor-code').props.editable).not.toBe(false);
+
+  await act(async () => { refuse(new ApiResponseError(400, 'Invalid verification code', undefined, 'VERIFICATION_FAILED', 'code')); });
+  await view.findByTestId('two-factor-error');
+  expect(view.getByTestId('two-factor-code').props.editable).not.toBe(false);
+});
+
 it('says when the code box gets focus, so the screen can bring the Verify button into view', async () => {
   const onCodeFocus = jest.fn();
   const view = render(<TwoFactorEnrolment onDone={jest.fn()} onCodeFocus={onCodeFocus} />);
