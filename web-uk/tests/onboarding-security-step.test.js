@@ -127,6 +127,16 @@ describe('the "Protect your account" onboarding step', () => {
     expect(response.text).toMatch(/5[^0-9]+6/);
   });
 
+  it('puts "Set up two-factor" and "Not now" side by side in one GOV.UK button group', async () => {
+    // They sat on separate lines, a start button over a lone grey button. A
+    // start button is for the start of a service, not a step inside one.
+    const response = await request(buildApp()).get('/onboarding/security');
+    expect(response.text).toMatch(
+      /<form method="post" action="\/onboarding\/security" novalidate>[\s\S]*?<div class="govuk-button-group">\s*<a class="govuk-button" [^>]*href="\/profile\/two-factor\?return=%2Fonboarding%2Fsecurity"[^>]*>\s*Set up two-factor\s*<\/a>\s*<button class="govuk-button govuk-button--secondary"[^>]*>Not now<\/button>\s*<\/div>\s*<\/form>/
+    );
+    expect(response.text).not.toContain('govuk-button--start');
+  });
+
   it('skips itself when two-factor is already on', async () => {
     api.getTwoFactorStatus.mockResolvedValue({ data: { enabled: true, enrollment_allowed: true } });
     const response = await request(buildApp()).get('/onboarding/security');

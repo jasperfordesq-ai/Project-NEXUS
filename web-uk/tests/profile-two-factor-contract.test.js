@@ -163,7 +163,9 @@ describe('Laravel two-factor enrolment contract', () => {
       expect(page.status).toBe(200);
       expect(page.body.locals.setup).toEqual({
         qr_data_uri: 'data:image/svg+xml;base64,PHN2Zy8+',
-        secret: 'ABCD EFGH IJKL'
+        secret: 'ABCD EFGH IJKL',
+        // No provisioning_uri in this API answer, so no "on this device" link.
+        otpauth_uri: ''
       });
       expect(page.body.locals.canStartSetup).toBe(false);
     }
@@ -204,7 +206,8 @@ describe('Laravel two-factor enrolment contract', () => {
     const verified = await request(app).post('/profile/two-factor/verify').type('form').send({ code: '123456' });
 
     expect(verified.status).toBe(302);
-    expect(verified.headers.location).toContain('2fa-setup-confirm-failed');
+    // Says the five minutes ran out (November 2026), not that the password was wrong.
+    expect(verified.headers.location).toContain('2fa-setup-expired');
   });
 
   it('says setup could not start, and offers it again, when the API refuses', async () => {

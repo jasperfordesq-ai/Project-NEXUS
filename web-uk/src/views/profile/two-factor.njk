@@ -115,19 +115,28 @@
         {% if setup.qr_data_uri %}
           <img class="nexus-alpha-qr" src="{{ setup.qr_data_uri }}" alt="{{ t("security_2fa.qr_alt") }}" width="200" height="200">
         {% endif %}
+        {% if setup.otpauth_uri %}
+          {# A phone cannot scan its own screen, and a screen reader cannot read a
+             QR code: this link adds the key to an authenticator app on this device. #}
+          <p class="govuk-body govuk-!-margin-top-4"><a class="govuk-link" href="{{ setup.otpauth_uri }}">{{ t("security_2fa.open_app") }}</a></p>
+        {% endif %}
 
         <p class="govuk-body govuk-!-margin-top-4">{{ t("security_2fa.manual_intro") }}</p>
+        {# In groups of four, the way authenticator apps show a typed key. #}
+        {% set setupKey = (setup.secret or "") | replace(" ", "") | upper %}
         <div class="govuk-inset-text">
-          <p class="govuk-body"><code class="nexus-alpha-totp-secret">{{ setup.secret }}</code></p>
+          <p class="govuk-body"><code class="nexus-alpha-totp-secret">{% for i in range(0, setupKey | length, 4) %}{{ setupKey.substr(i, 4) }}{% if not loop.last %} {% endif %}{% endfor %}</code></p>
         </div>
 
         <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/verify') }}" class="govuk-!-margin-top-4" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           {% if returnPath %}<input type="hidden" name="return" value="{{ returnPath }}">{% endif %}
-          <div class="govuk-form-group">
+          {% set codeError = fieldError and fieldError.id == "code" %}
+          <div class="govuk-form-group{% if codeError %} govuk-form-group--error{% endif %}">
             <label class="govuk-label govuk-label--m" for="code">{{ t("security_2fa.code_label") }}</label>
             <div id="code-hint" class="govuk-hint">{{ t("security_2fa.code_hint") }}</div>
-            <input class="govuk-input govuk-input--width-10" id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" aria-describedby="code-hint" spellcheck="false">
+            {% if codeError %}<p id="code-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldError.message }}</p>{% endif %}
+            <input class="govuk-input govuk-input--width-10{% if codeError %} govuk-input--error{% endif %}" id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" aria-describedby="code-hint{% if codeError %} code-error{% endif %}" spellcheck="false">
           </div>
           <button class="govuk-button" data-module="govuk-button">{{ t("security_2fa.verify_button") }}</button>
         </form>
@@ -141,9 +150,11 @@
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           {% if returnPath %}<input type="hidden" name="return" value="{{ returnPath }}">{% endif %}
           {# E-035 F-170: turning two-step verification on needs your password. #}
-          <div class="govuk-form-group">
+          {% set passwordError = fieldError and fieldError.id == "setup-password" %}
+          <div class="govuk-form-group{% if passwordError %} govuk-form-group--error{% endif %}">
             <label class="govuk-label" for="setup-password">{{ t("security_2fa.password_label") }}</label>
-            <input class="govuk-input govuk-input--width-20" id="setup-password" name="current_password" type="password" autocomplete="current-password" spellcheck="false">
+            {% if passwordError %}<p id="setup-password-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldError.message }}</p>{% endif %}
+            <input class="govuk-input govuk-input--width-20{% if passwordError %} govuk-input--error{% endif %}" id="setup-password" name="current_password" type="password" autocomplete="current-password" spellcheck="false"{% if passwordError %} aria-describedby="setup-password-error"{% endif %}>
           </div>
           <button class="govuk-button" data-module="govuk-button">{{ t("mandatory_2fa.title") }}</button>
         </form>

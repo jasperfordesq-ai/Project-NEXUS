@@ -3870,6 +3870,8 @@ return [
         'password_required' => 'Enter your password to turn off two-step verification.',
         'setup_password_required' => 'Enter your password to turn on two-step verification.',
         'setup_confirm_failed' => 'We could not confirm your password. Check it and try again.',
+        'setup_expired' => 'That took longer than five minutes, so enter your password again.',
+        'open_app' => 'Add the key to the authenticator app on this device',
         'disable_button' => 'Turn off two-step verification',
         'disable_failed' => 'We could not turn off two-step verification. Check your password and try again.',
         'devices_revoke_failed' => 'We could not forget your remembered devices. Try again in a moment.',

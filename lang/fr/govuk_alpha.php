@@ -3803,6 +3803,8 @@ return [
         'password_required' => 'Saisissez votre mot de passe pour désactiver la vérification en deux étapes.',
         'setup_password_required' => 'Saisissez votre mot de passe pour activer la vérification en deux étapes.',
         'setup_confirm_failed' => 'Nous n\'avons pas pu confirmer votre mot de passe. Vérifiez-le et réessayez.',
+        'setup_expired' => 'Cela a pris plus de cinq minutes. Saisissez à nouveau votre mot de passe.',
+        'open_app' => 'Ajouter la clé à l\'application d\'authentification de cet appareil',
         'disable_button' => 'Désactiver la vérification en deux étapes',
         'disable_failed' => 'Nous n\'avons pas pu désactiver la vérification en deux étapes. Vérifiez votre mot de passe et réessayez.',
         'devices_revoke_failed' => 'Nous ne pouvions pas oublier vos appareils mémorisés. Réessayez dans un instant.',

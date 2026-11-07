@@ -4840,6 +4840,8 @@
                 "password_required": "Introduzca su contraseña para desactivar la verificación en dos pasos.",
                 "setup_password_required": "Introduzca su contraseña para activar la verificación en dos pasos.",
                 "setup_confirm_failed": "No hemos podido confirmar su contraseña. Compruébela e inténtelo de nuevo.",
+                "setup_expired": "Han pasado más de cinco minutos, así que vuelva a introducir su contraseña.",
+                "open_app": "Añadir la clave a la aplicación de autenticación de este dispositivo",
                 "disable_button": "Desactivar la verificación en dos pasos",
                 "disable_failed": "No hemos podido desactivar la verificación en dos pasos. Compruebe su contraseña e inténtelo de nuevo.",
                 "devices_revoke_failed": "No podíamos olvidarnos de tus dispositivos recordados. Inténtalo de nuevo en un momento.",

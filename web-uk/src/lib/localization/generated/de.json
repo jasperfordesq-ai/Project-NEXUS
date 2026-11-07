@@ -4840,6 +4840,8 @@
                 "password_required": "Geben Sie Ihr Passwort ein, um die Zwei-Schritt-Verifizierung zu deaktivieren.",
                 "setup_password_required": "Geben Sie Ihr Passwort ein, um die Zwei-Schritt-Verifizierung zu aktivieren.",
                 "setup_confirm_failed": "Ihr Passwort konnte nicht bestätigt werden. Überprüfen Sie es und versuchen Sie es erneut.",
+                "setup_expired": "Das hat länger als fünf Minuten gedauert. Geben Sie Ihr Passwort bitte erneut ein.",
+                "open_app": "Schlüssel zur Authenticator-App auf diesem Gerät hinzufügen",
                 "disable_button": "Zwei-Schritt-Verifizierung deaktivieren",
                 "disable_failed": "Die Zwei-Schritt-Verifizierung konnte nicht deaktiviert werden. Überprüfen Sie Ihr Passwort und versuchen Sie es erneut.",
                 "devices_revoke_failed": "Wir konnten Ihre erinnerten Geräte nicht vergessen. Versuchen Sie es gleich noch einmal.",

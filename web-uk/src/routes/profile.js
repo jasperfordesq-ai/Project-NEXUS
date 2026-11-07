@@ -403,6 +403,13 @@ const TWO_FACTOR_STATUS_MESSAGES = {
     type: 'error',
     message: 'We could not confirm your password. Check it and try again.',
     anchor: 'tfa-form'
+  },
+  // The five-minute confirmation ran out before the code was entered (a new
+  // member installing an authenticator app can easily take longer).
+  '2fa-setup-expired': {
+    type: 'error',
+    message: 'That took longer than five minutes, so enter your password again.',
+    anchor: 'tfa-form'
   }
 };
 const TWO_FACTOR_STATUS_MESSAGE_KEYS = Object.freeze({
@@ -414,8 +421,26 @@ const TWO_FACTOR_STATUS_MESSAGE_KEYS = Object.freeze({
   '2fa-disable-failed': 'security_2fa.disable_failed',
   '2fa-devices-revoke-failed': 'security_2fa.devices_revoke_failed',
   '2fa-setup-password-required': 'security_2fa.setup_password_required',
-  '2fa-setup-confirm-failed': 'security_2fa.setup_confirm_failed'
+  '2fa-setup-confirm-failed': 'security_2fa.setup_confirm_failed',
+  '2fa-setup-expired': 'security_2fa.setup_expired'
 });
+
+// While setting two-factor up, these statuses belong to one box on the page, so
+// the GOV.UK error summary links to that box and the box shows the message.
+// (The same code statuses also come back from the recovery-code and turn-off
+// forms, which keep linking to the form as before.)
+const TWO_FACTOR_SETUP_CODE_STATUSES = new Set(['2fa-code-required', '2fa-code-invalid']);
+const TWO_FACTOR_SETUP_PASSWORD_STATUSES = new Set([
+  '2fa-setup-password-required',
+  '2fa-setup-confirm-failed',
+  '2fa-setup-expired'
+]);
+
+/** The server's otpauth:// link (what the QR code encodes), or '' for anything else. */
+function otpauthUriFrom(value) {
+  const uri = typeof value === 'string' ? value : '';
+  return uri.startsWith('otpauth://totp/') ? uri : '';
+}
 
 function tokenFrom(req) {
   return (req.signedCookies && req.signedCookies.token) || req.token || '';
@@ -1409,7 +1434,10 @@ function normalizeTwoFactorPayload(payload) {
       ? null
       : {
           qr_data_uri: qrDataUri,
-          secret
+          secret,
+          // Opens the authenticator app on the same device: a phone cannot scan
+          // its own screen, and a screen reader cannot read a QR code.
+          otpauth_uri: otpauthUriFrom(setup.provisioning_uri || setup.otpauth_uri)
     },
     backupCodes,
     backupCodesRemaining: Number.isFinite(backupCodesRemaining) ? backupCodesRemaining : 0
@@ -1434,7 +1462,7 @@ function pendingTwoFactorSetup(req) {
     delete req.session.pendingTwoFactorSetup;
     return null;
   }
-  return { qr_data_uri: qrDataUri, secret };
+  return { qr_data_uri: qrDataUri, secret, otpauth_uri: otpauthUriFrom(pending.otpauth_uri) };
 }
 
 function rememberPendingTwoFactorSetup(req, setup, securityConfirmationToken = '') {
@@ -1455,6 +1483,15 @@ function forgetPendingTwoFactorSetup(req) {
 
 function renderTwoFactor(req, res, twoFactor, status = '', options = {}) {
   const statusConfig = twoFactorStatusConfig(req, status);
+  const canStartSetup = !twoFactor.enabled && !twoFactor.setup;
+  let fieldError = null;
+  if (statusConfig && statusConfig.type === 'error') {
+    if (twoFactor.setup && !twoFactor.enabled && TWO_FACTOR_SETUP_CODE_STATUSES.has(status)) {
+      fieldError = { id: 'code', message: statusConfig.message };
+    } else if (canStartSetup && TWO_FACTOR_SETUP_PASSWORD_STATUSES.has(status)) {
+      fieldError = { id: 'setup-password', message: statusConfig.message };
+    }
+  }
 
   // The page can carry the pending setup key, the QR code and one-time recovery
   // codes. None of that may be replayed from a browser or proxy cache.
@@ -1468,12 +1505,13 @@ function renderTwoFactor(req, res, twoFactor, status = '', options = {}) {
     statusConfig,
     successStatus: statusConfig && statusConfig.type === 'success',
     errorStatus: statusConfig && statusConfig.type === 'error',
-    errorAnchor: statusConfig ? statusConfig.anchor || 'tfa-form' : '',
+    errorAnchor: fieldError ? fieldError.id : (statusConfig ? statusConfig.anchor || 'tfa-form' : ''),
+    fieldError,
     enabled: twoFactor.enabled,
     enforcementRequired: twoFactor.enforcementRequired,
     devicesRevoked: req.query.devices_revoked === '1',
     setup: twoFactor.setup,
-    canStartSetup: !twoFactor.enabled && !twoFactor.setup,
+    canStartSetup,
     setupUnavailable: options.setupUnavailable === true,
     backupCodes: twoFactor.backupCodes,
     backupCodesRemaining: twoFactor.backupCodesRemaining,
@@ -2478,10 +2516,11 @@ router.post('/two-factor/verify', asyncRoute(async (req, res) => {
       return redirectTo(res, twoFactorRedirect('2fa-code-invalid', returnPath));
     }
     // E-035 F-170: the fresh confirmation lapsed (or was never given) — start
-    // setup again with the password rather than leave a dead pending secret.
+    // setup again with the password rather than leave a dead pending secret,
+    // and say why, rather than that the password was wrong.
     if (error instanceof ApiError && error.status === 403 && apiErrorCode(error) === 'SECURITY_CONFIRMATION_REQUIRED') {
       forgetPendingTwoFactorSetup(req);
-      return redirectTo(res, twoFactorRedirect('2fa-setup-confirm-failed', returnPath));
+      return redirectTo(res, twoFactorRedirect('2fa-setup-expired', returnPath));
     }
     if (error instanceof ApiError && error.status === 429) {
       return res.status(429).render('errors/500', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });
