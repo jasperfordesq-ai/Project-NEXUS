@@ -302,5 +302,6 @@
   "group_message_too_long": "Un mensaje puede tener como máximo 10.000 caracteres.",
   "groups_empty": "Todavía no estás en ningún chat de grupo.",
   "groups_load_failed": "No se pudieron cargar tus chats de grupo.",
-  "group_open_aria": "Abrir el chat de grupo {{name}}"
+  "group_open_aria": "Abrir el chat de grupo {{name}}",
+  "aria_download_photo": "Descargar la foto"
 }

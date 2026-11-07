@@ -241,7 +241,7 @@ final class PublicMarketplaceListingResource
 
         return [
             'url' => $url,
-            'alt_text' => self::nullableString($image['alt_text'] ?? null) ?? $title,
+            'alt_text' => self::nullableString(\App\Support\Media\ImageAltText::fromStored($image['alt_text'] ?? null)) ?? $title,
         ];
     }
 
@@ -266,7 +266,7 @@ final class PublicMarketplaceListingResource
 
             $gallery[] = [
                 'url' => $url,
-                'alt_text' => self::nullableString($image['alt_text'] ?? null) ?? $title,
+                'alt_text' => self::nullableString(\App\Support\Media\ImageAltText::fromStored($image['alt_text'] ?? null)) ?? $title,
                 'sort_order' => self::nullableInt($image['sort_order'] ?? null) ?? $index,
             ];
         }
@@ -276,7 +276,7 @@ final class PublicMarketplaceListingResource
         if ($gallery === [] && $fallbackUrl !== null) {
             $gallery[] = [
                 'url' => $fallbackUrl,
-                'alt_text' => self::nullableString($image['alt_text'] ?? null) ?? $title,
+                'alt_text' => self::nullableString(\App\Support\Media\ImageAltText::fromStored($image['alt_text'] ?? null)) ?? $title,
                 'sort_order' => 0,
             ];
         }

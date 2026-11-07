@@ -300,5 +300,6 @@
   "group_message_too_long": "Een bericht mag maximaal 10.000 tekens lang zijn.",
   "groups_empty": "Je zit nog in geen enkel groepsgesprek.",
   "groups_load_failed": "Je groepsgesprekken konden niet worden geladen.",
-  "group_open_aria": "Groepsgesprek {{name}} openen"
+  "group_open_aria": "Groepsgesprek {{name}} openen",
+  "aria_download_photo": "Foto downloaden"
 }

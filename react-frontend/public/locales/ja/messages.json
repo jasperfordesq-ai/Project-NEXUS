@@ -300,5 +300,6 @@
   "group_message_too_long": "メッセージは10,000文字までです。",
   "groups_empty": "まだどのグループチャットにも参加していません。",
   "groups_load_failed": "グループチャットを読み込めませんでした。",
-  "group_open_aria": "グループチャット「{{name}}」を開く"
+  "group_open_aria": "グループチャット「{{name}}」を開く",
+  "aria_download_photo": "写真をダウンロード"
 }

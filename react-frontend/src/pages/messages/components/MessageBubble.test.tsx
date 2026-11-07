@@ -49,6 +49,10 @@ vi.mock('@/contexts/TenantContext', () => ({
   }),
 }));
 
+vi.mock('@/hooks/useAuthenticatedMedia', () => ({
+  useAuthenticatedMedia: (url?: string) => (url ? `blob:${url}` : null),
+}));
+
 vi.mock('./VoiceMessagePlayer', () => ({
   VoiceMessagePlayer: () => <div data-testid="voice-player">Voice Player</div>,
 }));
@@ -331,5 +335,20 @@ describe('MessageBubble — report message', () => {
     await user.click(screen.getByRole('button', { name: 'aria_message_options' }));
     await user.click(screen.getByText('member_report.action_report_message'));
     expect(onReport).toHaveBeenCalled();
+  });
+  // AWID accessibility report, Oct 2026: a photo's file name was read aloud.
+  it('labels a photo attachment as a photo, never by its file name; a document keeps its name', () => {
+    const message = {
+      ...mockMessage,
+      attachments: [
+        { id: 1, url: '/api/v2/messages/attachments/1', type: 'image', name: 'IMG_2034.jpg', size: 1000 },
+        { id: 2, url: '/api/v2/messages/attachments/2', type: 'file', name: 'rota.pdf', size: 1000 },
+      ],
+    } as unknown as Message;
+    render(<MessageBubble {...defaultProps} message={message} />);
+
+    expect(screen.getByRole('button', { name: 'aria_download_photo' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'IMG_2034.jpg' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'rota.pdf' })).toBeInTheDocument();
   });
 });

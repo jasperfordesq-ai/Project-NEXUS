@@ -23,6 +23,7 @@ return [
         'error_too_many' => 'U kunt maximaal 5 bestanden bijvoegen.',
         'error_failed' => 'Uw bijlage kon niet worden geüpload. Probeer het opnieuw.',
         'error_invalid' => 'Dat type bijlage is niet toegestaan.',
+        'photo_alt' => 'Foto verstuurd in dit gesprek',
     ],
     'groups' => [
         'title' => 'Groepsgesprekken',

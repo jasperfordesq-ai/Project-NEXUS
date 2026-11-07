@@ -302,5 +302,6 @@
   "group_message_too_long": "A message can be up to 10,000 characters.",
   "groups_empty": "You are not in any group chats yet.",
   "groups_load_failed": "Could not load your group chats.",
-  "group_open_aria": "Open group chat {{name}}"
+  "group_open_aria": "Open group chat {{name}}",
+  "aria_download_photo": "Download photo"
 }

@@ -209,7 +209,9 @@ function normalizeListing(listing, t = (key) => key) {
     title: String(listing && (listing.title || listing.name || t('feed.item_types.listing'))).trim(),
     type,
     description: stripTags(listing && listing.description),
-    imageUrl: resolveBackendMediaUrl(listing && (listing.image_url || listing.imageUrl))
+    imageUrl: resolveBackendMediaUrl(listing && (listing.image_url || listing.imageUrl)),
+    // The member's own words for the photo (AWID report, Oct 2026), when written.
+    imageAlt: String((listing && listing.image_alt) || '').trim()
   };
 }
 

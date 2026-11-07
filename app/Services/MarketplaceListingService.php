@@ -1230,7 +1230,7 @@ class MarketplaceListingService
             'image' => $primaryImage ? [
                 'url' => $primaryImage->image_url,
                 'thumbnail_url' => $primaryImage->thumbnail_url,
-                'alt_text' => $primaryImage->alt_text,
+                'alt_text' => \App\Support\Media\ImageAltText::fromStored($primaryImage->alt_text),
             ] : null,
             'image_count' => $listing->images_count ?? $listing->images->count(),
             'category' => $listing->category ? [
@@ -1267,7 +1267,7 @@ class MarketplaceListingService
                 'id' => $img->id,
                 'url' => $img->image_url,
                 'thumbnail_url' => $img->thumbnail_url,
-                'alt_text' => $img->alt_text,
+                'alt_text' => \App\Support\Media\ImageAltText::fromStored($img->alt_text),
                 'is_primary' => $img->is_primary,
             ])->all()
             : [];

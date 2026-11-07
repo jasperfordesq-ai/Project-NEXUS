@@ -304,5 +304,6 @@
   "group_message_too_long": "Wiadomość może mieć maksymalnie 10 000 znaków.",
   "groups_empty": "Nie należysz jeszcze do żadnego czatu grupowego.",
   "groups_load_failed": "Nie udało się wczytać Twoich czatów grupowych.",
-  "group_open_aria": "Otwórz czat grupowy {{name}}"
+  "group_open_aria": "Otwórz czat grupowy {{name}}",
+  "aria_download_photo": "Pobierz zdjęcie"
 }

@@ -367,7 +367,7 @@ class MarketplaceGroupService
             'image' => $primaryImage ? [
                 'url' => $primaryImage->image_url,
                 'thumbnail_url' => $primaryImage->thumbnail_url,
-                'alt_text' => $primaryImage->alt_text,
+                'alt_text' => \App\Support\Media\ImageAltText::fromStored($primaryImage->alt_text),
             ] : null,
             'image_count' => $listing->images_count ?? $listing->images->count(),
             'category' => $listing->category ? [

@@ -114,7 +114,7 @@
                 </h3>
                 {% if listing.description %}<p class="govuk-body" dir="auto">{{ listing.description }}</p>{% endif %}
                 {% if listing.imageUrl %}
-                  <img class="nexus-alpha-card-thumb" src="{{ listing.imageUrl }}" alt="{{ t('listings.image_alt', { title: listing.title }) }}" width="120" height="90" loading="lazy" decoding="async">
+                  <img class="nexus-alpha-card-thumb" src="{{ listing.imageUrl }}" alt="{{ listing.imageAlt or t('listings.image_alt', { title: listing.title }) }}" width="120" height="90" loading="lazy" decoding="async">
                 {% endif %}
               </article>
             {% endfor %}

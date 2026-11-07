@@ -187,7 +187,7 @@
                           {% if attachmentHref %}
                             {% if attachmentMime.startsWith('image/') %}
                               <a class="govuk-link" href="{{ attachmentHref }}" target="_blank" rel="noopener"> {{ t("opens_new_tab") }}
-                                <img src="{{ attachmentHref }}" alt="{{ attachmentName }}" width="220" loading="lazy" decoding="async">
+                                <img src="{{ attachmentHref }}" alt="{{ t('govuk_alpha_messages.attachments.photo_alt') }}" width="220" loading="lazy" decoding="async">
                               </a>
                             {% else %}
                               <a class="govuk-link" href="{{ attachmentHref }}" download>{{ attachmentName }}</a>

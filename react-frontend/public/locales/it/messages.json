@@ -302,5 +302,6 @@
   "group_message_too_long": "Un messaggio può contenere al massimo 10.000 caratteri.",
   "groups_empty": "Non fai ancora parte di nessuna chat di gruppo.",
   "groups_load_failed": "Impossibile caricare le tue chat di gruppo.",
-  "group_open_aria": "Apri la chat di gruppo {{name}}"
+  "group_open_aria": "Apri la chat di gruppo {{name}}",
+  "aria_download_photo": "Scarica la foto"
 }

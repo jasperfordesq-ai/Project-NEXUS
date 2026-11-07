@@ -23,6 +23,7 @@ return [
         'error_too_many' => 'Możesz dołączyć maksymalnie 5 plików.',
         'error_failed' => 'Nie udało się przesłać załącznika. Spróbuj ponownie.',
         'error_invalid' => 'Ten typ załącznika jest niedozwolony.',
+        'photo_alt' => 'Zdjęcie wysłane w tej rozmowie',
     ],
     'groups' => [
         'title' => 'Rozmowy grupowe',

@@ -23,6 +23,7 @@ return [
         'error_too_many' => 'Is féidir leat suas le 5 chomhad a cheangal.',
         'error_failed' => 'Níorbh fhéidir do cheangaltán a uaslódáil. Bain triail eile as le do thoil.',
         'error_invalid' => 'Níl an cineál ceangaltáin sin ceadaithe.',
+        'photo_alt' => 'Grianghraf a seoladh sa chomhrá seo',
     ],
     'groups' => [
         'title' => 'Comhráite grúpa',

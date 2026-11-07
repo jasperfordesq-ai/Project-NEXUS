@@ -23,6 +23,7 @@ return [
         'error_too_many' => 'Vous pouvez joindre jusqu\'à 5 fichiers.',
         'error_failed' => 'Votre pièce jointe n\'a pas pu être téléversée. Veuillez réessayer.',
         'error_invalid' => 'Ce type de pièce jointe n\'est pas autorisé.',
+        'photo_alt' => 'Photo envoyée dans cette conversation',
     ],
     'groups' => [
         'title' => 'Conversations de groupe',

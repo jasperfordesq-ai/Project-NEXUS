@@ -48,7 +48,18 @@
 
       <div class="govuk-grid-row govuk-!-margin-bottom-6">
         <div class="govuk-grid-column-one-quarter">
-          {% set size = 'large' %}{% include "partials/avatar.njk" %}
+          {#
+            The member's own description of their photo, when they wrote one (AWID
+            report, Oct 2026). Without one the photo stays decorative beside the name,
+            which is why the shared partial uses alt="".
+          #}
+          {% set profileAvatarSource = user.avatarUrl or user.avatar_url or user.avatar or user.profile_image or '' %}
+          {% set profileAvatarAlt = (user.avatar_alt or '') | trim %}
+          {% if profileAvatarSource and profileAvatarAlt %}
+            <img class="nexus-alpha-avatar nexus-alpha-avatar--large" src="{{ profileAvatarSource | thumb(128, 128) }}" width="64" height="64" alt="{{ profileAvatarAlt }}" decoding="async">
+          {% else %}
+            {% set size = 'large' %}{% include "partials/avatar.njk" %}
+          {% endif %}
         </div>
         <div class="govuk-grid-column-three-quarters">
           <span class="govuk-caption-xl">{{ t("profile.own_caption") if isOwnProfile else t("profile.member_caption") }}</span>

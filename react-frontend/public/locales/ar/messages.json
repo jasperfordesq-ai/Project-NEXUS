@@ -308,5 +308,6 @@
   "group_message_too_long": "يمكن أن تصل الرسالة إلى 10,000 حرف كحد أقصى.",
   "groups_empty": "لست في أي محادثة جماعية بعد.",
   "groups_load_failed": "تعذّر تحميل محادثاتك الجماعية.",
-  "group_open_aria": "فتح المحادثة الجماعية {{name}}"
+  "group_open_aria": "فتح المحادثة الجماعية {{name}}",
+  "aria_download_photo": "تنزيل الصورة"
 }

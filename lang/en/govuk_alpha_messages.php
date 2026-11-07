@@ -25,6 +25,7 @@ return [
         'error_too_many' => 'You can attach up to 5 files.',
         'error_failed' => 'Your attachment could not be uploaded. Please try again.',
         'error_invalid' => 'That attachment type is not allowed.',
+        'photo_alt' => 'Photo sent in this conversation',
     ],
     'groups' => [
         'title' => 'Group conversations',

@@ -727,7 +727,11 @@ export const MessageBubble = memo(function MessageBubble({
 function ProtectedAttachment({ attachment }: {
   attachment: { id: number | string; url: string; type: string; name: string; size: number };
 }) {
+  const { t } = useTranslation('messages');
   const previewUrl = useAuthenticatedMedia(attachment.type === 'image' ? attachment.url : undefined);
+  // A photo's file name ("IMG_2034.jpg") is noise read aloud (AWID report,
+  // Oct 2026); a document's name is what tells it apart, so files keep theirs.
+  const isPhoto = attachment.type === 'image' && Boolean(previewUrl);
 
   const download = useCallback(() => {
     if (!attachment.url.startsWith('/api/')) return;
@@ -739,12 +743,12 @@ function ProtectedAttachment({ attachment }: {
       variant="tertiary"
       onPress={download}
       className="block h-auto min-w-0 max-w-full p-0"
-      aria-label={attachment.name}
+      aria-label={isPhoto ? t('aria_download_photo') : attachment.name}
     >
-      {attachment.type === 'image' && previewUrl ? (
+      {isPhoto ? (
         <img
           src={previewUrl}
-          alt={attachment.name}
+          alt=""
           className="max-h-[200px] max-w-[min(200px,70vw)] rounded-lg object-cover transition-opacity hover:opacity-90"
           loading="lazy"
         />

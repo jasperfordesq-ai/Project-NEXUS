@@ -300,5 +300,6 @@
   "group_message_too_long": "Eine Nachricht darf höchstens 10.000 Zeichen lang sein.",
   "groups_empty": "Sie sind noch in keinem Gruppenchat.",
   "groups_load_failed": "Ihre Gruppenchats konnten nicht geladen werden.",
-  "group_open_aria": "Gruppenchat {{name}} öffnen"
+  "group_open_aria": "Gruppenchat {{name}} öffnen",
+  "aria_download_photo": "Foto herunterladen"
 }

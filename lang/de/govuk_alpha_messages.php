@@ -23,6 +23,7 @@ return [
         'error_too_many' => 'Sie können bis zu 5 Dateien anhängen.',
         'error_failed' => 'Ihr Anhang konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.',
         'error_invalid' => 'Dieser Anhangstyp ist nicht zulässig.',
+        'photo_alt' => 'In dieser Unterhaltung gesendetes Foto',
     ],
     'groups' => [
         'title' => 'Gruppengespräche',

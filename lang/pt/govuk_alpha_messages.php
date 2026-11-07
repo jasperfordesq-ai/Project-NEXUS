@@ -23,6 +23,7 @@ return [
         'error_too_many' => 'Pode anexar até 5 ficheiros.',
         'error_failed' => 'Não foi possível carregar o seu anexo. Tente novamente.',
         'error_invalid' => 'Esse tipo de anexo não é permitido.',
+        'photo_alt' => 'Fotografia enviada nesta conversa',
     ],
     'groups' => [
         'title' => 'Conversas em grupo',

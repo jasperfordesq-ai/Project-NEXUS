@@ -739,7 +739,7 @@ export function SearchPage() {
                                   widths: [320, 480, 640],
                                   sizes: '(max-width: 640px) 100vw, 50vw',
                                 })}
-                                alt={listing.title || t('listing_image_alt')}
+                                alt={listing.image_alt?.trim() || listing.title || t('listing_image_alt')}
                                 className="w-full h-32 object-cover"
                                 loading="lazy"
                                 decoding="async"

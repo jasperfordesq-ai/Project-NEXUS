@@ -23,6 +23,7 @@ return [
         'error_too_many' => 'Puedes adjuntar hasta 5 archivos.',
         'error_failed' => 'No se pudo subir tu archivo adjunto. Inténtalo de nuevo.',
         'error_invalid' => 'Ese tipo de archivo adjunto no está permitido.',
+        'photo_alt' => 'Foto enviada en esta conversación',
     ],
     'groups' => [
         'title' => 'Conversaciones grupales',

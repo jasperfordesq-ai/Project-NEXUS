@@ -991,7 +991,9 @@ function ownProfileListings(result) {
       title: trimmed(listing?.title || listing?.name),
       description: trimmed(String(listing?.description || '').replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' '),
       type: String(listing?.type || 'offer').toLowerCase() === 'request' ? 'request' : 'offer',
-      imageUrl: resolveBackendMediaUrl(listing?.image_url || listing?.imageUrl)
+      imageUrl: resolveBackendMediaUrl(listing?.image_url || listing?.imageUrl),
+      // The member's own words for the photo (AWID report, Oct 2026), when written.
+      imageAlt: trimmed(listing?.image_alt)
     }))
     .filter((listing) => listing.id && listing.title)
     .slice(0, 6);

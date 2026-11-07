@@ -221,6 +221,28 @@ describe('StoryViewer', () => {
     });
   });
 
+  // AWID accessibility report, Oct 2026: the description was hard-coded English.
+  it('describes an image story in the reader\'s language, not hard-coded English', async () => {
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: [{ ...makeStory({ media_type: 'image', text_content: null }), media_url: '/uploads/stories/1.jpg' }],
+    });
+    const { StoryViewer } = await import('./StoryViewer');
+    render(
+      <StoryViewer
+        storyUsers={[makeStoryUser()]}
+        initialUserIndex={0}
+        onClose={onClose}
+      />
+    );
+    // The test i18n setup loads English only, where both read alike, so also
+    // pin that the description comes from the translated `viewer.story_from`.
+    expect(await screen.findByRole('img', { name: 'Story from Alice Example' })).toBeInTheDocument();
+    const source = (await import('./StoryViewer.tsx?raw')).default;
+    expect(source).not.toContain('`Story from ');
+    expect(source).toContain("alt={t('viewer.story_from'");
+  });
+
   it('displays text story content after loading', async () => {
     const { StoryViewer } = await import('./StoryViewer');
     render(

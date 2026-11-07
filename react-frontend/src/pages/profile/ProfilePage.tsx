@@ -1155,7 +1155,7 @@ export function ProfilePage() {
                                 height: 360,
                                 sizes: '(min-width: 1024px) 360px, (min-width: 640px) 45vw, 92vw',
                               })}
-                              alt={listing.title || t('listing_image_alt')}
+                              alt={listing.image_alt?.trim() || listing.title || t('listing_image_alt')}
                               className="w-full h-32 object-cover"
                               loading="lazy"
                             />

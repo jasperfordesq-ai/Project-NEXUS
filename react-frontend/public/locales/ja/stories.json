@@ -103,7 +103,7 @@
     "video_duration_seconds_one": "{{count}} 件"
   },
   "viewer": {
-    "story_from": "ストーリー from {{name}}",
+    "story_from": "{{name}}さんのストーリー",
     "close": "ストーリー ビューアを閉じる",
     "previous_user": "前のユーザー",
     "next_user": "次のユーザー",

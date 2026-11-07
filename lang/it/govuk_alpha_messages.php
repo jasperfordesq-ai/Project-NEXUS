@@ -23,6 +23,7 @@ return [
         'error_too_many' => 'Puoi allegare fino a 5 file.',
         'error_failed' => 'Impossibile caricare il tuo allegato. Riprova.',
         'error_invalid' => 'Questo tipo di allegato non è consentito.',
+        'photo_alt' => 'Foto inviata in questa conversazione',
     ],
     'groups' => [
         'title' => 'Conversazioni di gruppo',

@@ -75,6 +75,38 @@ class MarketplaceListingControllerTest extends TestCase
         ])->assertStatus(403);
     }
 
+    /**
+     * AWID accessibility report, Oct 2026, point 6: an uploaded marketplace
+     * photo was saved with its FILE NAME as the description, so a screen reader
+     * announced "IMG_2034.jpg". Nothing is saved now, and a file name already
+     * stored is never handed out as a description.
+     */
+    public function test_a_photo_is_not_described_by_its_file_name(): void
+    {
+        \Illuminate\Support\Facades\Queue::fake();
+        \Illuminate\Support\Facades\Mail::fake();
+        $this->enableMarketplaceFeature();
+        $seller = $this->authenticatedUser();
+        $listingId = $this->createMarketplaceListing($seller, $this->createMarketplaceCategory());
+        $this->mock(\App\Services\ImageUploadService::class, function ($mock): void {
+            $mock->shouldReceive('upload')->andReturn([
+                'url' => '/uploads/marketplace/file-name-test.png',
+                'thumbnail_url' => null,
+            ]);
+        });
+
+        $this->apiPost("/v2/marketplace/listings/{$listingId}/images", [
+            'image' => \Illuminate\Http\UploadedFile::fake()->image('IMG_2034.png'),
+        ])->assertStatus(201);
+
+        $this->assertNull(DB::table('marketplace_images')->where('marketplace_listing_id', $listingId)->value('alt_text'));
+
+        // A description a member never wrote, stored by the old upload.
+        DB::table('marketplace_images')->where('marketplace_listing_id', $listingId)->update(['alt_text' => 'IMG_2034.png']);
+        $detail = $this->apiGet("/v2/marketplace/listings/{$listingId}")->assertOk();
+        $this->assertStringNotContainsString('IMG_2034.png', $detail->getContent());
+    }
+
     public function test_csv_import_row_errors_are_translated_in_every_locale(): void
     {
         $source = file_get_contents(app_path('Http/Controllers/Api/MarketplaceListingController.php'));

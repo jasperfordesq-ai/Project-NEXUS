@@ -302,5 +302,6 @@
   "group_message_too_long": "Uma mensagem pode ter no máximo 10 000 caracteres.",
   "groups_empty": "Ainda não está em nenhuma conversa de grupo.",
   "groups_load_failed": "Não foi possível carregar as suas conversas de grupo.",
-  "group_open_aria": "Abrir a conversa de grupo {{name}}"
+  "group_open_aria": "Abrir a conversa de grupo {{name}}",
+  "aria_download_photo": "Transferir a fotografia"
 }

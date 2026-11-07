@@ -306,5 +306,6 @@
   "group_message_too_long": "Is féidir le teachtaireacht a bheith suas le 10,000 carachtar.",
   "groups_empty": "Níl tú in aon chomhrá grúpa fós.",
   "groups_load_failed": "Níorbh fhéidir do chomhráite grúpa a lódáil.",
-  "group_open_aria": "Oscail an comhrá grúpa {{name}}"
+  "group_open_aria": "Oscail an comhrá grúpa {{name}}",
+  "aria_download_photo": "Íoslódáil an grianghraf"
 }

@@ -619,7 +619,7 @@ export function StoryViewer({ storyUsers, initialUserIndex, onClose }: StoryView
                   <div className="w-full h-full bg-black">
                     <img
                       src={resolveThumbnailUrl(currentStory.media_url, { width: 1080, height: 1920 })}
-                      alt={`Story from ${currentUserStory.name}`}
+                      alt={t('viewer.story_from', { name: currentUserStory.name })}
                       className="w-full h-full object-cover"
                       loading="eager"
                       decoding="async"
