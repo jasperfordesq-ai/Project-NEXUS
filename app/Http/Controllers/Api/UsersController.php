@@ -132,6 +132,14 @@ class UsersController extends BaseApiController
             $profile['auto_translate_target_locale'] = $translation['auto_translate_target_locale'];
         }
 
+        // Read by the same settings page for its "newest first" box. Missing,
+        // it showed unticked and every save there switched the member's
+        // newest-first feed off.
+        $profile['prefers_chronological_feed'] = (bool) DB::table('users')
+            ->where('id', $userId)
+            ->where('tenant_id', $homeTenantId)
+            ->value('prefers_chronological_feed');
+
         return $this->respondWithData($profile);
     }
 
