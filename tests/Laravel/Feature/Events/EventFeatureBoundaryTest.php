@@ -84,7 +84,8 @@ final class EventFeatureBoundaryTest extends TestCase
             }
         }
 
-        $this->assertCount(45, $eventRoutes, 'The first-party Events API route inventory changed.');
+        // 46 with PUT /v2/events/{id}/image-description (AWID report, 7 Nov 2026).
+        $this->assertCount(46, $eventRoutes, 'The first-party Events API route inventory changed.');
 
         foreach ($eventRoutes as $route) {
             $this->assertContains(
