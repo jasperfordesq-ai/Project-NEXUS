@@ -917,7 +917,7 @@ class MarketplaceListingService
      * Add images to a marketplace listing.
      *
      * @param MarketplaceListing $listing
-     * @param array<array{url: string, thumbnail_url?: string, alt_text?: string}> $images
+     * @param array<array{url: string, thumbnail_url?: string|null, alt_text?: string|null}> $images
      */
     public static function addImages(MarketplaceListing $listing, array $images): void
     {
