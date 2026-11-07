@@ -10,6 +10,8 @@ use App\Core\TenantContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
+use App\Support\Matching\MatchReasonText;
+use App\Services\Translation\TaxonomyNameLocalizer;
 
 /**
  * CrossModuleMatchingService — Aggregates match results across listings, groups,
@@ -184,7 +186,11 @@ class CrossModuleMatchingService
                     'avatar_url' => $match['avatar_url'] ?? null,
                     'match_score' => (float) ($match['match_score'] ?? 0),
                     'match_type' => $match['match_type'] ?? 'one_way',
-                    'match_reasons' => $match['match_reasons'] ?? [],
+                    // In the reader's language, category name included (AWID, Oct 2026).
+                    'match_reasons' => MatchReasonText::localize(
+                        $match['match_reasons'] ?? [],
+                        self::categoryNameMap($match)
+                    ),
                     'distance_km' => isset($match['distance_km']) && is_numeric($match['distance_km'])
                         ? (float) $match['distance_km'] : null,
                     'is_remote' => ($match['service_type'] ?? 'physical_only') === 'remote_only',
@@ -270,7 +276,7 @@ class CrossModuleMatchingService
                         'description' => mb_substr($org->description ?? '', 0, 200),
                         'match_score' => $score,
                         'match_type' => 'volunteering_recommendation',
-                        'match_reasons' => ['Volunteering opportunity that matches your profile'],
+                        'match_reasons' => MatchReasonText::localize(['Volunteering opportunity that matches your profile']),
                         'distance_km' => null,
                         'created_at' => $org->created_at ?? null,
                     ];
@@ -348,7 +354,7 @@ class CrossModuleMatchingService
                         'attendee_count' => (int) ($event->attendee_count ?? 0),
                         'match_score' => (float) $score,
                         'match_type' => 'event_recommendation',
-                        'match_reasons' => ['Upcoming event that matches your interests'],
+                        'match_reasons' => MatchReasonText::localize(['Upcoming event that matches your interests']),
                         'distance_km' => null,
                         'created_at' => $event->created_at ?? null,
                     ];
@@ -440,5 +446,30 @@ class CrossModuleMatchingService
 
         // Scale: 0.0 → 0, 0.1 → 40, 0.2 → 60, 0.4+ → 80+
         return min(100, round($jaccard * 400, 1));
+    }
+
+    /**
+     * Stored category name => the name to show, so a "Same category: X" reason
+     * names the category in the reader's language. Display only (stored
+     * translations, no provider call); the match's own category_name is left
+     * as stored, because clients compare and group by it.
+     *
+     * @param array<string, mixed> $match
+     * @return array<string, string>
+     */
+    private static function categoryNameMap(array $match): array
+    {
+        $stored = isset($match['category_name']) && is_string($match['category_name']) ? $match['category_name'] : '';
+        if ($stored === '' || empty($match['category_id'])) {
+            return [];
+        }
+        try {
+            $shown = TaxonomyNameLocalizer::nameFor('categories', $match['category_id'], $stored);
+        } catch (\Throwable $e) {
+            Log::warning('[CrossModuleMatching] category name for match reason unavailable', ['error' => $e->getMessage()]);
+            return [];
+        }
+
+        return is_string($shown) && $shown !== '' ? [$stored => $shown] : [];
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
+use App\Support\Matching\MatchReasonText;
 
 /**
  * ExploreService — Aggregates discovery data for the Explore/Discover page.
@@ -105,7 +106,38 @@ class ExploreService
             }
         }
 
-        return array_merge($globalData, $userData);
+        return self::withLocalizedReasons(array_merge($globalData, $userData));
+    }
+
+    /**
+     * "Why this is suggested" in the reader's language (AWID pilot feedback,
+     * Oct 2026). Done after the cache, which is per member and not per
+     * language, so the cached rows keep the engine's English phrases.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private static function withLocalizedReasons(array $data): array
+    {
+        foreach (['recommended_listings', 'near_you_listings'] as $section) {
+            if (!isset($data[$section]) || !is_array($data[$section])) {
+                continue;
+            }
+            foreach ($data[$section] as $i => $item) {
+                if (is_array($item) && isset($item['match_reason']) && is_string($item['match_reason'])) {
+                    $data[$section][$i]['match_reason'] = MatchReasonText::localize([$item['match_reason']])[0] ?? $item['match_reason'];
+                }
+            }
+        }
+        if (isset($data['suggested_connections']) && is_array($data['suggested_connections'])) {
+            foreach ($data['suggested_connections'] as $i => $item) {
+                if (is_array($item) && isset($item['reason']) && is_string($item['reason'])) {
+                    $data['suggested_connections'][$i]['reason'] = MatchReasonText::localize([$item['reason']])[0] ?? $item['reason'];
+                }
+            }
+        }
+
+        return $data;
     }
 
     /**

@@ -8625,6 +8625,9 @@ export default interface Resources {
       "save_changes": "Save changes",
       "search_placeholder": "Search categories...",
       "tabs_aria": "Category type filter",
+      "translations_after_rename": "You are renaming this category. Save first: the new name is then translated into every language, and you can check the translations here.",
+      "translations_heading": "Name in other languages",
+      "translations_hint": "Translated automatically into every language the platform supports. Correct any translation here; your change is kept. Leave a box empty to have it translated again.",
       "type_blog": "Blog",
       "type_event": "Event",
       "type_listing": "Listing",
@@ -9500,8 +9503,11 @@ export default interface Resources {
       "tenant_features_title": "Tenant Features",
       "toggle_module": "Toggle {{name}}",
       "translation_add": "Add",
-      "translation_auto_translate_desc": "Automatically translate incoming content for users in a different language",
-      "translation_auto_translate_label": "Auto-translate by default",
+      "translation_ai_off_link": "Open AI settings",
+      "translation_ai_unavailable_desc": "AI translation needs AI switched on and your community's own OpenAI key in AI settings. Until then, translations use Google Translate.",
+      "translation_ai_unavailable_title": "AI translation is not available yet",
+      "translation_auto_translate_desc": "On the website, messages in a conversation are translated into the reader's language automatically until the member turns it off for that conversation. Posts, listings and other content are translated when a member presses Translate.",
+      "translation_auto_translate_label": "Auto-translate messages by default",
       "translation_col_language": "Language",
       "translation_col_source_term": "Source term",
       "translation_col_target_term": "Target term",
@@ -9512,7 +9518,10 @@ export default interface Resources {
       "translation_delete_entry": "Delete entry for \"{{term}}\"",
       "translation_enabled_desc": "Allow users to translate content on this platform",
       "translation_enabled_label": "Enable translation",
+      "translation_engine_ai": "AI, with your own AI key",
+      "translation_engine_choice_desc": "Google Translate works for every community. AI translation uses your community's own AI key from AI settings; without one, Google Translate is used.",
       "translation_engine_desc": "Select the provider used for automatic translations",
+      "translation_engine_google": "Google Translate (default)",
       "translation_engine_label": "Translation engine",
       "translation_general_settings": "General Settings",
       "translation_glossary_add_failed": "Failed to add glossary entry",
@@ -9527,8 +9536,24 @@ export default interface Resources {
       "translation_glossary_load_failed": "Failed to load glossary",
       "translation_glossary_management": "Glossary Management",
       "translation_glossary_management_desc": "Add custom translations for specific terms",
+      "translation_google_key_desc": "Your community can use its own Google Cloud Translation key. Without one, the platform's key is used.",
+      "translation_google_key_label": "Your own Google Translate API key",
+      "translation_google_key_placeholder": "Paste the key from the Google Cloud console",
+      "translation_google_key_remove": "Remove our key",
+      "translation_google_key_removed": "Google Translate key removed",
+      "translation_google_key_replace_placeholder": "A key is saved. Paste a new one to replace it",
+      "translation_google_key_save": "Save key",
+      "translation_google_key_save_failed": "The key could not be saved",
+      "translation_google_key_saved": "Google Translate key saved",
+      "translation_google_key_title": "Google Translate key",
+      "translation_google_key_using_ai": "Using AI with your community's own AI key.",
+      "translation_google_key_using_none": "No Google Translate key is available.",
+      "translation_google_key_using_own": "Using your community's own Google Translate key.",
+      "translation_google_key_using_platform": "Using the platform's Google Translate key.",
       "translation_language": "Language",
       "translation_load_failed": "Failed to load translation settings",
+      "translation_not_set_up_desc": "There is no Google Translate key for this community or the platform, so nothing can be translated. Add your community's own key below, or ask the platform team.",
+      "translation_not_set_up_title": "Translation is not set up",
       "translation_provider_deepl": "DeepL",
       "translation_provider_google": "Google Translate",
       "translation_provider_openai": "OpenAI",
@@ -28520,6 +28545,23 @@ export default interface Resources {
         "title": "Pipeline velocity - average days from inquiry submission to each milestone:"
       }
     },
+    "platform_translation": {
+      "description": "Google Translate is every community's default translation engine. Communities that have saved their own Google key use it; every other community uses the platform key saved here.",
+      "key_heading": "Google Cloud Translation API key",
+      "key_help": "Create the key in the Google Cloud console (APIs & Services → Credentials), restricted to the Cloud Translation API. It is stored encrypted and never shown again.",
+      "key_label": "Platform Google Translate API key",
+      "placeholder": "Paste the key from the Google Cloud console",
+      "remove": "Remove key",
+      "removed": "Platform translation key removed",
+      "replace_placeholder": "A key is saved. Paste a new one to replace it",
+      "save": "Save key",
+      "save_failed": "The key could not be saved",
+      "saved": "Platform translation key saved",
+      "status_environment": "No key is saved here; the server's GOOGLE_TRANSLATE_API_KEY setting is in use.",
+      "status_none": "No platform Google Translate key is saved. Communities without their own key cannot translate.",
+      "status_saved": "A platform Google Translate key is saved and in use.",
+      "title": "Platform translation key"
+    },
     "resources": "Resources",
     "shared": {
       "broker_actions": "Broker Actions",
@@ -30880,6 +30922,8 @@ export default interface Resources {
         "step_profile_desc": "Step where members fill in their profile information",
         "step_safeguarding": "Step Safeguarding",
         "step_safeguarding_desc": "Step where members complete safeguarding declarations",
+        "step_security": "Protect your account (two-factor offer)",
+        "step_security_desc": "Offers members two-step sign-in with an authenticator app. Always optional for members, and only shown to members who can set it up.",
         "step_skills": "Step Skills",
         "step_skills_desc": "Step where members add their skills and what they can offer",
         "step_welcome": "Step Welcome",
@@ -34078,9 +34122,13 @@ export default interface Resources {
     "mandatory_setup": {
       "cancel": "Return to sign in",
       "code": "Six-digit verification code",
+      "copy_key": "Copy key",
       "failed": "Setup could not be completed. Retry, or return to sign in if your session has expired.",
+      "key_copied": "Key copied",
+      "key_copy_failed": "The key could not be copied. Select it and copy it by hand.",
       "loading": "Loading setup…",
       "manual": "Or enter this setup key manually:",
+      "open_app": "Open in authenticator app",
       "qr_alt": "Authenticator setup QR code",
       "reason": "Two-factor authentication is required for your account before you can continue.",
       "recovery_copied": "Codes copied",
@@ -34233,12 +34281,21 @@ export default interface Resources {
     "resend_sent": "Check your inbox — we sent a new verification link",
     "reset_password": {
       "back_to_login": "Back to login",
+      "checking": "Checking your link…",
       "confirm_label": "Confirm password",
       "confirm_password_label": "Confirm Password",
       "confirm_placeholder": "Re-enter your password",
+      "dead_invitation_hint": "If this was your invitation to join, the new link does the same job: it lets you choose your password.",
+      "dead_message": "Links in our emails work only once, and they stop working after a while. Ask for a new one and we will email it to you.",
+      "dead_title": "This link no longer works",
       "hide_password": "Hide password",
       "invalid_message": "This password reset link is invalid or has expired. Please request a new one.",
       "invalid_title": "Invalid reset link",
+      "invitation_submit": "Create password",
+      "invitation_subtitle": "Choose a password. You will sign in with your email address and this password.",
+      "invitation_success_message": "Your password is set. Sign in with your email address and your new password.",
+      "invitation_success_title": "Your account is ready",
+      "invitation_title": "Set up your account",
       "link_expired_error": "Failed to reset password. The link may have expired.",
       "new_password_label": "New Password",
       "new_password_placeholder": "Enter a strong password",
@@ -34246,6 +34303,7 @@ export default interface Resources {
       "page_title": "Set new password",
       "passwords_no_match": "Passwords do not match",
       "request_new_link": "Request new link",
+      "send_new_link": "Send me a new link",
       "show_password": "Show password",
       "sign_in": "Sign in",
       "submit": "Reset Password",
@@ -34336,6 +34394,274 @@ export default interface Resources {
     "slot_status_label": "{{day}} {{time}}: {{status}}",
     "timezone_label": "Timezone",
     "unavailable": "Unavailable"
+  },
+  "badge_copy": {
+    "badges": {
+      "5star_1": {
+        "description": "Receive your first 5-star review",
+        "name": "First 5-Star"
+      },
+      "5star_10": {
+        "description": "Receive 10 five-star reviews",
+        "name": "Highly Rated"
+      },
+      "5star_25": {
+        "description": "Receive 25 five-star reviews",
+        "name": "Excellence Award"
+      },
+      "connect_1": {
+        "description": "Make your first connection",
+        "name": "First Friend"
+      },
+      "connect_10": {
+        "description": "Make 10 connections",
+        "name": "Social Butterfly"
+      },
+      "connect_25": {
+        "description": "Make 25 connections",
+        "name": "Network Builder"
+      },
+      "connect_50": {
+        "description": "Make 50 connections",
+        "name": "Community Connector"
+      },
+      "diversity_10": {
+        "description": "Help 10 different people",
+        "name": "Diverse Giver"
+      },
+      "diversity_25": {
+        "description": "Help 25 different people",
+        "name": "Community Pillar"
+      },
+      "diversity_3": {
+        "description": "Help 3 different people",
+        "name": "Community Helper"
+      },
+      "early_adopter": {
+        "description": "Be an early adopter of the platform",
+        "name": "Early Adopter"
+      },
+      "earn_1": {
+        "description": "Earn your first time credit",
+        "name": "First Earn"
+      },
+      "earn_10": {
+        "description": "Earn 10 time credits",
+        "name": "Go Getter"
+      },
+      "earn_100": {
+        "description": "Earn 100 time credits",
+        "name": "Centurion"
+      },
+      "earn_250": {
+        "description": "Earn 250 time credits",
+        "name": "Credit Master"
+      },
+      "earn_50": {
+        "description": "Earn 50 time credits",
+        "name": "Credit Builder"
+      },
+      "event_attend_1": {
+        "description": "Attend your first event",
+        "name": "First Event"
+      },
+      "event_attend_10": {
+        "description": "Attend 10 events",
+        "name": "Event Regular"
+      },
+      "event_attend_25": {
+        "description": "Attend 25 events",
+        "name": "Event Enthusiast"
+      },
+      "event_host_1": {
+        "description": "Host your first event",
+        "name": "Event Host"
+      },
+      "event_host_5": {
+        "description": "Host 5 events",
+        "name": "Event Organizer"
+      },
+      "group_create": {
+        "description": "Create your first group",
+        "name": "Group Founder"
+      },
+      "group_join_1": {
+        "description": "Join your first group",
+        "name": "Team Player"
+      },
+      "group_join_5": {
+        "description": "Join 5 groups",
+        "name": "Community Member"
+      },
+      "level_10": {
+        "description": "Reach level 10",
+        "name": "Community Champion"
+      },
+      "level_5": {
+        "description": "Reach level 5",
+        "name": "Rising Star"
+      },
+      "likes_200": {
+        "description": "Receive 200 likes",
+        "name": "Popular Voice"
+      },
+      "likes_50": {
+        "description": "Receive 50 likes",
+        "name": "Getting Noticed"
+      },
+      "member_180d": {
+        "description": "Be a member for 6 months",
+        "name": "Semester Member"
+      },
+      "member_30d": {
+        "description": "Be a member for 30 days",
+        "name": "Monthly Member"
+      },
+      "member_365d": {
+        "description": "Be a member for one year",
+        "name": "Annual Member"
+      },
+      "msg_1": {
+        "description": "Send your first message",
+        "name": "Conversation Starter"
+      },
+      "msg_200": {
+        "description": "Send 200 messages",
+        "name": "Communication Pro"
+      },
+      "msg_50": {
+        "description": "Send 50 messages",
+        "name": "Active Communicator"
+      },
+      "offer_1": {
+        "description": "Post your first offer",
+        "name": "First Offer"
+      },
+      "offer_10": {
+        "description": "Post 10 offers",
+        "name": "Gift Giver"
+      },
+      "offer_25": {
+        "description": "Post 25 offers",
+        "name": "Offer Master"
+      },
+      "offer_5": {
+        "description": "Post 5 offers",
+        "name": "Generous Soul"
+      },
+      "post_1": {
+        "description": "Create your first post",
+        "name": "First Post"
+      },
+      "post_100": {
+        "description": "Create 100 posts",
+        "name": "Prolific Poster"
+      },
+      "post_25": {
+        "description": "Create 25 posts",
+        "name": "Content Creator"
+      },
+      "profile_complete": {
+        "description": "Complete your profile",
+        "name": "Profile Pro"
+      },
+      "request_1": {
+        "description": "Post your first request",
+        "name": "First Request"
+      },
+      "request_10": {
+        "description": "Make 10 requests",
+        "name": "Active Requester"
+      },
+      "request_5": {
+        "description": "Make 5 requests",
+        "name": "Community Seeker"
+      },
+      "review_1": {
+        "description": "Leave your first review",
+        "name": "First Feedback"
+      },
+      "review_10": {
+        "description": "Leave 10 reviews",
+        "name": "Trusted Reviewer"
+      },
+      "review_25": {
+        "description": "Leave 25 reviews",
+        "name": "Review Expert"
+      },
+      "spend_1": {
+        "description": "Spend your first time credit",
+        "name": "First Spend"
+      },
+      "spend_10": {
+        "description": "Spend 10 time credits",
+        "name": "Active Spender"
+      },
+      "spend_50": {
+        "description": "Spend 50 time credits",
+        "name": "Generous Spender"
+      },
+      "streak_100d": {
+        "description": "Maintain a 100-day streak",
+        "name": "Streak Master"
+      },
+      "streak_30d": {
+        "description": "Maintain a 30-day streak",
+        "name": "Monthly Dedication"
+      },
+      "streak_365d": {
+        "description": "Maintain a 365-day streak",
+        "name": "Year-Long Legend"
+      },
+      "streak_7d": {
+        "description": "Maintain a 7-day streak",
+        "name": "Week Warrior"
+      },
+      "transaction_1": {
+        "description": "Complete your first transaction",
+        "name": "First Exchange"
+      },
+      "transaction_10": {
+        "description": "Complete 10 transactions",
+        "name": "Active Trader"
+      },
+      "transaction_50": {
+        "description": "Complete 50 transactions",
+        "name": "Exchange Master"
+      },
+      "verified": {
+        "description": "Complete identity verification",
+        "name": "Verified Member"
+      },
+      "vol_100h": {
+        "description": "Volunteer 100 hours",
+        "name": "TimeBank Legend"
+      },
+      "vol_10h": {
+        "description": "Volunteer 10 hours",
+        "name": "Helping Hand"
+      },
+      "vol_1h": {
+        "description": "Log your first volunteer hour",
+        "name": "First Steps"
+      },
+      "vol_250h": {
+        "description": "Volunteer 250 hours",
+        "name": "Volunteer Hero"
+      },
+      "vol_500h": {
+        "description": "Volunteer 500 hours",
+        "name": "Volunteer Champion"
+      },
+      "vol_50h": {
+        "description": "Volunteer 50 hours",
+        "name": "Change Maker"
+      },
+      "volunteer_org": {
+        "description": "Create a volunteer organization",
+        "name": "Organization Partner"
+      }
+    }
   },
   "blog": {
     "empty_desc": "No blog posts have been published yet",
@@ -37484,6 +37810,22 @@ export default interface Resources {
     "feature_unavailable_title": "AI Assistant Not Available",
     "header_subtitle": "Powered by AI",
     "header_title": "AI Assistant",
+    "history_button_aria": "Past conversations",
+    "history_cancel": "Cancel",
+    "history_close": "Close",
+    "history_delete_aria": "Delete conversation \"{{title}}\"",
+    "history_delete_confirm": "Delete this conversation? This cannot be undone.",
+    "history_delete_confirm_button": "Yes, delete it",
+    "history_delete_error": "Could not delete the conversation. Please try again.",
+    "history_empty": "You have no past conversations yet.",
+    "history_load_error": "Could not load your past conversations. Please try again.",
+    "history_loading": "Loading past conversations",
+    "history_message_count": "Messages: {{total}}",
+    "history_open": "Open",
+    "history_open_aria": "Open conversation \"{{title}}\"",
+    "history_open_error": "Could not open the conversation. Please try again.",
+    "history_title": "Past conversations",
+    "history_untitled": "Untitled conversation",
     "input_aria": "Message",
     "input_placeholder": "Ask me anything... (Enter to send, Shift+Enter for new line)",
     "limits_left_today": "{{count}} left today",
@@ -39628,8 +39970,15 @@ export default interface Resources {
       "provider_facebook": "Facebook",
       "provider_google": "Google",
       "provider_unavailable": "Not available for this community",
+      "refused_email_unverified": "Please confirm your email address first, using the link we sent you, then sign in again.",
+      "refused_no_account": "There's no account here for the account you used. Sign up first — you can use the same button on the sign-up page.",
+      "refused_registration_closed": "This community isn't taking new sign-ups at the moment.",
+      "refused_suspended": "This account can't sign in at the moment. Please contact your community.",
+      "refused_title": "We couldn't sign you in",
       "sign_in_with_provider": "Sign in with {{name}}",
-      "sso_link_required": "If you already have an account with this community, sign in with your usual method first, then link this provider from your account settings."
+      "sign_up_instead": "Sign up",
+      "sso_link_required": "If you already have an account with this community, sign in with your usual method first, then link this provider from your account settings.",
+      "terms_required": "Tick the box to confirm you agree to the Terms and Privacy Policy and are 18 or older."
     },
     "offer_favour": {
       "back": "Back to Community Hub",
@@ -41289,11 +41638,14 @@ export default interface Resources {
       "lesson_name": "Lesson title",
       "lesson_saved": "Lesson saved",
       "move_down": "Move down",
+      "move_lesson_down": "Move lesson \"{{title}}\" down",
+      "move_lesson_up": "Move lesson \"{{title}}\" up",
       "move_up": "Move up",
       "new_lesson": "New lesson",
       "new_section": "New section",
       "no_cohorts": "No cohorts yet.",
       "no_questions": "No questions yet. Save the quiz lesson, then add questions.",
+      "order_changed": "The lesson order was changed somewhere else. Reload the page to see the current order, then try again.",
       "preview_course": "Preview",
       "publish_hint": "Your course is a draft. Publish it to make it visible to members and open for enrolment.",
       "published_toast": "Course published — it is now visible to members.",
@@ -43298,6 +43650,10 @@ export default interface Resources {
     },
     "idle_logout_message": "You were signed out automatically after a period of inactivity. Please log in again to continue.",
     "idle_logout_title": "Signed out due to inactivity",
+    "idle_warning_message": "You have not done anything for a while. To protect your account, you will be signed out in {{minutes}}:{{seconds}}. Anything you have not saved will be lost.",
+    "idle_warning_sign_out": "Sign out now",
+    "idle_warning_stay": "Stay signed in",
+    "idle_warning_title": "You will be signed out soon",
     "later": "Later",
     "offline_message": "You appear to be offline",
     "session_expired": "Session expired",
@@ -48529,6 +48885,10 @@ export default interface Resources {
       "hours_amount": "{{count}}h",
       "hours_amount_one": "{{count}}h",
       "hours_amount_other": "{{count}}h",
+      "how_activity": "Confirming means you agree to the hours. The activity itself happens however you arrange it together: in person, by phone or on a video call. The platform does not create a meeting link, so agree the details in messages.",
+      "how_complete": "When everyone has confirmed, the organiser marks the exchange complete and the time credits move between members' wallets.",
+      "how_start": "The organiser starts the exchange. Everyone taking part is then asked to confirm their hours.",
+      "how_title": "What happens next",
       "keep_exchange": "Keep Exchange",
       "loading": "Loading group exchange...",
       "no_members_found": "No members found matching your search.",
@@ -49669,7 +50029,7 @@ export default interface Resources {
             "title": "Teaching the AI assistant about your community"
           },
           "admin_help_faqs": {
-            "body": "The Help Centre explains how the platform works. You can add questions and answers about your own community, such as opening times or local rules. Members see them in the [Help Centre](/help), as questions from your community.\n\n## Adding a question\n\n1. Open **Content** in the admin menu and press **Help FAQs**.\n2. Press **Add FAQ**.\n3. Write the **Question** as a member would ask it. For example: \"How do I earn time credits?\"\n4. Write the **Answer** members will see.\n5. Enter a **Category**, such as \"Joining\" or \"Events\". If you leave it empty, it goes under \"General\".\n6. Use **Sort order** to set its position. Lower numbers come first.\n7. Choose whether it is **Published** or a **Draft**.\n8. Press **Create FAQ**.\n\nQuestions are grouped by category in the Help Centre.\n\n## Changing or hiding a question\n\nUse the actions on a question to edit it, then press **Save changes**. Use its publish switch to hide it without deleting it. Press **Delete FAQ** to remove it for good.\n\n## Good to know\n\n- Your questions are shown exactly as written. They are not translated.\n- Until you publish your own, members may see a few general questions provided with the platform.\n\n> Look at the questions members ask you most often. Those make the best Help Centre entries.",
+            "body": "The Help Centre explains how the platform works. You can add questions and answers about your own community, such as opening times or local rules. Members see them in the [Help Centre](/help), as questions from your community.\n\n## Adding a question\n\n1. Open **Content** in the admin menu and press **Help FAQs**.\n2. Press **Add FAQ**.\n3. Write the **Question** as a member would ask it. For example: \"How do I earn time credits?\"\n4. Write the **Answer** members will see.\n5. Enter a **Category**, such as \"Joining\" or \"Events\". If you leave it empty, it goes under \"General\".\n6. Use **Sort order** to set its position. Lower numbers come first.\n7. Choose whether it is **Published** or a **Draft**.\n8. Press **Create FAQ**.\n\nQuestions are grouped by category in the Help Centre.\n\n## Changing or hiding a question\n\nUse the actions on a question to edit it, then press **Save changes**. Use its publish switch to hide it without deleting it. Press **Delete FAQ** to remove it for good.\n\n## Good to know\n\n- Your original wording stays available. When community translation is enabled, members can translate the question, answer and category in [Help](/help). The public [FAQ](/faq) is a separate platform guide; editing community questions does not change it.\n- Until you publish your own, members may see a few general questions provided with the platform.\n\n> Look at the questions members ask you most often. Those make the best Help Centre entries.",
             "summary": "Add questions and answers about your own community to the Help Centre that members read.",
             "title": "Writing your own Help Centre questions"
           },
@@ -49869,7 +50229,7 @@ export default interface Resources {
             "title": "How do I switch features on and off?"
           },
           "admin_translation_settings": {
-            "body": "If your community lets members translate messages, members see a **Translate to** button on messages, followed by their language. The **Translation Settings** page changes how those translations are made.\n\n1. Open **Platform Operations** in the admin menu.\n2. Press **Translation Settings**.\n\nEach change saves as soon as you make it. A short message confirms it, such as \"Context-aware translation updated\".\n\n## Settings that change translations\n\n- **Context-aware translation**: when on, the translation service also receives some earlier messages from the same conversation. This can make translations more accurate.\n- **Context message count**: how many earlier messages to send, from 1 to 20. It is only used when context-aware translation is on.\n- **Enable glossary**: when on, your own word list is used. See below.\n\n> Context-aware translation sends more of a private conversation to the translation service. Think about your members' privacy before you turn it on.\n\n## Adding your own translations\n\nA glossary is a list of words you always want translated in a certain way. For example, the name of your community, or the word you use for time credits.\n\n1. Turn on **Enable glossary**. The **Glossary Management** section appears.\n2. In **Source term**, enter the word as members write it.\n3. In **Target term**, enter the word you want in the translation.\n4. Choose the **Language** of the target term.\n5. Press **Add**.\n\nTo remove an entry, press the delete button at the end of its row.\n\n## Turning translation on or off\n\nTo switch message translation on or off for everyone, use **Message Translation** on the [Module Configuration](/admin/module-configuration) page.\n\nTranslation uses the platform's AI service. If members are told translation is unavailable, contact the platform team.",
+            "body": "Open [Translation settings](/admin/translation-config) to control the existing translation service. Changes save as you make them.\n\nGoogle Translate is the default engine. It uses your community’s configured Google key, or the platform Google key when one is available. AI translation is used only when your community enables AI and has its own usable AI key. The platform AI service is not a fallback for translation.\n\nContext-aware translation and the glossary apply only to AI translation. They do not alter Google translations. Context can send earlier messages from the same conversation to the AI provider. Consider member privacy before enabling it. Choose the number of context messages, from 1 to 20.\n\nTo maintain the glossary, enable it, enter a source term and its preferred translation, choose the target language and add the entry. Delete an entry using its row’s delete control.\n\nThe translation switch controls availability for the community. Message translation also depends on the community’s message-translation feature. If translation is unavailable, check the selected provider’s key, configuration and quota. A provider failure should leave the original readable.\n\nA member’s automatic content-translation preference displays existing cached translations in their selected target language. It does not automatically send every item in a feed to a paid provider.",
             "summary": "Change how message translation in messages works, and add your own translations for key words.",
             "title": "Setting up message translation"
           }
@@ -50645,7 +51005,7 @@ export default interface Resources {
       "getting_started": {
         "articles": {
           "accessible_version": {
-            "body": "Yes. Your community also has a simpler, highly accessible version of the site. It uses plain, clear pages, and it is designed to work well with screen readers, keyboards and screen magnifiers.\n\nIt is the same community, with the same members. You sign in with the same email address and password.\n\n## How to open it\n\n- On a computer, press **WCAG 2.2 AA Version** in the thin bar at the very top of the screen. If you cannot see the bar, scroll back to the top of the page.\n- On a phone, press **Menu**, then press **WCAG 2.2 AA Version** near the bottom.\n\nIt opens in a new tab. WCAG 2.2 AA is the name of an international standard for accessible websites.\n\n## Making the main site easier to use\n\nYou can also change how the main site looks. Open [Settings](/settings), stay on the **Profile** tab, and scroll down to **Appearance Preferences**. There you can turn on **Large Text**, **High Contrast**, **Reduced Motion** or **Simplified Layout**. See **Changing language, dark mode and text size**.",
+            "body": "Yes. Your community also has a simpler, highly accessible version of the site. It uses plain, clear pages, and it is designed to work well with screen readers, keyboards and screen magnifiers.\n\nIt is the same community, with the same members. You sign in with the same email address and password.\n\n## How to open it\n\n- On a computer, press **WCAG 2.2 AA Version** in the thin bar at the very top of the screen. If you cannot see the bar, scroll back to the top of the page.\n- On a phone, press **Menu**, then press **WCAG 2.2 AA Version** near the bottom.\n\nIt opens in a new tab. WCAG 2.2 AA is the name of an international standard for accessible websites.\n\n## Making the main site easier to use\n\nYou can also change how the main site looks. Open [Settings](/settings), stay on the **Profile** tab, and scroll down to **Appearance Preferences**. There you can turn on **Large Text**, **High Contrast**, **Reduced Motion** or **Simplified Layout**. See **Changing language, dark mode and text size**.\n\nKeyboard navigation: use Tab to move forward between controls and Shift+Tab to go back. Enter follows a focused link; Enter or Space activates a focused button. Use the skip-to-content link at the start of the page to bypass repeated navigation. In the main website, Ctrl+K (Command+K on a Mac) opens search when your community enables search. Escape closes an open search dialog. These shortcuts do not change your browser’s own shortcuts.",
             "summary": "Yes. A simpler, highly accessible version of the site is available. It opens in a new tab.",
             "title": "Is there a simpler, more accessible version?"
           },
@@ -51240,7 +51600,7 @@ export default interface Resources {
       "recognition": {
         "articles": {
           "recognition_badges": {
-            "body": "Badges mark the things you have done, such as your first exchange or a number of volunteer hours.\n\n## See your badges\n\n1. Open [Achievements](/achievements).\n2. Choose the **Badges** tab.\n\nBadges you have earned show the date you earned them. Badges you have not earned yet show **Locked**. Press any badge to see what it is for and how rare it is.\n\nUse the filter to show one type of badge, such as **Streaks**.\n\n## Choose badges for the members directory\n\n1. On the **Badges** tab, press **Manage Showcase**.\n2. Choose up to 5 badges.\n3. Press **Save Showcase**.\n\nYour chosen badges show a **Showcased** label. Other members see them next to your name in the members directory, if your community has one. Your choice does not change the badges shown on your profile page.\n\n## Journeys\n\nThe **Journeys** tab groups badges into sets. It shows how many badges in each set you have collected. Finishing a set earns you extra XP.\n\n## Engagement\n\nThe **Engagement** tab shows a year at a glance. Each month you did something useful, such as an exchange, a listing, a review or volunteer hours, is marked as active.",
+            "body": "Badges mark the things you have done, such as your first exchange or a number of volunteer hours.\n\n## See your badges\n\n1. Open [Achievements](/achievements).\n2. Choose the **Badges** tab.\n\nBadges you have earned show the date you earned them. Badges you have not earned yet show **Locked**. Press any badge to see what it is for and how rare it is.\n\nUse the filter to show one type of badge, such as **Streaks**.\n\n## Choose badges for the members directory\n\n1. On the **Badges** tab, press **Manage Showcase**.\n2. Choose up to 5 badges.\n3. Press **Save Showcase**.\n\nYour chosen badges show a **Showcased** label. Other members see them next to your name in the members directory, if your community has one. Your choice does not change the badges shown on your profile page.\n\n## Journeys\n\nThe **Journeys** tab groups badges into sets. It shows how many badges in each set you have collected. Finishing a set earns you extra XP.\n\n## Engagement\n\nThe **Engagement** tab shows a year at a glance. Each month you did something useful, such as an exchange, a listing, a review or volunteer hours, is marked as active.\n\nAn achievement records progress or an activity. A badge is a named award for meeting its conditions. XP means experience points: it measures participation, not spendable time credits. Completing an exchange means finishing its confirmation process; sending a message or agreeing to help does not by itself complete the exchange.",
             "summary": "Collect badges for what you do, and choose up to five to show in the members directory.",
             "title": "Earning and showing off badges"
           },
@@ -54190,6 +54550,9 @@ export default interface Resources {
       "hours_label": "Hours",
       "hours_placeholder": "1",
       "hours_range": "Hours must be between 0.5 and 100",
+      "image_alt_hint": "Helps people who use screen readers. Say what the photo shows, in a few words.",
+      "image_alt_label": "Describe this photo (optional)",
+      "image_alt_placeholder": "For example: two people repairing a bicycle together",
       "image_formats": "JPG, PNG, WebP — max 8MB",
       "image_label": "Photo (optional)",
       "image_preview_alt": "Listing preview",
@@ -55085,6 +55448,18 @@ export default interface Resources {
         "title": "My Orders",
         "waiting_shipment": "Waiting for Shipment"
       },
+      "cancel": {
+        "action": "Cancel order",
+        "confirm": "Cancel order",
+        "error": "We could not cancel this order. Please try again.",
+        "keep": "Keep order",
+        "modal_body": "The order will be cancelled and both of you will be told. This cannot be undone.",
+        "modal_title": "Cancel this order?",
+        "reason_label": "Reason for cancelling",
+        "reason_placeholder": "Tell the other person why",
+        "reason_required": "Enter a reason for cancelling.",
+        "success": "The order has been cancelled."
+      },
       "load_error": "Failed to load orders",
       "quantity_multiplier": "x{{count}}",
       "quantity_multiplier_one": "x{{count}}",
@@ -55722,8 +56097,10 @@ export default interface Resources {
       "disabled_toast": "Auto-translate disabled",
       "enable": "Auto-translate",
       "enabled_toast": "Messages will be automatically translated",
+      "limit_reached": "You have reached your translation limit for now, so new messages are shown in their original language. Turn auto-translate off and on again later to resume.",
       "menu_disable": "Turn off auto-translate",
       "menu_enable": "Translate messages automatically",
+      "some_failed": "Some messages could not be translated, so they are shown in their original language. They will be tried again when a new message arrives.",
       "tooltip_off": "Translate all messages automatically",
       "tooltip_on": "Auto-translate is on — click to turn off",
       "translating_all": "Translating messages...",
@@ -55791,24 +56168,49 @@ export default interface Resources {
     "error_title": "Error",
     "exchanges_link": "Exchanges",
     "go_to_exchanges": "Go to Exchanges",
+    "group_action_failed": "That did not work. Please try again.",
+    "group_add_aria": "Add {{name}} to the group",
     "group_add_member": "Add Member",
     "group_admin": "Admin",
+    "group_chat_title": "Group chat",
+    "group_close": "Close",
+    "group_composer_label": "Message the group",
+    "group_confirm_leave": "Yes, leave",
+    "group_confirm_remove": "Yes, remove",
     "group_created": "Group Created",
     "group_created_desc": "Your group conversation has been created.",
     "group_edit_name": "Edit Name",
+    "group_empty": "No messages yet. Say hello to the group.",
+    "group_full": "This group has the maximum of {{max}} members.",
     "group_leave": "Leave Group",
     "group_leave_confirm": "Are you sure you want to leave this group? You won't receive new messages.",
     "group_left": "You left the group",
+    "group_left_notice": "You are no longer a member of this group. You can read earlier messages but cannot send new ones.",
+    "group_load_error": "Could not load the group members. Please try again.",
+    "group_load_failed": "Could not load this group chat. Please try again.",
     "group_member": "Member",
     "group_member_added": "Member added to group",
     "group_member_removed": "Member removed from group",
     "group_members": "{{count}} members",
+    "group_members_button": "Members",
+    "group_message_too_long": "A message can be up to 10,000 characters.",
     "group_name_label": "Group Name",
     "group_name_placeholder": "Enter a name for this group...",
     "group_name_updated": "Group name updated",
+    "group_not_found": "This group chat could not be found, or you are not a member.",
+    "group_only_admins": "Only group admins can add or remove members.",
+    "group_open_aria": "Open group chat {{name}}",
     "group_participants": "Participants",
+    "group_remove_aria": "Remove {{name}} from the group",
+    "group_remove_confirm": "Remove {{name}} from this group?",
     "group_remove_member": "Remove",
+    "group_restricted_body": "Messaging in this group is restricted for your account. Contact a coordinator if you need help.",
+    "group_restricted_title": "You cannot send messages to this group",
+    "group_show_older": "Show older messages",
     "group_tab": "Groups",
+    "group_you": "(you)",
+    "groups_empty": "You are not in any group chats yet.",
+    "groups_load_failed": "Could not load your group chats.",
     "load_error_title": "Unable to Load Messages",
     "load_failed": "Failed to load conversations",
     "load_older_hint": "Scroll up or tap to load older messages",
@@ -55901,6 +56303,7 @@ export default interface Resources {
     "tab_inbox": "Inbox",
     "title": "Messages",
     "translate": {
+      "limit_reached": "You have reached your translation limit for now. Please try again later.",
       "show_translation": "Show translation",
       "translate": "Translate",
       "translate_to": "Translate to",
@@ -56020,6 +56423,11 @@ export default interface Resources {
     "and_others_other": "and {{count}} others",
     "caught_up_badge": "Caught up",
     "collapse_group": "Collapse",
+    "delete_all": "Delete all",
+    "delete_all_body": "This permanently removes every notification, read and unread. It cannot be undone.",
+    "delete_all_cancel": "Cancel",
+    "delete_all_confirm": "Delete all notifications",
+    "delete_all_title": "Delete all notifications?",
     "delete_aria": "Delete notification",
     "empty_caught_up": "All caught up!",
     "empty_caught_up_desc": "You've read all your notifications",
@@ -56098,7 +56506,9 @@ export default interface Resources {
     "subtitle": "Stay updated with your activity",
     "title": "Notifications",
     "toast": {
+      "all_deleted": "All notifications deleted",
       "all_read": "All notifications marked as read",
+      "delete_all_failed": "We could not delete your notifications. Please try again.",
       "delete_failed": "Failed to delete notification",
       "deleted": "Notification deleted",
       "mark_all_failed": "Failed to mark all as read",
@@ -56176,6 +56586,9 @@ export default interface Resources {
     "profile_title": "Your Profile",
     "required_to_continue": "Required to continue:",
     "safeguarding": {
+      "answer_missing": "Please choose at least one option before you continue.",
+      "answer_missing_with_none": "Please choose at least one option. If none of them apply to you, choose “{{none}}”.",
+      "answer_needed_title": "Please answer the safeguarding question",
       "confirmation": {
         "activation_broker_review": "A coordinator (also called a broker) checks and approves exchanges and matches involving you before they go ahead. This does not let them read your messages.",
         "activation_discovery_hidden": "You will be hidden from discovery for members who have not completed the required vetting.",
@@ -56213,6 +56626,21 @@ export default interface Resources {
     "safeguarding_intro": "Your safety matters to us. If you would like extra support while using this community, let us know below. Each choice tells you exactly what it does before you pick it. Your answers are confidential and only visible to community coordinators — never on your public profile.",
     "safeguarding_subtitle": "Let us know if you'd like additional support",
     "safeguarding_title": "Support & Safeguarding",
+    "security_checking": "Checking your account",
+    "security_confirm_failed_hint": "If you can't confirm with a password here, choose \"Not now\" to carry on. You can set this up later in Settings, under Security.",
+    "security_continue": "Continue",
+    "security_intro": "Two-factor authentication keeps your account safe even if someone finds out your password. When you sign in, you enter your password as usual, then a 6-digit code from an authenticator app on your phone.",
+    "security_need_password": "The password you use for this account",
+    "security_need_phone": "Your phone, with a free authenticator app such as Google Authenticator, Microsoft Authenticator or Authy",
+    "security_need_time": "About two minutes",
+    "security_need_title": "What you need",
+    "security_not_now": "Not now",
+    "security_on_body": "From now on, when you sign in you'll enter a code from your authenticator app as well as your password. You can manage it in Settings, under Security.",
+    "security_on_title": "Two-factor authentication is on",
+    "security_optional_note": "This is optional. If you prefer, choose \"Not now\" — you can set it up later in Settings, under Security.",
+    "security_set_up": "Set it up",
+    "security_subtitle": "Optional: add a second check when you sign in",
+    "security_title": "Protect your account",
     "skills_add_button": "Add",
     "skills_add_own_label": "Add your own",
     "skills_add_own_placeholder": "e.g. Bike repairs",
@@ -56231,6 +56659,7 @@ export default interface Resources {
     "step_confirm": "Confirm",
     "step_profile": "Profile",
     "step_safeguarding": "Safeguarding",
+    "step_security": "Security",
     "step_skills": "Skills",
     "step_welcome": "Welcome",
     "subtitle": "Set up your profile in a few easy steps",
@@ -58486,6 +58915,7 @@ export default interface Resources {
     "listing_image_alt": "Listing image",
     "listing_offering": "Offering",
     "listing_requesting": "Requesting",
+    "load_more": "Load more",
     "members_count": "{{count}} members",
     "members_count_one": "{{count}} members",
     "members_count_other": "{{count}} members",
@@ -58702,6 +59132,7 @@ export default interface Resources {
     "delete_account": "Delete Account",
     "delete_modal": {
       "aria_label": "Type DELETE to confirm account deletion",
+      "needs_password": "To delete your account here, your account needs a password first. You can also ask your community's organisers to delete it.",
       "placeholder": "DELETE",
       "submit": "Delete My Account",
       "title": "Delete Account",
@@ -59022,6 +59453,9 @@ export default interface Resources {
       "phone": "Phone Number",
       "phone_invalid": "Phone must be in international format (e.g. +1 555 123 4567)",
       "phone_placeholder": "+1 555 123 4567",
+      "photo_alt_hint": "Helps people who use screen readers. Say what the photo shows, in a few words.",
+      "photo_alt_label": "Describe this photo (optional)",
+      "photo_alt_placeholder": "For example: smiling, standing in my vegetable garden",
       "photo_hint": "JPG, PNG, GIF or WebP. Max 5MB.",
       "photo_label": "Profile Photo",
       "profile_type": "Profile Type",
@@ -59048,6 +59482,16 @@ export default interface Resources {
       "unsupported": "Your browser does not support push notifications."
     },
     "safeguarding": {
+      "add": {
+        "added_toast": "Added. This support is now switched on.",
+        "button": "Add this",
+        "confirm_body": "It starts straight away. We will email you a summary of your choices. You can remove it from your settings at any time.",
+        "confirm_title": "Add this support?",
+        "confirm_yes": "Yes, add it",
+        "error_toast": "Could not add that. Nothing was changed.",
+        "intro": "You can ask for extra support at any time. Read what each choice does before you add it.",
+        "title": "Add extra support"
+      },
       "chip_broker_review": "Broker review",
       "chip_match_approval": "Match approval",
       "chip_vetted_only": "Vetted contacts only",
@@ -59160,6 +59604,13 @@ export default interface Resources {
     "sessions_empty": "No active sessions found.",
     "sessions_load_error": "We couldn't load your active sessions.",
     "sessions_retry": "Try again",
+    "set_password_action": "Email me a link to set a password",
+    "set_password_failed": "We couldn't send the email. Please try again.",
+    "set_password_no_password": "Your account doesn't have a password yet, because you sign in with Google or another account.",
+    "set_password_sent": "We've emailed you a link to set a password. Using it signs you out everywhere, so sign in again afterwards.",
+    "set_password_subtitle": "You sign in with Google or another account",
+    "set_password_title": "Set a password",
+    "set_password_why": "With a password you can also turn on two-factor authentication, add a passkey and delete your account here, and sign in on the accessible site and the phone app.",
     "skills": {
       "description": "Add skills to your profile so other members can find you. Community members can endorse your skills.",
       "loading": "Loading skills...",
@@ -59433,6 +59884,7 @@ export default interface Resources {
       "invalid_file_type": "Invalid file type",
       "invalid_file_type_desc": "Please upload an image file (JPG, PNG, GIF, or WebP)",
       "invalid_insurance_file_desc": "Only PDF, JPG, and PNG files are accepted",
+      "key_copied_desc": "The set-up key has been copied.",
       "marketing_consent_failed": "Failed to update marketing consent",
       "marketing_subscribed": "Subscribed to marketing emails",
       "marketing_unsubscribed": "Unsubscribed from marketing emails",
@@ -59491,10 +59943,14 @@ export default interface Resources {
     "twofa_cancel": "Cancel",
     "twofa_checking": "Checking status...",
     "twofa_code_description": "Enter the 6-digit code from your authenticator app",
+    "twofa_confirm_expired": "That took longer than five minutes, so please enter your password again.",
     "twofa_confirm_password": "Confirm Your Password",
+    "twofa_confirm_password_hint": "Enter the password you use for this account.",
+    "twofa_copy_key": "Copy key",
     "twofa_disable": "Disable",
     "twofa_disable_confirm": "Disable 2FA",
     "twofa_disable_desc": "Without 2FA, your account will only be protected by your password.",
+    "twofa_disable_needs_password": "To turn off two-factor authentication, your account needs a password first.",
     "twofa_disable_title": "Disable Two-Factor Authentication",
     "twofa_disable_warning": "This will reduce your account security",
     "twofa_download_prompt": "Download a free authenticator app if you don't have one:",
@@ -59503,7 +59959,9 @@ export default interface Resources {
     "twofa_enter_code": "Enter 6-digit code",
     "twofa_loading_setup": "Loading two-factor setup...",
     "twofa_manual_key": "Manual entry key:",
+    "twofa_needs_password": "To turn on two-factor authentication, your account needs a password first.",
     "twofa_not_enabled": "Not enabled",
+    "twofa_open_app": "Open in authenticator app",
     "twofa_qr_alt": "2FA QR Code",
     "twofa_required_policy": "Two-factor authentication is required for your account and cannot be disabled.",
     "twofa_scan_qr": "Scan this QR code with your authenticator app",
@@ -59998,6 +60456,7 @@ export default interface Resources {
       "super_admin": "Super Admin",
       "tenant": "Tenant",
       "tenants": "Tenants",
+      "translation": "Translation key",
       "unknown": "{{segment}}",
       "users": "Users",
       "whitelist": "Whitelist"
@@ -60332,6 +60791,7 @@ export default interface Resources {
       "partnerships": "Partnerships",
       "pilot_inquiries": "Pilot Inquiries",
       "platform_admin": "Platform Admin",
+      "platform_translation": "Translation key",
       "provisioning_queue": "Provisioning Queue",
       "regional_analytics": "Regional Analytics",
       "revenue_dashboard": "Revenue Dashboard",
@@ -63149,6 +63609,17 @@ export default interface Resources {
     "signed_hours_value": "{{sign}}{{count}}h",
     "signed_hours_value_one": "{{sign}}{{count}}h",
     "signed_hours_value_other": "{{sign}}{{count}}h",
+    "statement": {
+      "cancel": "Cancel",
+      "description": "Download every transaction in your wallet as a spreadsheet (CSV file). Leave the dates empty to include all of them.",
+      "download": "Download",
+      "end_label": "To",
+      "error": "We could not download your statement. Please try again.",
+      "range_invalid": "The end date must be on or after the start date.",
+      "start_label": "From",
+      "success": "Statement downloaded",
+      "title": "Download statement"
+    },
     "stats": {
       "earned": "Earned",
       "pending": "Pending",
