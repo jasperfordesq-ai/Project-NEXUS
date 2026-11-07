@@ -1179,8 +1179,8 @@ function GroupDetailView({ groupId }: GroupDetailViewProps) {
       templateId: group.template_id ?? null,
       primaryColor: group.primary_color ?? null,
       accentColor: group.accent_color ?? null,
-      avatar: emptyGroupImageDraft(group.image_url || null),
-      cover: emptyGroupImageDraft(group.cover_image_url || group.cover_image || null),
+      avatar: emptyGroupImageDraft(group.image_url || null, group.image_alt),
+      cover: emptyGroupImageDraft(group.cover_image_url || group.cover_image || null, group.cover_image_alt),
     };
     settingsInitialFingerprintRef.current = groupFormFingerprint(draft);
     setSettingsDraft(draft);

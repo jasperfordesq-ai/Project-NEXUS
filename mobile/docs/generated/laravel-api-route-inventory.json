@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2828,
-  "api_route_rows": 2793,
-  "distinct_api_paths": 2329,
+  "total_registered_routes": 2830,
+  "api_route_rows": 2795,
+  "distinct_api_paths": 2331,
   "route_source_fingerprint": {
-    "digest": "653e35e5debd6dd885513d52be4d28f1b652a4fa0ad663609403343b75b8e6f5",
+    "digest": "5a132053f587a703724fb1aaa7c336148af79176890106ddebd672590d4f5dff",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "f377f2b63dcd6e330cc72c7ea9ef8d3c23037addb9fa2454e4a3138b6a6e0685"
+        "sha256": "ccb7823d28a5824c31eee4eaca45c914c331feae86f95f9366d0fb98dddb648a"
       },
       {
         "file": "routes/channels.php",
@@ -4260,6 +4260,9 @@
     "/api/v2/events/{id}/image": [
       "POST"
     ],
+    "/api/v2/events/{id}/image-description": [
+      "PUT"
+    ],
     "/api/v2/events/{id}/lifecycle-history": [
       "GET"
     ],
@@ -5189,6 +5192,9 @@
     "/api/v2/groups/{id}/image": [
       "DELETE",
       "POST"
+    ],
+    "/api/v2/groups/{id}/image-description": [
+      "PUT"
     ],
     "/api/v2/groups/{id}/invites": [
       "GET"

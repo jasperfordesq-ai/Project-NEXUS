@@ -249,6 +249,25 @@ describe('CreateEventPage', () => {
     expect(screen.queryByText(/only staff can create events here/i)).not.toBeInTheDocument();
   });
 
+  // AWID accessibility report, Oct 2026: an event's cover photo can be described.
+  it('shows the cover photo description for editing', async () => {
+    const existing = createCanonicalEventFixture({ id: 5, title: 'Repair cafe' });
+    const withCover = {
+      ...existing,
+      primary_image: { url: '/uploads/events/cafe.jpg', alt_text: 'Volunteers fixing a bicycle', description: 'Volunteers fixing a bicycle' },
+    };
+    mockApi.get.mockImplementation((endpoint: string) => Promise.resolve(
+      endpoint.startsWith('/v2/events/5')
+        ? { success: true, data: withCover }
+        : { success: true, data: [] },
+    ));
+
+    await renderEventRoute(<CreateEventPage />, { route: '/test/events/edit/5', path: '/test/events/edit/:id' });
+
+    expect(await screen.findByDisplayValue('Volunteers fixing a bicycle')).toBeInTheDocument();
+    expect(screen.getByLabelText('Describe this photo (optional)')).toBeInTheDocument();
+  });
+
   it('bounds the start date from today to five years ahead (E-104 FN-10)', async () => {
     await renderCreateEventPage();
 

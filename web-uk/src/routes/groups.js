@@ -18,6 +18,7 @@ const {
   leaveGroup,
   callGroupApi,
   uploadGroupImage,
+  setGroupImageDescription,
   uploadGroupFile,
   downloadGroupFile,
   getFeedPosts,
@@ -379,6 +380,9 @@ function normalizeGroup(item, fallbackId = null) {
     name: trimmed(raw.name || raw.title) || 'Group',
     imageUrl: resolveBackendMediaUrl(raw.image_url || raw.imageUrl || raw.avatar_url || raw.avatarUrl),
     coverImageUrl: resolveBackendMediaUrl(raw.cover_image_url || raw.coverImageUrl || raw.cover_url || raw.coverUrl),
+    // Descriptions for screen readers (AWID report, Oct 2026).
+    imageAlt: trimmed(raw.image_alt, 255),
+    coverImageAlt: trimmed(raw.cover_image_alt, 255),
     createdAtLabel: dateLabel(raw.created_at || raw.createdAt),
     tagsText: groupTags(raw.tags).join(', '),
     typeLabel: groupTypeLabel(raw),
@@ -2718,8 +2722,18 @@ router.post('/:id(\\d+)/image', requireAuth, asyncRoute(async (req, res) => {
   }
 
   const type = allowed(req.body.type, ['avatar', 'cover'], 'avatar');
+  const imageAlt = trimmed(req.body.image_alt, 255);
+  const currentImage = type === 'cover' ? group.coverImageUrl : group.imageUrl;
+  const updatedStatus = type === 'cover' ? 'cover-updated' : 'avatar-updated';
 
   if (!file) {
+    // No new image: the description of the current one may still be saved.
+    if (currentImage && Object.prototype.hasOwnProperty.call(req.body || {}, 'image_alt')) {
+      return requireGroupAction(req, res, groupSubpageRedirect(res, id, 'image', 'image-failed'), async (token) => {
+        await setGroupImageDescription(token, id, type, imageAlt);
+        return res.redirect(groupSubpageRedirect(res, id, 'image', updatedStatus));
+      });
+    }
     return res.redirect(groupSubpageRedirect(res, id, 'image', 'image-missing'));
   }
 
@@ -2733,7 +2747,8 @@ router.post('/:id(\\d+)/image', requireAuth, asyncRoute(async (req, res) => {
           filename: trimmed(file.originalFilename) || 'group-image',
           contentType: trimmed(file.mimetype) || 'application/octet-stream',
           size: file.size
-        }
+        },
+        image_alt: imageAlt
       });
     } finally {
       await removeUploadedFile(file);

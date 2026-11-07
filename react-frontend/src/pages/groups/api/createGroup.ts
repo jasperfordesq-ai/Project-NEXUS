@@ -30,6 +30,9 @@ export interface EditableGroup {
   image_url?: string | null;
   cover_image_url?: string | null;
   cover_image?: string | null;
+  /** Descriptions of the picture and cover (AWID report, Oct 2026). */
+  image_alt?: string | null;
+  cover_image_alt?: string | null;
   type_id?: number | null;
   parent_id?: number | null;
   template_id?: number | null;

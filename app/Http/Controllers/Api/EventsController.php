@@ -2308,6 +2308,36 @@ class EventsController extends BaseApiController
      * Upload an image for an event. Uses request()->file() (Laravel native).
      * Field name: 'image'
      */
+    /**
+     * PUT /v2/events/{id}/image-description — describe the cover photo for
+     * screen-reader users (AWID accessibility report, Oct 2026). Empty clears it.
+     */
+    public function imageDescription($id): JsonResponse
+    {
+        $id = (int) $id;
+        $userId = $this->getActingUserId();
+        $this->rateLimit('events_image_description', 30, 60);
+
+        $description = request()->input('image_alt');
+        if ($description !== null && !is_string($description)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), 'image_alt', 422);
+        }
+        if (is_string($description) && mb_strlen(trim($description)) > 255) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.text_too_long'), 'image_alt', 422);
+        }
+        $rawScope = request()->input('scope');
+        $scope = is_string($rawScope) && trim($rawScope) !== '' ? trim($rawScope) : null;
+
+        if (!$this->eventService->setImageDescription($id, $userId, $description, $scope)) {
+            $errors = $this->eventService->getErrors();
+            $codes = array_column($errors, 'code');
+            $status = in_array('NOT_FOUND', $codes, true) ? 404 : (in_array('FORBIDDEN', $codes, true) ? 403 : 422);
+            return $this->respondWithErrors($errors, $status);
+        }
+
+        return $this->respondWithData(['image_alt' => is_string($description) && trim($description) !== '' ? trim($description) : null]);
+    }
+
     public function uploadImage($id): JsonResponse
     {
         $id = (int) $id;
@@ -2370,6 +2400,12 @@ class EventsController extends BaseApiController
                 }
                 return $this->respondWithErrors($errors, $status);
             }
+
+            // A new cover takes the description sent with it, or none: the old
+            // words described the old photo (AWID report, Oct 2026).
+            $description = request()->input('image_alt');
+            $description = is_string($description) ? mb_substr(trim($description), 0, 255) : null;
+            $this->eventService->setImageDescription($id, $userId, $description, $scope);
 
             return $this->respondWithData(['image_url' => $imageUrl]);
         } catch (\Exception $e) {

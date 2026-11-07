@@ -3583,6 +3583,27 @@ class EventService
     }
 
     /**
+     * Set or clear the description of an event's cover photo, read aloud by
+     * screen readers (AWID accessibility report, Oct 2026, point 6). Same
+     * permission as changing the photo; the cover itself is not touched, so
+     * no update notification is sent. Length (255) is checked by the caller.
+     */
+    public static function setImageDescription(int $eventId, int $userId, ?string $description, ?string $scope = null): bool
+    {
+        if (!self::canUpdateImage($eventId, $userId, $scope)) {
+            return false;
+        }
+
+        $description = is_string($description) ? trim($description) : '';
+        DB::table('events')
+            ->where('tenant_id', (int) TenantContext::getId())
+            ->where('id', $eventId)
+            ->update(['image_alt' => $description === '' ? null : $description]);
+
+        return true;
+    }
+
+    /**
      * Cancel an event through the serialized lifecycle boundary.
      *
      * This compatibility method is shared by the JSON and accessible frontends.

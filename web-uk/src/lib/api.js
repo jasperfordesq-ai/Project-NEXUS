@@ -1473,11 +1473,33 @@ async function uploadEventImage(token, eventId, data) {
     });
     form.append('image', blob, file.filename || 'event-image');
   }
+  // The photo's description for screen readers (AWID report, Oct 2026).
+  if (typeof data.image_alt === 'string' && data.image_alt.trim()) {
+    form.append('image_alt', data.image_alt.trim());
+  }
 
   return request(`/api/v2/events/${encodeURIComponent(eventId)}/image`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: form
+  });
+}
+
+/** Describe an event's cover photo for screen readers; empty clears it. */
+async function setEventImageDescription(token, eventId, imageAlt) {
+  return request(`/api/v2/events/${encodeURIComponent(eventId)}/image-description`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ image_alt: String(imageAlt || '') })
+  });
+}
+
+/** Describe a group's picture (`avatar`) or cover (`cover`); empty clears it. */
+async function setGroupImageDescription(token, groupId, type, imageAlt) {
+  return request(`/api/v2/groups/${encodeURIComponent(groupId)}/image-description`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ type, image_alt: String(imageAlt || '') })
   });
 }
 
@@ -1697,6 +1719,10 @@ async function uploadGroupImage(token, groupId, data) {
       type: data.file.contentType || 'application/octet-stream'
     });
     form.append('image', blob, data.file.filename || 'group-image');
+  }
+  // The image's description for screen readers (AWID report, Oct 2026).
+  if (typeof data.image_alt === 'string' && data.image_alt.trim()) {
+    form.append('image_alt', data.image_alt.trim());
   }
 
   return request(`/api/v2/groups/${encodeURIComponent(groupId)}/image?type=${encodeURIComponent(type)}`, {
@@ -5002,6 +5028,8 @@ module.exports = {
   getEventCategories,
   getVolunteeringCategories,
   uploadEventImage,
+  setEventImageDescription,
+  setGroupImageDescription,
   getGoals,
   getGoal,
   callGoalApi,

@@ -371,6 +371,8 @@ Route::middleware('feature:events')->group(function () {
     Route::delete('/v2/events/{id}/waitlist', [\App\Http\Controllers\Api\EventsController::class, 'leaveWaitlist'])->whereNumber('id');
     Route::post('/v2/events/{id}/image', [\App\Http\Controllers\Api\EventsController::class, 'uploadImage'])
         ->whereNumber('id')->middleware('throttle:nexus-route-20-per-1m');
+    Route::put('/v2/events/{id}/image-description', [\App\Http\Controllers\Api\EventsController::class, 'imageDescription'])
+        ->whereNumber('id')->middleware('throttle:nexus-route-30-per-1m');
     Route::put('/v2/events/{id}/recurring', [\App\Http\Controllers\Api\EventsController::class, 'updateRecurring'])->whereNumber('id');
     Route::get('/v2/events/{id}/waitlist', [\App\Http\Controllers\Api\EventsController::class, 'waitlist'])->whereNumber('id');
     Route::get('/v2/events/{id}/reminders', [\App\Http\Controllers\Api\EventsController::class, 'getReminders'])->whereNumber('id');
@@ -715,6 +717,7 @@ Route::get('/v2/groups/{id}/discussions/{discussionId}', [\App\Http\Controllers\
 Route::post('/v2/groups/{id}/discussions/{discussionId}/messages', [\App\Http\Controllers\Api\GroupsController::class, 'postToDiscussion'])->middleware('group.tab:discussion');
 Route::post('/v2/groups/{id}/image', [\App\Http\Controllers\Api\GroupsController::class, 'uploadImage'])->middleware('throttle:groups-upload');
 Route::delete('/v2/groups/{id}/image', [\App\Http\Controllers\Api\GroupsController::class, 'removeImage'])->middleware('throttle:nexus-route-20-per-1m');
+Route::put('/v2/groups/{id}/image-description', [\App\Http\Controllers\Api\GroupsController::class, 'imageDescription'])->middleware('throttle:nexus-route-30-per-1m');
 Route::get('/v2/groups/{id}/announcements', [\App\Http\Controllers\Api\GroupsController::class, 'announcements'])->middleware('group.tab:announcements');
 Route::post('/v2/groups/{id}/announcements', [\App\Http\Controllers\Api\GroupsController::class, 'createAnnouncement'])->middleware('group.tab:announcements');
 Route::put('/v2/groups/{id}/announcements/{announcementId}', [\App\Http\Controllers\Api\GroupsController::class, 'updateAnnouncement'])->middleware('group.tab:announcements');

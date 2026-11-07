@@ -277,6 +277,10 @@ export function CreateEventPage() {
   const [existingImage, setExistingImage] = useState<string | null>(null);
   const [coverRemovalRequested, setCoverRemovalRequested] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  // The cover's description for screen readers (AWID accessibility report,
+  // Oct 2026). Sent with a new photo, or saved on its own when only it changed.
+  const [coverAlt, setCoverAlt] = useState('');
+  const loadedCoverAltRef = useRef('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   // Synchronous re-entry guard: isSubmitting is async state, so a double-Enter (the
@@ -382,6 +386,9 @@ export function CreateEventPage() {
 
         if (event.primary_image?.url) {
           setExistingImage(resolveAssetUrl(event.primary_image.url));
+          const writtenAlt = event.primary_image.description ?? '';
+          setCoverAlt(writtenAlt);
+          loadedCoverAltRef.current = writtenAlt;
         }
       } else {
         setLoadError(t('form.error_not_found'));
@@ -520,6 +527,7 @@ export function CreateEventPage() {
   }
 
   function removeImage() {
+    setCoverAlt('');
     if (imageFile || imagePreview) {
       setImageFile(null);
       setImagePreview(null);
@@ -646,7 +654,10 @@ export function CreateEventPage() {
 
     try {
       setIsUploadingImage(true);
-      const response = await eventsApi.uploadCover(eventId, imageFile, scope);
+      const body = new FormData();
+      body.append('image', imageFile);
+      if (coverAlt.trim()) body.append('image_alt', coverAlt.trim());
+      const response = await eventsApi.uploadCover(eventId, body, scope);
       if (!response.success) {
         toast.error(t('form.toast.image_failed'));
       }
@@ -655,6 +666,20 @@ export function CreateEventPage() {
       toast.error(t('form.toast.image_failed'));
     } finally {
       setIsUploadingImage(false);
+    }
+  }
+
+  /** The cover was kept but its description changed: save just that. */
+  async function saveCoverDescriptionIfChanged(eventId: number, scope?: 'single' | 'all'): Promise<void> {
+    if (!existingImage || coverRemovalRequested) return;
+    const next = coverAlt.trim();
+    if (next === loadedCoverAltRef.current.trim()) return;
+    try {
+      const response = await eventsApi.setCoverDescription(eventId, next, scope);
+      if (!response.success) toast.error(t('form.toast.image_failed'));
+    } catch (err) {
+      logError('Failed to save the cover photo description', err);
+      toast.error(t('form.toast.image_failed'));
     }
   }
 
@@ -856,6 +881,8 @@ export function CreateEventPage() {
 
         if (imageFile && eventId) {
           await uploadImage(eventId, isRecurringSubmission ? 'all' : undefined);
+        } else if (eventId) {
+          await saveCoverDescriptionIfChanged(eventId, isRecurringSubmission ? 'all' : undefined);
         }
 
         toast.success(isEditing ? t('form.toast.updated') : t('form.toast.created'));
@@ -934,6 +961,8 @@ export function CreateEventPage() {
       if (response.success) {
         if (imageFile) {
           await uploadImage(Number(id), 'single');
+        } else {
+          await saveCoverDescriptionIfChanged(Number(id), 'single');
         }
         toast.success(t('form.toast.updated'));
         navigate(tenantPath('/events'));
@@ -1188,6 +1217,17 @@ export function CreateEventPage() {
               aria-hidden="true"
               tabIndex={-1}
             />
+            {hasImage && (
+              <Input
+                className="mt-3"
+                label={t('form.cover_alt_label')}
+                placeholder={t('form.cover_alt_placeholder')}
+                description={t('form.cover_alt_hint')}
+                value={coverAlt}
+                onChange={(e) => setCoverAlt(e.target.value)}
+                maxLength={255}
+              />
+            )}
           </div>
 
           {/* Title */}

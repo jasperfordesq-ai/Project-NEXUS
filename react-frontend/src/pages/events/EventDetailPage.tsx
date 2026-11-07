@@ -961,7 +961,7 @@ export function EventDetailPage() {
         {eventImageProps ? (
           <img
             {...eventImageProps}
-            alt={t('detail.cover_alt', { title: event.title })}
+            alt={event.primary_image?.description?.trim() || t('detail.cover_alt', { title: event.title })}
             className="absolute inset-0 h-full w-full object-cover"
             loading="eager"
           />

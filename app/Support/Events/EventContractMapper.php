@@ -784,18 +784,22 @@ final class EventContractMapper
         ];
     }
 
-    /** @return array{url: string, alt_text: string}|null */
+    /** @return array{url: string, alt_text: string, description: string|null}|null */
     private static function primaryImage(array $event): ?array
     {
         $url = self::nullableString($event['cover_image'] ?? $event['image_url'] ?? null);
         if ($url === null) {
             return null;
         }
+        // What the organiser wrote (events.image_alt, AWID report Oct 2026),
+        // apart from alt_text, which falls back to the title, so an edit form
+        // can tell a written description from the fallback.
+        $description = self::nullableString($event['image_alt'] ?? null);
 
         return [
             'url' => $url,
-            'alt_text' => self::nullableString($event['image_alt'] ?? null)
-                ?? self::stringValue($event['title'] ?? ''),
+            'alt_text' => $description ?? self::stringValue($event['title'] ?? ''),
+            'description' => $description,
         ];
     }
 

@@ -5,7 +5,8 @@
   "description": "Bring an item and learn how to repair it.",
   "primary_image": {
     "url": "/uploads/events/repair.jpg",
-    "alt_text": "Community repair morning"
+    "alt_text": "Community repair morning",
+    "description": null
   },
   "organizer": {
     "id": 7,

@@ -249,7 +249,8 @@
       {% set coverImage = event.cover_image or event.coverImage %}
       {% if coverImage %}
         <figure class="nexus-alpha-detail-hero">
-          <img src="{{ coverImage }}" alt="{{ t('events.image_alt', { title: event.title }) }}" width="640" height="360" decoding="async">
+          {% set coverAlt = (event.primary_image.description if event.primary_image else '') or event.image_alt %}
+          <img src="{{ coverImage }}" alt="{{ coverAlt or t('events.image_alt', { title: event.title }) }}" width="640" height="360" decoding="async">
         </figure>
       {% endif %}
 

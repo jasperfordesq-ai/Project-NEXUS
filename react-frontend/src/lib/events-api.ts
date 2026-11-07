@@ -163,6 +163,8 @@ export const eventSchema = z.object({
   primary_image: z.object({
     url: z.string(),
     alt_text: z.string(),
+    // What the organiser wrote; alt_text falls back to the title (AWID, Oct 2026).
+    description: nullableString.optional(),
   }).nullable(),
   organizer: z.object({
     id: z.number().int().nonnegative(),
@@ -1759,6 +1761,21 @@ export const eventsApi = {
       endpoint,
       await api.upload(endpoint, image, 'image', withContract(options)),
       uploadResponseSchema,
+    );
+  },
+
+  /** Describe the cover photo for screen readers; empty clears it (AWID, Oct 2026). */
+  async setCoverDescription(
+    id: number | string,
+    imageAlt: string,
+    scope?: 'single' | 'all',
+    options?: RequestOptions,
+  ): Promise<ApiResponse<{ image_alt: string | null }>> {
+    const endpoint = `/v2/events/${id}/image-description`;
+    return parseResponse(
+      endpoint,
+      await api.put(endpoint, { image_alt: imageAlt, ...(scope ? { scope } : {}) }, withContract(options)),
+      z.object({ image_alt: nullableString }).passthrough(),
     );
   },
 

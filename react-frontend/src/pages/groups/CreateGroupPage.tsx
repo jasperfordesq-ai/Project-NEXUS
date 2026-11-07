@@ -131,11 +131,12 @@ export function CreateGroupPage() {
         templateId: group.template_id ?? null,
         primaryColor: group.primary_color ?? null,
         accentColor: group.accent_color ?? null,
-        avatar: emptyGroupImageDraft(group.image_url ? resolveAssetUrl(group.image_url) : null),
+        avatar: emptyGroupImageDraft(group.image_url ? resolveAssetUrl(group.image_url) : null, group.image_alt),
         cover: emptyGroupImageDraft(
           group.cover_image_url || group.cover_image
             ? resolveAssetUrl(group.cover_image_url || group.cover_image || '')
             : null,
+          group.cover_image_alt,
         ),
       };
       initialFingerprintRef.current = groupFormFingerprint(nextDraft);
@@ -238,6 +239,7 @@ export function CreateGroupPage() {
           action: current.existingUrl ? 'remove' : 'keep',
           file: null,
           previewUrl: null,
+          alt: '',
         },
       };
     });
@@ -537,6 +539,20 @@ export function CreateGroupPage() {
                       {displayImage ? t('form.change_image') : t('form.upload_image')}
                     </Button>
                     <p className="mt-1 text-xs text-theme-subtle">{t('form.image_hint')}</p>
+                    {displayImage && (
+                      <Input
+                        className="mt-2"
+                        label={t('form.image_alt_label')}
+                        placeholder={t('form.image_alt_placeholder')}
+                        description={t('form.image_alt_hint')}
+                        value={formData[type].alt}
+                        maxLength={255}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          setDraft((previous) => ({ ...previous, [type]: { ...previous[type], alt: value } }));
+                        }}
+                      />
+                    )}
                     <input
                       ref={inputRef}
                       type="file"

@@ -2443,6 +2443,55 @@ describe('API Request Functions', () => {
     });
   });
 
+  // AWID accessibility report, Oct 2026: event covers and group images can be described.
+  describe('image descriptions', () => {
+    it('sets an event cover description', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { image_alt: 'Volunteers fixing a bicycle' } })
+      });
+
+      await api.setEventImageDescription('tok', 5, 'Volunteers fixing a bicycle');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/events/5/image-description',
+        expect.objectContaining({ method: 'PUT', body: JSON.stringify({ image_alt: 'Volunteers fixing a bicycle' }) })
+      );
+    });
+
+    it('sets a group cover description', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { type: 'cover', image_alt: 'Members planting trees' } })
+      });
+
+      await api.setGroupImageDescription('tok', 9, 'cover', 'Members planting trees');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/groups/9/image-description',
+        expect.objectContaining({ method: 'PUT', body: JSON.stringify({ type: 'cover', image_alt: 'Members planting trees' }) })
+      );
+    });
+
+    it('sends the description with an event cover upload', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { image_url: '/uploads/cover.jpg' } })
+      });
+
+      await api.uploadEventImage('tok', 5, {
+        file: { buffer: Buffer.from('x'), filename: 'cover.jpg', contentType: 'image/jpeg' },
+        image_alt: ' Volunteers fixing a bicycle '
+      });
+
+      const body = mockFetch.mock.calls[0][1].body;
+      expect(body.get('image_alt')).toBe('Volunteers fixing a bicycle');
+    });
+  });
+
   describe('checkResetLink', () => {
     it('should ask the read-only Laravel link check about the token', async () => {
       mockFetch.mockResolvedValueOnce({

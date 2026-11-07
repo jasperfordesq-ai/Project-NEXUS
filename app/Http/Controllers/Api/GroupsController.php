@@ -170,6 +170,8 @@ class GroupsController extends BaseApiController
             $data[$field] = $stored;
         }
 
+        $imageDescriptions = $this->groupImageDescriptionsFromRequest();
+        unset($data['avatar_alt'], $data['cover_alt']);
         try {
             $createdGroup = $this->groupService->create($userId, $data);
         } catch (\Throwable $exception) {
@@ -190,6 +192,9 @@ class GroupsController extends BaseApiController
 
         // create() returns a Group model — use its ID to fetch the full response
         $groupId = $createdGroup instanceof \App\Models\Group ? $createdGroup->id : (int) $createdGroup;
+        if (! (bool) $createdGroup->getAttribute('_idempotent_replay')) {
+            $this->applyGroupImageDescriptions($groupId, $userId, $imageDescriptions, []);
+        }
         $group = $this->groupService->getById($groupId, $userId);
 
         // Pending-review groups have not completed creation for economy purposes.
@@ -264,6 +269,8 @@ class GroupsController extends BaseApiController
             $data[$field] = $stored;
         }
         unset($data['avatar_action'], $data['cover_action']);
+        $imageDescriptions = $this->groupImageDescriptionsFromRequest();
+        unset($data['avatar_alt'], $data['cover_alt']);
 
         try {
             $success = $this->groupService->update($id, $userId, $data, true);
@@ -294,7 +301,54 @@ class GroupsController extends BaseApiController
             }
         }
 
+        $this->applyGroupImageDescriptions($id, $userId, $imageDescriptions, $operations);
+
         return $this->respondWithData($this->groupService->getById($id, $userId));
+    }
+
+    /**
+     * The picture and cover descriptions sent with the group form
+     * (`avatar_alt`, `cover_alt`; AWID accessibility report, Oct 2026). Only
+     * the keys actually sent; each trimmed and capped at 255 characters.
+     *
+     * @return array<string, string|null> type => description
+     */
+    private function groupImageDescriptionsFromRequest(): array
+    {
+        $descriptions = [];
+        foreach (['avatar' => 'avatar_alt', 'cover' => 'cover_alt'] as $type => $key) {
+            if (! request()->has($key)) {
+                continue;
+            }
+            $value = request()->input($key);
+            $descriptions[$type] = is_string($value) ? mb_substr(trim($value), 0, 255) : null;
+        }
+
+        return $descriptions;
+    }
+
+    /**
+     * Save the descriptions that were sent, and clear one whose image was
+     * replaced or removed without a new description: the old words described
+     * the old image.
+     *
+     * @param array<string, string|null> $descriptions
+     * @param array<string, string> $operations type => keep|replace|remove
+     */
+    private function applyGroupImageDescriptions(int $groupId, int $userId, array $descriptions, array $operations): void
+    {
+        foreach (['avatar', 'cover'] as $type) {
+            $operation = $operations[$type] ?? 'keep';
+            if ($operation === 'remove') {
+                $this->groupService->setImageDescription($groupId, $userId, $type, null);
+                continue;
+            }
+            if (array_key_exists($type, $descriptions)) {
+                $this->groupService->setImageDescription($groupId, $userId, $type, $descriptions[$type]);
+            } elseif ($operation === 'replace') {
+                $this->groupService->setImageDescription($groupId, $userId, $type, null);
+            }
+        }
     }
 
     /**
@@ -995,6 +1049,41 @@ class GroupsController extends BaseApiController
     // ================================================================
 
     /**
+     * PUT /api/v2/groups/{id}/image-description
+     *
+     * Describe the group's picture (`type` avatar) or cover (`type` cover) for
+     * screen-reader users (AWID accessibility report, Oct 2026). Empty clears
+     * it. Same permission as changing the image.
+     */
+    public function imageDescription($id): JsonResponse
+    {
+        $id = (int) $id;
+        $userId = $this->requireAuth();
+        $this->rateLimit('groups_image_description', 30, 60);
+
+        $type = (string) $this->input('type', 'avatar');
+        $description = request()->input('image_alt');
+        if ($description !== null && ! is_string($description)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), 'image_alt', 422);
+        }
+        if (is_string($description) && mb_strlen(trim($description)) > 255) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.text_too_long'), 'image_alt', 422);
+        }
+
+        if (! $this->groupService->setImageDescription($id, $userId, $type, $description)) {
+            $errors = $this->groupService->getErrors();
+            $codes = array_column($errors, 'code');
+            $status = in_array('NOT_FOUND', $codes, true) ? 404 : (in_array('FORBIDDEN', $codes, true) ? 403 : 422);
+            return $this->respondWithErrors($errors, $status);
+        }
+
+        return $this->respondWithData([
+            'type' => $type,
+            'image_alt' => \App\Services\GroupService::cleanImageDescription($description),
+        ]);
+    }
+
+    /**
      * POST /api/v2/groups/{id}/image
      *
      * Upload an image for a group (avatar or cover). Uses request()->file() (Laravel native).
@@ -1060,7 +1149,10 @@ class GroupsController extends BaseApiController
                 return $this->respondWithError('UPLOAD_FAILED', __('api.failed_upload_image'), 'image', 500);
             }
 
-            $replacement = $this->groupService->replaceImage($id, $userId, $imageUrl, $imageType);
+            // A new image takes the description sent with it, or none (AWID report, Oct 2026).
+            $imageAlt = request()->input('image_alt');
+            $imageAlt = is_string($imageAlt) ? mb_substr(trim($imageAlt), 0, 255) : null;
+            $replacement = $this->groupService->replaceImage($id, $userId, $imageUrl, $imageType, $imageAlt);
 
             if ($replacement === null) {
                 \App\Core\ImageUploader::deleteTenantUpload($imageUrl, 'groups');

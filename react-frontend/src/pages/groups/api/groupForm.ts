@@ -14,6 +14,8 @@ export interface GroupImageDraft {
   file: File | null;
   previewUrl: string | null;
   existingUrl: string | null;
+  /** The image's description for screen readers (AWID report, Oct 2026). */
+  alt: string;
 }
 
 export interface GroupLocationDraft {
@@ -194,8 +196,8 @@ function normalizeCapabilities(value: unknown): GroupFormCapabilities {
   };
 }
 
-export function emptyGroupImageDraft(existingUrl: string | null = null): GroupImageDraft {
-  return { action: 'keep', file: null, previewUrl: null, existingUrl };
+export function emptyGroupImageDraft(existingUrl: string | null = null, alt: string | null = null): GroupImageDraft {
+  return { action: 'keep', file: null, previewUrl: null, existingUrl, alt: alt ?? '' };
 }
 
 export function emptyGroupFormDraft(): GroupFormDraft {
@@ -263,6 +265,14 @@ function appendDraft(formData: FormData, draft: GroupFormDraft): void {
 function appendImage(formData: FormData, field: 'avatar' | 'cover', image: GroupImageDraft): void {
   formData.append(`${field}_action`, image.action);
   if (image.action === 'replace' && image.file) formData.append(field, image.file);
+  appendImageDescription(formData, field, image);
+}
+
+/** Sent whenever there is an image to describe; empty clears it. */
+function appendImageDescription(formData: FormData, field: 'avatar' | 'cover', image: GroupImageDraft): void {
+  if (image.action === 'remove') return;
+  const hasImage = (image.action === 'replace' && image.file) || image.existingUrl;
+  if (hasImage) formData.append(`${field}_alt`, image.alt.trim());
 }
 
 function normalizeSavedGroup(value: unknown): { id: number } {
@@ -278,6 +288,8 @@ export async function createGroupFromDraft(draft: GroupFormDraft): Promise<{ id:
     appendDraft(formData, draft);
     if (draft.avatar.action === 'replace' && draft.avatar.file) formData.append('avatar', draft.avatar.file);
     if (draft.cover.action === 'replace' && draft.cover.file) formData.append('cover', draft.cover.file);
+    appendImageDescription(formData, 'avatar', draft.avatar);
+    appendImageDescription(formData, 'cover', draft.cover);
     const response = await api.upload<unknown>('/v2/groups', formData);
     return normalizeSavedGroup(unwrapGroupResponse(response));
   } catch (error) {

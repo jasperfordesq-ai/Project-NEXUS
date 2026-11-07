@@ -314,6 +314,20 @@ export function GroupSettingsModal({
                   )}
                   </div>
                   <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={(e) => onImageUpload(e, 'avatar')} />
+                  {avatarUrl && (
+                    <Input
+                      className="mt-2"
+                      size="sm"
+                      label={t('form.image_alt_label')}
+                      description={t('form.image_alt_hint')}
+                      value={draft.avatar.alt}
+                      maxLength={255}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        onDraftChange((previous) => ({ ...previous, avatar: { ...previous.avatar, alt: value } }));
+                      }}
+                    />
+                  )}
                 </div>
                 <div className="p-3 rounded-lg bg-theme-elevated border border-theme-default">
                   <p className="text-sm font-medium text-theme-primary mb-2 flex items-center gap-1.5">
@@ -342,6 +356,20 @@ export function GroupSettingsModal({
                     )}
                   </div>
                   <input ref={coverInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={(e) => onImageUpload(e, 'cover')} />
+                  {coverUrl && (
+                    <Input
+                      className="mt-2"
+                      size="sm"
+                      label={t('form.image_alt_label')}
+                      description={t('form.image_alt_hint')}
+                      value={draft.cover.alt}
+                      maxLength={255}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        onDraftChange((previous) => ({ ...previous, cover: { ...previous.cover, alt: value } }));
+                      }}
+                    />
+                  )}
                 </div>
               </div>
               <Select

@@ -30,6 +30,7 @@ const {
   downloadEventRegistrationSubmissions,
   getEventCategories,
   uploadEventImage,
+  setEventImageDescription,
   callUgcTranslateApi,
   getUser,
   ApiError
@@ -187,7 +188,7 @@ function resultEventId(result) {
   );
 }
 
-async function uploadEventCoverImage(token, eventId, image) {
+async function uploadEventCoverImage(token, eventId, image, imageAlt = '') {
   if (!image || !image.filepath || !eventId) return;
 
   const buffer = await fs.readFile(image.filepath);
@@ -197,8 +198,14 @@ async function uploadEventCoverImage(token, eventId, image) {
       filename: trimmed(image.originalFilename) || 'event-image',
       contentType: trimmed(image.mimetype) || 'application/octet-stream',
       size: image.size
-    }
+    },
+    image_alt: imageAlt
   });
+}
+
+/** The cover photo description typed on the form (AWID report, Oct 2026). */
+function submittedImageAlt(body) {
+  return trimmed(body && body.image_alt, 255);
 }
 
 function loginRedirect() {
@@ -4053,7 +4060,7 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
     // "created" while every image was dropped.
     let imageUploadFailed = false;
     try {
-      await uploadEventCoverImage(req.token, eventId, image);
+      await uploadEventCoverImage(req.token, eventId, image, submittedImageAlt(req.body));
     } catch (uploadError) {
       if (uploadError instanceof ApiError && uploadError.status === 401) {
         throw uploadError;
@@ -4368,7 +4375,12 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.eventUpdate(), asyncRoute(asyn
     // reported instead of swallowed.
     let imageUploadFailed = false;
     try {
-      await uploadEventCoverImage(req.token, id, image);
+      if (image && image.filepath) {
+        await uploadEventCoverImage(req.token, id, image, submittedImageAlt(req.body));
+      } else if (Object.prototype.hasOwnProperty.call(req.body || {}, 'image_alt')) {
+        // Only the description of the existing cover changed.
+        await setEventImageDescription(req.token, id, submittedImageAlt(req.body));
+      }
     } catch (uploadError) {
       if (uploadError instanceof ApiError && uploadError.status === 401) {
         throw uploadError;

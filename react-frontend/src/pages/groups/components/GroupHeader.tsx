@@ -159,7 +159,7 @@ export function GroupHeader({
         {coverImageProps && (
           <img
             {...coverImageProps}
-            alt={t('detail.cover_image_alt', { name: group.name })}
+            alt={group.cover_image_alt?.trim() || t('detail.cover_image_alt', { name: group.name })}
             className="absolute inset-0 h-full w-full object-cover"
             loading="lazy"
             decoding="async"
@@ -175,7 +175,7 @@ export function GroupHeader({
               src={avatarImage}
               name={group.name}
               className="h-24 w-24 flex-shrink-0 border-4 border-[var(--surface-elevated)] bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 text-theme-primary shadow-lg"
-              imgProps={{ alt: t('detail.group_image_alt', { name: group.name }) }}
+              imgProps={{ alt: group.image_alt?.trim() || t('detail.group_image_alt', { name: group.name }) }}
               fallback={<Users className="h-10 w-10 text-accent" aria-hidden="true" />}
             />
             <div className="min-w-0 pb-1">

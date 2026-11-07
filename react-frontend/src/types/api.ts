@@ -912,6 +912,9 @@ export type MembershipStatus = 'active' | 'pending' | 'invited' | 'banned' | 're
 export interface Group {
   id: number;
   name: string;
+  /** Descriptions of the picture and cover (AWID report, Oct 2026). */
+  image_alt?: string | null;
+  cover_image_alt?: string | null;
   slug?: string;
   description: string;
   image_url?: string | null;        // Backend returns image_url

@@ -134,6 +134,12 @@
           </div>
           <input class="govuk-file-upload" id="image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="image-hint">
         </div>
+        {# The cover's description for screen readers (AWID report, Oct 2026). #}
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="image_alt">{{ t("feed.image_alt_label") }}</label>
+          <div id="image_alt-hint" class="govuk-hint">{{ t("feed.image_alt_hint") }}</div>
+          <input class="govuk-input" id="image_alt" name="image_alt" type="text" maxlength="255" value="{{ values.image_alt if values else '' }}" aria-describedby="image_alt-hint">
+        </div>
 
         </fieldset>
 

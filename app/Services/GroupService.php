@@ -3409,6 +3409,7 @@ class GroupService
         int $userId,
         ?string $imageUrl,
         string $type = 'avatar',
+        ?string $description = null,
     ): ?array {
         self::$errors = [];
         if (! in_array($type, ['avatar', 'cover'], true)) {
@@ -3421,7 +3422,8 @@ class GroupService
         }
 
         $tenantId = (int) TenantContext::getId();
-        return DB::transaction(function () use ($groupId, $userId, $imageUrl, $type, $tenantId): ?array {
+        $description = self::cleanImageDescription($description);
+        return DB::transaction(function () use ($groupId, $userId, $imageUrl, $type, $tenantId, $description): ?array {
             /** @var Group|null $group */
             $group = Group::query()
                 ->where('tenant_id', $tenantId)
@@ -3440,6 +3442,9 @@ class GroupService
             $field = $type === 'cover' ? 'cover_image_url' : 'image_url';
             $previous = $group->{$field} !== null ? (string) $group->{$field} : null;
             $group->{$field} = $imageUrl;
+            // The description belongs to the photo it was written for, so a
+            // new photo (or none) replaces it (AWID report, Oct 2026).
+            $group->{self::imageDescriptionColumn($type)} = $imageUrl === null ? null : $description;
             $group->save();
 
             GroupAuditService::log(
@@ -3455,6 +3460,54 @@ class GroupService
 
             return ['image_url' => $imageUrl, 'previous_url' => $previous, 'type' => $type];
         }, 3);
+    }
+
+    /**
+     * Set or clear the description of a group's picture or cover, read aloud
+     * by screen readers (AWID accessibility report, Oct 2026, point 6). Same
+     * permission as changing the image itself.
+     */
+    public static function setImageDescription(int $groupId, int $userId, string $type, ?string $description): bool
+    {
+        self::$errors = [];
+        if (! in_array($type, ['avatar', 'cover'], true)) {
+            self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.group_image_type_invalid'), 'field' => 'type'];
+            return false;
+        }
+        $tenantId = (int) TenantContext::getId();
+        $exists = DB::table('groups')->where('tenant_id', $tenantId)->where('id', $groupId)->exists();
+        if (! $exists) {
+            self::$errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.group_not_found')];
+            return false;
+        }
+        if (! self::canModify($groupId, $userId)) {
+            self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.group_modify_forbidden')];
+            return false;
+        }
+
+        DB::table('groups')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $groupId)
+            ->update([self::imageDescriptionColumn($type) => self::cleanImageDescription($description)]);
+
+        return true;
+    }
+
+    /** The column holding the description of the group's picture or cover. */
+    private static function imageDescriptionColumn(string $type): string
+    {
+        return $type === 'cover' ? 'cover_image_alt' : 'image_alt';
+    }
+
+    /** Trimmed, or null when empty. Length is checked by the caller (255). */
+    public static function cleanImageDescription(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+        $value = trim($value);
+
+        return $value === '' ? null : $value;
     }
 
     // -----------------------------------------------------------------

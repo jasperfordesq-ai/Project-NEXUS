@@ -281,6 +281,20 @@ describe('Events v2 API boundary', () => {
     );
   });
 
+  // AWID accessibility report, Oct 2026: an event's cover photo can be described.
+  it('sets the cover photo description, with the recurrence scope when given', async () => {
+    apiMock.put.mockResolvedValue({ success: true, data: { image_alt: 'Volunteers fixing a bicycle' } });
+
+    const response = await eventsApi.setCoverDescription(101, 'Volunteers fixing a bicycle', 'single');
+
+    expect(response).toMatchObject({ success: true, data: { image_alt: 'Volunteers fixing a bicycle' } });
+    expect(apiMock.put).toHaveBeenCalledWith(
+      '/v2/events/101/image-description',
+      { image_alt: 'Volunteers fixing a bicycle', scope: 'single' },
+      expect.any(Object),
+    );
+  });
+
   it('previews and commits effective-dated recurrence revisions with a stable idempotency key', async () => {
     const patch = { title: 'Updated workshop', local_start_time: '11:30', timezone: 'Europe/Dublin' };
     const impact = {
