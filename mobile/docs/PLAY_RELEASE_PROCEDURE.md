@@ -555,7 +555,7 @@ has SHA-256 `4D475D4DC34A4599F4C6B94D74376CBC0532BE0CD29F45ED2EE77B3236CDA3DF`. 
 uploaded it; the agent did everything else in the owner's Chrome.
 
 - **Console slot, 2026-11-07:** `u/0` was the `timebank-global@` account and opened a Play
-  Console **terms page — not accepted**. `?authuser=jasper@hour-timebank.ie` landed on `u/1`,
+  Console **terms page — not accepted**. `?authuser=` set to the owner's own account landed on `u/1`,
   "Production | Timebank Global", live release 25 (1.12.0).
 - **Release notes trap:** the first attempt typed the whole `<en-GB>…</en-GB>` block in one go and
   the field reported "Line 3: expected </en-GB>" with notes for 0 languages. Clearing the box,
