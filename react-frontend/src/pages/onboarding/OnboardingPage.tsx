@@ -179,6 +179,10 @@ export function OnboardingPage() {
   // Step 5: Submission + completion
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  // Two-factor is on (turned on in the "Protect your account" step, or already
+  // on): the stepper ticks that step.
+  const [twoFactorOn, setTwoFactorOn] = useState(false);
+  const markTwoFactorOn = useCallback(() => setTwoFactorOn(true), []);
 
   // Track which steps have been visited (for stepper). Persisted to sessionStorage
   // so a refresh mid-wizard preserves the indicator's "visited" markers.
@@ -649,6 +653,7 @@ export function OnboardingPage() {
             hasLocation,
             offerSkills,
             needSkills,
+            twoFactorOn,
             stepSlugToIndex,
           })}
           onStepClick={(step) => {
@@ -1032,9 +1037,10 @@ export function OnboardingPage() {
             <SecurityStep
               onNext={goNextAnimated}
               onBack={goBackAnimated}
-              // Already on, or not allowed: pass through in the direction the
-              // member was travelling, so Back from the next step still works.
+              // Not allowed in this community: pass through in the direction
+              // the member was travelling, so Back from the next step still works.
               onUnavailable={slideDirection < 0 ? goBackAnimated : goNextAnimated}
+              onProtected={markTwoFactorOn}
             />
           )}
 
@@ -1160,6 +1166,7 @@ function getCompletedSteps(state: {
   hasLocation: boolean;
   offerSkills: string[];
   needSkills: string[];
+  twoFactorOn: boolean;
   stepSlugToIndex: Map<string, number>;
 }): Set<number> {
   const completed = new Set<number>();
@@ -1167,10 +1174,12 @@ function getCompletedSteps(state: {
   const welcomeIdx = idx.get('welcome');
   const profileIdx = idx.get('profile');
   const skillsIdx = idx.get('skills');
+  const securityIdx = idx.get('security');
 
   if (welcomeIdx) completed.add(welcomeIdx); // Welcome is always "done" once visited
   if (profileIdx && state.hasAvatar && state.hasBio && state.hasLocation) completed.add(profileIdx);
   if (skillsIdx && (state.offerSkills.length > 0 || state.needSkills.length > 0)) completed.add(skillsIdx);
+  if (securityIdx && state.twoFactorOn) completed.add(securityIdx);
   return completed;
 }
 

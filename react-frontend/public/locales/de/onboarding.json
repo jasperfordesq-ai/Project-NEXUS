@@ -149,7 +149,7 @@
   "skills_needed_count_other": "{{count}} Fähigkeit(en) gesucht",
   "security_title": "Schützen Sie Ihr Konto",
   "security_subtitle": "Optional: eine zweite Prüfung bei der Anmeldung",
-  "security_intro": "Die Anmeldung in zwei Schritten schützt Ihr Konto, selbst wenn jemand Ihr Passwort herausfindet. Bei der Anmeldung geben Sie wie gewohnt Ihr Passwort ein und danach einen 6-stelligen Code aus einer Authenticator-App auf Ihrem Handy.",
+  "security_intro": "Die Zwei-Faktor-Authentifizierung schützt Ihr Konto, selbst wenn jemand Ihr Passwort herausfindet. Bei der Anmeldung geben Sie wie gewohnt Ihr Passwort ein und danach einen 6-stelligen Code aus einer Authenticator-App auf Ihrem Handy.",
   "security_need_title": "Was Sie brauchen",
   "security_need_phone": "Ihr Handy mit einer kostenlosen Authenticator-App wie Google Authenticator, Microsoft Authenticator oder Authy",
   "security_need_password": "Das Passwort, das Sie für dieses Konto verwenden",
@@ -159,5 +159,7 @@
   "security_not_now": "Jetzt nicht",
   "security_continue": "Weiter",
   "security_checking": "Ihr Konto wird geprüft",
-  "security_confirm_failed_hint": "Wenn Sie sich hier nicht mit einem Passwort bestätigen können, wählen Sie „Jetzt nicht“, um fortzufahren. Sie können es später in den Einstellungen unter „Sicherheit“ einrichten."
+  "security_confirm_failed_hint": "Wenn Sie sich hier nicht mit einem Passwort bestätigen können, wählen Sie „Jetzt nicht“, um fortzufahren. Sie können es später in den Einstellungen unter „Sicherheit“ einrichten.",
+  "security_on_title": "Die Zwei-Faktor-Authentifizierung ist aktiviert",
+  "security_on_body": "Ab jetzt geben Sie bei der Anmeldung zusätzlich zu Ihrem Passwort einen Code aus Ihrer Authenticator-App ein. Sie können das in den Einstellungen unter „Sicherheit“ verwalten."
 }

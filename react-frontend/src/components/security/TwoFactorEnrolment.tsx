@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import QrCode from 'lucide-react/icons/qr-code';
 import Copy from 'lucide-react/icons/copy';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
+import Smartphone from 'lucide-react/icons/smartphone';
 // Button, Input and Spinner come through the barrel, like the rest of
 // components/security: tests that fake the barrel must reach them here too
 // (src/test/dead-barrel-mocks.baseline.json is shrink-only).
@@ -32,7 +33,8 @@ import { Description } from '@/components/ui/Description';
 import { Label } from '@/components/ui/Label';
 import { SecurityConfirmationModal } from '@/components/security/SecurityConfirmationModal';
 import { SetPasswordPrompt } from '@/components/security/SetPasswordPrompt';
-import type { TwoFactorEnrolmentController } from './useTwoFactorEnrolment';
+import { OTP_SLOT_CLASS } from '@/components/security/otpSlot';
+import type { TwoFactorEnrolmentController, TwoFactorSetup } from './useTwoFactorEnrolment';
 
 export interface TwoFactorEnrolmentProps {
   enrolment: TwoFactorEnrolmentController;
@@ -53,10 +55,25 @@ const modalClassNames = {
 };
 
 const AUTHENTICATOR_APPS = [
-  { key: 'twofa_app_google', href: 'https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2' },
+  // Google's own page, with links for both Android and iPhone (the Play
+  // Store link sent iPhone users to the wrong store).
+  { key: 'twofa_app_google', href: 'https://support.google.com/accounts/answer/1066447' },
   { key: 'twofa_app_microsoft', href: 'https://www.microsoft.com/en-us/security/mobile-authenticator-app' },
   { key: 'twofa_app_authy', href: 'https://authy.com/download/' },
 ] as const;
+
+const OTPAUTH_PREFIX = 'otpauth://totp/';
+
+/** The key in groups of four, which is how authenticator apps show it when it is typed. */
+function formatSetupKey(secret: string): string {
+  return secret.replace(/\s+/g, '').toUpperCase().replace(/(.{4})/g, '$1 ').trim();
+}
+
+/** The server's otpauth:// link, or null if it is missing or anything else. */
+function openInAppHref(setup: TwoFactorSetup): string | null {
+  const uri = setup.provisioning_uri ?? '';
+  return uri.startsWith(OTPAUTH_PREFIX) ? uri : null;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared pieces
@@ -64,7 +81,7 @@ const AUTHENTICATOR_APPS = [
 
 function SetupBody({ enrolment }: { enrolment: TwoFactorEnrolmentController }) {
   const { t } = useTranslation('settings');
-  const { setupData, verifyCode, setVerifyCode } = enrolment;
+  const { setupData, verifyCode, setVerifyCode, verifyError } = enrolment;
 
   if (!setupData) {
     return (
@@ -75,6 +92,8 @@ function SetupBody({ enrolment }: { enrolment: TwoFactorEnrolmentController }) {
       </div>
     );
   }
+
+  const appHref = openInAppHref(setupData);
 
   return (
     <div className="space-y-6">
@@ -111,11 +130,38 @@ function SetupBody({ enrolment }: { enrolment: TwoFactorEnrolmentController }) {
             loading="lazy"
           />
         </div>
+        {appHref && (
+          // A phone cannot scan its own screen. On touch screens, offer the
+          // otpauth:// link: it opens the authenticator app with the key filled in.
+          <div className="mt-3 hidden justify-center pointer-coarse:flex">
+            <Button
+              as="a"
+              href={appHref}
+              variant="secondary"
+              size="sm"
+              className="min-h-10"
+              startContent={<Smartphone className="w-4 h-4" aria-hidden="true" />}
+            >
+              {t('twofa_open_app')}
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="p-3 rounded-lg bg-theme-elevated">
         <p className="text-xs text-theme-subtle mb-1">{t('twofa_manual_key')}</p>
-        <p className="font-mono text-sm text-theme-primary break-all select-all">{setupData.secret}</p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="font-mono text-sm tracking-wide text-theme-primary break-words">{formatSetupKey(setupData.secret)}</p>
+          <Button
+            size="sm"
+            variant="tertiary"
+            className="min-h-9"
+            startContent={<Copy className="w-4 h-4" aria-hidden="true" />}
+            onPress={() => { void enrolment.copyKey(); }}
+          >
+            {t('twofa_copy_key')}
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2 items-center">
@@ -123,22 +169,37 @@ function SetupBody({ enrolment }: { enrolment: TwoFactorEnrolmentController }) {
         <InputOTP
           maxLength={6}
           name="twofa-enrol-code"
+          // HeroUI: inside a surface (this card, or a dialog) use "secondary";
+          // the default boxes are nearly invisible on white.
+          variant="secondary"
           value={verifyCode}
+          isInvalid={verifyError !== null}
+          aria-describedby={verifyError ? 'twofa-enrol-code-error' : undefined}
           onChange={(val) => setVerifyCode(val.replace(/\D/g, '').slice(0, 6))}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              void enrolment.verify();
+            }
+          }}
         >
           <InputOTP.Group>
-            <InputOTP.Slot index={0} />
-            <InputOTP.Slot index={1} />
-            <InputOTP.Slot index={2} />
+            <InputOTP.Slot index={0} className={OTP_SLOT_CLASS} />
+            <InputOTP.Slot index={1} className={OTP_SLOT_CLASS} />
+            <InputOTP.Slot index={2} className={OTP_SLOT_CLASS} />
           </InputOTP.Group>
           <InputOTP.Separator />
           <InputOTP.Group>
-            <InputOTP.Slot index={3} />
-            <InputOTP.Slot index={4} />
-            <InputOTP.Slot index={5} />
+            <InputOTP.Slot index={3} className={OTP_SLOT_CLASS} />
+            <InputOTP.Slot index={4} className={OTP_SLOT_CLASS} />
+            <InputOTP.Slot index={5} className={OTP_SLOT_CLASS} />
           </InputOTP.Group>
         </InputOTP>
-        <Description className="self-start text-xs">{t('twofa_code_description')}</Description>
+        {verifyError ? (
+          <p id="twofa-enrol-code-error" role="alert" className="self-start text-sm text-danger">{verifyError}</p>
+        ) : (
+          <Description className="self-start text-xs">{t('twofa_code_description')}</Description>
+        )}
       </div>
     </div>
   );
@@ -221,7 +282,7 @@ export function TwoFactorEnrolment({
           isSubmitDisabled={!enrolment.confirmValue.trim() || enrolment.isConfirming}
           onSubmit={() => { void enrolment.submitConfirmation(); }}
           onCancel={() => enrolment.cancel('confirming')}
-          description={t('twofa_confirm_password')}
+          description={enrolment.confirmNotice ?? t('twofa_confirm_password_hint')}
         />
 
         {/* 2FA Setup Modal */}
@@ -285,7 +346,11 @@ export function TwoFactorEnrolment({
     return (
       <div className="space-y-4" data-testid="twofa-enrol-confirm">
         <h3 className="font-semibold text-theme-primary">{t('passkey_security_confirm_title')}</h3>
-        <p className="text-sm text-theme-subtle">{t('twofa_confirm_password')}</p>
+        {enrolment.confirmNotice ? (
+          <p role="status" className="text-sm text-theme-primary">{enrolment.confirmNotice}</p>
+        ) : (
+          <p className="text-sm text-theme-subtle">{t('twofa_confirm_password_hint')}</p>
+        )}
         <Input
           autoFocus
           type="password"
@@ -343,8 +408,12 @@ export function TwoFactorEnrolment({
   if (phase === 'codes') {
     return (
       <div className="space-y-4" data-testid="twofa-enrol-codes">
-        <h3 className="font-semibold text-theme-primary flex items-center gap-2">
-          <CheckCircle className="w-5 h-5 text-emerald-500" aria-hidden="true" />
+        {/* Say plainly that it worked: the toast is gone in a few seconds. */}
+        <p role="status" className="flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-400">
+          <CheckCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
+          {t('toasts.twofa_enabled_desc')}
+        </p>
+        <h3 className="font-semibold text-theme-primary">
           {t('backup_codes_title')}
         </h3>
         <BackupCodesBody enrolment={enrolment} />

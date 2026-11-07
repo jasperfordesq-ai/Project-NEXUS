@@ -149,7 +149,7 @@
   "skills_needed_count_other": "{{count}} のスキルが必要",
   "security_title": "アカウントを守る",
   "security_subtitle": "任意：サインイン時にもう一段階の確認を追加します",
-  "security_intro": "2段階サインインを使うと、誰かにパスワードを知られてもアカウントを守れます。サインイン時はいつもどおりパスワードを入力し、続けてスマートフォンの認証アプリに表示される6桁のコードを入力します。",
+  "security_intro": "二段階認証を使うと、誰かにパスワードを知られてもアカウントを守れます。サインイン時はいつもどおりパスワードを入力し、続けてスマートフォンの認証アプリに表示される6桁のコードを入力します。",
   "security_need_title": "必要なもの",
   "security_need_phone": "Google Authenticator、Microsoft Authenticator、Authy などの無料の認証アプリを入れたスマートフォン",
   "security_need_password": "このアカウントで使っているパスワード",
@@ -159,5 +159,7 @@
   "security_not_now": "今はしない",
   "security_continue": "続ける",
   "security_checking": "アカウントを確認しています",
-  "security_confirm_failed_hint": "ここでパスワードによる確認ができない場合は、「今はしない」を選んで先に進んでください。あとで［設定］の［セキュリティ］から設定できます。"
+  "security_confirm_failed_hint": "ここでパスワードによる確認ができない場合は、「今はしない」を選んで先に進んでください。あとで［設定］の［セキュリティ］から設定できます。",
+  "security_on_title": "二段階認証はオンになっています",
+  "security_on_body": "今後はサインイン時に、パスワードに加えて認証アプリのコードを入力します。［設定］の［セキュリティ］で管理できます。"
 }

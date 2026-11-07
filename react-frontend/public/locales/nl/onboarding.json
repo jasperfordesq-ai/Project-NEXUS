@@ -149,7 +149,7 @@
   "skills_needed_count_other": "{{count}} vaardigheid(en) nodig",
   "security_title": "Bescherm je account",
   "security_subtitle": "Optioneel: een tweede controle bij het inloggen",
-  "security_intro": "Inloggen in twee stappen houdt je account veilig, zelfs als iemand je wachtwoord te weten komt. Bij het inloggen voer je zoals gewoonlijk je wachtwoord in en daarna een 6-cijferige code uit een authenticator-app op je telefoon.",
+  "security_intro": "Twee-factor-authenticatie houdt je account veilig, zelfs als iemand je wachtwoord te weten komt. Bij het inloggen voer je zoals gewoonlijk je wachtwoord in en daarna een 6-cijferige code uit een authenticator-app op je telefoon.",
   "security_need_title": "Wat je nodig hebt",
   "security_need_phone": "Je telefoon, met een gratis authenticator-app zoals Google Authenticator, Microsoft Authenticator of Authy",
   "security_need_password": "Het wachtwoord dat je voor dit account gebruikt",
@@ -159,5 +159,7 @@
   "security_not_now": "Niet nu",
   "security_continue": "Doorgaan",
   "security_checking": "Je account wordt gecontroleerd",
-  "security_confirm_failed_hint": "Kun je hier niet bevestigen met een wachtwoord? Kies dan ‘Niet nu’ om verder te gaan. Je kunt het later instellen via Instellingen, onder Beveiliging."
+  "security_confirm_failed_hint": "Kun je hier niet bevestigen met een wachtwoord? Kies dan ‘Niet nu’ om verder te gaan. Je kunt het later instellen via Instellingen, onder Beveiliging.",
+  "security_on_title": "Twee-factor-authenticatie staat aan",
+  "security_on_body": "Vanaf nu voer je bij het inloggen naast je wachtwoord ook een code uit je authenticator-app in. Je kunt dit beheren via Instellingen, onder Beveiliging."
 }

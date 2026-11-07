@@ -611,7 +611,8 @@ describe('SettingsPage', () => {
     await user.type(await screen.findByLabelText('passkey_security_confirm_password'), 'CurrentPassword!123');
     await user.click(screen.getByRole('button', { name: 'passkey_security_confirm_action' }));
 
-    expect(await screen.findByText('SECRETKEY123')).toBeInTheDocument();
+    // The key is shown in groups of four, as authenticator apps show it.
+    expect(await screen.findByText('SECR ETKE Y123')).toBeInTheDocument();
     const codeInput = document.querySelector('input[name="twofa-enrol-code"]');
     expect(codeInput).not.toBeNull();
     await user.type(codeInput as HTMLInputElement, '654321');

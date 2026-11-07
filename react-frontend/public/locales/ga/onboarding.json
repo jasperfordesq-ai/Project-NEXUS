@@ -161,7 +161,7 @@
   "skills_needed_count_two": "{{count}} scil de dhíth",
   "security_title": "Cosain do chuntas",
   "security_subtitle": "Roghnach: cuir an dara seiceáil leis nuair a shíníonn tú isteach",
-  "security_intro": "Coinníonn síniú isteach dhá chéim do chuntas slán fiú má fhaigheann duine éigin amach do phasfhocal. Nuair a shíníonn tú isteach, cuireann tú isteach do phasfhocal mar is gnách, agus ansin cód 6 dhigit ó aip fíordheimhnithe ar d'fhón.",
+  "security_intro": "Coinníonn fíordheimhniú dhá fhachtóir do chuntas slán fiú má fhaigheann duine éigin amach do phasfhocal. Nuair a shíníonn tú isteach, cuireann tú isteach do phasfhocal mar is gnách, agus ansin cód 6 dhigit ó aip fíordheimhnithe ar d'fhón.",
   "security_need_title": "A bhfuil uait",
   "security_need_phone": "D'fhón, le haip fíordheimhnithe saor in aisce ar nós Google Authenticator, Microsoft Authenticator nó Authy",
   "security_need_password": "An pasfhocal a úsáideann tú don chuntas seo",
@@ -171,5 +171,7 @@
   "security_not_now": "Ní anois",
   "security_continue": "Lean ar aghaidh",
   "security_checking": "Do chuntas á sheiceáil",
-  "security_confirm_failed_hint": "Mura féidir leat deimhniú le pasfhocal anseo, roghnaigh \"Ní anois\" chun leanúint ar aghaidh. Is féidir leat é a shocrú níos déanaí i Socruithe, faoi Slándáil."
+  "security_confirm_failed_hint": "Mura féidir leat deimhniú le pasfhocal anseo, roghnaigh \"Ní anois\" chun leanúint ar aghaidh. Is féidir leat é a shocrú níos déanaí i Socruithe, faoi Slándáil.",
+  "security_on_title": "Tá fíordheimhniú dhá fhachtóir ar siúl",
+  "security_on_body": "As seo amach, nuair a shíníonn tú isteach cuirfidh tú isteach cód ó d'aip fíordheimhnithe chomh maith le do phasfhocal. Is féidir leat é a bhainistiú i Socruithe, faoi Slándáil."
 }

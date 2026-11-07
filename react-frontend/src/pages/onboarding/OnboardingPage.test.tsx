@@ -858,7 +858,9 @@ describe('OnboardingPage', () => {
       });
     });
 
-    it('is passed straight through when two-factor is already on', async () => {
+    it('when two-factor is already on it says so, and the Security step shows as done', async () => {
+      // Turning it on and coming back used to bounce the member to the step
+      // before. Now the step says it is on, and the dot is ticked.
       mockTwoFactorStatus({ enabled: true });
       await withSecurityStep(async () => {
         const { userEvent } = await import('@/test/test-utils');
@@ -866,10 +868,14 @@ describe('OnboardingPage', () => {
         render(<OnboardingPage />);
         await user.click(screen.getByText("Let's Get Started"));
 
+        expect(await screen.findByText('Two-factor authentication is on')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Step 2: Security \(current\)/ })).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: /^Continue/ }));
+
         await waitFor(() => {
           expect(screen.getByRole('button', { name: /Step 3: Confirm \(current\)/ })).toBeInTheDocument();
         });
-        expect(screen.queryByText('Protect your account')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Step 2: Security \(completed\)/ })).toBeInTheDocument();
         expect(api.post).not.toHaveBeenCalledWith('/v2/onboarding/complete', expect.anything());
       });
     });

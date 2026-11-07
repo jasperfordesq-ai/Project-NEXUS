@@ -28,6 +28,7 @@ import { Label } from '@/components/ui/Label';
 import { BiometricSettings } from '@/components/security/BiometricSettings';
 import { SetPasswordPrompt } from '@/components/security/SetPasswordPrompt';
 import { TwoFactorRecovery } from '@/components/security/TwoFactorRecovery';
+import { OTP_SLOT_CLASS } from '@/components/security/otpSlot';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts';
 
@@ -483,19 +484,21 @@ export function SecurityTab({
                 <InputOTP
                   maxLength={6}
                   name="disable-code"
+                  // HeroUI: inside a surface (this dialog) use "secondary".
+                  variant="secondary"
                   value={twoFactorDisableCode}
                   onChange={(val) => onTwoFactorDisableCodeChange(val.replace(/\D/g, '').slice(0, 6))}
                 >
                   <InputOTP.Group>
-                    <InputOTP.Slot index={0} />
-                    <InputOTP.Slot index={1} />
-                    <InputOTP.Slot index={2} />
+                    <InputOTP.Slot index={0} className={OTP_SLOT_CLASS} />
+                    <InputOTP.Slot index={1} className={OTP_SLOT_CLASS} />
+                    <InputOTP.Slot index={2} className={OTP_SLOT_CLASS} />
                   </InputOTP.Group>
                   <InputOTP.Separator />
                   <InputOTP.Group>
-                    <InputOTP.Slot index={3} />
-                    <InputOTP.Slot index={4} />
-                    <InputOTP.Slot index={5} />
+                    <InputOTP.Slot index={3} className={OTP_SLOT_CLASS} />
+                    <InputOTP.Slot index={4} className={OTP_SLOT_CLASS} />
+                    <InputOTP.Slot index={5} className={OTP_SLOT_CLASS} />
                   </InputOTP.Group>
                 </InputOTP>
                 <Description className="self-start">{t('twofa_code_description')}</Description>

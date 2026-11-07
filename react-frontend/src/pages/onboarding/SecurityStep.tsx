@@ -12,8 +12,11 @@
  * (community allows it, the community setting is on, the member has a password
  * of their own and it is not already on).
  *
- * As a second check, on mount we read `/v2/auth/2fa/status` and skip the step
- * when two-factor is already on or the community does not allow enrolment.
+ * As a second check, on mount we read `/v2/auth/2fa/status`. When the
+ * community does not allow enrolment the step passes itself by. When two-factor
+ * is already on (the member turned it on in this wizard and came back with Back
+ * or the step dots) it says so and offers Back and Continue: it used to pass
+ * itself by too, which sent a member who pressed "Security" to the step before.
  *
  * The enrolment itself is the shared `TwoFactorEnrolment` flow used by
  * Settings → Security, so it keeps the fresh "confirm it is you" check
@@ -47,16 +50,21 @@ export interface SecurityStepProps {
   onNext: () => void;
   onBack: () => void;
   /**
-   * Called (once) when this member cannot or need not set it up: two-factor
-   * is already on, or the community does not allow enrolment.
+   * Called (once) when this member cannot set it up: the community does not
+   * allow enrolment.
    */
   onUnavailable: () => void;
+  /** Called when two-factor is on (already, or just turned on here), so the step shows as done. */
+  onProtected?: () => void;
 }
 
-export function SecurityStep({ onNext, onBack, onUnavailable }: SecurityStepProps) {
+export function SecurityStep({ onNext, onBack, onUnavailable, onProtected }: SecurityStepProps) {
   const { t } = useTranslation('onboarding');
   const [checking, setChecking] = useState(true);
-  const enrolment = useTwoFactorEnrolment();
+  const [alreadyOn, setAlreadyOn] = useState(false);
+  const onProtectedRef = useRef(onProtected);
+  useEffect(() => { onProtectedRef.current = onProtected; }, [onProtected]);
+  const enrolment = useTwoFactorEnrolment({ onEnrolled: () => onProtectedRef.current?.() });
   const onUnavailableRef = useRef(onUnavailable);
   useEffect(() => { onUnavailableRef.current = onUnavailable; }, [onUnavailable]);
 
@@ -66,7 +74,10 @@ export function SecurityStep({ onNext, onBack, onUnavailable }: SecurityStepProp
       try {
         const res = await api.get<TwoFactorStatus>('/v2/auth/2fa/status');
         if (cancelled) return;
-        if (res.success && res.data && (res.data.enabled === true || res.data.enrollment_allowed === false)) {
+        if (res.success && res.data?.enabled === true) {
+          setAlreadyOn(true);
+          onProtectedRef.current?.();
+        } else if (res.success && res.data?.enrollment_allowed === false) {
           onUnavailableRef.current();
           return;
         }
@@ -84,6 +95,41 @@ export function SecurityStep({ onNext, onBack, onUnavailable }: SecurityStepProp
     return (
       <div role="status" aria-busy="true" aria-label={t('security_checking')} className="flex items-center justify-center py-12">
         <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (alreadyOn) {
+    return (
+      <div className="space-y-6">
+        <GlassCard className="p-6">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-emerald-500/20 shrink-0">
+              <ShieldCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-theme-primary">{t('security_on_title')}</h2>
+              <p className="mt-1 text-theme-muted">{t('security_on_body')}</p>
+            </div>
+          </div>
+        </GlassCard>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Button
+            variant="tertiary"
+            className="text-theme-muted"
+            onPress={onBack}
+            startContent={<ArrowLeft className="w-4 h-4" aria-hidden="true" />}
+          >
+            {t('back')}
+          </Button>
+          <Button
+            className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium"
+            endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
+            onPress={onNext}
+          >
+            {t('security_continue')}
+          </Button>
+        </div>
       </div>
     );
   }
@@ -144,7 +190,9 @@ export function SecurityStep({ onNext, onBack, onUnavailable }: SecurityStepProp
       </GlassCard>
 
       {!showingCodes && (
-        <div className="flex items-center justify-between gap-3">
+        // Stacked on phones, like the wizard's last step: in one row the
+        // "Set it up" button ran off the screen at 320 px.
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Button
             variant="tertiary"
             className="text-theme-muted"
@@ -153,7 +201,7 @@ export function SecurityStep({ onNext, onBack, onUnavailable }: SecurityStepProp
           >
             {t('back')}
           </Button>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
             <Button
               variant="tertiary"
               className="text-theme-subtle"
@@ -166,6 +214,7 @@ export function SecurityStep({ onNext, onBack, onUnavailable }: SecurityStepProp
               <Button
                 className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium"
                 endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
+                isLoading={enrolment.isStarting}
                 onPress={() => { void enrolment.start(); }}
               >
                 {t('security_set_up')}

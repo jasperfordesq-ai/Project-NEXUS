@@ -157,7 +157,7 @@
   "skills_needed_count_many": "{{count}} umiejętność(i) potrzebne",
   "security_title": "Chroń swoje konto",
   "security_subtitle": "Opcjonalnie: dodatkowe sprawdzenie przy logowaniu",
-  "security_intro": "Logowanie dwuetapowe chroni Twoje konto, nawet jeśli ktoś pozna Twoje hasło. Podczas logowania wpisujesz hasło jak zwykle, a potem 6-cyfrowy kod z aplikacji uwierzytelniającej w telefonie.",
+  "security_intro": "Uwierzytelnianie dwuskładnikowe chroni Twoje konto, nawet jeśli ktoś pozna Twoje hasło. Podczas logowania wpisujesz hasło jak zwykle, a potem 6-cyfrowy kod z aplikacji uwierzytelniającej w telefonie.",
   "security_need_title": "Czego potrzebujesz",
   "security_need_phone": "Telefonu z bezpłatną aplikacją uwierzytelniającą, np. Google Authenticator, Microsoft Authenticator lub Authy",
   "security_need_password": "Hasła, którego używasz do tego konta",
@@ -167,5 +167,7 @@
   "security_not_now": "Nie teraz",
   "security_continue": "Dalej",
   "security_checking": "Sprawdzamy Twoje konto",
-  "security_confirm_failed_hint": "Jeśli nie możesz tu potwierdzić tożsamości hasłem, wybierz „Nie teraz”, aby kontynuować. Możesz to włączyć później w Ustawieniach, w sekcji Bezpieczeństwo."
+  "security_confirm_failed_hint": "Jeśli nie możesz tu potwierdzić tożsamości hasłem, wybierz „Nie teraz”, aby kontynuować. Możesz to włączyć później w Ustawieniach, w sekcji Bezpieczeństwo.",
+  "security_on_title": "Uwierzytelnianie dwuskładnikowe jest włączone",
+  "security_on_body": "Od teraz podczas logowania oprócz hasła wpiszesz kod z aplikacji uwierzytelniającej. Możesz tym zarządzać w Ustawieniach, w sekcji Bezpieczeństwo."
 }

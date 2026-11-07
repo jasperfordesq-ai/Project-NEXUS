@@ -16,6 +16,8 @@
  * "confirm it is you" step (`POST /webauthn/security-confirm`). The resulting
  * token is held only in memory for this enrolment and is sent to both
  * `/v2/auth/2fa/setup` and `/v2/auth/2fa/verify`. Never skip or weaken this.
+ * The token lasts five minutes; if it runs out while the member is in their
+ * authenticator app, they are asked for their password again.
  */
 
 import { useCallback, useRef, useState } from 'react';
@@ -30,6 +32,8 @@ import type { SecurityConfirmationMethod } from '@/components/security/SecurityC
 export interface TwoFactorSetup {
   qr_code_url: string;
   secret: string;
+  /** The otpauth:// link the QR code encodes (opens the authenticator app on a phone). */
+  provisioning_uri?: string;
   backup_codes?: string[];
 }
 
@@ -48,6 +52,8 @@ export interface UseTwoFactorEnrolmentOptions {
 
 export interface TwoFactorEnrolmentController {
   phase: TwoFactorEnrolmentPhase;
+  /** True while `start()` is getting ready (before the first screen appears). */
+  isStarting: boolean;
   /**
    * Whether the member can confirm with a password. False for a member who
    * joined with Google and never set one (F-611): the confirmation step then
@@ -60,11 +66,15 @@ export interface TwoFactorEnrolmentController {
   confirmValue: string;
   setConfirmValue: (value: string) => void;
   confirmError: string | null;
+  /** A neutral note for the confirmation step, e.g. "that took too long". Not an error. */
+  confirmNotice: string | null;
   isConfirming: boolean;
   // Set-up step
   setupData: TwoFactorSetup | null;
   verifyCode: string;
   setVerifyCode: (value: string) => void;
+  /** Why the last code was refused, shown beside the code boxes. */
+  verifyError: string | null;
   isVerifying: boolean;
   // Result
   backupCodes: string[];
@@ -72,6 +82,7 @@ export interface TwoFactorEnrolmentController {
   start: () => Promise<void>;
   submitConfirmation: () => Promise<void>;
   verify: () => Promise<void>;
+  copyKey: () => Promise<void>;
   copyBackupCodes: () => Promise<void>;
   /**
    * Abandon the flow (confirmation or set-up) and forget the token. With
@@ -109,20 +120,30 @@ export function useTwoFactorEnrolment(options: UseTwoFactorEnrolmentOptions = {}
     setPhaseState(next);
   }, []);
   const confirmTokenRef = useRef<string | null>(null);
+  const [isStarting, setIsStarting] = useState(false);
   const [hasPassword, setHasPassword] = useState(true);
   const [confirmMethod, setConfirmMethod] = useState<SecurityConfirmationMethod>('password');
   const [confirmValue, setConfirmValue] = useState('');
   const [confirmError, setConfirmError] = useState<string | null>(null);
+  const [confirmNotice, setConfirmNotice] = useState<string | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [setupData, setSetupData] = useState<TwoFactorSetup | null>(null);
-  const [verifyCode, setVerifyCode] = useState('');
+  const [verifyCode, setVerifyCodeState] = useState('');
+  const [verifyError, setVerifyError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
+
+  const setVerifyCode = useCallback((value: string) => {
+    setVerifyCodeState(value);
+    // Typing a new code clears the complaint about the last one.
+    setVerifyError(null);
+  }, []);
 
   const startSetup = useCallback(async () => {
     try {
       setSetupData(null);
-      setVerifyCode('');
+      setVerifyCodeState('');
+      setVerifyError(null);
       setPhase('setup');
 
       const response = await api.post<TwoFactorSetup>('/v2/auth/2fa/setup', {
@@ -144,22 +165,28 @@ export function useTwoFactorEnrolment(options: UseTwoFactorEnrolmentOptions = {}
   const start = useCallback(async () => {
     confirmTokenRef.current = null;
     setConfirmError(null);
+    setConfirmNotice(null);
     setConfirmValue('');
     setConfirmMethod('password');
-    // A recent passkey sign-in can confirm silently; otherwise ask.
+    setIsStarting(true);
     try {
-      const silent = await confirmWebAuthnSecurity({});
-      if (silent.success && silent.securityConfirmationToken) {
-        confirmTokenRef.current = silent.securityConfirmationToken;
-        await startSetup();
-        return;
+      // A recent passkey sign-in can confirm silently; otherwise ask.
+      try {
+        const silent = await confirmWebAuthnSecurity({});
+        if (silent.success && silent.securityConfirmationToken) {
+          confirmTokenRef.current = silent.securityConfirmationToken;
+          await startSetup();
+          return;
+        }
+      } catch {
+        // Fall through to the explicit confirmation prompt.
       }
-    } catch {
-      // Fall through to the explicit confirmation prompt.
+      // F-611 (E-121): a member who joined with Google has no password to type.
+      setHasPassword(await memberHasPassword());
+      setPhase('confirming');
+    } finally {
+      setIsStarting(false);
     }
-    // F-611 (E-121): a member who joined with Google has no password to type.
-    setHasPassword(await memberHasPassword());
-    setPhase('confirming');
   }, [setPhase, startSetup]);
 
   const submitConfirmation = useCallback(async () => {
@@ -176,6 +203,7 @@ export function useTwoFactorEnrolment(options: UseTwoFactorEnrolmentOptions = {}
       }
       confirmTokenRef.current = result.securityConfirmationToken;
       setConfirmValue('');
+      setConfirmNotice(null);
       await startSetup();
     } catch {
       setConfirmError(t('passkey_security_confirm_failed'));
@@ -185,8 +213,9 @@ export function useTwoFactorEnrolment(options: UseTwoFactorEnrolmentOptions = {}
   }, [confirmMethod, confirmValue, isConfirming, startSetup, t]);
 
   const verify = useCallback(async () => {
+    if (isVerifying) return;
     if (!verifyCode || verifyCode.length < 6) {
-      toast.error(t('toasts.invalid_code'), t('toasts.invalid_code_desc'));
+      setVerifyError(t('toasts.invalid_code_desc'));
       return;
     }
 
@@ -202,20 +231,43 @@ export function useTwoFactorEnrolment(options: UseTwoFactorEnrolmentOptions = {}
         const codes = response.data?.backup_codes ?? [];
         setBackupCodes(codes);
         setSetupData(null);
-        setVerifyCode('');
+        setVerifyCodeState('');
+        setVerifyError(null);
         toast.success(t('toasts.twofa_enabled'), t('toasts.twofa_enabled_desc'));
         setPhase(codes.length > 0 ? 'codes' : 'idle');
         onEnrolled?.(codes);
+      } else if (response.code === 'SECURITY_CONFIRMATION_REQUIRED') {
+        // The five-minute confirmation ran out while the member was in their
+        // authenticator app. Every code would now be refused, so ask again.
+        confirmTokenRef.current = null;
+        setSetupData(null);
+        setVerifyCodeState('');
+        setVerifyError(null);
+        setConfirmValue('');
+        setConfirmError(null);
+        setConfirmNotice(t('twofa_confirm_expired'));
+        setPhase('confirming');
       } else {
-        toast.error(t('toasts.verification_failed'), response.error || t('toasts.verification_failed'));
+        setVerifyCodeState('');
+        setVerifyError(response.error || t('toasts.verification_failed_desc'));
       }
     } catch (error) {
       logError('Failed to verify 2FA', error);
-      toast.error(t('toasts.verification_failed'), t('toasts.verification_failed_desc'));
+      setVerifyError(t('toasts.verification_failed_desc'));
     } finally {
       setIsVerifying(false);
     }
-  }, [onEnrolled, setPhase, t, toast, verifyCode]);
+  }, [isVerifying, onEnrolled, setPhase, t, toast, verifyCode]);
+
+  const copyKey = useCallback(async () => {
+    if (!setupData?.secret) return;
+    try {
+      await navigator.clipboard.writeText(setupData.secret);
+      toast.success(t('toasts.copied'), t('toasts.key_copied_desc'));
+    } catch {
+      toast.error(t('toasts.copy_failed'), t('toasts.copy_failed_desc'));
+    }
+  }, [setupData, t, toast]);
 
   const copyBackupCodes = useCallback(async () => {
     try {
@@ -232,8 +284,10 @@ export function useTwoFactorEnrolment(options: UseTwoFactorEnrolmentOptions = {}
     confirmTokenRef.current = null;
     setConfirmValue('');
     setConfirmError(null);
+    setConfirmNotice(null);
     setSetupData(null);
-    setVerifyCode('');
+    setVerifyCodeState('');
+    setVerifyError(null);
     setPhase('idle');
   }, [setPhase]);
 
@@ -243,21 +297,25 @@ export function useTwoFactorEnrolment(options: UseTwoFactorEnrolmentOptions = {}
 
   return {
     phase,
+    isStarting,
     hasPassword,
     confirmMethod,
     setConfirmMethod,
     confirmValue,
     setConfirmValue,
     confirmError,
+    confirmNotice,
     isConfirming,
     setupData,
     verifyCode,
     setVerifyCode,
+    verifyError,
     isVerifying,
     backupCodes,
     start,
     submitConfirmation,
     verify,
+    copyKey,
     copyBackupCodes,
     cancel,
     finish,

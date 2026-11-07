@@ -153,7 +153,7 @@
   "skills_needed_count_many": "{{count}} compétence(s) recherchée(s)",
   "security_title": "Protégez votre compte",
   "security_subtitle": "Facultatif : ajoutez une seconde vérification à la connexion",
-  "security_intro": "La connexion en deux étapes protège votre compte même si quelqu'un découvre votre mot de passe. À la connexion, vous saisissez votre mot de passe comme d'habitude, puis un code à 6 chiffres provenant d'une application d'authentification sur votre téléphone.",
+  "security_intro": "L'authentification à deux facteurs protège votre compte même si quelqu'un découvre votre mot de passe. À la connexion, vous saisissez votre mot de passe comme d'habitude, puis un code à 6 chiffres provenant d'une application d'authentification sur votre téléphone.",
   "security_need_title": "Ce dont vous avez besoin",
   "security_need_phone": "Votre téléphone, avec une application d'authentification gratuite comme Google Authenticator, Microsoft Authenticator ou Authy",
   "security_need_password": "Le mot de passe que vous utilisez pour ce compte",
@@ -163,5 +163,7 @@
   "security_not_now": "Pas maintenant",
   "security_continue": "Continuer",
   "security_checking": "Vérification de votre compte",
-  "security_confirm_failed_hint": "Si vous ne pouvez pas confirmer avec un mot de passe ici, choisissez « Pas maintenant » pour continuer. Vous pourrez l'activer plus tard dans les Paramètres, rubrique Sécurité."
+  "security_confirm_failed_hint": "Si vous ne pouvez pas confirmer avec un mot de passe ici, choisissez « Pas maintenant » pour continuer. Vous pourrez l'activer plus tard dans les Paramètres, rubrique Sécurité.",
+  "security_on_title": "L'authentification à deux facteurs est activée",
+  "security_on_body": "Désormais, à la connexion, vous saisirez un code de votre application d'authentification en plus de votre mot de passe. Vous pouvez gérer cela dans les Paramètres, rubrique Sécurité."
 }

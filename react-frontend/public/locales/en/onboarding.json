@@ -149,7 +149,7 @@
   "skills_needed_count_other": "{{count}} skill(s) needed",
   "security_title": "Protect your account",
   "security_subtitle": "Optional: add a second check when you sign in",
-  "security_intro": "Two-step sign-in keeps your account safe even if someone finds out your password. When you sign in, you enter your password as usual, then a 6-digit code from an authenticator app on your phone.",
+  "security_intro": "Two-factor authentication keeps your account safe even if someone finds out your password. When you sign in, you enter your password as usual, then a 6-digit code from an authenticator app on your phone.",
   "security_need_title": "What you need",
   "security_need_phone": "Your phone, with a free authenticator app such as Google Authenticator, Microsoft Authenticator or Authy",
   "security_need_password": "The password you use for this account",
@@ -159,5 +159,7 @@
   "security_not_now": "Not now",
   "security_continue": "Continue",
   "security_checking": "Checking your account",
-  "security_confirm_failed_hint": "If you can't confirm with a password here, choose \"Not now\" to carry on. You can set this up later in Settings, under Security."
+  "security_confirm_failed_hint": "If you can't confirm with a password here, choose \"Not now\" to carry on. You can set this up later in Settings, under Security.",
+  "security_on_title": "Two-factor authentication is on",
+  "security_on_body": "From now on, when you sign in you'll enter a code from your authenticator app as well as your password. You can manage it in Settings, under Security."
 }

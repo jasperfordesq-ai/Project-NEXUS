@@ -153,7 +153,7 @@
   "skills_needed_count_many": "{{count}} competência(s) necessária(s)",
   "security_title": "Proteja a sua conta",
   "security_subtitle": "Opcional: uma segunda verificação ao iniciar sessão",
-  "security_intro": "O início de sessão em dois passos mantém a sua conta segura mesmo que alguém descubra a sua senha. Ao iniciar sessão, introduz a senha como habitualmente e, depois, um código de 6 dígitos de uma app de autenticação no seu telemóvel.",
+  "security_intro": "A autenticação de dois fatores mantém a sua conta segura mesmo que alguém descubra a sua senha. Ao iniciar sessão, introduz a senha como habitualmente e, depois, um código de 6 dígitos de uma app de autenticação no seu telemóvel.",
   "security_need_title": "O que precisa",
   "security_need_phone": "O seu telemóvel, com uma app de autenticação gratuita como o Google Authenticator, o Microsoft Authenticator ou o Authy",
   "security_need_password": "A senha que utiliza nesta conta",
@@ -163,5 +163,7 @@
   "security_not_now": "Agora não",
   "security_continue": "Continuar",
   "security_checking": "A verificar a sua conta",
-  "security_confirm_failed_hint": "Se não conseguir confirmar com uma senha aqui, escolha «Agora não» para continuar. Pode configurá-lo mais tarde em Configurações, na secção Segurança."
+  "security_confirm_failed_hint": "Se não conseguir confirmar com uma senha aqui, escolha «Agora não» para continuar. Pode configurá-lo mais tarde em Configurações, na secção Segurança.",
+  "security_on_title": "A autenticação de dois fatores está ativada",
+  "security_on_body": "A partir de agora, ao iniciar sessão vai introduzir um código da sua app de autenticação, além da senha. Pode geri-la em Configurações, na secção Segurança."
 }
