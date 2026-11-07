@@ -327,6 +327,13 @@ jest.mock('@/components/ui/Avatar', () => {
   return ({ name }: { name: string }) => React.createElement(View, { accessibilityLabel: `${name} avatar` });
 });
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
+// Stand-in for the shared Translate control (its own tests cover the API call).
+jest.mock('@/components/ContentTranslation', () => {
+  const React = require('react');
+  const { Text } = require('react-native');
+  return ({ contentType, contentId, fields }: { contentType: string; contentId: number; fields: { body?: string } }) =>
+    React.createElement(Text, { testID: `translate-${contentType}-${contentId}`, accessibilityHint: fields.body }, 'translate-stub');
+});
 jest.mock('@/components/ui/ActionSheet', () => {
   const React = require('react');
   const { Pressable, Text, View } = require('react-native');
@@ -2455,4 +2462,20 @@ it('AUDIT keeps the next draft when an earlier send fails', async () => {
   expect(ui.getByPlaceholderText('Type a message...').props.value).toBe('First message');
   fireEvent.press(ui.getByText('Edit unsent draft'));
   expect(ui.getByPlaceholderText('Type a message...').props.value).toBe('Next draft - do not lose this');
+});
+
+// AWID report, Oct 2026: the app could translate only partner-community messages.
+it('offers Translate under another member\'s message, never under my own or a voice note', () => {
+  mockUseApi.mockReturnValue({
+    data: { data: mockMessages },
+    isLoading: false,
+    error: null,
+    refresh: jest.fn(),
+  });
+
+  const { getByTestId, queryByTestId } = render(<ThreadScreen />);
+
+  expect(getByTestId('translate-message-1')).toBeTruthy();
+  expect(queryByTestId('translate-message-2')).toBeNull();
+  expect(queryByTestId('translate-message-7')).toBeNull();
 });

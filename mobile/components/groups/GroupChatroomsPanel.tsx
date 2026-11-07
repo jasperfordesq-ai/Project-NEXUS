@@ -18,6 +18,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import TextArea from '@/components/ui/TextArea';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
+import ContentTranslation from '@/components/ContentTranslation';
 import {
   createGroupChatroom,
   deleteGroupChatroom,
@@ -412,6 +413,10 @@ export default function GroupChatroomsPanel({
                   {pinnedIds.has(message.id) ? <Ionicons name="pin" size={15} color={primary} accessibilityLabel={t('detail.chatrooms.pinned')} /> : null}
                 </View>
                 <Text className="text-sm leading-5" style={{ color: theme.text }}>{message.body}</Text>
+                {/* Translate another member's message (AWID report, Oct 2026). */}
+                {message.user_id !== currentUserId && message.body ? (
+                  <ContentTranslation contentType="group_chatroom_message" contentId={message.id} fields={{ body: message.body }} />
+                ) : null}
                 {(canManage || message.user_id === currentUserId) ? (
                   <View className="flex-row justify-end gap-2">
                     {canManage ? (

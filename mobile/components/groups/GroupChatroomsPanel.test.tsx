@@ -36,6 +36,13 @@ jest.mock('@/lib/api/groups', () => ({
   pinGroupChatroomMessage: (...args: unknown[]) => mockApi.pin(...args),
   unpinGroupChatroomMessage: (...args: unknown[]) => mockApi.unpin(...args),
 }));
+// Stand-in for the shared Translate control (its own tests cover the API call).
+jest.mock('@/components/ContentTranslation', () => {
+  const React = require('react');
+  const { Text } = require('react-native');
+  return ({ contentType, contentId, fields }: { contentType: string; contentId: number; fields: { body?: string } }) =>
+    React.createElement(Text, { testID: `translate-${contentType}-${contentId}`, accessibilityHint: fields.body }, 'translate-stub');
+});
 jest.mock('@/lib/groupContentCreationOperation', () => ({
   loadGroupContentCreationOperation: (...args: unknown[]) => mockOperation.load(...args),
   reserveGroupContentCreationOperation: (...args: unknown[]) => mockOperation.reserve(...args),
@@ -59,6 +66,19 @@ beforeEach(() => {
   mockOperation.reserve.mockImplementation(async (_groupId: number, kind: string, payload: unknown) => ({
     storageKey: `saved-${kind}`, key: `key-${kind}`, kind, groupId: 23, intent: JSON.stringify(payload), payload, createdAt: 1,
   }));
+});
+
+// AWID report, Oct 2026: "posts inside groups aren't translated".
+it('offers Translate under another member\'s channel message, not under my own', async () => {
+  mockApi.getMessages.mockResolvedValue({
+    data: [message, { ...message, id: 11, body: 'Hola a todos', user_id: 8, author: { id: 8, name: 'Ana', avatar_url: null } }],
+    meta: { cursor: null, has_more: false },
+  });
+  const screen = render(<GroupChatroomsPanel groupId={23} currentUserId={4} canManage={false} canView refreshToken={0} />);
+
+  await waitFor(() => expect(screen.getByTestId('translate-group_chatroom_message-11')).toBeTruthy());
+  expect(screen.getByTestId('translate-group_chatroom_message-11').props.accessibilityHint).toBe('Hola a todos');
+  expect(screen.queryByTestId('translate-group_chatroom_message-9')).toBeNull();
 });
 
 it('keeps the chatroom API closed to a non-member', async () => {

@@ -31,6 +31,7 @@ import { Chip } from '@/components/ui/StatusChip';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import { useTranslation } from 'react-i18next';
+import ContentTranslation from '@/components/ContentTranslation';
 import { deleteMessage, displayName, getMessagingRestrictionStatus, getOrCreateThread, getThread, markConversationRead, sendMessage, sendMessageWithAttachments, sendVoiceMessage as sendVoiceMessageApi, toggleMessageReaction, updateMessage, type Message, type ConversationOtherUser, type MessageAttachmentUpload, type MessagingRestrictionStatus, type SendMessageOptions } from '@/lib/api/messages';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { useApi } from '@/lib/hooks/useApi';
@@ -2175,6 +2176,14 @@ function MessageBubble({
             {isOwn ? <MessageReceipt item={item} primary={primary} onPrimary={onPrimary} t={t} /> : null}
           </View>
         </Pressable>
+        {/*
+          Translate another member's message (AWID report, Oct 2026: the app could
+          translate only partner-community messages). The shared control hides itself
+          when the text is already in the reader's language, as on both websites.
+        */}
+        {!isOwn && !item.is_deleted && !item.is_voice && body ? (
+          <ContentTranslation contentType="message" contentId={item.id} fields={{ body }} />
+        ) : null}
         {hasReactions ? (
           <View className="flex-row flex-wrap gap-1.5">
             {Object.entries(reactions).map(([emoji, count]) => {
