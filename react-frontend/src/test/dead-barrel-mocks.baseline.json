@@ -348,7 +348,6 @@
     },
     "src/pages/explore/ExplorePage.test.tsx": {
       "@/components/ui": [
-        "Avatar",
         "Progress",
         "SearchField",
         "Skeleton"
@@ -535,6 +534,6 @@
   },
   "totals": {
     "offenderFileCount": 80,
-    "rowCount": 256
+    "rowCount": 255
   }
 }

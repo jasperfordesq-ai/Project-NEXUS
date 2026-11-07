@@ -174,9 +174,10 @@ class StoryServiceTest extends TestCase
         DB::shouldReceive('insert')
             ->once()
             ->withArgs(function ($sql, $bindings) {
-                // Duration is at index 9 in the bindings array
+                // Duration is at index 10 in the bindings array (media_alt,
+                // a photo story's description, sits at index 4 since 7 Nov 2026)
                 // min(max(1, 3), 30) = 3 (clamped from 1 to 3)
-                return $bindings[9] === 3;
+                return $bindings[10] === 3;
             })
             ->andReturn(true);
 

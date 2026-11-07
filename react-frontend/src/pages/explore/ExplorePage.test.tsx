@@ -136,7 +136,6 @@ vi.mock('@/components/ui', async (importOriginal) => {
     Progress: ({ value, label }: { value?: number; label?: string }) => (
       <div role="progressbar" aria-label={label} aria-valuenow={value} />
     ),
-    Avatar: ({ name }: { name?: string }) => <div data-testid="avatar">{name}</div>,
     SearchField: ({ label, value, onValueChange }: {
       label?: string;
       value?: string;

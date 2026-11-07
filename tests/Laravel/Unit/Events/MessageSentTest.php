@@ -211,6 +211,8 @@ class MessageSentTest extends TestCase
             'url' => '/api/v2/messages/123/attachments/7',
             'type' => 'image',
             'name' => 'photo.png',
+            // The sender's description of the photo (none written here).
+            'alt_text' => null,
             'size' => 1234,
             'mime_type' => 'image/png',
         ], $attachments[0]);
