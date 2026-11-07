@@ -513,6 +513,40 @@ describe('OnboardingScreen', () => {
       expect(view.getByText('security_continue')).toBeTruthy();
     });
 
+    it('the last step lists only what this wizard asked for', async () => {
+      // "Your Interests" showed in communities with no interests step (emulator, 7 Nov 2026).
+      const view = await pastWelcome();
+      await waitFor(() => expect(view.getByText('security_title')).toBeTruthy());
+      fireEvent.press(view.getByTestId('onboarding-next'));
+      await waitFor(() => expect(view.getByTestId('onboarding-complete')).toBeTruthy());
+
+      expect(view.queryByText('summary_interests')).toBeNull();
+      expect(view.queryByText('summary_offers')).toBeNull();
+      expect(view.queryByText('summary_needs')).toBeNull();
+    });
+
+    it('the last step lists interests and skills when the wizard asked for them', async () => {
+      jest.mocked(getOnboardingConfig).mockResolvedValue({
+        config: { bio_min_length: 10 },
+        steps: [
+          { slug: 'welcome', label_code: 'welcome', required: false },
+          { slug: 'interests', label_code: 'interests', required: false },
+          { slug: 'skills', label_code: 'skills', required: false },
+          { slug: 'confirm', label_code: 'confirm', required: false },
+        ],
+      });
+      const view = await pastWelcome();
+      await waitFor(() => expect(view.getByText('Step 2 of 4 · step_interests')).toBeTruthy());
+      fireEvent.press(view.getByTestId('onboarding-next'));
+      await waitFor(() => expect(view.getByText('Step 3 of 4 · step_skills')).toBeTruthy());
+      fireEvent.press(view.getByTestId('onboarding-next'));
+      await waitFor(() => expect(view.getByTestId('onboarding-complete')).toBeTruthy());
+
+      expect(view.getByText('summary_interests')).toBeTruthy();
+      expect(view.getByText('summary_offers')).toBeTruthy();
+      expect(view.getByText('summary_needs')).toBeTruthy();
+    });
+
     it('names the kind of app the member needs before they start', async () => {
       const view = await pastWelcome();
       await waitFor(() => expect(view.getByText('security_title')).toBeTruthy());

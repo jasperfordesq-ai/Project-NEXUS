@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockGetStatus = jest.fn();
 const mockToast = jest.fn();
@@ -30,18 +30,29 @@ jest.mock('@/lib/hooks/useTenant', () => ({
 }));
 jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 1, email: 'alex@example.org' } }) }));
 jest.mock('@/components/ui/AppToast', () => ({ useAppToast: () => ({ show: mockToast }) }));
+const mockConfirm = jest.fn();
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({ confirm: (...args: unknown[]) => mockConfirm(...args), confirmDialog: null, dismiss: jest.fn() }),
+}));
 jest.mock('@/lib/api/twoFactor', () => ({
   getTwoFactorStatus: (...args: unknown[]) => mockGetStatus(...args),
 }));
 jest.mock('@/components/security/TwoFactorEnrolment', () => {
-  const { Pressable, Text } = require('react-native');
-  return (props: { accountLabel?: string | null; onDone: () => void }) => {
+  const { Pressable, Text, View } = require('react-native');
+  return (props: { accountLabel?: string | null; onDone: () => void; onStageChange?: (stage: string) => void }) => {
     mockEnrolmentProps(props);
-    return <Pressable testID="two-factor-enrolment" onPress={props.onDone}><Text>enrol</Text></Pressable>;
+    return (
+      <View>
+        <Pressable testID="two-factor-enrolment" onPress={props.onDone}><Text>enrol</Text></Pressable>
+        {/* Stands in for a verified code: two-factor is on and the backup codes are shown once. */}
+        <Pressable testID="enrolment-show-codes" onPress={() => props.onStageChange?.('codes')}><Text>codes</Text></Pressable>
+      </View>
+    );
   };
 });
 
 import SettingsTwoFactorScreen from './settings-two-factor';
+import { firePreventedRemoval, isGuardArmed } from '@/lib/test/unsavedGuardHarness';
 
 const status = (overrides: Record<string, unknown> = {}) => ({
   enabled: false,
@@ -65,6 +76,41 @@ it('offers set-up when two-factor is off and allowed, labelled with the memberâ€
   fireEvent.press(view.getByTestId('two-factor-enrolment'));
   expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'twoFactor.screen.success', variant: 'success' }));
   expect(mockBack).toHaveBeenCalled();
+});
+
+it('asks before leaving while the backup codes are on screen, and only then', async () => {
+  // Back (the top bar, Android's button or an iOS swipe) threw the codes away, and they
+  // are shown once (found while walking the wizard's version, 7 November 2026).
+  mockGetStatus.mockResolvedValue(status());
+  const view = render(<SettingsTwoFactorScreen />);
+  await view.findByTestId('two-factor-enrolment');
+  expect(isGuardArmed()).toBe(false);
+
+  fireEvent.press(view.getByTestId('enrolment-show-codes'));
+  expect(isGuardArmed()).toBe(true);
+
+  act(() => { firePreventedRemoval(); });
+  expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({
+    title: 'twoFactor.codes.title',
+    message: 'twoFactor.codes.warning',
+    // The app's usual short "Leave": "I have saved them. Continue" wrapped over three
+    // lines in the dialog's half-width button (emulator walk, 7 November 2026).
+    confirmLabel: 'common:unsavedChanges.discard',
+    cancelLabel: 'twoFactor.cancel',
+  }));
+  expect(mockBack).not.toHaveBeenCalled();
+});
+
+it('"I have saved them" leaves without asking', async () => {
+  mockGetStatus.mockResolvedValue(status());
+  const view = render(<SettingsTwoFactorScreen />);
+  await view.findByTestId('two-factor-enrolment');
+  fireEvent.press(view.getByTestId('enrolment-show-codes'));
+  expect(isGuardArmed()).toBe(true);
+
+  fireEvent.press(view.getByTestId('two-factor-enrolment'));
+  await waitFor(() => expect(mockBack).toHaveBeenCalled());
+  expect(isGuardArmed()).toBe(false);
 });
 
 it('says it is on, and does not offer set-up again', async () => {

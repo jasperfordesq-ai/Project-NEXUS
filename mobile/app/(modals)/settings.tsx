@@ -181,9 +181,17 @@ function SettingsScreen() {
     still shows, with a neutral description, rather than claiming on or off.
   */
   const [twoFactor, setTwoFactor] = useState<TwoFactorStatus | null>(null);
+  // Back from the screen the row opens, the old answer may be the wrong one: the row said
+  // "Off" beside "now on" until the status answered (7 November 2026). Only that screen
+  // can change it, so only that return forgets it; any other keeps the row steady.
+  const returningFromTwoFactor = useRef(false);
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
+      if (returningFromTwoFactor.current) {
+        returningFromTwoFactor.current = false;
+        setTwoFactor(null);
+      }
       void getTwoFactorStatus()
         .then((next) => { if (!cancelled) setTwoFactor(next); })
         .catch(() => { if (!cancelled) setTwoFactor(null); });
@@ -424,6 +432,7 @@ function SettingsScreen() {
                 tone={twoFactor?.enabled ? theme.success : primary}
                 onPress={() => {
                   void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  returningFromTwoFactor.current = true;
                   router.push('/(modals)/settings-two-factor' as Href);
                 }}
                 theme={theme}

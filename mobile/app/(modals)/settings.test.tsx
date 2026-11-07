@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 
 jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
@@ -433,6 +433,55 @@ describe('SettingsScreen', () => {
       const { queryByText } = render(<SettingsScreen />);
       await waitFor(() => expect(mockGetTwoFactorStatus).toHaveBeenCalled());
       await waitFor(() => expect(queryByText('Two-factor authentication')).toBeNull());
+    });
+
+    /**
+     * Runs every focus effect on mount, and hands back a way to focus the screen again:
+     * like a real return to the screen, each effect is cleaned up and run once more.
+     */
+    function focusableSettings() {
+      const refocus = new Set<React.Dispatch<React.SetStateAction<number>>>();
+      const { useFocusEffect } = require('expo-router');
+      (useFocusEffect as jest.Mock).mockImplementation((effect: () => void | (() => void)) => {
+        const [focusCount, setFocusCount] = React.useState(0);
+        refocus.add(setFocusCount);
+        React.useEffect(effect, [effect, focusCount]);
+      });
+      return { focusAgain: () => refocus.forEach((bump) => bump((count) => count + 1)) };
+    }
+
+    it('does not keep saying "off" while it re-checks after the two-factor screen', async () => {
+      // Back from turning it on, the row said "Off" beside the "now on" message until the
+      // status answered (emulator walk, 7 November 2026). It says neither until it knows.
+      const { focusAgain } = focusableSettings();
+      let answer: (value: unknown) => void = () => undefined;
+      mockGetTwoFactorStatus
+        .mockResolvedValueOnce(status())
+        .mockImplementationOnce(() => new Promise((resolve) => { answer = resolve; }));
+      const { findByText, getByText, queryByText } = render(<SettingsScreen />);
+      expect(await findByText('Off. Add a code from an authenticator app for extra protection.')).toBeTruthy();
+
+      fireEvent.press(getByText('Two-factor authentication'));
+      act(() => { focusAgain(); });
+      expect(queryByText('Off. Add a code from an authenticator app for extra protection.')).toBeNull();
+      expect(getByText('Ask for a code from an authenticator app as well as your password.')).toBeTruthy();
+
+      await act(async () => { answer(status({ enabled: true })); });
+      expect(getByText('On. You can manage it on the website.')).toBeTruthy();
+    });
+
+    it('keeps what it knows while it re-checks after any other screen', async () => {
+      // Only the screen the row opens can change the answer. Blanking it on every return
+      // would make the row jump in and out where the community does not allow it.
+      const { focusAgain } = focusableSettings();
+      mockGetTwoFactorStatus
+        .mockResolvedValueOnce(status())
+        .mockImplementationOnce(() => new Promise(() => undefined));
+      const { findByText, getByText } = render(<SettingsScreen />);
+      expect(await findByText('Off. Add a code from an authenticator app for extra protection.')).toBeTruthy();
+
+      act(() => { focusAgain(); });
+      expect(getByText('Off. Add a code from an authenticator app for extra protection.')).toBeTruthy();
     });
 
     it('stays, without claiming on or off, when the status cannot be read', async () => {

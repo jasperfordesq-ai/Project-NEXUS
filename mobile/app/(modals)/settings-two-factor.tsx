@@ -30,10 +30,12 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
-import TwoFactorEnrolment from '@/components/security/TwoFactorEnrolment';
+import TwoFactorEnrolment, { type TwoFactorEnrolmentStage } from '@/components/security/TwoFactorEnrolment';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { getTwoFactorStatus, type TwoFactorStatus } from '@/lib/api/twoFactor';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { withAlpha } from '@/lib/utils/color';
@@ -76,10 +78,33 @@ function SettingsTwoFactorScreen() {
 
   useEffect(() => { void load(); }, [load]);
 
+  // The backup codes are shown once, and two-factor is already on by then. Leaving the
+  // screen (top bar, Android's Back, an iOS swipe) threw them away, so it asks first;
+  // "I have saved them. Continue" leaves without asking (7 November 2026).
+  const { confirm, confirmDialog } = useConfirm();
+  const [stage, setStage] = useState<TwoFactorEnrolmentStage>('password');
+  const [leaving, setLeaving] = useState(false);
+  useUnsavedChangesGuard({
+    isDirty: stage === 'codes',
+    hasSaved: leaving,
+    confirm,
+    title: t('twoFactor.codes.title'),
+    message: t('twoFactor.codes.warning'),
+    // The app's usual short "Leave": the screen's own "I have saved them. Continue"
+    // wrapped over three lines in the dialog's half-width button (7 November 2026).
+    discardLabel: t('common:unsavedChanges.discard'),
+    cancelLabel: t('twoFactor.cancel'),
+  });
+  // Navigate only after the render that stands the guard down, or it would challenge
+  // this screen's own exit.
+  useEffect(() => {
+    if (leaving && router.canGoBack?.()) router.back();
+  }, [leaving]);
+
   function finished() {
     showToast({ title: t('twoFactor.screen.success'), variant: 'success' });
     setStatus((current) => (current ? { ...current, enabled: true } : current));
-    if (router.canGoBack?.()) router.back();
+    setLeaving(true);
   }
 
   return (
@@ -127,11 +152,12 @@ function SettingsTwoFactorScreen() {
             <HeroCard className="rounded-panel p-0">
               <HeroCard.Body className="gap-4 p-4">
                 <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('twoFactor.screen.needApp')}</Text>
-                <TwoFactorEnrolment accountLabel={user?.email ?? null} onDone={finished} />
+                <TwoFactorEnrolment accountLabel={user?.email ?? null} onDone={finished} onStageChange={setStage} />
               </HeroCard.Body>
             </HeroCard>
           )}
         </ScrollView>
+        {confirmDialog}
       </SafeAreaView>
     </ModalErrorBoundary>
   );

@@ -651,9 +651,17 @@ function OnboardingScreenInner() {
           <HeroCard className="rounded-panel">
             <HeroCard.Body className="gap-4 p-5">
               <Text accessibilityRole="header" className="text-xl font-bold text-foreground">{t('confirm_title')}</Text>
-              <Summary title={t('summary_interests')} values={interests} categories={categories} empty={t('none_selected')} />
-              <Summary title={t('summary_offers')} values={offers} categories={categories} empty={t('none_selected')} />
-              <Summary title={t('summary_needs')} values={needs} categories={categories} empty={t('none_selected')} />
+              {/* Only rows for steps this wizard asked: "Your Interests" showed in
+                  communities with no interests step (emulator, 7 Nov 2026). */}
+              {steps.some((step) => step.slug === 'interests') ? (
+                <Summary title={t('summary_interests')} values={interests} categories={categories} empty={t('none_selected')} />
+              ) : null}
+              {steps.some((step) => step.slug === 'skills') ? (
+                <>
+                  <Summary title={t('summary_offers')} values={offers} categories={categories} empty={t('none_selected')} />
+                  <Summary title={t('summary_needs')} values={needs} categories={categories} empty={t('none_selected')} />
+                </>
+              ) : null}
               <Button testID="onboarding-complete" fullWidth onPress={() => void finish()} isLoading={busy}>{t('complete_setup')}</Button>
               {/* The last step had no way back except Android's own Back button. */}
               {stepIndex > 0 ? (
