@@ -382,6 +382,10 @@ class User extends Authenticatable
             'is_approved' => $isApproved,
             'status' => $status,
             'is_tenant_super_admin' => $data['is_tenant_super_admin'] ?? 0,
+            // Nobody asked this member, so their community's language, never the
+            // column's bare 'en' default.
+            'preferred_language' => \App\Support\CommunityLanguage::supported($data['preferred_language'] ?? null)
+                ?? \App\Support\CommunityLanguage::forTenant($tenantId),
             'created_at' => now(),
         ]);
 

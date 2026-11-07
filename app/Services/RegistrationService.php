@@ -861,31 +861,12 @@ class RegistrationService
      */
     private function registrationLanguage(array $data, int $tenantId): string
     {
-        $supported = \App\Http\Middleware\SetLocale::SUPPORTED_LOCALES;
-        $pick = static function ($value) use ($supported): ?string {
-            $code = strtolower(substr(trim((string) $value), 0, 2));
+        $explicit = $data['preferred_language'] ?? null;
 
-            return in_array($code, $supported, true) ? $code : null;
-        };
-
-        $explicit = $pick($data['preferred_language'] ?? null);
-        if ($explicit !== null) {
-            return $explicit;
-        }
-
-        $header = (string) request()->header('Accept-Language', '');
-        if ($header !== '') {
-            foreach (explode(',', $header) as $part) {
-                $code = $pick(explode(';', $part)[0]);
-                if ($code !== null) {
-                    return $code;
-                }
-            }
-        }
-
-        $configuration = DB::table('tenants')->where('id', $tenantId)->value('configuration');
-        $config = is_string($configuration) ? json_decode($configuration, true) : null;
-
-        return $pick(is_array($config) ? ($config['default_language'] ?? null) : null) ?? 'en';
+        return \App\Support\CommunityLanguage::forNewMember(
+            $tenantId,
+            is_string($explicit) ? $explicit : null,
+            (string) request()->header('Accept-Language', '')
+        );
     }
 }

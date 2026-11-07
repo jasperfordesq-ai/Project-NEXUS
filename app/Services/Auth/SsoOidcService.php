@@ -1023,7 +1023,12 @@ class SsoOidcService
                 // Provisioning is reachable only after a signed literal-boolean
                 // `email_verified: true` assertion for this exact address.
                 'email_verified_at' => now(),
-                'preferred_language' => 'en',
+                // The browser finishing sign-in, else the community: never a bare 'en'.
+                'preferred_language' => \App\Support\CommunityLanguage::forNewMember(
+                    $tenantId,
+                    null,
+                    (string) request()->header('Accept-Language', '')
+                ),
                 'status' => $isOpen ? 'active' : 'pending',
                 'is_approved' => $isOpen ? 1 : 0,
                 'role' => 'member',

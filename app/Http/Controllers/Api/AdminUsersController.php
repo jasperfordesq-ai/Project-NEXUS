@@ -807,10 +807,10 @@ class AdminUsersController extends BaseApiController
             Log::warning('[AdminUsers] GDPR consent recording failed for admin-created user: ' . $e->getMessage());
         }
 
-        // Send welcome email if requested. The newly-created user has no
-        // preferred_language preference yet, so this renders in the app default
-        // (English). Locale-switch to the new user's row for consistency so future
-        // preference changes flow through automatically via findById.
+        // Send welcome email if requested, in the new member's language: the
+        // community's own (User::createWithTenant), since nobody has asked them.
+        // Locale-switch to the new user's row so later preference changes flow
+        // through automatically via findById.
         $welcomeEmailSent = false;
         if ($sendWelcomeEmail) {
             try {

@@ -452,7 +452,11 @@ class SocialAuthService
                 // photo as done, and showing it would tell Google each time the
                 // profile is viewed. The wizard asks for a photo, as for everyone.
                 'avatar_url' => null,
-                'preferred_language' => $this->detectLanguage(),
+                'preferred_language' => \App\Support\CommunityLanguage::forNewMember(
+                    $tenantId,
+                    null,
+                    (string) request()->header('Accept-Language', '')
+                ),
                 'status' => $isOpen ? 'active' : 'pending',
                 'is_approved' => $isOpen ? 1 : 0,
                 'role' => 'member',
@@ -1538,20 +1542,5 @@ class SocialAuthService
             $first = ucfirst($local);
         }
         return ['first' => $first, 'last' => $last];
-    }
-
-    private function detectLanguage(): string
-    {
-        $supported = ['en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar'];
-        $header = request()->header('Accept-Language', '');
-        if ($header) {
-            foreach (explode(',', (string) $header) as $part) {
-                $code = strtolower(substr(trim($part), 0, 2));
-                if (in_array($code, $supported, true)) {
-                    return $code;
-                }
-            }
-        }
-        return 'en';
     }
 }

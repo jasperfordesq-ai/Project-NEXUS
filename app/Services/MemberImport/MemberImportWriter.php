@@ -11,6 +11,7 @@ namespace App\Services\MemberImport;
 use App\Services\AuditLogService;
 use App\Services\Auth\EmailConfirmationService;
 use App\Services\Identity\AdminCreatedAccountAdmission;
+use App\Support\CommunityLanguage;
 use App\Support\UserDisplayName;
 use App\Support\Wallet\OpeningBalance;
 use Illuminate\Database\QueryException;
@@ -93,6 +94,8 @@ final class MemberImportWriter
                     'password_hash' => $this->unusablePasswordHash(),
                     'phone' => $row['phone'],
                     'location' => $row['location'],
+                    // The file says nothing about language: the community's, not English.
+                    'preferred_language' => CommunityLanguage::forTenant($tenantId),
                     'role' => 'member',
                     'status' => $decision['columns']['status'],
                     'is_approved' => $decision['columns']['is_approved'],

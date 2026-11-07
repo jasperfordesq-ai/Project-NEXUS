@@ -567,6 +567,8 @@ class TenantProvisioningService
             'is_super_admin' => 0,
             'is_approved'  => 1,
             'status'       => 'active',
+            // The new community's language, not the column's bare 'en' default.
+            'preferred_language' => \App\Support\CommunityLanguage::forTenant($tenantId),
             'created_at'   => $now,
             'updated_at'   => $now,
         ];
