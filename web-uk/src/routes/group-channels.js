@@ -48,6 +48,8 @@ const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { requireGroupSection, renderRefusal } = require('../lib/group-media-access');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { translateFields } = require('../lib/ugc-translation');
+const { htmlToPlainText } = require('../lib/html-sanitizer');
 const {
   text,
   positiveInteger,
@@ -124,6 +126,17 @@ function failureStatus(error) {
 
 function roomPath(groupId, roomId) {
   return `/groups/${groupId}/channels/${roomId}`;
+}
+
+const TRANSLATION_PROBLEMS = {
+  unavailable: 'govuk_alpha_messages.translate.unavailable',
+  failed: 'govuk_alpha_messages.translate.failed',
+  empty: 'govuk_alpha_messages.translate.empty'
+};
+
+/** Translation is offered unless the community has switched it off. */
+function translationOffered(req, res) {
+  return (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false;
 }
 
 /** Load the section and the channel together; answers the refusal itself and returns null. */
@@ -238,6 +251,12 @@ router.get('/:id(\\d+)/channels/:roomId(\\d+)', requireAuth, asyncRoute(async (r
   const nextCursor = page?.meta?.has_more === true ? text(page.meta.cursor) : '';
   const banner = statusBanner(t, `${NS}.states`, req.query.status, SUCCESS_STATES, ERROR_STATES, ROOM_FIELD_FOR);
 
+  // A translation made by the POST below is shown once, under its message.
+  const saved = req.session?.channelTranslation;
+  if (saved) delete req.session.channelTranslation;
+  const translation = saved && saved.roomId === room.id ? saved : null;
+  const problemKey = TRANSLATION_PROBLEMS[text(req.query.translationStatus, 20)];
+
   return res.render('groups/channels/room', {
     title: room.name,
     group,
@@ -248,6 +267,10 @@ router.get('/:id(\\d+)/channels/:roomId(\\d+)', requireAuth, asyncRoute(async (r
     canDeleteRoom: isChannelAdmin && !room.isDefault,
     olderHref: nextCursor ? `${roomPath(group.id, room.id)}?cursor=${encodeURIComponent(nextCursor)}` : '',
     latestHref: cursor ? roomPath(group.id, room.id) : '',
+    pageCursor: cursor,
+    translationOffered: translationOffered(req, res),
+    translation,
+    translationProblem: problemKey ? t(problemKey) : '',
     statusBanner: banner,
     hasErrors: Boolean(banner && banner.type === 'error')
   });
@@ -274,6 +297,46 @@ router.post('/:id(\\d+)/channels/:roomId(\\d+)/messages', requireAuth, asyncRout
   }
 
   return redirectWithStatus(res, back, 'posted', '#latest');
+}, PAGE_OPTIONS));
+
+/**
+ * Translate one channel message into the member's language (the website's
+ * Translate on group chat; AWID report, Oct 2026: "posts inside groups aren't
+ * translated"). The text is read from the API — the page of messages the member
+ * was reading, passed back as `cursor` — never taken from the form.
+ */
+router.post('/:id(\\d+)/channels/:roomId(\\d+)/messages/:messageId(\\d+)/translate', requireAuth, asyncRoute(async (req, res) => {
+  const context = await requireRoom(req, res);
+  if (!context) return undefined;
+  const { group, room } = context;
+  const messageId = Number(req.params.messageId);
+  const cursor = text(req.body?.cursor, 200);
+  const back = cursor ? `${roomPath(group.id, room.id)}?cursor=${encodeURIComponent(cursor)}&` : `${roomPath(group.id, room.id)}?`;
+  const done = (status) => res.redirect(urlFor(res, `${back}translationStatus=${status}#channel-message-${messageId}`));
+
+  if (!translationOffered(req, res)) return done('unavailable');
+
+  const params = new URLSearchParams({ per_page: String(PER_PAGE) });
+  if (cursor) params.set('cursor', cursor);
+  let rows = [];
+  try {
+    const page = await callGroupChatroomApi(req.token, 'GET', `/${encodeURIComponent(room.id)}/messages?${params.toString()}`);
+    rows = Array.isArray(page?.data) ? page.data : [];
+  } catch (error) {
+    if (isAuthError(error)) return loginRedirect(res);
+    return done('failed');
+  }
+
+  const row = rows.find((candidate) => positiveInteger(candidate?.id) === messageId);
+  const body = row ? htmlToPlainText(text(row.body, 10000)).slice(0, 8000).trim() : '';
+  if (body === '') return done('empty');
+
+  const result = await translateFields(req, res, req.token, { type: 'group_chatroom_message', id: messageId, fields: { body } }, true);
+  if (result && result.fields && result.fields.body) {
+    if (req.session) req.session.channelTranslation = { roomId: room.id, id: messageId, text: result.fields.body };
+    return done('done');
+  }
+  return done(req.translationUnavailable ? 'unavailable' : 'failed');
 }, PAGE_OPTIONS));
 
 router.get('/:id(\\d+)/channels/:roomId(\\d+)/messages/:messageId(\\d+)/delete', requireAuth, asyncRoute(async (req, res) => {

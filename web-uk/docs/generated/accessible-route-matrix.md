@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-11-06T20:39:49.526Z
-Laravel commit SHA: `8cc63ab6dbb796b029f356d73b5dae7b119c4afc`
-Web UK repository commit SHA: `8cc63ab6dbb796b029f356d73b5dae7b119c4afc`
+Generated: 2026-11-07T13:10:41.796Z
+Laravel commit SHA: `6397976e00eba3a601826d9517509d6bd9faee51`
+Web UK repository commit SHA: `6397976e00eba3a601826d9517509d6bd9faee51`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1091 |
+| web-uk routes | 1093 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 381 |
+| Extra web-uk routes | 383 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -54,7 +54,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | feed | 22 | 0 | 7 | 0 |
 | goals | 27 | 0 | 1 | 0 |
 | group-exchanges | 9 | 0 | 1 | 0 |
-| groups | 36 | 0 | 62 | 0 |
+| groups | 36 | 0 | 63 | 0 |
 | guide | 1 | 0 | 0 | 0 |
 | health | 0 | 0 | 0 | 1 |
 | help | 1 | 0 | 4 | 0 |
@@ -74,7 +74,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | matches | 4 | 0 | 4 | 0 |
 | me | 6 | 0 | 4 | 0 |
 | members | 11 | 0 | 4 | 0 |
-| messages | 18 | 0 | 6 | 0 |
+| messages | 18 | 0 | 7 | 0 |
 | municipality-calendar | 0 | 0 | 1 | 0 |
 | newsletter | 1 | 0 | 1 | 0 |
 | nexus-score | 2 | 0 | 0 | 0 |
@@ -235,6 +235,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/groups/{param}/channels/{param}/messages` | groups |  | web-uk/src/routes/group-channels.js |
 | POST | `/groups/{param}/channels/{param}/messages/{param}/delete` | groups |  | web-uk/src/routes/group-channels.js |
 | POST | `/groups/{param}/channels/{param}/messages/{param}/pin` | groups |  | web-uk/src/routes/group-channels.js |
+| POST | `/groups/{param}/channels/{param}/messages/{param}/translate` | groups |  | web-uk/src/routes/group-channels.js |
 | POST | `/groups/{param}/channels/{param}/messages/{param}/unpin` | groups |  | web-uk/src/routes/group-channels.js |
 | POST | `/groups/{param}/data-export` | groups |  | web-uk/src/routes/group-analytics.js |
 | POST | `/groups/{param}/discussions/{param}/translate` | groups |  | web-uk/src/routes/groups.js |
@@ -360,6 +361,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/messages/{param}/m/{param}/react` | messages |  | web-uk/src/routes/messages.js |
 | POST | `/messages/{param}/m/{param}/report` | messages |  | web-uk/src/routes/messages.js |
 | POST | `/messages/{param}/request-coordinator` | messages |  | web-uk/src/routes/messages.js |
+| POST | `/messages/groups/{param}/m/{param}/translate` | messages |  | web-uk/src/routes/messages.js |
 | GET | `/municipality-calendar` | municipality-calendar | municipality-calendar/index | web-uk/src/routes/municipality-calendar.js |
 | POST | `/newsletter/unsubscribe` | newsletter |  | web-uk/src/routes/public-info.js |
 | POST | `/organisations/{param}/reviews` | organisations |  | web-uk/src/server.js |

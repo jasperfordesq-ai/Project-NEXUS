@@ -1,9 +1,9 @@
 {
   "source": "disposable journey environment (synthetic accounts only)",
   "tenant": "e2e-community",
-  "contractsVerified": 120,
+  "contractsVerified": 143,
   "contractsWithFindings": 0,
-  "contractsModuleGatedForThisCommunity": 20,
+  "contractsModuleGatedForThisCommunity": 12,
   "results": [
     {
       "path": "/api/achievements/progress",
@@ -17,7 +17,7 @@
       "findings": []
     },
     {
-      "path": "/api/ai/providers",
+      "path": "/api/ai/limits",
       "anonymousStatus": 401,
       "memberStatus": 200,
       "responseKeys": [
@@ -28,18 +28,12 @@
       "findings": []
     },
     {
-      "path": "/api/auth/validate-token",
-      "anonymousStatus": 400,
+      "path": "/api/ai/providers",
+      "anonymousStatus": 401,
       "memberStatus": 200,
       "responseKeys": [
-        "success",
-        "valid",
-        "user_id",
-        "tenant_id",
-        "type",
-        "expires_at",
-        "time_remaining",
-        "needs_refresh"
+        "data",
+        "meta"
       ],
       "moduleGated": false,
       "findings": []
@@ -78,6 +72,49 @@
       "findings": []
     },
     {
+      "path": "/api/v2/blog/categories",
+      "anonymousStatus": 200,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/caring-community/caregiver/incoming-links",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/caring-community/caregiver/links",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/caring-community/regional-points/summary",
+      "anonymousStatus": 401,
+      "memberStatus": 403,
+      "responseKeys": [
+        "errors"
+      ],
+      "moduleGated": true,
+      "findings": []
+    },
+    {
       "path": "/api/v2/categories?type=event",
       "anonymousStatus": 200,
       "memberStatus": 200,
@@ -103,6 +140,17 @@
       "memberStatus": 200,
       "responseKeys": [
         "data"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/config/algorithms",
+      "anonymousStatus": 200,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
       ],
       "moduleGated": false,
       "findings": []
@@ -146,21 +194,23 @@
     {
       "path": "/api/v2/courses/categories",
       "anonymousStatus": 401,
-      "memberStatus": 403,
+      "memberStatus": 200,
       "responseKeys": [
-        "errors"
+        "data",
+        "meta"
       ],
-      "moduleGated": true,
+      "moduleGated": false,
       "findings": []
     },
     {
       "path": "/api/v2/courses/mine",
       "anonymousStatus": 401,
-      "memberStatus": 403,
+      "memberStatus": 200,
       "responseKeys": [
-        "errors"
+        "data",
+        "meta"
       ],
-      "moduleGated": true,
+      "moduleGated": false,
       "findings": []
     },
     {
@@ -216,6 +266,17 @@
       "findings": []
     },
     {
+      "path": "/api/v2/explore",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
       "path": "/api/v2/federation/activity",
       "anonymousStatus": 401,
       "memberStatus": 403,
@@ -223,6 +284,17 @@
         "errors"
       ],
       "moduleGated": true,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/federation/debit-approvals",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "success",
+        "data"
+      ],
+      "moduleGated": false,
       "findings": []
     },
     {
@@ -259,6 +331,17 @@
     },
     {
       "path": "/api/v2/federation/status",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/feed/sidebar",
       "anonymousStatus": 401,
       "memberStatus": 200,
       "responseKeys": [
@@ -423,6 +506,28 @@
       "findings": []
     },
     {
+      "path": "/api/v2/groups/form-capabilities",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/groups/types",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
       "path": "/api/v2/ideation-campaigns?per_page=50",
       "anonymousStatus": 401,
       "memberStatus": 200,
@@ -478,7 +583,29 @@
       "findings": []
     },
     {
+      "path": "/api/v2/identity/status",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
       "path": "/api/v2/jobs/alerts",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/jobs/gdpr-export",
       "anonymousStatus": 401,
       "memberStatus": 200,
       "responseKeys": [
@@ -533,6 +660,28 @@
       "findings": []
     },
     {
+      "path": "/api/v2/jobs/saved-profile",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/jobs/templates",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
       "path": "/api/v2/legal/acceptance/status",
       "anonymousStatus": 401,
       "memberStatus": 200,
@@ -546,61 +695,67 @@
     {
       "path": "/api/v2/marketplace/categories",
       "anonymousStatus": 401,
-      "memberStatus": 403,
+      "memberStatus": 200,
       "responseKeys": [
-        "errors"
+        "data",
+        "meta"
       ],
-      "moduleGated": true,
+      "moduleGated": false,
       "findings": []
     },
     {
-      "path": "/api/v2/marketplace/listings/free?limit=50",
+      "path": "/api/v2/marketplace/collections",
       "anonymousStatus": 401,
-      "memberStatus": 403,
+      "memberStatus": 200,
       "responseKeys": [
-        "errors"
+        "data",
+        "meta"
       ],
-      "moduleGated": true,
+      "moduleGated": false,
       "findings": []
     },
     {
-      "path": "/api/v2/marketplace/listings/saved?limit=50",
+      "path": "/api/v2/marketplace/listings/featured",
       "anonymousStatus": 401,
-      "memberStatus": 403,
+      "memberStatus": 200,
       "responseKeys": [
-        "errors"
+        "data",
+        "meta"
       ],
-      "moduleGated": true,
+      "moduleGated": false,
       "findings": []
     },
     {
       "path": "/api/v2/marketplace/me/pickups",
       "anonymousStatus": 401,
-      "memberStatus": 403,
+      "memberStatus": 200,
       "responseKeys": [
-        "errors"
+        "data",
+        "meta"
       ],
-      "moduleGated": true,
+      "moduleGated": false,
       "findings": []
     },
     {
-      "path": "/api/v2/marketplace/my-offers/received?per_page=50",
+      "path": "/api/v2/marketplace/reports",
       "anonymousStatus": 401,
-      "memberStatus": 403,
+      "memberStatus": 200,
       "responseKeys": [
-        "errors"
+        "data",
+        "meta"
       ],
-      "moduleGated": true,
+      "moduleGated": false,
       "findings": []
     },
     {
-      "path": "/api/v2/marketplace/my-offers/sent?per_page=50",
+      "path": "/api/v2/marketplace/saved-searches",
       "anonymousStatus": 401,
-      "memberStatus": 403,
+      "memberStatus": 200,
       "responseKeys": [
-        "errors"
+        "data",
+        "meta"
       ],
-      "moduleGated": true,
+      "moduleGated": false,
       "findings": []
     },
     {
@@ -618,7 +773,62 @@
       "findings": []
     },
     {
+      "path": "/api/v2/marketplace/seller/dashboard",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/marketplace/seller/onboard/status",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
       "path": "/api/v2/marketplace/seller/pickup-slots",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/marketplace/seller/shipping-options",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/matches/all?modules=groups&limit=3&min_score=50",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/me/ad-campaigns",
       "anonymousStatus": 401,
       "memberStatus": 403,
       "responseKeys": [
@@ -641,43 +851,76 @@
     {
       "path": "/api/v2/me/courses",
       "anonymousStatus": 401,
-      "memberStatus": 403,
+      "memberStatus": 200,
       "responseKeys": [
-        "errors"
+        "data",
+        "meta"
       ],
-      "moduleGated": true,
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/me/data-export/history",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/me/verein-dues",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/me/verein-invitations",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
       "findings": []
     },
     {
       "path": "/api/v2/member-premium/me",
       "anonymousStatus": 401,
-      "memberStatus": 200,
-      "responseKeys": [
-        "data",
-        "meta"
-      ],
-      "moduleGated": false,
-      "findings": []
-    },
-    {
-      "path": "/api/v2/member-premium/tiers",
-      "anonymousStatus": 200,
-      "memberStatus": 200,
-      "responseKeys": [
-        "data",
-        "meta"
-      ],
-      "moduleGated": false,
-      "findings": []
-    },
-    {
-      "path": "/api/v2/merchant-onboarding/status",
-      "anonymousStatus": 401,
       "memberStatus": 403,
       "responseKeys": [
         "errors"
       ],
       "moduleGated": true,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/member-premium/tiers",
+      "anonymousStatus": 403,
+      "memberStatus": 403,
+      "responseKeys": [
+        "errors"
+      ],
+      "moduleGated": true,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/merchant-onboarding/status",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
       "findings": []
     },
     {
@@ -815,11 +1058,12 @@
     {
       "path": "/api/v2/podcasts/mine",
       "anonymousStatus": 401,
-      "memberStatus": 403,
+      "memberStatus": 200,
       "responseKeys": [
-        "errors"
+        "data",
+        "meta"
       ],
-      "moduleGated": true,
+      "moduleGated": false,
       "findings": []
     },
     {
@@ -868,6 +1112,17 @@
     },
     {
       "path": "/api/v2/reviews/pending?per_page=20",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/safeguarding/available-options",
       "anonymousStatus": 401,
       "memberStatus": 200,
       "responseKeys": [
@@ -1010,6 +1265,17 @@
       "findings": []
     },
     {
+      "path": "/api/v2/users/me/listings-digest",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
       "path": "/api/v2/users/me/match-preferences",
       "anonymousStatus": 401,
       "memberStatus": 200,
@@ -1033,6 +1299,17 @@
     },
     {
       "path": "/api/v2/users/me/parent-accounts",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/users/me/preferences",
       "anonymousStatus": 401,
       "memberStatus": 200,
       "responseKeys": [
@@ -1098,29 +1375,7 @@
       "findings": []
     },
     {
-      "path": "/api/v2/volunteering/certificates",
-      "anonymousStatus": 401,
-      "memberStatus": 200,
-      "responseKeys": [
-        "data",
-        "meta"
-      ],
-      "moduleGated": false,
-      "findings": []
-    },
-    {
-      "path": "/api/v2/volunteering/community-projects?public=true&limit=12",
-      "anonymousStatus": 401,
-      "memberStatus": 200,
-      "responseKeys": [
-        "data",
-        "meta"
-      ],
-      "moduleGated": false,
-      "findings": []
-    },
-    {
-      "path": "/api/v2/volunteering/credentials",
+      "path": "/api/v2/volunteering/community-projects?per_page=20",
       "anonymousStatus": 401,
       "memberStatus": 200,
       "responseKeys": [
@@ -1132,17 +1387,6 @@
     },
     {
       "path": "/api/v2/volunteering/donations?per_page=20",
-      "anonymousStatus": 401,
-      "memberStatus": 200,
-      "responseKeys": [
-        "data",
-        "meta"
-      ],
-      "moduleGated": false,
-      "findings": []
-    },
-    {
-      "path": "/api/v2/volunteering/expenses?per_page=50",
       "anonymousStatus": 401,
       "memberStatus": 200,
       "responseKeys": [
@@ -1186,7 +1430,7 @@
       "findings": []
     },
     {
-      "path": "/api/v2/volunteering/hours?per_page=10",
+      "path": "/api/v2/volunteering/incidents",
       "anonymousStatus": 401,
       "memberStatus": 200,
       "responseKeys": [
@@ -1197,7 +1441,7 @@
       "findings": []
     },
     {
-      "path": "/api/v2/volunteering/incidents",
+      "path": "/api/v2/volunteering/incidents/report-options",
       "anonymousStatus": 401,
       "memberStatus": 200,
       "responseKeys": [
@@ -1219,6 +1463,28 @@
       "findings": []
     },
     {
+      "path": "/api/v2/volunteering/opportunities?per_page=100",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
+      "path": "/api/v2/volunteering/qualifications",
+      "anonymousStatus": 401,
+      "memberStatus": 200,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
+      "moduleGated": false,
+      "findings": []
+    },
+    {
       "path": "/api/v2/volunteering/recommended-shifts?limit=15&min_score=20",
       "anonymousStatus": 401,
       "memberStatus": 200,
@@ -1230,18 +1496,7 @@
       "findings": []
     },
     {
-      "path": "/api/v2/volunteering/shifts?limit=50",
-      "anonymousStatus": 401,
-      "memberStatus": 200,
-      "responseKeys": [
-        "data",
-        "meta"
-      ],
-      "moduleGated": false,
-      "findings": []
-    },
-    {
-      "path": "/api/v2/volunteering/swaps",
+      "path": "/api/v2/volunteering/shifts?per_page=50",
       "anonymousStatus": 401,
       "memberStatus": 200,
       "responseKeys": [
@@ -1296,10 +1551,13 @@
       "findings": []
     },
     {
-      "path": "/api/v2/wallet/statement",
+      "path": "/api/v2/wallet/config",
       "anonymousStatus": 401,
       "memberStatus": 200,
-      "responseKeys": null,
+      "responseKeys": [
+        "data",
+        "meta"
+      ],
       "moduleGated": false,
       "findings": []
     },

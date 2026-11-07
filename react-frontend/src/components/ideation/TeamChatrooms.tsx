@@ -36,6 +36,7 @@ import Trash2 from 'lucide-react/icons/trash-2';
 import MessageSquare from 'lucide-react/icons/message-square';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { useAuth, useToast } from '@/contexts';
 import { usePusherOptional } from '@/contexts/PusherContext';
 import { api } from '@/lib/api';
@@ -67,6 +68,33 @@ interface ChatMessage {
     name: string;
     avatar_url: string | null;
   };
+}
+
+/**
+ * One channel message's text, with Translate under it (AWID report, Oct 2026:
+ * "posts inside groups aren't translated"). The translation replaces the text
+ * in place, as on comments; TranslateButton hides itself when the text is
+ * already in the reader's language.
+ */
+function ChatroomMessageText({ message }: { message: ChatMessage }) {
+  const [displayed, setDisplayed] = useState(message.body);
+  useEffect(() => { setDisplayed(message.body); }, [message.body]);
+
+  return (
+    <>
+      <p className="break-words whitespace-pre-wrap text-sm text-[var(--color-text-secondary)]">
+        {displayed}
+      </p>
+      <TranslateButton
+        contentType="group_chatroom_message"
+        contentId={message.id}
+        sourceText={message.body}
+        sourceLocale={null}
+        onTextChange={(text) => setDisplayed(text)}
+        className="min-h-[24px] px-0 py-0 text-xs"
+      />
+    </>
+  );
 }
 
 interface PinnedMessage extends ChatMessage {
@@ -624,9 +652,7 @@ export function TeamChatrooms({ groupId, isGroupAdmin }: TeamChatroomsProps) {
                         </OverlayActionButton>
                       )}
                     </div>
-                    <p className="break-words whitespace-pre-wrap text-sm text-[var(--color-text-secondary)]">
-                      {msg.body}
-                    </p>
+                    <ChatroomMessageText message={msg} />
                   </div>
                 </div>
               ))}

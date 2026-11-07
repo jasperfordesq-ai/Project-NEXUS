@@ -29,6 +29,18 @@
       {% if post.createdAtLabel %}<span aria-hidden="true"> | </span><span class="govuk-visually-hidden">{{ t("groups_t1.feed_posted_on_prefix") }}</span> <time datetime="{{ post.createdAt }}">{{ post.createdAtLabel }}</time>{% endif %}
     </p>
     {% for paragraph in post.contentParagraphs %}<p class="govuk-body">{{ paragraph }}</p>{% endfor %}
+    {#
+      Translate (React's FeedCard TranslateButton in GroupFeedTab). AWID report,
+      Oct 2026: "posts inside groups aren't translated". Group posts are feed
+      posts, so this uses the feed's own translate route, which reads the post
+      from the API and shows the translation on the post page.
+    #}
+    {% if post.type == "post" and post.id and post.contentParagraphs.length > 0 and needsTranslation(post.contentParagraphs, t.locale) %}
+      <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/translate') }}" class="govuk-!-margin-bottom-3" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_feed.translate.button") }}<span class="govuk-visually-hidden"> {{ postHeading }}</span></button>
+      </form>
+    {% endif %}
     {% if post.media.length > 0 %}
       <ul class="nexus-alpha-feed-media" data-count="{{ post.media.length }}">
         {% for media in post.media %}

@@ -16,7 +16,8 @@
 const request = require('supertest');
 
 jest.mock('../src/lib/api', () => require('./support/api-mock').apiMockFactory([
-  'getGroup', 'getProfile', 'callGroupApi', 'callGroupChatroomApi', 'callGroupChatroomMessageApi'
+  'getGroup', 'getProfile', 'callGroupApi', 'callGroupChatroomApi', 'callGroupChatroomMessageApi',
+  'callUgcTranslateApi', 'callUserSettingsApi'
 ]));
 
 const api = require('../src/lib/api');
@@ -233,5 +234,63 @@ describe('creating and deleting channels', () => {
     api.getGroup.mockResolvedValue(ADMIN);
     const page = await request(app).get('/groups/974/channels/7/delete');
     expect(page.status).toBe(403);
+  });
+});
+
+/**
+ * AWID report, Oct 2026: "posts inside groups aren't translated". A channel
+ * message gets the same Translate as a group discussion: the text is read from
+ * the API (the page the member was on), never taken from the form.
+ */
+describe('translating a channel message', () => {
+  const SPANISH = 'Hola a todos, ¿quién puede llevarme mañana al mercado del pueblo? Gracias de antemano.';
+
+  beforeEach(() => {
+    api.callUserSettingsApi.mockResolvedValue({ data: { translation: {} } });
+  });
+
+  it('offers Translate on a message in another language, and not on one in mine', async () => {
+    routeApi({ messages: [message(12, 22, SPANISH, 'Bob Ray'), message(11, 23, 'Is anyone driving to the market on Saturday morning? I need a lift for two boxes.', 'Cat Doe')] });
+    const res = await request(app).get('/groups/974/channels/7');
+    expect(res.text).toContain('action="/groups/974/channels/7/messages/12/translate"');
+    expect(res.text).not.toContain('action="/groups/974/channels/7/messages/11/translate"');
+  });
+
+  it('translates the message read from the API and shows it under that message', async () => {
+    routeApi({ messages: [message(12, 22, SPANISH, 'Bob Ray')] });
+    api.callUgcTranslateApi.mockResolvedValue({ data: { translated_text: 'Hello everyone, who can give me a lift to the village market tomorrow?' } });
+    const agent = request.agent(app);
+
+    const post = await agent.post('/groups/974/channels/7/messages/12/translate').type('form')
+      .send({ _csrf: 'csrf', cursor: '', body: 'ignored: never translated from the form' });
+
+    expect(api.callUgcTranslateApi).toHaveBeenCalledWith('token:test', expect.objectContaining({
+      content_type: 'group_chatroom_message', content_id: 12, source_text: SPANISH
+    }));
+    expect(post.headers.location).toBe('/groups/974/channels/7?translationStatus=done#channel-message-12');
+    const page = await agent.get('/groups/974/channels/7');
+    expect(page.text).toContain('Hello everyone, who can give me a lift to the village market tomorrow?');
+    expect(page.text).toContain('id="channel-message-12"');
+  });
+
+  it('says plainly when translation is not set up in this community', async () => {
+    routeApi({ messages: [message(12, 22, SPANISH, 'Bob Ray')] });
+    api.callUgcTranslateApi.mockRejectedValue(new api.ApiError('No', 422, { errors: [{ code: 'TRANSLATION_NOT_SET_UP' }] }));
+
+    const post = await request(app).post('/groups/974/channels/7/messages/12/translate').type('form').send({ _csrf: 'csrf' });
+
+    expect(post.headers.location).toBe('/groups/974/channels/7?translationStatus=unavailable#channel-message-12');
+    const page = await request(app).get('/groups/974/channels/7?translationStatus=unavailable');
+    expect(page.text).toContain(t('govuk_alpha_messages.translate.unavailable'));
+  });
+
+  it('keeps the older page the member was reading', async () => {
+    routeApi({ messages: [message(12, 22, SPANISH, 'Bob Ray')] });
+    api.callUgcTranslateApi.mockResolvedValue({ data: { translated_text: 'Hello everyone' } });
+
+    const post = await request(app).post('/groups/974/channels/7/messages/12/translate').type('form').send({ _csrf: 'csrf', cursor: 'MTE=' });
+
+    expect(api.callGroupChatroomApi).toHaveBeenCalledWith('token:test', 'GET', '/7/messages?per_page=50&cursor=MTE%3D');
+    expect(post.headers.location).toBe('/groups/974/channels/7?cursor=MTE%3D&translationStatus=done#channel-message-12');
   });
 });

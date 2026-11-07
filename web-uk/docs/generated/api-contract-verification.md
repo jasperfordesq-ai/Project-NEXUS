@@ -12,9 +12,9 @@ The consumer ledger records that a call exists and that Laravel declares a route
 it. This file records what the endpoint **actually did**: the status for an anonymous
 caller, the status for a signed-in member, and the response keys returned.
 
-- Contracts verified: **120**
+- Contracts verified: **143**
 - Contracts with findings: **0**
-- Answered **403** because the fixture community has that module switched off: **20**
+- Answered **403** because the fixture community has that module switched off: **12**
 
 🔴 A 403 is not a fault. It means the module is off for this community, so this file
 is evidence about the endpoints it could actually reach — not about all of them.
@@ -28,29 +28,37 @@ None.
 | Endpoint | Member | Anonymous | Response keys |
 | --- | --- | --- | --- |
 | `/api/achievements/progress` | 200 | 401 | success, data |
+| `/api/ai/limits` | 200 | 401 | data, meta |
 | `/api/ai/providers` | 200 | 401 | data, meta |
-| `/api/auth/validate-token` | 200 | 400 | success, valid, user_id, tenant_id, type, expires_at, time_remaining, needs_refresh |
 | `/api/v2/admin/jobs/?limit=200` | 403 | 401 | errors, success |
 | `/api/v2/auth/2fa/status` | 200 | 401 | data, meta |
 | `/api/v2/auth/registration-info` | 200 | 200 | data, meta |
+| `/api/v2/blog/categories` | 200 | 200 | data, meta |
+| `/api/v2/caring-community/caregiver/incoming-links` | 200 | 401 | data, meta |
+| `/api/v2/caring-community/caregiver/links` | 200 | 401 | data, meta |
+| `/api/v2/caring-community/regional-points/summary` | 403 | 401 | errors |
 | `/api/v2/categories?type=event` | 200 | 200 | data |
 | `/api/v2/categories?type=listing` | 200 | 200 | data |
 | `/api/v2/categories?type=volunteering` | 200 | 200 | data |
+| `/api/v2/config/algorithms` | 200 | 200 | data, meta |
 | `/api/v2/connections/pending` | 200 | 401 | data, meta |
 | `/api/v2/conversations/groups` | 200 | 401 | data, meta |
 | `/api/v2/coupons` | 403 | 401 | message, exception, file, line, trace |
-| `/api/v2/courses/categories` | 403 | 401 | errors |
-| `/api/v2/courses/mine` | 403 | 401 | errors |
+| `/api/v2/courses/categories` | 200 | 401 | data, meta |
+| `/api/v2/courses/mine` | 200 | 401 | data, meta |
 | `/api/v2/events/calendar/feed-tokens` | 200 | 401 | data, meta |
 | `/api/v2/events/calendar/feed.ics` | 200 | 401 | — |
 | `/api/v2/events/recurrence-capabilities` | 200 | 401 | data, meta |
 | `/api/v2/exchanges/config` | 200 | 401 | data, meta |
 | `/api/v2/exchanges/needs-attention-count` | 200 | 401 | data, meta |
+| `/api/v2/explore` | 200 | 401 | data, meta |
 | `/api/v2/federation/activity` | 403 | 401 | errors |
+| `/api/v2/federation/debit-approvals` | 200 | 401 | success, data |
 | `/api/v2/federation/messages` | 403 | 401 | errors |
 | `/api/v2/federation/partners` | 200 | 401 | data, meta |
 | `/api/v2/federation/settings` | 200 | 401 | data, meta |
 | `/api/v2/federation/status` | 200 | 401 | data, meta |
+| `/api/v2/feed/sidebar` | 200 | 401 | data, meta |
 | `/api/v2/gamification/badges` | 200 | 401 | data, meta |
 | `/api/v2/gamification/challenges` | 200 | 401 | data, meta |
 | `/api/v2/gamification/collections` | 200 | 401 | data, meta |
@@ -65,30 +73,44 @@ None.
 | `/api/v2/gamification/seasons/current` | 200 | 401 | data, meta |
 | `/api/v2/gamification/shop` | 200 | 401 | data, meta |
 | `/api/v2/goals/templates/categories` | 200 | 401 | data, meta |
+| `/api/v2/groups/form-capabilities` | 200 | 401 | data, meta |
+| `/api/v2/groups/types` | 200 | 401 | data, meta |
 | `/api/v2/ideation-campaigns?per_page=50` | 200 | 401 | data, meta |
 | `/api/v2/ideation-categories` | 200 | 401 | data, meta |
 | `/api/v2/ideation-outcomes/dashboard` | 200 | 401 | data, meta |
 | `/api/v2/ideation-tags/popular` | 200 | 401 | data, meta |
 | `/api/v2/ideation-templates` | 200 | 401 | data, meta |
+| `/api/v2/identity/status` | 200 | 401 | data, meta |
 | `/api/v2/jobs/alerts` | 200 | 401 | data, meta |
+| `/api/v2/jobs/gdpr-export` | 200 | 401 | data, meta |
 | `/api/v2/jobs/my-applications?per_page=100` | 200 | 401 | data, meta |
 | `/api/v2/jobs/my-interviews` | 200 | 401 | data, meta |
 | `/api/v2/jobs/my-offers` | 200 | 401 | data, meta |
 | `/api/v2/jobs/my-postings?per_page=1` | 200 | 401 | data, meta |
+| `/api/v2/jobs/saved-profile` | 200 | 401 | data, meta |
+| `/api/v2/jobs/templates` | 200 | 401 | data, meta |
 | `/api/v2/legal/acceptance/status` | 200 | 401 | data, meta |
-| `/api/v2/marketplace/categories` | 403 | 401 | errors |
-| `/api/v2/marketplace/listings/free?limit=50` | 403 | 401 | errors |
-| `/api/v2/marketplace/listings/saved?limit=50` | 403 | 401 | errors |
-| `/api/v2/marketplace/me/pickups` | 403 | 401 | errors |
-| `/api/v2/marketplace/my-offers/received?per_page=50` | 403 | 401 | errors |
-| `/api/v2/marketplace/my-offers/sent?per_page=50` | 403 | 401 | errors |
+| `/api/v2/marketplace/categories` | 200 | 401 | data, meta |
+| `/api/v2/marketplace/collections` | 200 | 401 | data, meta |
+| `/api/v2/marketplace/listings/featured` | 200 | 401 | data, meta |
+| `/api/v2/marketplace/me/pickups` | 200 | 401 | data, meta |
+| `/api/v2/marketplace/reports` | 200 | 401 | data, meta |
+| `/api/v2/marketplace/saved-searches` | 200 | 401 | data, meta |
 | `/api/v2/marketplace/seller/coupons` | 403 | 401 | message, exception, file, line, trace |
-| `/api/v2/marketplace/seller/pickup-slots` | 403 | 401 | errors |
+| `/api/v2/marketplace/seller/dashboard` | 200 | 401 | data, meta |
+| `/api/v2/marketplace/seller/onboard/status` | 200 | 401 | data, meta |
+| `/api/v2/marketplace/seller/pickup-slots` | 200 | 401 | data, meta |
+| `/api/v2/marketplace/seller/shipping-options` | 200 | 401 | data, meta |
+| `/api/v2/matches/all?modules=groups&limit=3&min_score=50` | 200 | 401 | data, meta |
+| `/api/v2/me/ad-campaigns` | 403 | 401 | errors |
 | `/api/v2/me/collections` | 200 | 401 | data, meta |
-| `/api/v2/me/courses` | 403 | 401 | errors |
-| `/api/v2/member-premium/me` | 200 | 401 | data, meta |
-| `/api/v2/member-premium/tiers` | 200 | 200 | data, meta |
-| `/api/v2/merchant-onboarding/status` | 403 | 401 | errors |
+| `/api/v2/me/courses` | 200 | 401 | data, meta |
+| `/api/v2/me/data-export/history` | 200 | 401 | data, meta |
+| `/api/v2/me/verein-dues` | 200 | 401 | data, meta |
+| `/api/v2/me/verein-invitations` | 200 | 401 | data, meta |
+| `/api/v2/member-premium/me` | 403 | 401 | errors |
+| `/api/v2/member-premium/tiers` | 403 | 403 | errors |
+| `/api/v2/merchant-onboarding/status` | 200 | 401 | data, meta |
 | `/api/v2/messages/restriction-status` | 200 | 401 | data, meta |
 | `/api/v2/messages/unread-count` | 200 | 401 | data, meta |
 | `/api/v2/notifications/counts` | 200 | 401 | data, meta |
@@ -101,12 +123,13 @@ None.
 | `/api/v2/partner-venues/my-visits` | 403 | 401 | errors, success |
 | `/api/v2/partner-venues/pass` | 403 | 401 | errors, success |
 | `/api/v2/platform/stats` | 200 | 200 | data, meta |
-| `/api/v2/podcasts/mine` | 403 | 401 | errors |
+| `/api/v2/podcasts/mine` | 200 | 401 | data, meta |
 | `/api/v2/polls/categories` | 200 | 401 | data, meta |
 | `/api/v2/resources/categories` | 200 | 401 | data, meta |
 | `/api/v2/resources/categories/tree` | 200 | 401 | data, meta |
 | `/api/v2/reviews/given?per_page=20` | 200 | 401 | data, meta |
 | `/api/v2/reviews/pending?per_page=20` | 200 | 401 | data, meta |
+| `/api/v2/safeguarding/available-options` | 200 | 401 | data, meta |
 | `/api/v2/safeguarding/my-guardians` | 200 | 401 | data, meta |
 | `/api/v2/safeguarding/my-preferences` | 200 | 401 | data, meta |
 | `/api/v2/safeguarding/my-vetting-status` | 200 | 401 | data, meta |
@@ -119,31 +142,31 @@ None.
 | `/api/v2/users/me/availability` | 200 | 401 | data, meta |
 | `/api/v2/users/me/consent` | 200 | 401 | data, meta |
 | `/api/v2/users/me/insurance` | 200 | 401 | data, meta |
+| `/api/v2/users/me/listings-digest` | 200 | 401 | data, meta |
 | `/api/v2/users/me/match-preferences` | 200 | 401 | data, meta |
 | `/api/v2/users/me/notifications` | 200 | 401 | data, meta |
 | `/api/v2/users/me/parent-accounts` | 200 | 401 | data, meta |
+| `/api/v2/users/me/preferences` | 200 | 401 | data, meta |
 | `/api/v2/users/me/sessions` | 200 | 401 | data, meta |
 | `/api/v2/users/me/skills` | 200 | 401 | data, meta |
 | `/api/v2/users/me/sub-accounts` | 200 | 401 | data, meta |
 | `/api/v2/volunteering/accessibility-needs` | 200 | 401 | data, meta |
 | `/api/v2/volunteering/applications?status=approved&per_page=50` | 200 | 401 | data, meta |
-| `/api/v2/volunteering/certificates` | 200 | 401 | data, meta |
-| `/api/v2/volunteering/community-projects?public=true&limit=12` | 200 | 401 | data, meta |
-| `/api/v2/volunteering/credentials` | 200 | 401 | data, meta |
+| `/api/v2/volunteering/community-projects?per_page=20` | 200 | 401 | data, meta |
 | `/api/v2/volunteering/donations?per_page=20` | 200 | 401 | data, meta |
-| `/api/v2/volunteering/expenses?per_page=50` | 200 | 401 | data, meta |
 | `/api/v2/volunteering/giving-days` | 200 | 401 | data, meta |
 | `/api/v2/volunteering/group-reservations` | 200 | 401 | data, meta |
 | `/api/v2/volunteering/hours/summary` | 200 | 401 | data, meta |
-| `/api/v2/volunteering/hours?per_page=10` | 200 | 401 | data, meta |
 | `/api/v2/volunteering/incidents` | 200 | 401 | data, meta |
+| `/api/v2/volunteering/incidents/report-options` | 200 | 401 | data, meta |
 | `/api/v2/volunteering/my-waitlists` | 200 | 401 | data, meta |
+| `/api/v2/volunteering/opportunities?per_page=100` | 200 | 401 | data, meta |
+| `/api/v2/volunteering/qualifications` | 200 | 401 | data, meta |
 | `/api/v2/volunteering/recommended-shifts?limit=15&min_score=20` | 200 | 401 | data, meta |
-| `/api/v2/volunteering/shifts?limit=50` | 200 | 401 | data, meta |
-| `/api/v2/volunteering/swaps` | 200 | 401 | data, meta |
+| `/api/v2/volunteering/shifts?per_page=50` | 200 | 401 | data, meta |
 | `/api/v2/volunteering/training` | 200 | 401 | data, meta |
 | `/api/v2/volunteering/wellbeing` | 200 | 401 | data, meta |
 | `/api/v2/wallet/balance` | 200 | 401 | data, meta |
 | `/api/v2/wallet/community-fund` | 200 | 401 | data, meta |
-| `/api/v2/wallet/statement` | 200 | 401 | — |
+| `/api/v2/wallet/config` | 200 | 401 | data, meta |
 | `/api/webauthn/credentials` | 200 | 401 | data, meta |

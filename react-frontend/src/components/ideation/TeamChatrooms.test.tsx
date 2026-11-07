@@ -77,6 +77,26 @@ vi.mock('@/components/ui/ConfirmDialog', async (importOriginal) => {
 });
 
 // Stub feedback
+// A stand-in for the real TranslateButton (its own tests cover the API call):
+// pressing it hands back a translation the way the real one does.
+vi.mock('@/components/i18n/TranslateButton', () => ({
+  TranslateButton: ({ contentType, contentId, sourceText, onTextChange }: {
+    contentType: string;
+    contentId: number;
+    sourceText: string;
+    onTextChange?: (text: string, isTranslated: boolean) => void;
+  }) => (
+    <button
+      type="button"
+      data-testid={`translate-${contentType}-${contentId}`}
+      data-source={sourceText}
+      onClick={() => onTextChange?.(`[translated] ${sourceText}`, true)}
+    >
+      Translate
+    </button>
+  ),
+}));
+
 vi.mock('@/components/feedback', () => ({
   EmptyState: ({ title }: { title: string }) => (
     <div data-testid="empty-state">{title}</div>
@@ -476,5 +496,22 @@ describe('TeamChatrooms', () => {
         expect.objectContaining({ name: 'my-new-channel' }),
       );
     });
+  });
+  // AWID report, Oct 2026: "posts inside groups aren't translated".
+  it('offers Translate on each channel message and shows the translation in place', async () => {
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/messages')) {
+        return Promise.resolve({ success: true, data: [makeMessage({ id: 101, body: 'Hola a todos, ¿quién viene el sábado?' })] });
+      }
+      if (url.includes('/pinned')) return Promise.resolve(emptyPinned);
+      return Promise.resolve(okChatrooms);
+    });
+    const { TeamChatrooms } = await import('./TeamChatrooms');
+    render(<TeamChatrooms groupId={5} isGroupAdmin={false} />);
+
+    const button = await screen.findByTestId('translate-group_chatroom_message-101');
+    expect(button).toHaveAttribute('data-source', 'Hola a todos, ¿quién viene el sábado?');
+    fireEvent.click(button);
+    expect(await screen.findByText('[translated] Hola a todos, ¿quién viene el sábado?')).toBeInTheDocument();
   });
 });

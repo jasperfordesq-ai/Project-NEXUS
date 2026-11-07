@@ -263,7 +263,8 @@ const GROUP_SUCCESS_STATUSES = new Set([
   'group-member-removed',
   'group-left',
   'reaction-added',
-  'reaction-removed'
+  'reaction-removed',
+  'translate-done'
 ]);
 
 const GROUP_ERROR_STATUSES = new Set([
@@ -284,7 +285,10 @@ const GROUP_ERROR_STATUSES = new Set([
   'group-policy-unavailable',
   'reaction-invalid',
   'reaction-forbidden',
-  'reaction-failed'
+  'reaction-failed',
+  'translate-failed',
+  'translate-unavailable',
+  'translate-empty'
 ]);
 
 function groupStatus(status, t) {
@@ -293,7 +297,12 @@ function groupStatus(status, t) {
   const safeguardingKey = {
     'group-vetting-required': 'safeguarding.errors.vetting_required_title',
     'group-contact-restricted': 'safeguarding.errors.contact_restricted_title',
-    'group-policy-unavailable': 'safeguarding.errors.policy_unavailable_title'
+    'group-policy-unavailable': 'safeguarding.errors.policy_unavailable_title',
+    // Same wording as a direct conversation's Translate.
+    'translate-done': 'govuk_alpha_messages.translate.done',
+    'translate-failed': 'govuk_alpha_messages.translate.failed',
+    'translate-unavailable': 'govuk_alpha_messages.translate.unavailable',
+    'translate-empty': 'govuk_alpha_messages.translate.empty'
   }[value];
   return {
     type: GROUP_SUCCESS_STATUSES.has(value) ? 'success' : 'error',
@@ -1215,6 +1224,52 @@ router.post('/groups/:conversationId(\\d+)/m/:messageId(\\d+)/react', asyncRoute
   return redirectTo(res, groupRedirect(conversationId, status, `#m-${messageId}`));
 }));
 
+/**
+ * Translate one group-chat message into the member's language (React's
+ * MessageBubble Translate, shared by direct and group chats). AWID report,
+ * Oct 2026: "posts inside groups aren't translated". Laravel's
+ * POST /api/v2/messages/{id}/translate already serves any participant of the
+ * group conversation (MessagesController, 31 Oct 2026); the text is read there,
+ * never taken from the form. The result is shown once, under that message.
+ */
+router.post('/groups/:conversationId(\\d+)/m/:messageId(\\d+)/translate', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const conversationId = Number(req.params.conversationId);
+  const messageId = Number(req.params.messageId);
+  if (!translationAvailable(req)) {
+    return redirectTo(res, groupRedirect(conversationId, 'translate-unavailable', `#m-${messageId}`));
+  }
+
+  const requestedLanguage = trimmed(req.body.target_language || req.body.target_locale || req.locale || 'en', 10);
+  const targetLanguage = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/.test(requestedLanguage)
+    ? requestedLanguage
+    : 'en';
+  let status = 'translate-done';
+  try {
+    const result = await callMessage(token, 'POST', `/${encodeURIComponent(messageId)}/translate`, {
+      target_language: targetLanguage
+    });
+    const translated = dataFrom(result) || {};
+    const translatedText = trimmed(translated.translated_text || translated.translatedText);
+    if (!translatedText) {
+      status = 'translate-failed';
+    } else if (req.flash) {
+      req.flash('messagesTranslation', JSON.stringify({
+        id: messageId,
+        text: translatedText,
+        target: targetLanguage
+      }));
+    }
+  } catch (error) {
+    if (redirectOnAuthError(error, req, res)) return undefined;
+    status = translateFailureStatus(error);
+  }
+
+  return redirectTo(res, groupRedirect(conversationId, status, `#m-${messageId}`));
+}));
+
 router.get('/groups', requireAuth, asyncRoute(async (req, res) => {
   let groups = [];
   let error = '';
@@ -1407,6 +1462,8 @@ router.get('/groups/:conversationId(\\d+)', requireAuth, asyncRoute(async (req, 
       cursor: meta.cursor || ''
     },
     groupStatus: groupStatus(req.query.status, res.locals.t),
+    translationEnabled: translationAvailable(req),
+    translation: messageTranslationFromFlash(req),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { notFoundTitle: 'Group conversation not found' }));
