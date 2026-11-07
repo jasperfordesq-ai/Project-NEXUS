@@ -208,6 +208,9 @@ class TwoFactorController extends BaseApiController
             return $this->respondWithData([
                 'qr_code_url' => $svgDataUri,
                 'secret' => $result['secret'],
+                // The otpauth:// link the QR code encodes. On a phone it opens the
+                // authenticator app directly; a phone cannot scan its own screen.
+                'provisioning_uri' => $result['provisioning_uri'],
                 'backup_codes' => [],
             ]);
         } catch (\Exception $e) {

@@ -35,12 +35,20 @@ class TotpService
     /** The single cookie every account shared until 23 Oct 2026; still read, never written. */
     private const LEGACY_TRUSTED_DEVICE_COOKIE = 'nexus_trusted_device';
 
+    /** Bytes in a new TOTP secret: 160 bits, the length RFC 4226 §4 recommends. */
+    private const SECRET_BYTES = 20;
+
     /**
-     * Generate a new TOTP secret.
+     * Generate a new TOTP secret: 32 base32 characters.
+     *
+     * The library default is 64 bytes (103 characters). Nobody can reasonably
+     * type that, and some members must type the key: a phone cannot scan its
+     * own screen, and a screen reader cannot read a QR code. Secrets issued
+     * before November 2026 are longer and keep working unchanged.
      */
     public static function generateSecret(): string
     {
-        $totp = TOTP::generate();
+        $totp = TOTP::generate(null, self::SECRET_BYTES);
         return $totp->getSecret();
     }
 
