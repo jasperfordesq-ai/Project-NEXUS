@@ -88,7 +88,11 @@ reviewer account. Its password is typed into App Store Connect by the owner.
   owner's choice for this version. The en-GB "What's New" text was set, and the reviewer notes
   were updated: the 2.5.4 resubmission paragraph was replaced with what is new, and two
   sentences were corrected. They said notifications were requested only from Settings, but
-  since `44a990f16` the app asks once, right after sign-in.
+  since `44a990f16` the app asks once, right after sign-in. After the phone check the owner
+  answered "Works, send both" (which phone or phones was not recorded). The App Store screenshots carried over from 1.12.0 (Feed, Listings,
+  Messages, iPhone 6.1"), and the reviewer account was proven to sign in on production without
+  a code. Submitted to App Review through the API (review submission
+  `35e5373e-8533-41fb-83c3-2e8771b5da71`) at 18:11 UTC; state `WAITING_FOR_REVIEW`.
 
 🔴 **`store-listing/apple/en-GB.json` carries the App Store version, and
 `npm run verify:ios-release` refuses when it differs from `app.json`.** It still said 1.10.0

@@ -566,6 +566,24 @@ uploaded it; the agent did everything else in the owner's Chrome.
   (Phone 12,538 / Tablet 6,522 / TV 3 / Wearable 0 / Car 0 / Chromebook 10 / Android XR 2). New
   install 33.6 MB (+223 KB), update 3.04 MB. Build 25 under "Not included". Published **5:58 PM**
   Console time ("Available to internal testers").
+- **Promote:** after the phone check the owner answered "Works, send both" (which phone or
+  phones was not recorded). Promote carried the
+  bundle, name `26 (1.13.0)` and notes across, with build 25 under "Not included". 100.0%
+  roll-out, all targeted countries, 7 active installs, 0 devices lost on every row.
+- 🔴 **Quick checks — a new trap.** Straight after "Go to overview", Publishing overview read
+  **"Your changes can now be sent for review"** with no progress bar, and Submit was enabled. That
+  sentence is the documented all-clear, but it was showing *before* the checks had started. About
+  30 seconds later the bar appeared, "Running quick checks for commonly found issues … Up to 14
+  minutes remaining". **Wait at least 30 seconds after arriving, re-read, and only trust the
+  all-clear once a bar has run and gone.** This time the bar counted down for **about 6 minutes**
+  and then read "Your changes can now be sent for review" with no issues listed.
+- **Submission 20**, submitted November 7, 2026 at **6:16 PM** Console time ("Production · 26
+  (1.13.0) · Start full rollout", managed publishing off). No second bar appeared after Submit;
+  the panel went straight to "Your changes are now in review". Submission activity: **In review**.
+- **Released automatically** (managed publishing off): the Production track read "26 (1.13.0) ·
+  Available on Google Play · Released on Nov 7 7:19 PM", **63 minutes** after submission. It was
+  still "In review" at 21 and 36 minutes. `mobile/live-store-build.json` records build 26 and
+  commit `c7070884cc`.
 
 Two Console behaviours worth knowing before you click:
 
