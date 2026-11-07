@@ -30,7 +30,13 @@
   {% elif setup %}
     <p class="govuk-body">{{ t('security_2fa.step_scan') }}</p>
     <img src="{{ setup.qr_code_url }}" alt="{{ t('security_2fa.qr_alt') }}" width="208" height="208">
-    <p class="govuk-body">{{ t('security_2fa.manual_intro') }} <code>{{ setup.secret }}</code></p>
+    {% if setup.otpauth_uri %}
+      {# A phone cannot scan its own screen, and a screen reader cannot read a QR code. #}
+      <p class="govuk-body"><a class="govuk-link" href="{{ setup.otpauth_uri }}">{{ t('security_2fa.open_app') }}</a></p>
+    {% endif %}
+    {# In groups of four, the way authenticator apps show a typed key. #}
+    {% set setupKey = (setup.secret or "") | replace(" ", "") | upper %}
+    <p class="govuk-body">{{ t('security_2fa.manual_intro') }} <code class="nexus-alpha-totp-secret">{% for i in range(0, setupKey | length, 4) %}{{ setupKey.substr(i, 4) }}{% if not loop.last %} {% endif %}{% endfor %}</code></p>
     <form method="post" action="{{ urlFor('/login/two-factor/setup') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <div class="govuk-form-group{% if codeFieldShown %} govuk-form-group--error{% endif %}">

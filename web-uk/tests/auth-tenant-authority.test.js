@@ -121,7 +121,8 @@ describe('auth tenant authority', () => {
       .expect('Location', '/acme/accessible/login/two-factor/setup');
     const setup = await client.get('/acme/accessible/login/two-factor/setup').expect(200);
     expect(setup.headers['cache-control']).toBe('private, no-store');
-    expect(setup.body.locals.setup).toEqual({ secret: 'test-secret', qr_code_url: 'data:image/svg+xml;base64,abc' });
+    // No provisioning_uri in this API answer, so no "on this device" link.
+    expect(setup.body.locals.setup).toEqual({ secret: 'test-secret', qr_code_url: 'data:image/svg+xml;base64,abc', otpauth_uri: '' });
     expect(api.setupRequiredTwoFactor).toHaveBeenCalledWith('setup-challenge', 'acme');
     api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: {
       login_complete: true, access_token: 'access', refresh_token: 'refresh', expires_in: 900,

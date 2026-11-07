@@ -237,12 +237,20 @@ function rotatingSessionFrom(result) {
   return { accessToken, refreshToken, expiresIn, refreshExpiresIn };
 }
 
+/** The API's otpauth:// link (what the QR code encodes), or '' for anything else. */
+function otpauthUriFrom(value) {
+  const uri = typeof value === 'string' ? value : '';
+  return uri.startsWith('otpauth://totp/') ? uri : '';
+}
+
 function pendingTwoFactorSetupSeed(req) {
   const seed = req.session?.pending2faSetupSeed;
   if (!seed || typeof seed !== 'object') return null;
   const secret = String(seed.secret || '');
   const qrCodeUrl = String(seed.qr_code_url || '');
-  return secret || qrCodeUrl ? { secret, qr_code_url: qrCodeUrl } : null;
+  return secret || qrCodeUrl
+    ? { secret, qr_code_url: qrCodeUrl, otpauth_uri: otpauthUriFrom(seed.otpauth_uri) }
+    : null;
 }
 
 function pendingTwoFactorTenantSlug(req) {
@@ -516,7 +524,13 @@ router.post('/login/two-factor/setup/start', asyncRoute(async (req, res) => {
   const secret = String(result?.data?.secret || '');
   const qrCodeUrl = String(result?.data?.qr_code_url || '');
   if (secret || qrCodeUrl) {
-    req.session.pending2faSetupSeed = { secret, qr_code_url: qrCodeUrl };
+    // otpauth_uri: a phone cannot scan its own screen, so the page offers to add the
+    // key to an authenticator app on the same device (7 November 2026).
+    req.session.pending2faSetupSeed = {
+      secret,
+      qr_code_url: qrCodeUrl,
+      otpauth_uri: otpauthUriFrom(result?.data?.provisioning_uri)
+    };
   }
   return redirectTo(res, '/login/two-factor/setup');
 }));

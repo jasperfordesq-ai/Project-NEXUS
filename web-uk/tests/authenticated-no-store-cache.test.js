@@ -99,10 +99,15 @@ describe('authenticated responses are never cached', () => {
     const start = await client.get('/login/two-factor/setup').expect(200);
     expect(start.text).toContain('/login/two-factor/setup/start');
     expect(api.setupRequiredTwoFactor).not.toHaveBeenCalled();
-    api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: { secret: 'JBSWY3DPEHPK3PXP', qr_code_url: 'data:image/svg+xml;base64,PHN2Zy8+' } });
+    const otpauth = 'otpauth://totp/Project%20NEXUS:admin%40example.test?secret=JBSWY3DPEHPK3PXP&issuer=Project%20NEXUS';
+    api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: { secret: 'JBSWY3DPEHPK3PXP', qr_code_url: 'data:image/svg+xml;base64,PHN2Zy8+', provisioning_uri: otpauth } });
     await client.post('/login/two-factor/setup/start').type('form').send({ _csrf: csrf(start.text) }).expect(302);
     const setup = await client.get('/login/two-factor/setup').expect(200);
-    expect(setup.text).toContain('JBSWY3DPEHPK3PXP');
+    // The key in groups of four, and a link that adds it to an authenticator app on this
+    // device: a phone cannot scan its own screen (7 November 2026).
+    expect(setup.text).toContain('JBSW Y3DP EHPK 3PXP');
+    expect(setup.text).toContain(`href="${otpauth.replace(/&/g, '&amp;')}"`);
+    expect(setup.text).toContain('Add the key to the authenticator app on this device');
     expect(setup.text).toContain('Set up two-factor authentication');
     api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: { login_complete: true, access_token: 'fixture-access-token', refresh_token: 'fixture-refresh-token', expires_in: 900, refresh_expires_in: 2592000, backup_codes: ['recover-once'] } });
     const verified = await client.post('/login/two-factor/setup').type('form').send({ code: '123456', _csrf: csrf(setup.text) }).expect(302);

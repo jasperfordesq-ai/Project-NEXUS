@@ -229,6 +229,33 @@ describe('two-factor set-up page markup', () => {
     expect(html).toContain('aria-describedby="setup-password-error"');
   });
 
+  it('says once that it is on: the confirmation panel, without a second success banner', () => {
+    // Both showed after turning it on: "Success — Two-step verification is now turned
+    // on." above the heading and the panel "Two-step verification is on" below it.
+    const html = renderPage({
+      enabled: true,
+      backupCodes: ['otter-amber'],
+      status: '2fa-enabled',
+      statusConfig: { type: 'success', message: 'Two-step verification is now turned on.' },
+      successStatus: true
+    });
+
+    expect(html).toContain('govuk-panel--confirmation');
+    expect(html).not.toContain('govuk-notification-banner--success');
+  });
+
+  it('keeps the success banner where there is no panel (turning it off)', () => {
+    const html = renderPage({
+      canStartSetup: true,
+      status: '2fa-disabled',
+      statusConfig: { type: 'success', message: 'Two-step verification has been turned off.' },
+      successStatus: true
+    });
+
+    expect(html).toContain('govuk-notification-banner--success');
+    expect(html).toContain('Two-step verification has been turned off.');
+  });
+
   it('leaves the boxes plain when there is no error', () => {
     const setupHtml = renderPage({ setup: { qr_data_uri: '', secret: SECRET, otpauth_uri: '' } });
     expect(setupHtml).not.toContain('govuk-form-group--error');
