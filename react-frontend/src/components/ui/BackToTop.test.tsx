@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
+import { act, fireEvent, render, screen, waitFor } from '@/test/test-utils';
 import { BackToTop } from './BackToTop';
 
 // Mock framer-motion
@@ -72,16 +72,15 @@ describe('BackToTop', () => {
     fireEvent.scroll(window);
     expect(screen.getByLabelText('Scroll to top')).toBeInTheDocument();
 
+    // jsdom's focus() fires real focusin/focusout events, which update state, so it
+    // belongs inside act() like any other event (CI fails on React's act() warning).
     const input = screen.getByLabelText('Code');
-    input.focus();
-    fireEvent.focusIn(input);
+    act(() => input.focus());
     await waitFor(() => expect(screen.queryByLabelText('Scroll to top')).not.toBeInTheDocument());
 
     // Focusing a button is not typing: the button comes back.
     const other = screen.getByRole('button', { name: 'Other button' });
-    other.focus();
-    fireEvent.focusOut(input);
-    fireEvent.focusIn(other);
+    act(() => other.focus());
     await waitFor(() => expect(screen.getByLabelText('Scroll to top')).toBeInTheDocument());
   });
 
