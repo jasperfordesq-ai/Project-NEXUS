@@ -969,5 +969,13 @@
     "notice_option_keep": "<strong>Mantenha as coisas como estão.</strong> Você não precisa fazer nada. Não alteraremos sua configuração sem sua autorização.",
     "notice_option_talk": "<strong>Fale com alguém.</strong> Responda a este e-mail ou entre em contato com um coordenador e nós ajudaremos.",
     "notice_cta": "Abrir minhas configurações de segurança"
+  },
+  "app_links": {
+    "subject": "Instale a aplicação {{community}} no seu telemóvel",
+    "title": "Obter a aplicação",
+    "intro": "Aqui estão os links para obter a aplicação de <strong>{{community}}</strong>. Abra este e-mail no seu telemóvel e toque no link para o seu telemóvel.",
+    "android_line": "Telemóveis Android (Google Play): {{link}}",
+    "ios_line": "iPhone e iPad (App Store): {{link}}",
+    "send_failed": "Não foi possível enviar o e-mail. Tente novamente mais tarde."
   }
 }

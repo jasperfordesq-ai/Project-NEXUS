@@ -21,8 +21,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import React from 'react';
 
+const { mockApiPost } = vi.hoisted(() => ({ mockApiPost: vi.fn() }));
+
 vi.mock('@/lib/api', () => ({
-  api: { get: vi.fn().mockResolvedValue({ success: true, data: null }) },
+  api: { get: vi.fn().mockResolvedValue({ success: true, data: null }), post: mockApiPost },
   tokenManager: { getTenantId: vi.fn(), getToken: vi.fn() },
 }));
 
@@ -113,6 +115,7 @@ describe('InstallAppPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseInstallPrompt.mockReturnValue(promptState());
+    mockAuth.isAuthenticated = false;
   });
 
   it('links both official store badges to the real store pages', () => {
@@ -183,6 +186,40 @@ describe('InstallAppPage', () => {
     ).toBeInTheDocument();
     expect(screen.getByTestId('install-qr-badge-apple')).toHaveAttribute('href', APP_STORE_URL);
     expect(screen.getByTestId('install-qr-badge-google')).toHaveAttribute('href', PLAY_STORE_URL);
+  });
+
+  it('prints each store link as text, so nobody has to scan a code', () => {
+    render(<InstallAppPage />);
+
+    // AWID accessibility report, Oct 2026, point 15: a blind member cannot
+    // scan a QR code. The link itself must be on the page as readable text.
+    expect(screen.getByTestId('install-qr-link-apple')).toHaveTextContent(APP_STORE_URL);
+    expect(screen.getByTestId('install-qr-link-google')).toHaveTextContent(PLAY_STORE_URL);
+    // Only a signed-in member can have them emailed (to their own address).
+    expect(screen.queryByTestId('install-email-links')).toBeNull();
+  });
+
+  it('emails a signed-in member the links and says so', async () => {
+    mockAuth.isAuthenticated = true;
+    mockApiPost.mockResolvedValueOnce({ success: true, data: { sent: true } });
+    const { default: userEvent } = await import('@testing-library/user-event');
+    render(<InstallAppPage />);
+
+    await userEvent.click(screen.getByTestId('install-email-links'));
+
+    expect(mockApiPost).toHaveBeenCalledWith('/v2/app-links/email', {});
+    expect(await screen.findByText('The links are on their way to your email address.')).toBeInTheDocument();
+  });
+
+  it('says plainly when the email could not be sent', async () => {
+    mockAuth.isAuthenticated = true;
+    mockApiPost.mockResolvedValueOnce({ success: false, error: 'nope' });
+    const { default: userEvent } = await import('@testing-library/user-event');
+    render(<InstallAppPage />);
+
+    await userEvent.click(screen.getByTestId('install-email-links'));
+
+    expect(await screen.findByText('We could not send the email. Please try again later.')).toBeInTheDocument();
   });
 
   it('no longer says the iPhone app is still to come', () => {

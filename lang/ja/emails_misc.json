@@ -969,5 +969,13 @@
     "notice_option_keep": "<strong>現状をそのままにしておきます</strong>。何もする必要はありません。お客様のご指示なしに設定を変更することはありません。",
     "notice_option_talk": "<strong>誰かに相談してください。</strong> このメールにご返信いただくか、コーディネーターにご連絡ください。お手伝いいたします。",
     "notice_cta": "安全設定を開く"
+  },
+  "app_links": {
+    "subject": "{{community}}のアプリをスマートフォンに",
+    "title": "アプリを入手",
+    "intro": "<strong>{{community}}</strong>のアプリを入手するリンクです。このメールをスマートフォンで開き、お使いの機種のリンクをタップしてください。",
+    "android_line": "Android スマートフォン（Google Play）: {{link}}",
+    "ios_line": "iPhone・iPad（App Store）: {{link}}",
+    "send_failed": "メールを送信できませんでした。しばらくしてからもう一度お試しください。"
   }
 }

@@ -969,5 +969,13 @@
     "notice_option_keep": "<strong>Zachowaj wszystko tak, jak jest.</strong> Nie musisz nic robić. Nie zmienimy Twoich ustawień bez Twojej zgody.",
     "notice_option_talk": "<strong>Porozmawiaj z kimś.</strong> Odpowiedz na tego e-maila lub skontaktuj się z koordynatorem, a pomożemy.",
     "notice_cta": "Otwórz moje ustawienia bezpieczeństwa"
+  },
+  "app_links": {
+    "subject": "Zainstaluj aplikację {{community}} na telefonie",
+    "title": "Pobierz aplikację",
+    "intro": "Oto linki do aplikacji <strong>{{community}}</strong>. Otwórz tę wiadomość na telefonie i stuknij link dla swojego telefonu.",
+    "android_line": "Telefony z Androidem (Google Play): {{link}}",
+    "ios_line": "iPhone i iPad (App Store): {{link}}",
+    "send_failed": "Nie udało się wysłać wiadomości. Spróbuj ponownie później."
   }
 }

@@ -3718,6 +3718,8 @@ Route::post('/v2/auth/2fa/disable', [\App\Http\Controllers\Api\TwoFactorControll
 Route::post('/v2/auth/2fa/recovery-codes', [\App\Http\Controllers\Api\TwoFactorController::class, 'regenerateRecoveryCodes'])->middleware('throttle:nexus-route-5-per-1m');
 Route::post('/v2/auth/2fa/trusted-devices/revoke', [\App\Http\Controllers\Api\TwoFactorController::class, 'revokeTrustedDevices'])->middleware('throttle:nexus-route-5-per-1m');
 Route::post('/app/log', [\App\Http\Controllers\Api\AppController::class, 'log'])->withoutMiddleware('auth:sanctum')->middleware('throttle:nexus-route-10-per-1m');
+// Store links emailed to the signed-in member's own address (AWID report, Oct 2026).
+Route::post('/v2/app-links/email', [\App\Http\Controllers\Api\AppLinksController::class, 'email'])->middleware('throttle:nexus-route-5-per-1m');
 Route::post('/pusher/auth', [\App\Http\Controllers\Api\PusherController::class, 'auth']);
 Route::get('/pusher/auth', [\App\Http\Controllers\Api\PusherController::class, 'auth']);
 Route::get('/pusher/config', [\App\Http\Controllers\Api\PusherController::class, 'config']);

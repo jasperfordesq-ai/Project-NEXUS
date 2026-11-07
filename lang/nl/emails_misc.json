@@ -969,5 +969,13 @@
     "notice_option_keep": "<strong>Houd de zaken zoals ze zijn.</strong> U hoeft niets te doen. Wij zullen uw instelling niet wijzigen zonder uw toestemming.",
     "notice_option_talk": "<strong>Praat met iemand.</strong> Beantwoord deze e-mail of neem contact op met een coördinator, dan helpen wij u verder.",
     "notice_cta": "Open mijn veiligheidsinstellingen"
+  },
+  "app_links": {
+    "subject": "Zet de app van {{community}} op je telefoon",
+    "title": "Download de app",
+    "intro": "Hier zijn de links om de app van <strong>{{community}}</strong> te downloaden. Open deze e-mail op je telefoon en tik op de link voor jouw telefoon.",
+    "android_line": "Android-telefoons (Google Play): {{link}}",
+    "ios_line": "iPhone en iPad (App Store): {{link}}",
+    "send_failed": "We konden de e-mail niet versturen. Probeer het later opnieuw."
   }
 }

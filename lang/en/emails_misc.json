@@ -969,5 +969,13 @@
     "notice_option_keep": "<strong>Keep things as they are.</strong> You do not need to do anything. We will not change your setting without your say-so.",
     "notice_option_talk": "<strong>Talk to someone.</strong> Reply to this email or contact a coordinator, and we will help.",
     "notice_cta": "Open my safety settings"
+  },
+  "app_links": {
+    "subject": "Get the {{community}} app on your phone",
+    "title": "Get the app",
+    "intro": "Here are the links to get the app for <strong>{{community}}</strong>. Open this email on your phone and tap the link for your phone.",
+    "android_line": "Android phones (Google Play): {{link}}",
+    "ios_line": "iPhone and iPad (App Store): {{link}}",
+    "send_failed": "We could not send the email. Please try again later."
   }
 }

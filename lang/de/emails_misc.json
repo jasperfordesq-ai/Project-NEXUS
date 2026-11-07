@@ -969,5 +969,13 @@
     "notice_option_keep": "<strong>Lassen Sie alles so, wie es ist.</strong> Sie müssen nichts tun. Wir werden Ihre Einstellung nicht ohne Ihre Zustimmung ändern.",
     "notice_option_talk": "<strong>Sprechen Sie mit jemandem.</strong> Antworten Sie auf diese E-Mail oder wenden Sie sich an einen Koordinator. Wir helfen Ihnen weiter.",
     "notice_cta": "Öffnen Sie meine Sicherheitseinstellungen"
+  },
+  "app_links": {
+    "subject": "Die {{community}}-App auf Ihr Telefon holen",
+    "title": "App herunterladen",
+    "intro": "Hier sind die Links zur App für <strong>{{community}}</strong>. Öffnen Sie diese E-Mail auf Ihrem Telefon und tippen Sie auf den Link für Ihr Telefon.",
+    "android_line": "Android-Telefone (Google Play): {{link}}",
+    "ios_line": "iPhone und iPad (App Store): {{link}}",
+    "send_failed": "Wir konnten die E-Mail nicht senden. Bitte versuchen Sie es später erneut."
   }
 }

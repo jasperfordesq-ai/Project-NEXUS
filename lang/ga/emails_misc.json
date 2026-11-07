@@ -969,5 +969,13 @@
     "notice_option_keep": "<strong>Fág mar atá.</strong> Ní gá duit aon rud a dhéanamh. Ní athróimid do shocrú gan do chead.",
     "notice_option_talk": "<strong>Labhair le duine.</strong> Freagair an ríomhphost seo nó déan teagmháil le comhordaitheoir, agus cabhróimid leat.",
     "notice_cta": "Oscail mo shocruithe sábháilteachta"
+  },
+  "app_links": {
+    "subject": "Faigh aip {{community}} ar d'fhón",
+    "title": "Faigh an aip",
+    "intro": "Seo iad na naisc chun an aip a fháil do <strong>{{community}}</strong>. Oscail an ríomhphost seo ar d'fhón agus tapáil an nasc do d'fhón.",
+    "android_line": "Fóin Android (Google Play): {{link}}",
+    "ios_line": "iPhone agus iPad (App Store): {{link}}",
+    "send_failed": "Níorbh fhéidir linn an ríomhphost a sheoladh. Bain triail eile as ar ball."
   }
 }

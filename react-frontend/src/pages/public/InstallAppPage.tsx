@@ -36,6 +36,7 @@ import Globe from 'lucide-react/icons/globe';
 import HelpCircle from 'lucide-react/icons/help-circle';
 import Laptop from 'lucide-react/icons/laptop';
 import LifeBuoy from 'lucide-react/icons/life-buoy';
+import Mail from 'lucide-react/icons/mail';
 import MessageSquareHeart from 'lucide-react/icons/message-square-heart';
 import QrCode from 'lucide-react/icons/qr-code';
 import ShieldCheck from 'lucide-react/icons/shield-check';
@@ -53,8 +54,9 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Tab, Tabs } from '@/components/ui/Tabs';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { QrCodeImage } from '@/components/volunteering/QrCodeImage';
-import { useTenant } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
+import { api } from '@/lib/api';
 import { useInstallPrompt } from '@/lib/installPrompt';
 import {
   ANDROID_PLAY_STORE_URL,
@@ -171,6 +173,20 @@ export function InstallAppPage() {
   const { t, i18n } = useTranslation('public');
   const { branding, tenantPath } = useTenant();
   const install = useInstallPrompt();
+  const { isAuthenticated } = useAuth();
+  // AWID accessibility report (Oct 2026), point 15: the QR codes were the only
+  // way from a computer to the app, and a blind member cannot scan one. A
+  // signed-in member can have the links emailed to their own address.
+  const [emailState, setEmailState] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+  const emailLinks = async () => {
+    setEmailState('sending');
+    try {
+      const response = await api.post('/v2/app-links/email', {});
+      setEmailState(response.success ? 'sent' : 'failed');
+    } catch {
+      setEmailState('failed');
+    }
+  };
 
   // Falls back to a neutral name so the {{name}} placeholder can never render
   // literally when tenant bootstrap has not settled (same guard as the legal
@@ -323,6 +339,14 @@ export function InstallAppPage() {
                   size={168}
                 />
               </div>
+              {/* The link as plain text too, so it can be read aloud, copied
+                  or typed on the phone without scanning anything. */}
+              <p
+                className="max-w-full select-all break-all text-xs text-theme-secondary"
+                data-testid={`install-qr-link-${store}`}
+              >
+                {store === 'apple' ? IOS_APP_STORE_URL : ANDROID_PLAY_STORE_URL}
+              </p>
               <StoreBadge
                 store={store}
                 language={i18n.language}
@@ -332,6 +356,26 @@ export function InstallAppPage() {
             </GlassCard>
           ))}
         </div>
+        {isAuthenticated ? (
+          <GlassCard className="mt-4 flex flex-col items-start gap-3 p-5 sm:flex-row sm:items-center">
+            <p className="flex-1 text-sm text-theme-secondary">{t('install_app.email_links_hint')}</p>
+            <Button
+              variant="flat"
+              className="w-full shrink-0 bg-accent/10 text-accent hover:bg-accent/20 sm:w-auto"
+              startContent={<Mail className="h-4 w-4" aria-hidden="true" />}
+              isLoading={emailState === 'sending'}
+              isDisabled={emailState === 'sent'}
+              onPress={() => { void emailLinks(); }}
+              data-testid="install-email-links"
+            >
+              {t('install_app.email_links_button')}
+            </Button>
+          </GlassCard>
+        ) : null}
+        <p role="status" className="mt-2 text-sm text-theme-secondary" data-testid="install-email-links-status">
+          {emailState === 'sent' ? t('install_app.email_links_sent') : null}
+          {emailState === 'failed' ? t('install_app.email_links_failed') : null}
+        </p>
       </motion.section>
 
       {/* What the app gives you over the website. */}
