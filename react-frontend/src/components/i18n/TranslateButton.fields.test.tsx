@@ -74,4 +74,28 @@ describe('TranslateButton — extra fields', () => {
 
     await waitFor(() => expect(onFieldsChange).toHaveBeenLastCalledWith({ title: 'Título' }));
   });
+
+  // AWID report, Oct 2026: a profile's skills translate with its bio.
+  it('translates companion fields with the text and hands them back', async () => {
+    vi.mocked(api.post).mockImplementation(async (_url, body) => (
+      (body as { content_type: string }).content_type === 'profile_bio_skills'
+        ? reply('Gardening\nCooking')
+        : reply('I love helping my neighbours.')
+    ));
+    const onFieldsChange = vi.fn();
+    render(
+      <TranslateButton
+        contentType="profile_bio"
+        contentId={12}
+        sourceText="Me encanta ayudar a mis vecinos."
+        companionFields={{ skills: 'Jardinería\nCocina' }}
+        onFieldsChange={onFieldsChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /^translate/i }));
+
+    await waitFor(() => expect(onFieldsChange).toHaveBeenLastCalledWith({ skills: 'Gardening\nCooking' }));
+    expect(api.post).toHaveBeenCalledWith('/v2/ugc-translate', expect.objectContaining({ content_type: 'profile_bio_skills', source_text: 'Jardinería\nCocina' }));
+  });
 });

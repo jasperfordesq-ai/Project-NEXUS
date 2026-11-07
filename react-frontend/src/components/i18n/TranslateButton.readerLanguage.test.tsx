@@ -47,6 +47,19 @@ describe('TranslateButton — already in the reader\'s language', () => {
     expect(button()).not.toBeNull();
   });
 
+  // AWID report, Oct 2026: a profile's skills must translate with its bio. A
+  // list of single words is never "beyond doubt" in any language, so companion
+  // fields ride along with a press but never decide whether the button shows.
+  it('does not let companion fields bring the button back for an English bio', () => {
+    render(<TranslateButton contentType="profile_bio" contentId={5} sourceText={ENGLISH} companionFields={{ skills: 'Gardening\nCooking' }} />);
+    expect(button()).toBeNull();
+  });
+
+  it('does not show the button for companion fields alone', () => {
+    render(<TranslateButton contentType="profile_bio" contentId={6} sourceText="" companionFields={{ skills: 'Jardinería\nCocina' }} />);
+    expect(button()).toBeNull();
+  });
+
   it('keeps it for a short text it cannot be sure about', () => {
     render(<TranslateButton contentType="comment" contentId={4} sourceText="Thanks so much!" />);
     expect(button()).not.toBeNull();

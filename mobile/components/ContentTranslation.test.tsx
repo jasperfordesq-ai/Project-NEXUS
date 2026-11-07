@@ -90,6 +90,27 @@ test('formatted descriptions are translated as the plain text the reader sees', 
   await screen.findByText('Hola');
   expect(api.post).toHaveBeenCalledWith('/api/v2/ugc-translate', expect.objectContaining({ source_text: 'Hello there' }));
 });
+// AWID report, Oct 2026: a profile's skills translate with its bio, but a list
+// of single words never decides whether the control shows.
+test('companion fields are translated on the same press and shown with the rest', async () => {
+  jest.mocked(getUserPreferences).mockResolvedValue({});
+  jest.mocked(api.post).mockImplementation(async (_url: string, body: any) => ({
+    data: { translated_text: body.content_type === 'profile_bio_skills' ? 'Gardening\nCooking' : 'I love helping my neighbours.' },
+  }));
+  const screen = render(<ContentTranslation contentType="profile_bio" contentId={5} fields={{ body: 'Me encanta ayudar a mis vecinos, sobre todo a los mayores del barrio.' }} companionFields={{ skills: 'Jardinería\nCocina' }} />);
+
+  fireEvent.press(screen.getByLabelText('ugcTranslation.translate'));
+
+  await screen.findByText('Gardening\nCooking');
+  expect(api.post).toHaveBeenCalledWith('/api/v2/ugc-translate', expect.objectContaining({ content_type: 'profile_bio_skills', source_text: 'Jardinería\nCocina' }));
+});
+test('companion fields never bring the control back for an English bio, nor show it alone', async () => {
+  jest.mocked(getUserPreferences).mockResolvedValue({});
+  const english = render(<ContentTranslation contentType="profile_bio" contentId={6} fields={{ body: 'Please remember to log your hours after each exchange so the balance stays accurate.' }} companionFields={{ skills: 'Gardening\nCooking' }} />);
+  await waitFor(() => expect(english.queryByLabelText('ugcTranslation.translate')).toBeNull());
+  const alone = render(<ContentTranslation contentType="profile_bio" contentId={7} fields={{ body: '' }} companionFields={{ skills: 'Jardinería\nCocina' }} />);
+  expect(alone.queryByLabelText('ugcTranslation.translate')).toBeNull();
+});
 // Owner, 31 Oct 2026: no control where the text is already the reader's language.
 test('no translation control for English text read in English, one for Spanish', async () => {
   jest.mocked(getUserPreferences).mockResolvedValue({});

@@ -1142,15 +1142,42 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
   });
 }, { redirectOn401: LOGIN_AUTH_REQUIRED_PATH })));
 
-function profileTranslationSpec(user, id) {
-  return { type: 'profile_bio', id: Number(id), fields: { tagline: String(user.tagline || ''), body: String(user.bio || '') } };
+// The skills ride along with the bio and tagline (AWID report, Oct 2026: "the
+// translation button doesn't translate everything"), one per line, as on the
+// website (content type profile_bio_skills, so the two share cached results).
+// They never decide whether Translate is offered: a list of single words is
+// never "beyond doubt" in any language.
+function profileTranslationSpec(user, id, skills = []) {
+  const skillLines = skills.map((skill) => skill.name).filter(Boolean).join('\n');
+  return {
+    type: 'profile_bio',
+    id: Number(id),
+    fields: { tagline: String(user.tagline || ''), body: String(user.bio || '') },
+    ...(skillLines ? { companionFields: { skills: skillLines } } : {})
+  };
+}
+
+/** Each skill with its translation, when every line came back; otherwise as it was. */
+function withTranslatedSkills(skills, translation) {
+  const lines = typeof translation?.companion?.skills === 'string'
+    ? translation.companion.skills.split('\n').map((line) => line.trim())
+    : null;
+  if (!lines || lines.length !== skills.length) return skills;
+  return skills.map((skill, index) => (lines[index] && lines[index] !== skill.name
+    ? { ...skill, translatedName: lines[index], translatedLocale: translation.locale }
+    : skill));
 }
 
 router.post('/:id(\\d+)/translate', requireAuth, asyncRoute(async (req, res) => {
-  const user = dataFrom(await getUser(req.token, req.params.id));
+  const [userResult, skillsResult] = await Promise.all([
+    getUser(req.token, req.params.id),
+    getUserSkills(req.token, req.params.id).catch(() => ({ data: [] }))
+  ]);
+  const user = dataFrom(userResult);
   let result = null;
   if (user && typeof user === 'object') {
-    result = await translateFields(req, res, req.token, profileTranslationSpec(user, req.params.id), true);
+    const skills = profileSkillsFrom(skillsResult, user);
+    result = await translateFields(req, res, req.token, profileTranslationSpec(user, req.params.id, skills), true);
   }
   if (req.session && result) req.session.ugcTranslation = result;
   const failure = req.translationUnavailable ? 'translate-unavailable' : 'translate-failed';
@@ -1256,7 +1283,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const flashedSuccess = req.flash ? req.flash('success')[0] : null;
   const flashedError = req.flash ? req.flash('error')[0] : null;
 
-  const profileTranslation = await translateFields(req, res, req.token, profileTranslationSpec(user, id));
+  const profileTranslation = await translateFields(req, res, req.token, profileTranslationSpec(user, id, profileSkills));
   res.render('members/profile', {
     profileTranslation,
     translationFailed: req.query.status === 'translate-unavailable' ? 'unavailable' : req.query.status === 'translate-failed',
@@ -1284,7 +1311,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     reviewSummary,
     profileStats: profileStatsFrom(user, activityResult, profileListings, reviewSummary, gamification, res.locals.formatLocaleNumber),
     profileListings,
-    profileSkills,
+    profileSkills: withTranslatedSkills(profileSkills, profileTranslation),
     profileAvailability: profileAvailabilityFrom(availabilityResult, res.locals.t),
     profileActivity: profileActivityFrom(activityResult, res.locals.t),
     profileEndorsements: profileEndorsementsFrom(endorsementsResult, viewerId),

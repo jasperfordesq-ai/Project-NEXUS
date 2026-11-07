@@ -24,7 +24,8 @@ async function preferences(req, res, token) {
 
 function fingerprint(req, token, locale, spec) {
   return createHash('sha256').update(JSON.stringify([
-    req.accessibleRouting?.tenant?.id || req.tenant?.id, token, locale, spec.type, String(spec.id), spec.fields
+    req.accessibleRouting?.tenant?.id || req.tenant?.id, token, locale, spec.type, String(spec.id), spec.fields,
+    ...(spec.companionFields ? [spec.companionFields] : [])
   ])).digest('hex');
 }
 
@@ -42,15 +43,24 @@ async function translateFields(req, res, token, spec, manual = false) {
     if (!preference.automatic) return null;
   }
   const entries = Object.entries(spec.fields).filter(([, value]) => typeof value === 'string' && value.trim());
-  const results = await Promise.allSettled(entries.map(([key, text]) => callUgcTranslateApi(token, {
+  // Companion fields (a profile's skills, AWID report Oct 2026) are translated
+  // with the others but never decide anything: not whether there is a result,
+  // and not whether the button shows (callers check spec.fields only).
+  const companionEntries = Object.entries(spec.companionFields || {})
+    .filter(([, value]) => typeof value === 'string' && value.trim());
+  const all = [...entries, ...companionEntries];
+  const results = await Promise.allSettled(all.map(([key, text]) => callUgcTranslateApi(token, {
     content_type: key === 'body' ? spec.type : `${spec.type}_${key}`,
     content_id: spec.id, source_text: text, target_locale: preference.locale,
     ...(!manual ? { cache_only: true } : {})
   })));
   const fields = {};
+  const companion = {};
   results.forEach((result, index) => {
     const text = result.status === 'fulfilled' ? result.value?.data?.translated_text : null;
-    if (typeof text === 'string' && text) fields[entries[index][0]] = text;
+    if (typeof text !== 'string' || !text) return;
+    if (index < entries.length) fields[all[index][0]] = text;
+    else companion[all[index][0]] = text;
   });
   if (!Object.keys(fields).length) {
     // Tell the caller it is permanent (no key, switched off), not "try again".
@@ -59,7 +69,7 @@ async function translateFields(req, res, token, spec, manual = false) {
     }
     return null;
   }
-  return { fields, locale: preference.locale, signature, partial: Object.keys(fields).length !== entries.length };
+  return { fields, companion, locale: preference.locale, signature, partial: Object.keys(fields).length !== entries.length };
 }
 
 /** Reuse a detail page's authorised loader for its no-JavaScript translation action. */

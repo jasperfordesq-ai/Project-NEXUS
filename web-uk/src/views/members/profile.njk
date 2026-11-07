@@ -136,7 +136,8 @@
               {% for skill in profileSkills %}
                 {% set endorsement = profileEndorsements[skill.name] or { count: 0, viewerEndorsed: false } %}
                 <li class="govuk-!-margin-bottom-3">
-                  <span class="govuk-!-font-weight-bold">{{ skill.name }}</span>
+                  <span class="govuk-!-font-weight-bold" dir="auto">{{ skill.name }}</span>
+                  {% if skill.translatedName %}<span class="govuk-body-s" lang="{{ skill.translatedLocale }}" dir="auto">({{ t("govuk_alpha_feed.translate.heading") }}: {{ skill.translatedName }})</span>{% endif %}
                   {% if skill.isOffering %}{{ govukTag({ text: t("profile.skill_offering"), classes: "govuk-tag--blue" }) }}{% endif %}
                   {% if skill.isRequesting %}{{ govukTag({ text: t("profile.skill_requesting"), classes: "govuk-tag--purple" }) }}{% endif %}
                   {% if endorsement.count %}{{ govukTag({ text: tc("profile.endorsement_count", endorsement.count, { count: endorsement.count }), classes: "govuk-tag--green" }) }}{% endif %}

@@ -202,6 +202,7 @@ import { api } from '@/lib/api';
 const translations: Record<string, string> = {
   profile_bio: 'I love gardening',
   profile_bio_tagline: 'Gardener and baker',
+  profile_bio_skills: 'Gardening\nBaking',
 };
 
 describe('ProfilePage — Translate the bio and tagline', () => {
@@ -215,7 +216,7 @@ describe('ProfilePage — Translate the bio and tagline', () => {
     mockApiGet.mockImplementation((url: string) => (url.includes('/v2/users/') && !url.includes('block-status')
       ? base(url).then((res: { data: Record<string, unknown> }) => ({
         ...res,
-        data: { ...res.data, bio: 'Me encanta la jardinería', tagline: 'Jardinera y panadera' },
+        data: { ...res.data, bio: 'Me encanta la jardinería', tagline: 'Jardinera y panadera', skills: ['Jardinería', 'Panadería'] },
       }))
       : base(url)));
     vi.mocked(api.post).mockImplementation((url: string, body?: unknown) => {
@@ -251,5 +252,22 @@ describe('ProfilePage — Translate the bio and tagline', () => {
     fireEvent.click(screen.getByRole('button', { name: /show original/i }));
     expect(await screen.findByText('Me encanta la jardinería')).toBeInTheDocument();
     expect(screen.getByText('Jardinera y panadera')).toBeInTheDocument();
+  });
+
+  // AWID report, Oct 2026: "the translation button doesn't translate everything".
+  it('translates the skills on the same press and restores them', async () => {
+    render(<ProfilePage />);
+    await screen.findByText('Jardinería');
+
+    fireEvent.click(screen.getByRole('button', { name: /^translate/i }));
+
+    expect(await screen.findByText('Gardening')).toBeInTheDocument();
+    expect(screen.getByText('Baking')).toBeInTheDocument();
+    expect(api.post).toHaveBeenCalledWith('/v2/ugc-translate', expect.objectContaining({
+      content_type: 'profile_bio_skills', content_id: 42, source_text: 'Jardinería\nPanadería',
+    }));
+
+    fireEvent.click(screen.getByRole('button', { name: /show original/i }));
+    expect(await screen.findByText('Jardinería')).toBeInTheDocument();
   });
 });

@@ -681,7 +681,14 @@ function MemberProfileScreenInner() {
                   {isOwnProfile ? t('profile.noBioOwn') : t('profile.noBio')}
                 </Text>
               )}
-              <ContentTranslation contentType="profile_bio" contentId={member.id} disabled={isFederatedProfile} fields={{ body: bio, tagline: 'tagline' in member ? String(member.tagline || '') : '' }} />
+              {/* Skills translate with the bio, one per line (AWID report, Oct 2026). */}
+              <ContentTranslation
+                contentType="profile_bio"
+                contentId={member.id}
+                disabled={isFederatedProfile}
+                fields={{ body: bio, tagline: 'tagline' in member ? String(member.tagline || '') : '' }}
+                companionFields={{ skills: (member.skills ?? []).filter(Boolean).join('\n') }}
+              />
             </HeroCard.Body>
           </HeroCard>
 

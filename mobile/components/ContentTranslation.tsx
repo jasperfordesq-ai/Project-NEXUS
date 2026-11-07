@@ -14,11 +14,23 @@ import { useUgcTranslationPreferences } from '@/lib/context/UgcTranslationPrefer
 import { toPlainText } from '@/lib/utils/plainText';
 import { alreadyInReaderLanguage, useReaderVocabulary } from '@/lib/textLanguage/readerVocabulary';
 
-type Props = { contentType: string; contentId: string | number; fields: Record<string, string | null | undefined>; disabled?: boolean };
+type Props = {
+  contentType: string;
+  contentId: string | number;
+  fields: Record<string, string | null | undefined>;
+  /**
+   * Translated with `fields` on the same press and shown with them, but left out
+   * of the "already in the reader's language?" check and never enough on their
+   * own to show the control: a profile's skills, a list of single words no check
+   * can be sure about (AWID report, Oct 2026). Same rule as both websites.
+   */
+  companionFields?: Record<string, string | null | undefined>;
+  disabled?: boolean;
+};
 type Result = { key: string; fields: Record<string, string>; partial: boolean };
 
 /** Translated plain text appears beneath the original; no provider calls on automatic cache misses. */
-export default function ContentTranslation({ contentType, contentId, fields, disabled = false }: Props) {
+export default function ContentTranslation({ contentType, contentId, fields, companionFields, disabled = false }: Props) {
   const { t, i18n } = useTranslation('common');
   const theme = useTheme();
   const { tenant } = useTenant();
@@ -29,6 +41,9 @@ export default function ContentTranslation({ contentType, contentId, fields, dis
   const entries = Object.entries(fields)
     .map(([field, value]): [string, unknown] => [field, typeof value === 'string' ? toPlainText(value) : value])
     .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && Boolean(entry[1].trim()));
+  const companionEntries = Object.entries(companionFields ?? {})
+    .map(([field, value]): [string, unknown] => [field, typeof value === 'string' ? toPlainText(value) : value])
+    .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && Boolean(entry[1].trim()));
   // No control when everything shown is, beyond doubt, the reader's language
   // already (the website's own rule; doubt keeps it).
   const vocabularyReady = useReaderVocabulary(locale);
@@ -37,7 +52,7 @@ export default function ContentTranslation({ contentType, contentId, fields, dis
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [JSON.stringify(entries), locale, vocabularyReady]);
   const enabled = !disabled && tenant?.translation?.enabled !== false && entries.length > 0 && !inReaderLanguage;
-  const key = JSON.stringify([tenant?.id, preferences.identity, preferences.automatic, i18n?.language, locale, contentType, contentId, entries, enabled]);
+  const key = JSON.stringify([tenant?.id, preferences.identity, preferences.automatic, i18n?.language, locale, contentType, contentId, entries, companionEntries, enabled]);
   const currentKey = useRef(key); currentKey.current = key;
   const generation = useRef(0);
   const [result, setResult] = useState<Result | null>(null);
@@ -49,17 +64,21 @@ export default function ContentTranslation({ contentType, contentId, fields, dis
   const translate = useCallback(async (cacheOnly: boolean) => {
     const request = ++generation.current;
     if (!cacheOnly) { setPending(key); setError(null); }
-    const responses = await Promise.allSettled(entries.map(([field, text]) => api.post<{ data?: { translated_text?: string } | null }>(`${API_V2}/ugc-translate`, {
+    const all = [...entries, ...companionEntries];
+    const responses = await Promise.allSettled(all.map(([field, text]) => api.post<{ data?: { translated_text?: string } | null }>(`${API_V2}/ugc-translate`, {
       content_type: field === 'body' ? contentType : `${contentType}_${field}`, content_id: contentId,
       source_text: text, target_locale: locale, ...(cacheOnly ? { cache_only: true } : {}),
     })));
     if (generation.current !== request || currentKey.current !== key) return;
     const translated: Record<string, string> = {};
+    let count = 0;
     responses.forEach((response, index) => {
       const text = response.status === 'fulfilled' ? response.value?.data?.translated_text : null;
-      if (typeof text === 'string' && text) translated[entries[index]![0]] = text;
+      if (typeof text !== 'string' || !text) return;
+      translated[all[index]![0]] = text;
+      // Only the fields decide whether there is a result and whether it is partial.
+      if (index < entries.length) count++;
     });
-    const count = Object.keys(translated).length;
     if (count) { setResult({ key, fields: translated, partial: count !== entries.length }); setHidden(null); }
     if (!cacheOnly && count < entries.length) setError(key);
     setPending(null);

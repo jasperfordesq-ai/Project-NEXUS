@@ -203,7 +203,16 @@ export function ProfilePage() {
   const [translatedBio, setTranslatedBio] = useState<string | null>(null);
   // The tagline is translated with the bio, on the same press (31 Oct 2026).
   const [translatedTagline, setTranslatedTagline] = useState<string | null>(null);
-  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedTagline(fields?.tagline ?? null), []);
+  // So are the skills (AWID report, Oct 2026: "the translation button doesn't
+  // translate everything"). Sent one per line; shown only when every line comes
+  // back, so a skill is never paired with another one's translation.
+  // Kept as the plain string: the callback runs on every render of the button,
+  // and a fresh array each time would re-render without end.
+  const [translatedSkillsText, setTranslatedSkillsText] = useState<string | null>(null);
+  const onTranslatedFields = useCallback((fields: Record<string, string> | null) => {
+    setTranslatedTagline(fields?.tagline ?? null);
+    setTranslatedSkillsText(fields?.skills ?? null);
+  }, []);
 
   // Reviews state
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -603,6 +612,11 @@ export function ProfilePage() {
   const metaDescription = t('page_meta.description', { name: profileName });
   const earnedBadgeCount = gamification?.total_badges ?? gamification?.badges.length ?? 0;
   const visibleSkills = profile.skills ? (showAllSkills ? profile.skills : profile.skills.slice(0, 8)) : [];
+  const skillsForTranslation = (profile.skills ?? []).join('\n');
+  const translatedSkillLines = translatedSkillsText !== null ? translatedSkillsText.split('\n').map((line) => line.trim()) : null;
+  const skillTranslations = translatedSkillLines && profile.skills && translatedSkillLines.length === profile.skills.length
+    ? new Map(profile.skills.map((skill, index) => [skill, translatedSkillLines[index] || skill]))
+    : null;
   const taglineText = profile.tagline
     ? profile.tagline.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
     : '';
@@ -1046,6 +1060,7 @@ export function ProfilePage() {
                     sourceLocale={null}
                     onTextChange={(text, isTranslated) => setTranslatedBio(isTranslated ? text : null)}
                     extraFields={{ tagline: taglineText }}
+                    companionFields={{ skills: skillsForTranslation }}
                     onFieldsChange={onTranslatedFields}
                     className="mt-1"
                   />
@@ -1061,7 +1076,7 @@ export function ProfilePage() {
                           size="sm"
                           className="max-w-[12rem] bg-accent/20 text-accent dark:text-accent"
                         >
-                          <span className="block truncate">{skill}</span>
+                          <span className="block truncate">{skillTranslations?.get(skill) ?? skill}</span>
                         </Chip>
                         {!isOwnProfile && isAuthenticated && profile.id && (
                           isLoadingEndorsements ? (

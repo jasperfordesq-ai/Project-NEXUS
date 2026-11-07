@@ -40,6 +40,14 @@ interface TranslateButtonProps {
    * Keyed by field name; each is sent as content type `<contentType>_<field>`.
    */
   extraFields?: Record<string, string | null | undefined>;
+  /**
+   * Fields translated with the text but left out of the "already in the
+   * reader's language?" check, and never enough on their own to show the
+   * button: a profile's skills, for example, a list of single words that no
+   * language check can be sure about (AWID report, Oct 2026). Handed back
+   * through onFieldsChange like extraFields.
+   */
+  companionFields?: Record<string, string | null | undefined>;
   /** Receives the translated extra fields while the translation is shown, and null for the original. */
   onFieldsChange?: (fields: Record<string, string> | null) => void;
 }
@@ -60,6 +68,7 @@ export function TranslateButton({
   hidden = false,
   className,
   extraFields,
+  companionFields,
   onFieldsChange,
 }: TranslateButtonProps) {
   const { t, i18n } = useTranslation('common');
@@ -73,7 +82,10 @@ export function TranslateButton({
   const fieldEntries = Object.entries(extraFields ?? {})
     .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].trim() !== '')
     .sort(([a], [b]) => a.localeCompare(b));
-  const fieldsKey = JSON.stringify(fieldEntries);
+  const companionEntries = Object.entries(companionFields ?? {})
+    .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].trim() !== '')
+    .sort(([a], [b]) => a.localeCompare(b));
+  const fieldsKey = JSON.stringify([fieldEntries, companionEntries]);
   const subject = JSON.stringify([tenant?.id, preferences.identity, preferences.automatic, translationSwitchedOff, hidden,
     interfaceLocale, userLocale, contentType, contentId, sourceText, fieldsKey, normalisedSource]);
   type Result = { subject: string; text: string; fields: Record<string, string>; bodyTranslated: boolean; partial: boolean };
@@ -112,6 +124,7 @@ export function TranslateButton({
     const entries: Array<[string, string]> = [
       ...(sourceText.trim() ? [['', sourceText] as [string, string]] : []),
       ...fieldEntries,
+      ...companionEntries,
     ];
     try {
       const responses = await Promise.allSettled(entries.map(([key, text]) =>
@@ -128,7 +141,7 @@ export function TranslateButton({
       let text = sourceText;
       let bodyTranslated = false;
       let successes = 0;
-      const fields = Object.fromEntries(fieldEntries);
+      const fields = Object.fromEntries([...fieldEntries, ...companionEntries]);
       responses.forEach((response, index) => {
         if (response.status !== 'fulfilled' || !response.value?.success || !response.value.data) return;
         const translated = response.value.data.translated_text;
