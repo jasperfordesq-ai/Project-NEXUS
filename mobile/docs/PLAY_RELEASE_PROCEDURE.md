@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Releasing to Google Play — the procedure, and everything that bites
 
-Last reviewed: 2026-09-27
+Last reviewed: 2026-11-07
 
 Status: **Maintained — written from an end-to-end release of version code 8 on
 2026-09-09, every timing and fingerprint in it measured rather than assumed.**
@@ -543,6 +543,29 @@ agent did everything else in the owner's Chrome.
 - **Released automatically** (managed publishing off): the Production track read "25 (1.12.0) ·
   Available on Google Play · Released on Oct 27 8:56 AM" — **26 minutes** after submission.
   `mobile/live-store-build.json` records build 25 and commit `0e8cb523c`.
+
+On **2026-11-07**, build **26 / 1.13.0** was built and published to internal testing at the
+owner's request, and this time the owner chose to **try it on a phone before promoting it**.
+A store build was required: since build 25 the iOS `with-ios-no-background-audio` plugin was
+added (`08c3eba408`) and the `decode-uri-component` override moved 0.5.0 → 0.5.1, so the native
+surface differed. It was built by `build-aab-play.sh --version-code 26` from `c7070884cc` (the
+version bump on top of `eb3b177236`, whose CI Pipeline, E2E, Platform contracts, Security Scan,
+CodeQL and Docs Lint runs all passed). The guarded build took **2m 43s**; the 96,906,228-byte AAB
+has SHA-256 `4D475D4DC34A4599F4C6B94D74376CBC0532BE0CD29F45ED2EE77B3236CDA3DF`. The owner
+uploaded it; the agent did everything else in the owner's Chrome.
+
+- **Console slot, 2026-11-07:** `u/0` was the `timebank-global@` account and opened a Play
+  Console **terms page — not accepted**. `?authuser=jasper@hour-timebank.ie` landed on `u/1`,
+  "Production | Timebank Global", live release 25 (1.12.0).
+- **Release notes trap:** the first attempt typed the whole `<en-GB>…</en-GB>` block in one go and
+  the field reported "Line 3: expected </en-GB>" with notes for 0 languages. Clearing the box,
+  typing the opening tag, one line and the closing tag, then inserting the remaining lines above
+  the closing tag, was accepted ("Release notes provided for 1 language"). Read the counter line
+  under the box, not just the text.
+- **Internal testing:** "Ready to release", no quick-checks bar. 0 devices lost on every row
+  (Phone 12,538 / Tablet 6,522 / TV 3 / Wearable 0 / Car 0 / Chromebook 10 / Android XR 2). New
+  install 33.6 MB (+223 KB), update 3.04 MB. Build 25 under "Not included". Published **5:58 PM**
+  Console time ("Available to internal testers").
 
 Two Console behaviours worth knowing before you click:
 

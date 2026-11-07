@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Releasing to the Apple App Store — the procedure, and everything that bites
 
-Last reviewed: 2026-10-17
+Last reviewed: 2026-11-07
 
 Status: **Maintained — written from the first iPhone release, 1.10.0 (build 8), set up and
 submitted to App Review on 16–17 October 2026.** The Google Play equivalent is
@@ -46,8 +46,8 @@ reviewer account. Its password is typed into App Store Connect by the owner.
 
 ## The release, in order
 
-1. **Bump the version** in all four places (`mobile/package.json`, `mobile/app.json`,
-   `config/mobile.php`, and the Android version code) — see the Play procedure. The iOS
+1. **Bump the version** in all five places (`mobile/package.json`, `mobile/app.json`,
+   `config/mobile.php`, `store-listing/apple/en-GB.json`, and the Android version code) — see the Play procedure. The iOS
    build number is EAS's remote counter and increments by itself; failed attempts burn
    numbers, which is harmless.
 2. **Run the gates**: `npm run verify:release` and `npm run verify:ios-release` from
@@ -72,6 +72,32 @@ reviewer account. Its password is typed into App Store Connect by the owner.
 9. **After approval**, the version waits for a manual **Release**. Then record the build
    in `live-store-build.json` (add an `ios` entry — it currently records Android only, and
    the over-the-air publish script must check both platforms).
+
+## Release record
+
+- **1.10.0 (8)** — first submission, 17 Oct 2026. Rejected 30 Oct 2026 under Guideline
+  2.5.4 (an `audio` background mode with no persistent-audio feature).
+- **1.12.0 (9)** — the `audio` mode removed (`08c3eba408`), resubmitted 31 Oct 2026 through
+  the App Store Connect API, approved and live 31 Oct 2026.
+- **1.13.0 (10)** — 7 Nov 2026. EAS build `4846a946-4f13-41bc-9f94-fbcd6e69c39b` from
+  `c7070884cc`, queued at 17:50 and finished at 18:00 UTC. The IPA was opened before
+  submission: version 1.13.0 (10), no `UIBackgroundModes`, `ITSAppUsesNonExemptEncryption`
+  false, and over-the-air updates on with channel `production` and runtime 1.13.0. Uploaded
+  to TestFlight with `eas-submit-ios.js` (EAS submission `b8fb76f0-53a9-4b64-8256-894eaa309f31`).
+  The App Store version was created through the API with release type `AFTER_APPROVAL`, at the
+  owner's choice for this version. The en-GB "What's New" text was set, and the reviewer notes
+  were updated: the 2.5.4 resubmission paragraph was replaced with what is new, and two
+  sentences were corrected. They said notifications were requested only from Settings, but
+  since `44a990f16` the app asks once, right after sign-in.
+
+🔴 **`store-listing/apple/en-GB.json` carries the App Store version, and
+`npm run verify:ios-release` refuses when it differs from `app.json`.** It still said 1.10.0
+when 1.12.0 was submitted through the API, so the gate was not run for that release. Bump it
+with the other four places.
+
+🔴 **A new App Store version copies the previous version's App Review details**, including the
+reviewer password and the notes, and copies the listing text. It does not copy "What's New". Read
+the copied notes before submitting, because they still describe the previous release.
 
 ## Traps that cost real time
 
