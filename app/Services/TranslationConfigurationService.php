@@ -29,6 +29,13 @@ class TranslationConfigurationService
     public const CONFIG_CONTEXT_AWARE = 'translation.context_aware';
     public const CONFIG_CONTEXT_MESSAGES = 'translation.context_messages';
     public const CONFIG_AUTO_TRANSLATE_DEFAULT = 'translation.auto_translate_default';
+    /**
+     * Owner decision, 7 Nov 2026: posts, listings and other member content are
+     * translated automatically for members who have not chosen for themselves
+     * (see Translation\MemberContentAutoTranslate). Off by default. Not the same
+     * as CONFIG_AUTO_TRANSLATE_DEFAULT, which is about messages in conversations.
+     */
+    public const CONFIG_AUTO_TRANSLATE_CONTENT = 'translation.auto_translate_content';
     public const CONFIG_MAX_PER_USER_PER_HOUR = 'translation.max_per_user_per_hour';
     public const CONFIG_GLOSSARY_ENABLED = 'translation.glossary_enabled';
 
@@ -42,6 +49,7 @@ class TranslationConfigurationService
         self::CONFIG_CONTEXT_AWARE        => false,       // INT7: send conversation history
         self::CONFIG_CONTEXT_MESSAGES     => 5,           // number of preceding messages
         self::CONFIG_AUTO_TRANSLATE_DEFAULT => false,      // INT8: default for new conversations
+        self::CONFIG_AUTO_TRANSLATE_CONTENT => false,      // posts/listings, for members who never chose
         self::CONFIG_MAX_PER_USER_PER_HOUR => 100,        // rate limit
         self::CONFIG_GLOSSARY_ENABLED     => false,       // INT10: use custom glossary
     ];
@@ -133,10 +141,11 @@ class TranslationConfigurationService
 
     /**
      * What the websites need to know, for the tenant bootstrap: whether
-     * translation is on, whether new conversations auto-translate, and which
+     * translation is on, whether new conversations auto-translate, whether
+     * member content auto-translates for members who never chose, and which
      * provider is used.
      *
-     * @return array{enabled: bool, auto_translate_default: bool, provider: string}
+     * @return array{enabled: bool, auto_translate_default: bool, auto_translate_content: bool, provider: string}
      */
     public static function publicSettingsForTenant(int $tenantId): array
     {
@@ -146,9 +155,25 @@ class TranslationConfigurationService
         return [
             'enabled' => filter_var($value(self::CONFIG_ENABLED), FILTER_VALIDATE_BOOLEAN),
             'auto_translate_default' => filter_var($value(self::CONFIG_AUTO_TRANSLATE_DEFAULT), FILTER_VALIDATE_BOOLEAN),
+            'auto_translate_content' => self::contentAutoTranslateOn($tenantId),
             // The community's choice: 'google' (default) or 'ai' (its own AI key).
             'provider' => in_array(strtolower((string) $value(self::CONFIG_ENGINE)), ['ai', 'openai'], true) ? 'ai' : 'google',
         ];
+    }
+
+    /**
+     * Does this community auto-translate posts, listings and other content for
+     * members who have not made their own choice? Read for the tenant given,
+     * never the request's, so one community's setting cannot reach another.
+     */
+    public static function contentAutoTranslateOn(int $tenantId): bool
+    {
+        $stored = self::getStoredValues($tenantId);
+
+        return filter_var(
+            $stored[self::CONFIG_AUTO_TRANSLATE_CONTENT] ?? self::DEFAULTS[self::CONFIG_AUTO_TRANSLATE_CONTENT],
+            FILTER_VALIDATE_BOOLEAN,
+        );
     }
 
     /**

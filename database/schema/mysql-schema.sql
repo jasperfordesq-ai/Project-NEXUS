@@ -20476,6 +20476,7 @@ CREATE TABLE `users` (
   `stripe_customer_id` varchar(255) DEFAULT NULL,
   `geocode_attempted_at` timestamp NULL DEFAULT NULL,
   `avatar_alt` varchar(255) DEFAULT NULL,
+  `auto_translate_ugc_chosen_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_email_tenant` (`email`,`tenant_id`),
   UNIQUE KEY `idx_tenant_username` (`tenant_id`,`username`),

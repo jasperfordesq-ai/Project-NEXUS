@@ -85,6 +85,12 @@ const CONFIG_KEYS: Record<string, { labelKey: string; descKey: string }> = {
     labelKey: 'config.translation_auto_translate_label',
     descKey: 'config.translation_auto_translate_desc',
   },
+  // Owner decision, 7 Nov 2026: optional, off by default. Members who never
+  // chose follow it; each member can still switch it off in their settings.
+  'translation.auto_translate_content': {
+    labelKey: 'config.translation_auto_translate_content_label',
+    descKey: 'config.translation_auto_translate_content_desc',
+  },
   'translation.max_per_user_per_hour': {
     labelKey: 'config.translation_rate_limit_label',
     descKey: 'config.translation_rate_limit_desc',
@@ -416,6 +422,21 @@ export function TranslationConfig() {
                 isSelected={!!getValue('translation.auto_translate_default')}
                 onValueChange={(val) => saveSetting('translation.auto_translate_default', val)}
                 isDisabled={saving === 'translation.auto_translate_default'}
+                size="sm"
+              />
+            </div>
+
+            {/* translation.auto_translate_content */}
+            <div className="flex items-center justify-between py-3">
+              <div>
+                <p className="font-medium">{meta('translation.auto_translate_content').label}</p>
+                <p className="text-sm text-muted">{meta('translation.auto_translate_content').description}</p>
+              </div>
+              <Switch
+                aria-label={meta('translation.auto_translate_content').label}
+                isSelected={!!getValue('translation.auto_translate_content')}
+                onValueChange={(val) => saveSetting('translation.auto_translate_content', val)}
+                isDisabled={saving === 'translation.auto_translate_content'}
                 size="sm"
               />
             </div>

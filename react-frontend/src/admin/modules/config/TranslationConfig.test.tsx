@@ -85,6 +85,7 @@ const makeConfigResponse = (config = {}, defaults = {}) => ({
       'translation.context_aware': false,
       'translation.context_messages': 5,
       'translation.auto_translate_default': false,
+      'translation.auto_translate_content': false,
       'translation.max_per_user_per_hour': 100,
       'translation.glossary_enabled': false,
       ...config,
@@ -194,6 +195,27 @@ describe('TranslationConfig', () => {
 
     expect(await screen.findByText('AI translation is not available yet')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open AI settings' })).toHaveAttribute('href', expect.stringContaining('/admin/ai-settings'));
+  });
+
+  // Owner decision, 7 Nov 2026: automatic translation of posts and listings is
+  // an optional extra, off by default, and the admin is told what it costs.
+  it('offers automatic translation of posts and listings, off by default, and explains the cost', async () => {
+    mockApi.put.mockResolvedValue({ success: true });
+    const { TranslationConfig } = await import('./TranslationConfig');
+    render(<TranslationConfig />);
+
+    const toggle = await screen.findByRole('switch', { name: 'Auto-translate posts, listings and other content' });
+    expect(toggle).not.toBeChecked();
+    expect(screen.getByText(/sent to Google Translate .* Google charges per character/)).toBeInTheDocument();
+    expect(screen.getByText(/Members can switch this off for themselves in their settings/)).toBeInTheDocument();
+    // The messages switch is a separate setting and stays.
+    expect(screen.getByText('Auto-translate messages by default')).toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    await waitFor(() => expect(mockApi.put).toHaveBeenCalledWith(
+      '/v2/admin/config/translation',
+      { key: 'translation.auto_translate_content', value: true },
+    ));
   });
 
   it('shows loading spinner while config is fetching', async () => {

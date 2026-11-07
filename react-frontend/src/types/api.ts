@@ -1378,6 +1378,8 @@ export interface TenantConfig {
   translation?: {
     enabled: boolean;
     auto_translate_default: boolean;
+    /** Posts, listings and other content auto-translate for members who never chose (7 Nov 2026). */
+    auto_translate_content?: boolean;
     provider: string;
   };
   contact?: {

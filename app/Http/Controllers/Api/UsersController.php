@@ -20,6 +20,7 @@ use App\Services\Enterprise\GdprService;
 use App\Services\EventConfigurationService;
 use App\Services\ListingService;
 use App\Services\MailchimpService;
+use App\Services\Translation\MemberContentAutoTranslate;
 use App\Models\User;
 use App\Services\MemberRankingService;
 use App\Services\OnboardingConfigService;
@@ -114,6 +115,21 @@ class UsersController extends BaseApiController
         } catch (\Throwable $e) {
             // Never break /me over this. Omit rather than guess, so the UI falls
             // back to showing the button and the server stays authoritative.
+        }
+
+        /*
+         * Automatic translation of posts and listings, as the member's settings
+         * page on the accessible website reads it from here. The EFFECTIVE value
+         * (owner decision, 7 Nov 2026): the member's own choice, else their
+         * community's. Read from the member's home community. Showing it unticked
+         * while the community has it on would opt the member out the next time
+         * they saved that form.
+         */
+        $homeTenantId = (int) ($profile['tenant_id'] ?? TenantContext::getId());
+        $translation = MemberContentAutoTranslate::forMember($userId, $homeTenantId);
+        if ($translation !== null) {
+            $profile['auto_translate_ugc'] = $translation['auto_translate_ugc'];
+            $profile['auto_translate_target_locale'] = $translation['auto_translate_target_locale'];
         }
 
         return $this->respondWithData($profile);
@@ -298,7 +314,7 @@ class UsersController extends BaseApiController
         $row = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', TenantContext::getId())
-            ->select(['theme_preferences', 'prefers_chronological_feed', 'auto_translate_ugc', 'auto_translate_target_locale', 'preferred_language'])
+            ->select(['theme_preferences', 'prefers_chronological_feed', 'auto_translate_ugc', MemberContentAutoTranslate::CHOSEN_AT_COLUMN, 'auto_translate_target_locale', 'preferred_language'])
             ->first();
 
         $themePreferences = is_string($row->theme_preferences ?? null)
@@ -321,7 +337,12 @@ class UsersController extends BaseApiController
                 'prefers_chronological' => (bool) ($row->prefers_chronological_feed ?? false),
             ],
             'translation' => [
-                'auto_translate_ugc'           => (bool) ($row->auto_translate_ugc ?? false),
+                // Effective value: the member's own choice, else their community's.
+                'auto_translate_ugc'           => $row !== null && MemberContentAutoTranslate::effective(
+                    $row->auto_translate_ugc,
+                    $row->{MemberContentAutoTranslate::CHOSEN_AT_COLUMN},
+                    (int) TenantContext::getId(),
+                ),
                 'auto_translate_target_locale' => $row->auto_translate_target_locale
                     ?? ($row->preferred_language ?? null),
             ],
@@ -374,7 +395,12 @@ class UsersController extends BaseApiController
         }
         if (isset($data['translation']) && is_array($data['translation'])) {
             if (array_key_exists('auto_translate_ugc', $data['translation'])) {
-                $userColumnUpdates['auto_translate_ugc'] = (bool) $data['translation']['auto_translate_ugc'];
+                // Also records whether this is the member's own choice or the
+                // community's setting (owner decision, 7 Nov 2026).
+                $userColumnUpdates += MemberContentAutoTranslate::columnsForSave(
+                    (bool) $data['translation']['auto_translate_ugc'],
+                    (int) TenantContext::getId(),
+                );
             }
             if (array_key_exists('auto_translate_target_locale', $data['translation'])) {
                 $loc = $data['translation']['auto_translate_target_locale'];
@@ -395,7 +421,7 @@ class UsersController extends BaseApiController
         $row = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', TenantContext::getId())
-            ->select(['prefers_chronological_feed', 'auto_translate_ugc', 'auto_translate_target_locale', 'preferred_language'])
+            ->select(['prefers_chronological_feed', 'auto_translate_ugc', MemberContentAutoTranslate::CHOSEN_AT_COLUMN, 'auto_translate_target_locale', 'preferred_language'])
             ->first();
 
         return $this->respondWithData([
@@ -408,7 +434,11 @@ class UsersController extends BaseApiController
                 'prefers_chronological' => (bool) ($row->prefers_chronological_feed ?? false),
             ],
             'translation' => [
-                'auto_translate_ugc'           => (bool) ($row->auto_translate_ugc ?? false),
+                'auto_translate_ugc'           => $row !== null && MemberContentAutoTranslate::effective(
+                    $row->auto_translate_ugc,
+                    $row->{MemberContentAutoTranslate::CHOSEN_AT_COLUMN},
+                    (int) TenantContext::getId(),
+                ),
                 'auto_translate_target_locale' => $row->auto_translate_target_locale
                     ?? ($row->preferred_language ?? null),
             ],
