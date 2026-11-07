@@ -59,19 +59,27 @@ jest.mock('@/lib/api/twoFactor', () => ({ getTwoFactorStatus: jest.fn() }));
 // here only its two exits matter.
 jest.mock('@/components/security/TwoFactorEnrolment', () => {
   const { Pressable, Text, View } = require('react-native');
-  return ({ onDone, onCancel, onStageChange }: {
+  return ({ onDone, onCancel, onStageChange, onFieldFocus }: {
     onDone: () => void;
     onCancel?: () => void;
     onStageChange?: (stage: string) => void;
+    onFieldFocus?: () => void;
   }) => (
     <View testID="two-factor-enrolment">
       <Pressable testID="enrolment-finish" onPress={onDone}><Text>finish</Text></Pressable>
       {onCancel ? <Pressable testID="enrolment-cancel" onPress={onCancel}><Text>cancel</Text></Pressable> : null}
       {/* Stands in for a verified code: the backup codes are on screen and two-factor is on. */}
       <Pressable testID="enrolment-show-codes" onPress={() => onStageChange?.('codes')}><Text>codes</Text></Pressable>
+      {/* Stands in for the six-digit code box getting focus. */}
+      <Pressable testID="enrolment-focus-code" onPress={() => onFieldFocus?.()}><Text>focus</Text></Pressable>
     </View>
   );
 });
+const mockBringEndIntoView = jest.fn();
+const mockScrollRef: { current: unknown } = { current: null };
+jest.mock('@/lib/hooks/useScrollToEndOnKeyboard', () => ({
+  useScrollToEndOnKeyboard: () => ({ scrollRef: mockScrollRef, bringEndIntoView: mockBringEndIntoView }),
+}));
 
 import OnboardingScreen from './onboarding';
 import { storage } from '@/lib/storage';
@@ -610,6 +618,17 @@ describe('OnboardingScreen', () => {
       } finally {
         spy.mockRestore();
       }
+    });
+
+    it('brings the code box and its button above the keyboard', async () => {
+      // The keyboard opened over the Verify button below the code box (emulator, 7 Nov 2026).
+      const view = await pastWelcome();
+      await waitFor(() => expect(view.getByTestId('onboarding-security-setup')).toBeTruthy());
+      fireEvent.press(view.getByTestId('onboarding-security-setup'));
+      expect(mockScrollRef.current).toBeTruthy();
+
+      fireEvent.press(view.getByTestId('enrolment-focus-code'));
+      expect(mockBringEndIntoView).toHaveBeenCalledTimes(1);
     });
 
     it('can back out of the set-up to the step', async () => {

@@ -8,7 +8,6 @@ import {
   AccessibilityInfo,
   BackHandler,
   Image,
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -48,6 +47,7 @@ import {
 import { updateAvatar, updateProfile } from '@/lib/api/profile';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useScrollToEndOnKeyboard } from '@/lib/hooks/useScrollToEndOnKeyboard';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { storage } from '@/lib/storage';
@@ -254,28 +254,8 @@ function OnboardingScreenInner() {
 
   // When the two-factor code box gets focus the keyboard opens over the Verify button
   // below it (emulator, 7 Nov 2026). Once the keyboard is up and the view has shrunk,
-  // scroll to the end, where the set-up's buttons are.
-  const scrollRef = useRef<ScrollView>(null);
-  const scrollToEndOnKeyboardRef = useRef(false);
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const subscription = Keyboard.addListener('keyboardDidShow', () => {
-      if (!scrollToEndOnKeyboardRef.current) return;
-      scrollToEndOnKeyboardRef.current = false;
-      timer = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
-    });
-    return () => {
-      subscription.remove();
-      if (timer) clearTimeout(timer);
-    };
-  }, []);
-  const bringSetupButtonsIntoView = useCallback(() => {
-    if (Keyboard.isVisible()) {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    } else {
-      scrollToEndOnKeyboardRef.current = true;
-    }
-  }, []);
+  // scroll to the end, where the set-up's buttons are. Shared with Settings → Two-factor.
+  const { scrollRef, bringEndIntoView } = useScrollToEndOnKeyboard();
 
   const pickAvatar = useCallback(async () => {
     if (busy) return;
@@ -632,7 +612,7 @@ function OnboardingScreenInner() {
                   onDone={() => { setSecurityEnrolling(false); setSecurityDone(true); goNext(); }}
                   onCancel={() => setSecurityEnrolling(false)}
                   onStageChange={(stage) => { securityStageRef.current = stage; }}
-                  onCodeFocus={bringSetupButtonsIntoView}
+                  onFieldFocus={bringEndIntoView}
                 />
               ) : (
                 <>

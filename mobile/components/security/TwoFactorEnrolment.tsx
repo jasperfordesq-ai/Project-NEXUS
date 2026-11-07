@@ -56,11 +56,15 @@ export interface TwoFactorEnrolmentProps {
    * backup codes are shown once, so a screen handling Android's Back must not drop them.
    */
   onStageChange?: (stage: TwoFactorEnrolmentStage) => void;
-  /** The code box got focus: the screen around it can scroll the Verify button into view. */
-  onCodeFocus?: () => void;
+  /**
+   * The password or code box got focus, or the code box is back after a wrong code with
+   * an error line under it: the screen around it can scroll the button below into view
+   * (Continue or Verify sat behind the keyboard; emulator, 7 Nov 2026).
+   */
+  onFieldFocus?: () => void;
 }
 
-export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel, onStageChange, onCodeFocus }: TwoFactorEnrolmentProps) {
+export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel, onStageChange, onFieldFocus }: TwoFactorEnrolmentProps) {
   const { t } = useTranslation('settings');
   const [stage, setStage] = useState<Stage>('password');
   const [password, setPassword] = useState('');
@@ -85,12 +89,17 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel, onS
 
   // After a wrong code the box is emptied; put the cursor back in it once it can take
   // typing again, so the keyboard stays up for the next try (emulator, 7 Nov 2026).
+  // The box usually never lost focus, so its onFocus does not fire: say so directly, or
+  // the new error line leaves Verify half behind the keyboard.
   const codeInputRef = useRef<TextInput>(null);
   const refocusCodeRef = useRef(false);
+  const onFieldFocusRef = useRef(onFieldFocus);
+  useEffect(() => { onFieldFocusRef.current = onFieldFocus; }, [onFieldFocus]);
   useEffect(() => {
     if (!busy && refocusCodeRef.current) {
       refocusCodeRef.current = false;
       codeInputRef.current?.focus();
+      onFieldFocusRef.current?.();
     }
   }, [busy]);
 
@@ -229,6 +238,7 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel, onS
             autoComplete="current-password"
             textContentType="password"
             editable={!busy}
+            onFocus={() => onFieldFocus?.()}
             onSubmitEditing={() => void confirmPassword()}
             containerClassName="mb-0"
           />
@@ -271,7 +281,7 @@ export default function TwoFactorEnrolment({ accountLabel, onDone, onCancel, onS
             accessibilityLabel={t('twoFactor.setup.codeLabel')}
             value={code}
             onChangeText={(value) => { setCode(value.replace(/\D/g, '').slice(0, 6)); setError(''); }}
-            onFocus={() => onCodeFocus?.()}
+            onFocus={() => onFieldFocus?.()}
             keyboardType="number-pad"
             autoComplete="one-time-code"
             textContentType="oneTimeCode"

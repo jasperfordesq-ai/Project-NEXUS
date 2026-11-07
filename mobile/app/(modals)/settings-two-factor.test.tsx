@@ -39,17 +39,25 @@ jest.mock('@/lib/api/twoFactor', () => ({
 }));
 jest.mock('@/components/security/TwoFactorEnrolment', () => {
   const { Pressable, Text, View } = require('react-native');
-  return (props: { accountLabel?: string | null; onDone: () => void; onStageChange?: (stage: string) => void }) => {
+  return (props: { accountLabel?: string | null; onDone: () => void; onStageChange?: (stage: string) => void; onFieldFocus?: () => void }) => {
     mockEnrolmentProps(props);
     return (
       <View>
         <Pressable testID="two-factor-enrolment" onPress={props.onDone}><Text>enrol</Text></Pressable>
         {/* Stands in for a verified code: two-factor is on and the backup codes are shown once. */}
         <Pressable testID="enrolment-show-codes" onPress={() => props.onStageChange?.('codes')}><Text>codes</Text></Pressable>
+        {/* Stands in for the six-digit code box getting focus. */}
+        <Pressable testID="enrolment-focus-code" onPress={() => props.onFieldFocus?.()}><Text>focus</Text></Pressable>
       </View>
     );
   };
 });
+
+const mockBringEndIntoView = jest.fn();
+const mockScrollRef: { current: unknown } = { current: null };
+jest.mock('@/lib/hooks/useScrollToEndOnKeyboard', () => ({
+  useScrollToEndOnKeyboard: () => ({ scrollRef: mockScrollRef, bringEndIntoView: mockBringEndIntoView }),
+}));
 
 import SettingsTwoFactorScreen from './settings-two-factor';
 import { firePreventedRemoval, isGuardArmed } from '@/lib/test/unsavedGuardHarness';
@@ -99,6 +107,18 @@ it('asks before leaving while the backup codes are on screen, and only then', as
     cancelLabel: 'twoFactor.cancel',
   }));
   expect(mockBack).not.toHaveBeenCalled();
+});
+
+it('brings the code box and its button above the keyboard', async () => {
+  // The number pad covered the code box and "Verify and turn on", so the member typed
+  // blind (emulator walk, 7 November 2026). The wizard already did this.
+  mockGetStatus.mockResolvedValue(status());
+  const view = render(<SettingsTwoFactorScreen />);
+  await view.findByTestId('two-factor-enrolment');
+  expect(mockScrollRef.current).toBeTruthy();
+
+  fireEvent.press(view.getByTestId('enrolment-focus-code'));
+  expect(mockBringEndIntoView).toHaveBeenCalledTimes(1);
 });
 
 it('"I have saved them" leaves without asking', async () => {

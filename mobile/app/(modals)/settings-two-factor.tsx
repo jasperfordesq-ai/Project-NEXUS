@@ -19,7 +19,7 @@
 
 import ErrorState from '@/components/ui/ErrorState';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -35,6 +35,7 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { getTwoFactorStatus, type TwoFactorStatus } from '@/lib/api/twoFactor';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useScrollToEndOnKeyboard } from '@/lib/hooks/useScrollToEndOnKeyboard';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
@@ -101,6 +102,10 @@ function SettingsTwoFactorScreen() {
     if (leaving && router.canGoBack?.()) router.back();
   }, [leaving]);
 
+  // The number pad covered the code box and "Verify and turn on", so the member typed
+  // blind (emulator, 7 November 2026): on focus, scroll them above the keyboard.
+  const { scrollRef, bringEndIntoView } = useScrollToEndOnKeyboard();
+
   function finished() {
     showToast({ title: t('twoFactor.screen.success'), variant: 'success' });
     setStatus((current) => (current ? { ...current, enabled: true } : current));
@@ -111,7 +116,15 @@ function SettingsTwoFactorScreen() {
     <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('twoFactor.title')} backLabel={t('common:buttons.back')} fallbackHref="/(modals)/settings" />
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          // Android only, as in the welcome wizard: adjustResize no longer resizes an
+          // edge-to-edge window (Android 15+). iOS uses automaticallyAdjustKeyboardInsets.
+          behavior={Platform.OS === 'android' ? 'height' : undefined}
+          enabled={Platform.OS === 'android'}
+        >
         <ScrollView
+          ref={scrollRef}
           automaticallyAdjustKeyboardInsets
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }}
@@ -152,11 +165,17 @@ function SettingsTwoFactorScreen() {
             <HeroCard className="rounded-panel p-0">
               <HeroCard.Body className="gap-4 p-4">
                 <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('twoFactor.screen.needApp')}</Text>
-                <TwoFactorEnrolment accountLabel={user?.email ?? null} onDone={finished} onStageChange={setStage} />
+                <TwoFactorEnrolment
+                  accountLabel={user?.email ?? null}
+                  onDone={finished}
+                  onStageChange={setStage}
+                  onFieldFocus={bringEndIntoView}
+                />
               </HeroCard.Body>
             </HeroCard>
           )}
         </ScrollView>
+        </KeyboardAvoidingView>
         {confirmDialog}
       </SafeAreaView>
     </ModalErrorBoundary>

@@ -241,11 +241,32 @@ it('keeps the code box editable while the code is checked, so Android keeps the 
 });
 
 it('says when the code box gets focus, so the screen can bring the Verify button into view', async () => {
-  const onCodeFocus = jest.fn();
-  const view = render(<TwoFactorEnrolment onDone={jest.fn()} onCodeFocus={onCodeFocus} />);
+  const onFieldFocus = jest.fn();
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} onFieldFocus={onFieldFocus} />);
   await reachSetup(view);
   fireEvent(view.getByTestId('two-factor-code'), 'focus');
-  expect(onCodeFocus).toHaveBeenCalledTimes(1);
+  expect(onFieldFocus).toHaveBeenCalledTimes(1);
+});
+
+it('says when the password box gets focus, so the screen can bring Continue into view', () => {
+  // Continue sat behind the keyboard on the password step (emulator, 7 November 2026).
+  const onFieldFocus = jest.fn();
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} onFieldFocus={onFieldFocus} />);
+  fireEvent(view.getByTestId('two-factor-password'), 'focus');
+  expect(onFieldFocus).toHaveBeenCalledTimes(1);
+});
+
+it('asks for the code box and Verify to be shown again after a wrong code', async () => {
+  // The error line under the box pushed Verify half behind the keyboard, and the box
+  // never lost focus, so nothing scrolled it back (emulator, 7 November 2026).
+  mockVerify.mockRejectedValueOnce(new ApiResponseError(400, 'Invalid verification code', undefined, 'VERIFICATION_FAILED', 'code'));
+  const onFieldFocus = jest.fn();
+  const view = render(<TwoFactorEnrolment onDone={jest.fn()} onFieldFocus={onFieldFocus} />);
+  await reachSetup(view);
+  fireEvent.changeText(view.getByTestId('two-factor-code'), '000000');
+  fireEvent.press(view.getByTestId('two-factor-verify'));
+  await view.findByTestId('two-factor-error');
+  await waitFor(() => expect(onFieldFocus).toHaveBeenCalledTimes(1));
 });
 
 it('copies and shares the backup codes', async () => {
