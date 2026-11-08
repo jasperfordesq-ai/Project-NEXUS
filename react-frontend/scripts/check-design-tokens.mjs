@@ -57,6 +57,7 @@ const inlineStyleExceptionGroups = [
     files: {
       'src/admin/modules/categories/CategoriesAdmin.tsx': 3,
       'src/admin/modules/groups/GroupTypes.tsx': 1,
+      'src/admin/modules/system/settings/sections/CommunityColourSection.tsx': 1,
       'src/admin/modules/system/settings/sections/HeaderColorsSection.tsx': 1,
       'src/components/branding/TenantLogo.tsx': 1,
       'src/components/layout/ThemePicker.tsx': 1,

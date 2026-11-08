@@ -12,6 +12,11 @@
  * - `band`: a soft tinted panel with readable text. Light mode uses the -800
  *   shade on -100 and dark mode the -300 shade on a -500/15 tint; both pairs
  *   clear WCAG AA (4.5:1) for normal text.
+ *
+ * Raw `indigo-*` and `purple-*` utilities are reserved for the platform brand
+ * (react-frontend/scripts/check-design-tokens.mjs), so the admin's "purple"
+ * shows in the near-identical violet shades and "indigo" in sky, which keeps
+ * it distinct from "blue".
  */
 interface CategoryColourClasses {
   dot: string;
@@ -23,11 +28,11 @@ const CATEGORY_COLOURS: Record<string, CategoryColourClasses> = {
   red: { dot: 'bg-red-500', band: 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300' },
   green: { dot: 'bg-green-500', band: 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300' },
   orange: { dot: 'bg-orange-500', band: 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300' },
-  purple: { dot: 'bg-purple-500', band: 'bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300' },
+  purple: { dot: 'bg-violet-500', band: 'bg-violet-100 text-violet-800 dark:bg-violet-500/15 dark:text-violet-300' },
   pink: { dot: 'bg-pink-500', band: 'bg-pink-100 text-pink-800 dark:bg-pink-500/15 dark:text-pink-300' },
   yellow: { dot: 'bg-yellow-500', band: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-300' },
   teal: { dot: 'bg-teal-500', band: 'bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-300' },
-  indigo: { dot: 'bg-indigo-500', band: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300' },
+  indigo: { dot: 'bg-sky-500', band: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300' },
   cyan: { dot: 'bg-cyan-500', band: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-500/15 dark:text-cyan-300' },
   fuchsia: { dot: 'bg-fuchsia-500', band: 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-500/15 dark:text-fuchsia-300' },
   gray: { dot: 'bg-gray-500', band: 'bg-gray-100 text-gray-800 dark:bg-gray-500/15 dark:text-gray-300' },
