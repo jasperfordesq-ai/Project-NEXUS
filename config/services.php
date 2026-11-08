@@ -29,6 +29,10 @@ return [
     'openai' => [
         'api_key' => env('OPENAI_API_KEY'),
         'model' => env('OPENAI_MODEL', 'gpt-4'),
+        // Voice-message transcription (speech to text), platform-wide.
+        // Owner decision, 8 Nov 2026: disabled. Off unless this is set true;
+        // community AI settings cannot turn it on.
+        'voice_transcription' => filter_var(env('VOICE_TRANSCRIPTION_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
     ],
 
     // Last-resort fallback for Google Translate, the default translation

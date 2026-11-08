@@ -51,6 +51,10 @@ final class AiProviderCallGateTest extends TestCase
         $this->app->useStoragePath($this->storage);
 
         config(['services.openai.api_key' => 'sk-e035-fake-not-real']);
+        // Voice transcription is off platform-wide since 8 Nov 2026
+        // (VoiceTranscriptionSwitchTest). These tests pin how the AI switch and
+        // allowance gate it when the platform does turn it on.
+        config(['services.openai.voice_transcription' => true]);
         Http::preventStrayRequests();
         Http::fake([
             'api.openai.com/v1/audio/transcriptions' => Http::response(['text' => 'E035 FAKE TRANSCRIPT', 'language' => 'en'], 200),

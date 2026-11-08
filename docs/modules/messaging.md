@@ -12,7 +12,7 @@ Supported workflows:
 
 - **Direct messaging** — a 1-to-1 text, image/file, or voice conversation between two members on the same tenant.
 - **Contextual messaging** — a message linked to a listing, event, job, volunteering opportunity, or group via `context_type` / `context_id`.
-- **Voice messaging** — an audio recording uploaded by the sender, optionally auto-transcribed and translated.
+- **Voice messaging** — an audio recording uploaded by the sender. Automatic transcription is **disabled platform-wide** (owner decision, 8 November 2026; see below).
 - **Message translation** — on-demand translation of any message body or voice transcript to a target language (gated by the `message_translation` feature flag).
 - **Broker safeguarding visibility** — automatic copy of qualifying messages to a broker review queue, with in-app and email alerts to broker-role users.
 - **Federation messaging** — cross-community messages between members of different federated tenants (see [docs/FEDERATION_API_MANUAL.md](../FEDERATION_API_MANUAL.md)).
@@ -197,7 +197,9 @@ Accepted audio MIME types: `audio/webm`, `video/webm`, `audio/ogg`,
 Maximum file size: **10 MB**. Maximum duration: **5 minutes** (300
 seconds, enforced by `AudioUploader::$maxDuration`).
 
-After upload, `TranscriptionService::transcribe()` runs non-blocking. On success the `transcript` and `transcript_language` columns are updated on the message row and included in the response. Transcription failure is logged as a warning and does not fail the send.
+**Transcription is disabled platform-wide** (owner decision, 8 November 2026). The switch is `services.openai.voice_transcription` (environment variable `VOICE_TRANSCRIPTION_ENABLED`, default `false`); no community setting can turn it on. While it is off the voice message is stored, sent and playable, the recording is never sent to a speech-to-text provider, and no AI allowance is used. Pinned by `tests/Laravel/Feature/Messages/VoiceTranscriptionSwitchTest.php`.
+
+If the switch is ever turned on, transcription runs after upload through `TranscriptionService::transcribeForMember()`, which also requires the community's AI to be switched on and the member to have AI allowance left. On success the `transcript` and `transcript_language` columns are updated on the message row and included in the response. Transcription failure is logged as a warning and does not fail the send.
 
 ## Real-time delivery via Pusher
 
@@ -404,7 +406,7 @@ For full federation operational notes, partner onboarding, and the external part
 - **Message media is never public.** New attachment and voice bytes live under `storage/app/private/message-media/{tenantId}/`; clients receive only authenticated API URLs. Media delivery fails closed for outsiders, cross-tenant pointers, traversal, missing files, and attachments that do not belong to the requested message.
 - **Broker copies are immutable.** A broker copy stores `message_body` at the moment of copy. Subsequent edits or deletions of the original message do not propagate to the copy.
 - **Translation is opt-in per message.** Translations are not stored; they are computed on demand and returned in the response. The source text for translation is either `transcript` (voice) or `body` (text), both already stored.
-- **Voice transcripts are stored on the server** in the `transcript` column. Tenants should include this in their privacy policy.
+- **Voice transcripts are stored on the server** in the `transcript` column. No new transcripts are created while transcription is disabled (since 8 November 2026); transcripts made earlier remain until the message is deleted.
 - **Erasure removes authored media without breaking another sender's reference.** `GdprService::executeAccountDeletion()` deletes attachment rows and voice pointers authored by the erased member. It unlinks the underlying private file only when no other sender still references the same canonical path. An unlink failure retains the database pointer so cleanup remains retryable; when erasure is processing a `gdpr_requests` row, that request remains `processing` instead of being marked complete.
 
 ## Failure modes and recovery

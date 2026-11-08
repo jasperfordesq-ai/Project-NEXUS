@@ -315,6 +315,9 @@ final class CaringLowFindingsTest extends TestCase
 
     public function test_f138_voice_help_still_works_and_is_charged_when_ai_is_enabled(): void
     {
+        // Voice transcription is off platform-wide since 8 Nov 2026
+        // (VoiceTranscriptionSwitchTest); this pins the behaviour if it is turned on.
+        config(['services.openai.voice_transcription' => true]);
         $this->fakeOpenAi();
         $this->setAiEnabled(true);
         $member = $this->member();

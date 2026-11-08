@@ -34,6 +34,20 @@ class TranscriptionService
     }
 
     /**
+     * Is voice-message transcription switched on for the platform?
+     *
+     * Owner decision, 8 Nov 2026: disabled site-wide. Off unless
+     * VOICE_TRANSCRIPTION_ENABLED is set true; no community setting can turn it
+     * on. While off, a voice message is still stored, sent and playable, but the
+     * recording is never sent to a speech-to-text provider and no AI allowance
+     * is used. Translation ({@see translate()}) is unaffected.
+     */
+    public static function isTranscriptionEnabled(): bool
+    {
+        return config('services.openai.voice_transcription') === true;
+    }
+
+    /**
      * Transcribe a member's voice message, but only through the AI gate.
      *
      * 🔴 E-035 F-164: voice-message transcription used to call Whisper on every
@@ -50,7 +64,8 @@ class TranscriptionService
      */
     public static function transcribeForMember(int $userId, string $audioFilePath): ?array
     {
-        if (!self::isConfigured() || !file_exists($audioFilePath)) {
+        // Checked before the AI gate so a disabled feature never uses allowance.
+        if (!self::isTranscriptionEnabled() || !self::isConfigured() || !file_exists($audioFilePath)) {
             return null;
         }
 
@@ -76,6 +91,12 @@ class TranscriptionService
      */
     public static function transcribe(string $audioFilePath): ?array
     {
+        // Every speech-to-text request passes through here, so the platform
+        // switch is enforced for all callers, not just the voice-message routes.
+        if (!self::isTranscriptionEnabled()) {
+            return null;
+        }
+
         $apiKey = config('services.openai.api_key');
         if (empty($apiKey)) {
             Log::warning('TranscriptionService::transcribe — OpenAI API key not configured');
