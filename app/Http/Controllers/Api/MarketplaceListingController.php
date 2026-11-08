@@ -869,6 +869,12 @@ class MarketplaceListingController extends BaseApiController
         $userId = $this->requireAuth();
         $this->rateLimit('marketplace_ai_generate', 5, 60);
 
+        // AI on, Content generation on, the community's own OpenAI key saved and
+        // not refused — the same rule that decides whether the apps show the button.
+        if (!\App\Services\AI\AiDescriptionAvailability::isAvailable(\App\Services\AI\AiDescriptionAvailability::MARKETPLACE)) {
+            return $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403);
+        }
+
         $data = request()->validate([
             'title'     => 'required|string|max:200',
             'category'  => 'nullable|string|max:100',

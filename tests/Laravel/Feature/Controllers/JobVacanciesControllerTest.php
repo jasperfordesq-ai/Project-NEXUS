@@ -1307,10 +1307,30 @@ class JobVacanciesControllerTest extends TestCase
     public function test_generate_description_requires_title(): void
     {
         $this->authenticatedUser();
+        // The generator is off by default (8 Nov 2026); switch everything on so
+        // the request gets as far as the title check.
+        foreach (['ai_enabled' => '1', 'ai_content_gen_enabled' => '1', 'openai_api_key' => 'sk-test-fake-not-real'] as $key => $value) {
+            DB::table('ai_settings')->updateOrInsert(
+                ['tenant_id' => $this->testTenantId, 'setting_key' => $key],
+                ['setting_value' => $value, 'updated_at' => now()]
+            );
+        }
+        \App\Services\JobConfigurationService::set(\App\Services\JobConfigurationService::CONFIG_ENABLE_AI_DESCRIPTIONS, true);
+        \App\Services\AI\AIServiceFactory::clearCache();
 
         $response = $this->apiPost('/v2/jobs/generate-description', []);
 
         $response->assertStatus(400);
+    }
+
+    public function test_generate_description_is_refused_while_switched_off(): void
+    {
+        $this->authenticatedUser();
+
+        $response = $this->apiPost('/v2/jobs/generate-description', ['title' => 'Community Garden Coordinator']);
+
+        $response->assertStatus(403);
+        $response->assertJsonPath('errors.0.code', 'FEATURE_DISABLED');
     }
 
     public function test_generate_description_with_title(): void

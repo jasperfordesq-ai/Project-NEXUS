@@ -486,6 +486,10 @@ class TenantBootstrapController extends BaseApiController
         // Jobs module configuration
         $data['job_config'] = JobConfigurationService::getAll();
 
+        // Which "Generate description" buttons the apps may show. Decided here,
+        // not in the apps, so all three clients agree with the endpoints.
+        $data['ai_descriptions'] = \App\Services\AI\AiDescriptionAvailability::forCurrentCommunity();
+
         // Group tab visibility — only include tab_* keys for frontend filtering
         $groupConfig = GroupConfigurationService::getAll();
         $groupTabs = [];

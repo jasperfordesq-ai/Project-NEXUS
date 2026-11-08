@@ -143,7 +143,7 @@ const CORE_MODULES: ModuleDefinition[] = [
       // Features
       { key: 'listing.enable_featured', type: 'boolean', defaultValue: true, category: 'features' },
       { key: 'listing.featured_duration_days', type: 'number', defaultValue: 7, category: 'features', min: 1, max: 90 },
-      { key: 'listing.enable_ai_descriptions', type: 'boolean', defaultValue: true, category: 'features' },
+      { key: 'listing.enable_ai_descriptions', type: 'boolean', defaultValue: false, category: 'features' },
       { key: 'listing.enable_reporting', type: 'boolean', defaultValue: true, category: 'features' },
       { key: 'listing.enable_favourites', type: 'boolean', defaultValue: true, category: 'features' },
       { key: 'listing.enable_map_view', type: 'boolean', defaultValue: true, category: 'features' },
@@ -560,7 +560,7 @@ const FEATURE_MODULES: ModuleDefinition[] = [
       // Features
       { key: 'jobs.enable_featured', type: 'boolean', defaultValue: true, category: 'features' },
       { key: 'jobs.featured_duration_days', type: 'number', defaultValue: 7, category: 'features', min: 1, max: 90 },
-      { key: 'jobs.enable_ai_descriptions', type: 'boolean', defaultValue: true, category: 'features' },
+      { key: 'jobs.enable_ai_descriptions', type: 'boolean', defaultValue: false, category: 'features' },
       { key: 'jobs.enable_skills_matching', type: 'boolean', defaultValue: true, category: 'features' },
       { key: 'jobs.enable_referrals', type: 'boolean', defaultValue: true, category: 'features' },
       { key: 'jobs.enable_templates', type: 'boolean', defaultValue: true, category: 'features' },

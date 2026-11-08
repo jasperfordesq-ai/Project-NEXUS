@@ -37,6 +37,21 @@ export type GroupTabKey =
 
 export type GroupTabConfig = Partial<Record<GroupTabKey, boolean>>;
 
+/**
+ * Whether each "Generate description" AI button may be offered in this community.
+ *
+ * The server decides every flag (feature switch, the community's own settings and
+ * whether an AI provider is usable) and sends the result. The app does not work any of
+ * it out again: a flag shows its button only when it is exactly `true`. A missing
+ * object, a missing key or an older server that never sends it all mean hidden.
+ * See `lib/tenancy/aiDescriptions.ts`.
+ */
+export interface AiDescriptionAvailability {
+  listings?: boolean;
+  jobs?: boolean;
+  marketplace?: boolean;
+}
+
 export interface TenantConfig {
   translation?: { enabled?: boolean };
   /**
@@ -61,6 +76,8 @@ export interface TenantConfig {
   job_config?: JobConfig;
   /** Server-authoritative visibility for configured group sections. */
   group_tabs?: GroupTabConfig;
+  /** Server-authoritative availability of the AI description buttons. Absent = hidden. */
+  ai_descriptions?: AiDescriptionAvailability;
   config: {
     time_unit: string;
     time_unit_plural: string;

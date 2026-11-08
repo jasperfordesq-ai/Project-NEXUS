@@ -43,6 +43,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { SkillTagsInput } from '@/components/listings/SkillTagsInput';
 import { LoadingScreen } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
+import { aiDescriptionAvailable } from '@/lib/aiDescriptions';
 import { api, type ApiErrorDetail } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveThumbnailUrl } from '@/lib/helpers';
@@ -235,7 +236,7 @@ export function ListingForm({
 }: ListingFormProps) {
   const { t } = useTranslation('listings');
   const navigate = useNavigate();
-  const { tenantPath, listingConfig } = useTenant();
+  const { tenant, tenantPath, listingConfig } = useTenant();
   const { user } = useAuth();
   const toast = useToast();
   const isEditing = !!listingId;
@@ -772,26 +773,28 @@ export function ListingForm({
               description: 'text-theme-subtle',
             }}
           />
-          <div className="flex flex-col items-stretch gap-2 mt-2 sm:flex-row sm:items-center">
-            <Button
-              size="sm"
-              variant="secondary"
-              className="bg-theme-elevated text-theme-primary"
-              startContent={<Sparkles className="w-3.5 h-3.5" aria-hidden="true" />}
-              onPress={handleGenerateDescription}
-              isLoading={isGenerating}
-              isDisabled={!formData.title.trim() || isGenerating}
-            >
-              {isGenerating
-                ? t('form.ai_generating')
-                : t('form.ai_help_write')}
-            </Button>
-            {!formData.title.trim() && (
-              <span className="text-xs text-theme-subtle">
-                {t('form.ai_enter_title_first')}
-              </span>
-            )}
-          </div>
+          {aiDescriptionAvailable(tenant, 'listings') && (
+            <div className="flex flex-col items-stretch gap-2 mt-2 sm:flex-row sm:items-center">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="bg-theme-elevated text-theme-primary"
+                startContent={<Sparkles className="w-3.5 h-3.5" aria-hidden="true" />}
+                onPress={handleGenerateDescription}
+                isLoading={isGenerating}
+                isDisabled={!formData.title.trim() || isGenerating}
+              >
+                {isGenerating
+                  ? t('form.ai_generating')
+                  : t('form.ai_help_write')}
+              </Button>
+              {!formData.title.trim() && (
+                <span className="text-xs text-theme-subtle">
+                  {t('form.ai_enter_title_first')}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </section>
 

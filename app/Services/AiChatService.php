@@ -7,7 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
-use App\Models\AiSettings;
+use App\Services\AI\CommunityOpenAiKey;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -28,13 +28,16 @@ class AiChatService
 
     public function chat(int $userId, string $message, array $context = []): array
     {
-        $key = self::communityOpenAiKey();
+        // Owner decision, 8 Nov 2026: the community's own key only. The
+        // platform key (OPENAI_API_KEY) is never used here.
+        $tenantId = (int) (TenantContext::getId() ?? 0);
+        $key = CommunityOpenAiKey::get($tenantId);
         if ($key === null) {
             return ['reply' => 'AI chat is not configured.', 'error' => true];
         }
 
         try {
-            $response = Http::withToken($key['key'])
+            $response = Http::withToken($key)
                 ->timeout(30)
                 ->post('https://api.openai.com/v1/chat/completions', [
                     'model'    => in_array($context['model'] ?? 'gpt-4o-mini', ['gpt-4o-mini', 'gpt-4o'], true) ? ($context['model'] ?? 'gpt-4o-mini') : 'gpt-4o-mini',
@@ -50,12 +53,18 @@ class AiChatService
             // error, never a reply: it used to come back as the text
             // "No response." and land in the member's description as if written.
             if (!$response->successful()) {
+                $providerError = $response->json('error.code') ?? $response->json('error.type');
                 Log::warning('AiChatService::chat provider refused the request', [
-                    'tenant_id' => TenantContext::getId(),
-                    'key_source' => $key['source'],
+                    'tenant_id' => $tenantId,
                     'status' => $response->status(),
-                    'provider_error' => $response->json('error.code') ?? $response->json('error.type'),
+                    'provider_error' => $providerError,
                 ]);
+                // A wrong key or an account with no credit switches the
+                // community's "Generate description" buttons off by itself.
+                $refusal = CommunityOpenAiKey::refusalReason($response->status(), $providerError);
+                if ($refusal !== null) {
+                    CommunityOpenAiKey::recordRefusal($tenantId, $refusal);
+                }
                 return ['reply' => 'An error occurred. Please try again.', 'error' => true];
             }
 
@@ -190,38 +199,6 @@ PROMPT;
             Log::error('AiChatService::parseResume failed', ['error' => $e->getMessage()]);
             return ['error' => 'Could not parse file'];
         }
-    }
-
-    /**
-     * The OpenAI key to use for the current community.
-     *
-     * Owner decision, 8 Nov 2026: the community's OWN key from Admin › AI
-     * settings when one is saved, otherwise the platform key (OPENAI_API_KEY).
-     * A saved key that OpenAI refuses is reported as an error; the platform key
-     * is not used to cover for it. Until then every request used the platform
-     * key, whatever the community had saved. Translation follows a similar
-     * own-key rule ({@see \App\Services\Translation\TranslationEngine}).
-     *
-     * The key is never logged; only where it came from.
-     *
-     * @return array{key: string, source: 'community'|'platform'}|null
-     */
-    private static function communityOpenAiKey(): ?array
-    {
-        $tenantId = (int) (TenantContext::getId() ?? 0);
-        if ($tenantId > 0) {
-            $own = trim((string) AiSettings::get($tenantId, 'openai_api_key'));
-            if ($own !== '') {
-                return ['key' => $own, 'source' => 'community'];
-            }
-        }
-
-        $platform = config('services.openai.api_key');
-        if (is_string($platform) && trim($platform) !== '') {
-            return ['key' => trim($platform), 'source' => 'platform'];
-        }
-
-        return null;
     }
 
     /**

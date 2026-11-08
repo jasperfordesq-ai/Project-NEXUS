@@ -101,7 +101,7 @@ class ListingConfigurationService
         // Features
         self::CONFIG_ENABLE_FEATURED          => true,
         self::CONFIG_FEATURED_DURATION_DAYS   => 7,
-        self::CONFIG_ENABLE_AI_DESCRIPTIONS   => true,
+        self::CONFIG_ENABLE_AI_DESCRIPTIONS   => false, // off until an admin turns it on (owner, 8 Nov 2026)
         self::CONFIG_ENABLE_REPORTING         => true,
         self::CONFIG_ENABLE_FAVOURITES        => true,
         self::CONFIG_ENABLE_MAP_VIEW          => true,

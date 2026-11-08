@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import type { ReactNode } from 'react';
 
@@ -120,6 +120,37 @@ describe('CreateJobPage', () => {
     mockUseAuth.mockReturnValue({
       user: { id: 1, first_name: 'Test', name: 'Test User' },
       isAuthenticated: true,
+    });
+  });
+
+  describe('AI Generate button', () => {
+    const baseTenant = { id: 2, name: 'Test Tenant', slug: 'test' };
+
+    beforeEach(() => {
+      mockUseParams.mockReturnValue({ id: undefined });
+    });
+
+    afterEach(() => {
+      mockTenantContext.tenant = baseTenant;
+    });
+
+    it('shows the button when the community can use it', () => {
+      mockTenantContext.tenant = { ...baseTenant, ai_descriptions: { jobs: true } } as typeof baseTenant;
+      render(<CreateJobPage />);
+
+      expect(screen.getByRole('button', { name: 'ai_generate.button' })).toBeInTheDocument();
+    });
+
+    it.each([
+      ['the server sends nothing', undefined],
+      ['the server sends no jobs flag', {}],
+      ['the server says no', { jobs: false }],
+    ])('hides the button when %s', (_label, flags) => {
+      mockTenantContext.tenant = { ...baseTenant, ai_descriptions: flags } as typeof baseTenant;
+      render(<CreateJobPage />);
+
+      expect(screen.getByText('form.create_title')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'ai_generate.button' })).toBeNull();
     });
   });
 

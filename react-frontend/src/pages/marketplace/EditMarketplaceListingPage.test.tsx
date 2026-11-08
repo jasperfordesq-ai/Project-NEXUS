@@ -19,7 +19,7 @@ const { mockApi, mockTenantState, stableTenantPath, stableT } = vi.hoisted(() =>
     download: vi.fn(),
     upload: vi.fn(),
   },
-  mockTenantState: { currency: 'EUR' },
+  mockTenantState: { currency: 'EUR', aiDescriptions: undefined as { marketplace?: boolean } | undefined },
   // Stable function references — prevents effect re-runs from identity changes
   stableTenantPath: (p: string) => `/test${p}`,
   stableT: (key: string) => key,
@@ -73,7 +73,7 @@ vi.mock('@/contexts', () =>
     }),
     useToast: () => mockToast,
     useTenant: () => ({
-      tenant: { id: 2, name: 'Test', slug: 'test', currency: mockTenantState.currency },
+      tenant: { id: 2, name: 'Test', slug: 'test', currency: mockTenantState.currency, ai_descriptions: mockTenantState.aiDescriptions },
       tenantPath: stableTenantPath,
       hasFeature: vi.fn(() => true),
       hasModule: vi.fn(() => true),
@@ -179,6 +179,7 @@ describe('EditMarketplaceListingPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockTenantState.currency = 'EUR';
+    mockTenantState.aiDescriptions = undefined;
     setupMocks();
   });
 
@@ -492,15 +493,27 @@ describe('EditMarketplaceListingPage', () => {
     });
   });
 
-  it('renders Generate with AI button after load', async () => {
+  it('renders Generate with AI button after load when the community can use it', async () => {
+    mockTenantState.aiDescriptions = { marketplace: true };
     const { EditMarketplaceListingPage } = await import('./EditMarketplaceListingPage');
     render(<EditMarketplaceListingPage />);
 
     await waitFor(() => {
-      const aiBtn = screen.getAllByRole('button').find(
-        (b) => b.textContent?.toLowerCase().includes('ai') || b.textContent?.toLowerCase().includes('generat')
-      );
-      expect(aiBtn).toBeDefined();
+      expect(screen.getByRole('button', { name: /generate[_ ]with[_ ]ai/i })).toBeInTheDocument();
     });
+  });
+
+  it('hides the Generate with AI button unless the community can use it', async () => {
+    const { EditMarketplaceListingPage } = await import('./EditMarketplaceListingPage');
+
+    for (const flags of [undefined, {}, { marketplace: false }]) {
+      mockTenantState.aiDescriptions = flags;
+      const { unmount } = render(<EditMarketplaceListingPage />);
+      // The form has loaded once its description box is on screen.
+      await waitFor(() => expect(screen.getByText('create.description_label')).toBeInTheDocument());
+
+      expect(screen.queryByRole('button', { name: /generate[_ ]with[_ ]ai/i })).toBeNull();
+      unmount();
+    }
   });
 });

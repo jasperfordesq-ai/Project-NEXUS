@@ -29,8 +29,9 @@ import {
 import { ApiResponseError } from '@/lib/api/client';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { aiDescriptionAvailable } from '@/lib/tenancy/aiDescriptions';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -88,6 +89,9 @@ function NewExchangeModal() {
 function NewExchangeModalInner() {
   const { t } = useTranslation('exchanges');
   const primary = usePrimaryColor();
+  const { tenant } = useTenant();
+  // Hidden unless the server says this community may use it (see aiDescriptionAvailable).
+  const canGenerateDescription = aiDescriptionAvailable(tenant, 'listings');
   const theme = useTheme();
   const bottomInset = useBottomInset();
   const { confirm, confirmDialog } = useConfirm();
@@ -495,15 +499,17 @@ function NewExchangeModalInner() {
               style={[inputStyle(theme, Boolean(fieldErrors.description)), { minHeight: 132, paddingTop: 14 }]}
             />
             {fieldErrors.description ? <ErrorText message={fieldErrors.description} theme={theme} /> : null}
-            <View className="gap-2">
-              <HeroButton variant="secondary" isDisabled={!title.trim() || generatingDescription} onPress={() => void handleGenerateDescription()}>
-                {generatingDescription ? <Spinner size="sm" /> : <Ionicons name="sparkles-outline" size={17} color={primary} />}
-                <HeroButton.Label>{generatingDescription ? t('form.aiGenerating') : t('form.aiHelpWrite')}</HeroButton.Label>
-              </HeroButton>
-              {!title.trim() ? (
-                <Text style={{ color: theme.textMuted }} className="text-xs leading-5">{t('form.aiEnterTitleFirst')}</Text>
-              ) : null}
-            </View>
+            {canGenerateDescription ? (
+              <View className="gap-2">
+                <HeroButton variant="secondary" isDisabled={!title.trim() || generatingDescription} onPress={() => void handleGenerateDescription()}>
+                  {generatingDescription ? <Spinner size="sm" /> : <Ionicons name="sparkles-outline" size={17} color={primary} />}
+                  <HeroButton.Label>{generatingDescription ? t('form.aiGenerating') : t('form.aiHelpWrite')}</HeroButton.Label>
+                </HeroButton>
+                {!title.trim() ? (
+                  <Text style={{ color: theme.textMuted }} className="text-xs leading-5">{t('form.aiEnterTitleFirst')}</Text>
+                ) : null}
+              </View>
+            ) : null}
           </FormSection>
 
           <FormSection title={t('form.deliveryTitle')} icon="location-outline" primary={primary} theme={theme}>

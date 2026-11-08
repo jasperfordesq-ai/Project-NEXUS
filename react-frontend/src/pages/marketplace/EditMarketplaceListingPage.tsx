@@ -48,6 +48,7 @@ import Save from 'lucide-react/icons/save';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
+import { aiDescriptionAvailable } from '@/lib/aiDescriptions';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
@@ -738,18 +739,20 @@ export function EditMarketplaceListingPage() {
               minRows={4}
               maxRows={10}
             />
-            <div className="flex justify-end">
-              <Button
-                variant="tertiary"
-                size="sm"
-                startContent={<Sparkles className="w-3.5 h-3.5" />}
-                onPress={handleGenerateDescription}
-                isLoading={isGeneratingDesc}
-                isDisabled={!title.trim()}
-              >
-                {t('create.generate_with_ai')}
-              </Button>
-            </div>
+            {aiDescriptionAvailable(tenant, 'marketplace') && (
+              <div className="flex justify-end">
+                <Button
+                  variant="tertiary"
+                  size="sm"
+                  startContent={<Sparkles className="w-3.5 h-3.5" />}
+                  onPress={handleGenerateDescription}
+                  isLoading={isGeneratingDesc}
+                  isDisabled={!title.trim()}
+                >
+                  {t('create.generate_with_ai')}
+                </Button>
+              </div>
+            )}
           </div>
 
           <Select

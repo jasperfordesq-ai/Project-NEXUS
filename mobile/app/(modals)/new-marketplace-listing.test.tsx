@@ -15,6 +15,8 @@ jest.mock('expo-crypto', () => {
 
 let mockParams: Record<string, string> = {};
 let mockTenantCurrency = 'EUR';
+// The server's per-community decision on the AI description buttons; see beforeEach.
+let mockAiDescriptions: { marketplace?: boolean } | undefined = { marketplace: true };
 let mockUserId = 41;
 
 // Stable references so screens that put `show` in a useCallback/useEffect
@@ -140,7 +142,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ tenant: { currency: mockTenantCurrency } }),
+  useTenant: () => ({ tenant: { currency: mockTenantCurrency, ai_descriptions: mockAiDescriptions } }),
 }));
 jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUserId } }) }));
 
@@ -211,6 +213,7 @@ describe('NewMarketplaceListingRoute', () => {
     jest.clearAllMocks();
     mockParams = {};
     mockTenantCurrency = 'EUR';
+    mockAiDescriptions = { marketplace: true };
     mockUserId = 41;
   });
 
@@ -268,6 +271,21 @@ describe('NewMarketplaceListingRoute', () => {
       variant: 'warning',
     })));
     expect(createMarketplaceListing).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['the server sends no ai_descriptions object', undefined],
+    ['the marketplace flag is missing', {}],
+    ['the marketplace flag is false', { marketplace: false }],
+  ])('hides the AI description button when %s', async (_label, flags) => {
+    mockAiDescriptions = flags;
+    const ui = render(<NewMarketplaceListingRoute />);
+    // Let the form finish loading before asserting what is absent from it.
+    expect(await ui.findByText('Map coordinates')).toBeTruthy();
+    expect(ui.queryByText('Generate with AI')).toBeNull();
+    fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Garden shears');
+    expect(ui.queryByText('Generate with AI')).toBeNull();
+    expect(generateMarketplaceDescription).not.toHaveBeenCalled();
   });
 
   it('generates a marketplace description from the backend AI endpoint', async () => {

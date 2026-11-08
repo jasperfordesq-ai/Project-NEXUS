@@ -150,7 +150,14 @@ function listingConfigFrom(req) {
     requireImage: booleanValue(config['listing.require_image'], false),
     minTitleLength: Math.round(numberValue(config['listing.min_title_length'], 5, 1, 255)),
     minDescriptionLength: Math.round(numberValue(config['listing.min_description_length'], 20, 1, 10000)),
-    maxImageSizeMb: numberValue(config['listing.max_image_size_mb'], 8, 1, 25)
+    maxImageSizeMb: numberValue(config['listing.max_image_size_mb'], 8, 1, 25),
+    // The server decides whether the AI suggestion button may show
+    // (AiDescriptionAvailability): AI and Content generation on, the listings
+    // switch on, and the community's own OpenAI key saved and not refused.
+    // Only an explicit true shows it; anything else — including an older
+    // server that sends nothing — hides it (owner decision, 8 Nov 2026).
+    aiDescriptions: Boolean(tenant.ai_descriptions && typeof tenant.ai_descriptions === 'object'
+      && tenant.ai_descriptions.listings === true)
   };
 }
 

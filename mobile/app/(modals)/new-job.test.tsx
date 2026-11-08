@@ -15,6 +15,8 @@ const mockReplace = jest.fn();
 let mockSearchParams: Record<string, string> = {};
 let mockUserId = 21;
 let mockTenantId = 2;
+// The server's per-community decision on the AI description buttons; see beforeEach.
+let mockAiDescriptions: { jobs?: boolean } | undefined = { jobs: true };
 const mockDraftGuard = jest.fn();
 jest.mock('@/lib/hooks/useUnsavedChangesGuard', () => ({ useUnsavedChangesGuard: (options: unknown) => mockDraftGuard(options) }));
 
@@ -128,7 +130,7 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { id: mockTenantId, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
+  useTenant: () => ({ tenant: { id: mockTenantId, slug: 'hour-timebank', ai_descriptions: mockAiDescriptions }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
 jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUserId } }) }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
@@ -380,6 +382,7 @@ describe('NewJobRoute', () => {
     mockSearchParams = {};
     mockUserId = 21;
     mockTenantId = 2;
+    mockAiDescriptions = { jobs: true };
     mockCreateJob.mockClear();
     mockGenerateJobDescription.mockReset();
     mockGenerateJobDescription.mockResolvedValue({ data: { description: 'AI generated role description.' } });
@@ -420,6 +423,19 @@ describe('NewJobRoute', () => {
       });
     });
     expect(getByDisplayValue('AI generated role description.')).toBeTruthy();
+  });
+
+  it.each([
+    ['the server sends no ai_descriptions object', undefined],
+    ['the jobs flag is missing', {}],
+    ['the jobs flag is false', { jobs: false }],
+  ])('hides the AI description button when %s', (_label, flags) => {
+    mockAiDescriptions = flags;
+    const { getByPlaceholderText, queryByText } = render(<NewJobRoute />);
+    expect(queryByText('Generate with AI')).toBeNull();
+    fireEvent.changeText(getByPlaceholderText('Role title'), 'Community coordinator');
+    expect(queryByText('Generate with AI')).toBeNull();
+    expect(mockGenerateJobDescription).not.toHaveBeenCalled();
   });
 
   it('disables description generation until a title is present', () => {

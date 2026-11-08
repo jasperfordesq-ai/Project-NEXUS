@@ -25,6 +25,7 @@ import { createJob, generateJobDescription, getJobDetail, updateJob, type Create
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { aiDescriptionAvailable } from '@/lib/tenancy/aiDescriptions';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import FormActionFooter from '@/components/ui/FormActionFooter';
@@ -77,6 +78,9 @@ function NewJobScreen() {
   const { t } = useTranslation(['jobs', 'common']);
   const params = useLocalSearchParams<{ id?: string }>();
   const primary = usePrimaryColor();
+  const { tenant } = useTenant();
+  // Hidden unless the server says this community may use it (see aiDescriptionAvailable).
+  const canGenerateDescription = aiDescriptionAvailable(tenant, 'jobs');
   const theme = useTheme();
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale > 1.3;
@@ -413,10 +417,12 @@ function NewJobScreen() {
         <FormSection title={t('create.sectionRole')} icon="document-text-outline" testID="job-section-role">
           <FormField disabled={isSubmitting} label={t('create.titleLabel')} value={title} onChangeText={setTitle} placeholder={t('create.titlePlaceholder')} theme={theme} />
           <FormField disabled={isSubmitting} label={t('create.descriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('create.descriptionPlaceholder')} theme={theme} multiline />
-          <HeroButton variant="secondary" onPress={() => void generateDescription()} isDisabled={isSubmitting || isGeneratingDescription || !title.trim()}>
-            <Ionicons name="sparkles-outline" size={16} color={primary} />
-            <HeroButton.Label>{isGeneratingDescription ? t('create.generatingDescription') : t('create.generateDescription')}</HeroButton.Label>
-          </HeroButton>
+          {canGenerateDescription ? (
+            <HeroButton variant="secondary" onPress={() => void generateDescription()} isDisabled={isSubmitting || isGeneratingDescription || !title.trim()}>
+              <Ionicons name="sparkles-outline" size={16} color={primary} />
+              <HeroButton.Label>{isGeneratingDescription ? t('create.generatingDescription') : t('create.generateDescription')}</HeroButton.Label>
+            </HeroButton>
+          ) : null}
           <ButtonGroup disabled={isSubmitting} label={t('create.typeLabel')} values={jobTypes} selected={type} onSelect={setType} labelFor={(value) => t(`filters.type.${value}`)} />
           <ButtonGroup disabled={isSubmitting} label={t('create.commitmentLabel')} values={commitments} selected={commitment} onSelect={setCommitment} labelFor={(value) => t(`filters.commitment.${value}`)} />
         </FormSection>

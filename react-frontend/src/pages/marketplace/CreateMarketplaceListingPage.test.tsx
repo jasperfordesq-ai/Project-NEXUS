@@ -15,7 +15,7 @@ const { mockApi, mockToast, mockNavigate, mockClearDraft, mockTenantState } = vi
   mockToast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
   mockNavigate: vi.fn(),
   mockClearDraft: vi.fn(),
-  mockTenantState: { currency: 'EUR' },
+  mockTenantState: { currency: 'EUR', aiDescriptions: undefined as { marketplace?: boolean } | undefined },
 }));
 
 // ─── Module mocks ────────────────────────────────────────────────────────────
@@ -41,7 +41,7 @@ vi.mock('@/contexts', () =>
       updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle' as const, error: null,
     }),
     useTenant: () => ({
-      tenant: { id: 2, name: 'Test', slug: 'test', currency: mockTenantState.currency },
+      tenant: { id: 2, name: 'Test', slug: 'test', currency: mockTenantState.currency, ai_descriptions: mockTenantState.aiDescriptions },
       tenantPath: (p: string) => `/test${p}`,
       hasFeature: vi.fn(() => true),
       hasModule: vi.fn(() => true),
@@ -100,6 +100,7 @@ describe('CreateMarketplaceListingPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockTenantState.currency = 'EUR';
+    mockTenantState.aiDescriptions = undefined;
     mockApi.get.mockImplementation((url: string) => {
       if (url === '/v2/marketplace/categories') {
         return Promise.resolve({ success: true, data: makeCategories() });
@@ -519,6 +520,7 @@ describe('CreateMarketplaceListingPage', () => {
   });
 
   it('calls AI generate endpoint when AI button is clicked with a title', async () => {
+    mockTenantState.aiDescriptions = { marketplace: true };
     mockApi.post
       .mockResolvedValueOnce({ success: true, data: { description: 'AI description text' } })
       .mockResolvedValue({ success: true, data: { id: 77 } });
@@ -533,13 +535,8 @@ describe('CreateMarketplaceListingPage', () => {
     );
     if (titleInput) await userEvent.type(titleInput, 'Cool Widget');
 
-    const aiBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('ai') ||
-             b.textContent?.toLowerCase().includes('generat') ||
-             b.textContent?.toLowerCase().includes('sparkle') ||
-             b.getAttribute('aria-label')?.toLowerCase().includes('ai')
-    );
-    if (aiBtn && !aiBtn.hasAttribute('disabled')) {
+    const aiBtn = screen.getByRole('button', { name: /generate with ai/i });
+    if (!aiBtn.hasAttribute('disabled')) {
       fireEvent.click(aiBtn);
       await waitFor(() => {
         expect(mockApi.post).toHaveBeenCalledWith(
@@ -547,6 +544,19 @@ describe('CreateMarketplaceListingPage', () => {
           expect.objectContaining({ title: 'Cool Widget' })
         );
       });
+    }
+  });
+
+  it('hides the Generate with AI button unless the community can use it', async () => {
+    const { CreateMarketplaceListingPage } = await import('./CreateMarketplaceListingPage');
+
+    for (const flags of [undefined, {}, { marketplace: false }]) {
+      mockTenantState.aiDescriptions = flags;
+      const { unmount } = render(<CreateMarketplaceListingPage />);
+      await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+
+      expect(screen.queryByRole('button', { name: /generate with ai/i })).toBeNull();
+      unmount();
     }
   });
 });

@@ -50,6 +50,7 @@ import Calendar from 'lucide-react/icons/calendar';
 import DollarSign from 'lucide-react/icons/dollar-sign';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useToast, useTenant } from '@/contexts';
+import { aiDescriptionAvailable } from '@/lib/aiDescriptions';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { PageMeta } from '@/components/seo';
@@ -195,7 +196,7 @@ export function CreateJobPage() {
   const { t } = useTranslation('jobs');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { tenantPath } = useTenant();
+  const { tenant, tenantPath } = useTenant();
   const toast = useToast();
   const { isAuthenticated, user } = useAuth();
   const confirm = useConfirm();
@@ -849,21 +850,23 @@ export function CreateJobPage() {
 
           {/* Description with AI Generate Button (Agent A) */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Tooltip content={t('ai_generate.tooltip')}>
-                <Button
-                  size="sm"
-                  variant="flat"
-                  className="bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 text-violet-600 dark:text-violet-400"
-                  startContent={<Sparkles className="w-3.5 h-3.5" aria-hidden="true" />}
-                  onPress={handleAiGenerate}
-                  isLoading={isGenerating}
-                  isDisabled={!form.title.trim()}
-                >
-                  {isGenerating ? t('ai_generate.button_loading') : t('ai_generate.button')}
-                </Button>
-              </Tooltip>
-            </div>
+            {aiDescriptionAvailable(tenant, 'jobs') && (
+              <div className="flex items-center justify-between">
+                <Tooltip content={t('ai_generate.tooltip')}>
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    className="bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 text-violet-600 dark:text-violet-400"
+                    startContent={<Sparkles className="w-3.5 h-3.5" aria-hidden="true" />}
+                    onPress={handleAiGenerate}
+                    isLoading={isGenerating}
+                    isDisabled={!form.title.trim()}
+                  >
+                    {isGenerating ? t('ai_generate.button_loading') : t('ai_generate.button')}
+                  </Button>
+                </Tooltip>
+              </div>
+            )}
             <Textarea
               label={t('form.description_label')}
               placeholder={t('form.description_placeholder')}

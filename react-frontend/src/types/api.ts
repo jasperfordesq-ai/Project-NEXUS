@@ -1425,6 +1425,11 @@ export interface TenantConfig {
   volunteering_config?: VolunteeringConfig;
   /** Jobs module configuration */
   job_config?: JobConfig;
+  /**
+   * Which "Generate description" (AI) buttons may show, decided by the server.
+   * Read it through `aiDescriptionAvailable()` in `@/lib/aiDescriptions`.
+   */
+  ai_descriptions?: import('@/lib/aiDescriptions').AiDescriptionAvailability;
   /** Group tab visibility — which tabs are enabled for group detail view */
   group_tabs?: GroupTabConfig;
   /** Language codes supported by this tenant (e.g. ['en', 'ga'] or ['de', 'fr', 'it', 'en']) */

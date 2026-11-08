@@ -38,19 +38,34 @@ class AiChatServiceTest extends TestCase
         return $mock;
     }
 
-    public function test_chat_returns_error_when_api_key_missing(): void
+    /**
+     * The community's own OpenAI key, as AiSettings::get() reads it from
+     * ai_settings. Since 8 Nov 2026 chat() uses only this key.
+     */
+    private function mockCommunityKey(?string $key): void
     {
-        config(['services.openai.api_key' => null]);
+        $aiSettings = \Mockery::mock('Illuminate\Database\Query\Builder');
+        $aiSettings->shouldReceive('where')->andReturnSelf();
+        $aiSettings->shouldReceive('value')->with('setting_value')->andReturn($key);
+        DB::shouldReceive('table')->with('ai_settings')->andReturn($aiSettings);
+    }
+
+    public function test_chat_returns_error_when_the_community_has_no_key_even_if_the_platform_has_one(): void
+    {
+        config(['services.openai.api_key' => 'sk-platform-key-fake']);
+        Http::preventStrayRequests();
+        $this->mockCommunityKey(null);
 
         $result = $this->service->chat(1, 'Hello');
 
         $this->assertTrue($result['error']);
         $this->assertSame('AI chat is not configured.', $result['reply']);
+        Http::assertNothingSent();
     }
 
-    public function test_chat_calls_openai_and_saves_message(): void
+    public function test_chat_calls_openai_with_the_community_key_and_saves_message(): void
     {
-        config(['services.openai.api_key' => 'test-key']);
+        config(['services.openai.api_key' => 'sk-platform-key-fake']);
 
         Http::fake([
             'api.openai.com/*' => Http::response([
@@ -58,11 +73,7 @@ class AiChatServiceTest extends TestCase
             ]),
         ]);
 
-        // The community has saved no OpenAI key of its own, so the platform key is used.
-        $aiSettings = \Mockery::mock('Illuminate\Database\Query\Builder');
-        $aiSettings->shouldReceive('where')->andReturnSelf();
-        $aiSettings->shouldReceive('value')->with('setting_value')->andReturn(null);
-        DB::shouldReceive('table')->with('ai_settings')->andReturn($aiSettings);
+        $this->mockCommunityKey('sk-community-key-fake');
 
         // saveMessage() touches ai_conversations (lookup + update) and ai_messages (insert).
         DB::shouldReceive('table')->with('ai_conversations')->andReturn($this->mockSaveMessageBuilder());
@@ -72,11 +83,12 @@ class AiChatServiceTest extends TestCase
 
         $this->assertFalse($result['error']);
         $this->assertSame('Hello there!', $result['reply']);
+        Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer sk-community-key-fake'));
     }
 
     public function test_chat_returns_error_on_http_failure(): void
     {
-        config(['services.openai.api_key' => 'test-key']);
+        $this->mockCommunityKey('sk-community-key-fake');
 
         // A 5xx response makes ->json() succeed but saveMessage still runs; force a
         // throw inside the try block so the catch logs and returns error=true.

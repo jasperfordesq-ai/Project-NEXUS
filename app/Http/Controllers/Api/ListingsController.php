@@ -1362,7 +1362,10 @@ class ListingsController extends BaseApiController
      */
     public function generateDescription(): JsonResponse
     {
-        if (! $this->listingConfigEnabled(ListingConfigurationService::CONFIG_ENABLE_AI_DESCRIPTIONS)) {
+        // AI on, Content generation on, the listings switch on, the community's
+        // own OpenAI key saved and not refused — the same rule that decides
+        // whether the apps show the button.
+        if (! \App\Services\AI\AiDescriptionAvailability::isAvailable(\App\Services\AI\AiDescriptionAvailability::LISTINGS)) {
             return $this->respondWithError('FEATURE_DISABLED', __('api.listing_ai_descriptions_disabled'), null, 403);
         }
 

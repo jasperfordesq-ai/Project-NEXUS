@@ -125,8 +125,11 @@ jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
 }));
 
+// The server's per-community decision on the AI description buttons. Reset to "on" before
+// each test so the generation tests can press the button; the hidden-by-default tests clear it.
+let mockAiDescriptions: { listings?: boolean } | undefined = { listings: true };
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({ tenant: { slug: 'hour-timebank', ai_descriptions: mockAiDescriptions }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 
@@ -194,6 +197,7 @@ import NewExchangeModal from './new-exchange';
 import { firePreventedRemoval, isGuardArmed } from '@/lib/test/unsavedGuardHarness';
 
 beforeEach(() => {
+  mockAiDescriptions = { listings: true };
   mockUseApi.mockReset().mockReturnValue({
     data: { data: [{ id: 1, name: 'Gardening' }, { id: 2, name: 'Teaching' }] },
     isLoading: false,
@@ -383,6 +387,27 @@ describe('NewExchangeModal', () => {
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/(modals)/exchange-detail', params: { id: '9' },
     }));
+  });
+
+  it.each([
+    ['the server sends no ai_descriptions object', undefined],
+    ['the listings flag is missing', {}],
+    ['the listings flag is false', { listings: false }],
+  ])('hides the AI description button and its hint when %s', (_label, flags) => {
+    mockAiDescriptions = flags;
+    const { getByPlaceholderText, queryByText } = render(<NewExchangeModal />);
+    // No title yet: the "enter a title first" hint belongs to the button and must go with it.
+    expect(queryByText('Help write description')).toBeNull();
+    expect(queryByText('Enter a title first')).toBeNull();
+    fireEvent.changeText(getByPlaceholderText('What are you offering?'), 'Gardening help');
+    expect(queryByText('Help write description')).toBeNull();
+    expect(mockGenerateExchangeDescription).not.toHaveBeenCalled();
+  });
+
+  it('shows the AI description button and its hint when the server allows it', () => {
+    const { getByText } = render(<NewExchangeModal />);
+    expect(getByText('Help write description')).toBeTruthy();
+    expect(getByText('Enter a title first')).toBeTruthy();
   });
 
   it('generates a description from the listing context', async () => {

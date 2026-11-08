@@ -2013,7 +2013,10 @@ class JobVacanciesController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('jobs_ai_generate', 10, 60);
 
-        if (!$this->configBool(JobConfigurationService::CONFIG_ENABLE_AI_DESCRIPTIONS, true)) {
+        // AI on, Content generation on, the jobs switch on, the community's own
+        // OpenAI key saved and not refused — the same rule that decides whether
+        // the apps show the button.
+        if (!\App\Services\AI\AiDescriptionAvailability::isAvailable(\App\Services\AI\AiDescriptionAvailability::JOBS)) {
             return $this->respondWithError('FEATURE_DISABLED', __('api.job_ai_descriptions_disabled'), null, 403);
         }
 

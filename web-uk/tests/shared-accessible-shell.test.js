@@ -30022,7 +30022,8 @@ describe('shared accessible frontend shell', () => {
             'listing.min_title_length': 12,
             'listing.min_description_length': 50,
             'listing.max_image_size_mb': 2
-          }
+          },
+          ai_descriptions: { listings: true, jobs: false, marketplace: false }
         }
       });
       api.getListingCategories.mockResolvedValueOnce({ data: [{ id: 8, name: 'Practical help' }] });
@@ -30050,6 +30051,38 @@ describe('shared accessible frontend shell', () => {
       expect(form.text).toContain('aria-describedby="description-ai-hint description-hint"');
     });
 
+    it('hides the AI suggestion button unless the community can use it', async () => {
+      const api = require('../src/lib/api');
+      api.getListingCategories.mockResolvedValue({ data: [] });
+
+      const cases = [
+        ['shown', { listings: true }],
+        ['hidden', undefined],
+        ['hidden', {}],
+        ['hidden', { listings: false, jobs: true, marketplace: true }]
+      ];
+      for (const [expected, aiDescriptions] of cases) {
+        api.getTenantBootstrap.mockResolvedValue(tenantBootstrap('acme', aiDescriptions === undefined ? {} : { ai_descriptions: aiDescriptions }));
+
+        const form = await request(app)
+          .get('/acme/accessible/listings/new')
+          .set('Cookie', signedCookieHeader());
+
+        expect(form.status).toBe(200);
+        // The community was loaded, so the decision came from its own flags.
+        expect(form.text).toContain('acme Timebank');
+        expect(form.text).toContain('name="description"');
+        if (expected === 'shown') {
+          expect(form.text).toContain('formaction="/acme/accessible/listings/generate-description"');
+          expect(form.text).toContain('aria-describedby="description-ai-hint description-hint"');
+        } else {
+          expect(form.text).not.toContain('/listings/generate-description');
+          expect(form.text).not.toContain('Add a title first, then generate a suggested description you can edit before saving.');
+          expect(form.text).not.toContain('description-ai-hint');
+        }
+      }
+    });
+
     it('round-trips the no-JS AI suggestion and every safe form value through one-use session state', async () => {
       const api = require('../src/lib/api');
       const agent = request.agent(app);
@@ -30062,8 +30095,9 @@ describe('shared accessible frontend shell', () => {
         .get('/listings/new')
         .set('Cookie', signedCookieHeader());
       const csrfMatch = form.text.match(/name="_csrf" value="([^"]+)"/);
-      expect(form.text).toContain('Add a title first, then generate a suggested description you can edit before saving.');
-      expect(form.text).toContain('formaction="/listings/generate-description"');
+      // No community is routed on this bare path, so the AI button itself is
+      // hidden (see "hides the AI suggestion button…"); the POST round trip
+      // below is still exercised directly.
 
       const generated = await agent
         .post('/listings/generate-description')

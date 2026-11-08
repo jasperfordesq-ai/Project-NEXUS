@@ -1889,6 +1889,10 @@ class AdminConfigController extends BaseApiController
         }
 
         \App\Models\AiSettings::setMultiple($tenantId, $toSave);
+        // A newly saved key gets a fresh chance even if the old one was refused.
+        if (array_key_exists('openai_api_key', $toSave)) {
+            \App\Services\AI\CommunityOpenAiKey::clearRefusal($tenantId);
+        }
         $this->redisCache->delete('tenant_bootstrap', $tenantId);
 
         return $this->respondWithData(['updated' => true, 'keys_updated' => array_keys($toSave)]);

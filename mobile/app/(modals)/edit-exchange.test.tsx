@@ -22,6 +22,8 @@ let mockListingCategoryId: number | null = 2;
 let mockRouteId = '5';
 let mockUserId = 1;
 let mockTenantSlug = 'hour-timebank';
+// The server's per-community decision on the AI description buttons; see beforeEach.
+let mockAiDescriptions: { listings?: boolean } | undefined = { listings: true };
 let mockListingDescription = 'Listing body with enough detail.';
 let mockExperienceLabel = 'Experience';
 let mockEquipmentLabel = 'Equipment';
@@ -80,7 +82,7 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: mockTenantSlug }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({ tenant: { slug: mockTenantSlug, ai_descriptions: mockAiDescriptions }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 
@@ -147,6 +149,7 @@ beforeEach(() => {
   mockRouteId = '5';
   mockUserId = 1;
   mockTenantSlug = 'hour-timebank';
+  mockAiDescriptions = { listings: true };
   mockListingDescription = 'Listing body with enough detail.';
   mockExperienceLabel = 'Experience';
   mockEquipmentLabel = 'Equipment';
@@ -267,6 +270,26 @@ describe('EditExchangeModal', () => {
 
     await waitFor(() => expect(getByText('Enter between 0.5 and 100 credits.')).toBeTruthy());
     expect(mockUpdateExchange).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['the server sends no ai_descriptions object', undefined],
+    ['the listings flag is missing', {}],
+    ['the listings flag is false', { listings: false }],
+  ])('hides the AI description button and its hint when %s', (_label, flags) => {
+    mockAiDescriptions = flags;
+    const { getByDisplayValue, queryByText } = render(<EditExchangeModal />);
+    expect(getByDisplayValue('Edit me')).toBeTruthy();
+    expect(queryByText('Help write description')).toBeNull();
+    // Clearing the title is when the "enter a title first" hint would appear next to the button.
+    fireEvent.changeText(getByDisplayValue('Edit me'), '');
+    expect(queryByText('Enter a title first')).toBeNull();
+    expect(mockGenerateExchangeDescription).not.toHaveBeenCalled();
+  });
+
+  it('shows the AI description button when the server allows it', () => {
+    const { getByText } = render(<EditExchangeModal />);
+    expect(getByText('Help write description')).toBeTruthy();
   });
 
   it('generates a replacement description from the listing context', async () => {

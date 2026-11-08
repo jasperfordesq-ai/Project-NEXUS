@@ -49,6 +49,7 @@ import {
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { aiDescriptionAvailable } from '@/lib/tenancy/aiDescriptions';
 import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import {
@@ -115,6 +116,8 @@ export function MarketplaceListingForm() {
   const { t } = useTranslation(['marketplace', 'common']);
   const params = useLocalSearchParams<{ id?: string; price_type?: MarketplacePriceType }>();
   const { tenant } = useTenant();
+  // Hidden unless the server says this community may use it (see aiDescriptionAvailable).
+  const canGenerateDescription = aiDescriptionAvailable(tenant, 'marketplace');
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
@@ -640,10 +643,12 @@ export function MarketplaceListingForm() {
             <FormField label={t('forms.title')} value={title} onChangeText={setTitle} placeholder={isLend ? t('forms.lendTitlePlaceholder') : t('forms.titlePlaceholder')} />
             <FormField label={t('forms.tagline')} value={tagline} onChangeText={setTagline} placeholder={t('forms.taglinePlaceholder')} />
             <FormField label={t('forms.description')} value={description} onChangeText={setDescription} placeholder={t('forms.descriptionPlaceholder')} multiline />
-            <HeroButton variant="secondary" onPress={() => void generateDescription()} isDisabled={isGeneratingDescription || !title.trim()}>
-              <Ionicons name="sparkles-outline" size={16} color={primary} />
-              <HeroButton.Label>{isGeneratingDescription ? t('forms.generatingDescription') : t('forms.generateDescription')}</HeroButton.Label>
-            </HeroButton>
+            {canGenerateDescription ? (
+              <HeroButton variant="secondary" onPress={() => void generateDescription()} isDisabled={isGeneratingDescription || !title.trim()}>
+                <Ionicons name="sparkles-outline" size={16} color={primary} />
+                <HeroButton.Label>{isGeneratingDescription ? t('forms.generatingDescription') : t('forms.generateDescription')}</HeroButton.Label>
+              </HeroButton>
+            ) : null}
             <ButtonGroup label={t('forms.priceType')} values={PRICE_TYPES} selected={priceType} onSelect={setPriceType} labelFor={(value) => value === 'lend' ? t('forms.priceTypeLend') : t(`priceType.${value}`)} />
             {isLend ? (
               <View className="gap-2">

@@ -82,6 +82,12 @@ final class AiProviderCallGateTest extends TestCase
 
         ListingConfigurationService::set(ListingConfigurationService::CONFIG_ENABLE_AI_DESCRIPTIONS, true);
         JobConfigurationService::set(JobConfigurationService::CONFIG_ENABLE_AI_DESCRIPTIONS, true);
+        // Since 8 Nov 2026 the "Generate description" buttons also need Content
+        // generation switched on (AiDescriptionAvailability); it is off by default.
+        DB::table('ai_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'ai_content_gen_enabled'],
+            ['setting_value' => '1', 'updated_at' => now()]
+        );
         AIServiceFactory::clearCache();
     }
 
