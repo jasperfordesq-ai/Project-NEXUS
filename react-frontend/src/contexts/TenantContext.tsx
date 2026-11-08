@@ -35,6 +35,7 @@ import { tenantBootstrapSchema } from '@/lib/api-schemas';
 import { queueSentryTenant } from '@/lib/telemetryQueue';
 import { logError } from '@/lib/logger';
 import { setRegion } from '@/lib/regionStore';
+import ThemeContext from './ThemeContext';
 import { DEFAULT_LANDING_PAGE_CONFIG } from '@/types';
 import type { TenantConfig, TenantFeatures, TenantModules, TenantBranding, GroupTabConfig, ListingConfig, VolunteeringConfig, JobConfig, LandingPageConfig, AuthenticationConfig } from '@/types';
 
@@ -576,6 +577,11 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
     const logoDarkTone = (raw.logoDarkTone ?? raw.logo_dark_tone ?? undefined) as TenantBranding['logoDarkTone'];
     const favicon = raw.favicon ?? raw.favicon_url ?? undefined;
     const primaryColor = raw.primaryColor ?? raw.primary_color ?? defaultBranding.primaryColor;
+    // Only the server's own field, and only as strict hex: this value is
+    // written into the page's theme variables.
+    const communityColor = typeof raw.primary_color === 'string' && /^#[0-9a-fA-F]{6}$/.test(raw.primary_color)
+      ? raw.primary_color.toLowerCase()
+      : null;
     return {
       ...defaultBranding,
       ...raw,
@@ -589,8 +595,18 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
       logoDarkTone,
       favicon,
       primaryColor,
+      communityColor,
     };
   }, [state.tenant]);
+
+  // Hand the community colour to the theme so buttons, links, tabs and
+  // highlights across the member site use it. Optional context: the provider
+  // is also rendered without a ThemeProvider (tests, isolated shells).
+  const theme = use(ThemeContext);
+  const setCommunityAccent = theme?.setCommunityAccent;
+  useEffect(() => {
+    setCommunityAccent?.(branding.communityColor ?? null);
+  }, [branding.communityColor, setCommunityAccent]);
 
   /**
    * Get listing config with fallback to defaults

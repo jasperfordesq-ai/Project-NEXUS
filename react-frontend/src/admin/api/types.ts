@@ -2218,6 +2218,8 @@ export interface AdminSettingsResponse {
     header_bg_color?: string | null;
     /** Accessible header accent line colour — #rrggbb or null (defaults to the background, or GOV.UK blue when no background is set). */
     header_accent_color?: string | null;
+    /** The community colour (member website accent) — #rrggbb or null for the standard colour. */
+    community_color?: string | null;
   };
 }
 

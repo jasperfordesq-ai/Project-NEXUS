@@ -29,6 +29,7 @@ use App\Services\TenantFeatureConfig;
 use App\Services\TenantSettingsService;
 use App\Services\TenantHierarchyService;
 use App\Support\Authorization\TenantAdminScope;
+use App\Support\ColourContrast;
 use App\Support\OutboundUrlGuard;
 use App\Jobs\RunAdminCronJob;
 use Illuminate\Http\JsonResponse;
@@ -62,10 +63,13 @@ class AdminConfigController extends BaseApiController
     // Constants (from legacy)
     // ─────────────────────────────────────────────────────────────────────────
 
+    // `primary_color` was listed here until Nov 2026, but `tenants` has no such
+    // column, so a save that sent it failed in the database. The community
+    // colour lives in tenants.configuration and is saved by saveHeaderColors().
     private const TENANT_DIRECT_COLUMNS = [
         'name', 'slug', 'domain', 'tagline', 'description',
         'contact_email', 'contact_phone', 'default_layout',
-        'logo_url', 'favicon_url', 'primary_color', 'og_image_url',
+        'logo_url', 'favicon_url', 'og_image_url',
         'meta_title', 'meta_description',
     ];
 
@@ -979,6 +983,9 @@ class AdminConfigController extends BaseApiController
             : [];
         $generalSettings['header_bg_color'] = is_string($config['header_bg_color'] ?? null) ? $config['header_bg_color'] : null;
         $generalSettings['header_accent_color'] = is_string($config['header_accent_color'] ?? null) ? $config['header_accent_color'] : null;
+        // The community colour (member website buttons, links, highlights; also
+        // the round-up email and volunteer certificate). Stored as primary_color.
+        $generalSettings['community_color'] = $this->normalizeHexColor($config['primary_color'] ?? null);
 
         return $this->respondWithData([
             'tenant_id' => $tenantId,
@@ -1186,6 +1193,14 @@ class AdminConfigController extends BaseApiController
      * reverts that part of the header to the stock GOV.UK black + blue. They
      * sit next to the header logo so TenantContext::getSetting() reads them
      * with no extra wiring, exactly like the logo URLs.
+     *
+     * Also saves the community colour (`community_color`, stored as
+     * configuration.primary_color): the member website's buttons, links and
+     * highlights. It must be readable as text on white (4.5:1), because that
+     * is exactly how the website uses it.
+     *
+     * Each of the three keys is optional: a key that is not sent keeps its
+     * stored value; a key sent empty clears it.
      */
     public function saveHeaderColors(): JsonResponse
     {
@@ -1193,10 +1208,37 @@ class AdminConfigController extends BaseApiController
         $tenantId = TenantContext::getId();
 
         $input = $this->getAllInput();
+        $config = $this->getTenantConfig($tenantId);
+
+        $sentBg = array_key_exists('bg_color', $input);
+        $sentAccent = array_key_exists('accent_color', $input);
+        $sentCommunity = array_key_exists('community_color', $input);
+
         $rawBg = $input['bg_color'] ?? null;
         $rawAccent = $input['accent_color'] ?? null;
-        $bg = $this->normalizeHexColor($rawBg);
-        $accent = $this->normalizeHexColor($rawAccent);
+        $rawCommunity = $input['community_color'] ?? null;
+        $bg = $sentBg ? $this->normalizeHexColor($rawBg) : $this->normalizeHexColor($config['header_bg_color'] ?? null);
+        $accent = $sentAccent ? $this->normalizeHexColor($rawAccent) : $this->normalizeHexColor($config['header_accent_color'] ?? null);
+        $community = $sentCommunity ? $this->normalizeHexColor($rawCommunity) : $this->normalizeHexColor($config['primary_color'] ?? null);
+
+        if ($sentCommunity && is_string($rawCommunity) && trim($rawCommunity) !== '') {
+            if ($community === null) {
+                return $this->respondWithError(
+                    'VALIDATION_ERROR',
+                    __('api.invalid_hex_color', ['field' => 'community_color', 'example' => '#A3195B']),
+                    'community_color',
+                    422,
+                );
+            }
+            if (ColourContrast::ratio($community, '#ffffff') < ColourContrast::AA_NORMAL_TEXT) {
+                return $this->respondWithError(
+                    'VALIDATION_ERROR',
+                    __('api.community_color_low_contrast'),
+                    'community_color',
+                    422,
+                );
+            }
+        }
 
         // A present-but-invalid value is a client bug worth surfacing; an
         // absent / empty value is a deliberate "use the default", stored as
@@ -1219,9 +1261,16 @@ class AdminConfigController extends BaseApiController
         }
 
         try {
-            DB::transaction(function () use ($tenantId, $bg, $accent): void {
-                $this->setTenantConfigValue($tenantId, 'header_bg_color', $bg);
-                $this->setTenantConfigValue($tenantId, 'header_accent_color', $accent);
+            DB::transaction(function () use ($tenantId, $bg, $accent, $community, $sentBg, $sentAccent, $sentCommunity): void {
+                if ($sentBg) {
+                    $this->setTenantConfigValue($tenantId, 'header_bg_color', $bg);
+                }
+                if ($sentAccent) {
+                    $this->setTenantConfigValue($tenantId, 'header_accent_color', $accent);
+                }
+                if ($sentCommunity) {
+                    $this->setTenantConfigValue($tenantId, 'primary_color', $community);
+                }
                 app(PrerenderContentInvalidator::class)->refreshTenantOrFail($tenantId, true);
             });
         } catch (\Throwable $e) {
@@ -1232,6 +1281,7 @@ class AdminConfigController extends BaseApiController
         return $this->respondWithData([
             'header_bg_color' => $bg,
             'header_accent_color' => $accent,
+            'community_color' => $community,
         ]);
     }
 
@@ -1354,6 +1404,17 @@ class AdminConfigController extends BaseApiController
      * other keys (modules, languages, …) are preserved, then bust the cached
      * bootstrap payload. Passing $value === null unsets the key.
      */
+    /** @return array<string, mixed> The tenant's configuration JSON, decoded ([] when empty). */
+    private function getTenantConfig(int $tenantId): array
+    {
+        $tenantRow = DB::selectOne("SELECT configuration FROM tenants WHERE id = ?", [$tenantId]);
+        $config = ($tenantRow && !empty($tenantRow->configuration))
+            ? json_decode((string) $tenantRow->configuration, true)
+            : [];
+
+        return is_array($config) ? $config : [];
+    }
+
     private function setTenantConfigValue(int $tenantId, string $key, ?string $value): void
     {
         $tenantRow = DB::selectOne("SELECT configuration FROM tenants WHERE id = ?", [$tenantId]);

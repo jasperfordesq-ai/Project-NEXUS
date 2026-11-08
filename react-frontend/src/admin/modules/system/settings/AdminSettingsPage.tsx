@@ -54,6 +54,11 @@ import { GeneralSection, GENERAL_SECTION_ID } from './sections/GeneralSection';
 import { BrandingSection, BRANDING_SECTION_ID } from './sections/BrandingSection';
 import { HeaderLogoSection, HEADER_LOGO_SECTION_ID } from './sections/HeaderLogoSection';
 import { HeaderColorsSection, HEADER_COLORS_SECTION_ID } from './sections/HeaderColorsSection';
+import {
+  CommunityColourSection,
+  COMMUNITY_COLOUR_SECTION_ID,
+  communityColourTooLight,
+} from './sections/CommunityColourSection';
 import { PoweredBySection, POWERED_BY_SECTION_ID } from './sections/PoweredBySection';
 import { RegistrationSection, REGISTRATION_SECTION_ID } from './sections/RegistrationSection';
 
@@ -61,6 +66,7 @@ import { RegistrationSection, REGISTRATION_SECTION_ID } from './sections/Registr
 const SECTION_FIELDS: Record<string, SettingsFormKey[]> = {
   [GENERAL_SECTION_ID]: ['name', 'description', 'contact_email', 'contact_phone', 'default_currency', 'region'],
   [BRANDING_SECTION_ID]: ['footer_text', 'partner_logo_url', 'partner_logo_label', 'partner_logo_link_url'],
+  [COMMUNITY_COLOUR_SECTION_ID]: ['community_color'],
   [HEADER_LOGO_SECTION_ID]: [],
   [HEADER_COLORS_SECTION_ID]: ['header_bg_color', 'header_accent_color'],
   [POWERED_BY_SECTION_ID]: [
@@ -130,6 +136,7 @@ export function AdminSettingsPage() {
     const own: JumpNavSection[] = [
       { id: GENERAL_SECTION_ID, label: t('system.section_general') },
       { id: BRANDING_SECTION_ID, label: t('system.section_branding_legal') },
+      { id: COMMUNITY_COLOUR_SECTION_ID, label: t('admin_settings.community_colour_section') },
       { id: HEADER_LOGO_SECTION_ID, label: t('admin_settings.header_logo_section') },
       { id: HEADER_COLORS_SECTION_ID, label: t('admin_settings.header_colors_section') },
       ...(general.ctx.isPlatformGod ? [{ id: POWERED_BY_SECTION_ID, label: t('system.powered_by_branding_section') }] : []),
@@ -241,7 +248,13 @@ export function AdminSettingsPage() {
     }
   }, [confirm, system, general, refreshTenant, toast, t]);
 
-  const blockedReason = hasErrors ? t('admin_settings.fix_errors_before_saving') : null;
+  // The server refuses a community colour that cannot be read on white, so a
+  // Save would fail anyway; say why here instead.
+  const blockedReason = hasErrors
+    ? t('admin_settings.fix_errors_before_saving')
+    : communityColourTooLight(general.form.community_color)
+      ? t('admin_settings.community_colour_too_light')
+      : null;
 
   return (
     <div className="pb-24">
@@ -259,6 +272,7 @@ export function AdminSettingsPage() {
 
           <GeneralSection state={general} />
           <BrandingSection state={general} />
+          <CommunityColourSection state={general} />
           <HeaderLogoSection state={general} />
           <HeaderColorsSection state={general} />
           {general.ctx.isPlatformGod && <PoweredBySection state={general} />}

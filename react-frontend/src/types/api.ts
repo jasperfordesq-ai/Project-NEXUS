@@ -1331,6 +1331,12 @@ export interface TenantBranding {
   favicon_url?: string; // raw backend field
   primaryColor?: string;
   primary_color?: string; // raw backend field
+  /**
+   * The community colour an admin chose (strict #rrggbb), or null for the
+   * standard colour. Unlike `primaryColor` it carries no default, so a
+   * component can tell "chosen" from "standard".
+   */
+  communityColor?: string | null;
   secondaryColor?: string;
   og_image_url?: string;
 }

@@ -10,6 +10,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { TenantProvider, useTenant, useFeature, useModule } from './TenantContext';
+import { ThemeProvider } from './ThemeContext';
 import { tokenManager } from '@/lib/api';
 
 // Mock dependencies
@@ -30,6 +31,8 @@ vi.mock('@/lib/api', () => ({
     setTenantSlug: vi.fn(),
     hasAccessToken: vi.fn().mockReturnValue(false),
     hasRefreshToken: vi.fn().mockReturnValue(false),
+    // Read by ThemeProvider in the community-colour tests.
+    getAccessToken: vi.fn().mockReturnValue(null),
     clearTokens: vi.fn(),
   },
   fetchCsrfToken: (...args: unknown[]) => mockFetchCsrfToken(...args),
@@ -350,6 +353,50 @@ describe('TenantContext', () => {
     // name comes from top-level tenant.name (not branding.name)
     expect(screen.getByTestId('branding-name')).toHaveTextContent('hOUR Timebank');
     expect(screen.getByTestId('branding-color')).toHaveTextContent('#6366f1');
+  });
+
+  describe('community colour', () => {
+    function ColourConsumer() {
+      const { branding } = useTenant();
+      return <div data-testid="community-color">{branding.communityColor ?? 'none'}</div>;
+    }
+
+    async function renderWithTheme(branding: Record<string, unknown>) {
+      mockApiGet.mockResolvedValue({ success: true, data: { ...mockTenantConfig, branding } });
+      render(
+        <ThemeProvider>
+          <TenantProvider>
+            <ColourConsumer />
+          </TenantProvider>
+        </ThemeProvider>
+      );
+      await waitFor(() => {
+        expect(screen.getByTestId('community-color')).not.toHaveTextContent('loading');
+      });
+    }
+
+    beforeEach(() => {
+      localStorage.clear();
+      document.documentElement.style.removeProperty('--accent');
+    });
+
+    it('hands the community colour to the theme, so the whole site uses it', async () => {
+      await renderWithTheme({ primary_color: '#a3195b' });
+
+      await waitFor(() => {
+        expect(document.documentElement.style.getPropertyValue('--accent')).toBe('#a3195b');
+      });
+      expect(screen.getByTestId('community-color')).toHaveTextContent('#a3195b');
+    });
+
+    it('keeps the standard colour for a community that has not chosen one', async () => {
+      await renderWithTheme({});
+
+      await waitFor(() => {
+        expect(document.documentElement.style.getPropertyValue('--accent')).toBe('#6366f1');
+      });
+      expect(screen.getByTestId('community-color')).toHaveTextContent('none');
+    });
   });
 
   it('handles API error', async () => {

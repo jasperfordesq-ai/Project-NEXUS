@@ -1623,21 +1623,23 @@ describe('adminSettings', () => {
     expect(mockDelete).toHaveBeenCalledWith('/v2/admin/settings/header-logo');
   });
 
-  it('saveHeaderColors puts color data', async () => {
+  it('saveHeaderColors puts color data, community colour included', async () => {
     mockPut.mockResolvedValueOnce({ success: true, data: {} });
-    await adminSettings.saveHeaderColors('#000', '#005ea2');
+    await adminSettings.saveHeaderColors('#000', '#005ea2', '#a3195b');
     expect(mockPut).toHaveBeenCalledWith('/v2/admin/settings/header-colors', {
       bg_color: '#000',
       accent_color: '#005ea2',
+      community_color: '#a3195b',
     });
   });
 
   it('saveHeaderColors with nulls sends empty strings', async () => {
     mockPut.mockResolvedValueOnce({ success: true, data: {} });
-    await adminSettings.saveHeaderColors(null, null);
+    await adminSettings.saveHeaderColors(null, null, null);
     expect(mockPut).toHaveBeenCalledWith('/v2/admin/settings/header-colors', {
       bg_color: '',
       accent_color: '',
+      community_color: '',
     });
   });
 

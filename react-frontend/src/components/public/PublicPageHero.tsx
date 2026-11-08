@@ -6,6 +6,7 @@
 import type { ReactNode } from 'react';
 import Sparkles from 'lucide-react/icons/sparkles';
 import { Chip } from '@/components/ui';
+import { useCommunityAccent } from '@/contexts/ThemeContext';
 
 interface PublicPageHeroStat {
   label: string;
@@ -48,6 +49,13 @@ const accentClasses = {
     chipColor: 'danger',
     line: 'from-rose-500 via-fuchsia-500 to-accent-gradient-end',
   },
+  // Used on every page once a community has chosen its own colour: HeroUI's
+  // accent token only, so no fixed sky/cyan clashes with the community colour.
+  community: {
+    icon: 'from-accent/20 to-accent/5 text-accent dark:text-accent',
+    chipColor: 'accent',
+    line: 'from-accent via-accent/50 to-transparent',
+  },
 } satisfies Record<string, {
   icon: string;
   chipColor: 'accent' | 'success' | 'warning' | 'danger';
@@ -63,7 +71,11 @@ export function PublicPageHero({
   action,
   stats,
 }: PublicPageHeroProps) {
-  const classes = accentClasses[accent];
+  // Once a community has chosen its own colour, every page header uses it
+  // instead of the page's own palette. Without a choice, each page keeps its
+  // colour.
+  const communityAccent = useCommunityAccent();
+  const classes = accentClasses[communityAccent ? 'community' : accent];
 
   return (
     <section

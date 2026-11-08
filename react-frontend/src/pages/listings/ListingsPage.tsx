@@ -15,12 +15,13 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
 import { Progress } from '@/components/ui/Progress';
 import { SearchField } from '@/components/ui/SearchField';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { ListingSkeleton, MediaRowsSkeleton } from '@/components/ui/Skeletons';
 import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
+import { Label } from '@/components/ui/Label';
+import { TagGroup, Tag as ThemeTag } from '@/components/ui/TagGroup';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
 import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
 import { useFilterDraft } from '@/hooks/useFilterDraft';
@@ -41,7 +42,8 @@ import ListTodo from 'lucide-react/icons/list-todo';
 import ClipboardList from 'lucide-react/icons/clipboard-list';
 import MapIcon from 'lucide-react/icons/map';
 import MapPin from 'lucide-react/icons/map-pin';
-import Tag from 'lucide-react/icons/tag';
+import Gift from 'lucide-react/icons/gift';
+import HandHelping from 'lucide-react/icons/hand-helping';
 import Clock from 'lucide-react/icons/clock';
 import Calendar from 'lucide-react/icons/calendar';
 import Heart from 'lucide-react/icons/heart';
@@ -63,6 +65,7 @@ import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useTenant } from '@/contexts/TenantContext';
+import { useCommunityAccent } from '@/contexts/ThemeContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
@@ -70,6 +73,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { MAPS_ENABLED } from '@/lib/map-config';
 import { resolveAvatarUrl, resolveThumbnailUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
+import { categoryColour } from '@/lib/categoryColours';
 import type { EntityMapViewProps } from '@/components/location/EntityMapView';
 import type { ProximityFilterParams } from '@/components/proximity/ProximityFilter';
 import type { Listing, Category } from '@/types/api';
@@ -89,6 +93,18 @@ const LazyProximityFilter = lazy(() =>
 type ListingType = 'all' | 'offer' | 'request';
 type ViewMode = 'grid' | 'list' | 'map';
 type SortMode = 'recommended' | 'newest';
+
+/** The "All themes" tag's key; a real category slug can never be this. */
+const ALL_THEMES_KEY = '__all__';
+
+/**
+ * Selected-state classes for the view toggles. The page's own green stays
+ * until a community chooses its colour; then the toggles follow it.
+ */
+const VIEW_TOGGLE_SELECTED = {
+  page: 'data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-300',
+  community: 'data-[selected=true]:bg-accent/15 data-[selected=true]:text-accent',
+} as const;
 
 const validTypes: ListingType[] = ['all', 'offer', 'request'];
 const validHours = ['any', 'quick', 'short', 'half_day', 'full_day'];
@@ -169,9 +185,13 @@ export function ListingsPage() {
   // On phones the page hides its own hero card; the title lives in the app bar.
   useSetAppBarTitle(t('title'));
   const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { tenantPath, hasModule, hasFeature } = useTenant();
   const toast = useToast();
+  // A community's own colour, once chosen, replaces this page's green.
+  const usesCommunityColour = useCommunityAccent() !== null;
+  const viewToggleSelected = usesCommunityColour ? VIEW_TOGGLE_SELECTED.community : VIEW_TOGGLE_SELECTED.page;
+  const memberFirstName = user?.first_name?.trim() || '';
   const [searchParams, setSearchParams] = useSearchParams();
   const canUseMapView = MAPS_ENABLED && hasFeature('maps');
 
@@ -430,13 +450,6 @@ export function ListingsPage() {
   const loadListingsRef = useRef(loadListings);
   loadListingsRef.current = loadListings;
 
-  // Stable items array for the category Select — memoized so HeroUI's
-  // collection doesn't rebuild on every render (new array ref = rebuild = selected key lost)
-  const categoryItems = useMemo(
-    () => [{ slug: 'all', name: t('filter_all_categories') }, ...categories],
-    [categories, t],
-  );
-
   // Load categories once on mount
   useEffect(() => {
     const controller = new AbortController();
@@ -589,7 +602,7 @@ export function ListingsPage() {
       {!isPhone && (
       <div className="hidden sm:block">
         <PublicPageHero
-          eyebrow={t('hero_eyebrow')}
+          eyebrow={isAuthenticated && memberFirstName ? t('welcome_back', { name: memberFirstName }) : t('hero_eyebrow')}
           title={t('title')}
           description={t('page_subtitle')}
           accent="emerald"
@@ -607,13 +620,24 @@ export function ListingsPage() {
                   {t('mine.title')}
                 </Button>
               )}
+              {/* Two plain ways in, as AWID's members asked: give or ask. Each
+                  opens the listing form with the type already chosen. */}
               {isAuthenticated && (
-                <Button as={Link} to={tenantPath('/listings/create')}
+                <Button as={Link} to={tenantPath('/listings/create?type=offer')}
                   variant="primary"
                   className="shrink-0 font-semibold"
-                  startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
+                  startContent={<Gift className="w-4 h-4" aria-hidden="true" />}
                 >
-                  {t('create')}
+                  {t('offer_help')}
+                </Button>
+              )}
+              {isAuthenticated && (
+                <Button as={Link} to={tenantPath('/listings/create?type=request')}
+                  variant="secondary"
+                  className="shrink-0 font-semibold"
+                  startContent={<HandHelping className="w-4 h-4" aria-hidden="true" />}
+                >
+                  {t('ask_for_help')}
                 </Button>
               )}
             </div>
@@ -626,7 +650,7 @@ export function ListingsPage() {
       {isPhone && (
         <MobileFilterBar
           isVisible={showMobileControls}
-          accent="emerald"
+          accent={usesCommunityColour ? 'accent' : 'emerald'}
           onSearchPress={() => setIsSearchOverlayOpen(true)}
           searchValue={searchInput}
           onFiltersPress={openFilterSheet}
@@ -659,7 +683,7 @@ export function ListingsPage() {
                 isIconOnly
                 variant="ghost"
                 aria-label={t('aria_grid_view')}
-                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-300"
+                className={`h-10 min-w-10 rounded-none text-theme-muted transition-colors ${viewToggleSelected}`}
               >
                 <Grid className="h-4 w-4" aria-hidden="true" />
               </ToggleButton>
@@ -668,7 +692,7 @@ export function ListingsPage() {
                 isIconOnly
                 variant="ghost"
                 aria-label={t('aria_list_view')}
-                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-300"
+                className={`h-10 min-w-10 rounded-none text-theme-muted transition-colors ${viewToggleSelected}`}
               >
                 <List className="h-4 w-4" aria-hidden="true" />
               </ToggleButton>
@@ -678,7 +702,7 @@ export function ListingsPage() {
                   isIconOnly
                   variant="ghost"
                   aria-label={t('aria_map_view')}
-                  className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-300"
+                  className={`h-10 min-w-10 rounded-none text-theme-muted transition-colors ${viewToggleSelected}`}
                 >
                   <MapIcon className="h-4 w-4" aria-hidden="true" />
                 </ToggleButton>
@@ -704,7 +728,7 @@ export function ListingsPage() {
             <p className="mt-1 text-sm text-theme-muted">{t('filters_intro')}</p>
           </div>
           <div className="flex items-center gap-2 rounded-full bg-theme-elevated px-3 py-1 text-xs font-medium text-theme-muted">
-            <ListTodo className="h-3.5 w-3.5 text-emerald-500" aria-hidden="true" />
+            <ListTodo className={`h-3.5 w-3.5 ${usesCommunityColour ? 'text-accent' : 'text-emerald-500'}`} aria-hidden="true" />
             {totalItems != null ? t('results_count', { count: totalItems }) : t('results_loading')}
           </div>
         </div>
@@ -756,26 +780,8 @@ export function ListingsPage() {
               <SelectItem key="request" id="request">{t('filters.requests')}</SelectItem>
             </Select>
 
-            <Select
-              aria-label={t('filter_category_label')}
-              placeholder={t('filter_category_label')}
-              selectedKeys={[categories.length > 0 ? (selectedCategory || 'all') : 'all']}
-              disallowEmptySelection
-              isDisabled={categoriesLoading}
-              onSelectionChange={(keys) => {
-                const val = keys instanceof Set ? ([...keys][0] as string) : 'all';
-                setSelectedCategory(val === 'all' ? '' : (val || ''));
-              }}
-              className="w-full xl:w-44"
-              classNames={{
-                trigger: 'bg-theme-elevated border-theme-default hover:bg-theme-hover',
-                value: 'text-theme-primary',
-              }}
-              startContent={<Tag className="w-4 h-4 text-theme-subtle" />}
-              items={categoryItems}
-            >
-              {(cat) => <SelectItem key={cat.slug} id={cat.slug}>{cat.name}</SelectItem>}
-            </Select>
+            {/* Category moved out of this row into the "Browse by theme" tags
+                below the filters (AWID: "clear categories"). */}
 
             {/* Sort order */}
             <Select
@@ -801,7 +807,9 @@ export function ListingsPage() {
             <Button
               variant={showAdvancedFilters ? 'solid' : 'flat'}
               className={showAdvancedFilters
-                ? 'min-h-[40px] bg-emerald-600 text-white shadow-sm hover:bg-emerald-700'
+                ? (usesCommunityColour
+                  ? 'min-h-[40px] bg-accent text-accent-foreground shadow-sm hover:opacity-90'
+                  : 'min-h-[40px] bg-emerald-600 text-white shadow-sm hover:bg-emerald-700')
                 : 'min-h-[40px] bg-theme-elevated text-theme-primary'}
               startContent={<SlidersHorizontal className="w-4 h-4" aria-hidden="true" />}
               onPress={() => setShowAdvancedFilters((prev) => !prev)}
@@ -833,7 +841,7 @@ export function ListingsPage() {
                 isIconOnly
                 variant="ghost"
                 aria-label={t('aria_grid_view')}
-                className="min-h-[44px] min-w-[44px] rounded-none text-theme-muted transition-colors data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-300"
+                className={`min-h-[44px] min-w-[44px] rounded-none text-theme-muted transition-colors ${viewToggleSelected}`}
               >
                 <Grid className="w-4 h-4" aria-hidden="true" />
               </ToggleButton>
@@ -842,7 +850,7 @@ export function ListingsPage() {
                 isIconOnly
                 variant="ghost"
                 aria-label={t('aria_list_view')}
-                className="min-h-[44px] min-w-[44px] rounded-none text-theme-muted transition-colors data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-300"
+                className={`min-h-[44px] min-w-[44px] rounded-none text-theme-muted transition-colors ${viewToggleSelected}`}
               >
                 <List className="w-4 h-4" aria-hidden="true" />
               </ToggleButton>
@@ -852,7 +860,7 @@ export function ListingsPage() {
                   isIconOnly
                   variant="ghost"
                   aria-label={t('aria_map_view')}
-                  className="min-h-[44px] min-w-[44px] rounded-none text-theme-muted transition-colors data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-300"
+                  className={`min-h-[44px] min-w-[44px] rounded-none text-theme-muted transition-colors ${viewToggleSelected}`}
                 >
                   <MapIcon className="w-4 h-4" aria-hidden="true" />
                 </ToggleButton>
@@ -974,6 +982,43 @@ export function ListingsPage() {
           onApply={filterSheet.apply}
           onClearAll={filterSheet.clear}
         />
+      )}
+
+      {/* Browse by theme — every category as a HeroUI tag, each with its own
+          colour, on every screen size. Picking one filters the list, exactly
+          as the old category drop-down did (same state, same URL parameter). */}
+      {!categoriesLoading && categories.length > 0 && (
+        <TagGroup
+          aria-labelledby="listings-themes-label"
+          selectionMode="single"
+          disallowEmptySelection
+          selectedKeys={new Set([selectedCategory || ALL_THEMES_KEY])}
+          onSelectionChange={(keys) => {
+            const [key] = Array.from(keys);
+            if (key === undefined) return;
+            setSelectedCategory(key === ALL_THEMES_KEY ? '' : String(key));
+          }}
+          className="flex flex-col gap-2"
+        >
+          <Label id="listings-themes-label" className="text-sm font-semibold text-theme-primary">
+            {t('browse_by_theme')}
+          </Label>
+          {/* Phones: one row that scrolls sideways; each tag keeps its own
+              width (shrink-0) so a long list never squashes the labels. */}
+          <TagGroup.List className="flex items-center gap-2 max-sm:-mx-1 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-1 max-sm:pb-1 sm:flex-wrap">
+            <ThemeTag id={ALL_THEMES_KEY} textValue={t('all_themes')} className="shrink-0 whitespace-nowrap">
+              {t('all_themes')}
+            </ThemeTag>
+            {categories.map((cat) => (
+              <ThemeTag key={cat.slug} id={cat.slug} textValue={cat.name} className="shrink-0">
+                <span className="flex items-center gap-1.5 whitespace-nowrap">
+                  <span className={`size-2.5 shrink-0 rounded-full ${categoryColour(cat.color).dot}`} aria-hidden="true" />
+                  {cat.name}
+                </span>
+              </ThemeTag>
+            ))}
+          </TagGroup.List>
+        </TagGroup>
       )}
 
       {/* Listings Grid/List */}
@@ -1161,8 +1206,10 @@ export function ListingsPage() {
   );
 }
 
+// Labels are 12px semibold (they were 10px until Nov 2026 — AWID found the
+// Offer/Request label hard to read).
 // Light-mode text uses the -800 shade (not -600): on the soft -500/20 tint the
-// -600 shade fell below WCAG AA 4.5:1 for this 10px text (axe color-contrast,
+// -600 shade fell below WCAG AA 4.5:1 for this small text (axe color-contrast,
 // "serious", on the listings + dashboard cards). -800 clears 4.5:1 for every
 // hue here; dark mode keeps -400, which already passed on the dark tint. The
 // category badge's muted text on the hover surface likewise failed, so it now
@@ -1200,8 +1247,8 @@ function ListingBadge({
       size="sm"
       variant="soft"
       title={title}
-      className={`h-auto gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-medium ${BADGE_TONES[tone]}`}
-      startContent={Icon ? <Icon className="w-2.5 h-2.5" aria-hidden="true" /> : undefined}
+      className={`h-auto gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${BADGE_TONES[tone]}`}
+      startContent={Icon ? <Icon className="w-3 h-3" aria-hidden="true" /> : undefined}
     >
       {children}
     </Chip>
@@ -1378,7 +1425,24 @@ const ListingCard = memo(function ListingCard({ listing, viewMode, isSaving, onT
               onError={() => setImgError(true)}
             />
           ) : (
-            <ImagePlaceholder size="sm" />
+            // No photo: the listing's theme in its own colour, instead of a
+            // grey box (AWID: "attractive visuals", "clear categories").
+            // Decorative for screen readers: the theme name is also in the
+            // badges below.
+            <div
+              data-testid="listing-theme-band"
+              aria-hidden="true"
+              className={`flex h-full w-full flex-col justify-between p-4 ${categoryColour(listing.category_color).band}`}
+            >
+              <span className="text-sm font-semibold">
+                {listing.category_name || (listing.type === 'offer' ? t('offering') : t('requesting'))}
+              </span>
+              {listing.type === 'offer' ? (
+                <Gift className="h-10 w-10 self-end opacity-80" aria-hidden="true" />
+              ) : (
+                <HandHelping className="h-10 w-10 self-end opacity-80" aria-hidden="true" />
+              )}
+            </div>
           )}
           {/* Dark overlay on hover */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" aria-hidden="true" />

@@ -2887,6 +2887,7 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'glossary_not_found' => 'لم يتم العثور على إدخال المسرد.',
     'glossary_terms_too_long' => 'يجب ألا يزيد طول مصطلحات المسرد عن :max حرفًا.',
     'invalid_date_format' => 'يجب أن يستخدم :field التنسيق :format.',
+    'community_color_low_contrast' => 'هذا اللون فاتح جدًا بحيث لا يمكن قراءته على صفحة بيضاء. اختر درجة أغمق لتبقى الروابط والأزرار سهلة القراءة.',
     'invalid_hex_color' => 'يجب أن يكون :field لونًا سداسيًا صالحًا، مثل :example.',
     'invalid_risk_category' => 'قيمة risk_category غير صالحة.',
     'landing_card_field_required' => 'القسم :section، البطاقة :card تفتقد :field.',

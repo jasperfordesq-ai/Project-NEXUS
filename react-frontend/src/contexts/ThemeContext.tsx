@@ -27,7 +27,7 @@ import {
 import { api, tokenManager } from '@/lib/api';
 import { logWarn } from '@/lib/logger';
 import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageSetJSON } from '@/lib/safeStorage';
-import { getAccessibleForegroundColor } from '@/lib/colorContrast';
+import { ensureContrast, getAccessibleForegroundColor } from '@/lib/colorContrast';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -55,6 +55,12 @@ interface ThemeState {
 }
 
 interface ThemeContextValue extends ThemeState, ThemePreferences {
+  /**
+   * The community's own colour (Admin → Settings → "Community colour"), or
+   * null for the standard colour. Set by TenantProvider from the bootstrap.
+   */
+  communityAccent: string | null;
+  setCommunityAccent: (color: string | null) => void;
   setTheme: (theme: ThemeMode) => Promise<void>;
   toggleTheme: () => Promise<void>;
   setAccentColor: (color: string) => void;
@@ -101,6 +107,15 @@ const SPACING_MULTIPLIER_MAP: Record<Density, string> = {
   spacious: '1.25',
 };
 
+/**
+ * The lightest dark surface accent-coloured text sits on (a card over the dark
+ * page). A community colour is lightened in dark mode until it reads at 4.5:1
+ * against this, because a colour chosen to read on white is too dark there.
+ */
+const DARK_READING_SURFACE = '#18181b';
+
+const HEX_COLOUR = /^#[0-9a-fA-F]{6}$/;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
@@ -141,28 +156,32 @@ function applyThemeToDOM(resolvedTheme: ResolvedTheme): void {
   }
 }
 
-function applyPreferencesToDOM(prefs: ThemePreferences): void {
+/**
+ * `accent` is the colour actually in force: the member's own choice, else the
+ * community colour, else the standard one (see `effectiveAccent` below).
+ */
+function applyPreferencesToDOM(prefs: ThemePreferences, accent: string): void {
   if (typeof document === 'undefined') return;
 
   const html = document.documentElement;
 
-  const accentForeground = getAccessibleForegroundColor(prefs.accentColor);
+  const accentForeground = getAccessibleForegroundColor(accent);
 
   // Keep NEXUS and HeroUI v3 on one runtime accent source. HeroUI consumes
   // the canonical --accent/--focus/--link variables; legacy NEXUS utilities
   // consume --accent-color and the derived variables in tokens.css.
-  html.style.setProperty('--accent-color', prefs.accentColor);
-  html.style.setProperty('--accent', prefs.accentColor);
+  html.style.setProperty('--accent-color', accent);
+  html.style.setProperty('--accent', accent);
   html.style.setProperty('--accent-foreground', accentForeground);
-  html.style.setProperty('--focus', prefs.accentColor);
-  html.style.setProperty('--link', prefs.accentColor);
+  html.style.setProperty('--focus', accent);
+  html.style.setProperty('--link', accent);
   html.style.setProperty(
     '--border-focus',
-    `color-mix(in srgb, ${prefs.accentColor} 70%, transparent)`
+    `color-mix(in srgb, ${accent} 70%, transparent)`
   );
   html.style.setProperty(
     '--input-focus-border',
-    `color-mix(in srgb, ${prefs.accentColor} 70%, transparent)`
+    `color-mix(in srgb, ${accent} 70%, transparent)`
   );
   html.style.setProperty(
     '--font-size-base',
@@ -251,6 +270,7 @@ export function ThemeProvider({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [communityAccent, setCommunityAccentState] = useState<string | null>(null);
 
   // Debounce timer for backend sync
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -266,10 +286,27 @@ export function ThemeProvider({
     setIsInitialized(true);
   }, [resolvedTheme]);
 
+  // The colour in force. A member's own pick wins; until they make one (their
+  // accent is still the standard default) the community's colour applies,
+  // lightened on the dark theme just enough to read as link text there.
+  const effectiveAccent = useMemo(() => {
+    const memberChoseOwn = preferences.accentColor.toLowerCase() !== DEFAULT_PREFERENCES.accentColor;
+    if (communityAccent && !memberChoseOwn) {
+      return resolvedTheme === 'dark'
+        ? ensureContrast(communityAccent, DARK_READING_SURFACE)
+        : communityAccent;
+    }
+    return preferences.accentColor;
+  }, [preferences.accentColor, communityAccent, resolvedTheme]);
+
   // Apply preferences to DOM when they change
   useEffect(() => {
-    applyPreferencesToDOM(preferences);
-  }, [preferences]);
+    applyPreferencesToDOM(preferences, effectiveAccent);
+  }, [preferences, effectiveAccent]);
+
+  const setCommunityAccent = useCallback((color: string | null) => {
+    setCommunityAccentState(typeof color === 'string' && HEX_COLOUR.test(color) ? color.toLowerCase() : null);
+  }, []);
 
   // Load preferences from backend on mount (if authenticated)
   useEffect(() => {
@@ -292,9 +329,10 @@ export function ThemeProvider({
             reducedMotion: (themePrefs.reduced_motion as boolean) ?? DEFAULT_PREFERENCES.reducedMotion,
             simplifiedLayout: (themePrefs.simplified_layout as boolean) ?? DEFAULT_PREFERENCES.simplifiedLayout,
           };
+          // The preferences effect applies them, with the community colour
+          // taken into account.
           setPreferences(serverPrefs);
           storePreferences(serverPrefs);
-          applyPreferencesToDOM(serverPrefs);
         }
       } catch {
         // Silently ignore — local preferences still apply
@@ -463,6 +501,8 @@ export function ThemeProvider({
       setTheme,
       toggleTheme,
       isLoading,
+      communityAccent,
+      setCommunityAccent,
       accentColor: preferences.accentColor,
       fontSize: preferences.fontSize,
       density: preferences.density,
@@ -479,6 +519,7 @@ export function ThemeProvider({
       setSimplifiedLayout,
     }),
     [theme, resolvedTheme, isInitialized, setTheme, toggleTheme, isLoading,
+     communityAccent, setCommunityAccent,
      preferences, setAccentColor, setFontSize, setDensity, setLargeText,
      setHighContrast, setReducedMotion, setSimplifiedLayout]
   );
@@ -491,6 +532,15 @@ export function ThemeProvider({
 // ─────────────────────────────────────────────────────────────────────────────
 // Hook
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The community's chosen colour, or null for the standard colour. Unlike
+ * useTheme() it never throws, so shared components can read it outside a
+ * ThemeProvider (isolated tests, shells) and simply keep their own colours.
+ */
+export function useCommunityAccent(): string | null {
+  return use(ThemeContext)?.communityAccent ?? null;
+}
 
 export function useTheme(): ThemeContextValue {
   const context = use(ThemeContext);

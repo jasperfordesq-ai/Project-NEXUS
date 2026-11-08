@@ -864,10 +864,14 @@ class TenantBootstrapController extends BaseApiController
             $branding['favicon_url'] = UrlHelper::absolute($config['favicon_url']);
         }
 
-        if (!empty($tenant['primary_color'])) {
-            $branding['primary_color'] = $tenant['primary_color'];
-        } elseif (!empty($config['primary_color'])) {
-            $branding['primary_color'] = $config['primary_color'];
+        // The community colour (Admin → Settings → "Community colour"). It drives
+        // the member website's accent, so it is published only as strict
+        // #rrggbb, like the header colours below. (`tenants` has no
+        // primary_color column; the old `$tenant['primary_color']` branch could
+        // never fire and was removed in Nov 2026.)
+        $communityColor = $config['primary_color'] ?? null;
+        if (is_string($communityColor) && preg_match('/^#[0-9a-fA-F]{6}$/', $communityColor) === 1) {
+            $branding['primary_color'] = strtolower($communityColor);
         }
 
         // Accessible (web-uk) header colours, set on Admin → Settings → "Accessible

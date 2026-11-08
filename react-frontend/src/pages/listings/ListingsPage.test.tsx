@@ -141,9 +141,49 @@ describe('ListingsPage', () => {
     expect(screen.getByText('Browse services and requests from the community')).toBeInTheDocument();
   });
 
-  it('shows New Listing button when authenticated', () => {
+  it('welcomes the member and offers both ways to take part (AWID feedback)', () => {
     render(<ListingsPage />);
-    expect(screen.getByText('Create Listing')).toBeInTheDocument();
+    expect(screen.getByText('Welcome back, Test')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Offer help' })).toHaveAttribute('href', '/test/listings/create?type=offer');
+    expect(screen.getByRole('link', { name: 'Ask for help' })).toHaveAttribute('href', '/test/listings/create?type=request');
+  });
+
+  describe('browse by theme', () => {
+    const categories = [
+      { id: 1, name: 'Care & wellbeing', slug: 'care', color: 'pink' },
+      { id: 2, name: 'Learning', slug: 'learning', color: 'blue' },
+    ];
+
+    beforeEach(() => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/categories')
+            ? { success: true, data: categories }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+    });
+
+    it('shows every theme as a tag, each with its colour', async () => {
+      render(<ListingsPage />);
+
+      const group = await screen.findByRole('grid', { name: 'Browse by theme' });
+      expect(group).toHaveTextContent('All themes');
+      expect(group).toHaveTextContent('Care & wellbeing');
+      expect(group).toHaveTextContent('Learning');
+      expect(group.querySelector('.bg-pink-500')).not.toBeNull();
+    });
+
+    it('shows only that theme when a member picks it', async () => {
+      render(<ListingsPage />);
+
+      const learning = await screen.findByRole('row', { name: 'Learning' });
+      fireEvent.click(learning);
+
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(expect.stringContaining('category=learning'));
+      });
+    });
   });
 
   it('renders search input', () => {
@@ -242,6 +282,74 @@ describe('ListingsPage', () => {
       render(<ListingsPage />);
 
       expect((await screen.findAllByAltText('A hand saw on a workbench')).length).toBeGreaterThan(0);
+    });
+
+    it('shows the theme in its colour, not a grey box, when there is no photo', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/listings')
+            ? {
+                success: true,
+                meta: {},
+                data: [
+                  {
+                    id: 1,
+                    title: 'French conversation',
+                    description: 'Relaxed practice over video.',
+                    type: 'offer',
+                    status: 'active',
+                    created_at: '2026-08-01T00:00:00Z',
+                    updated_at: '2026-08-01T00:00:00Z',
+                    category_name: 'Learning',
+                    category_color: 'blue',
+                    user: { id: 9, name: 'Sofia Haddad' },
+                  },
+                ],
+              }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+
+      render(<ListingsPage />);
+
+      const band = await screen.findByTestId('listing-theme-band');
+      expect(band).toHaveTextContent('Learning');
+      expect(band.className).toContain('bg-blue-100');
+    });
+
+    it('labels Offer and Request in readable text, not 10px', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/listings')
+            ? {
+                success: true,
+                meta: {},
+                data: [
+                  {
+                    id: 1,
+                    title: 'French conversation',
+                    description: 'Relaxed practice over video.',
+                    type: 'offer',
+                    status: 'active',
+                    created_at: '2026-08-01T00:00:00Z',
+                    updated_at: '2026-08-01T00:00:00Z',
+                    user: { id: 9, name: 'Sofia Haddad' },
+                  },
+                ],
+              }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+
+      render(<ListingsPage />);
+
+      // "Offering" also heads the coloured band of a card with no photo or
+      // theme; the label is the one inside a chip.
+      const label = (await screen.findAllByText('Offering'))
+        .map((el) => el.closest('[data-slot="chip"]'))
+        .find((chip) => chip !== null);
+      expect(label).toHaveClass('text-xs');
+      expect(label?.className).not.toContain('text-[10px]');
     });
   });
 

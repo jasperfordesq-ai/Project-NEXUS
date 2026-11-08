@@ -4,7 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test/test-utils';
+import { useEffect } from 'react';
+import { render, screen, waitFor } from '@/test/test-utils';
+import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { PublicPageHero } from './PublicPageHero';
 
 vi.mock('@/contexts', () => ({
@@ -142,5 +144,36 @@ describe('PublicPageHero', () => {
     // No accent → default 'indigo'; component renders without crash
     render(<PublicPageHero {...defaultProps} />);
     expect(screen.getByText('Welcome to the Platform')).toBeInTheDocument();
+  });
+
+  it('follows the community colour on every page once a community has chosen one', async () => {
+    function CommunityColour() {
+      const { setCommunityAccent } = useTheme();
+      useEffect(() => setCommunityAccent('#a3195b'), [setCommunityAccent]);
+      return null;
+    }
+
+    render(
+      <ThemeProvider>
+        <CommunityColour />
+        <PublicPageHero {...defaultProps} accent="emerald" />
+      </ThemeProvider>
+    );
+
+    await waitFor(() => {
+      const chip = screen.getByText('Featured Section').closest('[data-slot="chip"]');
+      expect(chip).toHaveClass('chip--accent');
+    });
+  });
+
+  it('keeps its own page colour when the community has not chosen one', () => {
+    render(
+      <ThemeProvider>
+        <PublicPageHero {...defaultProps} accent="emerald" />
+      </ThemeProvider>
+    );
+
+    const chip = screen.getByText('Featured Section').closest('[data-slot="chip"]');
+    expect(chip).toHaveClass('chip--success');
   });
 });

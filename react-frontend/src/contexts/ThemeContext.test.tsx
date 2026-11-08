@@ -8,7 +8,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { useEffect } from 'react';
 import { render, screen, act } from '@testing-library/react';
+import { getContrastRatio } from '@/lib/colorContrast';
 import { ThemeProvider, useTheme } from './ThemeContext';
 
 // Mock the API module
@@ -264,5 +266,85 @@ describe('ThemeContext', () => {
     });
 
     expect(document.documentElement.style.getPropertyValue('--accent-foreground')).toBe('#ffffff');
+  });
+
+  describe('community colour', () => {
+    function CommunityProbe({ colour }: { colour: string | null }) {
+      const { setCommunityAccent } = useTheme();
+      useEffect(() => {
+        setCommunityAccent(colour);
+      }, [colour, setCommunityAccent]);
+      return null;
+    }
+
+    const accent = () => document.documentElement.style.getPropertyValue('--accent');
+
+    it('colours the site when the member has not chosen a colour of their own', async () => {
+      render(
+        <ThemeProvider>
+          <CommunityProbe colour="#a3195b" />
+        </ThemeProvider>
+      );
+
+      await act(async () => {});
+      expect(accent()).toBe('#a3195b');
+      expect(document.documentElement.style.getPropertyValue('--link')).toBe('#a3195b');
+      expect(document.documentElement.style.getPropertyValue('--accent-foreground')).toBe('#ffffff');
+    });
+
+    it('steps aside for a colour the member picked themselves', async () => {
+      render(
+        <ThemeProvider>
+          <CommunityProbe colour="#a3195b" />
+          <TestComponent />
+        </ThemeProvider>
+      );
+
+      await act(async () => {
+        screen.getByRole('button', { name: 'Set Green Accent' }).click();
+      });
+      expect(accent()).toBe('#22c55e');
+    });
+
+    it('goes back to the standard colour when the community clears its colour', async () => {
+      const { rerender } = render(
+        <ThemeProvider>
+          <CommunityProbe colour="#a3195b" />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+
+      rerender(
+        <ThemeProvider>
+          <CommunityProbe colour={null} />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(accent()).toBe('#6366f1');
+    });
+
+    it('ignores a value that is not a colour', async () => {
+      render(
+        <ThemeProvider>
+          <CommunityProbe colour="red;background:url(x)" />
+        </ThemeProvider>
+      );
+
+      await act(async () => {});
+      expect(accent()).toBe('#6366f1');
+    });
+
+    it('uses a lighter shade in dark mode so links stay readable on the dark page', async () => {
+      render(
+        <ThemeProvider defaultTheme="dark">
+          <CommunityProbe colour="#a3195b" />
+        </ThemeProvider>
+      );
+
+      await act(async () => {});
+      const darkAccent = accent();
+      expect(darkAccent).not.toBe('#a3195b');
+      expect(getContrastRatio(darkAccent, '#18181b')).toBeGreaterThanOrEqual(4.5);
+    });
   });
 });
