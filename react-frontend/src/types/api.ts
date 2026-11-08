@@ -283,6 +283,7 @@ export interface Listing {
   category_id: number | null;
   category_name?: string;
   category_color?: string;
+  category_slug?: string;
   estimated_hours?: number;
   hours_estimate?: number;  // Alias for estimated_hours (frontend compatibility)
   /**

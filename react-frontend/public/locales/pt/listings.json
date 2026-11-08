@@ -127,6 +127,8 @@
   "page_subtitle": "Explore serviços e pedidos da comunidade",
   "hero_eyebrow": "Quadro de trocas da comunidade",
   "welcome_back": "Olá de novo, {{name}}",
+  "welcome_generic": "Olá de novo",
+  "welcome_intro": "Partilhe o que sabe, peça o que precisa. Cada hora que dá volta para a comunidade.",
   "offer_help": "Oferecer ajuda",
   "ask_for_help": "Pedir ajuda",
   "browse_by_theme": "Explorar por tema",

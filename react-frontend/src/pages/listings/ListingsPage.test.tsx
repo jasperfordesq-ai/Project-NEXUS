@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
+import { fireEvent, render, screen, waitFor, within } from '@/test/test-utils';
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -122,6 +122,7 @@ vi.mock('@/lib/motion', () => {  const motionProps = new Set(['variants', 'initi
 
 import { ListingsPage } from './ListingsPage';
 import { api } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 describe('ListingsPage', () => {
   beforeEach(() => {
@@ -141,11 +142,34 @@ describe('ListingsPage', () => {
     expect(screen.getByText('Browse services and requests from the community')).toBeInTheDocument();
   });
 
-  it('welcomes the member and offers both ways to take part (AWID feedback)', () => {
+  it('welcomes the member in a panel with both ways to take part (AWID feedback)', () => {
     render(<ListingsPage />);
-    expect(screen.getByText('Welcome back, Test')).toBeInTheDocument();
+    const panel = screen.getByTestId('listings-welcome');
+    expect(within(panel).getByRole('heading', { name: 'Welcome back, Test' })).toBeInTheDocument();
+    expect(within(panel).getByText(/Every hour you give comes back to the community/)).toBeInTheDocument();
+    // Exactly one of each on the page: the panel's, not a second in the header.
     expect(screen.getByRole('link', { name: 'Offer help' })).toHaveAttribute('href', '/test/listings/create?type=offer');
     expect(screen.getByRole('link', { name: 'Ask for help' })).toHaveAttribute('href', '/test/listings/create?type=request');
+  });
+
+  it('shows the welcome panel on phones too', () => {
+    isPhoneViewport = true;
+    render(<ListingsPage />);
+    expect(screen.getByTestId('listings-welcome')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Offer help' })).toBeInTheDocument();
+  });
+
+  it('shows no welcome panel to a visitor who is not signed in', () => {
+    const signedIn = vi.mocked(useAuth).getMockImplementation();
+    vi.mocked(useAuth).mockReturnValue({ user: null, isAuthenticated: false } as unknown as ReturnType<typeof useAuth>);
+    try {
+      render(<ListingsPage />);
+      expect(screen.queryByTestId('listings-welcome')).toBeNull();
+      expect(screen.queryByRole('link', { name: 'Offer help' })).toBeNull();
+    } finally {
+      // clearAllMocks keeps implementations, so put the signed-in member back.
+      if (signedIn) vi.mocked(useAuth).mockImplementation(signedIn);
+    }
   });
 
   describe('browse by theme', () => {
@@ -164,14 +188,32 @@ describe('ListingsPage', () => {
       );
     });
 
-    it('shows every theme as a tag, each with its colour', async () => {
+    it('shows every theme as a tile in the colour the admin chose', async () => {
       render(<ListingsPage />);
 
       const group = await screen.findByRole('grid', { name: 'Browse by theme' });
       expect(group).toHaveTextContent('All themes');
       expect(group).toHaveTextContent('Care & wellbeing');
       expect(group).toHaveTextContent('Learning');
-      expect(group.querySelector('.bg-pink-500')).not.toBeNull();
+      const care = screen.getByRole('row', { name: 'Care & wellbeing' });
+      expect(care.className).toContain('bg-pink-100');
+      expect(care.querySelector('.bg-pink-500')).not.toBeNull();
+    });
+
+    it('gives each theme its own colour while the community has left them all blue', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/categories')
+            ? { success: true, data: categories.map((c) => ({ ...c, color: 'blue' })) }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+      render(<ListingsPage />);
+
+      const care = await screen.findByRole('row', { name: 'Care & wellbeing' });
+      const learning = screen.getByRole('row', { name: 'Learning' });
+      expect(care.className).toContain('bg-blue-100');
+      expect(learning.className).toContain('bg-orange-100');
     });
 
     it('shows only that theme when a member picks it', async () => {
@@ -317,6 +359,49 @@ describe('ListingsPage', () => {
       expect(band.className).toContain('bg-blue-100');
     });
 
+    it('colours a card the same as its theme tile when themes were left blue', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/categories')
+            ? {
+                success: true,
+                data: [
+                  { id: 1, name: 'Care', slug: 'care', color: 'blue' },
+                  { id: 2, name: 'Learning', slug: 'learning', color: 'blue' },
+                ],
+              }
+            : url.startsWith('/v2/listings')
+              ? {
+                  success: true,
+                  meta: {},
+                  data: [
+                    {
+                      id: 1,
+                      title: 'French conversation',
+                      description: 'Relaxed practice over video.',
+                      type: 'offer',
+                      status: 'active',
+                      created_at: '2026-08-01T00:00:00Z',
+                      updated_at: '2026-08-01T00:00:00Z',
+                      category_name: 'Learning',
+                      category_slug: 'learning',
+                      category_color: 'blue',
+                      user: { id: 9, name: 'Sofia Haddad' },
+                    },
+                  ],
+                }
+              : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+
+      render(<ListingsPage />);
+
+      await screen.findByRole('row', { name: 'Learning' });
+      await waitFor(() => {
+        expect(screen.getByTestId('listing-theme-band').className).toContain('bg-orange-100');
+      });
+    });
+
     it('labels Offer and Request in readable text, not 10px', async () => {
       vi.mocked(api.get).mockImplementation((url: string) =>
         Promise.resolve(
@@ -350,6 +435,8 @@ describe('ListingsPage', () => {
         .find((chip) => chip !== null);
       expect(label).toHaveClass('text-xs');
       expect(label?.className).not.toContain('text-[10px]');
+      // No photo and no theme: the offer's own green, never a grey box.
+      expect(screen.getByTestId('listing-theme-band').className).toContain('bg-green-100');
     });
   });
 

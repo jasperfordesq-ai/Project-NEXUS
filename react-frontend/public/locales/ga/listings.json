@@ -129,6 +129,8 @@
   "page_subtitle": "Brabhsáil seirbhísí agus iarratais ón bpobal",
   "hero_eyebrow": "Clár malartaithe pobail",
   "welcome_back": "Fáilte ar ais, {{name}}",
+  "welcome_generic": "Fáilte ar ais",
+  "welcome_intro": "Roinn an méid atá ar eolas agat, iarr an rud a theastaíonn uait. Filleann gach uair a thugann tú ar an bpobal.",
   "offer_help": "Tairg cabhair",
   "ask_for_help": "Iarr cabhair",
   "browse_by_theme": "Brabhsáil de réir téama",

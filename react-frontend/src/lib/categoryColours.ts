@@ -38,3 +38,33 @@ const CATEGORY_COLOURS: Record<string, CategoryColourClasses> = {
 export function categoryColour(name?: string | null): CategoryColourClasses {
   return CATEGORY_COLOURS[(name ?? '').toLowerCase()] ?? CATEGORY_COLOURS.slate!;
 }
+
+/**
+ * Colours handed out in turn when a community has not coloured its themes.
+ * Neighbouring entries are far apart in hue so adjacent themes never look
+ * alike. Slate is left out: it is the "unknown colour" grey.
+ */
+export const THEME_ROTATION = [
+  'blue', 'orange', 'teal', 'pink', 'purple', 'green', 'yellow', 'cyan', 'red', 'indigo', 'fuchsia',
+] as const;
+
+/**
+ * The colour name to show for each theme, keyed by slug.
+ *
+ * Every category is created as 'blue' (the database default), so a community
+ * that never opened Admin → Categories has nothing but blue themes. While all
+ * its themes share one colour, they are given different colours in turn, in
+ * the order given. As soon as an admin gives any two themes different colours,
+ * every theme shows exactly the colour stored for it.
+ */
+export function themeColourNames(categories: ReadonlyArray<{ slug: string; color?: string | null }>): Record<string, string> {
+  const stored = categories.map((category) => (category.color ?? '').trim().toLowerCase());
+  const allTheSame = new Set(stored).size <= 1;
+  const names: Record<string, string> = {};
+  categories.forEach((category, index) => {
+    names[category.slug] = allTheSame
+      ? THEME_ROTATION[index % THEME_ROTATION.length]!
+      : (stored[index] && CATEGORY_COLOURS[stored[index]!] ? stored[index]! : 'slate');
+  });
+  return names;
+}

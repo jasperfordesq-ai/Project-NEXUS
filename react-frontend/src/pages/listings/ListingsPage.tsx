@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { AlgorithmLabel } from '@/components/ui/AlgorithmLabel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
+import { Card, CardBody } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Progress } from '@/components/ui/Progress';
@@ -73,7 +74,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { MAPS_ENABLED } from '@/lib/map-config';
 import { resolveAvatarUrl, resolveThumbnailUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
-import { categoryColour } from '@/lib/categoryColours';
+import { categoryColour, themeColourNames } from '@/lib/categoryColours';
 import type { EntityMapViewProps } from '@/components/location/EntityMapView';
 import type { ProximityFilterParams } from '@/components/proximity/ProximityFilter';
 import type { Listing, Category } from '@/types/api';
@@ -582,6 +583,10 @@ export function ListingsPage() {
     }
   }, [savingIds]);
 
+  // One colour per theme, shared by the theme tiles and the cards so a card
+  // matches its tile (see themeColourNames for the "all left blue" rule).
+  const themeColours = useMemo(() => themeColourNames(categories), [categories]);
+
   if (!hasModule('listings')) {
     return null;
   }
@@ -602,7 +607,7 @@ export function ListingsPage() {
       {!isPhone && (
       <div className="hidden sm:block">
         <PublicPageHero
-          eyebrow={isAuthenticated && memberFirstName ? t('welcome_back', { name: memberFirstName }) : t('hero_eyebrow')}
+          eyebrow={t('hero_eyebrow')}
           title={t('title')}
           description={t('page_subtitle')}
           accent="emerald"
@@ -620,30 +625,48 @@ export function ListingsPage() {
                   {t('mine.title')}
                 </Button>
               )}
-              {/* Two plain ways in, as AWID's members asked: give or ask. Each
-                  opens the listing form with the type already chosen. */}
-              {isAuthenticated && (
-                <Button as={Link} to={tenantPath('/listings/create?type=offer')}
-                  variant="primary"
-                  className="shrink-0 font-semibold"
-                  startContent={<Gift className="w-4 h-4" aria-hidden="true" />}
-                >
-                  {t('offer_help')}
-                </Button>
-              )}
-              {isAuthenticated && (
-                <Button as={Link} to={tenantPath('/listings/create?type=request')}
-                  variant="secondary"
-                  className="shrink-0 font-semibold"
-                  startContent={<HandHelping className="w-4 h-4" aria-hidden="true" />}
-                >
-                  {t('ask_for_help')}
-                </Button>
-              )}
             </div>
           }
         />
       </div>
+      )}
+
+      {/* Welcome panel for signed-in members, on every screen size (AWID:
+          warmth, an intuitive layout). A HeroUI Card on the theme's soft
+          accent, so it takes the community's colour once one is chosen. Its
+          two buttons are the plain ways in: give, or ask. Each opens the
+          listing form with the type already chosen. */}
+      {isAuthenticated && (
+        <Card data-testid="listings-welcome" className="border-0 bg-accent-soft shadow-none">
+          <CardBody className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div className="min-w-0">
+              <h2 className="text-xl font-bold tracking-tight text-theme-primary sm:text-2xl">
+                {memberFirstName ? t('welcome_back', { name: memberFirstName }) : t('welcome_generic')}
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-theme-secondary sm:text-base">
+                {t('welcome_intro')}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:shrink-0">
+              <Button as={Link} to={tenantPath('/listings/create?type=offer')}
+                variant="primary"
+                size="lg"
+                className="font-semibold"
+                startContent={<Gift className="h-5 w-5" aria-hidden="true" />}
+              >
+                {t('offer_help')}
+              </Button>
+              <Button as={Link} to={tenantPath('/listings/create?type=request')}
+                variant="secondary"
+                size="lg"
+                className="font-semibold"
+                startContent={<HandHelping className="h-5 w-5" aria-hidden="true" />}
+              >
+                {t('ask_for_help')}
+              </Button>
+            </div>
+          </CardBody>
+        </Card>
       )}
 
       {/* Phone: slim sticky control bar (feed-parity) — auto-hides on scroll down. */}
@@ -998,25 +1021,40 @@ export function ListingsPage() {
             if (key === undefined) return;
             setSelectedCategory(key === ALL_THEMES_KEY ? '' : String(key));
           }}
+          size="lg"
           className="flex flex-col gap-2"
         >
-          <Label id="listings-themes-label" className="text-sm font-semibold text-theme-primary">
+          <Label id="listings-themes-label" className="text-base font-semibold text-theme-primary">
             {t('browse_by_theme')}
           </Label>
-          {/* Phones: one row that scrolls sideways; each tag keeps its own
-              width (shrink-0) so a long list never squashes the labels. */}
-          <TagGroup.List className="flex items-center gap-2 max-sm:-mx-1 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-1 max-sm:pb-1 sm:flex-wrap">
-            <ThemeTag id={ALL_THEMES_KEY} textValue={t('all_themes')} className="shrink-0 whitespace-nowrap">
+          {/* Phones: one row that scrolls sideways; each tile keeps its own
+              width (shrink-0) so a long list never squashes the labels.
+              Tiles are HeroUI Tags (size lg) tinted in their theme's colour by
+              Tailwind classes; the chosen one is outlined in the accent. */}
+          <TagGroup.List className="flex items-center gap-2.5 max-sm:-mx-1 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-1 max-sm:py-1 sm:flex-wrap">
+            <ThemeTag
+              id={ALL_THEMES_KEY}
+              textValue={t('all_themes')}
+              className="shrink-0 whitespace-nowrap rounded-xl px-4 py-2.5 font-semibold data-[selected=true]:ring-2 data-[selected=true]:ring-accent"
+            >
               {t('all_themes')}
             </ThemeTag>
-            {categories.map((cat) => (
-              <ThemeTag key={cat.slug} id={cat.slug} textValue={cat.name} className="shrink-0">
-                <span className="flex items-center gap-1.5 whitespace-nowrap">
-                  <span className={`size-2.5 shrink-0 rounded-full ${categoryColour(cat.color).dot}`} aria-hidden="true" />
-                  {cat.name}
-                </span>
-              </ThemeTag>
-            ))}
+            {categories.map((cat) => {
+              const colour = categoryColour(themeColours[cat.slug]);
+              return (
+                <ThemeTag
+                  key={cat.slug}
+                  id={cat.slug}
+                  textValue={cat.name}
+                  className={`shrink-0 rounded-xl px-4 py-2.5 font-semibold ${colour.band} data-[selected=true]:ring-2 data-[selected=true]:ring-accent data-[selected=true]:ring-offset-2 data-[selected=true]:ring-offset-[var(--background)]`}
+                >
+                  <span className="flex items-center gap-2 whitespace-nowrap">
+                    <span className={`size-3 shrink-0 rounded-full ${colour.dot}`} aria-hidden="true" />
+                    {cat.name}
+                  </span>
+                </ThemeTag>
+              );
+            })}
           </TagGroup.List>
         </TagGroup>
       )}
@@ -1155,6 +1193,7 @@ export function ListingsPage() {
                   <motion.div key={listing.id} variants={listingItemVariants}>
                     <ListingCard
                       listing={listing}
+                      themeColour={(listing.category_slug && themeColours[listing.category_slug]) || listing.category_color}
                       viewMode={viewMode}
                       isSaving={savingIds.has(listing.id)}
                       onToggleSave={isAuthenticated ? handleToggleSave : undefined}
@@ -1257,12 +1296,14 @@ function ListingBadge({
 
 interface ListingCardProps {
   listing: Listing;
+  /** The colour name of the listing's theme, as its theme tile shows it. */
+  themeColour?: string;
   viewMode: ViewMode;
   isSaving?: boolean;
   onToggleSave?: (listingId: number, currentlySaved: boolean) => void;
 }
 
-const ListingCard = memo(function ListingCard({ listing, viewMode, isSaving, onToggleSave }: ListingCardProps) {
+const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, isSaving, onToggleSave }: ListingCardProps) {
   const { t } = useTranslation('listings');
   const { tenantPath } = useTenant();
   const isGrid = viewMode === 'grid';
@@ -1432,7 +1473,10 @@ const ListingCard = memo(function ListingCard({ listing, viewMode, isSaving, onT
             <div
               data-testid="listing-theme-band"
               aria-hidden="true"
-              className={`flex h-full w-full flex-col justify-between p-4 ${categoryColour(listing.category_color).band}`}
+              className={`flex h-full w-full flex-col justify-between p-4 ${categoryColour(
+                // No theme either: the offer/request colours used by its label.
+                themeColour ?? listing.category_color ?? (listing.type === 'offer' ? 'green' : 'orange'),
+              ).band}`}
             >
               <span className="text-sm font-semibold">
                 {listing.category_name || (listing.type === 'offer' ? t('offering') : t('requesting'))}

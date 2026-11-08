@@ -126,6 +126,8 @@
   "page_subtitle": "Dienstleistungen und Gesuche der Gemeinschaft durchsuchen",
   "hero_eyebrow": "Community-Tauschbörse",
   "welcome_back": "Willkommen zurück, {{name}}",
+  "welcome_generic": "Willkommen zurück",
+  "welcome_intro": "Teilen Sie, was Sie können, und bitten Sie um das, was Sie brauchen. Jede Stunde, die Sie geben, kommt der Gemeinschaft zugute.",
   "offer_help": "Hilfe anbieten",
   "ask_for_help": "Um Hilfe bitten",
   "browse_by_theme": "Nach Thema stöbern",

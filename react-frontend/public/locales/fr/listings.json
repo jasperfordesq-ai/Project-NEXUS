@@ -127,6 +127,8 @@
   "page_subtitle": "Parcourez les services et demandes de la communauté",
   "hero_eyebrow": "Tableau d'échange communautaire",
   "welcome_back": "Bon retour, {{name}}",
+  "welcome_generic": "Bon retour",
+  "welcome_intro": "Partagez ce que vous savez, demandez ce dont vous avez besoin. Chaque heure donnée revient à la communauté.",
   "offer_help": "Proposer de l’aide",
   "ask_for_help": "Demander de l’aide",
   "browse_by_theme": "Parcourir par thème",

@@ -126,6 +126,8 @@
   "page_subtitle": "コミュニティからのサービスとリクエストを閲覧",
   "hero_eyebrow": "コミュニティ交換ボード",
   "welcome_back": "おかえりなさい、{{name}}さん",
+  "welcome_generic": "おかえりなさい",
+  "welcome_intro": "できることを分かち合い、必要なことを頼みましょう。あなたが提供した1時間は、コミュニティに還っていきます。",
   "offer_help": "手助けを申し出る",
   "ask_for_help": "助けを求める",
   "browse_by_theme": "テーマ別に見る",

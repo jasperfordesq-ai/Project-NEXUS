@@ -126,6 +126,8 @@
   "page_subtitle": "Browse services and requests from the community",
   "hero_eyebrow": "Community exchange board",
   "welcome_back": "Welcome back, {{name}}",
+  "welcome_generic": "Welcome back",
+  "welcome_intro": "Share what you know, ask for what you need. Every hour you give comes back to the community.",
   "offer_help": "Offer help",
   "ask_for_help": "Ask for help",
   "browse_by_theme": "Browse by theme",

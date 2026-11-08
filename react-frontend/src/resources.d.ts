@@ -54839,7 +54839,9 @@ export default interface Resources {
     "unsave_title": "Removed from saved",
     "unsaved_success": "Listing removed from saved",
     "user_fallback": "User",
-    "welcome_back": "Welcome back, {{name}}"
+    "welcome_back": "Welcome back, {{name}}",
+    "welcome_generic": "Welcome back",
+    "welcome_intro": "Share what you know, ask for what you need. Every hour you give comes back to the community."
   },
   "marketplace": {
     "ai_reply": {

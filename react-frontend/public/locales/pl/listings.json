@@ -128,6 +128,8 @@
   "page_subtitle": "Przeglądaj usługi i prośby z społeczności",
   "hero_eyebrow": "Tablica wymiany społeczności",
   "welcome_back": "Witaj ponownie, {{name}}",
+  "welcome_generic": "Witaj ponownie",
+  "welcome_intro": "Dziel się tym, co umiesz, i proś o to, czego potrzebujesz. Każda godzina, którą dajesz, wraca do społeczności.",
   "offer_help": "Zaoferuj pomoc",
   "ask_for_help": "Poproś o pomoc",
   "browse_by_theme": "Przeglądaj według tematu",
