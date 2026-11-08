@@ -426,12 +426,33 @@ const FeedCardInner = React.memo(function FeedCardInner({
   const [showHeartOverlay, setShowHeartOverlay] = useState(false);
   const heartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const author = getAuthor(item, t('author_unknown'));
+  const isOwnPost = currentUserId === author.id;
+  const canViewAnalytics = isOwnPost && item.type === 'post';
+
+  // What the ⋯ menu can offer on this card. One list feeds both the desktop
+  // dropdown and the phone sheet, and the ⋯ button only appears when the list
+  // is non-empty. Your own card only has edit/delete, which exist for ordinary
+  // posts alone, so your own podcast, listing or event card has nothing to
+  // offer — it used to open an empty menu.
+  const menuActions = {
+    analytics: canViewAnalytics,
+    edit: isOwnPost && !!onEditPost && item.type === 'post',
+    delete: isOwnPost && item.type === 'post',
+    hide: !isOwnPost && !item.is_official,
+    notInterested: !isOwnPost && !!onNotInterested,
+    mute: !isOwnPost && !!onMuteUser,
+    report: !isOwnPost && !!onReportPost,
+    adminDelete: !isOwnPost && !!isAdmin && !!onAdminDeletePost,
+  };
+  const showOptionsMenu = isAuthenticated && Object.values(menuActions).some(Boolean);
+
   // Bottom sheet for mobile options menu
   const [isOptionsSheetOpen, setIsOptionsSheetOpen] = useState(false);
 
   // Long-press to open options on mobile
   const longPressHandlers = useLongPress({
-    onLongPress: () => { if (isAuthenticated) setIsOptionsSheetOpen(true); },
+    onLongPress: () => { if (showOptionsMenu) setIsOptionsSheetOpen(true); },
   });
 
   const handleDoubleTapLike = useCallback(() => {
@@ -481,9 +502,6 @@ const FeedCardInner = React.memo(function FeedCardInner({
 
   const setViewRef = useSharedFeedObserver(handleViewEntry, { threshold: 0.5 });
 
-  const author = getAuthor(item, t('author_unknown'));
-  const isOwnPost = currentUserId === author.id;
-  const canViewAnalytics = isOwnPost && item.type === 'post';
   const isCommentable = COMMENTABLE_TYPES.has(item.type);
   // Keep the route usable if an API feed type arrives before a cached client
   // learns its presentation. Unknown items render neutrally instead of taking
@@ -664,8 +682,9 @@ const FeedCardInner = React.memo(function FeedCardInner({
             </div>
           </div>
 
-          {/* 3-dot moderation menu — Dropdown on desktop, BottomSheet on mobile */}
-          {isAuthenticated && (
+          {/* 3-dot moderation menu — Dropdown on desktop, BottomSheet on mobile.
+              Rendered only when menuActions has something to offer. */}
+          {showOptionsMenu && (
             <>
               {/* Desktop: HeroUI Dropdown */}
               <div className="hidden sm:block">
@@ -681,90 +700,83 @@ const FeedCardInner = React.memo(function FeedCardInner({
                     </Button>
                   </DropdownTrigger>
                   <DropdownMenu aria-label={t('card.post_actions')}>
-                    {isOwnPost ? (
-                      <>
-                        {canViewAnalytics && (
-                          <DropdownItem
-                            key="analytics" id="analytics"
-                            startContent={<BarChart3 className="w-4 h-4" aria-hidden="true" />}
-                            onPress={() => setShowAnalytics(true)}
-                          >
-                            {t('card.view_analytics')}
-                          </DropdownItem>
-                        )}
-                        {onEditPost && item.type === 'post' && (
-                          <DropdownItem
-                            key="edit" id="edit"
-                            startContent={<Pencil className="w-4 h-4" aria-hidden="true" />}
-                            onPress={() => onEditPost(item)}
-                          >
-                            {t('card.edit_post')}
-                          </DropdownItem>
-                        )}
-                        {item.type === 'post' && (
-                          <DropdownItem
-                            key="delete" id="delete"
-                            startContent={<Trash2 className="w-4 h-4" aria-hidden="true" />}
-                            className="text-danger"
-                            color="danger"
-                            onPress={() => onDeletePost(item)}
-                          >
-                            {t('card.delete_post')}
-                          </DropdownItem>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        {!item.is_official && (
-                          <DropdownItem
-                            key="hide" id="hide"
-                            startContent={<EyeOff className="w-4 h-4" aria-hidden="true" />}
-                            onPress={() => onHidePost(item)}
-                          >
-                            {t('card.hide_post')}
-                          </DropdownItem>
-                        )}
-                        {onNotInterested && (
-                          <DropdownItem
-                            key="not-interested" id="not-interested"
-                            startContent={<ThumbsDown className="w-4 h-4" aria-hidden="true" />}
-                            onPress={() => onNotInterested(item)}
-                          >
-                            {t('card.not_interested')}
-                          </DropdownItem>
-                        )}
-                        {onMuteUser && (
-                          <DropdownItem
-                            key="mute" id="mute"
-                            startContent={<VolumeX className="w-4 h-4" aria-hidden="true" />}
-                            onPress={() => onMuteUser(item)}
-                          >
-                            {t('card.mute_user', { name: author.name })}
-                          </DropdownItem>
-                        )}
-                        {onReportPost && (
-                          <DropdownItem
-                            key="report" id="report"
-                            startContent={<Flag className="w-4 h-4" aria-hidden="true" />}
-                            className="text-danger"
-                            color="danger"
-                            onPress={() => onReportPost(item)}
-                          >
-                            {t('card.report_post')}
-                          </DropdownItem>
-                        )}
-                        {isAdmin && onAdminDeletePost && (
-                          <DropdownItem
-                            key="admin-delete" id="admin-delete"
-                            startContent={<Trash2 className="w-4 h-4" aria-hidden="true" />}
-                            className="text-danger"
-                            color="danger"
-                            onPress={() => onAdminDeletePost(item)}
-                          >
-                            {t('card.admin_delete')}
-                          </DropdownItem>
-                        )}
-                      </>
+                    {menuActions.analytics && (
+                      <DropdownItem
+                        key="analytics" id="analytics"
+                        startContent={<BarChart3 className="w-4 h-4" aria-hidden="true" />}
+                        onPress={() => setShowAnalytics(true)}
+                      >
+                        {t('card.view_analytics')}
+                      </DropdownItem>
+                    )}
+                    {menuActions.edit && (
+                      <DropdownItem
+                        key="edit" id="edit"
+                        startContent={<Pencil className="w-4 h-4" aria-hidden="true" />}
+                        onPress={() => onEditPost?.(item)}
+                      >
+                        {t('card.edit_post')}
+                      </DropdownItem>
+                    )}
+                    {menuActions.delete && (
+                      <DropdownItem
+                        key="delete" id="delete"
+                        startContent={<Trash2 className="w-4 h-4" aria-hidden="true" />}
+                        className="text-danger"
+                        color="danger"
+                        onPress={() => onDeletePost(item)}
+                      >
+                        {t('card.delete_post')}
+                      </DropdownItem>
+                    )}
+                    {menuActions.hide && (
+                      <DropdownItem
+                        key="hide" id="hide"
+                        startContent={<EyeOff className="w-4 h-4" aria-hidden="true" />}
+                        onPress={() => onHidePost(item)}
+                      >
+                        {t('card.hide_post')}
+                      </DropdownItem>
+                    )}
+                    {menuActions.notInterested && (
+                      <DropdownItem
+                        key="not-interested" id="not-interested"
+                        startContent={<ThumbsDown className="w-4 h-4" aria-hidden="true" />}
+                        onPress={() => onNotInterested?.(item)}
+                      >
+                        {t('card.not_interested')}
+                      </DropdownItem>
+                    )}
+                    {menuActions.mute && (
+                      <DropdownItem
+                        key="mute" id="mute"
+                        startContent={<VolumeX className="w-4 h-4" aria-hidden="true" />}
+                        onPress={() => onMuteUser?.(item)}
+                      >
+                        {t('card.mute_user', { name: author.name })}
+                      </DropdownItem>
+                    )}
+                    {menuActions.report && (
+                      <DropdownItem
+                        key="report" id="report"
+                        startContent={<Flag className="w-4 h-4" aria-hidden="true" />}
+                        className="text-danger"
+                        color="danger"
+                        onPress={() => onReportPost?.(item)}
+                      >
+                        {t('card.report_post')}
+                      </DropdownItem>
+                    )}
+                    {menuActions.adminDelete && (
+                      <DropdownItem
+                        key="admin-delete" id="admin-delete"
+                        startContent={<Trash2 className="w-4 h-4" aria-hidden="true" />}
+                        className="text-danger"
+                        color="danger"
+                        onPress={() => onAdminDeletePost?.(item)}
+                      >
+                        {t('card.admin_delete')}
+                      </DropdownItem>
                     )}
                   </DropdownMenu>
                 </Dropdown>
@@ -789,93 +801,86 @@ const FeedCardInner = React.memo(function FeedCardInner({
                 snapPoints={['auto']}
               >
                 <div className="flex flex-col gap-1 [&_.button]:min-h-11">
-                  {isOwnPost ? (
-                    <>
-                      {canViewAnalytics && (
-                        <Button
-                          variant="light"
-                          className="justify-start text-theme-primary"
-                          startContent={<BarChart3 className="w-4 h-4" aria-hidden="true" />}
-                          onPress={() => { setIsOptionsSheetOpen(false); setShowAnalytics(true); }}
-                        >
-                          {t('card.view_analytics')}
-                        </Button>
-                      )}
-                      {onEditPost && item.type === 'post' && (
-                        <Button
-                          variant="light"
-                          className="justify-start text-theme-primary"
-                          startContent={<Pencil className="w-4 h-4" aria-hidden="true" />}
-                          onPress={() => { setIsOptionsSheetOpen(false); onEditPost(item); }}
-                        >
-                          {t('card.edit_post')}
-                        </Button>
-                      )}
-                      {item.type === 'post' && (
-                        <Button
-                          variant="light"
-                          className="justify-start text-danger"
-                          startContent={<Trash2 className="w-4 h-4" aria-hidden="true" />}
-                          onPress={() => { setIsOptionsSheetOpen(false); onDeletePost(item); }}
-                        >
-                          {t('card.delete_post')}
-                        </Button>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      {!item.is_official && (
-                        <Button
-                          variant="light"
-                          className="justify-start text-theme-primary"
-                          startContent={<EyeOff className="w-4 h-4" aria-hidden="true" />}
-                          onPress={() => { setIsOptionsSheetOpen(false); onHidePost(item); }}
-                        >
-                          {t('card.hide_post')}
-                        </Button>
-                      )}
-                      {onNotInterested && (
-                        <Button
-                          variant="light"
-                          className="justify-start text-theme-primary"
-                          startContent={<ThumbsDown className="w-4 h-4" aria-hidden="true" />}
-                          onPress={() => { setIsOptionsSheetOpen(false); onNotInterested(item); }}
-                        >
-                          {t('card.not_interested')}
-                        </Button>
-                      )}
-                      {onMuteUser && (
-                        <Button
-                          variant="light"
-                          className="justify-start text-theme-primary"
-                          startContent={<VolumeX className="w-4 h-4" aria-hidden="true" />}
-                          aria-label={t('card.mute_user_label', { name: author.name ?? '' })}
-                          onPress={() => { setIsOptionsSheetOpen(false); onMuteUser(item); }}
-                        >
-                          {t('card.mute_user', { name: author.name })}
-                        </Button>
-                      )}
-                      {onReportPost && (
-                        <Button
-                          variant="light"
-                          className="justify-start text-danger"
-                          startContent={<Flag className="w-4 h-4" aria-hidden="true" />}
-                          onPress={() => { setIsOptionsSheetOpen(false); onReportPost(item); }}
-                        >
-                          {t('card.report_post')}
-                        </Button>
-                      )}
-                      {isAdmin && onAdminDeletePost && (
-                        <Button
-                          variant="light"
-                          className="justify-start text-danger"
-                          startContent={<Trash2 className="w-4 h-4" aria-hidden="true" />}
-                          onPress={() => { setIsOptionsSheetOpen(false); onAdminDeletePost(item); }}
-                        >
-                          {t('card.admin_delete')}
-                        </Button>
-                      )}
-                    </>
+                  {menuActions.analytics && (
+                    <Button
+                      variant="light"
+                      className="justify-start text-theme-primary"
+                      startContent={<BarChart3 className="w-4 h-4" aria-hidden="true" />}
+                      onPress={() => { setIsOptionsSheetOpen(false); setShowAnalytics(true); }}
+                    >
+                      {t('card.view_analytics')}
+                    </Button>
+                  )}
+                  {menuActions.edit && (
+                    <Button
+                      variant="light"
+                      className="justify-start text-theme-primary"
+                      startContent={<Pencil className="w-4 h-4" aria-hidden="true" />}
+                      onPress={() => { setIsOptionsSheetOpen(false); onEditPost?.(item); }}
+                    >
+                      {t('card.edit_post')}
+                    </Button>
+                  )}
+                  {menuActions.delete && (
+                    <Button
+                      variant="light"
+                      className="justify-start text-danger"
+                      startContent={<Trash2 className="w-4 h-4" aria-hidden="true" />}
+                      onPress={() => { setIsOptionsSheetOpen(false); onDeletePost(item); }}
+                    >
+                      {t('card.delete_post')}
+                    </Button>
+                  )}
+                  {menuActions.hide && (
+                    <Button
+                      variant="light"
+                      className="justify-start text-theme-primary"
+                      startContent={<EyeOff className="w-4 h-4" aria-hidden="true" />}
+                      onPress={() => { setIsOptionsSheetOpen(false); onHidePost(item); }}
+                    >
+                      {t('card.hide_post')}
+                    </Button>
+                  )}
+                  {menuActions.notInterested && (
+                    <Button
+                      variant="light"
+                      className="justify-start text-theme-primary"
+                      startContent={<ThumbsDown className="w-4 h-4" aria-hidden="true" />}
+                      onPress={() => { setIsOptionsSheetOpen(false); onNotInterested?.(item); }}
+                    >
+                      {t('card.not_interested')}
+                    </Button>
+                  )}
+                  {menuActions.mute && (
+                    <Button
+                      variant="light"
+                      className="justify-start text-theme-primary"
+                      startContent={<VolumeX className="w-4 h-4" aria-hidden="true" />}
+                      aria-label={t('card.mute_user_label', { name: author.name ?? '' })}
+                      onPress={() => { setIsOptionsSheetOpen(false); onMuteUser?.(item); }}
+                    >
+                      {t('card.mute_user', { name: author.name })}
+                    </Button>
+                  )}
+                  {menuActions.report && (
+                    <Button
+                      variant="light"
+                      className="justify-start text-danger"
+                      startContent={<Flag className="w-4 h-4" aria-hidden="true" />}
+                      onPress={() => { setIsOptionsSheetOpen(false); onReportPost?.(item); }}
+                    >
+                      {t('card.report_post')}
+                    </Button>
+                  )}
+                  {menuActions.adminDelete && (
+                    <Button
+                      variant="light"
+                      className="justify-start text-danger"
+                      startContent={<Trash2 className="w-4 h-4" aria-hidden="true" />}
+                      onPress={() => { setIsOptionsSheetOpen(false); onAdminDeletePost?.(item); }}
+                    >
+                      {t('card.admin_delete')}
+                    </Button>
                   )}
                 </div>
               </BottomSheet>

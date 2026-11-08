@@ -256,6 +256,45 @@ describe('FeedCard', () => {
     expect(buttons.length).toBeGreaterThanOrEqual(1);
   });
 
+  // Regression: on your OWN card the menu only ever offered edit/delete, and
+  // both exist only for ordinary posts. A podcast, listing or event you
+  // published opened an empty dropdown (desktop) or an empty sheet (phone).
+  it.each(['podcast_episode', 'podcast_show', 'listing', 'event'] as const)(
+    'shows no options button on your own %s card, because it has no options',
+    (type) => {
+      const item: FeedItem = {
+        ...baseFeedItem,
+        type,
+        slug: 'welcome',
+        show_slug: type === 'podcast_episode' ? 'community-voices' : undefined,
+      };
+      render(<FeedCard {...defaultProps} item={item} currentUserId={10} />);
+      expect(screen.queryAllByLabelText('Post options')).toHaveLength(0);
+    },
+  );
+
+  it('still offers options on someone else\'s podcast episode', async () => {
+    const user = userEvent.setup();
+    const item: FeedItem = {
+      ...baseFeedItem,
+      type: 'podcast_episode',
+      slug: 'welcome',
+      show_slug: 'community-voices',
+    };
+    render(<FeedCard {...defaultProps} item={item} currentUserId={99} />);
+    const [desktopTrigger] = screen.getAllByLabelText('Post options');
+    await user.click(desktopTrigger!);
+    expect(await screen.findByText('Report Post')).toBeInTheDocument();
+  });
+
+  it('still offers delete on your own ordinary post', async () => {
+    const user = userEvent.setup();
+    render(<FeedCard {...defaultProps} currentUserId={10} />);
+    const [desktopTrigger] = screen.getAllByLabelText('Post options');
+    await user.click(desktopTrigger!);
+    expect(await screen.findByText('Delete Post')).toBeInTheDocument();
+  });
+
   it('renders review with rating stars', () => {
     const item: FeedItem = {
       ...baseFeedItem,
