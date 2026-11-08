@@ -58,6 +58,12 @@ class AiChatServiceTest extends TestCase
             ]),
         ]);
 
+        // The community has saved no OpenAI key of its own, so the platform key is used.
+        $aiSettings = \Mockery::mock('Illuminate\Database\Query\Builder');
+        $aiSettings->shouldReceive('where')->andReturnSelf();
+        $aiSettings->shouldReceive('value')->with('setting_value')->andReturn(null);
+        DB::shouldReceive('table')->with('ai_settings')->andReturn($aiSettings);
+
         // saveMessage() touches ai_conversations (lookup + update) and ai_messages (insert).
         DB::shouldReceive('table')->with('ai_conversations')->andReturn($this->mockSaveMessageBuilder());
         DB::shouldReceive('table')->with('ai_messages')->andReturn($this->mockSaveMessageBuilder());
