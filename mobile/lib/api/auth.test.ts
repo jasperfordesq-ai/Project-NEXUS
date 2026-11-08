@@ -252,6 +252,65 @@ describe('verifyEmail', () => {
 
     expect(api.post).toHaveBeenCalledWith('/api/auth/verify-email', { token: 'verify-token' });
   });
+
+  /*
+    The code in a verification link works once: the server deletes it the moment it
+    verifies the address. Opening the link from the email puts the verify screen up
+    twice — Expo Router opens it, then the root navigator replays the same link and
+    REPLACES that screen with a fresh copy — and each copy used to send the code. The
+    second request was refused as an invalid link, and that refusal is what the member
+    was left looking at, although their address had just been verified.
+  */
+  describe('when the same link is opened more than once', () => {
+    function deferred<T>() {
+      let resolve!: (value: T) => void;
+      const promise = new Promise<T>((r) => { resolve = r; });
+      return { promise, resolve };
+    }
+
+    it('asks the server once while the first request is still on its way', async () => {
+      const answer = deferred<{ success: true; data: { verified: true } }>();
+      (api.post as jest.Mock).mockReset().mockReturnValueOnce(answer.promise);
+
+      const first = verifyEmail('token-in-flight');
+      const second = verifyEmail('token-in-flight');
+      answer.resolve({ success: true, data: { verified: true } });
+
+      await expect(first).resolves.toEqual({ success: true, data: { verified: true } });
+      await expect(second).resolves.toEqual({ success: true, data: { verified: true } });
+      expect(api.post).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not send a code the server has already accepted', async () => {
+      (api.post as jest.Mock).mockReset()
+        .mockResolvedValueOnce({ success: true, data: { verified: true } })
+        .mockRejectedValueOnce(new Error('Invalid or expired verification token'));
+
+      await verifyEmail('token-already-used');
+      await expect(verifyEmail('token-already-used')).resolves.toEqual({ success: true, data: { verified: true } });
+      expect(api.post).toHaveBeenCalledTimes(1);
+    });
+
+    it('asks again after a lost connection, so the member can retry', async () => {
+      (api.post as jest.Mock).mockReset()
+        .mockRejectedValueOnce(new Error('Network request failed'))
+        .mockResolvedValueOnce({ success: true, data: { verified: true } });
+
+      await expect(verifyEmail('token-retry-network')).rejects.toThrow('Network request failed');
+      await expect(verifyEmail('token-retry-network')).resolves.toEqual({ success: true, data: { verified: true } });
+      expect(api.post).toHaveBeenCalledTimes(2);
+    });
+
+    it('asks again after a refusal rather than remembering it', async () => {
+      (api.post as jest.Mock).mockReset()
+        .mockResolvedValueOnce({ success: false, error: 'Temporarily unavailable' })
+        .mockResolvedValueOnce({ success: true, data: { verified: true } });
+
+      await expect(verifyEmail('token-retry-refusal')).resolves.toEqual({ success: false, error: 'Temporarily unavailable' });
+      await expect(verifyEmail('token-retry-refusal')).resolves.toEqual({ success: true, data: { verified: true } });
+      expect(api.post).toHaveBeenCalledTimes(2);
+    });
+  });
 });
 
 describe('logout (F-116)', () => {

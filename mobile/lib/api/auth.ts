@@ -280,9 +280,40 @@ export function resetPassword(payload: ResetPasswordPayload): Promise<ResetPassw
   return api.post<ResetPasswordResponse>('/api/auth/reset-password', payload);
 }
 
+/**
+ * Verification requests already sent in this run of the app, by link code.
+ *
+ * 🔴 The code in a verification link works ONCE: the server deletes it as it verifies the
+ * address, and answers any later request with "invalid or expired". Opening the link from
+ * the email puts the verify screen up twice — Expo Router opens it (`+native-intent.ts`),
+ * then the root navigator replays the same link (`decideAuthRedirect` → `navigateToLink`),
+ * and `router.replace` to the same screen gives it a new key, so React mounts a fresh copy.
+ * Each copy sent the code. The first verified the address, the second was refused, and the
+ * second copy is the one left on screen — so the member was told "Could not verify email"
+ * about an address that had just been verified.
+ *
+ * So a code is sent once and every caller shares the answer. Only an answer that verified
+ * the address is kept: a refusal or a lost connection is forgotten, so opening the link
+ * again really does ask the server again.
+ */
+const verificationRequests = new Map<string, Promise<VerifyEmailResponse>>();
+
 /** POST /api/auth/verify-email — verify an email address from a deep-link token. */
 export function verifyEmail(token: string): Promise<VerifyEmailResponse> {
-  return api.post<VerifyEmailResponse>('/api/auth/verify-email', { token });
+  const pending = verificationRequests.get(token);
+  if (pending) return pending;
+
+  const request = api.post<VerifyEmailResponse>('/api/auth/verify-email', { token });
+  verificationRequests.set(token, request);
+  request.then(
+    (response) => {
+      if (response?.success === false) verificationRequests.delete(token);
+    },
+    () => {
+      verificationRequests.delete(token);
+    },
+  );
+  return request;
 }
 
 /**
