@@ -14,7 +14,9 @@ import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── API mock ────────────────────────────────────────────────────────────────
-const { mockApi } = vi.hoisted(() => ({
+const { mockApi, mockTenantState } = vi.hoisted(() => ({
+  // Which AI description buttons the server allows (tenant bootstrap ai_descriptions).
+  mockTenantState: { aiDescriptions: undefined as { listings?: boolean } | undefined },
   mockApi: {
     get: vi.fn(),
     post: vi.fn(),
@@ -50,7 +52,7 @@ vi.mock('@/contexts', () =>
     }),
     useToast: () => mockToast,
     useTenant: () => ({
-      tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+      tenant: { id: 2, name: 'Test Tenant', slug: 'test', ai_descriptions: mockTenantState.aiDescriptions },
       tenantPath: (p: string) => `/test${p}`,
       hasFeature: vi.fn(() => true),
       hasModule: vi.fn(() => true),
@@ -129,6 +131,7 @@ function fillValidForm(container: HTMLElement) {
 describe('ListingTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTenantState.aiDescriptions = undefined;
     mockApi.get.mockResolvedValue({ success: true, data: [] });
     mockApi.post.mockResolvedValue({ success: true, data: { id: 99 } });
     mockApi.put.mockResolvedValue({ success: true });
@@ -157,7 +160,8 @@ describe('ListingTab', () => {
     });
   });
 
-  it('renders the AI help-me-write button', async () => {
+  it('renders the AI help-me-write button when the community can use it', async () => {
+    mockTenantState.aiDescriptions = { listings: true };
     render(<ListingTab {...defaultProps} />);
     await waitFor(() => {
       const aiBtn = screen.getAllByRole('button').find(
@@ -165,6 +169,14 @@ describe('ListingTab', () => {
       );
       expect(aiBtn).toBeDefined();
     });
+  });
+
+  it('hides the AI help-me-write button unless the community can use it (8 Nov 2026)', async () => {
+    render(<ListingTab {...defaultProps} />);
+    await waitFor(() => expect(screen.getByTestId('skill-tags-input')).toBeInTheDocument());
+    expect(
+      screen.queryAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('help me write'))
+    ).toBeUndefined();
   });
 
   it('renders the skill tags input from the shared form', async () => {
