@@ -160,6 +160,32 @@ describe('AuthContext', () => {
     expect(api.get).toHaveBeenCalledWith('/v2/users/me');
   });
 
+  it('exposes the member photo as `avatar` too, because the API sends only `avatar_url`', async () => {
+    // GET /v2/users/me (UserService::formatProfile) and the login response carry the
+    // photo as `avatar_url` and never as `avatar`. The feed profile card, the post
+    // composer and the stories bar read `user.avatar`, so every one of them showed
+    // the default silhouette for a member who had uploaded a photo.
+    vi.mocked(tokenManager.hasRefreshToken).mockReturnValue(true);
+    vi.mocked(api.refreshSession).mockImplementation(async () => {
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+      vi.mocked(tokenManager.getAccessToken).mockReturnValue('restored-access');
+      return 'refreshed';
+    });
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: {
+      id: 1, first_name: 'Jane', last_name: 'Doe', tenant_id: 2,
+      avatar_url: '/uploads/avatars/jane.png',
+    } });
+
+    function AvatarProbe() {
+      const { user } = useAuth();
+      return <div data-testid="avatar">{user?.avatar ?? 'none'}</div>;
+    }
+
+    render(<AuthProvider><TestAuthDisplay /><AvatarProbe /></AuthProvider>);
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'));
+    expect(screen.getByTestId('avatar')).toHaveTextContent('/uploads/avatars/jane.png');
+  });
+
   it('retries a transient cookie restoration without leaving the member at a loading gate', async () => {
     vi.mocked(tokenManager.hasRefreshToken).mockReturnValue(true);
     vi.mocked(api.refreshSession)

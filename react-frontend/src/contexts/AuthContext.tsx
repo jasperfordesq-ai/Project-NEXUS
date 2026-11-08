@@ -135,6 +135,19 @@ function setTelemetryUser(user: User | null): void {
   queueSentryUser(user);
 }
 
+/**
+ * The API sends the member's photo as `avatar_url` only — GET /v2/users/me
+ * (`UserService::formatProfile`) and the login response never include `avatar`.
+ * Many components read the signed-in member's photo as `user.avatar` (the feed
+ * profile card, the post composer, the stories bar), so without this they all
+ * showed the default silhouette. `avatar_url` wins, matching the Navbar's
+ * `avatar_url || avatar` order, so a stale `avatar` can never mask a new photo.
+ */
+function withAvatarAlias(user: User | null): User | null {
+  if (!user?.avatar_url || user.avatar === user.avatar_url) return user;
+  return { ...user, avatar: user.avatar_url };
+}
+
 function captureTelemetryAuthEvent(
   event: string,
   userId?: number,
@@ -1192,6 +1205,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const value = useMemo<AuthContextValue>(
     () => ({
       ...state,
+      user: withAvatarAlias(state.user),
       isAuthenticated: state.status === 'authenticated',
       isLoading: state.status === 'loading',
       login,
