@@ -193,6 +193,45 @@ describe('Tabs component', () => {
     expect(container.querySelector('[data-slot="tabs"]')).toHaveClass('tabs--secondary');
     expect(container.querySelector('[data-slot="tabs-indicator"]')).toBeInTheDocument();
   });
+
+  // Regression (8 Nov 2026): a fixed tab followed by tabs from a .map() — the
+  // reactions modal's "All" + one tab per emoji — handed onSelectionChange
+  // "1:$like" instead of "like", because Children.toArray prefixes a nested
+  // key with its array's position. The modal then asked the API for reaction
+  // type "1:$like", got a 400, and showed "No reactions yet".
+  it('hands onSelectionChange the caller key for tabs built with .map() beside a fixed tab', async () => {
+    const onSelectionChange = vi.fn();
+    await renderSettled(
+      <Tabs aria-label="Mixed tabs" onSelectionChange={onSelectionChange}>
+        <Tab key="all" title="All" />
+        {['like', 'love', 'a:b=c'].map((type) => (
+          <Tab key={type} title={`Tab ${type}`} />
+        ))}
+      </Tabs>,
+    );
+
+    await act(async () => fireEvent.click(screen.getByRole('tab', { name: 'Tab like' })));
+    expect(onSelectionChange).toHaveBeenLastCalledWith('like');
+
+    await act(async () => fireEvent.click(screen.getByRole('tab', { name: 'Tab a:b=c' })));
+    expect(onSelectionChange).toHaveBeenLastCalledWith('a:b=c');
+
+    await act(async () => fireEvent.click(screen.getByRole('tab', { name: 'All' })));
+    expect(onSelectionChange).toHaveBeenLastCalledWith('all');
+  });
+
+  it('honours a selectedKey that names a tab built with .map()', async () => {
+    await renderSettled(
+      <Tabs aria-label="Mixed tabs" selectedKey="love">
+        <Tab key="all" title="All" />
+        {['like', 'love'].map((type) => (
+          <Tab key={type} title={`Tab ${type}`} />
+        ))}
+      </Tabs>,
+    );
+
+    expect(screen.getByRole('tab', { name: 'Tab love' })).toHaveAttribute('aria-selected', 'true');
+  });
 });
 
 describe('Tabs scrollAffordance', () => {

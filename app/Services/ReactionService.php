@@ -249,7 +249,17 @@ class ReactionService
     }
 
     /**
-     * Get paginated list of users who reacted with a specific type.
+     * Pseudo reaction type for getReactors(): every reactor, whatever they chose.
+     * The "All" tab of the reactions dialog uses it; before it existed that tab
+     * fell back to getReactions()' three-name `top_reactors` preview and listed
+     * three people on a post with four reactions.
+     */
+    public const ALL_REACTORS = 'all';
+
+    /**
+     * Get paginated list of users who reacted with a specific type, or with any
+     * type when $reactionType is self::ALL_REACTORS. Each user carries the
+     * `reaction_type` they gave.
      *
      * @return array{users: array, total: int, has_more: bool}
      */
@@ -274,20 +284,25 @@ class ReactionService
             })
             ->where('r.tenant_id', $tenantId)
             ->where('r.target_type', $entityType)
-            ->where('r.target_id', $entityId)
-            ->where('r.emoji', $reactionType);
+            ->where('r.target_id', $entityId);
+
+        if ($reactionType !== self::ALL_REACTORS) {
+            $query = $query->where('r.emoji', $reactionType);
+        }
 
         $total = $query->count();
 
         $users = (clone $query)
             ->orderByDesc('r.created_at')
+            ->orderByDesc('r.id')
             ->offset(($page - 1) * $perPage)
             ->limit($perPage)
             ->select(
                 'u.id',
                 DB::raw(UserDisplayName::sql('u', 'name')),
                 'u.avatar_url',
-                'r.created_at as reacted_at'
+                'r.created_at as reacted_at',
+                'r.emoji as reaction_type'
             )
             ->get()
             ->map(fn ($r) => [
@@ -295,6 +310,7 @@ class ReactionService
                 'name' => trim($r->name),
                 'avatar_url' => $r->avatar_url,
                 'reacted_at' => $r->reacted_at,
+                'reaction_type' => $r->reaction_type,
             ])
             ->all();
 

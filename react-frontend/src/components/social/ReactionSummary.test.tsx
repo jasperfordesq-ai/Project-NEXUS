@@ -139,9 +139,11 @@ const makeProps = (overrides = {}) => ({
 describe('ReactionSummary', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    // The modal reads the paginated reactors endpoint (an array plus meta).
     mockApi.get.mockResolvedValue({
       success: true,
-      data: { counts: { love: 5, laugh: 2 }, total: 7, top_reactors: [] },
+      data: [],
+      meta: { total: 0, has_more: false },
     });
   });
 
@@ -210,7 +212,7 @@ describe('ReactionSummary', () => {
 
     await waitFor(() => {
       expect(mockApi.get).toHaveBeenCalledWith(
-        expect.stringContaining('/v2/reactions/post/42')
+        '/v2/reactions/post/42/users/all?page=1&per_page=20'
       );
     });
   });
@@ -218,14 +220,11 @@ describe('ReactionSummary', () => {
   it('shows reactor names in modal after loading', async () => {
     mockApi.get.mockResolvedValue({
       success: true,
-      data: {
-        counts: { love: 5 },
-        total: 5,
-        top_reactors: [
-          { id: 20, name: 'Carol', avatar_url: null },
-          { id: 21, name: 'Dave', avatar_url: null },
-        ],
-      },
+      data: [
+        { id: 20, name: 'Carol', avatar_url: null, reacted_at: '2026-11-08 10:00:00', reaction_type: 'love' },
+        { id: 21, name: 'Dave', avatar_url: null, reacted_at: '2026-11-08 09:00:00', reaction_type: 'love' },
+      ],
+      meta: { total: 2, has_more: false },
     });
 
     const { ReactionSummary } = await import('./ReactionSummary');

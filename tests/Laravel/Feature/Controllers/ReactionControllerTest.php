@@ -724,6 +724,49 @@ class ReactionControllerTest extends TestCase
         $data = $response->json('data');
         $this->assertCount(1, $data);
         $this->assertEquals($user->id, $data[0]['id']);
+        $this->assertSame('clap', $data[0]['reaction_type']);
+    }
+
+    /**
+     * Regression (8 Nov 2026, hour-timebank feed): the "All" tab of the
+     * reactions dialog had no endpoint of its own and fell back to the
+     * summary's three-name preview, so a post with four reactions listed
+     * three people. "all" lists every reactor, newest first, paginated,
+     * each with the reaction they gave.
+     */
+    public function test_polymorphic_reactors_route_all_lists_every_reactor_with_their_reaction(): void
+    {
+        $viewer = $this->authenticatedUser();
+        $postId = $this->createPost($viewer->id);
+
+        $reactions = ['like', 'like', 'like', 'like', 'love'];
+        $reactorIds = [];
+        foreach ($reactions as $i => $emoji) {
+            $reactor = User::factory()->forTenant($this->testTenantId)->create();
+            DB::table('reactions')->insert([
+                'tenant_id' => $this->testTenantId,
+                'target_type' => 'post',
+                'target_id' => $postId,
+                'user_id' => $reactor->id,
+                'emoji' => $emoji,
+                'created_at' => now()->subMinutes(10 - $i),
+            ]);
+            $reactorIds[] = $reactor->id;
+        }
+
+        $response = $this->apiGet("/v2/reactions/post/{$postId}/users/all");
+
+        $response->assertStatus(200);
+        $data = $response->json('data');
+        $this->assertCount(5, $data, 'every reactor is listed, not a three-name preview');
+        $this->assertSame(5, $response->json('meta.total'));
+        $this->assertSame(array_reverse($reactorIds), array_column($data, 'id'), 'newest reaction first');
+        $this->assertSame(['love', 'like', 'like', 'like', 'like'], array_column($data, 'reaction_type'));
+
+        $page = $this->apiGet("/v2/reactions/post/{$postId}/users/all?per_page=2&page=3");
+        $page->assertStatus(200);
+        $this->assertCount(1, $page->json('data'));
+        $this->assertFalse($page->json('meta.has_more'));
     }
 }
 

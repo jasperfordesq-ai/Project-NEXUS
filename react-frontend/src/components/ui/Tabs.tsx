@@ -71,12 +71,31 @@ function combineClasses(...classes: Array<string | false | undefined>): string |
   return className || undefined;
 }
 
+/**
+ * Recover the caller's own key from the one `Children.toArray` assigns.
+ *
+ * toArray encodes each child's path: a top-level `<Tab key="all">` becomes
+ * ".$all", but a tab produced by a `.map()` placed beside a fixed tab becomes
+ * ".1:$like" — the array's position, then the key, with "=" and ":" inside the
+ * key escaped as "=0" and "=2". Stripping only the leading prefix left
+ * "1:$like" as the tab id, so `onSelectionChange` handed callers a key they
+ * never wrote and a `selectedKey` of "like" matched nothing (8 Nov 2026: the
+ * reactions dialog asked the API for reaction type "1:$like").
+ */
 function normalizeKey(key: Key | null, fallback: number): string {
   if (key == null) {
     return String(fallback);
   }
 
-  return String(key)
+  const raw = String(key);
+  // Escaped keys never contain ":", so the last segment is this child's own.
+  const ownSegment = raw.slice(raw.lastIndexOf(':') + 1).replace(/^\./, '');
+  if (ownSegment.startsWith('$')) {
+    return ownSegment.slice(1).replace(/=[02]/g, (escape) => (escape === '=0' ? '=' : ':'));
+  }
+
+  // No caller key (an index-only path): keep the established ids.
+  return raw
     .replace(/^\.\$/, '')
     .replace(/^\./, '')
     .replace(/^\$/, '')

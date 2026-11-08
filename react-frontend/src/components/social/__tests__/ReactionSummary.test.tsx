@@ -97,13 +97,11 @@ const defaultProps = {
 describe('ReactionSummary', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // The modal reads the paginated reactors endpoint (an array plus meta).
     mockApiGet.mockResolvedValue({
       success: true,
-      data: {
-        counts: { love: 5 },
-        total: 5,
-        top_reactors: [{ id: 1, name: 'Alice', avatar_url: null }],
-      },
+      data: [{ id: 1, name: 'Alice', avatar_url: null, reacted_at: '2026-11-08 10:00:00', reaction_type: 'love' }],
+      meta: { total: 1, has_more: false },
     });
   });
 
@@ -230,7 +228,7 @@ describe('ReactionSummary', () => {
     fireEvent.click(screen.getByRole('button', { name: /View reactions/i }));
 
     await waitFor(() => {
-      expect(mockApiGet).toHaveBeenCalledWith('/v2/reactions/post/42');
+      expect(mockApiGet).toHaveBeenCalledWith('/v2/reactions/post/42/users/all?page=1&per_page=20');
     });
   });
 
@@ -246,13 +244,8 @@ describe('ReactionSummary', () => {
   it('shows reactor names in modal after loading', async () => {
     mockApiGet.mockResolvedValue({
       success: true,
-      data: {
-        counts: { love: 5 },
-        total: 5,
-        top_reactors: [
-          { id: 10, name: 'Charlie', avatar_url: null },
-        ],
-      },
+      data: [{ id: 10, name: 'Charlie', avatar_url: null, reacted_at: '2026-11-08 10:00:00', reaction_type: 'love' }],
+      meta: { total: 1, has_more: false },
     });
 
     render(<W><ReactionSummary {...defaultProps} /></W>);
@@ -266,11 +259,8 @@ describe('ReactionSummary', () => {
   it('shows "No reactions yet" when API returns empty data', async () => {
     mockApiGet.mockResolvedValue({
       success: true,
-      data: {
-        counts: {},
-        total: 0,
-        top_reactors: [],
-      },
+      data: [],
+      meta: { total: 0, has_more: false },
     });
 
     render(<W><ReactionSummary {...defaultProps} /></W>);

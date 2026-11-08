@@ -337,8 +337,9 @@ class ReactionServiceTest extends TestCase
             ->once()
             ->andReturn(5);
 
-        // paginated results — clone adds orderByDesc, offset, limit, select, get->map->all
-        DB::shouldReceive('table->join->where->where->where->where->orderByDesc->offset->limit->select->get->map->all')
+        // paginated results — clone adds orderByDesc (created_at, then id as a
+        // stable tie-break), offset, limit, select, get->map->all
+        DB::shouldReceive('table->join->where->where->where->where->orderByDesc->orderByDesc->offset->limit->select->get->map->all')
             ->once()
             ->andReturn([
                 ['id' => 1, 'name' => 'User A', 'avatar_url' => null, 'reacted_at' => '2026-03-23 10:00:00'],
@@ -360,7 +361,7 @@ class ReactionServiceTest extends TestCase
             ->once()
             ->andReturn(2);
 
-        DB::shouldReceive('table->join->where->where->where->where->orderByDesc->offset->limit->select->get->map->all')
+        DB::shouldReceive('table->join->where->where->where->where->orderByDesc->orderByDesc->offset->limit->select->get->map->all')
             ->once()
             ->andReturn([
                 ['id' => 1, 'name' => 'User A', 'avatar_url' => null, 'reacted_at' => '2026-03-23 10:00:00'],
@@ -380,7 +381,7 @@ class ReactionServiceTest extends TestCase
             ->once()
             ->andReturn(0);
 
-        DB::shouldReceive('table->join->where->where->where->where->orderByDesc->offset->limit->select->get->map->all')
+        DB::shouldReceive('table->join->where->where->where->where->orderByDesc->orderByDesc->offset->limit->select->get->map->all')
             ->once()
             ->andReturn([]);
 

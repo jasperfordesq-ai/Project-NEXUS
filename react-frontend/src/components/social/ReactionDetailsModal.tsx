@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { type Key, useCallback, useEffect, useState } from 'react';
+import { type Key, useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Clock from 'lucide-react/icons/clock';
 import { useTranslation } from 'react-i18next';
@@ -29,7 +29,11 @@ interface ReactorUser {
   name: string;
   avatar_url: string | null;
   reacted_at: string;
+  reaction_type?: string;
 }
+
+/** The reactors endpoint's pseudo type for "everyone, whatever they chose". */
+const ALL_TAB = 'all';
 
 interface ReactionDetailsModalProps {
   isOpen: boolean;
@@ -40,13 +44,13 @@ interface ReactionDetailsModalProps {
   entityId: number;
 }
 
-const renderEmoji = (type: string) => {
+const renderEmoji = (type: string, label: string) => {
   if (type === 'time_credit') {
-    return <Clock className="w-3 h-3 text-accent" aria-hidden="true" />;
+    return <Clock className="w-3 h-3 text-accent" role="img" aria-label={label} />;
   }
 
   return (
-    <span role="img" aria-label={REACTION_LABEL_MAP[type as ReactionType] ?? type}>
+    <span role="img" aria-label={label}>
       {REACTION_EMOJI_MAP[type as ReactionType] ?? type}
     </span>
   );
@@ -66,47 +70,42 @@ export function ReactionDetailsModal({
     const value = t(key);
     return value === key ? fallback : value;
   };
-  const [selectedTab, setSelectedTab] = useState<string>('all');
+  const reactionLabel = (type: string) => {
+    const key = REACTION_LABEL_MAP[type as ReactionType];
+    return key ? tr(key, type) : type;
+  };
+  const [selectedTab, setSelectedTab] = useState<string>(ALL_TAB);
   const [reactors, setReactors] = useState<ReactorUser[]>([]);
   const [isLoadingReactors, setIsLoadingReactors] = useState(false);
   const [reactorPage, setReactorPage] = useState(1);
   const [hasMoreReactors, setHasMoreReactors] = useState(false);
+  // Only the newest request may fill the list: switching tabs quickly must not
+  // let a slower earlier response overwrite the tab the member is looking at.
+  const latestRequest = useRef(0);
 
   const loadReactors = useCallback(
     async (type: string, page = 1, append = false) => {
+      const requestId = ++latestRequest.current;
       setIsLoadingReactors(true);
       try {
-        const endpoint =
-          type === 'all'
-            ? `/v2/reactions/${entityType}/${entityId}`
-            : `/v2/reactions/${entityType}/${entityId}/users/${type}?page=${page}&per_page=20`;
-
-        if (type === 'all') {
-          const res = await api.get<{
-            counts: Record<string, number>;
-            total: number;
-            top_reactors: Array<{ id: number; name: string; avatar_url: string | null }>;
-          }>(endpoint);
-          if (res.success && res.data) {
-            const allReactors = (res.data.top_reactors || []).map((reactor) => ({
-              ...reactor,
-              reacted_at: new Date().toISOString(),
-            }));
-            setReactors(allReactors);
-            setHasMoreReactors(false);
-          }
-        } else {
-          const res = await api.get<ReactorUser[]>(endpoint);
-          if (res.success && res.data) {
-            const users = Array.isArray(res.data) ? res.data : [];
-            setReactors((current) => (append ? [...current, ...users] : users));
-            setHasMoreReactors(res.meta?.has_more ?? false);
-          }
+        // "All" is the same paginated list with no reaction filter. It used to
+        // read the summary's three-name preview, which under-listed any post
+        // with more than three reactions and stamped every row "now".
+        const res = await api.get<ReactorUser[]>(
+          `/v2/reactions/${entityType}/${entityId}/users/${encodeURIComponent(type)}?page=${page}&per_page=20`
+        );
+        if (requestId !== latestRequest.current) return;
+        if (res.success && res.data) {
+          const users = Array.isArray(res.data) ? res.data : [];
+          setReactors((current) => (append ? [...current, ...users] : users));
+          setHasMoreReactors(res.meta?.has_more ?? false);
         }
       } catch (err) {
         logError('Failed to load reactors', err);
       } finally {
-        setIsLoadingReactors(false);
+        if (requestId === latestRequest.current) {
+          setIsLoadingReactors(false);
+        }
       }
     },
     [entityType, entityId]
@@ -115,10 +114,10 @@ export function ReactionDetailsModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    setSelectedTab('all');
+    setSelectedTab(ALL_TAB);
     setReactorPage(1);
     setReactors([]);
-    void loadReactors('all', 1);
+    void loadReactors(ALL_TAB, 1);
   }, [isOpen, loadReactors]);
 
   const handleTabChange = useCallback(
@@ -157,7 +156,7 @@ export function ReactionDetailsModal({
                 key={type}
                 className="w-7 h-7 rounded-full bg-[var(--surface-elevated)] border-2 border-[var(--glass-bg)] flex items-center justify-center text-sm"
               >
-                {renderEmoji(type)}
+                {renderEmoji(type, reactionLabel(type))}
               </span>
             ))}
           </div>
@@ -177,13 +176,13 @@ export function ReactionDetailsModal({
               tab: 'text-xs px-2',
             }}
           >
-            <Tab key="all" title={`${tr('card.all', 'All')} ${total}`} />
+            <Tab key={ALL_TAB} title={`${tr('card.all', 'All')} ${total}`} />
             {sortedTypes.map(([type, count]) => (
               <Tab
                 key={type}
                 title={
                   <span className="flex items-center gap-1">
-                    {renderEmoji(type)} {count}
+                    {renderEmoji(type, reactionLabel(type))} {count}
                   </span>
                 }
               />
@@ -208,12 +207,19 @@ export function ReactionDetailsModal({
                     onClick={onClose}
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--surface-hover)] transition-colors"
                   >
-                    <Avatar
-                      name={reactor.name}
-                      src={resolveAvatarUrl(reactor.avatar_url)}
-                      size="sm"
-                      className="ring-2 ring-white/10"
-                    />
+                    <span className="relative shrink-0">
+                      <Avatar
+                        name={reactor.name}
+                        src={resolveAvatarUrl(reactor.avatar_url)}
+                        size="sm"
+                        className="ring-2 ring-white/10"
+                      />
+                      {selectedTab === ALL_TAB && reactor.reaction_type && (
+                        <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[var(--surface-dropdown)] border border-[var(--border-default)] flex items-center justify-center text-[11px] leading-none">
+                          {renderEmoji(reactor.reaction_type, reactionLabel(reactor.reaction_type))}
+                        </span>
+                      )}
+                    </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-[var(--text-primary)] truncate">
                         {reactor.name}

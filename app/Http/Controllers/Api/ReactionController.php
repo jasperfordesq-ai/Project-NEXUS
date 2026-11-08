@@ -23,7 +23,9 @@ use Illuminate\Support\Facades\Log;
  * Canonical endpoints:
  *   POST   /v2/reactions                          — toggle reaction (body: target_type, target_id, reaction_type)
  *   GET    /v2/reactions/{type}/{id}              — get reaction counts
- *   GET    /v2/reactions/{type}/{id}/users/{rxn}  — paginated reactors
+ *   GET    /v2/reactions/{type}/{id}/users/{rxn}  — paginated reactors ({rxn} = a
+ *                                                   reaction type, or "all" for everyone;
+ *                                                   each row carries its reaction_type)
  *
  * Legacy aliases (kept for backward compat — thin wrappers):
  *   POST   /v2/posts/{id}/reactions               — toggle on a post
@@ -224,7 +226,8 @@ class ReactionController extends BaseApiController
         if (!in_array($targetType, ReactionService::VALID_TARGET_TYPES, true)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.social_invalid_target_type'), 'target_type', 400);
         }
-        if (!in_array($reactionType, ReactionService::VALID_TYPES, true)) {
+        if ($reactionType !== ReactionService::ALL_REACTORS
+            && !in_array($reactionType, ReactionService::VALID_TYPES, true)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_reaction_type'), 'type', 400);
         }
 
