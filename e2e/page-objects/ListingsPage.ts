@@ -34,7 +34,8 @@ export class ListingsPage extends BasePage {
     this.createListingButton = page.locator('a[href*="/listings/create"], a:has-text("New Listing"), button:has-text("New Listing")').first();
     this.loadMoreButton = page.locator('button:has-text("Load More")');
     // EmptyState renders an h3 with the title text, wrapped in a div[role="status"]
-    this.noResultsMessage = page.locator('h3:has-text("No listings found"), [role="status"]:has-text("No listings found")');
+    // Worded "No offers or requests to show" since Nov 2026 (was "No listings found").
+    this.noResultsMessage = page.locator('h3:has-text("No offers or requests to show"), [role="status"]:has-text("No offers or requests to show")');
   }
 
   /**

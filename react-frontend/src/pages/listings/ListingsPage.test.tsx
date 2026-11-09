@@ -168,7 +168,7 @@ describe('ListingsPage', () => {
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(within(panel).getByText('Welcome back, Test')).toBeInTheDocument();
     expect(within(panel).getByText(/Every hour you give comes back to the community/)).toBeInTheDocument();
-    expect(within(panel).getByRole('link', { name: 'My listings' })).toHaveAttribute('href', '/test/listings/mine');
+    expect(within(panel).getByRole('link', { name: 'My offers and requests' })).toHaveAttribute('href', '/test/listings/mine');
     // Exactly one of each on the page.
     expect(screen.getByRole('link', { name: 'Offer help' })).toHaveAttribute('href', '/test/listings/create?type=offer');
     expect(screen.getByRole('link', { name: 'Ask for help' })).toHaveAttribute('href', '/test/listings/create?type=request');
@@ -182,6 +182,69 @@ describe('ListingsPage', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Find an offer or request' })).toHaveClass('sr-only');
     await waitFor(() => {
       expect(screen.getAllByText(/^(\d+ offers and requests|Finding offers and requests)$/)).toHaveLength(1);
+    });
+  });
+
+  describe('one word for the page: "offers and requests", never "listings"', () => {
+    const offer = {
+      id: 1, title: 'Dog walking', description: 'Mornings, near the park.', type: 'offer', status: 'active',
+      created_at: '2026-08-01T00:00:00Z', updated_at: '2026-08-01T00:00:00Z',
+      image_url: '/uploads/listings/dog.jpg', estimated_hours: 1, user: { id: 9, name: 'Sofia Haddad' },
+    };
+
+    /** Everything a sighted or screen-reader user meets on the page. */
+    function pageWords() {
+      const labels = [...document.querySelectorAll('[aria-label], [title], [alt]')].flatMap((el) =>
+        ['aria-label', 'title', 'alt'].map((name) => el.getAttribute(name) ?? ''));
+      return [document.body.textContent ?? '', ...labels].join(' | ');
+    }
+
+    beforeEach(() => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/listings')
+            ? { success: true, meta: {}, data: [offer] }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+    });
+
+    it('on a computer', async () => {
+      render(<ListingsPage />);
+      await screen.findByTestId('listing-card');
+      expect(pageWords()).not.toMatch(/listing/i);
+      expect(screen.getByRole('button', { name: 'Save for later' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Details for Dog walking' })).toBeInTheDocument();
+    });
+
+    it('on a phone, with the filter sheet open', async () => {
+      isPhoneViewport = true;
+      render(<ListingsPage />);
+      await screen.findByTestId('listing-card');
+      fireEvent.click(screen.getByLabelText('More filters'));
+      await screen.findByText('Show results');
+      expect(pageWords()).not.toMatch(/listing/i);
+    });
+
+    it('when there is nothing to show yet', async () => {
+      vi.mocked(api.get).mockImplementation(() =>
+        Promise.resolve({ success: true, meta: {}, data: [] }) as ReturnType<typeof api.get>);
+      render(<ListingsPage />);
+      expect(await screen.findByText('No offers or requests to show')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Share an offer or request' }))
+        .toHaveAttribute('href', '/test/listings/create');
+      expect(pageWords()).not.toMatch(/listing/i);
+    });
+
+    it('when they cannot be loaded', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        (url.startsWith('/v2/listings')
+          ? Promise.reject(new Error('offline'))
+          : Promise.resolve({ success: true, meta: {}, data: [] })) as ReturnType<typeof api.get>);
+      render(<ListingsPage />);
+      expect(await screen.findByText("We couldn't load this right now")).toBeInTheDocument();
+      expect(screen.getByText('Please check your connection and try again.')).toBeInTheDocument();
+      expect(pageWords()).not.toMatch(/listing/i);
     });
   });
 
@@ -582,7 +645,8 @@ describe('ListingsPage', () => {
     it('renders the sticky bar with search pill, Filters button and view toggle', () => {
       render(<ListingsPage />);
       expect(screen.getByLabelText('More filters')).toBeInTheDocument();
-      expect(screen.getByText('Search listings')).toBeInTheDocument();
+      // The bar's own short label: the longer one was cut off on a phone.
+      expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
       expect(screen.getByLabelText('Grid view')).toBeInTheDocument();
       expect(screen.getByLabelText('List view')).toBeInTheDocument();
     });
@@ -599,10 +663,27 @@ describe('ListingsPage', () => {
       expect(screen.getByText('Distance')).toBeInTheDocument();
       expect(screen.getByText('Sort')).toBeInTheDocument();
       expect(screen.getByText('Under 1h')).toBeInTheDocument();
-      expect(screen.getByText('Show listings')).toBeInTheDocument();
+      expect(screen.getByText('Show results')).toBeInTheDocument();
     });
 
-    it('applies draft filters only when Show listings is pressed', async () => {
+    it('calls them themes in the filter sheet, as the page does', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/categories')
+            ? { success: true, data: [{ id: 1, name: 'Learning', slug: 'learning', color: 'blue' }] }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+      render(<ListingsPage />);
+      await screen.findByRole('row', { name: 'Learning' });
+      fireEvent.click(screen.getByLabelText('More filters'));
+
+      await screen.findByText('Show results');
+      expect(screen.getByText('Theme')).toBeInTheDocument();
+      expect(screen.queryByText(/categor/i)).toBeNull();
+    });
+
+    it('applies draft filters only when Show results is pressed', async () => {
       render(<ListingsPage />);
       await waitFor(() => {
         expect(api.get).toHaveBeenCalledWith(expect.stringMatching(/^\/v2\/listings\?/));
@@ -621,7 +702,7 @@ describe('ListingsPage', () => {
       });
       expect(api.get).not.toHaveBeenCalledWith(expect.stringContaining('per_page=20'));
 
-      fireEvent.click(screen.getByText('Show listings'));
+      fireEvent.click(screen.getByText('Show results'));
       await waitFor(() => {
         expect(api.get).toHaveBeenCalledWith(expect.stringMatching(/type=offer.*per_page=20/));
       });

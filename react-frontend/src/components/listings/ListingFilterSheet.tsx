@@ -142,10 +142,10 @@ export function ListingFilterSheet({
       <SearchField
         size="lg"
         autoFocus
-        placeholder={t('form.category_search')}
+        placeholder={t('theme_search')}
         value={categoryQuery}
         onChange={(e) => setCategoryQuery(e.target.value)}
-        aria-label={t('form.category_search')}
+        aria-label={t('theme_search')}
         classNames={{
           input: 'bg-transparent text-theme-primary placeholder:text-theme-subtle',
           inputWrapper: 'bg-theme-elevated border-theme-default',

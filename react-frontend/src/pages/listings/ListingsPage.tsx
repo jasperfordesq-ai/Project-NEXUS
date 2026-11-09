@@ -702,7 +702,9 @@ export function ListingsPage() {
             region: t('filter_form_label'),
             filters: t('filters_label'),
             moreFilters: t('more_filters'),
-            search: t('search_label'),
+            // No `search` label: the bar's own short "Search" fits the pill on a
+            // phone; "Search offers and requests" was cut off. The section
+            // around it is named "Filter offers and requests".
             clearAll: t('clear_all'),
             activeFilters: t('active_filters_label'),
             removeFilter: (filter) => t('remove_filter', { filter }),
@@ -1122,7 +1124,7 @@ export function ListingsPage() {
                   </Button>
                 ) : isAuthenticated ? (
                   <Button as={Link} to={tenantPath('/listings/create')} variant="primary" startContent={<Plus className="h-4 w-4" aria-hidden="true" />}>
-                    {t('create')}
+                    {t('empty_share_cta')}
                   </Button>
                 ) : undefined
               }
