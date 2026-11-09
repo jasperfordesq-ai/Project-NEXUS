@@ -21,7 +21,7 @@ import Calculator from 'lucide-react/icons/calculator';
 import Camera from 'lucide-react/icons/camera';
 import Car from 'lucide-react/icons/car';
 import Coffee from 'lucide-react/icons/coffee';
-import Dumbbell from 'lucide-react/icons/dumbbell';
+import HeartPulse from 'lucide-react/icons/heart-pulse';
 import Hammer from 'lucide-react/icons/hammer';
 import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import House from 'lucide-react/icons/house';
@@ -53,7 +53,7 @@ export const THEME_ICONS = {
   arts: Palette,
   clothes: Shirt,
   home: House,
-  fitness: Dumbbell,
+  fitness: HeartPulse,
   languages: Languages,
   office: Briefcase,
   beauty: Scissors,
@@ -97,9 +97,9 @@ const GUESSES: ReadonlyArray<readonly [ThemeIconKey, RegExp]> = [
   ['music', /\b(music\w*|instruments?|singing|singers?|piano|guitars?|choirs?)\b/],
   ['clothes', /\b(sew\w*|cloth\w*|alterations?|textiles?|tailor\w*)\b/],
   ['arts', /\b(arts?|crafts?|crafting|paint\w*|draw\w*|knit\w*|creative|pottery)\b/],
-  ['care', /\b(care|caring|carers?|support|wellbeing|communit\w*|neighbou?r\w*|volunteer\w*)\b/],
+  ['care', /\b(care|caring|carers?|support|communit\w*|neighbou?r\w*|volunteer\w*)\b/],
   ['company', /\b(company|companion\w*|befriend\w*|chats?|social\w*|coffee|visit\w*|friends?|friendship|listening)\b/],
-  ['fitness', /\b(fitness|exercis\w*|yoga|sports?|health\w*|gym)\b/],
+  ['fitness', /\b(fitness|wellbeing|exercis\w*|yoga|sports?|health\w*|gym)\b/],
   ['beauty', /\b(hair\w*|beauty|massages?|nails?|barber\w*|make up|makeup)\b/],
   ['photography', /\b(photo\w*|videos?|film\w*|cameras?)\b/],
   ['money', /\b(money|financ\w*|tax|taxes|budget\w*|paperwork|forms|accounts?|accounting|bookkeep\w*)\b/],

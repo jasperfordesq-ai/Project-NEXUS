@@ -59,6 +59,15 @@ describe('CommunityMonthHighlight', () => {
     expect(await screen.findByRole('heading', { name: new RegExp(expected) })).toBeInTheDocument();
   });
 
+  it('leaves out a total that is still zero, rather than showing "0"', async () => {
+    mockApi.get.mockResolvedValueOnce(month({ hours_shared: 0, new_members: 5, new_listings: 1 }));
+    render(<CommunityMonthHighlight />);
+    const card = await screen.findByTestId('community-month-highlight');
+    expect(within(card).queryByText('Hours shared')).toBeNull();
+    expect(within(card).getByText('New members')).toBeInTheDocument();
+    expect(within(card).getByText('New offers and requests')).toBeInTheDocument();
+  });
+
   it('shows nothing in a quiet month, rather than a row of zeros', async () => {
     mockApi.get.mockResolvedValueOnce(month({}));
     render(<CommunityMonthHighlight />);

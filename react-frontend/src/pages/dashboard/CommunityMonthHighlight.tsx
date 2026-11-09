@@ -10,8 +10,8 @@
  * GET /v2/community/this-month (totals only, no names). Three tiles in the
  * community's own palette.
  *
- * Shows nothing in a quiet month (a row of zeros is discouraging, not warm)
- * or when the totals cannot be loaded.
+ * Leaves out any total still at zero, and shows nothing in a quiet month (a
+ * row of zeros is discouraging, not warm) or when the totals cannot be loaded.
  */
 
 import { useEffect, useMemo, useState, type ComponentType } from 'react';
@@ -42,6 +42,9 @@ interface Tile {
   icon: ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' }>;
 }
 
+/** Tile columns on wider screens, by how many totals are shown. */
+const GRID_COLUMNS: Record<number, string> = { 1: 'sm:grid-cols-1', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3' };
+
 export function CommunityMonthHighlight({ className = '' }: { className?: string }) {
   const { t } = useTranslation('dashboard');
   const { tenant, branding, hasModule } = useTenant();
@@ -69,10 +72,11 @@ export function CommunityMonthHighlight({ className = '' }: { className?: string
       ...(showListings
         ? [{ key: 'listings', label: t('month_highlight.listings'), value: totals.new_listings, icon: Gift }]
         : []),
-    ];
+      // A total still at zero is left out: "0" reads as a scolding, not a welcome.
+    ].filter((tile) => tile.value > 0);
   }, [totals, showListings, t]);
 
-  if (!totals || tiles.every((tile) => !tile.value)) return null;
+  if (!totals || tiles.length === 0) return null;
 
   const locale = getFormattingLocale();
   const [year, monthNumber] = totals.month.split('-').map(Number);
@@ -90,7 +94,7 @@ export function CommunityMonthHighlight({ className = '' }: { className?: string
         </h2>
       </div>
       <p className="mt-1 text-sm text-theme-secondary">{t('month_highlight.subtitle')}</p>
-      <dl className={`mt-4 grid grid-cols-1 gap-3 ${tiles.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+      <dl className={`mt-4 grid grid-cols-1 gap-3 ${GRID_COLUMNS[tiles.length] ?? 'sm:grid-cols-3'}`}>
         {tiles.map((tile, i) => {
           const Icon = tile.icon;
           return (

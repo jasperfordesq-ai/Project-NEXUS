@@ -32,7 +32,7 @@ describe('theme pictures', () => {
     expect(guessThemeIconKey('community')).toBe('care');
     expect(guessThemeIconKey('creative-arts')).toBe('arts');
     expect(guessThemeIconKey('education-and-tutoring')).toBe('learning');
-    expect(guessThemeIconKey('health-and-wellbeing')).toBe('care');
+    expect(guessThemeIconKey('health-and-wellbeing')).toBe('fitness');
     expect(guessThemeIconKey('home-and-garden')).toBe('garden');
     expect(guessThemeIconKey('professional-services')).toBe('office');
     expect(guessThemeIconKey('technology-support')).toBe('technology');
