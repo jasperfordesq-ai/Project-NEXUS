@@ -77,9 +77,15 @@ export function useAlgorithmInfo(area: AlgorithmArea) {
 interface AlgorithmLabelProps {
   /** Which page area to show the algorithm for */
   area: AlgorithmArea;
+  /**
+   * Icon only, for a tight row (the phone feed bar, shared with the feed
+   * mode buttons and Filters). The button keeps its spoken name and still
+   * opens the explanation.
+   */
+  compact?: boolean;
 }
 
-export function AlgorithmLabel({ area }: AlgorithmLabelProps) {
+export function AlgorithmLabel({ area, compact = false }: AlgorithmLabelProps) {
   const { t } = useTranslation('common');
   const info = useAlgorithmInfo(area);
 
@@ -103,9 +109,10 @@ export function AlgorithmLabel({ area }: AlgorithmLabelProps) {
             variant="flat"
             size="sm"
             startContent={<Sparkles className="w-3 h-3" aria-hidden="true" />}
-            className="bg-[var(--surface-elevated)] text-[var(--text-subtle)] border border-[var(--border-default)] cursor-help text-xs h-6"
+            className={`bg-[var(--surface-elevated)] text-[var(--text-subtle)] border border-[var(--border-default)] cursor-help text-xs h-6${compact ? ' w-6 justify-center px-0' : ''}`}
+            classNames={compact ? { content: 'hidden' } : undefined}
           >
-            {t('algorithm.sorted_for_you')}
+            {compact ? null : t('algorithm.sorted_for_you')}
           </Chip>
         </Button>
       </PopoverTrigger>

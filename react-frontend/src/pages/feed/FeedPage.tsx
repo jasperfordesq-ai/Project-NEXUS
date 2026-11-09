@@ -1030,7 +1030,8 @@ export function FeedPage() {
         <div className="flex min-w-0 items-center gap-2 sm:hidden">
           <FeedModeToggle mode={feedMode} onModeChange={(mode) => { safeLocalStorageSet(FEED_MODE_KEY, mode); setFeedMode(mode); syncToUrl({ mode }); }} />
           <div className="flex-1" />
-          <AlgorithmLabel area="feed" />
+          {/* Icon only: a phone bar has no room for the words beside the mode buttons and Filters */}
+          <AlgorithmLabel area="feed" compact />
           <Button
             size="sm"
             variant="flat"

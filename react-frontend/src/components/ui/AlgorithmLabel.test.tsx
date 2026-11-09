@@ -134,6 +134,20 @@ describe('AlgorithmLabel', () => {
     expect(screen.getByText('Method: Smart Feed')).toBeInTheDocument();
   });
 
+  it('shows only its icon when compact (the phone feed bar), and still explains itself on press', async () => {
+    mockApi.get.mockResolvedValueOnce(makeAlgorithmsResponse());
+    const { AlgorithmLabel } = await importFresh();
+    const user = (await import('@testing-library/user-event')).default.setup();
+    render(<AlgorithmLabel area="feed" compact />);
+    // Still named for screen readers, but no visible words to crowd the bar.
+    const trigger = await screen.findByRole('button', { name: 'How this is sorted' });
+    expect(screen.queryByText('Sorted for you')).toBeNull();
+    await user.click(trigger);
+    await waitFor(() => {
+      expect(screen.getByText('Personalised feed algorithm')).toBeInTheDocument();
+    });
+  });
+
   it('renders the matching algorithm chip for the "matching" area', async () => {
     mockApi.get.mockResolvedValueOnce(makeAlgorithmsResponse());
     const { AlgorithmLabel } = await importFresh();

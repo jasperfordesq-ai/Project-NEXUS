@@ -35,7 +35,12 @@ export function FeedModeToggle({ mode, onModeChange }: FeedModeToggleProps) {
   return (
     <ToggleButtonGroup
       aria-label={t('mode.label')}
-      className="gap-4 p-0"
+      // HeroUI's own ToggleButton look: a selected button is a soft pill in the
+      // accent colour, with its own padding and readable text colour. (The
+      // padding was zeroed, so the pill hugged the icon and text — owner, 9 Nov.)
+      // Buttons use px-2.5 on phones, where this shares one bar with the
+      // sorting chip and the Filters button, and HeroUI's own px-3 from sm up.
+      className="gap-1 p-0"
       selectedKeys={selectedKeys}
       onSelectionChange={handleSelectionChange}
       selectionMode="single"
@@ -46,7 +51,7 @@ export function FeedModeToggle({ mode, onModeChange }: FeedModeToggleProps) {
       <ToggleButton
         id="ranking"
         variant="ghost"
-        className="h-8 px-0 text-[var(--text-muted)] transition-colors duration-200 hover:text-accent data-[selected=true]:text-accent data-[selected=true]:font-semibold"
+        className="h-8 px-2.5 sm:px-3 text-[var(--text-muted)] transition-colors duration-200 hover:text-accent data-[selected=true]:font-semibold data-[selected=true]:text-accent-soft-foreground"
       >
         <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
         <span>{t('mode.for_you')}</span>
@@ -54,7 +59,7 @@ export function FeedModeToggle({ mode, onModeChange }: FeedModeToggleProps) {
       <ToggleButton
         id="recent"
         variant="ghost"
-        className="h-8 px-0 text-[var(--text-muted)] transition-colors duration-200 hover:text-accent data-[selected=true]:text-accent data-[selected=true]:font-semibold"
+        className="h-8 px-2.5 sm:px-3 text-[var(--text-muted)] transition-colors duration-200 hover:text-accent data-[selected=true]:font-semibold data-[selected=true]:text-accent-soft-foreground"
       >
         <Clock className="w-3.5 h-3.5" aria-hidden="true" />
         <span>{t('mode.recent')}</span>

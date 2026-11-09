@@ -65,6 +65,21 @@ describe('FeedModeToggle', () => {
     expect(rankingTab).toHaveAttribute('aria-checked', 'true');
   });
 
+  it("keeps HeroUI's own padding, so the selected pill frames its text instead of bleeding round it", () => {
+    // HeroUI paints a selected ToggleButton as a soft pill with px-3 (size sm).
+    // Zeroing the padding made the pill hug the icon and text (owner, 9 Nov).
+    render(<FeedModeToggle mode="ranking" onModeChange={mockOnModeChange} />);
+    for (const tab of screen.getAllByRole('radio')) {
+      expect(tab.className).not.toMatch(/(^|\s)px-0(\s|$)/);
+      // A touch tighter on phones, where the feed bar is shared with the
+      // sorting chip and the Filters button; HeroUI's own px-3 from sm up.
+      expect(tab.className).toContain('px-2.5');
+      expect(tab.className).toContain('sm:px-3');
+      // The selected text uses HeroUI's colour made for its pill.
+      expect(tab.className).toContain('data-[selected=true]:text-accent-soft-foreground');
+    }
+  });
+
   it('has "recent" tab selected when mode is recent', () => {
     render(<FeedModeToggle mode="recent" onModeChange={mockOnModeChange} />);
     const tabs = screen.getAllByRole('radio');
