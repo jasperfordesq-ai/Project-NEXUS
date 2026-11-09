@@ -313,7 +313,7 @@ describe('GroupsPage', () => {
           tags: [], recent_members: [], created_at: '2026-01-01T00:00:00Z',
         },
       ],
-      meta: { has_more: false, total_items: 1 },
+      meta: { has_more: false, total_items: 1, per_page: 20 },
     });
 
     const { container } = render(<GroupsPage />);

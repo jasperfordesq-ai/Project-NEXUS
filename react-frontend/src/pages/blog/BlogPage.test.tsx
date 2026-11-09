@@ -142,15 +142,16 @@ describe('BlogPage', () => {
   });
 
   it('gives posts with no picture a colour cover, shared by posts in the same category', async () => {
+    const posts = [
+      { ...POST, id: 9, title: 'First post', slug: 'first', category: CATEGORY },
+      { ...POST, id: 10, title: 'Second post', slug: 'second', category: CATEGORY },
+      { ...POST, id: 11, title: 'Third post', slug: 'third', category: CATEGORY },
+    ];
     mockApiGet.mockImplementation((url: string) => Promise.resolve({
       success: true,
-      data: url.includes('/categories') ? [CATEGORY] : [
-        { ...POST, id: 9, title: 'First post', slug: 'first', category: CATEGORY },
-        { ...POST, id: 10, title: 'Second post', slug: 'second', category: CATEGORY },
-        { ...POST, id: 11, title: 'Third post', slug: 'third', category: CATEGORY },
-      ],
+      data: url.includes('/categories') ? [CATEGORY] : posts,
       meta: {},
-    }));
+    }) as ReturnType<typeof api.get>);
 
     render(<BlogPage />);
 
