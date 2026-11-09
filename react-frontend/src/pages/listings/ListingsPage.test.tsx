@@ -324,7 +324,32 @@ describe('ListingsPage', () => {
       expect(group).toHaveTextContent('Learning');
       const care = screen.getByRole('row', { name: 'Care & wellbeing' });
       expect(care.className).toContain('bg-pink-100');
-      expect(care.querySelector('.bg-pink-500')).not.toBeNull();
+    });
+
+    it("shows each theme's picture on its tile: the admin's choice, else a guess from its name", async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/categories')
+            ? {
+                success: true,
+                data: [
+                  { id: 1, name: 'Care & wellbeing', slug: 'care', color: 'pink', icon: 'music' },
+                  { id: 2, name: 'Learning', slug: 'learning', color: 'blue', icon: null },
+                  { id: 3, name: 'Odds and ends', slug: 'odds-and-ends', color: 'green', icon: null },
+                ],
+              }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+      render(<ListingsPage />);
+
+      const care = await screen.findByRole('row', { name: 'Care & wellbeing' });
+      expect(care.querySelector('svg.lucide-music')).not.toBeNull();
+      expect(screen.getByRole('row', { name: 'Learning' }).querySelector('svg.lucide-book-open')).not.toBeNull();
+      // Nothing recognisable and no choice: the colour dot, as before.
+      const odds = screen.getByRole('row', { name: 'Odds and ends' });
+      expect(odds.querySelector('svg')).toBeNull();
+      expect(odds.querySelector('.bg-green-500')).not.toBeNull();
     });
 
     it('gives each theme its own colour while the community has left them all blue', async () => {
@@ -585,6 +610,41 @@ describe('ListingsPage', () => {
       // No photo and no theme: a palette colour picked by the listing's id.
       expect(band).toHaveAttribute('data-colour', colourForSeed(1, paletteFor(null)));
       expect(band.textContent).toBe('');
+    });
+
+    it("puts the theme's picture on a card with no photo, and the offer/request picture when it has no theme", async () => {
+      const base = {
+        description: 'Relaxed practice over video.',
+        status: 'active',
+        created_at: '2026-08-01T00:00:00Z',
+        updated_at: '2026-08-01T00:00:00Z',
+        user: { id: 9, name: 'Sofia Haddad' },
+      };
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/listings')
+            ? {
+                success: true,
+                meta: {},
+                data: [
+                  { ...base, id: 1, title: 'Tomato seedlings', type: 'offer', category_name: 'Gardening', category_slug: 'gardening', category_icon: null },
+                  { ...base, id: 2, title: 'Lift to the clinic', type: 'request', category_name: 'Errands', category_slug: 'errands', category_icon: 'transport' },
+                  { ...base, id: 3, title: 'Anything at all', type: 'offer' },
+                ],
+              }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+
+      render(<ListingsPage />);
+
+      await screen.findByText('Tomato seedlings');
+      const bands = screen.getAllByTestId('listing-theme-band');
+      expect(bands).toHaveLength(3);
+      expect(bands[0]!.querySelector('svg.lucide-sprout')).not.toBeNull();
+      // The admin's choice wins over the guess from "errands".
+      expect(bands[1]!.querySelector('svg.lucide-car')).not.toBeNull();
+      expect(bands[2]!.querySelector('svg.lucide-gift')).not.toBeNull();
     });
 
     it('names the theme once on a card with no photo, and puts "Remote" beside the hours', async () => {

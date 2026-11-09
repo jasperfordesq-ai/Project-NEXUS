@@ -2871,6 +2871,7 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'admin_image_size_limit_2mb' => '画像のサイズは 2 MB 以下にしてください。',
     'community_photo_invalid_type' => '写真は JPEG、PNG、WebP のいずれかの画像にしてください。',
     'community_photo_too_large' => '写真のサイズは 8 MB 以下にしてください。',
+    'category_icon_invalid' => '一覧から絵を選んでください。',
     'billing_checkout_session_failed' => 'チェックアウトセッションを作成できませんでした。もう一度お試しください。',
     'billing_free_downgrade_support_required' => '無料プランへのダウングレードはセルフサービスでは行えません。サポートにお問い合わせください。',
     'billing_interval_invalid' => 'billing_interval は :monthly または :yearly である必要があります。',

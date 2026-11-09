@@ -78,6 +78,7 @@ import { MAPS_ENABLED } from '@/lib/map-config';
 import { resolveAvatarUrl, resolveThumbnailUrl, responsiveThumbnailProps, getFormattingLocale, formatRelativeTime } from '@/lib/helpers';
 import { categoryColour, colourForSeed, themeColourNames } from '@/lib/categoryColours';
 import { ThemedCover } from '@/components/ui/ThemedCover';
+import { themeIconFor } from '@/lib/themeIcons';
 import type { EntityMapViewProps } from '@/components/location/EntityMapView';
 import type { ProximityFilterParams } from '@/components/proximity/ProximityFilter';
 import type { Listing, Category } from '@/types/api';
@@ -1066,6 +1067,9 @@ export function ListingsPage() {
             </ThemeTag>
             {categories.map((cat) => {
               const colour = categoryColour(themeColours[cat.slug]);
+              // The theme's picture (AWID: "clear categories"), in the tile's
+              // own text colour; a coloured dot when it has none.
+              const ThemeIcon = themeIconFor(cat);
               return (
                 <ThemeTag
                   key={cat.slug}
@@ -1074,7 +1078,11 @@ export function ListingsPage() {
                   className={`shrink-0 rounded-xl px-4 py-2.5 font-semibold ${colour.band} data-[selected=true]:ring-2 data-[selected=true]:ring-accent data-[selected=true]:ring-offset-2 data-[selected=true]:ring-offset-[var(--background)]`}
                 >
                   <span className="flex items-center gap-2 whitespace-nowrap">
-                    <span className={`size-3 shrink-0 rounded-full ${colour.dot}`} aria-hidden="true" />
+                    {ThemeIcon ? (
+                      <ThemeIcon className="size-4 shrink-0" aria-hidden="true" />
+                    ) : (
+                      <span className={`size-3 shrink-0 rounded-full ${colour.dot}`} aria-hidden="true" />
+                    )}
                     {cat.name}
                   </span>
                 </ThemeTag>
@@ -1521,7 +1529,10 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
             <ThemedCover
               data-testid="listing-theme-band"
               colour={themeColour ?? colourForSeed(listing.id, palette)}
-              icon={listing.type === 'offer' ? Gift : HandHelping}
+              icon={
+                themeIconFor({ icon: listing.category_icon, slug: listing.category_slug, name: listing.category_name })
+                ?? (listing.type === 'offer' ? Gift : HandHelping)
+              }
               label={listing.category_name}
             />
           )}

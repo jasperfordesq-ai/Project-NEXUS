@@ -769,10 +769,10 @@ export const adminCategories = {
   list: (params: { type?: string } = {}) =>
     api.get<AdminCategory[]>(`/v2/admin/categories${buildQuery(params)}`),
 
-  create: (data: { name: string; color?: string; type?: string }) =>
+  create: (data: { name: string; color?: string; type?: string; icon?: string }) =>
     api.post<AdminCategory>('/v2/admin/categories', data),
 
-  update: (id: number, data: { name?: string; color?: string; type?: string; name_translations?: Record<string, string> }) =>
+  update: (id: number, data: { name?: string; color?: string; type?: string; icon?: string; name_translations?: Record<string, string> }) =>
     api.put<AdminCategory>(`/v2/admin/categories/${id}`, data),
 
   delete: (id: number) =>

@@ -41,6 +41,7 @@ import HandHelping from 'lucide-react/icons/hand-helping';
 import { useListingThemeColours } from '@/hooks/useListingThemeColours';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { colourForSeed } from '@/lib/categoryColours';
+import { themeIconFor } from '@/lib/themeIcons';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { RadioGroup, Radio } from '@/components/ui/Radio';
 import { Textarea } from '@/components/ui/Textarea';
@@ -561,7 +562,10 @@ export function ListingDetailPage() {
                   || listing.category_color
                   || colourForSeed(listing.id, palette)
                 }
-                icon={listing.type === 'offer' ? Gift : HandHelping}
+                icon={
+                  themeIconFor({ icon: listing.category_icon, slug: listing.category_slug, name: listing.category_name })
+                  ?? (listing.type === 'offer' ? Gift : HandHelping)
+                }
                 label={listing.category_name}
               />
             </div>

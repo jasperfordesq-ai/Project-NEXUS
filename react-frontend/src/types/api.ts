@@ -284,6 +284,8 @@ export interface Listing {
   category_name?: string;
   category_color?: string;
   category_slug?: string;
+  /** The theme's picture, chosen by an admin (lib/themeIcons key), or null for "automatic". */
+  category_icon?: string | null;
   estimated_hours?: number;
   hours_estimate?: number;  // Alias for estimated_hours (frontend compatibility)
   /**
@@ -461,7 +463,8 @@ export interface Category {
   id: number;
   name: string;
   slug: string;
-  icon?: string;
+  /** The theme's picture, chosen by an admin (lib/themeIcons key), or null for "automatic". */
+  icon?: string | null;
   color?: string;
   parent_id?: number;
   children?: Category[];

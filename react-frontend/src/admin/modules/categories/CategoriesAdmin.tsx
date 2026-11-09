@@ -1,5 +1,6 @@
 import { getFormattingLocale } from '@/lib/helpers';
-import { Button, Chip, Input, Card, CardBody, Select, SelectItem, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Tabs, Tab } from '@/components/ui';
+import { Button, Chip, Input, Card, CardBody, Select, SelectItem, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Tabs, Tab, ToggleButton, ToggleButtonGroup } from '@/components/ui';
+import { THEME_ICONS, THEME_ICON_KEYS, guessThemeIconKey, isThemeIconKey, themeIconFor } from '@/lib/themeIcons';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -20,6 +21,7 @@ import Trash2 from 'lucide-react/icons/trash-2';
 import FolderOpen from 'lucide-react/icons/folder-open';
 import Tag from 'lucide-react/icons/tag';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
+import WandSparkles from 'lucide-react/icons/wand-sparkles';
 import { useAdminPageMeta } from '../../AdminMetaContext';
 import { useTenant, useToast } from '@/contexts';
 import { adminCategories } from '../../api/adminApi';
@@ -68,6 +70,12 @@ function parseTranslations(value: AdminCategory['name_translations']): Record<st
     return {};
   }
 }
+
+/** The picture picker's "Choose automatically" button (sent to the API as ''). */
+const AUTOMATIC_PICTURE = 'auto';
+
+const PICTURE_BUTTON_CLASS =
+  'rounded-lg text-muted data-[selected=true]:bg-accent-soft data-[selected=true]:text-accent-soft-foreground data-[selected=true]:ring-2 data-[selected=true]:ring-accent';
 
 const COLOR_OPTIONS = [
   'blue', 'red', 'green', 'orange', 'purple', 'pink',
@@ -146,7 +154,8 @@ export function CategoriesAdmin() {
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
-  const [formData, setFormData] = useState({ name: '', color: 'blue', type: 'listing' });
+  // icon: a lib/themeIcons key, or '' for "choose automatically".
+  const [formData, setFormData] = useState({ name: '', color: 'blue', type: 'listing', icon: '' });
   // The name in other languages, for the admin to check and correct (AWID
   // feedback, 30 Oct 2026). Filled automatically; an edit here is kept.
   const [translations, setTranslations] = useState<Record<string, string>>({});
@@ -192,7 +201,7 @@ export function CategoriesAdmin() {
 
   const openCreateModal = () => {
     setEditingCategory(null);
-    setFormData({ name: '', color: 'blue', type: 'listing' });
+    setFormData({ name: '', color: 'blue', type: 'listing', icon: '' });
     setModalOpen(true);
   };
 
@@ -202,6 +211,7 @@ export function CategoriesAdmin() {
       name: category.name,
       color: category.color || 'blue',
       type: category.type || 'listing',
+      icon: isThemeIconKey(category.icon) ? category.icon : '',
     });
     setTranslations(parseTranslations(category.name_translations));
     setModalOpen(true);
@@ -210,7 +220,7 @@ export function CategoriesAdmin() {
   const closeModal = () => {
     setModalOpen(false);
     setEditingCategory(null);
-    setFormData({ name: '', color: 'blue', type: 'listing' });
+    setFormData({ name: '', color: 'blue', type: 'listing', icon: '' });
   };
 
   const handleSave = async () => {
@@ -228,6 +238,7 @@ export function CategoriesAdmin() {
         name: formData.name.trim(),
         color: formData.color,
         type: formData.type,
+        icon: formData.icon,
         // A rename translates the new name afresh, so edits to the old one are not sent.
         ...(renamed ? {} : { name_translations: translations }),
       });
@@ -246,6 +257,7 @@ export function CategoriesAdmin() {
         name: formData.name.trim(),
         color: formData.color,
         type: formData.type,
+        icon: formData.icon,
       });
 
       if (res.success) {
@@ -260,6 +272,15 @@ export function CategoriesAdmin() {
 
     setSaving(false);
   };
+
+  // What the picture choice gives, in words: the chosen picture's name, or
+  // what "automatic" picks from the name (or that nothing fits).
+  const guessedPicture = guessThemeIconKey(formData.name);
+  const pictureSummary = formData.icon && isThemeIconKey(formData.icon)
+    ? t(`categories.picture_names.${formData.icon}`)
+    : guessedPicture
+      ? t('categories.picture_auto_guess', { picture: t(`categories.picture_names.${guessedPicture}`) })
+      : t('categories.picture_auto_none');
 
   // ─── Delete ───
 
@@ -286,15 +307,19 @@ export function CategoriesAdmin() {
       key: 'name',
       label: t('categories.label_name'),
       sortable: true,
-      render: (cat) => (
-        <div className="flex items-center gap-3">
-          <div
-            className="h-3 w-3 rounded-full shrink-0"
-            style={{ '--category-color': cat.color || 'var(--color-primary)', backgroundColor: 'var(--category-color)' } as CSSProperties}
-          />
-          <span className="font-medium text-foreground">{cat.name}</span>
-        </div>
-      ),
+      render: (cat) => {
+        const ThemeIcon = themeIconFor(cat);
+        return (
+          <div className="flex items-center gap-3">
+            <div
+              className="h-3 w-3 rounded-full shrink-0"
+              style={{ '--category-color': cat.color || 'var(--color-primary)', backgroundColor: 'var(--category-color)' } as CSSProperties}
+            />
+            {ThemeIcon && <ThemeIcon size={16} className="shrink-0 text-muted" aria-hidden="true" />}
+            <span className="font-medium text-foreground">{cat.name}</span>
+          </div>
+        );
+      },
     },
     {
       key: 'slug',
@@ -473,6 +498,54 @@ export function CategoriesAdmin() {
                 </SelectItem>
               ))}
             </Select>
+
+            {/* The theme's picture (AWID: "clear categories"). HeroUI
+                ToggleButtonGroup, one choice, with "Choose automatically" first. */}
+            <div className="space-y-2">
+              <p id="category-picture-label" className="text-sm font-medium text-foreground">{t('categories.label_picture')}</p>
+              <p className="text-xs leading-5 text-muted">{t('categories.picture_hint')}</p>
+              <ToggleButtonGroup
+                aria-labelledby="category-picture-label"
+                selectionMode="single"
+                disallowEmptySelection
+                isDetached
+                size="sm"
+                className="flex flex-wrap gap-1.5"
+                selectedKeys={new Set([formData.icon || AUTOMATIC_PICTURE])}
+                onSelectionChange={(keys) => {
+                  const next = Array.from(keys)[0];
+                  if (next === undefined) return;
+                  setFormData((prev) => ({ ...prev, icon: next === AUTOMATIC_PICTURE ? '' : String(next) }));
+                }}
+              >
+                <ToggleButton
+                  id={AUTOMATIC_PICTURE}
+                  isIconOnly
+                  aria-label={t('categories.picture_automatic')}
+                  className={PICTURE_BUTTON_CLASS}
+                >
+                  <WandSparkles size={16} aria-hidden="true" />
+                </ToggleButton>
+                {THEME_ICON_KEYS.map((key) => {
+                  const Icon = THEME_ICONS[key];
+                  return (
+                    <ToggleButton
+                      key={key}
+                      id={key}
+                      isIconOnly
+                      aria-label={t(`categories.picture_names.${key}`)}
+                      className={PICTURE_BUTTON_CLASS}
+                    >
+                      <Icon size={16} aria-hidden="true" />
+                    </ToggleButton>
+                  );
+                })}
+              </ToggleButtonGroup>
+              <p className="text-xs font-medium text-theme-secondary" aria-live="polite">
+                {pictureSummary}
+              </p>
+            </div>
+
             {editingCategory && (
               <fieldset className="space-y-3 rounded-lg border border-theme-default p-3">
                 <legend className="px-1 text-sm font-medium text-theme-primary">{t('categories.translations_heading')}</legend>

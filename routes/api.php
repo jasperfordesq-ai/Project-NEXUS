@@ -152,6 +152,7 @@ Route::get('/v2/categories', function (\Illuminate\Http\Request $request) {
             'slug',
             'type',
             'color',
+            'icon',
             'parent_id',
             'sort_order',
             'is_active',

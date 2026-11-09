@@ -133,7 +133,7 @@ class ListingService
 
         $query = self::applyOwnerGroup(self::ownedBy($userId, $type), $group)
             ->with(['user:id,first_name,last_name,organization_name,profile_type,avatar_url,tagline,is_verified',
-                    'category:id,name,color,slug']);
+                    'category:id,name,color,slug,icon']);
 
         if ($cursor !== null) {
             $cursorId = base64_decode($cursor, true);
@@ -288,7 +288,7 @@ class ListingService
 
                 $q = Listing::query()
                     ->with(['user:id,first_name,last_name,organization_name,profile_type,avatar_url,tagline,is_verified',
-                            'category:id,name,color,slug'])
+                            'category:id,name,color,slug,icon'])
                     ->whereIn('id', $ids);
 
                 self::applyPublicVisibility($q);
@@ -367,7 +367,7 @@ class ListingService
 
         $query = Listing::query()
             ->with(['user:id,first_name,last_name,organization_name,profile_type,avatar_url,tagline,is_verified',
-                     'category:id,name,color,slug']);
+                     'category:id,name,color,slug,icon']);
 
         // Status filter
         if (empty($filters['include_deleted'])) {
@@ -579,6 +579,7 @@ class ListingService
             $data['category']['name'] = $data['category_name'];
         }
         $data['category_color'] = $cat?->color;
+        $data['category_icon'] = $cat?->icon;
         $data['category_slug']  = $cat?->slug;
 
         // Lightweight trust signals for list view
@@ -891,6 +892,7 @@ class ListingService
             $data['category']['name'] = $data['category_name'];
         }
         $data['category_color'] = $cat?->color;
+        $data['category_icon'] = $cat?->icon;
         $data['category_slug'] = $cat?->slug;
 
         // Engagement counts (wrapped in try/catch — tables may not exist during migration)
@@ -984,7 +986,7 @@ class ListingService
         $query = Listing::query()
             ->with([
                 'user:id,first_name,last_name,organization_name,profile_type,avatar_url',
-                'category:id,name,color',
+                'category:id,name,color,icon',
             ])
             ->selectRaw("listings.*, {$haversine} AS distance_km", [$lat, $lon, $lat])
             ->where('status', 'active')
@@ -1089,6 +1091,7 @@ class ListingService
                 $data['category']['name'] = $data['category_name'];
             }
             $data['category_color'] = $cat?->color;
+            $data['category_icon'] = $cat?->icon;
             $data['distance_km'] = round((float) $listing->distance_km, 2);
             $data['is_favorited'] = isset($savedIds[$listing->id]);
             $data['can_edit'] = $currentUserId === $listing->user_id;
@@ -1120,7 +1123,7 @@ class ListingService
         return Listing::query()
             ->with([
                 'user:id,first_name,last_name,organization_name,profile_type,avatar_url',
-                'category:id,name,color',
+                'category:id,name,color,icon',
             ])
             ->where('status', 'active')
             ->where(function (Builder $q) {
@@ -1149,6 +1152,7 @@ class ListingService
                     $data['category']['name'] = $data['category_name'];
                 }
                 $data['category_color'] = $cat?->color;
+                $data['category_icon'] = $cat?->icon;
                 return $data;
             })
             ->all();

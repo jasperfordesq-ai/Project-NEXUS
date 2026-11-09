@@ -320,6 +320,8 @@ describe('ListingDetailPage', () => {
     // exactly as its tile and card on the offers page do.
     await waitFor(() => expect(cover).toHaveAttribute('data-colour', paletteFor(null)[1]));
     expect(cover).toHaveTextContent('Technology');
+    // The theme's picture, guessed from its name, instead of the offer gift.
+    expect(cover.querySelector('svg.lucide-laptop')).not.toBeNull();
   });
 
   it("reads the member's photo description as the image alt text (AWID regression)", async () => {

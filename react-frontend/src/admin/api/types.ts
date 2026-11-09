@@ -322,6 +322,8 @@ export interface AdminCategory {
   name: string;
   slug: string;
   color: string;
+  /** The theme's picture (lib/themeIcons key), or null for "choose automatically". */
+  icon?: string | null;
   type: 'listing' | 'event' | 'blog' | 'vol_opportunity';
   listing_count: number;
   created_at: string;

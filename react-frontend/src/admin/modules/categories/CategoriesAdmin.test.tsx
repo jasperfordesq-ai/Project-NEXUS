@@ -313,3 +313,48 @@ describe('CategoriesAdmin — names in other languages', () => {
   });
 });
 
+// AWID feedback (Nov 2026, "clear categories"): each theme has a picture. The
+// admin picks one, or leaves it on "Choose automatically" (a guess from the name).
+describe('CategoriesAdmin — theme pictures', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  async function openEdit() {
+    render(<CategoriesAdmin />);
+    await screen.findByText('Gardening');
+    await userEvent.click(screen.getAllByRole('button', { name: /category actions/i })[0]!);
+    await userEvent.click(await screen.findByRole('menuitem', { name: /edit/i }));
+  }
+
+  it('starts on "Choose automatically" and says which picture that gives', async () => {
+    successList([{ ...MOCK_CATEGORY, icon: null }]);
+    await openEdit();
+
+    expect(await screen.findByRole('radio', { name: 'Choose automatically' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByText(/Automatic: Garden/)).toBeInTheDocument();
+  });
+
+  it('sends the picture the admin picks', async () => {
+    successList([{ ...MOCK_CATEGORY, icon: null }]);
+    adminCategoriesMock.update.mockResolvedValue({ success: true, data: MOCK_CATEGORY });
+    await openEdit();
+
+    await userEvent.click(await screen.findByRole('radio', { name: 'Transport' }));
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    await waitFor(() => expect(adminCategoriesMock.update).toHaveBeenCalledWith(1, expect.objectContaining({ icon: 'transport' })));
+  });
+
+  it('goes back to automatic by sending an empty picture', async () => {
+    successList([{ ...MOCK_CATEGORY, icon: 'music' }]);
+    adminCategoriesMock.update.mockResolvedValue({ success: true, data: MOCK_CATEGORY });
+    await openEdit();
+
+    expect(await screen.findByRole('radio', { name: 'Music' })).toHaveAttribute('aria-checked', 'true');
+    await userEvent.click(screen.getByRole('radio', { name: 'Choose automatically' }));
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    await waitFor(() => expect(adminCategoriesMock.update).toHaveBeenCalledWith(1, expect.objectContaining({ icon: '' })));
+  });
+});

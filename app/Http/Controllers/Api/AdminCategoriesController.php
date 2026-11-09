@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use App\Models\ActivityLog;
 use App\Jobs\FillCategoryNameTranslations;
 use App\Services\Translation\TaxonomyNameLocalizer;
+use App\Support\Categories\ThemeIcons;
 
 /**
  * AdminCategoriesController -- Admin category and attribute management.
@@ -66,6 +67,7 @@ class AdminCategoriesController extends BaseApiController
                 'name' => $row->name ?? '',
                 'slug' => $row->slug ?? '',
                 'color' => $row->color ?? 'blue',
+                'icon' => $row->icon ?? null,
                 'type' => $row->type ?? 'listing',
                 'listing_count' => (int) ($row->listing_count ?? 0),
                 'created_at' => $row->created_at,
@@ -107,6 +109,12 @@ class AdminCategoriesController extends BaseApiController
             );
         }
 
+        // The theme's picture: one of a fixed set, or none ("choose automatically").
+        $icon = $this->themeIconFromInput($this->getAllInput(), null);
+        if ($icon === false) {
+            return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.category_icon_invalid'), 'icon', 422);
+        }
+
         // Check name uniqueness within tenant
         $existing = DB::selectOne(
             "SELECT id FROM categories WHERE name = ? AND tenant_id = ?",
@@ -122,6 +130,7 @@ class AdminCategoriesController extends BaseApiController
             'name' => $name,
             'slug' => $slug,
             'color' => $color,
+            'icon' => $icon,
             'type' => $type,
         ]);
 
@@ -134,6 +143,7 @@ class AdminCategoriesController extends BaseApiController
             'name' => $name,
             'slug' => $slug,
             'color' => $color,
+            'icon' => $icon,
             'type' => $type,
             'listing_count' => 0,
             'created_at' => date('Y-m-d H:i:s'),
@@ -176,6 +186,12 @@ class AdminCategoriesController extends BaseApiController
             );
         }
 
+        // The theme's picture: kept unless the request names one ('' = automatic).
+        $icon = $this->themeIconFromInput($data, $category->icon ?? null);
+        if ($icon === false) {
+            return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.category_icon_invalid'), 'icon', 422);
+        }
+
         // Check name uniqueness if name changed
         if ($name !== $category->name) {
             $existing = DB::selectOne(
@@ -196,8 +212,8 @@ class AdminCategoriesController extends BaseApiController
         }
 
         DB::update(
-            "UPDATE categories SET name = ?, slug = ?, color = ?, type = ? WHERE id = ? AND tenant_id = ?",
-            [$name, $slug, $color, $type, $id, $tenantId]
+            "UPDATE categories SET name = ?, slug = ?, color = ?, icon = ?, type = ? WHERE id = ? AND tenant_id = ?",
+            [$name, $slug, $color, $icon, $type, $id, $tenantId]
         );
 
         // An admin's corrections to the name in other languages (AWID feedback,
@@ -243,10 +259,32 @@ class AdminCategoriesController extends BaseApiController
             'name' => $updated->name,
             'slug' => $updated->slug,
             'color' => $updated->color,
+            'icon' => $updated->icon ?? null,
             'type' => $updated->type,
             'listing_count' => (int) ($updated->listing_count ?? 0),
             'created_at' => $updated->created_at,
         ]);
+    }
+
+    /**
+     * The theme picture a request asks for (categories.icon; AWID feedback,
+     * Nov 2026). Not mentioned → $current. Empty or null → null, "choose
+     * automatically". One of ThemeIcons::ALLOWED → that key. Anything else
+     * → false, which the caller refuses.
+     *
+     * @param array<string, mixed> $input
+     */
+    private function themeIconFromInput(array $input, ?string $current): string|null|false
+    {
+        if (!array_key_exists('icon', $input)) {
+            return $current;
+        }
+        $raw = $input['icon'];
+        if ($raw === null || (is_string($raw) && trim($raw) === '')) {
+            return null;
+        }
+        $key = is_string($raw) ? trim($raw) : $raw;
+        return ThemeIcons::isAllowed($key) ? $key : false;
     }
 
     /**

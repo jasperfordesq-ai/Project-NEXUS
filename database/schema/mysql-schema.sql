@@ -1924,6 +1924,7 @@ CREATE TABLE `categories` (
   `parent_id` int(10) unsigned DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `name_translations` text DEFAULT NULL,
+  `icon` varchar(40) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_name_tenant` (`name`,`tenant_id`),
   KEY `tenant_id` (`tenant_id`),
