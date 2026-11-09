@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { ShippingOptionsManager } from '@/components/marketplace/ShippingOptionsManager';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 
@@ -38,15 +39,15 @@ export function SellerShippingOptionsPage() {
           {t('shipping.back_to_listings')}
         </Button>
 
-        <div className="space-y-1">
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <Truck className="h-7 w-7 text-accent" aria-hidden="true" />
-            {t('shipping.page_title')}
-          </h1>
-          <p className="text-sm text-muted">
-            {t('shipping.page_subtitle')}
-          </p>
-        </div>
+        {/* The same soft panel in the community colour that opens the offers,
+            events and groups pages (AWID: warmer, more inviting). */}
+        <PublicPageHero
+          size="compact"
+          title={t('shipping.page_title')}
+          description={t('shipping.page_subtitle')}
+          icon={<Truck className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+        />
 
         <ShippingOptionsManager sellerId={user?.id ?? 0} />
       </div>

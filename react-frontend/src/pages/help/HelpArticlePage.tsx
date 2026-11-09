@@ -13,6 +13,7 @@ import { Breadcrumbs } from '@/components/navigation';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { HelpBody } from './guides/HelpBody';
@@ -67,17 +68,19 @@ export function HelpArticlePage() {
         ]}
       />
 
-      <GlassCard className="p-6 sm:p-10">
-        <article>
-          <p className="flex items-center gap-2 text-sm font-medium text-accent">
-            <HelpIcon name={section.icon} className="h-4 w-4" />
-            {sectionTitle}
-          </p>
-          <h1 className="mt-3 text-2xl font-bold leading-tight text-theme-primary sm:text-3xl">{title}</h1>
-          <p className="mt-3 text-lg leading-8 text-theme-muted">
-            {guideText(audience, articleKey(section.id, article.id, 'summary'))}
-          </p>
-          <hr className="my-6 border-theme-default" />
+      <article className="space-y-6">
+        {/* The same soft panel in the community colour that opens the offers,
+            events and groups pages (AWID: warmer, more inviting). */}
+        <PublicPageHero
+          size="compact"
+          eyebrow={sectionTitle}
+          title={title}
+          description={guideText(audience, articleKey(section.id, article.id, 'summary'))}
+          icon={<HelpIcon name={section.icon} className="h-6 w-6" />}
+          accent="indigo"
+        />
+
+        <GlassCard className="p-6 sm:p-10">
           <HelpBody body={guideText(audience, articleKey(section.id, article.id, 'body'))} />
 
           {article.link && (
@@ -92,8 +95,8 @@ export function HelpArticlePage() {
               </Button>
             </div>
           )}
-        </article>
-      </GlassCard>
+        </GlassCard>
+      </article>
 
       {(previous || next) && (
         <nav aria-label={t('pager_label')} className="grid gap-3 sm:grid-cols-2">

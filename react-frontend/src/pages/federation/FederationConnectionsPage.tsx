@@ -31,6 +31,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Tab, Tabs } from '@/components/ui/Tabs';
 import { Breadcrumbs } from '@/components/navigation';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
@@ -138,16 +139,15 @@ export function FederationConnectionsPage() {
         ]}
       />
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-theme-primary">
-            {t('connections.title')}
-          </h1>
-          <p className="text-theme-muted mt-1">
-            {t('connections.subtitle')}
-          </p>
-        </div>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('connections.title')}
+        description={t('connections.subtitle')}
+        icon={<UserPlus className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+      />
 
       <Tabs
         aria-label={t('connections.tabs_aria')}

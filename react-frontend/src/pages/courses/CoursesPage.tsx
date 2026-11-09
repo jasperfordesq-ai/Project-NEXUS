@@ -13,7 +13,9 @@ import { Link } from 'react-router-dom';
 import { SearchField, Select, SelectItem, Spinner, ModuleStageBadge, Button } from '@/components/ui';
 import Search from 'lucide-react/icons/search';
 import Plus from 'lucide-react/icons/plus';
+import GraduationCap from 'lucide-react/icons/graduation-cap';
 import { usePageTitle } from '@/hooks';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth, useTenant } from '@/contexts';
 import { coursesApi, type Course, type CourseCategory } from '@/lib/api/courses';
 import { CourseCard } from '@/components/courses/CourseCard';
@@ -97,26 +99,34 @@ export default function CoursesPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <div className="flex flex-col gap-3 mb-1 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold leading-tight">{t('title')}</h1>
-          <ModuleStageBadge stage="beta" />
-        </div>
-        {isAuthenticated && (
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <Button as={Link} to={tenantPath('/courses/my-learning')} variant="tertiary" size="sm">
-              {t('my_learning.title')}
-            </Button>
-            <Button as={Link} to={tenantPath('/courses/instructor')} variant="tertiary" size="sm">
-              {t('instructor.my_courses')}
-            </Button>
-            <Button as={Link} to={tenantPath('/courses/instructor/new')} color="primary" size="sm" startContent={<Plus size={16} />}>
-              {t('instructor.create_course')}
-            </Button>
-          </div>
-        )}
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <div className="mb-6">
+        <PublicPageHero
+          title={t('title')}
+          description={t('subtitle')}
+          icon={<GraduationCap className="h-7 w-7" aria-hidden="true" />}
+          accent="indigo"
+          action={
+            <div className="flex flex-wrap items-center gap-2">
+              <ModuleStageBadge stage="beta" />
+              {isAuthenticated && (
+                <>
+                  <Button as={Link} to={tenantPath('/courses/my-learning')} variant="tertiary" size="sm">
+                    {t('my_learning.title')}
+                  </Button>
+                  <Button as={Link} to={tenantPath('/courses/instructor')} variant="tertiary" size="sm">
+                    {t('instructor.my_courses')}
+                  </Button>
+                  <Button as={Link} to={tenantPath('/courses/instructor/new')} color="primary" size="sm" startContent={<Plus size={16} />}>
+                    {t('instructor.create_course')}
+                  </Button>
+                </>
+              )}
+            </div>
+          }
+        />
       </div>
-      <p className="text-sm text-muted mb-6">{t('subtitle')}</p>
 
       <div className="grid grid-cols-1 gap-3 mb-6 sm:grid-cols-[minmax(16rem,1fr)_minmax(11rem,14rem)_minmax(11rem,14rem)]">
         <SearchField

@@ -25,6 +25,7 @@ import { api } from '@/lib/api';
 import { usePageTitle } from '@/hooks';
 import { LoadingScreen, EmptyState } from '@/components/feedback';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useTenant, useToast } from '@/contexts';
 
 interface Collection {
@@ -110,14 +111,20 @@ export default function MyCollectionsPage() {
   return (
     <div className="container mx-auto px-4 py-6 max-w-5xl">
       <PageMeta title={t('collections.my_title')} noIndex />
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Bookmark className="w-6 h-6 text-[var(--color-warning)]" />
-          {t('collections.my_title')}
-        </h1>
-        <Button color="primary" startContent={<Plus className="w-4 h-4" />} onPress={() => setShowCreate(true)}>
-          {t('collections.new')}
-        </Button>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <div className="mb-6">
+        <PublicPageHero
+          size="compact"
+          title={t('collections.my_title')}
+          icon={<Bookmark className="h-6 w-6" aria-hidden="true" />}
+          accent="amber"
+          action={
+            <Button color="primary" startContent={<Plus className="w-4 h-4" />} onPress={() => setShowCreate(true)}>
+              {t('collections.new')}
+            </Button>
+          }
+        />
       </div>
 
       {loadError ? (

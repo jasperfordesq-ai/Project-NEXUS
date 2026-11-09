@@ -29,6 +29,10 @@ import X from 'lucide-react/icons/x';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import TriangleAlert from 'lucide-react/icons/triangle-alert';
 import { resolveThumbnailUrl } from '@/lib/helpers';
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
+import { coverSeed } from '@/lib/coverSeeds';
 import { safePodcastArtworkUrl } from '@/lib/podcasts/artwork';
 
 interface PodcastMiniPlayerProps {
@@ -38,6 +42,7 @@ interface PodcastMiniPlayerProps {
 
 export function PodcastMiniPlayer({ tabBarMayShow = true }: PodcastMiniPlayerProps) {
   const { t } = useTranslation('podcasts');
+  const palette = useSitePalette();
   const { hasFeature, tenantPath } = useTenant();
   const player = usePodcastPlayerOptional();
   const tabBarVisible = useMobileTabBarVisible() && tabBarMayShow;
@@ -96,8 +101,9 @@ export function PodcastMiniPlayer({ tabBarMayShow = true }: PodcastMiniPlayerPro
             {artworkSrc ? (
               <img src={artworkSrc} alt="" className="size-10 shrink-0 rounded-md object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
             ) : (
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-secondary text-muted">
-                <Podcast size={20} aria-hidden="true" />
+              // No artwork: a small cover in the show's own colour (was grey).
+              <div className="size-10 shrink-0 overflow-hidden rounded-md">
+                <ThemedCover data-testid="podcast-mini-cover" size="sm" colour={colourForSeed(coverSeed.podcastShow(track.showSlug), palette)} icon={Podcast} />
               </div>
             )}
 

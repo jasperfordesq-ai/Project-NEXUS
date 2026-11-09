@@ -8,6 +8,8 @@ import { useTranslation } from 'react-i18next';
 import type { Key } from '@heroui/react/rac';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
 import { DynamicIcon, ICON_MAP } from '@/components/ui/DynamicIcon';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import type { MarketplaceCategory } from '@/types/marketplace';
 
 interface CategoryChipsProps {
@@ -19,6 +21,7 @@ interface CategoryChipsProps {
 export function CategoryChips({ categories, activeId, onSelect }: CategoryChipsProps) {
   const { t } = useTranslation('marketplace');
   const selectedKey = activeId == null ? 'all' : String(activeId);
+  const palette = useSitePalette();
 
   const handleSelectionChange = (keys: Set<Key>) => {
     const nextKey = Array.from(keys)[0];
@@ -45,18 +48,31 @@ export function CategoryChips({ categories, activeId, onSelect }: CategoryChipsP
         {t('categories.all')}
       </ToggleButton>
 
-      {categories.map((category) => (
-        <ToggleButton
-          key={category.id}
-          id={String(category.id)}
-        >
-          {/* `icon` is a Lucide icon name from the category seeder; unknown names render no icon. */}
-          {category.icon && ICON_MAP[category.icon] && (
-            <DynamicIcon name={category.icon} className="w-3.5 h-3.5" />
-          )}
-          {category.name}
-        </ToggleButton>
-      ))}
+      {categories.map((category) => {
+        // Each category has its own colour from the community palette, the
+        // same on every visit (AWID: "clear categories"; were all one grey).
+        const colour = colourForSeed(`marketplace-${category.slug || category.id}`, palette);
+        const hasIcon = Boolean(category.icon && ICON_MAP[category.icon]);
+        return (
+          <ToggleButton
+            key={category.id}
+            id={String(category.id)}
+          >
+            <span
+              aria-hidden="true"
+              data-testid="category-chip-mark"
+              data-colour={colour}
+              className={hasIcon
+                ? `inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${categoryColour(colour).band}`
+                : `h-2.5 w-2.5 shrink-0 rounded-full ${categoryColour(colour).dot}`}
+            >
+              {/* `icon` is a Lucide icon name from the category seeder; unknown names render a dot. */}
+              {hasIcon && <DynamicIcon name={category.icon!} className="w-3 h-3" />}
+            </span>
+            {category.name}
+          </ToggleButton>
+        );
+      })}
     </ToggleButtonGroup>
   );
 }

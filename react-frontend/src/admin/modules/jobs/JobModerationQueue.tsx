@@ -20,6 +20,10 @@ import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
 import { EmptyState } from '../../components/EmptyState';
+
+// Written out in full so Tailwind can find them (a class built at runtime,
+// such as `text-${color}`, is never generated and shows no colour).
+const STATUS_TEXT = { success: 'text-success', warning: 'text-warning', danger: 'text-danger' } as const;
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -454,7 +458,7 @@ export function JobModerationQueue() {
             return (
               <>
                 <ModalHeader className="flex items-center gap-2">
-                  <ActionIcon aria-hidden="true" size={20} className={`text-${config.color}`} />
+                  <ActionIcon aria-hidden="true" size={20} className={STATUS_TEXT[config.color]} />
                   {config.label}: {actionModal.job.title}
                 </ModalHeader>
                 <ModalBody>

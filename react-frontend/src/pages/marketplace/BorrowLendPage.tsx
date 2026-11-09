@@ -30,6 +30,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 
 const ITEMS_PER_PAGE = 24;
 
@@ -157,18 +158,15 @@ export function BorrowLendPage() {
       />
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Handshake className="w-7 h-7 text-accent" aria-hidden="true" />
-              {t('borrow.page_title')}
-            </h1>
-            <p className="text-muted text-sm mt-1">
-              {t('borrow.subtitle')}
-            </p>
-          </div>
-          {isAuthenticated && (
+        {/* The same soft panel in the community colour that opens the offers,
+            events and groups pages (AWID: warmer, more inviting). */}
+        <PublicPageHero
+          size="full"
+          title={t('borrow.page_title')}
+          description={t('borrow.subtitle')}
+          icon={<Handshake className="h-7 w-7" aria-hidden="true" />}
+          accent="indigo"
+          action={isAuthenticated ? (
             <Button
               as={Link}
               to={tenantPath('/marketplace/sell')}
@@ -177,8 +175,8 @@ export function BorrowLendPage() {
             >
               {t('borrow.lend_something')}
             </Button>
-          )}
-        </div>
+          ) : undefined}
+        />
 
         {/* CTA banner */}
         {isAuthenticated && (

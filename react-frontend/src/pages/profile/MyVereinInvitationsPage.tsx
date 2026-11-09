@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 
 import UserPlus from 'lucide-react/icons/user-plus';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
@@ -160,15 +161,15 @@ export default function MyVereinInvitationsPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 space-y-4">
       <PageMeta title={t('verein_federation.my_invitations_title')} noIndex />
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <UserPlus className="w-6 h-6 text-accent" />
-          {t('verein_federation.my_invitations_title')}
-        </h1>
-        <p className="text-sm text-muted mt-1">
-          {t('verein_federation.my_invitations_subtitle')}
-        </p>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('verein_federation.my_invitations_title')}
+        description={t('verein_federation.my_invitations_subtitle')}
+        icon={<UserPlus className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+      />
 
       <Card>
         <CardHeader>

@@ -8,6 +8,7 @@
 import { useParams } from 'react-router-dom';
 import { Breadcrumbs } from '@/components/navigation';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 import { HelpCardLink, HelpContactPanel, HelpIcon } from './guides/HelpParts';
 import { HelpNotFound } from './guides/HelpNotFound';
@@ -39,15 +40,14 @@ export function HelpSectionPage() {
         ]}
       />
 
-      <header className="flex items-start gap-4">
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-accent/12 text-accent">
-          <HelpIcon name={section.icon} className="h-7 w-7" />
-        </span>
-        <div>
-          <h1 className="text-2xl font-bold text-theme-primary sm:text-3xl">{title}</h1>
-          <p className="mt-2 text-base leading-7 text-theme-muted">{guideText(audience, sectionKey(section.id, 'summary'))}</p>
-        </div>
-      </header>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        title={title}
+        description={guideText(audience, sectionKey(section.id, 'summary'))}
+        icon={<HelpIcon name={section.icon} className="h-7 w-7" />}
+        accent="indigo"
+      />
 
       <ol className="grid gap-3">
         {section.articles.map((article) => (

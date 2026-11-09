@@ -17,10 +17,12 @@ import { useEffect, useState, FormEvent } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 
 import ArrowLeft from 'lucide-react/icons/arrow-left';
+import Tag from 'lucide-react/icons/tag';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 import { logError } from '@/lib/logger';
 
@@ -231,11 +233,19 @@ export default function SellerCouponEditPage() {
         {t('coupon.back_to_coupons')}
       </Button>
 
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <div className="mb-6">
+        <PublicPageHero
+          size="compact"
+          title={isEdit ? t('coupon.seller.edit_title') : t('coupon.seller.create_title')}
+          icon={<Tag className="h-6 w-6" aria-hidden="true" />}
+          accent="emerald"
+        />
+      </div>
+
       <Card>
         <CardBody className="p-6">
-          <h1 className="text-2xl font-bold mb-6">
-            {isEdit ? t('coupon.seller.edit_title') : t('coupon.seller.create_title')}
-          </h1>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
               label={t('coupon.code')}

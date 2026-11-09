@@ -36,6 +36,7 @@ import { Tabs, Tab } from '@/components/ui/Tabs';
 import { Breadcrumbs } from '@/components/navigation';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -193,21 +194,17 @@ export function MatchesPage() {
       <PageMeta title={t('page_meta.title')} noIndex />
       <Breadcrumbs items={[{ label: t('breadcrumb_dashboard'), href: '/dashboard' }, { label: t('breadcrumb_matches') }]} />
 
-      {/* Header */}
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-accent/20 to-accent-gradient-end/20">
-              <Sparkles className="w-6 h-6 text-accent" />
-            </div>
-            {t('heading')}
-          </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-theme-subtle">{t('subtitle')}</p>
-            <AlgorithmLabel area="matching" />
-          </div>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('heading')}
+        description={t('subtitle')}
+        icon={<Sparkles className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+        action={
+        <div className="flex flex-wrap items-center gap-2">
+          <AlgorithmLabel area="matching" />
           <Button
             as={Link}
             to={tenantPath('/matches/preferences')}
@@ -228,7 +225,8 @@ export function MatchesPage() {
             {t('refresh')}
           </Button>
         </div>
-      </div>
+        }
+      />
 
       {/* Degraded (no coordinates) banner */}
       {meta.degraded_reason === 'no_coordinates' && (

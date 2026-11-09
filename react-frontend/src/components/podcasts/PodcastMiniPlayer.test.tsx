@@ -104,6 +104,15 @@ describe('PodcastMiniPlayer', () => {
     expect(link.getAttribute('href')).toBe('/podcasts/my-show/ep-one');
   });
 
+  // The bar shows on every page while audio plays; a show without artwork had
+  // a grey square there. It now has a small cover in the show's own colour.
+  it('gives a show without artwork a small cover in its own colour', () => {
+    renderBar();
+    const cover = screen.getByTestId('podcast-mini-cover');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBeTruthy();
+  });
+
   it('closes via the dismiss button', () => {
     renderBar();
     fireEvent.click(screen.getByRole('button', { name: 'Close player' }));

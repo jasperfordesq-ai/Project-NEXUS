@@ -42,6 +42,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { useMediaQuery, usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -502,28 +503,28 @@ export function MarketplaceCategoryPage() {
           ]}
         />
 
-        {/* Category header */}
-        <GlassCard className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-              {/* `icon` is a Lucide icon NAME (see MarketplaceCategorySeeder), never text to print. */}
-              {category.icon && ICON_MAP[category.icon] ? (
-                <DynamicIcon name={category.icon} className="w-7 h-7 text-accent" />
-              ) : (
-                <Tag className="w-7 h-7 text-accent" aria-hidden="true" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-foreground">{category.name}</h1>
-              {category.description && (
-                <p className="text-sm text-muted mt-1">{category.description}</p>
-              )}
-              <p className="text-xs text-muted mt-1">
-                {t('category.listings_count', { count: category.listing_count })}
-              </p>
-            </div>
-          </div>
-        </GlassCard>
+        {/* Category header — the same soft panel in the community colour that
+            opens the offers, events and groups pages (AWID: warmer, more
+            inviting). */}
+        <PublicPageHero
+          size="full"
+          title={category.name}
+          description={category.description || undefined}
+          icon={
+            // `icon` is a Lucide icon NAME (see MarketplaceCategorySeeder), never text to print.
+            category.icon && ICON_MAP[category.icon] ? (
+              <DynamicIcon name={category.icon} className="h-7 w-7" />
+            ) : (
+              <Tag className="h-7 w-7" aria-hidden="true" />
+            )
+          }
+          accent="indigo"
+          action={
+            <p className="text-sm text-theme-secondary">
+              {t('category.listings_count', { count: category.listing_count })}
+            </p>
+          }
+        />
 
         {/* Search + Sort */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">

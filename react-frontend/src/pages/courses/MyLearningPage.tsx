@@ -10,8 +10,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import GraduationCap from 'lucide-react/icons/graduation-cap';
 import { Button, Card, CardBody, Chip, Spinner, Progress } from '@/components/ui';
 import { usePageTitle } from '@/hooks';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useTenant } from '@/contexts';
 import { coursesApi, type CourseEnrollment } from '@/lib/api/courses';
 import { writePrintableDocument } from '@/lib/printableDocument';
@@ -45,7 +47,16 @@ export default function MyLearningPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">{t('my_learning.title')}</h1>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <div className="mb-6">
+        <PublicPageHero
+          size="compact"
+          title={t('my_learning.title')}
+          icon={<GraduationCap className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+        />
+      </div>
 
       {enrollments.length === 0 ? (
         <div className="text-center py-16 text-muted">

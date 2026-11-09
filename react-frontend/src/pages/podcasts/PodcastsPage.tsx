@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { Avatar, Button, Card, CardBody, Chip, ModuleStageBadge, SearchField, Select, SelectItem, Spinner } from '@/components/ui';
 import { useAuth, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { podcastsApi, type PodcastShow } from '@/lib/api/podcasts';
 import { resolveThumbnailUrl } from '@/lib/helpers';
 import { safePodcastArtworkUrl } from '@/lib/podcasts/artwork';
@@ -144,25 +145,30 @@ export default function PodcastsPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold leading-tight">{t('title')}</h1>
-            <ModuleStageBadge stage="beta" />
-          </div>
-          <p className="mt-1 max-w-2xl text-sm text-muted">{t('subtitle')}</p>
-        </div>
-
-        {isAuthenticated && (
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button as={Link} to={tenantPath('/podcasts/studio')} variant="tertiary" size="sm">
-              {t('studio.title')}
-            </Button>
-            <Button as={Link} to={tenantPath('/podcasts/studio')} color="primary" size="sm" startContent={<Plus size={16} aria-hidden="true" />}>
-              {t('studio.create_show')}
-            </Button>
-          </div>
-        )}
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <div className="mb-6">
+        <PublicPageHero
+          title={t('title')}
+          description={t('subtitle')}
+          icon={<PodcastIcon className="h-7 w-7" aria-hidden="true" />}
+          accent="indigo"
+          action={
+            <div className="flex flex-wrap items-center gap-2">
+              <ModuleStageBadge stage="beta" />
+              {isAuthenticated && (
+                <>
+                  <Button as={Link} to={tenantPath('/podcasts/studio')} variant="tertiary" size="sm">
+                    {t('studio.title')}
+                  </Button>
+                  <Button as={Link} to={tenantPath('/podcasts/studio')} color="primary" size="sm" startContent={<Plus size={16} aria-hidden="true" />}>
+                    {t('studio.create_show')}
+                  </Button>
+                </>
+              )}
+            </div>
+          }
+        />
       </div>
 
       <div className="mb-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_14rem_12rem_auto]">

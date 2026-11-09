@@ -8,6 +8,10 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
+import { coverSeed } from '@/lib/coverSeeds';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { Link } from 'react-router-dom';
 
@@ -82,9 +86,21 @@ export function JobDetailHeader({
   const TypeIcon = TYPE_ICONS[vacancy.type] ?? Briefcase;
   const deadlineDate = vacancy.deadline ? new Date(vacancy.deadline) : null;
   const salaryDisplay = formatSalary();
+  const palette = useSitePalette();
 
   return (
-    <GlassCard className="p-6">
+    <GlassCard className="overflow-hidden p-0">
+      {/* A cover band in a colour for this kind of work (AWID: attractive
+          visuals), as a group page has. Decoration only. */}
+      <div className="group relative h-20 sm:h-24">
+        <ThemedCover
+          data-testid="job-detail-cover"
+          size="sm"
+          colour={colourForSeed(coverSeed.jobType(vacancy.type), palette)}
+          icon={TypeIcon}
+        />
+      </div>
+      <div className="p-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap mb-2">
@@ -316,6 +332,7 @@ export function JobDetailHeader({
           <MatchBadge match={matchResult} />
         </div>
       )}
+      </div>
     </GlassCard>
   );
 }

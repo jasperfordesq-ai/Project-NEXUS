@@ -35,6 +35,7 @@ import { useTranslation } from 'react-i18next';
 import { Breadcrumbs } from '@/components/navigation';
 import { EmptyState } from '@/components/feedback';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
@@ -209,16 +210,15 @@ export function FederationGroupsPage() {
         ]}
       />
 
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-          <UsersRound className="w-7 h-7 text-violet-400" aria-hidden="true" />
-          {t('groups.heading')}
-        </h1>
-        <p className="text-theme-muted mt-1">
-          {t('groups.subheading')}
-        </p>
-      </div>
+      {/* Header — the same soft panel in the community colour that opens the
+          offers, events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('groups.heading')}
+        description={t('groups.subheading')}
+        icon={<UsersRound className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+      />
 
       {/* Filter Bar */}
       <GlassCard className="p-4">

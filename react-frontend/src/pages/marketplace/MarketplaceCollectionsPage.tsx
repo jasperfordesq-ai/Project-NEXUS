@@ -47,6 +47,7 @@ import { resolveThumbnailUrl } from '@/lib/helpers';
 import { formatMarketplaceCurrency } from '@/lib/marketplaceNumbers';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 
 export function MarketplaceCollectionsPage() {
   const { t } = useTranslation('marketplace');
@@ -377,17 +378,15 @@ export function MarketplaceCollectionsPage() {
       />
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <FolderHeart className="w-7 h-7 text-accent" />
-              {t('collections.page_title')}
-            </h1>
-            <p className="text-muted text-sm mt-1">
-              {t('collections.subtitle')}
-            </p>
-          </div>
+        {/* The same soft panel in the community colour that opens the offers,
+            events and groups pages (AWID: warmer, more inviting). */}
+        <PublicPageHero
+          size="full"
+          title={t('collections.page_title')}
+          description={t('collections.subtitle')}
+          icon={<FolderHeart className="h-7 w-7" aria-hidden="true" />}
+          accent="indigo"
+          action={
           <Button
 
             startContent={<Plus className="w-4 h-4" />}
@@ -395,7 +394,8 @@ export function MarketplaceCollectionsPage() {
           >
             {t('collections.create')}
           </Button>
-        </div>
+          }
+        />
 
         {/* Tabs */}
         <Tabs

@@ -46,6 +46,7 @@ import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, resolveThumbnailUrl, getFormattingLocale } from '@/lib/helpers';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { formatMarketplaceCurrency } from '@/lib/marketplaceNumbers';
 import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
@@ -395,16 +396,15 @@ export function SellerOrdersPage() {
       <PageMeta title={t('orders.seller.page_title')} noIndex={true} />
 
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Store className="w-7 h-7 text-accent" />
-            {t('orders.seller.title')}
-          </h1>
-          <p className="text-muted text-sm mt-1">
-            {t('orders.seller.subtitle')}
-          </p>
-        </div>
+        {/* The same soft panel in the community colour that opens the offers,
+            events and groups pages (AWID: warmer, more inviting). */}
+        <PublicPageHero
+          size="compact"
+          title={t('orders.seller.title')}
+          description={t('orders.seller.subtitle')}
+          icon={<Store className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+        />
 
         {/* Tabs */}
         <Tabs

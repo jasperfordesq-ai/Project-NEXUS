@@ -34,6 +34,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -208,23 +209,24 @@ export function MyAdCampaignsPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
       <PageMeta title={t('advertise.page_title')} noIndex />
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Megaphone size={28} className="text-accent" aria-hidden="true" />
-          <div>
-            <h1 className="text-2xl font-bold text-theme-primary">{t('advertise.page_title')}</h1>
-            <p className="text-sm text-theme-subtle">{t('advertise.page_subtitle')}</p>
-          </div>
-        </div>
-        <Button
-          color="primary"
-          startContent={<Plus size={16} aria-hidden="true" />}
-          onPress={createModal.onOpen}
-        >
-          {t('advertise.create_campaign')}
-        </Button>
-      </div>
+      {/* Header — the same soft panel in the community colour that opens the
+          offers, events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('advertise.page_title')}
+        description={t('advertise.page_subtitle')}
+        icon={<Megaphone className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+        action={
+          <Button
+            color="primary"
+            startContent={<Plus size={16} aria-hidden="true" />}
+            onPress={createModal.onOpen}
+          >
+            {t('advertise.create_campaign')}
+          </Button>
+        }
+      />
 
       {/* Campaign list */}
       <GlassCard className="overflow-hidden">

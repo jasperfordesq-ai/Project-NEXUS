@@ -187,4 +187,32 @@ describe('CourseCard', () => {
     render(<CourseCard course={makeCourse({ summary: null })} />);
     expect(screen.queryByText('Learn the basics')).toBeNull();
   });
+
+  // AWID feedback: "attractive visuals". A course without a picture showed a
+  // grey box with a faint cap; it now gets a cover in a colour, as offers,
+  // events and blog posts do.
+  it('gives a course without a picture a cover in a colour, not a grey box', async () => {
+    const { CourseCard } = await import('./CourseCard');
+    render(<CourseCard course={makeCourse({ cover_image: null })} />);
+    const cover = screen.getByTestId('course-card-cover');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBeTruthy();
+    expect(cover.getAttribute('data-colour')).not.toBe('slate');
+  });
+
+  it('gives courses in the same category the same colour', async () => {
+    const { CourseCard } = await import('./CourseCard');
+    const { unmount } = render(<CourseCard course={makeCourse({ id: 1, title: 'A' })} />);
+    const first = screen.getByTestId('course-card-cover').getAttribute('data-colour');
+    unmount();
+    render(<CourseCard course={makeCourse({ id: 99, title: 'B' })} />);
+    expect(screen.getByTestId('course-card-cover').getAttribute('data-colour')).toBe(first);
+  });
+
+  it('shows the picture, not a cover, when the course has one', async () => {
+    const { CourseCard } = await import('./CourseCard');
+    render(<CourseCard course={makeCourse({ cover_image: '/uploads/course.jpg' })} />);
+    expect(screen.queryByTestId('course-card-cover')).toBeNull();
+    expect(screen.getByRole('img', { name: 'Introduction to Timebanking' })).toBeInTheDocument();
+  });
 });

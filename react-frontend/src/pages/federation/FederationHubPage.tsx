@@ -53,6 +53,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Spinner } from '@/components/ui/Spinner';
 import { Breadcrumbs, type BreadcrumbItem } from '@/components/navigation';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
@@ -216,9 +217,10 @@ function FederationHero({ onOptIn, isOptingIn }: { onOptIn: () => void; isOpting
             <Network className="w-10 h-10" aria-hidden="true" />
           </motion.div>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-theme-primary mb-4">
+          {/* h2: the page's one h1 is the panel above (hub.title). */}
+          <h2 className="text-3xl md:text-4xl font-bold text-theme-primary mb-4">
             {t('hub.hero_title')}
-          </h1>
+          </h2>
           <p className="text-lg text-theme-muted mb-8 max-w-2xl mx-auto">
             {t('hub.hero_description')}
           </p>
@@ -821,22 +823,23 @@ export default function FederationHubPage() {
       <PageMeta title={t('hub.page_title')} noIndex />
       <Breadcrumbs items={breadcrumbs} />
 
-      {/* Page header */}
+      {/* Page header — the same soft panel in the community colour that opens
+          the offers, events and groups pages (AWID: warmer, more inviting). */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         className="mt-4 mb-8"
       >
-        <div className="flex items-center gap-3 mb-1">
-          <Network className="w-7 h-7 text-accent" aria-hidden="true" />
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('hub.title')}</h1>
-        </div>
-        <p className="text-muted ml-10">
-          {isOptedIn
+        <PublicPageHero
+          size="full"
+          title={t('hub.title')}
+          description={isOptedIn
             ? t('hub.subtitle_opted_in')
             : t('hub.subtitle_opted_out')}
-        </p>
+          icon={<Network className="h-7 w-7" aria-hidden="true" />}
+          accent="indigo"
+        />
       </motion.div>
 
       {/* Not opted in: show hero */}

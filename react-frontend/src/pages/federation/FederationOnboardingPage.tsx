@@ -48,6 +48,7 @@ import HandHeart from 'lucide-react/icons/hand-heart';
 import Network from 'lucide-react/icons/network';
 import { useTranslation } from 'react-i18next';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
@@ -247,14 +248,19 @@ export function FederationOnboardingPage() {
   return (
     <div className="max-w-2xl mx-auto py-6 space-y-6">
       <PageMeta title={t('onboarding.page_title')} noIndex />
-      {/* Title */}
+      {/* Title — the same soft panel in the community colour that opens the
+          offers, events and groups pages (AWID: warmer, more inviting). */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center"
       >
-        <h1 className="text-2xl font-bold text-theme-primary">{t('onboarding.title')}</h1>
-        <p className="text-theme-muted mt-1">{t('onboarding.subtitle')}</p>
+        <PublicPageHero
+          size="compact"
+          title={t('onboarding.title')}
+          description={t('onboarding.subtitle')}
+          icon={<Network className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+        />
       </motion.div>
 
       {/* Progress Bar */}

@@ -15,13 +15,13 @@ import ShieldOff from 'lucide-react/icons/shield-off';
 import UserX from 'lucide-react/icons/user-x';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { EmptyState, LoadingScreen } from '@/components/feedback';
 import { useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
@@ -108,32 +108,28 @@ export function BlockedUsersPage() {
     <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-0">
       <PageMeta title={t('blocked_users.title')} noIndex />
 
-      {/* Header */}
-      <header className="overflow-hidden rounded-2xl border border-theme-default bg-theme-surface">
-        <div className="flex flex-col gap-5 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex max-w-2xl items-start gap-4">
-            <Button as={Link} to={tenantPath('/settings?tab=privacy')} isIconOnly variant="tertiary" aria-label={t('back', { ns: 'common' })}>
-              <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-            </Button>
-            <div>
-              <Chip size="sm" variant="soft" color="danger" className="mb-3 font-medium">
-                {t('blocked_users.privacy_badge')}
-              </Chip>
-              <h1 className="flex items-center gap-3 text-3xl font-bold leading-tight text-theme-primary sm:text-4xl">
-                <ShieldOff className="h-8 w-8 text-[var(--color-error)]" aria-hidden="true" />
-                {t('blocked_users.title')}
-              </h1>
-              <p className="mt-2 text-sm leading-6 text-theme-muted sm:text-base">{t('blocked_users.subtitle')}</p>
-            </div>
+      {/* Back to the privacy settings, above the panel. */}
+      <Button as={Link} to={tenantPath('/settings?tab=privacy')} isIconOnly variant="tertiary" aria-label={t('back', { ns: 'common' })}>
+        <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+      </Button>
+
+      {/* Header — the same soft panel in the community colour that opens the
+          offers, events and groups pages (AWID: warmer, more inviting). Was a
+          grey bordered card. */}
+      <PublicPageHero
+        size="compact"
+        eyebrow={t('blocked_users.privacy_badge')}
+        title={t('blocked_users.title')}
+        description={t('blocked_users.subtitle')}
+        icon={<ShieldOff className="h-6 w-6" aria-hidden="true" />}
+        accent="rose"
+        action={!loadError ? (
+          <div className="rounded-xl border border-theme-default bg-theme-elevated px-4 py-3 lg:min-w-64">
+            <span className="block text-xs font-medium uppercase tracking-wide text-theme-subtle">{t('blocked_users.summary_label')}</span>
+            <span className="mt-1 block font-semibold text-theme-primary">{t('blocked_users.count', { count: blockedUsers.length })}</span>
           </div>
-          {!loadError && (
-            <div className="rounded-xl border border-theme-default bg-theme-elevated px-4 py-3 lg:min-w-64">
-              <span className="block text-xs font-medium uppercase tracking-wide text-theme-subtle">{t('blocked_users.summary_label')}</span>
-              <span className="mt-1 block font-semibold text-theme-primary">{t('blocked_users.count', { count: blockedUsers.length })}</span>
-            </div>
-          )}
-        </div>
-      </header>
+        ) : undefined}
+      />
 
       {/* List — never show the "No blocked users" empty state on a failed load */}
       {loadError ? (

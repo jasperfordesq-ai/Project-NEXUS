@@ -32,6 +32,7 @@ import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 // Direct hook paths, not the '@/hooks' barrel: page tests replace that barrel with
 // a partial stub, so a barrel import would resolve to undefined and crash them.
@@ -265,23 +266,24 @@ export function ExchangesPage() {
           (useSetAppBarTitle) and the "Browse Listings" CTA is re-homed into the
           sticky bar below, since the header was its only phone entry point once
           the list is non-empty. */}
+      {/* Larger screens: the same soft panel in the community colour that opens
+          the offers, events and groups pages (AWID: warmer, more inviting). */}
       {!isPhone && (
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-theme-primary">
-            {t('title')}
-          </h1>
-          <p className="text-theme-muted mt-1">
-            {t('subtitle')}
-          </p>
-        </div>
-        <Button as={Link} to={tenantPath("/listings")}
-          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-          startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
-        >
-          {t('browse_listings')}
-        </Button>
-      </div>
+      <PublicPageHero
+        size="compact"
+        title={t('title')}
+        description={t('subtitle')}
+        icon={<ArrowRightLeft className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+        action={
+          <Button as={Link} to={tenantPath("/listings")}
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
+            startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
+          >
+            {t('browse_listings')}
+          </Button>
+        }
+      />
       )}
 
       {/* Phone: slim sticky bar replacing the horizontally-scrolling tab strip.

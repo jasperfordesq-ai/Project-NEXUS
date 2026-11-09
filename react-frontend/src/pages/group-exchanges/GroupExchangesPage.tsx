@@ -36,6 +36,7 @@ import { CardRowsSkeleton } from '@/components/ui/Skeletons';
 import { Tabs, Tab } from '@/components/ui/Tabs';
 import { EmptyState } from '@/components/feedback';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
@@ -204,23 +205,23 @@ export function GroupExchangesPage() {
       className="space-y-6"
     >
       <PageMeta title={t('page_meta.list.title')} noIndex />
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-theme-primary">
-            {t('title')}
-          </h1>
-          <p className="text-theme-muted mt-1">
-            {t('subtitle')}
-          </p>
-        </div>
-        <Button as={Link} to={tenantPath('/group-exchanges/create')}
-          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-          startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
-        >
-          {t('new_exchange')}
-        </Button>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('title')}
+        description={t('subtitle')}
+        icon={<Users className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+        action={
+          <Button as={Link} to={tenantPath('/group-exchanges/create')}
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
+            startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
+          >
+            {t('new_exchange')}
+          </Button>
+        }
+      />
 
       {/* Tabs */}
       <GlassCard className="p-2">

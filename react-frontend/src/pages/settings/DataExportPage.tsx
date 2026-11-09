@@ -13,11 +13,11 @@ import ShieldCheck from 'lucide-react/icons/shield-check';
 import History from 'lucide-react/icons/history';
 import AlertTriangle from 'lucide-react/icons/alert-triangle';
 import { Button } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { RadioGroup, Radio } from '@/components/ui/Radio';
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui/Table';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api, tokenManager, API_BASE } from '@/lib/api';
@@ -156,30 +156,29 @@ export function DataExportPage(): ReactNode {
     >
       <PageMeta title={t('data_export.meta.title')} noIndex />
 
-      {/* Hero */}
-      <header className="overflow-hidden rounded-2xl border border-theme-default bg-theme-surface">
-        <div className="flex flex-col gap-5 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex max-w-2xl items-start gap-4">
-            <div className="rounded-2xl bg-accent/15 p-3">
-              <ShieldCheck className="h-7 w-7 text-accent" aria-hidden="true" />
+      {/* Hero — the same soft panel in the community colour that opens the
+          offers, events and groups pages (AWID: warmer, more inviting). Was a
+          grey bordered card. The panel holds one description, so the intro
+          sits just below it. */}
+      <div className="space-y-3">
+        <PublicPageHero
+          size="compact"
+          eyebrow={t('data_export.format.label')}
+          title={t('data_export.title')}
+          description={t('data_export.subtitle')}
+          icon={<ShieldCheck className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+          action={
+            <div className="rounded-xl border border-theme-default bg-theme-elevated px-4 py-3 lg:min-w-72">
+              <span className="block text-xs font-medium uppercase tracking-wide text-theme-subtle">{t('data_export.history.title')}</span>
+              <span className="mt-1 block font-semibold text-theme-primary">
+                {isLoadingHistory ? t('data_export.downloading') : t('data_export.history.count', { count: history.length })}
+              </span>
             </div>
-            <div className="space-y-2">
-              <Chip size="sm" variant="soft" color="accent" className="font-medium">
-                {t('data_export.format.label')}
-              </Chip>
-              <h1 className="text-3xl font-bold leading-tight text-theme-primary sm:text-4xl">{t('data_export.title')}</h1>
-              <p className="text-sm leading-6 text-theme-muted sm:text-base">{t('data_export.subtitle')}</p>
-              <p className="text-sm leading-6 text-theme-muted">{t('data_export.intro')}</p>
-            </div>
-          </div>
-          <div className="rounded-xl border border-theme-default bg-theme-elevated px-4 py-3 lg:min-w-72">
-            <span className="block text-xs font-medium uppercase tracking-wide text-theme-subtle">{t('data_export.history.title')}</span>
-            <span className="mt-1 block font-semibold text-theme-primary">
-              {isLoadingHistory ? t('data_export.downloading') : t('data_export.history.count', { count: history.length })}
-            </span>
-          </div>
-        </div>
-      </header>
+          }
+        />
+        <p className="px-1 text-sm leading-6 text-theme-muted">{t('data_export.intro')}</p>
+      </div>
 
       {/* Format + download */}
       <GlassCard className="space-y-6 p-5 sm:p-6">

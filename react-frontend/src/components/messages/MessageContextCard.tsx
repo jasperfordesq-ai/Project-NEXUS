@@ -24,6 +24,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveThumbnailUrl } from '@/lib/helpers';
 import { Chip, Skeleton } from '@/components/ui';
+import { feedTypeColour } from '@/components/feed/feedTypeColours';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -42,11 +43,14 @@ interface MessageContextCardProps {
   contextId: number;
 }
 
-const CONTEXT_CONFIG: Record<string, { icon: typeof ListChecks; labelKey: string; color: 'accent' | 'default' | 'warning' | 'danger'; apiPath: string; detailPath: string }> = {
-  listing: { icon: ListChecks, labelKey: 'context_type_listing', color: 'accent', apiPath: '/listings', detailPath: '/listings' },
-  event: { icon: Calendar, labelKey: 'context_type_event', color: 'default', apiPath: '/events', detailPath: '/events' },
-  job: { icon: Briefcase, labelKey: 'context_type_job', color: 'warning', apiPath: '/jobs', detailPath: '/jobs' },
-  volunteering: { icon: Heart, labelKey: 'context_type_volunteering', color: 'danger', apiPath: '/volunteering/opportunities', detailPath: '/volunteering/opportunities' },
+// `feedKind`: the tile takes the colour that kind of post has in the feed
+// (feedTypeColours), so a message about an event looks like an event. Was a
+// class built at runtime (`bg-${color}/10`), which Tailwind cannot find.
+const CONTEXT_CONFIG: Record<string, { icon: typeof ListChecks; labelKey: string; color: 'accent' | 'success' | 'warning' | 'danger'; feedKind: string; apiPath: string; detailPath: string }> = {
+  listing: { icon: ListChecks, labelKey: 'context_type_listing', color: 'accent', feedKind: 'listing', apiPath: '/listings', detailPath: '/listings' },
+  event: { icon: Calendar, labelKey: 'context_type_event', color: 'success', feedKind: 'event', apiPath: '/events', detailPath: '/events' },
+  job: { icon: Briefcase, labelKey: 'context_type_job', color: 'warning', feedKind: 'job', apiPath: '/jobs', detailPath: '/jobs' },
+  volunteering: { icon: Heart, labelKey: 'context_type_volunteering', color: 'danger', feedKind: 'volunteer', apiPath: '/volunteering/opportunities', detailPath: '/volunteering/opportunities' },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -128,8 +132,8 @@ export function MessageContextCard({ contextType, contextId }: MessageContextCar
               loading="lazy"
             />
           ) : (
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center bg-${config.color}/10`}>
-              <Icon className={`w-5 h-5 text-${config.color}`} />
+            <div data-testid="message-context-tile" className={`w-10 h-10 rounded-lg flex items-center justify-center ${feedTypeColour(config.feedKind).label}`}>
+              <Icon className="w-5 h-5" aria-hidden="true" />
             </div>
           )}
         </div>

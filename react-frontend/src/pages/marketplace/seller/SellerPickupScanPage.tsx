@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -64,15 +65,15 @@ export function SellerPickupScanPage() {
     <>
       <PageMeta title={t('marketplace.pickup.scan_title')} noIndex />
       <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <QrCode className="w-7 h-7 text-accent" />
-          {t('marketplace.pickup.scan_title')}
-        </h1>
-        <p className="text-muted text-sm mt-1">
-          {t('marketplace.pickup.scan_subtitle')}
-        </p>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('marketplace.pickup.scan_title')}
+        description={t('marketplace.pickup.scan_subtitle')}
+        icon={<QrCode className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+      />
 
       <GlassCard className="p-6 space-y-4">
         <Input

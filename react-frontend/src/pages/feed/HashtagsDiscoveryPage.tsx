@@ -23,6 +23,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { SearchField } from '@/components/ui/SearchField';
 import { Spinner } from '@/components/ui/Spinner';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { EmptyState } from '@/components/feedback';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts';
@@ -118,27 +119,22 @@ export function HashtagsDiscoveryPage() {
     />
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button as={Link} to={tenantPath('/feed')}
-          isIconOnly
-          variant="flat"
-          className="bg-theme-elevated text-theme-muted"
-          aria-label={t('hashtags.back_to_feed')}
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center shadow-lg shadow-accent/20">
-              <Hash className="w-5 h-5 text-white" aria-hidden="true" />
-            </div>
-            {t('hashtags.title')}
-          </h1>
-          <p className="text-theme-muted mt-1 text-sm">
-            {t('hashtags.subtitle')}
-          </p>
-        </div>
-      </div>
+      <Button as={Link} to={tenantPath('/feed')}
+        isIconOnly
+        variant="flat"
+        className="bg-theme-elevated text-theme-muted"
+        aria-label={t('hashtags.back_to_feed')}
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </Button>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        title={t('hashtags.title')}
+        description={t('hashtags.subtitle')}
+        icon={<Hash className="h-7 w-7" aria-hidden="true" />}
+        accent="indigo"
+      />
 
       {/* Search */}
       <GlassCard className="p-4">

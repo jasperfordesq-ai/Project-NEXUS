@@ -32,6 +32,7 @@ import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveThumbnailUrl, getFormattingLocale } from '@/lib/helpers';
@@ -165,21 +166,24 @@ export function CampaignsPage() {
         {t('title')}
       </Button>
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-[var(--color-text)] flex items-center gap-3">
-          <Layers className="w-7 h-7" />
-          {t('campaigns.title')}
-        </h1>
-        {isAdmin && (
-          <Button
-            color="primary"
-            startContent={<Plus className="w-4 h-4" />}
-            onPress={onOpen}
-          >
-            {t('campaigns.create')}
-          </Button>
-        )}
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <div className="mb-6">
+        <PublicPageHero
+          size="compact"
+          title={t('campaigns.title')}
+          icon={<Layers className="h-6 w-6" aria-hidden="true" />}
+          accent="amber"
+          action={isAdmin ? (
+            <Button
+              color="primary"
+              startContent={<Plus className="w-4 h-4" />}
+              onPress={onOpen}
+            >
+              {t('campaigns.create')}
+            </Button>
+          ) : undefined}
+        />
       </div>
 
       {/* Loading */}

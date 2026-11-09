@@ -45,6 +45,7 @@ import { getFormattingLocale, resolveThumbnailUrl } from '@/lib/helpers';
 import { safeLocalStorageGet, safeLocalStorageSet } from '@/lib/safeStorage';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -288,17 +289,15 @@ export function MyListingsPage() {
       <PageMeta title={t('my_listings.page_title')} noIndex={true} />
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <ShoppingBag className="w-7 h-7 text-accent" />
-              {t('my_listings.title')}
-            </h1>
-            <p className="text-muted text-sm mt-1">
-              {t('my_listings.subtitle')}
-            </p>
-          </div>
+        {/* The same soft panel in the community colour that opens the offers,
+            events and groups pages (AWID: warmer, more inviting). */}
+        <PublicPageHero
+          size="compact"
+          title={t('my_listings.title')}
+          description={t('my_listings.subtitle')}
+          icon={<ShoppingBag className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+          action={
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <Button
               as={Link}
@@ -316,7 +315,8 @@ export function MyListingsPage() {
               {t('hub.sell_something')}
             </Button>
           </div>
-        </div>
+          }
+        />
 
         {/* AG48 — Onboarding nudge */}
         {!onboardingDone && !onboardingDismissed && (

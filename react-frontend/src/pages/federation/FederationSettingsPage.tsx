@@ -40,6 +40,7 @@ import Mail from 'lucide-react/icons/mail';
 import { useTranslation } from 'react-i18next';
 import { Breadcrumbs } from '@/components/navigation';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
@@ -299,15 +300,15 @@ export function FederationSettingsPage() {
           { label: t('settings.breadcrumb_federation'), href: tenantPath('/federation') },
           { label: t('settings.breadcrumb_settings') },
         ]} />
-        <div>
-          <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-            <Settings className="w-7 h-7 text-accent dark:text-accent" aria-hidden="true" />
-            {t('settings.heading')}
-          </h1>
-          <p className="text-theme-muted mt-1">
-            {t('settings.subheading')}
-          </p>
-        </div>
+        {/* The same soft panel in the community colour that opens the offers,
+            events and groups pages (AWID: warmer, more inviting). */}
+        <PublicPageHero
+          size="compact"
+          title={t('settings.heading')}
+          description={t('settings.subheading')}
+          icon={<Settings className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+        />
         <div role="status" aria-busy="true" aria-label={t('loading', { ns: 'common' })} className="flex items-center justify-center py-20">
           <Spinner size="lg" />
         </div>
@@ -354,15 +355,16 @@ export function FederationSettingsPage() {
         { label: t('settings.breadcrumb_settings') },
       ]} />
 
-      {/* Header */}
+      {/* Header — the same soft panel in the community colour that opens the
+          offers, events and groups pages (AWID: warmer, more inviting). */}
       <motion.div variants={itemVariants}>
-        <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-          <Settings className="w-7 h-7 text-accent dark:text-accent" aria-hidden="true" />
-          {t('settings.heading')}
-        </h1>
-        <p className="text-theme-muted mt-1">
-          {t('settings.subheading')}
-        </p>
+        <PublicPageHero
+          size="compact"
+          title={t('settings.heading')}
+          description={t('settings.subheading')}
+          icon={<Settings className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+        />
       </motion.div>
 
       {/* â”€â”€â”€ Status Banner â”€â”€â”€ */}

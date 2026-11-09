@@ -36,6 +36,7 @@ import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGro
 import { EmptyState } from '@/components/feedback';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -259,54 +260,49 @@ export function SkillsBrowsePage() {
         noIndex
       />
       {/* ── Hero / Explainer ──────────────────────────────────────────── */}
-      <GlassCard className="p-5 sm:p-6">
-        <div className="relative">
-          <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
-              <GraduationCap className="w-5 h-5 text-accent" aria-hidden="true" />
-            </div>
-            {t('skills.browse_title')}
-          </h1>
-
-          <p className="text-theme-muted mt-3 text-sm leading-relaxed max-w-2xl">
-            {t('skills.explainer')}
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <div className="flex items-start gap-2">
-              <HandHelping className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" aria-hidden="true" />
-              <p className="text-xs text-theme-subtle">
-                <span className="font-medium text-theme-success">
-                  {t('skills.offering_label')}
-                </span>
-                {' - '}
-                {t('skills.offering_desc')}
-              </p>
-            </div>
-            <div className="flex items-start gap-2">
-              <Megaphone className="w-4 h-4 text-[var(--color-info)] mt-0.5 shrink-0" aria-hidden="true" />
-              <p className="text-xs text-theme-subtle">
-                <span className="font-medium text-blue-600 dark:text-blue-400">
-                  {t('skills.requesting_label')}
-                </span>
-                {' - '}
-                {t('skills.requesting_desc')}
-              </p>
-            </div>
-          </div>
-
-          {isAuthenticated && hasModule('settings') && (
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <div>
+        <PublicPageHero
+          title={t('skills.browse_title')}
+          description={t('skills.explainer')}
+          icon={<GraduationCap className="h-7 w-7" aria-hidden="true" />}
+          accent="indigo"
+          action={isAuthenticated && hasModule('settings') ? (
             <Link
               to={tenantPath('/settings?tab=skills')}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/20"
+              className="inline-flex items-center gap-2 rounded-lg bg-theme-elevated px-4 py-2 text-sm font-medium text-theme-primary shadow-sm transition-colors hover:bg-theme-hover"
             >
               <Settings className="w-4 h-4" aria-hidden="true" />
               {t('skills.add_your_skills')}
               <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
             </Link>
-          )}
+          ) : undefined}
+        />
+
+        <div className="flex flex-col sm:flex-row gap-4 mt-4 px-1">
+          <div className="flex items-start gap-2">
+            <HandHelping className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" aria-hidden="true" />
+            <p className="text-xs text-theme-subtle">
+              <span className="font-medium text-theme-success">
+                {t('skills.offering_label')}
+              </span>
+              {' - '}
+              {t('skills.offering_desc')}
+            </p>
+          </div>
+          <div className="flex items-start gap-2">
+            <Megaphone className="w-4 h-4 text-[var(--color-info)] mt-0.5 shrink-0" aria-hidden="true" />
+            <p className="text-xs text-theme-subtle">
+              <span className="font-medium text-blue-600 dark:text-blue-400">
+                {t('skills.requesting_label')}
+              </span>
+              {' - '}
+              {t('skills.requesting_desc')}
+            </p>
+          </div>
         </div>
-      </GlassCard>
+      </div>
 
       {/* ── Stats ────────────────────────────────────────────────────────── */}
       {!isLoading && !error && categories.length > 0 && (

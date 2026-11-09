@@ -10,7 +10,11 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardBody, Chip } from '@/components/ui';
+import { ThemedCover } from '@/components/ui/ThemedCover';
 import { useTenant } from '@/contexts';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
+import { coverSeed } from '@/lib/coverSeeds';
 import GraduationCap from 'lucide-react/icons/graduation-cap';
 import Users from 'lucide-react/icons/users';
 import { normalizeCourseMediaUrl } from '@/lib/courseContentSecurity';
@@ -28,20 +32,25 @@ export function CourseCard({ course }: CourseCardProps) {
   const coverThumbnail = coverImage
     ? resolveThumbnailUrl(coverImage, { width: 640, height: 360 })
     : '';
+  const palette = useSitePalette();
+  // Courses in one category share a colour; the course page uses the same one.
+  const coverColour = colourForSeed(coverSeed.course(course), palette);
 
   return (
     <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
       <Link to={tenantPath(`/courses/${course.slug}`)} className="block">
-        <div className="aspect-video w-full bg-[var(--color-surface-2)] flex items-center justify-center overflow-hidden">
+        <div className="group aspect-video w-full overflow-hidden">
           {coverImage ? (
             <img src={coverThumbnail} alt={course.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
           ) : (
-            <GraduationCap size={40} className="text-muted" aria-hidden="true" />
+            // No picture: a cover in a colour from the community palette, as
+            // offers, events and blog posts have (was a grey box).
+            <ThemedCover data-testid="course-card-cover" colour={coverColour} icon={GraduationCap} />
           )}
         </div>
         <CardBody className="p-4 flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <Chip size="sm" variant="soft">{t(`level.${course.level}`)}</Chip>
+            <Chip size="sm" variant="soft" color="accent">{t(`level.${course.level}`)}</Chip>
             {course.category?.name ? (
               <Chip size="sm" variant="soft" color="secondary">{course.category.name}</Chip>
             ) : null}

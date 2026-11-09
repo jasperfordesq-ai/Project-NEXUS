@@ -1,5 +1,5 @@
 import { getFormattingLocale } from '@/lib/helpers';
-import { Card, CardBody, CardHeader, Button, Chip, Spinner, useConfirm } from '@/components/ui';
+import { Card, CardBody, Button, Chip, Spinner, useConfirm } from '@/components/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Separator } from '@/components/ui';
@@ -8,6 +8,7 @@ import ExternalLink from 'lucide-react/icons/external-link';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useTenant, useToast } from '@/contexts';
 import api from '@/lib/api';
 // Copyright © 2024–2026 Jasper Ford
@@ -143,39 +144,41 @@ export function MySubscriptionPage() {
     return (
       <div className="max-w-xl mx-auto px-4 py-12">
         <PageMeta title={t('premium.manage_title')} noIndex />
-        <Card className="border border-border">
-          <CardBody className="text-center py-10 flex flex-col items-center gap-4">
-            <HandHeart size={48} className="text-[var(--color-success)]" aria-hidden="true" />
-            <h1 className="text-xl font-semibold">
-              {t('premium.no_subscription_title')}
-            </h1>
-            <p className="text-[var(--color-text-secondary)]">
-              {t('premium.no_subscription_body')}
-            </p>
+        {/* The same soft panel in the community colour that opens the offers,
+            events and groups pages (AWID: warmer, more inviting). Was a grey
+            bordered card. */}
+        <PublicPageHero
+          size="compact"
+          title={t('premium.no_subscription_title')}
+          description={t('premium.no_subscription_body')}
+          icon={<HandHeart className="h-6 w-6" aria-hidden="true" />}
+          accent="emerald"
+          action={
             <Button as={Link} to={tenantPath('/premium')} variant="primary">
               {t('premium.view_pricing_cta')}
             </Button>
-          </CardBody>
-        </Card>
+          }
+        />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-2xl mx-auto px-4 py-10 space-y-6">
       <PageMeta title={t('premium.manage_title')} noIndex />
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). Was the
+          header of the grey bordered card below. */}
+      <PublicPageHero
+        size="compact"
+        title={sub.tier_name}
+        description={sub.billing_interval === 'yearly'
+          ? t('premium.billed_yearly')
+          : t('premium.billed_monthly')}
+        icon={<HandHeart className="h-6 w-6" aria-hidden="true" />}
+        accent="emerald"
+      />
       <Card className="border border-border">
-        <CardHeader className="flex items-center gap-3">
-          <HandHeart className="text-[var(--color-success)]" size={24} aria-hidden="true" />
-          <div>
-            <h1 className="text-2xl font-semibold">{sub.tier_name}</h1>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              {sub.billing_interval === 'yearly'
-                ? t('premium.billed_yearly')
-                : t('premium.billed_monthly')}
-            </p>
-          </div>
-        </CardHeader>
         <CardBody className="flex flex-col gap-5">
           <div className="flex items-center gap-2">
             <span className="text-sm text-[var(--color-text-secondary)]">

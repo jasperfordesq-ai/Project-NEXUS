@@ -29,6 +29,7 @@ import { CardRowsSkeleton } from '@/components/ui/Skeletons';
 import { EmptyState } from '@/components/feedback';
 import { Breadcrumbs } from '@/components/navigation';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -148,14 +149,14 @@ export function ClubsPage() {
 
       <Breadcrumbs items={[{ label: t('clubs.meta.title') }]} />
 
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-          <Users className="w-7 h-7 text-accent" aria-hidden="true" />
-          {t('clubs.meta.title')}
-        </h1>
-        <p className="text-theme-muted mt-1">{t('clubs.subtitle')}</p>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        title={t('clubs.meta.title')}
+        description={t('clubs.subtitle')}
+        icon={<Users className="h-7 w-7" aria-hidden="true" />}
+        accent="indigo"
+      />
 
       {/* Search */}
       <div className="w-full sm:max-w-md">

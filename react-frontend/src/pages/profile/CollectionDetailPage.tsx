@@ -22,6 +22,7 @@ import { api } from '@/lib/api';
 import { usePageTitle } from '@/hooks';
 import { LoadingScreen, EmptyState } from '@/components/feedback';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useTenant, useToast } from '@/contexts';
 
 interface SavedItem {
@@ -122,17 +123,24 @@ export default function CollectionDetailPage() {
         {t('collections.back_to_my')}
       </Link>
 
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). The
+          collection's own colour dot stays as its picture. */}
       {data?.collection && (
-        <div className="flex items-center gap-3 mb-6">
-          <span
-            className="w-5 h-5 rounded-full"
-            style={{ backgroundColor: data.collection.color || 'var(--color-primary)' }}
-            aria-hidden="true"
+        <div className="mb-6">
+          <PublicPageHero
+            size="compact"
+            title={data.collection.name}
+            description={t('collections.items_count', { n: data.collection.items_count })}
+            icon={
+              <span
+                className="block h-6 w-6 rounded-full"
+                style={{ backgroundColor: data.collection.color || 'var(--color-primary)' }}
+                aria-hidden="true"
+              />
+            }
+            accent="indigo"
           />
-          <h1 className="text-2xl font-bold">{data.collection.name}</h1>
-          <span className="text-[var(--text-muted)]">
-            {t('collections.items_count', { n: data.collection.items_count })}
-          </span>
         </div>
       )}
 

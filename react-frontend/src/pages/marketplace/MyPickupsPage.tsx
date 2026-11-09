@@ -15,6 +15,7 @@ import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Spinner } from '@/components/ui/Spinner';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -72,15 +73,15 @@ export function MyPickupsPage() {
     <>
       <PageMeta title={t('pickup.my_pickups_title')} noIndex />
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-      <div className="min-w-0">
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <ShoppingBag className="w-7 h-7 text-accent" />
-          {t('pickup.my_pickups_title')}
-        </h1>
-        <p className="text-muted text-sm mt-1">
-          {t('pickup.my_pickups_subtitle')}
-        </p>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('pickup.my_pickups_title')}
+        description={t('pickup.my_pickups_subtitle')}
+        icon={<ShoppingBag className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+      />
 
       {loading ? (
         <div role="status" aria-busy="true" aria-label={t('loading', { ns: 'common' })} className="flex justify-center py-16">

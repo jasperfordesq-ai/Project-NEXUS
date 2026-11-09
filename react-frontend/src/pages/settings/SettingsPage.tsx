@@ -54,6 +54,7 @@ import { DATE_OF_BIRTH_UNDER_MINIMUM_AGE, serverMessageFor } from '@/lib/minimum
 import { usePageTitle } from '@/hooks';
 import { useWebPush } from '@/hooks/useWebPush';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useTranslation } from 'react-i18next';
 
 // Tab components
@@ -1055,26 +1056,31 @@ export function SettingsPage() {
       className="mx-auto max-w-5xl space-y-6"
     >
       <PageMeta title={t('page_meta.title')} noIndex />
-      {/* Header */}
-      <motion.div variants={itemVariants} className="overflow-hidden rounded-2xl border border-theme-default bg-theme-surface">
-        <div className="flex flex-col gap-5 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="max-w-2xl">
-            <Chip size="sm" variant="soft" color={isDirty ? 'warning' : 'accent'} className="mb-3 font-medium">
-              {isDirty ? t('header.unsaved_badge') : t('header.badge')}
-            </Chip>
-            <h1 className="flex items-center gap-3 text-3xl font-bold leading-tight text-theme-primary sm:text-4xl">
-              <Settings className="h-8 w-8 text-accent" aria-hidden="true" />
-              {t('header.title')}
-            </h1>
-            <p className="mt-2 text-sm leading-6 text-theme-muted sm:text-base">{t('header.subtitle')}</p>
-          </div>
-          <div className="rounded-xl border border-theme-default bg-theme-elevated px-4 py-3 lg:min-w-72">
-            <span className="block text-xs font-medium uppercase tracking-wide text-theme-subtle">
-              {t('header.current_section')}
-            </span>
-            <span className="mt-1 block font-semibold text-theme-primary">{activeTabLabel}</span>
-          </div>
-        </div>
+      {/* Header — the same soft panel in the community colour that opens the
+          offers, events and groups pages (AWID: warmer, more inviting). Was a
+          grey bordered card. The badge stays a Chip of its own (not the panel's
+          label) so "unsaved changes" keeps its warning colour. */}
+      <motion.div variants={itemVariants}>
+        <PublicPageHero
+          size="compact"
+          title={t('header.title')}
+          description={t('header.subtitle')}
+          icon={<Settings className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+          action={
+            <div className="flex flex-col items-start gap-2 sm:items-end">
+              <Chip size="sm" variant="soft" color={isDirty ? 'warning' : 'accent'} className="font-medium">
+                {isDirty ? t('header.unsaved_badge') : t('header.badge')}
+              </Chip>
+              <div className="rounded-xl border border-theme-default bg-theme-elevated px-4 py-3 lg:min-w-72">
+                <span className="block text-xs font-medium uppercase tracking-wide text-theme-subtle">
+                  {t('header.current_section')}
+                </span>
+                <span className="mt-1 block font-semibold text-theme-primary">{activeTabLabel}</span>
+              </div>
+            </div>
+          }
+        />
       </motion.div>
 
       {/* Tabs */}

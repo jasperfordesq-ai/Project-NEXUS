@@ -219,6 +219,20 @@ describe('MessageContextCard', () => {
     });
   });
 
+  // The tile's colour was built at runtime (`bg-${color}/10`), which Tailwind
+  // cannot find, so it never had one; events were grey. Each kind now has the
+  // colour it has in the feed, written out in full.
+  it('colours the picture tile like that kind of post in the feed', async () => {
+    mockApi.get.mockResolvedValue(makeEventResponse());
+    const { MessageContextCard } = await import('./MessageContextCard');
+    render(<MessageContextCard contextType="event" contextId={42} />);
+
+    const tile = await screen.findByTestId('message-context-tile');
+    expect(tile.className).toContain('bg-emerald-100');
+    expect(tile.className).not.toMatch(/bg-(accent|default|warning|danger)\/10/);
+    expect(screen.getByTestId('chip')).toHaveAttribute('data-color', 'success');
+  });
+
   it('renders image when image_url is provided', async () => {
     mockApi.get.mockResolvedValue(makeListingResponse({ image_url: 'https://example.com/img.jpg' }));
     const { MessageContextCard } = await import('./MessageContextCard');

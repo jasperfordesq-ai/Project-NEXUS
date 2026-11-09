@@ -26,6 +26,7 @@ import Send from 'lucide-react/icons/send';
 import ArrowDownCircle from 'lucide-react/icons/arrow-down-circle';
 import ArrowUpCircle from 'lucide-react/icons/arrow-up-circle';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { EmptyState } from '@/components/feedback';
 import { useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
@@ -297,18 +298,15 @@ export default function RegionalPointsPage() {
         description={t('regional_points.subtitle')}
       />
 
-      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface/80 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-warning/15 text-warning">
-              <Coins className="w-6 h-6" aria-hidden="true" />
-            </span>
-            {cfg.label || t('regional_points.title')}
-          </h1>
-          <p className="text-sm text-muted mt-2 max-w-2xl">
-            {t('regional_points.subtitle')}
-          </p>
-        </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={cfg.label || t('regional_points.title')}
+        description={t('regional_points.subtitle')}
+        icon={<Coins className="h-6 w-6" aria-hidden="true" />}
+        accent="amber"
+        action={
         <Button
           size="sm"
           variant="secondary"
@@ -319,7 +317,8 @@ export default function RegionalPointsPage() {
         >
           {t('refresh')}
         </Button>
-      </div>
+        }
+      />
 
       {/* Balance */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

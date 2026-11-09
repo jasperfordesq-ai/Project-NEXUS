@@ -13,6 +13,11 @@ import { usePageTitle } from '@/hooks';
 import { adminEnterprise } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import type { HealthCheckResult, HealthCheckHistoryEntry } from '../../api/types';
+
+// Written out in full so Tailwind can find them (a class built at runtime,
+// such as `text-${color}`, is never generated and shows no colour).
+const STATUS_TEXT = { success: 'text-success', warning: 'text-warning', danger: 'text-danger' } as const;
+const STATUS_TINT = { success: 'bg-success/10', warning: 'bg-warning/10', danger: 'bg-danger/10' } as const;
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -142,8 +147,8 @@ export function HealthCheck() {
           {/* Overall Status */}
           <Card >
             <CardBody className="flex flex-row items-center gap-4 p-6">
-              <div className={`flex h-14 w-14 items-center justify-center rounded-full bg-${statusColor}/10`}>
-                <HeartPulse aria-hidden="true" size={28} className={`text-${statusColor}`} />
+              <div className={`flex h-14 w-14 items-center justify-center rounded-full ${STATUS_TINT[statusColor]}`}>
+                <HeartPulse aria-hidden="true" size={28} className={STATUS_TEXT[statusColor]} />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-foreground">{t('enterprise.system_status')}</h3>

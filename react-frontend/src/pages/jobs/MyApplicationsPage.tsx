@@ -37,6 +37,7 @@ import { logError } from '@/lib/logger';
 import { safeHref, webHref } from '@/lib/safeHref';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { EmptyState } from '@/components/feedback';
 
 import { useTranslation } from 'react-i18next';
@@ -999,17 +1000,16 @@ export function MyApplicationsPage() {
         description={t('page_meta.my_applications.description')}
         noIndex
       />
-      {/* Page header */}
-      <div className='mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3'>
-        <div>
-          <h1 className='text-2xl font-bold text-theme-primary flex items-center gap-2'>
-            <Briefcase size={24} aria-hidden="true" />
-            {t('my_applications.title')}
-          </h1>
-          <p className='text-sm text-theme-muted mt-1'>
-            {t('my_applications.subtitle')}
-          </p>
-        </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <div className='mb-6'>
+      <PublicPageHero
+        size='compact'
+        title={t('my_applications.title')}
+        description={t('my_applications.subtitle')}
+        icon={<Briefcase className='h-6 w-6' aria-hidden="true" />}
+        accent='indigo'
+        action={
         <Button
           size='sm'
           variant='tertiary'
@@ -1020,6 +1020,8 @@ export function MyApplicationsPage() {
         >
           {t('gdpr.export_my_data')}
         </Button>
+        }
+      />
       </div>
 
       {/* Filter tabs */}

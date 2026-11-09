@@ -27,6 +27,7 @@ import { Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter 
 import { Textarea } from '@/components/ui/Textarea';
 import { useDisclosure } from '@/components/ui/useDisclosure';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { EmptyState } from '@/components/feedback';
 import { FeedCard } from '@/components/feed/FeedCard';
 import { FeedSkeleton } from '@/components/feed/FeedSkeleton';
@@ -361,27 +362,23 @@ export function HashtagPage() {
       )}
 
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button as={Link} to={tenantPath('/feed')}
-          isIconOnly
-          variant="flat"
-          className="bg-theme-elevated text-theme-muted"
-          aria-label={t('hashtag.back_to_feed')}
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-2">
-            <Hash className="w-6 h-6 text-accent" aria-hidden="true" />
-            {tag}
-          </h1>
-          {postCount > 0 && (
-            <p className="text-sm text-theme-muted">
-              {t('hashtag.post_count', { count: postCount })}
-            </p>
-          )}
-        </div>
-      </div>
+      <Button as={Link} to={tenantPath('/feed')}
+        isIconOnly
+        variant="flat"
+        className="bg-theme-elevated text-theme-muted"
+        aria-label={t('hashtag.back_to_feed')}
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </Button>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={tag ?? ''}
+        description={postCount > 0 ? t('hashtag.post_count', { count: postCount }) : undefined}
+        icon={<Hash className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+      />
 
       {/* Error State */}
       {error && !isLoading && (

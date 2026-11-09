@@ -22,6 +22,7 @@ import Tags from 'lucide-react/icons/tags';
 import Bell from 'lucide-react/icons/bell';
 import Flame from 'lucide-react/icons/flame';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
+import SlidersHorizontal from 'lucide-react/icons/sliders-horizontal';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { CheckboxGroup, Checkbox } from '@/components/ui/Checkbox';
@@ -33,6 +34,7 @@ import { Switch } from '@/components/ui/Switch';
 import { Breadcrumbs } from '@/components/navigation';
 import { useAuth, useToast } from '@/contexts';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -152,10 +154,15 @@ export function MatchPreferencesPage() {
           ]}
         />
 
-        <div>
-          <h1 className="text-2xl font-bold text-theme-primary">{t('preferences.heading')}</h1>
-          <p className="text-theme-subtle mt-1">{t('preferences.subtitle')}</p>
-        </div>
+        {/* The same soft panel in the community colour that opens the offers,
+            events and groups pages (AWID: warmer, more inviting). */}
+        <PublicPageHero
+          size="compact"
+          title={t('preferences.heading')}
+          description={t('preferences.subtitle')}
+          icon={<SlidersHorizontal className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+        />
 
         <GlassCard role="alert" className="p-8 text-center">
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
@@ -184,10 +191,15 @@ export function MatchPreferencesPage() {
         ]}
       />
 
-      <div>
-        <h1 className="text-2xl font-bold text-theme-primary">{t('preferences.heading')}</h1>
-        <p className="text-theme-subtle mt-1">{t('preferences.subtitle')}</p>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('preferences.heading')}
+        description={t('preferences.subtitle')}
+        icon={<SlidersHorizontal className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+      />
 
       {/* Pause matching */}
       <GlassCard className="p-6">

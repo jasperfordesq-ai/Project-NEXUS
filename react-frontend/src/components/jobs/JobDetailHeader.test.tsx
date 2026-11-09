@@ -357,4 +357,22 @@ describe('JobDetailHeader', () => {
     // t('deadline_passed') key is rendered
     expect(screen.getByText(/deadline/i)).toBeInTheDocument();
   });
+
+  // AWID feedback: "attractive visuals". Every vacancy opened with a plain card;
+  // it now has a cover band in a colour for its kind of work, like a group page.
+  it('opens with a cover in a colour for its kind of work, above the title', () => {
+    render(<JobDetailHeader {...DEFAULT_PROPS} />);
+    const cover = screen.getByTestId('job-detail-cover');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBeTruthy();
+    expect(cover.compareDocumentPosition(screen.getByRole('heading', { level: 1 })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('gives vacancies of the same kind the same colour', () => {
+    const { unmount } = render(<JobDetailHeader {...DEFAULT_PROPS} vacancy={{ ...BASE_VACANCY, id: 1 }} />);
+    const first = screen.getByTestId('job-detail-cover').getAttribute('data-colour');
+    unmount();
+    render(<JobDetailHeader {...DEFAULT_PROPS} vacancy={{ ...BASE_VACANCY, id: 2, title: 'Another' }} />);
+    expect(screen.getByTestId('job-detail-cover').getAttribute('data-colour')).toBe(first);
+  });
 });

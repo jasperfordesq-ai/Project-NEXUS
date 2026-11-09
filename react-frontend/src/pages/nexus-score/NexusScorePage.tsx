@@ -33,6 +33,7 @@ import type { TFunction } from 'i18next';
 import { Link } from 'react-router-dom';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -278,26 +279,28 @@ export default function NexusScorePage() {
         noIndex
       />
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <motion.div variants={itemVariants} className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-accent" aria-hidden="true" />
-            {t('nexus_score.title')}
-          </h1>
-          <p className="text-sm text-theme-subtle mt-0.5">
-            {t('nexus_score.subtitle')}
-          </p>
-        </div>
-        <Button
-          size="sm"
-          variant="flat"
-          color="default"
-          isLoading={refreshing}
-          onPress={() => load(true)}
-          startContent={!refreshing && <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />}
-        >
-          {t('nexus_score.refresh')}
-        </Button>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <motion.div variants={itemVariants}>
+        <PublicPageHero
+          size="compact"
+          title={t('nexus_score.title')}
+          description={t('nexus_score.subtitle')}
+          icon={<Trophy className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+          action={
+            <Button
+              size="sm"
+              variant="flat"
+              color="default"
+              isLoading={refreshing}
+              onPress={() => load(true)}
+              startContent={!refreshing && <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />}
+            >
+              {t('nexus_score.refresh')}
+            </Button>
+          }
+        />
       </motion.div>
 
       {/* ── Score hero card ────────────────────────────────────────────────── */}

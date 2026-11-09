@@ -20,9 +20,11 @@ import { Chip } from '@/components/ui/Chip';
 import { QrCodeImage } from '@/components/volunteering/QrCodeImage';
 import Store from 'lucide-react/icons/store';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
+import QrCode from 'lucide-react/icons/qr-code';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { partnerVenuesApi, type MemberPass, type MyVisit } from '@/lib/partner-venues-api';
 import { resolveUserDisplayName } from '@/lib/helpers';
@@ -78,10 +80,15 @@ export default function MyPassPage() {
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <PageMeta title={t('pass.title')} noIndex />
 
-      <div>
-        <h1 className="text-2xl font-semibold">{t('pass.title')}</h1>
-        <p className="text-theme-muted mt-1">{t('pass.intro')}</p>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('pass.title')}
+        description={t('pass.intro')}
+        icon={<QrCode className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+      />
 
       <Card className="p-8 text-center space-y-4">
         {loading ? (

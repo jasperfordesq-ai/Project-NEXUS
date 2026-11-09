@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { Spinner } from '@/components/ui/Spinner';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import Store from 'lucide-react/icons/store';
 import MapPin from 'lucide-react/icons/map-pin';
 import QrCode from 'lucide-react/icons/qr-code';
@@ -52,16 +53,21 @@ export default function PartnerVenuesPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('directory.title')}</h1>
-          <p className="text-theme-muted mt-1">{t('directory.intro')}</p>
-        </div>
-        <Button color="primary" as={Link} to={tenantPath('/venues/pass')}>
-          <QrCode className="w-4 h-4 mr-2" aria-hidden="true" />
-          {t('directory.my_pass')}
-        </Button>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="full"
+        title={t('directory.title')}
+        description={t('directory.intro')}
+        icon={<Store className="h-7 w-7" aria-hidden="true" />}
+        accent="indigo"
+        action={
+          <Button color="primary" as={Link} to={tenantPath('/venues/pass')}>
+            <QrCode className="w-4 h-4 mr-2" aria-hidden="true" />
+            {t('directory.my_pass')}
+          </Button>
+        }
+      />
 
       {loading ? (
         <div className="py-16 text-center">

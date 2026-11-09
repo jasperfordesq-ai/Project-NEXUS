@@ -24,6 +24,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Switch } from '@/components/ui/Switch';
 import { useDisclosure } from '@/components/ui/useDisclosure';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -140,20 +141,20 @@ export function SellerPickupSlotsPage() {
     <>
       <PageMeta title={t('marketplace.pickup.slots_title')} noIndex />
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Calendar className="w-7 h-7 text-accent" />
-            {t('marketplace.pickup.slots_title')}
-          </h1>
-          <p className="text-muted text-sm mt-1">
-            {t('marketplace.pickup.slots_subtitle')}
-          </p>
-        </div>
-        <Button startContent={<Plus className="w-4 h-4" />} onPress={onOpen}>
-          {t('marketplace.pickup.new_slot')}
-        </Button>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('marketplace.pickup.slots_title')}
+        description={t('marketplace.pickup.slots_subtitle')}
+        icon={<Calendar className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+        action={
+          <Button startContent={<Plus className="w-4 h-4" />} onPress={onOpen}>
+            {t('marketplace.pickup.new_slot')}
+          </Button>
+        }
+      />
 
       {loading ? (
         <div role="status" aria-busy="true" aria-label={t('loading')} className="flex justify-center py-16">

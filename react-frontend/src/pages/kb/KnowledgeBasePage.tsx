@@ -38,6 +38,7 @@ import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { formatRelativeTime } from '@/lib/helpers';
@@ -202,16 +203,14 @@ export function KnowledgeBasePage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageMeta title={t('page_title')} description={t('page_description')} />
-      {/* Header */}
-      <div className="text-center py-4">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-accent-gradient-end mb-4">
-          <BookOpen className="w-7 h-7 text-white" aria-hidden="true" />
-        </div>
-        <h1 className="text-3xl font-bold text-theme-primary">
-          {t('title')}
-        </h1>
-        <p className="text-theme-muted mt-2 max-w-lg mx-auto">{t('description')}</p>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        title={t('title')}
+        description={t('description')}
+        icon={<BookOpen className="h-7 w-7" aria-hidden="true" />}
+        accent="blue"
+      />
 
       {/* Search */}
       <div className="max-w-xl mx-auto">

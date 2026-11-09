@@ -12,6 +12,7 @@ import CheckCircle2 from 'lucide-react/icons/check-circle-2';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import api from '@/lib/api';
 import { getFormattingLocale } from '@/lib/helpers';
@@ -122,24 +123,26 @@ export function PricingPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
       <PageMeta title={t('premium.pricing_title')} noIndex />
-      <div className="text-center mb-10">
-        <HandHeart className="mx-auto mb-3 text-[var(--color-success)]" size={48} aria-hidden="true" />
-        <h1 className="text-3xl font-bold mb-2">
-          {t('premium.pricing_title')}
-        </h1>
-        <p className="text-[var(--color-text-secondary)] max-w-2xl mx-auto">
-          {t('premium.pricing_subtitle')}
-        </p>
-
-        <div className="mt-6">
-          <Button
-            variant="primary"
-            startContent={<HandHeart size={18} aria-hidden="true" />}
-            onPress={() => setOneOffOpen(true)}
-          >
-            {t('premium.one_off_cta')}
-          </Button>
-        </div>
+      <div className="mb-10">
+        {/* The same soft panel in the community colour that opens the offers,
+            events and groups pages (AWID: warmer, more inviting). The billing
+            switch stays below it, just above the tiers it changes. */}
+        <PublicPageHero
+          size="full"
+          title={t('premium.pricing_title')}
+          description={t('premium.pricing_subtitle')}
+          icon={<HandHeart className="h-7 w-7" aria-hidden="true" />}
+          accent="emerald"
+          action={
+            <Button
+              variant="primary"
+              startContent={<HandHeart size={18} aria-hidden="true" />}
+              onPress={() => setOneOffOpen(true)}
+            >
+              {t('premium.one_off_cta')}
+            </Button>
+          }
+        />
 
         <div className="flex items-center justify-center gap-3 mt-6">
           <span className={interval === 'monthly' ? 'font-semibold' : 'text-[var(--color-text-secondary)]'}>

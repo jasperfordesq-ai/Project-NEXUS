@@ -41,11 +41,14 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
   homepage_carousel: Zap,
 };
 
-const TYPE_COLORS: Record<string, 'primary' | 'warning' | 'secondary' | 'success'> = {
-  bump: 'primary',
-  featured: 'warning',
-  top_of_category: 'secondary',
-  homepage_carousel: 'success',
+// Written out in full so Tailwind can find them (was `bg-${color}/10`, built
+// at runtime, so the tiles had no colour). Pale tint, deep text; dark tint,
+// light text in dark mode.
+const TYPE_TILES: Record<string, string> = {
+  bump: 'bg-accent-soft text-accent-soft-foreground',
+  featured: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+  top_of_category: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-500/15 dark:text-cyan-300',
+  homepage_carousel: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
 };
 
 function formatPromotionPrice(price: number, currency: string): string {
@@ -158,7 +161,7 @@ export function PromotionSelector({
             <div className="space-y-3">
               {products.map((product) => {
                 const Icon = TYPE_ICONS[product.type] ?? Zap;
-                const color = TYPE_COLORS[product.type] ?? 'primary';
+                const tile = TYPE_TILES[product.type] ?? TYPE_TILES.bump;
                 const isSelected = selectedType === product.type;
 
                 return (
@@ -174,8 +177,8 @@ export function PromotionSelector({
                   >
                     <CardBody className="p-4">
                       <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg bg-${color}/10`}>
-                          <Icon aria-hidden="true" className={`w-5 h-5 text-${color}`} />
+                        <div data-testid="promotion-type-tile" className={`p-2 rounded-lg ${tile}`}>
+                          <Icon aria-hidden="true" className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">

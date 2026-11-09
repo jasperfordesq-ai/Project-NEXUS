@@ -12,6 +12,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, CardBody, Chip, Spinner, ModuleStageBadge } from '@/components/ui';
 import BookOpen from 'lucide-react/icons/book-open';
+import GraduationCap from 'lucide-react/icons/graduation-cap';
+import { DetailCover } from '@/components/ui/DetailCover';
+import { coverSeed } from '@/lib/coverSeeds';
+import { normalizeCourseMediaUrl } from '@/lib/courseContentSecurity';
+import { resolveThumbnailUrl } from '@/lib/helpers';
 import PlayCircle from 'lucide-react/icons/play-circle';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useTenant, useToast } from '@/contexts';
@@ -101,8 +106,18 @@ export default function CourseDetailPage() {
 
   const lessonCount = (course.sections ?? []).reduce((n, s) => n + (s.lessons?.length ?? 0), 0);
 
+  const coverImage = normalizeCourseMediaUrl(course.cover_image);
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
+      {/* The course's picture, or a cover in the same colour as its card. */}
+      <DetailCover
+        data-testid="course-detail-cover"
+        seed={coverSeed.course(course)}
+        icon={GraduationCap}
+        imageUrl={coverImage ? resolveThumbnailUrl(coverImage, { width: 1200, height: 400 }) : null}
+        className="mb-6 h-28 rounded-2xl sm:h-40"
+      />
       <div className="flex flex-col md:flex-row gap-6">
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-2">

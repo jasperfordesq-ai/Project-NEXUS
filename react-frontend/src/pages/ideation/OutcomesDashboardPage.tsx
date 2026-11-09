@@ -30,6 +30,7 @@ import { EmptyState } from '@/components/feedback';
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 
@@ -131,12 +132,15 @@ export function OutcomesDashboardPage() {
         {t('title')}
       </Button>
 
-      {/* Header */}
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[var(--color-text)] flex items-center gap-3">
-          <BarChart3 className="w-7 h-7" />
-          {t('outcomes.dashboard')}
-        </h1>
+        <PublicPageHero
+          size="compact"
+          title={t('outcomes.dashboard')}
+          icon={<BarChart3 className="h-6 w-6" aria-hidden="true" />}
+          accent="amber"
+        />
       </div>
 
       {/* Loading */}

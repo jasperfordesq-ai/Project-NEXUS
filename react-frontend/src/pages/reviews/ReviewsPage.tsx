@@ -26,6 +26,7 @@ import { api } from '@/lib/api';
 import { useToast } from '@/contexts';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { ReviewModal } from '@/components/reviews/ReviewModal';
 import { SocialInteractionPanel } from '@/components/social/SocialInteractionPanel';
 import { TranslateButton } from '@/components/i18n/TranslateButton';
@@ -426,7 +427,16 @@ export default function ReviewsPage(): ReactNode {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
       <PageMeta title={t('page_title')} noIndex />
-      <h1 className="text-2xl font-bold text-[var(--color-text)] mb-6">{t('page_title')}</h1>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <div className="mb-6">
+        <PublicPageHero
+          size="compact"
+          title={t('page_title')}
+          icon={<Star className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+        />
+      </div>
 
       <Tabs
         selectedKey={activeTab}

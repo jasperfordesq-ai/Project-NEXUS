@@ -17,6 +17,10 @@ import { useToast } from '@/contexts';
 import { adminEnterprise } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import type { SystemRequirements as SystemRequirementsType } from '../../api/types';
+
+// Written out in full so Tailwind can find them (a class built at runtime,
+// such as `text-${color}`, is never generated and shows no colour).
+const STATUS_TEXT = { success: 'text-success', warning: 'text-warning', danger: 'text-danger' } as const;
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -125,7 +129,7 @@ export function SystemRequirements() {
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/80 dark:bg-surface-secondary">
                 {(() => {
                   const StatusIcon = statusConfig[status].icon;
-                  return <StatusIcon size={28} className={`text-${statusConfig[status].color}`} />;
+                  return <StatusIcon size={28} className={STATUS_TEXT[statusConfig[status].color]} />;
                 })()}
               </div>
               <div>

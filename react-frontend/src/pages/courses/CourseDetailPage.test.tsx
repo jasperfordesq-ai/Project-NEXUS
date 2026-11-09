@@ -134,6 +134,17 @@ describe('CourseDetailPage', () => {
     expect(screen.getByText('A great intro course')).toBeInTheDocument();
   });
 
+  // AWID: "attractive visuals". The page opened with plain text; it now opens
+  // with the course's cover — the same colour as its card on the courses page.
+  it('opens with a cover in the same colour as the course card', async () => {
+    vi.mocked(coursesApi.show).mockResolvedValue({ success: true, data: MOCK_COURSE });
+    render(<CourseDetailPage />);
+    const cover = await screen.findByTestId('course-detail-cover');
+    const { CourseCard } = await import('@/components/courses/CourseCard');
+    const { getByTestId } = render(<CourseCard course={MOCK_COURSE} />);
+    expect(cover.getAttribute('data-colour')).toBe(getByTestId('course-card-cover').getAttribute('data-colour'));
+  });
+
   it('shows the enroll button for a non-enrolled, non-owner user', async () => {
     vi.mocked(coursesApi.show).mockResolvedValue({ success: true, data: MOCK_COURSE });
     render(<CourseDetailPage />);

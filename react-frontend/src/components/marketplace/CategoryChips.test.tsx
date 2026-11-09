@@ -103,4 +103,28 @@ describe('CategoryChips', () => {
     render(<CategoryChips categories={CATEGORIES} onSelect={onSelect} />);
     expect(onSelect).not.toHaveBeenCalled();
   });
+
+  // AWID feedback: "clear categories". Every category was the same grey pill;
+  // each now carries a small mark in its own colour, the same every visit.
+  it('gives each category a mark in its own colour', async () => {
+    const { CategoryChips } = await import('./CategoryChips');
+    render(<CategoryChips categories={[...CATEGORIES, { id: 4, name: 'Garden', slug: 'garden', icon: 'Leaf', listing_count: 1 }]} onSelect={onSelect} />);
+    const marks = screen.getAllByTestId('category-chip-mark');
+    expect(marks).toHaveLength(4);
+    for (const mark of marks) {
+      expect(mark).toHaveAttribute('aria-hidden', 'true');
+      expect(mark.getAttribute('data-colour')).toBeTruthy();
+    }
+    expect(new Set(marks.map((m) => m.getAttribute('data-colour'))).size).toBeGreaterThan(1);
+  });
+
+  it("keeps a category's colour the same from one visit to the next", async () => {
+    const { CategoryChips } = await import('./CategoryChips');
+    const { unmount } = render(<CategoryChips categories={CATEGORIES} onSelect={onSelect} />);
+    const first = screen.getAllByTestId('category-chip-mark').map((m) => m.getAttribute('data-colour'));
+    unmount();
+    render(<CategoryChips categories={[...CATEGORIES].reverse()} onSelect={onSelect} />);
+    const again = screen.getAllByTestId('category-chip-mark').map((m) => m.getAttribute('data-colour')).reverse();
+    expect(again).toEqual(first);
+  });
 });

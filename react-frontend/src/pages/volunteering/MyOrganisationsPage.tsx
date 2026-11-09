@@ -23,6 +23,7 @@ import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Spinner } from '@/components/ui/Spinner';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { Breadcrumbs } from '@/components/navigation';
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -111,26 +112,25 @@ export default function MyOrganisationsPage() {
         ]}
       />
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-            <Building2 className="w-7 h-7 text-rose-400" aria-hidden="true" />
-            {t('my_organisations')}
-          </h1>
-          <p className="text-theme-muted mt-1">
-            {t('my_organisations_subtitle')}
-          </p>
-        </div>
-        <Button
-          as={Link}
-          to={tenantPath('/organisations/register')}
-          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:shrink-0"
-          startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
-        >
-          {t('register_organisation')}
-        </Button>
-      </div>
+      {/* Header — the same soft panel in the community colour that opens the
+          offers, events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('my_organisations')}
+        description={t('my_organisations_subtitle')}
+        icon={<Building2 className="h-6 w-6" aria-hidden="true" />}
+        accent="rose"
+        action={
+          <Button
+            as={Link}
+            to={tenantPath('/organisations/register')}
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:shrink-0"
+            startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
+          >
+            {t('register_organisation')}
+          </Button>
+        }
+      />
 
       {isLoading ? (
         <div role="status" aria-busy="true" aria-label={t('loading')} className="flex justify-center py-16">

@@ -45,6 +45,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 
 interface JobAlert {
   id: number;
@@ -208,15 +209,15 @@ export function JobAlertsPage() {
         {t('title')}
       </Link>
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-            <Bell className="w-7 h-7 text-blue-400" aria-hidden="true" />
-            {t('alerts.title')}
-          </h1>
-          <p className="text-theme-muted mt-1">{t('alerts.subtitle')}</p>
-        </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('alerts.title')}
+        description={t('alerts.subtitle')}
+        icon={<Bell className="h-6 w-6" aria-hidden="true" />}
+        accent="blue"
+        action={
         <Button
           className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
@@ -224,7 +225,8 @@ export function JobAlertsPage() {
         >
           {t('alerts.create')}
         </Button>
-      </div>
+        }
+      />
 
       {/* Error State */}
       {error && !isLoading && (

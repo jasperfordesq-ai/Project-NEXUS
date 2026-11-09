@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { useTenant, useToast } from '@/contexts';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 import { logError } from '@/lib/logger';
 import { formatMarketplaceMinorAmount } from '@/lib/marketplaceNumbers';
@@ -102,16 +103,25 @@ export default function SellerCouponsPage() {
     <>
       <PageMeta title={t('coupon.seller.page_title')} noIndex />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <header className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">{t('coupon.seller.page_title')}</h1>
-        <Button
-          as={Link}
-          to={tenantPath('/marketplace/seller/coupons/new')}
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <header className="mb-6">
+        <PublicPageHero
+          size="compact"
+          title={t('coupon.seller.page_title')}
+          icon={<Tag className="h-6 w-6" aria-hidden="true" />}
+          accent="emerald"
+          action={
+            <Button
+              as={Link}
+              to={tenantPath('/marketplace/seller/coupons/new')}
 
-          startContent={<Plus className="w-4 h-4" />}
-        >
-          {t('coupon.seller.create_button')}
-        </Button>
+              startContent={<Plus className="w-4 h-4" />}
+            >
+              {t('coupon.seller.create_button')}
+            </Button>
+          }
+        />
       </header>
 
       {loading ? (
