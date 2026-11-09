@@ -33,6 +33,7 @@ import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { stripHtmlToText } from '@/lib/sanitize';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -547,17 +548,16 @@ export default function ConnectionsPage() {
     <div className="min-h-screen py-6 px-4">
       <PageMeta title={t('page_meta.title')} noIndex />
       <div className="max-w-3xl mx-auto">
-        {/* Hero Banner */}
-        <div className="relative overflow-hidden rounded-xl border border-theme-default bg-theme-surface p-5 shadow-sm sm:p-6 mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-lg bg-accent/10 p-2 text-accent dark:text-accent">
-              <Users2 className="w-5 h-5" aria-hidden="true" />
-            </div>
-            <h1 className="text-xl font-bold text-theme-primary">{t('title')}</h1>
-          </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <p className="text-sm text-theme-muted">{t('subtitle')}</p>
-            {pendingReceivedCount > 0 && (
+        {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+        <div className="mb-6">
+        <PublicPageHero
+          size="compact"
+          title={t('title')}
+          description={t('subtitle')}
+          icon={<Users2 className="h-6 w-6" aria-hidden="true" />}
+          accent="indigo"
+          action={pendingReceivedCount > 0 ? (
               <Chip
                 size="sm"
                 color="warning"
@@ -566,8 +566,8 @@ export default function ConnectionsPage() {
               >
                 {t('pending_count', { count: pendingReceivedCount })}
               </Chip>
-            )}
-          </div>
+            ) : undefined}
+        />
         </div>
 
         {/* Search */}

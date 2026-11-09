@@ -202,4 +202,43 @@ describe('PublicPageHero', () => {
     const chip = screen.getByText('Featured Section').closest('[data-slot="chip"]');
     expect(chip).toHaveClass('chip--success');
   });
+
+  describe('compact — the opening of everyday pages (messages, wallet, notifications)', () => {
+    it('is the same soft panel, with a smaller title and less padding', () => {
+      render(<PublicPageHero {...defaultProps} accent="amber" size="compact" />);
+      const section = document.querySelector('[data-public-page-hero="true"]');
+      const title = screen.getByRole('heading', { level: 1, name: 'Welcome to the Platform' });
+
+      expect(section).toHaveAttribute('data-size', 'compact');
+      expect(section?.className).toContain('bg-amber-500/10');
+      expect(section?.className).toContain('py-5');
+      expect(section?.className).not.toContain('sm:py-8');
+      expect(title.className).toContain('text-2xl');
+      expect(title.className).not.toContain('sm:text-4xl');
+      expect(screen.getByText('Discover how timebanking works.').className).toContain('text-theme-secondary');
+    });
+
+    it('keeps its picture on phones too, where it is the only sign of what the page is', () => {
+      render(<PublicPageHero {...defaultProps} size="compact" />);
+      const tile = screen.getByTestId('test-icon').parentElement;
+      expect(tile?.className).not.toMatch(/(^|\s)hidden(\s|$)/);
+    });
+
+    it('can open a page without the small label above the title', () => {
+      render(<PublicPageHero {...defaultProps} eyebrow={undefined} size="compact" />);
+      expect(document.querySelector('[data-slot="chip"]')).toBeNull();
+      expect(screen.getByRole('heading', { level: 1, name: 'Welcome to the Platform' })).toBeInTheDocument();
+    });
+
+    it('can open a page without a description', () => {
+      render(<PublicPageHero {...defaultProps} description={undefined} size="compact" />);
+      expect(document.querySelector('[data-public-page-hero="true"] p')).toBeNull();
+    });
+
+    it('keeps the full size by default', () => {
+      render(<PublicPageHero {...defaultProps} />);
+      expect(document.querySelector('[data-public-page-hero="true"]')).toHaveAttribute('data-size', 'full');
+      expect(screen.getByRole('heading', { level: 1 }).className).toContain('sm:text-4xl');
+    });
+  });
 });

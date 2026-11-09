@@ -63,6 +63,7 @@ import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { getFormattingLocale, resolveAvatarUrl } from '@/lib/helpers';
@@ -502,16 +503,15 @@ export function GoalsPage() {
   return (
     <div className="space-y-6">
       <PageMeta title={t('page_meta.goals.title')} noIndex />
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-            <Target className="w-7 h-7 text-emerald-400" aria-hidden="true" />
-            {t('goals.title')}
-          </h1>
-          <p className="text-theme-muted mt-1">{t('goals.subtitle')}</p>
-        </div>
-        {isAuthenticated && (
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('goals.title')}
+        description={t('goals.subtitle')}
+        icon={<Target className="h-6 w-6" aria-hidden="true" />}
+        accent="emerald"
+        action={isAuthenticated ? (
           <div className="flex gap-2">
             <Button
               variant="flat"
@@ -529,8 +529,8 @@ export function GoalsPage() {
               {t('goals.new_goal')}
             </Button>
           </div>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       {/* Tabs */}
       <ToggleButtonGroup

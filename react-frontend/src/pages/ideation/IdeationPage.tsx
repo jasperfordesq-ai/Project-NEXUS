@@ -45,6 +45,7 @@ import Layers from 'lucide-react/icons/layers';
 import BarChart3 from 'lucide-react/icons/chart-column';
 import { useTranslation } from 'react-i18next';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
@@ -323,18 +324,17 @@ export function IdeationPage() {
         description={t('page_description')}
       />
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--color-text)]">
-            {t('title')}
-          </h1>
-          <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-            {t('subtitle')}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <div className="mb-6">
+      <PublicPageHero
+        size="compact"
+        title={t('title')}
+        description={t('subtitle')}
+        icon={<Lightbulb className="h-6 w-6" aria-hidden="true" />}
+        accent="amber"
+        action={
+        <div className="flex flex-wrap items-center gap-2">
           {/* Campaigns link */}
           <Button
             variant="flat"
@@ -365,6 +365,8 @@ export function IdeationPage() {
             </Button>
           )}
         </div>
+        }
+      />
       </div>
 
       {/* Filter Row: Tabs + Category dropdown */}

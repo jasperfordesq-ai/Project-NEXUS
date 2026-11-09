@@ -32,6 +32,7 @@ import QrCode from 'lucide-react/icons/qr-code';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { EmptyState } from '@/components/feedback';
 import { TransferModal, DonateModal, CommunityFundCard } from '@/components/wallet';
 import { StatementDownloadModal } from '@/components/wallet/StatementDownloadModal';
@@ -245,16 +246,15 @@ export function WalletPage() {
     <div className="mx-auto max-w-5xl space-y-6 px-1 sm:px-0">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-theme-default bg-theme-elevated">
-              <Wallet className="h-6 w-6 text-amber-500" aria-hidden="true" />
-            </div>
-            <h1 className="text-2xl font-bold text-theme-primary sm:text-3xl">
-              {t('title')}
-            </h1>
-            <p className="mt-1 max-w-2xl text-sm text-theme-muted sm:text-base">{t('subtitle')}</p>
-          </div>
+        {/* The same soft panel in the community colour that opens the offers,
+            events and groups pages (AWID: warmer, more inviting). */}
+        <PublicPageHero
+          size="compact"
+          title={t('title')}
+          description={t('subtitle')}
+          icon={<Wallet className="h-6 w-6" aria-hidden="true" />}
+          accent="amber"
+          action={
           <Button
             variant="tertiary"
             size="sm"
@@ -266,7 +266,8 @@ export function WalletPage() {
           >
             {t('refresh')}
           </Button>
-        </div>
+          }
+        />
       </motion.div>
 
       {/* Error State */}

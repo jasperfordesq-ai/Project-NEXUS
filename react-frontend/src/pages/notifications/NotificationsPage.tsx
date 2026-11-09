@@ -5,7 +5,6 @@
 
 import { Avatar, AvatarGroup } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -48,6 +47,7 @@ import { getNotificationDisplayText } from '@/lib/notificationText';
 import { isNavigationPathEnabled } from '@/components/navigation/navigationRegistry';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import type { Notification } from '@/types/api';
 
 type NotificationFilter = 'all' | 'unread';
@@ -340,20 +340,16 @@ export function NotificationsPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <PageMeta title={t('page_meta.title')} noIndex />
-      {/* Header */}
-      <header className="overflow-hidden rounded-2xl border border-theme-default bg-theme-surface">
-        <div className="flex flex-col gap-5 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="max-w-2xl">
-            <Chip size="sm" variant="flat" color={unreadCount > 0 ? 'primary' : 'success'} className="mb-3 font-medium">
-              {unreadCount > 0 ? t('unread_badge', { count: unreadCount }) : t('caught_up_badge')}
-            </Chip>
-            <h1 className="flex items-center gap-3 text-3xl font-bold leading-tight text-theme-primary sm:text-4xl">
-              <Bell className="h-8 w-8 text-accent" aria-hidden="true" />
-              {t('title')}
-            </h1>
-            <p className="mt-2 text-sm leading-6 text-theme-muted sm:text-base">{t('subtitle')}</p>
-          </div>
-
+      {/* Header — the same soft panel in the community colour that opens the
+          offers, events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        eyebrow={unreadCount > 0 ? t('unread_badge', { count: unreadCount }) : t('caught_up_badge')}
+        title={t('title')}
+        description={t('subtitle')}
+        icon={<Bell className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+        action={
           <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-stretch">
             {unreadCount > 0 && (
               <Button
@@ -389,8 +385,8 @@ export function NotificationsPage() {
               {t('settings_label')}
             </Button>}
           </div>
-        </div>
-      </header>
+        }
+      />
 
       <Modal
         isOpen={isDeleteAllOpen}

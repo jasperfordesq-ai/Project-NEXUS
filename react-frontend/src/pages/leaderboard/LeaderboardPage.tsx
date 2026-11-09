@@ -45,6 +45,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { EmptyState } from '@/components/feedback';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 import { useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
@@ -555,16 +556,15 @@ export function LeaderboardPage() {
   return (
     <div className="space-y-6">
       <PageMeta title={t('page_meta.leaderboard.title')} description={t('page_meta.leaderboard.description')} />
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-          <Users className="w-7 h-7 text-amber-400" aria-hidden="true" />
-          {t('leaderboard.title')}
-        </h1>
-        <p className="text-theme-muted mt-1">
-          {t('leaderboard.subtitle_redesign')}
-        </p>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('leaderboard.title')}
+        description={t('leaderboard.subtitle_redesign')}
+        icon={<Users className="h-6 w-6" aria-hidden="true" />}
+        accent="amber"
+      />
 
       {/* Tab navigation */}
       <Tabs

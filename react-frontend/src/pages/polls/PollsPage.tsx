@@ -60,6 +60,7 @@ import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, formatNumber, formatRelativeTime } from '@/lib/helpers';
@@ -872,25 +873,26 @@ export function PollsPage() {
   return (
     <div className="space-y-6">
       <PageMeta title={t('page_meta.title')} noIndex />
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-            <BarChart3 className="w-7 h-7 text-amber-400" aria-hidden="true" />
-            {t('title')}
-          </h1>
-          <p className="text-theme-muted mt-1">{t('subtitle')}</p>
-        </div>
-        {isAuthenticated && (
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('title')}
+        description={t('subtitle')}
+        icon={<BarChart3 className="h-6 w-6" aria-hidden="true" />}
+        accent="amber"
+        action={isAuthenticated ? (
+          // The button shade of the community colour: white text on it is always
+          // readable (was white on amber-500, 2.1:1).
           <Button
-            className="bg-gradient-to-r from-amber-500 to-orange-600 text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={showCreate ? <ChevronUp className="w-4 h-4" aria-hidden="true" /> : <Plus className="w-4 h-4" aria-hidden="true" />}
             onPress={() => setShowCreate(!showCreate)}
           >
             {showCreate ? t('collapse') : t('expand')}
           </Button>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       {/* Create Poll Section */}
       <AnimatePresence>

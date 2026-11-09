@@ -43,6 +43,7 @@ import { usePusherOptional, type MessageReadEvent, type NewMessageEvent } from '
 import { usePresenceOptional } from '@/contexts/PresenceContext';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { api } from '@/lib/api';
 import { formatRelativeTime, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
@@ -569,17 +570,15 @@ export function MessagesPage() {
         </GlassCard>
       )}
 
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="flex items-center gap-3 text-2xl font-bold text-theme-primary sm:text-3xl">
-            <span className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-accent ring-1 ring-accent/20 dark:text-accent">
-              <MessageSquare className="h-6 w-6" aria-hidden="true" />
-            </span>
-            {t('title')}
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-theme-muted sm:text-base">{t('page_subtitle')}</p>
-        </div>
+      {/* Header — the same soft panel in the community colour that opens the
+          offers, events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('title')}
+        description={t('page_subtitle')}
+        icon={<MessageSquare className="h-6 w-6" aria-hidden="true" />}
+        accent="indigo"
+        action={
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-shrink-0">
           <Button
             className="min-w-0 bg-gradient-to-r from-accent-strong to-accent-strong-end font-medium text-white"
@@ -599,7 +598,8 @@ export function MessagesPage() {
             {t('new_group')}
           </Button>
         </div>
-      </div>
+        }
+      />
 
       {/* Tabs and Search */}
       <GlassCard className="space-y-4 p-3 sm:p-4">

@@ -37,6 +37,7 @@ import ShoppingBag from 'lucide-react/icons/shopping-bag';
 import Inbox from 'lucide-react/icons/inbox';
 import { useTranslation } from 'react-i18next';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { api } from '@/lib/api';
@@ -259,17 +260,16 @@ export default function BookmarksPage() {
         description={t('bookmarks.meta_description')}
         noIndex
       />
-      {/* Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-2">
-            <Bookmark className="w-6 h-6 text-[var(--color-warning)]" aria-hidden="true" />
-            {t('bookmarks.title')}
-          </h1>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
-            {t('bookmarks.subtitle')}
-          </p>
-        </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <div className="mb-6">
+      <PublicPageHero
+        size="compact"
+        title={t('bookmarks.title')}
+        description={t('bookmarks.subtitle')}
+        icon={<Bookmark className="h-6 w-6" aria-hidden="true" />}
+        accent="amber"
+        action={
         <Button
           color="primary"
           variant="flat"
@@ -280,6 +280,8 @@ export default function BookmarksPage() {
         >
           {t('bookmarks.new_collection')}
         </Button>
+        }
+      />
       </div>
 
       {/* Collections Bar */}

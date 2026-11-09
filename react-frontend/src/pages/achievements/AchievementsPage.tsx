@@ -47,6 +47,7 @@ import { useBadgeCopy } from '@/hooks/useBadgeCopy';
 import { EmptyState } from '@/components/feedback';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -1637,14 +1638,15 @@ export function AchievementsPage() {
   return (
     <div className="space-y-6">
       <PageMeta title={t('page_meta.achievements.title')} noIndex />
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-          <Trophy className="w-7 h-7 text-amber-400" aria-hidden="true" />
-          {t('achievements.title')}
-        </h1>
-        <p className="text-theme-muted mt-1">{t('achievements.subtitle')}</p>
-      </div>
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
+      <PublicPageHero
+        size="compact"
+        title={t('achievements.title')}
+        description={t('achievements.subtitle')}
+        icon={<Trophy className="h-6 w-6" aria-hidden="true" />}
+        accent="amber"
+      />
 
       {/* Error State */}
       {error && !isLoading && (

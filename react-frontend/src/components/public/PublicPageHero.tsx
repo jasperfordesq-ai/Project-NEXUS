@@ -14,14 +14,38 @@ interface PublicPageHeroStat {
 }
 
 interface PublicPageHeroProps {
-  eyebrow: string;
+  /** The small label above the title; leave it out when the page has nothing to say there. */
+  eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   icon: ReactNode;
   accent?: 'emerald' | 'indigo' | 'amber' | 'blue' | 'rose';
   action?: ReactNode;
   stats?: PublicPageHeroStat[];
+  /**
+   * 'full' opens a browsing page (offers, events, groups). 'compact' opens an
+   * everyday tool page (messages, wallet, notifications): the same soft panel,
+   * a smaller title, and its picture kept on phones.
+   */
+  size?: 'full' | 'compact';
 }
+
+const sizeClasses = {
+  full: {
+    section: 'px-5 py-6 sm:px-8 sm:py-8',
+    layout: 'flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between',
+    tile: 'hidden rounded-2xl bg-gradient-to-br p-3 shadow-sm sm:inline-flex',
+    title: 'text-3xl font-bold tracking-tight text-theme-primary sm:text-4xl',
+    description: 'mt-3 max-w-2xl text-base leading-7 text-theme-secondary',
+  },
+  compact: {
+    section: 'px-4 py-5 sm:px-6',
+    layout: 'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between',
+    tile: 'inline-flex shrink-0 rounded-2xl bg-gradient-to-br p-2.5 shadow-sm',
+    title: 'text-2xl font-bold tracking-tight text-theme-primary sm:text-3xl',
+    description: 'mt-1 max-w-2xl text-sm leading-6 text-theme-secondary sm:text-base',
+  },
+} as const;
 
 const accentClasses = {
   emerald: {
@@ -71,12 +95,14 @@ export function PublicPageHero({
   accent = 'indigo',
   action,
   stats,
+  size = 'full',
 }: PublicPageHeroProps) {
   // Once a community has chosen its own colour, every page header uses it
   // instead of the page's own palette. Without a choice, each page keeps its
   // colour.
   const communityAccent = useCommunityAccent();
   const classes = accentClasses[communityAccent ? 'community' : accent];
+  const sized = sizeClasses[size];
 
   return (
     // A soft panel in the page's colour — the community's once it has chosen
@@ -84,39 +110,44 @@ export function PublicPageHero({
     // inviting). Was a plain header with a thin coloured underline.
     <section
       data-public-page-hero="true"
-      className={`relative overflow-hidden rounded-3xl px-5 py-6 sm:px-8 sm:py-8 ${classes.panel}`}
+      data-size={size}
+      className={`relative overflow-hidden rounded-3xl ${sized.section} ${classes.panel}`}
     >
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div className="max-w-3xl">
+      <div className={sized.layout}>
+        <div className="min-w-0 max-w-3xl">
           {/* The icon goes in startContent, NOT in children: children are wrapped
               in <Chip.Label>, and Tailwind's reset makes an <svg> display:block,
               which broke the label onto a second line. As startContent it is a
               flex sibling of the label and centres against the text. */}
-          <Chip
-            color={classes.chipColor}
-            size="sm"
-            variant="soft"
-            className="mb-4 py-1 font-medium"
-            startContent={<Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
-          >
-            {eyebrow}
-          </Chip>
-          <div className="flex items-start gap-4">
-            <div className={`hidden rounded-2xl bg-gradient-to-br p-3 shadow-sm sm:inline-flex ${classes.icon}`}>
+          {eyebrow && (
+            <Chip
+              color={classes.chipColor}
+              size="sm"
+              variant="soft"
+              className={`${size === 'compact' ? 'mb-3' : 'mb-4'} py-1 font-medium`}
+              startContent={<Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
+            >
+              {eyebrow}
+            </Chip>
+          )}
+          <div className={`flex gap-4 ${size === 'compact' ? 'items-center' : 'items-start'}`}>
+            <div className={`${sized.tile} ${classes.icon}`}>
               {icon}
             </div>
             <div className="min-w-0">
-              <h1 className="text-3xl font-bold tracking-tight text-theme-primary sm:text-4xl">
+              <h1 className={sized.title}>
                 {title}
               </h1>
-              <p className="mt-3 max-w-2xl text-base leading-7 text-theme-secondary">
-                {description}
-              </p>
+              {description && (
+                <p className={sized.description}>
+                  {description}
+                </p>
+              )}
             </div>
           </div>
         </div>
         {(action || stats?.length) && (
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center lg:justify-end">
+          <div className={`flex flex-col gap-3 sm:flex-row sm:items-center ${size === 'compact' ? 'sm:shrink-0' : 'lg:justify-end'}`}>
             {stats?.length ? (
               <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
                 {stats.map((stat) => (

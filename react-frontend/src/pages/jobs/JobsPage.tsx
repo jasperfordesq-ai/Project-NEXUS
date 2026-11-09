@@ -74,6 +74,7 @@ import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import type { JobConfig } from '@/types';
 
 interface JobVacancy {
@@ -483,19 +484,16 @@ export function JobsPage() {
       <PageMeta title={t('page_title')} description={t('page_description')} />
       {/* Hero Banner — phones hide it entirely; the title lives in the app bar
           (useSetAppBarTitle) and its three actions re-home into the row below. */}
+      {/* The same soft panel in the community colour that opens the offers,
+          events and groups pages (AWID: warmer, more inviting). */}
       {!isPhone && (
-      <div className="relative overflow-hidden rounded-xl border border-theme-default bg-theme-surface p-5 shadow-sm sm:p-6">
-        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="rounded-lg bg-blue-500/10 p-2 text-blue-600 dark:text-blue-400">
-                <Briefcase className="w-5 h-5" aria-hidden="true" />
-              </div>
-              <h1 className="text-xl font-bold text-theme-primary">{t('title')}</h1>
-            </div>
-            <p className="text-sm text-theme-muted">{t('subtitle')}</p>
-          </div>
-          {isAuthenticated && (
+      <PublicPageHero
+        size="compact"
+        title={t('title')}
+        description={t('subtitle')}
+        icon={<Briefcase className="h-6 w-6" aria-hidden="true" />}
+        accent="blue"
+        action={isAuthenticated ? (
             <div className="flex gap-2 flex-wrap shrink-0">
               <Button
                 as={Link}
@@ -522,9 +520,8 @@ export function JobsPage() {
                 {t('create_vacancy')}
               </Button>
             </div>
-          )}
-        </div>
-      </div>
+          ) : undefined}
+      />
       )}
 
       {/* Phone: the hero was the ONLY entry point to /jobs/my-applications,
