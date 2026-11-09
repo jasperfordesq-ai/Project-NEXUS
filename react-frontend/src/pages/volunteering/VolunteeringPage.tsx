@@ -15,6 +15,8 @@ import { motion } from '@/lib/motion';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
@@ -894,6 +896,7 @@ interface OpportunityCardProps {
 
 function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) {
   const { t } = useTranslation('volunteering');
+  const palette = useSitePalette();
   const { tenantPath, hasFeature } = useTenant();
   const hasOrganisations = hasFeature('organisations');
   const navigate = useNavigate();
@@ -966,11 +969,19 @@ function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) {
                 {endDate ? `${t('date_range_separator')}${endDate.toLocaleDateString(getFormattingLocale())}` : ''}
               </span>
             )}
-            {categoryName && (
-              <Chip size="sm" variant="soft" className="text-theme-subtle">
-                {categoryName}
-              </Chip>
-            )}
+            {categoryName && (() => {
+              // Each category in its own colour, the same on every card (was grey).
+              const colour = colourForSeed(`volunteering-category-${categoryName.toLowerCase()}`, palette);
+              return (
+                <span
+                  data-testid="opportunity-category"
+                  data-colour={colour}
+                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryColour(colour).band}`}
+                >
+                  {categoryName}
+                </span>
+              );
+            })()}
             {opportunity.skills_needed && (
               <span className="flex items-center gap-1">
                 <Briefcase className="w-3 h-3" aria-hidden="true" />

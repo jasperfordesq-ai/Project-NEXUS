@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, onTestFinished } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 import { api } from '@/lib/api';
 import type { ReactNode } from 'react';
@@ -194,6 +194,43 @@ describe('OrganisationDetailPage', () => {
       expect(screen.getAllByText('Green Community Trust')[0]).toBeInTheDocument();
     });
     expect(screen.getByText('We help local communities thrive through volunteering.')).toBeInTheDocument();
+  });
+
+  // AWID: "attractive visuals". An organisation without a logo showed its
+  // initials; it now has a cover in its own colour, the same wherever it appears.
+  it('gives an organisation without a logo a cover in its own colour', async () => {
+    setupSuccessfulMocks();
+    render(<OrganisationDetailPage />);
+    const cover = await screen.findByTestId('organisation-detail-cover');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.organisation(7), paletteFor(null)));
+  });
+
+  it('keeps showing the logo of an organisation that has one', async () => {
+    // jsdom never loads a picture, and the avatar only shows one once loaded,
+    // so tell it every picture has loaded.
+    const complete = vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+    const width = vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(96);
+    onTestFinished(() => {
+      complete.mockRestore();
+      width.mockRestore();
+    });
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.includes('/reviews/organization/')) return Promise.resolve({ success: true, data: { reviews: [] } });
+      if (url.includes('/opportunities')) return Promise.resolve({ success: true, data: [] });
+      if (url.includes('/organisations/')) {
+        return Promise.resolve({ success: true, data: { ...mockOrganisation, logo_url: '/uploads/org-logo.png' } });
+      }
+      return Promise.resolve({ success: true, data: null });
+    });
+    render(<OrganisationDetailPage />);
+    await waitFor(() => {
+      expect(screen.getAllByText('Green Community Trust')[0]).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('organisation-detail-cover')).not.toBeInTheDocument();
+    expect(document.querySelector('img[src*="org-logo.png"]')).toBeInTheDocument();
   });
 
   it('renders linked opportunities', async () => {

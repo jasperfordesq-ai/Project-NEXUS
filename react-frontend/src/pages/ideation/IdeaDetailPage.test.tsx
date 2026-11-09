@@ -306,6 +306,29 @@ describe('IdeaDetailPage', () => {
     expect(screen.getByRole('button', { name: /Idea actions/i })).toBeInTheDocument();
   });
 
+  // AWID: "attractive visuals". The page opened with plain text; it now opens
+  // with a cover in the idea's own colour.
+  it('opens with a cover in the idea\'s own colour', async () => {
+    setupMocks();
+    render(<IdeaDetailPage />);
+    const cover = await screen.findByTestId('idea-detail-cover');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.idea(201), paletteFor(null)));
+  });
+
+  it('opens with the idea\'s own picture when it has one', async () => {
+    vi.mocked(api.get).mockImplementation(((url: string) => {
+      if (url.includes('/comments')) return Promise.resolve(mockCommentsResponse);
+      return Promise.resolve({ success: true, data: { ...mockIdea, image_url: 'https://cdn.example.test/idea-201.jpg' } });
+    }) as never);
+    const { container } = render(<IdeaDetailPage />);
+    await screen.findByText('Reusable Shopping Bags');
+    expect(screen.queryByTestId('idea-detail-cover')).not.toBeInTheDocument();
+    expect(container.querySelector('img[src*="idea-201.jpg"]')).not.toBeNull();
+  });
+
   it('calls the correct API endpoints on mount', async () => {
     setupMocks();
     render(<IdeaDetailPage />);

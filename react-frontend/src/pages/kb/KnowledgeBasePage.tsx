@@ -42,6 +42,8 @@ import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { formatRelativeTime } from '@/lib/helpers';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -91,6 +93,7 @@ const itemVariants = {
 
 export function KnowledgeBasePage() {
   const { t } = useTranslation('kb');
+  const palette = useSitePalette();
   usePageTitle(t('title'));
   const { tenantPath } = useTenant();
 
@@ -324,13 +327,18 @@ export function KnowledgeBasePage() {
               animate="visible"
               className="space-y-6"
             >
-              {groupedArticles.map(([category, catArticles]) => (
+              {groupedArticles.map(([category, catArticles]) => {
+                // Each category in its own colour, shared by its heading and its
+                // articles' tiles (AWID: "clear categories"; all were blue).
+                const colour = colourForSeed(`kb-category-${category.toLowerCase()}`, palette);
+                const tone = categoryColour(colour);
+                return (
                 <motion.div key={category} variants={itemVariants}>
                   <GlassCard className="overflow-hidden">
                     {/* Category header */}
-                    <div className="px-5 py-3 bg-gradient-to-r from-blue-500/5 to-accent-gradient-end/5 border-b border-theme-default">
-                      <h2 className="text-sm font-semibold text-theme-primary flex items-center gap-2">
-                        <Folder className="w-4 h-4 text-blue-400" aria-hidden="true" />
+                    <div data-testid="kb-category-heading" data-colour={colour} className={`px-5 py-3 border-b border-theme-default ${tone.band}`}>
+                      <h2 className="text-sm font-semibold flex items-center gap-2">
+                        <Folder className="w-4 h-4" aria-hidden="true" />
                         {category}
                         <Chip size="sm" variant="flat" className="text-[10px] bg-theme-elevated text-theme-subtle">
                           {t('article_count', { count: catArticles.length })}
@@ -346,12 +354,12 @@ export function KnowledgeBasePage() {
                           to={tenantPath(`/kb/${article.id}`)}
                           className="flex items-center gap-4 px-5 py-4 hover:bg-theme-hover/40 transition-colors group"
                         >
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/10 to-accent-gradient-end/10 flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-5 h-5 text-blue-400" aria-hidden="true" />
+                          <div data-testid="kb-article-tile" data-colour={colour} className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${tone.band}`}>
+                            <FileText className="w-5 h-5" aria-hidden="true" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <h3 className="text-sm font-semibold text-theme-primary group-hover:text-blue-400 transition-colors truncate">
+                              <h3 className="text-sm font-semibold text-theme-primary group-hover:text-accent transition-colors truncate">
                                 {article.title}
                               </h3>
                               {getContentTypeIcon(article.content_type) && (
@@ -383,13 +391,14 @@ export function KnowledgeBasePage() {
                               )}
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-theme-subtle group-hover:text-blue-400 transition-colors flex-shrink-0" aria-hidden="true" />
+                          <ChevronRight className="w-4 h-4 text-theme-subtle group-hover:text-accent transition-colors flex-shrink-0" aria-hidden="true" />
                         </Link>
                       ))}
                     </div>
                   </GlassCard>
                 </motion.div>
-              ))}
+                );
+              })}
             </motion.div>
           )}
         </>

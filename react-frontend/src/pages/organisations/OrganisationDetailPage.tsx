@@ -39,10 +39,14 @@ import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Textarea } from '@/components/ui/Textarea';
+import { ThemedCover } from '@/components/ui/ThemedCover';
 import { useDisclosure } from '@/components/ui/useDisclosure';
 import { EmptyState, LoadingScreen } from '@/components/feedback';
 import { Breadcrumbs } from '@/components/navigation';
 import { useAuth, useTenant, useToast } from '@/contexts';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
+import { coverSeed } from '@/lib/coverSeeds';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { TranslateButton } from '@/components/i18n/TranslateButton';
@@ -106,6 +110,7 @@ export function OrganisationDetailPage() {
   const { isAuthenticated } = useAuth();
   const { tenantPath, volunteeringConfig } = useTenant();
   const toast = useToast();
+  const palette = useSitePalette();
   const reviewsEnabled = volunteeringConfig?.['volunteering.enable_reviews'] !== false;
 
   const [organisation, setOrganisation] = useState<OrganisationDetail | null>(null);
@@ -348,11 +353,19 @@ export function OrganisationDetailPage() {
       {/* Hero Section */}
       <GlassCard className="p-6 md:p-8">
         <div className="flex flex-col sm:flex-row items-start gap-6">
-          <Avatar
-            name={organisation.name}
-            src={organisation.logo_url ?? undefined}
-            className="w-20 h-20 flex-shrink-0"
-          />
+          {organisation.logo_url ? (
+            <Avatar
+              name={organisation.name}
+              src={organisation.logo_url}
+              className="w-20 h-20 flex-shrink-0"
+            />
+          ) : (
+            // No logo: a cover in the organisation's own colour, the same
+            // wherever it appears (was its initials; AWID: "attractive visuals").
+            <div className="group h-20 w-20 flex-shrink-0 overflow-hidden rounded-3xl">
+              <ThemedCover data-testid="organisation-detail-cover" size="sm" colour={colourForSeed(coverSeed.organisation(organisation.id), palette)} icon={Building2} />
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-bold text-theme-primary">{translatedName ?? organisation.name}</h1>
 

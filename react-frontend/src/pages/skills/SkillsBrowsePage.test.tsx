@@ -124,6 +124,10 @@ describe('SkillsBrowsePage', () => {
       expect(screen.getByText('IT & Technology')).toBeInTheDocument();
       expect(screen.getByText('Home & Garden')).toBeInTheDocument();
     });
+    // AWID: "clear categories" — each category tile in its own colour (all were one tint).
+    const tiles = screen.getAllByTestId('skills-category-tile');
+    expect(tiles).toHaveLength(2);
+    expect(new Set(tiles.map((tile) => tile.getAttribute('data-colour'))).size).toBe(2);
   });
 
   it('renders empty state when no categories', async () => {

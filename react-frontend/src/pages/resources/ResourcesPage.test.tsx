@@ -159,6 +159,26 @@ describe('ResourcesPage', () => {
     expect(screen.getByText('Resources')).toBeInTheDocument();
   });
 
+  // AWID: "clear categories". The tile behind each file's icon was grey; it
+  // now has a soft tint for its kind of file (PDF red, spreadsheet green…).
+  it('tints each file tile by its kind of file', async () => {
+    const file = (id: number, path: string) => ({
+      id, title: `File ${id}`, description: '', file_url: '', file_path: path, file_type: '', file_size: 10,
+      downloads: 0, created_at: '2026-10-01T10:00:00Z', uploader: { id: 9, name: 'S', avatar: null }, category: null,
+    });
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: [file(1, 'a/guide.pdf'), file(2, 'a/rota.xlsx'), file(3, 'a/notes.bin')],
+      meta: { per_page: 20, has_more: false },
+    });
+    render(<ResourcesPage />);
+    await waitFor(() => expect(screen.getByText('File 1')).toBeInTheDocument());
+    const tiles = screen.getAllByTestId('resource-file-tile');
+    expect(tiles[0]!.className).toContain('bg-red-100');
+    expect(tiles[1]!.className).toContain('bg-emerald-100');
+    expect(tiles[2]!.className).toContain('bg-slate-100');
+  });
+
   it('shows search input', () => {
     render(<ResourcesPage />);
     expect(screen.getByPlaceholderText(/Search resources/i)).toBeInTheDocument();

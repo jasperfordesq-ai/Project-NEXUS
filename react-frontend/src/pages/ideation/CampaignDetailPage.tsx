@@ -30,6 +30,7 @@ import Unlink from 'lucide-react/icons/unlink';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
+import { DetailCover } from '@/components/ui/DetailCover';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
@@ -41,6 +42,7 @@ import { useAuth, useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { api } from '@/lib/api';
+import { coverSeed } from '@/lib/coverSeeds';
 import { logError } from '@/lib/logger';
 import { resolveThumbnailUrl, getFormattingLocale } from '@/lib/helpers';
 
@@ -266,6 +268,15 @@ export function CampaignDetailPage() {
       >
         {t('campaigns.title')}
       </Button>
+
+      {/* The campaign's picture (as on its card), or a cover in its own colour. */}
+      <DetailCover
+        data-testid="campaign-detail-cover"
+        seed={coverSeed.campaign(campaign.id)}
+        icon={Layers}
+        imageUrl={campaign.cover_image ? resolveThumbnailUrl(campaign.cover_image, { width: 1200, height: 400 }) : null}
+        className="mb-6 h-28 rounded-2xl sm:h-40"
+      />
 
       {/* Campaign Header */}
       <GlassCard className="p-6 mb-6">

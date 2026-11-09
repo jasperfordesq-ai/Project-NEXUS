@@ -7,17 +7,20 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { Button, Card, CardBody, Chip, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem, Spinner, Textarea } from '@/components/ui';
+import { DetailCover } from '@/components/ui/DetailCover';
 import { PodcastAudioPlayer, trackFromEpisode } from '@/components/podcasts/PodcastAudioPlayer';
 import { usePodcastPlayer } from '@/contexts/PodcastPlayerContext';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { podcastsApi, type PodcastEpisode } from '@/lib/api/podcasts';
 import { episodeAvailability } from '@/lib/podcasts/availability';
+import { coverSeed } from '@/lib/coverSeeds';
 import { EpisodeAvailabilityChip } from '@/components/podcasts/EpisodeAvailabilityChip';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import FileText from 'lucide-react/icons/file-text';
 import Heart from 'lucide-react/icons/heart';
 import Flag from 'lucide-react/icons/flag';
+import PodcastIcon from 'lucide-react/icons/podcast';
 
 export default function PodcastEpisodePage() {
   const { t } = useTranslation('podcasts');
@@ -195,6 +198,15 @@ export default function PodcastEpisodePage() {
       </Button>
 
       <article className="mt-5 space-y-6">
+        {/* A cover in the show's colour — the same as the show page and the
+            player bar. Artwork is square and would be cropped hard in a band,
+            so it is not used here. */}
+        <DetailCover
+          data-testid="podcast-episode-cover"
+          seed={coverSeed.podcastShow(showPath)}
+          icon={PodcastIcon}
+          className="mb-6 h-28 rounded-2xl sm:h-40"
+        />
         <header>
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <Chip size="sm" variant="soft">{t(`episode.type.${episode.episode_type}`, { defaultValue: episode.episode_type })}</Chip>

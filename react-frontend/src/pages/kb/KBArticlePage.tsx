@@ -43,12 +43,14 @@ const MarkdownRenderer = lazy(() =>
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
+import { DetailCover } from '@/components/ui/DetailCover';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Spinner } from '@/components/ui/Spinner';
 import { useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { api, API_BASE } from '@/lib/api';
+import { coverSeed } from '@/lib/coverSeeds';
 import { logError } from '@/lib/logger';
 import { formatRelativeTime } from '@/lib/helpers';
 
@@ -278,6 +280,14 @@ export function KBArticlePage() {
         )}
         <Breadcrumbs.Item className="text-theme-primary font-medium">{article.title}</Breadcrumbs.Item>
       </Breadcrumbs>
+
+      {/* A cover in the article's own colour. */}
+      <DetailCover
+        data-testid="kb-article-cover"
+        seed={coverSeed.article(article.id)}
+        icon={BookOpen}
+        className="mb-6 h-28 rounded-2xl sm:h-40"
+      />
 
       {/* Article Header */}
       <motion.div

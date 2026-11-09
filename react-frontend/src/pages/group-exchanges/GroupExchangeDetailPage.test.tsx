@@ -201,6 +201,17 @@ describe('GroupExchangeDetailPage', () => {
     });
   });
 
+  // AWID: "attractive visuals". The page opened with plain text; it now opens
+  // with a cover in the exchange's own colour, the same wherever it appears.
+  it("opens with a cover in the exchange's own colour", async () => {
+    render(<GroupExchangeDetailPage />);
+    const cover = await screen.findByTestId('group-exchange-detail-cover');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.groupExchange(1), paletteFor(null)));
+  });
+
   it('renders organizer name', async () => {
     render(<GroupExchangeDetailPage />);
     await waitFor(() => {

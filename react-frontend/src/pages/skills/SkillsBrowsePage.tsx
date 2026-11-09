@@ -37,6 +37,8 @@ import { EmptyState } from '@/components/feedback';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import { useAuth, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -124,6 +126,7 @@ const itemVariants = {
 
 export function SkillsBrowsePage() {
   const { t } = useTranslation('common');
+  const palette = useSitePalette();
   usePageTitle(t('skills.browse_title'));
   const { tenantPath, hasModule } = useTenant();
   const { isAuthenticated } = useAuth();
@@ -408,7 +411,12 @@ export function SkillsBrowsePage() {
                         aria-expanded={isExpanded}
                       >
                         <div className="flex items-center gap-3">
-                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                          {/* Each category in its own colour (AWID: "clear categories"; all were one tint). */}
+                          <div
+                            data-testid="skills-category-tile"
+                            data-colour={colourForSeed(`skills-category-${category.name.toLowerCase()}`, palette)}
+                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${categoryColour(colourForSeed(`skills-category-${category.name.toLowerCase()}`, palette)).band}`}
+                          >
                             {category.icon || <FolderTree className="h-5 w-5" aria-hidden="true" />}
                           </div>
                           <div className="text-left">

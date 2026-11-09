@@ -203,6 +203,26 @@ describe('JobsPage', () => {
     });
   });
 
+  // AWID: "clear categories". Every card had the same blue briefcase; each now
+  // shows its kind of work in that kind's colour — the same as its own page.
+  it('colours each card by its kind of work, the same as the vacancy page', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: [makeVacancy({ id: 1, title: 'Paid role', type: 'paid' }), makeVacancy({ id: 2, title: 'Volunteer role', type: 'volunteer' })],
+      meta: { has_more: false, cursor: null, per_page: 20 },
+    });
+    render(<JobsPage />);
+    await waitFor(() => expect(screen.getByText('Paid role')).toBeInTheDocument());
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    const marks = screen.getAllByTestId('job-card-mark');
+    expect(marks.map((m) => m.getAttribute('data-colour'))).toEqual([
+      colourForSeed(coverSeed.jobType('paid'), paletteFor(null)),
+      colourForSeed(coverSeed.jobType('volunteer'), paletteFor(null)),
+    ]);
+    marks.forEach((mark) => expect(mark).toHaveAttribute('aria-hidden', 'true'));
+  });
+
   it('shows search input', () => {
     render(<JobsPage />);
     // The real SearchField renders <input type="search"> → role `searchbox`.

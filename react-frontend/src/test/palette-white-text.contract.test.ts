@@ -72,6 +72,14 @@ export function offendsOn(line: string): boolean {
   });
 }
 
+const STATUS_FILL = /(?:^|[\s"'`{}])((?:[\w\-[\]=&>*.()]+:)*)!?bg-(?:warning|success)!?(?=[\s"'`{}]|$)/g;
+
+/** White text over HeroUI's (light) warning or success fill, outside dark mode. */
+export function whiteOnStatusFill(line: string): boolean {
+  const lightWhite = [...line.matchAll(WHITE_TEXT)].some((m) => !m[1]!.includes('dark:'));
+  return lightWhite && [...line.matchAll(STATUS_FILL)].some((m) => !m[1]!.includes('dark:'));
+}
+
 function sourceFiles(dir: string, out: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
@@ -103,6 +111,26 @@ describe('white text on Tailwind colours', () => {
       });
     }
     expect(offenders, 'see the note at the top of this file').toEqual([]);
+  });
+
+  // HeroUI's warning and success fills are light (a yellow and a light green):
+  // text on them uses their own foreground token, never white (9 Nov 2026:
+  // resources filter chips, two step indicators).
+  it('never puts white text on the theme\'s warning or success fill', () => {
+    const offenders: string[] = [];
+    for (const file of sourceFiles(SRC)) {
+      const relative = path.relative(SRC, file).split(path.sep).join('/');
+      if (NOT_TOUCHED.some((prefix) => relative.startsWith(prefix))) continue;
+      fs.readFileSync(file, 'utf8').split('\n').forEach((line, index) => {
+        if (whiteOnStatusFill(line)) offenders.push(`${relative}:${index + 1}`);
+      });
+    }
+    expect(offenders, 'use text-warning-foreground / text-success-foreground').toEqual([]);
+    expect(whiteOnStatusFill("'bg-success border-success text-white'")).toBe(true);
+    expect(whiteOnStatusFill("'data-[selected=true]:bg-warning! data-[selected=true]:text-white!'")).toBe(true);
+    expect(whiteOnStatusFill("'bg-success text-success-foreground'")).toBe(false);
+    expect(whiteOnStatusFill("'bg-warning/10 text-white'")).toBe(false);
+    expect(whiteOnStatusFill("'bg-success-soft text-white'")).toBe(false);
   });
 
   it('recognises the fault and its fix', () => {

@@ -40,6 +40,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 
 import Briefcase from 'lucide-react/icons/briefcase';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { categoryColour, colourForSeed } from '@/lib/categoryColours';
+import { coverSeed } from '@/lib/coverSeeds';
 import Plus from 'lucide-react/icons/plus';
 import MapPin from 'lucide-react/icons/map-pin';
 import Clock from 'lucide-react/icons/clock';
@@ -967,6 +970,10 @@ const TYPE_CHIP_COLORS: Record<string, 'success' | 'default' | 'accent'> = {
 
 const JobCard = memo(function JobCard({ vacancy }: JobCardProps) {
   const { t } = useTranslation('jobs');
+  const palette = useSitePalette();
+  // The kind of work in its own colour — the same as the vacancy page's cover.
+  const typeColour = colourForSeed(coverSeed.jobType(vacancy.type), palette);
+  const TypeIcon = TYPE_FILTERS.find((filter) => filter.id === vacancy.type)?.icon ?? Briefcase;
   const { tenantPath } = useTenant();
 
   const deadlineDate = vacancy.deadline ? new Date(vacancy.deadline) : null;
@@ -1027,12 +1034,17 @@ const JobCard = memo(function JobCard({ vacancy }: JobCardProps) {
           <div className="flex gap-3 sm:gap-4">
             {/* Icon */}
             <div className="flex-shrink-0">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-linear-to-br from-blue-500/20 to-accent-gradient-end/20 flex items-center justify-center relative">
-                <Briefcase className="w-6 h-6 text-blue-400" aria-hidden="true" />
-                {/* J10: Featured star */}
+              <div
+                data-testid="job-card-mark"
+                data-colour={typeColour}
+                aria-hidden="true"
+                className={`w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center relative ${categoryColour(typeColour).band}`}
+              >
+                <TypeIcon className="w-6 h-6" aria-hidden="true" />
+                {/* J10: Featured star (its own text colour: white on the warning fill was too faint) */}
                 {vacancy.is_featured && (
                   <div className="absolute -top-1 -right-1 w-5 h-5 bg-warning rounded-full flex items-center justify-center">
-                    <Star className="w-3 h-3 text-white" aria-hidden="true" />
+                    <Star className="w-3 h-3 text-warning-foreground" aria-hidden="true" />
                   </div>
                 )}
               </div>

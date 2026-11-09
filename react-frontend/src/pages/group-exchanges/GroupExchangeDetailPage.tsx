@@ -40,6 +40,7 @@ import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
+import { DetailCover } from '@/components/ui/DetailCover';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
@@ -52,6 +53,7 @@ import { PageMeta } from '@/components/seo';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { coverSeed } from '@/lib/coverSeeds';
 import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -486,6 +488,15 @@ export function GroupExchangeDetailPage() {
         { label: t('title'), href: '/group-exchanges' },
         { label: exchange.title },
       ]} />
+
+      {/* An exchange has no picture: a cover in its own colour, the same
+          wherever it appears (AWID: "attractive visuals"). */}
+      <DetailCover
+        data-testid="group-exchange-detail-cover"
+        seed={coverSeed.groupExchange(exchange.id)}
+        icon={ArrowLeftRight}
+        className="mb-6 h-28 rounded-2xl sm:h-40"
+      />
 
       {/* Status Card */}
       <GlassCard className="p-6">

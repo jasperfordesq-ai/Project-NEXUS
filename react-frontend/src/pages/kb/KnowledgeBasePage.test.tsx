@@ -181,6 +181,20 @@ describe('KnowledgeBasePage', () => {
     expect(screen.getAllByText('Wallet').length).toBeGreaterThan(0);
   });
 
+  // AWID: "clear categories". Every category and article was the same blue;
+  // each category now has its own colour, shared by its heading and articles.
+  it('gives each category its own colour, shared by its articles', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [mockArticle, mockArticle2] });
+    render(<KnowledgeBasePage />);
+    await waitFor(() => expect(screen.getByText('How to Create a Listing')).toBeInTheDocument());
+
+    const headings = screen.getAllByTestId('kb-category-heading');
+    const tiles = screen.getAllByTestId('kb-article-tile');
+    expect(headings).toHaveLength(2);
+    headings.forEach((heading) => expect(heading.getAttribute('data-colour')).toBeTruthy());
+    expect(tiles.map((tile) => tile.getAttribute('data-colour'))).toEqual(headings.map((h) => h.getAttribute('data-colour')));
+  });
+
   it('displays article excerpts when present', async () => {
     vi.mocked(api.get).mockResolvedValue({
       success: true,

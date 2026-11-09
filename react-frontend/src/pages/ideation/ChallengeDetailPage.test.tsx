@@ -270,6 +270,30 @@ describe('ChallengeDetailPage', () => {
     expect(screen.getByText('ideas.empty_description')).toBeInTheDocument();
     expect(screen.queryByText('Reusable Shopping Bags')).not.toBeInTheDocument();
   });
+  // AWID: "attractive visuals". A challenge without a cover image opened with
+  // plain text; it now opens with a cover in the challenge's own colour.
+  it('opens with a cover in the challenge\'s own colour when it has no image', async () => {
+    setupMocks();
+    render(<ChallengeDetailPage />);
+    const cover = await screen.findByTestId('challenge-detail-cover');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.challenge(3), paletteFor(null)));
+  });
+
+  it('still opens with the challenge\'s cover image when it has one', async () => {
+    vi.mocked(api.get).mockImplementation(((url: string) => {
+      if (url.includes('/ideas')) return Promise.resolve(mockIdeasResponse);
+      if (url.includes('/drafts')) return Promise.resolve({ success: true, data: [] });
+      return Promise.resolve({ success: true, data: { ...mockChallenge, cover_image: '/uploads/challenge-3.jpg' } });
+    }) as never);
+    render(<ChallengeDetailPage />);
+    const image = await screen.findByAltText('Zero-Waste Living Challenge');
+    expect(image).toHaveAttribute('src', '/uploads/challenge-3.jpg');
+    expect(screen.queryByTestId('challenge-detail-cover')).not.toBeInTheDocument();
+  });
+
   // F-595 follow-up (E-104): member-written text must not be able to close the
   // structured-data block early in a prerendered snapshot.
   it('escapes "<" in the structured data', async () => {

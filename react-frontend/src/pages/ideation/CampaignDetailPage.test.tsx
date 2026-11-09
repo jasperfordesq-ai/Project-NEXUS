@@ -190,4 +190,24 @@ describe('CampaignDetailPage', () => {
       expect(api.get).toHaveBeenCalledWith('/v2/ideation-campaigns/5');
     });
   });
+
+  // AWID: "attractive visuals". The page opened with plain text; it now opens
+  // with a cover in the campaign's own colour.
+  it('opens with a cover in the campaign\'s own colour when it has no image', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: mockCampaign });
+    render(<CampaignDetailPage />);
+    const cover = await screen.findByTestId('campaign-detail-cover');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.campaign(5), paletteFor(null)));
+  });
+
+  it('opens with the campaign\'s own cover image when it has one', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...mockCampaign, cover_image: '/uploads/campaign-5.jpg' } });
+    const { container } = render(<CampaignDetailPage />);
+    await screen.findByText('Sustainable Futures Campaign');
+    expect(screen.queryByTestId('campaign-detail-cover')).not.toBeInTheDocument();
+    expect(container.querySelector('img[src="/uploads/campaign-5.jpg"]')).not.toBeNull();
+  });
 });

@@ -20,9 +20,15 @@ import Bell from 'lucide-react/icons/bell';
 import BellOff from 'lucide-react/icons/bell-off';
 import Radio from 'lucide-react/icons/radio';
 import Rss from 'lucide-react/icons/rss';
+import PodcastIcon from 'lucide-react/icons/podcast';
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
+import { coverSeed } from '@/lib/coverSeeds';
 
 export default function PodcastShowPage() {
   const { t } = useTranslation('podcasts');
+  const palette = useSitePalette();
   const { showSlug = '' } = useParams();
   const { tenant, tenantPath } = useTenant();
   const { user, isAuthenticated } = useAuth();
@@ -115,16 +121,24 @@ export default function PodcastShowPage() {
       </Button>
 
       <section className="mt-5 grid gap-6 md:grid-cols-[12rem_1fr]">
-        <Avatar
-          src={safePodcastArtworkUrl(show.artwork_url) ?? undefined}
-          name={show.title}
-          radius="md"
-          className="h-48 w-48"
-          imgProps={safePodcastArtworkUrl(show.artwork_url) ? {
-            src: resolveThumbnailUrl(safePodcastArtworkUrl(show.artwork_url), { width: 512, height: 512 }),
-            referrerPolicy: 'no-referrer',
-          } : undefined}
-        />
+        {safePodcastArtworkUrl(show.artwork_url) ? (
+          <Avatar
+            src={safePodcastArtworkUrl(show.artwork_url) ?? undefined}
+            name={show.title}
+            radius="md"
+            className="h-48 w-48"
+            imgProps={safePodcastArtworkUrl(show.artwork_url) ? {
+              src: resolveThumbnailUrl(safePodcastArtworkUrl(show.artwork_url), { width: 512, height: 512 }),
+              referrerPolicy: 'no-referrer',
+            } : undefined}
+          />
+        ) : (
+          // No artwork: a cover in the show's own colour — the same as the
+          // player bar while one of its episodes plays (was its initials).
+          <div className="group h-48 w-48 overflow-hidden rounded-2xl">
+            <ThemedCover data-testid="podcast-show-cover" size="lg" colour={colourForSeed(coverSeed.podcastShow(show.slug), palette)} icon={PodcastIcon} />
+          </div>
+        )}
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <Chip size="sm" variant="soft">{t(`visibility.${show.visibility}`, { defaultValue: show.visibility })}</Chip>

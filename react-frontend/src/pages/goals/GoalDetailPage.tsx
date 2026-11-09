@@ -6,9 +6,11 @@
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
+import { DetailCover } from '@/components/ui/DetailCover';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Progress } from '@/components/ui/Progress';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { coverSeed } from '@/lib/coverSeeds';
 /**
  * GoalDetailPage — single-goal view at /goals/:id.
  *
@@ -232,6 +234,15 @@ export function GoalDetailPage() {
       />
 
       {backButton}
+
+      {/* A goal has no picture: a cover in its own colour, the same wherever
+          it appears (AWID: "attractive visuals"). */}
+      <DetailCover
+        data-testid="goal-detail-cover"
+        seed={coverSeed.goal(goal.id)}
+        icon={Target}
+        className="mb-6 h-28 rounded-2xl sm:h-40"
+      />
 
       <GlassCard className={`p-5 sm:p-6 space-y-6 ${isCompleted ? 'border-l-4 border-emerald-500' : ''} ${isOverdue ? 'border-l-4 border-red-500' : ''}`}>
         {/* Header */}

@@ -641,6 +641,12 @@ describe('VolunteeringPage', () => {
     });
     expect(screen.getByText('Green Org')).toBeInTheDocument();
     expect(screen.getByText('Apply')).toBeInTheDocument();
+    // AWID: "clear categories". The category was a grey chip; it now has its
+    // own colour, the same for every opportunity in that category.
+    const label = screen.getByTestId('opportunity-category');
+    expect(label).toHaveTextContent('Environment');
+    expect(label.getAttribute('data-colour')).toBeTruthy();
+    expect(label.className).toMatch(/bg-[a-z]+-100/);
   });
 
   it('shows Applied chip and hides Apply button when already applied', async () => {

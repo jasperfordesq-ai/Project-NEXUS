@@ -158,6 +158,40 @@ describe('PodcastEpisodePage', () => {
     expect(mockRecordListen).not.toHaveBeenCalled();
   });
 
+  // AWID: "attractive visuals". The episode page opened with plain text; an
+  // episode without artwork now opens with a cover in its show's colour — the
+  // same as the show page and the player bar.
+  it('gives an episode without artwork a cover in its show\'s colour', async () => {
+    renderEpisodePage();
+
+    const cover = await screen.findByTestId('podcast-episode-cover');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.podcastShow('community-show'), paletteFor(null)));
+  });
+
+  // Artwork is square and would be cropped hard in a wide band, so the band
+  // keeps the show's colour even when the episode has artwork.
+  it('keeps the show-coloured cover when the episode has artwork', async () => {
+    mockEpisode.mockResolvedValueOnce({
+      success: true,
+      data: {
+        id: 42, show_id: 7, author_user_id: 3, title: 'Public episode', slug: 'public-episode',
+        audio_url: 'https://cdn.example.test/public.mp3', explicit: false, episode_type: 'full',
+        visibility: 'public', status: 'published', moderation_status: 'approved', listen_count: 0,
+        reaction_count: 0, viewer_has_reacted: false, cover_image_url: '/uploads/podcasts/episode-42.jpg',
+        show: { id: 7, owner_user_id: 3, title: 'Community show', slug: 'community-show', language: 'en', visibility: 'public', status: 'published', moderation_status: 'approved', episode_count: 1, subscriber_count: 0 },
+      },
+    });
+
+    renderEpisodePage();
+
+    expect(await screen.findByRole('heading', { name: 'Public episode' })).toBeInTheDocument();
+    expect(screen.getByTestId('podcast-episode-cover')).toBeInTheDocument();
+    expect(document.querySelector('img[src*="episode-42.jpg"]')).toBeNull();
+  });
+
   it('space starts playback of the loaded episode via a keyboard gesture', async () => {
     renderEpisodePage();
     expect(await screen.findByRole('heading', { name: 'Public episode' })).toBeInTheDocument();

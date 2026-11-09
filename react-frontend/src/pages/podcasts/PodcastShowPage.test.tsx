@@ -135,6 +135,19 @@ describe('PodcastShowPage', () => {
     expect(screen.getByText('A show about things')).toBeInTheDocument();
   });
 
+  // A show without artwork showed its initials; it now has a cover in its own
+  // colour — the same colour as the player bar while one of its episodes plays.
+  it('gives a show without artwork a cover in the same colour as the player bar', async () => {
+    vi.mocked(podcastsApi.show).mockResolvedValueOnce({ success: true, data: makeShow() as never });
+    render(<PodcastShowPage />);
+
+    const cover = await screen.findByTestId('podcast-show-cover');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.podcastShow('my-cool-show'), paletteFor(null)));
+  });
+
   it('renders episode list', async () => {
     vi.mocked(podcastsApi.show).mockResolvedValueOnce({
       success: true,

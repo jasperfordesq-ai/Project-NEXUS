@@ -120,7 +120,7 @@ function StepIndicator({ current, labels }: StepIndicatorProps) {
                 className={[
                   'w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors',
                   isComplete
-                    ? 'bg-success border-success text-white'
+                    ? 'bg-success border-success text-success-foreground'
                     : isActive
                       ? 'bg-accent-strong border-accent text-white'
                       : 'bg-[var(--color-surface)] border-border text-muted',

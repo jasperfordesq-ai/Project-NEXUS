@@ -27,7 +27,9 @@ import { Switch } from '@/components/ui/Switch';
 import { Textarea } from '@/components/ui/Textarea';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
 import { useDisclosure } from '@/components/ui/useDisclosure';
+import { DetailCover } from '@/components/ui/DetailCover';
 import { QrCodeImage } from '@/components/volunteering/QrCodeImage';
+import { coverSeed } from '@/lib/coverSeeds';
 
 import MapPin from 'lucide-react/icons/map-pin';
 import Calendar from 'lucide-react/icons/calendar';
@@ -1157,6 +1159,14 @@ export function OpportunityDetailPage() {
       />
 
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+        {/* An opportunity has no picture of its own: a cover in its own colour,
+            the same wherever it appears (AWID: "attractive visuals"). */}
+        <DetailCover
+          data-testid="opportunity-detail-cover"
+          seed={coverSeed.opportunity(opp.id)}
+          icon={Briefcase}
+          className="mb-6 h-28 rounded-2xl sm:h-40"
+        />
         {/* Header Card */}
         <GlassCard className="p-6 space-y-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start">

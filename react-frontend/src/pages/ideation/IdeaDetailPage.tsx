@@ -41,8 +41,10 @@ import Star from 'lucide-react/icons/star';
 import Trash2 from 'lucide-react/icons/trash-2';
 import Send from 'lucide-react/icons/send';
 import Users from 'lucide-react/icons/users';
+import Lightbulb from 'lucide-react/icons/lightbulb';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
+import { DetailCover } from '@/components/ui/DetailCover';
 import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { EmptyState } from '@/components/feedback';
@@ -51,7 +53,8 @@ import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl, formatRelativeTime } from '@/lib/helpers';
+import { coverSeed } from '@/lib/coverSeeds';
+import { resolveAvatarUrl, resolveThumbnailUrl, formatRelativeTime } from '@/lib/helpers';
 import { toJsonLd } from '@/lib/json-ld';
 
 /* ───────────────────────── Types ───────────────────────── */
@@ -62,6 +65,8 @@ interface Idea {
   user_id: number;
   title: string;
   description: string;
+  /** Optional picture attached to the idea (shown on its card in the challenge). */
+  image_url?: string | null;
   votes_count: number;
   comments_count: number;
   status: 'submitted' | 'shortlisted' | 'winner' | 'withdrawn';
@@ -472,6 +477,15 @@ export function IdeaDetailPage() {
       >
         {t('idea_detail.back_to_challenge')}
       </Button>
+
+      {/* The idea's picture, or a cover in the idea's own colour. */}
+      <DetailCover
+        data-testid="idea-detail-cover"
+        seed={coverSeed.idea(idea.id)}
+        icon={Lightbulb}
+        imageUrl={idea.image_url ? resolveThumbnailUrl(idea.image_url, { width: 1200, height: 400 }) : null}
+        className="mb-6 h-28 rounded-2xl sm:h-40"
+      />
 
       {/* Idea Header */}
       <GlassCard className="p-6 mb-6">

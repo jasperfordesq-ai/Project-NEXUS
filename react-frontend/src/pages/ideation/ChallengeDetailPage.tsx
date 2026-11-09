@@ -62,6 +62,7 @@ import Target from 'lucide-react/icons/target';
 import Layers from 'lucide-react/icons/layers';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
+import { DetailCover } from '@/components/ui/DetailCover';
 import { EmptyState } from '@/components/feedback';
 import { SocialInteractionPanel } from '@/components/social/SocialInteractionPanel';
 import { useAuth, useToast, useTenant } from '@/contexts';
@@ -69,6 +70,7 @@ import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { coverSeed } from '@/lib/coverSeeds';
 import { resolveAvatarUrl, resolveAssetUrl, resolveThumbnailUrl, formatRelativeTime, getFormattingLocale } from '@/lib/helpers';
 import { toJsonLd } from '@/lib/json-ld';
 
@@ -840,18 +842,16 @@ export function ChallengeDetailPage() {
         {t('title')}
       </Button>
 
-      {/* Cover Image Banner */}
-      {challenge.cover_image && (
-        <div className="w-full h-48 sm:h-64 rounded-xl overflow-hidden mb-6">
-          <img
-            src={resolveThumbnailUrl(challenge.cover_image, { width: 1200, height: 675 })}
-            alt={challenge.title}
-            className="w-full h-full object-cover"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-      )}
+      {/* Cover Image Banner — the challenge's picture, or, when it has none,
+          a cover in the challenge's own colour. */}
+      <DetailCover
+        data-testid="challenge-detail-cover"
+        seed={coverSeed.challenge(challenge.id)}
+        icon={Trophy}
+        imageUrl={challenge.cover_image ? resolveThumbnailUrl(challenge.cover_image, { width: 1200, height: 675 }) : null}
+        imageAlt={challenge.title}
+        className={challenge.cover_image ? 'mb-6 h-48 rounded-xl sm:h-64' : 'mb-6 h-28 rounded-2xl sm:h-40'}
+      />
 
       {/* Challenge Header */}
       <GlassCard className="p-6 mb-6">

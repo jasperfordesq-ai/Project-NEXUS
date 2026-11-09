@@ -563,7 +563,7 @@ export default function CoordinatorTasks() {
                         onPress={() => handleQuickComplete(task)}
                         className={`mt-0.5 shrink-0 rounded-full border-2 ${
                           completed
-                            ? 'border-success bg-success text-white'
+                            ? 'border-success bg-success text-success-foreground'
                             : 'border-muted text-muted hover:border-success hover:text-success'
                         }`}
                       >

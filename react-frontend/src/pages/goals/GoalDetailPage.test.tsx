@@ -141,6 +141,18 @@ describe('GoalDetailPage', () => {
     });
   });
 
+  // AWID: "attractive visuals". The page opened with plain text; it now opens
+  // with a cover in the goal's own colour, the same wherever it appears.
+  it("opens with a cover in the goal's own colour", async () => {
+    mockApi.get.mockResolvedValue({ success: true, data: GOAL });
+    render(<GoalDetailPage />);
+    const cover = await screen.findByTestId('goal-detail-cover');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.goal(42), paletteFor(null)));
+  });
+
   it('renders the goal description', async () => {
     mockApi.get.mockResolvedValue({ success: true, data: GOAL });
     render(<GoalDetailPage />);

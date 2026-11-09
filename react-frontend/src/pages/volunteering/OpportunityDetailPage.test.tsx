@@ -184,6 +184,18 @@ describe('OpportunityDetailPage', () => {
     expect(screen.getByText('Green Dublin')).toBeInTheDocument();
   });
 
+  // AWID: "attractive visuals". The page opened with plain text; it now opens
+  // with a cover in the opportunity's own colour, the same wherever it appears.
+  it("opens with a cover in the opportunity's own colour", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: mockOpportunity });
+    render(<OpportunityDetailPage />);
+    const cover = await screen.findByTestId('opportunity-detail-cover');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.opportunity(42), paletteFor(null)));
+  });
+
   it('shows error state when API fails', async () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Network failure'));
     render(<OpportunityDetailPage />);
