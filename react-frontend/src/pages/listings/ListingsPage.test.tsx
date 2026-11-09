@@ -133,43 +133,74 @@ describe('ListingsPage', () => {
 
   it('renders without crashing', () => {
     render(<ListingsPage />);
-    expect(screen.getByText('Listings')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Offers and requests' })).toBeInTheDocument();
   });
 
-  it('shows the page heading and description', () => {
-    render(<ListingsPage />);
-    expect(screen.getByText('Listings')).toBeInTheDocument();
-    expect(screen.getByText('Browse services and requests from the community')).toBeInTheDocument();
-  });
-
-  it('welcomes the member in a panel with both ways to take part (AWID feedback)', () => {
-    render(<ListingsPage />);
-    const panel = screen.getByTestId('listings-welcome');
-    expect(within(panel).getByRole('heading', { name: 'Welcome back, Test' })).toBeInTheDocument();
-    expect(within(panel).getByText(/Every hour you give comes back to the community/)).toBeInTheDocument();
-    // Exactly one of each on the page: the panel's, not a second in the header.
-    expect(screen.getByRole('link', { name: 'Offer help' })).toHaveAttribute('href', '/test/listings/create?type=offer');
-    expect(screen.getByRole('link', { name: 'Ask for help' })).toHaveAttribute('href', '/test/listings/create?type=request');
-  });
-
-  it('shows the welcome panel on phones too', () => {
-    isPhoneViewport = true;
-    render(<ListingsPage />);
-    expect(screen.getByTestId('listings-welcome')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Offer help' })).toBeInTheDocument();
-  });
-
-  it('shows no welcome panel to a visitor who is not signed in', () => {
+  /** Runs `check` while the visitor is signed out, then signs the member back in. */
+  function asVisitor(check: () => void) {
     const signedIn = vi.mocked(useAuth).getMockImplementation();
     vi.mocked(useAuth).mockReturnValue({ user: null, isAuthenticated: false } as unknown as ReturnType<typeof useAuth>);
     try {
-      render(<ListingsPage />);
-      expect(screen.queryByTestId('listings-welcome')).toBeNull();
-      expect(screen.queryByRole('link', { name: 'Offer help' })).toBeNull();
+      check();
     } finally {
       // clearAllMocks keeps implementations, so put the signed-in member back.
       if (signedIn) vi.mocked(useAuth).mockImplementation(signedIn);
     }
+  }
+
+  it('gives a visitor the page banner in plain, warm words', () => {
+    asVisitor(() => {
+      render(<ListingsPage />);
+      const banner = document.querySelector<HTMLElement>('[data-public-page-hero="true"]');
+      expect(banner).not.toBeNull();
+      expect(within(banner!).getByRole('heading', { level: 1, name: 'Offers and requests' })).toBeInTheDocument();
+      expect(within(banner!).getByText('People helping people')).toBeInTheDocument();
+      expect(within(banner!).getByText('See what people in this community can offer, and what they need help with.')).toBeInTheDocument();
+    });
+  });
+
+  it('shows a signed-in member one header: the welcome panel replaces the banner (AWID feedback)', () => {
+    render(<ListingsPage />);
+    expect(document.querySelector('[data-public-page-hero="true"]')).toBeNull();
+
+    const panel = screen.getByTestId('listings-welcome');
+    expect(within(panel).getByRole('heading', { level: 1, name: 'Offers and requests' })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(within(panel).getByText('Welcome back, Test')).toBeInTheDocument();
+    expect(within(panel).getByText(/Every hour you give comes back to the community/)).toBeInTheDocument();
+    expect(within(panel).getByRole('link', { name: 'My listings' })).toHaveAttribute('href', '/test/listings/mine');
+    // Exactly one of each on the page.
+    expect(screen.getByRole('link', { name: 'Offer help' })).toHaveAttribute('href', '/test/listings/create?type=offer');
+    expect(screen.getByRole('link', { name: 'Ask for help' })).toHaveAttribute('href', '/test/listings/create?type=request');
+  });
+
+  it('keeps the search box free of a second heading and a second count', async () => {
+    render(<ListingsPage />);
+
+    expect(screen.queryByText('Browse Listings')).toBeNull();
+    // Still named for screen-reader users, who move between headings.
+    expect(screen.getByRole('heading', { level: 2, name: 'Find an offer or request' })).toHaveClass('sr-only');
+    await waitFor(() => {
+      expect(screen.getAllByText(/^(\d+ offers and requests|Finding offers and requests)$/)).toHaveLength(1);
+    });
+  });
+
+  it('shows the welcome panel on phones too, with the greeting as its heading', () => {
+    isPhoneViewport = true;
+    render(<ListingsPage />);
+    const panel = screen.getByTestId('listings-welcome');
+    expect(within(panel).getByRole('heading', { level: 2, name: 'Welcome back, Test' })).toBeInTheDocument();
+    // The phone's app bar carries the title; the page keeps one hidden h1.
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole('link', { name: 'Offer help' })).toBeInTheDocument();
+  });
+
+  it('shows no welcome panel to a visitor who is not signed in', () => {
+    asVisitor(() => {
+      render(<ListingsPage />);
+      expect(screen.queryByTestId('listings-welcome')).toBeNull();
+      expect(screen.queryByRole('link', { name: 'Offer help' })).toBeNull();
+    });
   });
 
   describe('browse by theme', () => {
@@ -428,15 +459,118 @@ describe('ListingsPage', () => {
 
       render(<ListingsPage />);
 
-      // "Offering" also heads the coloured band of a card with no photo or
-      // theme; the label is the one inside a chip.
-      const label = (await screen.findAllByText('Offering'))
-        .map((el) => el.closest('[data-slot="chip"]'))
-        .find((chip) => chip !== null);
+      // Said once: the coloured panel of a card with no theme no longer
+      // repeats "Offering" above the label.
+      const label = (await screen.findByText('Offering')).closest('[data-slot="chip"]');
       expect(label).toHaveClass('text-xs');
       expect(label?.className).not.toContain('text-[10px]');
       // No photo and no theme: the offer's own green, never a grey box.
-      expect(screen.getByTestId('listing-theme-band').className).toContain('bg-green-100');
+      const band = screen.getByTestId('listing-theme-band');
+      expect(band.className).toContain('bg-green-100');
+      expect(band.textContent).toBe('');
+    });
+
+    it('names the theme once on a card with no photo, and puts "Remote" beside the hours', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/listings')
+            ? {
+                success: true,
+                meta: {},
+                data: [
+                  {
+                    id: 1,
+                    title: 'French conversation',
+                    description: 'Relaxed practice over video.',
+                    type: 'offer',
+                    status: 'active',
+                    created_at: '2026-08-01T00:00:00Z',
+                    updated_at: '2026-08-01T00:00:00Z',
+                    category_name: 'Learning',
+                    category_color: 'blue',
+                    service_type: 'remote_only',
+                    estimated_hours: 2,
+                    user: { id: 9, name: 'Sofia Haddad' },
+                  },
+                ],
+              }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+
+      render(<ListingsPage />);
+
+      const card = await screen.findByTestId('listing-card');
+      const mentions = within(card).getAllByText('Learning');
+      // Seen once, in the coloured panel ...
+      expect(mentions.filter((el) => !el.classList.contains('sr-only'))).toHaveLength(1);
+      expect(within(card).getByTestId('listing-theme-band')).toHaveTextContent('Learning');
+      // ... and still heard by screen readers, because the panel is decoration.
+      expect(mentions.some((el) => el.classList.contains('sr-only'))).toBe(true);
+      // "Remote" is part of the details line, not one more label.
+      expect(within(card).getByText('Remote').closest('[data-slot="chip"]')).toBeNull();
+      expect(within(card).getByText('2h')).toBeInTheDocument();
+    });
+
+    it('shows hours as a person would write them: "1.5h", not "1.50h"', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/listings')
+            ? {
+                success: true,
+                meta: {},
+                data: [
+                  // The API sends the database's decimal as a string.
+                  { id: 1, title: 'Dog walking', description: 'Mornings.', type: 'offer', status: 'active',
+                    created_at: '2026-08-01T00:00:00Z', updated_at: '2026-08-01T00:00:00Z',
+                    estimated_hours: '1.50', user: { id: 9, name: 'Sofia Haddad' } },
+                  { id: 2, title: 'Lift to town', description: 'Saturdays.', type: 'request', status: 'active',
+                    created_at: '2026-08-01T00:00:00Z', updated_at: '2026-08-01T00:00:00Z',
+                    estimated_hours: '0.00', user: { id: 10, name: 'Aoife Nolan' } },
+                ],
+              }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+
+      render(<ListingsPage />);
+
+      const [dogs, lift] = await screen.findAllByTestId('listing-card');
+      expect(within(dogs!).getByText('1.5h')).toBeInTheDocument();
+      expect(within(dogs!).queryByText('1.50h')).toBeNull();
+      // Zero hours says nothing useful, so it is left out.
+      expect(within(lift!).queryByText(/h$/)).toBeNull();
+    });
+
+    it('does not darken a card when the pointer is over it', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/listings')
+            ? {
+                success: true,
+                meta: {},
+                data: [
+                  {
+                    id: 1,
+                    title: 'Basic carpentry',
+                    description: 'I would love some basic carpentry advice.',
+                    type: 'request',
+                    status: 'active',
+                    created_at: '2026-08-01T00:00:00Z',
+                    updated_at: '2026-08-01T00:00:00Z',
+                    image_url: '/uploads/listings/saw.jpg',
+                    user: { id: 9, name: 'Aoife Nolan' },
+                  },
+                ],
+              }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+
+      render(<ListingsPage />);
+
+      const card = await screen.findByTestId('listing-card');
+      expect(card.querySelector('[class*="group-hover:bg-black"]')).toBeNull();
     });
   });
 

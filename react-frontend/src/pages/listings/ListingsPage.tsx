@@ -193,6 +193,7 @@ export function ListingsPage() {
   const usesCommunityColour = useCommunityAccent() !== null;
   const viewToggleSelected = usesCommunityColour ? VIEW_TOGGLE_SELECTED.community : VIEW_TOGGLE_SELECTED.page;
   const memberFirstName = user?.first_name?.trim() || '';
+  const greeting = memberFirstName ? t('welcome_back', { name: memberFirstName }) : t('welcome_generic');
   const [searchParams, setSearchParams] = useSearchParams();
   const canUseMapView = MAPS_ENABLED && hasFeature('maps');
 
@@ -603,8 +604,13 @@ export function ListingsPage() {
           heading to orient by. Keep one for screen readers. Mirrors BlogPage. */}
       {isPhone && <h1 className="sr-only">{t('title')}</h1>}
       <div className="space-y-5">
-      {/* Phones hide the hero entirely — the title lives in the app bar (useSetAppBarTitle). */}
-      {!isPhone && (
+      {/* Visitors on a computer or tablet get the shared page banner. A
+          signed-in member gets one header instead of two: the welcome panel
+          below carries the page title, the count and "My listings", so the
+          offers start higher up the page (AWID: clean, inviting). Phones hide
+          the banner entirely — the title lives in the app bar
+          (useSetAppBarTitle). */}
+      {!isPhone && !isAuthenticated && (
       <div className="hidden sm:block">
         <PublicPageHero
           eyebrow={t('hero_eyebrow')}
@@ -613,20 +619,7 @@ export function ListingsPage() {
           accent="emerald"
           icon={<ListTodo className="h-7 w-7" aria-hidden="true" />}
           stats={totalItems != null ? [{ label: t('hero_results_label'), value: totalItems.toLocaleString(getFormattingLocale()) }] : undefined}
-          action={
-            <div className="flex flex-wrap items-center gap-3">
-              <AlgorithmLabel area="listings" />
-              {isAuthenticated && (
-                <Button as={Link} to={tenantPath('/listings/mine')}
-                  variant="tertiary"
-                  className="shrink-0"
-                  startContent={<ClipboardList className="w-4 h-4" aria-hidden="true" />}
-                >
-                  {t('mine.title')}
-                </Button>
-              )}
-            </div>
-          }
+          action={<AlgorithmLabel area="listings" />}
         />
       </div>
       )}
@@ -635,17 +628,42 @@ export function ListingsPage() {
           warmth, an intuitive layout). A HeroUI Card on the theme's soft
           accent, so it takes the community's colour once one is chosen. Its
           two buttons are the plain ways in: give, or ask. Each opens the
-          listing form with the type already chosen. */}
+          listing form with the type already chosen. On a computer or tablet
+          it is the page's header, so it holds the page's only <h1>; on a phone
+          the title is in the app bar and the greeting is the heading. */}
       {isAuthenticated && (
         <Card data-testid="listings-welcome" className="border-0 bg-accent-soft shadow-none">
-          <CardBody className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <CardBody className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 lg:p-8">
             <div className="min-w-0">
-              <h2 className="text-xl font-bold tracking-tight text-theme-primary sm:text-2xl">
-                {memberFirstName ? t('welcome_back', { name: memberFirstName }) : t('welcome_generic')}
-              </h2>
-              <p className="mt-1 max-w-2xl text-sm leading-6 text-theme-secondary sm:text-base">
+              {isPhone ? (
+                <h2 className="text-xl font-bold tracking-tight text-theme-primary">{greeting}</h2>
+              ) : (
+                <>
+                  <p className="text-sm font-semibold text-theme-secondary">{greeting}</p>
+                  <h1 className="mt-1 text-3xl font-bold tracking-tight text-theme-primary sm:text-4xl">
+                    {t('title')}
+                  </h1>
+                </>
+              )}
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-theme-secondary sm:text-base">
                 {t('welcome_intro')}
               </p>
+              {!isPhone && (
+                <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <span className="text-sm font-medium text-theme-secondary">
+                    {totalItems != null ? t('results_count', { count: totalItems }) : t('results_loading')}
+                  </span>
+                  <Button as={Link} to={tenantPath('/listings/mine')}
+                    variant="tertiary"
+                    size="sm"
+                    className="shrink-0"
+                    startContent={<ClipboardList className="w-4 h-4" aria-hidden="true" />}
+                  >
+                    {t('mine.title')}
+                  </Button>
+                  <AlgorithmLabel area="listings" />
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3 sm:flex sm:shrink-0">
               <Button as={Link} to={tenantPath('/listings/create?type=offer')}
@@ -745,21 +763,18 @@ export function ListingsPage() {
       {/* Filters (desktop and tablet — phones use the sticky bar + sheet) */}
       {!isPhone && (
       <GlassCard className="hidden p-4 sm:block sm:p-5">
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 className="text-base font-semibold text-theme-primary">{t('browse')}</h2>
-            <p className="mt-1 text-sm text-theme-muted">{t('filters_intro')}</p>
-          </div>
-          <div className="flex items-center gap-2 rounded-full bg-theme-elevated px-3 py-1 text-xs font-medium text-theme-muted">
-            <ListTodo className={`h-3.5 w-3.5 ${usesCommunityColour ? 'text-accent' : 'text-emerald-500'}`} aria-hidden="true" />
-            {totalItems != null ? t('results_count', { count: totalItems }) : t('results_loading')}
-          </div>
-        </div>
+        {/* No visible heading or count here: the header above already says
+            both. The heading stays for screen-reader users, who move around
+            the page by heading. */}
+        <h2 className="sr-only">{t('find_heading')}</h2>
 
         {/* Row 1: Search + primary filters */}
         <form onSubmit={handleSearch} aria-label={t('filter_form_label')} className="flex flex-col gap-3 xl:flex-row">
           <div className="flex min-w-0 flex-1 gap-2">
+            {/* fullWidth: without it HeroUI sizes the field to its content,
+                which left it squashed to a third of the row. */}
             <SearchField
+              fullWidth
               size="lg"
               placeholder={t('search_placeholder')}
               value={searchInput}
@@ -1258,8 +1273,6 @@ const BADGE_TONES = {
   request: 'bg-amber-500/20 text-amber-800 dark:text-amber-400',
   mutual: 'bg-violet-500/20 text-violet-800 dark:text-violet-400',
   one_way: 'bg-sky-500/20 text-sky-800 dark:text-sky-400',
-  remote: 'bg-blue-500/20 text-blue-800 dark:text-blue-400',
-  hybrid: 'bg-teal-500/20 text-teal-800 dark:text-teal-400',
   category: 'bg-theme-hover text-theme-primary',
 } as const;
 
@@ -1308,7 +1321,13 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
   const { tenantPath } = useTenant();
   const isGrid = viewMode === 'grid';
   const [imgError, setImgError] = useState(false);
-  const hours = listing.estimated_hours || listing.hours_estimate;
+  // The API sends the database decimal as a string ("2.00"), which the card
+  // showed as "2.00h". Written as a person would ("2h", "1.5h"); zero hours
+  // says nothing useful, so it is left out.
+  const hoursNumber = Number(listing.estimated_hours || listing.hours_estimate);
+  const hours = Number.isFinite(hoursNumber) && hoursNumber > 0
+    ? hoursNumber.toLocaleString(getFormattingLocale(), { maximumFractionDigits: 2 })
+    : undefined;
   const avatarSource = listing.author_avatar || listing.user?.avatar;
   const avatarSrc = avatarSource
     ? resolveThumbnailUrl(avatarSource, { width: 96, height: 96, fallback: resolveAvatarUrl(null) })
@@ -1339,6 +1358,14 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
         sizes: isGrid ? '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw' : '160px',
       })
     : null;
+  const showsPhoto = imageProps !== null && !imgError;
+  // Remote / hybrid sit in the details line beside the hours and the place,
+  // not as one more label: a card carried up to six labels (AWID: clean).
+  const serviceMode = listing.service_type === 'remote_only'
+    ? { Icon: Monitor, label: t('service_type_remote') }
+    : listing.service_type === 'hybrid'
+      ? { Icon: ArrowRightLeft, label: t('service_type_hybrid_available') }
+      : null;
 
   if (!isGrid) {
     // ─── List View ───
@@ -1377,12 +1404,6 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
                 {listing.reciprocity_match === 'one_way' && (
                   <ListingBadge tone="one_way" icon={Zap}>{t('reciprocity_one_way')}</ListingBadge>
                 )}
-                {listing.service_type === 'remote_only' && (
-                  <ListingBadge tone="remote" icon={Monitor}>{t('service_type_remote')}</ListingBadge>
-                )}
-                {listing.service_type === 'hybrid' && (
-                  <ListingBadge tone="hybrid" icon={ArrowRightLeft}>{t('service_type_hybrid_available')}</ListingBadge>
-                )}
                 {listing.category_name && (
                   <ListingBadge tone="category">{listing.category_name}</ListingBadge>
                 )}
@@ -1412,6 +1433,12 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3" aria-hidden="true" />
                   {t('listings:hours_short', { hours })}
+                </span>
+              )}
+              {serviceMode && (
+                <span className="flex items-center gap-1">
+                  <serviceMode.Icon className="w-3 h-3" aria-hidden="true" />
+                  {serviceMode.label}
                 </span>
               )}
               {listing.location && (
@@ -1453,7 +1480,7 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
       <GlassCard data-testid="listing-card" className="group relative flex h-full cursor-pointer flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
         {/* Listing Image with hover overlay and floating save button */}
         <div className="relative aspect-video overflow-hidden bg-theme-elevated">
-          {imageProps && !imgError ? (
+          {showsPhoto && imageProps ? (
             <img
               {...imageProps}
               alt={imageAlt}
@@ -1468,28 +1495,29 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
           ) : (
             // No photo: the listing's theme in its own colour, instead of a
             // grey box (AWID: "attractive visuals", "clear categories").
-            // Decorative for screen readers: the theme name is also in the
-            // badges below.
+            // Decorative for screen readers: the theme name is repeated, out
+            // of sight, in the labels below. With no theme it shows only the
+            // icon — "Offering" is already the first label.
             <div
               data-testid="listing-theme-band"
               aria-hidden="true"
-              className={`flex h-full w-full flex-col justify-between p-4 ${categoryColour(
+              className={`flex h-full w-full flex-col p-4 ${listing.category_name ? 'justify-between' : 'items-center justify-center'} ${categoryColour(
                 // No theme either: the offer/request colours used by its label.
                 themeColour ?? listing.category_color ?? (listing.type === 'offer' ? 'green' : 'orange'),
               ).band}`}
             >
-              <span className="text-sm font-semibold">
-                {listing.category_name || (listing.type === 'offer' ? t('offering') : t('requesting'))}
-              </span>
+              {listing.category_name && (
+                <span className="text-sm font-semibold">{listing.category_name}</span>
+              )}
               {listing.type === 'offer' ? (
-                <Gift className="h-10 w-10 self-end opacity-80" aria-hidden="true" />
+                <Gift className={`h-10 w-10 opacity-80 ${listing.category_name ? 'self-end' : ''}`} aria-hidden="true" />
               ) : (
-                <HandHelping className="h-10 w-10 self-end opacity-80" aria-hidden="true" />
+                <HandHelping className={`h-10 w-10 opacity-80 ${listing.category_name ? 'self-end' : ''}`} aria-hidden="true" />
               )}
             </div>
           )}
-          {/* Dark overlay on hover */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" aria-hidden="true" />
+          {/* No dark overlay on hover: the card lifts instead (a darkened
+              photo or colour panel read as heavier, not warmer). */}
           {/* Floating save button */}
           {onToggleSave && (
             <div className="absolute top-2 right-2 z-10">
@@ -1527,14 +1555,11 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
           {listing.reciprocity_match === 'one_way' && (
             <ListingBadge tone="one_way" icon={Zap} title={t('reciprocity_one_way_title')}>{t('reciprocity_one_way')}</ListingBadge>
           )}
-          {listing.service_type === 'remote_only' && (
-            <ListingBadge tone="remote" icon={Monitor}>{t('service_type_remote')}</ListingBadge>
-          )}
-          {listing.service_type === 'hybrid' && (
-            <ListingBadge tone="hybrid" icon={ArrowRightLeft}>{t('service_type_hybrid_available')}</ListingBadge>
-          )}
-          {listing.category_name && (
-            <ListingBadge tone="category">{listing.category_name}</ListingBadge>
+          {/* The coloured panel already shows the theme when there is no
+              photo, so it is named here only for screen readers. */}
+          {listing.category_name && (showsPhoto
+            ? <ListingBadge tone="category">{listing.category_name}</ListingBadge>
+            : <span className="sr-only">{listing.category_name}</span>
           )}
         </div>
 
@@ -1570,12 +1595,18 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
               </span>
             )}
           </div>
-          {(hours || listing.location || listing.distance_km !== undefined) && (
+          {(hours || serviceMode || listing.location || listing.distance_km !== undefined) && (
             <div className="flex min-w-0 items-center gap-3 text-xs text-theme-subtle">
               {hours && (
                 <span className="flex items-center gap-1 shrink-0" aria-label={t('aria_hours_estimated', { hours })}>
                   <Clock className="w-3 h-3" aria-hidden="true" />
                   {t('listings:hours_short', { hours })}
+                </span>
+              )}
+              {serviceMode && (
+                <span className="flex items-center gap-1 shrink-0">
+                  <serviceMode.Icon className="w-3 h-3" aria-hidden="true" />
+                  {serviceMode.label}
                 </span>
               )}
               {listing.location && (

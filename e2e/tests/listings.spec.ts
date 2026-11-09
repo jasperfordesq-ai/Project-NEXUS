@@ -108,7 +108,9 @@ test.describe('Listings Marketplace', () => {
     // showing "Checking authentication...", so the heading — which does exist —
     // reported as not found. And `h1, h2` matches BOTH "Listings" and
     // "Browse Listings", so it fails strict mode once the page does paint.
-    await expect(page.getByRole('heading', { name: /listings|marketplace/i }).first())
+    // The page is titled "Offers and requests" since Nov 2026 (AWID: warmer
+    // wording); "Browse Listings" is gone, so the page has one <h1>.
+    await expect(page.getByRole('heading', { level: 1, name: /offers and requests|listings|marketplace/i }))
       .toBeVisible({ timeout: 20000 });
 
     // Search box should be visible. Scoped with .first() because the page renders
