@@ -974,7 +974,7 @@ export function EventDetailPage() {
             className="absolute inset-0 overflow-hidden bg-linear-to-br from-accent-strong to-accent-strong-end"
             aria-hidden="true"
           >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] bg-[length:18px_18px] text-white opacity-[0.08]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] bg-[length:22px_22px] text-white opacity-[0.05]" />
             <div className="absolute -end-10 -top-12 h-56 w-56 rounded-full bg-white/15 blur-3xl" />
           </div>
         )}

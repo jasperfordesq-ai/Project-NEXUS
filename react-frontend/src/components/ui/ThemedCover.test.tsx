@@ -49,4 +49,18 @@ describe('ThemedCover', () => {
     render(<ThemedCover colour="no-such-colour" icon={Users} data-testid="cover" />);
     expect(screen.getByTestId('cover').className).toContain('from-slate-100');
   });
+
+  // Owner, 9 Nov 2026: on dark mode the dot texture read as "loads of white dots".
+  // It stays a whisper: at most 5% in light mode, and fainter still in dark mode,
+  // where the dots are a light colour on a dark cover.
+  it('keeps the dot texture faint, and fainter in dark mode than in light', () => {
+    render(<ThemedCover colour="green" icon={Users} data-testid="cover" />);
+    const texture = screen.getByTestId('cover').querySelector('[data-cover-texture]');
+    const cls = texture?.className ?? '';
+    const light = Number(/(?:^|\s)opacity-\[([\d.]+)\]/.exec(cls)?.[1]);
+    const dark = Number(/dark:opacity-\[([\d.]+)\]/.exec(cls)?.[1]);
+    expect(light).toBeGreaterThan(0);
+    expect(light).toBeLessThanOrEqual(0.05);
+    expect(dark).toBeLessThan(light);
+  });
 });

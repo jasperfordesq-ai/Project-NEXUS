@@ -50,7 +50,9 @@ export function ThemedCover({
       className={`relative isolate flex h-full w-full overflow-hidden ${known.cover} ${className}`}
     >
       {/* A faint dot texture in the cover's own colour. */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] bg-[length:18px_18px] opacity-[0.07] dark:opacity-[0.12]" />
+      {/* Kept a whisper (owner, 9 Nov 2026: stronger, it read as "loads of
+          white dots"), and fainter on dark, where the dots are light on dark. */}
+      <div data-cover-texture className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] bg-[length:22px_22px] opacity-[0.05] dark:opacity-[0.035]" />
       {/* A soft light in the top corner. */}
       <div className="pointer-events-none absolute -end-10 -top-12 h-40 w-40 rounded-full bg-white/60 blur-3xl dark:bg-white/5" />
 
