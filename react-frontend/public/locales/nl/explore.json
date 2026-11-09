@@ -149,7 +149,8 @@
     "deadline": "Deadline: {{date}}"
   },
   "aria": {
-    "content_tabs": "Verken inhoudstabbladen"
+    "content_tabs": "Verken inhoudstabbladen",
+    "browse_by_theme": "Bladeren per thema"
   },
   "tabs": {
     "all": "Alles",
@@ -181,5 +182,18 @@
   "empty_groups": "Nog geen actieve groepen. Start een groep rond jouw interesses!",
   "create_listing": "Aanbod of verzoek maken",
   "create_event": "Evenement maken",
-  "create_group": "Groep Aanmaken"
+  "create_group": "Groep Aanmaken",
+  "listing_type": {
+    "offer": "Aanbod",
+    "request": "Verzoek"
+  },
+  "content_type": {
+    "listing": "Aanbod of verzoek",
+    "post": "Bericht",
+    "event": "Evenement",
+    "group": "Groep",
+    "member": "Lid",
+    "blog": "Blogbericht",
+    "other": "Iets nieuws"
+  }
 }

@@ -149,7 +149,8 @@
     "deadline": "Frist: {{date}}"
   },
   "aria": {
-    "content_tabs": "Entdecken-Inhaltsregister"
+    "content_tabs": "Entdecken-Inhaltsregister",
+    "browse_by_theme": "Nach Thema stöbern"
   },
   "tabs": {
     "all": "Alle",
@@ -181,5 +182,18 @@
   "empty_groups": "Noch keine aktiven Gruppen. Gründen Sie eine Gruppe zu Ihren Interessen!",
   "create_listing": "Angebot oder Gesuch erstellen",
   "create_event": "Veranstaltung erstellen",
-  "create_group": "Gruppe erstellen"
+  "create_group": "Gruppe erstellen",
+  "listing_type": {
+    "offer": "Angebot",
+    "request": "Gesuch"
+  },
+  "content_type": {
+    "listing": "Angebot oder Gesuch",
+    "post": "Beitrag",
+    "event": "Veranstaltung",
+    "group": "Gruppe",
+    "member": "Mitglied",
+    "blog": "Blogbeitrag",
+    "other": "Etwas Neues"
+  }
 }

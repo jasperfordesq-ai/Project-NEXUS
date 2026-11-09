@@ -149,7 +149,8 @@
     "deadline": "Deadline: {{date}}"
   },
   "aria": {
-    "content_tabs": "Explore content tabs"
+    "content_tabs": "Explore content tabs",
+    "browse_by_theme": "Browse by theme"
   },
   "tabs": {
     "all": "All",
@@ -181,5 +182,18 @@
   "empty_groups": "No active groups yet. Start a group around your interests!",
   "create_listing": "Create an offer or request",
   "create_event": "Create Event",
-  "create_group": "Create Group"
+  "create_group": "Create Group",
+  "listing_type": {
+    "offer": "Offer",
+    "request": "Request"
+  },
+  "content_type": {
+    "listing": "Offer or request",
+    "post": "Post",
+    "event": "Event",
+    "group": "Group",
+    "member": "Member",
+    "blog": "Blog post",
+    "other": "Something new"
+  }
 }

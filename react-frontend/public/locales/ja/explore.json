@@ -149,7 +149,8 @@
     "deadline": "締切: {{date}}"
   },
   "aria": {
-    "content_tabs": "コンテンツタブを探索"
+    "content_tabs": "コンテンツタブを探索",
+    "browse_by_theme": "テーマで探す"
   },
   "tabs": {
     "all": "すべて",
@@ -181,5 +182,18 @@
   "empty_groups": "まだアクティブなグループはありません。あなたの興味に基づいてグループを始めましょう！",
   "create_listing": "提供・リクエストを作成",
   "create_event": "イベントを作成",
-  "create_group": "グループを作成"
+  "create_group": "グループを作成",
+  "listing_type": {
+    "offer": "提供",
+    "request": "リクエスト"
+  },
+  "content_type": {
+    "listing": "提供・リクエスト",
+    "post": "投稿",
+    "event": "イベント",
+    "group": "グループ",
+    "member": "メンバー",
+    "blog": "ブログ記事",
+    "other": "新着"
+  }
 }

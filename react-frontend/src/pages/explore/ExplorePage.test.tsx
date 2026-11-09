@@ -504,3 +504,64 @@ describe('ExplorePage', () => {
     expect(screen.getByAltText('Quiet Listing')).toBeInTheDocument();
   });
 });
+
+// AWID feedback (Nov 2026, "warmth, clear categories, attractive visuals"):
+// Explore opens like the rest of the site and shows themes with their colours
+// and pictures; no raw English type words.
+describe('ExplorePage — warmth', () => {
+  beforeEach(() => {
+    disabled.clear();
+    vi.resetAllMocks();
+    window.history.pushState({}, '', '/');
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/v2/explore/for-you')) {
+        return Promise.resolve({
+          success: true,
+          data: [{ id: 7, content_type: 'listing', title: 'Seedlings to share', subtitle: null, image_url: null, url: '/listings/7', meta: null }],
+          meta: { per_page: 15, total: 1, has_more: false },
+        });
+      }
+      if (url.includes('/v2/explore')) return Promise.resolve({ success: true, data: makeExploreData() });
+      if (url.includes('/v2/categories')) {
+        return Promise.resolve({ success: true, data: [{ id: 1, name: 'Gardening', slug: 'gardening' }] });
+      }
+      return Promise.resolve({ success: true, data: null });
+    });
+    mockApi.post.mockResolvedValue({ success: true, data: null });
+  });
+
+  it('opens with a soft panel in the community colour, like the feed and dashboard', async () => {
+    const { default: ExplorePage } = await import('./ExplorePage');
+    render(<ExplorePage />);
+    const hero = await screen.findByTestId('explore-hero');
+    expect(hero.className).toContain('bg-accent-soft');
+    expect(hero.querySelector('h1')).not.toBeNull();
+  });
+
+  it('shows each theme as a coloured link with its picture', async () => {
+    const { default: ExplorePage } = await import('./ExplorePage');
+    render(<ExplorePage />);
+    const link = await screen.findByRole('link', { name: 'Gardening' });
+    expect(link).toHaveAttribute('href', '/test/listings?category=gardening');
+    expect(link.querySelector('svg.lucide-sprout')).not.toBeNull();
+    expect(link.className).toMatch(/bg-[a-z]+-100/);
+  });
+
+  it("gives an offer without a photo its theme's cover and picture, and names its type in words", async () => {
+    const { default: ExplorePage } = await import('./ExplorePage');
+    render(<ExplorePage />);
+    const cover = await screen.findByTestId('explore-listing-cover');
+    expect(cover.querySelector('svg.lucide-sprout')).not.toBeNull();
+    expect(screen.getByText('Offer')).toBeInTheDocument();
+    expect(screen.queryByText('offer')).toBeNull();
+  });
+
+  it('names what each For You item is in words, not the raw "listing"', async () => {
+    window.history.pushState({}, '', '/?tab=for_you');
+    const { default: ExplorePage } = await import('./ExplorePage');
+    render(<ExplorePage />);
+    await screen.findByText('Seedlings to share');
+    expect(screen.getByText('Offer or request')).toBeInTheDocument();
+    expect(screen.queryByText('listing')).toBeNull();
+  });
+});

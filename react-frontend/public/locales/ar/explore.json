@@ -201,7 +201,8 @@
     "deadline": "الموعد النهائي: {{date}}"
   },
   "aria": {
-    "content_tabs": "استكشاف علامات المحتوى"
+    "content_tabs": "استكشاف علامات المحتوى",
+    "browse_by_theme": "تصفح حسب الموضوع"
   },
   "tabs": {
     "all": "الكل",
@@ -233,5 +234,18 @@
   "empty_groups": "لا توجد مجموعات نشطة بعد. ابدأ مجموعة حول اهتماماتك!",
   "create_listing": "إنشاء عرض أو طلب",
   "create_event": "إنشاء حدث",
-  "create_group": "إنشاء مجموعة"
+  "create_group": "إنشاء مجموعة",
+  "listing_type": {
+    "offer": "عرض",
+    "request": "طلب"
+  },
+  "content_type": {
+    "listing": "عرض أو طلب",
+    "post": "منشور",
+    "event": "فعالية",
+    "group": "مجموعة",
+    "member": "عضو",
+    "blog": "مقالة مدونة",
+    "other": "شيء جديد"
+  }
 }

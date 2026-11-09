@@ -6,6 +6,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
+import CalendarDays from 'lucide-react/icons/calendar-days';
+import { SiteAccentContext } from '@/contexts/SiteAccentContext';
+import { paletteFor } from '@/lib/categoryColours';
 import { ExploreSection } from './ExploreSection';
 
 vi.mock('@/contexts', () => createMockContexts());
@@ -101,5 +104,26 @@ describe('ExploreSection', () => {
     // motion.section renders as a <section>
     const section = container.querySelector('section');
     expect(section?.className).toContain('my-custom-class');
+  });
+
+  // AWID feedback (Nov 2026): twenty sections with identical plain headings are
+  // hard to scan; each gets a small picture in a colour from the community palette.
+  it('puts a small coloured picture beside the heading, hidden from screen readers', () => {
+    render(
+      <SiteAccentContext.Provider value="#a3195b">
+        <ExploreSection title="Upcoming events" icon={CalendarDays} colourIndex={1}>
+          <p>x</p>
+        </ExploreSection>
+      </SiteAccentContext.Provider>,
+    );
+    const tile = screen.getByTestId('explore-section-icon');
+    expect(tile).toHaveAttribute('aria-hidden', 'true');
+    expect(tile).toHaveAttribute('data-colour', paletteFor('#a3195b')[1]);
+    expect(tile.querySelector('svg.lucide-calendar-days')).not.toBeNull();
+  });
+
+  it('shows no picture when none is given', () => {
+    render(<ExploreSection title="Plain"><p>x</p></ExploreSection>);
+    expect(screen.queryByTestId('explore-section-icon')).toBeNull();
   });
 });

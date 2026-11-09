@@ -171,7 +171,7 @@ class ExploreService
     {
         try {
             $rows = DB::select(
-                "SELECT id, name, slug, color FROM categories WHERE tenant_id = ? AND type = 'listing' ORDER BY sort_order ASC, name ASC LIMIT 20",
+                "SELECT id, name, slug, color, icon FROM categories WHERE tenant_id = ? AND type = 'listing' ORDER BY sort_order ASC, name ASC LIMIT 20",
                 [$tenantId]
             );
             return array_map(fn($row) => [
@@ -179,6 +179,7 @@ class ExploreService
                 'name' => $row->name,
                 'slug' => $row->slug,
                 'color' => $row->color,
+                'icon' => $row->icon,
             ], $rows);
         } catch (\Throwable $e) {
             Log::debug('[ExploreService] getListingCategories failed: ' . $e->getMessage());
@@ -369,6 +370,7 @@ class ExploreService
                     l.category_id,
                     COALESCE(cat.name, '') AS category_name,
                     COALESCE(cat.slug, '') AS category_slug,
+                    cat.icon AS category_icon,
                     cat.color AS category_color,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
@@ -400,6 +402,7 @@ class ExploreService
                 'save_count' => (int) $row->save_count,
                 'category_name' => $row->category_name,
                 'category_slug' => $row->category_slug,
+                'category_icon' => $row->category_icon ?? null,
                 'category_color' => $row->category_color,
                 'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                 'author_avatar' => $row->author_avatar,
@@ -948,6 +951,7 @@ class ExploreService
                     l.user_id, l.created_at,
                     COALESCE(cat.name, '') AS category_name,
                     cat.slug AS category_slug,
+                    cat.icon AS category_icon,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
                     u.profile_type AS author_profile_type,
@@ -1030,6 +1034,7 @@ class ExploreService
                     'location' => $row->location,
                     'category_name' => $row->category_name,
                     'category_slug' => $row->category_slug,
+                    'category_icon' => $row->category_icon ?? null,
                     'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                     'author_avatar' => $row->author_avatar,
                     'match_reason' => $matchReason,
@@ -1113,6 +1118,7 @@ class ExploreService
                     l.id, l.title, l.type, l.image_url, l.location, l.category_id,
                     COALESCE(cat.name, '') AS category_name,
                     cat.slug AS category_slug,
+                    cat.icon AS category_icon,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
                     u.profile_type AS author_profile_type,
@@ -1146,6 +1152,7 @@ class ExploreService
                 'location' => $row->location,
                 'category_name' => $row->category_name,
                 'category_slug' => $row->category_slug,
+                'category_icon' => $row->category_icon ?? null,
                 'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                 'author_avatar' => $row->author_avatar,
                 'match_reason' => null,
@@ -1246,6 +1253,7 @@ class ExploreService
                     l.id, l.title, l.type, l.image_url, l.location,
                     COALESCE(cat.name, '') AS category_name,
                     cat.slug AS category_slug,
+                    cat.icon AS category_icon,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
                     u.profile_type AS author_profile_type,
@@ -1277,6 +1285,7 @@ class ExploreService
                 'location' => $row->location,
                 'category_name' => $row->category_name,
                 'category_slug' => $row->category_slug,
+                'category_icon' => $row->category_icon ?? null,
                 'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                 'author_avatar' => $row->author_avatar,
                 'distance_km' => round((float) $row->distance_km, 1),
@@ -2292,6 +2301,7 @@ class ExploreService
                     COALESCE(l.save_count, 0) AS save_count,
                     COALESCE(cat.name, '') AS category_name,
                     COALESCE(cat.slug, '') AS category_slug,
+                    cat.icon AS category_icon,
                     cat.color AS category_color,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
@@ -2321,6 +2331,7 @@ class ExploreService
                     'save_count' => (int) $row->save_count,
                     'category_name' => $row->category_name,
                     'category_slug' => $row->category_slug,
+                    'category_icon' => $row->category_icon ?? null,
                     'category_color' => $row->category_color,
                     'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                     'author_avatar' => $row->author_avatar,
@@ -2344,7 +2355,7 @@ class ExploreService
 
         try {
             $category = DB::selectOne(
-                "SELECT id, name, slug, color FROM categories WHERE tenant_id = ? AND slug = ?",
+                "SELECT id, name, slug, color, icon FROM categories WHERE tenant_id = ? AND slug = ?",
                 [$tenantId, $slug]
             );
 

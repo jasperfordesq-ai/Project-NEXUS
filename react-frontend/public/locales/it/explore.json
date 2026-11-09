@@ -162,7 +162,8 @@
     "deadline": "Scadenza: {{date}}"
   },
   "aria": {
-    "content_tabs": "Schede contenuti da esplorare"
+    "content_tabs": "Schede contenuti da esplorare",
+    "browse_by_theme": "Sfoglia per tema"
   },
   "tabs": {
     "all": "Tutto",
@@ -194,5 +195,18 @@
   "empty_groups": "Nessun gruppo attivo. Avvia un gruppo sui tuoi interessi!",
   "create_listing": "Crea un'offerta o una richiesta",
   "create_event": "Crea Evento",
-  "create_group": "Crea Gruppo"
+  "create_group": "Crea Gruppo",
+  "listing_type": {
+    "offer": "Offerta",
+    "request": "Richiesta"
+  },
+  "content_type": {
+    "listing": "Offerta o richiesta",
+    "post": "Post",
+    "event": "Evento",
+    "group": "Gruppo",
+    "member": "Membro",
+    "blog": "Articolo del blog",
+    "other": "Qualcosa di nuovo"
+  }
 }

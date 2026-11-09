@@ -55,6 +55,22 @@ import { useTenant, useAuth } from '@/contexts';
 import { canCreateEvents } from '@/lib/access';
 import { resolveAvatarUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
 import apiClient from '@/lib/api';
+import { CommunityPhoto } from '@/components/branding/CommunityPhoto';
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { categoryColour, colourForSeed } from '@/lib/categoryColours';
+import { themeIconFor } from '@/lib/themeIcons';
+import { useListingThemeColours } from '@/hooks/useListingThemeColours';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import Gift from 'lucide-react/icons/gift';
+import HandHelping from 'lucide-react/icons/hand-helping';
+import Flame from 'lucide-react/icons/flame';
+import CalendarDays from 'lucide-react/icons/calendar-days';
+import UsersRound from 'lucide-react/icons/users-round';
+import Sparkles from 'lucide-react/icons/sparkles';
+import Newspaper from 'lucide-react/icons/newspaper';
+import HeartHandshake from 'lucide-react/icons/heart-handshake';
+import Smile from 'lucide-react/icons/smile';
+import Target from 'lucide-react/icons/target';
 import { ExploreSection, ExploreStatCard, HorizontalScroll } from '@/components/explore';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -88,6 +104,8 @@ interface PopularListing {
   category_name: string;
   category_slug: string;
   category_color: string | null;
+  /** The theme's picture (lib/themeIcons key), or null for "automatic". */
+  category_icon?: string | null;
   author_name: string;
   author_avatar: string | null;
 }
@@ -289,7 +307,7 @@ interface ExploreData {
   in_demand_skills: InDemandSkill[];
   featured_resources: FeaturedResource[];
   latest_jobs: JobVacancy[];
-  categories?: Array<{ id: number; name: string; slug: string; color?: string }>;
+  categories?: Array<{ id: number; name: string; slug: string; color?: string; icon?: string | null }>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -353,6 +371,16 @@ interface ForYouItem {
   score: number;
   created_at: string | null;
 }
+
+/** What each For You item is, in the reader's language (was the raw English type). */
+const CONTENT_TYPE_LABEL_KEYS: Record<string, string> = {
+  listing: 'content_type.listing',
+  post: 'content_type.post',
+  event: 'content_type.event',
+  group: 'content_type.group',
+  member: 'content_type.member',
+  blog: 'content_type.blog',
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Empty state component
@@ -420,6 +448,13 @@ export default function ExplorePage() {
 
   const navigate = useNavigate();
   const { tenantPath, hasFeature, hasModule } = useTenant();
+  // Theme colours exactly as the offers page shows them, and the community's palette.
+  const themeColours = useListingThemeColours();
+  const palette = useSitePalette();
+  // A soft ring in each member's own colour (the seed their initials and
+  // profile cover use), around their photo in the people sections.
+  const memberHalo = (name: string | null | undefined) =>
+    categoryColour(colourForSeed((name ?? '').trim().toLowerCase(), palette)).band;
   const hasListings = hasModule('listings');
   const { isAuthenticated, user } = useAuth();
   const hasConnections = hasFeature('connections');
@@ -473,11 +508,11 @@ export default function ExplorePage() {
   const { data, isLoading, error, execute: retry } = useApi<ExploreData>('/v2/explore');
 
   // Fetch categories for quick-filter chips (fallback — also included in explore response now)
-  const { data: categories } = useApi<Array<{ id: number; name: string; slug: string; color?: string }>>(
+  const { data: categories } = useApi<Array<{ id: number; name: string; slug: string; color?: string; icon?: string | null }>>(
     '/v2/categories?type=listing'
   );
   // Prefer categories from explore response (Phase 5 — eliminates 2nd API call)
-  const effectiveCategories: Array<{ id: number; name: string; slug: string; color?: string }> | null | undefined = data?.categories ?? categories;
+  const effectiveCategories: Array<{ id: number; name: string; slug: string; color?: string; icon?: string | null }> | null | undefined = data?.categories ?? categories;
 
   // ── For You infinite scroll feed ──────────────────────────────────────────
   const [forYouItems, setForYouItems] = useState<ForYouItem[]>([]);
@@ -575,16 +610,23 @@ export default function ExplorePage() {
       <PageMeta title={t('page_title')} description={t('page_description')} />
 
       {/* ─── Hero Search Bar ──────────────────────────────────────────────── */}
+      {/* A soft panel in the community colour with the community's own photo
+          across the top when it has one, like the feed, dashboard and offers
+          pages (AWID: "warmth, and community"). Text on the tint uses the
+          darker secondary token so it stays readable. */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="text-center mb-8"
+        data-testid="explore-hero"
+        className="mb-8 overflow-hidden rounded-3xl bg-accent-soft text-center"
       >
-        <h1 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] mb-2">
+        <CommunityPhoto data-testid="explore-hero-photo" className="block h-28 w-full sm:h-36" />
+        <div className="px-4 py-6 sm:px-8 sm:py-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-theme-primary mb-2">
           {t('heading')}
         </h1>
-        <p className="text-[var(--text-muted)] mb-6 max-w-xl mx-auto">
+        <p className="text-theme-secondary mb-6 max-w-xl mx-auto">
           {t('subtitle')}
         </p>
 
@@ -602,7 +644,7 @@ export default function ExplorePage() {
             onSubmit={() => handleSearch()}
             className="flex-1"
             classNames={{
-              inputWrapper: 'bg-[var(--glass-bg)] border-[var(--glass-border)] backdrop-blur-md',
+              inputWrapper: 'bg-[var(--surface-solid)] border-[var(--glass-border)] shadow-sm',
             }}
           />
           <Button
@@ -616,22 +658,32 @@ export default function ExplorePage() {
           </Button>
         </form>}
 
-        {/* Category quick-filter chips */}
+        {/* Themes: each in its own colour with its picture, exactly as the
+            offers page shows them (AWID: "clear categories"). Links, because
+            each one opens the offers page filtered to that theme. */}
         {hasListings && effectiveCategories && effectiveCategories.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-2">
-            {effectiveCategories.slice(0, 8).map((cat) => (
-              <Button
-                key={cat.id}
-                variant="flat"
-                size="sm"
-                className="cursor-pointer hover:bg-[var(--surface-hover)] transition-colors"
-                onPress={() => navigate(tenantPath(`/listings?category=${cat.slug}`))}
-              >
-                {cat.name}
-              </Button>
-            ))}
-          </div>
+          <nav aria-label={t('aria.browse_by_theme')} className="flex flex-wrap justify-center gap-2">
+            {effectiveCategories.slice(0, 8).map((cat) => {
+              const colour = categoryColour(themeColours[cat.slug] ?? cat.color ?? 'slate');
+              const ThemeIcon = themeIconFor(cat);
+              return (
+                <Link
+                  key={cat.id}
+                  to={tenantPath(`/listings?category=${cat.slug}`)}
+                  className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold shadow-sm ring-1 ring-black/5 transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:ring-white/10 ${colour.band}`}
+                >
+                  {ThemeIcon ? (
+                    <ThemeIcon className="size-4 shrink-0" aria-hidden="true" />
+                  ) : (
+                    <span className={`size-3 shrink-0 rounded-full ${colour.dot}`} aria-hidden="true" />
+                  )}
+                  {cat.name}
+                </Link>
+              );
+            })}
+          </nav>
         )}
+        </div>
       </motion.div>
 
       {/* ─── Tab Navigation ──────────────────────────────────────────────── */}
@@ -688,8 +740,8 @@ export default function ExplorePage() {
                   <Card className="h-full border border-[var(--card-border)] bg-[var(--card-bg)] hover:bg-[var(--card-hover-bg)] transition-colors">
                     <CardBody className="p-4 gap-3">
                       <div className="flex items-center gap-2">
-                        <Chip size="sm" variant="soft" className="text-xs capitalize">
-                          {item.content_type}
+                        <Chip size="sm" variant="soft" className="text-xs">
+                          {t(CONTENT_TYPE_LABEL_KEYS[item.content_type] ?? 'content_type.other')}
                         </Chip>
                         {item.meta && (
                           <span className="text-xs text-[var(--text-muted)] truncate">{item.meta}</span>
@@ -777,10 +829,10 @@ export default function ExplorePage() {
                 ))
               ) : (
                 <>
-                  <ExploreStatCard icon={Users} label={t('stats.members')} value={stats?.total_members ?? 0} />
-                  <ExploreStatCard icon={ArrowRightLeft} label={t('stats.exchanges_this_month')} value={stats?.exchanges_this_month ?? 0} />
-                  <ExploreStatCard icon={Clock} label={t('stats.hours_exchanged')} value={stats?.hours_exchanged ?? 0} suffix="h" />
-                  <ExploreStatCard icon={ListTodo} label={t('stats.active_listings')} value={stats?.active_listings ?? 0} />
+                  <ExploreStatCard icon={Users} label={t('stats.members')} value={stats?.total_members ?? 0} colour={palette[0]} />
+                  <ExploreStatCard icon={ArrowRightLeft} label={t('stats.exchanges_this_month')} value={stats?.exchanges_this_month ?? 0} colour={palette[1]} />
+                  <ExploreStatCard icon={Clock} label={t('stats.hours_exchanged')} value={stats?.hours_exchanged ?? 0} suffix="h" colour={palette[2]} />
+                  <ExploreStatCard icon={ListTodo} label={t('stats.active_listings')} value={stats?.active_listings ?? 0} colour={palette[3]} />
                 </>
               )}
             </div>
@@ -793,6 +845,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('trending_posts.title')}
           subtitle={t('trending_posts.subtitle')}
+          icon={Flame}
+          colourIndex={0}
           seeAllLink={tenantPath('/feed')}
         >
           {isLoading ? (
@@ -863,6 +917,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('popular_listings.title')}
           subtitle={t('popular_listings.subtitle')}
+          icon={Gift}
+          colourIndex={1}
           seeAllLink={tenantPath('/listings?sort=popular')}
         >
           {isLoading ? (
@@ -895,15 +951,22 @@ export default function ExplorePage() {
                           loading="lazy"
                         />
                       ) : (
-                        <div className="w-full h-32 rounded-lg bg-gradient-to-br from-[var(--surface-elevated)] to-[var(--glass-bg)] flex flex-col items-center justify-center gap-1.5">
-                          {listing.type === 'offer' ? (
-                            <HandHeart className="w-7 h-7 text-accent opacity-40" aria-hidden="true" />
-                          ) : (
-                            <Search className="w-7 h-7 text-accent opacity-40" aria-hidden="true" />
-                          )}
-                          <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-subtle)]">
-                            {listing.type}
-                          </span>
+                        // No photo: a cover in the theme's colour with its
+                        // picture, as on the offers page (was a grey box).
+                        <div className="h-32 w-full overflow-hidden rounded-lg">
+                          <ThemedCover
+                            data-testid="explore-listing-cover"
+                            size="sm"
+                            colour={
+                              (listing.category_slug && themeColours[listing.category_slug])
+                              || listing.category_color
+                              || colourForSeed(listing.id, palette)
+                            }
+                            icon={
+                              themeIconFor({ icon: listing.category_icon, slug: listing.category_slug, name: listing.category_name })
+                              ?? (listing.type === 'offer' ? Gift : HandHelping)
+                            }
+                          />
                         </div>
                       )}
                       <div>
@@ -917,8 +980,8 @@ export default function ExplorePage() {
                               {listing.category_name}
                             </Chip>
                           )}
-                          <Chip size="sm" variant="soft" className="text-xs capitalize">
-                            {listing.type}
+                          <Chip size="sm" variant="soft" className="text-xs">
+                            {listing.type === 'offer' ? t('listing_type.offer') : t('listing_type.request')}
                           </Chip>
                         </div>
                         <h3 className="text-sm font-semibold text-[var(--text-primary)] line-clamp-2">
@@ -955,6 +1018,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('upcoming_events.title')}
           subtitle={t('upcoming_events.subtitle')}
+          icon={CalendarDays}
+          colourIndex={2}
           seeAllLink={tenantPath('/events')}
         >
           {isLoading ? (
@@ -991,8 +1056,14 @@ export default function ExplorePage() {
                           loading="lazy"
                         />
                       ) : (
-                        <div className="w-full h-28 rounded-lg bg-accent-soft flex items-center justify-center">
-                          <Calendar className="w-8 h-8 text-accent" aria-hidden="true" />
+                        // No picture: a cover in a colour from the community palette.
+                        <div className="h-28 w-full overflow-hidden rounded-lg">
+                          <ThemedCover
+                            data-testid="explore-event-cover"
+                            size="sm"
+                            colour={colourForSeed(`event-${event.id}`, palette)}
+                            icon={CalendarDays}
+                          />
                         </div>
                       )}
                       <h3 className="text-sm font-semibold text-[var(--text-primary)] line-clamp-2">
@@ -1029,6 +1100,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('active_groups.title')}
           subtitle={t('active_groups.subtitle')}
+          icon={UsersRound}
+          colourIndex={3}
           seeAllLink={tenantPath('/groups')}
         >
           {isLoading ? (
@@ -1047,15 +1120,20 @@ export default function ExplorePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {data!.active_groups.map((group) => (
                 <Link key={group.id} to={tenantPath(`/groups/${group.id}`)}>
-                  <Card className="h-full border border-[var(--card-border)] bg-[var(--card-bg)] hover:bg-[var(--card-hover-bg)] transition-colors">
+                  <Card className="h-full overflow-hidden border border-[var(--card-border)] bg-[var(--card-bg)] hover:bg-[var(--card-hover-bg)] transition-colors">
                     <CardBody className="p-4 gap-3">
-                      <div className="flex items-center gap-3">
+                      {/* A band in the group's own colour — the one its cover
+                          uses on the groups page — with its picture over the edge. */}
+                      <div className="-mx-4 -mt-4 h-12">
+                        <ThemedCover data-testid="explore-group-band" colour={colourForSeed(group.id, palette)} />
+                      </div>
+                      <div className="-mt-9 flex items-end gap-3">
                         <Avatar
                           src={group.image_url ? resolveAvatarUrl(group.image_url) : undefined}
                           alt={group.image_alt?.trim() || undefined}
                           name={group.name}
                           size="md"
-                          className="shrink-0"
+                          className="shrink-0 ring-4 ring-[var(--surface-solid)]"
                         />
                         <div className="min-w-0 flex-1">
                           <h3 className="text-sm font-semibold text-[var(--text-primary)] truncate">
@@ -1094,6 +1172,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('top_contributors.title')}
           subtitle={t('top_contributors.subtitle')}
+          icon={Trophy}
+          colourIndex={4}
           seeAllLink={tenantPath('/leaderboard')}
         >
           {isLoading ? (
@@ -1148,6 +1228,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('trending_hashtags.title')}
           subtitle={t('trending_hashtags.subtitle')}
+          icon={Hash}
+          colourIndex={5}
           seeAllLink={tenantPath('/feed/hashtags')}
         >
           {isLoading ? (
@@ -1183,6 +1265,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('recommended.title')}
           subtitle={t('recommended.subtitle')}
+          icon={Sparkles}
+          colourIndex={0}
           seeAllLink={tenantPath('/matches')}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1263,6 +1347,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('near_you.title')}
           subtitle={t('near_you.subtitle')}
+          icon={MapPin}
+          colourIndex={1}
           seeAllLink={tenantPath('/listings?sort=nearby')}
         >
           <HorizontalScroll>
@@ -1307,6 +1393,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('suggested_connections.title')}
           subtitle={t('suggested_connections.subtitle')}
+          icon={UserPlus}
+          colourIndex={2}
           seeAllLink={tenantPath('/members')}
         >
           <HorizontalScroll>
@@ -1315,7 +1403,11 @@ export default function ExplorePage() {
                 key={member.id}
                 className="flex flex-col items-center gap-2 min-w-[130px] snap-start shrink-0 p-3"
               >
-                <Link to={tenantPath(`/profile/${member.id}`)}>
+                <Link
+                  to={tenantPath(`/profile/${member.id}`)}
+                  data-testid="explore-member-halo"
+                  className={`block rounded-full p-1 ${memberHalo(member.name)}`}
+                >
                   <Avatar
                     src={resolveAvatarUrl(member.avatar)}
                     name={member.name}
@@ -1356,6 +1448,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('blog_posts.title')}
           subtitle={t('blog_posts.subtitle')}
+          icon={Newspaper}
+          colourIndex={3}
           seeAllLink={tenantPath('/blog')}
         >
           <HorizontalScroll>
@@ -1379,8 +1473,14 @@ export default function ExplorePage() {
                         loading="lazy"
                       />
                     ) : (
-                      <div className="w-full h-28 rounded-lg bg-accent-soft flex items-center justify-center">
-                        <BookOpen className="w-8 h-8 text-accent" aria-hidden="true" />
+                      // No picture: a cover in a colour from the community palette.
+                      <div className="h-28 w-full overflow-hidden rounded-lg">
+                        <ThemedCover
+                          data-testid="explore-blog-cover"
+                          size="sm"
+                          colour={colourForSeed(`blog-${post.id}`, palette)}
+                          icon={BookOpen}
+                        />
                       </div>
                     )}
                     <h3 className="text-sm font-semibold text-[var(--text-primary)] line-clamp-2">
@@ -1409,6 +1509,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('volunteering.title')}
           subtitle={t('volunteering.subtitle')}
+          icon={HeartHandshake}
+          colourIndex={4}
           seeAllLink={tenantPath('/volunteering')}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1459,6 +1561,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('polls.title')}
           subtitle={t('polls.subtitle')}
+          icon={BarChart3}
+          colourIndex={5}
           seeAllLink={tenantPath('/polls')}
         >
           <HorizontalScroll>
@@ -1506,6 +1610,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('in_demand_skills.title')}
           subtitle={t('in_demand_skills.subtitle')}
+          icon={Lightbulb}
+          colourIndex={0}
           seeAllLink={tenantPath('/skills')}
         >
           <div className="flex flex-wrap gap-2">
@@ -1533,6 +1639,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('organisations.title')}
           subtitle={t('organisations.subtitle')}
+          icon={Building2}
+          colourIndex={1}
           seeAllLink={tenantPath('/organisations')}
         >
           <HorizontalScroll>
@@ -1573,6 +1681,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('jobs.title')}
           subtitle={t('jobs.subtitle')}
+          icon={Briefcase}
+          colourIndex={2}
           seeAllLink={tenantPath('/jobs')}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1617,6 +1727,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('resources.title')}
           subtitle={t('resources.subtitle')}
+          icon={BookOpen}
+          colourIndex={3}
           seeAllLink={tenantPath('/resources')}
         >
           <HorizontalScroll>
@@ -1651,6 +1763,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('recently_viewed.title')}
           subtitle={t('recently_viewed.subtitle')}
+          icon={History}
+          colourIndex={4}
         >
           <div className="flex items-center justify-end mb-2 -mt-2">
             <Button
@@ -1706,6 +1820,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('new_members.title')}
           subtitle={t('new_members.subtitle')}
+          icon={Smile}
+          colourIndex={5}
           seeAllLink={tenantPath('/members')}
         >
           {isLoading ? (
@@ -1724,7 +1840,11 @@ export default function ExplorePage() {
                   key={member.id}
                   className="flex flex-col items-center gap-2 min-w-[120px] snap-start shrink-0 p-3"
                 >
-                  <Link to={tenantPath(`/profile/${member.id}`)}>
+                  <Link
+                    to={tenantPath(`/profile/${member.id}`)}
+                    data-testid="explore-member-halo"
+                    className={`block rounded-full p-1 ${memberHalo(member.name)}`}
+                  >
                     <Avatar
                       src={resolveAvatarUrl(member.avatar)}
                       name={member.name}
@@ -1766,6 +1886,8 @@ export default function ExplorePage() {
         <ExploreSection
           title={t('featured_challenges.title')}
           subtitle={t('featured_challenges.subtitle')}
+          icon={Target}
+          colourIndex={0}
           seeAllLink={tenantPath('/ideation')}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

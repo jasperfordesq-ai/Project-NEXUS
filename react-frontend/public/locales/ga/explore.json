@@ -188,7 +188,8 @@
     "deadline": "Spriocdháta: {{date}}"
   },
   "aria": {
-    "content_tabs": "Cluaisíní ábhair Aimsigh"
+    "content_tabs": "Cluaisíní ábhair Aimsigh",
+    "browse_by_theme": "Brabhsáil de réir téama"
   },
   "tabs": {
     "all": "Gach rud",
@@ -220,5 +221,18 @@
   "empty_groups": "Níl aon ghrúpaí gníomhacha fós. Tosaigh grúpa bunaithe ar do spéiseanna!",
   "create_listing": "Cruthaigh tairiscint nó iarratas",
   "create_event": "Cruthaigh Imeacht",
-  "create_group": "Cruthaigh Grúpa"
+  "create_group": "Cruthaigh Grúpa",
+  "listing_type": {
+    "offer": "Tairiscint",
+    "request": "Iarratas"
+  },
+  "content_type": {
+    "listing": "Tairiscint nó iarratas",
+    "post": "Post",
+    "event": "Imeacht",
+    "group": "Grúpa",
+    "member": "Ball",
+    "blog": "Post blag",
+    "other": "Rud éigin nua"
+  }
 }

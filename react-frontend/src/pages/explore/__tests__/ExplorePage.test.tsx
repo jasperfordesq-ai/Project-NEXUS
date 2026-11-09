@@ -172,6 +172,8 @@ vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
 
 vi.mock('@/lib/api', () => ({
   default: { post: vi.fn().mockResolvedValue({}) },
+  // The shared theme-colour hook reads the theme list itself.
+  api: { get: vi.fn().mockResolvedValue({ success: true, data: [] }) },
 }));
 
 vi.mock('@/components/seo/PageMeta', () => ({
