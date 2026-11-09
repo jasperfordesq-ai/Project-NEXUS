@@ -57,12 +57,14 @@ export function SuggestedListingsWidget({ listings }: SuggestedListingsWidgetPro
             className="flex items-start gap-3 p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors duration-200 group"
           >
             <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${
-              listing.type === 'offer' ? 'bg-emerald-500/10' : 'bg-orange-500/10'
+              listing.type === 'offer'
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300'
+                : 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300'
             }`}>
               {listing.type === 'offer' ? (
-                <Heart className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
+                <Heart className="w-3.5 h-3.5" aria-hidden="true" />
               ) : (
-                <HandHelping className="w-3.5 h-3.5 text-orange-500" aria-hidden="true" />
+                <HandHelping className="w-3.5 h-3.5" aria-hidden="true" />
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -77,8 +79,8 @@ export function SuggestedListingsWidget({ listings }: SuggestedListingsWidgetPro
               size="sm"
               variant="flat"
               className={listing.type === 'offer'
-                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px]'
-                : 'bg-orange-500/10 text-orange-600 dark:text-orange-400 text-[10px]'
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300 text-[10px]'
+                : 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300 text-[10px]'
               }
             >
               {listing.type === 'offer'

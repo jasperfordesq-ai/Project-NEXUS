@@ -1005,7 +1005,7 @@ export function FeedPage() {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {!isLoading && items.length > 0 && (
-              <Chip size="sm" variant="flat" className="bg-white/70 text-accent dark:bg-white/10">
+              <Chip size="sm" variant="flat" className="bg-white/70 text-accent-soft-foreground dark:bg-white/10">
                 {t('items_loaded', { count: items.length })}
               </Chip>
             )}

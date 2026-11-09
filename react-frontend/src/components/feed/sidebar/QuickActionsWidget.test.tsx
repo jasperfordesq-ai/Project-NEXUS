@@ -105,6 +105,17 @@ describe('QuickActionsWidget', () => {
     expect(screen.getByText('Host Event')).toBeInTheDocument();
   });
 
+  // axe (9 Nov 2026): the -500 words on -500/10 tints measured 2.2–4.5:1 at
+  // 11px. Each action is now a pale tint with its colour's deep shade.
+  it('draws each action as a pale tint with deep, readable text', async () => {
+    const { QuickActionsWidget } = await import('./QuickActionsWidget');
+    render(<QuickActionsWidget />);
+    const hostEvent = screen.getByText('Host Event').closest('a')!;
+    expect(hostEvent.className).toContain('bg-pink-100');
+    expect(hostEvent.className).toContain('text-pink-800');
+    expect(hostEvent.className).not.toMatch(/text-pink-500/);
+  });
+
   it('renders the Create Poll action when polls feature is enabled', async () => {
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
     render(<QuickActionsWidget />);

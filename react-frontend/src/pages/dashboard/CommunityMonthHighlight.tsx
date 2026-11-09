@@ -98,20 +98,23 @@ export function CommunityMonthHighlight({ className = '' }: { className?: string
         {tiles.map((tile, i) => {
           const Icon = tile.icon;
           return (
+            // <dt> and <dd> sit directly in this <div>, as a description list
+            // requires (axe "definition-list"); the icon rides inside the <dt>,
+            // placed beside both lines. The value reads above its label.
             <div
               key={tile.key}
               data-testid={`community-month-${tile.key}`}
-              className={`flex items-center gap-3 rounded-2xl p-4 ${categoryColour(palette[i % palette.length]).band}`}
+              className={`relative flex min-h-[4.5rem] min-w-0 flex-col-reverse justify-center rounded-2xl p-4 ps-[4.25rem] ${categoryColour(palette[i % palette.length]).band}`}
             >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/60 dark:bg-white/10">
-                <Icon className="size-5" aria-hidden="true" />
-              </span>
-              <div className="flex min-w-0 flex-col-reverse">
-                <dt className="text-sm font-medium">{tile.label}</dt>
-                <dd className="text-2xl font-bold leading-tight">
-                  {tile.value.toLocaleString(locale, { maximumFractionDigits: 1 })}
-                </dd>
-              </div>
+              <dt className="text-sm font-medium">
+                <span className="absolute start-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-xl bg-white/60 dark:bg-white/10" aria-hidden="true">
+                  <Icon className="size-5" aria-hidden="true" />
+                </span>
+                {tile.label}
+              </dt>
+              <dd className="text-2xl font-bold leading-tight">
+                {tile.value.toLocaleString(locale, { maximumFractionDigits: 1 })}
+              </dd>
             </div>
           );
         })}

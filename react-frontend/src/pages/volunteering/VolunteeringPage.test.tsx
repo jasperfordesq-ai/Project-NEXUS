@@ -647,6 +647,16 @@ describe('VolunteeringPage', () => {
     expect(label).toHaveTextContent('Environment');
     expect(label.getAttribute('data-colour')).toBeTruthy();
     expect(label.className).toMatch(/bg-[a-z]+-100/);
+    // The organisation, with no logo, in its own colour — as on its own page.
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(screen.getByTestId('opportunity-organisation-tile').getAttribute('data-colour'))
+      .toBe(colourForSeed(coverSeed.organisation(1), paletteFor(null)));
+    // The tile is decoration, so the link around it carries the organisation's
+    // name (axe "link-name", 9 Nov 2026).
+    for (const link of screen.getAllByRole('link').filter((l) => l.querySelector('[data-testid="opportunity-organisation-tile"]'))) {
+      expect(link).toHaveAccessibleName('Green Org');
+    }
   });
 
   it('shows Applied chip and hides Apply button when already applied', async () => {

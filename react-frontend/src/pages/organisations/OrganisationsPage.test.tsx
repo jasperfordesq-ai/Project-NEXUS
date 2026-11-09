@@ -163,6 +163,14 @@ describe('OrganisationsPage', () => {
     });
     expect(screen.getByText('Community Care')).toBeInTheDocument();
     expect(screen.getByText('Environmental conservation organisation')).toBeInTheDocument();
+    // No logo: a tile in the organisation's own colour — the same as its page
+    // (was its initials, coloured by name, so list and page did not match).
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(screen.getAllByTestId('organisation-card-tile').map((tile) => tile.getAttribute('data-colour'))).toEqual([
+      colourForSeed(coverSeed.organisation(1), paletteFor(null)),
+      colourForSeed(coverSeed.organisation(2), paletteFor(null)),
+    ]);
   });
 
   it('displays stats on organisation cards (opportunities, volunteers, hours)', async () => {

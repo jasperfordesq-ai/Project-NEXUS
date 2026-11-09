@@ -23,6 +23,7 @@ import type { ReactNode } from 'react';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useTenant } from '@/contexts';
 import { getFormattingLocale } from '@/lib/helpers';
 import type { VolunteeringHubSummary } from './useVolunteeringHubSummary';
@@ -115,7 +116,7 @@ export function VolunteeringHub({ sections, onSelect, summary }: HubProps) {
             <Icon className="mt-1 h-6 w-6 shrink-0 text-theme-primary" aria-hidden="true" />
             <div className="min-w-0 flex-1">
               <h2 className="text-lg font-semibold text-theme-primary">{t(`hub.${key}_title`)}</h2>
-              <p className="mt-1 text-sm leading-relaxed text-theme-muted">{t(`hub.${key}_description`)}</p>
+              <p className="mt-1 text-sm leading-relaxed text-theme-secondary">{t(`hub.${key}_description`)}</p>
               {glance(key)}
               <div className="mt-3 -ms-3">{keys.map(sectionButton)}</div>
             </div>
@@ -178,20 +179,26 @@ interface HomeHeaderProps {
 export function VolunteeringHomeHeader({ canLogHours, onLogHours, onFindOpportunities, hasOrganisations, welcome }: HomeHeaderProps) {
   const { t } = useTranslation('volunteering');
   const { tenantPath } = useTenant();
+  // The same soft panel in the community colour that opens the offers, events
+  // and groups pages (AWID: warmer, more inviting); was a plain heading.
   return <header className="space-y-5">
-    <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-      <div className="max-w-2xl">
-        <p className="mb-2 text-sm font-medium text-theme-muted">{t('heading')}</p>
-        <h1 id="volunteering-home-heading" tabIndex={-1} className="scroll-mt-24 rounded-lg text-2xl font-bold tracking-tight text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-4 sm:text-3xl lg:text-4xl">{t('hub.title')}</h1>
-        <p className="mt-3 text-base leading-relaxed text-theme-muted">{t('hub.subtitle')}</p>
-      </div>
+    <PublicPageHero
+      eyebrow={t('heading')}
+      title={t('hub.title')}
+      description={t('hub.subtitle')}
+      icon={<Heart className="h-7 w-7" aria-hidden="true" />}
+      accent="rose"
+      headingId="volunteering-home-heading"
+      headingFocusable
+      action={
       <div className="flex shrink-0 flex-wrap gap-2 sm:max-w-xs sm:justify-end">
         {canLogHours === true && <Button variant="primary" className={HUB_PRIMARY} onPress={onLogHours} startContent={<Timer className="h-4 w-4" aria-hidden="true" />}>{t('log_hours')}</Button>}
         {/* The welcome card carries its own "Find opportunities"; never show two. */}
         {canLogHours === false && !welcome && <Button variant="primary" className={HUB_PRIMARY} onPress={onFindOpportunities} startContent={<Search className="h-4 w-4" aria-hidden="true" />}>{t('hub.find_opportunities')}</Button>}
         {hasOrganisations && <Button as={Link} to={tenantPath('/organisations')} variant="secondary" className="min-h-11">{t('browse_organisations')}</Button>}
       </div>
-    </div>
+      }
+    />
     {welcome ?? <details className="group max-w-2xl rounded-xl border border-theme-default bg-theme-elevated px-4 text-sm">
       <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 font-medium text-theme-primary [&::-webkit-details-marker]:hidden">
         <Info className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" aria-hidden="true" />
@@ -210,16 +217,21 @@ export function VolunteeringHomeHeader({ canLogHours, onLogHours, onFindOpportun
  */
 export function VolunteeringSectionHeader({ section, onBack }: { section: string; onBack: () => void }) {
   const { t } = useTranslation('volunteering');
+  // The section's group picture (find, activity, together, support).
+  const SectionIcon = groups.find((group) => (group.sections as readonly string[]).includes(section))?.icon ?? Heart;
   return <header className="space-y-2">
     <Button variant="tertiary" onPress={onBack} className="-ms-3 min-h-11" startContent={<ArrowLeft className="h-4 w-4 shrink-0 rtl:rotate-180" aria-hidden="true" />}>
       {t('hub.back_home')}
     </Button>
-    <h1
-      id="volunteering-content"
-      tabIndex={-1}
-      className="scroll-mt-24 rounded-lg text-2xl font-bold tracking-tight text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-4 sm:text-3xl"
-    >{t(`hub.links.${section}`)}</h1>
-    <p className="max-w-2xl text-base leading-relaxed text-theme-muted">{t(`hub.intro.${section}`)}</p>
+    <PublicPageHero
+      size="compact"
+      title={t(`hub.links.${section}`)}
+      description={t(`hub.intro.${section}`)}
+      icon={<SectionIcon className="h-6 w-6" aria-hidden="true" />}
+      accent="rose"
+      headingId="volunteering-content"
+      headingFocusable
+    />
   </header>;
 }
 

@@ -24,7 +24,9 @@ import Star from 'lucide-react/icons/star';
 import Users from 'lucide-react/icons/users';
 import Plus from 'lucide-react/icons/plus';
 import { useTranslation } from 'react-i18next';
-import { Avatar } from '@/components/ui/Avatar';
+import { CoverTile } from '@/components/ui/CoverTile';
+import { coverSeed } from '@/lib/coverSeeds';
+import Building2Icon from 'lucide-react/icons/building-2';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SearchField } from '@/components/ui/SearchField';
@@ -339,11 +341,14 @@ function OrganisationCard({ organisation }: OrganisationCardProps) {
     <Link to={tenantPath(`/organisations/${organisation.id}`)}>
       <GlassCard hoverable className="p-5 h-full">
         <div className="flex items-center gap-3 mb-3">
-          <Avatar
+          {/* Its logo, or a tile in its own colour — the same as its page. */}
+          <CoverTile
+            data-testid="organisation-card-tile"
+            seed={coverSeed.organisation(organisation.id)}
+            icon={Building2Icon}
+            imageUrl={organisation.logo_url}
             name={organisation.name}
-            src={organisation.logo_url ?? undefined}
-            size="lg"
-            className="flex-shrink-0"
+            className="h-14 w-14 rounded-2xl"
           />
           <div className="min-w-0 flex-1">
             <h3 className="font-semibold text-theme-primary truncate">{organisation.name}</h3>

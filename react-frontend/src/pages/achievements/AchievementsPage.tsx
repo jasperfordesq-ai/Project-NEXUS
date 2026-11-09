@@ -1848,7 +1848,7 @@ export function AchievementsPage() {
 
                     <Button
                       variant="flat"
-                      className="text-amber-700 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20"
+                      className="bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:hover:bg-amber-500/25"
                       startContent={<Star className="w-4 h-4" aria-hidden="true" />}
                       onPress={() => setIsShowcaseOpen(true)}
                     >

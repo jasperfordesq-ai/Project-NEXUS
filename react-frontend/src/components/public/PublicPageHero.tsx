@@ -28,6 +28,13 @@ interface PublicPageHeroProps {
    * a smaller title, and its picture kept on phones.
    */
   size?: 'full' | 'compact';
+  /** An id for the heading, for a skip link or for moving focus to it. */
+  headingId?: string;
+  /**
+   * The heading can receive focus (tabIndex -1, with a visible outline), for
+   * pages that move focus to it when a section opens.
+   */
+  headingFocusable?: boolean;
 }
 
 const sizeClasses = {
@@ -51,38 +58,49 @@ const accentClasses = {
   emerald: {
     icon: 'from-emerald-500/20 to-teal-500/20 text-emerald-500 dark:text-emerald-300',
     chipColor: 'success',
-    panel: 'bg-emerald-500/10 dark:bg-emerald-500/15',
+    chipText: 'text-emerald-800! dark:text-emerald-200!',
+    panel: 'bg-emerald-500/10 dark:bg-emerald-500/15',
   },
   indigo: {
     icon: 'from-accent/20 to-sky-500/20 text-accent dark:text-accent',
     chipColor: 'accent',
-    panel: 'bg-accent-soft',
+    chipText: '',
+    panel: 'bg-accent-soft',
   },
   amber: {
     icon: 'from-amber-500/20 to-orange-500/20 text-amber-500 dark:text-amber-300',
     chipColor: 'warning',
-    panel: 'bg-amber-500/10 dark:bg-amber-500/15',
+    chipText: 'text-amber-800! dark:text-amber-200!',
+    panel: 'bg-amber-500/10 dark:bg-amber-500/15',
   },
   blue: {
     icon: 'from-blue-500/20 to-accent-gradient-end/20 text-blue-500 dark:text-blue-300',
     chipColor: 'accent',
-    panel: 'bg-blue-500/10 dark:bg-blue-500/15',
+    chipText: '',
+    panel: 'bg-blue-500/10 dark:bg-blue-500/15',
   },
   rose: {
     icon: 'from-rose-500/20 to-fuchsia-500/20 text-rose-500 dark:text-rose-300',
     chipColor: 'danger',
-    panel: 'bg-rose-500/10 dark:bg-rose-500/15',
+    chipText: 'text-rose-800! dark:text-rose-200!',
+    panel: 'bg-rose-500/10 dark:bg-rose-500/15',
   },
   // Used on every page once a community has chosen its own colour: HeroUI's
   // accent token only, so no fixed sky/cyan clashes with the community colour.
   community: {
     icon: 'from-accent/20 to-accent/5 text-accent dark:text-accent',
     chipColor: 'accent',
-    panel: 'bg-accent-soft',
+    chipText: '',
+    panel: 'bg-accent-soft',
   },
 } satisfies Record<string, {
   icon: string;
-  chipColor: 'accent' | 'success' | 'warning' | 'danger';
+  chipColor: 'accent' | 'success' | 'warning' | 'danger';
+  /**
+   * The label's text, deepened where HeroUI's soft status chip falls short on
+   * the tinted panel (danger soft was 4.2:1 on the rose panel — axe, 9 Nov 2026).
+   */
+  chipText: string;
   /** The panel's soft tint (light and dark). Text on it uses the darker secondary token. */
   panel: string;
 }>;
@@ -96,6 +114,8 @@ export function PublicPageHero({
   action,
   stats,
   size = 'full',
+  headingId,
+  headingFocusable = false,
 }: PublicPageHeroProps) {
   // Once a community has chosen its own colour, every page header uses it
   // instead of the page's own palette. Without a choice, each page keeps its
@@ -124,7 +144,7 @@ export function PublicPageHero({
               color={classes.chipColor}
               size="sm"
               variant="soft"
-              className={`${size === 'compact' ? 'mb-3' : 'mb-4'} py-1 font-medium`}
+              className={`${size === 'compact' ? 'mb-3' : 'mb-4'} py-1 font-medium ${classes.chipText}`}
               startContent={<Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
             >
               {eyebrow}
@@ -135,7 +155,13 @@ export function PublicPageHero({
               {icon}
             </div>
             <div className="min-w-0">
-              <h1 className={sized.title}>
+              <h1
+                id={headingId}
+                tabIndex={headingFocusable ? -1 : undefined}
+                className={headingFocusable
+                  ? `${sized.title} scroll-mt-24 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4`
+                  : sized.title}
+              >
                 {title}
               </h1>
               {description && (

@@ -119,26 +119,27 @@ export function ProfileCardWidget() {
           {hasListings && <div className="grid grid-cols-2 gap-2 mt-3">
             <Link
               to={tenantPath('/listings?type=offer')}
-              className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors duration-200"
+              // Pale tint, deep text (axe: muted text on the tints was 4.3:1).
+              className="flex items-center gap-2 p-2 rounded-lg bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25 transition-colors duration-200"
             >
-              <Heart className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
+              <Heart className="w-3.5 h-3.5" aria-hidden="true" />
               <div>
-                <p className="text-xs font-semibold text-theme-success">
+                <p className="text-xs font-semibold">
                   {stats.offers_count}
                 </p>
-                <p className="text-[10px] text-[var(--text-muted)]">{t('sidebar.profile.offers')}</p>
+                <p className="text-[10px] font-medium">{t('sidebar.profile.offers')}</p>
               </div>
             </Link>
             <Link
               to={tenantPath('/listings?type=request')}
-              className="flex items-center gap-2 p-2 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 transition-colors duration-200"
+              className="flex items-center gap-2 p-2 rounded-lg bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-500/15 dark:text-orange-300 dark:hover:bg-orange-500/25 transition-colors duration-200"
             >
-              <HandHelping className="w-3.5 h-3.5 text-orange-500" aria-hidden="true" />
+              <HandHelping className="w-3.5 h-3.5" aria-hidden="true" />
               <div>
-                <p className="text-xs font-semibold text-orange-600 dark:text-orange-400">
+                <p className="text-xs font-semibold">
                   {stats.requests_count}
                 </p>
-                <p className="text-[10px] text-[var(--text-muted)]">{t('sidebar.profile.requests')}</p>
+                <p className="text-[10px] font-medium">{t('sidebar.profile.requests')}</p>
               </div>
             </Link>
           </div>}

@@ -235,6 +235,23 @@ describe('PublicPageHero', () => {
       expect(document.querySelector('[data-public-page-hero="true"] p')).toBeNull();
     });
 
+    it('can make its heading the place focus moves to when a section opens', () => {
+      render(<PublicPageHero {...defaultProps} size="compact" headingId="section-heading" headingFocusable />);
+      const title = screen.getByRole('heading', { level: 1, name: 'Welcome to the Platform' });
+      expect(title).toHaveAttribute('id', 'section-heading');
+      expect(title).toHaveAttribute('tabindex', '-1');
+      expect(title.className).toContain('focus-visible:outline-2');
+    });
+
+    // axe (9 Nov 2026): HeroUI's danger soft chip was 4.2:1 on the rose panel.
+    it('deepens the label text on the status-coloured panels', () => {
+      const { unmount } = render(<PublicPageHero {...defaultProps} accent="rose" />);
+      expect(screen.getByText('Featured Section').closest('[data-slot="chip"]')?.className).toContain('text-rose-800!');
+      unmount();
+      render(<PublicPageHero {...defaultProps} accent="amber" />);
+      expect(screen.getByText('Featured Section').closest('[data-slot="chip"]')?.className).toContain('text-amber-800!');
+    });
+
     it('keeps the full size by default', () => {
       render(<PublicPageHero {...defaultProps} />);
       expect(document.querySelector('[data-public-page-hero="true"]')).toHaveAttribute('data-size', 'full');

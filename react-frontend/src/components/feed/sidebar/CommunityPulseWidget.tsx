@@ -39,32 +39,28 @@ export function CommunityPulseWidget({ stats }: CommunityPulseWidgetProps) {
       count: stats.members,
       label: t('sidebar.pulse.members'),
       path: '/members',
-      color: 'text-accent',
-      bg: 'bg-accent/10',
+      tone: 'bg-accent-soft text-accent-soft-foreground',
     },
     {
       icon: Tag,
       count: stats.listings,
       label: t('sidebar.pulse.listings'),
       path: '/listings',
-      color: 'text-emerald-500',
-      bg: 'bg-emerald-500/10',
+      tone: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
     },
     {
       icon: CalendarDays,
       count: stats.events,
       label: t('sidebar.pulse.events'),
       path: '/events',
-      color: 'text-pink-500',
-      bg: 'bg-pink-500/10',
+      tone: 'bg-pink-100 text-pink-800 dark:bg-pink-500/15 dark:text-pink-300',
     },
     {
       icon: UsersRound,
       count: stats.groups,
       label: t('sidebar.pulse.groups'),
       path: '/groups',
-      color: 'text-[var(--color-warning)]',
-      bg: 'bg-amber-500/10',
+      tone: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
     },
   ];
 
@@ -82,13 +78,15 @@ export function CommunityPulseWidget({ stats }: CommunityPulseWidgetProps) {
           <Link
             key={item.path}
             to={tenantPath(item.path)}
-            className={`flex flex-col items-center gap-1 p-3 rounded-lg ${item.bg} hover:opacity-80 transition-opacity`}
+            // A soft tint with deep text in each figure's colour (axe: -500 and
+            // muted text on the tints were 2.2–4.5:1).
+            className={`flex flex-col items-center gap-1 p-3 rounded-lg ${item.tone} transition-[filter] hover:brightness-95 dark:hover:brightness-125`}
           >
-            <item.icon className={`w-4 h-4 ${item.color}`} aria-hidden="true" />
-            <p className={`text-sm font-bold ${item.color}`}>
+            <item.icon className="w-4 h-4" aria-hidden="true" />
+            <p className="text-sm font-bold">
               {(item.count ?? 0).toLocaleString(getFormattingLocale())}
             </p>
-            <p className="text-[10px] text-[var(--text-muted)]">{item.label}</p>
+            <p className="text-[10px] font-medium">{item.label}</p>
           </Link>
         ))}
       </div>

@@ -52,6 +52,21 @@ describe('CommunityMonthHighlight', () => {
     expect(within(card).getByText('New offers and requests')).toBeInTheDocument();
   });
 
+  // CI's real-browser accessibility gate (axe "definition-list" and "dlitem"):
+  // each figure's <dt> and <dd> must sit directly in a <div> directly in the
+  // <dl> — they were wrapped in a second <div> beside the icon.
+  it('keeps each figure a valid description-list group', async () => {
+    mockApi.get.mockResolvedValueOnce(month({ hours_shared: 42.5, new_members: 9, new_listings: 12 }));
+    render(<CommunityMonthHighlight />);
+    const card = await screen.findByTestId('community-month-highlight');
+    const list = card.querySelector('dl')!;
+    expect(list).not.toBeNull();
+    for (const group of Array.from(list.children)) {
+      expect(group.tagName).toBe('DIV');
+      expect(Array.from(group.children).map((child) => child.tagName)).toEqual(['DT', 'DD']);
+    }
+  });
+
   it('names the month in the heading', async () => {
     mockApi.get.mockResolvedValueOnce(month({ new_members: 1 }));
     render(<CommunityMonthHighlight />);

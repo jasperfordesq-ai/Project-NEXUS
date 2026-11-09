@@ -12,11 +12,13 @@ import React, { useState, useEffect, useCallback, useMemo, useRef, Suspense, typ
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from '@/lib/motion';
-import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { categoryColour, colourForSeed } from '@/lib/categoryColours';
+import { CoverTile } from '@/components/ui/CoverTile';
+import { coverSeed } from '@/lib/coverSeeds';
+import Building2Icon from 'lucide-react/icons/building-2';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
@@ -909,18 +911,23 @@ function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) {
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
-            {hasOrganisations ? <Link to={tenantPath(`/organisations/${opportunity.organization.id}`)}>
-              <Avatar
+            {/* The organisation's logo, or a tile in its own colour — the same as its page. */}
+            {hasOrganisations ? <Link to={tenantPath(`/organisations/${opportunity.organization.id}`)} aria-label={opportunity.organization.name}>
+              <CoverTile
+                data-testid="opportunity-organisation-tile"
+                seed={coverSeed.organisation(opportunity.organization.id)}
+                icon={Building2Icon}
+                imageUrl={opportunity.organization.logo_url}
                 name={opportunity.organization.name}
-                src={opportunity.organization.logo_url ?? undefined}
-                size="sm"
-                className="flex-shrink-0"
+                className="h-9 w-9 rounded-xl"
               />
-            </Link> : <Avatar
+            </Link> : <CoverTile
+              data-testid="opportunity-organisation-tile"
+              seed={coverSeed.organisation(opportunity.organization.id)}
+              icon={Building2Icon}
+              imageUrl={opportunity.organization.logo_url}
               name={opportunity.organization.name}
-              src={opportunity.organization.logo_url ?? undefined}
-              size="sm"
-              className="flex-shrink-0"
+              className="h-9 w-9 rounded-xl"
             />}
             <div className="min-w-0">
               <Link

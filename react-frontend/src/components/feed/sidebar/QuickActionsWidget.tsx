@@ -30,32 +30,28 @@ export function QuickActionsWidget() {
       label: t('sidebar.actions.host_event'),
       icon: CalendarDays,
       path: '/events/create',
-      color: 'text-pink-500',
-      bg: 'bg-pink-500/10 hover:bg-pink-500/20',
+      tone: 'bg-pink-100 text-pink-800 dark:bg-pink-500/15 dark:text-pink-300',
       feature: 'events' as const,
     },
     {
       label: t('sidebar.actions.create_poll'),
       icon: BarChart3,
       path: '/polls',
-      color: 'text-accent',
-      bg: 'bg-accent/10 hover:bg-accent/20',
+      tone: 'bg-accent-soft text-accent-soft-foreground',
       feature: 'polls' as const,
     },
     {
       label: t('sidebar.actions.set_goal'),
       icon: Target,
       path: '/goals',
-      color: 'text-[var(--color-warning)]',
-      bg: 'bg-amber-500/10 hover:bg-amber-500/20',
+      tone: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
       feature: 'goals' as const,
     },
     {
       label: t('sidebar.actions.groups'),
       icon: UsersRound,
       path: '/groups',
-      color: 'text-emerald-500',
-      bg: 'bg-emerald-500/10 hover:bg-emerald-500/20',
+      tone: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
       feature: 'groups' as const,
     },
   ];
@@ -86,10 +82,12 @@ export function QuickActionsWidget() {
             <Link
               key={action.path}
               to={tenantPath(action.path)}
-              className={`flex flex-col items-center gap-1.5 p-3 rounded-lg ${action.bg} transition-colors duration-200`}
+              // A soft tint with deep text in each action's colour (axe: the
+              // -500 text on a -500/10 tint was 2.2–4.5:1 at 11px).
+              className={`flex flex-col items-center gap-1.5 p-3 rounded-lg ${action.tone} transition-[filter] duration-200 hover:brightness-95 dark:hover:brightness-125`}
             >
-              <action.icon className={`w-4 h-4 ${action.color}`} aria-hidden="true" />
-              <span className={`text-[11px] font-medium ${action.color}`}>
+              <action.icon className="w-4 h-4" aria-hidden="true" />
+              <span className="text-[11px] font-medium">
                 {action.label}
               </span>
             </Link>

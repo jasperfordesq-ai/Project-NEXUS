@@ -25,15 +25,17 @@ interface TopCategoriesWidgetProps {
   categories: Category[];
 }
 
+// A pale tint with the colour's deep shade (-800 on -100, 6:1 or better);
+// the -600 text on a -500/10 tint measured 3.3–4.5:1 (axe, 9 Nov 2026).
 const COLOR_CLASSES = [
-  'bg-accent/10 text-accent dark:text-accent hover:bg-accent/20',
-  'bg-pink-500/10 text-pink-600 dark:text-pink-400 hover:bg-pink-500/20',
-  'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20',
-  'bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20',
-  'bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500/20',
-  'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20',
-  'bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20',
-  'bg-lime-500/10 text-lime-600 dark:text-lime-400 hover:bg-lime-500/20',
+  'bg-accent-soft text-accent-soft-foreground hover:brightness-95',
+  'bg-pink-100 text-pink-800 hover:bg-pink-200 dark:bg-pink-500/15 dark:text-pink-300 dark:hover:bg-pink-500/25',
+  'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25',
+  'bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:hover:bg-amber-500/25',
+  'bg-violet-100 text-violet-800 hover:bg-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:hover:bg-violet-500/25',
+  'bg-cyan-100 text-cyan-800 hover:bg-cyan-200 dark:bg-cyan-500/15 dark:text-cyan-300 dark:hover:bg-cyan-500/25',
+  'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-500/15 dark:text-red-300 dark:hover:bg-red-500/25',
+  'bg-lime-100 text-lime-800 hover:bg-lime-200 dark:bg-lime-500/15 dark:text-lime-300 dark:hover:bg-lime-500/25',
 ];
 
 export function TopCategoriesWidget({ categories }: TopCategoriesWidgetProps) {
