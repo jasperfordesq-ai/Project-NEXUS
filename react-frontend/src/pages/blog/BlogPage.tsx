@@ -344,7 +344,7 @@ export function BlogPage() {
           >
             <ToggleButton
               id="all"
-              className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-blue-500 data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white"
+              className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-blue-500 data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
             >
               {t('filter_all')}
             </ToggleButton>
@@ -352,7 +352,7 @@ export function BlogPage() {
               <ToggleButton
                 key={cat.id}
                 id={String(cat.id)}
-                className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-blue-500 data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white"
+                className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-blue-500 data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
               >
                 {cat.name}
                 {cat.post_count > 0 && (

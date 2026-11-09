@@ -612,8 +612,8 @@ export function MessagesPage() {
               base: 'w-full sm:w-auto',
               tabList: 'w-full gap-1 rounded-xl bg-theme-elevated p-1 sm:w-auto',
               cursor: 'bg-theme-hover shadow-sm',
-              tab: 'h-10 flex-1 px-3 text-theme-muted data-[selected=true]:text-theme-primary sm:flex-none',
-              tabContent: 'group-data-[selected=true]:text-theme-primary',
+              tab: 'h-10 flex-1 px-3 text-theme-muted data-[selected=true]:text-[var(--text-primary)]! sm:flex-none',
+              tabContent: 'group-data-[selected=true]:text-[var(--text-primary)]!',
             }}
           >
             <Tab

@@ -681,6 +681,26 @@ describe('ListingsPage', () => {
       expect(within(listCard).getByText('2 hours ago').tagName).toBe('TIME');
     });
 
+    it('uses a clean white save button in light mode and a dark one in dark mode, not a muddy grey', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/listings')
+            ? { success: true, meta: {}, data: [{ id: 1, title: 'Dog walking', description: 'Mornings.', type: 'offer', status: 'active',
+                created_at: '2026-08-01T00:00:00Z', updated_at: '2026-08-01T00:00:00Z', user: { id: 9, name: 'Sofia Haddad' } }] }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+      render(<ListingsPage />);
+      // The page remembers the last layout; this is about the grid's floating button.
+      fireEvent.click(screen.getByLabelText('Grid view'));
+
+      const card = await screen.findByTestId('listing-card');
+      const save = within(card).getByRole('button', { name: 'Save for later' });
+      expect(save.className).toContain('bg-white/90');
+      expect(save.className).toContain('dark:bg-black/50');
+      expect(save.className).not.toContain('bg-black/40');
+    });
+
     it('does not darken a card when the pointer is over it', async () => {
       vi.mocked(api.get).mockImplementation((url: string) =>
         Promise.resolve(

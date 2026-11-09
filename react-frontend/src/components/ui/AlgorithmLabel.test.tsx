@@ -109,14 +109,15 @@ describe('AlgorithmLabel', () => {
     });
   });
 
-  it('renders the chip with algorithm name for a smart feed key', async () => {
+  it('says "Sorted for you" in plain words, not the technical name of the method', async () => {
     mockApi.get.mockResolvedValueOnce(makeAlgorithmsResponse());
     const { AlgorithmLabel } = await importFresh();
     render(<AlgorithmLabel area="feed" />);
     await waitFor(() => {
       expect(screen.getByTestId('chip')).toBeInTheDocument();
-      expect(screen.getByText('Smart Feed')).toBeInTheDocument();
+      expect(screen.getByText('Sorted for you')).toBeInTheDocument();
     });
+    expect(screen.queryByText('Smart Feed')).toBeNull();
   });
 
   it('opens a popover with the algorithm description on press (touch-reachable)', async () => {
@@ -124,11 +125,13 @@ describe('AlgorithmLabel', () => {
     const { AlgorithmLabel } = await importFresh();
     const user = (await import('@testing-library/user-event')).default.setup();
     render(<AlgorithmLabel area="feed" />);
-    const trigger = await screen.findByRole('button', { name: 'Smart Feed' });
+    const trigger = await screen.findByRole('button', { name: 'How this is sorted' });
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Personalised feed algorithm')).toBeInTheDocument();
     });
+    // The method's own name is still there for anyone who wants it.
+    expect(screen.getByText('Method: Smart Feed')).toBeInTheDocument();
   });
 
   it('renders the matching algorithm chip for the "matching" area', async () => {
@@ -136,7 +139,7 @@ describe('AlgorithmLabel', () => {
     const { AlgorithmLabel } = await importFresh();
     render(<AlgorithmLabel area="matching" />);
     await waitFor(() => {
-      expect(screen.getByText('Match Score')).toBeInTheDocument();
+      expect(screen.getByText('Sorted for you')).toBeInTheDocument();
     });
   });
 
@@ -172,7 +175,7 @@ describe('AlgorithmLabel', () => {
     const { AlgorithmLabel } = await importFresh();
     render(<AlgorithmLabel area="listings" />);
     await waitFor(() => {
-      expect(screen.getByText('Trending')).toBeInTheDocument();
+      expect(screen.getByText('Sorted for you')).toBeInTheDocument();
     });
   });
 

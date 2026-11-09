@@ -380,7 +380,7 @@ export function MarktPage() {
             tabList: 'flex-wrap border border-theme-default bg-theme-elevated p-1',
             tab: 'h-9 px-4',
             cursor: 'bg-theme-surface shadow-sm',
-            tabContent: 'text-sm font-medium group-data-[selected=true]:text-theme-primary',
+            tabContent: 'text-sm font-medium group-data-[selected=true]:text-[var(--text-primary)]!',
           }}
         >
           {tabs.map((tab) => (

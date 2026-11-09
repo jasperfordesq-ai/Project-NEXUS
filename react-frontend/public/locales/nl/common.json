@@ -3283,5 +3283,18 @@
         "help": "Vertel het de coördinatoren hieronder in uw eigen woorden"
       }
     }
+  },
+  "greeting": {
+    "morning": "Goedemorgen, {{name}}",
+    "morning_generic": "Goedemorgen",
+    "afternoon": "Goedemiddag, {{name}}",
+    "afternoon_generic": "Goedemiddag",
+    "evening": "Goedenavond, {{name}}",
+    "evening_generic": "Goedenavond"
+  },
+  "algorithm": {
+    "sorted_for_you": "Voor jou gesorteerd",
+    "how_sorted": "Hoe dit gesorteerd is",
+    "method": "Methode: {{name}}"
   }
 }

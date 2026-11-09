@@ -1337,13 +1337,13 @@ export function EventDetailPage() {
             <Tabs.List aria-label={t('detail.tabs_aria')} className="min-w-max gap-1">
               <Tabs.Tab
                 id="details"
-                className="min-h-10 min-w-fit px-4 text-sm font-medium text-theme-muted data-[selected=true]:text-theme-primary"
+                className="min-h-10 min-w-fit px-4 text-sm font-medium text-theme-muted data-[selected=true]:text-[var(--text-primary)]!"
               >
                 {t('detail.tab_details')}
               </Tabs.Tab>
               <Tabs.Tab
                 id="agenda"
-                className="min-h-10 min-w-fit px-4 text-sm font-medium text-theme-muted data-[selected=true]:text-theme-primary"
+                className="min-h-10 min-w-fit px-4 text-sm font-medium text-theme-muted data-[selected=true]:text-[var(--text-primary)]!"
               >
                 <ListOrdered className="h-4 w-4" aria-hidden="true" />
                 {t('manage.tab_agenda')}
@@ -1351,7 +1351,7 @@ export function EventDetailPage() {
               {canViewTickets && (
                 <Tabs.Tab
                   id="tickets"
-                  className="min-h-10 min-w-fit px-4 text-sm font-medium text-theme-muted data-[selected=true]:text-theme-primary"
+                  className="min-h-10 min-w-fit px-4 text-sm font-medium text-theme-muted data-[selected=true]:text-[var(--text-primary)]!"
                 >
                   <Ticket className="h-4 w-4" aria-hidden="true" />
                   {t('event_tickets:tickets.title')}
@@ -1359,7 +1359,7 @@ export function EventDetailPage() {
               )}
               <Tabs.Tab
                 id="attendees"
-                className="min-h-10 min-w-fit px-4 text-sm font-medium text-theme-muted data-[selected=true]:text-theme-primary"
+                className="min-h-10 min-w-fit px-4 text-sm font-medium text-theme-muted data-[selected=true]:text-[var(--text-primary)]!"
               >
                 {t('detail.tab_attendees')}
                 <Chip size="sm" variant="flat" color="default">{goingCount + interestedCount}</Chip>
@@ -1367,7 +1367,7 @@ export function EventDetailPage() {
               {canCheckIn && (
                 <Tabs.Tab
                   id="checkin"
-                  className="min-h-10 min-w-fit px-4 text-sm font-medium text-theme-muted data-[selected=true]:text-theme-primary"
+                  className="min-h-10 min-w-fit px-4 text-sm font-medium text-theme-muted data-[selected=true]:text-[var(--text-primary)]!"
                 >
                   <ClipboardCheck className="w-4 h-4" aria-hidden="true" />
                   {t('detail.tab_checkin')}
@@ -1782,7 +1782,7 @@ export function EventDetailPage() {
                       id="going"
                       variant="ghost"
                       aria-label={t('detail.rsvp_going_aria')}
-                      className="bg-theme-elevated text-theme-primary transition-colors hover:bg-emerald-500/20 data-[selected=true]:bg-emerald-500 data-[selected=true]:text-white"
+                      className="bg-theme-elevated text-theme-primary transition-colors hover:bg-emerald-500/20 data-[selected=true]:bg-emerald-500! data-[selected=true]:text-white!"
                     >
                       <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
                       {t('detail.going_btn')}
@@ -1793,7 +1793,7 @@ export function EventDetailPage() {
                       id="interested"
                       variant="ghost"
                       aria-label={t('detail.rsvp_interested_aria')}
-                      className="bg-theme-elevated text-theme-primary transition-colors hover:bg-amber-500/20 data-[selected=true]:bg-amber-500 data-[selected=true]:text-white"
+                      className="bg-theme-elevated text-theme-primary transition-colors hover:bg-amber-500/20 data-[selected=true]:bg-amber-500! data-[selected=true]:text-white!"
                     >
                       <Heart className="w-4 h-4" aria-hidden="true" />
                       {t('detail.interested_btn')}
@@ -1804,7 +1804,7 @@ export function EventDetailPage() {
                       id="not_going"
                       variant="ghost"
                       aria-label={t('detail.rsvp_not_going_aria')}
-                      className="bg-theme-elevated text-theme-primary transition-colors hover:bg-theme-hover data-[selected=true]:bg-theme-hover data-[selected=true]:text-theme-muted"
+                      className="bg-theme-elevated text-theme-primary transition-colors hover:bg-theme-hover data-[selected=true]:bg-[var(--surface-hover)]! data-[selected=true]:text-[var(--text-muted)]!"
                     >
                       <XCircle className="w-4 h-4" aria-hidden="true" />
                       {t('detail.not_going_btn')}

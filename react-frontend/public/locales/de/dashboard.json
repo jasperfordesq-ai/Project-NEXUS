@@ -5,7 +5,7 @@
   },
   "fallback_name": "dort",
   "welcome_back": "Willkommen zurück, {{name}}!",
-  "community_activity": "Das passiert gerade in Ihrer {{community}}-Gemeinschaft",
+  "community_activity": "Das passiert gerade in {{community}}",
   "unable_to_load": "Dashboard konnte nicht geladen werden",
   "try_again": "Erneut versuchen",
   "common": {

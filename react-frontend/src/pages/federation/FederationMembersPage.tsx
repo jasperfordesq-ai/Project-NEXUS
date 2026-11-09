@@ -433,7 +433,7 @@ export function FederationMembersPage() {
                     key={option.key}
                     id={option.key}
                     variant="ghost"
-                    className="bg-theme-elevated text-theme-muted hover:bg-theme-hover data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground"
+                    className="bg-theme-elevated text-theme-muted hover:bg-theme-hover data-[selected=true]:bg-accent! data-[selected=true]:text-accent-foreground!"
                   >
                     <Icon className="w-3.5 h-3.5" aria-hidden="true" />
                     {t(`members.reach_${option.key}`)}

@@ -5,7 +5,7 @@
   },
   "fallback_name": "こんにちは",
   "welcome_back": "おかえりなさい、{{name}}！",
-  "community_activity": "{{community}}コミュニティでの出来事はこちらです",
+  "community_activity": "{{community}}での出来事はこちらです",
   "unable_to_load": "ダッシュボードを読み込めませんでした",
   "try_again": "再試行",
   "common": {

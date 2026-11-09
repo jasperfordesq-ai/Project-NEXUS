@@ -5,7 +5,7 @@
   },
   "fallback_name": "là",
   "welcome_back": "Content de vous revoir, {{name}} !",
-  "community_activity": "Voici ce qui se passe dans votre communauté {{community}}",
+  "community_activity": "Voici ce qui se passe dans {{community}}",
   "unable_to_load": "Impossible de charger le tableau de bord",
   "try_again": "Réessayer",
   "common": {

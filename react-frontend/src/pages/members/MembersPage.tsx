@@ -616,7 +616,7 @@ export function MembersPage() {
                 isIconOnly
                 variant="ghost"
                 aria-label={t('aria.grid_view')}
-                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-blue-500/15 data-[selected=true]:text-blue-700 dark:data-[selected=true]:text-blue-300"
+                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-blue-500/15 data-[selected=true]:text-blue-700! dark:data-[selected=true]:text-blue-300!"
               >
                 <Grid className="h-4 w-4" aria-hidden="true" />
               </ToggleButton>
@@ -625,7 +625,7 @@ export function MembersPage() {
                 isIconOnly
                 variant="ghost"
                 aria-label={t('aria.list_view')}
-                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-blue-500/15 data-[selected=true]:text-blue-700 dark:data-[selected=true]:text-blue-300"
+                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-blue-500/15 data-[selected=true]:text-blue-700! dark:data-[selected=true]:text-blue-300!"
               >
                 <List className="h-4 w-4" aria-hidden="true" />
               </ToggleButton>
@@ -635,7 +635,7 @@ export function MembersPage() {
                   isIconOnly
                   variant="ghost"
                   aria-label={t('aria.map_view')}
-                  className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-blue-500/15 data-[selected=true]:text-blue-700 dark:data-[selected=true]:text-blue-300"
+                  className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-blue-500/15 data-[selected=true]:text-blue-700! dark:data-[selected=true]:text-blue-300!"
                 >
                   <MapIcon className="h-4 w-4" aria-hidden="true" />
                 </ToggleButton>
@@ -689,7 +689,7 @@ export function MembersPage() {
         <ToggleButton
           id="all"
           variant="ghost"
-          className="bg-theme-elevated text-theme-secondary transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:bg-accent data-[selected=true]:text-white data-[selected=true]:shadow-sm"
+          className="bg-theme-elevated text-theme-secondary transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:bg-accent! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
         >
           <Users className="w-3.5 h-3.5" aria-hidden="true" />
           {t('members.all')}
@@ -697,7 +697,7 @@ export function MembersPage() {
         <ToggleButton
           id="new"
           variant="ghost"
-          className="bg-theme-elevated text-theme-secondary transition-colors hover:bg-emerald-500/5 hover:text-emerald-500 data-[selected=true]:bg-emerald-600 data-[selected=true]:text-white data-[selected=true]:shadow-sm"
+          className="bg-theme-elevated text-theme-secondary transition-colors hover:bg-emerald-500/5 hover:text-emerald-500 data-[selected=true]:bg-emerald-600! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
         >
           <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
           {t('members.new')}
@@ -705,7 +705,7 @@ export function MembersPage() {
         <ToggleButton
           id="active"
           variant="ghost"
-          className="bg-theme-elevated text-theme-secondary transition-colors hover:bg-amber-500/5 hover:text-[var(--color-warning)] data-[selected=true]:bg-amber-600 data-[selected=true]:text-white data-[selected=true]:shadow-sm"
+          className="bg-theme-elevated text-theme-secondary transition-colors hover:bg-amber-500/5 hover:text-[var(--color-warning)] data-[selected=true]:bg-amber-600! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
         >
           <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" />
           {t('members.active')}
@@ -777,7 +777,7 @@ export function MembersPage() {
               variant="ghost"
               isSelected={nearMeEnabled}
               onChange={() => handleNearMeToggle()}
-              className="bg-theme-elevated text-theme-primary transition-colors hover:bg-emerald-500/10 hover:text-emerald-600 data-[selected=true]:bg-emerald-600 data-[selected=true]:text-white data-[selected=true]:shadow-sm"
+              className="bg-theme-elevated text-theme-primary transition-colors hover:bg-emerald-500/10 hover:text-emerald-600 data-[selected=true]:bg-emerald-600! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
               aria-label={t('members.near_me')}
             >
               <MapPin className="w-4 h-4" aria-hidden="true" />
@@ -824,7 +824,7 @@ export function MembersPage() {
                 isIconOnly
                 variant="ghost"
                 aria-label={t('aria.grid_view')}
-                className="rounded-none bg-theme-elevated text-theme-muted transition-colors data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent dark:data-[selected=true]:text-accent"
+                className="rounded-none bg-theme-elevated text-theme-muted transition-colors data-[selected=true]:bg-accent/10! data-[selected=true]:text-accent! dark:data-[selected=true]:text-accent!"
               >
                 <Grid className="w-4 h-4" aria-hidden="true" />
               </ToggleButton>
@@ -833,7 +833,7 @@ export function MembersPage() {
                 isIconOnly
                 variant="ghost"
                 aria-label={t('aria.list_view')}
-                className="rounded-none bg-theme-elevated text-theme-muted transition-colors data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent dark:data-[selected=true]:text-accent"
+                className="rounded-none bg-theme-elevated text-theme-muted transition-colors data-[selected=true]:bg-accent/10! data-[selected=true]:text-accent! dark:data-[selected=true]:text-accent!"
               >
                 <List className="w-4 h-4" aria-hidden="true" />
               </ToggleButton>
@@ -843,7 +843,7 @@ export function MembersPage() {
                   isIconOnly
                   variant="ghost"
                   aria-label={t('aria.map_view')}
-                  className="rounded-none bg-theme-elevated text-theme-muted transition-colors data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent dark:data-[selected=true]:text-accent"
+                  className="rounded-none bg-theme-elevated text-theme-muted transition-colors data-[selected=true]:bg-accent/10! data-[selected=true]:text-accent! dark:data-[selected=true]:text-accent!"
                 >
                   <MapIcon className="w-4 h-4" aria-hidden="true" />
                 </ToggleButton>

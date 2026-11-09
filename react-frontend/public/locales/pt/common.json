@@ -3326,5 +3326,18 @@
         "help": "Explique aos coordenadores por palavras suas abaixo"
       }
     }
+  },
+  "greeting": {
+    "morning": "Bom dia, {{name}}",
+    "morning_generic": "Bom dia",
+    "afternoon": "Boa tarde, {{name}}",
+    "afternoon_generic": "Boa tarde",
+    "evening": "Boa noite, {{name}}",
+    "evening_generic": "Boa noite"
+  },
+  "algorithm": {
+    "sorted_for_you": "Ordenado para si",
+    "how_sorted": "Como é ordenado",
+    "method": "Método: {{name}}"
   }
 }

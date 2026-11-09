@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, within } from '@/test/test-utils';
 
 const {
   featureFlags,
@@ -183,17 +183,35 @@ describe('DashboardPage', () => {
 
   it('renders without crashing', () => {
     render(<DashboardPage />);
-    expect(screen.getByText(/Welcome back/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 
-  it('shows the welcome message with user name', () => {
-    render(<DashboardPage />);
-    expect(screen.getByText(/Welcome back, Test!/i)).toBeInTheDocument();
+  it('greets the member for the time of day, in a soft panel in the community colour', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 10, 9, 15, 0));
+    try {
+      render(<DashboardPage />);
+      const panel = screen.getByTestId('dashboard-welcome');
+      expect(panel.className).toContain('bg-accent-soft');
+      expect(within(panel).getByRole('heading', { level: 1, name: 'Good afternoon, Test' })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
-  it('shows community name in welcome section', () => {
+  it('names the community once, even when its name contains "Community"', () => {
     render(<DashboardPage />);
-    expect(screen.getByText(/Test Community/i)).toBeInTheDocument();
+    expect(screen.getByText("Here's what's happening in Test Community")).toBeInTheDocument();
+    expect(screen.queryByText(/Community community/i)).toBeNull();
+  });
+
+  it('shows each number with its icon in a coloured circle beside it, not a stretched colour bar', () => {
+    render(<DashboardPage />);
+    const tile = screen.getByText('Balance').closest('a')!;
+    const circle = tile.querySelector('[data-testid="stat-icon"]');
+    expect(circle).not.toBeNull();
+    expect(circle!.className).toContain('rounded-full');
+    expect(circle!.className).toContain('shrink-0');
   });
 
   it('shows the Caring Community dashboard card only when the feature is enabled', () => {

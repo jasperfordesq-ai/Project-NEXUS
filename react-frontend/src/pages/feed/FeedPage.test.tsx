@@ -116,6 +116,20 @@ describe('FeedPage', () => {
     expect(screen.getByText('Community Feed')).toBeInTheDocument();
   });
 
+  it('greets the member in a soft panel in the community colour (AWID: warmth)', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 10, 9, 19, 0));
+    try {
+      render(<FeedPage />);
+      const header = screen.getByTestId('feed-header');
+      expect(header.className).toContain('bg-accent-soft');
+      expect(within(header).getByText('Good evening, Test')).toBeInTheDocument();
+      expect(within(header).getByRole('heading', { level: 1, name: 'Community Feed' })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('keeps feed controls and desktop sidebar in normal document flow', () => {
     render(<FeedPage />);
 

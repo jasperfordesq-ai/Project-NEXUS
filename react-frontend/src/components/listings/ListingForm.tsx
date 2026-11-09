@@ -685,7 +685,7 @@ export function ListingForm({
           <Radio
             value="offer"
             classNames={{
-              base: 'm-0 max-w-none rounded-xl border border-theme-default bg-theme-elevated p-4 data-[selected=true]:border-emerald-500 data-[selected=true]:bg-emerald-500/10 sm:flex-1',
+              base: 'm-0 max-w-none rounded-xl border border-theme-default bg-theme-elevated p-4 data-[selected=true]:border-emerald-500! data-[selected=true]:bg-emerald-500/10! sm:flex-1',
               label: 'text-theme-primary',
             }}
           >
@@ -700,7 +700,7 @@ export function ListingForm({
           <Radio
             value="request"
             classNames={{
-              base: 'm-0 max-w-none rounded-xl border border-theme-default bg-theme-elevated p-4 data-[selected=true]:border-amber-500 data-[selected=true]:bg-amber-500/10 sm:flex-1',
+              base: 'm-0 max-w-none rounded-xl border border-theme-default bg-theme-elevated p-4 data-[selected=true]:border-amber-500! data-[selected=true]:bg-amber-500/10! sm:flex-1',
               label: 'text-theme-primary',
             }}
           >
@@ -901,7 +901,7 @@ export function ListingForm({
           <Radio
             value="physical_only"
             classNames={{
-              base: 'm-0 max-w-none p-3 border border-theme-default rounded-xl bg-theme-elevated data-[selected=true]:border-emerald-500 data-[selected=true]:bg-emerald-500/10',
+              base: 'm-0 max-w-none p-3 border border-theme-default rounded-xl bg-theme-elevated data-[selected=true]:border-emerald-500! data-[selected=true]:bg-emerald-500/10!',
               label: 'text-theme-primary',
             }}
           >
@@ -916,7 +916,7 @@ export function ListingForm({
           <Radio
             value="remote_only"
             classNames={{
-              base: 'm-0 max-w-none p-3 border border-theme-default rounded-xl bg-theme-elevated data-[selected=true]:border-blue-500 data-[selected=true]:bg-blue-500/10',
+              base: 'm-0 max-w-none p-3 border border-theme-default rounded-xl bg-theme-elevated data-[selected=true]:border-blue-500! data-[selected=true]:bg-blue-500/10!',
               label: 'text-theme-primary',
             }}
           >
@@ -931,7 +931,7 @@ export function ListingForm({
           <Radio
             value="hybrid"
             classNames={{
-              base: 'm-0 max-w-none p-3 border border-theme-default rounded-xl bg-theme-elevated data-[selected=true]:border-teal-500 data-[selected=true]:bg-teal-500/10',
+              base: 'm-0 max-w-none p-3 border border-theme-default rounded-xl bg-theme-elevated data-[selected=true]:border-teal-500! data-[selected=true]:bg-teal-500/10!',
               label: 'text-theme-primary',
             }}
           >
@@ -946,7 +946,7 @@ export function ListingForm({
           <Radio
             value="location_dependent"
             classNames={{
-              base: 'm-0 max-w-none p-3 border border-theme-default rounded-xl bg-theme-elevated data-[selected=true]:border-slate-500 data-[selected=true]:bg-slate-500/10',
+              base: 'm-0 max-w-none p-3 border border-theme-default rounded-xl bg-theme-elevated data-[selected=true]:border-slate-500! data-[selected=true]:bg-slate-500/10!',
               label: 'text-theme-primary',
             }}
           >

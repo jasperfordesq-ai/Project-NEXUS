@@ -10,7 +10,8 @@
 
 import { useState, useEffect } from 'react';
 
-import Cpu from 'lucide-react/icons/cpu';
+import Sparkles from 'lucide-react/icons/sparkles';
+import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { Chip, Popover, PopoverTrigger, PopoverContent, PopoverHeading } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
@@ -79,10 +80,14 @@ interface AlgorithmLabelProps {
 }
 
 export function AlgorithmLabel({ area }: AlgorithmLabelProps) {
+  const { t } = useTranslation('common');
   const info = useAlgorithmInfo(area);
 
   if (!info || DEFAULT_KEYS.has(info.key)) return null;
 
+  // Plain words on the chip ("Sorted for you"); the method's own name
+  // (EdgeRank, MatchRank, …) read as jargon to members, so it moved into the
+  // explanation, which still says exactly how the order is worked out.
   // Tap/click-opened popover rather than a hover tooltip: the description is
   // the only place the ranking is explained, and hover does not exist on touch.
   return (
@@ -92,21 +97,22 @@ export function AlgorithmLabel({ area }: AlgorithmLabelProps) {
           variant="light"
           size="sm"
           className="h-auto min-h-0 min-w-0 p-0 rounded-full"
-          aria-label={info.name}
+          aria-label={t('algorithm.how_sorted')}
         >
           <Chip
             variant="flat"
             size="sm"
-            startContent={<Cpu className="w-3 h-3" aria-hidden="true" />}
-            className="bg-[var(--surface-elevated)] text-[var(--text-subtle)] border border-[var(--border-default)] cursor-help text-[11px] h-6"
+            startContent={<Sparkles className="w-3 h-3" aria-hidden="true" />}
+            className="bg-[var(--surface-elevated)] text-[var(--text-subtle)] border border-[var(--border-default)] cursor-help text-xs h-6"
           >
-            {info.name}
+            {t('algorithm.sorted_for_you')}
           </Chip>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-[18rem] px-3 py-2 text-xs text-theme-muted">
-        <PopoverHeading className="sr-only">{info.name}</PopoverHeading>
-        {info.description}
+        <PopoverHeading className="mb-1 text-sm font-semibold text-theme-primary">{t('algorithm.how_sorted')}</PopoverHeading>
+        <p>{info.description}</p>
+        <p className="mt-1.5 text-[var(--text-subtle)]">{t('algorithm.method', { name: info.name })}</p>
       </PopoverContent>
     </Popover>
   );

@@ -5,7 +5,7 @@
   },
   "fallback_name": "amigo",
   "welcome_back": "¡Bienvenido de nuevo, {{name}}!",
-  "community_activity": "Esto es lo que está pasando en tu comunidad {{community}}",
+  "community_activity": "Esto es lo que está pasando en {{community}}",
   "unable_to_load": "No se Pudo Cargar el Panel",
   "try_again": "Intentar de Nuevo",
   "common": {

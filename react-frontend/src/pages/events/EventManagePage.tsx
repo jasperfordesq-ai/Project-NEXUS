@@ -103,7 +103,7 @@ function canUseDefinitionBlueprints(
     && capabilities.rollout_state === 'v2_rolling';
 }
 
-const managementTabClassName = 'min-h-10 w-auto min-w-fit flex-none rounded-lg px-4 text-sm font-medium data-[selected=true]:bg-theme-hover data-[selected=true]:text-theme-primary';
+const managementTabClassName = 'min-h-10 w-auto min-w-fit flex-none rounded-lg px-4 text-sm font-medium data-[selected=true]:bg-[var(--surface-hover)]! data-[selected=true]:text-[var(--text-primary)]!';
 
 export function EventManagePage() {
   const { t } = useTranslation([

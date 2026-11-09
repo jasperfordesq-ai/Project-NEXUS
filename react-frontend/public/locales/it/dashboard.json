@@ -5,7 +5,7 @@
   },
   "fallback_name": "là",
   "welcome_back": "Bentornato/a, {{name}}!",
-  "community_activity": "Ecco cosa sta accadendo nella comunità {{community}}",
+  "community_activity": "Ecco cosa sta accadendo in {{community}}",
   "unable_to_load": "Impossibile Caricare la Dashboard",
   "try_again": "Riprova",
   "common": {

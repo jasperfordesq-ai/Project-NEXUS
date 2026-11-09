@@ -1029,7 +1029,7 @@ export function MyApplicationsPage() {
           onSelectionChange={(key) => setActiveTab(key as FilterTab)}
           variant='underlined'
           aria-label={t('my_applications.filter_aria')}
-          classNames={{ tab: 'text-theme-muted data-[selected=true]:text-theme-primary' }}>
+          classNames={{ tab: 'text-theme-muted data-[selected=true]:text-[var(--text-primary)]!' }}>
           <Tab key='all' title={t('my_applications.tab_all')} />
           <Tab key='active' title={t('my_applications.tab_active')} />
           <Tab key='accepted' title={t('my_applications.tab_accepted')} />

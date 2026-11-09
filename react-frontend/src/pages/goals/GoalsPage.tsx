@@ -545,7 +545,7 @@ export function GoalsPage() {
         <ToggleButton
           id="my"
           variant="ghost"
-          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white"
+          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
         >
           <Target className="w-4 h-4" aria-hidden="true" />
           {t('goals.tab_my')}
@@ -553,7 +553,7 @@ export function GoalsPage() {
         <ToggleButton
           id="buddying"
           variant="ghost"
-          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white"
+          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
         >
           <Users className="w-4 h-4" aria-hidden="true" />
           {t('goals.tab_buddying')}
@@ -561,7 +561,7 @@ export function GoalsPage() {
         <ToggleButton
           id="discover"
           variant="ghost"
-          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white"
+          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
         >
           <Globe className="w-4 h-4" aria-hidden="true" />
           {t('goals.tab_discover')}

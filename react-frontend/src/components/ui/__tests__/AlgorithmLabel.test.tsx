@@ -68,7 +68,7 @@ describe('AlgorithmLabel', () => {
 
     render(<AlgorithmLabel area="feed" />);
     await waitFor(() => {
-      expect(screen.getByText('SmartFeed')).toBeInTheDocument();
+      expect(screen.getByText('Sorted for you')).toBeInTheDocument();
     });
   });
 
@@ -82,7 +82,7 @@ describe('AlgorithmLabel', () => {
 
     render(<AlgorithmLabel area="listings" />);
     await waitFor(() => {
-      expect(screen.getByText('Relevance')).toBeInTheDocument();
+      expect(screen.getByText('Sorted for you')).toBeInTheDocument();
     });
   });
 

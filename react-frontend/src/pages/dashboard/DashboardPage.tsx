@@ -7,6 +7,8 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { Card, CardBody } from '@/components/ui/Card';
+import { useGreeting } from '@/hooks/useGreeting';
 import { GuardianConsentPrompt } from '@/components/safeguarding/GuardianConsentPrompt';
 import { SupportActionPrompt } from '@/components/subaccounts/SupportActionPrompt';
 import { LocationMissingPrompt, shouldShowLocationReminder } from '@/components/location/LocationMissingPrompt';
@@ -235,6 +237,7 @@ export function DashboardPage() {
   usePageTitle(t('meta.title'));
   const { user } = useAuth();
   const { branding, tenantPath } = useTenant();
+  const greeting = useGreeting(user?.first_name || user?.name?.split(' ')[0]);
   const { counts: notificationCounts } = useNotifications();
   const hasGamification = useFeature('gamification');
   const hasEvents = useFeature('events');
@@ -419,19 +422,20 @@ export function DashboardPage() {
           </motion.div>
         )}
 
-        {/* Welcome Header */}
+        {/* Welcome Header — a soft panel in the community colour with a
+            greeting for the time of day, like the offers page (AWID: warmth). */}
         <motion.div variants={itemVariants}>
-          <GlassCard className="p-5 sm:p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <Card data-testid="dashboard-welcome" className="border-0 bg-accent-soft shadow-none">
+            <CardBody className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 lg:p-8">
               <div className="min-w-0">
-                <h1 className="text-2xl font-bold leading-tight text-theme-primary sm:text-3xl">{t('welcome_back', { name: user?.first_name || user?.name?.split(' ')[0] || t('fallback_name') })}</h1>
-                <p className="mt-1 max-w-2xl text-sm leading-6 text-theme-muted sm:text-base">{t('community_activity', { community: branding.name })}</p>
+                <h1 className="text-2xl font-bold leading-tight tracking-tight text-theme-primary sm:text-3xl">{greeting}</h1>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-theme-secondary sm:text-base">{t('community_activity', { community: branding.name })}</p>
               </div>
               <div className="flex shrink-0 gap-3">
-                {hasListingsModule && <Button as={Link} to={tenantPath('/listings/create')} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto" startContent={<Plus className="w-4 h-4" aria-hidden="true" />}>{t('new_listing')}</Button>}
+                {hasListingsModule && <Button as={Link} to={tenantPath('/listings/create')} variant="primary" size="lg" className="w-full font-semibold sm:w-auto" startContent={<Plus className="w-4 h-4" aria-hidden="true" />}>{t('new_listing')}</Button>}
               </div>
-            </div>
-          </GlassCard>
+            </CardBody>
+          </Card>
         </motion.div>
 
         {hasCaringCommunity && (
@@ -803,11 +807,18 @@ function StatCard({ icon, label, value, color, href, isLoading }: StatCardProps)
   const { tenantPath } = useTenant();
   const { t } = useTranslation('dashboard');
   return (
+    // The icon sits in a coloured circle beside the number. (It was an
+    // inline-flex box that the card's column layout stretched into a wide,
+    // empty colour bar.)
     <Link to={tenantPath(href)} aria-label={`${label}: ${isLoading ? t('common.loading') : value}`} className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-base)]">
-      <GlassCard hoverable className="min-h-[124px] p-4 focus-within:ring-2 focus-within:ring-accent/40">
-        <div className={`mb-3 inline-flex rounded-xl p-2.5 ${colorClasses[color]}`}>{icon}</div>
-        <div className="text-xs font-medium uppercase tracking-wide text-theme-muted sm:text-sm sm:normal-case sm:tracking-normal">{label}</div>
-        {isLoading ? (<Skeleton className="mt-2 rounded-lg"><div className="h-8 w-16 rounded-lg bg-surface-tertiary" /></Skeleton>) : (<div className="mt-1 truncate text-2xl font-bold text-theme-primary">{value}</div>)}
+      <GlassCard hoverable className="p-4 focus-within:ring-2 focus-within:ring-accent/40 sm:p-5">
+        <div className="flex items-center gap-4">
+          <div data-testid="stat-icon" className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${colorClasses[color]}`}>{icon}</div>
+          <div className="min-w-0">
+            <div className="truncate text-sm font-medium text-theme-secondary">{label}</div>
+            {isLoading ? (<Skeleton className="mt-1 rounded-lg"><div className="h-8 w-16 rounded-lg bg-surface-tertiary" /></Skeleton>) : (<div className="truncate text-3xl font-bold leading-tight text-theme-primary">{value}</div>)}
+          </div>
+        </div>
       </GlassCard>
     </Link>
   );

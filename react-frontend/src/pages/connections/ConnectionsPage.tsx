@@ -614,7 +614,7 @@ export default function ConnectionsPage() {
             tabList: 'gap-4 border-b border-theme-default',
             cursor: 'bg-accent',
             tab: 'text-sm font-medium',
-            tabContent: 'text-theme-muted group-data-[selected=true]:text-accent',
+            tabContent: 'text-theme-muted group-data-[selected=true]:text-accent!',
           }}
           aria-label={t('title')}
         >

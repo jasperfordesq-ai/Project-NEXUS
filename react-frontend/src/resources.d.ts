@@ -38086,6 +38086,11 @@ export default interface Resources {
         "no_daily_data": "No daily data yet."
       }
     },
+    "algorithm": {
+      "how_sorted": "How this is sorted",
+      "method": "Method: {{name}}",
+      "sorted_for_you": "Sorted for you"
+    },
     "alpha_badge": "Alpha",
     "already_responded": "You have already participated in this survey.",
     "analytics": {
@@ -39179,6 +39184,14 @@ export default interface Resources {
       "trending": "Trending"
     },
     "go_back": "Go back",
+    "greeting": {
+      "afternoon": "Good afternoon, {{name}}",
+      "afternoon_generic": "Good afternoon",
+      "evening": "Good evening, {{name}}",
+      "evening_generic": "Good evening",
+      "morning": "Good morning, {{name}}",
+      "morning_generic": "Good morning"
+    },
     "groups": {
       "policy_content": "Policy Content",
       "policy_creation": "Policy Creation",
@@ -41895,7 +41908,7 @@ export default interface Resources {
     "common": {
       "loading": "Loading"
     },
-    "community_activity": "Here's what's happening in your {{community}} community",
+    "community_activity": "Here's what's happening in {{community}}",
     "events": {
       "browse": "Browse events",
       "empty": "No upcoming events",
@@ -51257,7 +51270,7 @@ export default interface Resources {
       "listings": {
         "articles": {
           "browse_listings": {
-            "body": "Open [Listings](/listings) to see what members offer and need.\n\nType in the search box to look for words in the title, description, location or member's name, then press Enter.\n\nUse the choices next to the search box:\n\n- **Type**: **All Types**, **Offers** or **Requests**.\n- **Category**: pick one, or keep **All Categories**.\n- **Sort**: **Recommended** or **Newest first**.\n\nPress **Filters** for more choices:\n\n- **Duration**: **Quick (under 1h)**, **Short (1-3h)**, **Half day (3-6h)** or **Full day (6h+)**.\n- **Service mode**: **Remote available** or **In-person only**.\n- **Posted date**: **Today**, **This week** or **This month**.\n- **Near me**: shows listings close to the location on your profile. Then choose a distance.\n\nPress **Clear filters** to start again.\n\nYou can switch between grid and list layouts with the buttons at the top of the page.\n\n> **Near me** uses the location on your profile. If you have not set one, you will see a message asking you to add it.",
+            "body": "Open [Listings](/listings) to see what members offer and need.\n\nType in the search box to look for words in the title, description, location or member's name, then press Enter.\n\nUse the choices next to the search box:\n\n- **Type**: **All Types**, **Offers** or **Requests**.\n- **Sort**: **Recommended** or **Newest first**.\n\nBelow the search box, **Browse by theme** shows each theme as a coloured tile. Press one to see only that theme, or press **All themes** to see everything again.\n\nPress **Filters** for more choices:\n\n- **Duration**: **Quick (under 1h)**, **Short (1-3h)**, **Half day (3-6h)** or **Full day (6h+)**.\n- **Service mode**: **Remote available** or **In-person only**.\n- **Posted date**: **Today**, **This week** or **This month**.\n- **Near me**: shows listings close to the location on your profile. Then choose a distance.\n\nPress **Clear filters** to start again.\n\nYou can switch between grid and list layouts with the buttons at the top of the page.\n\n> **Near me** uses the location on your profile. If you have not set one, you will see a message asking you to add it.",
             "summary": "Search listings and narrow them down by type, category, time and distance.",
             "title": "Browsing and filtering listings"
           },
@@ -51277,7 +51290,7 @@ export default interface Resources {
             "title": "Categories, skill tags and optional details"
           },
           "listing_map": {
-            "body": "If your community uses maps, you can see listings as pins on a map.\n\n1. Open [Listings](/listings).\n2. Press the map button next to the grid and list buttons.\n3. Press a pin to see the listing.\n4. Press **View listing** to open it.\n\nOnly listings with a location appear on the map. If none have one, you will see **No listings with location data**.\n\nA listing's location comes from the profile of the member who posted it. A listing page may also show a small map under **Service Location**.\n\nYour listings use the location on your profile, so keep it up to date.",
+            "body": "If your community uses maps, you can see listings as pins on a map.\n\n1. Open [Listings](/listings).\n2. Press the map button next to the grid and list buttons.\n3. Press a pin to see the listing.\n4. Press **View details** to open it.\n\nOnly listings with a location appear on the map. If none have one, you will see **No offers or requests with a place on the map**.\n\nA listing's location comes from the profile of the member who posted it. A listing page may also show a small map under **Service Location**.\n\nYour listings use the location on your profile, so keep it up to date.",
             "summary": "If your community uses maps, view listings as pins on a map.",
             "title": "Seeing listings on a map"
           },
@@ -54638,12 +54651,6 @@ export default interface Resources {
       "update": "Update Listing",
       "update_success": "Listing updated successfully"
     },
-    "greeting_afternoon": "Good afternoon, {{name}}",
-    "greeting_afternoon_generic": "Good afternoon",
-    "greeting_evening": "Good evening, {{name}}",
-    "greeting_evening_generic": "Good evening",
-    "greeting_morning": "Good morning, {{name}}",
-    "greeting_morning_generic": "Good morning",
     "hero_eyebrow": "People helping people",
     "hero_results_label": "Showing now",
     "hours_short": "{{hours}}h",

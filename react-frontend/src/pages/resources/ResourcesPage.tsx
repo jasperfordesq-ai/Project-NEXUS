@@ -737,7 +737,7 @@ export function ResourcesPage() {
             variant="ghost"
             isSelected={isReordering}
             onChange={setIsReordering}
-            className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-warning data-[selected=true]:text-white"
+            className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-warning! data-[selected=true]:text-white!"
           >
             <GripVertical className="w-3.5 h-3.5" aria-hidden="true" />
             {isReordering ? t('resources.done_reordering') : t('resources.reorder')}
@@ -770,7 +770,7 @@ export function ResourcesPage() {
               variant="ghost"
               isSelected={isReordering}
               onChange={setIsReordering}
-              className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-warning data-[selected=true]:text-white"
+              className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-warning! data-[selected=true]:text-white!"
             >
               <GripVertical className="w-3.5 h-3.5" aria-hidden="true" />
               {isReordering ? t('resources.done_reordering') : t('resources.reorder')}
@@ -792,7 +792,7 @@ export function ResourcesPage() {
               <ToggleButton
                 id="__all__"
                 variant="ghost"
-                className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-warning data-[selected=true]:text-white"
+                className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-warning! data-[selected=true]:text-white!"
               >
                 {t('resources.filter_all')}
               </ToggleButton>
@@ -801,7 +801,7 @@ export function ResourcesPage() {
                   key={cat.id}
                   id={String(cat.id)}
                   variant="ghost"
-                  className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-warning data-[selected=true]:text-white"
+                  className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-warning! data-[selected=true]:text-white!"
                 >
                   {cat.name}
                 </ToggleButton>

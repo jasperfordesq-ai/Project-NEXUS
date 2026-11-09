@@ -3369,5 +3369,18 @@
         "help": "Opisz to koordynatorom własnymi słowami poniżej"
       }
     }
+  },
+  "greeting": {
+    "morning": "Dzień dobry, {{name}}",
+    "morning_generic": "Dzień dobry",
+    "afternoon": "Dzień dobry, {{name}}",
+    "afternoon_generic": "Dzień dobry",
+    "evening": "Dobry wieczór, {{name}}",
+    "evening_generic": "Dobry wieczór"
+  },
+  "algorithm": {
+    "sorted_for_you": "Posortowane dla Ciebie",
+    "how_sorted": "Jak to jest sortowane",
+    "method": "Metoda: {{name}}"
   }
 }

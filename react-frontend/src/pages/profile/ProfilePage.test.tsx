@@ -195,6 +195,7 @@ vi.mock('@/lib/motion', () => {
 });
 
 import { ProfilePage } from './ProfilePage';
+import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 
 describe('ProfilePage', () => {
   beforeEach(() => {
@@ -263,6 +264,24 @@ describe('ProfilePage', () => {
     // Was `expect(document.body).toBeTruthy()`, which could not fail. isLoading
     // starts true, so the (stubbed) LoadingScreen is what the first paint must show.
     expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
+  });
+
+  it("opens with a cover in the member's own colour — the same as their initials", async () => {
+    render(<ProfilePage />);
+    const cover = await screen.findByTestId('profile-cover');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover).toHaveAttribute('data-colour', colourForSeed('john doe', paletteFor(null)));
+  });
+
+  it('shows each number with its icon in a coloured circle, not a stretched colour bar', async () => {
+    render(<ProfilePage />);
+    await waitFor(() => expect(screen.getAllByText('John Doe').length).toBeGreaterThan(0));
+    const icons = screen.getAllByTestId('profile-stat-icon');
+    expect(icons.length).toBeGreaterThan(0);
+    for (const icon of icons) {
+      expect(icon.className).toContain('rounded-full');
+      expect(icon.className).toContain('mx-auto');
+    }
   });
 
   it('loads profile data from API', async () => {

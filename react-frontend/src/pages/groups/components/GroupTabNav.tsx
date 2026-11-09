@@ -178,7 +178,7 @@ export function GroupTabNav({
                 size="sm"
                 onPress={() => selectSection(section.key)}
                 onKeyDown={(event) => handlePrimaryKeyDown(event, index)}
-                className="h-9 min-w-0 shrink px-2.5 text-sm font-medium text-theme-muted hover:bg-theme-hover/60 hover:text-theme-primary data-[selected=true]:bg-theme-hover data-[selected=true]:text-theme-primary data-[selected=true]:shadow-sm lg:px-3"
+                className="h-9 min-w-0 shrink px-2.5 text-sm font-medium text-theme-muted hover:bg-theme-hover/60 hover:text-theme-primary data-[selected=true]:bg-[var(--surface-hover)]! data-[selected=true]:text-[var(--text-primary)]! data-[selected=true]:shadow-sm lg:px-3"
                 data-selected={isSelected}
               >
                 <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -194,7 +194,7 @@ export function GroupTabNav({
               aria-label={activeSecondarySection
                 ? `${t('detail.tab_more_label')}: ${activeSecondarySection.label}`
                 : t('detail.tab_more_label')}
-              className="flex h-9 min-w-0 shrink items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-theme-muted hover:bg-theme-hover/60 hover:text-theme-primary data-[selected=true]:bg-theme-hover data-[selected=true]:text-theme-primary data-[selected=true]:shadow-sm lg:px-3"
+              className="flex h-9 min-w-0 shrink items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-theme-muted hover:bg-theme-hover/60 hover:text-theme-primary data-[selected=true]:bg-[var(--surface-hover)]! data-[selected=true]:text-[var(--text-primary)]! data-[selected=true]:shadow-sm lg:px-3"
               data-selected={Boolean(activeSecondarySection)}
             >
               {activeSecondarySection && ActiveSecondaryIcon ? (

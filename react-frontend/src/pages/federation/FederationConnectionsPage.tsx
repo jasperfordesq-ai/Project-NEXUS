@@ -156,7 +156,7 @@ export function FederationConnectionsPage() {
         variant="underlined"
         classNames={{
           tabList: 'gap-4',
-          tab: 'text-theme-muted data-[selected=true]:text-accent',
+          tab: 'text-theme-muted data-[selected=true]:text-accent!',
           cursor: 'bg-accent',
         }}
       >

@@ -335,7 +335,7 @@ export function MyListingsPage() {
                 key={value}
                 id={value}
                 variant="ghost"
-                className="rounded-none px-4 text-theme-muted data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-700 dark:data-[selected=true]:text-emerald-300"
+                className="rounded-none px-4 text-theme-muted data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-700! dark:data-[selected=true]:text-emerald-300!"
               >
                 {t(`mine.type_${value}`)}
               </ToggleButton>

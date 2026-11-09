@@ -3326,5 +3326,18 @@
         "help": "Spiegalo ai coordinatori con parole tue qui sotto"
       }
     }
+  },
+  "greeting": {
+    "morning": "Buongiorno, {{name}}",
+    "morning_generic": "Buongiorno",
+    "afternoon": "Buon pomeriggio, {{name}}",
+    "afternoon_generic": "Buon pomeriggio",
+    "evening": "Buonasera, {{name}}",
+    "evening_generic": "Buonasera"
+  },
+  "algorithm": {
+    "sorted_for_you": "Ordinato per te",
+    "how_sorted": "Come viene ordinato",
+    "method": "Metodo: {{name}}"
   }
 }

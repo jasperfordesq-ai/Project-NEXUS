@@ -3283,5 +3283,18 @@
         "help": "下の欄にコーディネーターへご自身の言葉でお書きください"
       }
     }
+  },
+  "greeting": {
+    "morning": "おはようございます、{{name}}さん",
+    "morning_generic": "おはようございます",
+    "afternoon": "こんにちは、{{name}}さん",
+    "afternoon_generic": "こんにちは",
+    "evening": "こんばんは、{{name}}さん",
+    "evening_generic": "こんばんは"
+  },
+  "algorithm": {
+    "sorted_for_you": "あなた向けの並び順",
+    "how_sorted": "並び順について",
+    "method": "方式: {{name}}"
   }
 }

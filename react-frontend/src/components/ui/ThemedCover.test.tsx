@@ -36,6 +36,15 @@ describe('ThemedCover', () => {
     expect(cover.querySelector('svg')).not.toBeNull();
   });
 
+  it('puts the icon in the same place with or without a label, so a grid of cards lines up', () => {
+    const { rerender } = render(<ThemedCover colour="rose" icon={Users} label="Gardening" data-testid="cover" />);
+    const withLabel = screen.getByTestId('cover').querySelector('[data-cover-icon]');
+    expect(withLabel?.parentElement?.className).toContain('justify-center');
+    rerender(<ThemedCover colour="rose" icon={Users} data-testid="cover" />);
+    const withoutLabel = screen.getByTestId('cover').querySelector('[data-cover-icon]');
+    expect(withoutLabel?.parentElement?.className).toBe(withLabel?.parentElement?.className);
+  });
+
   it('falls back to a neutral colour it knows for an unknown name', () => {
     render(<ThemedCover colour="no-such-colour" icon={Users} data-testid="cover" />);
     expect(screen.getByTestId('cover').className).toContain('from-slate-100');

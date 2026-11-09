@@ -651,7 +651,7 @@ export function SearchPage() {
               base: 'w-full max-w-full overflow-x-auto',
               tabList: 'bg-theme-elevated p-1 rounded-lg min-w-max flex-nowrap',
               cursor: 'bg-theme-hover',
-              tab: 'shrink-0 text-theme-muted data-[selected=true]:text-theme-primary',
+              tab: 'shrink-0 text-theme-muted data-[selected=true]:text-[var(--text-primary)]!',
             }}
           >
             <Tab key="all" title={t('tab_all', { count: totalResults })} />

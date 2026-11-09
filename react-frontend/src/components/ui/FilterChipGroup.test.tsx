@@ -104,6 +104,17 @@ describe('FilterChipGroup', () => {
     expect(screen.getByRole('radio', { name: 'Any' })).not.toHaveAttribute('data-disabled');
   });
 
+  it('makes the selected chip visibly selected: its colours beat the chip\'s own grey', () => {
+    // The chip's resting colours (bg-theme-elevated, text-theme-muted) are
+    // unlayered CSS and win over any plain Tailwind utility, so the selected
+    // ones must be marked important or the chip never changes — and white
+    // text on the resting white chip would be unreadable.
+    render(<FilterChipGroup accent="emerald" label="Type" selected="remote" options={OPTIONS} onChange={onChange} />);
+    const chip = screen.getByRole('radio', { name: 'Remote' }).className;
+    expect(chip).toContain('data-[selected=true]:bg-emerald-600!');
+    expect(chip).toContain('data-[selected=true]:text-white!');
+  });
+
   it('applies the requested accent to the chips', () => {
     const { rerender } = render(
       <FilterChipGroup accent="emerald" label="Type" selected="any" options={OPTIONS} onChange={onChange} />,

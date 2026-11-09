@@ -3283,5 +3283,18 @@
         "help": "Beschreiben Sie es den Koordinatoren unten in eigenen Worten"
       }
     }
+  },
+  "greeting": {
+    "morning": "Guten Morgen, {{name}}",
+    "morning_generic": "Guten Morgen",
+    "afternoon": "Guten Tag, {{name}}",
+    "afternoon_generic": "Guten Tag",
+    "evening": "Guten Abend, {{name}}",
+    "evening_generic": "Guten Abend"
+  },
+  "algorithm": {
+    "sorted_for_you": "Für Sie sortiert",
+    "how_sorted": "So wird sortiert",
+    "method": "Methode: {{name}}"
   }
 }

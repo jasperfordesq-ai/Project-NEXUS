@@ -3455,5 +3455,18 @@
         "help": "أخبر المنسقين بكلماتك الخاصة أدناه"
       }
     }
+  },
+  "greeting": {
+    "morning": "صباح الخير، {{name}}",
+    "morning_generic": "صباح الخير",
+    "afternoon": "مساء الخير، {{name}}",
+    "afternoon_generic": "مساء الخير",
+    "evening": "مساء الخير، {{name}}",
+    "evening_generic": "مساء الخير"
+  },
+  "algorithm": {
+    "sorted_for_you": "مرتّب لك",
+    "how_sorted": "كيف يتم الترتيب",
+    "method": "الطريقة: {{name}}"
   }
 }

@@ -69,6 +69,7 @@ import { useTenant } from '@/contexts/TenantContext';
 import { useCommunityAccent } from '@/contexts/ThemeContext';
 import { useSiteAccent, useSitePalette } from '@/contexts/SiteAccentContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useGreeting } from '@/hooks/useGreeting';
 import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { api } from '@/lib/api';
@@ -105,8 +106,8 @@ const ALL_THEMES_KEY = '__all__';
  * until a community chooses its colour; then the toggles follow it.
  */
 const VIEW_TOGGLE_SELECTED = {
-  page: 'data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-300',
-  community: 'data-[selected=true]:bg-accent/15 data-[selected=true]:text-accent',
+  page: 'data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600! dark:data-[selected=true]:text-emerald-300!',
+  community: 'data-[selected=true]:bg-accent/15 data-[selected=true]:text-accent!',
 } as const;
 
 const validTypes: ListingType[] = ['all', 'offer', 'request'];
@@ -196,20 +197,9 @@ export function ListingsPage() {
   const siteAccent = useSiteAccent();
   const viewToggleSelected = usesCommunityColour ? VIEW_TOGGLE_SELECTED.community : VIEW_TOGGLE_SELECTED.page;
   const memberFirstName = user?.first_name?.trim() || '';
-  // Greets by the member's own time of day (AWID: warmth).
-  const hour = new Date().getHours();
-  const partOfDay = hour >= 5 && hour < 12 ? 'morning' : hour >= 12 && hour < 18 ? 'afternoon' : 'evening';
-  const greeting = memberFirstName
-    ? (partOfDay === 'morning'
-        ? t('greeting_morning', { name: memberFirstName })
-        : partOfDay === 'afternoon'
-          ? t('greeting_afternoon', { name: memberFirstName })
-          : t('greeting_evening', { name: memberFirstName }))
-    : (partOfDay === 'morning'
-        ? t('greeting_morning_generic')
-        : partOfDay === 'afternoon'
-          ? t('greeting_afternoon_generic')
-          : t('greeting_evening_generic'));
+  // Greets by the member's own time of day (AWID: warmth); shared with the
+  // dashboard and the feed.
+  const greeting = useGreeting(memberFirstName);
   const [searchParams, setSearchParams] = useSearchParams();
   const canUseMapView = MAPS_ENABLED && hasFeature('maps');
 
@@ -1546,10 +1536,12 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
                 onPress={handleSaveClick}
                 isDisabled={isSaving}
                 aria-label={isFavorited ? t('unsave_listing') : t('save_listing')}
-                className={`min-w-[36px] min-h-[36px] rounded-full backdrop-blur-sm shadow-lg transition-all ${
+                // A clean white circle in light mode and a dark one in dark mode
+                // (a see-through grey read as muddy on the pale covers).
+                className={`min-w-[36px] min-h-[36px] rounded-full backdrop-blur-sm shadow-md ring-1 transition-all ${
                   isFavorited
-                    ? 'bg-rose-500/90 text-white hover:bg-rose-600'
-                    : 'bg-black/40 text-white hover:bg-black/60'
+                    ? 'bg-rose-500/90 text-white ring-rose-500/30 hover:bg-rose-600'
+                    : 'bg-white/90 text-rose-600 ring-black/5 hover:bg-white dark:bg-black/50 dark:text-white dark:ring-white/10 dark:hover:bg-black/70'
                 }`}
               >
                 <Heart

@@ -30,6 +30,7 @@ import CircleX from 'lucide-react/icons/circle-x';
 import ListFilter from 'lucide-react/icons/list-filter';
 import { useTranslation } from 'react-i18next';
 import { AlgorithmLabel } from '@/components/ui/AlgorithmLabel';
+import { useGreeting } from '@/hooks/useGreeting';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
@@ -161,6 +162,7 @@ export function FeedPage() {
   useSetAppBarTitle(t('title'));
   const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const { isAuthenticated, user } = useAuth();
+  const greeting = useGreeting(user?.first_name);
   const toast = useToast();
   const pusher = usePusherOptional();
   const navigate = useNavigate();
@@ -977,19 +979,23 @@ export function FeedPage() {
         </div>
       )}
 
-      {/* Page header — hidden on phones (title lives in the app bar), full hero on ≥sm */}
-      <section className="hidden overflow-hidden rounded-xl border border-theme-default bg-[var(--surface-base)] shadow-sm sm:block">
-        <div className="flex items-center gap-3 px-5 py-4">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent ring-1 ring-accent/15">
-            <Newspaper className="w-5 h-5" aria-hidden="true" />
+      {/* Page header — hidden on phones (title lives in the app bar), full hero on ≥sm.
+          A soft panel in the community colour with a greeting for the time of
+          day, like the offers page and the dashboard (AWID: warmth). Text on
+          the tint uses the darker secondary token so it stays readable. */}
+      <section data-testid="feed-header" className="hidden overflow-hidden rounded-3xl bg-accent-soft sm:block">
+        <div className="flex items-center gap-4 px-5 py-5 sm:px-6">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-accent shadow-sm ring-1 ring-accent/15 dark:bg-white/10">
+            <Newspaper className="w-6 h-6" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
-            <h1 className="text-balance text-3xl font-semibold leading-tight text-theme-primary">{t('title')}</h1>
-            <p className="mt-1 max-w-xl text-sm leading-6 text-theme-muted">{t('subtitle')}</p>
+            {isAuthenticated && <p className="text-sm font-semibold text-theme-secondary">{greeting}</p>}
+            <h1 className="text-balance text-3xl font-bold leading-tight tracking-tight text-theme-primary">{t('title')}</h1>
+            <p className="mt-1 max-w-xl text-sm leading-6 text-theme-secondary">{t('subtitle')}</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {!isLoading && items.length > 0 && (
-              <Chip size="sm" variant="flat" className="bg-accent/10 text-accent">
+              <Chip size="sm" variant="flat" className="bg-white/70 text-accent dark:bg-white/10">
                 {t('items_loaded', { count: items.length })}
               </Chip>
             )}
@@ -1005,8 +1011,8 @@ export function FeedPage() {
             )}
           </div>
         </div>
-        <div className="border-t border-theme-default bg-theme-elevated/45 px-5 py-2.5">
-          <p className="text-xs font-medium uppercase tracking-wide text-theme-muted">
+        <div className="border-t border-accent/15 bg-white/40 px-5 py-2.5 sm:px-6 dark:bg-white/5">
+          <p className="text-xs font-medium uppercase tracking-wide text-theme-secondary">
             {t('feed.current_view', { filter: activeFilterLabel })}
           </p>
         </div>
@@ -1079,7 +1085,7 @@ export function FeedPage() {
                 key={opt.key}
                 id={opt.key}
                 variant="ghost"
-                className="shrink-0 rounded-full border border-theme-default bg-theme-elevated px-3 text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:border-transparent data-[selected=true]:bg-accent data-[selected=true]:text-white data-[selected=true]:shadow-sm"
+                className="shrink-0 rounded-full border border-theme-default bg-theme-elevated px-3 text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:border-transparent! data-[selected=true]:bg-accent! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
               >
                 {opt.label}
               </ToggleButton>

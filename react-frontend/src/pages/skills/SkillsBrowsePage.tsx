@@ -509,7 +509,7 @@ export function SkillsBrowsePage() {
                                         key={skill.skill_name}
                                         id={skill.skill_name}
                                         variant="ghost"
-                                        className="text-left p-3 rounded-xl border transition-all justify-start min-h-9 bg-theme-elevated border-theme-default hover:border-accent/30 hover:bg-theme-hover data-[selected=true]:border-accent/40 data-[selected=true]:bg-accent/10 data-[selected=true]:shadow-sm data-[selected=true]:shadow-accent/10"
+                                        className="text-left p-3 rounded-xl border transition-all justify-start min-h-9 bg-theme-elevated border-theme-default hover:border-accent/30 hover:bg-theme-hover data-[selected=true]:border-accent/40! data-[selected=true]:bg-accent/10! data-[selected=true]:shadow-sm data-[selected=true]:shadow-accent/10"
                                       >
                                           <div className="flex items-center justify-between">
                                             <span className="text-sm font-medium text-theme-primary">

@@ -387,7 +387,7 @@ export function GroupsPage() {
         <ToggleButton
           id="all"
           variant="ghost"
-          className="bg-theme-elevated text-theme-secondary hover:text-accent data-[selected=true]:bg-accent data-[selected=true]:font-semibold data-[selected=true]:text-white data-[selected=true]:shadow-sm"
+          className="bg-theme-elevated text-theme-secondary hover:text-accent data-[selected=true]:bg-accent! data-[selected=true]:font-semibold data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
         >
           <Users className="w-3.5 h-3.5" aria-hidden="true" />
           {t('filter_all')}
@@ -396,7 +396,7 @@ export function GroupsPage() {
           <ToggleButton
             id="joined"
             variant="ghost"
-            className="bg-theme-elevated text-theme-secondary hover:text-emerald-600 data-[selected=true]:bg-emerald-600 data-[selected=true]:font-semibold data-[selected=true]:text-white data-[selected=true]:shadow-sm"
+            className="bg-theme-elevated text-theme-secondary hover:text-emerald-600 data-[selected=true]:bg-emerald-600! data-[selected=true]:font-semibold data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
           >
             <Star className="w-3.5 h-3.5" aria-hidden="true" />
             {t('filter_my')}
@@ -405,7 +405,7 @@ export function GroupsPage() {
         <ToggleButton
           id="public"
           variant="ghost"
-          className="bg-theme-elevated text-theme-secondary hover:text-sky-600 data-[selected=true]:bg-sky-600 data-[selected=true]:font-semibold data-[selected=true]:text-white data-[selected=true]:shadow-sm"
+          className="bg-theme-elevated text-theme-secondary hover:text-sky-600 data-[selected=true]:bg-sky-600! data-[selected=true]:font-semibold data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
         >
           <Globe className="w-3.5 h-3.5" aria-hidden="true" />
           {t('filter_public')}
@@ -413,7 +413,7 @@ export function GroupsPage() {
         <ToggleButton
           id="private"
           variant="ghost"
-          className="bg-theme-elevated text-theme-secondary hover:text-amber-600 data-[selected=true]:bg-amber-600 data-[selected=true]:font-semibold data-[selected=true]:text-white data-[selected=true]:shadow-sm"
+          className="bg-theme-elevated text-theme-secondary hover:text-amber-600 data-[selected=true]:bg-amber-600! data-[selected=true]:font-semibold data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
         >
           <Lock className="w-3.5 h-3.5" aria-hidden="true" />
           {t('filter_private')}
@@ -674,6 +674,8 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
   const { t } = useTranslation('groups');
   const { tenantPath } = useTenant();
   const palette = useSitePalette();
+  // The lock / globe badge: dark glass over a photo, a clean white (dark in
+  // dark mode) circle over a colour cover, where dark glass looked muddy.
   const memberCount = group.member_count ?? group.members_count ?? 0;
   const privacyLabel = group.visibility === 'private' || group.visibility === 'secret'
     ? t('private_title')
@@ -693,6 +695,9 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
         sizes: '(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 92vw',
       })
     : null;
+  const visibilityBadgeClass = imageProps
+    ? 'bg-black/45 text-white'
+    : 'bg-white/85 text-stone-700 shadow-sm ring-1 ring-black/5 dark:bg-black/40 dark:text-white dark:ring-white/10';
 
   return (
     <Link to={tenantPath(`/groups/${group.id}`)} aria-label={`${group.name} - ${privacyLabel} - ${t('members', { count: memberCount })}${imageDescription ? ` - ${imageDescription}` : ''}`} className="block h-full">
@@ -717,13 +722,13 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
             {imageProps && <div className="absolute inset-0 bg-linear-to-t from-black/35 to-transparent" aria-hidden="true" />}
             {group.visibility === 'private' || group.visibility === 'secret' ? (
               <Tooltip content={t('private_title')}>
-                <span className="absolute end-3 top-3 shrink-0 rounded-full bg-black/45 p-1.5 text-white backdrop-blur-sm">
+                <span className={`absolute end-3 top-3 shrink-0 rounded-full p-1.5 backdrop-blur-sm ${visibilityBadgeClass}`}>
                   <Lock className="w-4 h-4" aria-hidden="true" />
                 </span>
               </Tooltip>
             ) : (
               <Tooltip content={t('public_title')}>
-                <span className="absolute end-3 top-3 shrink-0 rounded-full bg-black/45 p-1.5 text-white backdrop-blur-sm">
+                <span className={`absolute end-3 top-3 shrink-0 rounded-full p-1.5 backdrop-blur-sm ${visibilityBadgeClass}`}>
                   <Globe className="w-4 h-4" aria-hidden="true" />
                 </span>
               </Tooltip>

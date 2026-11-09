@@ -346,7 +346,7 @@ export function FederationListingsPage() {
               key={item.key}
               id={item.key}
               variant="ghost"
-              className="bg-theme-elevated text-theme-muted hover:bg-theme-hover data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground"
+              className="bg-theme-elevated text-theme-muted hover:bg-theme-hover data-[selected=true]:bg-accent! data-[selected=true]:text-accent-foreground!"
             >
               {item.label}
             </ToggleButton>

@@ -341,7 +341,7 @@ export function MatchesPage() {
         classNames={{
           tabList: 'bg-theme-elevated p-1 rounded-lg',
           cursor: 'bg-theme-hover',
-          tab: 'text-theme-muted data-[selected=true]:text-theme-primary',
+          tab: 'text-theme-muted data-[selected=true]:text-[var(--text-primary)]!',
         }}
       >
         <Tab

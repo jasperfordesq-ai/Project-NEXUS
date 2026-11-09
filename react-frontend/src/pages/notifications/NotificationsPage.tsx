@@ -430,14 +430,14 @@ export function NotificationsPage() {
         <ToggleButton
           id="all"
           variant="ghost"
-          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-theme-hover data-[selected=true]:text-theme-primary"
+          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-[var(--surface-hover)]! data-[selected=true]:text-[var(--text-primary)]!"
         >
           {t('filter_all')}
         </ToggleButton>
         <ToggleButton
           id="unread"
           variant="ghost"
-          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-theme-hover data-[selected=true]:text-theme-primary"
+          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-[var(--surface-hover)]! data-[selected=true]:text-[var(--text-primary)]!"
         >
           {t('filter_unread', { count: unreadCount })}
         </ToggleButton>

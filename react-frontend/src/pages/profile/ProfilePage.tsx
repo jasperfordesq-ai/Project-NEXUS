@@ -4,6 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { Avatar } from '@/components/ui/Avatar';
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
@@ -141,6 +144,7 @@ const itemVariants = {
 
 export function ProfilePage() {
   const { t } = useTranslation('profile');
+  const sitePalette = useSitePalette();
   const { badgeName, badgeDescription } = useBadgeCopy();
   const { id } = useParams<{ id: string }>();
   const { user: currentUser, isAuthenticated, isLoading: isAuthLoading } = useAuth();
@@ -605,6 +609,8 @@ export function ProfilePage() {
   }
 
   const profileName = profile.name || profile.first_name || t('member_fallback');
+  // The same seed as the Avatar's initials colour, so cover and initials match.
+  const coverColour = colourForSeed(profileName.trim().toLowerCase(), sitePalette);
   const profileAvatar = profile.avatar_url || profile.avatar;
   const joinedDate = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString(getFormattingLocale(), { month: 'long', year: 'numeric' })
@@ -635,14 +641,20 @@ export function ProfilePage() {
         type="profile"
         noIndex
       />
-      {/* Profile Header */}
+      {/* Profile Header — no card padding, so the cover runs edge to edge. */}
       <motion.div variants={itemVariants}>
-        <GlassCard className="overflow-hidden">
-          <div className="h-1.5 bg-[linear-gradient(90deg,var(--color-primary),var(--color-secondary,var(--color-primary)))]" aria-hidden="true" />
+        <GlassCard className="overflow-hidden p-0">
+          {/* A cover in the member's own colour — the same one as their
+              initials everywhere (the palette follows the community colour).
+              Was a thin bar in a fixed colour. */}
+          <div className="h-20 sm:h-28">
+            <ThemedCover data-testid="profile-cover" colour={coverColour} />
+          </div>
           <div className="p-5 sm:p-8">
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
             {/* Avatar */}
-            <div className="relative flex-shrink-0">
+            {/* Pulled up so it sits half over the cover. */}
+            <div className="relative -mt-16 flex-shrink-0 sm:-mt-24">
               <Avatar
                 src={profileAvatar ? resolveAvatarUrl(profileAvatar) : undefined}
                 name={profileName}
@@ -650,7 +662,7 @@ export function ProfilePage() {
                 // without one the photo is named after the member, as before.
                 alt={profile.avatar_alt?.trim() || undefined}
                 showFallback
-                className="w-24 h-24 sm:w-32 sm:h-32 ring-4 ring-theme-default shadow-lg"
+                className="w-24 h-24 sm:w-32 sm:h-32 ring-4 ring-[var(--surface-solid)] shadow-lg"
               />
               {hasGamification && profile.level && (
                 <div aria-hidden="true" className="absolute -bottom-2 -right-2 px-2 py-1 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary,var(--color-primary))] text-white text-xs font-bold">
@@ -993,7 +1005,7 @@ export function ProfilePage() {
                 tabList: 'w-max max-w-full bg-theme-elevated p-1 rounded-lg gap-1',
                 cursor: 'bg-theme-hover shadow-sm',
                 tab: 'min-h-9 w-auto min-w-0 px-3 py-2 text-xs sm:text-sm',
-                tabContent: 'group-data-[selected=true]:text-theme-primary text-theme-muted',
+                tabContent: 'group-data-[selected=true]:text-[var(--text-primary)]! text-theme-muted',
               }}
             >
               {tabs.map((tab) => {
@@ -1530,7 +1542,9 @@ function ProfileStatCard({ icon, label, value, color, to }: ProfileStatCardProps
     <GlassCard
       className={`relative p-4 text-center hover:bg-theme-hover transition-colors${to ? ' focus-within:ring-2 focus-within:ring-[var(--color-primary)]' : ''}`}
     >
-      <div className={`inline-flex p-2 rounded-lg bg-gradient-to-br ${colorClasses[color]} mb-2`}>
+      {/* A coloured circle, centred above the number. (An inline-flex box that
+          the card's column layout stretched into a wide, empty colour bar.) */}
+      <div data-testid="profile-stat-icon" className={`mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br ${colorClasses[color]}`}>
         {icon}
       </div>
       {/* The link stretches over the whole card (after:inset-0) so the card is
@@ -1542,7 +1556,7 @@ function ProfileStatCard({ icon, label, value, color, to }: ProfileStatCardProps
           </Link>
         ) : label}
       </dt>
-      <dd className="text-xl font-bold text-theme-primary">{value}</dd>
+      <dd className="text-2xl font-bold leading-tight text-theme-primary">{value}</dd>
     </GlassCard>
   );
 }

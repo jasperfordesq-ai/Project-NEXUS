@@ -573,7 +573,7 @@ export function JobsPage() {
           onSelectionChange={(key) => setActiveTab(key as string)}
           variant="underlined"
           classNames={{
-            tab: 'text-theme-muted data-[selected=true]:text-theme-primary',
+            tab: 'text-theme-muted data-[selected=true]:text-[var(--text-primary)]!',
             cursor: 'bg-accent',
           }}
         >

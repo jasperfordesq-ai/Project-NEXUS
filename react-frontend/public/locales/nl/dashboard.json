@@ -5,7 +5,7 @@
   },
   "fallback_name": "daar",
   "welcome_back": "Welkom terug, {{name}}!",
-  "community_activity": "Dit is wat er gebeurt in jouw {{community}} gemeenschap",
+  "community_activity": "Dit is wat er gebeurt in {{community}}",
   "unable_to_load": "Dashboard kan niet worden geladen",
   "try_again": "Probeer het opnieuw",
   "common": {

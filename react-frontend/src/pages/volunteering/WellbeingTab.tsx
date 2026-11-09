@@ -825,7 +825,7 @@ export function WellbeingTab() {
                     id={String(mood.value)}
                     variant="ghost"
                     aria-label={t('wellbeing.mood_aria', { mood: mood.label })}
-                    className="flex min-h-20 min-w-0 flex-col items-center gap-1 rounded-xl p-3 transition-all bg-theme-elevated hover:bg-theme-hover data-[selected=true]:bg-rose-500/20 data-[selected=true]:ring-2 data-[selected=true]:ring-rose-500 data-[selected=true]:scale-110"
+                    className="flex min-h-20 min-w-0 flex-col items-center gap-1 rounded-xl p-3 transition-all bg-theme-elevated hover:bg-theme-hover data-[selected=true]:bg-rose-500/20! data-[selected=true]:ring-2 data-[selected=true]:ring-rose-500 data-[selected=true]:scale-110"
                   >
                     <span className="text-3xl" role="img" aria-hidden="true">{mood.emoji}</span>
                     <span className="text-xs text-theme-muted">{mood.label}</span>

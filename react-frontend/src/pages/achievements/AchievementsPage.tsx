@@ -1759,7 +1759,7 @@ export function AchievementsPage() {
                 classNames={{
                   tabList: 'bg-theme-elevated border border-white/10 rounded-lg p-1',
                   cursor: 'bg-gradient-to-r from-accent to-accent-gradient-end',
-                  tab: 'text-theme-muted data-[selected=true]:text-white',
+                  tab: 'text-theme-muted data-[selected=true]:text-white!',
                   tabContent: 'group-data-[selected=true]:text-white',
                 }}
                 fullWidth

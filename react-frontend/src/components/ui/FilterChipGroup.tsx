@@ -52,7 +52,7 @@ export interface FilterChipGroupProps {
 }
 
 const CHIP_CLASS =
-  'min-h-11 shrink-0 rounded-full border border-theme-default bg-theme-elevated px-4 text-sm text-theme-muted transition-colors data-[selected=true]:border-transparent data-[selected=true]:font-medium data-[selected=true]:text-white data-[selected=true]:shadow-sm';
+  'min-h-11 shrink-0 rounded-full border border-theme-default bg-theme-elevated px-4 text-sm text-theme-muted transition-colors data-[selected=true]:border-transparent! data-[selected=true]:font-medium data-[selected=true]:text-white! data-[selected=true]:shadow-sm';
 
 export function FilterChipGroup({
   label,

@@ -161,7 +161,8 @@ describe('MembersPage', () => {
       )
     );
 
-    expect(await screen.findByText('CommunityRank')).toBeInTheDocument();
+    // The sorting chip says it in plain words; the method's name is in its explanation.
+    expect(await screen.findByText('Sorted for you')).toBeInTheDocument();
   });
 
   it('allows Near me when a user has zero coordinates', async () => {

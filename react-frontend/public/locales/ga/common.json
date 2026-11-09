@@ -3412,5 +3412,18 @@
         "help": "Inis do na comhordaitheoirí i d'fhocail féin thíos"
       }
     }
+  },
+  "greeting": {
+    "morning": "Maidin mhaith, {{name}}",
+    "morning_generic": "Maidin mhaith",
+    "afternoon": "Tráthnóna maith, {{name}}",
+    "afternoon_generic": "Tráthnóna maith",
+    "evening": "Tráthnóna maith, {{name}}",
+    "evening_generic": "Tráthnóna maith"
+  },
+  "algorithm": {
+    "sorted_for_you": "Sórtáilte duitse",
+    "how_sorted": "Conas a shórtáiltear é seo",
+    "method": "Modh: {{name}}"
   }
 }

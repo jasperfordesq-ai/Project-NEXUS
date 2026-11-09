@@ -158,7 +158,7 @@ const itemVariants = {
  * search pill and the Filters button — same anatomy ListingsPage ships.
  */
 const PHONE_VIEW_TOGGLE_CLASS =
-  'h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-amber-500/15 data-[selected=true]:text-amber-600 dark:data-[selected=true]:text-amber-300';
+  'h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-amber-500/15 data-[selected=true]:text-amber-600! dark:data-[selected=true]:text-amber-300!';
 
 /** Event category metadata — names resolved via t() inside the component */
 const CATEGORY_ICONS: Record<string, typeof Tag> = {
@@ -751,7 +751,7 @@ export function EventsPage() {
         <ToggleButton
           id="all"
           variant="ghost"
-          className="bg-theme-elevated text-theme-muted transition-colors hover:bg-theme-hover data-[selected=true]:bg-linear-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white"
+          className="bg-theme-elevated text-theme-muted transition-colors hover:bg-theme-hover data-[selected=true]:bg-linear-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
         >
           <Tag className="w-3.5 h-3.5" aria-hidden="true" />
           {t('category.all')}
@@ -763,7 +763,7 @@ export function EventsPage() {
               key={cat.id}
               id={String(cat.id)}
               variant="ghost"
-              className="bg-theme-elevated text-theme-muted transition-colors hover:bg-theme-hover data-[selected=true]:bg-linear-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white"
+              className="bg-theme-elevated text-theme-muted transition-colors hover:bg-theme-hover data-[selected=true]:bg-linear-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
             >
               <IconComp className="w-3.5 h-3.5" aria-hidden="true" />
               {cat.name}

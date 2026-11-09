@@ -1103,7 +1103,7 @@ export function PollsPage() {
           <ToggleButton
             id="__all__"
             variant="ghost"
-            className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-amber-500 data-[selected=true]:to-orange-600 data-[selected=true]:text-white"
+            className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-amber-500 data-[selected=true]:to-orange-600 data-[selected=true]:text-white!"
           >
             <Filter className="w-3.5 h-3.5" aria-hidden="true" />
             {t('all_categories')}
@@ -1113,7 +1113,7 @@ export function PollsPage() {
               key={cat}
               id={cat}
               variant="ghost"
-              className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-amber-500 data-[selected=true]:to-orange-600 data-[selected=true]:text-white"
+              className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-amber-500 data-[selected=true]:to-orange-600 data-[selected=true]:text-white!"
             >
               {cat}
             </ToggleButton>

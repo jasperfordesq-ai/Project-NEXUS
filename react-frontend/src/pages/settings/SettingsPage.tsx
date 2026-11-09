@@ -1091,7 +1091,7 @@ export function SettingsPage() {
             base: 'w-full max-w-full',
             tabList: 'w-full max-w-full justify-start gap-1 bg-transparent p-0',
             cursor: 'bg-theme-elevated shadow-sm',
-            tab: 'w-auto flex-none px-2.5 sm:px-3 text-sm text-theme-muted data-[selected=true]:text-theme-primary',
+            tab: 'w-auto flex-none px-2.5 sm:px-3 text-sm text-theme-muted data-[selected=true]:text-[var(--text-primary)]!',
             tabContent: 'whitespace-nowrap',
           }}
         >

@@ -52,7 +52,7 @@ const THEME_ACCENT: FilterAccentClasses = {
   filtersButtonIdle:
     'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent',
   appliedChip: 'bg-accent/15 text-accent transition-colors hover:bg-accent/25',
-  chip: 'hover:bg-accent/5 hover:text-accent data-[selected=true]:bg-accent',
+  chip: 'hover:bg-accent/5 hover:text-accent data-[selected=true]:bg-accent!',
   applyButton: 'bg-accent text-white shadow-sm hover:bg-accent/90',
   linkAction: 'text-accent hover:bg-accent/10',
 };
@@ -71,7 +71,7 @@ export const FILTER_ACCENT_CLASSES: Record<FilterAccent, FilterAccentClasses> = 
       'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-emerald-500/10 hover:text-emerald-600',
     appliedChip:
       'bg-emerald-500/15 text-emerald-800 transition-colors hover:bg-emerald-500/25 dark:text-emerald-300',
-    chip: 'hover:bg-emerald-500/10 hover:text-emerald-600 data-[selected=true]:bg-emerald-600',
+    chip: 'hover:bg-emerald-500/10 hover:text-emerald-600 data-[selected=true]:bg-emerald-600!',
     applyButton: 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700',
     linkAction: 'text-emerald-600 hover:bg-emerald-500/10 dark:text-emerald-400',
   },
@@ -81,7 +81,7 @@ export const FILTER_ACCENT_CLASSES: Record<FilterAccent, FilterAccentClasses> = 
       'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-amber-500/10 hover:text-amber-600',
     appliedChip:
       'bg-amber-500/15 text-amber-800 transition-colors hover:bg-amber-500/25 dark:text-amber-300',
-    chip: 'hover:bg-amber-500/10 hover:text-amber-600 data-[selected=true]:bg-amber-600',
+    chip: 'hover:bg-amber-500/10 hover:text-amber-600 data-[selected=true]:bg-amber-600!',
     applyButton: 'bg-amber-600 text-white shadow-sm hover:bg-amber-700',
     linkAction: 'text-amber-600 hover:bg-amber-500/10 dark:text-amber-400',
   },
@@ -91,7 +91,7 @@ export const FILTER_ACCENT_CLASSES: Record<FilterAccent, FilterAccentClasses> = 
       'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-blue-500/10 hover:text-blue-600',
     appliedChip:
       'bg-blue-500/15 text-blue-800 transition-colors hover:bg-blue-500/25 dark:text-blue-300',
-    chip: 'hover:bg-blue-500/10 hover:text-blue-600 data-[selected=true]:bg-blue-600',
+    chip: 'hover:bg-blue-500/10 hover:text-blue-600 data-[selected=true]:bg-blue-600!',
     applyButton: 'bg-blue-600 text-white shadow-sm hover:bg-blue-700',
     linkAction: 'text-blue-600 hover:bg-blue-500/10 dark:text-blue-400',
   },
@@ -101,7 +101,7 @@ export const FILTER_ACCENT_CLASSES: Record<FilterAccent, FilterAccentClasses> = 
       'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-rose-500/10 hover:text-rose-600',
     appliedChip:
       'bg-rose-500/15 text-rose-800 transition-colors hover:bg-rose-500/25 dark:text-rose-300',
-    chip: 'hover:bg-rose-500/10 hover:text-rose-600 data-[selected=true]:bg-rose-600',
+    chip: 'hover:bg-rose-500/10 hover:text-rose-600 data-[selected=true]:bg-rose-600!',
     applyButton: 'bg-rose-600 text-white shadow-sm hover:bg-rose-700',
     linkAction: 'text-rose-600 hover:bg-rose-500/10 dark:text-rose-400',
   },
@@ -111,7 +111,7 @@ export const FILTER_ACCENT_CLASSES: Record<FilterAccent, FilterAccentClasses> = 
       'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-violet-500/10 hover:text-violet-600',
     appliedChip:
       'bg-violet-500/15 text-violet-800 transition-colors hover:bg-violet-500/25 dark:text-violet-300',
-    chip: 'hover:bg-violet-500/10 hover:text-violet-600 data-[selected=true]:bg-violet-600',
+    chip: 'hover:bg-violet-500/10 hover:text-violet-600 data-[selected=true]:bg-violet-600!',
     applyButton: 'bg-violet-600 text-white shadow-sm hover:bg-violet-700',
     linkAction: 'text-violet-600 hover:bg-violet-500/10 dark:text-violet-400',
   },

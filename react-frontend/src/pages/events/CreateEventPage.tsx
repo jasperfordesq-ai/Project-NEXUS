@@ -1496,7 +1496,7 @@ export function CreateEventPage() {
                           key={key}
                           value={key}
                           classNames={{
-                            base: 'px-3 py-1.5 rounded-lg border border-theme-default bg-theme-elevated data-[selected=true]:bg-accent/20 data-[selected=true]:border-accent/50 cursor-pointer',
+                            base: 'px-3 py-1.5 rounded-lg border border-theme-default bg-theme-elevated data-[selected=true]:bg-accent/20! data-[selected=true]:border-accent/50! cursor-pointer',
                             label: 'text-sm text-theme-primary',
                           }}
                         >

@@ -626,7 +626,7 @@ function ApplicationsPanel({ opportunityId, opportunityTitle }: ApplicationsPane
             <ToggleButton
               key={f.key}
               id={f.key}
-              className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent data-[selected=true]:to-violet-600 data-[selected=true]:text-white"
+              className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent data-[selected=true]:to-violet-600 data-[selected=true]:text-white!"
             >
               {f.label}
             </ToggleButton>
