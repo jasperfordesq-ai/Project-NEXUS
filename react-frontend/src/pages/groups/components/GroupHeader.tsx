@@ -12,13 +12,11 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Users from 'lucide-react/icons/users';
-import MessageSquare from 'lucide-react/icons/message-square';
 import Settings from 'lucide-react/icons/settings';
 import Lock from 'lucide-react/icons/lock';
 import Globe from 'lucide-react/icons/globe';
 import UserPlus from 'lucide-react/icons/user-plus';
 import UserMinus from 'lucide-react/icons/user-minus';
-import Calendar from 'lucide-react/icons/calendar';
 import MapPin from 'lucide-react/icons/map-pin';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
@@ -29,6 +27,9 @@ import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { LocationMapCard } from '@/components/location/LocationMapCard';
 import { resolveAvatarUrl, responsiveThumbnailProps, formatDateValue, formatRelativeTime } from '@/lib/helpers';
 import type { Group } from '@/types/api';
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { colourForSeed } from '@/lib/categoryColours';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -102,6 +103,7 @@ export function GroupHeader({
   onJoinRequest,
 }: GroupHeaderProps) {
   const { t } = useTranslation('groups');
+  const palette = useSitePalette();
   // Member-written name + description, translated together on one press (31 Oct 2026).
   const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
   const [translatedName, setTranslatedName] = useState<string | null>(null);
@@ -150,13 +152,16 @@ export function GroupHeader({
       : t('detail.join_group');
 
   return (
-    <GlassCard className="overflow-hidden">
+    <GlassCard className="overflow-hidden" data-group-header>
+      {/* The cover: the group's photo; else the colours its admins chose;
+          else a cover in the group's own colour — the one its card uses on
+          the groups page (was a near-invisible pale wash). */}
       <div
-        className="relative min-h-32 bg-gradient-to-br from-[var(--color-primary)]/18 via-[var(--surface-elevated)] to-[var(--color-secondary)]/16"
+        className="relative h-32 sm:h-40"
         style={brandedFallbackStyle}
         data-group-branding={brandedFallbackStyle ? 'custom' : 'theme'}
       >
-        {coverImageProps && (
+        {coverImageProps ? (
           <img
             {...coverImageProps}
             alt={group.cover_image_alt?.trim() || t('detail.cover_image_alt', { name: group.name })}
@@ -164,21 +169,26 @@ export function GroupHeader({
             loading="lazy"
             decoding="async"
           />
+        ) : !brandedFallbackStyle && (
+          <ThemedCover data-testid="group-header-cover" colour={colourForSeed(group.id, palette)} />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-elevated)] via-[var(--surface-elevated)]/55 to-transparent" />
       </div>
 
       <div className="px-4 pb-5 sm:px-6 sm:pb-6">
-        <div className="-mt-12 flex flex-col gap-4 sm:-mt-10 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end">
+        {/* Only the group picture reaches up into the cover. The name and
+            everything after it start below the cover, so a long name that
+            wraps can never slide under it (owner, 9 Nov 2026). */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
             <Avatar
               src={avatarImage}
               name={group.name}
-              className="h-24 w-24 flex-shrink-0 border-4 border-[var(--surface-elevated)] bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 text-theme-primary shadow-lg"
+              data-testid="group-header-avatar"
+              className="relative z-10 -mt-12 h-24 w-24 flex-shrink-0 border-4 border-[var(--surface-solid)] bg-accent-soft text-theme-primary shadow-lg"
               imgProps={{ alt: group.image_alt?.trim() || t('detail.group_image_alt', { name: group.name }) }}
               fallback={<Users className="h-10 w-10 text-accent" aria-hidden="true" />}
             />
-            <div className="min-w-0 pb-1">
+            <div className="min-w-0 sm:pt-3">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="min-w-0 max-w-full break-words text-2xl font-bold leading-tight text-theme-primary sm:text-3xl">
                   {translatedName ?? group.name}
@@ -208,6 +218,12 @@ export function GroupHeader({
                     <span className="max-w-56 truncate sm:max-w-xs">{group.location}</span>
                   </span>
                 )}
+                {group.posts_count !== undefined && (
+                  <>
+                    <span aria-hidden="true">&#183;</span>
+                    <span>{t('detail.posts_count', { count: group.posts_count })}</span>
+                  </>
+                )}
                 <span aria-hidden="true">&#183;</span>
                 <span>
                   {t('detail.created')}{' '}
@@ -217,32 +233,12 @@ export function GroupHeader({
             </div>
           </div>
 
-        <div className="flex flex-col gap-2 sm:items-end" aria-label={t('detail.header_actions_aria')}>
-          <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
-          {userIsAdmin && (
-            <>
-              <Button
-                variant="flat"
-                className="min-w-0 flex-1 bg-theme-elevated text-theme-primary sm:flex-none"
-                startContent={<Settings className="w-4 h-4" aria-hidden="true" />}
-                onPress={onOpenSettings}
-              >
-                {t('detail.settings')}
-              </Button>
-              {canDelete && (
-                <Button
-                  variant="flat"
-                  className="min-w-0 flex-1 bg-red-500/10 text-[var(--color-error)] hover:bg-red-500/20 sm:flex-none"
-                  startContent={<Trash2 className="w-4 h-4" aria-hidden="true" />}
-                  onPress={onOpenDelete}
-                >
-                  {t('detail.delete')}
-                </Button>
-              )}
-            </>
-          )}
+        {/* One row of actions, the member's own step first (join, leave),
+            then inviting, then the group's settings and deletion. */}
+        <div className="sm:pt-3" aria-label={t('detail.header_actions_aria')}>
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
           {isAuthenticated && (
-            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+            <>
               {showMembershipAction && (
                 <Button
                   className={membershipActionIsExit
@@ -281,7 +277,29 @@ export function GroupHeader({
                   {t('detail.invite')}
                 </Button>
               )}
-            </div>
+            </>
+          )}
+          {userIsAdmin && (
+            <>
+              <Button
+                variant="flat"
+                className="min-w-0 flex-1 bg-theme-elevated text-theme-primary sm:flex-none"
+                startContent={<Settings className="w-4 h-4" aria-hidden="true" />}
+                onPress={onOpenSettings}
+              >
+                {t('detail.settings')}
+              </Button>
+              {canDelete && (
+                <Button
+                  variant="flat"
+                  className="min-w-0 flex-1 bg-red-500/10 text-[var(--color-error)] hover:bg-red-500/20 sm:flex-none"
+                  startContent={<Trash2 className="w-4 h-4" aria-hidden="true" />}
+                  onPress={onOpenDelete}
+                >
+                  {t('detail.delete')}
+                </Button>
+              )}
+            </>
           )}
           </div>
         </div>
@@ -303,24 +321,6 @@ export function GroupHeader({
           onFieldsChange={onTranslatedFields}
           className="mt-1"
         />
-
-      {/* Quick Stats */}
-      <div className="mt-6 grid gap-3 text-sm sm:grid-cols-3">
-        <div className="flex min-w-0 items-center gap-2 rounded-lg bg-theme-elevated px-3 py-2 text-theme-muted">
-          <Users className="w-5 h-5" aria-hidden="true" />
-          <span className="truncate">{t('detail.members_count', { count: getMemberCount(group) })}</span>
-        </div>
-        {group.posts_count !== undefined && (
-          <div className="flex min-w-0 items-center gap-2 rounded-lg bg-theme-elevated px-3 py-2 text-theme-muted">
-            <MessageSquare className="w-5 h-5" aria-hidden="true" />
-            <span className="truncate">{t('detail.posts_count', { count: group.posts_count })}</span>
-          </div>
-        )}
-        <div className="flex min-w-0 items-center gap-2 rounded-lg bg-theme-elevated px-3 py-2 text-theme-muted">
-          <Calendar className="w-5 h-5" aria-hidden="true" />
-          <span className="truncate">{t('detail.created')} <time dateTime={group.created_at}>{createdDateLabel}</time></span>
-        </div>
-      </div>
 
       {/* Location Map */}
       {group.location && group.latitude && group.longitude && (

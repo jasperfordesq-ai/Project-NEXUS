@@ -29,6 +29,7 @@ vi.mock('@/lib/helpers', async (importOriginal) => {
 });
 
 import type { Group } from '@/types/api';
+import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 import { GroupHeader, type JoinRequest } from './GroupHeader';
 
 // ── Shared fixtures ───────────────────────────────────────────────────────────
@@ -424,5 +425,32 @@ describe('GroupHeader', () => {
     const spinners = screen.getAllByRole('status');
     const busy = spinners.find((el) => el.getAttribute('aria-busy') === 'true');
     expect(busy).toBeTruthy();
+  });
+
+  // Owner, 9 Nov 2026: a group name that wrapped onto two lines slid its first
+  // line up under the cover. Only the group picture may overlap the cover; the
+  // name and everything after it start below it.
+  it('never pulls the group name up into the cover — only the picture overlaps it', () => {
+    render(<GroupHeader {...defaultProps} group={makeGroup({ name: 'E088 Media Test Group With A Long Name' })} />);
+    const heading = screen.getByRole('heading', { level: 1 });
+    let el: HTMLElement | null = heading;
+    while (el && !el.hasAttribute('data-group-header')) {
+      expect(el.className).not.toMatch(/(^|\s)(sm:)?-mt-/);
+      el = el.parentElement;
+    }
+    expect(el).not.toBeNull();
+    expect(screen.getByTestId('group-header-avatar').className).toMatch(/-mt-12/);
+  });
+
+  it('gives a group with no cover picture a cover in its own colour, the one its card uses', () => {
+    render(<GroupHeader {...defaultProps} group={makeGroup({ id: 7 })} />);
+    expect(screen.getByTestId('group-header-cover')).toHaveAttribute('data-colour', colourForSeed(7, paletteFor(null)));
+  });
+
+  it('says the member count and the date once, with the post count beside them', () => {
+    render(<GroupHeader {...defaultProps} />);
+    expect(screen.getAllByText(/12 members/)).toHaveLength(1);
+    expect(screen.getAllByText(/Created/)).toHaveLength(1);
+    expect(screen.getByText(/7 posts/)).toBeInTheDocument();
   });
 });
