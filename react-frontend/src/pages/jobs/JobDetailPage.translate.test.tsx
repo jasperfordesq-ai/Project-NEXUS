@@ -57,6 +57,8 @@ const mockUseAuth = vi.fn(() => ({
 }));
 
 vi.mock('@/contexts', () => ({
+  // TranslateButton asks whether a member is signed in (9 Nov 2026); language checks are off in tests.
+  useAuthOptional: () => null,
   useAuth: () => mockUseAuth(),
   useTenant: vi.fn(() => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },

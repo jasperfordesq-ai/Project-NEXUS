@@ -35,6 +35,8 @@ vi.mock('@/contexts', () => ({
   useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
   useFeature: vi.fn(() => true),
   useModule: vi.fn(() => true),
+  // TranslateButton asks whether a member is signed in (9 Nov 2026); language checks are off in tests.
+  useAuthOptional: () => null,
   useAuth: () => ({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null }),
   useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
 }));

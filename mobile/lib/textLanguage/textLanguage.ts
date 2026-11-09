@@ -131,6 +131,21 @@ function mostlyOwnWords(part: string, vocabulary: ReadonlySet<string>): boolean 
 }
 
 /**
+ * Is every part (title, body…) mostly everyday words of the reader's language?
+ * Not proof of the language on its own (close neighbours share words); used as
+ * a second opinion when a language service is unsure. False without the
+ * vocabulary, or when a part has no words at all.
+ */
+export function isMostlyEverydayWords(
+  parts: string | readonly (string | null | undefined)[] | null | undefined,
+  vocabulary: ReadonlySet<string> | null | undefined,
+): boolean {
+  const list = (Array.isArray(parts) ? parts : [parts]).filter((part): part is string => typeof part === 'string' && part.trim() !== '');
+  if (!vocabulary || list.length === 0) return false;
+  return list.every((part) => words(readable(part)).length > 0 && mostlyOwnWords(part, vocabulary));
+}
+
+/**
  * @param parts      what the reader sees: one text, or several (title and body)
  * @param locale     the reader's language
  * @param vocabulary the reader's everyday vocabulary (vocabularyCode → the

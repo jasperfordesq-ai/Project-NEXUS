@@ -11,6 +11,11 @@
  * caches results for 30 days. Automatic display reads the cache only.
  *
  * Renders nothing if `sourceLocale` is already the user's current i18n locale.
+ *
+ * Owner, 9 Nov 2026: the button appears only when the text is in a different
+ * language from the reader's. When the words alone cannot tell (short texts),
+ * the server's language service is asked (`useTextLanguages`); while it
+ * answers the button waits, and if the answer is not known the button stays.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -18,11 +23,13 @@ import Languages from 'lucide-react/icons/languages';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
-import { useTenant, useToast } from '@/contexts';
+import { useAuthOptional, useTenant, useToast } from '@/contexts';
 import { Button } from '@/components/ui';
 import { useUgcTranslationPreferences } from '@/contexts/UgcTranslationPreferencesContext';
 import { isClearlyWrittenIn } from '@/lib/textLanguage/textLanguage';
 import { useReaderVocabulary } from '@/lib/textLanguage/useReaderVocabulary';
+import { useTextLanguages, writtenInReaderLanguage } from '@/lib/textLanguage/detectLanguage';
+import { isVisitingManager } from '@/lib/access';
 
 interface TranslateButtonProps {
   contentType: string;
@@ -107,8 +114,23 @@ export function TranslateButton({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [normalisedSource, sourceText, fieldsKey, userLocale, vocabulary],
   );
-  const enabled = !hidden && !translationSwitchedOff && normalisedSource !== userLocale && !alreadyInReaderLanguage
-    && (Boolean(sourceText.trim()) || fieldEntries.length > 0);
+  // Everything the check judges, in the order sent: the text, then its fields.
+  const judgedParts = useMemo(
+    () => [sourceText, ...fieldEntries.map(([, value]) => value)].filter((part) => part.trim() !== ''),
+    // fieldsKey stands for fieldEntries' contents.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sourceText, fieldsKey],
+  );
+  const couldShow = !hidden && !translationSwitchedOff && normalisedSource !== userLocale && !alreadyInReaderLanguage
+    && judgedParts.length > 0;
+  // Ask the server only for a signed-in member in their own community: the
+  // request needs a session, and a manager visiting a community below theirs
+  // may only read there (every POST is refused and announced to them).
+  const auth = useAuthOptional();
+  const mayAsk = Boolean(auth?.isAuthenticated) && !isVisitingManager(auth?.user, tenant?.id);
+  const languages = useTextLanguages(judgedParts, couldShow && !normalisedSource && mayAsk);
+  const languageIsReaders = languages.settled && writtenInReaderLanguage(judgedParts, languages.answers, userLocale, vocabulary);
+  const enabled = couldShow && languages.settled && !languageIsReaders;
 
   useEffect(() => () => { generation.current++; }, []);
   useEffect(() => {

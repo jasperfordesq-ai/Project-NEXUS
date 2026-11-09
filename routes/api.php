@@ -644,6 +644,7 @@ Route::post('/v2/messages/{id}/reactions', [\App\Http\Controllers\Api\MessagesCo
 Route::post('/v2/messages/{id}/request-coordinator', [\App\Http\Controllers\Api\MessagesController::class, 'requestCoordinator']);
 Route::post('/v2/messages/{id}/translate', [\App\Http\Controllers\Api\MessagesController::class, 'translateTranscript']);
 Route::post('/v2/ugc-translate', [\App\Http\Controllers\Api\UgcTranslationController::class, 'translate']);
+Route::post('/v2/ugc-language', [\App\Http\Controllers\Api\UgcTranslationController::class, 'detectLanguage']);
 Route::put('/v2/messages/{id}', [\App\Http\Controllers\Api\MessagesController::class, 'update']);
 Route::delete('/v2/messages/{id}', [\App\Http\Controllers\Api\MessagesController::class, 'deleteMessage']);
 Route::delete('/v2/conversations/{id}', [\App\Http\Controllers\Api\MessagesController::class, 'archive']);

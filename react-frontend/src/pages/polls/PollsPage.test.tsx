@@ -47,6 +47,8 @@ const stableTenant = {
 
 vi.mock('@/contexts', () => ({
   useTenant: vi.fn(() => stableTenant),
+  // TranslateButton asks whether a member is signed in (9 Nov 2026); language checks are off in tests.
+  useAuthOptional: () => null,
   useAuth: vi.fn(() => ({
     user: { id: 1, first_name: 'Test', role: 'member' },
     isAuthenticated: true,

@@ -106,6 +106,8 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@/contexts', () => ({
+  // TranslateButton asks whether a member is signed in (9 Nov 2026); language checks are off in tests.
+  useAuthOptional: () => null,
   useAuth: vi.fn(() => AUTH_STATE),
   useTenant: vi.fn(() => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },

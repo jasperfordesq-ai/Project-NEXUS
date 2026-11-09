@@ -60,6 +60,8 @@ vi.mock('@/lib/api', () => ({
 }));
 
 vi.mock('@/contexts', () => ({
+  // TranslateButton asks whether a member is signed in (9 Nov 2026); language checks are off in tests.
+  useAuthOptional: () => null,
   useAuth: vi.fn(() => ({
     user: { id: 1, first_name: 'Test', name: 'Test User', role: 'member' },
     isAuthenticated: true,

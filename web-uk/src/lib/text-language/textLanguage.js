@@ -10,6 +10,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.vocabularyCode = vocabularyCode;
 exports.vocabularySet = vocabularySet;
+exports.isMostlyEverydayWords = isMostlyEverydayWords;
 exports.isClearlyWrittenIn = isClearlyWrittenIn;
 /**
  * Is this text, beyond reasonable doubt, already in the reader's language?
@@ -129,6 +130,18 @@ function mostlyOwnWords(part, vocabulary) {
         if (vocabulary.has(word))
             known++;
     return known >= OWN_WORD_SHARE * all.length;
+}
+/**
+ * Is every part (title, body…) mostly everyday words of the reader's language?
+ * Not proof of the language on its own (close neighbours share words); used as
+ * a second opinion when a language service is unsure. False without the
+ * vocabulary, or when a part has no words at all.
+ */
+function isMostlyEverydayWords(parts, vocabulary) {
+    const list = (Array.isArray(parts) ? parts : [parts]).filter((part) => typeof part === 'string' && part.trim() !== '');
+    if (!vocabulary || list.length === 0)
+        return false;
+    return list.every((part) => words(readable(part)).length > 0 && mostlyOwnWords(part, vocabulary));
 }
 /**
  * @param parts      what the reader sees: one text, or several (title and body)

@@ -10,6 +10,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Services\AI\AiUsageGate;
 use App\Services\TranslationConfigurationService;
+use App\Services\Translation\ContentLanguageDetector;
 use App\Services\Translation\TranslationEngine;
 use App\Services\UgcTranslationService;
 use Illuminate\Http\JsonResponse;
@@ -127,5 +128,33 @@ class UgcTranslationController extends BaseApiController
         }
 
         return $this->respondWithData($result);
+    }
+
+    /**
+     * POST /api/v2/ugc-language
+     *
+     * Body: { texts: string[] } (at most 50). Answers, in the same order, which
+     * language each text is written in — so the websites show "Translate" only
+     * when it differs from the reader's language (owner, 9 Nov 2026). An answer
+     * is null when it is not known; the websites then keep the button.
+     */
+    public function detectLanguage(): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $this->rateLimit('ugc_language', 60, 60);
+
+        $texts = $this->getAllInput()['texts'] ?? null;
+        if (!is_array($texts) || !array_is_list($texts) || count($texts) > ContentLanguageDetector::MAX_TEXTS) {
+            return $this->respondWithError(
+                'VALIDATION_ERROR',
+                __('api.missing_required_field', ['field' => 'texts']),
+                'texts',
+                422,
+            );
+        }
+
+        return $this->respondWithData([
+            'detections' => app(ContentLanguageDetector::class)->detect($texts, $userId),
+        ]);
     }
 }

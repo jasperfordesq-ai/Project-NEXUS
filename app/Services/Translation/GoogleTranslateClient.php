@@ -58,6 +58,55 @@ class GoogleTranslateClient
         return is_string($translated) && $translated !== '' ? $translated : null;
     }
 
+    /**
+     * Which language each text is in, in the same order: Google's most likely
+     * language and how sure it is (0–1), or null where Google could not tell.
+     * Null overall when Google refused or could not be reached, so the caller
+     * can tell "not known" from an answer.
+     *
+     * @param list<string> $texts
+     * @return list<array{language: string, confidence: float}|null>|null
+     */
+    public function detect(array $texts, string $apiKey): ?array
+    {
+        if ($texts === []) {
+            return [];
+        }
+
+        try {
+            $response = Http::asJson()
+                ->timeout(10)
+                ->post(self::ENDPOINT . '/detect?key=' . rawurlencode($apiKey), ['q' => array_values($texts)]);
+        } catch (\Throwable $e) {
+            Log::warning('GoogleTranslateClient: language request failed', ['error' => $e->getMessage()]);
+            return null;
+        }
+
+        if (!$response->successful()) {
+            Log::warning('GoogleTranslateClient: Google refused the language request', [
+                'status' => $response->status(),
+                'reason' => $response->json('error.message'),
+            ]);
+            return null;
+        }
+
+        $detections = $response->json('data.detections');
+        if (!is_array($detections)) {
+            return null;
+        }
+
+        $answers = [];
+        foreach (array_keys(array_values($texts)) as $index) {
+            $best = $detections[$index][0] ?? null;
+            $language = is_array($best) && is_string($best['language'] ?? null) ? strtolower(trim($best['language'])) : '';
+            $answers[] = $language === '' || $language === 'und'
+                ? null
+                : ['language' => $language, 'confidence' => round((float) ($best['confidence'] ?? 0), 3)];
+        }
+
+        return $answers;
+    }
+
     /** "pt-BR" → "pt-BR", "en_GB" → "en-GB", "ja" → "ja". Google accepts both forms. */
     private function languageCode(string $code): string
     {

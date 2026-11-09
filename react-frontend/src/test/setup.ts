@@ -73,6 +73,21 @@ vi.mock('@/components/seo', () => ({
   default: () => null,
 }));
 
+// Global mock for the server's "which language is this text in?" service (9 Nov
+// 2026). Every Translate button on a page asks it; in tests it knows nothing, so
+// components behave as they did before it existed and no test's api.post mocks
+// are consumed by it. Tests of the real thing opt in with
+// vi.unmock('@/lib/textLanguage/detectLanguage').
+vi.mock('@/lib/textLanguage/detectLanguage', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/textLanguage/detectLanguage')>();
+  return {
+    ...actual,
+    detectTextLanguage: async () => null,
+    knownTextLanguage: () => null,
+    useTextLanguages: () => ({ settled: true, answers: [] }),
+  };
+});
+
 // Suppress noisy console output that pollutes test logs and slows I/O
 const originalError = console.error.bind(console);
 const originalWarn = console.warn.bind(console);
