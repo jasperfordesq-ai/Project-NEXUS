@@ -10,7 +10,11 @@ import { SiteAccentContext } from '@/contexts/SiteAccentContext';
 import { paletteFor } from '@/lib/categoryColours';
 
 const { branding } = vi.hoisted(() => ({
-  branding: { name: 'Hour Timebank', tagline: 'Neighbours helping neighbours' as string | undefined },
+  branding: {
+    name: 'Hour Timebank',
+    tagline: 'Neighbours helping neighbours' as string | undefined,
+    communityPhoto: null as string | null,
+  },
 }));
 
 vi.mock('@/contexts', () => createMockContexts({
@@ -28,6 +32,16 @@ import { CommunityWelcome } from './CommunityWelcome';
 describe('CommunityWelcome', () => {
   beforeEach(() => {
     branding.tagline = 'Neighbours helping neighbours';
+    branding.communityPhoto = null;
+  });
+
+  it("opens with the community's own photo when it has one", () => {
+    branding.communityPhoto = '/uploads/tenants/hour/community-photos/us.webp';
+    render(<CommunityWelcome />);
+    expect(screen.getByTestId('community-welcome-photo').getAttribute('src')).toContain('community-photos/us.webp');
+    expect(screen.queryByTestId('community-welcome-cover')).not.toBeInTheDocument();
+    // The logo still sits on top of the photo.
+    expect(screen.getByTestId('community-welcome-logo')).toBeInTheDocument();
   });
 
   it("opens with a cover in the community's own colour", () => {

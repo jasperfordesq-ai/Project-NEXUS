@@ -4,8 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * The top of the sign-in and join cards: a cover in the community's own
- * colour with its logo (or initials) on it, and its tagline underneath — so
+ * The top of the sign-in and join cards: the community's own photo, or a
+ * cover in its colour, with its logo (or initials) on it, and its tagline
+ * underneath — so
  * the first thing a new member sees is the community, not a form (AWID
  * feedback, Nov 2026: "warmth, and community").
  *
@@ -16,6 +17,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { TenantLogo } from '@/components/branding/TenantLogo';
+import { CommunityPhoto, useCommunityPhotoUrl } from '@/components/branding/CommunityPhoto';
 import { ThemedCover } from '@/components/ui/ThemedCover';
 import { useTenant } from '@/contexts';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
@@ -26,10 +28,16 @@ export function CommunityWelcome({ className = '' }: { className?: string }) {
   const palette = useSitePalette();
   const tagline = branding.tagline?.trim() || t('footer.default_tagline');
 
+  const hasPhoto = Boolean(useCommunityPhotoUrl());
+
   return (
     <div data-testid="community-welcome" className={`mb-6 ${className}`}>
-      <div className="relative h-24 sm:h-28">
-        <ThemedCover colour={palette[0] ?? 'blue'} data-testid="community-welcome-cover" />
+      <div className={`relative ${hasPhoto ? 'h-32 sm:h-40' : 'h-24 sm:h-28'}`}>
+        <CommunityPhoto
+          data-testid="community-welcome-photo"
+          className="absolute inset-0 size-full"
+          fallback={<ThemedCover colour={palette[0] ?? 'blue'} data-testid="community-welcome-cover" />}
+        />
         <div className="absolute inset-0 z-10 flex items-center justify-center">
           <div
             data-testid="community-welcome-logo"

@@ -2391,6 +2391,8 @@ export const adminSettings = {
   uploadHeaderLogoDark:  (file: File) => api.upload<{ url: string }>('/v2/admin/settings/header-logo-dark', file, 'logo'),
   removeHeaderLogo:      () => api.delete<{ url: string | null }>('/v2/admin/settings/header-logo'),
   removeHeaderLogoDark:  () => api.delete<{ url: string | null }>('/v2/admin/settings/header-logo-dark'),
+  uploadCommunityPhoto:  (file: File) => api.upload<{ url: string }>('/v2/admin/settings/community-photo', file, 'photo'),
+  removeCommunityPhoto:  () => api.delete<{ url: string | null }>('/v2/admin/settings/community-photo'),
   // Accessible (GOV.UK alpha) header colours and the community colour (the
   // member website's accent). Pass null / '' to clear an override: the header
   // reverts to the stock GOV.UK black + blue, the website to its standard colour.

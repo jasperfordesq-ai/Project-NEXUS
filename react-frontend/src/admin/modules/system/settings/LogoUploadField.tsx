@@ -31,6 +31,11 @@ export interface LogoUploadFieldProps {
   /** True when a deferred removal is waiting for Save. */
   pendingRemoval?: boolean;
   accept?: string;
+  /**
+   * How to preview the image: a logo on a light and a dark surface (default),
+   * or a photo filling a wide cover, the way the website shows it.
+   */
+  preview?: 'logo' | 'photo';
   uploading: boolean;
   onUpload: (file: File) => void | Promise<void>;
   onRemove: () => void | Promise<void>;
@@ -70,6 +75,7 @@ export function LogoUploadField({
   persistence,
   pendingRemoval = false,
   accept = DEFAULT_ACCEPT,
+  preview = 'logo',
   uploading,
   onUpload,
   onRemove,
@@ -85,7 +91,16 @@ export function LogoUploadField({
         {hint && <p className="mt-0.5 text-xs leading-5 text-muted">{hint}</p>}
       </div>
 
-      {hasImage && value && (
+      {hasImage && value && preview === 'photo' && (
+        <img
+          src={value}
+          alt={label}
+          data-testid={`logo-preview-${id}`}
+          className="h-36 w-full max-w-lg rounded-xl border border-divider object-cover"
+        />
+      )}
+
+      {hasImage && value && preview === 'logo' && (
         <div className="flex flex-col gap-3 sm:flex-row">
           <PreviewTile src={value} alt={label} dark={false} caption={t('admin_settings.preview_light')} />
           <PreviewTile src={value} alt={label} dark caption={t('admin_settings.preview_dark')} />

@@ -582,6 +582,13 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
     const communityColor = typeof raw.primary_color === 'string' && /^#[0-9a-fA-F]{6}$/.test(raw.primary_color)
       ? raw.primary_color.toLowerCase()
       : null;
+    // Only ever an uploaded file (the server publishes nothing else); checked
+    // here too because this value becomes an <img> address.
+    const communityPhoto = typeof raw.community_photo_url === 'string'
+      && /^\/uploads\/[A-Za-z0-9._/-]+$/.test(raw.community_photo_url)
+      && !raw.community_photo_url.includes('..')
+      ? raw.community_photo_url
+      : null;
     return {
       ...defaultBranding,
       ...raw,
@@ -596,6 +603,7 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
       favicon,
       primaryColor,
       communityColor,
+      communityPhoto,
     };
   }, [state.tenant]);
 

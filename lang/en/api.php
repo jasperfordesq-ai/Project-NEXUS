@@ -3357,6 +3357,8 @@ return [
     'group_color_invalid' => 'Group colors must use the #RRGGBB format.',
     'admin_image_invalid_type' => 'The file must be a JPEG, PNG, GIF, WebP, or SVG image.',
     'admin_image_size_limit_2mb' => 'The image must be 2 MB or smaller.',
+    'community_photo_invalid_type' => 'The photo must be a JPEG, PNG or WebP image.',
+    'community_photo_too_large' => 'The photo must be 8 MB or smaller.',
     'billing_checkout_session_failed' => 'The checkout session could not be created. Please try again.',
     'billing_free_downgrade_support_required' => 'Downgrading to a free plan is not available through self-service. Please contact support.',
     'billing_interval_invalid' => 'billing_interval must be either :monthly or :yearly.',

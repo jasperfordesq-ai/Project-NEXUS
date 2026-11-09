@@ -101,6 +101,7 @@ vi.mock('@/components/ui/ConfirmDialog', () => ({
 
 vi.mock('@/lib/motion', () => {  const motionProps = new Set(['variants', 'initial', 'animate', 'layout', 'transition', 'exit', 'whileHover', 'whileTap', 'whileInView', 'viewport']);  const filterMotion = (props: Record<string, unknown>) => {    const filtered: Record<string, unknown> = {};    for (const [k, v] of Object.entries(props)) {      if (!motionProps.has(k)) filtered[k] = v;    }    return filtered;  };  return {    motion: {      div: ({ children, ...props }: Record<string, unknown>) => <div {...filterMotion(props)}>{children}</div>,    },    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,  };});
 
+import { useTenant } from '@/contexts';
 import { FeedPage } from './FeedPage';
 
 describe('FeedPage', () => {
@@ -127,6 +128,22 @@ describe('FeedPage', () => {
       expect(within(header).getByRole('heading', { level: 1, name: 'Community Feed' })).toBeInTheDocument();
     } finally {
       vi.useRealTimers();
+    }
+  });
+
+  it("shows the community's own photo across the top of the header when it has one", () => {
+    const original = vi.mocked(useTenant).getMockImplementation()!;
+    vi.mocked(useTenant).mockImplementation(() => ({
+      ...original(),
+      branding: { name: 'Test Community', communityPhoto: '/uploads/tenants/test/community-photos/us.webp' },
+    }));
+    try {
+      render(<FeedPage />);
+      const photo = within(screen.getByTestId('feed-header')).getByTestId('feed-header-photo');
+      expect(photo.getAttribute('src')).toContain('community-photos/us.webp');
+      expect(photo).toHaveAttribute('alt', '');
+    } finally {
+      vi.mocked(useTenant).mockImplementation(original);
     }
   });
 

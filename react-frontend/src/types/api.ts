@@ -1338,6 +1338,12 @@ export interface TenantBranding {
    * component can tell "chosen" from "standard".
    */
   communityColor?: string | null;
+  /**
+   * The community's own photo (Admin → Settings → "Community photo"), an
+   * uploads path, or null. Normalised from community_photo_url.
+   */
+  communityPhoto?: string | null;
+  community_photo_url?: string; // raw backend field
   secondaryColor?: string;
   og_image_url?: string;
 }

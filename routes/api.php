@@ -1928,6 +1928,8 @@ Route::post('/v2/admin/settings/header-logo-dark',  [\App\Http\Controllers\Api\A
 Route::delete('/v2/admin/settings/header-logo',      [\App\Http\Controllers\Api\AdminConfigController::class, 'removeHeaderLogo']);
 Route::delete('/v2/admin/settings/header-logo-dark', [\App\Http\Controllers\Api\AdminConfigController::class, 'removeHeaderLogoDark']);
 Route::put('/v2/admin/settings/header-colors',       [\App\Http\Controllers\Api\AdminConfigController::class, 'saveHeaderColors']);
+Route::post('/v2/admin/settings/community-photo',    [\App\Http\Controllers\Api\AdminConfigController::class, 'uploadCommunityPhoto']);
+Route::delete('/v2/admin/settings/community-photo',  [\App\Http\Controllers\Api\AdminConfigController::class, 'removeCommunityPhoto']);
 Route::get('/v2/admin/config/registration-policy', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'getPolicy']);
 Route::put('/v2/admin/config/registration-policy', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'updatePolicy']);
 Route::get('/v2/admin/identity/providers', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'listProviders']);

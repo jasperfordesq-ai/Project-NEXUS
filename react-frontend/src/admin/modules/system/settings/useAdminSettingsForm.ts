@@ -34,6 +34,7 @@ export type UploadSlot =
   | 'partner'
   | 'header_light'
   | 'header_dark'
+  | 'community_photo'
   | 'powered_light'
   | 'powered_dark'
   | 'network_powered_light'
@@ -91,6 +92,7 @@ export function useAdminSettingsForm(): AdminSettingsFormState {
     partner: false,
     header_light: false,
     header_dark: false,
+    community_photo: false,
     powered_light: false,
     powered_dark: false,
     network_powered_light: false,
@@ -217,6 +219,19 @@ export function useAdminSettingsForm(): AdminSettingsFormState {
             toast.success(t('admin_settings.header_logo_uploaded'));
             break;
           }
+          case 'community_photo': {
+            // Lives in tenants.configuration; reaches the website through the
+            // tenant bootstrap as branding.communityPhoto.
+            const res = await adminSettings.uploadCommunityPhoto(file);
+            if (!res.data?.url) {
+              // admin-i18n-ignore: localized server message — the photo's type
+              // and size refusals are __() keys.
+              toast.error(res.error || t('admin_settings.upload_failed'));
+              return;
+            }
+            toast.success(t('admin_settings.community_photo_uploaded'));
+            break;
+          }
         }
         await refreshTenant();
       } catch (err) {
@@ -258,6 +273,21 @@ export function useAdminSettingsForm(): AdminSettingsFormState {
             await refreshTenant();
           } catch (err) {
             logError('Header logo remove error', err);
+            toast.error(t('admin_settings.upload_failed'));
+          }
+          return;
+        }
+        case 'community_photo': {
+          try {
+            const res = await adminSettings.removeCommunityPhoto();
+            if (res.success === false) {
+              toast.error(t('admin_settings.upload_failed'));
+              return;
+            }
+            toast.success(t('admin_settings.community_photo_removed'));
+            await refreshTenant();
+          } catch (err) {
+            logError('Community photo remove error', err);
             toast.error(t('admin_settings.upload_failed'));
           }
         }

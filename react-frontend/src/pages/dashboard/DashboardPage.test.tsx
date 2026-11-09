@@ -107,6 +107,7 @@ vi.mock('@/components/seo', () => ({
 
 vi.mock('@/lib/motion', () => {  const motionProps = new Set(['variants', 'initial', 'animate', 'layout', 'transition', 'exit', 'whileHover', 'whileTap', 'whileInView', 'viewport']);  const filterMotion = (props: Record<string, unknown>) => {    const filtered: Record<string, unknown> = {};    for (const [k, v] of Object.entries(props)) {      if (!motionProps.has(k)) filtered[k] = v;    }    return filtered;  };  return {    motion: {      div: ({ children, ...props }: Record<string, unknown>) => <div {...filterMotion(props)}>{children}</div>,    },    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,  };});
 
+import { useTenant } from '@/contexts';
 import { DashboardPage } from './DashboardPage';
 
 function buildApiResponse(endpoint: string) {
@@ -197,6 +198,27 @@ describe('DashboardPage', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("shows the community's own photo in the welcome panel when it has one", () => {
+    const original = vi.mocked(useTenant).getMockImplementation()!;
+    vi.mocked(useTenant).mockImplementation(() => ({
+      ...original(),
+      branding: { name: 'Test Community', communityPhoto: '/uploads/tenants/test/community-photos/us.webp' },
+    }));
+    try {
+      render(<DashboardPage />);
+      const photo = within(screen.getByTestId('dashboard-welcome')).getByTestId('dashboard-welcome-photo');
+      expect(photo.getAttribute('src')).toContain('community-photos/us.webp');
+      expect(photo).toHaveAttribute('alt', '');
+    } finally {
+      vi.mocked(useTenant).mockImplementation(original);
+    }
+  });
+
+  it('shows no photo space in the welcome panel when the community has no photo', () => {
+    render(<DashboardPage />);
+    expect(screen.queryByTestId('dashboard-welcome-photo')).not.toBeInTheDocument();
   });
 
   it('names the community once, even when its name contains "Community"', () => {

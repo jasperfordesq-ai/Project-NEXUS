@@ -400,6 +400,36 @@ describe('TenantContext', () => {
     });
   });
 
+  describe('community photo', () => {
+    function PhotoConsumer() {
+      const { branding, isLoading } = useTenant();
+      if (isLoading) return <div data-testid="community-photo">loading</div>;
+      return <div data-testid="community-photo">{branding.communityPhoto ?? 'none'}</div>;
+    }
+
+    async function renderPhoto(branding: Record<string, unknown>) {
+      mockApiGet.mockResolvedValue({ success: true, data: { ...mockTenantConfig, branding } });
+      render(
+        <TenantProvider>
+          <PhotoConsumer />
+        </TenantProvider>
+      );
+      await waitFor(() => {
+        expect(screen.getByTestId('community-photo')).not.toHaveTextContent('loading');
+      });
+    }
+
+    it("passes on the community's uploaded photo", async () => {
+      await renderPhoto({ community_photo_url: '/uploads/tenants/hour/community-photos/us.webp' });
+      expect(screen.getByTestId('community-photo')).toHaveTextContent('/uploads/tenants/hour/community-photos/us.webp');
+    });
+
+    it('passes on nothing that is not an uploaded file', async () => {
+      await renderPhoto({ community_photo_url: 'javascript:alert(1)' });
+      expect(screen.getByTestId('community-photo')).toHaveTextContent('none');
+    });
+  });
+
   it('handles API error', async () => {
     mockApiGet.mockResolvedValue({ success: false, error: 'Server error' });
 

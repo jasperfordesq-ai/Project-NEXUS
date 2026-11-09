@@ -1377,6 +1377,80 @@ class AdminConfigController extends BaseApiController
     }
 
     /**
+     * POST /api/v2/admin/settings/community-photo
+     *
+     * One photo of the community (AWID feedback, Nov 2026: "warmth, and
+     * community"), shown by the member website on the sign-in and join pages,
+     * the dashboard and the feed. Stored in tenants.configuration
+     * .community_photo_url and published as branding.community_photo_url.
+     *
+     * A photo, so raster only — no SVG. ImageUploader re-encodes it, shrinks
+     * an oversized one and strips its metadata (F-192), so a phone photo's
+     * location never reaches the public sign-in page.
+     */
+    public function uploadCommunityPhoto(): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+        $this->rateLimit('admin_logo_upload', 10, 60);
+
+        $file = request()->file('photo');
+        if (!$file || !$file->isValid()) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.file_required'), 'photo', 400);
+        }
+
+        if (!in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/webp'], true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.community_photo_invalid_type'), 'photo', 422);
+        }
+
+        if ($file->getSize() > 8 * 1024 * 1024) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.community_photo_too_large'), 'photo', 422);
+        }
+
+        try {
+            $imageUrl = \App\Core\ImageUploader::upload([
+                'name'     => $file->getClientOriginalName(),
+                'type'     => $file->getMimeType(),
+                'tmp_name' => $file->getRealPath(),
+                'error'    => UPLOAD_ERR_OK,
+                'size'     => $file->getSize(),
+            ], 'community-photos');
+
+            DB::transaction(function () use ($tenantId, $imageUrl): void {
+                $this->setTenantConfigValue($tenantId, 'community_photo_url', $imageUrl);
+                app(PrerenderContentInvalidator::class)->refreshTenantOrFail($tenantId, true);
+            });
+
+            return $this->respondWithData(['url' => $imageUrl]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Community photo upload failed', [
+                'error'     => $e->getMessage(),
+                'tenant_id' => $tenantId,
+            ]);
+            return $this->respondWithError('UPLOAD_FAILED', __('api.failed_upload_image'), 'photo', 500);
+        }
+    }
+
+    /** DELETE /api/v2/admin/settings/community-photo */
+    public function removeCommunityPhoto(): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+
+        try {
+            DB::transaction(function () use ($tenantId): void {
+                $this->setTenantConfigValue($tenantId, 'community_photo_url', null);
+                app(PrerenderContentInvalidator::class)->refreshTenantOrFail($tenantId, true);
+            });
+        } catch (\Throwable $e) {
+            report($e);
+            return $this->respondWithError('PRERENDER_REFRESH_FAILED', __('api.prerender_reset_failed'), null, 503);
+        }
+
+        return $this->respondWithData(['url' => null]);
+    }
+
+    /**
      * Clear a header-logo variant, reverting the header to the tenant default
      * (initials avatar in React, text name in the accessible frontend).
      */

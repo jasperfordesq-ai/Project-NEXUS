@@ -2869,6 +2869,8 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'group_color_invalid' => 'يجب أن تستخدم ألوان المجموعة تنسيق #RRGBB.',
     'admin_image_invalid_type' => 'يجب أن يكون الملف صورة بصيغة JPEG أو PNG أو GIF أو WebP أو SVG.',
     'admin_image_size_limit_2mb' => 'يجب ألا يزيد حجم الصورة عن 2 ميغابايت.',
+    'community_photo_invalid_type' => 'يجب أن تكون الصورة بصيغة JPEG أو PNG أو WebP.',
+    'community_photo_too_large' => 'يجب ألا يزيد حجم الصورة عن 8 ميغابايت.',
     'billing_checkout_session_failed' => 'تعذّر إنشاء جلسة الدفع. يرجى المحاولة مرة أخرى.',
     'billing_free_downgrade_support_required' => 'لا يمكن الانتقال إلى خطة مجانية عبر الخدمة الذاتية. يرجى الاتصال بالدعم.',
     'billing_interval_invalid' => 'يجب أن تكون قيمة billing_interval إما :monthly أو :yearly.',

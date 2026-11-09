@@ -208,6 +208,7 @@ export const tenantBootstrapSchema = z.object({
     logo: z.string().nullable().optional(),
     logo_url: z.string().nullable().optional(),
     logo_dark_url: z.string().nullable().optional(),
+    community_photo_url: z.string().nullable().optional(),
     logo_shape: z.string().optional(),
     logo_tone: z.string().optional(),
     logo_dark_tone: z.string().optional(),

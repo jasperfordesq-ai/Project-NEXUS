@@ -836,6 +836,15 @@ class TenantBootstrapController extends BaseApiController
             $branding['logo_dark_url'] = $config['logo_dark_url'];
         }
 
+        // The community photo (Admin → Settings → "Community photo"). Only ever
+        // set by AdminConfigController::uploadCommunityPhoto, so it is an
+        // uploads path; anything else in the configuration is not published.
+        $communityPhoto = $config['community_photo_url'] ?? null;
+        if (is_string($communityPhoto) && preg_match('#^/uploads/[A-Za-z0-9._/\-]+$#', $communityPhoto) === 1
+            && !str_contains($communityPhoto, '..')) {
+            $branding['community_photo_url'] = $communityPhoto;
+        }
+
         // Aspect-ratio bucket so the SPA can size the header logo (and grow the
         // navbar for square/stacked logos) without an async measure + layout shift.
         $shapeSource = $branding['logo_url'] ?? ($config['logo_dark_url'] ?? null);

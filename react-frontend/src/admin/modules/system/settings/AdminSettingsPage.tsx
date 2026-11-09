@@ -59,6 +59,7 @@ import {
   COMMUNITY_COLOUR_SECTION_ID,
   communityColourTooLight,
 } from './sections/CommunityColourSection';
+import { CommunityPhotoSection, COMMUNITY_PHOTO_SECTION_ID } from './sections/CommunityPhotoSection';
 import { PoweredBySection, POWERED_BY_SECTION_ID } from './sections/PoweredBySection';
 import { RegistrationSection, REGISTRATION_SECTION_ID } from './sections/RegistrationSection';
 
@@ -67,6 +68,7 @@ const SECTION_FIELDS: Record<string, SettingsFormKey[]> = {
   [GENERAL_SECTION_ID]: ['name', 'description', 'contact_email', 'contact_phone', 'default_currency', 'region'],
   [BRANDING_SECTION_ID]: ['footer_text', 'partner_logo_url', 'partner_logo_label', 'partner_logo_link_url'],
   [COMMUNITY_COLOUR_SECTION_ID]: ['community_color'],
+  [COMMUNITY_PHOTO_SECTION_ID]: [],
   [HEADER_LOGO_SECTION_ID]: [],
   [HEADER_COLORS_SECTION_ID]: ['header_bg_color', 'header_accent_color'],
   [POWERED_BY_SECTION_ID]: [
@@ -137,6 +139,7 @@ export function AdminSettingsPage() {
       { id: GENERAL_SECTION_ID, label: t('system.section_general') },
       { id: BRANDING_SECTION_ID, label: t('system.section_branding_legal') },
       { id: COMMUNITY_COLOUR_SECTION_ID, label: t('admin_settings.community_colour_section') },
+      { id: COMMUNITY_PHOTO_SECTION_ID, label: t('admin_settings.community_photo_section') },
       { id: HEADER_LOGO_SECTION_ID, label: t('admin_settings.header_logo_section') },
       { id: HEADER_COLORS_SECTION_ID, label: t('admin_settings.header_colors_section') },
       ...(general.ctx.isPlatformGod ? [{ id: POWERED_BY_SECTION_ID, label: t('system.powered_by_branding_section') }] : []),
@@ -273,6 +276,7 @@ export function AdminSettingsPage() {
           <GeneralSection state={general} />
           <BrandingSection state={general} />
           <CommunityColourSection state={general} />
+          <CommunityPhotoSection state={general} />
           <HeaderLogoSection state={general} />
           <HeaderColorsSection state={general} />
           {general.ctx.isPlatformGod && <PoweredBySection state={general} />}
