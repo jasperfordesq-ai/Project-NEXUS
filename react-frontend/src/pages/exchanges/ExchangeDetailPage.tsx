@@ -42,6 +42,7 @@ import { useTranslation } from 'react-i18next';
 import { Breadcrumbs } from '@/components/navigation';
 import { LoadingScreen, EmptyState } from '@/components/feedback';
 import { RatingModal } from '@/components/wallet';
+import { ExchangeThanks } from '@/components/exchanges/ExchangeThanks';
 import { VerificationBadgeRow } from '@/components/verification/VerificationBadge';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { PageMeta } from '@/components/seo';
@@ -51,6 +52,12 @@ import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, formatRelativeTime, getFormattingLocale } from '@/lib/helpers';
 import { EXCHANGE_STATUS_CONFIG, MAX_EXCHANGE_HOURS, getStatusIconBgClass } from '@/lib/exchange-status';
 import type { Exchange, ExchangeHistoryEntry, ExchangeRating } from '@/types/api';
+
+/** The member's year so far, returned when their confirmation completes an exchange. */
+interface ExchangeYearThanks {
+  neighbours_this_year: number;
+  hours_this_year: number;
+}
 
 /* ───────────────────────── Timeline Helpers ───────────────────────── */
 
@@ -168,6 +175,7 @@ export function ExchangeDetailPage() {
   const [ratings, setRatings] = useState<ExchangeRating[]>([]);
   const [declineReason, setDeclineReason] = useState('');
   const [confirmHours, setConfirmHours] = useState('');
+  const [thanks, setThanks] = useState<ExchangeYearThanks | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadExchange = useCallback(async () => {
@@ -328,10 +336,18 @@ export function ExchangeDetailPage() {
 
     try {
       setIsSubmitting(true);
-      const response = await api.post(`/v2/exchanges/${exchange.id}/confirm`, { hours });
+      const response = await api.post<{ status?: string; thanks?: ExchangeYearThanks }>(
+        `/v2/exchanges/${exchange.id}/confirm`,
+        { hours },
+      );
       if (response.success) {
         toastRef.current.success(tRef.current('toast.hours_confirmed'));
         setShowConfirmModal(false);
+        // This confirmation completed the exchange: say thank you, with the
+        // member's year so far (AWID: "warmth, and community").
+        if (response.data?.status === 'completed' && response.data.thanks) {
+          setThanks(response.data.thanks);
+        }
         loadExchange();
       } else {
         toastRef.current.error(response.error || tRef.current('toast.confirm_failed'));
@@ -424,6 +440,14 @@ export function ExchangeDetailPage() {
         { label: t('breadcrumb.exchanges'), href: '/exchanges' },
         { label: exchange?.listing?.title || t('breadcrumb.exchange') },
       ]} />
+
+      {thanks && (
+        <ExchangeThanks
+          neighbours={thanks.neighbours_this_year}
+          hours={thanks.hours_this_year}
+          onClose={() => setThanks(null)}
+        />
+      )}
 
       {/* Status Card */}
       <GlassCard className="p-6">

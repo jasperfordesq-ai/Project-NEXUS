@@ -212,5 +212,12 @@
       "label": "Cancelled",
       "description": "This exchange was cancelled."
     }
+  },
+  "thanks": {
+    "title": "Thank you!",
+    "body": "Your exchange is complete and the hours have moved. Every exchange makes the community a little stronger.",
+    "neighbours_label": "People you've exchanged with this year",
+    "hours_label": "Hours exchanged this year",
+    "close": "Close"
   }
 }

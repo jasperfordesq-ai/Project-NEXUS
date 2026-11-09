@@ -216,5 +216,12 @@
       "label": "Anulowana",
       "description": "Ta wymiana została anulowana."
     }
+  },
+  "thanks": {
+    "title": "Dziękujemy!",
+    "body": "Twoja wymiana została zakończona, a godziny przekazane. Każda wymiana sprawia, że społeczność jest trochę silniejsza.",
+    "neighbours_label": "Osoby, z którymi wymieniłeś się w tym roku",
+    "hours_label": "Godziny wymienione w tym roku",
+    "close": "Zamknij"
   }
 }

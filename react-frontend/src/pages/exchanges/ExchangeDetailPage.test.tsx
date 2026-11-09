@@ -9,7 +9,8 @@
 
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
+import userEvent from '@testing-library/user-event';
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -213,5 +214,43 @@ describe('ExchangeDetailPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Exchange Timeline')).toBeInTheDocument();
     });
+  });
+});
+
+// AWID feedback (Nov 2026, "warmth, and community"): a thank-you when the
+// member's confirmation completes the exchange.
+describe('ExchangeDetailPage — thank-you on completion', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.get.mockResolvedValue({ success: true, data: { ...mockExchange, status: 'pending_confirmation' } });
+    api.delete.mockResolvedValue({ success: true });
+  });
+
+  async function confirmHours() {
+    render(<ExchangeDetailPage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Confirm Hours' }));
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Confirm Hours' }));
+  }
+
+  it('says thank you, with the year so far, when confirming completes the exchange', async () => {
+    api.post.mockResolvedValue({
+      success: true,
+      data: { ...mockExchange, status: 'completed', thanks: { neighbours_this_year: 3, hours_this_year: 6 } },
+    });
+    await confirmHours();
+
+    const panel = await screen.findByTestId('exchange-thanks');
+    expect(within(panel).getByText('Thank you!')).toBeInTheDocument();
+    expect(within(panel).getByText('3')).toBeInTheDocument();
+    expect(within(panel).getByText('6')).toBeInTheDocument();
+  });
+
+  it('says nothing extra while the exchange still waits for the other person', async () => {
+    api.post.mockResolvedValue({ success: true, data: { ...mockExchange, status: 'pending_confirmation' } });
+    await confirmHours();
+
+    await waitFor(() => expect(api.post).toHaveBeenCalled());
+    expect(screen.queryByTestId('exchange-thanks')).toBeNull();
   });
 });

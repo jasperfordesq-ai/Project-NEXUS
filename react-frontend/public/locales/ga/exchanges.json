@@ -218,5 +218,12 @@
       "label": "Cealaithe",
       "description": "Cealaíodh an malartú seo."
     }
+  },
+  "thanks": {
+    "title": "Go raibh maith agat!",
+    "body": "Tá do mhalartú críochnaithe agus aistríodh na huaireanta. Neartaíonn gach malartú an pobal beagán.",
+    "neighbours_label": "Daoine ar mhalartaigh tú leo i mbliana",
+    "hours_label": "Uaireanta malartaithe i mbliana",
+    "close": "Dún"
   }
 }

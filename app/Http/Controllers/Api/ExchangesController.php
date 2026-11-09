@@ -7,6 +7,8 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Core\TenantContext;
 use App\Services\ExchangeService;
 use App\Services\BrokerControlConfigService;
 use App\Services\ExchangeWorkflowService;
@@ -418,13 +420,45 @@ class ExchangesController extends BaseApiController
         $exchange = $this->exchangeWorkflowService->getExchange($id);
 
         $message = __('api.exchange_hours_confirmed');
+        $extra = [];
         if ($exchange['status'] === 'completed') {
             $message = __('api.exchange_completed_credits');
+            $extra['thanks'] = $this->yearOfExchangesFor($userId);
         } elseif ($exchange['status'] === 'disputed') {
             $message = __('api.exchange_disputed_broker');
         }
 
-        return $this->respondWithData(array_merge($this->formatExchange($exchange), ['message' => $message]));
+        return $this->respondWithData(array_merge($this->formatExchange($exchange), ['message' => $message], $extra));
+    }
+
+    /**
+     * The thank-you the website shows when a member's confirmation completes an
+     * exchange (AWID feedback, Nov 2026: "warmth, and community"): how many
+     * different people they have exchanged time with this calendar year, and
+     * how many hours. Counted from their completed exchange transactions in this
+     * community only (the workflow writes one per completed exchange; direct
+     * transfers are not exchanges). Only the member's own figures.
+     *
+     * @return array{neighbours_this_year: int, hours_this_year: float}
+     */
+    private function yearOfExchangesFor(int $userId): array
+    {
+        $row = DB::table('transactions')
+            ->where('tenant_id', TenantContext::getId())
+            ->where('transaction_type', 'exchange')
+            ->where('status', 'completed')
+            ->where('created_at', '>=', now()->startOfYear())
+            ->where(fn ($q) => $q->where('sender_id', $userId)->orWhere('receiver_id', $userId))
+            ->selectRaw(
+                'COUNT(DISTINCT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END) AS neighbours, COALESCE(SUM(amount), 0) AS hours',
+                [$userId]
+            )
+            ->first();
+
+        return [
+            'neighbours_this_year' => (int) ($row->neighbours ?? 0),
+            'hours_this_year' => round((float) ($row->hours ?? 0), 2),
+        ];
     }
 
     /** DELETE /api/v2/exchanges/{id} — cancel exchange */

@@ -15,16 +15,17 @@ import PartyPopper from 'lucide-react/icons/party-popper';
 
 const COLORS = ['#6366f1', '#a855f7', '#22c55e', '#f59e0b', '#ec4899'];
 
-export function ConfettiCelebration({ show }: { show: boolean }) {
+export function ConfettiCelebration({ show, colors = COLORS }: { show: boolean; colors?: readonly string[] }) {
   if (!show) return null;
 
+  const palette = colors.length > 0 ? colors : COLORS;
   const particles = Array.from({ length: 20 }, (_, i) => ({
     id: i,
     x: Math.random() * 200 - 100,
     y: -(Math.random() * 200 + 50),
     rotation: Math.random() * 360,
     scale: Math.random() * 0.5 + 0.5,
-    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    color: palette[Math.floor(Math.random() * palette.length)],
   }));
 
   return (

@@ -214,5 +214,12 @@
       "label": "Cancelada",
       "description": "Esta troca foi cancelada."
     }
+  },
+  "thanks": {
+    "title": "Obrigado!",
+    "body": "A sua troca está concluída e as horas foram transferidas. Cada troca torna a comunidade um pouco mais forte.",
+    "neighbours_label": "Pessoas com quem trocou este ano",
+    "hours_label": "Horas trocadas este ano",
+    "close": "Fechar"
   }
 }

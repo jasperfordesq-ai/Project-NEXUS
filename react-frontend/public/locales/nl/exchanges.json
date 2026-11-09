@@ -212,5 +212,12 @@
       "label": "Geannuleerd",
       "description": "Deze uitwisseling is geannuleerd."
     }
+  },
+  "thanks": {
+    "title": "Bedankt!",
+    "body": "Je ruil is voltooid en de uren zijn overgemaakt. Elke ruil maakt de gemeenschap een beetje sterker.",
+    "neighbours_label": "Mensen met wie je dit jaar hebt geruild",
+    "hours_label": "Uren geruild dit jaar",
+    "close": "Sluiten"
   }
 }
