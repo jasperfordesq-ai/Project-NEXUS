@@ -1793,7 +1793,7 @@ export function EventDetailPage() {
                       id="going"
                       variant="ghost"
                       aria-label={t('detail.rsvp_going_aria')}
-                      className="bg-theme-elevated text-theme-primary transition-colors hover:bg-emerald-500/20 data-[selected=true]:bg-emerald-500! data-[selected=true]:text-white!"
+                      className="bg-theme-elevated text-theme-primary transition-colors hover:bg-emerald-500/20 data-[selected=true]:bg-emerald-700! data-[selected=true]:text-white!"
                     >
                       <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
                       {t('detail.going_btn')}
@@ -1804,7 +1804,7 @@ export function EventDetailPage() {
                       id="interested"
                       variant="ghost"
                       aria-label={t('detail.rsvp_interested_aria')}
-                      className="bg-theme-elevated text-theme-primary transition-colors hover:bg-amber-500/20 data-[selected=true]:bg-amber-500! data-[selected=true]:text-white!"
+                      className="bg-theme-elevated text-theme-primary transition-colors hover:bg-amber-500/20 data-[selected=true]:bg-amber-700! data-[selected=true]:text-white!"
                     >
                       <Heart className="w-4 h-4" aria-hidden="true" />
                       {t('detail.interested_btn')}
@@ -1868,7 +1868,7 @@ export function EventDetailPage() {
                   href={safeHref(event.online_access.video_url)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
+                  className="bg-gradient-to-r from-blue-600 to-cyan-700 text-white"
                   startContent={<Video className="w-4 h-4" aria-hidden="true" />}
                   aria-label={t('detail.join_meeting_aria', { title: event.title })}
                 >
@@ -2173,7 +2173,7 @@ export function EventDetailPage() {
               {t('detail.keep_event')}
             </Button>
             <Button
-              className="bg-amber-500 text-white"
+              className="bg-amber-700 text-white"
               startContent={<Archive className="w-4 h-4" aria-hidden="true" />}
               onPress={handleArchive}
               isLoading={isArchiving}
@@ -2229,7 +2229,7 @@ export function EventDetailPage() {
               {t('detail.keep_event')}
             </Button>
             <Button
-              className="bg-amber-500 text-white"
+              className="bg-amber-700 text-white"
               startContent={<Ban className="w-4 h-4" aria-hidden="true" />}
               onPress={handleCancelEvent}
               isLoading={isCancelling}

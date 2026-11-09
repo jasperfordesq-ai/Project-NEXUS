@@ -91,7 +91,7 @@ export default function OrgOverviewTab({ orgId, onTabChange }: OrgOverviewTabPro
         <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
         <p className="text-theme-muted mb-4">{t('org_dashboard.load_error')}</p>
         <Button
-          className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           onPress={loadStats}
         >
           {t('try_again')}
@@ -218,7 +218,7 @@ export default function OrgOverviewTab({ orgId, onTabChange }: OrgOverviewTabPro
           )}
           <Button
             variant="primary"
-            className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<Briefcase className="w-4 h-4" />}
             onPress={() => navigate(tenantPath('/volunteering/create'))}
           >

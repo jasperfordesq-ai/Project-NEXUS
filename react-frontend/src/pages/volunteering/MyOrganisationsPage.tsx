@@ -125,7 +125,7 @@ export default function MyOrganisationsPage() {
         <Button
           as={Link}
           to={tenantPath('/organisations/register')}
-          className="bg-gradient-to-r from-rose-500 to-pink-600 text-white sm:shrink-0"
+          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:shrink-0"
           startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
         >
           {t('register_organisation')}
@@ -141,7 +141,7 @@ export default function MyOrganisationsPage() {
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <p className="text-theme-muted mb-4">{t('my_organisations_load_error')}</p>
           <Button
-            className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             onPress={loadOrgs}
           >
             {t('try_again')}
@@ -161,7 +161,7 @@ export default function MyOrganisationsPage() {
           <Button
             as={Link}
             to={tenantPath('/organisations/register')}
-            className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<Plus className="w-4 h-4" />}
           >
             {t('register_organisation')}
@@ -234,7 +234,7 @@ export default function MyOrganisationsPage() {
                 <GlassCard hoverable className="p-6 transition-all hover:border-rose-500/40">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     {/* Org icon */}
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center flex-shrink-0">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center flex-shrink-0">
                       <Building2 className="w-7 h-7 text-white" aria-hidden="true" />
                     </div>
 
@@ -253,7 +253,7 @@ export default function MyOrganisationsPage() {
                     {/* CTA — the my-organisations API never returns a balance,
                         so the old balance stat rendered nothing. Removed. */}
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 sm:flex-shrink-0">
-                      <span className="button button--primary button--md bg-gradient-to-r from-rose-500 to-pink-600 text-white">
+                      <span className="button button--primary button--md bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
                         {t('manage')}
                         <ArrowRight className="w-4 h-4" aria-hidden="true" />
                       </span>

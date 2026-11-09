@@ -240,7 +240,7 @@ export function SecurityTab({
                     ) : twoFactorEnrollmentAllowed ? (
                       <Button
                         size="sm"
-                        className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+                        className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white"
                         onPress={onSetup2FA}
                       >
                         {t('twofa_enable')}

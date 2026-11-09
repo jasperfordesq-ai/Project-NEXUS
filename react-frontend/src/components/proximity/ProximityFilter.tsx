@@ -67,7 +67,7 @@ export function ProximityFilter({ value, onFilter, className }: Props) {
         size="sm"
         variant={isActive ? 'solid' : 'flat'}
         className={isActive
-          ? 'bg-emerald-600 text-white shadow-sm'
+          ? 'bg-emerald-700 text-white shadow-sm'
           : 'bg-theme-elevated text-theme-primary hover:bg-emerald-500/10 hover:text-emerald-600'}
         startContent={<MapPin className="w-4 h-4" aria-hidden="true" />}
         onPress={handleToggle}

@@ -385,7 +385,7 @@ export function ShiftManager({ opportunityId, onChanged, className }: ShiftManag
         <div className="flex flex-wrap gap-2 sm:flex-shrink-0">
           <Button
             size="sm"
-            className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
             onPress={() => setModal({ kind: 'shift' })}
             data-testid="shift-manager-add"
@@ -764,7 +764,7 @@ function ShiftFormModal({ opportunityId, shift, onClose, onSaved }: ShiftFormMod
             <ModalFooter>
               <Button variant="tertiary" onPress={close} isDisabled={saving}>{t('shift_manager.cancel')}</Button>
               <Button
-                className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 isLoading={saving}
                 onPress={() => { void submit(); }}
                 data-testid="shift-form-save"
@@ -977,7 +977,7 @@ function PatternFormModal({ opportunityId, onClose, onSaved }: PatternFormModalP
             <ModalFooter>
               <Button variant="tertiary" onPress={close} isDisabled={saving}>{t('shift_manager.cancel')}</Button>
               <Button
-                className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 isLoading={saving}
                 onPress={() => { void submit(); }}
                 data-testid="pattern-form-save"

@@ -253,7 +253,7 @@ export default function OrgTeamTab({ orgId }: OrgTeamTabProps) {
               {ROLES.map((role) => <SelectItem key={role} id={role}>{t(`org_team.roles.${role}`)}</SelectItem>)}
             </Select>
             <Button
-              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<UserPlus className="h-4 w-4" aria-hidden="true" />}
               isDisabled={!picked}
               isLoading={adding}

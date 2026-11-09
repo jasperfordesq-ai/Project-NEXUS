@@ -326,7 +326,7 @@ function DailyRewardWidget() {
             {!status.claimed_today ? (
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
-                  className="bg-gradient-to-r from-amber-400 to-orange-500 text-white font-semibold shadow-lg"
+                  className="bg-gradient-to-r from-amber-700 to-orange-700 text-white font-semibold shadow-lg"
                   startContent={
                     isClaiming ? (
                       <div role="status" aria-busy="true" aria-label={t('common:loading')} className="flex justify-center py-4"><Spinner size="sm" color="white" /></div>
@@ -547,7 +547,7 @@ function ChallengesTab() {
                         {challenge.is_completed && !challenge.reward_claimed ? (
                           <Button
                             size="sm"
-                            className="bg-gradient-to-r from-emerald-500 to-green-600 text-white"
+                            className="bg-gradient-to-r from-emerald-700 to-green-700 text-white"
                             startContent={
                               claimingId === challenge.id ? (
                                 <div role="status" aria-busy="true" aria-label={t('common:loading')} className="flex justify-center py-4"><Spinner size="sm" color="white" /></div>

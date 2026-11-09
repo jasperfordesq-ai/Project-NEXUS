@@ -1320,7 +1320,7 @@ function GoalCard({
           {canComplete && (
             <Button
               size="sm"
-              className="bg-gradient-to-r from-emerald-500 to-green-600 text-white"
+              className="bg-gradient-to-r from-emerald-700 to-green-700 text-white"
               startContent={<Award className="w-4 h-4" aria-hidden="true" />}
               onPress={() => onComplete(goal)}
             >

@@ -313,7 +313,7 @@ export function PostTab({ onSuccess, onClose, isOpen, groupId, templateData, onC
             variant="danger-soft"
             size="sm"
             onPress={() => setSelectedGifUrl(null)}
-            className="absolute -top-1.5 -right-1.5 size-6 min-h-6 rounded-full bg-red-500 text-white transition-colors hover:bg-red-600"
+            className="absolute -top-1.5 -right-1.5 size-6 min-h-6 rounded-full bg-red-600 text-white transition-colors hover:bg-red-700"
             aria-label={t('compose.cancel')}
           >
             <X className="w-3 h-3" />

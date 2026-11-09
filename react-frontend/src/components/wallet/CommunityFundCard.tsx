@@ -155,7 +155,7 @@ export function CommunityFundCard({ onDonateClick, compact = false }: CommunityF
 
       {onDonateClick && (
         <Button
-          className="w-full bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+          className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           startContent={<Heart className="w-4 h-4" />}
           onPress={onDonateClick}
         >

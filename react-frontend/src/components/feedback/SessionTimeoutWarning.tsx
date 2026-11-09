@@ -285,7 +285,7 @@ export function SessionTimeoutWarning() {
                   <Clock className="w-8 h-8 text-amber-600 dark:text-amber-400" aria-hidden="true" />
                   {/* Countdown badge */}
                   <span
-                    className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-white"
+                    className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-700 text-[11px] font-bold text-white"
                     aria-hidden="true"
                   >
                     {countdown}

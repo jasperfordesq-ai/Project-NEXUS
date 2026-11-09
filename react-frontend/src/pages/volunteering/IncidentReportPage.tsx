@@ -240,7 +240,7 @@ export function IncidentReportPage() {
               errorMessage={additionError ?? undefined}
             />
             <Button
-              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               onPress={sendAddition}
               isLoading={isSending}
             >

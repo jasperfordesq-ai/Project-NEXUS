@@ -204,7 +204,7 @@ export function RecommendedShiftsTab() {
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             onPress={load}
           >
             {t('common.try_again')}
@@ -327,7 +327,7 @@ export function RecommendedShiftsTab() {
                     </div>
                     <Button
                       size="sm"
-                      className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+                      className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                       endContent={<ExternalLink className="w-3 h-3" aria-hidden="true" />}
                       onPress={() => navigate(tenantPath(`/volunteering/opportunities/${item.opportunity.id}`))}
                     >

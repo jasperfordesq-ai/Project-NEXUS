@@ -208,7 +208,7 @@ export function WaitlistTab() {
         <GlassCard className="p-8 text-center" role="alert">
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <p className="text-theme-muted mb-4">{error}</p>
-          <Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={load}>
+          <Button className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white" onPress={load}>
             {t('waitlist.try_again')}
           </Button>
         </GlassCard>
@@ -340,7 +340,7 @@ export function WaitlistTab() {
                     {entry.status === 'notified' && (
                       <Button
                         size="sm"
-                        className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+                        className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white"
                         startContent={!claimingId ? <Check className="w-4 h-4" aria-hidden="true" /> : undefined}
                         onPress={() => handleClaimSpot(entry)}
                         isLoading={claimingId === entry.id}

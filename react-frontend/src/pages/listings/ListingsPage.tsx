@@ -858,7 +858,7 @@ export function ListingsPage() {
               className={showAdvancedFilters
                 ? (usesCommunityColour
                   ? 'min-h-[40px] bg-accent-strong text-accent-foreground shadow-sm hover:opacity-90'
-                  : 'min-h-[40px] bg-emerald-600 text-white shadow-sm hover:bg-emerald-700')
+                  : 'min-h-[40px] bg-emerald-700 text-white shadow-sm hover:bg-emerald-800')
                 : 'min-h-[40px] bg-theme-elevated text-theme-primary'}
               startContent={<SlidersHorizontal className="w-4 h-4" aria-hidden="true" />}
               onPress={() => setShowAdvancedFilters((prev) => !prev)}
@@ -1551,7 +1551,7 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
                 // (a see-through grey read as muddy on the pale covers).
                 className={`min-w-[36px] min-h-[36px] rounded-full backdrop-blur-sm shadow-md ring-1 transition-all ${
                   isFavorited
-                    ? 'bg-rose-500/90 text-white ring-rose-500/30 hover:bg-rose-600'
+                    ? 'bg-rose-600/90 text-white ring-rose-500/30 hover:bg-rose-700'
                     : 'bg-white/90 text-rose-600 ring-black/5 hover:bg-white dark:bg-black/50 dark:text-white dark:ring-white/10 dark:hover:bg-black/70'
                 }`}
               >

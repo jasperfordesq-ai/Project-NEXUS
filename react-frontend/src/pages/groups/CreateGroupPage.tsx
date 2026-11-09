@@ -516,7 +516,7 @@ export function CreateGroupPage() {
                         isIconOnly
                         size="sm"
                         variant="flat"
-                        className="absolute -right-2 -top-2 h-6 min-w-6 rounded-full bg-red-500/80 text-white"
+                        className="absolute -right-2 -top-2 h-6 min-w-6 rounded-full bg-red-600/80 text-white"
                         aria-label={t('form.remove_image_aria')}
                         onPress={() => clearImage(type)}
                       >

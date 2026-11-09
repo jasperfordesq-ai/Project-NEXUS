@@ -1091,7 +1091,7 @@ export function OpportunityDetailPage() {
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <p className="text-theme-muted mb-4">{error || t('opportunity.not_found')}</p>
           <Button
-            className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={load}
           >
@@ -1260,7 +1260,7 @@ export function OpportunityDetailPage() {
           {/* Apply button */}
           {isAuthenticated && opp.is_active && !isClosed && !opp.has_applied && !opp.is_owner && !runsOrganisation && (
             <Button
-              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<Send className="w-4 h-4" aria-hidden="true" />}
               onPress={applyModal.onOpen}
             >
@@ -1469,7 +1469,7 @@ export function OpportunityDetailPage() {
                             {offered && (
                               <Button
                                 size="sm"
-                                className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+                                className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white"
                                 isLoading={activeShiftAction === 'claim'}
                                 isDisabled={!!shiftAction}
                                 onPress={() => handleShiftAction(shift.id, 'claim')}
@@ -1499,7 +1499,7 @@ export function OpportunityDetailPage() {
                         ) : isOpenShift ? (
                           <Button
                             size="sm"
-                            className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+                            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                             isLoading={activeShiftAction === 'signup'}
                             isDisabled={!!shiftAction}
                             onPress={() => handleShiftAction(shift.id, 'signup')}
@@ -1559,7 +1559,7 @@ export function OpportunityDetailPage() {
                         size="sm"
                         variant={selectedShiftId === shift.id ? 'primary' : 'secondary'}
                         className={selectedShiftId === shift.id
-                          ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white w-full justify-start'
+                          ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white w-full justify-start'
                           : 'bg-theme-elevated text-theme-muted w-full justify-start'
                         }
                         onPress={() => setSelectedShiftId(
@@ -1576,7 +1576,7 @@ export function OpportunityDetailPage() {
               <ModalFooter>
                 <Button variant="tertiary" onPress={onClose}>{t('opportunity.cancel')}</Button>
                 <Button
-                  className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                   onPress={handleApply}
                   isLoading={isApplying}
                 >

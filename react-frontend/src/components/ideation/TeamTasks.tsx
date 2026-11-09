@@ -340,7 +340,7 @@ export function TeamTasks({ groupId, members = [] }: TeamTasksProps) {
                       : 'todo';
                   const statusClasses = `mt-0.5 flex h-11 w-11 min-w-11 shrink-0 items-center justify-center rounded border-2 p-0 transition-colors sm:h-8 sm:w-8 sm:min-w-8 ${
                     task.status === 'done'
-                      ? 'border-green-500 bg-green-500 text-white'
+                      ? 'border-green-500 bg-green-700 text-white'
                       : task.status === 'in_progress'
                         ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/20'
                         : 'border-[var(--color-border)]'

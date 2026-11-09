@@ -156,9 +156,9 @@ export function MatchCard({ match, index, highlightId, onDismissed }: MatchCardP
             <div
               className={`absolute -top-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${
                 match.match_score >= 80
-                  ? 'bg-emerald-500 text-white'
+                  ? 'bg-emerald-700 text-white'
                   : match.match_score >= 60
-                  ? 'bg-amber-500 text-white'
+                  ? 'bg-amber-700 text-white'
                   : 'bg-surface-tertiary text-foreground'
               }`}
               aria-label={t('score_label', { score: match.match_score })}

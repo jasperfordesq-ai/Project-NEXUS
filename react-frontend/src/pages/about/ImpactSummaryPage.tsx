@@ -354,7 +354,7 @@ export function ImpactSummaryPage() {
 
                 <Button as={Link} to={tenantPath('/contact')}
                   size="lg"
-                  className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold px-8"
+                  className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-semibold px-8"
                   startContent={<Mail className="w-5 h-5" aria-hidden="true" />}
                 >
                   {t('impact_summary.cta_contact')}

@@ -470,7 +470,7 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
             <Separator className="my-4" />
             <div className="flex flex-wrap justify-center gap-3 mt-4">
               <Button as={Link} to={tenantPath('/contact')}
-                className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white"
+                className="bg-gradient-to-r from-blue-600 to-cyan-700 text-white"
                 startContent={<Send className="w-4 h-4" aria-hidden="true" />}
               >
                 {t('terms.contact_us')}

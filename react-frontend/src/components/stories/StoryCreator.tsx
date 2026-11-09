@@ -872,7 +872,7 @@ export function StoryCreator({ onClose, onCreated }: StoryCreatorProps) {
                   </div>
                 )}
                 {videoDuration > 60 && (
-                  <div className="absolute bottom-3 left-3 right-3 bg-red-500/80 backdrop-blur rounded-lg px-3 py-2 text-white text-xs text-center">
+                  <div className="absolute bottom-3 left-3 right-3 bg-red-600/80 backdrop-blur rounded-lg px-3 py-2 text-white text-xs text-center">
                     {t('creator.videos_trimmed_notice')}
                   </div>
                 )}

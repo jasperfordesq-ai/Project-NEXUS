@@ -35,10 +35,11 @@ const groups = [
 ] as const;
 
 /**
- * The hub's main button. A deeper shade of the volunteering pink: white text on
- * the lighter rose-500 end of the page gradient falls short of WCAG AA contrast.
+ * The hub's main button: the community's button shade, like every main button
+ * on the site (9 Nov 2026; was a fixed volunteering pink). White text on it is
+ * always at least 4.5:1.
  */
-const HUB_PRIMARY = 'min-h-11 bg-linear-to-r from-rose-600 to-pink-700 text-white';
+const HUB_PRIMARY = 'min-h-11 bg-linear-to-r from-accent-strong to-accent-strong-end text-white';
 
 interface HubProps {
   /** Section keys this member can open, already filtered by community settings and sign-in. */

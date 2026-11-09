@@ -123,7 +123,7 @@ export function SecurityStep({ onNext, onBack, onUnavailable, onProtected }: Sec
             {t('back')}
           </Button>
           <Button
-            className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium"
+            className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-medium"
             endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
             onPress={onNext}
           >
@@ -212,7 +212,7 @@ export function SecurityStep({ onNext, onBack, onUnavailable, onProtected }: Sec
             </Button>
             {!inProgress && (
               <Button
-                className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium"
+                className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-medium"
                 endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
                 isLoading={enrolment.isStarting}
                 onPress={() => { void enrolment.start(); }}

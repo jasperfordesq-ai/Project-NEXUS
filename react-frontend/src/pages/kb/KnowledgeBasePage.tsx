@@ -294,7 +294,7 @@ export function KnowledgeBasePage() {
           <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('error.title')}</h2>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-blue-500 to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-blue-600 to-accent-gradient-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={loadArticles}
           >

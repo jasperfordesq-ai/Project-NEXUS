@@ -88,7 +88,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
             <div
               className={[
                 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors',
-                isDone  ? 'bg-emerald-500 text-white' :
+                isDone  ? 'bg-emerald-700 text-white' :
                 isActive ? 'bg-accent-strong text-white' :
                           'bg-theme-elevated text-theme-muted',
               ].join(' ')}
@@ -505,7 +505,7 @@ export function PilotInquiryPage() {
           ) : (
             <Button
               variant="primary"
-              className="bg-gradient-to-r from-accent-strong to-emerald-600 text-white font-medium"
+              className="bg-gradient-to-r from-accent-strong to-emerald-700 text-white font-medium"
               isLoading={submitting}
               isDisabled={!canAdvance() || submitting}
               spinner={<Spinner size="sm" />}

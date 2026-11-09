@@ -627,7 +627,7 @@ export default function CreateOpportunityPage() {
           <div className="flex flex-col gap-3 pt-4 sm:flex-row">
             <Button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              className="flex-1 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<Save className="w-4 h-4" aria-hidden="true" />}
               isLoading={isSubmitting}
             >

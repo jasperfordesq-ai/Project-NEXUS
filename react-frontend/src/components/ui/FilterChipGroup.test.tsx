@@ -111,7 +111,7 @@ describe('FilterChipGroup', () => {
     // text on the resting white chip would be unreadable.
     render(<FilterChipGroup accent="emerald" label="Type" selected="remote" options={OPTIONS} onChange={onChange} />);
     const chip = screen.getByRole('radio', { name: 'Remote' }).className;
-    expect(chip).toContain('data-[selected=true]:bg-emerald-600!');
+    expect(chip).toContain('data-[selected=true]:bg-emerald-700!');
     expect(chip).toContain('data-[selected=true]:text-white!');
   });
 
@@ -119,7 +119,7 @@ describe('FilterChipGroup', () => {
     const { rerender } = render(
       <FilterChipGroup accent="emerald" label="Type" selected="any" options={OPTIONS} onChange={onChange} />,
     );
-    expect(screen.getByRole('radio', { name: 'Any' }).className).toContain('data-[selected=true]:bg-emerald-600');
+    expect(screen.getByRole('radio', { name: 'Any' }).className).toContain('data-[selected=true]:bg-emerald-700');
 
     rerender(<FilterChipGroup label="Type" selected="any" options={OPTIONS} onChange={onChange} />);
     expect(screen.getByRole('radio', { name: 'Any' }).className).toContain('data-[selected=true]:bg-accent');

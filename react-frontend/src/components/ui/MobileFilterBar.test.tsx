@@ -127,7 +127,7 @@ describe('MobileFilterBar', () => {
       <MobileFilterBar isVisible accent="emerald" filterCount={2} onFiltersPress={onFiltersPress} testId="filter-bar" />,
     );
     expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByLabelText('More filters').className).toContain('bg-emerald-600');
+    expect(screen.getByLabelText('More filters').className).toContain('bg-emerald-700');
   });
 
   it('defaults the badge count to the number of applied chips', () => {
@@ -143,7 +143,7 @@ describe('MobileFilterBar', () => {
 
     // No explicit filterCount: the badge must still agree with the chip row.
     expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByLabelText('More filters').className).toContain('bg-emerald-600');
+    expect(screen.getByLabelText('More filters').className).toContain('bg-emerald-700');
   });
 
   it('lets an explicit filterCount override the chip count', () => {

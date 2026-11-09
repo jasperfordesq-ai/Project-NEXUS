@@ -157,7 +157,7 @@ export function CertificatesTab() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Button
           size="sm"
-          className="bg-gradient-to-r from-rose-500 to-pink-600 text-white sm:shrink-0"
+          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:shrink-0"
           startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
           onPress={handleGenerate}
           isLoading={isGenerating}
@@ -174,7 +174,7 @@ export function CertificatesTab() {
         <GlassCard className="p-8 text-center" role="alert">
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <p className="text-theme-muted mb-4">{error}</p>
-          <Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={load}>
+          <Button className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white" onPress={load}>
             {t('common.try_again')}
           </Button>
         </GlassCard>
@@ -195,7 +195,7 @@ export function CertificatesTab() {
           description={t('certificates.empty_description')}
           action={
             <Button
-              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               onPress={handleGenerate}
             >
               {t('certificates.generate')}
@@ -258,7 +258,7 @@ export function CertificatesTab() {
                   <div className="flex flex-col gap-2 sm:flex-shrink-0">
                     <Button
                       size="sm"
-                      className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+                      className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                       startContent={<Download className="w-4 h-4" aria-hidden="true" />}
                       onPress={() => handleDownload(cert.verification_code)}
                     >

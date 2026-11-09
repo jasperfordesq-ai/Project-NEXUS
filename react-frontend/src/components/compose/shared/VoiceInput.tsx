@@ -149,7 +149,7 @@ export function VoiceInput({ onTranscript, isDisabled }: VoiceInputProps) {
         variant={isListening ? 'solid' : 'light'}
         className={
           isListening
-            ? 'animate-pulse bg-red-500 text-white min-w-11 w-11 h-11'
+            ? 'animate-pulse bg-red-600 text-white min-w-11 w-11 h-11'
             : 'min-w-11 w-11 h-11'
         }
         onPress={handleToggle}

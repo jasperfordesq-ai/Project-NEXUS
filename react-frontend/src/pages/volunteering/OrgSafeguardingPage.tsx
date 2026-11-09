@@ -412,7 +412,7 @@ function IncidentView({ orgId, incidentId }: { orgId: number; incidentId: number
           isInvalid={!!updateError}
           errorMessage={updateError ?? undefined}
         />
-        <Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={sendUpdate} isLoading={isSending}>
+        <Button className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white" onPress={sendUpdate} isLoading={isSending}>
           {t('org_safeguarding.update_send')}
         </Button>
       </GlassCard>

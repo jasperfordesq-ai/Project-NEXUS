@@ -516,7 +516,7 @@ export function OrganisationDetailPage() {
                   {isAuthenticated && !opp.has_applied && (
                     <Button
                       size="sm"
-                      className="bg-gradient-to-r from-rose-500 to-pink-600 text-white flex-shrink-0"
+                      className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white flex-shrink-0"
                       endContent={<ChevronRight className="w-4 h-4" aria-hidden="true" />}
                       onPress={() => {
                         setSelectedOpp(opp);
@@ -648,7 +648,7 @@ export function OrganisationDetailPage() {
           <ModalFooter>
             <Button variant="tertiary" onPress={applyModal.onClose} className="text-theme-muted">{t('organisation_detail.cancel')}</Button>
             <Button
-              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               onPress={handleApply}
               isLoading={isApplying}
               startContent={<Send className="w-4 h-4" aria-hidden="true" />}
@@ -709,7 +709,7 @@ export function OrganisationDetailPage() {
           <ModalFooter>
             <Button variant="tertiary" onPress={reviewModal.onClose} className="text-theme-muted">{t('organisation_detail.cancel')}</Button>
             <Button
-              className="bg-gradient-to-r from-amber-500 to-orange-500 text-white"
+              className="bg-gradient-to-r from-amber-700 to-orange-700 text-white"
               isLoading={isSubmittingReview}
               onPress={handleSubmitReview}
             >

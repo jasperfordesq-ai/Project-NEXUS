@@ -412,7 +412,7 @@ export function WellbeingTab() {
               size="sm"
               startContent={<Smile className="w-4 h-4" aria-hidden="true" />}
               onPress={onOpen}
-              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white sm:shrink-0"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:shrink-0"
             >
               {t('wellbeing.log_feeling')}
             </Button>
@@ -478,7 +478,7 @@ export function WellbeingTab() {
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={load}
           >
@@ -507,7 +507,7 @@ export function WellbeingTab() {
           description={t('wellbeing.no_data_desc')}
           action={
             <Button
-              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               onPress={onOpen}
             >
               {t('wellbeing.log_mood')}
@@ -865,7 +865,7 @@ export function WellbeingTab() {
           <ModalFooter>
             <Button variant="tertiary" onPress={onClose} className="text-theme-muted">{t('wellbeing.cancel')}</Button>
             <Button
-              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               onPress={handleCheckin}
               isLoading={isSubmitting}
               startContent={!isSubmitting ? <Heart className="w-4 h-4" aria-hidden="true" /> : undefined}

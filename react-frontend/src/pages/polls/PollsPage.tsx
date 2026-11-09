@@ -1058,7 +1058,7 @@ export function PollsPage() {
                   </Button>
                   <Button
                     size="sm"
-                    className="bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20"
+                    className="bg-gradient-to-r from-amber-700 to-orange-700 text-white shadow-lg shadow-amber-500/20"
                     onPress={handleCreate}
                     isLoading={isCreating}
                     isDisabled={!canCreate}
@@ -1105,7 +1105,7 @@ export function PollsPage() {
           <ToggleButton
             id="__all__"
             variant="ghost"
-            className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-amber-500 data-[selected=true]:to-orange-600 data-[selected=true]:text-white!"
+            className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-amber-700 data-[selected=true]:to-orange-700 data-[selected=true]:text-white!"
           >
             <Filter className="w-3.5 h-3.5" aria-hidden="true" />
             {t('all_categories')}
@@ -1115,7 +1115,7 @@ export function PollsPage() {
               key={cat}
               id={cat}
               variant="ghost"
-              className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-amber-500 data-[selected=true]:to-orange-600 data-[selected=true]:text-white!"
+              className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-amber-700 data-[selected=true]:to-orange-700 data-[selected=true]:text-white!"
             >
               {cat}
             </ToggleButton>
@@ -1157,7 +1157,7 @@ export function PollsPage() {
               action={
                 isAuthenticated && tab !== 'closed' && (
                   <Button
-                    className="bg-gradient-to-r from-amber-500 to-orange-600 text-white"
+                    className="bg-gradient-to-r from-amber-700 to-orange-700 text-white"
                     startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
                     onPress={() => setShowCreate(true)}
                   >

@@ -129,7 +129,7 @@ const STATUS_LOOK: Record<QualificationStatus, ChipLook> = {
 };
 
 // Volunteering brand gradient — mirrors VOL_GRADIENT in VolunteeringPage.
-const VOL_GRADIENT = 'bg-linear-to-r from-rose-500 to-pink-600 text-white';
+const VOL_GRADIENT = 'bg-linear-to-r from-accent-strong to-accent-strong-end text-white';
 
 /* ───────────────────────── Helpers ───────────────────────── */
 

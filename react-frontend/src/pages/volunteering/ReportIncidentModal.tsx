@@ -374,7 +374,7 @@ export function ReportIncidentModal({ isOpen, onClose, onReported }: ReportIncid
         </ModalBody>
         <ModalFooter>
           <Button variant="tertiary" onPress={close}>{t('safeguarding.cancel')}</Button>
-          <Button className="bg-gradient-to-r from-amber-500 to-orange-600 text-white" onPress={handleSubmit} isLoading={isSubmitting} startContent={!isSubmitting ? <AlertTriangle className="w-4 h-4" aria-hidden="true" /> : undefined}>
+          <Button className="bg-gradient-to-r from-amber-700 to-orange-700 text-white" onPress={handleSubmit} isLoading={isSubmitting} startContent={!isSubmitting ? <AlertTriangle className="w-4 h-4" aria-hidden="true" /> : undefined}>
             {t('safeguarding.submit_incident')}
           </Button>
         </ModalFooter>

@@ -66,23 +66,23 @@ export const FILTER_ACCENT_CLASSES: Record<FilterAccent, FilterAccentClasses> = 
   accent: THEME_ACCENT,
   indigo: THEME_ACCENT,
   emerald: {
-    filtersButtonActive: 'bg-emerald-600 text-white shadow-sm',
+    filtersButtonActive: 'bg-emerald-700 text-white shadow-sm',
     filtersButtonIdle:
       'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-emerald-500/10 hover:text-emerald-600',
     appliedChip:
       'bg-emerald-500/15 text-emerald-800 transition-colors hover:bg-emerald-500/25 dark:text-emerald-300',
-    chip: 'hover:bg-emerald-500/10 hover:text-emerald-600 data-[selected=true]:bg-emerald-600!',
-    applyButton: 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700',
+    chip: 'hover:bg-emerald-500/10 hover:text-emerald-600 data-[selected=true]:bg-emerald-700!',
+    applyButton: 'bg-emerald-700 text-white shadow-sm hover:bg-emerald-800',
     linkAction: 'text-emerald-600 hover:bg-emerald-500/10 dark:text-emerald-400',
   },
   amber: {
-    filtersButtonActive: 'bg-amber-600 text-white shadow-sm',
+    filtersButtonActive: 'bg-amber-700 text-white shadow-sm',
     filtersButtonIdle:
       'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-amber-500/10 hover:text-amber-600',
     appliedChip:
       'bg-amber-500/15 text-amber-800 transition-colors hover:bg-amber-500/25 dark:text-amber-300',
-    chip: 'hover:bg-amber-500/10 hover:text-amber-600 data-[selected=true]:bg-amber-600!',
-    applyButton: 'bg-amber-600 text-white shadow-sm hover:bg-amber-700',
+    chip: 'hover:bg-amber-500/10 hover:text-amber-600 data-[selected=true]:bg-amber-700!',
+    applyButton: 'bg-amber-700 text-white shadow-sm hover:bg-amber-800',
     linkAction: 'text-amber-600 hover:bg-amber-500/10 dark:text-amber-400',
   },
   blue: {

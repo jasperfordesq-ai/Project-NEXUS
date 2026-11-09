@@ -171,9 +171,9 @@ const VOLUNTEER_TAB_FEATURE_GATES: Partial<Record<VolunteerTab, (keyof Volunteer
   expenses: ['volunteering.expenses_enabled'],
 };
 
-// Volunteering brand gradient — centralized so it can be themed later via tokens.
-// The deeper end of the pink range: white text on rose-500 falls short of WCAG AA contrast.
-const VOL_GRADIENT_BASE = 'bg-linear-to-r from-rose-600 to-pink-700';
+// Volunteering's main buttons: the community's button shade, like every main
+// button on the site (9 Nov 2026; was a fixed pink, part of it below 4.5:1 with white).
+const VOL_GRADIENT_BASE = 'bg-linear-to-r from-accent-strong to-accent-strong-end';
 const VOL_GRADIENT = `${VOL_GRADIENT_BASE} text-white`;
 
 // Today's date as YYYY-MM-DD in the user's LOCAL timezone. `toISOString()`

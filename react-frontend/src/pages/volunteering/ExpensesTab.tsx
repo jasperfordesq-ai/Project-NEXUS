@@ -280,7 +280,7 @@ export function ExpensesTab() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Button
           size="sm"
-          className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
           onPress={handleOpenForm}
         >
@@ -309,7 +309,7 @@ export function ExpensesTab() {
         <GlassCard className="p-8 text-center" role="alert">
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <p className="text-theme-muted mb-4">{error}</p>
-          <Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={load}>
+          <Button className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white" onPress={load}>
             {t('expenses.try_again')}
           </Button>
         </GlassCard>
@@ -333,7 +333,7 @@ export function ExpensesTab() {
           action={
             // The description says "Click Submit Expense"; offer it right here (gap C6).
             <Button
-              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
               onPress={handleOpenForm}
             >
@@ -540,7 +540,7 @@ export function ExpensesTab() {
               <ModalFooter>
                 <Button variant="tertiary" onPress={onClose}>{t('expenses.cancel')}</Button>
                 <Button
-                  className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                   onPress={() => handleSubmit(onClose)}
                   isLoading={isSubmitting}
                   isDisabled={organisations.length === 0}

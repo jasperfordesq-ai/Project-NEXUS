@@ -285,7 +285,7 @@ export function OrgWalletTab({ orgId, balance, onBalanceChange }: OrgWalletTabPr
         </div>
 
         <Button
-          className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white w-full"
+          className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white w-full"
           startContent={<ArrowDownToLine className="w-4 h-4" aria-hidden="true" />}
           onPress={onOpen}
         >
@@ -327,7 +327,7 @@ export function OrgWalletTab({ orgId, balance, onBalanceChange }: OrgWalletTabPr
             <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
             <p className="text-theme-muted mb-4">{error}</p>
             <Button
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+              className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white"
               onPress={() => loadTransactions()}
             >
               {t('org_wallet.try_again')}
@@ -483,7 +483,7 @@ export function OrgWalletTab({ orgId, balance, onBalanceChange }: OrgWalletTabPr
                   {t('org_wallet.cancel')}
                 </Button>
                 <Button
-                  className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+                  className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white"
                   onPress={() => handleDeposit(onClose)}
                   isLoading={isDepositing}
                 >

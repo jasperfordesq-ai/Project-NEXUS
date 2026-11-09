@@ -87,7 +87,7 @@ export function VolunteeringWelcome({ onDismiss, onFind }: VolunteeringWelcomePr
           // Already on the volunteering home: take the member straight to the list.
           <Button
             variant="primary"
-            className="min-h-11 w-full sm:w-auto bg-linear-to-r from-rose-600 to-pink-700 text-white"
+            className="min-h-11 w-full sm:w-auto bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<Search className="w-4 h-4" aria-hidden="true" />}
             onPress={() => { dismiss(); onFind(); }}
           >
@@ -98,7 +98,7 @@ export function VolunteeringWelcome({ onDismiss, onFind }: VolunteeringWelcomePr
             as={Link}
             to={tenantPath('/volunteering')}
             variant="primary"
-            className="min-h-11 w-full sm:w-auto bg-linear-to-r from-rose-600 to-pink-700 text-white"
+            className="min-h-11 w-full sm:w-auto bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<Search className="w-4 h-4" aria-hidden="true" />}
             onPress={dismiss}
           >

@@ -325,7 +325,7 @@ export function ShiftSwapsTab() {
         <Button
           size="sm"
           variant={view === 'all' ? 'primary' : 'tertiary'}
-          className={view === 'all' ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white' : 'bg-theme-elevated text-theme-muted'}
+          className={view === 'all' ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white' : 'bg-theme-elevated text-theme-muted'}
           onPress={() => setView('all')}
         >
           {t('swaps.all')} ({swaps.length})
@@ -333,7 +333,7 @@ export function ShiftSwapsTab() {
         <Button
           size="sm"
           variant={view === 'sent' ? 'primary' : 'tertiary'}
-          className={view === 'sent' ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white' : 'bg-theme-elevated text-theme-muted'}
+          className={view === 'sent' ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white' : 'bg-theme-elevated text-theme-muted'}
           onPress={() => setView('sent')}
           startContent={<Send className="w-3 h-3" aria-hidden="true" />}
         >
@@ -342,7 +342,7 @@ export function ShiftSwapsTab() {
         <Button
           size="sm"
           variant={view === 'received' ? 'primary' : 'tertiary'}
-          className={view === 'received' ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white' : 'bg-theme-elevated text-theme-muted'}
+          className={view === 'received' ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white' : 'bg-theme-elevated text-theme-muted'}
           onPress={() => setView('received')}
           startContent={<Inbox className="w-3 h-3" aria-hidden="true" />}
         >
@@ -355,7 +355,7 @@ export function ShiftSwapsTab() {
         <GlassCard className="p-8 text-center" role="alert">
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <p className="text-theme-muted mb-4">{error}</p>
-          <Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={() => { void load(); }}>
+          <Button className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white" onPress={() => { void load(); }}>
             {t('swaps.try_again')}
           </Button>
         </GlassCard>
@@ -506,7 +506,7 @@ export function ShiftSwapsTab() {
                     <div className="flex flex-col gap-2 sm:flex-shrink-0">
                       <Button
                         size="sm"
-                        className="bg-gradient-to-r from-emerald-500 to-green-600 text-white"
+                        className="bg-gradient-to-r from-emerald-700 to-green-700 text-white"
                         startContent={<Check className="w-4 h-4" aria-hidden="true" />}
                         onPress={() => handleAccept(swap.id)}
                         isLoading={actioningId === swap.id}

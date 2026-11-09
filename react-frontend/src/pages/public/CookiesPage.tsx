@@ -418,7 +418,7 @@ export function CookiesPage() {
             <Separator className="my-4" />
             <div className="flex flex-wrap justify-center gap-3 mt-4">
               <Button as={Link} to={tenantPath('/contact')}
-                className="bg-gradient-to-r from-amber-500 to-orange-600 text-white"
+                className="bg-gradient-to-r from-amber-700 to-orange-700 text-white"
                 startContent={<Send className="w-4 h-4" aria-hidden="true" />}
               >
                 {t('cookies.contact_us')}

@@ -958,7 +958,7 @@ const FeedCardInner = React.memo(function FeedCardInner({
               {isEvent && dateForChip && (
                 <div className="flex items-center gap-2.5">
                   <div className="flex flex-col items-center justify-center rounded-lg overflow-hidden border border-theme-default bg-[var(--surface-base)] w-11 h-12 shadow-sm" aria-hidden="true">
-                    <div className="w-full px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-green-500 text-white text-center leading-tight">
+                    <div className="w-full px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-700 to-green-700 text-white text-center leading-tight">
                       {dateForChip.toLocaleString(getFormattingLocale(), { month: 'short' })}
                     </div>
                     <div className="flex-1 flex items-center justify-center text-lg font-bold tabular-nums text-theme-primary leading-none">
@@ -1313,7 +1313,7 @@ const FeedCardInner = React.memo(function FeedCardInner({
                               <div className="relative flex items-center justify-between gap-3 px-3.5 py-3">
                                 <div className="flex items-center gap-2 min-w-0">
                                   {isVoted ? (
-                                    <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white">
+                                    <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-amber-700 text-white">
                                       <Check className="w-3 h-3" aria-hidden="true" />
                                     </span>
                                   ) : isLeading && !resultsHidden ? (

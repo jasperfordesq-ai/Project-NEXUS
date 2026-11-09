@@ -724,7 +724,7 @@ export function OnboardingPage() {
               <div className="flex justify-center pt-2">
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-10 font-semibold shadow-lg shadow-emerald-500/20"
+                  className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white px-10 font-semibold shadow-lg shadow-emerald-500/20"
                   endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
                   onPress={goNextAnimated}
                 >
@@ -797,7 +797,7 @@ export function OnboardingPage() {
                         <Button
                           isIconOnly
                           size="sm"
-                          className="absolute bottom-1 right-1 rounded-full bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg min-w-0 w-9 h-9"
+                          className="absolute bottom-1 right-1 rounded-full bg-emerald-700 text-white hover:bg-emerald-800 shadow-lg min-w-0 w-9 h-9"
                           isDisabled={isUploadingAvatar}
                           isLoading={isUploadingAvatar}
                           aria-label={t('aria_upload_photo')}
@@ -919,7 +919,7 @@ export function OnboardingPage() {
                   {t('back')}
                 </Button>
                 <Button
-                  className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium"
+                  className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-medium"
                   endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
                   onPress={handleSaveProfileAndProceed}
                   isLoading={isSavingProfile}
@@ -981,7 +981,7 @@ export function OnboardingPage() {
                     {t('skip')}
                   </Button>
                   <Button
-                    className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium"
+                    className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-medium"
                     endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
                     onPress={goNextAnimated}
                   >
@@ -1104,7 +1104,7 @@ export function OnboardingPage() {
                   </Button>
                   <Button
                     size="lg"
-                    className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold shadow-lg shadow-emerald-500/20"
+                    className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-semibold shadow-lg shadow-emerald-500/20"
                     onPress={handleComplete}
                     isLoading={isSubmitting}
                     isDisabled={isSubmitting}
@@ -1198,7 +1198,7 @@ function StepIndicator({ currentStep, totalSteps, visitedSteps, completedSteps, 
                 className={`
                   w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 shrink-0
                   ${isCurrent
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/30 scale-110'
+                    ? 'bg-gradient-to-r from-emerald-700 to-teal-700 text-white shadow-md shadow-emerald-500/30 scale-110'
                     : isCompleted
                       ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                       : 'bg-theme-elevated text-theme-subtle'

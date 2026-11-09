@@ -574,7 +574,7 @@ export function ListingDetailPage() {
             <div className="flex flex-wrap items-center gap-2">
               <Chip
                 variant="soft"
-                className={listing.type === 'offer' ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}
+                className={listing.type === 'offer' ? 'bg-emerald-700/90 text-white' : 'bg-amber-700/90 text-white'}
               >
                 {listing.type === 'offer' ? t('offering') : t('requesting')}
               </Chip>
@@ -872,7 +872,7 @@ export function ListingDetailPage() {
                 </Button>
               ) : (
                 <Button as={Link} to={tenantPath(`/listings/${listing.id}/request-exchange`)}
-                  className="w-full bg-linear-to-r from-emerald-500 to-teal-600 text-white"
+                  className="w-full bg-linear-to-r from-emerald-700 to-teal-700 text-white"
                   startContent={<ArrowRightLeft className="w-4 h-4" aria-hidden="true" />}
                 >
                   {t('detail_request_exchange')}

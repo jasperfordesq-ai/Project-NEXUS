@@ -784,7 +784,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                   <span>{messagesNavigationItem.label}</span>
                   {counts.messages > 0 && isAuthenticated && (
                     <span
-                      className="ms-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-red-500 text-white rounded-full"
+                      className="ms-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-red-600 text-white rounded-full"
                       aria-label={t('nav.unread_notifications', { count: counts.messages })}
                     >
                       <span aria-hidden="true">{counts.messages > 99 ? '99+' : counts.messages}</span>

@@ -207,7 +207,7 @@ describe('FilterSheet', () => {
         <p>Body</p>
       </FilterSheet>,
     );
-    expect(screen.getByText('Show 1 result').closest('button')?.className).toContain('bg-emerald-600');
+    expect(screen.getByText('Show 1 result').closest('button')?.className).toContain('bg-emerald-700');
 
     rerender(
       <FilterSheet isOpen onClose={onClose} title="Filters" resultCount={1} onApply={onApply}>

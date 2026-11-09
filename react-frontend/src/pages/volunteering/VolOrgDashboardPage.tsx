@@ -295,7 +295,7 @@ export default function VolOrgDashboardPage() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Button
-              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<RefreshCw className="w-4 h-4" />}
               onPress={() => loadOrg()}
             >
@@ -372,7 +372,7 @@ export default function VolOrgDashboardPage() {
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <GlassCard className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center flex-shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center flex-shrink-0">
               <Building2 className="w-7 h-7 text-white" aria-hidden="true" />
             </div>
             <div className="flex-1 min-w-0">
@@ -405,7 +405,7 @@ export default function VolOrgDashboardPage() {
               size="sm"
               variant={isActive ? 'solid' : 'flat'}
               className={isActive
-                ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white'
+                ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white'
                 : 'bg-theme-elevated text-theme-muted'
               }
               startContent={<Icon className="w-4 h-4" aria-hidden="true" />}

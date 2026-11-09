@@ -28,11 +28,23 @@ describe('filterAccent', () => {
 
   it('keeps Listings emerald and does not unify it with the theme accent', () => {
     const emerald = filterAccentClasses('emerald');
-    expect(emerald.filtersButtonActive).toBe('bg-emerald-600 text-white shadow-sm');
-    expect(emerald.chip).toContain('data-[selected=true]:bg-emerald-600');
-    expect(emerald.applyButton).toBe('bg-emerald-600 text-white shadow-sm hover:bg-emerald-700');
+    expect(emerald.filtersButtonActive).toBe('bg-emerald-700 text-white shadow-sm');
+    expect(emerald.chip).toContain('data-[selected=true]:bg-emerald-700');
+    expect(emerald.applyButton).toBe('bg-emerald-700 text-white shadow-sm hover:bg-emerald-800');
     expect(emerald.appliedChip).toContain('bg-emerald-500/15');
     expect(emerald).not.toEqual(FILTER_ACCENT_CLASSES.accent);
+  });
+
+  // A selected chip carries white text (FilterChipGroup's CHIP_CLASS) on a
+  // different line from its colour, where the white-text contract cannot see
+  // it. Tie it to the active Filters button, whose white text that contract
+  // does check: emerald-600 and amber-600 were 3.7:1 and 3.2:1 (9 Nov 2026).
+  it('gives a selected chip the same readable fill as the active Filters button', () => {
+    for (const accent of REQUIRED) {
+      const tone = FILTER_ACCENT_CLASSES[accent];
+      const buttonFill = tone.filtersButtonActive.match(/\bbg-[\w-]+/)?.[0];
+      expect(tone.chip, accent).toContain(`data-[selected=true]:${buttonFill}`);
+    }
   });
 
   it('exposes a complete literal class string for every slot (Tailwind cannot build names at runtime)', () => {

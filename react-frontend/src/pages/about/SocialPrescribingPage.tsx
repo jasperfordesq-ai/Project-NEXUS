@@ -264,7 +264,7 @@ export function SocialPrescribingPage() {
                 </p>
                 <footer>
                   <div className="inline-flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-sm" aria-hidden="true">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-700 to-teal-700 flex items-center justify-center text-white font-bold text-sm" aria-hidden="true">
                       M
                     </div>
                     <div className="text-left">
@@ -367,7 +367,7 @@ export function SocialPrescribingPage() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button as={Link} to={tenantPath('/contact')}
                     size="lg"
-                    className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold px-8"
+                    className="w-full sm:w-auto bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-semibold px-8"
                     endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
                   >
                     {t('social_prescribing.cta_contact')}

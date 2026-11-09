@@ -475,7 +475,7 @@ export function GroupSignUpTab() {
         <div className="flex flex-wrap gap-2">
           <Button
             size="sm"
-            className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
             onPress={openReservationModal}
           >
@@ -498,7 +498,7 @@ export function GroupSignUpTab() {
         <GlassCard className="p-8 text-center" role="alert">
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <p className="text-theme-muted mb-4">{error}</p>
-          <Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={load}>
+          <Button className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white" onPress={load}>
             {t('common.try_again')}
           </Button>
         </GlassCard>
@@ -661,7 +661,7 @@ export function GroupSignUpTab() {
                     <div className="flex flex-wrap gap-2 sm:flex-shrink-0 sm:flex-col sm:items-end">
                       <Button
                         size="sm"
-                        className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+                        className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                         startContent={<UserPlus className="w-4 h-4" aria-hidden="true" />}
                         onPress={() => openAddMemberModal(res.id)}
                         isDisabled={res.max_members !== null && res.members.length >= res.max_members}
@@ -743,7 +743,7 @@ export function GroupSignUpTab() {
           <ModalFooter>
             <Button variant="tertiary" onPress={onClose}>{t('common.cancel')}</Button>
             <Button
-              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               onPress={handleAddMember}
               isLoading={isAdding}
               isDisabled={!selectedMember}
@@ -864,7 +864,7 @@ export function GroupSignUpTab() {
           <ModalFooter>
             <Button variant="tertiary" onPress={reservationModal.onClose}>{t('common.cancel')}</Button>
             <Button
-              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               onPress={handleCreateReservation}
               isLoading={isReserving}
               isDisabled={!reserveGroupId || !reserveShiftId || isLoadingReservationOptions || isLoadingShifts}

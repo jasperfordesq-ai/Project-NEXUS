@@ -41,7 +41,7 @@ export function OfflineIndicator() {
           role="alert"
           data-nosnippet
         >
-          <div className="bg-amber-500 text-white text-center py-1.5 sm:py-2 px-2 sm:px-4 text-xs sm:text-sm font-medium flex items-center justify-center gap-2">
+          <div className="bg-amber-700 text-white text-center py-1.5 sm:py-2 px-2 sm:px-4 text-xs sm:text-sm font-medium flex items-center justify-center gap-2">
             <WifiOff className="w-4 h-4" aria-hidden="true" />
             <span>{t('offline_message')}</span>
           </div>

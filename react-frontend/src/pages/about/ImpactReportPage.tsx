@@ -170,7 +170,7 @@ export function ImpactReportPage() {
               href={FULL_REPORT_PDF}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold"
+              className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-semibold"
               startContent={<Download className="w-4 h-4" aria-hidden="true" />}
             >
               {t('impact_report.download_full_report')}
@@ -647,7 +647,7 @@ export function ImpactReportPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     size="lg"
-                    className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold"
+                    className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-semibold"
                     startContent={<Download className="w-5 h-5" aria-hidden="true" />}
                   >
                     {t('impact_report.cta_full_report')}

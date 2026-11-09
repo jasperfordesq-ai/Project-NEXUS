@@ -161,7 +161,7 @@ export function UrgentRequestModal({ shiftId, shiftLabel, onClose, onSent }: Urg
         <ModalFooter>
           <Button variant="tertiary" onPress={close} isDisabled={sending}>{t('shift_manager.cancel')}</Button>
           <Button
-            className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             isLoading={sending}
             onPress={() => void send()}
             data-testid="urgent-request-send"

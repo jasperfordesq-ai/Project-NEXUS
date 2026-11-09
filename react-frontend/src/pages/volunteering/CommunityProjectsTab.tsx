@@ -207,7 +207,7 @@ export function CommunityProjectsTab() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <Button
-          className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           size="sm"
           startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
           onPress={onOpen}
@@ -221,7 +221,7 @@ export function CommunityProjectsTab() {
         <GlassCard className="p-8 text-center" role="alert">
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <p className="text-theme-muted mb-4">{error}</p>
-          <Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={load}>
+          <Button className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white" onPress={load}>
             {t('community_projects.try_again')}
           </Button>
         </GlassCard>
@@ -244,7 +244,7 @@ export function CommunityProjectsTab() {
           description={t('community_projects.empty_description')}
           action={
             // "Be the first to propose…": the same form as the header button (gap C6).
-            <Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={onOpen}>
+            <Button className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white" onPress={onOpen}>
               {t('community_projects.propose')}
             </Button>
           }
@@ -311,7 +311,7 @@ export function CommunityProjectsTab() {
                     variant={project.has_supported ? 'primary' : 'tertiary'}
                     className={
                       project.has_supported
-                        ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white'
+                        ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white'
                         : 'bg-theme-elevated text-theme-muted'
                     }
                     startContent={<Heart className={`w-4 h-4 ${project.has_supported ? 'fill-current' : ''}`} aria-hidden="true" />}
@@ -402,7 +402,7 @@ export function CommunityProjectsTab() {
               <ModalFooter>
                 <Button variant="tertiary" onPress={onClose}>{t('community_projects.cancel')}</Button>
                 <Button
-                  className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                   isLoading={isSubmitting}
                   onPress={() => handleSubmit(onClose)}
                 >

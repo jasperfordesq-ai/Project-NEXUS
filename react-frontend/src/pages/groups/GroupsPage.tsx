@@ -397,7 +397,7 @@ export function GroupsPage() {
           <ToggleButton
             id="joined"
             variant="ghost"
-            className="bg-theme-elevated text-theme-secondary hover:text-emerald-600 data-[selected=true]:bg-emerald-600! data-[selected=true]:font-semibold data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
+            className="bg-theme-elevated text-theme-secondary hover:text-emerald-600 data-[selected=true]:bg-emerald-700! data-[selected=true]:font-semibold data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
           >
             <Star className="w-3.5 h-3.5" aria-hidden="true" />
             {t('filter_my')}
@@ -406,7 +406,7 @@ export function GroupsPage() {
         <ToggleButton
           id="public"
           variant="ghost"
-          className="bg-theme-elevated text-theme-secondary hover:text-sky-600 data-[selected=true]:bg-sky-600! data-[selected=true]:font-semibold data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
+          className="bg-theme-elevated text-theme-secondary hover:text-sky-600 data-[selected=true]:bg-sky-700! data-[selected=true]:font-semibold data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
         >
           <Globe className="w-3.5 h-3.5" aria-hidden="true" />
           {t('filter_public')}
@@ -414,7 +414,7 @@ export function GroupsPage() {
         <ToggleButton
           id="private"
           variant="ghost"
-          className="bg-theme-elevated text-theme-secondary hover:text-amber-600 data-[selected=true]:bg-amber-600! data-[selected=true]:font-semibold data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
+          className="bg-theme-elevated text-theme-secondary hover:text-amber-600 data-[selected=true]:bg-amber-700! data-[selected=true]:font-semibold data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
         >
           <Lock className="w-3.5 h-3.5" aria-hidden="true" />
           {t('filter_private')}

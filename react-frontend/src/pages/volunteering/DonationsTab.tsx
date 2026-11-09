@@ -130,7 +130,7 @@ const CAMPAIGN_CHIP_COLOR: Record<CampaignStatus, 'success' | 'accent' | 'defaul
 };
 
 // Volunteering brand gradient — mirrors VOL_GRADIENT in VolunteeringPage.
-const VOL_GRADIENT_BASE = 'bg-linear-to-r from-rose-500 to-pink-600';
+const VOL_GRADIENT_BASE = 'bg-linear-to-r from-accent-strong to-accent-strong-end';
 const VOL_GRADIENT = `${VOL_GRADIENT_BASE} text-white`;
 
 const EMPTY_PLEDGE: PledgeForm = {

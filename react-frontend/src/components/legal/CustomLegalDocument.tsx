@@ -146,7 +146,7 @@ const ACCENT_STYLES = {
     icon: 'text-[var(--color-info)]',
     tocHover: 'hover:bg-blue-500/10',
     chipBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-    btnGradient: 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white',
+    btnGradient: 'bg-gradient-to-r from-blue-600 to-cyan-700 text-white',
   },
   indigo: {
     gradientFrom: 'from-accent/20',
@@ -170,7 +170,7 @@ const ACCENT_STYLES = {
     icon: 'text-emerald-500 dark:text-emerald-400',
     tocHover: 'hover:bg-emerald-500/10',
     chipBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-    btnGradient: 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white',
+    btnGradient: 'bg-gradient-to-r from-emerald-700 to-teal-700 text-white',
   },
   amber: {
     gradientFrom: 'from-amber-500/20',
@@ -178,7 +178,7 @@ const ACCENT_STYLES = {
     icon: 'text-[var(--color-warning)]',
     tocHover: 'hover:bg-amber-500/10',
     chipBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-    btnGradient: 'bg-gradient-to-r from-amber-500 to-orange-600 text-white',
+    btnGradient: 'bg-gradient-to-r from-amber-700 to-orange-700 text-white',
   },
 };
 

@@ -247,7 +247,7 @@ export function BlogPostPage() {
               {t('post.back_to_blog')}
             </Button>
             <Button
-              className="bg-gradient-to-r from-blue-500 to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-blue-600 to-accent-gradient-end text-white"
               startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
               onPress={loadPost}
             >

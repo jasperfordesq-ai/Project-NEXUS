@@ -134,7 +134,7 @@ function PaymentForm({ onSuccess, onError }: Pick<StripePaymentFormProps, 'onSuc
 
       <Button
         type="submit"
-        className="w-full bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+        className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
         isLoading={isProcessing}
         isDisabled={!stripe || !elements || isProcessing}
         startContent={!isProcessing ? <CreditCard className="w-4 h-4" aria-hidden="true" /> : undefined}

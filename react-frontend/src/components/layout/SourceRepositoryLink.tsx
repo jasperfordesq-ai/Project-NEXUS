@@ -40,7 +40,7 @@ export function SourceRepositoryLink({
     'flex h-8 w-8 shrink-0 items-center justify-center rounded-md shadow-sm transition-transform duration-200 group-hover:scale-105',
     inverse
       ? 'bg-white text-slate-950'
-      : 'bg-gradient-to-br from-emerald-500 to-sky-500 text-white',
+      : 'bg-gradient-to-br from-emerald-700 to-sky-700 text-white',
   ].join(' ');
 
   return (
