@@ -37,7 +37,7 @@
   },
   "type": {
     "message": "Message",
-    "listing": "Listing",
+    "listing": "Aanbod of verzoek",
     "transaction": "Transaction",
     "connection": "Connection",
     "event": "Event",
@@ -64,7 +64,7 @@
     "transaction_complete": "Transactie Voltooid",
     "transaction_amount": "{{sign}}{{amount}} tijdcredits",
     "toast_message": "Nieuw Bericht",
-    "toast_listing": "Lijstupdate",
+    "toast_listing": "Update over een aanbod of verzoek",
     "toast_transaction": "Transaction",
     "toast_connection": "Verbindingsverzoek",
     "toast_event": "Evenementupdate",

@@ -16,7 +16,7 @@
     "banner_subtitle": "Ci dica i Suoi interessi e le Sue competenze per ottenere corrispondenze personalizzate",
     "get_started": "Inizia"
   },
-  "new_listing": "Nuovo Annuncio",
+  "new_listing": "Nuova offerta o richiesta",
   "caring_community": {
     "title": "Comunità solidale",
     "subtitle": "Coordina le richieste di aiuto, le offerte di tempo, le ore di volontariato verificate e il supporto affidabile da un unico posto.",
@@ -28,13 +28,13 @@
   },
   "stats": {
     "balance": "Saldo",
-    "active_listings": "Annunci Attivi",
+    "active_listings": "Offerte e richieste attive",
     "messages": "Messaggi",
     "pending": "In Attesa",
     "hours_value": "{{value}} h"
   },
   "sections": {
-    "recent_listings": "Annunci Recenti",
+    "recent_listings": "Offerte e richieste recenti",
     "recent_activity": "Attività Recente",
     "quick_actions": "Azioni Rapide",
     "suggested_for_you": "Suggeriti per te",
@@ -52,7 +52,7 @@
   "view_achievements": "Vedi Risultati",
   "view_all_transactions": "Vedi Tutte le Transazioni",
   "quick_actions": {
-    "create_listing": "Crea Annuncio",
+    "create_listing": "Crea un'offerta o una richiesta",
     "messages": "Messaggi",
     "view_wallet": "Vedi Portafoglio",
     "find_members": "Trova Membri",

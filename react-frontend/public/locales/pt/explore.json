@@ -9,14 +9,14 @@
     "members": "Membros",
     "exchanges_this_month": "Trocas Este Mês",
     "hours_exchanged": "Horas Trocadas",
-    "active_listings": "Anúncios Ativos"
+    "active_listings": "Ofertas e pedidos ativos"
   },
   "trending_posts": {
     "title": "Publicações em Destaque",
     "subtitle": "Publicações mais envolventes desta semana"
   },
   "popular_listings": {
-    "title": "Anúncios Populares",
+    "title": "Ofertas e pedidos populares",
     "subtitle": "Ofertas e pedidos mais vistos"
   },
   "upcoming_events": {
@@ -82,7 +82,7 @@
   "retry": "Tentar novamente",
   "near_you": {
     "title": "Perto de Si",
-    "subtitle": "Anúncios perto da sua localização",
+    "subtitle": "Ofertas e pedidos perto de si",
     "distance": "a {{distance}} km"
   },
   "suggested_connections": {
@@ -167,7 +167,7 @@
   "tabs": {
     "all": "Tudo",
     "for_you": "Para Si",
-    "listings": "Anúncios",
+    "listings": "Ofertas e pedidos",
     "people": "Pessoas",
     "events": "Eventos",
     "groups": "Grupos"
@@ -192,7 +192,7 @@
   "empty_people": "Ainda não há membros para mostrar. Convide alguém a juntar-se!",
   "empty_events": "Sem eventos próximos. Crie um para reunir a sua comunidade!",
   "empty_groups": "Ainda não há grupos ativos. Comece um grupo sobre os seus interesses!",
-  "create_listing": "Criar Anúncio",
+  "create_listing": "Criar uma oferta ou pedido",
   "create_event": "Criar Evento",
   "create_group": "Criar Grupo"
 }

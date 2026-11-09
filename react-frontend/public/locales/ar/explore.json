@@ -9,14 +9,14 @@
     "members": "الأعضاء",
     "exchanges_this_month": "التبادلات هذا الشهر",
     "hours_exchanged": "الساعات المتبادلة",
-    "active_listings": "القوائم النشطة"
+    "active_listings": "العروض والطلبات النشطة"
   },
   "trending_posts": {
     "title": "المشاركات الرائجة",
     "subtitle": "أكثر المشاركات تفاعلاً هذا الأسبوع"
   },
   "popular_listings": {
-    "title": "القوائم الشائعة",
+    "title": "العروض والطلبات الشائعة",
     "subtitle": "أكثر العروض والطلبات مشاهدة"
   },
   "upcoming_events": {
@@ -97,7 +97,7 @@
   "retry": "إعادة المحاولة",
   "near_you": {
     "title": "قريب منك",
-    "subtitle": "قوائم قريبة من موقعك",
+    "subtitle": "عروض وطلبات قريبة منك",
     "distance": "{{distance}} كم بعيد"
   },
   "suggested_connections": {
@@ -206,7 +206,7 @@
   "tabs": {
     "all": "الكل",
     "for_you": "لك",
-    "listings": "القوائم",
+    "listings": "العروض والطلبات",
     "people": "الأشخاص",
     "events": "الفعاليات",
     "groups": "المجموعات"
@@ -231,7 +231,7 @@
   "empty_people": "لا توجد أعضاء لعرضهم بعد. ادعُ شخصًا للانضمام!",
   "empty_events": "لا توجد فعاليات قادمة. أنشئ واحدة لجمع مجتمعك معًا!",
   "empty_groups": "لا توجد مجموعات نشطة بعد. ابدأ مجموعة حول اهتماماتك!",
-  "create_listing": "إنشاء قائمة",
+  "create_listing": "إنشاء عرض أو طلب",
   "create_event": "إنشاء حدث",
   "create_group": "إنشاء مجموعة"
 }

@@ -37,7 +37,7 @@
   },
   "type": {
     "message": "Nachricht",
-    "listing": "Anzeige",
+    "listing": "Angebot oder Gesuch",
     "transaction": "Transaktion",
     "connection": "Verbindung",
     "event": "Veranstaltung",
@@ -64,7 +64,7 @@
     "transaction_complete": "Transaktion abgeschlossen",
     "transaction_amount": "{{sign}}{{amount}} Zeitkredite",
     "toast_message": "Neue Nachricht",
-    "toast_listing": "Anzeigen-Update",
+    "toast_listing": "Neuigkeit zu einem Angebot oder Gesuch",
     "toast_transaction": "Transaktion",
     "toast_connection": "Verbindungsanfrage",
     "toast_event": "Veranstaltungs-Update",

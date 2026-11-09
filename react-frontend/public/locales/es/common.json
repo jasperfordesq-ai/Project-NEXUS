@@ -168,7 +168,7 @@
     "sign_up": "Registrarse"
   },
   "create": {
-    "new_listing": "Nuevo Anuncio",
+    "new_listing": "Nueva oferta o solicitud",
     "new_event": "Nuevo Evento",
     "new_course": "Nuevo curso",
     "new_podcast": "Nuevo podcast",
@@ -188,7 +188,7 @@
     "clear": "Limpiar búsqueda",
     "clear_recent": "Borrar búsquedas recientes",
     "close_search": "Cerrar búsqueda",
-    "type_listing": "Anuncio",
+    "type_listing": "Oferta o solicitud",
     "type_member": "Miembro",
     "type_event": "Evento",
     "type_group": "Grupo",
@@ -493,7 +493,7 @@
   "quick_create": {
     "title": "Crear nuevo",
     "close_aria": "Cerrar menú de creación",
-    "new_listing": "Nuevo anuncio",
+    "new_listing": "Nueva oferta o solicitud",
     "new_listing_desc": "Ofrecer o solicitar un servicio",
     "new_event": "Nuevo evento",
     "new_event_desc": "Organizar un evento comunitario",

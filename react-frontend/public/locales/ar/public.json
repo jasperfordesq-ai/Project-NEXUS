@@ -134,7 +134,7 @@
         "title": "تجربة العضو",
         "items": {
           "service_listings": {
-            "title": "إعلانات الخدمات",
+            "title": "العروض والطلبات",
             "description": "انشر العروض والطلبات، وتصفّح الإعلانات وطابقها بذكاء."
           },
           "marketplace": {
@@ -628,7 +628,7 @@
     "stats": {
       "active_members": "أعضاء نشطون",
       "hours_exchanged": "الساعات المتبادلة",
-      "active_listings": "قوائم نشطة",
+      "active_listings": "العروض والطلبات النشطة",
       "communities": "المجتمعات"
     },
     "scroll_down": "قم بالتمرير لأسفل",
@@ -750,7 +750,7 @@
     "stats": {
       "members": "أعضاء",
       "hours_exchanged": "الساعات المتبادلة",
-      "active_listings": "القوائم النشطة",
+      "active_listings": "العروض والطلبات النشطة",
       "communities": "المجتمعات"
     },
     "credits": {

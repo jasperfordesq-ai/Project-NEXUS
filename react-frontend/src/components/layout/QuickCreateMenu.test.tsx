@@ -180,7 +180,7 @@ describe('QuickCreateMenu', () => {
     // The first create option (listings) is the first grid button after the close btn
     const optionBtn = allBtns.find((b) => {
       const text = b.textContent?.toLowerCase() ?? '';
-      return text.includes('listing') || text.includes('quick_create');
+      return text.includes('offer or request') || text.includes('quick_create');
     });
     if (optionBtn) {
       await user.click(optionBtn);

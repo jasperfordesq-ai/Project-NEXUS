@@ -267,7 +267,7 @@
   "notification_prefs": {
     "new_messages": "Teachtaireachtaí Nua",
     "connection_requests": "Iarratais Cheangail",
-    "listing_activity": "Gníomhaíocht liostuithe",
+    "listing_activity": "Gníomhaíocht ar thairiscintí agus ar iarratais",
     "event_emails": "Ríomhphoist imeachtaí",
     "credit_transactions": "Idirbhearta Creidmheasa",
     "new_reviews": "Léirmheasanna nua",
@@ -464,7 +464,7 @@
   "notification_sections": {
     "title": "Roghanna Fógraí",
     "messages_communication": "Teachtaireachtaí & Cumarsáid",
-    "activity_listings": "Gníomhaíocht & Liostuithe",
+    "activity_listings": "Gníomhaíocht, tairiscintí agus iarratais",
     "community_achievements": "Pobal & Éachtaí",
     "organisation_notifications": "Fógraí na hEagraíochta",
     "match_digest": "Ríomhphoist Achoimre Meaitseála",

@@ -115,7 +115,7 @@
   "aria_conversation_unread": "Rozmowa z {{name}}, {{count}} nieprzeczytana",
   "aria_conversation": "Rozmowa z {{name}}",
   "aria_conversation_actions": "Akcje rozmowy",
-  "context_type_listing": "Ogłoszenie",
+  "context_type_listing": "Oferta lub prośba",
   "context_type_event": "Wydarzenie",
   "context_type_job": "Praca",
   "context_type_volunteering": "Wolontariat",

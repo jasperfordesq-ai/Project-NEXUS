@@ -242,7 +242,7 @@ describe('ExplorePage', () => {
     disabled.add('listings');
     rerender(<ExplorePage />);
     expect(screen.queryByText('Popular Listing One')).not.toBeInTheDocument();
-    expect(screen.queryByRole('tab', { name: /Listings/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Offers and requests/ })).not.toBeInTheDocument();
     disabled.delete('listings');
     rerender(<ExplorePage />);
     expect(screen.getByText('Popular Listing One')).toBeInTheDocument();
@@ -453,7 +453,7 @@ describe('ExplorePage', () => {
       const { default: ExplorePage } = await import('./ExplorePage');
       render(<ExplorePage />);
 
-      const cta = await screen.findByRole('button', { name: 'Create Listing' });
+      const cta = await screen.findByRole('button', { name: 'Create an offer or request' });
       await userEvent.click(cta);
 
       expect(mockNavigate).toHaveBeenCalledWith('/test/listings/create');

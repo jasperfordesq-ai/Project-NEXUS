@@ -6,7 +6,7 @@
   "bio": "自己紹介",
   "skills": "スキル",
   "interests": "興味",
-  "listings": "リスティング",
+  "listings": "提供とリクエスト",
   "reviews": "レビュー",
   "badges": "バッジ",
   "credits": "タイムクレジット",
@@ -32,13 +32,13 @@
   "stats": {
     "hours_given": "与えた時間",
     "hours_received": "受け取った時間",
-    "active_listings": "アクティブなリスティング",
+    "active_listings": "公開中の提供とリクエスト",
     "groups": "グループ",
     "events": "イベント"
   },
   "tabs": {
     "about": "自己紹介",
-    "listings": "リスティング",
+    "listings": "提供とリクエスト",
     "reviews": "レビュー",
     "achievements": "実績",
     "activity": "アクティビティ",
@@ -58,7 +58,7 @@
   "no_listings": "リスティングはありません",
   "no_listings_own": "まだリスティングを作成していません",
   "no_listings_other": "このユーザーはリスティングを作成していません",
-  "create_listing": "リスティングを作成",
+  "create_listing": "提供・リクエストを作成",
   "reviews_count_one": "{{count}} のレビュー",
   "reviews_count_other": "{{count}} のレビュー",
   "no_reviews": "まだレビューはありません",
@@ -100,7 +100,7 @@
     "save": "変更を保存"
   },
   "load_error": "プロフィールの読み込みに失敗しました。もう一度お試しください。",
-  "listing_image_alt": "リスティング画像",
+  "listing_image_alt": "この提供・リクエストの写真",
   "credits_sent_success": "{{name}}にクレジットを送信しました",
   "aria": {
     "profile_sections": "プロフィールセクション",

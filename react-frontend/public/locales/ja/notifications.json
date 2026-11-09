@@ -37,7 +37,7 @@
   },
   "type": {
     "message": "メッセージ",
-    "listing": "リスティング",
+    "listing": "提供・リクエスト",
     "transaction": "取引",
     "connection": "つながり",
     "event": "イベント",
@@ -64,7 +64,7 @@
     "transaction_complete": "取引完了",
     "transaction_amount": "{{sign}}{{amount}} タイムクレジット",
     "toast_message": "新しいメッセージ",
-    "toast_listing": "リストの更新",
+    "toast_listing": "提供・リクエストの更新",
     "toast_transaction": "取引",
     "toast_connection": "接続リクエスト",
     "toast_event": "イベントの更新",

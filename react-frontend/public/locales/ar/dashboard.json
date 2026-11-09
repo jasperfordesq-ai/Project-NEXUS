@@ -16,7 +16,7 @@
     "banner_subtitle": "أخبرنا عن اهتماماتك ومهاراتك للحصول على تطابقات مخصصة",
     "get_started": "ابدأ الآن"
   },
-  "new_listing": "قائمة جديدة",
+  "new_listing": "عرض أو طلب جديد",
   "caring_community": {
     "title": "مجتمع الرعاية",
     "subtitle": "نسّق طلبات المساعدة، وعروض الوقت، وساعات التطوع الموثقة، والدعم الموثوق من مكان واحد.",
@@ -28,13 +28,13 @@
   },
   "stats": {
     "balance": "الرصيد",
-    "active_listings": "القوائم النشطة",
+    "active_listings": "العروض والطلبات النشطة",
     "messages": "الرسائل",
     "pending": "قيد الانتظار",
     "hours_value": "{{value}} س"
   },
   "sections": {
-    "recent_listings": "القوائم الأخيرة",
+    "recent_listings": "أحدث العروض والطلبات",
     "recent_activity": "النشاط الأخير",
     "quick_actions": "إجراءات سريعة",
     "suggested_for_you": "مقترحات لك",
@@ -52,7 +52,7 @@
   "view_achievements": "عرض الإنجازات",
   "view_all_transactions": "عرض جميع المعاملات",
   "quick_actions": {
-    "create_listing": "إنشاء قائمة",
+    "create_listing": "إنشاء عرض أو طلب",
     "messages": "الرسائل",
     "view_wallet": "عرض المحفظة",
     "find_members": "البحث عن الأعضاء",

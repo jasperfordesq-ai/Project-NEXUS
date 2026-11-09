@@ -158,7 +158,7 @@ describe('TimebankingGuidePage', () => {
       hasModule: vi.fn(() => false),
     });
     render(<TimebankingGuidePage />);
-    expect(screen.queryByRole('link', { name: /browse listings/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /browse offers and requests/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /join/i })).not.toBeInTheDocument();
   });
 

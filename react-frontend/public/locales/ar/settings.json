@@ -267,7 +267,7 @@
   "notification_prefs": {
     "new_messages": "رسائل جديدة",
     "connection_requests": "طلبات الاتصال",
-    "listing_activity": "نشاط الإدراج",
+    "listing_activity": "النشاط على العروض والطلبات",
     "event_emails": "رسائل الفعاليات الإلكترونية",
     "credit_transactions": "معاملات الائتمان",
     "new_reviews": "مراجعات جديدة",
@@ -464,7 +464,7 @@
   "notification_sections": {
     "title": "تفضيلات الإشعارات",
     "messages_communication": "الرسائل والتواصل",
-    "activity_listings": "النشاط والقوائم",
+    "activity_listings": "النشاط والعروض والطلبات",
     "community_achievements": "المجتمع والإنجازات",
     "organisation_notifications": "إشعارات المنظمة",
     "match_digest": "رسائل ملخص المطابقة",

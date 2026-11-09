@@ -115,7 +115,7 @@
   "aria_conversation_unread": "محادثة مع {{name}}، {{count}} غير مقروءة",
   "aria_conversation": "محادثة مع {{name}}",
   "aria_conversation_actions": "إجراءات المحادثة",
-  "context_type_listing": "إعلان",
+  "context_type_listing": "عرض أو طلب",
   "context_type_event": "فعالية",
   "context_type_job": "وظيفة",
   "context_type_volunteering": "تطوع",

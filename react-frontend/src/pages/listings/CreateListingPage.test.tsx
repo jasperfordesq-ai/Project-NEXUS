@@ -125,7 +125,7 @@ describe('CreateListingPage', () => {
   it('renders create listing form heading', async () => {
     render(<CreateListingPage />);
     await waitFor(() => {
-      expect(screen.getAllByText(/Create New Listing/i).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText(/Create an offer or request/i).length).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -147,7 +147,7 @@ describe('CreateListingPage', () => {
 
   it('shows validation errors on empty submit', async () => {
     const { container } = render(<CreateListingPage />);
-    await waitFor(() => screen.getByText(/Create New Listing/i));
+    await waitFor(() => screen.getByRole('heading', { level: 1, name: /Create an offer or request/i }));
 
     // The generic Button stub forces type="button", so submit the <form>
     // directly to exercise the real handleSubmit/validateForm path. The Input
@@ -164,7 +164,7 @@ describe('CreateListingPage', () => {
 
   it('shows description validation error when too short', async () => {
     const { container } = render(<CreateListingPage />);
-    await waitFor(() => screen.getByText(/Create New Listing/i));
+    await waitFor(() => screen.getByRole('heading', { level: 1, name: /Create an offer or request/i }));
 
     // Fill title (>=5 chars) — the Input stub forwards `placeholder`, not the
     // floating `label`, so query by placeholder. Leave description empty.
@@ -224,7 +224,7 @@ describe('CreateListingPage', () => {
     vi.mocked(api.post).mockReturnValue(new Promise((resolve) => { resolvePost = resolve; }));
 
     const { container } = render(<CreateListingPage />);
-    await waitFor(() => screen.getByText(/Create New Listing/i));
+    await waitFor(() => screen.getByRole('heading', { level: 1, name: /Create an offer or request/i }));
 
     fireEvent.change(
       screen.getByPlaceholderText(/grocery shopping/i),
@@ -296,7 +296,7 @@ describe('CreateListingPage', () => {
       vi.mocked(api.post).mockResolvedValue({ success: false, error: 'Listing limit reached', code: 'HTTP_422' });
 
       const { container } = render(<CreateListingPage />);
-      await waitFor(() => screen.getByText(/Create New Listing/i));
+      await waitFor(() => screen.getByRole('heading', { level: 1, name: /Create an offer or request/i }));
       fillAndSubmitCreateForm(container);
 
       await waitFor(() => {
@@ -331,7 +331,7 @@ describe('CreateListingPage', () => {
       });
 
       const { container } = render(<CreateListingPage />);
-      await waitFor(() => screen.getByText(/Create New Listing/i));
+      await waitFor(() => screen.getByRole('heading', { level: 1, name: /Create an offer or request/i }));
       fillAndSubmitCreateForm(container);
 
       // Both field messages are rendered against their inputs.
@@ -353,7 +353,7 @@ describe('CreateListingPage', () => {
       });
 
       const { container } = render(<CreateListingPage />);
-      await waitFor(() => screen.getByText(/Create New Listing/i));
+      await waitFor(() => screen.getByRole('heading', { level: 1, name: /Create an offer or request/i }));
       fillAndSubmitCreateForm(container);
 
       await waitFor(() => {
@@ -366,7 +366,7 @@ describe('CreateListingPage', () => {
       vi.mocked(api.post).mockResolvedValue({ success: false });
 
       const { container } = render(<CreateListingPage />);
-      await waitFor(() => screen.getByText(/Create New Listing/i));
+      await waitFor(() => screen.getByRole('heading', { level: 1, name: /Create an offer or request/i }));
       fillAndSubmitCreateForm(container);
 
       await waitFor(() => {
@@ -380,11 +380,11 @@ describe('CreateListingPage', () => {
 
     it('still shows the success toast and navigates when creation succeeds', async () => {
       const { container } = render(<CreateListingPage />);
-      await waitFor(() => screen.getByText(/Create New Listing/i));
+      await waitFor(() => screen.getByRole('heading', { level: 1, name: /Create an offer or request/i }));
       fillAndSubmitCreateForm(container);
 
       await waitFor(() => {
-        expect(successToast).toHaveBeenCalledWith('Listing created successfully');
+        expect(successToast).toHaveBeenCalledWith('Your offer or request has been created');
       });
       expect(mockNavigate).toHaveBeenCalledWith('/test/listings/42');
       expect(errorToast).not.toHaveBeenCalled();
@@ -448,7 +448,7 @@ describe('CreateListingPage', () => {
         fireEvent.submit(container.querySelector('form') as HTMLFormElement);
 
         await waitFor(() => {
-          expect(successToast).toHaveBeenCalledWith('Listing updated successfully');
+          expect(successToast).toHaveBeenCalledWith('Your changes are saved');
         });
         expect(mockNavigate).toHaveBeenCalledWith('/test/listings/42');
         expect(errorToast).not.toHaveBeenCalled();

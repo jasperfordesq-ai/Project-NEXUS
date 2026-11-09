@@ -267,7 +267,7 @@
   "notification_prefs": {
     "new_messages": "Nieuwe berichten",
     "connection_requests": "Verbindingsverzoeken",
-    "listing_activity": "Lijstactiviteit",
+    "listing_activity": "Activiteit bij aanbod en verzoeken",
     "event_emails": "E-mails over evenementen",
     "credit_transactions": "Krediettransacties",
     "new_reviews": "Nieuwe beoordelingen",
@@ -464,7 +464,7 @@
   "notification_sections": {
     "title": "Notificatievoorkeuren",
     "messages_communication": "Berichten & Communicatie",
-    "activity_listings": "Activiteit & Lijsten",
+    "activity_listings": "Activiteit, aanbod en verzoeken",
     "community_achievements": "Gemeenschap & Prestaties",
     "organisation_notifications": "Organisatie Meldingen",
     "match_digest": "Match Digest E-mails",

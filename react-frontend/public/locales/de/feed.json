@@ -76,7 +76,7 @@
     "create_title": "{{type}} erstellen",
     "tab_post": "Beitrag",
     "tab_poll": "Umfrage",
-    "tab_listing": "Inserat",
+    "tab_listing": "Angebot oder Gesuch",
     "tab_event": "Veranstaltung",
     "tab_goal": "Ziel",
     "close_compose": "Schliessen",
@@ -100,7 +100,7 @@
     "create_poll": "Umfrage erstellen",
     "listing_title_label": "Titel",
     "listing_title_placeholder": "Was bieten Sie an oder suchen Sie?",
-    "listing_type_label": "Auflistungstyp",
+    "listing_type_label": "Angebot oder Gesuch",
     "listing_offering": "Anbieten",
     "listing_looking_for": "Suchen",
     "listing_desc_placeholder": "Beschreiben Sie Ihr Inserat...",
@@ -108,9 +108,9 @@
     "category_placeholder": "Kategorie auswählen",
     "estimated_hours_label": "Geschätzte Stunden",
     "placeholder_hours": "1",
-    "listing_created": "Inserat erstellt!",
+    "listing_created": "Angebot oder Gesuch veröffentlicht!",
     "listing_failed": "Inserat konnte nicht erstellt werden.",
-    "create_listing": "Inserat erstellen",
+    "create_listing": "Angebot oder Gesuch veröffentlichen",
     "event_title_label": "Veranstaltungstitel",
     "event_title_placeholder": "Benennen Sie Ihre Veranstaltung...",
     "event_desc_placeholder": "Beschreiben Sie Ihre Veranstaltung...",
@@ -245,7 +245,7 @@
     "video": "Video",
     "video_remove": "Video entfernen",
     "file_size_mb": "{{name}} ({{size}} MB)",
-    "listing_preview_alt": "Vorschau des Eintrags",
+    "listing_preview_alt": "Vorschau Ihres Angebots oder Gesuchs",
     "image_preview_alt": "Upload-Vorschau",
     "type_tabs_aria": "Inhaltstyp erstellen",
     "compose_post": "Beitrag verfassen",
@@ -290,7 +290,7 @@
     "admin_delete": "Löschen (Admin)",
     "view_analytics": "Analysen anzeigen",
     "type_post": "Beitrag",
-    "type_listing": "Anzeige",
+    "type_listing": "Angebot oder Gesuch",
     "type_offer": "Angebot",
     "type_request": "Gesuch",
     "type_event": "Veranstaltung",
@@ -323,7 +323,7 @@
     "other": "andere",
     "others": "andere",
     "all": "Alle",
-    "detail_listing": "Anzeige ansehen",
+    "detail_listing": "Angebot oder Gesuch ansehen",
     "detail_event": "Veranstaltung ansehen",
     "detail_goals": "Ziele ansehen",
     "detail_profile": "Profil ansehen",
@@ -501,7 +501,7 @@
   },
   "sidebar": {
     "profile": {
-      "listings": "Anzeigen",
+      "listings": "Angebote und Gesuche",
       "given": "Gegeben",
       "received": "Erhalten",
       "offers": "Angebote",
@@ -516,7 +516,7 @@
     "pulse": {
       "title": "Gemeinschaftspuls",
       "members": "Mitglieder",
-      "listings": "Anzeigen",
+      "listings": "Angebote und Gesuche",
       "events": "Veranstaltungen",
       "groups": "Gruppen"
     },
@@ -529,7 +529,7 @@
     },
     "categories": {
       "title": "Top-Kategorien",
-      "all_listings": "Alle Anzeigen"
+      "all_listings": "Alle Angebote und Gesuche"
     },
     "people": {
       "title": "Personen, die Sie kennen könnten",
@@ -549,7 +549,7 @@
     },
     "actions": {
       "title": "Schnellaktionen",
-      "create_listing": "Neue Anzeige erstellen",
+      "create_listing": "Angebot oder Gesuch erstellen",
       "create_listing_desc": "Fähigkeiten mit der Gemeinschaft teilen",
       "host_event": "Veranstaltung ausrichten",
       "create_poll": "Umfrage erstellen",

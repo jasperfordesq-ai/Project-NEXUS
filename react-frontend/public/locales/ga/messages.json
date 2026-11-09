@@ -115,7 +115,7 @@
   "aria_conversation_unread": "Comhrá le {{name}}, {{count}} neamhléite",
   "aria_conversation": "Comhrá le {{name}}",
   "aria_conversation_actions": "Gníomhartha comhrá",
-  "context_type_listing": "Liostú",
+  "context_type_listing": "Tairiscint nó iarratas",
   "context_type_event": "Imeacht",
   "context_type_job": "Post",
   "context_type_volunteering": "Obair Dheonach",

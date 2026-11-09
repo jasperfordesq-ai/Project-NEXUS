@@ -43,7 +43,7 @@
   "skill_request": "リクエスト",
   "activity_types": {
     "exchange": "交換",
-    "listing": "リスト",
+    "listing": "提供・リクエスト",
     "connection": "つながり",
     "event": "イベント",
     "message": "メッセージ",

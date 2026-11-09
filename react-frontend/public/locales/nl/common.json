@@ -167,7 +167,7 @@
     "sign_up": "Registreren"
   },
   "create": {
-    "new_listing": "Nieuwe advertentie",
+    "new_listing": "Nieuw aanbod of verzoek",
     "new_event": "Nieuw evenement",
     "new_course": "Nieuwe cursus",
     "new_podcast": "Nieuwe podcast",
@@ -187,7 +187,7 @@
     "clear": "Zoekopdracht wissen",
     "clear_recent": "Wis recente zoekopdrachten",
     "close_search": "Zoekopdracht sluiten",
-    "type_listing": "Advertentie",
+    "type_listing": "Aanbod of verzoek",
     "type_member": "Lid",
     "type_event": "Evenement",
     "type_group": "Groep",
@@ -489,7 +489,7 @@
   "quick_create": {
     "title": "Nieuw aanmaken",
     "close_aria": "Menu sluiten",
-    "new_listing": "Nieuwe advertentie",
+    "new_listing": "Nieuw aanbod of verzoek",
     "new_listing_desc": "Bied een dienst aan of vraag er één",
     "new_event": "Nieuw evenement",
     "new_event_desc": "Organiseer een gemeenschapsevenement",

@@ -16,7 +16,7 @@
     "banner_subtitle": "Parlez-nous de vos intérêts et compétences pour obtenir des correspondances personnalisées",
     "get_started": "Commencer"
   },
-  "new_listing": "Nouvelle annonce",
+  "new_listing": "Nouvelle offre ou demande",
   "caring_community": {
     "title": "Communauté bienveillante",
     "subtitle": "Coordonnez les demandes d'aide, les offres de temps, les heures de bénévolat vérifiées et le soutien de confiance depuis un seul endroit.",
@@ -28,13 +28,13 @@
   },
   "stats": {
     "balance": "Solde",
-    "active_listings": "Annonces actives",
+    "active_listings": "Offres et demandes actives",
     "messages": "Messages",
     "pending": "En attente",
     "hours_value": "{{value}} h"
   },
   "sections": {
-    "recent_listings": "Annonces récentes",
+    "recent_listings": "Offres et demandes récentes",
     "recent_activity": "Activité récente",
     "quick_actions": "Actions rapides",
     "suggested_for_you": "Suggestions pour vous",
@@ -52,7 +52,7 @@
   "view_achievements": "Voir les réalisations",
   "view_all_transactions": "Voir toutes les transactions",
   "quick_actions": {
-    "create_listing": "Créer une annonce",
+    "create_listing": "Créer une offre ou une demande",
     "messages": "Messages",
     "view_wallet": "Voir le portefeuille",
     "find_members": "Trouver des membres",

@@ -43,7 +43,7 @@
   "skill_request": "Prośba",
   "activity_types": {
     "exchange": "Wymiana",
-    "listing": "Ogłoszenie",
+    "listing": "Oferta lub prośba",
     "connection": "Połączenie",
     "event": "Wydarzenie",
     "message": "Wiadomość",

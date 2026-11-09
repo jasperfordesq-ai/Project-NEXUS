@@ -16,7 +16,7 @@
     "banner_subtitle": "Powiedz nam o swoich zainteresowaniach i umiejętnościach, aby uzyskać spersonalizowane dopasowania",
     "get_started": "Zacznij"
   },
-  "new_listing": "Nowa oferta",
+  "new_listing": "Nowa oferta lub prośba",
   "caring_community": {
     "title": "Wspólnota opiekuńcza",
     "subtitle": "Koordynuj prośby o pomoc, oferty czasu, zweryfikowane godziny wolontariatu i zaufane wsparcie z jednego miejsca.",
@@ -28,13 +28,13 @@
   },
   "stats": {
     "balance": "Saldo",
-    "active_listings": "Aktywne oferty",
+    "active_listings": "Aktywne oferty i prośby",
     "messages": "Wiadomości",
     "pending": "Oczekujące",
     "hours_value": "{{value}} godz."
   },
   "sections": {
-    "recent_listings": "Niedawne oferty",
+    "recent_listings": "Najnowsze oferty i prośby",
     "recent_activity": "Niedawna aktywność",
     "quick_actions": "Szybkie działania",
     "suggested_for_you": "Sugerowane dla Ciebie",
@@ -52,7 +52,7 @@
   "view_achievements": "Zobacz osiągnięcia",
   "view_all_transactions": "Zobacz wszystkie transakcje",
   "quick_actions": {
-    "create_listing": "Utwórz ofertę",
+    "create_listing": "Utwórz ofertę lub prośbę",
     "messages": "Wiadomości",
     "view_wallet": "Zobacz portfel",
     "find_members": "Znajdź członków",

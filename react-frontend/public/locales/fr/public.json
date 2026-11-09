@@ -134,7 +134,7 @@
         "title": "Expérience membre",
         "items": {
           "service_listings": {
-            "title": "Annonces de services",
+            "title": "Offres et demandes",
             "description": "Publiez des offres et des demandes, parcourez et faites correspondre les annonces intelligemment."
           },
           "marketplace": {
@@ -628,7 +628,7 @@
     "stats": {
       "active_members": "Membres actifs",
       "hours_exchanged": "Heures échangées",
-      "active_listings": "Annonces actives",
+      "active_listings": "Offres et demandes actives",
       "communities": "Communautés"
     },
     "scroll_down": "Défiler vers le bas",
@@ -750,7 +750,7 @@
     "stats": {
       "members": "Membres",
       "hours_exchanged": "Heures échangées",
-      "active_listings": "Annonces actives",
+      "active_listings": "Offres et demandes actives",
       "communities": "Communautés"
     },
     "credits": {

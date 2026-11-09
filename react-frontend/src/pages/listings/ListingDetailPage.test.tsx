@@ -524,7 +524,7 @@ describe('ListingDetailPage', () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(successToast).toHaveBeenCalledWith('Listing deleted');
+        expect(successToast).toHaveBeenCalledWith('Deleted');
       });
       expect(mockNavigate).toHaveBeenCalledWith('/test/listings', { replace: true });
       expect(errorToast).not.toHaveBeenCalled();

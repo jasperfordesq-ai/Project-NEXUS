@@ -31,7 +31,7 @@ export class ListingsPage extends BasePage {
     this.categoryFilter = page.locator('button[aria-haspopup="listbox"]').filter({ hasText: /Category|All Categories/ }).first();
     this.typeFilter = page.locator('button[aria-haspopup="listbox"]').filter({ hasText: /All Types|Offer|Request/ }).first();
     this.sortDropdown = page.locator('button[aria-haspopup="listbox"]').filter({ hasText: /Sort|Recent|Popular/ }).first();
-    this.createListingButton = page.locator('a[href*="/listings/create"], a:has-text("New Listing"), button:has-text("New Listing")').first();
+    this.createListingButton = page.locator('a[href*="/listings/create"], a:has-text("New offer or request"), button:has-text("New offer or request")').first();
     this.loadMoreButton = page.locator('button:has-text("Load More")');
     // EmptyState renders an h3 with the title text, wrapped in a div[role="status"]
     // Worded "No offers or requests to show" since Nov 2026 (was "No listings found").
@@ -183,7 +183,7 @@ export class CreateListingPage extends BasePage {
     this.locationInput = page.locator('input[placeholder*="Online, Dublin"]').first();
     this.durationInput = page.locator('input[placeholder="1"]').first();
     this.imageUpload = page.locator('input[type="file"]');
-    this.submitButton = page.locator('button:has-text("Create Listing"), button:has-text("Update Listing")').first();
+    this.submitButton = page.locator('button:has-text("Create an offer or request"), button:has-text("Save changes")').first();
     this.cancelButton = page.locator('button:has-text("Cancel"), a:has-text("Cancel")').first();
   }
 

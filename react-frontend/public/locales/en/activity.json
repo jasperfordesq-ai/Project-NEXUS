@@ -43,7 +43,7 @@
   "skill_request": "Request",
   "activity_types": {
     "exchange": "Exchange",
-    "listing": "Listing",
+    "listing": "Offer or request",
     "connection": "Connection",
     "event": "Event",
     "message": "Message",

@@ -134,7 +134,7 @@
         "title": "メンバー体験",
         "items": {
           "service_listings": {
-            "title": "サービスリスティング",
+            "title": "提供とリクエスト",
             "description": "提供と依頼を投稿し、リスティングを閲覧・スマートマッチング。"
           },
           "marketplace": {
@@ -628,7 +628,7 @@
     "stats": {
       "active_members": "アクティブメンバー",
       "hours_exchanged": "交換された時間",
-      "active_listings": "アクティブリスティング",
+      "active_listings": "公開中の提供とリクエスト",
       "communities": "コミュニティ"
     },
     "scroll_down": "下にスクロール",
@@ -750,7 +750,7 @@
     "stats": {
       "members": "メンバー",
       "hours_exchanged": "交換した時間",
-      "active_listings": "アクティブなリスト",
+      "active_listings": "公開中の提供とリクエスト",
       "communities": "コミュニティ"
     },
     "credits": {

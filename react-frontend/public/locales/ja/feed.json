@@ -76,7 +76,7 @@
     "create_title": "作成する {{type}}",
     "tab_post": "投稿",
     "tab_poll": "投票",
-    "tab_listing": "リスティング",
+    "tab_listing": "提供・リクエスト",
     "tab_event": "イベント",
     "tab_goal": "目標",
     "close_compose": "閉じる",
@@ -100,7 +100,7 @@
     "create_poll": "投票を作成",
     "listing_title_label": "タイトル",
     "listing_title_placeholder": "あなたが提供しているものまたは探しているものは何ですか？",
-    "listing_type_label": "出品タイプ",
+    "listing_type_label": "提供・リクエスト",
     "listing_offering": "提供",
     "listing_looking_for": "探しているもの",
     "listing_desc_placeholder": "リストの説明...",
@@ -108,9 +108,9 @@
     "category_placeholder": "カテゴリを選択",
     "estimated_hours_label": "推定時間",
     "placeholder_hours": "1",
-    "listing_created": "リストが作成されました！",
+    "listing_created": "提供・リクエストを投稿しました！",
     "listing_failed": "リストの作成に失敗しました。",
-    "create_listing": "リストを作成",
+    "create_listing": "提供・リクエストを投稿",
     "event_title_label": "イベントタイトル",
     "event_title_placeholder": "イベントに名前を付けてください...",
     "event_desc_placeholder": "イベントの説明...",
@@ -245,7 +245,7 @@
     "video": "動画",
     "video_remove": "動画を削除",
     "file_size_mb": "{{name}} ({{size}}MB)",
-    "listing_preview_alt": "リスティングのプレビュー",
+    "listing_preview_alt": "あなたの提供・リクエストのプレビュー",
     "image_preview_alt": "アップロードのプレビュー",
     "type_tabs_aria": "コンテンツタイプを作成する",
     "compose_post": "投稿を作成する",
@@ -290,7 +290,7 @@
     "admin_delete": "削除 (管理者)",
     "view_analytics": "分析を見る",
     "type_post": "投稿",
-    "type_listing": "リスティング",
+    "type_listing": "提供・リクエスト",
     "type_offer": "提供",
     "type_request": "依頼",
     "type_event": "イベント",
@@ -323,7 +323,7 @@
     "other": "その他",
     "others": "その他",
     "all": "すべて",
-    "detail_listing": "リストを見る",
+    "detail_listing": "提供・リクエストを見る",
     "detail_event": "イベントを見る",
     "detail_goals": "目標を見る",
     "detail_profile": "プロフィールを見る",
@@ -501,7 +501,7 @@
   },
   "sidebar": {
     "profile": {
-      "listings": "リスティング",
+      "listings": "提供とリクエスト",
       "given": "提供済み",
       "received": "受取済み",
       "offers": "提供",
@@ -516,7 +516,7 @@
     "pulse": {
       "title": "コミュニティの脈動",
       "members": "メンバー",
-      "listings": "リスティング",
+      "listings": "提供とリクエスト",
       "events": "イベント",
       "groups": "グループ"
     },
@@ -529,7 +529,7 @@
     },
     "categories": {
       "title": "トップカテゴリ",
-      "all_listings": "すべてのリスティング"
+      "all_listings": "すべての提供とリクエスト"
     },
     "people": {
       "title": "あなたが知っているかもしれない人々",
@@ -549,7 +549,7 @@
     },
     "actions": {
       "title": "クイックアクション",
-      "create_listing": "新しいリスティングを作成",
+      "create_listing": "提供・リクエストを作成",
       "create_listing_desc": "コミュニティとスキルを共有しよう",
       "host_event": "イベントを開催",
       "create_poll": "投票を作成",

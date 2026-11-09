@@ -261,7 +261,7 @@ describe('DashboardPage', () => {
   it('renders stat cards', () => {
     render(<DashboardPage />);
     expect(screen.getByText('Balance')).toBeInTheDocument();
-    expect(screen.getByText('Active Listings')).toBeInTheDocument();
+    expect(screen.getByText('Active offers and requests')).toBeInTheDocument();
     // "Messages" appears in both stat card and quick actions
     expect(screen.getAllByText('Messages').length).toBeGreaterThanOrEqual(1);
     // The dead always-zero "Pending" wallet stat was removed.
@@ -271,7 +271,7 @@ describe('DashboardPage', () => {
   it('renders Quick Actions section', () => {
     render(<DashboardPage />);
     expect(screen.getByText('Quick Actions')).toBeInTheDocument();
-    expect(screen.getByText('Create Listing')).toBeInTheDocument();
+    expect(screen.getByText('Create an offer or request')).toBeInTheDocument();
     expect(screen.getByText('View Wallet')).toBeInTheDocument();
     expect(screen.getByText('Find Members')).toBeInTheDocument();
   });
@@ -309,14 +309,14 @@ describe('DashboardPage', () => {
 
   it('Active Listings card shows the live count and opens My listings, not the community listings page', async () => {
     render(<DashboardPage />);
-    const card = await screen.findByRole('link', { name: 'Active Listings: 7' });
+    const card = await screen.findByRole('link', { name: 'Active offers and requests: 7' });
     expect(card).toHaveAttribute('href', '/test/listings/mine');
     expect(mockApiGet).toHaveBeenCalledWith('/v2/listings/mine?status=live&limit=5');
   });
 
   it('shows New Listing button', () => {
     render(<DashboardPage />);
-    expect(screen.getByText('New Listing')).toBeInTheDocument();
+    expect(screen.getByText('New offer or request')).toBeInTheDocument();
   });
 
   it('shows onboarding banner when onboarding not completed', async () => {
@@ -400,7 +400,7 @@ describe('DashboardPage', () => {
     render(<DashboardPage />);
 
     expect(screen.queryByText('Find Members')).not.toBeInTheDocument();
-    expect(screen.getByText('Create Listing')).toBeInTheDocument();
+    expect(screen.getByText('Create an offer or request')).toBeInTheDocument();
   });
 
   it('renders exchanges needing attention from the workflow endpoint', async () => {
@@ -458,7 +458,7 @@ describe('DashboardPage', () => {
     await waitFor(() => expect(screen.queryByText('Balance')).not.toBeInTheDocument());
     expect(mockApiGet).not.toHaveBeenCalledWith('/v2/wallet/balance');
     expect(mockApiGet.mock.calls.some(([url]) => String(url).startsWith('/v2/listings'))).toBe(false);
-    for (const label of ['Active Listings', 'Your listings', 'New Listing', 'Create Listing', 'View Wallet', 'Find Members']) {
+    for (const label of ['Active offers and requests', 'Your listings', 'New offer or request', 'Create an offer or request', 'View Wallet', 'Find Members']) {
       expect(screen.queryByText(label)).not.toBeInTheDocument();
     }
   });

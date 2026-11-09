@@ -9,14 +9,14 @@
     "members": "メンバー",
     "exchanges_this_month": "今月の交換",
     "hours_exchanged": "交換された時間",
-    "active_listings": "アクティブなリスト"
+    "active_listings": "公開中の提供とリクエスト"
   },
   "trending_posts": {
     "title": "トレンドの投稿",
     "subtitle": "今週の最もエンゲージメントの高い投稿"
   },
   "popular_listings": {
-    "title": "人気のリスト",
+    "title": "人気の提供とリクエスト",
     "subtitle": "最も閲覧されたオファーとリクエスト"
   },
   "upcoming_events": {
@@ -77,7 +77,7 @@
   "retry": "再試行",
   "near_you": {
     "title": "あなたの近く",
-    "subtitle": "あなたの位置に近いリスト",
+    "subtitle": "近くの提供とリクエスト",
     "distance": "{{distance}} km離れています"
   },
   "suggested_connections": {
@@ -154,7 +154,7 @@
   "tabs": {
     "all": "すべて",
     "for_you": "あなたのために",
-    "listings": "リスティング",
+    "listings": "提供とリクエスト",
     "people": "人",
     "events": "イベント",
     "groups": "グループ"
@@ -179,7 +179,7 @@
   "empty_people": "表示するメンバーはまだいません。誰かを招待して参加させましょう！",
   "empty_events": "今後のイベントはありません。コミュニティを集めるために作成しましょう！",
   "empty_groups": "まだアクティブなグループはありません。あなたの興味に基づいてグループを始めましょう！",
-  "create_listing": "リスティングを作成",
+  "create_listing": "提供・リクエストを作成",
   "create_event": "イベントを作成",
   "create_group": "グループを作成"
 }

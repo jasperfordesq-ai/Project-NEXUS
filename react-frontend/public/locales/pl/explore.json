@@ -9,14 +9,14 @@
     "members": "Członkowie",
     "exchanges_this_month": "Wymiany w tym miesiącu",
     "hours_exchanged": "Godziny wymienione",
-    "active_listings": "Aktywne ogłoszenia"
+    "active_listings": "Aktywne oferty i prośby"
   },
   "trending_posts": {
     "title": "Trendy posty",
     "subtitle": "Najbardziej angażujące posty w tym tygodniu"
   },
   "popular_listings": {
-    "title": "Popularne ogłoszenia",
+    "title": "Popularne oferty i prośby",
     "subtitle": "Najczęściej oglądane oferty i prośby"
   },
   "upcoming_events": {
@@ -87,7 +87,7 @@
   "retry": "Spróbuj ponownie",
   "near_you": {
     "title": "W Twojej okolicy",
-    "subtitle": "Ogłoszenia blisko Twojej lokalizacji",
+    "subtitle": "Oferty i prośby w Twojej okolicy",
     "distance": "{{distance}} km stąd"
   },
   "suggested_connections": {
@@ -180,7 +180,7 @@
   "tabs": {
     "all": "Wszystko",
     "for_you": "Dla Ciebie",
-    "listings": "Ogłoszenia",
+    "listings": "Oferty i prośby",
     "people": "Osoby",
     "events": "Wydarzenia",
     "groups": "Grupy"
@@ -205,7 +205,7 @@
   "empty_people": "Brak członków do wyświetlenia. Zaproś kogoś do dołączenia!",
   "empty_events": "Brak nadchodzących wydarzeń. Stwórz jedno, aby zjednoczyć swoją społeczność!",
   "empty_groups": "Brak aktywnych grup. Załóż grupę wokół swoich zainteresowań!",
-  "create_listing": "Utwórz ogłoszenie",
+  "create_listing": "Utwórz ofertę lub prośbę",
   "create_event": "Utwórz wydarzenie",
   "create_group": "Utwórz Grupę"
 }

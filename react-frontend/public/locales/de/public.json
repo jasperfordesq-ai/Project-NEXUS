@@ -134,7 +134,7 @@
         "title": "Mitglieder-Erlebnis",
         "items": {
           "service_listings": {
-            "title": "Dienstleistungs-Inserate",
+            "title": "Angebote und Gesuche",
             "description": "Angebote und Gesuche einstellen, Inserate durchsuchen und smart matchen."
           },
           "marketplace": {
@@ -628,7 +628,7 @@
     "stats": {
       "active_members": "Aktive Mitglieder",
       "hours_exchanged": "Getauschte Stunden",
-      "active_listings": "Aktive Angebote",
+      "active_listings": "Aktive Angebote und Gesuche",
       "communities": "Gemeinschaften"
     },
     "scroll_down": "Nach unten scrollen",
@@ -750,7 +750,7 @@
     "stats": {
       "members": "Mitglieder",
       "hours_exchanged": "Getauschte Stunden",
-      "active_listings": "Aktive Angebote",
+      "active_listings": "Aktive Angebote und Gesuche",
       "communities": "Gemeinschaften"
     },
     "credits": {

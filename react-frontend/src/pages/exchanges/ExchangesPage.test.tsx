@@ -166,7 +166,7 @@ describe('ExchangesPage', () => {
 
   it('shows Browse Listings button', () => {
     render(<ExchangesPage />);
-    expect(screen.getAllByText('Browse Listings').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Browse offers and requests').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders status filter tabs', () => {
@@ -324,8 +324,8 @@ describe('ExchangesPage', () => {
       expect(
         screen.getByLabelText('Filter by exchange status: Active'),
       ).toBeInTheDocument();
-      // "Browse Listings" was only reachable from the (now hidden) page header.
-      expect(screen.getByLabelText('Browse Listings')).toBeInTheDocument();
+      // "Browse offers and requests" was only reachable from the (now hidden) page header.
+      expect(screen.getByLabelText('Browse offers and requests')).toBeInTheDocument();
     });
 
     it('does not render the desktop header or the tab strip', () => {

@@ -115,7 +115,7 @@
   "aria_conversation_unread": "Gesprek met {{name}}, {{count}} ongelezen",
   "aria_conversation": "Gesprek met {{name}}",
   "aria_conversation_actions": "Gespreksacties",
-  "context_type_listing": "Advertentie",
+  "context_type_listing": "Aanbod of verzoek",
   "context_type_event": "Evenement",
   "context_type_job": "Vacature",
   "context_type_volunteering": "Vrijwilligerswerk",

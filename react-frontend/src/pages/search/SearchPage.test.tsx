@@ -144,7 +144,7 @@ describe('SearchPage', () => {
     disabled.add('listings');
     rerender(<SearchPage />);
     expect(screen.queryByText('Hidden listing')).not.toBeInTheDocument();
-    expect(screen.queryByRole('tab', { name: /Listings/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Offers and requests/ })).not.toBeInTheDocument();
     disabled.delete('listings');
     rerender(<SearchPage />);
     expect(screen.getByText('Hidden listing')).toBeInTheDocument();
@@ -161,7 +161,7 @@ describe('SearchPage', () => {
   it('does not show result tabs before a search is performed', () => {
     render(<SearchPage />);
     expect(screen.queryByText(/All \(\d+\)/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Listings \(\d+\)/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Offers and requests \(\d+\)/)).not.toBeInTheDocument();
   });
 
   it('shows no results state when search returns empty', async () => {
@@ -214,8 +214,8 @@ describe('SearchPage', () => {
     await waitFor(() => {
       expect(screen.getByText('All (2)')).toBeInTheDocument();
     });
-    // "Listings (1)" appears in both the tab and the section heading, use getAllByText
-    expect(screen.getAllByText('Listings (1)').length).toBeGreaterThanOrEqual(1);
+    // "Offers and requests (1)" appears in both the tab and the section heading, use getAllByText
+    expect(screen.getAllByText('Offers and requests (1)').length).toBeGreaterThanOrEqual(1);
     // "Members (1)" also appears in both tab and section heading
     expect(screen.getAllByText('Members (1)').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Events (0)')).toBeInTheDocument();

@@ -138,7 +138,7 @@ describe('ProfileCardWidget', () => {
 
     render(<ProfileCardWidget />);
     await waitFor(() => {
-      expect(screen.getByText('Listings')).toBeInTheDocument();
+      expect(screen.getByText('Offers and requests')).toBeInTheDocument();
       expect(screen.getByText('Given')).toBeInTheDocument();
       expect(screen.getByText('Received')).toBeInTheDocument();
     });

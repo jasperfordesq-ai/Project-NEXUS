@@ -16,7 +16,7 @@
     "banner_subtitle": "Cuéntanos sobre tus intereses y habilidades para obtener coincidencias personalizadas",
     "get_started": "Empezar"
   },
-  "new_listing": "Nuevo Anuncio",
+  "new_listing": "Nueva oferta o solicitud",
   "caring_community": {
     "title": "Comunidad de cuidados",
     "subtitle": "Coordina solicitudes de ayuda, ofertas de tiempo, horas de voluntariado verificadas y apoyo de confianza desde un solo lugar.",
@@ -28,13 +28,13 @@
   },
   "stats": {
     "balance": "Saldo",
-    "active_listings": "Anuncios Activos",
+    "active_listings": "Ofertas y solicitudes activas",
     "messages": "Mensajes",
     "pending": "Pendientes",
     "hours_value": "{{value}} h"
   },
   "sections": {
-    "recent_listings": "Anuncios Recientes",
+    "recent_listings": "Ofertas y solicitudes recientes",
     "recent_activity": "Actividad Reciente",
     "quick_actions": "Acciones Rápidas",
     "suggested_for_you": "Sugerido para Ti",
@@ -52,7 +52,7 @@
   "view_achievements": "Ver Logros",
   "view_all_transactions": "Ver Todas las Transacciones",
   "quick_actions": {
-    "create_listing": "Crear Anuncio",
+    "create_listing": "Crear una oferta o solicitud",
     "messages": "Mensajes",
     "view_wallet": "Ver Billetera",
     "find_members": "Buscar Miembros",

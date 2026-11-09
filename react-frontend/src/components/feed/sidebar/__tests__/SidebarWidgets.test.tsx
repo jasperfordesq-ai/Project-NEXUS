@@ -343,17 +343,17 @@ describe('QuickActionsWidget', () => {
     } as ReturnType<typeof useAuth>);
 
     render(<QuickActionsWidget />);
-    expect(screen.queryByText('Create New Listing')).not.toBeInTheDocument();
+    expect(screen.queryByText('Create an offer or request')).not.toBeInTheDocument();
   });
 
   it('renders Create New Listing primary CTA when authenticated', () => {
     render(<QuickActionsWidget />);
-    expect(screen.getByText('Create New Listing')).toBeInTheDocument();
+    expect(screen.getByText('Create an offer or request')).toBeInTheDocument();
   });
 
   it('primary CTA links to /listings/create', () => {
     render(<QuickActionsWidget />);
-    const btn = screen.getByText('Create New Listing').closest('a');
+    const btn = screen.getByText('Create an offer or request').closest('a');
     expect(btn).toHaveAttribute('href', '/test/listings/create');
   });
 
@@ -476,7 +476,7 @@ describe('TopCategoriesWidget', () => {
 
   it('renders All Listings link', () => {
     render(<TopCategoriesWidget categories={sampleCategories} />);
-    const allListings = screen.getByText('All Listings');
+    const allListings = screen.getByText('All offers and requests');
     expect(allListings.closest('a')).toHaveAttribute('href', '/test/listings');
   });
 });

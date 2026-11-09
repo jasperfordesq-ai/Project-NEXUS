@@ -134,7 +134,7 @@
         "title": "Doświadczenie członka",
         "items": {
           "service_listings": {
-            "title": "Ogłoszenia usług",
+            "title": "Oferty i prośby",
             "description": "Publikuj oferty i zapytania, przeglądaj i inteligentnie dopasowuj ogłoszenia."
           },
           "marketplace": {
@@ -628,7 +628,7 @@
     "stats": {
       "active_members": "Aktywni Członkowie",
       "hours_exchanged": "Godziny Wymienione",
-      "active_listings": "Aktywne Oferty",
+      "active_listings": "Aktywne oferty i prośby",
       "communities": "Społeczności"
     },
     "scroll_down": "Przewiń w dół",
@@ -750,7 +750,7 @@
     "stats": {
       "members": "Członkowie",
       "hours_exchanged": "Godziny wymienione",
-      "active_listings": "Aktywne ogłoszenia",
+      "active_listings": "Aktywne oferty i prośby",
       "communities": "Społeczności"
     },
     "credits": {

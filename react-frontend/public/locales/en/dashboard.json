@@ -16,7 +16,7 @@
     "banner_subtitle": "Tell us about your interests and skills to get personalized matches",
     "get_started": "Get Started"
   },
-  "new_listing": "New Listing",
+  "new_listing": "New offer or request",
   "caring_community": {
     "title": "Caring Community",
     "subtitle": "Coordinate help requests, time offers, verified volunteering hours, and trusted support from one place.",
@@ -28,13 +28,13 @@
   },
   "stats": {
     "balance": "Balance",
-    "active_listings": "Active Listings",
+    "active_listings": "Active offers and requests",
     "messages": "Messages",
     "pending": "Pending",
     "hours_value": "{{value}}h"
   },
   "sections": {
-    "recent_listings": "Recent Listings",
+    "recent_listings": "Recent offers and requests",
     "recent_activity": "Recent Activity",
     "quick_actions": "Quick Actions",
     "suggested_for_you": "Suggested for You",
@@ -52,7 +52,7 @@
   "view_achievements": "View Achievements",
   "view_all_transactions": "View All Transactions",
   "quick_actions": {
-    "create_listing": "Create Listing",
+    "create_listing": "Create an offer or request",
     "messages": "Messages",
     "view_wallet": "View Wallet",
     "find_members": "Find Members",

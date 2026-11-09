@@ -40,7 +40,7 @@
   },
   "type": {
     "message": "Teachtaireacht",
-    "listing": "Liostú",
+    "listing": "Tairiscint nó iarratas",
     "transaction": "Idirbheart",
     "connection": "Ceangal",
     "event": "Imeacht",
@@ -67,7 +67,7 @@
     "transaction_complete": "Idirbheart Críochnaithe",
     "transaction_amount": "{{sign}}{{amount}} creidmheas ama",
     "toast_message": "Teachtaireacht Nua",
-    "toast_listing": "Nuashonrú Liostaithe",
+    "toast_listing": "Nuashonrú ar thairiscint nó ar iarratas",
     "toast_transaction": "Idirbheart",
     "toast_connection": "Iarratas Ceangail",
     "toast_event": "Nuashonrú Imeachta",

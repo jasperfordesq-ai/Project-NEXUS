@@ -196,7 +196,7 @@ describe('Help Centre pages', () => {
     expect(response.status).toBe(200);
     expect(response.text).toContain(`<h1 class="govuk-heading-xl">${article.title}</h1>`);
     expect(response.text).toContain('<ol class="govuk-list govuk-list--number">');
-    expect(response.text).toContain('<strong>Create Listing</strong>');
+    expect(response.text).toContain('<strong>Create an offer or request</strong>');
     // [Listings](/listings) inside the body, and the "Go to this page" button,
     // which React points at /listings/create — here /listings/new.
     expect(response.text).toContain('<a class="govuk-link" href="/listings">Listings</a>');

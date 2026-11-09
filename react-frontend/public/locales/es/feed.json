@@ -77,7 +77,7 @@
     "create_title": "Crear {{type}}",
     "tab_post": "Publicación",
     "tab_poll": "Encuesta",
-    "tab_listing": "Anuncio",
+    "tab_listing": "Oferta o solicitud",
     "tab_event": "Evento",
     "tab_goal": "Meta",
     "close_compose": "Cerrar",
@@ -101,7 +101,7 @@
     "create_poll": "Crear Encuesta",
     "listing_title_label": "Título",
     "listing_title_placeholder": "¿Qué ofreces o buscas?",
-    "listing_type_label": "Tipo de listado",
+    "listing_type_label": "Oferta o solicitud",
     "listing_offering": "Ofreciendo",
     "listing_looking_for": "Buscando",
     "listing_desc_placeholder": "Describe tu anuncio...",
@@ -109,9 +109,9 @@
     "category_placeholder": "Selecciona una categoría",
     "estimated_hours_label": "Horas Estimadas",
     "placeholder_hours": "1",
-    "listing_created": "¡Anuncio creado!",
+    "listing_created": "¡Oferta o solicitud publicada!",
     "listing_failed": "Error al crear el anuncio.",
-    "create_listing": "Crear Anuncio",
+    "create_listing": "Publicar oferta o solicitud",
     "event_title_label": "Título del Evento",
     "event_title_placeholder": "Nombra tu evento...",
     "event_desc_placeholder": "Describe tu evento...",
@@ -246,7 +246,7 @@
     "video": "Vídeo",
     "video_remove": "Eliminar vídeo",
     "file_size_mb": "{{name}} ({{size}}MB)",
-    "listing_preview_alt": "Vista previa del anuncio",
+    "listing_preview_alt": "Vista previa de tu oferta o solicitud",
     "image_preview_alt": "Vista previa de la carga",
     "type_tabs_aria": "Redactar tipo de contenido",
     "compose_post": "Redactar publicación",
@@ -294,7 +294,7 @@
     "admin_delete": "Eliminar (Admin)",
     "view_analytics": "Ver Analíticas",
     "type_post": "Publicación",
-    "type_listing": "Anuncio",
+    "type_listing": "Oferta o solicitud",
     "type_offer": "Oferta",
     "type_request": "Solicitud",
     "type_event": "Evento",
@@ -327,7 +327,7 @@
     "other": "otro",
     "others": "otros",
     "all": "Todos",
-    "detail_listing": "Ver Anuncio",
+    "detail_listing": "Ver oferta o solicitud",
     "detail_event": "Ver Evento",
     "detail_goals": "Ver Objetivos",
     "detail_profile": "Ver Perfil",
@@ -512,7 +512,7 @@
   },
   "sidebar": {
     "profile": {
-      "listings": "Anuncios",
+      "listings": "Ofertas y solicitudes",
       "given": "Dadas",
       "received": "Recibidas",
       "offers": "Ofertas",
@@ -527,7 +527,7 @@
     "pulse": {
       "title": "Pulso de la Comunidad",
       "members": "Miembros",
-      "listings": "Anuncios",
+      "listings": "Ofertas y solicitudes",
       "events": "Eventos",
       "groups": "Grupos"
     },
@@ -540,7 +540,7 @@
     },
     "categories": {
       "title": "Categorías Principales",
-      "all_listings": "Todos los Anuncios"
+      "all_listings": "Todas las ofertas y solicitudes"
     },
     "people": {
       "title": "Personas Que Quizás Conozcas",
@@ -561,7 +561,7 @@
     },
     "actions": {
       "title": "Acciones Rápidas",
-      "create_listing": "Crear Nuevo Anuncio",
+      "create_listing": "Crear una oferta o solicitud",
       "create_listing_desc": "Comparte tus habilidades con la comunidad",
       "host_event": "Organizar Evento",
       "create_poll": "Crear Encuesta",

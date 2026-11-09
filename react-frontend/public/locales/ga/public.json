@@ -134,7 +134,7 @@
         "title": "Eispéireas na mBall",
         "items": {
           "service_listings": {
-            "title": "Liostálacha Seirbhísí",
+            "title": "Tairiscintí agus iarratais",
             "description": "Foilsigh tairiscintí agus iarrataí, brabhsáil liostálacha agus meaitseáil iad go cliste."
           },
           "marketplace": {
@@ -628,7 +628,7 @@
     "stats": {
       "active_members": "Baill Ghníomhacha",
       "hours_exchanged": "Uaireanta Malartaithe",
-      "active_listings": "Liostálacha Gníomhacha",
+      "active_listings": "Tairiscintí agus iarratais ghníomhacha",
       "communities": "Pobail"
     },
     "scroll_down": "Scrollaigh síos",
@@ -750,7 +750,7 @@
     "stats": {
       "members": "Baill",
       "hours_exchanged": "Uaireanta Malartaithe",
-      "active_listings": "Liostálacha Gníomhacha",
+      "active_listings": "Tairiscintí agus iarratais ghníomhacha",
       "communities": "Pobail"
     },
     "credits": {

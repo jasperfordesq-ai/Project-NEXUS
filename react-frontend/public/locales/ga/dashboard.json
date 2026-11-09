@@ -16,7 +16,7 @@
     "banner_subtitle": "Inis dúinn faoi do chuid suimeanna agus scileanna chun meaitseálacha pearsantaithe a fháil",
     "get_started": "Tosaigh"
   },
-  "new_listing": "Liostú nua",
+  "new_listing": "Tairiscint nó iarratas nua",
   "caring_community": {
     "title": "Pobal Cúraim",
     "subtitle": "Comhordaigh iarratais ar chabhair, tairiscintí ama, uaireanta deonaíochta fíoraithe agus tacaíocht iontaofa in aon áit amháin.",
@@ -28,13 +28,13 @@
   },
   "stats": {
     "balance": "Iarmhéid",
-    "active_listings": "Liostuithe gníomhacha",
+    "active_listings": "Tairiscintí agus iarratais ghníomhacha",
     "messages": "Teachtaireachtaí",
     "pending": "Ar feitheamh",
     "hours_value": "{{value}} u"
   },
   "sections": {
-    "recent_listings": "Liostuithe is déanaí",
+    "recent_listings": "Tairiscintí agus iarratais is déanaí",
     "recent_activity": "Gníomhaíocht is déanaí",
     "quick_actions": "Gníomhartha tapa",
     "suggested_for_you": "Molta duit",
@@ -52,7 +52,7 @@
   "view_achievements": "Féach ar na héachtaí",
   "view_all_transactions": "Féach ar na hidirbhearta go léir",
   "quick_actions": {
-    "create_listing": "Cruthaigh liostú",
+    "create_listing": "Cruthaigh tairiscint nó iarratas",
     "messages": "Teachtaireachtaí",
     "view_wallet": "Féach ar an sparán",
     "find_members": "Aimsigh baill",

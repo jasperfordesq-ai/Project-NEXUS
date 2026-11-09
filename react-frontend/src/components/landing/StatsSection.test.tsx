@@ -71,7 +71,7 @@ describe('StatsSection', () => {
       expect(screen.getByText('Active Members')).toBeInTheDocument();
     });
     expect(screen.getByText('Hours Exchanged')).toBeInTheDocument();
-    expect(screen.getByText('Active Listings')).toBeInTheDocument();
+    expect(screen.getByText('Active offers and requests')).toBeInTheDocument();
     expect(screen.getByText('Communities')).toBeInTheDocument();
   });
 

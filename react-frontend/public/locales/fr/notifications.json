@@ -38,7 +38,7 @@
   },
   "type": {
     "message": "Message",
-    "listing": "Annonce",
+    "listing": "Offre ou demande",
     "transaction": "Transaction",
     "connection": "Connexion",
     "event": "Événement",
@@ -65,7 +65,7 @@
     "transaction_complete": "Transaction terminée",
     "transaction_amount": "{{sign}}{{amount}} crédits-temps",
     "toast_message": "Nouveau message",
-    "toast_listing": "Mise à jour d'annonce",
+    "toast_listing": "Mise à jour d'une offre ou demande",
     "toast_transaction": "Transaction",
     "toast_connection": "Demande de connexion",
     "toast_event": "Mise à jour d'événement",

@@ -6,7 +6,7 @@
   "bio": "Faoi",
   "skills": "Scileanna",
   "interests": "Spéiseanna",
-  "listings": "Liostuithe",
+  "listings": "Tairiscintí agus iarratais",
   "reviews": "Léirmheasanna",
   "badges": "Suaitheantais",
   "credits": "Creidmheasanna Ama",
@@ -32,13 +32,13 @@
   "stats": {
     "hours_given": "Uaireanta Tugtha",
     "hours_received": "Uaireanta Faighte",
-    "active_listings": "Liostuithe Gníomhacha",
+    "active_listings": "Tairiscintí agus iarratais ghníomhacha",
     "groups": "Grúpaí",
     "events": "Imeachtaí"
   },
   "tabs": {
     "about": "Faoi",
-    "listings": "Liostuithe",
+    "listings": "Tairiscintí agus iarratais",
     "reviews": "Léirmheasanna",
     "achievements": "Éachtaí",
     "activity": "Gníomhaíocht",
@@ -58,7 +58,7 @@
   "no_listings": "Níl aon liostú ann",
   "no_listings_own": "Níor chruthaigh tú aon liostú fós",
   "no_listings_other": "Níor chruthaigh an t-úsáideoir seo aon liostú",
-  "create_listing": "Cruthaigh Liostú",
+  "create_listing": "Cruthaigh tairiscint nó iarratas",
   "reviews_count_one": "{{count}} léirmheas",
   "reviews_count_other": "{{count}} léirmheas",
   "no_reviews": "Gan léirmheasanna fós",
@@ -103,7 +103,7 @@
     "save": "Sábháil Athruithe"
   },
   "load_error": "Níorbh fhéidir an phróifíl a luchtú. Bain triail eile as.",
-  "listing_image_alt": "Íomhá an liostaithe",
+  "listing_image_alt": "Grianghraf don tairiscint nó don iarratas seo",
   "credits_sent_success": "Creidmheasanna seolta chuig {{name}}",
   "aria": {
     "profile_sections": "Rannóga próifíle",

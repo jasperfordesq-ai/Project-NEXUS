@@ -80,7 +80,7 @@
     "create_title": "إنشاء {{type}}",
     "tab_post": "منشور",
     "tab_poll": "استطلاع",
-    "tab_listing": "قائمة",
+    "tab_listing": "عرض أو طلب",
     "tab_event": "فعالية",
     "tab_goal": "هدف",
     "close_compose": "إغلاق",
@@ -104,7 +104,7 @@
     "create_poll": "إنشاء استطلاع",
     "listing_title_label": "العنوان",
     "listing_title_placeholder": "ماذا تقدم أو تبحث عنه؟",
-    "listing_type_label": "نوع القائمة",
+    "listing_type_label": "عرض أو طلب",
     "listing_offering": "تقديم",
     "listing_looking_for": "البحث عن",
     "listing_desc_placeholder": "صف قائمتك...",
@@ -112,9 +112,9 @@
     "category_placeholder": "اختر فئة",
     "estimated_hours_label": "الساعات المقدرة",
     "placeholder_hours": "1",
-    "listing_created": "تم إنشاء القائمة!",
+    "listing_created": "تم نشر العرض أو الطلب!",
     "listing_failed": "فشل في إنشاء القائمة.",
-    "create_listing": "إنشاء قائمة",
+    "create_listing": "نشر العرض أو الطلب",
     "event_title_label": "عنوان الحدث",
     "event_title_placeholder": "سمِّ حدثك...",
     "event_desc_placeholder": "وصف حدثك...",
@@ -249,7 +249,7 @@
     "video": "فيديو",
     "video_remove": "إزالة الفيديو",
     "file_size_mb": "{{name}} ({{size}}ميجابايت)",
-    "listing_preview_alt": "معاينة الإعلان",
+    "listing_preview_alt": "معاينة عرضك أو طلبك",
     "image_preview_alt": "معاينة الرفع",
     "type_tabs_aria": "يؤلف نوع المحتوى",
     "compose_post": "إنشاء مشاركة",
@@ -306,7 +306,7 @@
     "admin_delete": "حذف (مدير)",
     "view_analytics": "عرض التحليلات",
     "type_post": "منشور",
-    "type_listing": "قائمة",
+    "type_listing": "عرض أو طلب",
     "type_offer": "عرض",
     "type_request": "طلب",
     "type_event": "فعالية",
@@ -339,7 +339,7 @@
     "other": "آخر",
     "others": "آخرون",
     "all": "الكل",
-    "detail_listing": "عرض القائمة",
+    "detail_listing": "مشاهدة العرض أو الطلب",
     "detail_event": "عرض الحدث",
     "detail_goals": "عرض الأهداف",
     "detail_profile": "عرض الملف الشخصي",
@@ -545,7 +545,7 @@
   },
   "sidebar": {
     "profile": {
-      "listings": "القوائم",
+      "listings": "العروض والطلبات",
       "given": "المُعطاة",
       "received": "المُستلمة",
       "offers": "العروض",
@@ -560,7 +560,7 @@
     "pulse": {
       "title": "نبض المجتمع",
       "members": "الأعضاء",
-      "listings": "القوائم",
+      "listings": "العروض والطلبات",
       "events": "الفعاليات",
       "groups": "المجموعات"
     },
@@ -573,7 +573,7 @@
     },
     "categories": {
       "title": "الفئات الأعلى",
-      "all_listings": "جميع القوائم"
+      "all_listings": "جميع العروض والطلبات"
     },
     "people": {
       "title": "أشخاص قد تعرفهم",
@@ -597,7 +597,7 @@
     },
     "actions": {
       "title": "إجراءات سريعة",
-      "create_listing": "إنشاء قائمة جديدة",
+      "create_listing": "إنشاء عرض أو طلب",
       "create_listing_desc": "شارك مهاراتك مع المجتمع",
       "host_event": "استضافة حدث",
       "create_poll": "إنشاء استطلاع",

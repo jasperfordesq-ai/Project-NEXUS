@@ -58,7 +58,7 @@ describe('MatchesEmptyState', () => {
   it('renders the default "none" variant with browse and preferences CTAs', () => {
     render(<MatchesEmptyState variant="none" />);
     expect(screen.getByText('No matches yet')).toBeInTheDocument();
-    expect(screen.getByText('Browse Listings')).toBeInTheDocument();
+    expect(screen.getByText('Browse offers and requests')).toBeInTheDocument();
     expect(screen.getByText('Adjust match preferences')).toBeInTheDocument();
   });
 });

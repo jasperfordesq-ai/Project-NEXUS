@@ -111,7 +111,7 @@ describe('ProfileCardWidget', () => {
     render(<ProfileCardWidget />);
 
     await waitFor(() => expect(mockApi.get).toHaveBeenCalled());
-    expect(screen.queryByText('Listings')).not.toBeInTheDocument();
+    expect(screen.queryByText('Offers and requests')).not.toBeInTheDocument();
     expect(screen.queryByText('Offers')).not.toBeInTheDocument();
     expect(screen.queryByText('Requests')).not.toBeInTheDocument();
     expect(screen.getByText('Given')).toBeInTheDocument();

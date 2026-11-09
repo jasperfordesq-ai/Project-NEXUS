@@ -6,7 +6,7 @@
   "bio": "Über mich",
   "skills": "Fähigkeiten",
   "interests": "Interessen",
-  "listings": "Inserate",
+  "listings": "Angebote und Gesuche",
   "reviews": "Bewertungen",
   "badges": "Abzeichen",
   "credits": "Zeitguthaben",
@@ -32,13 +32,13 @@
   "stats": {
     "hours_given": "Geleistete Stunden",
     "hours_received": "Erhaltene Stunden",
-    "active_listings": "Aktive Inserate",
+    "active_listings": "Aktive Angebote und Gesuche",
     "groups": "Gruppen",
     "events": "Veranstaltungen"
   },
   "tabs": {
     "about": "Über mich",
-    "listings": "Inserate",
+    "listings": "Angebote und Gesuche",
     "reviews": "Bewertungen",
     "achievements": "Erfolge",
     "activity": "Aktivität",
@@ -58,7 +58,7 @@
   "no_listings": "Keine Inserate",
   "no_listings_own": "Sie haben noch keine Inserate erstellt",
   "no_listings_other": "Dieser Benutzer hat noch keine Inserate erstellt",
-  "create_listing": "Inserat erstellen",
+  "create_listing": "Angebot oder Gesuch erstellen",
   "reviews_count_one": "{{count}} Bewertung",
   "reviews_count_other": "{{count}} Bewertungen",
   "no_reviews": "Noch keine Bewertungen",
@@ -100,7 +100,7 @@
     "save": "Änderungen speichern"
   },
   "load_error": "Profil konnte nicht geladen werden.",
-  "listing_image_alt": "Anzeigenbild",
+  "listing_image_alt": "Foto zu diesem Angebot oder Gesuch",
   "credits_sent_success": "Kredite an {{name}} gesendet",
   "aria": {
     "profile_sections": "Profilbereiche",

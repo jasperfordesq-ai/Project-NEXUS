@@ -267,7 +267,7 @@
   "notification_prefs": {
     "new_messages": "新しいメッセージ",
     "connection_requests": "接続リクエスト",
-    "listing_activity": "リスティングアクティビティ",
+    "listing_activity": "提供とリクエストのアクティビティ",
     "event_emails": "イベントメール",
     "credit_transactions": "クレジット取引",
     "new_reviews": "新しいレビュー",
@@ -464,7 +464,7 @@
   "notification_sections": {
     "title": "通知設定",
     "messages_communication": "メッセージ & コミュニケーション",
-    "activity_listings": "アクティビティ & リスティング",
+    "activity_listings": "アクティビティと提供・リクエスト",
     "community_achievements": "コミュニティ & 実績",
     "organisation_notifications": "組織通知",
     "match_digest": "マッチダイジェストメール",

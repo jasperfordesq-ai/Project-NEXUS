@@ -9,14 +9,14 @@
     "members": "Baill",
     "exchanges_this_month": "Malartuithe an Mhí seo",
     "hours_exchanged": "Uaireanta Malartaithe",
-    "active_listings": "Liostuithe Gníomhacha"
+    "active_listings": "Tairiscintí agus iarratais ghníomhacha"
   },
   "trending_posts": {
     "title": "Postálacha Treochtúla",
     "subtitle": "Na postálacha is mó rannpháirtíochta an tseachtain seo"
   },
   "popular_listings": {
-    "title": "Liostuithe Coitianta",
+    "title": "Tairiscintí agus iarratais choitianta",
     "subtitle": "Na tairiscintí agus iarratais is mó amharc"
   },
   "upcoming_events": {
@@ -92,7 +92,7 @@
   "retry": "Atriail",
   "near_you": {
     "title": "In Aice Leat",
-    "subtitle": "Liostuithe gar do do shuíomh",
+    "subtitle": "Tairiscintí agus iarratais gar duit",
     "distance": "{{distance}} km ar shiúl"
   },
   "suggested_connections": {
@@ -193,7 +193,7 @@
   "tabs": {
     "all": "Gach rud",
     "for_you": "Duit Féin",
-    "listings": "Liostuithe",
+    "listings": "Tairiscintí agus iarratais",
     "people": "Daoine",
     "events": "Imeachtaí",
     "groups": "Grúpaí"
@@ -218,7 +218,7 @@
   "empty_people": "Níl aon bhaill le taispeáint fós. Tabhair cuireadh do dhuine éigin!",
   "empty_events": "Níl aon imeachtaí le teacht. Cruthaigh ceann chun do phobal a thabhairt le chéile!",
   "empty_groups": "Níl aon ghrúpaí gníomhacha fós. Tosaigh grúpa bunaithe ar do spéiseanna!",
-  "create_listing": "Cruthaigh Liostú",
+  "create_listing": "Cruthaigh tairiscint nó iarratas",
   "create_event": "Cruthaigh Imeacht",
   "create_group": "Cruthaigh Grúpa"
 }

@@ -134,7 +134,7 @@
         "title": "Ledenervaring",
         "items": {
           "service_listings": {
-            "title": "Service-advertenties",
+            "title": "Aanbod en verzoeken",
             "description": "Plaats aanbiedingen en verzoeken, blader door en match advertenties slim."
           },
           "marketplace": {
@@ -628,7 +628,7 @@
     "stats": {
       "active_members": "Actieve Leden",
       "hours_exchanged": "Uren Gewisseld",
-      "active_listings": "Actieve Lijsten",
+      "active_listings": "Actief aanbod en verzoeken",
       "communities": "Gemeenschappen"
     },
     "scroll_down": "Scroll naar beneden",
@@ -750,7 +750,7 @@
     "stats": {
       "members": "Leden",
       "hours_exchanged": "Uren Uitgewisseld",
-      "active_listings": "Actieve Lijsten",
+      "active_listings": "Actief aanbod en verzoeken",
       "communities": "Gemeenschappen"
     },
     "credits": {

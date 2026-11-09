@@ -110,7 +110,7 @@ describe('TopCategoriesWidget', () => {
 
   it('renders All Listings link pointing to /listings', () => {
     render(<TopCategoriesWidget categories={sampleCategories} />);
-    const allListings = screen.getByText('All Listings');
+    const allListings = screen.getByText('All offers and requests');
     expect(allListings.closest('a')).toHaveAttribute('href', '/test/listings');
   });
 

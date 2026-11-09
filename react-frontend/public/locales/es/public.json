@@ -134,7 +134,7 @@
         "title": "Experiencia del miembro",
         "items": {
           "service_listings": {
-            "title": "Anuncios de servicios",
+            "title": "Ofertas y solicitudes",
             "description": "Publica ofertas y solicitudes, navega y empareja anuncios de forma inteligente."
           },
           "marketplace": {
@@ -628,7 +628,7 @@
     "stats": {
       "active_members": "Miembros Activos",
       "hours_exchanged": "Horas Intercambiadas",
-      "active_listings": "Anuncios Activos",
+      "active_listings": "Ofertas y solicitudes activas",
       "communities": "Comunidades"
     },
     "scroll_down": "Desplázate hacia abajo",
@@ -750,7 +750,7 @@
     "stats": {
       "members": "Miembros",
       "hours_exchanged": "Horas Intercambiadas",
-      "active_listings": "Anuncios Activos",
+      "active_listings": "Ofertas y solicitudes activas",
       "communities": "Comunidades"
     },
     "credits": {

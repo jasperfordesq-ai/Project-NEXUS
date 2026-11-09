@@ -79,7 +79,7 @@
     "create_title": "Cruthaigh {{type}}",
     "tab_post": "Postáil",
     "tab_poll": "Pobalbhreith",
-    "tab_listing": "Liostú",
+    "tab_listing": "Tairiscint nó iarratas",
     "tab_event": "Imeacht",
     "tab_goal": "Sprioc",
     "close_compose": "Dún",
@@ -103,7 +103,7 @@
     "create_poll": "Cruthaigh Pobalbhreith",
     "listing_title_label": "Teideal",
     "listing_title_placeholder": "Cad atá á thairiscint agat nó cad atá á lorg agat?",
-    "listing_type_label": "Cineál liostaithe",
+    "listing_type_label": "Tairiscint nó iarratas",
     "listing_offering": "Ag Tairiscint",
     "listing_looking_for": "Ag Lorg",
     "listing_desc_placeholder": "Déan cur síos ar do liostú...",
@@ -111,9 +111,9 @@
     "category_placeholder": "Roghnaigh catagóir",
     "estimated_hours_label": "Uaireanta Measta",
     "placeholder_hours": "1",
-    "listing_created": "Cruthaíodh an liostú!",
+    "listing_created": "Foilsíodh an tairiscint nó an t-iarratas!",
     "listing_failed": "Níorbh fhéidir an liostú a chruthú.",
-    "create_listing": "Cruthaigh Liostú",
+    "create_listing": "Foilsigh an tairiscint nó an t-iarratas",
     "event_title_label": "Teideal Imeachta",
     "event_title_placeholder": "Ainmnigh d'imeacht...",
     "event_desc_placeholder": "Déan cur síos ar d'imeacht...",
@@ -248,7 +248,7 @@
     "video": "Físeán",
     "video_remove": "Bain físeán",
     "file_size_mb": "{{name}} ({{size}} MB)",
-    "listing_preview_alt": "Réamhamharc ar an liostú",
+    "listing_preview_alt": "Réamhamharc ar do thairiscint nó d'iarratas",
     "image_preview_alt": "Réamhamharc ar an uaslódáil",
     "type_tabs_aria": "Cineál ábhair na postála",
     "compose_post": "Cum postáil",
@@ -302,7 +302,7 @@
     "admin_delete": "Scrios (Riarachán)",
     "view_analytics": "Féach ar an anailísíocht",
     "type_post": "Postáil",
-    "type_listing": "Liostú",
+    "type_listing": "Tairiscint nó iarratas",
     "type_offer": "Tairiscint",
     "type_request": "Iarratas",
     "type_event": "Imeacht",
@@ -335,7 +335,7 @@
     "other": "eile",
     "others": "daoine eile",
     "all": "Gach",
-    "detail_listing": "Féach ar an liostú",
+    "detail_listing": "Féach ar an tairiscint nó ar an iarratas",
     "detail_event": "Féach ar an imeacht",
     "detail_goals": "Féach ar na spriocanna",
     "detail_profile": "Féach ar an bpróifíl",
@@ -534,7 +534,7 @@
   },
   "sidebar": {
     "profile": {
-      "listings": "Liostuithe",
+      "listings": "Tairiscintí agus iarratais",
       "given": "Tugtha",
       "received": "Faighte",
       "offers": "Tairiscintí",
@@ -549,7 +549,7 @@
     "pulse": {
       "title": "Cuisle an Phobail",
       "members": "Baill",
-      "listings": "Liostuithe",
+      "listings": "Tairiscintí agus iarratais",
       "events": "Imeachtaí",
       "groups": "Grúpaí"
     },
@@ -562,7 +562,7 @@
     },
     "categories": {
       "title": "Barrchatagóirí",
-      "all_listings": "Gach liostú"
+      "all_listings": "Gach tairiscint agus iarratas"
     },
     "people": {
       "title": "Daoine a bhféadfadh aithne a bheith agat orthu",
@@ -585,7 +585,7 @@
     },
     "actions": {
       "title": "Meargníomhartha",
-      "create_listing": "Cruthaigh Liostú Nua",
+      "create_listing": "Cruthaigh tairiscint nó iarratas",
       "create_listing_desc": "Roinn do scileanna leis an bpobal",
       "host_event": "Eagraigh Imeacht",
       "create_poll": "Cruthaigh Pobalbhreith",

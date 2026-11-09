@@ -70,7 +70,7 @@ test.describe('Dashboard', () => {
       await dashboard.waitForLoad();
 
       // Recent listings section
-      const listingsSection = page.locator('text=Recent Listings, text=My Listings, text=My Recent Listings').first();
+      const listingsSection = page.locator('text=Recent offers and requests, text=Your offers and requests').first();
       const hasListings = await listingsSection.count() > 0;
 
       expect(hasListings || true).toBeTruthy();
@@ -174,7 +174,7 @@ test.describe('Dashboard', () => {
       // is `/listings/create`, and the destination assertion below was checking
       // for the same dead path, so it could only have passed via the `feed`
       // alternative.
-      const createBtn = page.locator('button:has-text("Create"), a:has-text("Create Listing"), a[href*="listings/create"]').first();
+      const createBtn = page.locator('button:has-text("Create"), a:has-text("Create an offer or request"), a[href*="listings/create"]').first();
       if (await createBtn.count() > 0 && await createBtn.isVisible()) {
         await createBtn.click();
         await page.waitForLoadState('domcontentloaded');

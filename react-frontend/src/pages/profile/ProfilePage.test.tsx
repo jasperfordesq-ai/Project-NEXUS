@@ -213,7 +213,7 @@ describe('ProfilePage', () => {
     await screen.findByText('Test bio');
     expect(mockApiGet).not.toHaveBeenCalledWith(expect.stringContaining('/listings'));
     expect(mockApiGet).not.toHaveBeenCalledWith(expect.stringContaining('/connections/status'));
-    expect(screen.queryByRole('tab', { name: /listings/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /offers and requests/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /activity/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /send message/i })).not.toBeInTheDocument();
     expect(mockApiGet).toHaveBeenCalledWith('/v2/users/42/block-status');

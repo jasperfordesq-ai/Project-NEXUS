@@ -267,7 +267,7 @@
   "notification_prefs": {
     "new_messages": "Nouveaux messages",
     "connection_requests": "Demandes de connexion",
-    "listing_activity": "Activité des annonces",
+    "listing_activity": "Activité sur les offres et demandes",
     "event_emails": "E-mails d’événements",
     "credit_transactions": "Transactions de crédits",
     "new_reviews": "Nouveaux avis",
@@ -464,7 +464,7 @@
   "notification_sections": {
     "title": "Préférences de notifications",
     "messages_communication": "Messages et communication",
-    "activity_listings": "Activité et annonces",
+    "activity_listings": "Activité, offres et demandes",
     "community_achievements": "Communauté et réalisations",
     "organisation_notifications": "Notifications d'organisation",
     "match_digest": "E-mails de récapitulatif de correspondances",

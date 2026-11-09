@@ -16,7 +16,7 @@
     "banner_subtitle": "Teilen Sie uns Ihre Interessen und Fähigkeiten mit, um personalisierte Treffer zu erhalten",
     "get_started": "Jetzt starten"
   },
-  "new_listing": "Neues Inserat",
+  "new_listing": "Neues Angebot oder Gesuch",
   "caring_community": {
     "title": "Pflegende Gemeinschaft",
     "subtitle": "Koordinieren Sie Hilfeanfragen, Zeitangebote, verifizierte Freiwilligenstunden und vertrauenswürdige Unterstützung von einem Ort aus.",
@@ -28,13 +28,13 @@
   },
   "stats": {
     "balance": "Guthaben",
-    "active_listings": "Aktive Inserate",
+    "active_listings": "Aktive Angebote und Gesuche",
     "messages": "Nachrichten",
     "pending": "Ausstehend",
     "hours_value": "{{value}} Std."
   },
   "sections": {
-    "recent_listings": "Neueste Inserate",
+    "recent_listings": "Neueste Angebote und Gesuche",
     "recent_activity": "Aktuelle Aktivität",
     "quick_actions": "Schnellaktionen",
     "suggested_for_you": "Empfohlen für Sie",
@@ -52,7 +52,7 @@
   "view_achievements": "Erfolge anzeigen",
   "view_all_transactions": "Alle Transaktionen anzeigen",
   "quick_actions": {
-    "create_listing": "Inserat erstellen",
+    "create_listing": "Angebot oder Gesuch erstellen",
     "messages": "Nachrichten",
     "view_wallet": "Zeitkonto anzeigen",
     "find_members": "Mitglieder finden",

@@ -9,14 +9,14 @@
     "members": "Leden",
     "exchanges_this_month": "Ruilingen Deze Maand",
     "hours_exchanged": "Uren Gewisseld",
-    "active_listings": "Actieve Aanbiedingen"
+    "active_listings": "Actief aanbod en verzoeken"
   },
   "trending_posts": {
     "title": "Trending Berichten",
     "subtitle": "Meest betrokken berichten deze week"
   },
   "popular_listings": {
-    "title": "Populaire Aanbiedingen",
+    "title": "Populair aanbod en verzoeken",
     "subtitle": "Meest bekeken aanbiedingen en verzoeken"
   },
   "upcoming_events": {
@@ -77,7 +77,7 @@
   "retry": "Opnieuw proberen",
   "near_you": {
     "title": "Bij jou in de buurt",
-    "subtitle": "Lijsten dicht bij jouw locatie",
+    "subtitle": "Aanbod en verzoeken bij jou in de buurt",
     "distance": "{{distance}} km afstand"
   },
   "suggested_connections": {
@@ -154,7 +154,7 @@
   "tabs": {
     "all": "Alles",
     "for_you": "Voor jou",
-    "listings": "Vermeldingen",
+    "listings": "Aanbod en verzoeken",
     "people": "Mensen",
     "events": "Evenementen",
     "groups": "Groepen"
@@ -179,7 +179,7 @@
   "empty_people": "Nog geen leden om te tonen. Nodig iemand uit om lid te worden!",
   "empty_events": "Geen aankomende evenementen. Maak er een om jouw gemeenschap samen te brengen!",
   "empty_groups": "Nog geen actieve groepen. Start een groep rond jouw interesses!",
-  "create_listing": "Aanbieding maken",
+  "create_listing": "Aanbod of verzoek maken",
   "create_event": "Evenement maken",
   "create_group": "Groep Aanmaken"
 }

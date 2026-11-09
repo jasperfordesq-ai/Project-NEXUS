@@ -146,7 +146,7 @@ describe('FeedCard', () => {
     const item: FeedItem = { ...baseFeedItem, type: 'listing', listing_type: listingType };
     render(<FeedCard {...defaultProps} item={item} />);
     expect(screen.getByText(label)).toBeInTheDocument();
-    expect(screen.queryByText('Listing')).not.toBeInTheDocument();
+    expect(screen.queryByText('Offer or request')).not.toBeInTheDocument();
   });
 
   it('colours the label to match its kind of post, at a readable size', () => {

@@ -6,7 +6,7 @@
   "bio": "Over",
   "skills": "Vaardigheden",
   "interests": "Interesses",
-  "listings": "Lijsten",
+  "listings": "Aanbod en verzoeken",
   "reviews": "Beoordelingen",
   "badges": "Insignes",
   "credits": "Tijdcredits",
@@ -32,13 +32,13 @@
   "stats": {
     "hours_given": "Uren Gegeven",
     "hours_received": "Uren Ontvangen",
-    "active_listings": "Actieve Lijsten",
+    "active_listings": "Actief aanbod en verzoeken",
     "groups": "Groepen",
     "events": "Evenementen"
   },
   "tabs": {
     "about": "Over",
-    "listings": "Lijsten",
+    "listings": "Aanbod en verzoeken",
     "reviews": "Beoordelingen",
     "achievements": "Prestaties",
     "activity": "Activiteit",
@@ -58,7 +58,7 @@
   "no_listings": "Geen lijsten",
   "no_listings_own": "Je hebt nog geen lijsten aangemaakt",
   "no_listings_other": "Deze gebruiker heeft nog geen lijsten aangemaakt",
-  "create_listing": "Maak Lijst Aan",
+  "create_listing": "Aanbod of verzoek maken",
   "reviews_count_one": "{{count}} beoordeling",
   "reviews_count_other": "{{count}} beoordelingen",
   "no_reviews": "Nog geen beoordelingen",
@@ -100,7 +100,7 @@
     "save": "Wijzigingen Opslaan"
   },
   "load_error": "Profiel kon niet worden geladen. Probeer het opnieuw.",
-  "listing_image_alt": "Afbeelding van de vermelding",
+  "listing_image_alt": "Foto bij dit aanbod of verzoek",
   "credits_sent_success": "Credits verzonden naar {{name}}",
   "aria": {
     "profile_sections": "Profielsecties",

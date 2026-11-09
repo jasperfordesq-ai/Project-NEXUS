@@ -167,7 +167,7 @@
     "sign_up": "新規登録"
   },
   "create": {
-    "new_listing": "新しいリスティング",
+    "new_listing": "新しい提供・リクエスト",
     "new_event": "新しいイベント",
     "new_course": "新しいコース",
     "new_podcast": "新しいポッドキャスト",
@@ -187,7 +187,7 @@
     "clear": "検索をクリア",
     "clear_recent": "最近の検索をクリア",
     "close_search": "検索を閉じる",
-    "type_listing": "リスティング",
+    "type_listing": "提供・リクエスト",
     "type_member": "メンバー",
     "type_event": "イベント",
     "type_group": "グループ",
@@ -489,7 +489,7 @@
   "quick_create": {
     "title": "新規作成",
     "close_aria": "メニューを閉じる",
-    "new_listing": "新しいリスティング",
+    "new_listing": "新しい提供・リクエスト",
     "new_listing_desc": "サービスを提供またはリクエスト",
     "new_event": "新しいイベント",
     "new_event_desc": "コミュニティイベントを開催",

@@ -173,7 +173,7 @@ describe('MyListingsPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Renew Dog walking' }));
 
     await waitFor(() => expect(mockApi.post).toHaveBeenCalledWith('/v2/listings/1/renew', {}));
-    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Listing renewed. Other members can see it again.'));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Renewed. Other members can see it again.'));
     expect(mockApi.get.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -198,7 +198,7 @@ describe('MyListingsPage', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete listing' }));
 
     await waitFor(() => expect(mockApi.delete).toHaveBeenCalledWith('/v2/listings/1'));
-    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Listing deleted.'));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Deleted.'));
   });
 
   it('filters to offers or requests', async () => {

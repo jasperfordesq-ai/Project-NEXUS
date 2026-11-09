@@ -170,7 +170,7 @@
     "sign_up": "Cláraigh"
   },
   "create": {
-    "new_listing": "Liostú Nua",
+    "new_listing": "Tairiscint nó iarratas nua",
     "new_event": "Imeacht Nua",
     "new_course": "Cúrsa nua",
     "new_podcast": "Podchraoladh nua",
@@ -190,7 +190,7 @@
     "clear": "Glan an cuardach",
     "clear_recent": "Glan na cuardaigh is déanaí",
     "close_search": "Dún an cuardach",
-    "type_listing": "Liostú",
+    "type_listing": "Tairiscint nó iarratas",
     "type_member": "Comhalta",
     "type_event": "Imeacht",
     "type_group": "Grúpa",
@@ -501,7 +501,7 @@
   "quick_create": {
     "title": "Cruthaigh Rud Nua",
     "close_aria": "Dún an roghchlár cruthaithe",
-    "new_listing": "Liostú Nua",
+    "new_listing": "Tairiscint nó iarratas nua",
     "new_listing_desc": "Tairg nó iarr seirbhís",
     "new_event": "Imeacht Nua",
     "new_event_desc": "Eagraigh imeacht pobail",

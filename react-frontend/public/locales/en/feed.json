@@ -76,7 +76,7 @@
     "create_title": "Create {{type}}",
     "tab_post": "Post",
     "tab_poll": "Poll",
-    "tab_listing": "Listing",
+    "tab_listing": "Offer or request",
     "tab_event": "Event",
     "tab_goal": "Goal",
     "close_compose": "Close",
@@ -100,7 +100,7 @@
     "create_poll": "Create Poll",
     "listing_title_label": "Title",
     "listing_title_placeholder": "What are you offering or looking for?",
-    "listing_type_label": "Listing type",
+    "listing_type_label": "Offer or request",
     "listing_offering": "Offering",
     "listing_looking_for": "Looking For",
     "listing_desc_placeholder": "Describe your listing...",
@@ -108,9 +108,9 @@
     "category_placeholder": "Select a category",
     "estimated_hours_label": "Estimated Hours",
     "placeholder_hours": "1",
-    "listing_created": "Listing created!",
+    "listing_created": "Offer or request posted!",
     "listing_failed": "Failed to create listing.",
-    "create_listing": "Create Listing",
+    "create_listing": "Post offer or request",
     "event_title_label": "Event Title",
     "event_title_placeholder": "Name your event...",
     "event_desc_placeholder": "Describe your event...",
@@ -245,7 +245,7 @@
     "video": "Video",
     "video_remove": "Remove video",
     "file_size_mb": "{{name}} ({{size}}MB)",
-    "listing_preview_alt": "Listing preview",
+    "listing_preview_alt": "Preview of your offer or request",
     "image_preview_alt": "Upload preview",
     "type_tabs_aria": "Compose content type",
     "compose_post": "Compose post",
@@ -290,7 +290,7 @@
     "admin_delete": "Delete (Admin)",
     "view_analytics": "View Analytics",
     "type_post": "Post",
-    "type_listing": "Listing",
+    "type_listing": "Offer or request",
     "type_offer": "Offer",
     "type_request": "Request",
     "type_event": "Event",
@@ -323,7 +323,7 @@
     "other": "other",
     "others": "others",
     "all": "All",
-    "detail_listing": "View Listing",
+    "detail_listing": "View offer or request",
     "detail_event": "View Event",
     "detail_goals": "View Goals",
     "detail_profile": "View Profile",
@@ -501,7 +501,7 @@
   },
   "sidebar": {
     "profile": {
-      "listings": "Listings",
+      "listings": "Offers and requests",
       "given": "Given",
       "received": "Received",
       "offers": "Offers",
@@ -516,7 +516,7 @@
     "pulse": {
       "title": "Community Pulse",
       "members": "Members",
-      "listings": "Listings",
+      "listings": "Offers and requests",
       "events": "Events",
       "groups": "Groups"
     },
@@ -529,7 +529,7 @@
     },
     "categories": {
       "title": "Top Categories",
-      "all_listings": "All Listings"
+      "all_listings": "All offers and requests"
     },
     "people": {
       "title": "People You May Know",
@@ -549,7 +549,7 @@
     },
     "actions": {
       "title": "Quick Actions",
-      "create_listing": "Create New Listing",
+      "create_listing": "Create an offer or request",
       "create_listing_desc": "Share your skills with the community",
       "host_event": "Host Event",
       "create_poll": "Create Poll",

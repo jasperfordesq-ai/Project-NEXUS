@@ -9,14 +9,14 @@
     "members": "Members",
     "exchanges_this_month": "Exchanges This Month",
     "hours_exchanged": "Hours Exchanged",
-    "active_listings": "Active Listings"
+    "active_listings": "Active offers and requests"
   },
   "trending_posts": {
     "title": "Trending Posts",
     "subtitle": "Most engaging posts this week"
   },
   "popular_listings": {
-    "title": "Popular Listings",
+    "title": "Popular offers and requests",
     "subtitle": "Most viewed offers and requests"
   },
   "upcoming_events": {
@@ -77,7 +77,7 @@
   "retry": "Retry",
   "near_you": {
     "title": "Near You",
-    "subtitle": "Listings close to your location",
+    "subtitle": "Offers and requests close to you",
     "distance": "{{distance}} km away"
   },
   "suggested_connections": {
@@ -154,7 +154,7 @@
   "tabs": {
     "all": "All",
     "for_you": "For You",
-    "listings": "Listings",
+    "listings": "Offers and requests",
     "people": "People",
     "events": "Events",
     "groups": "Groups"
@@ -179,7 +179,7 @@
   "empty_people": "No members to show yet. Invite someone to join!",
   "empty_events": "No upcoming events. Create one to bring your community together!",
   "empty_groups": "No active groups yet. Start a group around your interests!",
-  "create_listing": "Create Listing",
+  "create_listing": "Create an offer or request",
   "create_event": "Create Event",
   "create_group": "Create Group"
 }

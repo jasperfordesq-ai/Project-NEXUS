@@ -210,7 +210,7 @@ describe('ListingsPage', () => {
   it('keeps the search box free of a second heading and a second count', async () => {
     render(<ListingsPage />);
 
-    expect(screen.queryByText('Browse Listings')).toBeNull();
+    expect(screen.queryByText('Browse offers and requests')).toBeNull();
     // Still named for screen-reader users, who move between headings.
     expect(screen.getByRole('heading', { level: 2, name: 'Find an offer or request' })).toHaveClass('sr-only');
     await waitFor(() => {

@@ -79,7 +79,7 @@ describe('QuickActionsWidget', () => {
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
     const { container } = render(<QuickActionsWidget />);
     expect(container.querySelector(CARD)).toBeNull();
-    expect(screen.queryByText('Create New Listing')).not.toBeInTheDocument();
+    expect(screen.queryByText('Create an offer or request')).not.toBeInTheDocument();
     // Not one action of any kind survives the unauthenticated early return.
     expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
@@ -87,7 +87,7 @@ describe('QuickActionsWidget', () => {
   it('renders the "Create New Listing" primary CTA when authenticated', async () => {
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
     render(<QuickActionsWidget />);
-    expect(screen.getByText('Create New Listing')).toBeInTheDocument();
+    expect(screen.getByText('Create an offer or request')).toBeInTheDocument();
   });
 
   it('Create New Listing link points to /listings/create', async () => {
@@ -95,7 +95,7 @@ describe('QuickActionsWidget', () => {
     render(<QuickActionsWidget />);
     // The primary CTA is a real Button rendered as a react-router Link, i.e. an
     // anchor whose accessible name is the CTA label.
-    const cta = screen.getByRole('link', { name: 'Create New Listing' });
+    const cta = screen.getByRole('link', { name: 'Create an offer or request' });
     expect(cta).toHaveAttribute('href', '/test/listings/create');
   });
 
@@ -129,7 +129,7 @@ describe('QuickActionsWidget', () => {
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
     render(<QuickActionsWidget />);
     // Primary CTA always shows; secondary actions should be absent
-    expect(screen.getByText('Create New Listing')).toBeInTheDocument();
+    expect(screen.getByText('Create an offer or request')).toBeInTheDocument();
     expect(screen.queryByText('Host Event')).not.toBeInTheDocument();
     expect(screen.queryByText('Create Poll')).not.toBeInTheDocument();
     expect(screen.queryByText('Set Goal')).not.toBeInTheDocument();
@@ -172,7 +172,7 @@ describe('QuickActionsWidget', () => {
     expect(card).not.toBeNull();
     expect(card).toHaveClass('glass-card', 'p-4');
     // The primary CTA and the secondary grid are nested INSIDE the card.
-    expect(card).toContainElement(screen.getByText('Create New Listing'));
+    expect(card).toContainElement(screen.getByText('Create an offer or request'));
     expect(card).toContainElement(screen.getByText('Host Event'));
   });
 });

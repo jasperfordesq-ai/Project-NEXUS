@@ -104,7 +104,7 @@ function serveListing(image: { url: string | null; alt: string | null }): void {
 }
 
 async function save(): Promise<Record<string, unknown>> {
-  fireEvent.click(screen.getByRole('button', { name: 'Update Listing' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
   await waitFor(() => expect(mockApi.put).toHaveBeenCalled());
   return (mockApi.put.mock.calls[0]?.[1] ?? {}) as Record<string, unknown>;
 }

@@ -204,8 +204,9 @@ test.describe('Listings Marketplace', () => {
     await titleField(page).fill(updatedTitle);
 
     // 🔴 Save via `button[type="submit"]`, NOT `selectors.saveButton`
-    // (`button:has-text("Save")`). This form's edit label is "Update Listing"
-    // (`form.update`), so the shared Save selector matches nothing here.
+    // (`button:has-text("Save")`). This form's edit label was "Update Listing"
+    // and is now "Save changes" (`form.update`, Nov 2026); the submit button
+    // is the one control that is right whatever its words.
     await page.click(selectors.submitButton);
     await page.waitForURL(/\/listings\/\d+$/, { timeout: 20000 });
 

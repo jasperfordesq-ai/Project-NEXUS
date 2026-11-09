@@ -39,7 +39,7 @@
   },
   "type": {
     "message": "Wiadomość",
-    "listing": "Ogłoszenie",
+    "listing": "Oferta lub prośba",
     "transaction": "Transakcja",
     "connection": "Połączenie",
     "event": "Wydarzenie",
@@ -66,7 +66,7 @@
     "transaction_complete": "Transakcja zakończona",
     "transaction_amount": "{{sign}}{{amount}} kredyty czasowe",
     "toast_message": "Nowa wiadomość",
-    "toast_listing": "Aktualizacja ogłoszenia",
+    "toast_listing": "Aktualizacja oferty lub prośby",
     "toast_transaction": "Transakcja",
     "toast_connection": "Prośba o połączenie",
     "toast_event": "Aktualizacja wydarzenia",

@@ -114,7 +114,7 @@ describe('MessageContextCard', () => {
       <W><MessageContextCard contextType="listing" contextId={1} /></W>,
     );
     await waitFor(() => {
-      expect(screen.getByText('Listing')).toBeInTheDocument();
+      expect(screen.getByText('Offer or request')).toBeInTheDocument();
     });
   });
 

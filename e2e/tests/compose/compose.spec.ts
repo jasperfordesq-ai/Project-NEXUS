@@ -152,7 +152,7 @@ test.describe('Listings - Create Listing', () => {
     // 🔴 Assert the create page specifically. The old `form, .listing-form, main`
     // fell through to `main`, which is present on the not-found page too — so it
     // passed against the wrong page, which is how the wrong URL survived here.
-    await expect(page.getByRole('heading', { name: /Create New Listing/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Create an offer or request/i })).toBeVisible();
   });
 
   test('should show title input for listing', async ({ page }) => {
@@ -320,7 +320,7 @@ test.describe('Content Creation - Accessibility', () => {
   test('should have proper heading on listings/create', async ({ page }) => {
     await gotoCreateForm(page, 'listings/create');
 
-    await expect(page.getByRole('heading', { name: /Create New Listing/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Create an offer or request/i })).toBeVisible();
   });
 
   test('should have proper form labels', async ({ page }) => {

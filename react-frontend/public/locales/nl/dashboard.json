@@ -16,7 +16,7 @@
     "banner_subtitle": "Vertel ons over je interesses en vaardigheden om gepersonaliseerde matches te krijgen",
     "get_started": "Aan de slag"
   },
-  "new_listing": "Nieuwe aanbieding",
+  "new_listing": "Nieuw aanbod of verzoek",
   "caring_community": {
     "title": "Zorgzame gemeenschap",
     "subtitle": "Coördineer hulpverzoeken, tijdaanbiedingen, geverifieerde vrijwilligersuren en betrouwbare ondersteuning vanuit één plek.",
@@ -28,13 +28,13 @@
   },
   "stats": {
     "balance": "Saldo",
-    "active_listings": "Actieve aanbiedingen",
+    "active_listings": "Actief aanbod en verzoeken",
     "messages": "Berichten",
     "pending": "In behandeling",
     "hours_value": "{{value}} u"
   },
   "sections": {
-    "recent_listings": "Recente aanbiedingen",
+    "recent_listings": "Recent aanbod en verzoeken",
     "recent_activity": "Recente activiteiten",
     "quick_actions": "Snelle acties",
     "suggested_for_you": "Aanbevolen voor jou",
@@ -52,7 +52,7 @@
   "view_achievements": "Bekijk prestaties",
   "view_all_transactions": "Bekijk alle transacties",
   "quick_actions": {
-    "create_listing": "Aanbieding maken",
+    "create_listing": "Aanbod of verzoek maken",
     "messages": "Berichten",
     "view_wallet": "Bekijk portemonnee",
     "find_members": "Vind leden",

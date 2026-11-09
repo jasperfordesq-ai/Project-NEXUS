@@ -167,7 +167,7 @@
     "sign_up": "Registrieren"
   },
   "create": {
-    "new_listing": "Neues Inserat",
+    "new_listing": "Neues Angebot oder Gesuch",
     "new_event": "Neue Veranstaltung",
     "new_course": "Neuer Kurs",
     "new_podcast": "Neuer Podcast",
@@ -187,7 +187,7 @@
     "clear": "Suche löschen",
     "clear_recent": "Letzte Suchanfragen löschen",
     "close_search": "Suche schließen",
-    "type_listing": "Inserat",
+    "type_listing": "Angebot oder Gesuch",
     "type_member": "Mitglied",
     "type_event": "Veranstaltung",
     "type_group": "Gruppe",
@@ -489,7 +489,7 @@
   "quick_create": {
     "title": "Neu erstellen",
     "close_aria": "Erstellungsmenü schliessen",
-    "new_listing": "Neues Inserat",
+    "new_listing": "Neues Angebot oder Gesuch",
     "new_listing_desc": "Einen Service anbieten oder anfragen",
     "new_event": "Neue Veranstaltung",
     "new_event_desc": "Eine Gemeinschaftsveranstaltung organisieren",

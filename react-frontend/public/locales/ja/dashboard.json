@@ -16,7 +16,7 @@
     "banner_subtitle": "あなたの興味やスキルについて教えて、パーソナライズされたマッチを得ましょう",
     "get_started": "始める"
   },
-  "new_listing": "新しいリスト",
+  "new_listing": "新しい提供・リクエスト",
   "caring_community": {
     "title": "ケアコミュニティ",
     "subtitle": "ヘルプリクエスト、時間の提供、認証済みボランティア時間、信頼できるサポートを一か所から調整できます。",
@@ -28,13 +28,13 @@
   },
   "stats": {
     "balance": "残高",
-    "active_listings": "アクティブなリスト",
+    "active_listings": "公開中の提供とリクエスト",
     "messages": "メッセージ",
     "pending": "保留中",
     "hours_value": "{{value}}時間"
   },
   "sections": {
-    "recent_listings": "最近のリスト",
+    "recent_listings": "最近の提供とリクエスト",
     "recent_activity": "最近のアクティビティ",
     "quick_actions": "クイックアクション",
     "suggested_for_you": "あなたへのおすすめ",
@@ -52,7 +52,7 @@
   "view_achievements": "実績を表示",
   "view_all_transactions": "すべての取引を表示",
   "quick_actions": {
-    "create_listing": "リストを作成",
+    "create_listing": "提供・リクエストを作成",
     "messages": "メッセージ",
     "view_wallet": "ウォレットを表示",
     "find_members": "メンバーを探す",

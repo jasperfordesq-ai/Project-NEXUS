@@ -41,7 +41,7 @@
   },
   "type": {
     "message": "Message",
-    "listing": "Listing",
+    "listing": "عرض أو طلب",
     "transaction": "Transaction",
     "connection": "Connection",
     "event": "Event",
@@ -68,7 +68,7 @@
     "transaction_complete": "العملية مكتملة",
     "transaction_amount": "{{sign}}{{amount}} رصيد زمني",
     "toast_message": "رسالة جديدة",
-    "toast_listing": "تحديث القائمة",
+    "toast_listing": "تحديث على عرض أو طلب",
     "toast_transaction": "Transaction",
     "toast_connection": "طلب اتصال",
     "toast_event": "تحديث الحدث",

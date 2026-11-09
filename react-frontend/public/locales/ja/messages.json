@@ -115,7 +115,7 @@
   "aria_conversation_unread": "会話 {{name}} と {{count}} は未読です",
   "aria_conversation": "会話 {{name}} と",
   "aria_conversation_actions": "会話のアクション",
-  "context_type_listing": "リスティング",
+  "context_type_listing": "提供・リクエスト",
   "context_type_event": "イベント",
   "context_type_job": "求人",
   "context_type_volunteering": "ボランティア",

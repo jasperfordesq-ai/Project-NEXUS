@@ -9,14 +9,14 @@
     "members": "Membri",
     "exchanges_this_month": "Scambi Questo Mese",
     "hours_exchanged": "Ore Scambiate",
-    "active_listings": "Annunci Attivi"
+    "active_listings": "Offerte e richieste attive"
   },
   "trending_posts": {
     "title": "Post di Tendenza",
     "subtitle": "I post più coinvolgenti di questa settimana"
   },
   "popular_listings": {
-    "title": "Annunci Popolari",
+    "title": "Offerte e richieste popolari",
     "subtitle": "Offerte e richieste più visualizzate"
   },
   "upcoming_events": {
@@ -82,7 +82,7 @@
   "retry": "Riprova",
   "near_you": {
     "title": "Vicino a Te",
-    "subtitle": "Annunci vicini alla tua posizione",
+    "subtitle": "Offerte e richieste vicino a te",
     "distance": "a {{distance}} km"
   },
   "suggested_connections": {
@@ -167,7 +167,7 @@
   "tabs": {
     "all": "Tutto",
     "for_you": "Per Te",
-    "listings": "Annunci",
+    "listings": "Offerte e richieste",
     "people": "Persone",
     "events": "Eventi",
     "groups": "Gruppi"
@@ -192,7 +192,7 @@
   "empty_people": "Nessun membro da mostrare. Invita qualcuno a unirsi!",
   "empty_events": "Nessun evento in programma. Creane uno per riunire la tua comunità!",
   "empty_groups": "Nessun gruppo attivo. Avvia un gruppo sui tuoi interessi!",
-  "create_listing": "Crea Annuncio",
+  "create_listing": "Crea un'offerta o una richiesta",
   "create_event": "Crea Evento",
   "create_group": "Crea Gruppo"
 }

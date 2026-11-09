@@ -112,7 +112,7 @@ describe('QuickCreateMenu', () => {
         <QuickCreateMenu isOpen={true} onClose={vi.fn()} />
       </W>
     );
-    expect(screen.getByText('New Listing')).toBeTruthy();
+    expect(screen.getByText('New offer or request')).toBeTruthy();
     expect(screen.getByText('New Event')).toBeTruthy();
     expect(screen.getByText('New Group')).toBeTruthy();
     expect(screen.getByText('New Goal')).toBeTruthy();
@@ -132,7 +132,7 @@ describe('QuickCreateMenu', () => {
     const options = screen.getByTestId('quick-create-options');
     expect(options).toHaveClass('grid-cols-2');
 
-    for (const label of ['New Listing', 'New Event', 'New Group', 'New Goal']) {
+    for (const label of ['New offer or request', 'New Event', 'New Group', 'New Goal']) {
       expect(screen.getByText(label).closest('button')).toHaveClass(
         'h-auto',
         'min-h-[116px]',
@@ -154,7 +154,7 @@ describe('QuickCreateMenu', () => {
         <QuickCreateMenu isOpen={true} onClose={vi.fn()} />
       </W>
     );
-    expect(screen.getByText('New Listing')).toBeTruthy();
+    expect(screen.getByText('New offer or request')).toBeTruthy();
     expect(screen.queryByText('New Event')).toBeNull();
   });
 
@@ -165,7 +165,7 @@ describe('QuickCreateMenu', () => {
         <QuickCreateMenu isOpen={true} onClose={vi.fn()} />
       </W>
     );
-    expect(screen.getByText('New Listing')).toBeTruthy();
+    expect(screen.getByText('New offer or request')).toBeTruthy();
     expect(screen.queryByText('New Group')).toBeNull();
   });
 
@@ -176,7 +176,7 @@ describe('QuickCreateMenu', () => {
         <QuickCreateMenu isOpen={true} onClose={vi.fn()} />
       </W>
     );
-    expect(screen.queryByText('New Listing')).toBeNull();
+    expect(screen.queryByText('New offer or request')).toBeNull();
     expect(screen.getByText('New Event')).toBeTruthy();
   });
 

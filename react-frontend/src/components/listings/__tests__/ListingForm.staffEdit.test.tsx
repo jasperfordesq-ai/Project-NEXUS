@@ -109,7 +109,7 @@ function serveListing(userId: number): void {
 
 async function saveAndReadPayload(): Promise<Record<string, unknown>> {
   await waitFor(() => expect(screen.getByLabelText(/^title/i)).toHaveValue('Weekly grocery shopping run'));
-  fireEvent.click(screen.getByRole('button', { name: 'Update Listing' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
   await waitFor(() => expect(mockApi.put).toHaveBeenCalled());
   return (mockApi.put.mock.calls[0]?.[1] ?? {}) as Record<string, unknown>;
 }

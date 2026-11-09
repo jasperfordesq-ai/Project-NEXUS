@@ -6,7 +6,7 @@
   "bio": "نبذة",
   "skills": "المهارات",
   "interests": "الاهتمامات",
-  "listings": "الإعلانات",
+  "listings": "العروض والطلبات",
   "reviews": "التقييمات",
   "badges": "الشارات",
   "credits": "رصيد الوقت",
@@ -32,13 +32,13 @@
   "stats": {
     "hours_given": "الساعات المعطاة",
     "hours_received": "الساعات المستلمة",
-    "active_listings": "القوائم النشطة",
+    "active_listings": "العروض والطلبات النشطة",
     "groups": "المجموعات",
     "events": "الفعاليات"
   },
   "tabs": {
     "about": "نبذة",
-    "listings": "الإعلانات",
+    "listings": "العروض والطلبات",
     "reviews": "التقييمات",
     "achievements": "الإنجازات",
     "activity": "النشاط",
@@ -58,7 +58,7 @@
   "no_listings": "لا توجد قوائم",
   "no_listings_own": "لم تقم بإنشاء أي قوائم بعد",
   "no_listings_other": "لم يقم هذا المستخدم بإنشاء أي قوائم",
-  "create_listing": "إنشاء قائمة",
+  "create_listing": "إنشاء عرض أو طلب",
   "reviews_count_one": "مراجعة {{count}}",
   "reviews_count_other": "مراجعات {{count}}",
   "no_reviews": "لا توجد مراجعات بعد",
@@ -104,7 +104,7 @@
     "save": "حفظ التغييرات"
   },
   "load_error": "فشل تحميل الملف الشخصي. يرجى المحاولة مرة أخرى.",
-  "listing_image_alt": "صورة الإعلان",
+  "listing_image_alt": "صورة هذا العرض أو الطلب",
   "credits_sent_success": "تم إرسال الأرصدة إلى {{name}}",
   "aria": {
     "profile_sections": "أقسام الملف الشخصي",

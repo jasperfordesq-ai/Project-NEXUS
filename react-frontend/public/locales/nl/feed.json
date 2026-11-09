@@ -76,7 +76,7 @@
     "create_title": "Maak {{type}}",
     "tab_post": "Bericht",
     "tab_poll": "Peiling",
-    "tab_listing": "Advertentie",
+    "tab_listing": "Aanbod of verzoek",
     "tab_event": "Evenement",
     "tab_goal": "Doel",
     "close_compose": "Sluiten",
@@ -100,7 +100,7 @@
     "create_poll": "Poll aanmaken",
     "listing_title_label": "Titel",
     "listing_title_placeholder": "Wat bied je aan of waar ben je naar op zoek?",
-    "listing_type_label": "Advertentietype",
+    "listing_type_label": "Aanbod of verzoek",
     "listing_offering": "Aanbod",
     "listing_looking_for": "Op zoek naar",
     "listing_desc_placeholder": "Beschrijf je aanbieding...",
@@ -108,9 +108,9 @@
     "category_placeholder": "Selecteer een categorie",
     "estimated_hours_label": "Geschatte uren",
     "placeholder_hours": "1",
-    "listing_created": "Aanbieding aangemaakt!",
+    "listing_created": "Aanbod of verzoek geplaatst!",
     "listing_failed": "Aanbieding aanmaken mislukt.",
-    "create_listing": "Aanbieding aanmaken",
+    "create_listing": "Aanbod of verzoek plaatsen",
     "event_title_label": "Evenementtitel",
     "event_title_placeholder": "Geef je evenement een naam...",
     "event_desc_placeholder": "Beschrijf je evenement...",
@@ -245,7 +245,7 @@
     "video": "Video",
     "video_remove": "Video verwijderen",
     "file_size_mb": "{{name}} ({{size}}MB)",
-    "listing_preview_alt": "Voorbeeld van vermelding",
+    "listing_preview_alt": "Voorbeeld van je aanbod of verzoek",
     "image_preview_alt": "Uploadvoorbeeld",
     "type_tabs_aria": "Inhoudstype samenstellen",
     "compose_post": "Bericht opstellen",
@@ -290,7 +290,7 @@
     "admin_delete": "Verwijderen (Admin)",
     "view_analytics": "Bekijk Analytics",
     "type_post": "Bericht",
-    "type_listing": "Advertentie",
+    "type_listing": "Aanbod of verzoek",
     "type_offer": "Aanbod",
     "type_request": "Verzoek",
     "type_event": "Evenement",
@@ -323,7 +323,7 @@
     "other": "ander",
     "others": "anderen",
     "all": "Alle",
-    "detail_listing": "Bekijk Vermelding",
+    "detail_listing": "Bekijk aanbod of verzoek",
     "detail_event": "Bekijk Evenement",
     "detail_goals": "Bekijk Doelen",
     "detail_profile": "Bekijk Profiel",
@@ -501,7 +501,7 @@
   },
   "sidebar": {
     "profile": {
-      "listings": "Advertenties",
+      "listings": "Aanbod en verzoeken",
       "given": "Gegeven",
       "received": "Ontvangen",
       "offers": "Aanbiedingen",
@@ -516,7 +516,7 @@
     "pulse": {
       "title": "Gemeenschaps Puls",
       "members": "Leden",
-      "listings": "Advertenties",
+      "listings": "Aanbod en verzoeken",
       "events": "Evenementen",
       "groups": "Groepen"
     },
@@ -529,7 +529,7 @@
     },
     "categories": {
       "title": "Top Categorieën",
-      "all_listings": "Alle Lijsten"
+      "all_listings": "Al het aanbod en alle verzoeken"
     },
     "people": {
       "title": "Mensen die je misschien kent",
@@ -549,7 +549,7 @@
     },
     "actions": {
       "title": "Snelle Acties",
-      "create_listing": "Nieuwe Vermelding Aanmaken",
+      "create_listing": "Aanbod of verzoek maken",
       "create_listing_desc": "Deel je vaardigheden met de gemeenschap",
       "host_event": "Evenement Hosten",
       "create_poll": "Poll Aanmaken",

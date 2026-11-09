@@ -9,14 +9,14 @@
     "members": "Mitglieder",
     "exchanges_this_month": "Tausche diesen Monat",
     "hours_exchanged": "Getauschte Stunden",
-    "active_listings": "Aktive Anzeigen"
+    "active_listings": "Aktive Angebote und Gesuche"
   },
   "trending_posts": {
     "title": "Trendende Beiträge",
     "subtitle": "Beliebteste Beiträge dieser Woche"
   },
   "popular_listings": {
-    "title": "Beliebte Anzeigen",
+    "title": "Beliebte Angebote und Gesuche",
     "subtitle": "Meistgesehene Angebote und Gesuche"
   },
   "upcoming_events": {
@@ -77,7 +77,7 @@
   "retry": "Erneut versuchen",
   "near_you": {
     "title": "In Ihrer Nähe",
-    "subtitle": "Anzeigen in der Nähe Ihres Standorts",
+    "subtitle": "Angebote und Gesuche in Ihrer Nähe",
     "distance": "{{distance}} km entfernt"
   },
   "suggested_connections": {
@@ -154,7 +154,7 @@
   "tabs": {
     "all": "Alle",
     "for_you": "Für Sie",
-    "listings": "Anzeigen",
+    "listings": "Angebote und Gesuche",
     "people": "Personen",
     "events": "Veranstaltungen",
     "groups": "Gruppen"
@@ -179,7 +179,7 @@
   "empty_people": "Noch keine Mitglieder anzuzeigen. Laden Sie jemanden ein!",
   "empty_events": "Keine bevorstehenden Veranstaltungen. Erstellen Sie eine, um Ihre Gemeinschaft zusammenzubringen!",
   "empty_groups": "Noch keine aktiven Gruppen. Gründen Sie eine Gruppe zu Ihren Interessen!",
-  "create_listing": "Inserat erstellen",
+  "create_listing": "Angebot oder Gesuch erstellen",
   "create_event": "Veranstaltung erstellen",
   "create_group": "Gruppe erstellen"
 }

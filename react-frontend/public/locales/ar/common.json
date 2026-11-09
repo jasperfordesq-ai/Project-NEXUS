@@ -171,7 +171,7 @@
     "sign_up": "إنشاء حساب"
   },
   "create": {
-    "new_listing": "إعلان جديد",
+    "new_listing": "عرض أو طلب جديد",
     "new_event": "فعالية جديدة",
     "new_course": "دورة جديدة",
     "new_podcast": "بودكاست جديد",
@@ -191,7 +191,7 @@
     "clear": "مسح البحث",
     "clear_recent": "مسح عمليات البحث الأخيرة",
     "close_search": "إغلاق البحث",
-    "type_listing": "إعلان",
+    "type_listing": "عرض أو طلب",
     "type_member": "عضو",
     "type_event": "فعالية",
     "type_group": "مجموعة",
@@ -505,7 +505,7 @@
   "quick_create": {
     "title": "إنشاء جديد",
     "close_aria": "إغلاق القائمة",
-    "new_listing": "إعلان جديد",
+    "new_listing": "عرض أو طلب جديد",
     "new_listing_desc": "اعرض أو اطلب خدمة",
     "new_event": "فعالية جديدة",
     "new_event_desc": "نظّم فعالية مجتمعية",

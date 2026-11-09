@@ -10,7 +10,7 @@ import { BasePage } from './BasePage';
  * Dashboard Page Object (React with GlassCard components)
  *
  * The React dashboard uses GlassCard components and a 2-column layout.
- * Main sections: Welcome, Stats, Recent Listings, Activity Feed
+ * Main sections: Welcome, Stats, Recent offers and requests, Activity Feed
  * Sidebar: Quick Actions, Suggested Matches, Groups, Events, Gamification
  */
 export class DashboardPage extends BasePage {
@@ -45,8 +45,8 @@ export class DashboardPage extends BasePage {
     );
 
     // Recent listings
-    this.myListings = page.locator('text=My Recent Listings').locator('..').locator('..').or(
-      page.locator('text=Recent Listings').locator('..').locator('..')
+    this.myListings = page.locator('text=Your offers and requests').locator('..').locator('..').or(
+      page.locator('text=Recent offers and requests').locator('..').locator('..')
     );
 
     // Suggested matches

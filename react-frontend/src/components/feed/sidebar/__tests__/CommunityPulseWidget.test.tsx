@@ -93,7 +93,7 @@ describe('CommunityPulseWidget', () => {
   it('renders stat labels (Members, Listings, Events, Groups)', () => {
     render(<CommunityPulseWidget stats={defaultStats} />);
     expect(screen.getByText('Members')).toBeInTheDocument();
-    expect(screen.getByText('Listings')).toBeInTheDocument();
+    expect(screen.getByText('Offers and requests')).toBeInTheDocument();
     expect(screen.getByText('Events')).toBeInTheDocument();
     expect(screen.getByText('Groups')).toBeInTheDocument();
   });

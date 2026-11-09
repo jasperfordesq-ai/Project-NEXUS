@@ -134,7 +134,7 @@
         "title": "Member Experience",
         "items": {
           "service_listings": {
-            "title": "Service Listings",
+            "title": "Offers and requests",
             "description": "Post offers and requests, browse and smart-match listings."
           },
           "marketplace": {
@@ -628,7 +628,7 @@
     "stats": {
       "active_members": "Active Members",
       "hours_exchanged": "Hours Exchanged",
-      "active_listings": "Active Listings",
+      "active_listings": "Active offers and requests",
       "communities": "Communities"
     },
     "scroll_down": "Scroll down",
@@ -750,7 +750,7 @@
     "stats": {
       "members": "Members",
       "hours_exchanged": "Hours Exchanged",
-      "active_listings": "Active Listings",
+      "active_listings": "Active offers and requests",
       "communities": "Communities"
     },
     "credits": {

@@ -6,7 +6,7 @@
   "bio": "Sobre",
   "skills": "Competências",
   "interests": "Interesses",
-  "listings": "Anúncios",
+  "listings": "Ofertas e pedidos",
   "reviews": "Avaliações",
   "badges": "Insígnias",
   "credits": "Créditos de Tempo",
@@ -32,13 +32,13 @@
   "stats": {
     "hours_given": "Horas Dadas",
     "hours_received": "Horas Recebidas",
-    "active_listings": "Anúncios Ativos",
+    "active_listings": "Ofertas e pedidos ativos",
     "groups": "Grupos",
     "events": "Eventos"
   },
   "tabs": {
     "about": "Sobre",
-    "listings": "Anúncios",
+    "listings": "Ofertas e pedidos",
     "reviews": "Avaliações",
     "achievements": "Conquistas",
     "activity": "Atividade",
@@ -58,7 +58,7 @@
   "no_listings": "Sem anúncios",
   "no_listings_own": "Ainda não criou nenhum anúncio",
   "no_listings_other": "Este usuário não criou nenhum anúncio",
-  "create_listing": "Criar Anúncio",
+  "create_listing": "Criar uma oferta ou pedido",
   "reviews_count_one": "{{count}} avaliação",
   "reviews_count_other": "{{count}} avaliações",
   "no_reviews": "Ainda sem avaliações",
@@ -101,7 +101,7 @@
     "save": "Salvar Alterações"
   },
   "load_error": "Falha ao carregar perfil.",
-  "listing_image_alt": "Imagem do anúncio",
+  "listing_image_alt": "Foto desta oferta ou pedido",
   "credits_sent_success": "Créditos enviados para {{name}}",
   "aria": {
     "profile_sections": "Secções do perfil",

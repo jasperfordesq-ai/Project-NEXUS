@@ -43,7 +43,7 @@
   "skill_request": "Anfrage",
   "activity_types": {
     "exchange": "Tausch",
-    "listing": "Anzeige",
+    "listing": "Angebot oder Gesuch",
     "connection": "Verbindung",
     "event": "Veranstaltung",
     "message": "Nachricht",

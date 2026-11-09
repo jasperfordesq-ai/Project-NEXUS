@@ -69,7 +69,7 @@ describe('CommunityPulseWidget', () => {
     const { CommunityPulseWidget } = await import('./CommunityPulseWidget');
     render(<CommunityPulseWidget stats={makeStats()} />);
     expect(screen.getByText('Members')).toBeInTheDocument();
-    expect(screen.getByText('Listings')).toBeInTheDocument();
+    expect(screen.getByText('Offers and requests')).toBeInTheDocument();
     expect(screen.getByText('Events')).toBeInTheDocument();
     expect(screen.getByText('Groups')).toBeInTheDocument();
   });

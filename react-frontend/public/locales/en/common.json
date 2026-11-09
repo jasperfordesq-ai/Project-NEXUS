@@ -167,7 +167,7 @@
     "sign_up": "Sign Up"
   },
   "create": {
-    "new_listing": "New Listing",
+    "new_listing": "New offer or request",
     "new_event": "New Event",
     "new_course": "New Course",
     "new_podcast": "New Podcast",
@@ -187,7 +187,7 @@
     "clear": "Clear search",
     "clear_recent": "Clear recent searches",
     "close_search": "Close search",
-    "type_listing": "Listing",
+    "type_listing": "Offer or request",
     "type_member": "Member",
     "type_event": "Event",
     "type_group": "Group",
@@ -489,7 +489,7 @@
   "quick_create": {
     "title": "Create New",
     "close_aria": "Close create menu",
-    "new_listing": "New Listing",
+    "new_listing": "New offer or request",
     "new_listing_desc": "Offer or request a service",
     "new_event": "New Event",
     "new_event_desc": "Organise a community event",
