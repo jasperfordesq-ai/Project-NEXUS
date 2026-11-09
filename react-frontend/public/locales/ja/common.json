@@ -323,7 +323,8 @@
     "powered_by": "搭載",
     "provided_by": "提供",
     "agpl_short": "フリーかつオープンソースソフトウェア。AGPL-3.0でライセンスされています。",
-    "nexus_link_label": "Project NEXUSのウェブサイトを訪問"
+    "nexus_link_label": "Project NEXUSのウェブサイトを訪問",
+    "default_tagline": "時間の交換を通じて、より強いコミュニティを築く。"
   },
   "report_problem": {
     "trigger": "ヘルプとサポート",

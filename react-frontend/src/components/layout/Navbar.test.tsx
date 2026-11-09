@@ -261,6 +261,8 @@ vi.mock('@/lib/api', () => ({
 
 import Users from 'lucide-react/icons/users';
 import { Navbar, getVisibleCommunityItems, type CommunityNavItem } from './Navbar';
+import { SiteAccentContext } from '@/contexts/SiteAccentContext';
+import { accentLineClasses, paletteFor } from '@/lib/categoryColours';
 
 // Helper to set up default context mock values
 function setupDefaultMocks(overrides: {
@@ -322,6 +324,22 @@ describe('Navbar', () => {
 
       expect(getVisibleCommunityItems(items, () => false)).toHaveLength(0);
       expect(getVisibleCommunityItems(items, feature => feature === 'caring_community')).toHaveLength(1);
+    });
+  });
+
+  describe('colour line under the header', () => {
+    it('runs along the bottom edge of the header in the site colour family, as decoration', () => {
+      render(<Navbar />);
+      const line = screen.getByTestId('site-header-accent-line');
+      expect(line.closest('[data-site-header]')).not.toBeNull();
+      expect(line).toHaveAttribute('aria-hidden', 'true');
+      expect(line.className).toContain('bottom-0');
+      expect(line.className).toContain(accentLineClasses(paletteFor(null)));
+    });
+
+    it('follows the community colour', () => {
+      render(<SiteAccentContext.Provider value="#0f766e"><Navbar /></SiteAccentContext.Provider>);
+      expect(screen.getByTestId('site-header-accent-line').className).toContain('from-emerald-500');
     });
   });
 

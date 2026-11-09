@@ -9,6 +9,9 @@
  * Uses V2 API: GET /api/v2/blog, GET /api/v2/blog/categories
  */
 
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from '@/lib/motion';
@@ -480,7 +483,16 @@ interface PostCardProps {
   categoryColors: Record<string, string>;
 }
 
+function useBlogCoverColour(post: PostCardProps['post']): string {
+  const palette = useSitePalette();
+  return colourForSeed(post.category ? `category-${post.category.id ?? post.category.name}` : `post-${post.id}`, palette);
+}
+
 function FeaturedPostCard({ post, categoryColors }: PostCardProps) {
+  // No picture: a cover in a colour from the community palette — the same
+  // for every post in a category, otherwise chosen by the post (was a fixed
+  // blue gradient).
+  const coverColour = useBlogCoverColour(post);
   const { t } = useTranslation('blog');
   const { tenantPath } = useTenant();
   const imageProps = post.featured_image
@@ -496,7 +508,7 @@ function FeaturedPostCard({ post, categoryColors }: PostCardProps) {
       <GlassCard className="overflow-hidden">
         <div className="flex flex-col md:flex-row">
           {/* Image */}
-          <div className="md:w-1/2 h-48 md:h-72 bg-gradient-to-br from-blue-500/20 to-accent-gradient-end/20 flex items-center justify-center overflow-hidden">
+          <div className="md:w-1/2 h-48 md:h-72 bg-theme-elevated flex items-center justify-center overflow-hidden">
             {imageProps ? (
               <img
                 {...imageProps}
@@ -508,7 +520,7 @@ function FeaturedPostCard({ post, categoryColors }: PostCardProps) {
                 height={288}
               />
             ) : (
-              <BookOpen className="w-16 h-16 text-blue-300 opacity-50" aria-hidden="true" />
+              <ThemedCover data-testid="blog-cover" size="lg" colour={coverColour} icon={BookOpen} label={post.category?.name} />
             )}
           </div>
 
@@ -548,6 +560,10 @@ function FeaturedPostCard({ post, categoryColors }: PostCardProps) {
 /* ───────────────────────── Blog Post Card ───────────────────────── */
 
 function BlogPostCard({ post, categoryColors }: PostCardProps) {
+  // No picture: a cover in a colour from the community palette — the same
+  // for every post in a category, otherwise chosen by the post (was a fixed
+  // blue gradient).
+  const coverColour = useBlogCoverColour(post);
   const { t } = useTranslation('blog');
   const { tenantPath } = useTenant();
   const imageProps = post.featured_image
@@ -562,7 +578,7 @@ function BlogPostCard({ post, categoryColors }: PostCardProps) {
     <Link to={tenantPath(`/blog/${post.slug}`)} className="block group h-full">
       <GlassCard className="overflow-hidden h-full flex flex-col">
         {/* Image */}
-        <div className="h-48 bg-gradient-to-br from-blue-500/10 to-accent-gradient-end/10 flex items-center justify-center overflow-hidden">
+        <div className="h-48 bg-theme-elevated flex items-center justify-center overflow-hidden">
           {imageProps ? (
             <img
               {...imageProps}
@@ -572,7 +588,7 @@ function BlogPostCard({ post, categoryColors }: PostCardProps) {
               decoding="async"
             />
           ) : (
-            <BookOpen className="w-12 h-12 text-blue-300 opacity-30" aria-hidden="true" />
+            <ThemedCover data-testid="blog-cover" colour={coverColour} icon={BookOpen} label={post.category?.name} />
           )}
         </div>
 

@@ -176,6 +176,7 @@ vi.mock('@/components/i18n/TranslateButton', () => ({
 }));
 
 import { ListingDetailPage } from './ListingDetailPage';
+import { paletteFor } from '@/lib/categoryColours';
 import { useSocialInteractions } from '@/hooks/useSocialInteractions';
 
 const mockUseSocialInteractions = vi.mocked(useSocialInteractions);
@@ -295,6 +296,30 @@ describe('ListingDetailPage', () => {
     // stub has no test id, so assert the listing image is absent — proving the
     // placeholder branch was taken rather than the real image.
     expect(screen.queryByAltText(/Image for Web Design Help/i)).not.toBeInTheDocument();
+  });
+
+  it('shows a theme cover in the same colour as the offer card when there is no photo', async () => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.includes('/config')) return Promise.resolve({ success: true, data: { exchange_workflow_enabled: true } });
+      if (url.includes('/check')) return Promise.resolve({ success: true, data: null });
+      if (url.startsWith('/v2/categories')) {
+        return Promise.resolve({
+          success: true,
+          data: [
+            { id: 3, name: 'Gardening', slug: 'gardening', color: 'blue' },
+            { id: 1, name: 'Technology', slug: 'technology', color: 'blue' },
+          ],
+        });
+      }
+      return Promise.resolve({ success: true, data: { ...mockListing, category_slug: 'technology' } });
+    });
+    render(<ListingDetailPage />);
+
+    const cover = await screen.findByTestId('listing-detail-cover');
+    // Technology is the second theme, so it takes the palette's second colour,
+    // exactly as its tile and card on the offers page do.
+    await waitFor(() => expect(cover).toHaveAttribute('data-colour', paletteFor(null)[1]));
+    expect(cover).toHaveTextContent('Technology');
   });
 
   it("reads the member's photo description as the image alt text (AWID regression)", async () => {

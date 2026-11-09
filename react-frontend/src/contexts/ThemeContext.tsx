@@ -28,6 +28,7 @@ import { api, tokenManager } from '@/lib/api';
 import { logWarn } from '@/lib/logger';
 import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageSetJSON } from '@/lib/safeStorage';
 import { ensureContrast, getAccessibleForegroundColor } from '@/lib/colorContrast';
+import { SiteAccentContext } from '@/contexts/SiteAccentContext';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -151,7 +152,8 @@ function applyThemeToDOM(resolvedTheme: ResolvedTheme): void {
   if (metaThemeColor) {
     metaThemeColor.setAttribute(
       'content',
-      resolvedTheme === 'dark' ? '#0a0a0f' : '#f8fafc'
+      // The page background (tokens.css --surface-base), warm since Nov 2026.
+      resolvedTheme === 'dark' ? '#0c0a09' : '#fafaf9'
     );
   }
 }
@@ -525,7 +527,11 @@ export function ThemeProvider({
   );
 
   return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>
+      {/* The colour the site shows, for components that follow it (avatars,
+          covers, the header line); see SiteAccentContext for why it is apart. */}
+      <SiteAccentContext.Provider value={effectiveAccent}>{children}</SiteAccentContext.Provider>
+    </ThemeContext.Provider>
   );
 }
 

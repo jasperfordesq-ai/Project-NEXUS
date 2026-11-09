@@ -158,7 +158,7 @@ export function Footer({ children, copyright }: FooterProps) {
               <div className="space-y-3">
                 <TenantLogo size="sm" showName />
                 <p className="text-sm text-theme-subtle">
-                  {branding.tagline || 'Building stronger communities through the exchange of time.'}
+                  {branding.tagline || t('footer.default_tagline')}
                 </p>
                 {/* Contact info from tenant bootstrap */}
                 {contact && (

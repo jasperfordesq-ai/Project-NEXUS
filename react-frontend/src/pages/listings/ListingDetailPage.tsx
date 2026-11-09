@@ -35,7 +35,12 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import Gift from 'lucide-react/icons/gift';
+import HandHelping from 'lucide-react/icons/hand-helping';
+import { useListingThemeColours } from '@/hooks/useListingThemeColours';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { RadioGroup, Radio } from '@/components/ui/Radio';
 import { Textarea } from '@/components/ui/Textarea';
@@ -154,6 +159,8 @@ function buildListingStructuredData(listing: Listing, options: ListingStructured
 
 export function ListingDetailPage() {
   const { t } = useTranslation('listings');
+  const themeColours = useListingThemeColours();
+  const palette = useSitePalette();
   usePageTitle(t('title'));
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -543,8 +550,20 @@ export function ListingDetailPage() {
               onError={() => setImageError(true)}
             />
           ) : (
-            <div className="flex h-64 items-center justify-center sm:h-80 lg:h-[24rem]">
-              <ImagePlaceholder size="lg" />
+            // No photo: the same theme cover as this offer's card on the
+            // offers page (its theme's colour, else a palette colour by id).
+            <div className="h-64 sm:h-80 lg:h-[24rem]">
+              <ThemedCover
+                data-testid="listing-detail-cover"
+                size="lg"
+                colour={
+                  (listing.category_slug && themeColours[listing.category_slug])
+                  || listing.category_color
+                  || colourForSeed(listing.id, palette)
+                }
+                icon={listing.type === 'offer' ? Gift : HandHelping}
+                label={listing.category_name}
+              />
             </div>
           )}
           <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 via-black/20 to-transparent p-4 sm:p-6">

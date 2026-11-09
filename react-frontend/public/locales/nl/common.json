@@ -323,7 +323,8 @@
     "powered_by": "Aangedreven door",
     "provided_by": "Aangeboden door",
     "agpl_short": "Vrije en opensourcesoftware. Gelicentieerd onder AGPL-3.0.",
-    "nexus_link_label": "Bezoek de Project NEXUS-website"
+    "nexus_link_label": "Bezoek de Project NEXUS-website",
+    "default_tagline": "Sterkere gemeenschappen bouwen door tijd uit te wisselen."
   },
   "report_problem": {
     "trigger": "Hulp en ondersteuning",

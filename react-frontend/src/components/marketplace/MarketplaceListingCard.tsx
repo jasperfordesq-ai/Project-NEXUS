@@ -89,7 +89,7 @@ export function MarketplaceListingCard({ listing, onSave, onUnsave }: Marketplac
               fetchPriority="low"
             />
           ) : (
-            <ImagePlaceholder className="w-full h-full" />
+            <ImagePlaceholder className="w-full h-full" seed={listing.id} />
           )}
 
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />

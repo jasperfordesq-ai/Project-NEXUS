@@ -39,11 +39,11 @@ const FRAME_WIDTH: Record<PreviewDevice, string> = {
 
 const PREVIEW_THEME_CSS: Record<ResolvedTheme, string> = {
   dark: `
-:root{--background:#0a0a0f;--foreground:#ededed;--foreground-muted:rgba(237,237,237,.7);--surface-elevated:rgba(255,255,255,.05);--border-default:rgba(255,255,255,.10);--accent-color:#818cf8;--color-accent:#06b6d4;--color-warning:#f59e0b;--accent-foreground:#ffffff;--shadow-md:0 4px 16px rgba(0,0,0,.4)}
+:root{--background:#0c0a09;--foreground:#ededed;--foreground-muted:rgba(237,237,237,.7);--surface-elevated:rgba(255,255,255,.05);--border-default:rgba(255,255,255,.10);--accent-color:#818cf8;--color-accent:#06b6d4;--color-warning:#f59e0b;--accent-foreground:#ffffff;--shadow-md:0 4px 16px rgba(0,0,0,.4)}
 html{color-scheme:dark}
 `.trim(),
   light: `
-:root{--background:#f8fafc;--foreground:#1e293b;--foreground-muted:rgba(30,41,59,.7);--surface-elevated:rgba(255,255,255,.9);--border-default:rgba(0,0,0,.08);--accent-color:#4f46e5;--color-accent:#0891b2;--color-warning:#d97706;--accent-foreground:#ffffff;--shadow-md:0 4px 16px rgba(0,0,0,.12)}
+:root{--background:#fafaf9;--foreground:#292524;--foreground-muted:rgba(41,37,36,.7);--surface-elevated:rgba(255,255,255,.9);--border-default:rgba(0,0,0,.08);--accent-color:#4f46e5;--color-accent:#0891b2;--color-warning:#d97706;--accent-foreground:#ffffff;--shadow-md:0 4px 16px rgba(0,0,0,.12)}
 html{color-scheme:light}
 `.trim(),
 };

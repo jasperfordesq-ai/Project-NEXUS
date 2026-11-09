@@ -326,7 +326,8 @@
     "powered_by": "Cumhachtaithe ag",
     "provided_by": "Arna sholáthar ag",
     "agpl_short": "Bogearraí saor agus foinse oscailte. Faoi cheadúnas AGPL-3.0.",
-    "nexus_link_label": "Tabhair cuairt ar shuíomh Project NEXUS"
+    "nexus_link_label": "Tabhair cuairt ar shuíomh Project NEXUS",
+    "default_tagline": "Pobail níos láidre a thógáil trí am a mhalartú."
   },
   "report_problem": {
     "trigger": "Cabhair agus tacaíocht",

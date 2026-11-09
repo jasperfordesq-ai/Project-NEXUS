@@ -165,6 +165,33 @@ describe('PublicPageHero', () => {
     });
   });
 
+  it("is a soft panel in the page's own colour, in light and dark mode", () => {
+    render(<PublicPageHero {...defaultProps} accent="amber" />);
+    const section = document.querySelector('[data-public-page-hero="true"]');
+    expect(section?.className).toContain('rounded-3xl');
+    expect(section?.className).toContain('bg-amber-500/10');
+    expect(section?.className).toContain('dark:bg-amber-500/15');
+    // Darker body text than before, so it stays readable on the tint.
+    expect(screen.getByText('Discover how timebanking works.').className).toContain('text-theme-secondary');
+  });
+
+  it("takes the community colour's soft tint once the community has chosen one", async () => {
+    function CommunityColour() {
+      const { setCommunityAccent } = useTheme();
+      useEffect(() => setCommunityAccent('#a3195b'), [setCommunityAccent]);
+      return null;
+    }
+    render(
+      <ThemeProvider>
+        <CommunityColour />
+        <PublicPageHero {...defaultProps} accent="amber" />
+      </ThemeProvider>
+    );
+    await waitFor(() => {
+      expect(document.querySelector('[data-public-page-hero="true"]')?.className).toContain('bg-accent-soft');
+    });
+  });
+
   it('keeps its own page colour when the community has not chosen one', () => {
     render(
       <ThemeProvider>

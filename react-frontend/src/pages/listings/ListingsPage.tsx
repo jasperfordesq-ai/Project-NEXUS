@@ -67,14 +67,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useCommunityAccent } from '@/contexts/ThemeContext';
+import { useSiteAccent, useSitePalette } from '@/contexts/SiteAccentContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { MAPS_ENABLED } from '@/lib/map-config';
-import { resolveAvatarUrl, resolveThumbnailUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
-import { categoryColour, themeColourNames } from '@/lib/categoryColours';
+import { resolveAvatarUrl, resolveThumbnailUrl, responsiveThumbnailProps, getFormattingLocale, formatRelativeTime } from '@/lib/helpers';
+import { categoryColour, colourForSeed, themeColourNames } from '@/lib/categoryColours';
+import { ThemedCover } from '@/components/ui/ThemedCover';
 import type { EntityMapViewProps } from '@/components/location/EntityMapView';
 import type { ProximityFilterParams } from '@/components/proximity/ProximityFilter';
 import type { Listing, Category } from '@/types/api';
@@ -191,9 +193,23 @@ export function ListingsPage() {
   const toast = useToast();
   // A community's own colour, once chosen, replaces this page's green.
   const usesCommunityColour = useCommunityAccent() !== null;
+  const siteAccent = useSiteAccent();
   const viewToggleSelected = usesCommunityColour ? VIEW_TOGGLE_SELECTED.community : VIEW_TOGGLE_SELECTED.page;
   const memberFirstName = user?.first_name?.trim() || '';
-  const greeting = memberFirstName ? t('welcome_back', { name: memberFirstName }) : t('welcome_generic');
+  // Greets by the member's own time of day (AWID: warmth).
+  const hour = new Date().getHours();
+  const partOfDay = hour >= 5 && hour < 12 ? 'morning' : hour >= 12 && hour < 18 ? 'afternoon' : 'evening';
+  const greeting = memberFirstName
+    ? (partOfDay === 'morning'
+        ? t('greeting_morning', { name: memberFirstName })
+        : partOfDay === 'afternoon'
+          ? t('greeting_afternoon', { name: memberFirstName })
+          : t('greeting_evening', { name: memberFirstName }))
+    : (partOfDay === 'morning'
+        ? t('greeting_morning_generic')
+        : partOfDay === 'afternoon'
+          ? t('greeting_afternoon_generic')
+          : t('greeting_evening_generic'));
   const [searchParams, setSearchParams] = useSearchParams();
   const canUseMapView = MAPS_ENABLED && hasFeature('maps');
 
@@ -586,7 +602,9 @@ export function ListingsPage() {
 
   // One colour per theme, shared by the theme tiles and the cards so a card
   // matches its tile (see themeColourNames for the "all left blue" rule).
-  const themeColours = useMemo(() => themeColourNames(categories), [categories]);
+  // Follows the site's colour: a new community colour recolours the themes
+  // (while the admin has left them all on the default).
+  const themeColours = useMemo(() => themeColourNames(categories, siteAccent), [categories, siteAccent]);
 
   if (!hasModule('listings')) {
     return null;
@@ -1321,6 +1339,7 @@ interface ListingCardProps {
 const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, isSaving, onToggleSave }: ListingCardProps) {
   const { t } = useTranslation('listings');
   const { tenantPath } = useTenant();
+  const palette = useSitePalette();
   const isGrid = viewMode === 'grid';
   const [imgError, setImgError] = useState(false);
   // The API sends the database decimal as a string ("2.00"), which the card
@@ -1361,6 +1380,13 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
       })
     : null;
   const showsPhoto = imageProps !== null && !imgError;
+  // How long ago it was posted ("2 days ago", in the reader's language), so
+  // the board feels current.
+  const postedAt = listing.created_at ? (
+    <time dateTime={listing.created_at} className="ms-auto shrink-0 text-xs text-theme-subtle">
+      {formatRelativeTime(listing.created_at)}
+    </time>
+  ) : null;
   // Remote / hybrid sit in the details line beside the hours and the place,
   // not as one more label: a card carried up to six labels (AWID: clean).
   const serviceMode = listing.service_type === 'remote_only'
@@ -1455,6 +1481,7 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
                   {formatDistance(listing.distance_km)}
                 </span>
               )}
+              {postedAt}
               {onToggleSave && (
                 <Button
                   isIconOnly
@@ -1495,28 +1522,18 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
               onError={() => setImgError(true)}
             />
           ) : (
-            // No photo: the listing's theme in its own colour, instead of a
-            // grey box (AWID: "attractive visuals", "clear categories").
-            // Decorative for screen readers: the theme name is repeated, out
-            // of sight, in the labels below. With no theme it shows only the
-            // icon — "Offering" is already the first label.
-            <div
+            // No photo: a cover in the listing's theme colour instead of a grey
+            // box (AWID: "attractive visuals", "clear categories"). With no
+            // theme, a colour from the community palette chosen by the
+            // listing's id, so it is stable and neighbours differ. Decorative
+            // for screen readers: the theme name is repeated, out of sight, in
+            // the labels below.
+            <ThemedCover
               data-testid="listing-theme-band"
-              aria-hidden="true"
-              className={`flex h-full w-full flex-col p-4 ${listing.category_name ? 'justify-between' : 'items-center justify-center'} ${categoryColour(
-                // No theme either: the offer/request colours used by its label.
-                themeColour ?? listing.category_color ?? (listing.type === 'offer' ? 'green' : 'orange'),
-              ).band}`}
-            >
-              {listing.category_name && (
-                <span className="text-sm font-semibold">{listing.category_name}</span>
-              )}
-              {listing.type === 'offer' ? (
-                <Gift className={`h-10 w-10 opacity-80 ${listing.category_name ? 'self-end' : ''}`} aria-hidden="true" />
-              ) : (
-                <HandHelping className={`h-10 w-10 opacity-80 ${listing.category_name ? 'self-end' : ''}`} aria-hidden="true" />
-              )}
-            </div>
+              colour={themeColour ?? colourForSeed(listing.id, palette)}
+              icon={listing.type === 'offer' ? Gift : HandHelping}
+              label={listing.category_name}
+            />
           )}
           {/* No dark overlay on hover: the card lifts instead (a darkened
               photo or colour panel read as heavier, not warmer). */}
@@ -1596,6 +1613,7 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
                 {listing.author_rating.toFixed(1)}
               </span>
             )}
+            {postedAt}
           </div>
           {(hours || serviceMode || listing.location || listing.distance_km !== undefined) && (
             <div className="flex min-w-0 items-center gap-3 text-xs text-theme-subtle">

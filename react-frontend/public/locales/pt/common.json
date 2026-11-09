@@ -324,7 +324,8 @@
     "powered_by": "Desenvolvido por",
     "provided_by": "Fornecido por",
     "agpl_short": "Software livre e de código aberto. Licenciado sob AGPL-3.0.",
-    "nexus_link_label": "Visitar o site do Project NEXUS"
+    "nexus_link_label": "Visitar o site do Project NEXUS",
+    "default_tagline": "Construir comunidades mais fortes através da troca de tempo."
   },
   "report_problem": {
     "trigger": "Ajuda e suporte",

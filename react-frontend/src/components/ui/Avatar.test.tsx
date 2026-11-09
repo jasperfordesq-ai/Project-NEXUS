@@ -6,7 +6,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
-import { Avatar, AvatarGroup } from './Avatar';
+import { Avatar, AvatarGroup, isStockAvatar } from './Avatar';
+import { SiteAccentContext } from '@/contexts/SiteAccentContext';
+import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 
 vi.mock('@/contexts', () => createMockContexts());
 
@@ -155,6 +157,64 @@ describe('Avatar', () => {
     const { container } = render(<Avatar name="A" radius="none" />);
     const rounded = container.querySelector('.rounded-none');
     expect(rounded).not.toBeNull();
+  });
+
+  // ── Coloured initials instead of a stock picture ───────────────────────────
+
+  const STOCK_PICTURE = 'https://api.example.test/assets/img/defaults/default_avatar.png';
+
+  function fallbackOf(container: HTMLElement) {
+    return container.querySelector('[data-slot="avatar-fallback"]') ?? container.querySelector('.avatar__fallback');
+  }
+
+  it('shows coloured initials, not the stock grey picture, for a member with no photo', () => {
+    const { container } = render(<Avatar name="Aoife Nolan" src={STOCK_PICTURE} />);
+    expect(container.querySelector('img')).toBeNull();
+    expect(screen.getByText('AN')).toBeInTheDocument();
+    const colour = colourForSeed('Aoife Nolan', paletteFor(null));
+    expect(fallbackOf(container)?.className).toContain(`bg-${colour}-100`);
+    expect(fallbackOf(container)?.className).toContain(`dark:text-${colour}-300`);
+  });
+
+  it('colours initials the same way when there is no picture at all', () => {
+    const { container } = render(<Avatar name="Aoife Nolan" />);
+    const colour = colourForSeed('Aoife Nolan', paletteFor(null));
+    expect(fallbackOf(container)?.className).toContain(`bg-${colour}-100`);
+  });
+
+  it('gives the same person the same colour everywhere, and different people different colours', () => {
+    const names = ['Aoife Nolan', 'Bob Smith', 'Chiara Rossi', 'Dmitri Ivanov', 'Efua Mensah', 'Fionn Byrne'];
+    const colours = names.map((name) => {
+      const { container, unmount } = render(<Avatar name={name} />);
+      const found = /bg-(\w+)-100/.exec(fallbackOf(container)?.className ?? '')?.[1];
+      unmount();
+      return found;
+    });
+    expect(colours.every(Boolean)).toBe(true);
+    expect(new Set(colours).size).toBeGreaterThan(2);
+  });
+
+  it('follows the community colour', () => {
+    const { container } = render(
+      <SiteAccentContext.Provider value="#0f766e"><Avatar name="Aoife Nolan" /></SiteAccentContext.Provider>,
+    );
+    const colour = colourForSeed('Aoife Nolan', paletteFor('#0f766e'));
+    expect(fallbackOf(container)?.className).toContain(`bg-${colour}-100`);
+  });
+
+  it('treats only the stock picture as "no photo", never a real photo', () => {
+    // jsdom never finishes loading an image, so HeroUI's <img> cannot be seen
+    // here; the decision itself is what matters.
+    expect(isStockAvatar(STOCK_PICTURE)).toBe(true);
+    expect(isStockAvatar('/assets/img/defaults/default_avatar.png')).toBe(true);
+    expect(isStockAvatar('/uploads/avatars/aoife.jpg')).toBe(false);
+    expect(isStockAvatar('https://cdn.example.test/u/7/photo.webp')).toBe(false);
+    expect(isStockAvatar(null)).toBe(false);
+  });
+
+  it('keeps a colour the caller asked for', () => {
+    const { container } = render(<Avatar name="Aoife Nolan" color="success" />);
+    expect(fallbackOf(container)?.className ?? '').not.toMatch(/bg-\w+-100/);
   });
 
   // ── Children ──────────────────────────────────────────────────────────────

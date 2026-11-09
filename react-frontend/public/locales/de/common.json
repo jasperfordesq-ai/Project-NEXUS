@@ -323,7 +323,8 @@
     "powered_by": "Bereitgestellt von",
     "provided_by": "Zur Verfügung gestellt von",
     "agpl_short": "Freie und Open-Source-Software. Lizenziert unter AGPL-3.0.",
-    "nexus_link_label": "Project NEXUS-Website besuchen"
+    "nexus_link_label": "Project NEXUS-Website besuchen",
+    "default_tagline": "Stärkere Gemeinschaften durch den Austausch von Zeit."
   },
   "report_problem": {
     "trigger": "Hilfe & Support",

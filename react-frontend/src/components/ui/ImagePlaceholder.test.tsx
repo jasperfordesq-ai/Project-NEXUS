@@ -8,7 +8,7 @@ import { render, screen } from '@/test/test-utils';
 import React from 'react';
 
 // No api calls in this component — no api mock needed.
-// No contexts consumed — no context mock needed.
+// Reads the site colour through ThemeContext, which is null without a provider.
 
 describe('ImagePlaceholder', () => {
   beforeEach(() => {
@@ -84,12 +84,23 @@ describe('ImagePlaceholder', () => {
     expect(root?.className).toContain('overflow-hidden');
   });
 
-  it('renders decorative orbs (multiple children inside root)', async () => {
+  it('fills the space with a colour cover from the site palette, not the old brand gradient', async () => {
     const { ImagePlaceholder } = await import('./ImagePlaceholder');
+    const { paletteFor } = await import('@/lib/categoryColours');
     const { container } = render(<ImagePlaceholder />);
-    const root = container.querySelector('[aria-hidden="true"]');
-    // Should have at least 4 child divs (gradient, pattern, orb ×2, glass center)
-    expect(root?.children.length).toBeGreaterThanOrEqual(4);
+    const cover = container.querySelector('[data-colour]');
+    expect(cover).not.toBeNull();
+    // No seed: the community's own colour family, first in its palette.
+    expect(cover?.getAttribute('data-colour')).toBe(paletteFor(null)[0]);
+    expect(container.innerHTML).not.toContain('to-cyan-500');
+  });
+
+  it('gives each item its own stable colour when given a seed', async () => {
+    const { ImagePlaceholder } = await import('./ImagePlaceholder');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { container } = render(<ImagePlaceholder seed={17} />);
+    expect(container.querySelector('[data-colour]')?.getAttribute('data-colour'))
+      .toBe(colourForSeed(17, paletteFor(null)));
   });
 
   it('sm icon has smaller class than lg icon', async () => {

@@ -42,6 +42,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useNotificationsOptional } from '@/contexts/NotificationsContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { accentLineClasses } from '@/lib/categoryColours';
 import { useMenuContext } from '@/contexts/MenuContextCore';
 import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { canCreateEvents, hasAdminPanelAccess, hasBrokerPanelAccess } from '@/lib/access';
@@ -151,6 +153,8 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   // Page-provided title shown next to the brand on phones (pages that hide
   // their own header for vertical space publish it via useSetAppBarTitle).
   const appBarTitle = useAppBarTitle();
+  const sitePalette = useSitePalette();
+  const headerLineClasses = useMemo(() => accentLineClasses(sitePalette), [sitePalette]);
 
   // Scroll behavior for utility bar auto-hide + logo shrink
   const { isScrolled, isUtilityBarVisible } = useHeaderScroll(48);
@@ -1053,6 +1057,17 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
             </div>
           </div>
         </div>
+
+        {/* A thin line in the site's colour along the header's bottom edge,
+            on every page and screen size. It follows the community colour (or
+            the member's own) and its two neighbours on the colour wheel, with
+            lighter shades in dark mode. Absolutely placed over the bottom
+            border, so the header keeps its height and nothing below moves. */}
+        <div
+          data-testid="site-header-accent-line"
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-linear-to-r ${headerLineClasses}`}
+        />
 
         {/* Search Overlay */}
         {hasFeature('search') && <SearchOverlay

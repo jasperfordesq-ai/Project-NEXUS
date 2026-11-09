@@ -327,7 +327,8 @@
     "powered_by": "مدعوم من",
     "provided_by": "مقدَّم من",
     "agpl_short": "برمجيات حرة ومفتوحة المصدر. مرخّصة بموجب AGPL-3.0.",
-    "nexus_link_label": "زيارة موقع Project NEXUS"
+    "nexus_link_label": "زيارة موقع Project NEXUS",
+    "default_tagline": "نبني مجتمعات أقوى من خلال تبادل الوقت."
   },
   "report_problem": {
     "trigger": "المساعدة والدعم",

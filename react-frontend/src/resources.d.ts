@@ -39096,6 +39096,7 @@ export default interface Resources {
       "community_partner": "Community Partner",
       "contact_us": "Contact Us",
       "cookie_settings": "Cookie Settings",
+      "default_tagline": "Building stronger communities through the exchange of time.",
       "help_center": "Help Center",
       "legal": "Legal",
       "nexus_link_label": "Visit the Project NEXUS website",
@@ -54637,6 +54638,12 @@ export default interface Resources {
       "update": "Update Listing",
       "update_success": "Listing updated successfully"
     },
+    "greeting_afternoon": "Good afternoon, {{name}}",
+    "greeting_afternoon_generic": "Good afternoon",
+    "greeting_evening": "Good evening, {{name}}",
+    "greeting_evening_generic": "Good evening",
+    "greeting_morning": "Good morning, {{name}}",
+    "greeting_morning_generic": "Good morning",
     "hero_eyebrow": "People helping people",
     "hero_results_label": "Showing now",
     "hours_short": "{{hours}}h",
@@ -54841,8 +54848,6 @@ export default interface Resources {
     "unsave_title": "Removed from saved",
     "unsaved_success": "Listing removed from saved",
     "user_fallback": "User",
-    "welcome_back": "Welcome back, {{name}}",
-    "welcome_generic": "Welcome back",
     "welcome_intro": "Share what you know, ask for what you need. Every hour you give comes back to the community."
   },
   "marketplace": {

@@ -7,7 +7,7 @@
  * Tests for ListingsPage
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@/test/test-utils';
 
 vi.mock('@/lib/api', () => ({
@@ -123,12 +123,44 @@ vi.mock('@/lib/motion', () => {  const motionProps = new Set(['variants', 'initi
 import { ListingsPage } from './ListingsPage';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { SiteAccentContext } from '@/contexts/SiteAccentContext';
+import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 
 describe('ListingsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mapsEnabled = false;
     isPhoneViewport = false;
+    // Only the clock is faked (timers stay real, so waitFor still works):
+    // the greeting depends on the time of day.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 10, 9, 10, 0, 0));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it.each([
+    [7, 'Good morning, Test'],
+    [14, 'Good afternoon, Test'],
+    [20, 'Good evening, Test'],
+    [2, 'Good evening, Test'],
+  ])('greets the member for the time of day (%i:00)', (hour, greeting) => {
+    vi.setSystemTime(new Date(2026, 10, 9, hour, 0, 0));
+    render(<ListingsPage />);
+    expect(within(screen.getByTestId('listings-welcome')).getByText(greeting)).toBeInTheDocument();
+  });
+
+  it('greets without a name when the member has none on record', () => {
+    const signedIn = vi.mocked(useAuth).getMockImplementation();
+    vi.mocked(useAuth).mockReturnValue({ user: { id: 1, first_name: '' }, isAuthenticated: true } as unknown as ReturnType<typeof useAuth>);
+    try {
+      render(<ListingsPage />);
+      expect(within(screen.getByTestId('listings-welcome')).getByText('Good morning')).toBeInTheDocument();
+    } finally {
+      if (signedIn) vi.mocked(useAuth).mockImplementation(signedIn);
+    }
   });
 
   it('renders without crashing', () => {
@@ -166,7 +198,8 @@ describe('ListingsPage', () => {
     const panel = screen.getByTestId('listings-welcome');
     expect(within(panel).getByRole('heading', { level: 1, name: 'Offers and requests' })).toBeInTheDocument();
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
-    expect(within(panel).getByText('Welcome back, Test')).toBeInTheDocument();
+    // 10:00 local time (see beforeEach), so a morning greeting.
+    expect(within(panel).getByText('Good morning, Test')).toBeInTheDocument();
     expect(within(panel).getByText(/Every hour you give comes back to the community/)).toBeInTheDocument();
     expect(within(panel).getByRole('link', { name: 'My offers and requests' })).toHaveAttribute('href', '/test/listings/mine');
     // Exactly one of each on the page.
@@ -252,7 +285,7 @@ describe('ListingsPage', () => {
     isPhoneViewport = true;
     render(<ListingsPage />);
     const panel = screen.getByTestId('listings-welcome');
-    expect(within(panel).getByRole('heading', { level: 2, name: 'Welcome back, Test' })).toBeInTheDocument();
+    expect(within(panel).getByRole('heading', { level: 2, name: 'Good morning, Test' })).toBeInTheDocument();
     // The phone's app bar carries the title; the page keeps one hidden h1.
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getByRole('link', { name: 'Offer help' })).toBeInTheDocument();
@@ -306,8 +339,29 @@ describe('ListingsPage', () => {
 
       const care = await screen.findByRole('row', { name: 'Care & wellbeing' });
       const learning = screen.getByRole('row', { name: 'Learning' });
-      expect(care.className).toContain('bg-blue-100');
-      expect(learning.className).toContain('bg-orange-100');
+      // No community colour here, so the standard palette, in order.
+      const [first, second] = paletteFor(null);
+      expect(care.className).toContain(`bg-${first}-100`);
+      expect(learning.className).toContain(`bg-${second}-100`);
+    });
+
+    it('recolours the themes from the community colour when one is chosen', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/categories')
+            ? { success: true, data: categories.map((c) => ({ ...c, color: 'blue' })) }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+      // ThemeProvider publishes the colour the site shows here.
+      render(<SiteAccentContext.Provider value="#0f766e"><ListingsPage /></SiteAccentContext.Provider>);
+
+      const [first, second] = paletteFor('#0f766e');
+      await waitFor(() => {
+        expect(screen.getByRole('row', { name: 'Care & wellbeing' }).className).toContain(`bg-${first}-100`);
+      });
+      expect(first).toBe('teal');
+      expect(screen.getByRole('row', { name: 'Learning' }).className).toContain(`bg-${second}-100`);
     });
 
     it('shows only that theme when a member picks it', async () => {
@@ -450,7 +504,7 @@ describe('ListingsPage', () => {
 
       const band = await screen.findByTestId('listing-theme-band');
       expect(band).toHaveTextContent('Learning');
-      expect(band.className).toContain('bg-blue-100');
+      expect(band).toHaveAttribute('data-colour', 'blue');
     });
 
     it('colours a card the same as its theme tile when themes were left blue', async () => {
@@ -492,7 +546,7 @@ describe('ListingsPage', () => {
 
       await screen.findByRole('row', { name: 'Learning' });
       await waitFor(() => {
-        expect(screen.getByTestId('listing-theme-band').className).toContain('bg-orange-100');
+        expect(screen.getByTestId('listing-theme-band')).toHaveAttribute('data-colour', paletteFor(null)[1]);
       });
     });
 
@@ -527,9 +581,9 @@ describe('ListingsPage', () => {
       const label = (await screen.findByText('Offering')).closest('[data-slot="chip"]');
       expect(label).toHaveClass('text-xs');
       expect(label?.className).not.toContain('text-[10px]');
-      // No photo and no theme: the offer's own green, never a grey box.
       const band = screen.getByTestId('listing-theme-band');
-      expect(band.className).toContain('bg-green-100');
+      // No photo and no theme: a palette colour picked by the listing's id.
+      expect(band).toHaveAttribute('data-colour', colourForSeed(1, paletteFor(null)));
       expect(band.textContent).toBe('');
     });
 
@@ -603,6 +657,28 @@ describe('ListingsPage', () => {
       expect(within(dogs!).queryByText('1.50h')).toBeNull();
       // Zero hours says nothing useful, so it is left out.
       expect(within(lift!).queryByText(/h$/)).toBeNull();
+    });
+
+    it('says how long ago each offer was posted, in the grid and the list', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/listings')
+            ? { success: true, meta: {}, data: [{ id: 1, title: 'Dog walking', description: 'Mornings.', type: 'offer', status: 'active',
+                created_at: '2026-11-07T09:00:00Z', updated_at: '2026-11-07T09:00:00Z', user: { id: 9, name: 'Sofia Haddad' } }] }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+      render(<ListingsPage />);
+
+      const card = await screen.findByTestId('listing-card');
+      // formatRelativeTime is stubbed to "2 hours ago" in this file.
+      const posted = within(card).getByText('2 hours ago');
+      expect(posted.tagName).toBe('TIME');
+      expect(posted).toHaveAttribute('datetime', '2026-11-07T09:00:00Z');
+
+      fireEvent.click(screen.getByLabelText('List view'));
+      const listCard = await screen.findByTestId('listing-card');
+      expect(within(listCard).getByText('2 hours ago').tagName).toBe('TIME');
     });
 
     it('does not darken a card when the pointer is over it', async () => {

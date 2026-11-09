@@ -36,6 +36,9 @@ import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
 import { useTenant } from '@/contexts/TenantContext';
 import { logError } from '@/lib/logger';
 import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName, responsiveThumbnailProps } from '@/lib/helpers';
@@ -670,6 +673,7 @@ interface GroupCardProps {
 const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
   const { t } = useTranslation('groups');
   const { tenantPath } = useTenant();
+  const palette = useSitePalette();
   const memberCount = group.member_count ?? group.members_count ?? 0;
   const privacyLabel = group.visibility === 'private' || group.visibility === 'secret'
     ? t('private_title')
@@ -704,11 +708,13 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
                 decoding="async"
               />
             ) : (
-              <div className="flex h-full items-center justify-center bg-theme-elevated text-theme-subtle">
-                <Users className="h-8 w-8" aria-hidden="true" />
-              </div>
+              // No picture: a cover in a colour from the community palette,
+              // chosen by the group's id so it is stable and neighbours differ
+              // (was a grey box).
+              <ThemedCover data-testid="group-cover" colour={colourForSeed(group.id, palette)} icon={Users} size="sm" />
             )}
-            <div className="absolute inset-0 bg-linear-to-t from-black/35 to-transparent" aria-hidden="true" />
+            {/* Shade only a photo, so its lock / globe badge stays readable. */}
+            {imageProps && <div className="absolute inset-0 bg-linear-to-t from-black/35 to-transparent" aria-hidden="true" />}
             {group.visibility === 'private' || group.visibility === 'secret' ? (
               <Tooltip content={t('private_title')}>
                 <span className="absolute end-3 top-3 shrink-0 rounded-full bg-black/45 p-1.5 text-white backdrop-blur-sm">

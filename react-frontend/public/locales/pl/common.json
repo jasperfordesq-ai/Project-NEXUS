@@ -325,7 +325,8 @@
     "powered_by": "Napędzane przez",
     "provided_by": "Dostarczane przez",
     "agpl_short": "Wolne i otwarte oprogramowanie. Licencja AGPL-3.0.",
-    "nexus_link_label": "Odwiedź stronę Project NEXUS"
+    "nexus_link_label": "Odwiedź stronę Project NEXUS",
+    "default_tagline": "Budujemy silniejsze społeczności dzięki wymianie czasu."
   },
   "report_problem": {
     "trigger": "Pomoc i wsparcie",

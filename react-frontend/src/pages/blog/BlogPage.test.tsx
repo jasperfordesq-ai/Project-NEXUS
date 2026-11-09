@@ -68,6 +68,7 @@ vi.mock('@/components/feedback', () => ({
 vi.mock('@/lib/motion', () => {  const motionProps = new Set(['variants', 'initial', 'animate', 'layout', 'transition', 'exit', 'whileHover', 'whileTap', 'whileInView', 'viewport']);  const filterMotion = (props: Record<string, unknown>) => {    const filtered: Record<string, unknown> = {};    for (const [k, v] of Object.entries(props)) {      if (!motionProps.has(k)) filtered[k] = v;    }    return filtered;  };  return {    motion: {      div: ({ children, ...props }: Record<string, unknown>) => <div {...filterMotion(props)}>{children}</div>,    },    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,  };});
 
 import { BlogPage } from './BlogPage';
+import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 import { api } from '@/lib/api';
 
 const mockApiGet = vi.mocked(api.get);
@@ -138,6 +139,31 @@ describe('BlogPage', () => {
     expect(screen.queryByText('Private Member Name')).not.toBeInTheDocument();
     expect(document.querySelector('a[href*="/profile/"]')).toBeNull();
     expect(document.querySelector('img[src*="member-avatar"]')).toBeNull();
+  });
+
+  it('gives posts with no picture a colour cover, shared by posts in the same category', async () => {
+    mockApiGet.mockImplementation((url: string) => Promise.resolve({
+      success: true,
+      data: url.includes('/categories') ? [CATEGORY] : [
+        { ...POST, id: 9, title: 'First post', slug: 'first', category: CATEGORY },
+        { ...POST, id: 10, title: 'Second post', slug: 'second', category: CATEGORY },
+        { ...POST, id: 11, title: 'Third post', slug: 'third', category: CATEGORY },
+      ],
+      meta: {},
+    }));
+
+    render(<BlogPage />);
+
+    await screen.findByText('Third post');
+    const covers = screen.getAllByTestId('blog-cover');
+    expect(covers).toHaveLength(3);
+    const expected = colourForSeed('category-3', paletteFor(null));
+    for (const cover of covers) {
+      expect(cover).toHaveAttribute('data-colour', expected);
+      expect(cover).toHaveTextContent('Community News');
+    }
+    // The old fixed blue gradient is gone from the cards.
+    for (const cover of covers) expect(cover.parentElement?.className).not.toMatch(/from-blue-500/);
   });
 
   describe('phone layout', () => {

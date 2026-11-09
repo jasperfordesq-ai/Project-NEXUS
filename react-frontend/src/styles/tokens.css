@@ -32,8 +32,11 @@
 :root,
 :root[data-theme="dark"],
 .dark {
-  /* BASE COLORS */
-  --background: #0a0a0f;
+  /* BASE COLORS
+     Warm neutrals (Tailwind "stone") since Nov 2026, instead of the cool
+     blue-black/blue-grey "slate" family (AWID: a warmer community look). Text
+     contrast was measured before and after and is unchanged or better. */
+  --background: #0c0a09;   /* stone-950 (was #0a0a0f) */
   --foreground: #ededed;
   --foreground-muted: rgba(237, 237, 237, 0.7);
   --foreground-subtle: rgba(237, 237, 237, 0.5);
@@ -43,7 +46,7 @@
   --text-secondary: rgba(255, 255, 255, 0.8);
   --text-muted: rgba(255, 255, 255, 0.6);
   --text-subtle: rgba(255, 255, 255, 0.55);   /* ↑ was 0.4 — lifted to pass WCAG 4.5:1 on dark bg */
-  --text-inverse: #0a0a0f;
+  --text-inverse: #0c0a09;
 
   /* STATUS TEXT COLORS — use these, never a raw palette class.
      🔴 Raw `text-emerald-500`/`-600` etc. FAIL WCAG AA as text: on a /10 tint of
@@ -65,10 +68,10 @@
   --text-info:    #51a2ff;   /* blue-400    */
 
   /* SEMANTIC SURFACE COLORS */
-  --surface-base: #0a0a0f;
+  --surface-base: #0c0a09;   /* stone-950 (was #0a0a0f) */
   --surface-elevated: rgba(255, 255, 255, 0.05);
   --surface-overlay: rgba(0, 0, 0, 0.8);
-  --surface-dropdown: #16162a;
+  --surface-dropdown: #1c1917;   /* stone-900 (was #16162a, blue) */
   --surface-hover: rgba(255, 255, 255, 0.08);
   --surface-active: rgba(255, 255, 255, 0.12);
 
@@ -130,7 +133,7 @@
   --card-hover-bg: rgba(255, 255, 255, 0.05);
 
   /* Solid surface — for modals, dropdowns, popovers that must be opaque */
-  --surface-solid: hsl(240, 10%, 8%);
+  --surface-solid: hsl(24, 10%, 8%);   /* warm (was hsl(240, 10%, 8%), blue) */
 
   /* Input/form colors */
   --input-bg: rgba(255, 255, 255, 0.05);
@@ -177,17 +180,20 @@
    ───────────────────────────────────────────── */
 :root[data-theme="light"],
 .light {
-  /* BASE COLORS */
-  --background: #f8fafc;
-  --foreground: #1e293b;
-  --foreground-muted: rgba(30, 41, 59, 0.7);
-  --foreground-subtle: rgba(30, 41, 59, 0.5);
+  /* BASE COLORS — warm "stone" neutrals since Nov 2026 (were "slate").
+     Measured, text on white / on the page background:
+       primary   17.85/17.06 -> 17.49/16.74   secondary 10.35/9.90 -> 10.27/9.84
+       muted      4.76/4.55  ->  4.80/4.59    subtle     7.58/7.24 ->  7.63/7.30 */
+  --background: #fafaf9;   /* stone-50 (was #f8fafc) */
+  --foreground: #292524;   /* stone-800 (was #1e293b) */
+  --foreground-muted: rgba(41, 37, 36, 0.7);
+  --foreground-subtle: rgba(41, 37, 36, 0.5);
 
   /* SEMANTIC TEXT COLORS */
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
-  --text-subtle: #475569;          /* ↑ was #94a3b8 (2.3:1) — Slate-600 gives 6.5:1 on light bg */
+  --text-primary: #1c1917;         /* stone-900 (was slate-900 #0f172a) */
+  --text-secondary: #44403c;       /* stone-700 (was slate-700 #334155) */
+  --text-muted: #78716c;           /* stone-500 (was slate-500 #64748b) — 4.59:1 on the page */
+  --text-subtle: #57534e;          /* stone-600 (was slate-600 #475569; before that #94a3b8, 2.3:1) */
   --text-inverse: #ffffff;
 
   /* STATUS TEXT COLORS — see the note in the dark block above.
@@ -200,7 +206,7 @@
   --text-info:    #0059db;
 
   /* SEMANTIC SURFACE COLORS */
-  --surface-base: #f8fafc;
+  --surface-base: #fafaf9;   /* stone-50 (was #f8fafc) */
   --surface-elevated: rgba(255, 255, 255, 0.9);
   --surface-overlay: rgba(255, 255, 255, 0.95);
   --surface-dropdown: #ffffff;

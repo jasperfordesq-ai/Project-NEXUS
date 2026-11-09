@@ -118,6 +118,7 @@ function lastRequestUrl(): string {
 vi.mock('@/lib/motion', () => {  const motionProps = new Set(['variants', 'initial', 'animate', 'layout', 'transition', 'exit', 'whileHover', 'whileTap', 'whileInView', 'viewport']);  const filterMotion = (props: Record<string, unknown>) => {    const filtered: Record<string, unknown> = {};    for (const [k, v] of Object.entries(props)) {      if (!motionProps.has(k)) filtered[k] = v;    }    return filtered;  };  return {    motion: {      div: ({ children, ...props }: Record<string, unknown>) => <div {...filterMotion(props)}>{children}</div>,    },    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,  };});
 
 import { GroupsPage } from './GroupsPage';
+import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 
 describe('GroupsPage', () => {
   beforeEach(() => {
@@ -300,6 +301,27 @@ describe('GroupsPage', () => {
     expect(screen.getByLabelText('12 members')).toBeInTheDocument();
     expect(screen.getByLabelText('5 posts')).toBeInTheDocument();
     expect(screen.getByText('Featured')).toBeInTheDocument();
+  });
+
+  it('gives a group with no picture a colour cover from the community palette, not a grey box', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 7, name: 'Knitting Circle', description: 'Wool and chat.', image_url: null,
+          member_count: 3, members_count: 3, posts_count: 0, visibility: 'public',
+          tags: [], recent_members: [], created_at: '2026-01-01T00:00:00Z',
+        },
+      ],
+      meta: { has_more: false, total_items: 1 },
+    });
+
+    const { container } = render(<GroupsPage />);
+
+    const cover = await screen.findByTestId('group-cover');
+    expect(cover).toHaveAttribute('data-colour', colourForSeed(7, paletteFor(null)));
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(container.querySelector('img')).toBeNull();
   });
 
   it('reads out the description written for the picture the card shows', async () => {

@@ -27,39 +27,40 @@ const accentClasses = {
   emerald: {
     icon: 'from-emerald-500/20 to-teal-500/20 text-emerald-500 dark:text-emerald-300',
     chipColor: 'success',
-    line: 'from-emerald-500 via-teal-500 to-cyan-500',
+    panel: 'bg-emerald-500/10 dark:bg-emerald-500/15',
   },
   indigo: {
     icon: 'from-accent/20 to-sky-500/20 text-accent dark:text-accent',
     chipColor: 'accent',
-    line: 'from-accent via-sky-500 to-cyan-500',
+    panel: 'bg-accent-soft',
   },
   amber: {
     icon: 'from-amber-500/20 to-orange-500/20 text-amber-500 dark:text-amber-300',
     chipColor: 'warning',
-    line: 'from-amber-500 via-orange-500 to-rose-500',
+    panel: 'bg-amber-500/10 dark:bg-amber-500/15',
   },
   blue: {
     icon: 'from-blue-500/20 to-accent-gradient-end/20 text-blue-500 dark:text-blue-300',
     chipColor: 'accent',
-    line: 'from-blue-500 via-accent to-violet-500',
+    panel: 'bg-blue-500/10 dark:bg-blue-500/15',
   },
   rose: {
     icon: 'from-rose-500/20 to-fuchsia-500/20 text-rose-500 dark:text-rose-300',
     chipColor: 'danger',
-    line: 'from-rose-500 via-fuchsia-500 to-accent-gradient-end',
+    panel: 'bg-rose-500/10 dark:bg-rose-500/15',
   },
   // Used on every page once a community has chosen its own colour: HeroUI's
   // accent token only, so no fixed sky/cyan clashes with the community colour.
   community: {
     icon: 'from-accent/20 to-accent/5 text-accent dark:text-accent',
     chipColor: 'accent',
-    line: 'from-accent via-accent/50 to-transparent',
+    panel: 'bg-accent-soft',
   },
 } satisfies Record<string, {
   icon: string;
-  chipColor: 'accent' | 'success' | 'warning' | 'danger';
-  line: string;
+  chipColor: 'accent' | 'success' | 'warning' | 'danger';
+  /** The panel's soft tint (light and dark). Text on it uses the darker secondary token. */
+  panel: string;
 }>;
 
 export function PublicPageHero({
@@ -78,11 +79,13 @@ export function PublicPageHero({
   const classes = accentClasses[communityAccent ? 'community' : accent];
 
   return (
+    // A soft panel in the page's colour — the community's once it has chosen
+    // one — like the welcome panel on the offers page (AWID: warmer, more
+    // inviting). Was a plain header with a thin coloured underline.
     <section
       data-public-page-hero="true"
-      className="relative overflow-hidden border-b border-theme-default pb-6 pt-2 sm:pb-8"
+      className={`relative overflow-hidden rounded-3xl px-5 py-6 sm:px-8 sm:py-8 ${classes.panel}`}
     >
-      <div className={`absolute inset-x-0 bottom-0 h-px bg-linear-to-r ${classes.line}`} aria-hidden="true" />
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl">
           {/* The icon goes in startContent, NOT in children: children are wrapped
@@ -106,7 +109,7 @@ export function PublicPageHero({
               <h1 className="text-3xl font-bold tracking-tight text-theme-primary sm:text-4xl">
                 {title}
               </h1>
-              <p className="mt-3 max-w-2xl text-base leading-7 text-theme-muted">
+              <p className="mt-3 max-w-2xl text-base leading-7 text-theme-secondary">
                 {description}
               </p>
             </div>
