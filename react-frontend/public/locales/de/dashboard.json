@@ -180,5 +180,12 @@
     "joined": "Beigetreten {{when}}",
     "say_hello": "Hallo sagen",
     "say_hello_aria": "{{name}} Hallo sagen"
+  },
+  "month_highlight": {
+    "title": "{{month}} in {{community}}",
+    "subtitle": "Was alle in diesem Monat bisher geteilt haben.",
+    "hours": "Geteilte Stunden",
+    "members": "Neue Mitglieder",
+    "listings": "Neue Angebote und Anfragen"
   }
 }

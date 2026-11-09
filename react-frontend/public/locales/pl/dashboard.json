@@ -188,5 +188,12 @@
     "joined": "Dołączenie: {{when}}",
     "say_hello": "Przywitaj się",
     "say_hello_aria": "Przywitaj się z: {{name}}"
+  },
+  "month_highlight": {
+    "title": "{{month}} w {{community}}",
+    "subtitle": "Czym wszyscy podzielili się do tej pory w tym miesiącu.",
+    "hours": "Udostępnione godziny",
+    "members": "Nowi członkowie",
+    "listings": "Nowe oferty i prośby"
   }
 }

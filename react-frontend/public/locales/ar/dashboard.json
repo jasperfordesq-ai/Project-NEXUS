@@ -196,5 +196,12 @@
     "joined": "انضم {{when}}",
     "say_hello": "قل مرحبًا",
     "say_hello_aria": "قل مرحبًا لـ {{name}}"
+  },
+  "month_highlight": {
+    "title": "{{month}} في {{community}}",
+    "subtitle": "ما شاركه الجميع حتى الآن هذا الشهر.",
+    "hours": "الساعات المشتركة",
+    "members": "أعضاء جدد",
+    "listings": "عروض وطلبات جديدة"
   }
 }

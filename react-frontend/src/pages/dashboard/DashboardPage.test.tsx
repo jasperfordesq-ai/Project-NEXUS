@@ -116,6 +116,8 @@ function buildApiResponse(endpoint: string) {
       return { success: true, data: { balance: 12 } };
     case '/v2/wallet/pending-count':
       return { success: true, data: { count: 4 } };
+    case '/v2/community/this-month':
+      return { success: true, data: { month: '2026-11', hours_shared: 42, new_members: 5, new_listings: 8 } };
     case '/v2/listings/mine?status=live&limit=5':
       return {
         success: true,
@@ -214,6 +216,13 @@ describe('DashboardPage', () => {
     } finally {
       vi.mocked(useTenant).mockImplementation(original);
     }
+  });
+
+  it("shows what the community has shared this month", async () => {
+    render(<DashboardPage />);
+    const card = await screen.findByTestId('community-month-highlight');
+    expect(within(card).getByText('42')).toBeInTheDocument();
+    expect(within(card).getByText('Hours shared')).toBeInTheDocument();
   });
 
   it('shows no photo space in the welcome panel when the community has no photo', () => {

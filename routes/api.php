@@ -1030,6 +1030,7 @@ Route::post('/v2/feed/impression', [\App\Http\Controllers\Api\SocialController::
 Route::post('/v2/feed/click', [\App\Http\Controllers\Api\SocialController::class, 'recordClickV2']);
 // Feed Sidebar
 Route::get('/v2/community/stats', [\App\Http\Controllers\Api\FeedSidebarController::class, 'communityStats']);
+Route::get('/v2/community/this-month', [\App\Http\Controllers\Api\FeedSidebarController::class, 'thisMonth']);
 Route::get('/v2/members/suggested', [\App\Http\Controllers\Api\FeedSidebarController::class, 'suggestedMembers']);
 Route::get('/v2/feed/sidebar', [\App\Http\Controllers\Api\FeedSidebarController::class, 'sidebar']);
 // Feed Sharing & Hashtags

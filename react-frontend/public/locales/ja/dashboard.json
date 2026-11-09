@@ -180,5 +180,12 @@
     "joined": "{{when}}に参加",
     "say_hello": "あいさつする",
     "say_hello_aria": "{{name}}さんにあいさつする"
+  },
+  "month_highlight": {
+    "title": "{{community}}の{{month}}",
+    "subtitle": "今月これまでにみんなで分かち合ったこと。",
+    "hours": "分かち合った時間",
+    "members": "新しいメンバー",
+    "listings": "新しいオファーとリクエスト"
   }
 }

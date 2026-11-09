@@ -184,5 +184,12 @@
     "joined": "Entrou {{when}}",
     "say_hello": "Dizer olá",
     "say_hello_aria": "Dizer olá para {{name}}"
+  },
+  "month_highlight": {
+    "title": "{{month}} em {{community}}",
+    "subtitle": "O que todos partilharam até agora este mês.",
+    "hours": "Horas partilhadas",
+    "members": "Novos membros",
+    "listings": "Novas ofertas e pedidos"
   }
 }

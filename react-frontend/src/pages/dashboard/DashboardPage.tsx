@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { NewMembersStrip } from './NewMembersStrip';
+import { CommunityMonthHighlight } from './CommunityMonthHighlight';
 import { Card, CardBody } from '@/components/ui/Card';
 import { useGreeting } from '@/hooks/useGreeting';
 import { GuardianConsentPrompt } from '@/components/safeguarding/GuardianConsentPrompt';
@@ -494,6 +495,9 @@ export function DashboardPage() {
 
         {/* FLAT 2-COLUMN GRID — V2 layout (no sidebar) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-w-0">
+
+          {/* This month in the community (span 2); renders nothing in a quiet month */}
+          <CommunityMonthHighlight className="md:col-span-2" />
 
           {/* New members to say hello to (span 2); renders nothing when nobody is new */}
           <NewMembersStrip className="md:col-span-2" />

@@ -184,5 +184,12 @@
     "joined": "Se unió {{when}}",
     "say_hello": "Saludar",
     "say_hello_aria": "Saludar a {{name}}"
+  },
+  "month_highlight": {
+    "title": "{{month}} en {{community}}",
+    "subtitle": "Lo que todos han compartido en lo que va de mes.",
+    "hours": "Horas compartidas",
+    "members": "Nuevos miembros",
+    "listings": "Nuevas ofertas y solicitudes"
   }
 }

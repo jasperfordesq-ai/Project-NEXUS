@@ -180,5 +180,12 @@
     "joined": "Lid geworden {{when}}",
     "say_hello": "Zeg hallo",
     "say_hello_aria": "Zeg hallo tegen {{name}}"
+  },
+  "month_highlight": {
+    "title": "{{month}} in {{community}}",
+    "subtitle": "Wat iedereen deze maand tot nu toe heeft gedeeld.",
+    "hours": "Gedeelde uren",
+    "members": "Nieuwe leden",
+    "listings": "Nieuwe aanbiedingen en verzoeken"
   }
 }

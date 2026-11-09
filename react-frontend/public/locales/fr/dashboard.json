@@ -184,5 +184,12 @@
     "joined": "A rejoint {{when}}",
     "say_hello": "Dire bonjour",
     "say_hello_aria": "Dire bonjour à {{name}}"
+  },
+  "month_highlight": {
+    "title": "{{month}} à {{community}}",
+    "subtitle": "Ce que chacun a partagé depuis le début du mois.",
+    "hours": "Heures partagées",
+    "members": "Nouveaux membres",
+    "listings": "Nouvelles offres et demandes"
   }
 }

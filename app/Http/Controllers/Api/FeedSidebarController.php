@@ -77,6 +77,67 @@ class FeedSidebarController extends BaseApiController
     }
 
     /**
+     * GET /api/v2/community/this-month
+     *
+     * The dashboard's monthly highlight (AWID feedback, Nov 2026: "energy,
+     * warmth, and community"): three totals for the member's own community,
+     * this calendar month — hours shared between members (completed exchanges
+     * and member-to-member transfers; not starting balances, grants or the
+     * community fund), members who joined and are approved and active, and
+     * offers and requests posted that are live or completed. Totals only, no
+     * names. Signed-in members only; cached for ten minutes per community.
+     */
+    public function thisMonth(): JsonResponse
+    {
+        $this->requireAuth();
+        $tenantId = $this->getTenantId();
+
+        try {
+            $data = Cache::remember(self::thisMonthCacheKey($tenantId), 600, function () use ($tenantId) {
+                $start = now()->startOfMonth();
+
+                $hours = (float) DB::table('transactions')
+                    ->where('tenant_id', $tenantId)
+                    ->whereIn('transaction_type', ['exchange', 'transfer'])
+                    ->where('status', 'completed')
+                    ->where('created_at', '>=', $start)
+                    ->sum('amount');
+
+                $members = (int) DB::table('users')
+                    ->where('tenant_id', $tenantId)
+                    ->where('is_approved', 1)
+                    ->where('status', 'active')
+                    ->where('created_at', '>=', $start)
+                    ->count();
+
+                $listings = (int) DB::table('listings')
+                    ->where('tenant_id', $tenantId)
+                    ->whereIn('status', ['active', 'completed'])
+                    ->where('created_at', '>=', $start)
+                    ->count();
+
+                return [
+                    'month' => $start->format('Y-m'),
+                    'hours_shared' => round($hours, 2),
+                    'new_members' => $members,
+                    'new_listings' => $listings,
+                ];
+            });
+
+            return $this->respondWithData($data);
+        } catch (\Throwable $e) {
+            report($e);
+            return $this->respondWithError('INTERNAL_ERROR', __('api.failed_load_community_stats'), null, 500);
+        }
+    }
+
+    /** The cache key for a community's monthly highlight (one per calendar month). */
+    public static function thisMonthCacheKey(int $tenantId): string
+    {
+        return "community_this_month:{$tenantId}:" . now()->format('Y-m');
+    }
+
+    /**
      * GET /api/v2/members/suggested
      *
      * Suggested members to connect with, excluding already-connected users.
