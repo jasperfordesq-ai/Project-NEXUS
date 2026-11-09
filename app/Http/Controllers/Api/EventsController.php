@@ -753,9 +753,17 @@ class EventsController extends BaseApiController
         $factsById = $this->usesCanonicalEventContract()
             ? $this->contractFacts($result['items'], $userId)
             : [];
+        // A few members going to each event, for the cards (signed-in viewers
+        // only; see EventService::goingPreviewBatch for every rule it applies).
+        $goingPreview = $this->eventService->goingPreviewBatch(
+            array_map(static fn (array $event): int => (int) $event['id'], $result['items']),
+            $userId,
+        );
         $items = [];
         foreach ($result['items'] as $event) {
-            $items[] = $this->serializeListEvent($event, $factsById[(int) $event['id']] ?? []);
+            $item = $this->serializeListEvent($event, $factsById[(int) $event['id']] ?? []);
+            $item['going_preview'] = $goingPreview[(int) $event['id']] ?? [];
+            $items[] = $item;
         }
 
         return $this->respondWithCollection(

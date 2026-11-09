@@ -34,6 +34,7 @@
   "load_more": "Load More Events",
   "no_location": "No events with location data",
   "going": "{{count}} going",
+  "going_including": "including {{names}}",
   "interested": "{{count}} interested",
   "events_in_month": "Events in {{month}}",
   "loading_aria": "Loading events",

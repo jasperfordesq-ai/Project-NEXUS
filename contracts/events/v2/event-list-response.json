@@ -174,7 +174,8 @@
       "series_count": null,
       "series_occurrences": [],
       "can_edit": false,
-      "group": null
+      "group": null,
+      "going_preview": []
     }
   ],
   "meta": {

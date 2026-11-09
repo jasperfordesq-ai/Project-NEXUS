@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { Avatar } from '@/components/ui/Avatar';
+import { joinList } from '@/lib/listFormat';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -54,7 +56,7 @@ import { PublicEmptyState } from '@/components/public/PublicEmptyState';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { eventsApi, type Event, type EventCategory } from '@/lib/events-api';
 import { logError } from '@/lib/logger';
-import { formatDateTime, formatDateValue, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
+import { formatDateTime, formatDateValue, responsiveThumbnailProps, getFormattingLocale, resolveAvatarUrl } from '@/lib/helpers';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
@@ -993,6 +995,9 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
         timeZone: eventTimezone,
         timeZoneName: 'short',
       });
+  const goingPreview = event.going_preview ?? [];
+  // "Maeve, Tom and Ann" in the reader's language, for screen readers.
+  const goingNames = joinList(goingPreview.map((person) => person.name), getFormattingLocale());
   const coverImageProps = event.primary_image?.url
     ? responsiveThumbnailProps(event.primary_image.url, {
         width: 360,
@@ -1118,8 +1123,31 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
                   </span>
                 )}
                 <span className="flex items-center gap-1.5">
-                  <Users className="w-4 h-4" aria-hidden="true" />
+                  {/* A few faces of members going (owner, 9 Nov 2026); the server
+                      sends only people the directory would show this viewer. */}
+                  {goingPreview.length > 0 ? (
+                    <span className="flex -space-x-1.5" aria-hidden="true">
+                      {goingPreview.map((person) => (
+                        <Avatar
+                          key={person.id}
+                          data-testid="event-going-face"
+                          src={resolveAvatarUrl(person.avatar_url)}
+                          name={person.name}
+                          size="sm"
+                          className="size-6 ring-2 ring-[var(--surface-solid)]"
+                        />
+                      ))}
+                    </span>
+                  ) : (
+                    <Users className="w-4 h-4" aria-hidden="true" />
+                  )}
                   {t('going', { count: event.metrics.confirmed_count })}
+                  {goingPreview.length > 0 && (
+                    <span className="sr-only">
+                      {' '}
+                      {t('going_including', { names: goingNames })}
+                    </span>
+                  )}
                   {event.metrics.interested_count > 0 && (
                     <span className="text-theme-subtle">&middot; {t('interested', { count: event.metrics.interested_count })}</span>
                   )}

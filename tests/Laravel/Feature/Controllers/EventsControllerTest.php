@@ -855,7 +855,14 @@ class EventsControllerTest extends TestCase
         $this->assertNull(EventService::getAttendanceRecords($eventId, null));
         $organizerRoster = EventService::getAttendees($eventId, [], $organizer->id);
         $this->assertCount(1, $organizerRoster['items']);
-        $this->assertSame([], EventService::getAttendees($eventId, [], $unrelated->id)['items']);
+        // Owner decision, 9 Nov 2026: a member may see who else is going — the
+        // narrow member list (going only, directory rules, no check-in detail),
+        // never the operational roster. See EventAttendeesVisibleToMembersTest.
+        foreach (EventService::getAttendees($eventId, ['status' => 'all'], $unrelated->id)['items'] as $item) {
+            $this->assertSame('going', $item['status']);
+            $this->assertNull($item['checked_in_at']);
+            $this->assertNull($item['rsvp_at']);
+        }
     }
 
     // ================================================================

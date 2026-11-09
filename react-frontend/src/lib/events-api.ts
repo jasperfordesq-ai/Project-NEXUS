@@ -278,6 +278,15 @@ export const eventSchema = z.object({
   attendance_credit_amount: z.number().positive().optional(),
   /** Organiser opted this event into the community's public events pages. */
   is_public_listing: z.boolean().optional(),
+  /**
+   * Event list only, signed-in viewers only: up to three members going whom the
+   * member directory would show this viewer (first names). Never the viewer.
+   */
+  going_preview: z.array(z.object({
+    id: z.number().int().positive(),
+    name: z.string(),
+    avatar_url: nullableString,
+  })).optional(),
 }).passthrough();
 
 export const eventRegistrationResponseSchema = z.object({

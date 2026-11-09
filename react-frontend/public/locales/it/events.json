@@ -34,6 +34,7 @@
   "load_more": "Carica altri eventi",
   "no_location": "Nessun evento con dati di posizione",
   "going": "{{count}} partecipante/i",
+  "going_including": "tra cui {{names}}",
   "interested": "{{count}} interessato/i",
   "events_in_month": "Eventi a {{month}}",
   "loading_aria": "Caricamento eventi",

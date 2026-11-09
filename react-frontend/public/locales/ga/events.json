@@ -34,6 +34,7 @@
   "load_more": "Luchtaigh Tuilleadh Imeachtaí",
   "no_location": "Níl sonraí suímh ag aon imeacht",
   "going": "Tá {{count}} duine ag dul",
+  "going_including": "lena n-áirítear {{names}}",
   "interested": "Tá suim ag {{count}} duine",
   "events_in_month": "Imeachtaí i {{month}}",
   "loading_aria": "Imeachtaí á lódáil",

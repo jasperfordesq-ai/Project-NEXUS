@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { joinList } from '@/lib/listFormat';
 import { useTranslation } from 'react-i18next';
 import LoaderCircle from 'lucide-react/icons/loader-circle';
 import { Alert } from '@/components/ui/Alert';
@@ -99,22 +100,6 @@ function allowedSegments(variant: EventBroadcastVariant): EventBroadcastSegment[
   if (variant === 'review_request') return ['attendance_attended'];
   if (variant === 'follow_up') return ['attendance_attended', 'attendance_no_show'];
   return SEGMENTS;
-}
-
-type ListFormatter = { format: (items: string[]) => string };
-type ListFormatConstructor = new (locale: string, options: { type: 'conjunction' }) => ListFormatter;
-
-/** "email and a notification in the app", in the reader's language (Intl.ListFormat is not in this TS lib). */
-function joinList(items: string[], locale: string): string {
-  const ListFormat = (Intl as unknown as { ListFormat?: ListFormatConstructor }).ListFormat;
-  if (ListFormat) {
-    try {
-      return new ListFormat(locale, { type: 'conjunction' }).format(items);
-    } catch {
-      // Fall through to a plain list.
-    }
-  }
-  return items.join(', ');
 }
 
 function focusFirstIn(id: string) {

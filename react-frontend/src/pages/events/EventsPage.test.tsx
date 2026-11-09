@@ -181,6 +181,35 @@ describe('EventsPage', () => {
   // Unpublished events reach the list only for their own organiser (and tenant
   // admins). Without a state chip a freshly created draft is indistinguishable
   // from a live event, which is how drafts came to look lost.
+  it('shows the faces of a few members going, and names them for screen readers', async () => {
+    const event = createCanonicalEventFixture({
+      going_preview: [
+        { id: 31, name: 'Maeve', avatar_url: null },
+        { id: 32, name: 'Tom', avatar_url: null },
+      ],
+      metrics: { ...createCanonicalEventFixture().metrics, confirmed_count: 12 },
+    });
+    mockApi.get.mockResolvedValue({ success: true, data: [event], meta: { has_more: false, total_items: 1 } });
+
+    renderEventRoute(<EventsPage />);
+    await screen.findByRole('heading', { name: 'Community Garden Day' });
+
+    expect(screen.getAllByTestId('event-going-face')).toHaveLength(2);
+    expect(screen.getByText('12 going')).toBeInTheDocument();
+    expect(screen.getByText(/including Maeve and Tom/)).toHaveClass('sr-only');
+  });
+
+  it('shows no faces when nobody the member may see is going', async () => {
+    const event = createCanonicalEventFixture({ going_preview: [] });
+    mockApi.get.mockResolvedValue({ success: true, data: [event], meta: { has_more: false, total_items: 1 } });
+
+    renderEventRoute(<EventsPage />);
+    await screen.findByRole('heading', { name: 'Community Garden Day' });
+
+    expect(screen.queryByTestId('event-going-face')).not.toBeInTheDocument();
+    expect(screen.queryByText(/including/)).not.toBeInTheDocument();
+  });
+
   it('badges a draft event card', async () => {
     const event = createCanonicalEventFixture({
       schedule: {

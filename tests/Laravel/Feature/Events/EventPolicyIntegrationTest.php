@@ -228,10 +228,19 @@ final class EventPolicyIntegrationTest extends TestCase
             'updated_at' => now(),
         ]);
 
+        // Owner decision, 9 Nov 2026: a member may see who else is GOING (the
+        // narrow member list), but never the complete roster or the waitlist.
         Sanctum::actingAs($confirmed, ['*']);
-        $this->apiGet("/v2/events/{$eventId}/attendees", ['X-Events-Contract' => '2'])
+        $memberView = $this->apiGet("/v2/events/{$eventId}/attendees?status=all", ['X-Events-Contract' => '2'])
             ->assertOk()
-            ->assertJsonCount(0, 'data');
+            ->json('data');
+        $memberIds = array_map(static fn (array $item): int => (int) $item['member']['id'], $memberView);
+        $this->assertNotContains((int) $waitlisted->getKey(), $memberIds);
+        $this->assertNotContains((int) $organizer->getKey(), $memberIds);
+        foreach ($memberView as $item) {
+            $this->assertSame('confirmed', $item['registration']['state']);
+            $this->assertNull($item['attendance']['checked_in_at']);
+        }
 
         Sanctum::actingAs($waitlisted, ['*']);
         $waitlistResponse = $this->apiGet("/v2/events/{$eventId}/waitlist");

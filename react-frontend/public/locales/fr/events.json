@@ -34,6 +34,7 @@
   "load_more": "Charger plus d'événements",
   "no_location": "Aucun événement avec des données de localisation",
   "going": "{{count}} participant(s)",
+  "going_including": "dont {{names}}",
   "interested": "{{count}} intéressé(s)",
   "events_in_month": "Événements en {{month}}",
   "loading_aria": "Chargement des événements",

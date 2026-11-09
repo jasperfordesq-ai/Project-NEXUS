@@ -30,6 +30,7 @@ use App\Support\Events\EventLifecycleTransitionGuard;
 use App\Support\Events\EventLifecycleTransitionResult;
 use App\Support\Events\EventRegistrationAvailability;
 use App\Support\Events\EventRegistrationCompatibility;
+use App\Support\Members\MemberDirectoryVisibility;
 use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\Database\Query\Builder as QueryBuilderContract;
@@ -2518,6 +2519,165 @@ class EventService
     }
 
     /**
+     * The Attendees list for a viewer who may not see the operational roster
+     * (owner decision, 9 Nov 2026: members may see who else is going).
+     *
+     * Deliberately narrow, with the same rules as goingPreviewBatch():
+     * people GOING only, whatever status was asked for; members of this
+     * community only (no federated RSVPs); only people the member directory
+     * would show this viewer; first names unless the viewer is an admin; no
+     * check-in, check-out or RSVP-time detail. Signed-in viewers only.
+     *
+     * @return array{items: array, cursor: string|null, has_more: bool}
+     */
+    private static function visibleGoingForMember(int $eventId, ?int $cursorId, int $limit, ?int $viewerId): array
+    {
+        $empty = ['items' => [], 'cursor' => null, 'has_more' => false];
+        if ($viewerId === null || $viewerId <= 0) {
+            return $empty;
+        }
+
+        $tenantId = (int) TenantContext::getId();
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+
+        $query = DB::table('event_rsvps as r')
+            ->join('users as u', function ($join): void {
+                $join->on('u.id', '=', 'r.user_id')->on('u.tenant_id', '=', 'r.tenant_id');
+            })
+            ->where('r.tenant_id', $tenantId)
+            ->where('r.event_id', $eventId)
+            ->where('r.status', 'going')
+            ->where(static function ($query): void {
+                $query->where('r.is_federated', 0)->orWhereNull('r.is_federated');
+            });
+        if ($cursorId) {
+            $query->where('r.id', '>', $cursorId);
+        }
+        MemberDirectoryVisibility::applyToQuery($query, $tenantId, 'u');
+        MemberProfileVisibility::applyToQuery($query, $tenantId, $viewerId, 'u', $viewerIsAdmin);
+
+        $rows = $query
+            ->orderBy('r.id')
+            ->limit($limit + 1)
+            ->get([
+                'r.id as rsvp_id', 'r.user_id', 'u.name', 'u.first_name', 'u.last_name',
+                'u.avatar_url', 'u.profile_type', 'u.organization_name',
+            ])
+            ->map(fn ($row) => (array) $row)
+            ->all();
+
+        $hasMore = count($rows) > $limit;
+        if ($hasMore) {
+            array_pop($rows);
+        }
+
+        $items = [];
+        $lastId = null;
+        foreach ($rows as $row) {
+            $lastId = $row['rsvp_id'];
+            $items[] = self::withoutRosterSurname([
+                'id' => (int) $row['user_id'],
+                'name' => $row['name'] ?? UserDisplayName::resolve($row),
+                'first_name' => $row['first_name'] ?? null,
+                'last_name' => $row['last_name'] ?? null,
+                'avatar' => $row['avatar_url'],
+                'avatar_url' => $row['avatar_url'],
+                'rsvp_status' => 'going',
+                'status' => 'going',
+                'rsvp_at' => null,
+                'checked_in_at' => null,
+                'checked_out_at' => null,
+            ], $row, $viewerId, $viewerIsAdmin);
+        }
+
+        return [
+            'items' => $items,
+            'cursor' => $hasMore && $lastId ? base64_encode((string) $lastId) : null,
+            'has_more' => $hasMore,
+        ];
+    }
+
+    /**
+     * A few of the members going to each event, for the event list's cards.
+     *
+     * Owner decision, 9 Nov 2026 ("Yes, show faces"): members may see who
+     * else is going. The full roster stays an organiser tool
+     * (EventPolicy::viewRoster); this preview is deliberately narrow:
+     *   - signed-in viewers only (no viewer, no preview);
+     *   - members of this community only — federated RSVPs and other
+     *     communities' accounts are left out;
+     *   - only people the member directory would show this viewer: their
+     *     "list me in member search" switch and the community's listing
+     *     requirements (MemberDirectoryVisibility), and their "who may see my
+     *     profile" setting (MemberProfileVisibility);
+     *   - never the viewer; first names only unless the viewer is an admin;
+     *   - newest RSVPs first, at most `$perEvent` per event.
+     * Timebank Ireland's DPO is asked about it in DPO-23.
+     *
+     * @param  int[] $eventIds
+     * @return array<int, list<array{id: int, name: string, avatar_url: string|null}>> event id => people
+     */
+    public static function goingPreviewBatch(array $eventIds, ?int $viewerId, int $perEvent = 3): array
+    {
+        $eventIds = array_values(array_unique(array_filter(
+            array_map('intval', $eventIds),
+            static fn (int $id): bool => $id > 0,
+        )));
+        if ($eventIds === [] || $viewerId === null || $viewerId <= 0 || $perEvent <= 0) {
+            return [];
+        }
+
+        $tenantId = (int) TenantContext::getId();
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+
+        $ranked = DB::table('event_rsvps as r')
+            ->join('users as u', function ($join): void {
+                $join->on('u.id', '=', 'r.user_id')->on('u.tenant_id', '=', 'r.tenant_id');
+            })
+            ->where('r.tenant_id', $tenantId)
+            ->whereIn('r.event_id', $eventIds)
+            ->where('r.status', 'going')
+            ->where(static function ($query): void {
+                $query->where('r.is_federated', 0)->orWhereNull('r.is_federated');
+            })
+            ->where('u.id', '<>', $viewerId)
+            ->selectRaw(
+                'r.event_id, u.id, u.first_name, u.last_name, u.profile_type, u.organization_name, u.avatar_url, '
+                . 'ROW_NUMBER() OVER (PARTITION BY r.event_id ORDER BY r.created_at DESC, r.id DESC) AS preview_rank'
+            );
+        MemberDirectoryVisibility::applyToQuery($ranked, $tenantId, 'u');
+        MemberProfileVisibility::applyToQuery($ranked, $tenantId, $viewerId, 'u', $viewerIsAdmin);
+
+        $rows = DB::query()
+            ->fromSub($ranked, 'ranked')
+            ->where('preview_rank', '<=', $perEvent)
+            ->orderBy('event_id')
+            ->orderBy('preview_rank')
+            ->get();
+
+        $preview = [];
+        foreach ($rows as $row) {
+            $person = [
+                'first_name' => $row->first_name,
+                'last_name' => $row->last_name,
+                'profile_type' => $row->profile_type,
+                'organization_name' => $row->organization_name,
+                'name' => UserDisplayName::resolve($row),
+            ];
+            if (! $viewerIsAdmin) {
+                $person = MemberProfileVisibility::withoutSurname($person);
+            }
+            $preview[(int) $row->event_id][] = [
+                'id' => (int) $row->id,
+                'name' => (string) $person['name'],
+                'avatar_url' => $row->avatar_url !== null ? (string) $row->avatar_url : null,
+            ];
+        }
+
+        return $preview;
+    }
+
+    /**
      * Batch-hydrate the durable facts consumed by negotiated Events resources.
      *
      * @param array<int, array<string, mixed>> $events
@@ -3377,12 +3537,17 @@ class EventService
 
         $tenantId = (int) \App\Core\TenantContext::getId();
         $event = Event::query()->find($eventId);
-        if ($event === null || ! self::policyAllows($event, $viewerId, 'viewRoster')) {
+        if ($event === null) {
             return [
                 'items' => [],
                 'cursor' => null,
                 'has_more' => false,
             ];
+        }
+        if (! self::policyAllows($event, $viewerId, 'viewRoster')) {
+            // Owner decision, 9 Nov 2026: members may see who else is going.
+            // Not the operational roster — see visibleGoingForMember().
+            return self::visibleGoingForMember($eventId, $cursorId, (int) $limit, $viewerId);
         }
 
         // The operational roster must retain checked-in/legacy-attended people
