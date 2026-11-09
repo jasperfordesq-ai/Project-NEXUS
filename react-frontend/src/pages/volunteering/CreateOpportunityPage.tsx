@@ -380,7 +380,7 @@ export default function CreateOpportunityPage() {
           </p>
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
             {hasFeature('organisations') && (
-              <Button as={Link} to={tenantPath('/organisations/register')} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+              <Button as={Link} to={tenantPath('/organisations/register')} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
                 {t('register_org_link')}
               </Button>
             )}

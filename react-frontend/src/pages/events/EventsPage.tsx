@@ -5,6 +5,8 @@
 
 import { Avatar } from '@/components/ui/Avatar';
 import { joinList } from '@/lib/listFormat';
+import { categoryColour, colourForSeed } from '@/lib/categoryColours';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -753,7 +755,7 @@ export function EventsPage() {
         <ToggleButton
           id="all"
           variant="ghost"
-          className="bg-theme-elevated text-theme-muted transition-colors hover:bg-theme-hover data-[selected=true]:bg-linear-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
+          className="bg-theme-elevated text-theme-muted transition-colors hover:bg-theme-hover data-[selected=true]:bg-linear-to-r data-[selected=true]:from-accent-strong data-[selected=true]:to-accent-strong-end data-[selected=true]:text-white!"
         >
           <Tag className="w-3.5 h-3.5" aria-hidden="true" />
           {t('category.all')}
@@ -765,7 +767,7 @@ export function EventsPage() {
               key={cat.id}
               id={String(cat.id)}
               variant="ghost"
-              className="bg-theme-elevated text-theme-muted transition-colors hover:bg-theme-hover data-[selected=true]:bg-linear-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
+              className="bg-theme-elevated text-theme-muted transition-colors hover:bg-theme-hover data-[selected=true]:bg-linear-to-r data-[selected=true]:from-accent-strong data-[selected=true]:to-accent-strong-end data-[selected=true]:text-white!"
             >
               <IconComp className="w-3.5 h-3.5" aria-hidden="true" />
               {cat.name}
@@ -955,6 +957,7 @@ function formatEventDistance(distanceKm: number): string {
 const EventCard = memo(function EventCard({ event }: EventCardProps) {
   const { t } = useTranslation('events');
   const { tenantPath } = useTenant();
+  const palette = useSitePalette();
   const startDate = new Date(event.schedule.start_at ?? event.created_at ?? 0);
   const formattingLocale = getFormattingLocale();
   let eventTimezone = event.schedule.timezone || 'UTC';
@@ -996,6 +999,10 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
         timeZoneName: 'short',
       });
   const goingPreview = event.going_preview ?? [];
+  const dateTileColour = colourForSeed(
+    event.category?.id != null ? `event-category-${event.category.id}` : `event-${event.id}`,
+    palette,
+  );
   // "Maeve, Tom and Ann" in the reader's language, for screen readers.
   const goingNames = joinList(goingPreview.map((person) => person.name), getFormattingLocale());
   const coverImageProps = event.primary_image?.url
@@ -1027,8 +1034,15 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
           <div className="flex gap-3 p-4 sm:gap-4 sm:p-5">
             {/* Date Box */}
             <div className="flex-shrink-0 w-14 sm:w-16 text-center">
-              <time dateTime={event.schedule.start_at ?? undefined} className="block rounded-lg border border-amber-500/25 bg-amber-500/10 p-2">
-                <span className="text-theme-warning text-xs font-medium uppercase block">
+              {/* In the colour of its kind of event (the community palette), so
+                  events of one kind share a colour; was always amber. */}
+              <time
+                dateTime={event.schedule.start_at ?? undefined}
+                data-testid="event-date-tile"
+                data-colour={dateTileColour}
+                className={`block rounded-xl p-2 ring-1 ring-black/5 dark:ring-white/10 ${categoryColour(dateTileColour).band}`}
+              >
+                <span className="text-xs font-semibold uppercase block">
                   {monthLabel}
                 </span>
                 <span className="text-theme-primary text-xl sm:text-2xl font-bold block">

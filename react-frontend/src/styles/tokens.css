@@ -391,12 +391,21 @@ html {
    decorative gradients tenant-aware without leaking a raw palette name. */
 :root {
   --accent-gradient-end: color-mix(in srgb, var(--accent-color), #000 22%);
+  /* The community colour's BUTTON shade: carries white text at 4.5:1 in both
+     themes. ThemeContext sets the real value; this is the standard colour's. */
+  --accent-strong: #5b5ede;
+  --accent-strong-end: color-mix(in srgb, var(--accent-strong), #000 22%);
 }
 
-/* Tailwind v4 bridge for the one project-specific semantic color. HeroUI
-   already exposes --accent, --accent-soft, and their foreground/hover tokens. */
+/* Tailwind v4 bridge for the project-specific semantic colours. HeroUI
+   already exposes --accent, --accent-soft, and their foreground/hover tokens.
+   `accent-strong` / `accent-strong-end` are for fills that carry white text
+   (bg-accent-strong, from-accent-strong to-accent-strong-end); see
+   src/test/accent-white-text.contract.test.ts. */
 @theme inline {
   --color-accent-gradient-end: var(--accent-gradient-end);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-strong-end: var(--accent-strong-end);
 }
 
 /* ─────────────────────────────────────────────

@@ -15,6 +15,7 @@
  */
 
 import { useMemo } from 'react';
+import { useChartColors } from '@/hooks/useChartColors';
 import { useTranslation } from 'react-i18next';
 import {
   Area,
@@ -49,6 +50,8 @@ function monthToDate(month: string): Date | null {
 }
 
 export function ExchangeTrendChart({ trends, loading, failed = false }: ExchangeTrendChartProps) {
+  // Charts in the community's colours (meaningful colours — success, warning — stay fixed).
+  const chartColors = useChartColors();
   const { t } = useTranslation('admin_dashboard');
   const locale = getFormattingLocale();
 
@@ -96,8 +99,8 @@ export function ExchangeTrendChart({ trends, loading, failed = false }: Exchange
               <AreaChart data={data} margin={{ top: 10, right: 8, left: -8, bottom: 0 }}>
                 <defs>
                   <linearGradient id="exchangeHoursGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={CHART_COLOR_MAP.primary} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={CHART_COLOR_MAP.primary} stopOpacity={0.02} />
+                    <stop offset="5%" stopColor={chartColors.primary} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={chartColors.primary} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border" vertical={false} />
@@ -127,7 +130,7 @@ export function ExchangeTrendChart({ trends, loading, failed = false }: Exchange
                   type="monotone"
                   dataKey="hours"
                   name={hoursLabel}
-                  stroke={CHART_COLOR_MAP.primary}
+                  stroke={chartColors.primary}
                   fill="url(#exchangeHoursGradient)"
                   strokeWidth={2}
                   activeDot={{ r: 5 }}

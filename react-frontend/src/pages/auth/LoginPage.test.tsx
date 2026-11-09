@@ -253,6 +253,11 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
     Reflect.deleteProperty(window, 'PublicKeyCredential');
   });
 
+  it("opens with the community's welcome: its colour, logo and tagline", async () => {
+    render(<LoginPage />);
+    expect(await screen.findByTestId('community-welcome')).toBeInTheDocument();
+  });
+
   // ─── 1. Passkey button renders when biometric available + tenant selected ──
   it('renders passkey button when biometric is available and tenant is selected', async () => {
     render(<LoginPage />);

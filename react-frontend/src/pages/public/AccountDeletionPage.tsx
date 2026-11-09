@@ -74,7 +74,7 @@ export function AccountDeletionPage() {
         <Button
           as={Link}
           to={tenantPath('/contact?topic=account-deletion')}
-          className="mt-5 bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+          className="mt-5 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
         >
           {t('account_deletion.web_request_button')}
         </Button>

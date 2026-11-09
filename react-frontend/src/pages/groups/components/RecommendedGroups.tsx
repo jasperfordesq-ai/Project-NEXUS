@@ -132,7 +132,7 @@ export function RecommendedGroups() {
                 {!hasJoined && (
                   <Button
                     size="sm"
-                    className="bg-gradient-to-r from-accent to-accent-gradient-end text-white flex-1"
+                    className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white flex-1"
                     isLoading={joiningId === group.group_id}
                     onPress={() => handleJoin(group.group_id)}
                   >

@@ -98,6 +98,7 @@ vi.mock('@/lib/motion', () => ({
 }));
 
 import { MembersPage } from './MembersPage';
+import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 
 const algorithmsResponse = {
   success: true,
@@ -133,6 +134,26 @@ describe('MembersPage', () => {
       return Promise.resolve({ success: true, data: [], meta: {} });
     });
     mockUseAuth.mockReturnValue({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null });
+  });
+
+  it("gives each member card a band in that member's own colour, the one their profile cover uses", async () => {
+    mockApiGet.mockImplementation((url: string) => {
+      if (url.includes('/v2/config/algorithms')) {
+        // The page caches this answer for the whole run: give the normal one.
+        return Promise.resolve(algorithmsResponse);
+      }
+      return Promise.resolve({
+        success: true,
+        data: [{ id: 51, name: 'Maeve', first_name: 'Maeve', avatar: null }],
+        meta: { total_items: 1 },
+      });
+    });
+
+    render(<MembersPage />);
+
+    const band = await screen.findByTestId('member-card-cover');
+    expect(band).toHaveAttribute('data-colour', colourForSeed('maeve', paletteFor(null)));
+    expect(band).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('renders without crashing', () => {

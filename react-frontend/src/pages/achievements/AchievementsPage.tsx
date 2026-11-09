@@ -1161,7 +1161,7 @@ function XpShopTab({ userXp }: { userXp: number }) {
                       size="sm"
                       className={
                         canAfford
-                          ? 'bg-gradient-to-r from-accent to-accent-gradient-end text-white'
+                          ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white'
                           : 'bg-theme-hover text-theme-subtle'
                       }
                       startContent={
@@ -1508,7 +1508,7 @@ function ShowcaseModal({ isOpen, onClose, badges, onSave, isSaving }: ShowcaseMo
             {t('achievements.showcase.cancel')}
           </Button>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={
               isSaving ? (
                 <div role="status" aria-busy="true" aria-label={t('common:loading')} className="flex justify-center py-4"><Spinner size="sm" color="white" /></div>
@@ -1653,7 +1653,7 @@ export function AchievementsPage() {
           <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('achievements.unable_to_load')}</h2>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={loadData}
           >
@@ -1711,7 +1711,7 @@ export function AchievementsPage() {
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                     <div className="flex items-center gap-4 flex-1">
                       <div className="relative">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-accent to-accent-gradient-end flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center">
                           <span className="text-white text-xl font-bold">{profile.level}</span>
                         </div>
                         <Sparkles className="w-5 h-5 text-amber-400 absolute -top-1 -right-1" aria-hidden="true" />
@@ -1758,7 +1758,7 @@ export function AchievementsPage() {
                 aria-label={t('achievements.sections_aria')}
                 classNames={{
                   tabList: 'bg-theme-elevated border border-white/10 rounded-lg p-1',
-                  cursor: 'bg-gradient-to-r from-accent to-accent-gradient-end',
+                  cursor: 'bg-gradient-to-r from-accent-strong to-accent-strong-end',
                   tab: 'text-theme-muted data-[selected=true]:text-white!',
                   tabContent: 'group-data-[selected=true]:text-white',
                 }}

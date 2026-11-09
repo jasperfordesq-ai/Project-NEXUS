@@ -74,7 +74,8 @@ vi.mock('recharts', () => ({
   Bar: () => null,
 }));
 
-vi.mock('@/lib/chartColors', () => ({
+vi.mock('@/lib/chartColors', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/chartColors')>()),
   CHART_TOKEN_COLORS: {
     primary: '#006FEE',
     success: '#17c964',

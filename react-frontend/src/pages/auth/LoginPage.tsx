@@ -14,6 +14,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback, type FormEvent } from 'react';
+import { CommunityWelcome } from '@/components/auth/CommunityWelcome';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 
 import { Autocomplete } from '@/components/ui/Autocomplete';
@@ -530,7 +531,9 @@ export function LoginPage() {
           transition={{ duration: 0.5 }}
           className="w-full max-w-md relative z-10"
         >
-          <GlassCard className="p-5 sm:p-8">
+          <GlassCard className="overflow-hidden p-5 sm:p-8">
+            {/* The community first: its colour, logo and tagline. */}
+            <CommunityWelcome className="-mx-5 -mt-5 sm:-mx-8 sm:-mt-8" />
             <AnimatePresence mode="wait">
               {!requires2FA ? (
                 // Login Form
@@ -542,13 +545,6 @@ export function LoginPage() {
                 >
                   {/* Header */}
                   <div className="text-center mb-8">
-                    <motion.div
-                      initial={{ scale: 0.8 }}
-                      animate={{ scale: 1 }}
-                      className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 mb-4"
-                    >
-                      <Mail className="w-8 h-8 text-accent dark:text-accent" aria-hidden="true" />
-                    </motion.div>
                     <h1 className="text-xl sm:text-2xl font-bold text-theme-primary">{t('login.title')}</h1>
                     <p className="text-theme-muted mt-2">
                       {t('login.subtitle_community', { name: branding.name })}

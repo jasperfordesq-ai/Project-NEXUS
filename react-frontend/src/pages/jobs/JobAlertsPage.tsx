@@ -218,7 +218,7 @@ export function JobAlertsPage() {
           <p className="text-theme-muted mt-1">{t('alerts.subtitle')}</p>
         </div>
         <Button
-          className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
           onPress={createModal.onOpen}
         >
@@ -233,7 +233,7 @@ export function JobAlertsPage() {
           <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('alerts.load_error')}</h2>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={loadAlerts}
           >
@@ -256,7 +256,7 @@ export function JobAlertsPage() {
           description={t('alerts.empty_description')}
           action={
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
               onPress={createModal.onOpen}
             >
@@ -457,7 +457,7 @@ export function JobAlertsPage() {
                   {t('apply.cancel')}
                 </Button>
                 <Button
-                  className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                   onPress={handleCreate}
                   isLoading={isCreating}
                 >

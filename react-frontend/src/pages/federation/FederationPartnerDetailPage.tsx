@@ -172,7 +172,7 @@ export function FederationPartnerDetailPage() {
               {t('partner_detail.back_to_partners')}
             </Button>
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
               onPress={loadPartner}
             >
@@ -207,10 +207,10 @@ export function FederationPartnerDetailPage() {
               <Avatar
                 name={partner.name}
                 src={resolveAvatarUrl(partner.logo)}
-                className="w-24 h-24 ring-4 ring-accent/20 bg-gradient-to-br from-accent to-accent-gradient-end text-white text-3xl"
+                className="w-24 h-24 ring-4 ring-accent/20 bg-gradient-to-br from-accent-strong to-accent-strong-end text-white text-3xl"
               />
               <div
-                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-accent flex items-center justify-center ring-2 ring-white dark:ring-gray-900"
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-accent-strong flex items-center justify-center ring-2 ring-white dark:ring-gray-900"
                 title={t('partner_detail.federation_partner_badge')}
               >
                 <Handshake className="w-4 h-4 text-white" aria-hidden="true" />
@@ -268,7 +268,7 @@ export function FederationPartnerDetailPage() {
                 {isAuthenticated && (
                   <>
                     <Button as={Link} to={tenantPath(`/federation/members?partner_id=${partner.id}`)}
-                      className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                      className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                       startContent={<Users className="w-4 h-4" aria-hidden="true" />}
                     >
                       {t('partner_detail.browse_members')}

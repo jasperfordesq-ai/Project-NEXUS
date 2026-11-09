@@ -190,7 +190,7 @@ export function GoalTemplatePickerModal({
                     size="sm"
                     variant={!selectedCategory ? 'solid' : 'flat'}
                     className={!selectedCategory
-                      ? 'bg-gradient-to-r from-accent to-accent-gradient-end text-white'
+                      ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white'
                       : 'bg-theme-elevated text-theme-muted'}
                     onPress={() => setSelectedCategory(null)}
                   >
@@ -270,7 +270,7 @@ export function GoalTemplatePickerModal({
                         <Button
                           size="sm"
                           isIconOnly
-                          className="size-11 min-h-11 min-w-11 p-0 bg-gradient-to-r from-accent to-accent-gradient-end text-white opacity-80 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+                          className="size-11 min-h-11 min-w-11 p-0 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white opacity-80 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
                           onPress={() => handleUseTemplate(template)}
                           isLoading={creatingFromId === template.id}
                           isDisabled={creatingFromId !== null}

@@ -35,7 +35,7 @@ export function MatchesEmptyState({ variant }: MatchesEmptyStateProps) {
         title={t('empty.no_coordinates_title')}
         description={t('empty.no_coordinates_description')}
         action={hasModule('settings') ? (
-          <Button as={Link} to={tenantPath('/settings?tab=profile')} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+          <Button as={Link} to={tenantPath('/settings?tab=profile')} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
             {t('empty.set_location_cta')}
           </Button>
         ) : undefined}
@@ -62,7 +62,7 @@ export function MatchesEmptyState({ variant }: MatchesEmptyStateProps) {
         title={t('empty.no_listings_title')}
         description={t('empty.no_listings_description')}
         action={
-          <Button as={Link} to={tenantPath('/listings/create')} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+          <Button as={Link} to={tenantPath('/listings/create')} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
             {t('empty.create_listing_cta')}
           </Button>
         }
@@ -77,7 +77,7 @@ export function MatchesEmptyState({ variant }: MatchesEmptyStateProps) {
       description={t('empty_description')}
       action={
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <Button as={Link} to={tenantPath('/listings')} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+          <Button as={Link} to={tenantPath('/listings')} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
             {t('browse_listings')}
           </Button>
           <Button as={Link} to={tenantPath('/matches/preferences')} variant="secondary" className="bg-theme-elevated text-theme-primary">

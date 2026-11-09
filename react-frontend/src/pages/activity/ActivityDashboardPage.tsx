@@ -262,7 +262,7 @@ export function ActivityDashboardPage() {
           <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load')}</h2>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={loadDashboard}
           >
@@ -295,7 +295,7 @@ export function ActivityDashboardPage() {
       {/* Header */}
       <motion.div variants={itemVariants}>
         <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent to-accent-gradient-end flex items-center justify-center shadow-lg shadow-accent/20">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center shadow-lg shadow-accent/20">
             <Activity className="w-5 h-5 text-white" aria-hidden="true" />
           </div>
           {t('page_title')}

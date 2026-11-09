@@ -383,7 +383,7 @@ export function ExchangeDetailPage() {
           title={t('detail.not_found_title')}
           description={error || t('detail.not_found_description')}
           action={
-            <Button as={Link} to={tenantPath("/exchanges")} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+            <Button as={Link} to={tenantPath("/exchanges")} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
               {t('detail.view_exchanges')}
             </Button>
           }

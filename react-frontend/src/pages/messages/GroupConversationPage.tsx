@@ -504,7 +504,7 @@ export function GroupConversationPage() {
             aria-label={t('aria_send_message')}
             isDisabled={!body.trim() || isSending}
             isLoading={isSending}
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           >
             <Send className="h-4 w-4" aria-hidden="true" />
           </Button>

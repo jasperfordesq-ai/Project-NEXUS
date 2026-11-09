@@ -119,7 +119,7 @@ function TypingIndicator() {
         icon={<Bot className="w-4 h-4" aria-hidden="true" />}
         size="sm"
         classNames={{
-          base: 'bg-gradient-to-br from-accent to-accent-gradient-end flex-shrink-0',
+          base: 'bg-gradient-to-br from-accent-strong to-accent-strong-end flex-shrink-0',
           icon: 'text-white',
         }}
       />
@@ -178,7 +178,7 @@ function MessageBubble({ message, userName, userAvatar, onFeedback }: MessageBub
           icon={<Bot className="w-4 h-4" aria-hidden="true" />}
           size="sm"
           classNames={{
-            base: 'bg-gradient-to-br from-accent to-accent-gradient-end flex-shrink-0',
+            base: 'bg-gradient-to-br from-accent-strong to-accent-strong-end flex-shrink-0',
             icon: 'text-white',
           }}
         />
@@ -189,7 +189,7 @@ function MessageBubble({ message, userName, userAvatar, onFeedback }: MessageBub
         <div
           className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
             isUser
-              ? 'bg-gradient-to-br from-accent to-accent-gradient-end text-white rounded-br-sm'
+              ? 'bg-gradient-to-br from-accent-strong to-accent-strong-end text-white rounded-br-sm'
               : message.isError
               ? 'bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-bl-sm'
               : 'bg-[var(--color-surface)] border border-[var(--border-default)] text-[var(--color-text)] rounded-bl-sm'
@@ -327,7 +327,7 @@ function EmptyState({ onQuestionClick, starters }: EmptyStateProps) {
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.4 }}
-        className="w-20 h-20 rounded-2xl bg-gradient-to-br from-accent to-accent-gradient-end flex items-center justify-center mb-5 shadow-lg"
+        className="w-20 h-20 rounded-2xl bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center mb-5 shadow-lg"
       >
         <Sparkles className="w-10 h-10 text-white" aria-hidden="true" />
       </motion.div>
@@ -607,7 +607,7 @@ export default function AiChatPage() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-default)] bg-[var(--color-surface)] flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent to-accent-gradient-end flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center">
             <Bot className="w-5 h-5 text-white" aria-hidden="true" />
           </div>
           <div>
@@ -717,7 +717,7 @@ export default function AiChatPage() {
                 <Button
                   isIconOnly
                   color="primary"
-                  className="bg-gradient-to-br from-accent to-accent-gradient-end text-white flex-shrink-0 mb-0.5"
+                  className="bg-gradient-to-br from-accent-strong to-accent-strong-end text-white flex-shrink-0 mb-0.5"
                   size="sm"
                   onPress={() => void sendMessage(input)}
                   isDisabled={!input.trim() || isLoading}

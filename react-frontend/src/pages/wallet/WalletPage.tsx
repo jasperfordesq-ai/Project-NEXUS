@@ -277,7 +277,7 @@ export function WalletPage() {
             <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load')}</h3>
             <p className="text-theme-muted mb-4">{error}</p>
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<RefreshCw aria-hidden="true" className="w-4 h-4" />}
               onPress={() => loadWalletData()}
             >
@@ -324,7 +324,7 @@ export function WalletPage() {
 
             <div className="flex flex-col gap-3 sm:flex-row lg:w-56 lg:flex-col">
               <Button
-                className="w-full bg-gradient-to-r from-accent to-accent-gradient-end px-8 font-medium text-white"
+                className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end px-8 font-medium text-white"
                 size="lg"
                 startContent={<Send className="h-5 w-5" aria-hidden="true" />}
                 onPress={() => setIsTransferModalOpen(true)}

@@ -630,7 +630,7 @@ export function JobsPage() {
               as={Link}
               to={tenantPath('/jobs/employer-onboarding')}
               size="sm"
-              className="bg-linear-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<Rocket className="w-3.5 h-3.5" aria-hidden="true" />}
             >
               {t('onboarding.start_wizard')}
@@ -758,7 +758,7 @@ export function JobsPage() {
                   id={filter.id}
                   className={
                     isSelected
-                      ? 'bg-accent text-white'
+                      ? 'bg-accent-strong text-white'
                       : 'bg-theme-elevated text-theme-muted hover:bg-theme-hover'
                   }
                 >
@@ -795,7 +795,7 @@ export function JobsPage() {
                   id={filter.id}
                   className={
                     isSelected
-                      ? 'bg-accent text-white'
+                      ? 'bg-accent-strong text-white'
                       : 'bg-theme-elevated text-theme-muted hover:bg-theme-hover'
                   }
                 >
@@ -813,7 +813,7 @@ export function JobsPage() {
               <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load')}</h2>
               <p className="text-theme-muted mb-4">{error}</p>
               <Button
-                className="bg-linear-to-r from-accent to-accent-gradient-end text-white"
+                className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
                 startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
                 onPress={() => loadVacancies()}
               >
@@ -838,7 +838,7 @@ export function JobsPage() {
                   description={debouncedQuery ? t('empty_search') : t('empty_description')}
                   action={
                     isAuthenticated && (
-                      <Button as={Link} to={tenantPath('/jobs/create')} className="bg-linear-to-r from-accent to-accent-gradient-end text-white">
+                      <Button as={Link} to={tenantPath('/jobs/create')} className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white">
                         {t('create_vacancy')}
                       </Button>
                     )
@@ -915,7 +915,7 @@ export function JobsPage() {
           {/* CTA header */}
           <div className="flex justify-end">
             <Button as={Link} to={tenantPath('/jobs/create')}
-              className="bg-linear-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
             >
               {t('create_vacancy')}
@@ -933,7 +933,7 @@ export function JobsPage() {
               title={t('my_postings.empty_title')}
               description={t('my_postings.empty_description')}
               action={
-                <Button as={Link} to={tenantPath('/jobs/create')} className="bg-linear-to-r from-accent to-accent-gradient-end text-white">
+                <Button as={Link} to={tenantPath('/jobs/create')} className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white">
                   {t('create_vacancy')}
                 </Button>
               }

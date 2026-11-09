@@ -364,7 +364,7 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
         {poll.poll_type === 'ranked' && isOpen && !hasVoted && (
           <Button
             size="sm"
-            className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white mb-3"
+            className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white mb-3"
             startContent={<ListOrdered className="w-4 h-4" aria-hidden="true" />}
             onPress={() => onRankedVote(poll)}
           >
@@ -1128,7 +1128,7 @@ export function PollsPage() {
           <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('errors.load_failed')}</h2>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={() => loadPolls()}
           >
@@ -1235,7 +1235,7 @@ export function PollsPage() {
                         key={optionId}
                         className="flex items-center gap-3 p-3 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-default)]"
                       >
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-r from-accent to-accent-gradient-end flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-r from-accent-strong to-accent-strong-end flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                           {index + 1}
                         </div>
                         <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">
@@ -1347,7 +1347,7 @@ export function PollsPage() {
             </Button>
             {rankedPoll?.status === 'open' && (
               <Button
-                className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 onPress={handleRankedSubmit}
                 isLoading={isSubmittingRank}
               >

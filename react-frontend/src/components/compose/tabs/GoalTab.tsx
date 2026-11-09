@@ -204,7 +204,7 @@ export function GoalTab({ onSuccess, onClose, templateData }: TabSubmitProps) {
             </Button>
             <Button
               size="sm"
-              className="bg-gradient-to-r from-accent to-pink-600 text-white shadow-lg shadow-accent/20"
+              className="bg-gradient-to-r from-accent-strong to-pink-600 text-white shadow-lg shadow-accent/20"
               onPress={handleSubmit}
               isLoading={isSubmitting}
               isDisabled={!canSubmit}

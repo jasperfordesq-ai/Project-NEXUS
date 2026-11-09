@@ -219,7 +219,7 @@ export function OrganisationsPage() {
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
               {manageableOrgs.length > 0 && (
                 <Button as={Link} to={manageHref}
-                  className="w-full sm:w-auto bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                  className="w-full sm:w-auto bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                   startContent={<Building2 className="w-4 h-4" aria-hidden="true" />}
                 >
                   {t('organisations.manage_my_button')}
@@ -227,7 +227,7 @@ export function OrganisationsPage() {
               )}
               <Button as={Link} to={tenantPath('/organisations/register')}
                 variant={manageableOrgs.length > 0 ? 'secondary' : 'primary'}
-                className={manageableOrgs.length > 0 ? 'w-full sm:w-auto' : 'w-full sm:w-auto bg-gradient-to-r from-accent to-accent-gradient-end text-white'}
+                className={manageableOrgs.length > 0 ? 'w-full sm:w-auto' : 'w-full sm:w-auto bg-gradient-to-r from-accent-strong to-accent-strong-end text-white'}
                 startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
               >
                 {t('organisations.register_button')}
@@ -258,7 +258,7 @@ export function OrganisationsPage() {
           <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('organisations.unable_to_load')}</h2>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={() => loadOrganisations()}
           >

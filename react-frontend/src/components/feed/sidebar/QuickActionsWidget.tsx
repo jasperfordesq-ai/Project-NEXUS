@@ -73,7 +73,7 @@ export function QuickActionsWidget() {
       {hasModule('listings') && <Button
         as={Link}
         to={tenantPath('/listings/create')}
-        className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-shadow font-medium"
+        className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-shadow font-medium"
         startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
       >
         {t('sidebar.actions.create_listing')}

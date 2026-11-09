@@ -129,7 +129,7 @@ export function HashtagsDiscoveryPage() {
         </Button>
         <div>
           <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent to-accent-gradient-end flex items-center justify-center shadow-lg shadow-accent/20">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center shadow-lg shadow-accent/20">
               <Hash className="w-5 h-5 text-white" aria-hidden="true" />
             </div>
             {t('hashtags.title')}
@@ -162,7 +162,7 @@ export function HashtagsDiscoveryPage() {
           <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('hashtags.unable_to_load')}</h3>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={loadTrending}
           >

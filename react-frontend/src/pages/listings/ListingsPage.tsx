@@ -856,7 +856,7 @@ export function ListingsPage() {
               variant={showAdvancedFilters ? 'solid' : 'flat'}
               className={showAdvancedFilters
                 ? (usesCommunityColour
-                  ? 'min-h-[40px] bg-accent text-accent-foreground shadow-sm hover:opacity-90'
+                  ? 'min-h-[40px] bg-accent-strong text-accent-foreground shadow-sm hover:opacity-90'
                   : 'min-h-[40px] bg-emerald-600 text-white shadow-sm hover:bg-emerald-700')
                 : 'min-h-[40px] bg-theme-elevated text-theme-primary'}
               startContent={<SlidersHorizontal className="w-4 h-4" aria-hidden="true" />}

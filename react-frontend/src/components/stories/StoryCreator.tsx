@@ -1233,7 +1233,7 @@ export function StoryCreator({ onClose, onCreated }: StoryCreatorProps) {
           </Button>
 
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white font-medium"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-medium"
             onPress={handleSubmit}
             isLoading={isSubmitting}
             startContent={!isSubmitting ? <Send className="w-4 h-4" /> : undefined}

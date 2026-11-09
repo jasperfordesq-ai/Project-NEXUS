@@ -21,7 +21,8 @@ vi.mock('../api/analytics', () => ({
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // ─── Chart colors (simple stubs avoid CSS var resolution errors) ──────────────
-vi.mock('@/lib/chartColors', () => ({
+vi.mock('@/lib/chartColors', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/chartColors')>()),
   CHART_COLORS: ['#4f46e5', '#10b981', '#f59e0b'],
   CHART_COLOR_MAP: { primary: '#4f46e5', secondary: '#6366f1', success: '#10b981' },
   CHART_TOKEN_COLORS: { border: '#e5e7eb', surface: '#ffffff', foreground: '#111827' },

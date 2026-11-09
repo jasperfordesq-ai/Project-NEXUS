@@ -273,7 +273,7 @@ export function MatchCard({ match, index, highlightId, onDismissed }: MatchCardP
                   as={Link}
                   to={tenantPath(`/messages?to=${match.user_id}&listing=${detailId}`)}
                   size="sm"
-                  className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                   startContent={<MessageSquare className="w-3.5 h-3.5" aria-hidden="true" />}
                 >
                   {t('card.message')}
@@ -288,7 +288,7 @@ export function MatchCard({ match, index, highlightId, onDismissed }: MatchCardP
                   {!hasJoined && (
                     <Button
                       size="sm"
-                      className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                      className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                       isLoading={isJoining}
                       onPress={handleJoinGroup}
                     >

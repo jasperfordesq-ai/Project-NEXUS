@@ -70,6 +70,9 @@ import { MAPS_ENABLED } from '@/lib/map-config';
 import { usePageTitle } from '@/hooks';
 import type { EntityMapViewProps } from '@/components/location/EntityMapView';
 import type { User } from '@/types/api';
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { colourForSeed } from '@/lib/categoryColours';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
 
 const LazyEntityMapView = lazy(() =>
   import('@/components/location/EntityMapView').then((module) => ({
@@ -689,7 +692,7 @@ export function MembersPage() {
         <ToggleButton
           id="all"
           variant="ghost"
-          className="bg-theme-elevated text-theme-secondary transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:bg-accent! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
+          className="bg-theme-elevated text-theme-secondary transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:bg-accent-strong! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
         >
           <Users className="w-3.5 h-3.5" aria-hidden="true" />
           {t('members.all')}
@@ -891,7 +894,7 @@ export function MembersPage() {
           <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('members.unable_to_load')}</h3>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={() => loadMembers()}
           >
@@ -1117,10 +1120,13 @@ const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: Member
   const { badgeName } = useBadgeCopy();
   const { tenantPath } = useTenant();
   const hasGamification = useFeature('gamification');
+  const palette = useSitePalette();
 
   // Handle empty names gracefully - fallback to "Member" or first_name/last_name
   const displayName = resolveUserDisplayName(member)
     || t('members.fallback_name');
+  // The member's own colour: the same seed as their initials and profile cover.
+  const memberColour = colourForSeed(displayName.trim().toLowerCase(), palette);
 
   // Resolve avatar from either field (index returns 'avatar', nearby may return 'avatar_url')
   const avatarSrc = resolveAvatarUrl(member.avatar ?? member.avatar_url);
@@ -1234,12 +1240,16 @@ const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: Member
   return (
       <Link to={tenantPath(`/profile/${member.id}`)} aria-label={t('members.profile_aria', { name: displayName })} className="group h-full">
       <article>
-        <GlassCard className="flex h-full min-h-[272px] flex-col p-5 text-center transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-accent/10">
-          <div className="relative inline-block mx-auto mb-3">
+        <GlassCard className="flex h-full min-h-[272px] flex-col overflow-hidden p-5 text-center transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-accent/10">
+          {/* A band in the member's own colour, as on their profile, with the photo over its edge. */}
+          <div className="-mx-5 -mt-5 h-14">
+            <ThemedCover data-testid="member-card-cover" colour={memberColour} />
+          </div>
+          <div className="relative inline-block mx-auto -mt-10 mb-3">
             <Avatar
               src={avatarSrc}
               name={displayName}
-              className="w-20 h-20 ring-2 ring-theme-muted/20 group-hover:ring-accent/50 transition-all duration-200"
+              className="w-20 h-20 ring-4 ring-[var(--surface-solid)] group-hover:ring-accent/50 transition-all duration-200"
             />
             <PresenceIndicator userId={member.id} size="md" />
           </div>

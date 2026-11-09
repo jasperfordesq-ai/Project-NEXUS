@@ -6,6 +6,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { getFormattingLocale } from '@/lib/helpers';
+import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 import { createCanonicalEventFixture, renderEventRoute } from '@/test/events-test-harness';
 
 const { mockApi, mockToast } = vi.hoisted(() => ({
@@ -197,6 +198,30 @@ describe('EventsPage', () => {
     expect(screen.getAllByTestId('event-going-face')).toHaveLength(2);
     expect(screen.getByText('12 going')).toBeInTheDocument();
     expect(screen.getByText(/including Maeve and Tom/)).toHaveClass('sr-only');
+  });
+
+  it('colours the date tile by the kind of event, from the community palette, not always amber', async () => {
+    const withCategory = createCanonicalEventFixture({
+      id: 41,
+      title: 'Repair Cafe',
+      category: { id: 7, name: 'Skills', slug: 'skills', colour: null },
+    });
+    const sameCategory = createCanonicalEventFixture({
+      id: 42,
+      title: 'Bike Clinic',
+      category: { id: 7, name: 'Skills', slug: 'skills', colour: null },
+    });
+    mockApi.get.mockResolvedValue({ success: true, data: [withCategory, sameCategory], meta: { has_more: false, total_items: 2 } });
+
+    renderEventRoute(<EventsPage />);
+    await screen.findByRole('heading', { name: 'Repair Cafe' });
+
+    const tiles = screen.getAllByTestId('event-date-tile');
+    expect(tiles).toHaveLength(2);
+    expect(tiles[0]).toHaveAttribute('data-colour', colourForSeed('event-category-7', paletteFor(null)));
+    // Events of the same kind share a colour.
+    expect(tiles[1]).toHaveAttribute('data-colour', tiles[0]!.getAttribute('data-colour'));
+    expect(tiles[0]!.className).not.toContain('amber');
   });
 
   it('shows no faces when nobody the member may see is going', async () => {

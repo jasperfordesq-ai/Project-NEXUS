@@ -354,7 +354,7 @@ export function GroupWikiTab({ groupId, isAdmin, isMember = true }: GroupWikiTab
         </h2>
         {isMember && (
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:shrink-0"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:shrink-0"
             size="sm"
             startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
             onPress={createModal.onOpen}
@@ -573,7 +573,7 @@ export function GroupWikiTab({ groupId, isAdmin, isMember = true }: GroupWikiTab
                     </Button>
                     <Button
                       size="sm"
-                      className="bg-gradient-to-r from-accent to-accent-gradient-end text-white w-full sm:w-auto"
+                      className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white w-full sm:w-auto"
                       onPress={handleSave}
                       isLoading={saving}
                       isDisabled={!editContent.trim()}
@@ -684,7 +684,7 @@ export function GroupWikiTab({ groupId, isAdmin, isMember = true }: GroupWikiTab
                   isMember &&
                   pages.length === 0 && (
                     <Button
-                      className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                      className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                       startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
                       onPress={createModal.onOpen}
                     >
@@ -771,7 +771,7 @@ export function GroupWikiTab({ groupId, isAdmin, isMember = true }: GroupWikiTab
                   {t('wiki.cancel')}
                 </Button>
                 <Button
-                  className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                   isLoading={creating}
                   isDisabled={!newTitle.trim() || !newContent.trim()}
                   onPress={handleCreate}

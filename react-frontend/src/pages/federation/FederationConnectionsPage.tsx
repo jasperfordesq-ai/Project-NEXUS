@@ -239,7 +239,7 @@ function ConnectionCard({ connection, tab, actionLoading, onAction, onMessage, o
         <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" onClick={() => onViewProfile(connection.user_id, connection.tenant_id)} role="button" tabIndex={0} aria-label={displayName} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onViewProfile(connection.user_id, connection.tenant_id); } }}>
           <div className="relative flex-shrink-0">
             <Avatar src={resolveAvatarUrl(connection.avatar_url)} name={displayName} className="w-12 h-12 ring-2 ring-accent/20" />
-            <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-accent flex items-center justify-center ring-1 ring-white dark:ring-gray-900" title={connection.tenant_name}>
+            <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-accent-strong flex items-center justify-center ring-1 ring-white dark:ring-gray-900" title={connection.tenant_name}>
               <Globe className="w-3 h-3 text-white" aria-hidden="true" />
             </div>
           </div>

@@ -2205,7 +2205,7 @@ export function ConversationPage() {
               {t('back_to_messages')}
             </Button>
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               onPress={() => loadConversation()}
             >
               {t('try_again')}

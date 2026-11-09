@@ -255,7 +255,7 @@ export function TimebankingGuidePage() {
               >
                 <GlassCard className="p-8 h-full text-center relative group hover:scale-[1.02] transition-transform overflow-hidden">
                   {/* Step number badge */}
-                  <div className="absolute top-2 right-2 w-9 h-9 rounded-full bg-gradient-to-br from-accent to-accent-gradient-end flex items-center justify-center text-white text-sm font-bold shadow-lg">
+                  <div className="absolute top-2 right-2 w-9 h-9 rounded-full bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center text-white text-sm font-bold shadow-lg">
                     {index + 1}
                   </div>
 
@@ -357,7 +357,7 @@ export function TimebankingGuidePage() {
                       as={Link}
                       to={tenantPath('/listings')}
                       size="lg"
-                      className="w-full sm:w-auto bg-gradient-to-r from-accent to-accent-gradient-end text-white font-semibold px-8"
+                      className="w-full sm:w-auto bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold px-8"
                       endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
                     >
                       {t('timebanking_guide.cta_browse_listings')}
@@ -367,7 +367,7 @@ export function TimebankingGuidePage() {
                       as={Link}
                       to={tenantPath('/register')}
                       size="lg"
-                      className="w-full sm:w-auto bg-gradient-to-r from-accent to-accent-gradient-end text-white font-semibold px-8"
+                      className="w-full sm:w-auto bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold px-8"
                       endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
                     >
                       {t('timebanking_guide.cta_join_free')}

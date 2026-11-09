@@ -215,7 +215,7 @@ export function GroupExchangesPage() {
           </p>
         </div>
         <Button as={Link} to={tenantPath('/group-exchanges/create')}
-          className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
         >
           {t('new_exchange')}
@@ -249,7 +249,7 @@ export function GroupExchangesPage() {
           <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load')}</h3>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={() => loadExchanges()}
           >
@@ -277,7 +277,7 @@ export function GroupExchangesPage() {
                   : t('empty_description_filtered')
               }
               action={
-                <Button as={Link} to={tenantPath('/group-exchanges/create')} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+                <Button as={Link} to={tenantPath('/group-exchanges/create')} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
                   {t('create_exchange')}
                 </Button>
               }

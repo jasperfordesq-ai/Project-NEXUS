@@ -64,7 +64,7 @@ export function ChildSafetyStandardsPage() {
         <Button
           as={Link}
           to={tenantPath('/contact?topic=child-safety')}
-          className="mt-5 bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+          className="mt-5 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
         >
           {t('child_safety.reporting_button')}
         </Button>

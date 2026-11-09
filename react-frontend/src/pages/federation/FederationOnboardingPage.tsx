@@ -353,7 +353,7 @@ export function FederationOnboardingPage() {
               <div className="flex justify-center">
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-accent to-accent-gradient-end text-white px-8"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white px-8"
                   endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
                   onPress={goNextAnimated}
                 >
@@ -680,7 +680,7 @@ export function FederationOnboardingPage() {
                   </Button>
                   <Button
                     size="lg"
-                    className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                    className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                     onPress={handleComplete}
                     isLoading={isSubmitting}
                     startContent={!isSubmitting && <CheckCircle className="w-5 h-5" aria-hidden="true" />}
@@ -791,7 +791,7 @@ function StepNavigation({ onBack, onNext, nextLabel, isLoading }: StepNavigation
         {t('onboarding.back')}
       </Button>
       <Button
-        className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+        className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
         endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
         onPress={onNext}
         isLoading={isLoading}

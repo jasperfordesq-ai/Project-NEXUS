@@ -213,7 +213,7 @@ export function GoalCheckinModal({
               size="sm"
               variant={!showHistory ? 'solid' : 'flat'}
               className={!showHistory
-                ? 'bg-gradient-to-r from-accent to-accent-gradient-end text-white'
+                ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white'
                 : 'bg-theme-elevated text-theme-muted'}
               onPress={() => setShowHistory(false)}
               startContent={<ClipboardCheck className="w-4 h-4" aria-hidden="true" />}
@@ -224,7 +224,7 @@ export function GoalCheckinModal({
               size="sm"
               variant={showHistory ? 'solid' : 'flat'}
               className={showHistory
-                ? 'bg-gradient-to-r from-accent to-accent-gradient-end text-white'
+                ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white'
                 : 'bg-theme-elevated text-theme-muted'}
               onPress={() => setShowHistory(true)}
               startContent={<Clock className="w-4 h-4" aria-hidden="true" />}
@@ -356,7 +356,7 @@ export function GoalCheckinModal({
                         size="sm"
                         variant={isSelected ? 'solid' : 'flat'}
                         className={isSelected
-                          ? 'bg-gradient-to-r from-accent to-accent-gradient-end text-white'
+                          ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white'
                           : 'bg-theme-elevated text-theme-muted'}
                         startContent={<Icon className={`w-4 h-4 ${isSelected ? 'text-white' : mood.color}`} aria-hidden="true" />}
                         onPress={() => setSelectedMood(isSelected ? null : mood.value)}
@@ -395,7 +395,7 @@ export function GoalCheckinModal({
           </Button>
           {!showHistory && (
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               onPress={handleSubmit}
               isLoading={isSubmitting}
             >

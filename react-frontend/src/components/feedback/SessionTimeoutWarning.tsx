@@ -332,7 +332,7 @@ export function SessionTimeoutWarning() {
                 {t('auth.log_out', { ns: 'common' })}
               </Button>
               <Button
-                className="flex-1 bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                className="flex-1 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
                 isLoading={isExtending}
                 onPress={() => { void handleExtend(); }}

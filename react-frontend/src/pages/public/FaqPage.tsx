@@ -482,8 +482,8 @@ export function FaqPage() {
             <Link
               to={tenantPath('/contact')}
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl
-                         bg-accent text-white font-medium
-                         hover:bg-accent transition-colors"
+                         bg-accent-strong text-white font-medium
+                         hover:bg-accent-strong transition-colors"
             >
               {t('faq.cta_button')}
             </Link>

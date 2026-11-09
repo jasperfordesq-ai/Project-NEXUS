@@ -203,7 +203,7 @@ export function HelpCenterPage() {
                           : 'border-theme-default bg-theme-elevated/60 hover:border-accent/40'
                       }`}
                     >
-                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${active ? 'bg-accent text-white' : 'bg-accent/12 text-accent'}`}>
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${active ? 'bg-accent-strong text-white' : 'bg-accent/12 text-accent'}`}>
                         <HelpIcon name={AUDIENCE_ICON[option]} className="h-5 w-5" />
                       </span>
                       <span className="min-w-0">

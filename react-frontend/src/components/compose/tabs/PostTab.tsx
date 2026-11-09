@@ -412,7 +412,7 @@ export function PostTab({ onSuccess, onClose, isOpen, groupId, templateData, onC
             </Button>
             <Button
               size="sm"
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white shadow-lg shadow-accent/20"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white shadow-lg shadow-accent/20"
               onPress={handleSubmit}
               isLoading={isSubmitting}
               isDisabled={!canSubmit}

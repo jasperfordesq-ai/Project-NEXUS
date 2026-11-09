@@ -205,13 +205,13 @@ export function VerifyEmailPage() {
             )}
 
             {isAuthenticated ? (
-              <Button as={Link} to={continuePath} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+              <Button as={Link} to={continuePath} className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
                 {destination
                   ? t('register.continue')
                   : dashboardEnabled ? t('verify_email.go_to_dashboard') : t('not_found.go_home', { ns: 'utility' })}
               </Button>
             ) : (
-              <Button as={Link} to={loginPath} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+              <Button as={Link} to={loginPath} className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
                 {requiresApproval ? t('verify_email.back_to_login') : t('verify_email.go_to_login')}
               </Button>
             )}
@@ -255,7 +255,7 @@ export function VerifyEmailPage() {
                 <Button
                   onPress={handleResendVerification}
                   isLoading={isResending}
-                  className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                   startContent={!isResending ? <Mail aria-hidden="true" className="w-4 h-4" /> : undefined}
                 >
                   {t('verify_email.resend')}

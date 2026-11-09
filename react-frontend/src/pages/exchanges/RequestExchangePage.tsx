@@ -180,7 +180,7 @@ export function RequestExchangePage() {
         title={error || t('request.cannot_request')}
         description={t('request.not_available')}
         action={
-          <Button as={Link} to={tenantPath("/listings")} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+          <Button as={Link} to={tenantPath("/listings")} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
             {t('browse_listings')}
           </Button>
         }
@@ -196,7 +196,7 @@ export function RequestExchangePage() {
         title={t('request.own_listing_title')}
         description={t('request.own_listing_description')}
         action={
-          <Button as={Link} to={tenantPath(`/listings/${listing.id}`)} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+          <Button as={Link} to={tenantPath(`/listings/${listing.id}`)} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
             {t('request.view_listing')}
           </Button>
         }

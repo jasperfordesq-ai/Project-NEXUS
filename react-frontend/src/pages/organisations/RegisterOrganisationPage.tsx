@@ -276,7 +276,7 @@ export default function RegisterOrganisationPage() {
           <div className="flex gap-3 pt-4">
             <Button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="flex-1 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<Save className="w-4 h-4" aria-hidden="true" />}
               isLoading={isSubmitting}
             >

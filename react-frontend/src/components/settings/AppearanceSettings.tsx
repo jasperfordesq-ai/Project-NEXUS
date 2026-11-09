@@ -106,7 +106,7 @@ export function AppearanceSettings() {
               key={size}
               size="sm"
               variant={fontSize === size ? 'solid' : 'flat'}
-              className={fontSize === size ? 'bg-accent text-white' : 'text-theme-secondary'}
+              className={fontSize === size ? 'bg-accent-strong text-white' : 'text-theme-secondary'}
               onPress={() => setFontSize(size as FontSize)}
             >
               {t(`appearance_prefs.font_${size}`)}
@@ -129,7 +129,7 @@ export function AppearanceSettings() {
               key={d}
               size="sm"
               variant={density === d ? 'solid' : 'flat'}
-              className={density === d ? 'bg-accent text-white' : 'text-theme-secondary'}
+              className={density === d ? 'bg-accent-strong text-white' : 'text-theme-secondary'}
               onPress={() => setDensity(d as Density)}
             >
               {t(`appearance_prefs.density_${d}`)}

@@ -40,7 +40,7 @@ export function MaintenancePage() {
       <Card className="max-w-lg w-full">
         <Card.Content className="text-center py-12 px-6 gap-6">
           <div className="flex justify-center">
-            <div className="w-20 h-20 bg-linear-to-br from-accent to-accent-soft rounded-full flex items-center justify-center">
+            <div className="w-20 h-20 bg-linear-to-br from-accent-strong to-accent-soft rounded-full flex items-center justify-center">
               <Wrench size={40} className="text-white" aria-hidden="true" />
             </div>
           </div>

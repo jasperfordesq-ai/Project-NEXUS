@@ -292,7 +292,7 @@ export function OrganisationDetailPage() {
           <p className="text-theme-muted mb-4" role="alert">{error}</p>
           <div className="flex gap-3 justify-center">
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
               onPress={() => loadData()}
             >
@@ -372,7 +372,7 @@ export function OrganisationDetailPage() {
             <div className="flex flex-wrap gap-3 mt-4">
               {canManage && (
                 <Button as={Link} to={tenantPath(`/volunteering/org/${organisation.id}/dashboard`)}
-                  className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                   startContent={<Building2 className="w-4 h-4" aria-hidden="true" />}
                 >
                   {t('organisation_detail.manage_button')}

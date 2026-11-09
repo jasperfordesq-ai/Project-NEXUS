@@ -206,7 +206,7 @@ export function AccessibilityPage() {
 
             <div className="flex flex-wrap gap-3 mt-4">
               <Button as={Link} to={tenantPath("/contact")}
-                className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}
               >
                 {t('accessibility.report_issue')}

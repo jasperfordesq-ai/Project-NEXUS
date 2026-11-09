@@ -422,7 +422,7 @@ export function MarktPage() {
             <AlertTriangle className="w-12 h-12 text-warning mx-auto mb-4" aria-hidden="true" />
             <p className="text-theme-muted mb-4">{loadError}</p>
             <Button
-              className="bg-linear-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
               onPress={() => loadRef.current(true)}
             >

@@ -374,7 +374,7 @@ export function ConnectedAccountsTab() {
         ) : (
           <Button
             size="sm"
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             isDisabled={isBusy || loading || !isProviderEnabled || pendingProvider !== null}
             isLoading={isBusy}
             onPress={() => handleConnect(target)}

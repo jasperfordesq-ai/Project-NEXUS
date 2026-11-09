@@ -186,7 +186,7 @@ export function ComposeHub({
       >
         <ModalContent>
           <ModalHeader className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 pb-2 text-[var(--text-primary)]">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-gradient-end flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center flex-shrink-0">
               <ActiveIcon className="w-4 h-4 text-white" aria-hidden="true" />
             </div>
             <ModalHeading className="font-semibold">

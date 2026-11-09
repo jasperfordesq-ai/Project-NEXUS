@@ -160,7 +160,7 @@ export function MobileTabBar({ onMenuOpen, isMenuOpen }: MobileTabBarProps) {
                         isIconOnly
                         radius="full"
                         onPress={tab.action}
-                        className="w-[52px] h-[52px] min-w-0 bg-gradient-to-br from-accent to-accent-gradient-end text-white shadow-lg shadow-accent/40 hover:shadow-accent/60 hover:scale-105 active:scale-95 transition-all duration-200"
+                        className="w-[52px] h-[52px] min-w-0 bg-gradient-to-br from-accent-strong to-accent-strong-end text-white shadow-lg shadow-accent/40 hover:shadow-accent/60 hover:scale-105 active:scale-95 transition-all duration-200"
                         // Same stable per-tab hook as the regular tabs below.
                         data-mobile-tab={tab.key}
                         aria-label={t('mobile_tab.create_new_content')}

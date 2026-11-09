@@ -461,7 +461,7 @@ export function FederationMemberProfilePage() {
                 className="w-24 h-24 ring-4 ring-accent/20"
               />
               <div
-                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-accent flex items-center justify-center ring-2 ring-white dark:ring-gray-900"
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-accent-strong flex items-center justify-center ring-2 ring-white dark:ring-gray-900"
                 title={member.timebank.name}
               >
                 <Globe className="w-4 h-4 text-white" aria-hidden="true" />

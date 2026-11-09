@@ -228,7 +228,7 @@ export function ExchangesPage() {
         title={t('workflow_not_enabled_title')}
         description={t('workflow_not_enabled_description')}
         action={
-          <Button as={Link} to={tenantPath("/listings")} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+          <Button as={Link} to={tenantPath("/listings")} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
             {t('browse_listings')}
           </Button>
         }
@@ -244,7 +244,7 @@ export function ExchangesPage() {
         title={t('workflow_not_enabled_title')}
         description={t('workflow_not_enabled_description')}
         action={
-          <Button as={Link} to={tenantPath("/listings")} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+          <Button as={Link} to={tenantPath("/listings")} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
             {t('browse_listings')}
           </Button>
         }
@@ -276,7 +276,7 @@ export function ExchangesPage() {
           </p>
         </div>
         <Button as={Link} to={tenantPath("/listings")}
-          className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
         >
           {t('browse_listings')}
@@ -309,7 +309,7 @@ export function ExchangesPage() {
               to={tenantPath("/listings")}
               isIconOnly
               aria-label={t('browse_listings')}
-              className="size-11 min-h-11 min-w-11 shrink-0 rounded-full bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="size-11 min-h-11 min-w-11 shrink-0 rounded-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             >
               <Plus className="w-4 h-4" aria-hidden="true" />
             </Button>
@@ -345,7 +345,7 @@ export function ExchangesPage() {
           <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('error.unable_to_load')}</h3>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={() => {
               if (!configLoadedRef.current) {
@@ -383,7 +383,7 @@ export function ExchangesPage() {
                   : t('empty.filter_description')
               }
               action={
-                <Button as={Link} to={tenantPath("/listings")} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+                <Button as={Link} to={tenantPath("/listings")} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
                   {t('browse_listings')}
                 </Button>
               }

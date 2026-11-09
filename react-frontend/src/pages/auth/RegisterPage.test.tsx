@@ -158,6 +158,11 @@ describe('RegisterPage', () => {
     expect(await screen.findByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
 
+  it("opens with the community's welcome: its colour, logo and tagline", async () => {
+    render(<RegisterPage />);
+    expect(await screen.findByTestId('community-welcome')).toBeInTheDocument();
+  });
+
   it('shows link to login page', () => {
     render(<RegisterPage />);
     expect(screen.getByText(/already have an account/i)).toBeInTheDocument();

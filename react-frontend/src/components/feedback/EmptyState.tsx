@@ -140,7 +140,7 @@ export function EmptyState({
             className={
               action.variant && action.variant !== 'solid' && action.variant !== 'primary'
                 ? undefined
-                : 'bg-gradient-to-r from-accent to-accent-gradient-end text-white font-medium'
+                : 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-medium'
             }
           >
             {action.label}
@@ -154,7 +154,7 @@ export function EmptyState({
       {!action && actionLabel && onAction && (
         <Button
           onPress={onAction}
-          className="bg-gradient-to-r from-accent to-accent-gradient-end text-white font-medium"
+          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-medium"
         >
           {actionLabel}
         </Button>

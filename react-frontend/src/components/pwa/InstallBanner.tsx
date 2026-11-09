@@ -107,7 +107,7 @@ export function InstallBanner() {
         </div>
         <Button
           size="sm"
-          className="shrink-0 bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+          className="shrink-0 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           onPress={onInstall}
         >
           {t('install.cta')}

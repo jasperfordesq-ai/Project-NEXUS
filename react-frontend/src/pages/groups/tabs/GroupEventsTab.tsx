@@ -80,7 +80,7 @@ export function GroupEventsTab({
         <h2 className="text-lg font-semibold text-theme-primary">{t('detail.group_events_heading')}</h2>
         {mayCreateEvent && (
           <Button as={Link} to={tenantPath(`/events/create?group_id=${groupId}`)}
-            className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto"
+            className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:w-auto"
             size="sm"
             startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
           >
@@ -101,7 +101,7 @@ export function GroupEventsTab({
           action={
             mayCreateEvent && (
               <Button as={Link} to={tenantPath(`/events/create?group_id=${groupId}`)}
-                className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
               >
                 {t('detail.create_event')}

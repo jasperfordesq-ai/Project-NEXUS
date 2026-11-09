@@ -467,7 +467,7 @@ export function ListingDetailPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               {isConnectionError && (
                 <Button
-                  className="bg-linear-to-r from-accent to-accent-gradient-end text-white"
+                  className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
                   onPress={() => void loadListing()}
                 >
                   {t('try_again')}
@@ -475,7 +475,7 @@ export function ListingDetailPage() {
               )}
               <Button as={Link} to={tenantPath('/listings')}
                 variant={isConnectionError ? 'flat' : undefined}
-                className={isConnectionError ? undefined : 'bg-linear-to-r from-accent to-accent-gradient-end text-white'}
+                className={isConnectionError ? undefined : 'bg-linear-to-r from-accent-strong to-accent-strong-end text-white'}
               >
                 {t('browse')}
               </Button>
@@ -876,7 +876,7 @@ export function ListingDetailPage() {
               )
             ) : canMessage ? (
               <Button as={Link} to={tenantPath(`/messages?to=${listing.user_id}&listing=${listing.id}`)}
-                className="w-full bg-linear-to-r from-accent to-accent-gradient-end text-white"
+                className="w-full bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
                 startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}
               >
                 {t('detail_send_message')}

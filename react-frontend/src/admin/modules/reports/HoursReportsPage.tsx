@@ -1,5 +1,6 @@
 import { Card, CardBody, CardHeader, Spinner, Button, Input, Chip, Select, SelectItem, Avatar, Tabs, Tab, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Pagination } from '@/components/ui';
 import { useState, useEffect, useCallback } from 'react';
+import { useChartColors } from '@/hooks/useChartColors';
 
 import {
   BarChart,
@@ -28,7 +29,7 @@ import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
-import { CHART_COLORS, CHART_COLOR_MAP, CHART_TOKEN_COLORS } from '@/lib/chartColors';
+import { CHART_COLOR_MAP, CHART_TOKEN_COLORS } from '@/lib/chartColors';
 import { StatCard } from '../../components/StatCard';
 import { PageHeader } from '../../components/PageHeader';
 import { useTranslation } from 'react-i18next';
@@ -137,7 +138,6 @@ const tooltipStyle = {
   color: CHART_TOKEN_COLORS.foreground,
 };
 
-const PIE_COLORS = CHART_COLORS;
 
 /** Rows per page for the By Member table. Sent to the API AND used to derive the
  *  page count, so the request and the pagination control cannot drift apart. */
@@ -193,6 +193,8 @@ async function exportCsv(tab: string, dateFrom?: string, dateTo?: string) {
 // ---------------------------------------------------------------------------
 
 export function HoursReportsPage() {
+  // Charts in the community's colours (meaningful colours — success, warning — stay fixed).
+  const chartColors = useChartColors();
   const { t } = useTranslation('admin_reports');
   usePageTitle(t('reports.page_title'));
   const toast = useToast();
@@ -314,7 +316,7 @@ export function HoursReportsPage() {
                     <XAxis type="number" tick={{ fontSize: 12 }} tickFormatter={(value: number) => formatNumber(value)} />
                     <YAxis type="category" dataKey="category_name" tick={{ fontSize: 11 }} width={80} />
                     <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="total_hours" name={t('reports.hours')} fill={CHART_COLOR_MAP.primary} radius={[0, 4, 4, 0]} fillOpacity={0.8} />
+                    <Bar dataKey="total_hours" name={t('reports.hours')} fill={chartColors.primary} radius={[0, 4, 4, 0]} fillOpacity={0.8} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -356,7 +358,7 @@ export function HoursReportsPage() {
                       {categories
                         .filter((c) => c.total_hours > 0)
                         .map((entry, index) => (
-                          <Cell key={`cell-${entry.category_id ?? entry.category_name}`} fill={PIE_COLORS[index % PIE_COLORS.length]} fillOpacity={0.85} />
+                          <Cell key={`cell-${entry.category_id ?? entry.category_name}`} fill={chartColors.categorical[index % chartColors.categorical.length]} fillOpacity={0.85} />
                         ))}
                     </Pie>
                     <Tooltip
@@ -497,8 +499,8 @@ export function HoursReportsPage() {
                 <AreaChart data={periods} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="hrTotalGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={CHART_COLOR_MAP.primary} stopOpacity={0.3} />
-                      <stop offset="95%" stopColor={CHART_COLOR_MAP.primary} stopOpacity={0} />
+                      <stop offset="5%" stopColor={chartColors.primary} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={chartColors.primary} stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="hrTxGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={CHART_COLOR_MAP.success} stopOpacity={0.3} />
@@ -524,7 +526,7 @@ export function HoursReportsPage() {
                     type="monotone"
                     dataKey="total_hours"
                     name={t('reports.sort_total_hours')}
-                    stroke={CHART_COLOR_MAP.primary}
+                    stroke={chartColors.primary}
                     fill="url(#hrTotalGrad)"
                     strokeWidth={2}
                   />

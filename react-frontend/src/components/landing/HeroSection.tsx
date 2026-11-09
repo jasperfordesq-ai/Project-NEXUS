@@ -119,7 +119,7 @@ export function HeroSection({ content }: HeroSectionProps) {
                   as={Link}
                   to={tenantPath(signedInCta.link)}
                   size="lg"
-                  className="w-full sm:w-auto bg-gradient-to-r from-accent to-accent-gradient-end text-white font-semibold px-8 shadow-lg shadow-accent/25 hover:shadow-accent/50 transition-shadow"
+                  className="w-full sm:w-auto bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold px-8 shadow-lg shadow-accent/25 hover:shadow-accent/50 transition-shadow"
                   endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
                 >
                   {signedInCta.text}
@@ -131,7 +131,7 @@ export function HeroSection({ content }: HeroSectionProps) {
                   as={Link}
                   to={tenantPath(ctaPrimaryLink)}
                   size="lg"
-                  className="w-full sm:w-auto bg-gradient-to-r from-accent to-accent-gradient-end text-white font-semibold px-8 shadow-lg shadow-accent/25 hover:shadow-accent/50 transition-shadow"
+                  className="w-full sm:w-auto bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold px-8 shadow-lg shadow-accent/25 hover:shadow-accent/50 transition-shadow"
                   endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
                 >
                   {ctaPrimaryText}

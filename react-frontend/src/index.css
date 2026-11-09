@@ -141,6 +141,19 @@
   .chip__label > svg {
     flex-shrink: 0;
   }
+
+  /* HeroUI's primary buttons wear the community colour's BUTTON shade
+     (--accent-strong, set by ThemeContext) with white text, in both themes —
+     the same shade as the site's own white-text fills. HeroUI's default reads
+     --accent, which on the dark theme is lightened to work as text and would
+     need dark text instead (9 Nov 2026). Hover and press go a little deeper,
+     which only raises the contrast. */
+  .button--primary {
+    --button-bg: var(--accent-strong);
+    --button-bg-hover: color-mix(in srgb, var(--accent-strong), #000 12%);
+    --button-bg-pressed: color-mix(in srgb, var(--accent-strong), #000 12%);
+    --button-fg: #ffffff;
+  }
 }
 
 /* ─────────────────────────────────────────────

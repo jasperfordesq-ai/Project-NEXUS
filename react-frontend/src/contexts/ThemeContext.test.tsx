@@ -352,7 +352,7 @@ describe('ThemeContext', () => {
       expect(document.documentElement.style.getPropertyValue('--accent-foreground')).toBe('#ffffff');
     });
 
-    it('keeps the standard colour as it was on the dark theme', async () => {
+    it('lightens the standard colour on the dark theme so it reads as text there, like a community colour', async () => {
       render(
         <ThemeProvider defaultTheme="dark">
           <CommunityProbe colour={null} />
@@ -360,7 +360,79 @@ describe('ThemeContext', () => {
       );
 
       await act(async () => {});
-      expect(accent()).toBe('#6366f1');
+      expect(getContrastRatio(accent(), '#18181b')).toBeGreaterThanOrEqual(4.5);
+    });
+
+    const strong = () => document.documentElement.style.getPropertyValue('--accent-strong');
+
+    it.each(['light', 'dark'] as const)(
+      'gives the colour a button shade that carries white text at 4.5:1 or better (%s theme)',
+      async (theme) => {
+        render(
+          <ThemeProvider defaultTheme={theme}>
+            <CommunityProbe colour={null} />
+          </ThemeProvider>
+        );
+        await act(async () => {});
+        expect(getContrastRatio(strong(), '#ffffff')).toBeGreaterThanOrEqual(4.5);
+      },
+    );
+
+    it('deepens a light colour for buttons, keeping its family, and leaves a dark enough one alone', async () => {
+      const { rerender } = render(
+        <ThemeProvider>
+          <CommunityProbe colour="#22c55e" />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(getContrastRatio(strong(), '#ffffff')).toBeGreaterThanOrEqual(4.5);
+      expect(strong()).not.toBe('#22c55e');
+
+      rerender(
+        <ThemeProvider>
+          <CommunityProbe colour="#a3195b" />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(strong()).toBe('#a3195b');
+    });
+
+    it('uses the same button shade on the dark theme as on the light one', async () => {
+      render(
+        <ThemeProvider defaultTheme="dark">
+          <CommunityProbe colour="#a3195b" />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      // The text shade is lightened for the dark page; the button shade is not.
+      expect(accent()).not.toBe('#a3195b');
+      expect(strong()).toBe('#a3195b');
+    });
+
+    it("colours a phone's browser bar with the button shade on the light theme, and the page colour on the dark one", async () => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      document.head.appendChild(meta);
+      try {
+        const { unmount } = render(
+          <ThemeProvider>
+            <CommunityProbe colour="#a3195b" />
+          </ThemeProvider>
+        );
+        await act(async () => {});
+        expect(meta.getAttribute('content')).toBe('#a3195b');
+        unmount();
+
+        render(
+          <ThemeProvider defaultTheme="dark">
+            <CommunityProbe colour="#a3195b" />
+          </ThemeProvider>
+        );
+        await act(async () => {});
+        expect(meta.getAttribute('content')).toBe('#0c0a09');
+      } finally {
+        meta.remove();
+      }
     });
 
     it('uses a lighter shade in dark mode so links stay readable on the dark page', async () => {

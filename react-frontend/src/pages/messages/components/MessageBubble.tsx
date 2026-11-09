@@ -308,7 +308,7 @@ export const MessageBubble = memo(function MessageBubble({
             inline-block max-w-full break-words px-3 py-2 sm:px-4 rounded-2xl relative [overflow-wrap:anywhere]
             ${isMobileSheet && canUseActions ? 'select-none [-webkit-touch-callout:none]' : ''}
             ${isOwn
-              ? 'bg-gradient-to-r from-accent to-accent-gradient-end text-white rounded-br-md'
+              ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white rounded-br-md'
               : 'bg-theme-elevated text-theme-primary rounded-bl-md'
             }
           `}

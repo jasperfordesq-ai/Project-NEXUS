@@ -540,7 +540,7 @@ export function TransferModal({
                 {t('cancel')}
               </Button>
               <Button
-                className="flex-1 bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                className="flex-1 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 startContent={!isSubmitting && <Send className="w-4 h-4" aria-hidden="true" />}
                 isLoading={isSubmitting}
                 isDisabled={!formData.recipient || !parsedAmount || isOverBalance}

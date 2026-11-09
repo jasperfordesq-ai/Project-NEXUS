@@ -162,7 +162,7 @@ export function ReviewModal({
             onPress={handleSubmit}
             isLoading={isSubmitting}
             isDisabled={rating === 0}
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           >
             {t('review_modal.submit')}
           </Button>

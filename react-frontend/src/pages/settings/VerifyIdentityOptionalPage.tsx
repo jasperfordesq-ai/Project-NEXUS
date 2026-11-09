@@ -331,7 +331,7 @@ export function VerifyIdentityOptionalPage() {
             {failureReason && <p className="text-theme-danger text-sm mb-4">{failureReason}</p>}
             <p className="text-theme-subtle text-sm mb-6">{t('identity.failed_hint')}</p>
             <div className="flex flex-col gap-3">
-              <Button onPress={handleStartVerification} isLoading={isStarting} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white" startContent={!isStarting ? <RefreshCw className="w-4 h-4" /> : undefined}>{t('identity.try_again')}</Button>
+              <Button onPress={handleStartVerification} isLoading={isStarting} className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white" startContent={!isStarting ? <RefreshCw className="w-4 h-4" /> : undefined}>{t('identity.try_again')}</Button>
               <Button variant="tertiary" className="w-full" startContent={<ArrowLeft className="w-4 h-4" />} onPress={() => navigate(dashboardPath)}>{backFromDashboardLabel}</Button>
             </div>
           </GlassCard>
@@ -351,7 +351,7 @@ export function VerifyIdentityOptionalPage() {
             </div>
             <h1 className="text-2xl font-bold text-theme-primary mb-2">{t('identity.error_title')}</h1>
             <p className="text-theme-muted mb-6">{errorMessage}</p>
-            <Button onPress={() => { setPageState('loading'); fetchStatus(); }} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white" startContent={<RefreshCw className="w-4 h-4" />}>{t('identity.try_again')}</Button>
+            <Button onPress={() => { setPageState('loading'); fetchStatus(); }} className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white" startContent={<RefreshCw className="w-4 h-4" />}>{t('identity.try_again')}</Button>
           </GlassCard>
         </motion.div>
       </div>
@@ -395,7 +395,7 @@ export function VerifyIdentityOptionalPage() {
               <Button
                 onPress={handleSaveDob}
                 isLoading={isSavingDob}
-                className="w-full bg-gradient-to-r from-accent to-emerald-600 text-white font-medium"
+                className="w-full bg-gradient-to-r from-accent-strong to-emerald-600 text-white font-medium"
                 size="lg"
                 isDisabled={!dob}
               >
@@ -443,7 +443,7 @@ export function VerifyIdentityOptionalPage() {
                 <Button
                   onPress={handleCreatePayment}
                   isLoading={isCreatingPayment}
-                  className="w-full bg-gradient-to-r from-accent to-emerald-600 text-white font-medium"
+                  className="w-full bg-gradient-to-r from-accent-strong to-emerald-600 text-white font-medium"
                   size="lg"
                   startContent={!isCreatingPayment ? <CreditCard className="w-5 h-5" aria-hidden="true" /> : undefined}
                 >
@@ -516,7 +516,7 @@ export function VerifyIdentityOptionalPage() {
               <Button
                 onPress={handleStartVerification}
                 isLoading={isStarting}
-                className="w-full bg-gradient-to-r from-accent to-emerald-600 text-white font-medium"
+                className="w-full bg-gradient-to-r from-accent-strong to-emerald-600 text-white font-medium"
                 size="lg"
                 startContent={!isStarting ? <ShieldCheck className="w-5 h-5" aria-hidden="true" /> : undefined}
                 spinner={<Spinner size="sm" />}

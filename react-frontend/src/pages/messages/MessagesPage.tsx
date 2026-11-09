@@ -543,7 +543,7 @@ export function MessagesPage() {
               </p>
               <Button
                 size="sm"
-                className="mt-3 bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                className="mt-3 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 startContent={<ArrowRightLeft className="w-4 h-4" />}
                 onPress={() => navigate(tenantPath('/exchanges'))}
               >
@@ -582,7 +582,7 @@ export function MessagesPage() {
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-shrink-0">
           <Button
-            className="min-w-0 bg-gradient-to-r from-accent to-accent-gradient-end font-medium text-white"
+            className="min-w-0 bg-gradient-to-r from-accent-strong to-accent-strong-end font-medium text-white"
             startContent={<Plus className="h-4 w-4 flex-shrink-0" aria-hidden="true" />}
             onPress={() => setIsNewMessageOpen(true)}
             isDisabled={!isDirectMessagingEnabled || messagingRestricted}
@@ -756,7 +756,7 @@ export function MessagesPage() {
             <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('load_error_title')}</h3>
             <p className="text-theme-muted mb-4">{error}</p>
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<RefreshCw className="h-4 w-4" aria-hidden="true" />}
               onPress={() => loadConversations()}
             >
@@ -772,7 +772,7 @@ export function MessagesPage() {
             description={hasSearchQuery ? t('search_empty_subtitle') : t('empty_subtitle')}
             action={!hasSearchQuery && (
               <Button
-                className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 startContent={<Plus className="h-4 w-4" aria-hidden="true" />}
                 onPress={() => setIsNewMessageOpen(true)}
                 isDisabled={!isDirectMessagingEnabled || messagingRestricted}
@@ -806,7 +806,7 @@ export function MessagesPage() {
             <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
             <p className="text-theme-muted mb-4">{t('groups_load_failed')}</p>
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<RefreshCw className="h-4 w-4" aria-hidden="true" />}
               onPress={() => void loadGroupConversations()}
             >

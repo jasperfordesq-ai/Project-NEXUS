@@ -246,7 +246,7 @@ export function ContactPage() {
                 type="submit"
                 isLoading={isSubmitting}
                 isDisabled={!formData.name.trim() || !formData.email.trim() || !formData.message.trim() || (!!turnstileSiteKey && turnstileArmed && !turnstileToken)}
-                className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white font-medium"
+                className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-medium"
                 size="lg"
                 spinner={<Spinner size="sm" aria-hidden="true" />}
               >

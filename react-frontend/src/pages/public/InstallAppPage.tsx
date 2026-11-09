@@ -485,7 +485,7 @@ export function InstallAppPage() {
             <div className="flex flex-col items-center gap-2">
               <Button
                 size="lg"
-                className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto sm:px-10"
+                className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:w-auto sm:px-10"
                 startContent={<Download className="h-5 w-5" aria-hidden="true" />}
                 onPress={() => { void install.promptInstall(); }}
                 data-testid="install-app-prompt"
@@ -633,7 +633,7 @@ export function InstallAppPage() {
             <Button
               as={Link}
               to={tenantPath('/contact')}
-              className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto"
+              className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:w-auto"
             >
               {t('install_app.help_cta')}
             </Button>

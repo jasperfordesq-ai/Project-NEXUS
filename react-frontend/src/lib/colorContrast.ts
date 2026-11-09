@@ -41,7 +41,8 @@ export function getContrastRatio(colorA: string, colorB: string): number | null 
 /** Minimum ratio for normal-size text (WCAG 2.2 AA, 1.4.3). */
 export const AA_NORMAL_TEXT_CONTRAST = 4.5;
 
-function mixHex(color: string, towards: string, amount: number): string {
+/** Mix two hex colours: `amount` 0 is `color`, 1 is `towards`. */
+export function mixHex(color: string, towards: string, amount: number): string {
   const parse = (value: string) => {
     const hex = value.trim().replace(/^#/, '');
     const full = hex.length === 3 ? hex.split('').map((c) => c.repeat(2)).join('') : hex;

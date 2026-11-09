@@ -206,7 +206,7 @@ export function FederationPartnersPage() {
           </h2>
           <p className="text-theme-muted mb-4">{loadError}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={loadPartners}
           >
@@ -261,7 +261,7 @@ export function FederationPartnersPage() {
                   name={selectedPartner.name[0]}
                   src={resolveAvatarUrl(selectedPartner.logo)}
                   size="md"
-                  className="row-span-2 bg-gradient-to-br from-accent to-accent-gradient-end text-white flex-shrink-0"
+                  className="row-span-2 bg-gradient-to-br from-accent-strong to-accent-strong-end text-white flex-shrink-0"
                 />
                 <ModalHeading className="text-lg font-bold text-theme-primary">
                   {selectedPartner.name}
@@ -366,7 +366,7 @@ export function FederationPartnersPage() {
                       {t('partners.browse_members')}
                     </Button>
                     <Button
-                      className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                      className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                       startContent={<ListTodo className="w-4 h-4" aria-hidden="true" />}
                       onPress={() => {
                         const path = tenantPath(`/federation/listings?partner_id=${selectedPartner.id}`);
@@ -417,7 +417,7 @@ function PartnerCard({ partner, onViewDetails }: PartnerCardProps) {
           name={partner.name}
           src={resolveAvatarUrl(partner.logo)}
           size="lg"
-          className="bg-gradient-to-br from-accent to-accent-gradient-end text-white flex-shrink-0"
+          className="bg-gradient-to-br from-accent-strong to-accent-strong-end text-white flex-shrink-0"
         />
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-theme-primary text-lg truncate">

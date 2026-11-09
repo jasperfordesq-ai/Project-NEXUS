@@ -24,7 +24,8 @@ vi.mock('@/lib/api', () => ({
 
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
-vi.mock('@/lib/chartColors', () => ({
+vi.mock('@/lib/chartColors', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/chartColors')>()),
   CHART_COLORS: ['#aaa', '#bbb', '#ccc'],
   CHART_COLOR_MAP: { primary: '#aaa', success: '#bbb', warning: '#ccc', danger: '#ddd' },
   CHART_TOKEN_COLORS: { border: '#eee', surface: '#fff', foreground: '#000' },

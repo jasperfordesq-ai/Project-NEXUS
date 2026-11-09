@@ -157,7 +157,7 @@ export function GroupDiscussionTab({
           action={
             isAuthenticated && (
               <Button
-                className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 onPress={onJoinLeave}
                 isLoading={isJoining}
               >
@@ -177,7 +177,7 @@ export function GroupDiscussionTab({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-theme-primary">{t('detail.discussions_heading')}</h2>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:w-auto"
             size="sm"
             startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
             onPress={onShowNewDiscussion}
@@ -198,7 +198,7 @@ export function GroupDiscussionTab({
             description={t('detail.no_discussions_desc')}
             action={
               <Button
-                className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 onPress={onShowNewDiscussion}
                 startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
               >
@@ -353,7 +353,7 @@ export function GroupDiscussionTab({
                               />
                               <Button
                                 isIconOnly
-                                className="min-h-11 min-w-11 flex-shrink-0 bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                                className="min-h-11 min-w-11 flex-shrink-0 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                                 aria-label={t('detail.send_reply_aria')}
                                 isLoading={sendingReply}
                                 isDisabled={!replyContent.trim()}

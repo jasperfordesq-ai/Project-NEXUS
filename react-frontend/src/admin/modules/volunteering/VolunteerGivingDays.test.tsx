@@ -40,7 +40,8 @@ vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock('@/lib/chartColors', () => ({
+vi.mock('@/lib/chartColors', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/chartColors')>()),
   CHART_TOKEN_COLORS: { accent: '#4f46e5', success: '#10b981' },
 }));
 

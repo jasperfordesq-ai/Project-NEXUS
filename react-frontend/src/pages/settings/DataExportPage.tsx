@@ -206,7 +206,7 @@ export function DataExportPage(): ReactNode {
             onPress={handleDownload}
             isLoading={isDownloading}
             startContent={!isDownloading ? <Download className="w-4 h-4" aria-hidden="true" /> : null}
-            className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto"
+            className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:w-auto"
           >
             {isDownloading ? t('data_export.downloading') : t('data_export.download_button')}
           </Button>

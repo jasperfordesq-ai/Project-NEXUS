@@ -1,5 +1,6 @@
 import { Card, CardBody, CardHeader, Spinner, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
 import { Suspense, lazy, useEffect, useState, useCallback } from 'react';
+import { useChartColors } from '@/hooks/useChartColors';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -18,7 +19,7 @@ import {
   Area,
   AreaChart,
 } from 'recharts';
-import { CHART_COLORS, CHART_COLOR_MAP } from '@/lib/chartColors';
+import { CHART_COLOR_MAP } from '@/lib/chartColors';
 import { formatPercentRatio, formatPercentValue } from '@/lib/helpers';
 import TrendingUp from 'lucide-react/icons/trending-up';
 import Users from 'lucide-react/icons/users';
@@ -104,7 +105,6 @@ interface GeographyData {
 // Chart color palette (works well in both light and dark modes)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PIE_COLORS = CHART_COLORS;
 
 const LazyLocationMap = lazy(() =>
   import('@/components/location/LocationMap').then((module) => ({
@@ -117,6 +117,8 @@ const LazyLocationMap = lazy(() =>
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function CommunityAnalytics() {
+  // Charts in the community's colours (meaningful colours — success, warning — stay fixed).
+  const chartColors = useChartColors();
   const { t } = useTranslation('admin_analytics');
   usePageTitle(t('analytics.page_title'));
   useAdminPageMeta({
@@ -281,8 +283,8 @@ export function CommunityAnalytics() {
                     x2="0"
                     y2="1"
                   >
-                    <stop offset="5%" stopColor={CHART_COLOR_MAP.primary} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={CHART_COLOR_MAP.primary} stopOpacity={0.02} />
+                    <stop offset="5%" stopColor={chartColors.primary} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={chartColors.primary} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
@@ -334,7 +336,7 @@ export function CommunityAnalytics() {
                   type="monotone"
                   dataKey="total_volume"
                   name={t('analytics.chart_hours_exchanged')}
-                  stroke={CHART_COLOR_MAP.primary}
+                  stroke={chartColors.primary}
                   fill="url(#volumeGradient)"
                   strokeWidth={2}
                 />
@@ -456,7 +458,7 @@ export function CommunityAnalytics() {
                       .map((cat, index) => (
                         <Cell
                           key={cat.name}
-                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                          fill={chartColors.categorical[index % chartColors.categorical.length]}
                           fillOpacity={0.85}
                         />
                       ))}

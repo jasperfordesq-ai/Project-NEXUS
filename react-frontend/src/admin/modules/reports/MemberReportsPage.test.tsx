@@ -22,7 +22,8 @@ const { mockApi } = vi.hoisted(() => ({
 
 vi.mock('@/lib/api', () => ({ api: mockApi, default: mockApi, tokenManager: { getAccessToken: vi.fn(() => null), getTenantId: vi.fn(() => null) } }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
-vi.mock('@/lib/chartColors', () => ({ CHART_COLOR_MAP: { success: '#22c55e', warning: '#f59e0b' } }));
+vi.mock('@/lib/chartColors', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/chartColors')>()), CHART_COLOR_MAP: { success: '#22c55e', warning: '#f59e0b' } }));
 
 // ─── Recharts — heavy, not needed in unit tests ───────────────────────────────
 vi.mock('recharts', () => ({

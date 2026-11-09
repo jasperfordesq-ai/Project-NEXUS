@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { Button } from '@/components/ui/Button';
+import { useChartColors } from '@/hooks/useChartColors';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Progress } from '@/components/ui/Progress';
@@ -37,7 +38,7 @@ import { useTenant } from '@/contexts/TenantContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { CHART_COLOR_MAP } from '@/lib/chartColors';
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -176,6 +177,8 @@ function TierLadder({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function NexusScorePage() {
+  // Charts in the community's colours (meaningful colours — success, warning — stay fixed).
+  const chartColors = useChartColors();
   const { t } = useTranslation('gamification');
   const { user }       = useAuth();
   const { tenantPath, hasModule } = useTenant();
@@ -313,8 +316,8 @@ export default function NexusScorePage() {
                   strokeLinecap="round" />
                 <defs>
                   <linearGradient id="score-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor={CHART_COLOR_MAP.primary} />
-                    <stop offset="100%" stopColor={CHART_COLOR_MAP.primaryLight} />
+                    <stop offset="0%" stopColor={chartColors.primary} />
+                    <stop offset="100%" stopColor={chartColors.primaryLight} />
                   </linearGradient>
                 </defs>
               </svg>

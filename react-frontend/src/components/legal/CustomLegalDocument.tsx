@@ -154,7 +154,7 @@ const ACCENT_STYLES = {
     icon: 'text-accent dark:text-accent',
     tocHover: 'hover:bg-accent/10',
     chipBg: 'bg-accent/10 text-accent dark:text-accent',
-    btnGradient: 'bg-gradient-to-r from-accent to-accent-gradient-end text-white',
+    btnGradient: 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white',
   },
   purple: {
     gradientFrom: 'from-accent/20',
@@ -162,7 +162,7 @@ const ACCENT_STYLES = {
     icon: 'text-accent dark:text-accent',
     tocHover: 'hover:bg-accent/10',
     chipBg: 'bg-accent/10 text-accent dark:text-accent',
-    btnGradient: 'bg-gradient-to-r from-accent to-pink-600 text-white',
+    btnGradient: 'bg-gradient-to-r from-accent-strong to-pink-600 text-white',
   },
   emerald: {
     gradientFrom: 'from-emerald-500/20',

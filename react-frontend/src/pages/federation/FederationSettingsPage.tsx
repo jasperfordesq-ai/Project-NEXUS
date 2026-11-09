@@ -326,7 +326,7 @@ export function FederationSettingsPage() {
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <p className="text-theme-muted mb-4">{loadError}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             onPress={loadSettings}
           >
             {t('settings.try_again')}
@@ -406,7 +406,7 @@ export function FederationSettingsPage() {
                 </div>
               </div>
               <Button
-                className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 onPress={handleToggleFederation}
                 isLoading={isTogglingStatus}
               >
@@ -595,7 +595,7 @@ export function FederationSettingsPage() {
       <motion.div variants={itemVariants} className="flex justify-end">
         <Button
           onPress={handleSave}
-          className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           startContent={<Save className="w-4 h-4" aria-hidden="true" />}
           isLoading={isSaving}
           isDisabled={!isDirty}

@@ -408,7 +408,7 @@ export function PilotApplyPage() {
             type="submit"
             isLoading={submitting}
             isDisabled={!canSubmit || submitting}
-            className="w-full bg-gradient-to-r from-accent to-emerald-600 text-white font-medium"
+            className="w-full bg-gradient-to-r from-accent-strong to-emerald-600 text-white font-medium"
             size="lg"
             spinner={<Spinner size="sm" />}
           >

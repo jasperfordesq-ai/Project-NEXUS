@@ -518,7 +518,7 @@ export function SkillSelector({
               {tc('cancel')}
             </Button>
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               onPress={() => handleAddSkill()}
               isLoading={isAdding}
               isDisabled={(!selectedSkill && !searchQuery) || (!isOffering && !isRequesting)}

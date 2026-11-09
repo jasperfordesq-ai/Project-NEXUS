@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect } from 'vitest';
-import { CHART_COLORS, CHART_COLOR_MAP, CHART_TOKEN_COLORS, chartTokenColor } from './chartColors';
+import { CHART_COLORS, CHART_COLOR_MAP, CHART_TOKEN_COLORS, chartColorsFor, chartTokenColor } from './chartColors';
 
 describe('CHART_COLORS', () => {
   it('is a non-empty array', () => {
@@ -74,5 +74,37 @@ describe('CHART_TOKEN_COLORS', () => {
   it('resolves token colors by name', () => {
     expect(chartTokenColor('primary')).toBe(CHART_TOKEN_COLORS.primary);
     expect(chartTokenColor('border')).toBe(CHART_TOKEN_COLORS.border);
+  });
+});
+
+describe('chartColorsFor (charts in the community colour)', () => {
+  const HEX = /^#[0-9a-f]{6}$/i;
+
+  it('leads with the community colour itself', () => {
+    expect(chartColorsFor('#a3195b').primary).toBe('#a3195b');
+    expect(chartColorsFor('#a3195b').categorical[0]).toBe('#a3195b');
+  });
+
+  it('uses the standard colour when the community has none', () => {
+    expect(chartColorsFor(null).primary).toBe('#5b5ede');
+  });
+
+  it('gives eight different colours for slices, all chart-ready hex', () => {
+    const { categorical } = chartColorsFor('#15803d');
+    expect(categorical).toHaveLength(8);
+    expect(new Set(categorical).size).toBe(8);
+    for (const colour of categorical) expect(colour).toMatch(HEX);
+  });
+
+  it('picks the companion colours from the community colour, so two communities differ', () => {
+    expect(chartColorsFor('#15803d').categorical.slice(1)).not.toEqual(
+      chartColorsFor('#a3195b').categorical.slice(1),
+    );
+  });
+
+  it('offers a lighter partner of the main colour for gradients', () => {
+    const { primary, primaryLight } = chartColorsFor('#a3195b');
+    expect(primaryLight).toMatch(HEX);
+    expect(primaryLight).not.toBe(primary);
   });
 });

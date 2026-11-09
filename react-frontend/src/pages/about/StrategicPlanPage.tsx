@@ -138,7 +138,7 @@ export function StrategicPlanPage() {
               href={STRATEGIC_PLAN_PDF}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white font-semibold"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold"
               startContent={<Download className="w-4 h-4" aria-hidden="true" />}
             >
               {t('strategic_plan.download_plan')}
@@ -614,7 +614,7 @@ export function StrategicPlanPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     size="lg"
-                    className="bg-gradient-to-r from-accent to-accent-gradient-end text-white font-semibold px-8"
+                    className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold px-8"
                     startContent={<Download className="w-5 h-5" aria-hidden="true" />}
                   >
                     {t('strategic_plan.cta_download')}

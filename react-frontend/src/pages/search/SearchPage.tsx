@@ -669,7 +669,7 @@ export function SearchPage() {
               <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('error_title')}</h2>
               <p className="text-theme-muted mb-4">{searchError}</p>
               <Button
-                className="bg-linear-to-r from-accent to-accent-gradient-end text-white"
+                className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
                 onPress={() => performSearch(query)}
               >
                 {t('try_again')}

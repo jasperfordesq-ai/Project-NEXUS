@@ -49,7 +49,7 @@ export function CtaSection({ content }: CtaSectionProps) {
             as={Link}
             to={tenantPath(buttonLink)}
             size="lg"
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white font-semibold px-10"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold px-10"
             endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
           >
             {buttonText}

@@ -122,7 +122,7 @@ function StepIndicator({ current, labels }: StepIndicatorProps) {
                   isComplete
                     ? 'bg-success border-success text-white'
                     : isActive
-                      ? 'bg-accent border-accent text-white'
+                      ? 'bg-accent-strong border-accent text-white'
                       : 'bg-[var(--color-surface)] border-border text-muted',
                 ].join(' ')}
               >

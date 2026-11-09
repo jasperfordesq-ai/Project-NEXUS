@@ -120,7 +120,7 @@ export function GoalBuddyRequests({ goalId, onAccepted }: GoalBuddyRequestsProps
             <div className="flex gap-2">
               <Button
                 size="sm"
-                className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 isDisabled={busyId !== null}
                 aria-label={t('goals.buddy_requests.accept_aria', { name: request.requester.name })}
                 onPress={() => decide(request, 'accept')}

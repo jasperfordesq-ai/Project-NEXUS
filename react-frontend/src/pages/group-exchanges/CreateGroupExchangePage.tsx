@@ -515,7 +515,7 @@ export function CreateGroupExchangePage() {
                 <div className={`
                   w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all
                   ${isComplete
-                    ? 'bg-gradient-to-r from-accent to-accent-gradient-end text-white'
+                    ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white'
                     : isCurrent
                       ? 'bg-accent/20 text-accent ring-2 ring-accent'
                       : 'bg-theme-elevated text-theme-subtle'}
@@ -701,7 +701,7 @@ export function CreateGroupExchangePage() {
               {/* Navigation */}
               <div className="flex items-center justify-end">
                 <Button
-                  className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                   endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
                   onPress={goNext}
                   isDisabled={!canProceedStep1}
@@ -1006,7 +1006,7 @@ export function CreateGroupExchangePage() {
                 </Button>
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                   onPress={handleCreate}
                   isLoading={isSubmitting}
                   isDisabled={!canCreate}
@@ -1210,7 +1210,7 @@ function StepNavigation({ onBack, onNext, nextLabel, isLoading, isNextDisabled }
         {t('create.back')}
       </Button>
       <Button
-        className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+        className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
         endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
         onPress={onNext}
         isLoading={isLoading}

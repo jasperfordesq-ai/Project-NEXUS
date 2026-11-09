@@ -387,7 +387,7 @@ export function GroupsPage() {
         <ToggleButton
           id="all"
           variant="ghost"
-          className="bg-theme-elevated text-theme-secondary hover:text-accent data-[selected=true]:bg-accent! data-[selected=true]:font-semibold data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
+          className="bg-theme-elevated text-theme-secondary hover:text-accent data-[selected=true]:bg-accent-strong! data-[selected=true]:font-semibold data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
         >
           <Users className="w-3.5 h-3.5" aria-hidden="true" />
           {t('filter_all')}
@@ -539,7 +539,7 @@ export function GroupsPage() {
           <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load')}</h2>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-linear-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={() => loadGroups()}
           >
@@ -566,7 +566,7 @@ export function GroupsPage() {
               accent="indigo"
               action={
                 isAuthenticated && (
-                  <Button as={Link} to={tenantPath('/groups/create')} className="bg-linear-to-r from-accent to-accent-gradient-end text-white">
+                  <Button as={Link} to={tenantPath('/groups/create')} className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white">
                     {t('create_group')}
                   </Button>
                 )

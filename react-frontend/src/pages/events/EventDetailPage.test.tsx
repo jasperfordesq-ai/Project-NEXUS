@@ -214,6 +214,16 @@ describe('EventDetailPage', () => {
       .toBeInTheDocument();
   });
 
+  it("gives an event without a picture the community's colour, not a dark box", async () => {
+    await renderLoadedEvent();
+
+    const cover = screen.getByTestId('event-hero-cover');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    // The button shade: white text on it reads at 4.5:1 in both themes.
+    expect(cover.className).toContain('from-accent-strong');
+    expect(cover.className).not.toContain('amber');
+  });
+
   it('renders the event title after loading', async () => {
     await renderLoadedEvent();
 

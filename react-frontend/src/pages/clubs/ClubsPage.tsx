@@ -177,7 +177,7 @@ export function ClubsPage() {
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <h2 className="text-lg font-semibold text-theme-primary mb-2">{error}</h2>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white mt-4"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white mt-4"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={() => loadClubs(1)}
           >

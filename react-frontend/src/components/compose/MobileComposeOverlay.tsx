@@ -116,7 +116,7 @@ export function MobileComposeOverlay({
               size="sm"
               classNames={{
                 tabList: 'gap-1 p-0',
-                tab: 'min-h-[40px] px-3 data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white rounded-full',
+                tab: 'min-h-[40px] px-3 data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent-strong data-[selected=true]:to-accent-strong-end data-[selected=true]:text-white rounded-full',
                 cursor: 'hidden',
               }}
             >

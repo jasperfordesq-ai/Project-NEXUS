@@ -232,7 +232,7 @@ export function AboutPage() {
                 >
                   <GlassCard className="p-6 h-full text-center relative group hover:scale-[1.02] transition-transform overflow-hidden">
                     {/* Step number */}
-                    <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-gradient-to-br from-accent to-accent-gradient-end flex items-center justify-center text-white text-sm font-bold">
+                    <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center text-white text-sm font-bold">
                       {index + 1}
                     </div>
 
@@ -487,7 +487,7 @@ export function AboutPage() {
                         as={Link}
                         to={tenantPath("/dashboard")}
                         size="lg"
-                        className="w-full sm:w-auto bg-gradient-to-r from-accent to-accent-gradient-end text-white font-semibold px-8"
+                        className="w-full sm:w-auto bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold px-8"
                         endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
                       >
                         {t('about.cta.dashboard')}
@@ -497,7 +497,7 @@ export function AboutPage() {
                         as={Link}
                         to={tenantPath("/register")}
                         size="lg"
-                        className="w-full sm:w-auto bg-gradient-to-r from-accent to-accent-gradient-end text-white font-semibold px-8"
+                        className="w-full sm:w-auto bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold px-8"
                         endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
                       >
                         {t('about.cta.join')}

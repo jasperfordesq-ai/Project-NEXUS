@@ -16,6 +16,7 @@
  */
 
 import { lazy, Suspense, useState, useEffect, useRef, useCallback, type FormEvent } from 'react';
+import { CommunityWelcome } from '@/components/auth/CommunityWelcome';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { buildReturnTarget, clearAuthReturn, explicitAuthReturn, rememberAuthReturn, resolveAuthReturn } from '@/lib/auth-return';
 
@@ -31,7 +32,6 @@ import { Separator } from '@/components/ui/Separator';
 import { Spinner } from '@/components/ui/Spinner';
 import { motion,
   AnimatePresence } from '@/lib/motion';
-import User from 'lucide-react/icons/user';
 import Mail from 'lucide-react/icons/mail';
 import Lock from 'lucide-react/icons/lock';
 import Eye from 'lucide-react/icons/eye';
@@ -1385,16 +1385,11 @@ export function RegisterPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-        <GlassCard className="p-6 sm:p-8">
+        <GlassCard className="overflow-hidden p-6 sm:p-8">
+          {/* The community first: its colour, logo and tagline. */}
+          <CommunityWelcome className="-mx-6 -mt-6 sm:-mx-8 sm:-mt-8" />
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 sm:h-16 sm:w-16"
-            >
-              <User className="w-7 h-7 sm:w-8 sm:h-8 text-accent dark:text-accent" aria-hidden="true" />
-            </motion.div>
             <h1 className="text-xl sm:text-2xl font-bold text-theme-primary">{registerHeaderTitle}</h1>
             {registerHeaderSubtitle && (
               <p className="text-theme-muted mt-2 text-sm sm:text-base">

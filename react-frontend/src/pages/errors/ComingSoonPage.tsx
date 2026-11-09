@@ -46,7 +46,7 @@ export function ComingSoonPage({ feature = 'This feature' }: ComingSoonPageProps
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Button as={Link} to={tenantPath(hasModule('dashboard') ? '/dashboard' : '/')}
-              className="flex-1 w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="flex-1 w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<Home className="w-4 h-4" />}
             >
               {hasModule('dashboard') ? t('coming_soon.dashboard') : t('not_found.go_home')}

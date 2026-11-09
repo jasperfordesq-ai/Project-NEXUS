@@ -816,7 +816,7 @@ export function FederationMessagesPage() {
               as={Link}
               to={tenantPath('/federation/onboarding')}
               size="sm"
-              className="bg-accent text-white flex-shrink-0"
+              className="bg-accent-strong text-white flex-shrink-0"
             >
               {t('messages.optin_cta')}
             </Button>
@@ -834,7 +834,7 @@ export function FederationMessagesPage() {
           <p className="text-theme-muted mt-1">{t('messages.subtitle')}</p>
         </div>
         <Button
-          className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
           onPress={() => setIsComposeOpen(true)}
           isDisabled={!canUseFederationMessaging}
@@ -855,7 +855,7 @@ export function FederationMessagesPage() {
           <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('messages.unable_to_load')}</h3>
           <p className="text-theme-muted mb-4">{t('messages.unable_to_load_description')}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             onPress={loadMessages}
           >
             {t('messages.try_again')}
@@ -872,7 +872,7 @@ export function FederationMessagesPage() {
               {t('messages.no_messages_description')}
             </p>
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white mt-2"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white mt-2"
               startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
               onPress={() => setIsComposeOpen(true)}
               isDisabled={!canUseFederationMessaging}
@@ -1160,7 +1160,7 @@ export function FederationMessagesPage() {
                               <div
                                 className={`px-4 py-2.5 rounded-2xl ${
                                   isOwn
-                                    ? 'bg-gradient-to-r from-accent to-accent-gradient-end text-white rounded-br-md'
+                                    ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white rounded-br-md'
                                     : 'bg-theme-elevated text-theme-primary rounded-bl-md'
                                 }`}
                               >
@@ -1287,7 +1287,7 @@ export function FederationMessagesPage() {
                     />
                     <Button
                       isIconOnly
-                      className="bg-gradient-to-r from-accent to-accent-gradient-end text-white self-end"
+                      className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white self-end"
                       onPress={sendReply}
                       isLoading={isSending}
                       isDisabled={!canUseFederationMessaging || !replyText.trim()}
@@ -1487,7 +1487,7 @@ export function FederationMessagesPage() {
               {t('messages.cancel')}
             </Button>
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<Send className="w-4 h-4" aria-hidden="true" />}
               onPress={sendComposeMessage}
               isLoading={isComposeSending}

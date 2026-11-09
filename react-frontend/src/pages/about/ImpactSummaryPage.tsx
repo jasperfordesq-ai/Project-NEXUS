@@ -309,7 +309,7 @@ export function ImpactSummaryPage() {
             >
               <Link to={tenantPath('/strategic-plan')}>
                 <GlassCard hoverable className="p-6 h-full text-center group hover:scale-[1.02] transition-transform">
-                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent-gradient-end mb-4">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-strong to-accent-strong-end mb-4">
                     <Compass className="w-7 h-7 text-white" aria-hidden="true" />
                   </div>
                   <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('impact_summary.strategic_plan_title')}</h3>

@@ -89,7 +89,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
               className={[
                 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors',
                 isDone  ? 'bg-emerald-500 text-white' :
-                isActive ? 'bg-accent text-white' :
+                isActive ? 'bg-accent-strong text-white' :
                           'bg-theme-elevated text-theme-muted',
               ].join(' ')}
             >
@@ -495,7 +495,7 @@ export function PilotInquiryPage() {
           {step < TOTAL_STEPS ? (
             <Button
               variant="primary"
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white font-medium"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-medium"
               endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
               isDisabled={!canAdvance()}
               onPress={() => setStep(s => s + 1)}
@@ -505,7 +505,7 @@ export function PilotInquiryPage() {
           ) : (
             <Button
               variant="primary"
-              className="bg-gradient-to-r from-accent to-emerald-600 text-white font-medium"
+              className="bg-gradient-to-r from-accent-strong to-emerald-600 text-white font-medium"
               isLoading={submitting}
               isDisabled={!canAdvance() || submitting}
               spinner={<Spinner size="sm" />}

@@ -29,7 +29,8 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // chartColors stub
-vi.mock('@/lib/chartColors', () => ({
+vi.mock('@/lib/chartColors', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/chartColors')>()),
   CHART_TOKEN_COLORS: {
     accent: '#6366f1',
     warning: '#f59e0b',

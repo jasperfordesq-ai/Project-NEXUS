@@ -114,7 +114,7 @@ export function LocationMissingPrompt() {
             <Button
               type="submit"
               size="sm"
-              className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:mt-1 sm:w-auto"
+              className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:mt-1 sm:w-auto"
               isLoading={isSaving}
               isDisabled={isSaving || !hasLocationText(value)}
             >

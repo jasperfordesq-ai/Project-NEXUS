@@ -32,7 +32,7 @@ export function FederationOptInNotice() {
           as={Link}
           to={tenantPath('/federation/onboarding')}
           size="sm"
-          className="bg-accent text-white flex-shrink-0"
+          className="bg-accent-strong text-white flex-shrink-0"
         >
           {t('optin_notice.cta')}
         </Button>

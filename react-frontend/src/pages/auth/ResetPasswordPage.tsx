@@ -118,7 +118,7 @@ export function ResetPasswordPage() {
             <p className="text-theme-muted mb-6">
               {t('reset_password.dead_invitation_hint')}
             </p>
-            <Button as={Link} to={tenantPath('/password/forgot')} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+            <Button as={Link} to={tenantPath('/password/forgot')} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
               {t('reset_password.send_new_link')}
             </Button>
             <p className="mt-6">
@@ -182,7 +182,7 @@ export function ResetPasswordPage() {
             <p className="text-theme-muted mb-6">
               {t(isInvitation ? 'reset_password.invitation_success_message' : 'reset_password.success_message')}
             </p>
-            <Button as={Link} to={tenantPath('/login')} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+            <Button as={Link} to={tenantPath('/login')} className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
               {t('reset_password.sign_in')}
             </Button>
           </GlassCard>
@@ -281,7 +281,7 @@ export function ResetPasswordPage() {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               isLoading={isLoading}
               isDisabled={!password || !confirmPassword}
             >

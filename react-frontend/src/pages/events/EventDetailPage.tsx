@@ -796,7 +796,7 @@ export function EventDetailPage() {
               {t('detail.browse_events')}
             </Button>
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
               onPress={() => loadEvent()}
             >
@@ -817,7 +817,7 @@ export function EventDetailPage() {
           title={t('detail.not_found')}
           description={t('detail.not_found_desc')}
           action={
-            <Button as={Link} to={tenantPath("/events")} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+            <Button as={Link} to={tenantPath("/events")} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
               {t('detail.browse_events')}
             </Button>
           }
@@ -966,9 +966,20 @@ export function EventDetailPage() {
             loading="eager"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 via-accent/10 to-emerald-500/20" aria-hidden="true" />
+          // No picture: the community's colour (its button shade, which carries
+          // white text), with the covers' dot texture and soft light — was a faint
+          // amber/green wash under the photo's dark overlay, a muddy dark box.
+          <div
+            data-testid="event-hero-cover"
+            className="absolute inset-0 overflow-hidden bg-linear-to-br from-accent-strong to-accent-strong-end"
+            aria-hidden="true"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] bg-[length:18px_18px] text-white opacity-[0.08]" />
+            <div className="absolute -end-10 -top-12 h-56 w-56 rounded-full bg-white/15 blur-3xl" />
+          </div>
         )}
-        <div className="absolute inset-0 bg-black/55" aria-hidden="true" />
+        {/* A photo needs the full dark overlay for white text; the colour needs only a touch. */}
+        <div className={`absolute inset-0 ${eventImageProps ? 'bg-black/55' : 'bg-black/20'}`} aria-hidden="true" />
         <div className="relative flex min-h-[22rem] flex-col justify-between gap-8 p-5 sm:min-h-[26rem] sm:p-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex flex-wrap gap-2">

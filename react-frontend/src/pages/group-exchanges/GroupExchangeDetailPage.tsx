@@ -465,7 +465,7 @@ export function GroupExchangeDetailPage() {
           title={t('detail.not_found')}
           description={error || t('detail.not_found_desc')}
           action={
-            <Button as={Link} to={tenantPath('/group-exchanges')} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+            <Button as={Link} to={tenantPath('/group-exchanges')} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
               {t('detail.view_exchanges')}
             </Button>
           }

@@ -76,7 +76,8 @@ vi.mock('@/admin/AdminMetaContext', () => ({
   AdminMetaProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('@/lib/chartColors', () => ({
+vi.mock('@/lib/chartColors', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/chartColors')>()),
   CHART_COLORS: ['#000'],
   CHART_COLOR_MAP: { primary: '#000', success: '#0f0' },
 }));

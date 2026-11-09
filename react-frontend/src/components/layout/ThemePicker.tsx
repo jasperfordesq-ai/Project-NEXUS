@@ -140,7 +140,7 @@ export function ThemePicker({
                     aria-pressed={isSelected}
                     aria-label={t(`theme_picker.scheme_${key}`, { ns: 'common' })}
                     className={`flex-1 gap-1 ${
-                      isSelected ? 'bg-accent text-white' : 'text-theme-secondary'
+                      isSelected ? 'bg-accent-strong text-white' : 'text-theme-secondary'
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" aria-hidden="true" />
@@ -203,7 +203,7 @@ export function ThemePicker({
                     onPress={() => setDensity(d)}
                     aria-pressed={isSelected}
                     className={`flex-1 text-xs ${
-                      isSelected ? 'bg-accent text-white' : 'text-theme-secondary'
+                      isSelected ? 'bg-accent-strong text-white' : 'text-theme-secondary'
                     }`}
                   >
                     {t(`appearance_prefs.density_${d}`, { ns: 'settings' })}

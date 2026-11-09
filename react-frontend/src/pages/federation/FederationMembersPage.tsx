@@ -613,7 +613,7 @@ const FederatedMemberCard = memo(function FederatedMemberCard({
           />
           {/* Community badge overlay */}
           <div
-            className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-accent flex items-center justify-center ring-2 ring-white dark:ring-gray-900"
+            className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-accent-strong flex items-center justify-center ring-2 ring-white dark:ring-gray-900"
             title={member.timebank.name}
           >
             <Globe className="w-3 h-3 text-white" aria-hidden="true" />

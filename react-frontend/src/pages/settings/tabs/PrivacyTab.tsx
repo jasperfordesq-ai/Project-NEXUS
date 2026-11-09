@@ -230,7 +230,7 @@ export function PrivacyTab({
 
           <Button
             onPress={onSavePrivacy}
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<Save className="w-4 h-4" aria-hidden="true" />}
             isLoading={isSavingPrivacy}
           >

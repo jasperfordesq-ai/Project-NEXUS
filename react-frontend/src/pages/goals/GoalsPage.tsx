@@ -522,7 +522,7 @@ export function GoalsPage() {
               {t('goals.from_template')}
             </Button>
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
               onPress={onOpen}
             >
@@ -545,7 +545,7 @@ export function GoalsPage() {
         <ToggleButton
           id="my"
           variant="ghost"
-          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
+          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent-strong data-[selected=true]:to-accent-strong-end data-[selected=true]:text-white!"
         >
           <Target className="w-4 h-4" aria-hidden="true" />
           {t('goals.tab_my')}
@@ -553,7 +553,7 @@ export function GoalsPage() {
         <ToggleButton
           id="buddying"
           variant="ghost"
-          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
+          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent-strong data-[selected=true]:to-accent-strong-end data-[selected=true]:text-white!"
         >
           <Users className="w-4 h-4" aria-hidden="true" />
           {t('goals.tab_buddying')}
@@ -561,7 +561,7 @@ export function GoalsPage() {
         <ToggleButton
           id="discover"
           variant="ghost"
-          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
+          className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent-strong data-[selected=true]:to-accent-strong-end data-[selected=true]:text-white!"
         >
           <Globe className="w-4 h-4" aria-hidden="true" />
           {t('goals.tab_discover')}
@@ -610,7 +610,7 @@ export function GoalsPage() {
           <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('goals.unable_to_load')}</h2>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={() => loadGoals()}
           >
@@ -643,14 +643,14 @@ export function GoalsPage() {
               action={
                 tab === 'my' && isAuthenticated ? (
                   <Button
-                    className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                    className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                     onPress={onOpen}
                   >
                     {t('goals.create_goal')}
                   </Button>
                 ) : tab === 'buddying' && isAuthenticated ? (
                   <Button
-                    className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                    className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                     onPress={() => setTab('discover')}
                     startContent={<Globe className="w-4 h-4" aria-hidden="true" />}
                   >
@@ -771,7 +771,7 @@ export function GoalsPage() {
           <ModalFooter>
             <Button variant="flat" onPress={onClose} className="text-theme-muted">{t('goals.modal.cancel')}</Button>
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               onPress={handleCreate}
               isLoading={isCreating}
               isDisabled={!newGoal.title.trim()}
@@ -845,7 +845,7 @@ export function GoalsPage() {
           <ModalFooter>
             <Button variant="flat" onPress={onEditClose} className="text-theme-muted">{t('goals.modal.cancel')}</Button>
             <Button
-              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               onPress={handleSaveEdit}
               isLoading={isSavingEdit}
               isDisabled={!editForm.title.trim()}
@@ -1079,7 +1079,7 @@ export function GoalsPage() {
               <ModalFooter>
                 {tab === 'discover' && detailGoal && !detailGoal.is_owner && detailGoal.is_public && !detailGoal.buddy_id && !detailGoal.is_buddy && !detailGoal.buddy_request_pending && user && (
                   <Button
-                    className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+                    className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                     startContent={<UserPlus className="w-4 h-4" aria-hidden="true" />}
                     onPress={() => {
                       handleBecomeBuddy(detailGoal);

@@ -198,7 +198,7 @@ export function GoalDetailPage() {
           <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('goals.unable_to_load')}</h2>
           <p className="text-theme-muted mb-4">{error ?? t('goals.load_error')}</p>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             onPress={loadGoal}
           >
             {t('goals.try_again')}

@@ -1009,7 +1009,7 @@ export function FeedPage() {
             <AlgorithmLabel area="feed" />
             {isAuthenticated && (
               <Button
-                className="bg-accent text-white shadow-sm"
+                className="bg-accent-strong text-white shadow-sm"
                 startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
                 onPress={() => openCompose('listing')}
               >
@@ -1093,7 +1093,7 @@ export function FeedPage() {
                 key={opt.key}
                 id={opt.key}
                 variant="ghost"
-                className="group shrink-0 rounded-full border border-theme-default bg-theme-elevated px-3 text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:border-transparent! data-[selected=true]:bg-accent! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
+                className="group shrink-0 rounded-full border border-theme-default bg-theme-elevated px-3 text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:border-transparent! data-[selected=true]:bg-accent-strong! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
               >
                 {opt.dotClass && (
                   <span data-filter-dot aria-hidden="true" className={`${FILTER_DOT_CLASS} ${opt.dotClass}`} />
@@ -1202,7 +1202,7 @@ export function FeedPage() {
               variant="shadow"
               size="lg"
               classNames={{
-                base: 'cursor-pointer bg-gradient-to-r from-accent to-accent-gradient-end shadow-lg shadow-accent/30 hover:shadow-accent/50 transition-shadow px-4 py-2 min-h-9',
+                base: 'cursor-pointer bg-gradient-to-r from-accent-strong to-accent-strong-end shadow-lg shadow-accent/30 hover:shadow-accent/50 transition-shadow px-4 py-2 min-h-9',
                 content: 'flex items-center gap-2 text-white font-medium text-sm',
               }}
               startContent={<ArrowUp className="w-3.5 h-3.5 text-white" aria-hidden="true" />}
@@ -1224,7 +1224,7 @@ export function FeedPage() {
           <p className="mx-auto mb-2 max-w-sm text-sm leading-6 text-theme-muted">{error}</p>
           <p className="mx-auto mb-6 max-w-sm text-xs leading-5 text-theme-subtle">{t('error_hint')}</p>
           <Button
-            className="bg-accent text-white shadow-lg shadow-accent/20"
+            className="bg-accent-strong text-white shadow-lg shadow-accent/20"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={() => loadFeed()}
           >
@@ -1266,7 +1266,7 @@ export function FeedPage() {
               )}
               {isAuthenticated && (
                 <Button
-                  className="bg-accent text-white shadow-lg shadow-accent/20"
+                  className="bg-accent-strong text-white shadow-lg shadow-accent/20"
                   startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
                   onPress={() => openCompose('listing')}
                 >

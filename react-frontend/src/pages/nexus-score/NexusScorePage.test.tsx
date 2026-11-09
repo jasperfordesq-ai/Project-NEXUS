@@ -23,7 +23,8 @@ vi.mock('@/lib/api', () => ({
 }));
 
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
-vi.mock('@/lib/chartColors', () => ({
+vi.mock('@/lib/chartColors', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/chartColors')>()),
   CHART_COLORS: ['#6366f1'],
   CHART_COLOR_MAP: { primary: '#6366f1', primaryLight: '#818cf8', secondary: '#8b5cf6' },
 }));

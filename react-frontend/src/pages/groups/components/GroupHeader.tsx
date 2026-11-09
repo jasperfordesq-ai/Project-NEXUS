@@ -247,7 +247,7 @@ export function GroupHeader({
                 <Button
                   className={membershipActionIsExit
                     ? 'min-w-0 flex-1 bg-theme-hover text-theme-primary sm:flex-none'
-                    : 'min-w-0 flex-1 bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:flex-none'
+                    : 'min-w-0 flex-1 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:flex-none'
                   }
                   startContent={membershipActionIsExit
                     ? <UserMinus className="w-4 h-4" aria-hidden="true" />

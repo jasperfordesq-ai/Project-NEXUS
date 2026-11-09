@@ -606,7 +606,7 @@ export function BiometricSettings() {
       {/* Registration button — no attachment restriction, let browser show all options */}
       {canEnroll && <Button
         size="md"
-        className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+        className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
         onPress={() => { void requestSecurityAction({ kind: 'register' }); }}
         isLoading={registering}
         isDisabled={securityActionBusy}

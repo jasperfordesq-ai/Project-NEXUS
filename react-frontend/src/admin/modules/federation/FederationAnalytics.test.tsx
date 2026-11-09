@@ -52,7 +52,8 @@ vi.mock('@/contexts', () =>
 );
 
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
-vi.mock('@/lib/chartColors', () => ({ CHART_TOKEN_COLORS: { primary: '#000' } }));
+vi.mock('@/lib/chartColors', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/chartColors')>()), CHART_TOKEN_COLORS: { primary: '#000' } }));
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 const ANALYTICS_DATA = {

@@ -27,7 +27,7 @@ import {
 import { api, tokenManager } from '@/lib/api';
 import { logWarn } from '@/lib/logger';
 import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageSetJSON } from '@/lib/safeStorage';
-import { ensureContrast, getAccessibleForegroundColor } from '@/lib/colorContrast';
+import { AA_NORMAL_TEXT_CONTRAST, ensureContrast, getAccessibleForegroundColor } from '@/lib/colorContrast';
 import { SiteAccentContext } from '@/contexts/SiteAccentContext';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -122,12 +122,16 @@ const DARK_READING_SURFACE = '#18181b';
  * just under WCAG AA's 4.5:1. This shade reads at 5.12:1 and 4.90:1.
  *
  * The stored value stays #6366f1, because that is how "the member has not
- * chosen a colour" is recognised (see `effectiveAccent`). The dark theme keeps
- * #6366f1: there one colour serves both as text on dark surfaces (which wants
- * it lighter) and behind white text (which wants it darker), and no single
- * shade passes both.
+ * chosen a colour" is recognised (see `baseAccent`).
+ *
+ * On the dark theme one colour cannot serve both as text on dark surfaces
+ * (which wants it lighter) and behind white text (which wants it darker), so
+ * every colour has two shades — see `effectiveAccent` and `accentStrong`.
  */
 const STANDARD_ACCENT_LIGHT_PAINT = '#5b5ede';
+
+/** The page colour on the dark theme (tokens.css --surface-base). */
+const DARK_PAGE = '#0c0a09';
 
 const HEX_COLOUR = /^#[0-9a-fA-F]{6}$/;
 
@@ -167,21 +171,42 @@ function applyThemeToDOM(resolvedTheme: ResolvedTheme): void {
     metaThemeColor.setAttribute(
       'content',
       // The page background (tokens.css --surface-base), warm since Nov 2026.
-      resolvedTheme === 'dark' ? '#0c0a09' : '#fafaf9'
+      // (On the light theme applyPreferencesToDOM then gives it the
+      // community colour's button shade.)
+      resolvedTheme === 'dark' ? DARK_PAGE : '#fafaf9'
     );
   }
 }
 
 /**
- * `accent` is the colour actually in force: the member's own choice, else the
- * community colour, else the standard one (see `effectiveAccent` below).
+ * `accent` is the colour actually in force, as its TEXT shade: the member's own
+ * choice, else the community colour, else the standard one, lightened on the
+ * dark theme (see `effectiveAccent` below). `accentStrong` is its BUTTON shade,
+ * which carries white text (`accentStrong`).
  */
-function applyPreferencesToDOM(prefs: ThemePreferences, accent: string): void {
+function applyPreferencesToDOM(
+  prefs: ThemePreferences,
+  accent: string,
+  accentStrong: string,
+  resolvedTheme: ResolvedTheme,
+): void {
   if (typeof document === 'undefined') return;
 
   const html = document.documentElement;
 
   const accentForeground = getAccessibleForegroundColor(accent);
+
+  // Fills that carry white text (bg-accent-strong, from-accent-strong, and
+  // HeroUI's primary buttons via index.css). Guarded by
+  // src/test/accent-white-text.contract.test.ts.
+  html.style.setProperty('--accent-strong', accentStrong);
+
+  // A phone's browser bar wears the community colour on the light theme; on
+  // the dark theme it stays the page colour, so the bar does not glare.
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', resolvedTheme === 'dark' ? DARK_PAGE : accentStrong);
+  }
 
   // Keep NEXUS and HeroUI v3 on one runtime accent source. HeroUI consumes
   // the canonical --accent/--focus/--link variables; legacy NEXUS utilities
@@ -302,26 +327,36 @@ export function ThemeProvider({
     setIsInitialized(true);
   }, [resolvedTheme]);
 
-  // The colour in force. A member's own pick wins; until they make one (their
-  // accent is still the standard default) the community's colour applies,
-  // lightened on the dark theme just enough to read as link text there.
-  const effectiveAccent = useMemo(() => {
+  // The colour in force, before any shading. A member's own pick wins; until
+  // they make one (their accent is still the standard default) the
+  // community's colour applies, else the standard one.
+  const baseAccent = useMemo(() => {
     const memberChoseOwn = preferences.accentColor.toLowerCase() !== DEFAULT_PREFERENCES.accentColor;
-    if (communityAccent && !memberChoseOwn) {
-      return resolvedTheme === 'dark'
-        ? ensureContrast(communityAccent, DARK_READING_SURFACE)
-        : communityAccent;
-    }
-    if (!memberChoseOwn && resolvedTheme === 'light') {
-      return STANDARD_ACCENT_LIGHT_PAINT;
+    if (!memberChoseOwn) {
+      return communityAccent ?? STANDARD_ACCENT_LIGHT_PAINT;
     }
     return preferences.accentColor;
-  }, [preferences.accentColor, communityAccent, resolvedTheme]);
+  }, [preferences.accentColor, communityAccent]);
+
+  // Two shades of it (9 Nov 2026). The TEXT shade (--accent: text, links,
+  // HeroUI's accent): on the dark theme, lightened just enough to read on the
+  // dark page.
+  const effectiveAccent = useMemo(
+    () => (resolvedTheme === 'dark' ? ensureContrast(baseAccent, DARK_READING_SURFACE) : baseAccent),
+    [baseAccent, resolvedTheme],
+  );
+  // The BUTTON shade (--accent-strong): carries white text at 4.5:1 in both
+  // themes — the colour itself when it already does, else deepened towards
+  // black just enough, keeping its family.
+  const accentStrong = useMemo(
+    () => ensureContrast(baseAccent, '#ffffff', AA_NORMAL_TEXT_CONTRAST, '#000000'),
+    [baseAccent],
+  );
 
   // Apply preferences to DOM when they change
   useEffect(() => {
-    applyPreferencesToDOM(preferences, effectiveAccent);
-  }, [preferences, effectiveAccent]);
+    applyPreferencesToDOM(preferences, effectiveAccent, accentStrong, resolvedTheme);
+  }, [preferences, effectiveAccent, accentStrong, resolvedTheme]);
 
   const setCommunityAccent = useCallback((color: string | null) => {
     setCommunityAccentState(typeof color === 'string' && HEX_COLOUR.test(color) ? color.toLowerCase() : null);

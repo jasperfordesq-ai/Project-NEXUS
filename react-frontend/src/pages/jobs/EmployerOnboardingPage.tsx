@@ -283,7 +283,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
         </p>
       </div>
       <Button
-        className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+        className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
         size="lg"
         endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
         onPress={onNext}
@@ -409,7 +409,7 @@ function StepOrganization({ state, user, onChange, onNext, onBack }: StepOrgProp
             {t('onboarding.skip')}
           </Button>
           <Button
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
             onPress={onNext}
           >
@@ -630,7 +630,7 @@ function StepPostJob({ state, errors, isSubmitting, onChange, onSubmit, onBack }
           {t('onboarding.back')}
         </Button>
         <Button
-          className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+          className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
           onPress={onSubmit}
           isLoading={isSubmitting}
         >
@@ -669,7 +669,7 @@ function StepSuccess({ state, tenantPath, onFinish }: StepSuccessProps) {
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         {state.createdJobId && (
           <Button as={Link} to={tenantPath(`/jobs/${state.createdJobId}`)}
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<Briefcase className="w-4 h-4" aria-hidden="true" />}
           >
             {t('onboarding.view_job')}

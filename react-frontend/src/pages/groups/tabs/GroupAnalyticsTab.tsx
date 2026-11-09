@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { Avatar } from '@/components/ui/Avatar';
+import { useChartColors } from '@/hooks/useChartColors';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
@@ -35,7 +36,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/contexts';
 import { logError } from '@/lib/logger';
-import { CHART_COLORS, CHART_COLOR_MAP, CHART_TOKEN_COLORS } from '@/lib/chartColors';
+import { CHART_COLOR_MAP, CHART_TOKEN_COLORS } from '@/lib/chartColors';
 import { resolveAvatarUrl } from '@/lib/helpers';
 import {
   downloadGroupAnalyticsExport,
@@ -76,6 +77,8 @@ const tooltipStyle = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function GroupAnalyticsTab({ groupId, isAdmin }: GroupAnalyticsTabProps) {
+  // Charts in the community's colours (meaningful colours — success, warning — stay fixed).
+  const chartColors = useChartColors();
   const { t } = useTranslation('groups');
   const toast = useToast();
 
@@ -352,7 +355,7 @@ export function GroupAnalyticsTab({ groupId, isAdmin }: GroupAnalyticsTabProps) 
                   type="monotone"
                   dataKey="total_members"
                   name={t('analytics.chart_total_members')}
-                  stroke={CHART_COLOR_MAP.primary}
+                  stroke={chartColors.primary}
                   strokeWidth={2}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
@@ -424,14 +427,14 @@ export function GroupAnalyticsTab({ groupId, isAdmin }: GroupAnalyticsTabProps) 
                 <Bar
                   dataKey="posts"
                   name={t('analytics.chart_posts')}
-                  fill={CHART_COLOR_MAP.primary}
+                  fill={chartColors.primary}
                   radius={[4, 4, 0, 0]}
                   fillOpacity={0.8}
                 />
                 <Bar
                   dataKey="discussions"
                   name={t('analytics.chart_discussions')}
-                  fill={CHART_COLOR_MAP.secondary}
+                  fill={chartColors.secondary}
                   radius={[4, 4, 0, 0]}
                   fillOpacity={0.8}
                 />
@@ -538,7 +541,7 @@ export function GroupAnalyticsTab({ groupId, isAdmin }: GroupAnalyticsTabProps) 
                     {activityChartData.map((entry, index) => (
                       <Cell
                         key={`cell-${entry.type}`}
-                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                        fill={chartColors.categorical[index % chartColors.categorical.length]}
                         fillOpacity={0.85}
                       />
                     ))}
