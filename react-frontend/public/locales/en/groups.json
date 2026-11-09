@@ -864,5 +864,8 @@
   "members_count_label_one": "{{count}} member",
   "members_count_label_other": "{{count}} members",
   "posts_count_label_one": "{{count}} post",
-  "posts_count_label_other": "{{count}} posts"
+  "posts_count_label_other": "{{count}} posts",
+  "card": {
+    "members_including": "Members include {{names}}"
+  }
 }

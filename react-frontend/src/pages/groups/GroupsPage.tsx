@@ -41,6 +41,7 @@ import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { colourForSeed } from '@/lib/categoryColours';
 import { useTenant } from '@/contexts/TenantContext';
 import { logError } from '@/lib/logger';
+import { joinList } from '@/lib/listFormat';
 import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName, responsiveThumbnailProps } from '@/lib/helpers';
 import { usePageTitle } from '@/hooks/usePageTitle';
 // Direct hook paths, never the '@/hooks' barrel: page tests partial-mock the barrel,
@@ -793,6 +794,14 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
               </div>
 
               {group.recent_members && group.recent_members.length > 0 && (
+                // One picture with the members' names, so a screen reader hears
+                // "Members include Maeve and Tom", not the initials "M, T".
+                <span
+                  role="img"
+                  aria-label={t('card.members_including', {
+                    names: joinList(group.recent_members.map((m) => resolveUserDisplayName(m)), getFormattingLocale()),
+                  })}
+                >
                 <AvatarGroup max={3} size="sm">
                   {group.recent_members.map((member) => (
                     <Avatar
@@ -807,6 +816,7 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
                     />
                   ))}
                 </AvatarGroup>
+                </span>
               )}
             </div>
 

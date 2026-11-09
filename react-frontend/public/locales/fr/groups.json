@@ -876,5 +876,8 @@
   "members_count_label_other": "{{count}} membres",
   "posts_count_label_many": "{{count}} publications",
   "posts_count_label_one": "{{count}} publications",
-  "posts_count_label_other": "{{count}} publications"
+  "posts_count_label_other": "{{count}} publications",
+  "card": {
+    "members_including": "Parmi les membres : {{names}}"
+  }
 }

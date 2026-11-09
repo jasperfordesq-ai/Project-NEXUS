@@ -328,6 +328,8 @@ describe('GroupsPage', () => {
       expect(face.className).toContain('ring-[var(--surface-solid)]');
       expect(face.className).not.toContain('ring-black');
     }
+    // Read out as names, not as the initials "M, T".
+    expect(screen.getByRole('img', { name: 'Members include Maeve Byrne and Tom Kelly' })).toBeInTheDocument();
   });
 
   it('gives a group with no picture a colour cover from the community palette, not a grey box', async () => {

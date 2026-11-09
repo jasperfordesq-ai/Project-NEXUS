@@ -864,5 +864,8 @@
   "members_count_label_one": "{{count}} leden",
   "members_count_label_other": "{{count}} leden",
   "posts_count_label_one": "{{count}} berichten",
-  "posts_count_label_other": "{{count}} berichten"
+  "posts_count_label_other": "{{count}} berichten",
+  "card": {
+    "members_including": "Leden zijn onder meer {{names}}"
+  }
 }

@@ -900,5 +900,8 @@
   "posts_count_label_many": "{{count}} postáil",
   "posts_count_label_one": "{{count}} postáil",
   "posts_count_label_other": "{{count}} postáil",
-  "posts_count_label_two": "{{count}} postáil"
+  "posts_count_label_two": "{{count}} postáil",
+  "card": {
+    "members_including": "I measc na mball: {{names}}"
+  }
 }

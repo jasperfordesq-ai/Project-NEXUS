@@ -864,5 +864,8 @@
   "posts_count_label_other": "{{count}}件の投稿",
   "members_one": "{{count}} メンバー",
   "members_count_label_one": "{{count}} メンバー",
-  "posts_count_label_one": "{{count}} 投稿"
+  "posts_count_label_one": "{{count}} 投稿",
+  "card": {
+    "members_including": "メンバー：{{names}}など"
+  }
 }

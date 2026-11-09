@@ -183,6 +183,10 @@ class GroupService
             return self::enrichGroupData($data, $group);
         })->all();
 
+        if ($viewerUserId) {
+            $enriched = self::attachRecentMemberFaces($enriched, $viewerUserId, $tenantId);
+        }
+
         $last = $items->last();
 
         return [
@@ -197,6 +201,89 @@ class GroupService
                 : null,
             'has_more' => $hasMore,
         ];
+    }
+
+    /**
+     * Faces on group cards (AWID feedback, Nov 2026: "community"): up to three
+     * of the most recent active members of each listed group, never the viewer,
+     * as `recent_members`. Only on groups whose members the viewer may already
+     * see on the group page — the same rule as GroupAccessService::
+     * canViewMemberContent (an active member, the owner, or a community
+     * administrator); every other group gets an empty list. First names only
+     * unless the viewer is an administrator (F-084), as on the group page.
+     * One query for the whole page.
+     *
+     * @param  array<int, array<string, mixed>> $groups
+     * @return array<int, array<string, mixed>>
+     */
+    private static function attachRecentMemberFaces(array $groups, int $viewerId, int $tenantId): array
+    {
+        $ids = array_values(array_filter(array_map(static fn (array $g): int => (int) ($g['id'] ?? 0), $groups)));
+        if ($ids === []) {
+            return $groups;
+        }
+
+        $viewerIsAdmin = self::isPlatformAdmin($viewerId);
+        $memberships = self::getViewerMembershipsBatch($ids, $viewerId);
+        $visible = [];
+        foreach ($groups as $group) {
+            $groupId = (int) ($group['id'] ?? 0);
+            if ($viewerIsAdmin
+                || (int) ($group['owner_id'] ?? 0) === $viewerId
+                || (($memberships[$groupId]['status'] ?? null) === 'active')) {
+                $visible[$groupId] = true;
+            }
+        }
+
+        $faces = [];
+        if ($visible !== []) {
+            $visibleIds = array_keys($visible);
+            $placeholders = implode(',', array_fill(0, count($visibleIds), '?'));
+            $rows = DB::select(
+                "SELECT x.group_id, x.id, x.first_name, x.last_name, x.profile_type, x.organization_name, x.avatar_url
+                 FROM (
+                     SELECT gm.group_id, u.id, u.first_name, u.last_name, u.profile_type, u.organization_name, u.avatar_url,
+                            ROW_NUMBER() OVER (PARTITION BY gm.group_id ORDER BY gm.created_at DESC, u.id DESC) AS rn
+                     FROM group_members gm
+                     JOIN users u ON u.id = gm.user_id AND u.tenant_id = ?
+                     WHERE gm.tenant_id = ?
+                       AND gm.group_id IN ({$placeholders})
+                       AND gm.status = 'active'
+                       AND u.status = 'active'
+                       AND gm.user_id <> ?
+                 ) x
+                 WHERE x.rn <= 3
+                 ORDER BY x.group_id, x.rn",
+                array_merge([$tenantId, $tenantId], $visibleIds, [$viewerId])
+            );
+
+            $viewerSeesSurnames = MemberProfileVisibility::viewerIsAdmin($viewerId);
+            foreach ($rows as $m) {
+                $row = [
+                    'id'         => (int) $m->id,
+                    'first_name' => $m->first_name,
+                    'last_name'  => $m->last_name,
+                    'name'       => UserDisplayName::resolve($m),
+                    'avatar_url' => $m->avatar_url,
+                    'avatar'     => $m->avatar_url,
+                ];
+                if (! $viewerSeesSurnames) {
+                    $row = MemberProfileVisibility::withoutSurname($row + [
+                        'profile_type'      => $m->profile_type,
+                        'organization_name' => $m->organization_name,
+                    ]);
+                    unset($row['profile_type'], $row['organization_name']);
+                }
+                $faces[(int) $m->group_id][] = $row;
+            }
+        }
+
+        foreach ($groups as &$group) {
+            $group['recent_members'] = $faces[(int) ($group['id'] ?? 0)] ?? [];
+        }
+        unset($group);
+
+        return $groups;
     }
 
     /**

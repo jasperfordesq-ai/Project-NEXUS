@@ -888,5 +888,8 @@
   "posts_count_label_few": "{{count}} postów",
   "posts_count_label_many": "{{count}} postów",
   "posts_count_label_one": "{{count}} postów",
-  "posts_count_label_other": "{{count}} postów"
+  "posts_count_label_other": "{{count}} postów",
+  "card": {
+    "members_including": "Wśród członków: {{names}}"
+  }
 }

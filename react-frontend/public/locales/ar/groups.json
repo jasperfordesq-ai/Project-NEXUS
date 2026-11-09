@@ -157,11 +157,11 @@
     "members_loading_aria": "جارٍ تحميل أعضاء المجموعة",
     "members_search_aria": "ابحث عن أعضاء المجموعة",
     "members_search_placeholder": "ابحث بالاسم أو النبذة",
-      "members_results_summary_one": "عرض {{start}}–{{end}} من أصل {{formattedCount}} عضو",
+    "members_results_summary_one": "عرض {{start}}–{{end}} من أصل {{formattedCount}} عضو",
     "members_results_summary_other": "عرض {{start}}–{{end}} من أصل {{formattedCount}} عضوًا",
-      "members_loaded_summary_one": "تم تحميل {{formattedCount}} عضو",
+    "members_loaded_summary_one": "تم تحميل {{formattedCount}} عضو",
     "members_loaded_summary_other": "تم تحميل {{formattedCount}} عضوًا",
-      "members_search_results_summary_one": "{{formattedCount}} نتيجة بحث",
+    "members_search_results_summary_one": "{{formattedCount}} نتيجة بحث",
     "members_search_results_summary_other": "{{formattedCount}} نتيجة بحث",
     "members_load_more": "تحميل المزيد من الأعضاء",
     "members_search_no_results_title": "لا يوجد أعضاء مطابقون",
@@ -912,5 +912,8 @@
   "posts_count_label_one": "{{count}} منشور",
   "posts_count_label_other": "{{count}} منشور",
   "posts_count_label_two": "{{count}} منشور",
-  "posts_count_label_zero": "{{count}} منشور"
+  "posts_count_label_zero": "{{count}} منشور",
+  "card": {
+    "members_including": "من الأعضاء: {{names}}"
+  }
 }
