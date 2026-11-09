@@ -222,8 +222,8 @@ describe('ExchangeDetailPage', () => {
 describe('ExchangeDetailPage — thank-you on completion', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    api.get.mockResolvedValue({ success: true, data: { ...mockExchange, status: 'pending_confirmation' } });
-    api.delete.mockResolvedValue({ success: true });
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...mockExchange, status: 'pending_confirmation' } });
+    vi.mocked(api.delete).mockResolvedValue({ success: true });
   });
 
   async function confirmHours() {
@@ -234,7 +234,7 @@ describe('ExchangeDetailPage — thank-you on completion', () => {
   }
 
   it('says thank you, with the year so far, when confirming completes the exchange', async () => {
-    api.post.mockResolvedValue({
+    vi.mocked(api.post).mockResolvedValue({
       success: true,
       data: { ...mockExchange, status: 'completed', thanks: { neighbours_this_year: 3, hours_this_year: 6 } },
     });
@@ -247,7 +247,7 @@ describe('ExchangeDetailPage — thank-you on completion', () => {
   });
 
   it('says nothing extra while the exchange still waits for the other person', async () => {
-    api.post.mockResolvedValue({ success: true, data: { ...mockExchange, status: 'pending_confirmation' } });
+    vi.mocked(api.post).mockResolvedValue({ success: true, data: { ...mockExchange, status: 'pending_confirmation' } });
     await confirmHours();
 
     await waitFor(() => expect(api.post).toHaveBeenCalled());
