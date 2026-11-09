@@ -481,7 +481,8 @@
     "hours_short_other": "{{count}} h",
     "results_count_many": "{{count}} membros apresentados",
     "hours_exchanged_aria_many": "{{count}} horas trocadas",
-    "hours_short_many": "{{count}} h"
+    "hours_short_many": "{{count}} h",
+    "new_here": "Acabou de chegar"
   },
   "error_boundary": {
     "title": "Algo correu mal",

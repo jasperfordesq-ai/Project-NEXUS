@@ -222,6 +222,7 @@
     "body": "Twoja wymiana została zakończona, a godziny przekazane. Każda wymiana sprawia, że społeczność jest trochę silniejsza.",
     "neighbours_label": "Osoby, z którymi wymieniłeś się w tym roku",
     "hours_label": "Godziny wymienione w tym roku",
-    "close": "Zamknij"
+    "close": "Zamknij",
+    "send_message": "Wyślij podziękowanie: {{name}}"
   }
 }

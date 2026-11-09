@@ -18,6 +18,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import X from 'lucide-react/icons/x';
+import MessageCircleHeart from 'lucide-react/icons/message-circle-heart';
+import { Link } from 'react-router-dom';
 import { Button, Card, CardBody } from '@/components/ui';
 import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
 import { useSiteAccent } from '@/contexts/SiteAccentContext';
@@ -28,11 +30,15 @@ interface ExchangeThanksProps {
   neighbours: number;
   hours: number;
   onClose: () => void;
+  /** The other person's name, for "Send … a thank-you message". */
+  partnerName?: string;
+  /** Where that message is written; no button when messaging is unavailable. */
+  messageHref?: string;
 }
 
 const STANDARD_ACCENT = '#5b5ede';
 
-export function ExchangeThanks({ neighbours, hours, onClose }: ExchangeThanksProps) {
+export function ExchangeThanks({ neighbours, hours, onClose, partnerName, messageHref }: ExchangeThanksProps) {
   const { t } = useTranslation('exchanges');
   const accent = useSiteAccent() ?? STANDARD_ACCENT;
   const panelRef = useRef<HTMLDivElement>(null);
@@ -64,6 +70,17 @@ export function ExchangeThanks({ neighbours, hours, onClose }: ExchangeThanksPro
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-bold leading-tight text-theme-primary">{t('thanks.title')}</h2>
             <p className="mt-1 text-sm leading-6 text-theme-secondary">{t('thanks.body')}</p>
+            {partnerName && messageHref && (
+              <Button
+                as={Link}
+                to={messageHref}
+                size="sm"
+                className="mt-3 bg-accent-strong text-white shadow-sm"
+                startContent={<MessageCircleHeart className="size-4" aria-hidden="true" />}
+              >
+                {t('thanks.send_message', { name: partnerName })}
+              </Button>
+            )}
           </div>
           <dl className="grid shrink-0 grid-cols-2 gap-2 sm:w-72">
             <div className="flex flex-col-reverse rounded-xl bg-white/70 px-3 py-2 text-center dark:bg-white/10">

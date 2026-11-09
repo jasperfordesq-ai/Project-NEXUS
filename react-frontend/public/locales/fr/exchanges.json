@@ -220,6 +220,7 @@
     "body": "Votre échange est terminé et les heures ont été transférées. Chaque échange rend la communauté un peu plus forte.",
     "neighbours_label": "Personnes avec qui vous avez échangé cette année",
     "hours_label": "Heures échangées cette année",
-    "close": "Fermer"
+    "close": "Fermer",
+    "send_message": "Envoyer un message de remerciement à {{name}}"
   }
 }

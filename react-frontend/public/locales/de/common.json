@@ -477,7 +477,8 @@
     "hours_exchanged_aria_one": "{{count}} Stunden ausgetauscht",
     "hours_exchanged_aria_other": "{{count}} Stunden ausgetauscht",
     "hours_short_one": "{{count}} Std.",
-    "hours_short_other": "{{count}} Std."
+    "hours_short_other": "{{count}} Std.",
+    "new_here": "Neu hier"
   },
   "error_boundary": {
     "title": "Etwas ist schiefgelaufen",

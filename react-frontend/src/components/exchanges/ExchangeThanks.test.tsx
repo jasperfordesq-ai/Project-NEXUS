@@ -19,6 +19,17 @@ describe('ExchangeThanks', () => {
     expect(within(panel).getByText('7.5')).toBeInTheDocument();
   });
 
+  it('offers to send the other person a thank-you message', () => {
+    render(<ExchangeThanks neighbours={1} hours={1} onClose={vi.fn()} partnerName="Ciaran" messageHref="/test/messages/new/9" />);
+    const link = screen.getByRole('link', { name: 'Send Ciaran a thank-you message' });
+    expect(link).toHaveAttribute('href', '/test/messages/new/9');
+  });
+
+  it('offers no message button when messaging is not available', () => {
+    render(<ExchangeThanks neighbours={1} hours={1} onClose={vi.fn()} partnerName="Ciaran" />);
+    expect(screen.queryByRole('link')).toBeNull();
+  });
+
   it('can be closed', () => {
     const onClose = vi.fn();
     render(<ExchangeThanks neighbours={1} hours={1} onClose={onClose} />);

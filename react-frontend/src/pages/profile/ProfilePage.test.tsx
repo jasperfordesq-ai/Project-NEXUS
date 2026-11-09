@@ -284,6 +284,28 @@ describe('ProfilePage', () => {
     }
   });
 
+  it('shows hours given and received together in one ring card once there are hours', async () => {
+    const original = mockApiGet.getMockImplementation()!;
+    mockApiGet.mockImplementation((url: string) =>
+      url.includes('/v2/users/')
+        ? original(url).then((res: { data: Record<string, unknown> }) => ({
+            ...res,
+            data: { ...res.data, total_hours_given: 6, total_hours_received: 2 },
+          }))
+        : original(url),
+    );
+    render(<ProfilePage />);
+    const card = await screen.findByTestId('profile-time-shared');
+    expect(card).toHaveTextContent('6');
+    expect(screen.getByTestId('profile-time-shared-total')).toHaveTextContent('8');
+  });
+
+  it('keeps the two plain hour cards for a member with no hours yet', async () => {
+    render(<ProfilePage />);
+    await waitFor(() => expect(screen.getAllByText('John Doe').length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('profile-time-shared')).toBeNull();
+  });
+
   it('loads profile data from API', async () => {
     const { api } = await import('@/lib/api');
     render(<ProfilePage />);

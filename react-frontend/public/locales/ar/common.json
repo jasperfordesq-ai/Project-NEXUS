@@ -493,7 +493,8 @@
     "hours_short_few": "{{count}} س",
     "hours_short_many": "{{count}} س",
     "hours_short_two": "{{count}} س",
-    "hours_short_zero": "{{count}} س"
+    "hours_short_zero": "{{count}} س",
+    "new_here": "جديد هنا"
   },
   "error_boundary": {
     "title": "حدث خطأ ما",

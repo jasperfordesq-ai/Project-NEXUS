@@ -197,5 +197,8 @@
   "show_more_skills_one": "Pokaż {{count}} więcej",
   "show_more_skills_other": "Pokaż {{count}} więcej",
   "reviews_count_few": "{{count}} recenzje",
-  "reviews_count_many": "{{count}} recenzje"
+  "reviews_count_many": "{{count}} recenzje",
+  "impact": {
+    "title": "Udostępniony czas"
+  }
 }

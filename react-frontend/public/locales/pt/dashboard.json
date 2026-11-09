@@ -44,7 +44,7 @@
     "pending_reviews": "Avaliações Pendentes",
     "endorsements": "Recomendações",
     "exchanges_attention": "Requer a sua atenção",
-    "my_listings": "Os seus anúncios"
+    "my_listings": "As suas ofertas e pedidos"
   },
   "view_all": "Ver tudo",
   "view_all_caps": "Ver Tudo",
@@ -66,9 +66,9 @@
     "offer": "Oferta",
     "request": "Pedido",
     "user_fallback": "Usuário",
-    "empty": "Sem anúncios recentes",
+    "empty": "Sem ofertas ou pedidos recentes",
     "empty_description": "Cria um pedido ou uma oferta para começares a encontrar correspondências com pessoas próximas.",
-    "create_first": "Crie o seu primeiro anúncio"
+    "create_first": "Crie a sua primeira oferta ou pedido"
   },
   "activity": {
     "action_listing": "compartilhou um anúncio",
@@ -191,5 +191,10 @@
     "hours": "Horas partilhadas",
     "members": "Novos membros",
     "listings": "Novas ofertas e pedidos"
+  },
+  "anniversary": {
+    "title": "Feliz aniversário!",
+    "body": "Juntou-se a {{community}} em {{date}}. Obrigado por fazer parte.",
+    "close": "Fechar"
   }
 }

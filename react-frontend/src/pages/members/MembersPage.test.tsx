@@ -97,7 +97,7 @@ vi.mock('@/lib/motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-import { MembersPage } from './MembersPage';
+import { MembersPage, isNewMember } from './MembersPage';
 import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 
 const algorithmsResponse = {
@@ -154,6 +154,36 @@ describe('MembersPage', () => {
     const band = await screen.findByTestId('member-card-cover');
     expect(band).toHaveAttribute('data-colour', colourForSeed('maeve', paletteFor(null)));
     expect(band).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('reads the directory\'s "YYYY-MM-DD HH:MM:SS" join date (which older Safari cannot parse as-is)', () => {
+    const now = new Date('2026-11-09T12:00:00').getTime();
+    expect(isNewMember('2026-11-06 19:24:49', now)).toBe(true);
+    expect(isNewMember('2026-08-29 17:24:46', now)).toBe(false);
+    expect(isNewMember('not a date', now)).toBe(false);
+    expect(isNewMember(null, now)).toBe(false);
+  });
+
+  it('marks people who joined in the last 30 days as "New here", and nobody else', async () => {
+    const daysAgo = (d: number) => new Date(Date.now() - d * 86_400_000).toISOString();
+    mockApiGet.mockImplementation((url: string) => {
+      if (url.includes('/v2/config/algorithms')) return Promise.resolve(algorithmsResponse);
+      return Promise.resolve({
+        success: true,
+        data: [
+          { id: 51, name: 'Maeve', first_name: 'Maeve', avatar: null, created_at: daysAgo(3) },
+          { id: 52, name: 'Oisin', first_name: 'Oisin', avatar: null, created_at: daysAgo(400) },
+        ],
+        meta: { total_items: 2 },
+      });
+    });
+
+    render(<MembersPage />);
+
+    await screen.findByText('Oisin');
+    const chips = screen.getAllByTestId('member-new-here');
+    expect(chips).toHaveLength(1);
+    expect(chips[0]).toHaveTextContent('New here');
   });
 
   it('renders without crashing', () => {

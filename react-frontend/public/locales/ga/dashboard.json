@@ -44,7 +44,7 @@
     "pending_reviews": "Léirmheasanna ar feitheamh",
     "endorsements": "Formhuinithe",
     "exchanges_attention": "Ní mór duit féachaint orthu",
-    "my_listings": "Do liostálacha"
+    "my_listings": "Do thairiscintí agus d'iarratais"
   },
   "view_all": "Féach orthu go léir",
   "view_all_caps": "Féach orthu go léir",
@@ -66,9 +66,9 @@
     "offer": "Tairiscint",
     "request": "Iarratas",
     "user_fallback": "Úsáideoir",
-    "empty": "Níl aon liostú ann le déanaí",
+    "empty": "Níl aon tairiscintí ná iarratais ann le déanaí",
     "empty_description": "Cruthaigh iarratas nó tairiscint chun meaitseálacha a aimsiú le daoine i do cheantar.",
-    "create_first": "Cruthaigh do chéad liostú"
+    "create_first": "Cruthaigh do chéad tairiscint nó iarratas"
   },
   "activity": {
     "action_listing": "— roinn siad liostú",
@@ -199,5 +199,10 @@
     "hours": "Uaireanta roinnte",
     "members": "Baill nua",
     "listings": "Tairiscintí agus iarratais nua"
+  },
+  "anniversary": {
+    "title": "Comóradh sona!",
+    "body": "Chuaigh tú isteach in {{community}} ar {{date}}. Go raibh maith agat as a bheith páirteach ann.",
+    "close": "Dún"
   }
 }

@@ -477,7 +477,8 @@
     "hours_exchanged_aria_one": "{{count}} hours exchanged",
     "hours_exchanged_aria_other": "{{count}} hours exchanged",
     "hours_short_one": "{{count}}h",
-    "hours_short_other": "{{count}}h"
+    "hours_short_other": "{{count}}h",
+    "new_here": "New here"
   },
   "error_boundary": {
     "title": "Something went wrong",

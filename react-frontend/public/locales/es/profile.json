@@ -193,5 +193,8 @@
   "show_more_skills_many": "Mostrar {{count}} más",
   "show_more_skills_one": "Mostrar {{count}} más",
   "show_more_skills_other": "Mostrar {{count}} más",
-  "reviews_count_many": "{{count}} reseñas"
+  "reviews_count_many": "{{count}} reseñas",
+  "impact": {
+    "title": "Tiempo compartido"
+  }
 }

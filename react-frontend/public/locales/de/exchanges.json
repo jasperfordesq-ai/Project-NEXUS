@@ -218,6 +218,7 @@
     "body": "Ihr Tausch ist abgeschlossen und die Stunden wurden übertragen. Jeder Tausch macht die Gemeinschaft ein Stück stärker.",
     "neighbours_label": "Menschen, mit denen Sie dieses Jahr getauscht haben",
     "hours_label": "Getauschte Stunden in diesem Jahr",
-    "close": "Schließen"
+    "close": "Schließen",
+    "send_message": "{{name}} eine Dankesnachricht senden"
   }
 }

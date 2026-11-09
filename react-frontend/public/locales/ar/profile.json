@@ -205,5 +205,8 @@
   "reviews_count_few": "مراجعات {{count}}",
   "reviews_count_many": "مراجعات {{count}}",
   "reviews_count_two": "مراجعات {{count}}",
-  "reviews_count_zero": "مراجعات {{count}}"
+  "reviews_count_zero": "مراجعات {{count}}",
+  "impact": {
+    "title": "الوقت المشترك"
+  }
 }

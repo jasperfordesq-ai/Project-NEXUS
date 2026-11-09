@@ -9,6 +9,7 @@ import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { NewMembersStrip } from './NewMembersStrip';
 import { CommunityMonthHighlight } from './CommunityMonthHighlight';
+import { MembershipAnniversary } from './MembershipAnniversary';
 import { Card, CardBody } from '@/components/ui/Card';
 import { useGreeting } from '@/hooks/useGreeting';
 import { GuardianConsentPrompt } from '@/components/safeguarding/GuardianConsentPrompt';
@@ -454,6 +455,9 @@ export function DashboardPage() {
             </CardBody>
           </Card>
         </motion.div>
+
+        {/* The member's own joining anniversary; renders nothing on other days. */}
+        <MembershipAnniversary />
 
         {hasCaringCommunity && (
           <motion.div variants={itemVariants}>

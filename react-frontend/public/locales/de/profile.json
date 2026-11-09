@@ -189,5 +189,8 @@
   "hours_abbrev": "{{hours}}h",
   "not_available_abbrev": "k.A.",
   "show_more_skills_one": "{{count}} weitere anzeigen",
-  "show_more_skills_other": "{{count}} weitere anzeigen"
+  "show_more_skills_other": "{{count}} weitere anzeigen",
+  "impact": {
+    "title": "Geteilte Zeit"
+  }
 }

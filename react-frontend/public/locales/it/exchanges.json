@@ -220,6 +220,7 @@
     "body": "Il tuo scambio è completato e le ore sono state trasferite. Ogni scambio rende la comunità un po’ più forte.",
     "neighbours_label": "Persone con cui hai fatto scambi quest’anno",
     "hours_label": "Ore scambiate quest’anno",
-    "close": "Chiudi"
+    "close": "Chiudi",
+    "send_message": "Invia a {{name}} un messaggio di ringraziamento"
   }
 }

@@ -44,7 +44,7 @@
     "pending_reviews": "Oczekujące recenzje",
     "endorsements": "Rekomendacje",
     "exchanges_attention": "Wymaga Twojej uwagi",
-    "my_listings": "Twoje ogłoszenia"
+    "my_listings": "Twoje oferty i prośby"
   },
   "view_all": "Zobacz wszystko",
   "view_all_caps": "Zobacz Wszystko",
@@ -66,9 +66,9 @@
     "offer": "Oferta",
     "request": "Prośba",
     "user_fallback": "Użytkownik",
-    "empty": "Brak niedawnych ofert",
+    "empty": "Brak niedawnych ofert i próśb",
     "empty_description": "Utwórz prośbę lub ofertę, aby zacząć dopasowywać się do osób w pobliżu.",
-    "create_first": "Utwórz swoją pierwszą ofertę"
+    "create_first": "Utwórz swoją pierwszą ofertę lub prośbę"
   },
   "activity": {
     "action_listing": "podzielił się ofertą",
@@ -195,5 +195,10 @@
     "hours": "Udostępnione godziny",
     "members": "Nowi członkowie",
     "listings": "Nowe oferty i prośby"
+  },
+  "anniversary": {
+    "title": "Szczęśliwej rocznicy!",
+    "body": "Dołączasz do {{community}} od {{date}}. Dziękujemy, że jesteś z nami.",
+    "close": "Zamknij"
   }
 }

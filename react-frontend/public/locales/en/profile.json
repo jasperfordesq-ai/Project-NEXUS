@@ -189,5 +189,8 @@
   "hours_abbrev": "{{hours}}h",
   "not_available_abbrev": "n/a",
   "show_more_skills_one": "Show {{count}} more",
-  "show_more_skills_other": "Show {{count}} more"
+  "show_more_skills_other": "Show {{count}} more",
+  "impact": {
+    "title": "Time shared"
+  }
 }

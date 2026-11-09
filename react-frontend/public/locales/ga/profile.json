@@ -201,5 +201,8 @@
   "show_more_skills_two": "Taispeáin {{count}} scil eile",
   "reviews_count_few": "{{count}} léirmheas",
   "reviews_count_many": "{{count}} léirmheas",
-  "reviews_count_two": "{{count}} léirmheas"
+  "reviews_count_two": "{{count}} léirmheas",
+  "impact": {
+    "title": "Am roinnte"
+  }
 }

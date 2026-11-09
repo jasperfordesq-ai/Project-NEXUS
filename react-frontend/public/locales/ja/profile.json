@@ -189,5 +189,8 @@
   "hours_abbrev": "{{hours}}時間",
   "not_available_abbrev": "該当なし",
   "show_more_skills_other": "{{count}}件をさらに表示",
-  "show_more_skills_one": "さらに {{count}} 件表示"
+  "show_more_skills_one": "さらに {{count}} 件表示",
+  "impact": {
+    "title": "分かち合った時間"
+  }
 }

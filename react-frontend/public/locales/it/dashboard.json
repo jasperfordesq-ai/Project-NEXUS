@@ -44,7 +44,7 @@
     "pending_reviews": "Recensioni in Attesa",
     "endorsements": "Referenze",
     "exchanges_attention": "Richiede la tua attenzione",
-    "my_listings": "I tuoi annunci"
+    "my_listings": "Le tue offerte e richieste"
   },
   "view_all": "Vedi tutto",
   "view_all_caps": "Vedi Tutto",
@@ -66,9 +66,9 @@
     "offer": "Offerta",
     "request": "Richiesta",
     "user_fallback": "Utente",
-    "empty": "Nessun annuncio recente",
+    "empty": "Nessuna offerta o richiesta recente",
     "empty_description": "Crea una richiesta o un'offerta per iniziare a trovare corrispondenze con persone vicine.",
-    "create_first": "Crea il tuo primo annuncio"
+    "create_first": "Crea la tua prima offerta o richiesta"
   },
   "activity": {
     "action_listing": "ha condiviso un annuncio",
@@ -191,5 +191,10 @@
     "hours": "Ore condivise",
     "members": "Nuovi membri",
     "listings": "Nuove offerte e richieste"
+  },
+  "anniversary": {
+    "title": "Buon anniversario!",
+    "body": "Sei entrato in {{community}} il {{date}}. Grazie di farne parte.",
+    "close": "Chiudi"
   }
 }

@@ -485,7 +485,8 @@
     "hours_exchanged_aria_few": "Wymieniono {{count}} godz.",
     "hours_exchanged_aria_many": "Wymieniono {{count}} godz.",
     "hours_short_few": "{{count}} g",
-    "hours_short_many": "{{count}} g"
+    "hours_short_many": "{{count}} g",
+    "new_here": "Nowa osoba"
   },
   "error_boundary": {
     "title": "Coś poszło nie tak",

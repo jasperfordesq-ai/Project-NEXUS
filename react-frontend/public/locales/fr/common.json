@@ -481,7 +481,8 @@
     "hours_short_other": "{{count}} h",
     "results_count_many": "{{count}} membres affichés",
     "hours_exchanged_aria_many": "{{count}} heures échangées",
-    "hours_short_many": "{{count}} h"
+    "hours_short_many": "{{count}} h",
+    "new_here": "Vient d’arriver"
   },
   "error_boundary": {
     "title": "Une erreur est survenue",

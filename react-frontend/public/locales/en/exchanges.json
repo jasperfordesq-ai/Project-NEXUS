@@ -218,6 +218,7 @@
     "body": "Your exchange is complete and the hours have moved. Every exchange makes the community a little stronger.",
     "neighbours_label": "People you've exchanged with this year",
     "hours_label": "Hours exchanged this year",
-    "close": "Close"
+    "close": "Close",
+    "send_message": "Send {{name}} a thank-you message"
   }
 }

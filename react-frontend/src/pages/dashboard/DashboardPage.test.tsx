@@ -303,7 +303,7 @@ describe('DashboardPage', () => {
 
   it("renders the member's own listings section, linking to My listings", async () => {
     render(<DashboardPage />);
-    expect(screen.getByText('Your listings')).toBeInTheDocument();
+    expect(screen.getByText('Your offers and requests')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'View all your listings' })).toHaveAttribute('href', '/test/listings/mine');
   });
 

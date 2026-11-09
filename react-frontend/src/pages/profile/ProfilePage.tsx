@@ -10,6 +10,7 @@ import { colourForSeed } from '@/lib/categoryColours';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
+import { ProfileTimeShared } from './ProfileTimeShared';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -934,20 +935,32 @@ export function ProfilePage() {
       {/* Stats Cards Row */}
       <motion.div variants={itemVariants}>
         <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <ProfileStatCard
-            icon={<ArrowUpRight className="w-5 h-5" aria-hidden="true" />}
-            label={t('stats.hours_given')}
-            value={profile.total_hours_given ?? 0}
-            color="emerald"
-            to={isOwnProfile && hasWallet ? tenantPath('/wallet') : undefined}
-          />
-          <ProfileStatCard
-            icon={<ArrowDownLeft className="w-5 h-5" aria-hidden="true" />}
-            label={t('stats.hours_received')}
-            value={profile.total_hours_received ?? 0}
-            color="indigo"
-            to={isOwnProfile && hasWallet ? tenantPath('/wallet') : undefined}
-          />
+          {/* Once there are hours to show, given and received share one card
+              with a ring in the community colour (AWID: "attractive visuals"). */}
+          {Number(profile.total_hours_given ?? 0) + Number(profile.total_hours_received ?? 0) > 0 ? (
+            <ProfileTimeShared
+              given={Number(profile.total_hours_given ?? 0)}
+              received={Number(profile.total_hours_received ?? 0)}
+              className="col-span-2"
+            />
+          ) : (
+            <>
+              <ProfileStatCard
+                icon={<ArrowUpRight className="w-5 h-5" aria-hidden="true" />}
+                label={t('stats.hours_given')}
+                value={profile.total_hours_given ?? 0}
+                color="emerald"
+                to={isOwnProfile && hasWallet ? tenantPath('/wallet') : undefined}
+              />
+              <ProfileStatCard
+                icon={<ArrowDownLeft className="w-5 h-5" aria-hidden="true" />}
+                label={t('stats.hours_received')}
+                value={profile.total_hours_received ?? 0}
+                color="indigo"
+                to={isOwnProfile && hasWallet ? tenantPath('/wallet') : undefined}
+              />
+            </>
+          )}
           <ProfileStatCard
             icon={<ListTodo className="w-5 h-5" aria-hidden="true" />}
             label={t('stats.active_listings')}

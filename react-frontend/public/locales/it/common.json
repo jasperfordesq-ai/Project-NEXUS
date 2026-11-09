@@ -481,7 +481,8 @@
     "hours_short_other": "{{count}} h",
     "results_count_many": "{{count}} membri mostrati",
     "hours_exchanged_aria_many": "{{count}} ore scambiate",
-    "hours_short_many": "{{count}} h"
+    "hours_short_many": "{{count}} h",
+    "new_here": "Nuovo arrivo"
   },
   "error_boundary": {
     "title": "Qualcosa è andato storto",

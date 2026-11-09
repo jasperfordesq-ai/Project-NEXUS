@@ -477,7 +477,8 @@
     "hours_exchanged_aria_one": "{{count}} 交換された時間",
     "hours_exchanged_aria_other": "{{count}}時間交換",
     "hours_short_one": "{{count}}h",
-    "hours_short_other": "{{count}}時間"
+    "hours_short_other": "{{count}}時間",
+    "new_here": "新メンバー"
   },
   "error_boundary": {
     "title": "問題が発生しました",

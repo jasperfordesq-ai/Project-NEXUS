@@ -44,7 +44,7 @@
     "pending_reviews": "المراجعات المعلقة",
     "endorsements": "التوصيات",
     "exchanges_attention": "يتطلب انتباهك",
-    "my_listings": "إعلاناتك"
+    "my_listings": "عروضك وطلباتك"
   },
   "view_all": "عرض الكل",
   "view_all_caps": "عرض الكل",
@@ -66,9 +66,9 @@
     "offer": "عرض",
     "request": "طلب",
     "user_fallback": "المستخدم",
-    "empty": "لا توجد قوائم حديثة",
+    "empty": "لا توجد عروض أو طلبات حديثة",
     "empty_description": "أنشئ طلبًا أو عرضًا لبدء التطابق مع أشخاص بالقرب منك.",
-    "create_first": "أنشئ قائمتك الأولى"
+    "create_first": "أنشئ أول عرض أو طلب لك"
   },
   "activity": {
     "action_listing": "شارك قائمة",
@@ -203,5 +203,10 @@
     "hours": "الساعات المشتركة",
     "members": "أعضاء جدد",
     "listings": "عروض وطلبات جديدة"
+  },
+  "anniversary": {
+    "title": "ذكرى سعيدة!",
+    "body": "انضممت إلى {{community}} في {{date}}. شكرًا لكونك جزءًا منه.",
+    "close": "إغلاق"
   }
 }

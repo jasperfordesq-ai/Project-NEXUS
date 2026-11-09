@@ -477,7 +477,8 @@
     "hours_exchanged_aria_one": "{{count}} uur uitgewisseld",
     "hours_exchanged_aria_other": "{{count}} uur uitgewisseld",
     "hours_short_one": "{{count}} u",
-    "hours_short_other": "{{count}} u"
+    "hours_short_other": "{{count}} u",
+    "new_here": "Nieuw hier"
   },
   "error_boundary": {
     "title": "Er ging iets mis",

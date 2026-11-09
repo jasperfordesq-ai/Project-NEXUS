@@ -189,5 +189,8 @@
   "hours_abbrev": "{{hours}}u",
   "not_available_abbrev": "n.v.t.",
   "show_more_skills_one": "Toon {{count}} meer",
-  "show_more_skills_other": "Toon {{count}} meer"
+  "show_more_skills_other": "Toon {{count}} meer",
+  "impact": {
+    "title": "Gedeelde tijd"
+  }
 }

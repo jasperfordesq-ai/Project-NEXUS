@@ -28,6 +28,7 @@ vi.mock('@/lib/api', () => ({
 const stableToastValue = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };
 const stableTenantValue = {
   tenant: { id: 2, name: 'Test Community', slug: 'test', branding: { name: 'Test Community' } },
+  branding: { name: 'Test Community', tagline: 'Neighbours helping neighbours' },
   tenantPath: (p: string) => `/test${p}`,
   hasFeature: vi.fn(() => true),
   hasModule: vi.fn(() => true),
@@ -263,6 +264,13 @@ describe('OnboardingPage', () => {
     render(<OnboardingPage />);
     expect(screen.getByText(/Welcome to Test Community!/)).toBeInTheDocument();
     expect(screen.getByText("Let's Get Started")).toBeInTheDocument();
+  });
+
+  it("opens the welcome step with the community's own cover and logo, like its sign-in page", () => {
+    render(<OnboardingPage />);
+    const welcome = screen.getByTestId('community-welcome');
+    expect(welcome).toBeInTheDocument();
+    expect(screen.getByTestId('community-welcome-logo')).toBeInTheDocument();
   });
 
   it('shows benefit cards on step 1', () => {

@@ -44,7 +44,7 @@
     "pending_reviews": "Pending Reviews",
     "endorsements": "Endorsements",
     "exchanges_attention": "Needs your attention",
-    "my_listings": "Your listings"
+    "my_listings": "Your offers and requests"
   },
   "view_all": "View all",
   "view_all_caps": "View All",
@@ -66,9 +66,9 @@
     "offer": "Offer",
     "request": "Request",
     "user_fallback": "User",
-    "empty": "No recent listings",
+    "empty": "No recent offers or requests",
     "empty_description": "Create a request or offer to start matching with people nearby.",
-    "create_first": "Create your first listing"
+    "create_first": "Create your first offer or request"
   },
   "activity": {
     "action_listing": "shared a listing",
@@ -187,5 +187,10 @@
     "hours": "Hours shared",
     "members": "New members",
     "listings": "New offers and requests"
+  },
+  "anniversary": {
+    "title": "Happy anniversary!",
+    "body": "You joined {{community}} on {{date}}. Thank you for being part of it.",
+    "close": "Close"
   }
 }

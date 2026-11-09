@@ -44,7 +44,7 @@
     "pending_reviews": "Avis en attente",
     "endorsements": "Recommandations",
     "exchanges_attention": "Nécessite votre attention",
-    "my_listings": "Vos annonces"
+    "my_listings": "Vos offres et demandes"
   },
   "view_all": "Voir tout",
   "view_all_caps": "Voir tout",
@@ -66,9 +66,9 @@
     "offer": "Offre",
     "request": "Demande",
     "user_fallback": "Utilisateur",
-    "empty": "Aucune annonce récente",
+    "empty": "Aucune offre ni demande récente",
     "empty_description": "Créez une demande ou une offre pour commencer à trouver des correspondances avec des personnes près de chez vous.",
-    "create_first": "Créez votre première annonce"
+    "create_first": "Créez votre première offre ou demande"
   },
   "activity": {
     "action_listing": "a partagé une annonce",
@@ -191,5 +191,10 @@
     "hours": "Heures partagées",
     "members": "Nouveaux membres",
     "listings": "Nouvelles offres et demandes"
+  },
+  "anniversary": {
+    "title": "Joyeux anniversaire !",
+    "body": "Vous avez rejoint {{community}} le {{date}}. Merci d’en faire partie.",
+    "close": "Fermer"
   }
 }

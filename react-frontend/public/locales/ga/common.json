@@ -489,7 +489,8 @@
       "profile_complete": "atá a bpróifíl curtha ar bun acu",
       "avatar": "atá grianghraf próifíle curtha leis acu",
       "bio": "atá réamhrá gearr scríofa acu"
-    }
+    },
+    "new_here": "Nua anseo"
   },
   "error_boundary": {
     "title": "Chuaigh rud éigin amú",

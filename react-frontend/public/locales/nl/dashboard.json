@@ -44,7 +44,7 @@
     "pending_reviews": "In afwachting van beoordelingen",
     "endorsements": "Aanbevelingen",
     "exchanges_attention": "Vraagt om uw aandacht",
-    "my_listings": "Je vermeldingen"
+    "my_listings": "Je aanbod en verzoeken"
   },
   "view_all": "Bekijk alles",
   "view_all_caps": "Bekijk alles",
@@ -66,9 +66,9 @@
     "offer": "Aanbod",
     "request": "Aanvraag",
     "user_fallback": "Gebruiker",
-    "empty": "Geen recente aanbiedingen",
+    "empty": "Geen recent aanbod of verzoeken",
     "empty_description": "Maak een verzoek of aanbod om matches te vinden met mensen in de buurt.",
-    "create_first": "Maak je eerste aanbieding"
+    "create_first": "Maak je eerste aanbod of verzoek"
   },
   "activity": {
     "action_listing": "deelde een aanbieding",
@@ -187,5 +187,10 @@
     "hours": "Gedeelde uren",
     "members": "Nieuwe leden",
     "listings": "Nieuwe aanbiedingen en verzoeken"
+  },
+  "anniversary": {
+    "title": "Gefeliciteerd met je jubileum!",
+    "body": "Je bent op {{date}} lid geworden van {{community}}. Bedankt dat je erbij bent.",
+    "close": "Sluiten"
   }
 }

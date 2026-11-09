@@ -33,11 +33,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from '@/lib/motion';
 
 import { Separator } from '@/components/ui/Separator';
-import Sparkles from 'lucide-react/icons/sparkles';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
-import Heart from 'lucide-react/icons/heart';
 import HandHeart from 'lucide-react/icons/hand-heart';
 import HelpCircle from 'lucide-react/icons/circle-help';
 import Rocket from 'lucide-react/icons/rocket';
@@ -56,6 +54,7 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { CommunityWelcome } from '@/components/auth/CommunityWelcome';
 import { Spinner } from '@/components/ui/Spinner';
 import { Textarea } from '@/components/ui/Textarea';
 import { usePageTitle } from '@/hooks';
@@ -689,39 +688,11 @@ export function OnboardingPage() {
           {/* ─── Step 1: Welcome ─── */}
           {currentStepSlug === 'welcome' && (
             <div className="space-y-6">
-              <GlassCard className="p-5 text-center sm:p-8">
-                <div className="flex items-center justify-center gap-4 mb-6">
-                  <motion.div
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-                    className="p-4 rounded-2xl bg-emerald-500/20"
-                  >
-                    <HandHeart
-                      className="w-10 h-10 text-emerald-600 dark:text-emerald-400"
-                      aria-hidden="true"
-                    />
-                  </motion.div>
-                  <motion.div
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', delay: 0.4 }}
-                    className="p-4 rounded-2xl bg-rose-500/20"
-                  >
-                    <Heart
-                      className="w-10 h-10 text-rose-600 dark:text-rose-400"
-                      aria-hidden="true"
-                    />
-                  </motion.div>
-                  <motion.div
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', delay: 0.8 }}
-                    className="p-4 rounded-2xl bg-amber-500/20"
-                  >
-                    <Sparkles
-                      className="w-10 h-10 text-amber-600 dark:text-amber-400"
-                      aria-hidden="true"
-                    />
-                  </motion.div>
-                </div>
+              <GlassCard className="overflow-hidden p-5 text-center sm:p-8">
+                {/* The community's own photo or colour cover, with its logo and
+                    tagline — the same welcome as its sign-in and join pages
+                    (AWID: "warmth, and community"). */}
+                <CommunityWelcome className="-mx-5 -mt-5 sm:-mx-8 sm:-mt-8" />
 
                 <h2 className="text-xl font-bold text-theme-primary mb-2">
                   {t('welcome_title', { name: tenantName })}

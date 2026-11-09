@@ -44,7 +44,7 @@
     "pending_reviews": "保留中のレビュー",
     "endorsements": "推薦",
     "exchanges_attention": "対応が必要",
-    "my_listings": "あなたのリスティング"
+    "my_listings": "あなたの提供とリクエスト"
   },
   "view_all": "すべて表示",
   "view_all_caps": "すべて表示",
@@ -66,9 +66,9 @@
     "offer": "提供",
     "request": "リクエスト",
     "user_fallback": "ユーザー",
-    "empty": "最近のリストはありません",
+    "empty": "最近の提供・リクエストはありません",
     "empty_description": "リクエストまたはオファーを作成して、近くの人とのマッチングを始めましょう。",
-    "create_first": "最初のリストを作成してください"
+    "create_first": "最初の提供・リクエストを作成しましょう"
   },
   "activity": {
     "action_listing": "リストを共有しました",
@@ -187,5 +187,10 @@
     "hours": "分かち合った時間",
     "members": "新しいメンバー",
     "listings": "新しいオファーとリクエスト"
+  },
+  "anniversary": {
+    "title": "記念日おめでとうございます！",
+    "body": "{{date}}に{{community}}に参加しました。いつもありがとうございます。",
+    "close": "閉じる"
   }
 }

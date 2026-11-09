@@ -1115,6 +1115,35 @@ interface MemberCardProps {
   sortBy?: SortOption;
 }
 
+const NEW_MEMBER_DAYS = 30;
+
+/** True when a member joined in the last 30 days. */
+export function isNewMember(createdAt: string | null | undefined, now: number = Date.now()): boolean {
+  if (!createdAt) return false;
+  // The directory sends "YYYY-MM-DD HH:MM:SS"; older Safari cannot parse the space.
+  const joined = new Date(createdAt.includes('T') ? createdAt : createdAt.replace(' ', 'T')).getTime();
+  if (Number.isNaN(joined)) return false;
+  const age = now - joined;
+  return age >= 0 && age < NEW_MEMBER_DAYS * 86_400_000;
+}
+
+/** "New here": a small HeroUI Chip, readable on a cover and on a card in both themes. */
+function NewHereChip({ label, className = '' }: { label: string; className?: string }) {
+  return (
+    <Chip
+      size="sm"
+      variant="soft"
+      data-testid="member-new-here"
+      className={`h-6 min-w-0 gap-1 bg-white/90 px-2 text-xs font-semibold text-zinc-800 shadow-sm ring-1 ring-black/5 dark:bg-zinc-900/85 dark:text-zinc-100 dark:ring-white/10 ${className}`}
+    >
+      <span className="inline-flex items-center gap-1">
+        <Sparkles className="size-3" aria-hidden="true" />
+        {label}
+      </span>
+    </Chip>
+  );
+}
+
 const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: MemberCardProps) {
   const { t } = useTranslation('common');
   const { badgeName } = useBadgeCopy();
@@ -1141,6 +1170,10 @@ const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: Member
       })
     : null;
 
+  // Joined in the last 30 days: a "New here" badge, so others think to say
+  // hello (AWID: "community").
+  const isNewHere = isNewMember(member.created_at);
+
   // Distance label for nearby mode
   const distanceLabel = member.distance != null
     ? t('members.distance_km', { distance: Number(member.distance).toFixed(1) })
@@ -1164,6 +1197,7 @@ const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: Member
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <h3 className="truncate font-semibold text-theme-primary">{displayName}</h3>
+                  {isNewHere && <NewHereChip label={t('members.new_here')} />}
                   {member.is_verified && (
                     <Tooltip content={t('members.verified_member')}>
                       <span role="img" aria-label={t('members.verified_member')} className="inline-flex shrink-0">
@@ -1242,8 +1276,11 @@ const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: Member
       <article>
         <GlassCard className="flex h-full min-h-[272px] flex-col overflow-hidden p-5 text-center transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-accent/10">
           {/* A band in the member's own colour, as on their profile, with the photo over its edge. */}
-          <div className="-mx-5 -mt-5 h-14">
+          <div className="relative -mx-5 -mt-5 h-14">
             <ThemedCover data-testid="member-card-cover" colour={memberColour} />
+            {isNewHere && (
+              <NewHereChip label={t('members.new_here')} className="absolute end-2 top-2 z-30" />
+            )}
           </div>
           <div className="relative inline-block mx-auto -mt-10 mb-3">
             <Avatar

@@ -193,5 +193,8 @@
   "show_more_skills_many": "Mostra {{count}} in più",
   "show_more_skills_one": "Mostra {{count}} in più",
   "show_more_skills_other": "Mostra {{count}} in più",
-  "reviews_count_many": "{{count}} recensioni"
+  "reviews_count_many": "{{count}} recensioni",
+  "impact": {
+    "title": "Tempo condiviso"
+  }
 }
