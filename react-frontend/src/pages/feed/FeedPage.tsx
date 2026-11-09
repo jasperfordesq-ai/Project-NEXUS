@@ -47,6 +47,8 @@ import type { ComposeTab } from '@/components/compose/types';
 import { StoriesBar } from '@/components/feed/StoriesBar';
 import { FeedFilterSheet } from '@/components/feed/FeedFilterSheet';
 import { FeedModeToggle } from '@/components/feed/FeedModeToggle';
+import { feedFilterDot } from '@/components/feed/feedTypeColours';
+import { FILTER_DOT_CLASS } from '@/components/ui/FilterChipGroup';
 import { SubFilterChips } from '@/components/feed/SubFilterChips';
 import { ConnectionSuggestionsWidget } from '@/components/feed/ConnectionSuggestionsWidget';
 import { useAuth, useToast, useTenant } from '@/contexts';
@@ -921,7 +923,7 @@ export function FeedPage() {
     syncToUrl({ filter: 'all', subFilter: null });
   }, [syncToUrl]);
 
-  const filterOptions: { key: FeedFilter; label: string }[] = useMemo(() => [
+  const filterOptionsBase: { key: FeedFilter; label: string }[] = useMemo(() => [
     { key: 'all', label: t('filter.all') },
     ...(user ? [
       { key: 'following' as FeedFilter, label: t('filter.following') },
@@ -939,6 +941,11 @@ export function FeedPage() {
     ...(hasFeature('groups') ? [{ key: 'discussions' as FeedFilter, label: t('filter.discussions') }] : []),
   ], [hasFeature, hasModule, t, user]);
 
+  // Each kind of post gets its colour dot: a key to the labels on the cards.
+  const filterOptions = useMemo(
+    () => filterOptionsBase.map((option) => ({ ...option, dotClass: feedFilterDot(option.key) })),
+    [filterOptionsBase],
+  );
   const filterOptionsKey = filterOptions.map((option) => option.key).join(',');
   useEffect(() => {
     const validKeys = filterOptionsKey.split(',');
@@ -1086,8 +1093,11 @@ export function FeedPage() {
                 key={opt.key}
                 id={opt.key}
                 variant="ghost"
-                className="shrink-0 rounded-full border border-theme-default bg-theme-elevated px-3 text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:border-transparent! data-[selected=true]:bg-accent! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
+                className="group shrink-0 rounded-full border border-theme-default bg-theme-elevated px-3 text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:border-transparent! data-[selected=true]:bg-accent! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
               >
+                {opt.dotClass && (
+                  <span data-filter-dot aria-hidden="true" className={`${FILTER_DOT_CLASS} ${opt.dotClass}`} />
+                )}
                 {opt.label}
               </ToggleButton>
             ))}

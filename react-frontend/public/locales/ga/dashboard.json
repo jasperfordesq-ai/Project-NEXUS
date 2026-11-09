@@ -184,5 +184,13 @@
     "error_location": "Níorbh fhéidir an áit sin a shábháil. Seiceáil é agus bain triail eile as.",
     "error_coordinates": "Níorbh fhéidir suíomh léarscáile na háite sin a úsáid. Roghnaigh as an liosta arís é, nó clóscríobh do bhaile amháin.",
     "error_generic": "Níorbh fhéidir do shuíomh a shábháil. Bain triail eile as."
+  },
+  "new_members": {
+    "title": "Cuir fáilte roimh bhaill nua",
+    "description": "Chuaigh siad isteach i {{community}} le déanaí. Cuidíonn beannú cairdiúil leo socrú isteach.",
+    "see_all": "Féach ar gach ball",
+    "joined": "Tháinig isteach {{when}}",
+    "say_hello": "Abair dia duit",
+    "say_hello_aria": "Abair dia duit le {{name}}"
   }
 }

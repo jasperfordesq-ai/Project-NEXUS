@@ -9,7 +9,8 @@
   "nav": {
     "dashboard": "Pannello di controllo",
     "feed": "Feed",
-    "listings": "Annunci",
+    "listings": "Offerte e richieste",
+    "listings_short": "Offerte",
     "messages": "Messaggi",
     "community": "Comunità",
     "caring_community": "Comunità premurosa",
@@ -79,7 +80,7 @@
     "unread_notifications_one": "{{count}} notifiche non lette",
     "unread_notifications_other": "{{count}} notifiche non lette",
     "unread_notifications_many": "{{count}} notifiche non lette",
-    "my_listings": "I miei annunci"
+    "my_listings": "Le mie offerte e richieste"
   },
   "landing_links": {
     "title": "Esplora questa comunità",

@@ -303,6 +303,33 @@ describe('GroupsPage', () => {
     expect(screen.getByText('Featured')).toBeInTheDocument();
   });
 
+  it("rings members' faces in the card's own colour, not a dark ring that looks muddy on a light card", async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 8, name: 'Walking Group', description: 'Sunday walks.', image_url: null,
+          member_count: 2, members_count: 2, posts_count: 0, visibility: 'public', tags: [],
+          recent_members: [
+            { id: 501, name: 'Maeve Byrne', avatar_url: null },
+            { id: 502, name: 'Tom Kelly', avatar_url: null },
+          ],
+          created_at: '2026-01-01T00:00:00Z',
+        },
+      ],
+      meta: { has_more: false, total_items: 1, per_page: 20 },
+    });
+
+    render(<GroupsPage />);
+
+    const faces = await screen.findAllByTestId('group-member-face');
+    expect(faces).toHaveLength(2);
+    for (const face of faces) {
+      expect(face.className).toContain('ring-[var(--surface-solid)]');
+      expect(face.className).not.toContain('ring-black');
+    }
+  });
+
   it('gives a group with no picture a colour cover from the community palette, not a grey box', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({
       success: true,

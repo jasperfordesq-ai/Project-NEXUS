@@ -24,7 +24,7 @@
   "filter": {
     "all": "Uile",
     "posts": "Postálacha",
-    "listings": "Liostuithe",
+    "listings": "Tairiscintí agus iarratais",
     "events": "Imeachtaí",
     "polls": "Pobalbhreitheanna",
     "goals": "Spriocanna",
@@ -303,6 +303,8 @@
     "view_analytics": "Féach ar an anailísíocht",
     "type_post": "Postáil",
     "type_listing": "Liostú",
+    "type_offer": "Tairiscint",
+    "type_request": "Iarratas",
     "type_event": "Imeacht",
     "type_poll": "Pobalbhreith",
     "type_goal": "Sprioc",

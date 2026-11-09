@@ -140,6 +140,26 @@ describe('FeedCard', () => {
   });
 
   it.each([
+    ['offer', 'Offer'],
+    ['request', 'Request'],
+  ] as const)('says what a listing is (%s), not just "Listing"', (listingType, label) => {
+    const item: FeedItem = { ...baseFeedItem, type: 'listing', listing_type: listingType };
+    render(<FeedCard {...defaultProps} item={item} />);
+    expect(screen.getByText(label)).toBeInTheDocument();
+    expect(screen.queryByText('Listing')).not.toBeInTheDocument();
+  });
+
+  it('colours the label to match its kind of post, at a readable size', () => {
+    const item = { ...baseFeedItem, type: 'event' as const };
+    render(<FeedCard {...defaultProps} item={item} />);
+    const chip = screen.getByText('Event').closest('[data-feed-type]');
+    expect(chip).toHaveAttribute('data-feed-type', 'event');
+    expect(chip?.className).toContain('bg-emerald-100');
+    expect(chip?.className).toContain('text-xs');
+    expect(chip?.className).not.toContain('text-[10px]');
+  });
+
+  it.each([
     ['podcast_show', 'Podcast show'],
     ['podcast_episode', 'Podcast episode'],
   ] as const)('renders %s activity without crashing', (type, label) => {

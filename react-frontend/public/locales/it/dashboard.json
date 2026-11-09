@@ -176,5 +176,13 @@
     "error_location": "Non siamo riusciti a salvare quel luogo. Controllalo e riprova.",
     "error_coordinates": "Non siamo riusciti a usare la posizione sulla mappa per quel luogo. Sceglilo di nuovo dall'elenco oppure scrivi solo la tua città.",
     "error_generic": "Non siamo riusciti a salvare la tua posizione. Riprova."
+  },
+  "new_members": {
+    "title": "Saluta i nuovi membri",
+    "description": "Si sono uniti a {{community}} da poco. Un saluto cordiale li aiuta ad ambientarsi.",
+    "see_all": "Vedi tutti i membri",
+    "joined": "Iscrizione: {{when}}",
+    "say_hello": "Saluta",
+    "say_hello_aria": "Saluta {{name}}"
   }
 }

@@ -28,7 +28,19 @@ export interface FilterChipOption {
   label: string;
   /** Disables just this chip (e.g. an option the current data can't satisfy). */
   isDisabled?: boolean;
+  /**
+   * Background class for a small colour dot before the label — a colour key
+   * that matches labels elsewhere on the page (the feed's kinds of post).
+   */
+  dotClass?: string | null;
 }
+
+/**
+ * The colour dot before a chip's label. The chip must carry `group`; a white
+ * ring keeps the dot visible on a selected chip, even one in the same colour.
+ */
+export const FILTER_DOT_CLASS =
+  'size-2 shrink-0 rounded-full group-data-[selected=true]:ring-2 group-data-[selected=true]:ring-white';
 
 export interface FilterChipGroupProps {
   /** Visible section heading. Omit for an unlabelled row. */
@@ -100,8 +112,11 @@ export function FilterChipGroup({
               id={opt.key}
               variant="ghost"
               isDisabled={opt.isDisabled}
-              className={`${CHIP_CLASS} ${tone.chip}`}
+              className={`group ${CHIP_CLASS} ${tone.chip}`}
             >
+              {opt.dotClass && (
+                <span data-filter-dot aria-hidden="true" className={`${FILTER_DOT_CLASS} ${opt.dotClass}`} />
+              )}
               {opt.label}
             </ToggleButton>
           ))}

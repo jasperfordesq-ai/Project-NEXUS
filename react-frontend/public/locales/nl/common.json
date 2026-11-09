@@ -9,7 +9,8 @@
   "nav": {
     "dashboard": "Dashboard",
     "feed": "Feed",
-    "listings": "Advertenties",
+    "listings": "Aanbod en verzoeken",
+    "listings_short": "Aanbod",
     "messages": "Berichten",
     "community": "Gemeenschap",
     "caring_community": "Zorgzame gemeenschap",
@@ -78,7 +79,7 @@
     "switch_community": "Van gemeenschap wisselen",
     "unread_notifications_one": "{{count}} ongelezen meldingen",
     "unread_notifications_other": "{{count}} ongelezen meldingen",
-    "my_listings": "Mijn vermeldingen"
+    "my_listings": "Mijn aanbod en verzoeken"
   },
   "landing_links": {
     "title": "Verken deze gemeenschap",

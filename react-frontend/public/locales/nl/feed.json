@@ -24,7 +24,7 @@
   "filter": {
     "all": "Alles",
     "posts": "Berichten",
-    "listings": "Advertenties",
+    "listings": "Aanbod en verzoeken",
     "events": "Evenementen",
     "polls": "Peilingen",
     "goals": "Doelen",
@@ -291,6 +291,8 @@
     "view_analytics": "Bekijk Analytics",
     "type_post": "Bericht",
     "type_listing": "Advertentie",
+    "type_offer": "Aanbod",
+    "type_request": "Verzoek",
     "type_event": "Evenement",
     "type_poll": "Peiling",
     "type_goal": "Doel",

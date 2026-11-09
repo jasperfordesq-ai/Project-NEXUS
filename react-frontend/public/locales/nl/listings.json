@@ -394,7 +394,7 @@
   "distance_meters": "{{distance}} m",
   "distance_kilometers": "{{distance}} kilometer",
   "mine": {
-    "page_title": "Mijn vermeldingen",
+    "page_title": "Mijn aanbod en verzoeken",
     "eyebrow": "Je aanbod en verzoeken",
     "title": "Mijn aanbod en verzoeken",
     "description": "Alles wat je hebt aangeboden of gevraagd, en of andere leden het kunnen zien.",

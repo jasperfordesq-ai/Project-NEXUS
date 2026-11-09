@@ -24,7 +24,7 @@
   "filter": {
     "all": "Alle",
     "posts": "Beiträge",
-    "listings": "Angebote",
+    "listings": "Angebote und Gesuche",
     "events": "Veranstaltungen",
     "polls": "Umfragen",
     "goals": "Ziele",
@@ -291,6 +291,8 @@
     "view_analytics": "Analysen anzeigen",
     "type_post": "Beitrag",
     "type_listing": "Anzeige",
+    "type_offer": "Angebot",
+    "type_request": "Gesuch",
     "type_event": "Veranstaltung",
     "type_poll": "Umfrage",
     "type_goal": "Ziel",

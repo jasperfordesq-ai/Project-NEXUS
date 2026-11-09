@@ -394,7 +394,7 @@
   "distance_meters": "{{distance}} m",
   "distance_kilometers": "{{distance}} km",
   "mine": {
-    "page_title": "My listings",
+    "page_title": "My offers and requests",
     "eyebrow": "Your offers and requests",
     "title": "My offers and requests",
     "description": "Everything you have offered or asked for, and whether other members can see it.",

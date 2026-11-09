@@ -24,7 +24,7 @@
   "filter": {
     "all": "Todos",
     "posts": "Publicações",
-    "listings": "Anúncios",
+    "listings": "Ofertas e pedidos",
     "events": "Eventos",
     "polls": "Sondagens",
     "goals": "Objetivos",
@@ -295,6 +295,8 @@
     "view_analytics": "Ver Análises",
     "type_post": "Publicação",
     "type_listing": "Anúncio",
+    "type_offer": "Oferta",
+    "type_request": "Pedido",
     "type_event": "Evento",
     "type_poll": "Sondagem",
     "type_goal": "Objetivo",

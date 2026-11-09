@@ -180,5 +180,13 @@
     "error_location": "Nie udało się zapisać tego miejsca. Sprawdź je i spróbuj ponownie.",
     "error_coordinates": "Nie udało się użyć położenia na mapie dla tego miejsca. Wybierz je ponownie z listy lub wpisz samą miejscowość.",
     "error_generic": "Nie udało się zapisać Twojej lokalizacji. Spróbuj ponownie."
+  },
+  "new_members": {
+    "title": "Przywitaj nowych członków",
+    "description": "Niedawno dołączyli do społeczności {{community}}. Przyjazne powitanie pomoże im się odnaleźć.",
+    "see_all": "Zobacz wszystkich członków",
+    "joined": "Dołączenie: {{when}}",
+    "say_hello": "Przywitaj się",
+    "say_hello_aria": "Przywitaj się z: {{name}}"
   }
 }

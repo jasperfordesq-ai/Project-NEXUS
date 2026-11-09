@@ -115,6 +115,20 @@ const SPACING_MULTIPLIER_MAP: Record<Density, string> = {
  */
 const DARK_READING_SURFACE = '#18181b';
 
+/**
+ * How the standard colour (DEFAULT_PREFERENCES.accentColor, #6366f1) is
+ * painted on the light theme: 8% deeper, the same hue. #6366f1 itself reads at
+ * 4.47:1 under white text and 4.28:1 as text on the warm page (#fafaf9) — both
+ * just under WCAG AA's 4.5:1. This shade reads at 5.12:1 and 4.90:1.
+ *
+ * The stored value stays #6366f1, because that is how "the member has not
+ * chosen a colour" is recognised (see `effectiveAccent`). The dark theme keeps
+ * #6366f1: there one colour serves both as text on dark surfaces (which wants
+ * it lighter) and behind white text (which wants it darker), and no single
+ * shade passes both.
+ */
+const STANDARD_ACCENT_LIGHT_PAINT = '#5b5ede';
+
 const HEX_COLOUR = /^#[0-9a-fA-F]{6}$/;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -297,6 +311,9 @@ export function ThemeProvider({
       return resolvedTheme === 'dark'
         ? ensureContrast(communityAccent, DARK_READING_SURFACE)
         : communityAccent;
+    }
+    if (!memberChoseOwn && resolvedTheme === 'light') {
+      return STANDARD_ACCENT_LIGHT_PAINT;
     }
     return preferences.accentColor;
   }, [preferences.accentColor, communityAccent, resolvedTheme]);

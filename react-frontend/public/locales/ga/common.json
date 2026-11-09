@@ -9,7 +9,8 @@
   "nav": {
     "dashboard": "Painéal",
     "feed": "Fotha",
-    "listings": "Liostaí",
+    "listings": "Tairiscintí agus iarratais",
+    "listings_short": "Tairiscintí",
     "messages": "Teachtaireachtaí",
     "community": "Pobal",
     "caring_community": "Pobal Cúraim",
@@ -81,7 +82,7 @@
     "unread_notifications_few": "{{count}} fógra gan léamh",
     "unread_notifications_many": "{{count}} fógra gan léamh",
     "unread_notifications_two": "{{count}} fógra gan léamh",
-    "my_listings": "Mo liostálacha"
+    "my_listings": "Mo thairiscintí agus m'iarratais"
   },
   "landing_links": {
     "title": "Déan iniúchadh ar an bpobal seo",

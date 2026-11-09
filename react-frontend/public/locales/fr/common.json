@@ -9,7 +9,8 @@
   "nav": {
     "dashboard": "Tableau de bord",
     "feed": "Fil d'actualité",
-    "listings": "Annonces",
+    "listings": "Offres et demandes",
+    "listings_short": "Offres",
     "messages": "Messages",
     "community": "Communauté",
     "caring_community": "Communauté solidaire",
@@ -79,7 +80,7 @@
     "unread_notifications_one": "{{count}} notifications non lues",
     "unread_notifications_other": "{{count}} notifications non lues",
     "unread_notifications_many": "{{count}} notifications non lues",
-    "my_listings": "Mes annonces"
+    "my_listings": "Mes offres et demandes"
   },
   "landing_links": {
     "title": "Explorez cette communauté",

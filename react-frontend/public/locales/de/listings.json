@@ -394,7 +394,7 @@
   "distance_meters": "{{distance}} m",
   "distance_kilometers": "{{distance}} km",
   "mine": {
-    "page_title": "Meine Inserate",
+    "page_title": "Meine Angebote und Gesuche",
     "eyebrow": "Deine Angebote und Gesuche",
     "title": "Meine Angebote und Gesuche",
     "description": "Alles, was du angeboten oder gesucht hast, und ob andere Mitglieder es sehen können.",

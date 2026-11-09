@@ -389,7 +389,7 @@ describe('Footer', () => {
   describe('Platform links', () => {
     it('renders Listings link', () => {
       render(<Footer />);
-      expect(screen.getByText('Listings')).toBeInTheDocument();
+      expect(screen.getByText('Offers and requests')).toBeInTheDocument();
     });
 
     it('renders Members link', () => {

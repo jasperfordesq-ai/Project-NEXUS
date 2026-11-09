@@ -402,7 +402,7 @@
   "detail_hours_many": "{{count}} horas",
   "detail_renewed_count_many": "Renovado {{count}} vez",
   "mine": {
-    "page_title": "Os meus anúncios",
+    "page_title": "As minhas ofertas e pedidos",
     "eyebrow": "As suas ofertas e pedidos",
     "title": "As minhas ofertas e pedidos",
     "description": "Tudo o que ofereceu ou pediu, e se os outros membros o podem ver.",

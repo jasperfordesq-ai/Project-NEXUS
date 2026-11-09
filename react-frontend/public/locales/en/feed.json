@@ -24,7 +24,7 @@
   "filter": {
     "all": "All",
     "posts": "Posts",
-    "listings": "Listings",
+    "listings": "Offers and requests",
     "events": "Events",
     "polls": "Polls",
     "goals": "Goals",
@@ -291,6 +291,8 @@
     "view_analytics": "View Analytics",
     "type_post": "Post",
     "type_listing": "Listing",
+    "type_offer": "Offer",
+    "type_request": "Request",
     "type_event": "Event",
     "type_poll": "Poll",
     "type_goal": "Goal",

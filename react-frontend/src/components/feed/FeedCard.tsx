@@ -19,6 +19,7 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
+import { feedTypeColour } from './feedTypeColours';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Separator } from '@/components/ui/Separator';
@@ -199,7 +200,6 @@ const COMMENTABLE_TYPES = new Set<FeedItem['type']>([
  */
 const fallbackTypeConfig = {
   labelKey: null,
-  color: 'default' as const,
   icon: null,
   softGradient: '',
   accentGradient: 'from-[var(--border-default)] via-[var(--border-subtle)] to-[var(--border-default)]',
@@ -208,7 +208,6 @@ const fallbackTypeConfig = {
 const typeConfig = {
   post: {
     labelKey: null,
-    color: 'default' as const,
     icon: null,
     softGradient: '',
     // Neutral strip on post cards — keeps every feed card visually matched
@@ -217,105 +216,90 @@ const typeConfig = {
   },
   listing: {
     labelKey: 'card.type_listing',
-    color: 'primary' as const,
     icon: <ShoppingBag className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-accent/10 to-blue-500/10',
     accentGradient: 'from-accent via-blue-500 to-accent-gradient-end',
   },
   event: {
     labelKey: 'card.type_event',
-    color: 'success' as const,
     icon: <Calendar className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-emerald-500/10 to-green-500/10',
     accentGradient: 'from-emerald-500 via-green-500 to-emerald-500',
   },
   poll: {
     labelKey: 'card.type_poll',
-    color: 'warning' as const,
     icon: <BarChart3 className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-amber-500/10 to-orange-500/10',
     accentGradient: 'from-amber-500 via-orange-500 to-amber-500',
   },
   goal: {
     labelKey: 'card.type_goal',
-    color: 'secondary' as const,
     icon: <Target className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-accent/10 to-pink-500/10',
     accentGradient: 'from-accent via-pink-500 to-accent-gradient-end',
   },
   review: {
     labelKey: 'card.type_review',
-    color: 'warning' as const,
     icon: <Star className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-amber-500/10 to-yellow-500/10',
     accentGradient: 'from-amber-500 via-yellow-500 to-amber-500',
   },
   job: {
     labelKey: 'card.type_job',
-    color: 'primary' as const,
     icon: <TrendingUp className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-blue-500/10 to-cyan-500/10',
     accentGradient: 'from-blue-500 via-cyan-500 to-blue-500',
   },
   challenge: {
     labelKey: 'card.type_challenge',
-    color: 'secondary' as const,
     icon: <Target className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-violet-500/10 to-accent-gradient-end/10',
     accentGradient: 'from-violet-500 via-accent-gradient-end to-violet-500',
   },
   volunteer: {
     labelKey: 'card.type_volunteer',
-    color: 'success' as const,
     icon: <Heart className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-green-500/10 to-emerald-500/10',
     accentGradient: 'from-green-500 via-emerald-500 to-green-500',
   },
   volunteer_hours: {
     labelKey: 'card.type_volunteer_hours',
-    color: 'success' as const,
     icon: <Clock className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-green-500/10 to-emerald-500/10',
     accentGradient: 'from-emerald-500 via-green-500 to-emerald-500',
   },
   blog: {
     labelKey: 'card.type_blog',
-    color: 'primary' as const,
     icon: <BookOpen className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-sky-500/10 to-blue-500/10',
     accentGradient: 'from-sky-500 via-blue-500 to-sky-500',
   },
   discussion: {
     labelKey: 'card.type_discussion',
-    color: 'secondary' as const,
     icon: <Users className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-fuchsia-500/10 to-accent-gradient-end/10',
     accentGradient: 'from-fuchsia-500 via-accent-gradient-end to-fuchsia-500',
   },
   resource: {
     labelKey: 'card.type_resource',
-    color: 'primary' as const,
     icon: <BookOpen className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-teal-500/10 to-cyan-500/10',
     accentGradient: 'from-teal-500 via-cyan-500 to-teal-500',
   },
   course: {
     labelKey: 'card.type_course',
-    color: 'primary' as const,
     icon: <BookOpen className="w-3 h-3" aria-hidden="true" />,
     softGradient: 'from-accent/10 to-violet-500/10',
     accentGradient: 'from-accent via-violet-500 to-accent-gradient-end',
   },
   podcast_show: {
     labelKey: 'card.type_podcast_show',
-    color: 'primary' as const,
     icon: <PodcastIcon className="h-3 w-3" aria-hidden="true" />,
     softGradient: 'from-fuchsia-500/10 to-violet-500/10',
     accentGradient: 'from-fuchsia-500 via-violet-500 to-fuchsia-500',
   },
   podcast_episode: {
     labelKey: 'card.type_podcast_episode',
-    color: 'secondary' as const,
     icon: <PodcastIcon className="h-3 w-3" aria-hidden="true" />,
     softGradient: 'from-violet-500/10 to-blue-500/10',
     accentGradient: 'from-violet-500 via-blue-500 to-violet-500',
@@ -511,7 +495,12 @@ const FeedCardInner = React.memo(function FeedCardInner({
   const config = item.type in typeConfig
     ? typeConfig[item.type as keyof typeof typeConfig]
     : fallbackTypeConfig;
-  const typeLabel = config.labelKey ? t(config.labelKey) : null;
+  // A listing says what it is — "Offer" or "Request" — like the offers page does.
+  const typeLabel = item.type === 'listing' && (item.listing_type === 'offer' || item.listing_type === 'request')
+    ? t(item.listing_type === 'offer' ? 'card.type_offer' : 'card.type_request')
+    : config.labelKey ? t(config.labelKey) : null;
+  // The label's colour matches this kind's stripe and its filter chip's dot.
+  const typeLabelClass = `${feedTypeColour(item.type).label} text-xs h-6 font-medium`;
   const detailPath = getItemDetailPath(item);
   const detailLabel = getItemDetailLabel(item);
   const imageUrl = item.type === 'podcast_show' || item.type === 'podcast_episode'
@@ -620,9 +609,9 @@ const FeedCardInner = React.memo(function FeedCardInner({
                       <Chip
                         size="sm"
                         variant="flat"
-                        color={config.color}
                         startContent={config.icon}
-                        className="text-[10px] h-5 cursor-pointer hover:opacity-80 transition-opacity"
+                        data-feed-type={item.type}
+                        className={`${typeLabelClass} cursor-pointer hover:opacity-80 transition-opacity`}
                       >
                         {typeLabel}
                       </Chip>
@@ -631,9 +620,9 @@ const FeedCardInner = React.memo(function FeedCardInner({
                     <Chip
                       size="sm"
                       variant="flat"
-                      color={config.color}
                       startContent={config.icon}
-                      className="text-[10px] h-5"
+                      data-feed-type={item.type}
+                      className={typeLabelClass}
                     >
                       {typeLabel}
                     </Chip>

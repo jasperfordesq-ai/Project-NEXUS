@@ -235,6 +235,10 @@ class FeedService
                 DB::raw("COALESCE(NULLIF(u.name, ''), NULLIF(TRIM(CONCAT_WS(' ', u.first_name, u.last_name)), '')) as author_name"),
                 'u.avatar_url as author_avatar',
                 'u.location as user_location',
+                // A listing's own type (offer / request), from the same community.
+                // The activity metadata alone is not enough: ListingsController::store,
+                // ListingObserver and the backfill command never wrote it.
+                DB::raw("(SELECT l.type FROM listings l WHERE feed_activity.source_type = 'listing' AND l.id = feed_activity.source_id AND l.tenant_id = feed_activity.tenant_id) as live_listing_type"),
             ]);
 
         $this->applyPostVisibilityScope($query, $currentUserId, $tenantId);
@@ -337,8 +341,13 @@ class FeedService
         }
 
         if ($subtype !== null) {
+            // The listing's own type first (most listing activity carries no
+            // listing_type metadata — see the select above), then the metadata.
             $query->whereRaw(
-                "JSON_UNQUOTE(JSON_EXTRACT(feed_activity.metadata, '$.listing_type')) = ?",
+                "COALESCE("
+                . "(SELECT l.type FROM listings l WHERE feed_activity.source_type = 'listing' AND l.id = feed_activity.source_id AND l.tenant_id = feed_activity.tenant_id), "
+                . "JSON_UNQUOTE(JSON_EXTRACT(feed_activity.metadata, '$.listing_type'))"
+                . ") = ?",
                 [$subtype]
             );
         }
@@ -558,7 +567,7 @@ class FeedService
                 'submission_deadline' => $meta['submission_deadline'] ?? null,
                 'ideas_count' => isset($meta['ideas_count']) ? (int) $meta['ideas_count'] : null,
                 // Listing metadata
-                'listing_type' => $meta['listing_type'] ?? null,
+                'listing_type' => $row->live_listing_type ?? $meta['listing_type'] ?? null,
                 // Gamification metadata
                 'badge_key' => $meta['badge_key'] ?? null,
                 'badge_name' => $meta['badge_name'] ?? null,

@@ -172,5 +172,13 @@
     "error_location": "We could not save that place. Please check it and try again.",
     "error_coordinates": "We could not use the map position for that place. Please pick it from the list again, or type just your town.",
     "error_generic": "We could not save your location. Please try again."
+  },
+  "new_members": {
+    "title": "Say hello to new members",
+    "description": "They joined {{community}} recently. A friendly hello helps them settle in.",
+    "see_all": "See all members",
+    "joined": "Joined {{when}}",
+    "say_hello": "Say hello",
+    "say_hello_aria": "Say hello to {{name}}"
   }
 }

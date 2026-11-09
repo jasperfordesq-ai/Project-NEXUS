@@ -37,6 +37,30 @@ describe('EmptyState', () => {
     expect(screen.getByTestId('empty-icon')).toBeInTheDocument();
   });
 
+  it('shows its icon in a soft circle in the community colour, whatever colour the page gave it', () => {
+    // AWID feedback (Nov 2026): empty pages were a grey icon in a grey box.
+    render(
+      <EmptyState
+        icon={<Search data-testid="empty-icon" className="w-12 h-12 text-theme-subtle" />}
+        title="No results"
+      />
+    );
+
+    const circle = screen.getByTestId('empty-state-icon');
+    expect(circle).toContainElement(screen.getByTestId('empty-icon'));
+    expect(circle.className).toContain('rounded-full');
+    expect(circle.className).toContain('bg-accent-soft');
+    // One size and the community colour for every caller's icon (the page's
+    // own text-theme-* colour is unlayered, so the override must be important).
+    expect(circle.className).toContain('[&_svg]:text-accent-soft-foreground!');
+    expect(circle.className).toContain('[&_svg]:size-9');
+  });
+
+  it('writes its description in the readable secondary text colour', () => {
+    render(<EmptyState title="No results" description="Try a different search" />);
+    expect(screen.getByText('Try a different search').className).toContain('text-theme-secondary');
+  });
+
   it('renders action button when provided', () => {
     render(
       <EmptyState

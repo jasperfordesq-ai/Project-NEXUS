@@ -799,7 +799,11 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
                       key={member.id}
                       src={resolveAvatarUrl(member.avatar_url || member.avatar)}
                       name={resolveUserDisplayName(member)}
-                      className="ring-2 ring-black/50"
+                      data-testid="group-member-face"
+                      // Ringed in the card's own colour so overlapping faces
+                      // separate cleanly in light and dark mode (a black ring
+                      // looked muddy on a light card).
+                      className="ring-2 ring-[var(--surface-solid)]"
                     />
                   ))}
                 </AvatarGroup>

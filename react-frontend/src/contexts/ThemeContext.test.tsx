@@ -320,13 +320,42 @@ describe('ThemeContext', () => {
         </ThemeProvider>
       );
       await act(async () => {});
-      expect(accent()).toBe('#6366f1');
+      // The standard colour, as painted on the light theme.
+      expect(accent()).toBe('#5b5ede');
     });
 
     it('ignores a value that is not a colour', async () => {
       render(
         <ThemeProvider>
           <CommunityProbe colour="red;background:url(x)" />
+        </ThemeProvider>
+      );
+
+      await act(async () => {});
+      expect(accent()).toBe('#5b5ede');
+    });
+
+    it('paints the standard colour a touch deeper on the light theme, so white text on it and coloured text on the page both pass AA', async () => {
+      // #6366f1 itself measures 4.47:1 under white text and 4.28:1 as text on
+      // the warm page (#fafaf9) — both just under 4.5:1 (owner, 9 Nov).
+      render(
+        <ThemeProvider>
+          <CommunityProbe colour={null} />
+        </ThemeProvider>
+      );
+
+      await act(async () => {});
+      const painted = accent();
+      expect(painted).not.toBe('#6366f1');
+      expect(getContrastRatio(painted, '#ffffff')).toBeGreaterThanOrEqual(4.5);
+      expect(getContrastRatio(painted, '#fafaf9')).toBeGreaterThanOrEqual(4.5);
+      expect(document.documentElement.style.getPropertyValue('--accent-foreground')).toBe('#ffffff');
+    });
+
+    it('keeps the standard colour as it was on the dark theme', async () => {
+      render(
+        <ThemeProvider defaultTheme="dark">
+          <CommunityProbe colour={null} />
         </ThemeProvider>
       );
 

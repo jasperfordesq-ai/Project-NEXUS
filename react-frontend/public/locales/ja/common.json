@@ -9,7 +9,8 @@
   "nav": {
     "dashboard": "ダッシュボード",
     "feed": "フィード",
-    "listings": "リスティング",
+    "listings": "提供とリクエスト",
+    "listings_short": "提供",
     "messages": "メッセージ",
     "community": "コミュニティ",
     "caring_community": "ケアリングコミュニティ",
@@ -78,7 +79,7 @@
     "switch_community": "コミュニティを切り替え",
     "unread_notifications_one": "{{count}} 未読の通知",
     "unread_notifications_other": "未読通知 {{count}}件",
-    "my_listings": "自分のリスティング"
+    "my_listings": "自分の提供・リクエスト"
   },
   "landing_links": {
     "title": "このコミュニティを探索",

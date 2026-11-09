@@ -9,7 +9,8 @@
   "nav": {
     "dashboard": "Dashboard",
     "feed": "Feed",
-    "listings": "Listings",
+    "listings": "Offers and requests",
+    "listings_short": "Offers",
     "messages": "Messages",
     "community": "Community",
     "caring_community": "Caring Community",
@@ -78,7 +79,7 @@
     "switch_community": "Switch community",
     "unread_notifications_one": "{{count}} unread notifications",
     "unread_notifications_other": "{{count}} unread notifications",
-    "my_listings": "My listings"
+    "my_listings": "My offers and requests"
   },
   "landing_links": {
     "title": "Explore this community",

@@ -9,7 +9,8 @@
   "nav": {
     "dashboard": "Panel",
     "feed": "Aktualności",
-    "listings": "Ogłoszenia",
+    "listings": "Oferty i prośby",
+    "listings_short": "Oferty",
     "messages": "Wiadomości",
     "community": "Społeczność",
     "caring_community": "Społeczność opiekuńcza",
@@ -80,7 +81,7 @@
     "unread_notifications_other": "{{count}} nieprzeczytanych powiadomień",
     "unread_notifications_few": "{{count}} nieprzeczytanych powiadomień",
     "unread_notifications_many": "{{count}} nieprzeczytanych powiadomień",
-    "my_listings": "Moje ogłoszenia"
+    "my_listings": "Moje oferty i prośby"
   },
   "landing_links": {
     "title": "Poznaj tę społeczność",

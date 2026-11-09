@@ -14,6 +14,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { EmptyState as SharedEmptyState } from '@/components/feedback';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 
@@ -276,14 +277,9 @@ function GivenReviewCard({
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
+/** The site's shared empty state (community-coloured icon), with this page's star. */
 function EmptyState({ message, subtitle }: { message: string; subtitle: string }): ReactNode {
-  return (
-    <div className="text-center py-12 text-[var(--color-text-muted)]">
-      <Star className="w-12 h-12 mx-auto mb-3 opacity-30" aria-hidden="true" />
-      <p className="font-medium">{message}</p>
-      <p className="text-sm mt-1 opacity-70">{subtitle}</p>
-    </div>
-  );
+  return <SharedEmptyState icon={<Star aria-hidden="true" />} title={message} description={subtitle} className="py-12" />;
 }
 
 // ─── Main page ────────────────────────────────────────────────────────────────

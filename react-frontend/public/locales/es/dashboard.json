@@ -176,5 +176,13 @@
     "error_location": "No pudimos guardar ese lugar. Revísalo e inténtalo de nuevo.",
     "error_coordinates": "No pudimos usar la posición en el mapa de ese lugar. Vuelve a elegirlo de la lista o escribe solo tu pueblo o ciudad.",
     "error_generic": "No pudimos guardar tu ubicación. Inténtalo de nuevo."
+  },
+  "new_members": {
+    "title": "Saluda a los nuevos miembros",
+    "description": "Se han unido a {{community}} hace poco. Un saludo amable les ayuda a sentirse en casa.",
+    "see_all": "Ver todos los miembros",
+    "joined": "Se unió {{when}}",
+    "say_hello": "Saludar",
+    "say_hello_aria": "Saludar a {{name}}"
   }
 }

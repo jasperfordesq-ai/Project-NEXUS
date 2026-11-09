@@ -24,7 +24,7 @@
   "filter": {
     "all": "Wszystkie",
     "posts": "Wpisy",
-    "listings": "Ogłoszenia",
+    "listings": "Oferty i prośby",
     "events": "Wydarzenia",
     "polls": "Ankiety",
     "goals": "Cele",
@@ -299,6 +299,8 @@
     "view_analytics": "Zobacz analizy",
     "type_post": "Wpis",
     "type_listing": "Ogłoszenie",
+    "type_offer": "Oferta",
+    "type_request": "Prośba",
     "type_event": "Wydarzenie",
     "type_poll": "Ankieta",
     "type_goal": "Cel",

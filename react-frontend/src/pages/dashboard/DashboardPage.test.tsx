@@ -245,6 +245,31 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Find Members')).toBeInTheDocument();
   });
 
+  it('says hello to new members, from the member directory', async () => {
+    const recently = new Date(Date.now() - 2 * 86_400_000).toISOString();
+    mockApiGet.mockImplementation((endpoint: string) => Promise.resolve(
+      endpoint === '/v2/users?sort=joined&order=desc&limit=7'
+        ? { success: true, data: [{ id: 77, name: 'Niamh Walsh', avatar: null, created_at: recently }] }
+        : buildApiResponse(endpoint),
+    ));
+    render(<DashboardPage />);
+    expect(await screen.findByTestId('new-members-strip')).toBeInTheDocument();
+    expect(screen.getByText('Niamh Walsh')).toBeInTheDocument();
+  });
+
+  it("shows an empty section's icon in a soft circle in the community colour, not faded grey", async () => {
+    mockApiGet.mockImplementation((endpoint: string) => Promise.resolve(
+      endpoint === '/v2/listings/mine?status=live&limit=5'
+        ? { success: true, data: [], meta: { cursor: null, has_more: false, counts: { live: 0 } } }
+        : buildApiResponse(endpoint),
+    ));
+    render(<DashboardPage />);
+    const icons = await screen.findAllByTestId('dashboard-empty-icon');
+    expect(icons[0]!.className).toContain('bg-accent-soft');
+    expect(icons[0]!.className).toContain('rounded-full');
+    expect(icons[0]!.className).not.toContain('opacity-60');
+  });
+
   it("renders the member's own listings section, linking to My listings", async () => {
     render(<DashboardPage />);
     expect(screen.getByText('Your listings')).toBeInTheDocument();

@@ -24,7 +24,7 @@
   "filter": {
     "all": "すべて",
     "posts": "投稿",
-    "listings": "リスティング",
+    "listings": "提供とリクエスト",
     "events": "イベント",
     "polls": "投票",
     "goals": "目標",
@@ -291,6 +291,8 @@
     "view_analytics": "分析を見る",
     "type_post": "投稿",
     "type_listing": "リスティング",
+    "type_offer": "提供",
+    "type_request": "依頼",
     "type_event": "イベント",
     "type_poll": "投票",
     "type_goal": "目標",

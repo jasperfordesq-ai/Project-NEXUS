@@ -24,7 +24,8 @@ import type { FeedFilter } from '@/components/feed/types';
 export interface FeedFilterSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  options: { key: FeedFilter; label: string }[];
+  /** `dotClass`: the colour key dot for a kind of post (feedTypeColours). */
+  options: { key: FeedFilter; label: string; dotClass?: string | null }[];
   filter: FeedFilter;
   onFilterChange: (filter: FeedFilter) => void;
   /** Filters that reveal sub-filter chips inside the sheet when selected. */

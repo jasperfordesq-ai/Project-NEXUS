@@ -159,7 +159,7 @@ describe('MobileTabBar', () => {
 
     it('renders Listings tab when module enabled', () => {
       render(<MobileTabBar />);
-      expect(screen.getByLabelText('Listings')).toBeInTheDocument();
+      expect(screen.getByLabelText('Offers')).toBeInTheDocument();
     });
 
     it('renders Create tab', () => {
@@ -255,7 +255,7 @@ describe('MobileTabBar', () => {
         },
       });
       render(<MobileTabBar />);
-      expect(screen.queryByLabelText('Listings')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Offers')).not.toBeInTheDocument();
     });
 
     it('hides Messages tab when messages module is disabled', () => {
@@ -301,7 +301,7 @@ describe('MobileTabBar', () => {
     it('marks Listings tab as active on listings route', () => {
       mockPathname = '/listings';
       render(<MobileTabBar />);
-      const listingsButton = screen.getByLabelText('Listings');
+      const listingsButton = screen.getByLabelText('Offers');
       expect(listingsButton).toHaveAttribute('aria-current', 'page');
     });
 

@@ -176,5 +176,13 @@
     "error_location": "Não foi possível guardar esse local. Verifique-o e tente novamente.",
     "error_coordinates": "Não foi possível usar a posição no mapa para esse local. Escolha-o novamente na lista ou escreva apenas a sua localidade.",
     "error_generic": "Não foi possível guardar a sua localização. Tente novamente."
+  },
+  "new_members": {
+    "title": "Dê as boas-vindas aos novos membros",
+    "description": "Eles entraram em {{community}} recentemente. Um olá amigável ajuda a se sentirem em casa.",
+    "see_all": "Ver todos os membros",
+    "joined": "Entrou {{when}}",
+    "say_hello": "Dizer olá",
+    "say_hello_aria": "Dizer olá para {{name}}"
   }
 }

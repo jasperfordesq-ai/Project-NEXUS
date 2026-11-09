@@ -73,6 +73,8 @@ export interface FeedItem {
   submission_deadline?: string;
   /** Challenge-specific: number of ideas submitted */
   ideas_count?: number;
+  /** Listing-specific: whether the listing offers help or asks for it */
+  listing_type?: 'offer' | 'request' | null;
   /** Volunteer-specific: time credits offered */
   credits_offered?: number;
   /** Volunteer-specific: organization name */

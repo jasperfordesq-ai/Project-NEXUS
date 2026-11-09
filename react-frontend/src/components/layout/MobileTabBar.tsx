@@ -117,7 +117,9 @@ export function MobileTabBar({ onMenuOpen, isMenuOpen }: MobileTabBarProps) {
     module?: string;
   }[] = [
     { key: 'feed',     label: t('nav.feed'),     icon: Newspaper,     path: tenantPath('/feed'), module: 'feed' },
-    { key: 'listings', label: t('nav.listings'), icon: ListTodo,      path: tenantPath('/listings'),  module: 'listings' },
+    // Short word ("Offers"): the bar has room for about 12 characters at 10px,
+    // and the full "Offers and requests" would be cut off.
+    { key: 'listings', label: t('nav.listings_short'), icon: ListTodo,      path: tenantPath('/listings'),  module: 'listings' },
     { key: 'create',   label: t('mobile_tab.create'),   icon: Plus,          action: handleCreateOpen,       isCreate: true },
     { key: 'messages', label: t('nav.messages'), icon: MessageSquare, path: tenantPath('/messages'),  badgeCount: counts.messages, module: 'messages' },
     { key: 'menu',     label: t('mobile_tab.menu'),     icon: Menu,          action: onMenuOpen },

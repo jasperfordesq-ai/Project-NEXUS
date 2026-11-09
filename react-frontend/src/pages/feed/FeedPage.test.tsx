@@ -159,9 +159,28 @@ describe('FeedPage', () => {
     render(<FeedPage />);
     expect(screen.getAllByText('All').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Posts').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Listings').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Offers and requests').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Events').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Polls').length).toBeGreaterThan(0);
+  });
+
+  it('colour-codes each kind of post in the filter row, as a key to the labels on the cards', () => {
+    render(<FeedPage />);
+    const filters = screen.getAllByRole('radiogroup', { name: 'Select feed filter' })[0]!;
+    const dotOf = (name: string) => within(filters).getByRole('radio', { name }).querySelector('[data-filter-dot]');
+    expect(dotOf('Events')?.className).toContain('bg-emerald-500');
+    expect(dotOf('Offers and requests')?.className).toContain('bg-accent');
+    // "All" and "Posts" are not one kind of post, so they have no dot.
+    expect(dotOf('All')).toBeNull();
+    expect(dotOf('Posts')).toBeNull();
+  });
+
+  it('shows the colour key in the phone filter sheet too', async () => {
+    render(<FeedPage />);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Filters' })[0]!);
+    const sheet = await screen.findByRole('dialog');
+    const events = within(sheet).getByRole('radio', { name: 'Events' });
+    expect(events.querySelector('[data-filter-dot]')?.className).toContain('bg-emerald-500');
   });
 
   it('shows quick post box for authenticated users', () => {
@@ -344,7 +363,7 @@ describe('FeedPage', () => {
       expect(within(sheetFilters).getByRole('radio', { name: 'All' })).toHaveAttribute('aria-checked', 'true');
       expect(within(sheetFilters).getByRole('radio', { name: 'Posts' })).toBeInTheDocument();
       expect(within(sheetFilters).getByRole('radio', { name: 'Events' })).toBeInTheDocument();
-      expect(within(sheetFilters).getByRole('radio', { name: 'Listings' })).toBeInTheDocument();
+      expect(within(sheetFilters).getByRole('radio', { name: 'Offers and requests' })).toBeInTheDocument();
     });
 
     it('keeps the sheet open on a filter with sub-filters and applies it to the feed request', async () => {
@@ -356,7 +375,7 @@ describe('FeedPage', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
       const sheet = await screen.findByRole('dialog');
-      fireEvent.click(within(sheet).getByRole('radio', { name: 'Listings' }));
+      fireEvent.click(within(sheet).getByRole('radio', { name: 'Offers and requests' }));
 
       // Listings has sub-filters, so the sheet stays open to offer them.
       await waitFor(() => {

@@ -24,7 +24,7 @@
   "filter": {
     "all": "الكل",
     "posts": "المنشورات",
-    "listings": "القوائم",
+    "listings": "العروض والطلبات",
     "events": "الفعاليات",
     "polls": "الاستطلاعات",
     "goals": "الأهداف",
@@ -307,6 +307,8 @@
     "view_analytics": "عرض التحليلات",
     "type_post": "منشور",
     "type_listing": "قائمة",
+    "type_offer": "عرض",
+    "type_request": "طلب",
     "type_event": "فعالية",
     "type_poll": "استطلاع",
     "type_goal": "هدف",

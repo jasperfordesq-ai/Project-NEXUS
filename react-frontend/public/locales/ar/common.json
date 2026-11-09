@@ -9,7 +9,8 @@
   "nav": {
     "dashboard": "لوحة التحكم",
     "feed": "الخلاصة",
-    "listings": "الإعلانات",
+    "listings": "العروض والطلبات",
+    "listings_short": "العروض",
     "messages": "الرسائل",
     "community": "المجتمع",
     "caring_community": "مجتمع الرعاية",
@@ -82,7 +83,7 @@
     "unread_notifications_many": "{{count}} إشعارات غير مقروءة",
     "unread_notifications_two": "{{count}} إشعارات غير مقروءة",
     "unread_notifications_zero": "{{count}} إشعارات غير مقروءة",
-    "my_listings": "إعلاناتي"
+    "my_listings": "عروضي وطلباتي"
   },
   "landing_links": {
     "title": "استكشف هذا المجتمع",

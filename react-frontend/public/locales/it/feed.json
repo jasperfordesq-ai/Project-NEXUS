@@ -24,7 +24,7 @@
   "filter": {
     "all": "Tutto",
     "posts": "Post",
-    "listings": "Annunci",
+    "listings": "Offerte e richieste",
     "events": "Eventi",
     "polls": "Sondaggi",
     "goals": "Obiettivi",
@@ -295,6 +295,8 @@
     "view_analytics": "Visualizza Analytics",
     "type_post": "Inviare",
     "type_listing": "Annuncio",
+    "type_offer": "Offerta",
+    "type_request": "Richiesta",
     "type_event": "Evento",
     "type_poll": "Sondaggio",
     "type_goal": "Obiettivo",

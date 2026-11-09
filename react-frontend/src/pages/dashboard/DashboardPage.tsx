@@ -7,6 +7,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { NewMembersStrip } from './NewMembersStrip';
 import { Card, CardBody } from '@/components/ui/Card';
 import { useGreeting } from '@/hooks/useGreeting';
 import { GuardianConsentPrompt } from '@/components/safeguarding/GuardianConsentPrompt';
@@ -210,7 +211,15 @@ interface DashboardEmptyStateProps {
 function DashboardEmptyState({ icon, title, description, actionTo, actionLabel }: DashboardEmptyStateProps) {
   return (
     <div className="flex min-h-36 flex-col items-center justify-center rounded-xl border border-dashed border-[var(--glass-border)] bg-theme-elevated/60 px-4 py-8 text-center text-theme-subtle">
-      <div className="mb-3 opacity-60">{icon}</div>
+      {/* The icon in a soft circle in the community colour, like the site's other
+          empty states (was faded grey). Callers pass h-10 w-10 icons. */}
+      <div
+        data-testid="dashboard-empty-icon"
+        aria-hidden="true"
+        className="mb-3 flex size-12 items-center justify-center rounded-full bg-accent-soft text-accent-soft-foreground [&_svg]:size-6 [&_svg]:text-accent-soft-foreground!"
+      >
+        {icon}
+      </div>
       <p className="text-sm font-medium text-theme-secondary">{title}</p>
       {description && <p className="mt-1 max-w-sm text-xs leading-5 text-theme-subtle">{description}</p>}
       {actionTo && actionLabel && (
@@ -478,6 +487,9 @@ export function DashboardPage() {
 
         {/* FLAT 2-COLUMN GRID — V2 layout (no sidebar) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-w-0">
+
+          {/* New members to say hello to (span 2); renders nothing when nobody is new */}
+          <NewMembersStrip className="md:col-span-2" />
 
           {/* Recent Listings (span 2) */}
           {hasListingsModule && <motion.div variants={itemVariants} className="md:col-span-2">

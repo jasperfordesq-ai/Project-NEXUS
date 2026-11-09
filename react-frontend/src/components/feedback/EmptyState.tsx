@@ -110,18 +110,25 @@ export function EmptyState({
       animate={{ opacity: 1, y: 0 }}
       className={`flex flex-col items-center justify-center py-16 text-center ${className}`}
     >
-      {/* Icon circle */}
+      {/*
+        Icon circle, in the community colour (AWID feedback, Nov 2026: empty
+        pages were a grey icon in a grey box). Every caller's icon gets one
+        size and the circle's colour: callers pass anything from w-6 to w-12,
+        and some add text-theme-subtle, which is unlayered CSS, so the colour
+        override must be important.
+      */}
       <div
-        className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-theme-elevated border border-theme-default mb-6"
+        data-testid="empty-state-icon"
+        className="mb-6 inline-flex size-20 items-center justify-center rounded-full bg-accent-soft text-accent-soft-foreground ring-8 ring-accent/5 [&_svg]:size-9 [&_svg]:text-accent-soft-foreground!"
         aria-hidden="true"
       >
-        {icon || <Inbox className="w-10 h-10 text-theme-subtle" />}
+        {icon || <Inbox />}
       </div>
 
       <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>
 
       {displayMessage && (
-        <p className="text-muted text-sm max-w-sm mb-6">{displayMessage}</p>
+        <p className="text-theme-secondary text-sm max-w-sm mb-6">{displayMessage}</p>
       )}
 
       {/* action: ReactNode or config object */}

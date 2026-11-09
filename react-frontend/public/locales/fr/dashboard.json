@@ -176,5 +176,13 @@
     "error_location": "Nous n'avons pas pu enregistrer ce lieu. Vérifiez-le et réessayez.",
     "error_coordinates": "Nous n'avons pas pu utiliser la position sur la carte pour ce lieu. Choisissez-le à nouveau dans la liste ou saisissez uniquement votre ville.",
     "error_generic": "Nous n'avons pas pu enregistrer votre lieu. Veuillez réessayer."
+  },
+  "new_members": {
+    "title": "Dites bonjour aux nouveaux membres",
+    "description": "Ils ont rejoint {{community}} récemment. Un petit bonjour les aide à trouver leur place.",
+    "see_all": "Voir tous les membres",
+    "joined": "A rejoint {{when}}",
+    "say_hello": "Dire bonjour",
+    "say_hello_aria": "Dire bonjour à {{name}}"
   }
 }

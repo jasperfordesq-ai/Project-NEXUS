@@ -393,7 +393,8 @@ describe('TenantContext', () => {
       await renderWithTheme({});
 
       await waitFor(() => {
-        expect(document.documentElement.style.getPropertyValue('--accent')).toBe('#6366f1');
+        // The standard colour as painted on the light theme (ThemeContext).
+        expect(document.documentElement.style.getPropertyValue('--accent')).toBe('#5b5ede');
       });
       expect(screen.getByTestId('community-color')).toHaveTextContent('none');
     });

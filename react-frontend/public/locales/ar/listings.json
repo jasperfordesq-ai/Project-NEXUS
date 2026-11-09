@@ -426,7 +426,7 @@
   "detail_renewed_count_two": "جُدِّد {{count}} مرة",
   "detail_renewed_count_zero": "جُدِّد {{count}} مرة",
   "mine": {
-    "page_title": "إعلاناتي",
+    "page_title": "عروضي وطلباتي",
     "eyebrow": "عروضك وطلباتك",
     "title": "عروضي وطلباتي",
     "description": "كل ما عرضته أو طلبته، وما إذا كان الأعضاء الآخرون يستطيعون رؤيته.",

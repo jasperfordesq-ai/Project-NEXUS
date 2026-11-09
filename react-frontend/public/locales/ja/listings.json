@@ -394,7 +394,7 @@
   "distance_meters": "{{distance}} 分",
   "distance_kilometers": "{{distance}} km",
   "mine": {
-    "page_title": "自分のリスティング",
+    "page_title": "自分の提供・リクエスト",
     "eyebrow": "あなたの提供と依頼",
     "title": "自分の提供・リクエスト",
     "description": "あなたが提供・依頼したものすべてと、他のメンバーに表示されているかどうかを確認できます。",
