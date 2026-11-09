@@ -3,6 +3,9 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -100,6 +103,7 @@ function SellerOrderCard({
   onCancel: (orderId: number) => void;
 }) {
   const { t } = useTranslation('marketplace');
+  const palette = useSitePalette();
   const { tenant, tenantPath } = useTenant();
 
   const hasRating = order.ratings && order.ratings.some((r) => r.rater_role === 'buyer');
@@ -121,8 +125,9 @@ function SellerOrderCard({
               decoding="async"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Package className="w-8 h-8 text-muted" />
+            // No photo: the same coloured cover as the item's card (was grey).
+            <div className="group h-full w-full" data-testid="order-item-cover">
+              <ThemedCover size="sm" colour={colourForSeed(order.listing.id, palette)} icon={Package} />
             </div>
           )}
         </Link> : (

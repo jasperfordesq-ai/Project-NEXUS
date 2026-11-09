@@ -36,8 +36,11 @@ type ThemeSetup = {
 };
 
 const IRISH_MEMBER_ROUTES = [
-  { path: 'dashboard', heading: 'Fáilte ar ais' },
-  { path: 'listings', heading: 'Liostálacha' },
+  // The dashboard greets by time of day since 9 Nov 2026 (common.greeting.*:
+  // "Maidin mhaith" / "Tráthnóna maith"), not "Fáilte ar ais".
+  { path: 'dashboard', heading: /Maidin mhaith|Tráthnóna maith/ },
+  // The offers page is "Offers and requests" since 9 Nov 2026 (listings.title).
+  { path: 'listings', heading: 'Tairiscintí agus iarratais' },
   { path: 'events', heading: 'Imeachtaí' },
   { path: 'messages', heading: 'Teachtaireachtaí' },
   { path: 'wallet', heading: 'Sparán' },

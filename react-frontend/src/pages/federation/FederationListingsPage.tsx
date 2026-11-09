@@ -38,6 +38,10 @@ import MapPin from 'lucide-react/icons/map-pin';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import ListTodo from 'lucide-react/icons/list-todo';
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
+import { themeIconFor } from '@/lib/themeIcons';
 import MessageSquare from 'lucide-react/icons/message-square';
 import User from 'lucide-react/icons/user';
 import { useTranslation } from 'react-i18next';
@@ -513,7 +517,7 @@ export function FederationListingsPage() {
                       </Chip>
                     )}
                     {isExternal && (
-                      <Chip size="sm" variant="flat" className="bg-accent/10 text-accent dark:text-accent"
+                      <Chip size="sm" variant="flat" className="bg-accent-soft text-accent-soft-foreground"
                         startContent={<Globe className="w-3 h-3" aria-hidden="true" />}
                       >
                         {t('listings.external_partner')}
@@ -595,7 +599,7 @@ export function FederationListingsPage() {
                       <Chip
                         size="sm"
                         variant="flat"
-                        className="bg-accent/10 text-accent dark:text-accent"
+                        className="bg-accent-soft text-accent-soft-foreground"
                         startContent={<Globe className="w-3 h-3" aria-hidden="true" />}
                       >
                         {selectedListing.timebank.name}
@@ -667,6 +671,7 @@ interface FederatedListingCardProps {
 
 function FederatedListingCard({ listing, onViewDetails }: FederatedListingCardProps) {
   const { t } = useTranslation('federation');
+  const palette = useSitePalette();
   const isOffer = listing.type === 'offer';
   const avatarSrc = resolveAvatarUrl(listing.author?.avatar);
   const imageProps = listing.image_url
@@ -694,20 +699,14 @@ function FederatedListingCard({ listing, onViewDetails }: FederatedListingCardPr
           />
         </div>
       ) : (
-        <div
-          className={`w-full h-20 rounded-lg mb-3 flex items-center justify-center ${
-            isOffer
-              ? 'bg-emerald-500/10'
-              : 'bg-amber-500/10'
-          }`}
-        >
-          <Hand
-            className={`w-8 h-8 ${
-              isOffer
-                ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-amber-600 dark:text-amber-400'
-            }`}
-            aria-hidden="true"
+        // No photo: a cover with its theme's picture, as on the offers page,
+        // as tall as a photo so the grid stays even (was a short tinted box).
+        <div className="group w-full h-36 rounded-lg overflow-hidden mb-3">
+          <ThemedCover
+            data-testid="federated-listing-cover"
+            colour={colourForSeed(`listing-category-${(listing.category_name ?? listing.type).toLowerCase()}`, palette)}
+            icon={(listing.category_name ? themeIconFor({ name: listing.category_name }) : null) ?? Hand}
+            label={listing.category_name}
           />
         </div>
       )}
@@ -718,9 +717,10 @@ function FederatedListingCard({ listing, onViewDetails }: FederatedListingCardPr
           size="sm"
           variant="flat"
           className={
+            // Pale tint, deep text (the -600 on -500/20 was about 3.3:1).
             isOffer
-              ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-              : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300'
+              : 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300'
           }
         >
           {isOffer ? t('listings.offer') : t('listings.request')}
@@ -734,7 +734,7 @@ function FederatedListingCard({ listing, onViewDetails }: FederatedListingCardPr
           <Chip
             size="sm"
             variant="flat"
-            className="bg-accent/10 text-accent dark:text-accent"
+            className="bg-accent-soft text-accent-soft-foreground"
             startContent={<Globe className="w-3 h-3" />}
           >
             {t('external')}
@@ -782,7 +782,7 @@ function FederatedListingCard({ listing, onViewDetails }: FederatedListingCardPr
         <Chip
           size="sm"
           variant="flat"
-          className="bg-accent/10 text-accent dark:text-accent"
+          className="bg-accent-soft text-accent-soft-foreground"
           startContent={<Globe className="w-3 h-3" aria-hidden="true" />}
         >
           {listing.timebank.name}

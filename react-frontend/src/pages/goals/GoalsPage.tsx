@@ -64,6 +64,8 @@ import { useAuth, useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
+import { CoverTile } from '@/components/ui/CoverTile';
+import { coverSeed } from '@/lib/coverSeeds';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { getFormattingLocale, resolveAvatarUrl } from '@/lib/helpers';
@@ -1149,6 +1151,14 @@ function GoalCard({
       <ConfettiCelebration show={isCelebrating} />
 
       <div className="flex items-start justify-between gap-4">
+        {/* The goal's own colour — the same as its goal page. */}
+        <CoverTile
+          data-testid="goal-card-tile"
+          seed={coverSeed.goal(goal.id)}
+          icon={Target}
+          name={goal.title}
+          className="hidden h-11 w-11 rounded-xl sm:block"
+        />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <Button

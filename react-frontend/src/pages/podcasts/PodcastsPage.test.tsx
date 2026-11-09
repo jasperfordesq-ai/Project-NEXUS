@@ -144,6 +144,13 @@ describe('PodcastsPage', () => {
       expect(screen.getByText('Tech Talk')).toBeInTheDocument();
     });
     expect(screen.getByText('Daily News')).toBeInTheDocument();
+    // A show without artwork: the same coloured cover as its page and the
+    // player bar (was its initials); its category in its own colour.
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(screen.getAllByTestId('podcast-card-cover')[0]!.getAttribute('data-colour'))
+      .toBe(colourForSeed(coverSeed.podcastShow('tech-talk'), paletteFor(null)));
+    expect(screen.getAllByTestId('podcast-card-category')[0]!.className).toMatch(/bg-[a-z]+-100/);
   });
 
   it('renders the podcast summary when present', async () => {

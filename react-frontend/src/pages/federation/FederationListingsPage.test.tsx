@@ -150,6 +150,19 @@ describe('FederationListingsPage', () => {
     });
   });
 
+  // A partner community's offer without a photo had a plain tinted box (shorter
+  // than a photo, so the grid was uneven); it now has a cover with its theme's
+  // picture, like the offers page. Its offer/request label is readable.
+  it('gives an offer without a photo a theme cover and a readable label', async () => {
+    setupMocks();
+    render(<FederationListingsPage />);
+    const cover = await screen.findByTestId('federated-listing-cover');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBeTruthy();
+    const label = screen.getAllByText(/^(Offer|listings\.offer)$/).find((el) => el.closest('[data-slot="chip"]'))!.closest('[data-slot="chip"]')!;
+    expect(label.className).toContain('text-emerald-800');
+  });
+
   it('shows partner name on listing card', async () => {
     setupMocks();
     render(<FederationListingsPage />);

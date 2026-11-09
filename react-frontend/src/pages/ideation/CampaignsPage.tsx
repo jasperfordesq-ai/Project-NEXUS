@@ -36,6 +36,8 @@ import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveThumbnailUrl, getFormattingLocale } from '@/lib/helpers';
+import { DetailCover } from '@/components/ui/DetailCover';
+import { coverSeed } from '@/lib/coverSeeds';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -232,17 +234,15 @@ export function CampaignsPage() {
               className="block"
             >
               <GlassCard className="h-full hover:shadow-lg transition-shadow cursor-pointer overflow-hidden">
-                {campaign.cover_image && (
-                  <div className="w-full h-32 overflow-hidden">
-                    <img
-                      src={resolveThumbnailUrl(campaign.cover_image, { width: 640, height: 320 })}
-                      alt={campaign.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
-                )}
+                {/* Its picture, or a cover in its own colour — the same as its page. */}
+                <DetailCover
+                  data-testid="campaign-card-cover"
+                  seed={coverSeed.campaign(campaign.id)}
+                  icon={Layers}
+                  imageUrl={campaign.cover_image ? resolveThumbnailUrl(campaign.cover_image, { width: 640, height: 320 }) : null}
+                  imageAlt={campaign.title}
+                  className="h-32"
+                />
                 <div className="p-5">
                   <h3 className="text-lg font-semibold text-[var(--color-text)] mb-2">
                     {campaign.title}

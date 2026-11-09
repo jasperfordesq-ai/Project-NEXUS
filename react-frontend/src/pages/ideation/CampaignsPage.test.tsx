@@ -124,6 +124,20 @@ describe('CampaignsPage', () => {
     expect(screen.getByText('Digital Inclusion Drive')).toBeInTheDocument();
   });
 
+  // Campaigns without a picture had no cover; each now has one in its own
+  // colour — the same as its page.
+  it('gives a campaign without a picture a cover in the same colour as its page', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: mockCampaigns });
+    render(<CampaignsPage />);
+    const covers = await screen.findAllByTestId('campaign-card-cover');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(covers.map((cover) => cover.getAttribute('data-colour'))).toEqual([
+      colourForSeed(coverSeed.campaign(1), paletteFor(null)),
+      colourForSeed(coverSeed.campaign(2), paletteFor(null)),
+    ]);
+  });
+
   it('shows error state when API fails', async () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Network error'));
     render(<CampaignsPage />);

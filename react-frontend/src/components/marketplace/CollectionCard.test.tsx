@@ -129,3 +129,14 @@ describe('CollectionCard — onClick', () => {
     expect(() => render(<CollectionCard collection={baseCollection} />)).not.toThrow();
   });
 });
+
+// An empty collection showed a grey box with a faint folder; it now has a
+// cover in its own colour, the same every visit.
+describe('CollectionCard — empty collection', () => {
+  it('gives an empty collection a cover in its own colour', () => {
+    render(<CollectionCard collection={baseCollection} thumbnails={[]} />);
+    const cover = screen.getByTestId('collection-card-cover');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBeTruthy();
+  });
+});

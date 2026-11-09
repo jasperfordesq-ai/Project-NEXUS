@@ -191,6 +191,11 @@ describe('GoalsPage', () => {
     expect(screen.getByText('Helping the community')).toBeInTheDocument();
     expect(screen.getByText('4 / 10')).toBeInTheDocument();
     expect(screen.getByText('40%')).toBeInTheDocument();
+    // Each goal carries its own colour — the same as its goal page.
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(screen.getByTestId('goal-card-tile').getAttribute('data-colour'))
+      .toBe(colourForSeed(coverSeed.goal(1), paletteFor(null)));
   });
 
   it('shows error state on API failure', async () => {

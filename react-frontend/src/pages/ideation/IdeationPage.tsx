@@ -52,6 +52,8 @@ import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveThumbnailUrl, getFormattingLocale } from '@/lib/helpers';
+import { DetailCover } from '@/components/ui/DetailCover';
+import { coverSeed } from '@/lib/coverSeeds';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -517,18 +519,16 @@ export function IdeationPage() {
                 className="block h-full"
               >
                 <GlassCard className="h-full hover:shadow-lg transition-shadow cursor-pointer overflow-hidden">
-                  {/* Cover Image */}
-                  {challenge.cover_image && (
-                    <div className="w-full h-40 overflow-hidden">
-                      <img
-                        src={resolveThumbnailUrl(challenge.cover_image, { width: 640, height: 360 })}
-                        alt={challenge.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                  )}
+                  {/* Its picture, or a cover in its own colour — the same as its page
+                      (was nothing, so the grid was uneven). */}
+                  <DetailCover
+                    data-testid="challenge-card-cover"
+                    seed={coverSeed.challenge(challenge.id)}
+                    icon={Trophy}
+                    imageUrl={challenge.cover_image ? resolveThumbnailUrl(challenge.cover_image, { width: 640, height: 360 }) : null}
+                    imageAlt={challenge.title}
+                    className="h-40"
+                  />
 
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-3 mb-3">
@@ -627,9 +627,7 @@ export function IdeationPage() {
                 onPress={() => handleToggleFavorite(challenge.id)}
                 aria-label={challenge.is_favorited ? t('favorites.remove') : t('favorites.add')}
                 isDisabled={favoritingIds.has(challenge.id)}
-                className={`absolute right-3 z-10 size-11 min-h-11 min-w-11 rounded-full ${
-                  challenge.cover_image ? 'top-[10.75rem]' : 'top-3'
-                }`}
+                className="absolute right-3 top-[10.75rem] z-10 size-11 min-h-11 min-w-11 rounded-full"
               >
                 <Heart
                   className={`w-4 h-4 ${

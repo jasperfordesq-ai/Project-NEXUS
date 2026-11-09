@@ -17,6 +17,9 @@
  * - Auth required
  */
 
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -94,6 +97,7 @@ function OrderCard({
   onCancel: (orderId: number) => void;
 }) {
   const { t } = useTranslation('marketplace');
+  const palette = useSitePalette();
   const { tenant, tenantPath } = useTenant();
 
   const hasRating = order.ratings && order.ratings.some((r) => r.rater_role === 'buyer');
@@ -115,8 +119,9 @@ function OrderCard({
               decoding="async"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <ShoppingBag className="w-8 h-8 text-muted" />
+            // No photo: the same coloured cover as the item's card (was grey).
+            <div className="group h-full w-full" data-testid="order-item-cover">
+              <ThemedCover size="sm" colour={colourForSeed(order.listing.id, palette)} icon={ShoppingBag} />
             </div>
           )}
         </Link> : (

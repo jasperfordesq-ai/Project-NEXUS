@@ -7,6 +7,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Avatar, Button, Card, CardBody, Chip, ModuleStageBadge, SearchField, Select, SelectItem, Spinner } from '@/components/ui';
+import { CoverTile } from '@/components/ui/CoverTile';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { categoryColour, colourForSeed } from '@/lib/categoryColours';
+import { coverSeed } from '@/lib/coverSeeds';
+import PodcastCoverIcon from 'lucide-react/icons/podcast';
 import { useAuth, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
@@ -27,6 +32,7 @@ function showArtwork(show: PodcastShow): string | undefined {
 
 export default function PodcastsPage() {
   const { t } = useTranslation('podcasts');
+  const palette = useSitePalette();
   usePageTitle(t('title'));
   const { tenant, isLoading: tenantLoading, tenantPath } = useTenant();
   const { isAuthenticated } = useAuth();
@@ -242,16 +248,27 @@ export default function PodcastsPage() {
               <Card key={show.id} className="h-full">
                 <CardBody className="flex h-full flex-col gap-4">
                   <div className="flex gap-4">
-                    <Avatar
-                      src={showArtwork(show)}
-                      name={show.title}
-                      radius="md"
-                      className="h-16 w-16 shrink-0"
-                      imgProps={showArtwork(show) ? {
-                        src: resolveThumbnailUrl(showArtwork(show), { width: 192, height: 192 }),
-                        referrerPolicy: 'no-referrer',
-                      } : undefined}
-                    />
+                    {showArtwork(show) ? (
+                      <Avatar
+                        src={showArtwork(show)}
+                        name={show.title}
+                        radius="md"
+                        className="h-16 w-16 shrink-0"
+                        imgProps={{
+                          src: resolveThumbnailUrl(showArtwork(show), { width: 192, height: 192 }),
+                          referrerPolicy: 'no-referrer',
+                        }}
+                      />
+                    ) : (
+                      // No artwork: the same coloured cover as the show page and the player bar.
+                      <CoverTile
+                        data-testid="podcast-card-cover"
+                        seed={coverSeed.podcastShow(show.slug)}
+                        icon={PodcastCoverIcon}
+                        name={show.title}
+                        className="h-16 w-16 rounded-2xl"
+                      />
+                    )}
                     <div className="min-w-0">
                       <Link className="text-base font-semibold hover:text-accent" to={tenantPath(`/podcasts/${show.slug}`)}>
                         {show.title}
@@ -262,7 +279,15 @@ export default function PodcastsPage() {
 
                   <div className="mt-auto flex flex-wrap items-center gap-2 text-xs text-muted">
                     <Chip size="sm" variant="soft">{t(`visibility.${show.visibility}`, { defaultValue: show.visibility })}</Chip>
-                    {show.category ? <Chip size="sm" variant="soft">{show.category}</Chip> : null}
+                    {show.category ? (
+                      // Each category in its own colour (was grey).
+                      <span
+                        data-testid="podcast-card-category"
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryColour(colourForSeed(`podcast-category-${show.category.toLowerCase()}`, palette)).band}`}
+                      >
+                        {show.category}
+                      </span>
+                    ) : null}
                     <span>{t('show.episode_count', { count: show.approved_episode_count ?? show.episode_count ?? 0 })}</span>
                     <span>{t('show.follower_count', { count: show.subscriber_count ?? 0 })}</span>
                     {show.owner?.name ? <span>{t('show.byline', { name: show.owner.name })}</span> : null}

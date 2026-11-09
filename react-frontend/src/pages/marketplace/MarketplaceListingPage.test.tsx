@@ -343,6 +343,16 @@ describe('MarketplaceListingPage', () => {
     });
   });
 
+  // An item without photos showed a grey box; it now has the same coloured
+  // cover as its card in the marketplace.
+  it('gives an item without photos the same coloured cover as its card', async () => {
+    setupMocks({ images: [] });
+    const { MarketplaceListingPage } = await import('./MarketplaceListingPage');
+    render(<MarketplaceListingPage />);
+    const placeholder = await screen.findByTestId('marketplace-gallery-placeholder');
+    expect(placeholder.querySelector('[data-colour]')).not.toBeNull();
+  });
+
   // AWID accessibility report, Oct 2026, point 6: the seller's own words describe each photo.
   it('describes the photo and its thumbnail with what the seller wrote', async () => {
     setupMocks({

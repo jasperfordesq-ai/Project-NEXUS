@@ -27,6 +27,7 @@ import MapPin from 'lucide-react/icons/map-pin';
 import Eye from 'lucide-react/icons/eye';
 import Clock from 'lucide-react/icons/clock';
 import ShoppingBag from 'lucide-react/icons/shopping-bag';
+import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Share2 from 'lucide-react/icons/share-2';
 import Star from 'lucide-react/icons/star';
@@ -232,14 +233,15 @@ function getDeliveryMethodKey(method: string): string {
 // Image Gallery
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ImageGallery({ images, videoUrl }: { images: ListingDetail['images']; videoUrl?: string | null }) {
+function ImageGallery({ images, videoUrl, seed }: { images: ListingDetail['images']; videoUrl?: string | null; seed: number | string }) {
   const { t } = useTranslation('marketplace');
   const [activeIndex, setActiveIndex] = useState(0);
 
   if (images.length === 0 && !videoUrl) {
+    // No photos: the same coloured cover as the item's card (was a grey box).
     return (
-      <div className="aspect-video bg-surface-secondary rounded-xl flex items-center justify-center">
-        <ShoppingBag className="w-16 h-16 text-muted" aria-hidden="true" />
+      <div data-testid="marketplace-gallery-placeholder" className="aspect-video overflow-hidden rounded-xl">
+        <ImagePlaceholder className="h-full w-full" seed={seed} icon={ShoppingBag} />
       </div>
     );
   }
@@ -644,7 +646,7 @@ export function MarketplaceListingPage() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Image gallery — 3 cols */}
           <div className="lg:col-span-3">
-            <ImageGallery images={listing.images} videoUrl={listing.video_url} />
+            <ImageGallery images={listing.images} videoUrl={listing.video_url} seed={listing.id} />
           </div>
 
           {/* Details sidebar — 2 cols */}

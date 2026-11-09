@@ -17,6 +17,9 @@ import Globe from 'lucide-react/icons/globe';
 import Package from 'lucide-react/icons/package';
 import { useTranslation } from 'react-i18next';
 import { resolveThumbnailUrl } from '@/lib/helpers';
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { colourForSeed } from '@/lib/categoryColours';
 import type { MarketplaceCollection } from '@/types/marketplace';
 
 interface CollectionCardProps {
@@ -28,6 +31,7 @@ interface CollectionCardProps {
 
 export function CollectionCard({ collection, thumbnails = [], onClick }: CollectionCardProps) {
   const { t } = useTranslation('marketplace');
+  const palette = useSitePalette();
 
   return (
     <Card
@@ -58,8 +62,9 @@ export function CollectionCard({ collection, thumbnails = [], onClick }: Collect
               ))}
             </div>
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <FolderHeart className="w-12 h-12 text-muted" />
+            // Empty: a cover in the collection's own colour (was a grey box).
+            <div className="group h-full w-full">
+              <ThemedCover data-testid="collection-card-cover" colour={colourForSeed(`collection-${collection.id}`, palette)} icon={FolderHeart} />
             </div>
           )}
         </div>

@@ -178,6 +178,18 @@ describe('IdeationPage', () => {
     });
   });
 
+  // A challenge without a picture had no cover, so the grid was uneven; it now
+  // has one in the challenge's own colour — the same as its page.
+  it('gives a challenge without a picture a cover in the same colour as its page', async () => {
+    setupMocks();
+    render(<IdeationPage />);
+    const cover = await screen.findByTestId('challenge-card-cover');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(cover).toHaveAttribute('aria-hidden', 'true');
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.challenge(1), paletteFor(null)));
+  });
+
   it('shows error state when API fails', async () => {
     vi.mocked(api.get).mockImplementation((url: string) => {
       if (url.includes('/v2/ideation-challenges')) {
