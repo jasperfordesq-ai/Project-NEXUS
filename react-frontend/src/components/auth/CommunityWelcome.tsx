@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { TenantLogo } from '@/components/branding/TenantLogo';
 import { CommunityPhoto, useCommunityPhotoUrl } from '@/components/branding/CommunityPhoto';
 import { ThemedCover } from '@/components/ui/ThemedCover';
-import { useTenant } from '@/contexts';
+import { useTenant } from '@/contexts/TenantContext';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 
 export function CommunityWelcome({ className = '' }: { className?: string }) {

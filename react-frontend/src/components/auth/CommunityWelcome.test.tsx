@@ -17,14 +17,21 @@ const { branding } = vi.hoisted(() => ({
   },
 }));
 
+const tenantValue = () => ({
+  tenant: { id: 2, name: 'Hour Timebank', slug: 'test' },
+  branding,
+  tenantPath: (p: string) => `/test${p}`,
+  hasFeature: vi.fn((_key: string) => true),
+  hasModule: vi.fn((_key: string) => true),
+});
+// CommunityWelcome is on the sign-in startup path, so it reads the tenant from
+// its own module (check-bundle-budget); CommunityPhoto inside it uses the barrel.
+vi.mock('@/contexts/TenantContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/TenantContext')>()),
+  useTenant: () => tenantValue(),
+}));
 vi.mock('@/contexts', () => createMockContexts({
-  useTenant: () => ({
-    tenant: { id: 2, name: 'Hour Timebank', slug: 'test' },
-    branding,
-    tenantPath: (p: string) => `/test${p}`,
-    hasFeature: vi.fn((_key: string) => true),
-    hasModule: vi.fn((_key: string) => true),
-  }),
+  useTenant: () => tenantValue(),
 }));
 
 import { CommunityWelcome } from './CommunityWelcome';

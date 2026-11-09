@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2831,
-  "api_route_rows": 2796,
-  "distinct_api_paths": 2332,
+  "total_registered_routes": 2835,
+  "api_route_rows": 2800,
+  "distinct_api_paths": 2335,
   "route_source_fingerprint": {
-    "digest": "0003143fb7a641b98c8d023759f55c82861ade8e1c18ef465667145f5a207281",
+    "digest": "ca19d0084ef2477a34bc82db6f499c212addf67001af0239b4104c28b9e14692",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "f8a9f999501a672b17cb5528546133e0489cd37b9256b639ae297d2942a4e16c"
+        "sha256": "fd4b350db21cf386121b71a9b234cc1ef90748d00a7a3d5b91ce1abc9d78dee6"
       },
       {
         "file": "routes/channels.php",
@@ -2971,6 +2971,10 @@
       "GET",
       "PUT"
     ],
+    "/api/v2/admin/settings/community-photo": [
+      "DELETE",
+      "POST"
+    ],
     "/api/v2/admin/settings/header-colors": [
       "PUT"
     ],
@@ -3918,6 +3922,9 @@
       "POST"
     ],
     "/api/v2/community/stats": [
+      "GET"
+    ],
+    "/api/v2/community/this-month": [
       "GET"
     ],
     "/api/v2/config/algorithms": [
@@ -6801,6 +6808,9 @@
     ],
     "/api/v2/tenants": [
       "GET"
+    ],
+    "/api/v2/ugc-language": [
+      "POST"
     ],
     "/api/v2/ugc-translate": [
       "POST"

@@ -57,6 +57,13 @@ vi.mock('@/contexts', () => ({
   useModule: vi.fn(() => true),
 }));
 
+// CommunityWelcome (the welcome step's cover) reads the tenant from its own
+// module, being on the sign-in startup path too.
+vi.mock('@/contexts/TenantContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/TenantContext')>()),
+  useTenant: vi.fn(() => stableTenantValue),
+}));
+
 vi.mock('@/contexts/ToastContext', () => ({
   useToast: vi.fn(() => stableToastValue),
   ToastProvider: ({ children }: { children: React.ReactNode }) => children,

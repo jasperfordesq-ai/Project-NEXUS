@@ -15,7 +15,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PartyPopper from 'lucide-react/icons/party-popper';
 import X from 'lucide-react/icons/x';
-import { Button, Card, CardBody } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Card, CardBody } from '@/components/ui/Card';
 import { useAuth, useTenant } from '@/contexts';
 import { getFormattingLocale } from '@/lib/helpers';
 
