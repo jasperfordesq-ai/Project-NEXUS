@@ -1041,11 +1041,44 @@ describe('Events v2 API boundary', () => {
         sequence: 3,
         updated_at: '2030-04-01T08:00:00+00:00',
         detail_url: 'https://app.example.test/events/101',
+        category_id: 7,
+      }, {
+        id: 102,
+        uid: 'uncategorised@example.test',
+        title: 'Uncategorised calendar event',
+        description: 'Safe',
+        starts_at: '2030-05-02',
+        ends_at: '2030-05-03',
+        timezone: 'UTC',
+        all_day: true,
+        operational_status: 'scheduled',
+        calendar_status: 'confirmed',
+        sequence: 0,
+        updated_at: '2030-04-01T08:00:00Z',
+        detail_url: null,
+        category_id: null,
+      }, {
+        // A server that predates the field sends none.
+        id: 103,
+        uid: 'older-server@example.test',
+        title: 'Older server calendar event',
+        description: 'Safe',
+        starts_at: '2030-05-04',
+        ends_at: '2030-05-05',
+        timezone: 'UTC',
+        all_day: true,
+        operational_status: 'scheduled',
+        calendar_status: 'confirmed',
+        sequence: 0,
+        updated_at: '2030-04-01T08:00:00Z',
+        detail_url: null,
       }],
     });
 
     const response = await eventsApi.calendar('2030-05-01', '2030-06-01');
 
+    expect(response.success).toBe(true);
+    expect(response.data?.map((entry) => entry.category_id)).toEqual([7, null, undefined]);
     expect(response.data?.[0]?.timezone).toBe('Europe/Dublin');
     expect(apiMock.get).toHaveBeenCalledWith(
       '/v2/events/calendar?from=2030-05-01&to=2030-06-01',

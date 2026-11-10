@@ -9,6 +9,8 @@ import { CalendarDate } from '@internationalized/date';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { colourForSeed, paletteFor } from '@/lib/categoryColours';
+import { coverSeed } from '@/lib/coverSeeds';
 import type { EventCalendarProjection } from '@/lib/events-api';
 import {
   EventCalendarViews,
@@ -17,10 +19,14 @@ import {
   normalizeAgendaRange,
 } from './EventCalendarViews';
 
-const { calendarMock, logErrorMock } = vi.hoisted(() => ({
+const { calendarMock, logErrorMock, apiGetMock } = vi.hoisted(() => ({
   calendarMock: vi.fn(),
   logErrorMock: vi.fn(),
+  apiGetMock: vi.fn(),
 }));
+
+// The category list the colours are shared out from (useCategoryListColours).
+vi.mock('@/lib/api', () => ({ api: { get: apiGetMock } }));
 
 vi.mock('@/lib/events-api', () => ({
   eventsApi: { calendar: calendarMock },
@@ -211,7 +217,57 @@ describe('normalizeAgendaRange', () => {
 describe('EventCalendarViews', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
     calendarMock.mockResolvedValue({ success: true, data: [projection] });
+    apiGetMock.mockResolvedValue({ success: false });
+  });
+
+  // The calendar colours an entry by its kind of event, by the same rule as
+  // the events list's date tile (EventsPage.test.tsx asserts the same values).
+  describe('category colours', () => {
+    const repair = { ...projection, id: 41, uid: 'event-41@example.test', title: 'Repair Cafe', category_id: 7 };
+    const bikes = { ...projection, id: 42, uid: 'event-42@example.test', title: 'Bike Clinic', category_id: 7 };
+    const choir = { ...projection, id: 43, uid: 'event-43@example.test', title: 'Choir', category_id: 8 };
+    const loose = { ...projection, id: 44, uid: 'event-44@example.test', title: 'Uncategorised', category_id: null };
+
+    const colours = () => screen.getAllByTestId('calendar-event-colour')
+      .map((mark) => mark.getAttribute('data-colour'));
+
+    it('shares the palette out between the event categories of the community, as the list does', async () => {
+      calendarMock.mockResolvedValue({ success: true, data: [repair, bikes, choir] });
+      apiGetMock.mockResolvedValue({ success: true, data: [{ id: 8, color: 'blue' }, { id: 7, color: 'blue' }] });
+
+      renderCalendar('agenda', '/events?from=2026-02-01&to=2026-03-03');
+      await screen.findByText('Repair Cafe');
+
+      const palette = paletteFor(null);
+      await waitFor(() => expect(colours()).toEqual([palette[0], palette[0], palette[1]]));
+      expect(apiGetMock).toHaveBeenCalledWith('/v2/categories?type=event', expect.any(Object));
+      const marks = screen.getAllByTestId('calendar-event-colour');
+      // Same kind, same colour; different kinds, different colours.
+      expect(marks[0]!.className).toBe(marks[1]!.className);
+      expect(marks[0]!.className).not.toBe(marks[2]!.className);
+      // Decoration only: nothing for a screen reader.
+      marks.forEach((mark) => {
+        expect(mark).toHaveAttribute('aria-hidden', 'true');
+        expect(mark).toBeEmptyDOMElement();
+      });
+    });
+
+    it('falls back to the seed colour of the list when the category list is unavailable', async () => {
+      calendarMock.mockResolvedValue({ success: true, data: [repair, bikes, loose] });
+
+      renderCalendar('month', '/events?month=2026-02&date=2026-02-01');
+      await screen.findByText('Repair Cafe');
+
+      const palette = paletteFor(null);
+      expect(colours()).toEqual([
+        colourForSeed(coverSeed.event(41, 7), palette),
+        colourForSeed(coverSeed.event(42, 7), palette),
+        colourForSeed(coverSeed.event(44, null), palette),
+      ]);
+      expect(colours()[0]).toBe(colours()[1]);
+    });
   });
 
   it('requests exact half-open month boundaries and announces non-colour status text', async () => {

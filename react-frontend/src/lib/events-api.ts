@@ -789,6 +789,9 @@ export const eventCalendarProjectionSchema = z.object({
   sequence: z.number().int().nonnegative(),
   updated_at: z.string().min(1),
   detail_url: z.string().url().nullable(),
+  // Decoration only: lets the calendar colour an entry by its kind of event,
+  // as the events list does. Optional so a server that predates it still parses.
+  category_id: z.number().int().positive().nullable().optional(),
 }).strict();
 
 export const eventCalendarActionsSchema = z.object({

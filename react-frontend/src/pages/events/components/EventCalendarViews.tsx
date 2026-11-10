@@ -17,7 +17,11 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { useTenant } from '@/contexts/TenantContext';
+import { useCategoryListColours } from '@/hooks/useCategoryListColours';
+import { categoryColour, colourForSeed } from '@/lib/categoryColours';
+import { coverSeed } from '@/lib/coverSeeds';
 import {
   eventsApi,
   type EventCalendarProjection,
@@ -135,6 +139,11 @@ function readableDate(value: CalendarDate): string {
 function EventRows({ events }: { events: EventCalendarProjection[] }) {
   const { t } = useTranslation('events');
   const { tenantPath } = useTenant();
+  // The same rule as the events list's date tile: the community's event
+  // categories share the palette out; an event with no category (or one the
+  // list does not have) keeps a colour of its own.
+  const palette = useSitePalette();
+  const eventCategoryColour = useCategoryListColours('/v2/categories?type=event');
 
   if (events.length === 0) {
     return (
@@ -150,6 +159,8 @@ function EventRows({ events }: { events: EventCalendarProjection[] }) {
         const time = event.all_day
           ? t('calendar.all_day')
           : eventLocalTimeLabel(event);
+        const colour = eventCategoryColour(event.category_id)
+          ?? colourForSeed(coverSeed.event(event.id, event.category_id), palette);
         return (
           <li key={event.uid}>
             <Link
@@ -158,9 +169,18 @@ function EventRows({ events }: { events: EventCalendarProjection[] }) {
               aria-label={t('calendar.open_event_aria', { title: event.title, time })}
             >
               <div className="flex min-w-0 items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-medium text-theme-primary">{event.title}</p>
-                  <p className="mt-1 text-sm text-theme-muted">{time}</p>
+                <div className="flex min-w-0 items-start gap-2.5">
+                  {/* Decoration only: the status chip and the text carry the meaning. */}
+                  <span
+                    aria-hidden="true"
+                    data-testid="calendar-event-colour"
+                    data-colour={colour}
+                    className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${categoryColour(colour).dot}`}
+                  />
+                  <div className="min-w-0">
+                    <p className="font-medium text-theme-primary">{event.title}</p>
+                    <p className="mt-1 text-sm text-theme-muted">{time}</p>
+                  </div>
                 </div>
                 {event.calendar_status !== 'confirmed' && (
                   <Chip

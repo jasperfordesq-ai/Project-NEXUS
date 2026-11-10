@@ -268,6 +268,37 @@ describe('EventsPage', () => {
     for (const mark of marks) expect(mark).toHaveAttribute('aria-hidden', 'true');
   });
 
+  // The card shows the organiser as the event's own page does: the list sends
+  // the same `organizer` object it sends that page, so nothing new is shown.
+  it('shows the organiser, face and name, on the card', async () => {
+    const event = createCanonicalEventFixture({ going_preview: [{ id: 31, name: 'Maeve', avatar_url: null }] });
+    mockApi.get.mockResolvedValue({ success: true, data: [event], meta: { has_more: false, total_items: 1 } });
+
+    renderEventRoute(<EventsPage />);
+    await screen.findByRole('heading', { name: 'Community Garden Day' });
+
+    const organiser = screen.getByTestId('event-organiser');
+    expect(screen.getAllByTestId('event-organiser-face')).toHaveLength(1);
+    // The face is decoration; the name is text, introduced for screen readers
+    // by the event page's own "Organized by" wording.
+    expect(screen.getByTestId('event-organiser-face').closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(organiser).toHaveTextContent('Morgan Organiser');
+    expect(organiser.querySelector('.sr-only')).toHaveTextContent(/\S/);
+    // The going faces are still only the people going.
+    expect(screen.getAllByTestId('event-going-face')).toHaveLength(1);
+  });
+
+  it('shows no organiser on the card when the event has no organiser name', async () => {
+    const base = createCanonicalEventFixture();
+    const event = createCanonicalEventFixture({ organizer: { ...base.organizer, display_name: null } });
+    mockApi.get.mockResolvedValue({ success: true, data: [event], meta: { has_more: false, total_items: 1 } });
+
+    renderEventRoute(<EventsPage />);
+    await screen.findByRole('heading', { name: 'Community Garden Day' });
+
+    expect(screen.queryByTestId('event-organiser')).not.toBeInTheDocument();
+  });
+
   it('shows no faces when nobody the member may see is going', async () => {
     const event = createCanonicalEventFixture({ going_preview: [] });
     mockApi.get.mockResolvedValue({ success: true, data: [event], meta: { has_more: false, total_items: 1 } });

@@ -129,6 +129,56 @@ final class EventCalendarIntegrationTest extends TestCase
         }
     }
 
+    public function test_collection_carries_the_category_id_only_for_the_tenants_own_categories(): void
+    {
+        $owner = $this->user();
+        $ownCategory = $this->category($this->testTenantId);
+        $foreignCategory = $this->category(999);
+        $categorised = $this->event((int) $owner->id, [
+            'title' => 'Categorised',
+            'category_id' => $ownCategory,
+            'start_time' => '2032-04-15 09:00:00',
+        ]);
+        $uncategorised = $this->event((int) $owner->id, [
+            'title' => 'Uncategorised',
+            'start_time' => '2032-04-16 09:00:00',
+            'end_time' => '2032-04-16 10:00:00',
+        ]);
+        // A row pointing at another community's category must not reveal it.
+        $crossed = $this->event((int) $owner->id, [
+            'title' => 'Crossed',
+            'category_id' => $foreignCategory,
+            'start_time' => '2032-04-17 09:00:00',
+            'end_time' => '2032-04-17 10:00:00',
+        ]);
+        // Another community's event never reaches this calendar at all.
+        $foreignEvent = $this->event((int) $owner->id, [
+            'tenant_id' => 999,
+            'title' => 'Foreign community event',
+            'category_id' => $foreignCategory,
+        ]);
+
+        Sanctum::actingAs($owner, ['*']);
+        $response = $this->apiGet('/v2/events/calendar?from=2032-04-01&to=2032-05-01');
+        $response->assertOk();
+        $byId = collect($response->json('data'))->keyBy('id');
+
+        self::assertSame([$categorised, $uncategorised, $crossed], $byId->keys()->all());
+        self::assertFalse($byId->has($foreignEvent));
+        self::assertSame($ownCategory, $byId[$categorised]['category_id']);
+        self::assertArrayHasKey('category_id', $byId[$uncategorised]);
+        self::assertNull($byId[$uncategorised]['category_id']);
+        self::assertNull($byId[$crossed]['category_id']);
+        self::assertStringNotContainsString(
+            '"category_id":' . $foreignCategory,
+            (string) $response->getContent(),
+        );
+
+        // The ICS feed is built from the same projection and is unchanged by it.
+        $feed = (string) $this->apiGet('/v2/events/calendar/feed.ics')->getContent();
+        self::assertStringNotContainsString('CATEGORIES:', strtoupper($feed));
+    }
+
     public function test_ics_uid_sequence_cancellation_and_vendor_actions_reconcile_from_one_projection(): void
     {
         $owner = $this->user();
@@ -332,6 +382,19 @@ final class EventCalendarIntegrationTest extends TestCase
         ]);
 
         return $id;
+    }
+
+    private function category(int $tenantId): int
+    {
+        $name = 'Calendar category ' . uniqid();
+
+        return (int) DB::table('categories')->insertGetId([
+            'tenant_id' => $tenantId,
+            'name' => $name,
+            'slug' => str_replace(' ', '-', strtolower($name)),
+            'type' => 'event',
+            'color' => 'blue',
+        ]);
     }
 
     private function group(int $ownerId, string $visibility, string $status = 'active'): int

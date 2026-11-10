@@ -1195,6 +1195,25 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
                     <span className="text-theme-subtle">&middot; {t('interested', { count: event.metrics.interested_count })}</span>
                   )}
                 </span>
+                {/* The organiser's face and name, exactly as the event's own
+                    page shows them (the list already sends the same organiser
+                    it sends that page; nothing more is fetched). The face is
+                    decoration: the name is the text beside it. */}
+                {event.organizer.display_name && (
+                  <span className="flex min-w-0 items-center gap-1.5" data-testid="event-organiser">
+                    <FaceStack
+                      people={[{
+                        id: event.organizer.id,
+                        name: event.organizer.display_name,
+                        avatar_url: event.organizer.avatar_url,
+                      }]}
+                      max={1}
+                      data-testid="event-organiser-face"
+                    />
+                    <span className="sr-only">{t('detail.organized_by')} </span>
+                    <span className="truncate">{event.organizer.display_name}</span>
+                  </span>
+                )}
               </div>
             </div>
 

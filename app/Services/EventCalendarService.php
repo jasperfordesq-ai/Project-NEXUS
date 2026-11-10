@@ -24,6 +24,7 @@ use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Sabre\VObject\Component;
 use Sabre\VObject\Component\VCalendar;
@@ -207,7 +208,7 @@ final class EventCalendarService
             return null;
         }
 
-        return $this->project($event);
+        return $this->project($event, $this->tenantCategoryIds($tenantId, collect([$event])));
     }
 
     /**
@@ -572,16 +573,62 @@ final class EventCalendarService
     private function visibleProjections(User $viewer, Collection $events): array
     {
         $abilities = $this->policy->abilitiesForEvents($viewer, $events);
-
-        return $events
+        $visible = $events
             ->filter(static fn (Event $event): bool => $abilities[(int) $event->getKey()]['view'] ?? false)
-            ->map(fn (Event $event): array => $this->project($event))
-            ->values()
+            ->values();
+        $tenantId = $this->validTenantFor($viewer);
+        $categoryIds = $tenantId === null ? [] : $this->tenantCategoryIds($tenantId, $visible);
+
+        return $visible
+            ->map(fn (Event $event): array => $this->project($event, $categoryIds))
             ->all();
     }
 
-    /** @return array<string, int|string|bool|null> */
-    private function project(Event $event): array
+    /**
+     * The category ids, among these events', that belong to this tenant.
+     *
+     * The projection carries a category id so clients can colour an entry the
+     * way the events list does. An id that does not name one of the tenant's
+     * own categories is never emitted; if the lookup fails, no id is.
+     *
+     * @param Collection<int, Event> $events
+     * @return array<int, true>
+     */
+    private function tenantCategoryIds(int $tenantId, Collection $events): array
+    {
+        $ids = $events
+            ->map(static fn (Event $event): int => (int) $event->getRawOriginal('category_id'))
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+        if ($ids === []) {
+            return [];
+        }
+
+        try {
+            $owned = DB::table('categories')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('id', $ids)
+                ->pluck('id')
+                ->all();
+        } catch (Throwable $exception) {
+            Log::warning('Event calendar category lookup failed; entries are sent without a category.', [
+                'tenant_id' => $tenantId,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return [];
+        }
+
+        return array_fill_keys(array_map(static fn (mixed $id): int => (int) $id, $owned), true);
+    }
+
+    /**
+     * @param array<int, true> $tenantCategoryIds
+     * @return array<string, int|string|bool|null>
+     */
+    private function project(Event $event, array $tenantCategoryIds = []): array
     {
         $timezone = $this->validTimezone((string) $event->getRawOriginal('timezone'));
         $zone = new DateTimeZone($timezone);
@@ -617,6 +664,7 @@ final class EventCalendarService
             (string) $event->getKey(),
             (string) ($event->getRawOriginal('occurrence_key') ?: 'concrete'),
         ]);
+        $categoryId = (int) $event->getRawOriginal('category_id');
 
         return [
             'id' => (int) $event->getKey(),
@@ -636,6 +684,8 @@ final class EventCalendarService
                 + max(0, (int) $event->getRawOriginal('lifecycle_version')),
             'updated_at' => $updated->setTimezone($utc)->format(DateTimeInterface::ATOM),
             'detail_url' => $detailUrl,
+            // Decoration only (clients colour the entry by its kind of event).
+            'category_id' => isset($tenantCategoryIds[$categoryId]) ? $categoryId : null,
         ];
     }
 
