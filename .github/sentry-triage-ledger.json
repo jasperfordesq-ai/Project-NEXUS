@@ -1,6 +1,6 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-10-30T03:07:48.001Z",
+  "lastRunAt": "2026-11-10T11:34:42.455Z",
   "issues": {
     "120262618": {
       "title": "RedisException: php_network_getaddresses: getaddrinfo for nexus-php-redis failed: Temporary failure in name resolution",
@@ -23,20 +23,20 @@
     "128022136": {
       "title": "Exception: Scheduled command ['/usr/local/bin/php' 'artisan' queue:verify-liveness] failed with exit code [1].",
       "culprit": "/artisan in ?",
-      "decision": "watching",
-      "note": "Single alarm 19 Oct 06:50 UTC from the OLD release 657d7d54e, three minutes before the 06:53 UTC blue/green switch to afd395394 — workers on the outgoing colour were winding down. Not seen since (incl. the 17:29 UTC deploy). Not a code fault.",
-      "sha": null,
-      "decidedAt": "2026-10-20T12:17:04.634Z",
-      "decidedAtRelease": "nexus-php@657d7d54e9af"
+      "decision": "fixed",
+      "note": "Fired just after deploys (10 Nov 08:30, 31 Oct, 19 Oct, 11 Oct, 1 Oct). New scheduler ran queue:verify-liveness in the same minute as its first heartbeat, against a pre-swap processed stamp. recordDispatch() now notes when dispatching resumes; check reports pending until a 15-min round trip.",
+      "sha": "f4aad766be",
+      "decidedAt": "2026-11-10T11:45:32.067Z",
+      "decidedAtRelease": "nexus-php@7fe927e7a298"
     },
     "129111072": {
-      "title": "RuntimeException: Queue workers are not processing jobs: heartbeat dispatched at 2026-10-19T06:50:51+00:00 but last processed at 2026-10-19T06:35:26+00:00. Check `ps aux | grep horizon:work` in the queue container.",
+      "title": "RuntimeException: Queue workers are not processing jobs: heartbeat dispatched at 2026-11-10T08:30:46+00:00 but last processed at 2026-11-10T08:15:17+00:00. Check `ps aux | grep horizon:work` in the queue container.",
       "culprit": "/app/Console/Commands/VerifyQueueLiveness.php in App\\Console\\Commands\\VerifyQueueLiveness::handle",
-      "decision": "watching",
-      "note": "Single alarm 19 Oct 06:50 UTC from the OLD release 657d7d54e, three minutes before the 06:53 UTC blue/green switch to afd395394 — workers on the outgoing colour were winding down. Not seen since (incl. the 17:29 UTC deploy). Not a code fault.",
-      "sha": null,
-      "decidedAt": "2026-10-20T12:17:03.096Z",
-      "decidedAtRelease": "nexus-php@657d7d54e9af"
+      "decision": "fixed",
+      "note": "Fired just after deploys (10 Nov 08:30, 31 Oct, 19 Oct, 11 Oct, 1 Oct). New scheduler ran queue:verify-liveness in the same minute as its first heartbeat, against a pre-swap processed stamp. recordDispatch() now notes when dispatching resumes; check reports pending until a 15-min round trip.",
+      "sha": "f4aad766be",
+      "decidedAt": "2026-11-10T11:45:26.981Z",
+      "decidedAtRelease": "nexus-php@7fe927e7a298"
     },
     "130353163": {
       "title": "Geocoding exception",
@@ -59,11 +59,11 @@
     "136097019": {
       "title": "QUEUE LIVENESS FAILED: heartbeats dispatched but not processed — workers are dead or stuck.",
       "culprit": null,
-      "decision": "watching",
-      "note": "Single alarm 19 Oct 06:50 UTC from the OLD release 657d7d54e, three minutes before the 06:53 UTC blue/green switch to afd395394 — workers on the outgoing colour were winding down. Not seen since (incl. the 17:29 UTC deploy). Not a code fault.",
-      "sha": null,
-      "decidedAt": "2026-10-20T12:17:06.115Z",
-      "decidedAtRelease": "nexus-php@657d7d54e9af"
+      "decision": "fixed",
+      "note": "Fired just after deploys (10 Nov 08:30, 31 Oct, 19 Oct, 11 Oct, 1 Oct). New scheduler ran queue:verify-liveness in the same minute as its first heartbeat, against a pre-swap processed stamp. recordDispatch() now notes when dispatching resumes; check reports pending until a 15-min round trip.",
+      "sha": "f4aad766be",
+      "decidedAt": "2026-11-10T11:45:37.092Z",
+      "decidedAtRelease": "nexus-php@7fe927e7a298"
     },
     "137783510": {
       "title": "RedisException: Connection refused",
@@ -654,10 +654,10 @@
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "30 Oct: fired again 29 Oct 08:05 UTC from the daily check, so the condition is unchanged, not a returning bug. Tenant 5 safeguarding jurisdiction is still 'unconfigured' while members have vetted-contact selections. Fix is a setting (broker panel -> Vetting -> Jurisdiction), not code.",
+      "note": "10 Nov: last fired 3 Nov 08:05 UTC, not since — the daily check may now pass (tenant 5 jurisdiction possibly set). Not verified against prod data. If it does not return, it can be closed. Setting, not code.",
       "sha": null,
-      "decidedAt": "2026-10-30T03:08:40.096Z",
-      "decidedAtRelease": "nexus-php@538365eb6e34"
+      "decidedAt": "2026-11-10T11:45:58.381Z",
+      "decidedAtRelease": "nexus-php@9646aa4de9ac"
     },
     "143797835": {
       "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
@@ -969,10 +969,10 @@
       "title": "Members require vetted contact in communities that have recorded no vetting",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "30 Oct: fired again 29 Oct 08:05 UTC from the daily check; condition unchanged. Tenants 2 and 11 have members asking for vetted-only contact but no vetting recorded. Community action needed (record vetting or move those members to coordinator introductions); tenant 2 part may touch DPO-17.",
+      "note": "10 Nov: still firing daily (last 08:05 UTC 10 Nov); condition unchanged. Tenants 2 and 11 have members asking for vetted-only contact but no vetting recorded. Community action (record vetting or switch those members to coordinator introductions); tenant 2 part may touch DPO-17. Not a code fault.",
       "sha": null,
-      "decidedAt": "2026-10-30T03:08:40.991Z",
-      "decidedAtRelease": "nexus-php@538365eb6e34"
+      "decidedAt": "2026-11-10T11:45:56.916Z",
+      "decidedAtRelease": "nexus-php@9ad6504d0230"
     },
     "157283631": {
       "title": "ApiOfflineError: The service took too long to respond",
@@ -982,6 +982,51 @@
       "sha": null,
       "decidedAt": "2026-10-30T03:08:38.823Z",
       "decidedAtRelease": "nexus-webuk@c67617d963ec"
+    },
+    "158723086": {
+      "title": "ApiOfflineError: The service took too long to respond",
+      "culprit": "GET /legal/acceptable-use",
+      "decision": "watching",
+      "note": "Two short bursts only: 5 Nov ~03:04 UTC and 6 Nov ~02:39 UTC, dozens of accessible pages across many communities within seconds, all 'API took too long' (web-uk timed out waiting for the Laravel API). No members affected (0 users), nothing since 6 Nov. Likely the API slow during a night-time job or crawl; cause not proven. Watch for a repeat.",
+      "sha": null,
+      "decidedAt": "2026-11-10T11:45:50.341Z",
+      "decidedAtRelease": "nexus-webuk@e91db8abeadd"
+    },
+    "158723090": {
+      "title": "ApiOfflineError: The service took too long to respond",
+      "culprit": "GET /whats-on",
+      "decision": "watching",
+      "note": "Two short bursts only: 5 Nov ~03:04 UTC and 6 Nov ~02:39 UTC, dozens of accessible pages across many communities within seconds, all 'API took too long' (web-uk timed out waiting for the Laravel API). No members affected (0 users), nothing since 6 Nov. Likely the API slow during a night-time job or crawl; cause not proven. Watch for a repeat.",
+      "sha": null,
+      "decidedAt": "2026-11-10T11:45:54.710Z",
+      "decidedAtRelease": "nexus-webuk@e91db8abeadd"
+    },
+    "158723122": {
+      "title": "ApiOfflineError: The service took too long to respond",
+      "culprit": "GET /help",
+      "decision": "watching",
+      "note": "Two short bursts only: 5 Nov ~03:04 UTC and 6 Nov ~02:39 UTC, dozens of accessible pages across many communities within seconds, all 'API took too long' (web-uk timed out waiting for the Laravel API). No members affected (0 users), nothing since 6 Nov. Likely the API slow during a night-time job or crawl; cause not proven. Watch for a repeat.",
+      "sha": null,
+      "decidedAt": "2026-11-10T11:45:51.760Z",
+      "decidedAtRelease": "nexus-webuk@e91db8abeadd"
+    },
+    "158723134": {
+      "title": "ApiOfflineError: The service took too long to respond",
+      "culprit": "GET /page/:slug([A-Za-z0-9][A-Za-z0-9_-]{0,119})",
+      "decision": "watching",
+      "note": "Two short bursts only: 5 Nov ~03:04 UTC and 6 Nov ~02:39 UTC, dozens of accessible pages across many communities within seconds, all 'API took too long' (web-uk timed out waiting for the Laravel API). No members affected (0 users), nothing since 6 Nov. Likely the API slow during a night-time job or crawl; cause not proven. Watch for a repeat.",
+      "sha": null,
+      "decidedAt": "2026-11-10T11:45:53.213Z",
+      "decidedAtRelease": "nexus-webuk@e91db8abeadd"
+    },
+    "159185717": {
+      "title": "Inefficient Database Queries",
+      "culprit": "/sitemap.xml",
+      "decision": "watching",
+      "note": "Single Sentry performance warning on /sitemap.xml (6 Nov 17:42 UTC), likely repeated per-row queries building the sitemap. One event, no users; not worth a change yet.",
+      "sha": null,
+      "decidedAt": "2026-11-10T11:45:55.813Z",
+      "decidedAtRelease": null
     }
   }
 }
