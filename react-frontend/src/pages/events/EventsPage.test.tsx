@@ -270,7 +270,7 @@ describe('EventsPage', () => {
 
   // The card shows the organiser as the event's own page does: the list sends
   // the same `organizer` object it sends that page, so nothing new is shown.
-  it('shows the organiser, face and name, on the card', async () => {
+  it("shows the organiser's face on the card, and never their name", async () => {
     const event = createCanonicalEventFixture({ going_preview: [{ id: 31, name: 'Maeve', avatar_url: null }] });
     mockApi.get.mockResolvedValue({ success: true, data: [event], meta: { has_more: false, total_items: 1 } });
 
@@ -279,11 +279,13 @@ describe('EventsPage', () => {
 
     const organiser = screen.getByTestId('event-organiser');
     expect(screen.getAllByTestId('event-organiser-face')).toHaveLength(1);
-    // The face is decoration; the name is text, introduced for screen readers
-    // by the event page's own "Organized by" wording.
+    // The face is decoration. 🔴 Surnames are private to non-admins (F-084,
+    // E-122): the fixture's organiser is "Morgan Organiser", and neither the
+    // surname nor its initial may reach the card.
     expect(screen.getByTestId('event-organiser-face').closest('[aria-hidden="true"]')).not.toBeNull();
-    expect(organiser).toHaveTextContent('Morgan Organiser');
-    expect(organiser.querySelector('.sr-only')).toHaveTextContent(/\S/);
+    expect(organiser.textContent ?? '').not.toContain('Organiser');
+    expect(organiser.textContent ?? '').not.toMatch(/MO/);
+    expect(document.body.textContent ?? '').not.toContain('Morgan Organiser');
     // The going faces are still only the people going.
     expect(screen.getAllByTestId('event-going-face')).toHaveLength(1);
   });

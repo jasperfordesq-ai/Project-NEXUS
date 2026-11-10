@@ -1195,23 +1195,23 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
                     <span className="text-theme-subtle">&middot; {t('interested', { count: event.metrics.interested_count })}</span>
                   )}
                 </span>
-                {/* The organiser's face and name, exactly as the event's own
-                    page shows them (the list already sends the same organiser
-                    it sends that page; nothing more is fetched). The face is
-                    decoration: the name is the text beside it. */}
+                {/* The organiser's face only — never their name. 🔴 Surnames are
+                    private to non-admins (F-084, owner 10 Nov 2026) and the
+                    server still sends the organiser's FULL display name here
+                    (security register E-122). The face is decoration, built
+                    from the first word of the name so the initials fallback
+                    cannot carry a surname's letter either. */}
                 {event.organizer.display_name && (
-                  <span className="flex min-w-0 items-center gap-1.5" data-testid="event-organiser">
+                  <span className="flex min-w-0 items-center" data-testid="event-organiser">
                     <FaceStack
                       people={[{
                         id: event.organizer.id,
-                        name: event.organizer.display_name,
+                        name: event.organizer.display_name.trim().split(/\s+/)[0] ?? '',
                         avatar_url: event.organizer.avatar_url,
                       }]}
                       max={1}
                       data-testid="event-organiser-face"
                     />
-                    <span className="sr-only">{t('detail.organized_by')} </span>
-                    <span className="truncate">{event.organizer.display_name}</span>
                   </span>
                 )}
               </div>
