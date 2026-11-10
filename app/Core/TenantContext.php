@@ -795,7 +795,10 @@ class TenantContext
             // Queued-job path: $parentDomain is null (setById was used, not HTTP resolve).
             // If tenant has no domain but has a parent, look up the parent's domain from DB.
             // Result is memoized per parent_id to avoid N identical queries in batch jobs.
-            if (empty($tenant['domain']) && !empty($tenant['parent_id'])) {
+            // The platform master (id 1) is never borrowed from: its `domain` is
+            // the sales site, which does not serve the app (same rule as the
+            // sitemap and crawler snapshots, `p.id > 1`).
+            if (empty($tenant['domain']) && (int) ($tenant['parent_id'] ?? 0) > 1) {
                 $pid = (int) $tenant['parent_id'];
                 if (!array_key_exists($pid, self::$parentDomainByParentId)) {
                     self::$parentDomainByParentId[$pid] = \Illuminate\Support\Facades\DB::table('tenants')

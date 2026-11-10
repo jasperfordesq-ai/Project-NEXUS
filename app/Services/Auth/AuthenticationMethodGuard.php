@@ -161,9 +161,10 @@ final class AuthenticationMethodGuard
             }
         }
 
-        $platformRpId = config('webauthn.rp_id');
-        if (is_string($platformRpId) && self::isValidRpId($platformRpId) && self::platformRpHasAllowedOrigin($platformRpId)) {
-            $rpIds[] = strtolower(rtrim(trim($platformRpId), '.'));
+        foreach (\App\Support\PlatformPasskeyDomains::all() as $platformRpId) {
+            if (self::isValidRpId($platformRpId) && self::platformRpHasAllowedOrigin($platformRpId)) {
+                $rpIds[] = $platformRpId;
+            }
         }
 
         return array_values(array_unique($rpIds));

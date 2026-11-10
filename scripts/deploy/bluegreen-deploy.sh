@@ -131,7 +131,8 @@ confirm-webuk-live:
   actually answers. That recording is what makes a later deploy REFUSE to
   drop web-uk without being told to. Until it exists, an ordinary deploy
   would silently stop serving the hostname with nothing failing.
-  Defaults to accessible.project-nexus.ie.
+  Defaults to the host of ACCESSIBLE_FRONTEND_URL in .env, else
+  accessible.project-nexus.ie.
 
 Apache route switch file:
   Auto-detected at /etc/apache2/conf-enabled/nexus-active-upstreams.conf
@@ -238,8 +239,27 @@ enforce_webuk_live_marker() {
 # This latches from the same evidence post_cutover_smoke uses — a live probe of a
 # real public hostname — so it CANNOT be used to assert something untrue. There is
 # deliberately no --force: if the host is not serving web-uk, refusing is correct.
+# The public host of a platform address held in the server's .env
+# (FRONTEND_URL, ACCESSIBLE_FRONTEND_URL), or the given default when the
+# setting is absent or unreadable. The post-switch checks probe these hosts,
+# so moving the app (app.project-nexus.ie -> app.project-nexus.net, decided
+# 10 Nov 2026) is a settings change: the checks follow it, and a redirect left
+# on the old address is never mistaken for the live site.
+platform_public_host() {
+    local key="$1" default_host="$2" value host
+    value="$(grep -m1 "^${key}=" "$DEPLOY_DIR/.env" 2>/dev/null | cut -d= -f2- | tr -d "\"' \r" || true)"
+    host="${value#*://}"
+    host="${host%%/*}"
+    host="${host%%:*}"
+    if [[ "$host" =~ ^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$ ]] && [[ "$host" == *.* ]]; then
+        printf '%s\n' "$host" | tr '[:upper:]' '[:lower:]'
+    else
+        printf '%s\n' "$default_host"
+    fi
+}
+
 cmd_confirm_webuk_live() {
-    local host="${1:-accessible.project-nexus.ie}"
+    local host="${1:-$(platform_public_host ACCESSIBLE_FRONTEND_URL accessible.project-nexus.ie)}"
     local version
 
     log_info "Probing https://$host/version"
@@ -1326,6 +1346,9 @@ stop_workers_for_color() {
 
 post_cutover_smoke() {
     phase "Public Post-Cutover Smoke Tests" "${CURRENT_ACTIVE:-}" "${CURRENT_TARGET:-}" "${CURRENT_COMMIT:-}"
+    local app_host accessible_host
+    app_host="$(platform_public_host FRONTEND_URL app.project-nexus.ie)"
+    accessible_host="$(platform_public_host ACCESSIBLE_FRONTEND_URL accessible.project-nexus.ie)"
 
     curl -sf https://api.project-nexus.ie/up >/dev/null
     log_ok "Public API health passed"
@@ -1357,7 +1380,7 @@ post_cutover_smoke() {
     if webuk_enabled; then
         local accessible_version
         accessible_version="$(curl -sf -H 'Cache-Control: no-cache' \
-            "https://accessible.project-nexus.ie/version?_t=$(date +%s)" 2>/dev/null || true)"
+            "https://$accessible_host/version?_t=$(date +%s)" 2>/dev/null || true)"
         if [ -z "$accessible_version" ]; then
             # 🔴 THIS ARM USED TO PASS UNCONDITIONALLY, AND THAT MADE THE WHOLE CHECK
             # USELESS FOR ITS OWN PURPOSE. Blade does not serve /version at all — so
@@ -1368,7 +1391,7 @@ post_cutover_smoke() {
             # vhost include exists yet. After it, empty means the frontend that was
             # serving members is gone. The marker is what tells the two apart.
             if [ -f "$WEBUK_LIVE_MARKER" ]; then
-                log_err "https://accessible.project-nexus.ie/version did NOT respond, and web-uk is LIVE."
+                log_err "https://$accessible_host/version did NOT respond, and web-uk is LIVE."
                 log_err "Marker: $WEBUK_LIVE_MARKER"
                 log_err ""
                 log_err "🔴 THE ACCESSIBLE SITE IS DOWN. Since the Blade accessible frontend was"
@@ -1384,7 +1407,7 @@ post_cutover_smoke() {
             log_warn "Expected while the vhost include has not been installed yet (cutover step 2)."
             log_warn "Once a hostname is confirmed served by web-uk, this becomes a hard failure."
         elif ! echo "$accessible_version" | grep -q '"service":"nexus-webuk"'; then
-            log_err "https://accessible.project-nexus.ie is NOT served by web-uk."
+            log_err "https://$accessible_host is NOT served by web-uk."
             log_err "Something else answered /version. Since the Blade accessible frontend was"
             log_err "deleted (2026-08-14) this is no longer 'still on the old frontend' — the"
             log_err "hostname is pointing somewhere it should not."
@@ -1397,8 +1420,8 @@ post_cutover_smoke() {
             # failure rather than "not cut over yet". Written only on a positive
             # observation of a real public hostname — never inferred from a flag.
             if [ ! -f "$WEBUK_LIVE_MARKER" ]; then
-                if printf 'confirmed_at=%s\nhost=accessible.project-nexus.ie\ncommit=%s\n' \
-                    "$(date -Iseconds)" "${BUILD_COMMIT:-unknown}" > "$WEBUK_LIVE_MARKER" 2>/dev/null; then
+                if printf 'confirmed_at=%s\nhost=%s\ncommit=%s\n' \
+                    "$(date -Iseconds)" "$accessible_host" "${BUILD_COMMIT:-unknown}" > "$WEBUK_LIVE_MARKER" 2>/dev/null; then
                     log_ok "web-uk recorded as LIVE ($WEBUK_LIVE_MARKER)"
                     log_info "Future deploys must pass --with-webuk, or refuse."
                 else
@@ -1431,8 +1454,8 @@ post_cutover_smoke() {
     fi
     log_ok "Public WebAuthn auth challenge passed"
 
-    curl -sf https://app.project-nexus.ie/ >/dev/null
-    log_ok "Public React frontend passed"
+    curl -sf "https://$app_host/" >/dev/null
+    log_ok "Public React frontend passed ($app_host)"
 }
 
 run_prerender_for_color() {

@@ -1070,6 +1070,12 @@ jobs:
       - name: "BLOCKING: Deploy probes crawler delivery only after the render publishes"
         run: bash scripts/test/test-deploy-probe-after-prerender.sh
 
+      # Added 2026-11-10. The post-switch checks take the app and accessible
+      # hosts from FRONTEND_URL / ACCESSIBLE_FRONTEND_URL in the server .env,
+      # so the move to app.project-nexus.net is a settings change. Sandbox .env.
+      - name: "BLOCKING: Deploy checks follow the app address settings"
+        run: bash scripts/test/test-platform-public-host.sh
+
       # Added 2026-10-02 (F-541). Production .env and its .env.bak-* copies
       # were readable by every local account; every deploy now re-asserts
       # owner-only (600) and stops if it cannot. Sandbox dir; no root needed.

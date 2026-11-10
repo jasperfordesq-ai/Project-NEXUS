@@ -514,6 +514,47 @@ class WebAuthnControllerTest extends TestCase
         $this->assertSame('project-nexus.ie', $response->json('data.rpId'));
     }
 
+    /**
+     * The shared app is moving from app.project-nexus.ie to app.project-nexus.net
+     * (10 Nov 2026). While both are served, each must get passkeys under its
+     * OWN registrable domain — a passkey for project-nexus.ie cannot be used on
+     * a project-nexus.net page, so one platform RP ID would leave the new
+     * address with no passkeys at all.
+     */
+    public function test_each_platform_address_gets_passkeys_under_its_own_domain(): void
+    {
+        config([
+            'webauthn.rp_id' => 'project-nexus.ie',
+            'webauthn.additional_rp_ids' => ['project-nexus.net'],
+            'webauthn.allowed_origins' => ['https://app.project-nexus.ie', 'https://app.project-nexus.net'],
+        ]);
+
+        $this->apiPost('/webauthn/auth-challenge', [], ['Origin' => 'https://app.project-nexus.net'])
+            ->assertOk()
+            ->assertJsonPath('data.rpId', 'project-nexus.net');
+        $this->apiPost('/webauthn/auth-challenge', [], ['Origin' => 'https://app.project-nexus.ie'])
+            ->assertOk()
+            ->assertJsonPath('data.rpId', 'project-nexus.ie');
+
+        // An extra platform domain only covers origins that are explicitly allowed.
+        $this->apiPost('/webauthn/auth-challenge', [], ['Origin' => 'https://evil.project-nexus.net'])
+            ->assertStatus(400)
+            ->assertJsonPath('errors.0.code', 'AUTH_WEBAUTHN_ORIGIN_NOT_ALLOWED');
+    }
+
+    public function test_an_allowed_origin_outside_every_platform_domain_gets_no_passkeys(): void
+    {
+        config([
+            'webauthn.rp_id' => 'project-nexus.ie',
+            'webauthn.additional_rp_ids' => [],
+            'webauthn.allowed_origins' => ['https://app.project-nexus.net'],
+        ]);
+
+        $this->apiPost('/webauthn/auth-challenge', [], ['Origin' => 'https://app.project-nexus.net'])
+            ->assertStatus(400)
+            ->assertJsonPath('errors.0.code', 'AUTH_WEBAUTHN_ORIGIN_NOT_ALLOWED');
+    }
+
     public function test_loopback_origins_are_rejected_outside_local_and_test_environments(): void
     {
         $originalEnvironment = $this->app->environment();

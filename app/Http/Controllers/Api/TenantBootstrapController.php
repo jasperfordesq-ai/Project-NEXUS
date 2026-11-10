@@ -423,7 +423,8 @@ class TenantBootstrapController extends BaseApiController
         // If this tenant has no custom domain but its parent does, expose that parent
         // domain so the SPA knows to use path-prefixed routing (e.g. timebanking.uk/cardiff).
         // Computed from DB so the value is correct whether resolved via slug or parent-domain path.
-        if (empty($tenant['domain']) && !empty($tenant['parent_id'])) {
+        // Never the platform master's: its `domain` is the sales site.
+        if (empty($tenant['domain']) && (int) ($tenant['parent_id'] ?? 0) > 1) {
             $parentDomain = DB::table('tenants')
                 ->where('id', (int) $tenant['parent_id'])
                 ->where('is_active', 1)
@@ -570,7 +571,10 @@ class TenantBootstrapController extends BaseApiController
             return "https://{$childDomain}";
         }
 
-        $parentDomain = $this->normalizeTenantDomain((string) ($parent['domain'] ?? ''));
+        // The platform master's own domain is the sales site, not an app host.
+        $parentDomain = (int) ($parent['id'] ?? 0) > 1
+            ? $this->normalizeTenantDomain((string) ($parent['domain'] ?? ''))
+            : '';
         $slug = rawurlencode((string) ($child['slug'] ?? ''));
 
         if ($parentDomain !== '' && $slug !== '') {

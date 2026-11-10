@@ -157,6 +157,50 @@ class TenantEmailLinkShapesTest extends TestCase
         return strtr($template, ['{platform}' => self::PLATFORM, '{slug}' => $slug]);
     }
 
+    // ------------------------------------------- the platform master's domain
+
+    /**
+     * The platform master (id 1) may carry the SALES site as its `domain`
+     * (project-nexus.ie, later project-nexus.net). That host does not serve the
+     * app, so it must never become a link host: not for the master itself and
+     * not for a community under it without a domain of its own. Those use the
+     * platform app address (FRONTEND_URL) — the rule the sitemap and the crawler
+     * snapshots already follow (`p.id > 1`).
+     */
+    public function test_the_masters_own_domain_is_never_a_link_host(): void
+    {
+        DB::table('tenants')->where('id', 1)->update(['domain' => 'sales.example.test']);
+        $slug = 'kid-' . bin2hex(random_bytes(4));
+        $child = Tenant::factory()->create([
+            'slug' => $slug,
+            'domain' => null,
+            'accessible_domain' => null,
+            'parent_id' => 1,
+            'path' => '/1/' . $slug,
+            'depth' => 1,
+            'is_active' => true,
+        ]);
+
+        TenantContext::runForTenant((int) $child->id, function () use ($slug): void {
+            $this->assertSame(self::PLATFORM, TenantContext::getFrontendUrl());
+            $this->assertSame(self::PLATFORM . '/' . $slug . '/events/7', EmailTemplateBuilder::tenantUrl('/events/7'));
+        });
+
+        $resolved = UserTenantResolver::resolve(['tenant_id' => (int) $child->id]);
+        $this->assertSame(self::PLATFORM, $resolved['frontend_url']);
+        $this->assertSame('/' . $slug, $resolved['slug_prefix']);
+
+        $master = UserTenantResolver::resolve(['tenant_id' => 1]);
+        $this->assertSame(self::PLATFORM, $master['frontend_url']);
+
+        // Nor is the master's accessible domain borrowed for the accessible link.
+        DB::table('tenants')->where('id', 1)->update(['accessible_domain' => 'accessible.sales.example.test']);
+        $accessible = \App\Support\Tenancy\AccessibleFrontendUrl::base(
+            (array) DB::table('tenants')->where('id', (int) $child->id)->first()
+        );
+        $this->assertStringNotContainsString('sales.example.test', (string) $accessible);
+    }
+
     // ------------------------------------------------------- the core pair
 
     /** @dataProvider shapes */

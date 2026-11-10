@@ -27,6 +27,9 @@ ARG VITE_TURNSTILE_SITE_KEY=
 # pass it points every community's accessible link at the live site. The default keeps
 # production byte-identical; non-production deployments MUST set it.
 ARG VITE_ACCESSIBLE_FRONTEND_BASE_URL=https://accessible.project-nexus.ie
+# The shared app address used when a page is not on it (src/lib/tenant-routing.ts). The
+# app moves to app.project-nexus.net (10 Nov 2026); set PLATFORM_APP_URL on switch day.
+ARG VITE_PLATFORM_APP_URL=https://app.project-nexus.ie
 ARG BUILD_COMMIT=unknown
 
 ENV VITE_API_BASE=$VITE_API_BASE
@@ -41,6 +44,7 @@ ENV VITE_GIPHY_API_KEY=$VITE_GIPHY_API_KEY
 ENV VITE_STRIPE_PUBLISHABLE_KEY=$VITE_STRIPE_PUBLISHABLE_KEY
 ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY
 ENV VITE_ACCESSIBLE_FRONTEND_BASE_URL=$VITE_ACCESSIBLE_FRONTEND_BASE_URL
+ENV VITE_PLATFORM_APP_URL=$VITE_PLATFORM_APP_URL
 ENV BUILD_COMMIT=$BUILD_COMMIT
 
 COPY package.json package-lock.json ./

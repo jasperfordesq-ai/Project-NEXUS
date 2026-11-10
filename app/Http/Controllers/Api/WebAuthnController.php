@@ -1616,7 +1616,6 @@ class WebAuthnController extends BaseApiController
             }
         }
 
-        $platformRpId = strtolower(rtrim(trim((string) config('webauthn.rp_id', '')), '.'));
         $configuredOrigins = config('webauthn.allowed_origins', []);
         if (!is_array($configuredOrigins)) {
             $configuredOrigins = [];
@@ -1647,8 +1646,11 @@ class WebAuthnController extends BaseApiController
             if ($isLoopback && !app()->environment(['local', 'development', 'testing'])) {
                 continue;
             }
-            $rpId = $isLoopback ? 'localhost' : $platformRpId;
-            if ($rpId !== '' && ($host === $rpId || str_ends_with($host, '.' . $rpId))) {
+            // Each allowed platform origin takes the platform domain it sits
+            // under (WEBAUTHN_RP_ID or one of WEBAUTHN_ADDITIONAL_RP_IDS); an
+            // origin under none of them gets no passkeys.
+            $rpId = $isLoopback ? 'localhost' : \App\Support\PlatformPasskeyDomains::forHost($host);
+            if ($rpId !== null && $rpId !== '' && ($host === $rpId || str_ends_with($host, '.' . $rpId))) {
                 $map[$origin] = ['origin' => $origin, 'rp_id' => $rpId];
             }
         }
@@ -1697,7 +1699,7 @@ class WebAuthnController extends BaseApiController
         return hash('sha256', json_encode([
             'tenant_id' => $tenantId,
             'lineage' => $lineage,
-            'platform_rp_id' => strtolower(rtrim(trim((string) config('webauthn.rp_id', '')), '.')),
+            'platform_rp_id' => implode(',', \App\Support\PlatformPasskeyDomains::all()),
             'allowed_origins' => array_values(array_filter(
                 (array) config('webauthn.allowed_origins', []),
                 'is_string'

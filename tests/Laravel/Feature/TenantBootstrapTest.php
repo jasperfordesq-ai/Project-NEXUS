@@ -148,6 +148,38 @@ class TenantBootstrapTest extends TestCase
     }
 
     /**
+     * The platform master's own `domain` is the sales site. A community under
+     * the master without a domain of its own must stay on the platform app
+     * address, so the bootstrap must not hand the SPA the sales site as a
+     * parent domain (the SPA would then build links on it). Fresh id/slug to
+     * avoid the per-tenant bootstrap cache.
+     */
+    public function test_bootstrap_never_offers_the_masters_domain_as_parent_domain(): void
+    {
+        DB::table('tenants')->where('id', 1)->update(['domain' => 'sales.example.test']);
+        $slug = 'master-child-' . bin2hex(random_bytes(3));
+        DB::table('tenants')->insert([
+            'id' => 990002,
+            'name' => 'Master Child Test',
+            'slug' => $slug,
+            'domain' => null,
+            'parent_id' => 1,
+            'path' => '/1/' . $slug,
+            'is_active' => true,
+            'depth' => 1,
+            'allows_subtenants' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->apiGet('/v2/tenant/bootstrap?slug=' . $slug);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.slug', $slug);
+        $response->assertJsonMissingPath('data.parent_domain');
+    }
+
+    /**
      * Test that bootstrap returns an error for a nonexistent slug.
      */
     public function test_bootstrap_returns_error_for_invalid_slug(): void

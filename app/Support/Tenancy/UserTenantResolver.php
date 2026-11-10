@@ -43,7 +43,7 @@ final class UserTenantResolver
         $tenant = DB::selectOne(
             "SELECT t.name, t.slug, t.domain, p.domain AS parent_domain
              FROM tenants t
-             LEFT JOIN tenants p ON p.id = t.parent_id AND p.is_active = 1
+             LEFT JOIN tenants p ON p.id = t.parent_id AND p.is_active = 1 AND p.id > 1
              WHERE t.id = ?",
             [$userTenantId]
         );
@@ -52,7 +52,9 @@ final class UserTenantResolver
             $tenantName = $tenant->name;
             $slug       = $tenant->slug ?? '';
 
-            if (!empty($tenant->domain)) {
+            // The platform master's own `domain` is the sales site, never an
+            // app address — it uses FRONTEND_URL like TenantContext does.
+            if (!empty($tenant->domain) && $userTenantId > 1) {
                 // Tenant owns its custom domain — no slug prefix in URLs
                 $frontendUrl = 'https://' . rtrim((string) $tenant->domain, '/');
                 $slugPrefix  = '';

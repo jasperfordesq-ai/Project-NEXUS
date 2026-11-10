@@ -47,7 +47,8 @@ final class AccessibleFrontendUrl
 
         $slug = (string) ($tenant['slug'] ?? '');
         $parentId = (int) ($tenant['parent_id'] ?? 0);
-        if ($parentId > 0 && $slug !== '') {
+        // Never the platform master's: it has no community accessible site.
+        if ($parentId > 1 && $slug !== '') {
             $parentDomain = trim((string) DB::table('tenants')
                 ->where('id', $parentId)->where('is_active', 1)->value('accessible_domain'));
             if ($parentDomain !== '' && filter_var($parentDomain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {

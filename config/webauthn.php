@@ -22,6 +22,18 @@ return [
     'rp_id' => env('WEBAUTHN_RP_ID'),
 
     /*
+     * Further platform domains that may each be an RP ID, comma-separated —
+     * e.g. project-nexus.net while the app is served on both
+     * app.project-nexus.ie and app.project-nexus.net (move decided
+     * 10 Nov 2026). Each still needs an explicitly allowed origin under it.
+     * See App\Support\PlatformPasskeyDomains.
+     */
+    'additional_rp_ids' => array_values(array_filter(array_map(
+        static fn (string $domain): string => trim($domain),
+        explode(',', (string) env('WEBAUTHN_ADDITIONAL_RP_IDS', ''))
+    ))),
+
+    /*
      * Exact platform origins permitted to initiate a ceremony. Tenant custom
      * and accessible domains are added dynamically by WebAuthnController.
      */
