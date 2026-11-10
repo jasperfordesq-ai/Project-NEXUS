@@ -5,6 +5,7 @@
 
 import { getFormattingLocale, resolveAvatarUrl } from '@/lib/helpers';
 import { Avatar } from '@/components/ui/Avatar';
+import { ProgressCircle } from '@heroui/react/progress-circle';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -303,11 +304,39 @@ export function WalletPage() {
                   </Skeleton>
                 </div>
               ) : (
-                <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1" aria-live="polite">
-                  <span data-testid="wallet-balance" className="text-5xl font-bold leading-none text-theme-primary sm:text-6xl">
-                    {balance?.balance ?? 0}
-                  </span>
-                  <span className="text-xl font-semibold text-theme-muted">{t('hours')}</span>
+                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  {/* How the member's hours split between given and received,
+                      as a ring in the community colour — the same picture as
+                      "Time shared" on a profile (warmth plan N11). Decoration:
+                      the two figures are in the cards below. */}
+                  {stats.earned + stats.spent > 0 && (
+                    <span data-testid="wallet-ring" aria-hidden="true" className="relative size-16 shrink-0 sm:size-20">
+                      <ProgressCircle
+                        aria-hidden="true"
+                        value={Math.round((stats.earned / (stats.earned + stats.spent)) * 100)}
+                        className="size-16 sm:size-20"
+                      >
+                        <ProgressCircle.Track className="size-16 sm:size-20" strokeWidth={4} viewBox="0 0 36 36">
+                          <ProgressCircle.TrackCircle cx={18} cy={18} r={15} strokeWidth={4} className="stroke-[var(--accent-soft)]" />
+                          <ProgressCircle.FillCircle
+                            cx={18}
+                            cy={18}
+                            r={15}
+                            strokeWidth={4}
+                            strokeLinecap="round"
+                            className="stroke-[var(--accent-strong)] dark:stroke-[var(--accent)]"
+                          />
+                        </ProgressCircle.Track>
+                      </ProgressCircle>
+                      <Wallet className="absolute inset-0 m-auto size-6 text-accent sm:size-7" />
+                    </span>
+                  )}
+                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1" aria-live="polite">
+                    <span data-testid="wallet-balance" className="text-5xl font-bold leading-none text-theme-primary sm:text-6xl">
+                      {balance?.balance ?? 0}
+                    </span>
+                    <span className="text-xl font-semibold text-theme-muted">{t('hours')}</span>
+                  </div>
                 </div>
               )}
 

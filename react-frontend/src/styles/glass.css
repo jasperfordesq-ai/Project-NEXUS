@@ -257,3 +257,18 @@ html[data-high-contrast="true"] .hero-glow {
     0 0 0 1px var(--color-accent),
     0 0 15px var(--glow-accent-subtle);
 }
+
+/* ─────────────────────────────────────────────
+   LOADING PLACEHOLDERS (warmth plan N10)
+   A page that is loading showed plain grey blocks. They now carry a soft
+   tint of the community colour, so even the wait looks like this community.
+   HeroUI paints `.skeleton` itself; most pages also put a filled block
+   inside it (`bg-surface-tertiary` / `bg-surface-secondary`), which covers
+   it — so both are tinted. Unlayered on purpose: it must beat HeroUI's
+   component layer and the utility on the inner block. No text ever sits on a
+   placeholder, so there is nothing here for contrast to fail.
+   ───────────────────────────────────────────── */
+.skeleton,
+.skeleton :is(.bg-surface-tertiary, .bg-surface-secondary) {
+  background-color: color-mix(in oklab, var(--accent) 9%, var(--surface-tertiary));
+}

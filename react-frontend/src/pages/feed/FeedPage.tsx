@@ -18,6 +18,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from '@/lib/motion';
 
 import Newspaper from 'lucide-react/icons/newspaper';
+import { PublicPageHeroStrip } from '@/components/public/PublicPageHero';
 import Plus from 'lucide-react/icons/plus';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
@@ -973,6 +974,10 @@ export function FeedPage() {
           title moves into the app bar as plain text — leaving a phone with no
           heading to orient by. Keep one for screen readers. Mirrors BlogPage. */}
       {isPhone && <h1 className="sr-only">{t('title')}</h1>}
+      {/* The slim phone-sized opening, as on Members, Events and Groups. */}
+      {isPhone && (
+        <PublicPageHeroStrip text={t('subtitle')} icon={<Newspaper aria-hidden="true" />} />
+      )}
       <div className="mx-auto flex w-full max-w-6xl items-start justify-center gap-6 px-0 sm:px-2">
         {/* Main Feed Column */}
         <section className="w-full min-w-0 max-w-2xl flex-1 space-y-4" aria-label={t('feed.region_label')}>

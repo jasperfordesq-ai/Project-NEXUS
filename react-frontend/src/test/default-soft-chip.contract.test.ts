@@ -46,3 +46,14 @@ describe('a plain soft label', () => {
     expect(alpha('dark', 'default-soft-hover').alpha).toBeGreaterThan(pill.alpha);
   });
 });
+
+describe('loading placeholders', () => {
+  it('carry a soft tint of the community colour, on the placeholder and the block inside it', () => {
+    const glass = fs.readFileSync(path.resolve(__dirname, '../styles/glass.css'), 'utf8');
+    const rule = /\.skeleton,\s*\.skeleton :is\(\.bg-surface-tertiary, \.bg-surface-secondary\) \{\s*background-color: color-mix\(in oklab, var\(--accent\) (\d+)%, var\(--surface-tertiary\)\);/.exec(glass);
+    expect(rule).not.toBeNull();
+    // A tint, not a fill: it must still read as "loading", not as content.
+    expect(Number(rule![1])).toBeGreaterThanOrEqual(6);
+    expect(Number(rule![1])).toBeLessThanOrEqual(14);
+  });
+});

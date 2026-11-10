@@ -179,10 +179,21 @@ describe('LeaderboardPage', () => {
     render(<LeaderboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Alice Champion')).toBeInTheDocument();
+      expect(screen.getAllByText('Alice Champion').length).toBeGreaterThan(0);
     });
-    expect(screen.getByText('Test User')).toBeInTheDocument();
-    expect(screen.getByText('Bob Runner')).toBeInTheDocument();
+    // Each of the top three is named in the list and again on the podium.
+    expect(screen.getAllByText('Test User').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Bob Runner').length).toBeGreaterThan(0);
+
+    // The podium is a picture of the list's top three: hidden from screen
+    // readers, nothing to click, first place in the middle.
+    const podium = screen.getByTestId('leaderboard-podium');
+    expect(podium).toHaveAttribute('aria-hidden', 'true');
+    expect(podium.querySelector('a, button')).toBeNull();
+    const steps = [...podium.children].map((column) => column.lastElementChild?.textContent);
+    expect(steps).toEqual(['2', '1', '3']);
+    // Every name is still a link in the list itself.
+    expect(screen.getByRole('link', { name: /Alice Champion/ })).toBeInTheDocument();
     // Check XP scores are displayed
     expect(screen.getByText('5,000')).toBeInTheDocument();
     expect(screen.getByText('3,500')).toBeInTheDocument();

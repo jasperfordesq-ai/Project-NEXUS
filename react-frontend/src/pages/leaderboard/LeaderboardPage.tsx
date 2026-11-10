@@ -398,11 +398,53 @@ function SeasonCard() {
 const LEADERBOARD_PAGE_SIZE = 50;
 
 const getRankIcon = (position: number) => {
-  if (position === 1) return <Crown className="w-5 h-5 text-yellow-400" aria-hidden="true" />;
-  if (position === 2) return <Medal className="w-5 h-5 text-gray-300" aria-hidden="true" />;
-  if (position === 3) return <Medal className="w-5 h-5 text-amber-600" aria-hidden="true" />;
+  // Gold, silver, bronze: shades that show on a white card as well as a dark
+  // one (yellow-400 and gray-300 were nearly invisible on white).
+  if (position === 1) return <Crown className="w-5 h-5 text-amber-500 dark:text-yellow-400" aria-hidden="true" />;
+  if (position === 2) return <Medal className="w-5 h-5 text-slate-500 dark:text-slate-300" aria-hidden="true" />;
+  if (position === 3) return <Medal className="w-5 h-5 text-orange-700 dark:text-orange-400" aria-hidden="true" />;
   return <span className="text-theme-subtle font-mono text-sm w-5 text-center">{position}</span>;
 };
+
+// The three steps, in the order they stand: second, first, third. Classes are
+// written out whole so Tailwind generates them; each step's number is dark on a
+// light fill (light theme) and light on a tinted fill (dark theme).
+const PODIUM_STEPS = [
+  { place: 2, order: 'order-1', height: 'h-14', avatar: 'size-12', step: 'bg-linear-to-b from-slate-200 to-slate-300 text-slate-800 dark:from-slate-400/30 dark:to-slate-400/15 dark:text-slate-100' },
+  { place: 1, order: 'order-2', height: 'h-20', avatar: 'size-16', step: 'bg-linear-to-b from-amber-200 to-amber-300 text-amber-900 dark:from-amber-400/35 dark:to-amber-400/15 dark:text-amber-100' },
+  { place: 3, order: 'order-3', height: 'h-10', avatar: 'size-12', step: 'bg-linear-to-b from-orange-200 to-orange-300 text-orange-900 dark:from-orange-400/30 dark:to-orange-400/15 dark:text-orange-100' },
+] as const;
+
+/**
+ * The top three on a podium above the list (warmth plan N12). A picture of the
+ * same three rows that head the list below, so it is hidden from screen
+ * readers and has nothing to click: names, links and scores are in the list.
+ */
+function LeaderboardPodium({ entries }: { entries: LeaderboardEntry[] }) {
+  const top = PODIUM_STEPS.map((step) => ({ step, entry: entries.find((e) => e.position === step.place) }));
+  if (top.some(({ entry }) => !entry)) return null;
+
+  return (
+    <div data-testid="leaderboard-podium" aria-hidden="true" className="mx-auto grid max-w-md grid-cols-3 items-end gap-2 px-2 pt-2 sm:gap-4">
+      {top.map(({ step, entry }) => (
+        <div key={step.place} className={`flex min-w-0 flex-col items-center ${step.order}`}>
+          {step.place === 1 && <Crown className="mb-1 size-6 text-amber-500 dark:text-yellow-400" />}
+          <Avatar
+            name={entry!.user.name}
+            src={resolveAvatarUrl(entry!.user.avatar_url)}
+            size="md"
+            showFallback
+            className={`${step.avatar} ring-2 ring-[var(--surface-solid)]`}
+          />
+          <p className="mt-1.5 w-full truncate text-center text-sm font-semibold text-theme-primary">{entry!.user.name}</p>
+          <div className={`mt-1.5 flex w-full items-start justify-center rounded-t-2xl pt-1.5 text-lg font-bold ${step.height} ${step.step}`}>
+            {step.place}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function LeaderboardPage() {
   const { t } = useTranslation('gamification');
@@ -830,6 +872,7 @@ function CompetitiveLeaderboard(props: CompetitiveLeaderboardProps) {
             />
           ) : (
             <>
+              <LeaderboardPodium entries={entries} />
               <GlassCard className="overflow-hidden">
                 <motion.div
                   variants={containerVariants}

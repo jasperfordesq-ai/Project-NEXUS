@@ -141,6 +141,14 @@ describe('WalletPage', () => {
     expect(screen.queryByText('11h')).not.toBeInTheDocument();
   });
 
+  it('draws the given / received split as a ring beside the balance', async () => {
+    mockWallet();
+    render(<WalletPage />);
+    // The mock's balance has 3 earned and 5 spent.
+    const ring = await screen.findByTestId('wallet-ring');
+    expect(ring).toHaveAttribute('aria-hidden', 'true');
+  });
+
   it("shows the other member's face on a transaction, not a generic person icon", async () => {
     mockWallet([{
       id: 993, type: 'credit', amount: 2, status: 'pending',

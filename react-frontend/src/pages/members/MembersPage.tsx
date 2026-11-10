@@ -1039,14 +1039,16 @@ export function MembersPage() {
                   renderInfoContent={(m: User) => (
                     <div className="p-2 max-w-[200px]">
                       <div className="flex items-center gap-2">
-                        {(m.avatar || m.avatar_url) && (
-                          <Avatar
-                            src={resolveAvatarUrl(m.avatar ?? m.avatar_url)}
-                            alt={t('members.avatar_alt', { name: resolveUserDisplayName(m) || t('members.fallback_name') })}
-                            name={resolveUserDisplayName(m) || t('members.fallback_name')}
-                            size="sm"
-                          />
-                        )}
+                        {/* Always a face: the member's photo, or their own
+                            coloured initials. A member without a photo used to
+                            get no picture at all on the map (warmth plan P10). */}
+                        <Avatar
+                          data-testid="member-map-face"
+                          src={resolveAvatarUrl(m.avatar ?? m.avatar_url)}
+                          alt={t('members.avatar_alt', { name: resolveUserDisplayName(m) || t('members.fallback_name') })}
+                          name={resolveUserDisplayName(m) || t('members.fallback_name')}
+                          size="sm"
+                        />
                         <div>
                           <h4 className="font-semibold text-sm text-theme-primary">
                             {resolveUserDisplayName(m)}
