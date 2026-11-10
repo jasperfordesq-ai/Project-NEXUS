@@ -165,6 +165,13 @@
   --muted: var(--text-muted);
   --default: var(--surface-elevated);
   --default-foreground: var(--text-primary);
+  /* A plain (default) soft label — <Chip variant="flat"> with no colour, about
+     850 uses. HeroUI makes it half of --default, and --default here is the
+     5%-white elevated surface: the pill came out at 2.5% white and the label
+     read as bare bold text (warmth plan W10 / P7). A visible neutral instead. */
+  --default-soft: rgba(255, 255, 255, 0.10);
+  --default-soft-hover: rgba(255, 255, 255, 0.14);
+  --default-soft-foreground: var(--text-primary);
   --accent: var(--accent-color);
   --accent-foreground: #ffffff;
   --success-soft-foreground: var(--status-success-foreground);
@@ -196,7 +203,11 @@
   /* SEMANTIC TEXT COLORS */
   --text-primary: #1c1917;         /* stone-900 (was slate-900 #0f172a) */
   --text-secondary: #44403c;       /* stone-700 (was slate-700 #334155) */
-  --text-muted: #78716c;           /* stone-500 (was slate-500 #64748b) — 4.59:1 on the page */
+  /* Between stone-500 and stone-600. stone-500 (#78716c) read at 4.59:1 on the
+     page but 4.4:1 on a lightly tinted pill (--surface-hover on a white card:
+     the "hours exchanged" pills on the members page, axe, 10 Nov 2026). This
+     reads at 5.0:1 on the page and 4.7:1 on that pill. */
+  --text-muted: #736c67;
   --text-subtle: #57534e;          /* stone-600 (was slate-600 #475569; before that #94a3b8, 2.3:1) */
   --text-inverse: #ffffff;
 
@@ -312,6 +323,12 @@
   --muted: var(--text-muted);
   --default: var(--surface-elevated);
   --default-foreground: var(--text-primary);
+  /* A plain (default) soft label: see the dark theme's note. Here --default is
+     90% white, so the pill was white on white. A warm-grey tint instead
+     (stone-900 at 7%): text on it reads at over 13:1. */
+  --default-soft: rgba(28, 25, 23, 0.07);
+  --default-soft-hover: rgba(28, 25, 23, 0.10);
+  --default-soft-foreground: var(--text-primary);
   --accent: var(--accent-color);
   --accent-foreground: #ffffff;
   --success-soft-foreground: var(--status-success-foreground);

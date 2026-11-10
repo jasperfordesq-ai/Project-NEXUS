@@ -134,6 +134,18 @@ describe('TenantLogo', () => {
     expect(screen.getByTestId('avatar-initials')).toBeInTheDocument();
   });
 
+  it('lets the community colour show behind the initials (HeroUI\'s own near-white fill hid it)', async () => {
+    // The Avatar is mocked in this file, so the class is checked in the source:
+    // without it a dark community colour gave white initials on white, 1.19:1.
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const source = fs.readFileSync(path.resolve(__dirname, 'TenantLogo.tsx'), 'utf8');
+    const fallback = /fallback: primaryForeground === '#000000' \? '([^']+)' : '([^']+)'/.exec(source);
+    expect(fallback).not.toBeNull();
+    expect(fallback![1]).toContain('!bg-transparent');
+    expect(fallback![2]).toContain('!bg-transparent');
+  });
+
   it('avatar initials are derived from tenant name', async () => {
     mockBranding.name = 'hOUR Timebank';
     mockBranding.logo = undefined;

@@ -27,12 +27,15 @@ export interface ReactionPickerProps {
   size?: 'sm' | 'md';
 }
 
+// The member's own reaction, as a small coloured label on a white card. The
+// -500 shades read at 2.5–3.7:1 there (axe, 10 Nov 2026: "Celebrate" at
+// 2.47:1); -700 on light and -400 on dark clear 4.5:1.
 const getReactionColor = (type: ReactionType | null): string => {
   if (!type) return 'text-[var(--text-muted)] hover:text-rose-500';
 
   switch (type) {
     case 'love':
-      return 'text-rose-500 font-medium';
+      return 'text-rose-700 dark:text-rose-400 font-medium';
     case 'like':
       return 'text-[var(--color-info)] font-medium';
     case 'laugh':
@@ -41,9 +44,9 @@ const getReactionColor = (type: ReactionType | null): string => {
     case 'sad':
       return 'text-blue-700 dark:text-blue-400 font-medium';
     case 'celebrate':
-      return 'text-emerald-500 font-medium';
+      return 'text-emerald-700 dark:text-emerald-400 font-medium';
     case 'clap':
-      return 'text-orange-500 font-medium';
+      return 'text-orange-700 dark:text-orange-400 font-medium';
     case 'time_credit':
       return 'text-accent font-medium';
     default:

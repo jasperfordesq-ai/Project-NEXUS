@@ -168,7 +168,11 @@ export function TenantLogo({
       size={avatarSizeMap[effectiveSize]}
       classNames={{
         base: 'ring-2 ring-offset-1 ring-offset-transparent ring-border dark:ring-border shrink-0 transition-all duration-200',
-        fallback: primaryForeground === '#000000' ? '!text-black' : '!text-white',
+        // The initials sit on the community colour painted on the avatar itself
+        // (style below). HeroUI gives the initials layer its own near-white fill,
+        // which covered that colour: white initials on white, 1.19:1, for any
+        // community with a dark colour and no logo (axe, 10 Nov 2026).
+        fallback: primaryForeground === '#000000' ? '!bg-transparent !text-black' : '!bg-transparent !text-white',
       }}
       style={{
         backgroundColor: primaryColor,
