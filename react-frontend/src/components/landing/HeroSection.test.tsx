@@ -231,7 +231,7 @@ describe('HeroSection — authenticated user', () => {
       useTenant.mockImplementation(() => ({
         ...original(),
         branding: { name: 'Test Community', logo_url: null, communityPhoto: '/uploads/tenants/2/community.jpg' },
-      }) as ReturnType<typeof contexts.useTenant>);
+      }) as unknown as ReturnType<typeof contexts.useTenant>);
       try {
         render(<HeroSection />);
         const photo = screen.getByTestId('landing-hero-photo');
