@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { Avatar } from '@/components/ui/Avatar';
+import { FaceStack } from '@/components/ui/FaceStack';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -620,6 +621,10 @@ export function DashboardPage() {
                               {event.location && (<p className="text-xs text-theme-subtle flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3 shrink-0" aria-hidden="true" /><span className="truncate">{event.location}</span></p>)}
                               {event.is_online && !event.location && (<p className="text-xs text-theme-subtle mt-0.5">{t('events.online_event')}</p>)}
                             </div>
+                            {/* A few faces of members going, as on the events page
+                                (warmth plan P10). The server sends only people the
+                                directory would show this viewer. Decoration here. */}
+                            <FaceStack people={event.going_preview ?? []} data-testid="dashboard-event-face" />
                           </Link>
                         );
                       })}
@@ -662,6 +667,8 @@ export function DashboardPage() {
                           <h3 className="text-sm font-medium text-theme-primary truncate">{group.name}</h3>
                           <p className="text-xs text-theme-subtle flex items-center gap-1"><UserPlus className="w-3 h-3" aria-hidden="true" />{t('groups.members_count', { count: group.member_count ?? group.members_count ?? 0 })}</p>
                         </div>
+                        {/* A few of the group's members, as on the groups page. */}
+                        <FaceStack people={group.recent_members ?? []} data-testid="dashboard-group-face" />
                       </Link>
                     ))}
                   </div>

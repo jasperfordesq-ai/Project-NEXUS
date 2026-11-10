@@ -576,8 +576,13 @@ describe('GroupsPage', () => {
       expect(screen.getByRole('heading', { level: 1, name: 'Groups' })).toHaveClass('sr-only');
       expect(screen.queryByPlaceholderText(/Search groups/i)).not.toBeInTheDocument();
       expect(screen.queryByRole('radio', { name: 'Public' })).not.toBeInTheDocument();
-      expect(screen.queryByText('Join groups to connect with like-minded community members'))
-        .not.toBeInTheDocument();
+      // The full opening is gone; its one line of description now sits in the
+      // slim phone-sized band instead (warmth plan P9), with no second heading.
+      expect(document.querySelector('[data-public-page-hero]')).toBeNull();
+      const strip = document.querySelector('[data-public-page-hero-strip]');
+      expect(strip).not.toBeNull();
+      expect(strip).toHaveTextContent('Join groups to connect with like-minded community members');
+      expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     });
 
     it('re-homes the Create Group action into the sticky bar', () => {

@@ -24,7 +24,8 @@ import { Button, Card, CardBody } from '@/components/ui';
 import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
 import { useSiteAccent } from '@/contexts/SiteAccentContext';
 import { mixHex } from '@/lib/colorContrast';
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl } from '@/lib/helpers';
+import { Avatar } from '@/components/ui/Avatar';
 
 interface ExchangeThanksProps {
   neighbours: number;
@@ -34,11 +35,13 @@ interface ExchangeThanksProps {
   partnerName?: string;
   /** Where that message is written; no button when messaging is unavailable. */
   messageHref?: string;
+  /** The other person's photo; with no photo their coloured initials show. */
+  partnerAvatar?: string | null;
 }
 
 const STANDARD_ACCENT = '#5b5ede';
 
-export function ExchangeThanks({ neighbours, hours, onClose, partnerName, messageHref }: ExchangeThanksProps) {
+export function ExchangeThanks({ neighbours, hours, onClose, partnerName, messageHref, partnerAvatar }: ExchangeThanksProps) {
   const { t } = useTranslation('exchanges');
   const accent = useSiteAccent() ?? STANDARD_ACCENT;
   const panelRef = useRef<HTMLDivElement>(null);
@@ -61,12 +64,34 @@ export function ExchangeThanks({ neighbours, hours, onClose, partnerName, messag
       <Card data-testid="exchange-thanks" className="relative overflow-hidden border-0 bg-accent-soft shadow-none">
         <ConfettiCelebration show colors={confettiColours} />
         <CardBody className="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
-          <span
-            data-testid="exchange-thanks-icon"
-            className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent-strong text-white shadow-sm"
-          >
-            <HeartHandshake className="size-6" aria-hidden="true" />
-          </span>
+          {/* The person you just exchanged with, with the handshake as a small
+              badge on their picture (warmth plan P10). Without a name to show,
+              the handshake stands alone as before. Decorative either way: the
+              name is in the button below. */}
+          {partnerName ? (
+            <span className="relative shrink-0" aria-hidden="true">
+              <Avatar
+                data-testid="exchange-thanks-face"
+                src={resolveAvatarUrl(partnerAvatar)}
+                name={partnerName}
+                size="lg"
+                className="size-14 ring-2 ring-[var(--surface-solid)]"
+              />
+              <span
+                data-testid="exchange-thanks-icon"
+                className="absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full bg-accent-strong text-white shadow-sm ring-2 ring-[var(--surface-solid)]"
+              >
+                <HeartHandshake className="size-3.5" aria-hidden="true" />
+              </span>
+            </span>
+          ) : (
+            <span
+              data-testid="exchange-thanks-icon"
+              className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent-strong text-white shadow-sm"
+            >
+              <HeartHandshake className="size-6" aria-hidden="true" />
+            </span>
+          )}
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-bold leading-tight text-theme-primary">{t('thanks.title')}</h2>
             <p className="mt-1 text-sm leading-6 text-theme-secondary">{t('thanks.body')}</p>

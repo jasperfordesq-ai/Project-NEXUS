@@ -762,6 +762,11 @@ export interface EventSeries {
 
 export interface Event {
   id: number;
+  /**
+   * A few members who are going, for a row of faces. The server sends only
+   * people the member directory would show this viewer.
+   */
+  going_preview?: Array<{ id: number; name: string; avatar_url?: string | null }>;
   title: string;
   description: string;
   start_date: string;

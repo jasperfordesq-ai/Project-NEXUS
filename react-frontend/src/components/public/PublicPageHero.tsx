@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import Sparkles from 'lucide-react/icons/sparkles';
 import { Chip } from '@/components/ui';
 import { useCommunityAccent } from '@/contexts/ThemeContext';
+import { FaceStack, type FaceStackPerson } from '@/components/ui/FaceStack';
 
 interface PublicPageHeroStat {
   label: string;
@@ -28,6 +29,14 @@ interface PublicPageHeroProps {
    * a smaller title, and its picture kept on phones.
    */
   size?: 'full' | 'compact';
+  /**
+   * A few of the people this page is about, shown as a row of faces under the
+   * description (warmth plan P8): the newest members, people going to events,
+   * members of groups. Pass only people the page already lists for this
+   * viewer — the faces are decoration (hidden from screen readers) because
+   * the same people are named on the page below.
+   */
+  people?: ReadonlyArray<FaceStackPerson>;
   /** An id for the heading, for a skip link or for moving focus to it. */
   headingId?: string;
   /**
@@ -130,6 +139,7 @@ export function PublicPageHero({
   accent = 'indigo',
   action,
   stats,
+  people,
   size = 'full',
   headingId,
   headingFocusable = false,
@@ -191,6 +201,15 @@ export function PublicPageHero({
                   {description}
                 </p>
               )}
+              {people && people.length > 0 && (
+                <FaceStack
+                  people={people}
+                  max={5}
+                  size="md"
+                  data-testid="hero-face"
+                  className={size === 'compact' ? 'mt-2' : 'mt-4'}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -214,6 +233,46 @@ export function PublicPageHero({
         )}
       </div>
     </section>
+  );
+}
+
+interface PublicPageHeroStripProps {
+  /** One short line: what this page is for. */
+  text: string;
+  icon: ReactNode;
+  accent?: PublicPageHeroProps['accent'];
+  /** A few of the people the page lists (see `people` on PublicPageHero). */
+  people?: ReadonlyArray<FaceStackPerson>;
+}
+
+/**
+ * The phone-sized opening for a browsing page (warmth plan P9). On a phone
+ * those pages hide the full opening — the title lives in the app bar — which
+ * left them starting cold on a search box. This is one slim band in the same
+ * colour: the page's picture, one line of text, and a few faces. It carries no
+ * heading: the page keeps its own (screen-reader) <h1>.
+ */
+export function PublicPageHeroStrip({ text, icon, accent = 'indigo', people }: PublicPageHeroStripProps) {
+  const communityAccent = useCommunityAccent();
+  const classes = accentClasses[communityAccent ? 'community' : accent];
+
+  return (
+    <div
+      data-public-page-hero-strip="true"
+      className={`relative flex items-center gap-3 overflow-hidden rounded-2xl px-3 py-2.5 ${classes.panel}`}
+    >
+      <div
+        aria-hidden="true"
+        className={`hero-glow pointer-events-none absolute -right-10 -top-16 size-32 rounded-full blur-2xl ${classes.glow}`}
+      />
+      <div className={`relative inline-flex shrink-0 rounded-xl bg-gradient-to-br p-2 [&_svg]:size-5 ${classes.icon}`}>
+        {icon}
+      </div>
+      <p className="relative min-w-0 flex-1 text-sm leading-5 text-theme-secondary line-clamp-2">{text}</p>
+      {people && people.length > 0 && (
+        <FaceStack people={people} max={3} size="sm" data-testid="hero-strip-face" className="relative" />
+      )}
+    </div>
   );
 }
 

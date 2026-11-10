@@ -447,6 +447,7 @@ export function ExchangeDetailPage() {
           hours={thanks.hours_this_year}
           onClose={() => setThanks(null)}
           partnerName={otherParty?.first_name || otherParty?.name}
+          partnerAvatar={otherParty?.avatar}
           messageHref={canMessage && otherPartyId ? tenantPath(`/messages/new/${otherPartyId}`) : undefined}
         />
       )}

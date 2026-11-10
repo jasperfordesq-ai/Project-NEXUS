@@ -17,7 +17,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
  * Groups Page - Community groups listing
  */
 
-import { lazy, Suspense, useState, useEffect, useCallback, useRef, memo, type CSSProperties } from 'react';
+import { lazy, Suspense, useState, useEffect, useCallback, useRef, memo, useMemo, type CSSProperties } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 
@@ -32,7 +32,7 @@ import Star from 'lucide-react/icons/star';
 import { useTranslation } from 'react-i18next';
 import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
-import { PublicPageHero } from '@/components/public/PublicPageHero';
+import { PublicPageHero, PublicPageHeroStrip } from '@/components/public/PublicPageHero';
 import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -114,6 +114,17 @@ export function GroupsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [groups, setGroups] = useState<Group[]>([]);
+  // A few different members of the groups listed, for the page opening. Only
+  // the faces the group cards below already show this viewer.
+  const heroPeople = useMemo(() => {
+    const seen = new Map<number, NonNullable<Group['recent_members']>[number]>();
+    for (const group of groups) {
+      for (const member of group.recent_members ?? []) {
+        if (!seen.has(member.id)) seen.set(member.id, member);
+      }
+    }
+    return [...seen.values()].slice(0, 5);
+  }, [groups]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -348,6 +359,14 @@ export function GroupsPage() {
           title moves into the app bar as plain text — leaving a phone with no
           heading to orient by. Keep one for screen readers. Mirrors BlogPage. */}
       {isPhone && <h1 className="sr-only">{t('title')}</h1>}
+      {isPhone && (
+        <PublicPageHeroStrip
+          text={t('subtitle')}
+          accent="indigo"
+          icon={<Users aria-hidden="true" />}
+          people={heroPeople}
+        />
+      )}
       {/* Tablet/desktop chrome, unchanged. Phones hide the hero, the quick-filter row
           and the search card and get the sticky bar + filter sheet below instead. */}
       {!isPhone && (
@@ -358,6 +377,7 @@ export function GroupsPage() {
         description={t('subtitle')}
         icon={<Users className="h-6 w-6" aria-hidden="true" />}
         accent="indigo"
+        people={heroPeople}
         stats={totalCount != null && !isLoading ? [{ label: t('count_label'), value: totalCount.toLocaleString(getFormattingLocale()) }] : undefined}
         action={
           isAuthenticated ? (

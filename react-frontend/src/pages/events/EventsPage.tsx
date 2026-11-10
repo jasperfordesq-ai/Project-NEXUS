@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { Avatar } from '@/components/ui/Avatar';
+import { FaceStack } from '@/components/ui/FaceStack';
 import { joinList } from '@/lib/listFormat';
 import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
@@ -55,10 +55,10 @@ import { canCreateEvents } from '@/lib/access';
 import { useToast } from '@/contexts/ToastContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
-import { PublicPageHero } from '@/components/public/PublicPageHero';
+import { PublicPageHero, PublicPageHeroStrip } from '@/components/public/PublicPageHero';
 import { eventsApi, type Event, type EventCategory } from '@/lib/events-api';
 import { logError } from '@/lib/logger';
-import { formatDateTime, formatDateValue, responsiveThumbnailProps, getFormattingLocale, resolveAvatarUrl } from '@/lib/helpers';
+import { formatDateTime, formatDateValue, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
@@ -195,6 +195,17 @@ export function EventsPage() {
     : 'list';
 
   const [events, setEvents] = useState<Event[]>([]);
+  // A few different people going to the events listed, for the page opening.
+  // Only the faces the list below already shows this viewer.
+  const heroPeople = useMemo(() => {
+    const seen = new Map<number, { id: number; name: string; avatar_url?: string | null }>();
+    for (const event of events) {
+      for (const person of event.going_preview ?? []) {
+        if (!seen.has(person.id)) seen.set(person.id, person);
+      }
+    }
+    return [...seen.values()].slice(0, 5);
+  }, [events]);
   const [categories, setCategories] = useState<EventCategory[]>([]);
   // Each kind of event in its colour on its filter button, as on its cards
   // (warmth plan W3; the seed is the fallback).
@@ -538,6 +549,14 @@ export function EventsPage() {
           title moves into the app bar as plain text — leaving a phone with no
           heading to orient by. Keep one for screen readers. Mirrors BlogPage. */}
       {isPhone && <h1 className="sr-only">{t('title')}</h1>}
+      {isPhone && (
+        <PublicPageHeroStrip
+          text={t('page_description')}
+          accent="amber"
+          icon={<CalendarDays aria-hidden="true" />}
+          people={heroPeople}
+        />
+      )}
       {/* Phones hide the hero entirely — the title lives in the app bar (useSetAppBarTitle). */}
       {!isPhone && (
       <PublicPageHero
@@ -546,6 +565,7 @@ export function EventsPage() {
         description={t('page_description')}
         accent="amber"
         icon={<CalendarDays className="h-7 w-7" aria-hidden="true" />}
+        people={heroPeople}
         stats={totalCount != null && !isLoading ? [{ label: t('hero_events_label'), value: totalCount.toLocaleString(getFormattingLocale()) }] : undefined}
         action={
           isAuthenticated ? (
@@ -1160,18 +1180,7 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
                   {/* A few faces of members going (owner, 9 Nov 2026); the server
                       sends only people the directory would show this viewer. */}
                   {goingPreview.length > 0 ? (
-                    <span className="flex -space-x-1.5" aria-hidden="true">
-                      {goingPreview.map((person) => (
-                        <Avatar
-                          key={person.id}
-                          data-testid="event-going-face"
-                          src={resolveAvatarUrl(person.avatar_url)}
-                          name={person.name}
-                          size="sm"
-                          className="size-6 ring-2 ring-[var(--surface-solid)]"
-                        />
-                      ))}
-                    </span>
+                    <FaceStack people={goingPreview} max={goingPreview.length} data-testid="event-going-face" />
                   ) : (
                     <Users className="w-4 h-4" aria-hidden="true" />
                   )}

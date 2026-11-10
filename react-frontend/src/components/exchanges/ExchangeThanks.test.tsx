@@ -42,4 +42,18 @@ describe('ExchangeThanks', () => {
     expect(screen.getByTestId('exchange-thanks').className).toContain('bg-accent-soft');
     expect(screen.getByTestId('exchange-thanks-icon').className).toContain('bg-accent-strong');
   });
+
+  it("shows the other person's picture, with the handshake as a badge on it", () => {
+    render(<ExchangeThanks neighbours={1} hours={1} onClose={vi.fn()} partnerName="Ciaran" partnerAvatar={null} />);
+    const face = screen.getByTestId('exchange-thanks-face');
+    expect(face).toBeInTheDocument();
+    // Decorative: the name is in the text, so the picture is hidden from screen readers.
+    expect(face.closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(screen.getByTestId('exchange-thanks-icon').className).toContain('bg-accent-strong');
+  });
+
+  it('keeps the handshake alone when there is no one to show', () => {
+    render(<ExchangeThanks neighbours={1} hours={1} onClose={vi.fn()} />);
+    expect(screen.queryByTestId('exchange-thanks-face')).toBeNull();
+  });
 });

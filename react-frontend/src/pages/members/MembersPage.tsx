@@ -58,7 +58,7 @@ import { useTranslation } from 'react-i18next';
 import { useBadgeCopy } from '@/hooks/useBadgeCopy';
 import { PresenceIndicator } from '@/components/social/PresenceIndicator';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
-import { PublicPageHero } from '@/components/public/PublicPageHero';
+import { PublicPageHero, PublicPageHeroStrip } from '@/components/public/PublicPageHero';
 import { PageMeta } from '@/components/seo';
 import { useAuth, useToast, useTenant, useFeature } from '@/contexts';
 import { usePresenceOptional } from '@/contexts/PresenceContext';
@@ -163,6 +163,8 @@ export function MembersPage() {
   const toast = useToast();
 
   const [members, setMembers] = useState<User[]>([]);
+  // The first few members listed below, as faces in the page opening.
+  const heroPeople = useMemo(() => members.slice(0, 5), [members]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -560,6 +562,14 @@ export function MembersPage() {
           title moves into the app bar as plain text — leaving a phone with no
           heading to orient by. Keep one for screen readers. Mirrors BlogPage. */}
       {isPhone && <h1 className="sr-only">{t('members.title')}</h1>}
+      {isPhone && (
+        <PublicPageHeroStrip
+          text={t('members.subtitle')}
+          accent="blue"
+          icon={<Users aria-hidden="true" />}
+          people={heroPeople}
+        />
+      )}
       {/* Phones hide the hero entirely — the title lives in the app bar (useSetAppBarTitle). */}
       {!isPhone && (
       <PublicPageHero
@@ -568,6 +578,7 @@ export function MembersPage() {
         description={t('members.subtitle')}
         icon={<Users className="h-6 w-6" aria-hidden="true" />}
         accent="blue"
+        people={heroPeople}
         // No count chip here, deliberately, unlike the other directory heroes.
         // This page states its size once, lower down, next to the explanation
         // of who is and is not listed — a chip repeating that same number a

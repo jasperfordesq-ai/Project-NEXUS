@@ -141,6 +141,27 @@ describe('WalletPage', () => {
     expect(screen.queryByText('11h')).not.toBeInTheDocument();
   });
 
+  it("shows the other member's face on a transaction, not a generic person icon", async () => {
+    mockWallet([{
+      id: 993, type: 'credit', amount: 2, status: 'pending',
+      description: 'Garden help', created_at: '2026-08-23T09:00:00Z',
+      other_user: { id: 5, name: 'Bob Smith', avatar: null },
+    }]);
+
+    render(<WalletPage />);
+
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
+    // This file's mock serves rows only for the Pending filter.
+    const pendingTab = screen.getAllByText('Pending')
+      .map((node) => node.closest('[role="tab"], button, [data-key="pending"]'))
+      .find((node): node is HTMLElement => node !== null);
+    fireEvent.click(pendingTab as HTMLElement);
+
+    expect(await screen.findByText('Bob Smith')).toBeInTheDocument();
+    // Decorative (the name is the text beside it), so it is found by test id.
+    expect(screen.getByTestId('wallet-transaction-face')).toHaveAttribute('aria-hidden', 'true');
+  });
+
   it('asks the server for pending rows instead of filtering a completed-only list', async () => {
     mockWallet([{
       id: 991, type: 'credit', amount: 7, status: 'pending',

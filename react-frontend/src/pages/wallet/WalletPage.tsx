@@ -3,7 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl } from '@/lib/helpers';
+import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -23,7 +24,6 @@ import ArrowDownLeft from 'lucide-react/icons/arrow-down-left';
 import Clock from 'lucide-react/icons/clock';
 import TrendingUp from 'lucide-react/icons/trending-up';
 import Calendar from 'lucide-react/icons/calendar';
-import User from 'lucide-react/icons/user';
 import Download from 'lucide-react/icons/download';
 import Send from 'lucide-react/icons/send';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
@@ -575,6 +575,7 @@ function TransactionCard({ transaction }: TransactionCardProps) {
   const { t } = useTranslation('wallet');
   const isCredit = transaction.type === 'credit';
   const otherPartyName = transaction.other_user?.name || transaction.other_party?.name;
+  const otherPartyAvatar = transaction.other_user?.avatar ?? transaction.other_party?.avatar;
   const description = transaction.description || t('transaction_fallback');
 
   return (
@@ -609,7 +610,17 @@ function TransactionCard({ transaction }: TransactionCardProps) {
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-theme-subtle mt-1">
             {otherPartyName && (
               <span className="flex min-w-0 max-w-full items-center gap-1">
-                <User className="w-3 h-3 shrink-0" aria-hidden="true" />
+                {/* The other member's face (or their coloured initials), not a
+                    generic person icon — warmth plan P10. Decorative: the name
+                    is the text beside it. */}
+                <Avatar
+                  data-testid="wallet-transaction-face"
+                  src={resolveAvatarUrl(otherPartyAvatar)}
+                  name={otherPartyName}
+                  size="sm"
+                  className="size-5 shrink-0 text-[9px]"
+                  aria-hidden="true"
+                />
                 <span className="truncate">{otherPartyName}</span>
               </span>
             )}

@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useEffect } from 'react';
 import { render, screen, waitFor } from '@/test/test-utils';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
-import { PublicPageHero } from './PublicPageHero';
+import { PublicPageHero, PublicPageHeroStrip } from './PublicPageHero';
 
 vi.mock('@/contexts', () => ({
   useAuth: () => ({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null }),
@@ -276,5 +276,47 @@ describe('PublicPageHero', () => {
       expect(document.querySelector('[data-public-page-hero="true"]')).toHaveAttribute('data-size', 'full');
       expect(screen.getByRole('heading', { level: 1 }).className).toContain('sm:text-4xl');
     });
+  });
+
+  it('shows a few of the people the page is about, as decoration', () => {
+    render(
+      <PublicPageHero
+        title="Members"
+        icon={<span />}
+        people={[
+          { id: 1, name: 'Maeve Byrne' },
+          { id: 2, name: 'Tom Walsh' },
+          { id: 3, name: 'Aoife' },
+          { id: 4, name: 'Seán' },
+          { id: 5, name: 'Niamh' },
+          { id: 6, name: 'Pádraig' },
+        ]}
+      />,
+    );
+    // Five at most, and hidden from screen readers: the page lists them below.
+    const faces = screen.getAllByTestId('hero-face');
+    expect(faces).toHaveLength(5);
+    expect(faces[0]!.closest('[aria-hidden="true"]')).not.toBeNull();
+  });
+
+  it('shows no row of faces when there is no one to show', () => {
+    render(<PublicPageHero title="Members" icon={<span />} people={[]} />);
+    expect(screen.queryByTestId('hero-face')).toBeNull();
+  });
+});
+
+describe('PublicPageHeroStrip — the phone-sized opening', () => {
+  it('shows one line of text and a few faces, and no heading of its own', () => {
+    render(
+      <PublicPageHeroStrip
+        text="Connect with members of the community"
+        icon={<span />}
+        people={[{ id: 1, name: 'Maeve' }, { id: 2, name: 'Tom' }, { id: 3, name: 'Aoife' }, { id: 4, name: 'Seán' }]}
+      />,
+    );
+    expect(screen.getByText('Connect with members of the community')).toBeInTheDocument();
+    expect(screen.getAllByTestId('hero-strip-face')).toHaveLength(3);
+    // The page keeps its own <h1>; a second one here would give it two.
+    expect(screen.queryByRole('heading')).toBeNull();
   });
 });
