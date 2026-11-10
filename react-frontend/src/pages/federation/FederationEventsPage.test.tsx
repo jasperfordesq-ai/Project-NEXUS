@@ -177,9 +177,9 @@ describe('FederationEventsPage', () => {
       { ...mockEvent, id: 102, title: 'Choir Night', timebank: { id: other, name: 'Galway Timebank' } },
     ];
     vi.mocked(api.get).mockImplementation((url: string) => {
-      if (url.includes('/v2/federation/partners')) return Promise.resolve({ success: true, data: [mockPartner] });
-      if (url.includes('/v2/federation/events')) return Promise.resolve({ success: true, data: events, meta: { cursor: null, has_more: false } });
-      return Promise.resolve({ success: true, data: [] });
+      if (url.includes('/v2/federation/partners')) return Promise.resolve({ success: true, data: [mockPartner] }) as ReturnType<typeof api.get>;
+      if (url.includes('/v2/federation/events')) return Promise.resolve({ success: true, data: events, meta: { cursor: null, has_more: false } }) as ReturnType<typeof api.get>;
+      return Promise.resolve({ success: true, data: [] }) as ReturnType<typeof api.get>;
     });
     render(<FederationEventsPage />);
     await screen.findByText('Choir Night');
