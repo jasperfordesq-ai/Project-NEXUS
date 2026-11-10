@@ -116,6 +116,16 @@ const SPACING_MULTIPLIER_MAP: Record<Density, string> = {
 const DARK_READING_SURFACE = '#18181b';
 
 /**
+ * The darkest light surface accent-coloured text sits on: the warm page
+ * (tokens.css --surface-base; cards are white). On the light theme a colour is
+ * deepened, towards black, until it reads at 4.5:1 against this (warmth plan
+ * W4, 10 Nov 2026). Admin → Settings refuses community colours that fail on
+ * white, but colours saved before that rule — and a bright colour a member
+ * picks for themselves — reached the page as-is: a pale yellow read at 1.5:1.
+ */
+const LIGHT_READING_SURFACE = '#fafaf9';
+
+/**
  * How the standard colour (DEFAULT_PREFERENCES.accentColor, #6366f1) is
  * painted on the light theme: 8% deeper, the same hue. #6366f1 itself reads at
  * 4.47:1 under white text and 4.28:1 as text on the warm page (#fafaf9) — both
@@ -342,7 +352,9 @@ export function ThemeProvider({
   // HeroUI's accent): on the dark theme, lightened just enough to read on the
   // dark page.
   const effectiveAccent = useMemo(
-    () => (resolvedTheme === 'dark' ? ensureContrast(baseAccent, DARK_READING_SURFACE) : baseAccent),
+    () => (resolvedTheme === 'dark'
+      ? ensureContrast(baseAccent, DARK_READING_SURFACE)
+      : ensureContrast(baseAccent, LIGHT_READING_SURFACE, AA_NORMAL_TEXT_CONTRAST, '#000000')),
     [baseAccent, resolvedTheme],
   );
   // The BUTTON shade (--accent-strong): carries white text at 4.5:1 in both

@@ -245,13 +245,17 @@ describe('ThemeContext', () => {
     });
 
     const htmlStyle = document.documentElement.style;
-    expect(htmlStyle.getPropertyValue('--accent-color')).toBe('#22c55e');
-    expect(htmlStyle.getPropertyValue('--accent')).toBe('#22c55e');
-    expect(htmlStyle.getPropertyValue('--accent-foreground')).toBe('#000000');
-    expect(htmlStyle.getPropertyValue('--focus')).toBe('#22c55e');
-    expect(htmlStyle.getPropertyValue('--link')).toBe('#22c55e');
-    expect(htmlStyle.getPropertyValue('--border-focus')).toContain('#22c55e');
-    expect(htmlStyle.getPropertyValue('--input-focus-border')).toContain('#22c55e');
+    // The member's green as painted on the light theme: deepened just enough
+    // to read as text on the warm page (warmth plan W4) — #22c55e itself reads
+    // at 2.2:1 there.
+    const painted = '#16803d';
+    expect(htmlStyle.getPropertyValue('--accent-color')).toBe(painted);
+    expect(htmlStyle.getPropertyValue('--accent')).toBe(painted);
+    expect(htmlStyle.getPropertyValue('--accent-foreground')).toBe('#ffffff');
+    expect(htmlStyle.getPropertyValue('--focus')).toBe(painted);
+    expect(htmlStyle.getPropertyValue('--link')).toBe(painted);
+    expect(htmlStyle.getPropertyValue('--border-focus')).toContain(painted);
+    expect(htmlStyle.getPropertyValue('--input-focus-border')).toContain(painted);
   });
 
   it('uses a light foreground for dark accent colors', async () => {
@@ -303,7 +307,8 @@ describe('ThemeContext', () => {
       await act(async () => {
         screen.getByRole('button', { name: 'Set Green Accent' }).click();
       });
-      expect(accent()).toBe('#22c55e');
+      // The member's own green (deepened to read on the light theme), not the community's.
+      expect(accent()).toBe('#16803d');
     });
 
     it('goes back to the standard colour when the community clears its colour', async () => {
@@ -361,6 +366,37 @@ describe('ThemeContext', () => {
 
       await act(async () => {});
       expect(getContrastRatio(accent(), '#18181b')).toBeGreaterThanOrEqual(4.5);
+    });
+
+    // Warmth plan W4 (10 Nov 2026), measured with real community colours: a
+    // colour saved before Admin → Settings began refusing pale ones (or a
+    // bright colour a member picks) was used as-is for text on the light
+    // theme — a pale yellow read at 1.5:1. It is now deepened just enough,
+    // keeping its family, as the dark theme already lightens.
+    it.each(['#facc15', '#22c55e', '#ef4444'])(
+      'deepens a colour too pale to read as text on the light theme (%s)',
+      async (colour) => {
+        render(
+          <ThemeProvider defaultTheme="light">
+            <CommunityProbe colour={colour} />
+          </ThemeProvider>
+        );
+        await act(async () => {});
+        expect(accent()).not.toBe(colour);
+        expect(getContrastRatio(accent(), '#fafaf9')).toBeGreaterThanOrEqual(4.5);
+        expect(getContrastRatio(accent(), '#ffffff')).toBeGreaterThanOrEqual(4.5);
+        expect(accent()).not.toBe('#000000');
+      },
+    );
+
+    it('leaves a colour that already reads on the light theme exactly as chosen', async () => {
+      render(
+        <ThemeProvider defaultTheme="light">
+          <CommunityProbe colour="#1e3a8a" />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(accent()).toBe('#1e3a8a');
     });
 
     const strong = () => document.documentElement.style.getPropertyValue('--accent-strong');

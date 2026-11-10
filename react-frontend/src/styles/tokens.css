@@ -537,6 +537,30 @@ html[data-simplified-layout="true"] .backdrop-blur-3xl {
 }
 
 /* ─────────────────────────────────────────────
+   RED (DANGER) ON THE MEMBER SITE — WCAG 2.2 AA (1.4.3)
+   Measured with axe on 10 Nov 2026 (warmth plan W4): HeroUI's red was
+   #ff383c on the light theme — 3.5:1 as text ("Delete all" on the
+   notifications page; `text-danger` is used in about 535 places) and 3.6:1
+   under white text — and #db3b3e on the dark theme, 3.1:1 as text on a raised
+   surface and 4.46:1 under white. One shade per theme now serves as text and
+   as a fill:
+     light #c2181d — text 5.8:1 on the page, 4.7:1 on its soft tint; white
+                     text on it 6.1:1
+     dark  #f97676 — text 6.7:1 on cards, 5.2:1 on raised surfaces; it is
+                     light, so a red fill carries dark text (6.7:1)
+   The broker panel keeps its own measured values (below). Pinned by
+   src/test/danger-colour.contract.test.ts.
+   ───────────────────────────────────────────── */
+:root[data-theme="light"]:not([data-panel="broker"]) {
+  --danger: oklch(0.52 0.2 27);
+}
+
+:root[data-theme="dark"]:not([data-panel="broker"]) {
+  --danger: oklch(0.72 0.16 22);
+  --danger-foreground: var(--eclipse);
+}
+
+/* ─────────────────────────────────────────────
    BROKER PANEL — TEXT CONTRAST (WCAG 2.2 AA, 1.4.3)
    A page-by-page measurement of the broker panel on 3 Oct 2026 found the
    shared status colours just under the 4.5:1 text minimum: accent links
