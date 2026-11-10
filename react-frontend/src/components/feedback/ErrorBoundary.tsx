@@ -17,6 +17,7 @@ import Home from 'lucide-react/icons/house';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/Button';
 import { logError } from '@/lib/logger';
+import { isSharedPlatformHost } from '@/lib/tenant-routing';
 import i18n from 'i18next';
 
 const ReportProblemButton = lazy(() =>
@@ -81,10 +82,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     // the slug must NOT appear in the path. Only prepend slug on shared hosts where
     // path-based routing is required (localhost, app.project-nexus.ie).
     const hostname = window.location.hostname;
-    const isSharedHost =
-      hostname === 'localhost' ||
-      hostname === '127.0.0.1' ||
-      hostname === 'app.project-nexus.ie';
+    const isSharedHost = isSharedPlatformHost(hostname);
 
     if (!isSharedHost) {
       window.location.href = '/';

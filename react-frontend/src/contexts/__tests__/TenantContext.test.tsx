@@ -50,6 +50,7 @@ vi.mock('@/lib/logger', () => ({
 
 // Mock tenant routing utilities
 vi.mock('@/lib/tenant-routing', () => ({
+  isSharedPlatformHost: (h: string) => ['localhost', '127.0.0.1', 'app.project-nexus.ie', 'app.project-nexus.net'].includes(h),
   detectTenantFromUrl: vi.fn(() => ({ slug: null, source: null })),
   tenantPath: vi.fn((path: string, slug: string | null) => {
     if (!slug) return path;

@@ -24,6 +24,7 @@ if (file_exists(__DIR__ . '/../.maintenance')) {
         $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
         $allowedOrigins = [
             'https://app.project-nexus.ie',
+            'https://app.project-nexus.net',
             'https://hour-timebank.ie',
             'https://www.hour-timebank.ie',
             'https://timebank.global',

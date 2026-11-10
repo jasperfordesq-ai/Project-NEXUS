@@ -31,7 +31,7 @@ import { Routes, useLocation, UNSAFE_NavigationContext, parsePath, type To } fro
 import { TenantProvider, useTenant } from '@/contexts/TenantContext';
 import { useAuth, AuthProvider } from '@/contexts/AuthContext';
 import { useCookieConsent } from '@/contexts/CookieConsentContext';
-import { detectTenantFromUrl } from '@/lib/tenant-routing';
+import { detectTenantFromUrl, isSharedPlatformHost } from '@/lib/tenant-routing';
 import { CARING_COMMUNITY_ROUTE } from '@/pages/caring-community/config';
 import { LoadingScreen } from '@/components/feedback/LoadingScreen';
 import { lazy, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ContextType } from 'react';
@@ -696,7 +696,7 @@ export function SlugUrlGuard({ slug }: { slug: string }) {
     // On subdomains (hour-timebank.project-nexus.ie) or custom domains (hour-timebank.ie),
     // the slug belongs in the domain, NOT the path — never touch the URL there.
     const hostname = window.location.hostname;
-    const isSharedHost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === 'app.project-nexus.ie';
+    const isSharedHost = isSharedPlatformHost(hostname);
     if (!isSharedHost) return;
 
     const currentPath = window.location.pathname;

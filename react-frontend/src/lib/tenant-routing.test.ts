@@ -17,6 +17,7 @@ import {
   tenantPath,
   stripTenantSlug,
   buildPlatformTenantUrl,
+  isSharedPlatformHost,
 } from './tenant-routing';
 
 // The address a community is reachable at WITHOUT a custom domain. Tenants are
@@ -205,6 +206,36 @@ describe('tenant-routing', () => {
       const result = detectTenantFromUrl();
       expect(result.slug).toBe('my-tenant');
       expect(result.source).toBe('path');
+    });
+
+    // The shared host is moving to app.project-nexus.net (10 Nov 2026). During
+    // the move the same build serves both addresses, so both must route alike.
+    it('resolves the community from the path on app.project-nexus.net too', () => {
+      mockLocation('app.project-nexus.net', '/my-tenant/feed');
+      expect(detectTenantFromUrl()).toEqual({ slug: 'my-tenant', source: 'path' });
+      mockLocation('app.project-nexus.net', '/dashboard');
+      expect(detectTenantFromUrl()).toEqual({ slug: null, source: null });
+    });
+
+    it('treats both app addresses (and local development) as shared hosts', () => {
+      expect(isSharedPlatformHost('app.project-nexus.ie')).toBe(true);
+      expect(isSharedPlatformHost('app.project-nexus.net')).toBe(true);
+      expect(isSharedPlatformHost('APP.project-nexus.net')).toBe(true);
+      expect(isSharedPlatformHost('localhost')).toBe(true);
+      expect(isSharedPlatformHost('127.0.0.1')).toBe(true);
+      expect(isSharedPlatformHost('hour-timebank.ie')).toBe(false);
+      expect(isSharedPlatformHost('project-nexus.net')).toBe(false);
+      expect(isSharedPlatformHost('app.project-nexus.net.evil.example')).toBe(false);
+    });
+
+    it('builds community addresses on whichever app address the page is on', () => {
+      mockLocation('app.project-nexus.net', '/');
+      expect(buildPlatformTenantUrl('hour-timebank')).toBe('https://app.project-nexus.net/hour-timebank');
+      mockLocation('app.project-nexus.ie', '/');
+      expect(buildPlatformTenantUrl('hour-timebank')).toBe('https://app.project-nexus.ie/hour-timebank');
+      // A custom domain does not lend its host to the platform address.
+      mockLocation('hour-timebank.ie', '/');
+      expect(buildPlatformTenantUrl('stratford')).toBe('https://app.project-nexus.ie/stratford');
     });
 
     it('returns null for reserved subdomain (api)', () => {

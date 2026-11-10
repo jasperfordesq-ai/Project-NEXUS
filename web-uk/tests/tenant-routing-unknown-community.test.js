@@ -303,6 +303,15 @@ describe('🔴 the slug-less route set is refused on the SHARED platform host', 
     expect(response.body.rewrittenUrl).toBe('/__accessible-domain-not-found__');
   });
 
+  it('treats accessible.app.project-nexus.net as the shared host too (move of 10 Nov 2026)', async () => {
+    const onNet = (path) => request(buildApp()).get(path).set('Host', 'accessible.app.project-nexus.net');
+    const app = await onNet('/listings');
+    expect(app.body.rewrittenUrl).toBe('/__accessible-domain-not-found__');
+    const root = await onNet('/');
+    expect(root.status).toBe(200);
+    expect(root.body.reached).toBe(true);
+  });
+
   it('404s other slug-less application paths too', async () => {
     for (const path of ['/events', '/members', '/wallet', '/messages']) {
       const response = await get(path);

@@ -109,6 +109,7 @@ vi.mock('./TenantPublicProviders', () => ({
 const mockDetectTenantFromUrl = vi.fn(() => ({ slug: null, source: null }));
 
 vi.mock('@/lib/tenant-routing', () => ({
+  isSharedPlatformHost: (h: string) => ['localhost', '127.0.0.1', 'app.project-nexus.ie', 'app.project-nexus.net'].includes(h),
   RESERVED_PATHS: new Set([
     'login', 'register', 'dashboard', 'listings', 'events', 'groups',
     'messages', 'notifications', 'wallet', 'feed', 'search', 'members',

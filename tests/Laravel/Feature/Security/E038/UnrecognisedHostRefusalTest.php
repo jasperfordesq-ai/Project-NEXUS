@@ -194,10 +194,24 @@ class UnrecognisedHostRefusalTest extends TestCase
         config(['tenancy.platform_hosts' => $shipped['platform_hosts']]);
 
         $hosts = \App\Support\Tenancy\PlatformHostPolicy::platformHosts();
-        foreach (['api.project-nexus.ie', 'app.project-nexus.ie', 'project-nexus.ie', 'accessible.project-nexus.ie'] as $host) {
+        // The .net pair: the app and accessible site move there (owner, 10 Nov 2026).
+        foreach (['api.project-nexus.ie', 'app.project-nexus.ie', 'project-nexus.ie', 'accessible.project-nexus.ie',
+            'app.project-nexus.net', 'accessible.app.project-nexus.net'] as $host) {
             $this->assertContains($host, $hosts);
         }
         $this->assertTrue($shipped['refuse_unknown_hosts']);
+
+        // The browser app on either address calls the API cross-origin, with
+        // credentials, so both must be in the shipped CORS list and in the
+        // cookie-carrying (stateful) list.
+        $cors = require config_path('cors.php');
+        $sanctum = require config_path('sanctum.php');
+        foreach (['https://app.project-nexus.ie', 'https://app.project-nexus.net'] as $origin) {
+            $this->assertContains($origin, $cors['allowed_origins']);
+        }
+        if (getenv('SANCTUM_STATEFUL_DOMAINS') === false) {
+            $this->assertContains('app.project-nexus.net', $sanctum['stateful']);
+        }
     }
 
     public function test_kill_switch_restores_the_previous_behaviour(): void

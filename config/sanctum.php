@@ -7,7 +7,7 @@
 return [
     'stateful' => explode(',', env(
         'SANCTUM_STATEFUL_DOMAINS',
-        'localhost,localhost:5173,localhost:8082,127.0.0.1,127.0.0.1:8082,app.project-nexus.ie'
+        'localhost,localhost:5173,localhost:8082,127.0.0.1,127.0.0.1:8082,app.project-nexus.ie,app.project-nexus.net'
     )),
     'guard' => ['web'],
     'expiration' => 60 * 24 * 7, // 7 days in minutes

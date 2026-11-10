@@ -698,7 +698,9 @@ function deniesSluglessRouteSet(req, pathname) {
  */
 function platformAccessibleHosts() {
   const configured = String(process.env.PLATFORM_ACCESSIBLE_HOSTS || '').trim();
-  const raw = configured || 'accessible.project-nexus.ie';
+  // Both shared accessible hosts while the site moves to project-nexus.net
+  // (owner, 10 Nov 2026).
+  const raw = configured || 'accessible.project-nexus.ie,accessible.app.project-nexus.net';
   return raw.split(',').map((entry) => normalizeHost(entry)).filter(Boolean);
 }
 

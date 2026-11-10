@@ -369,7 +369,17 @@ export function TenantForm() {
         // __('api.*'), guarded by ApiErrorLocalisationTest, so the operator sees
         // it in their own language. The generic string stays as the fallback for
         // a failure that carries no reason.
-        toast.error(res.error || generic);
+        //
+        // Two address boxes share one refusal ("must be a valid domain name"),
+        // so say which box it is about — the server names the field.
+        const refusedField = res.errors?.[0]?.field;
+        const refusedLabel = refusedField === 'domain'
+          ? t('tenant_form.domain_label')
+          : refusedField === 'accessible_domain'
+            ? t('tenant_form.accessible_domain_label')
+            : null;
+        const reason = res.error || generic;
+        toast.error(refusedLabel ? `${refusedLabel}: ${reason}` : reason);
       }
     } catch {
       toast.error(t('tenant_form.an_error_occurred'));

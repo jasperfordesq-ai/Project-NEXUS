@@ -354,6 +354,15 @@ class TenantHierarchyService
             'app.project-nexus.ie',
             'api.project-nexus.ie',
             'accessible.project-nexus.ie',
+            // project-nexus.net is the sales site, and the app and accessible
+            // site are moving under it (owner, 10 Nov 2026). None of these may
+            // ever be claimed as one community's own domain.
+            'project-nexus.net',
+            'www.project-nexus.net',
+            'app.project-nexus.net',
+            'api.project-nexus.net',
+            'accessible.project-nexus.net',
+            'accessible.app.project-nexus.net',
         ];
         foreach ([
             config('app.url'),

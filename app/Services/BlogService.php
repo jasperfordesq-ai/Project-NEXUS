@@ -284,7 +284,7 @@ class BlogService
 
             if (
                 (str_starts_with($path, '/storage/') || str_starts_with($path, '/uploads/'))
-                && in_array($host, array_filter([$baseHost, 'localhost', '127.0.0.1', 'hour-timebank.ie', 'app.project-nexus.ie']), true)
+                && in_array($host, array_filter([$baseHost, 'localhost', '127.0.0.1', 'hour-timebank.ie', 'app.project-nexus.ie', 'app.project-nexus.net']), true)
             ) {
                 return $baseUrl . $path;
             }

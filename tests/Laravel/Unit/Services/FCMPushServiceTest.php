@@ -443,6 +443,31 @@ class FCMPushServiceTest extends TestCase
         ], $data);
     }
 
+    public function test_native_payload_keeps_links_on_either_app_address(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $method->setAccessible(true);
+
+        // The app moves to app.project-nexus.net (10 Nov 2026); a push link on
+        // either address must still open the right screen, not the inbox.
+        foreach (['https://app.project-nexus.ie/messages/123', 'https://app.project-nexus.net/messages/123'] as $link) {
+            [, , $data] = $method->invoke(null, 'New Message', 'Private', [
+                'type' => 'new_message',
+                'link' => $link,
+                'display_title_safe' => '1',
+            ]);
+            $this->assertNotSame('/notifications', $data['link'], $link);
+        }
+
+        // A look-alike host stays refused.
+        [, , $data] = $method->invoke(null, 'New Message', 'Private', [
+            'type' => 'new_message',
+            'link' => 'https://app.project-nexus.net.evil.example/messages/123',
+            'display_title_safe' => '1',
+        ]);
+        $this->assertSame('/notifications', $data['link']);
+    }
+
     public function test_native_payload_rejects_external_and_credential_bearing_destinations(): void
     {
         $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');

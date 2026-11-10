@@ -37,7 +37,10 @@ class CorsHelper
         'https://www.project-nexus.net',
         'https://project-nexus.ie',
         'https://www.project-nexus.ie',
+        // The shared React host is moving to app.project-nexus.net (owner,
+        // 10 Nov 2026). Both app addresses are allowed while both are served.
         'https://app.project-nexus.ie',
+        'https://app.project-nexus.net',
         'https://api.project-nexus.ie',
         'https://hour-timebank.ie',
         'https://www.hour-timebank.ie',

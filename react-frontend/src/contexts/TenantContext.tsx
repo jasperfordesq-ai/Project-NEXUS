@@ -29,7 +29,7 @@ import {
 } from 'react';
 import i18n from '@/i18n';
 import { api, tokenManager, fetchCsrfToken, COMMUNITY_CHANGED_EVENT } from '@/lib/api';
-import { detectTenantFromUrl, tenantPath as buildTenantPath } from '@/lib/tenant-routing';
+import { detectTenantFromUrl, tenantPath as buildTenantPath, isSharedPlatformHost } from '@/lib/tenant-routing';
 import { validateResponseIfPresent } from '@/lib/api-validation';
 import { tenantBootstrapSchema } from '@/lib/api-schemas';
 import { queueSentryTenant } from '@/lib/telemetryQueue';
@@ -367,7 +367,7 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
   // tenantPath() to stop prepending the slug permanently. Instead, derive from hostname.
   const isSharedHost = useMemo(() => {
     const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === 'app.project-nexus.ie';
+    return isSharedPlatformHost(hostname);
   }, []);
 
   // A slug-only sub-tenant accessed via its parent's custom domain also needs path-based

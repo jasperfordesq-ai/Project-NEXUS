@@ -283,6 +283,33 @@ describe('TenantForm — create mode', () => {
     );
   });
 
+  // Two address boxes share one refusal text. Without the box's name the
+  // operator cannot tell which of the two to correct (10 Nov 2026).
+  it('names the address box the server refused', async () => {
+    mockAdminSuper.createTenant.mockResolvedValue({
+      success: false,
+      error: 'Domain must be a valid domain name',
+      code: 'VALIDATION_ERROR',
+      errors: [{ code: 'VALIDATION_ERROR', message: 'Domain must be a valid domain name', field: 'accessible_domain' }],
+    });
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    await userEvent.type(screen.getByRole('textbox', { name: /name/i }), 'AddressTenant');
+
+    const saveBtn = screen.getAllByRole('button').find(
+      (b) => b.textContent?.toLowerCase().includes('create') || b.textContent?.toLowerCase().includes('save')
+    );
+    if (saveBtn) fireEvent.click(saveBtn);
+
+    await waitFor(() =>
+      expect(mockToast.error).toHaveBeenCalledWith(
+        expect.stringMatching(/^.+: Domain must be a valid domain name$/)
+      )
+    );
+  });
+
   it('falls back to the generic message when the server sends no reason', async () => {
     mockAdminSuper.createTenant.mockResolvedValue({ success: false });
     const { TenantForm } = await import('./TenantForm');

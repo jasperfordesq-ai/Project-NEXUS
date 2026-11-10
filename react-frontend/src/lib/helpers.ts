@@ -106,7 +106,7 @@ export function resolveAssetUrl(url: string | null | undefined, fallback?: strin
       const parsed = new URL(url);
       if (parsed.pathname.startsWith('/uploads/') || parsed.pathname.startsWith('/storage/')) {
         const apiHost = API_ASSET_BASE ? new URL(API_ASSET_BASE).host : '';
-        const knownLocalHostnames = ['localhost', '127.0.0.1', 'hour-timebank.ie', 'app.project-nexus.ie'];
+        const knownLocalHostnames = ['localhost', '127.0.0.1', 'hour-timebank.ie', 'app.project-nexus.ie', 'app.project-nexus.net'];
         if (parsed.host === apiHost || knownLocalHostnames.includes(parsed.hostname)) {
           return API_ASSET_BASE + parsed.pathname;
         }

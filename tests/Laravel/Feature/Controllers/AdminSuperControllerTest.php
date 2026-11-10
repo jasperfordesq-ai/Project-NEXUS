@@ -189,6 +189,68 @@ class AdminSuperControllerTest extends TestCase
         );
     }
 
+    /**
+     * An operator pastes what the browser's address bar gives them. A scheme,
+     * a trailing slash or capitals are not a reason to refuse the address.
+     */
+    public function test_tenant_update_accepts_a_pasted_web_address_and_stores_the_bare_host(): void
+    {
+        $admin = $this->createSuperAdmin();
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'domain' => null,
+            'accessible_domain' => null,
+        ]);
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPut(
+            "/v2/admin/super/tenants/{$this->testTenantId}",
+            [
+                'domain' => ' https://Pasted-Host.example.test/ ',
+                'accessible_domain' => 'http://accessible.pasted-host.example.test/some/page?x=1',
+            ]
+        );
+
+        $response->assertOk()->assertJsonPath('data.updated', true);
+        $row = DB::table('tenants')->where('id', $this->testTenantId)->first(['domain', 'accessible_domain']);
+        $this->assertSame('pasted-host.example.test', $row->domain);
+        $this->assertSame('accessible.pasted-host.example.test', $row->accessible_domain);
+    }
+
+    /**
+     * The sales site and the platform's own addresses on project-nexus.net can
+     * never become one community's domain — whether typed bare or pasted.
+     */
+    public function test_tenant_update_refuses_the_platforms_own_net_addresses(): void
+    {
+        $admin = $this->createSuperAdmin();
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['domain' => null]);
+        Sanctum::actingAs($admin);
+
+        foreach (['project-nexus.net', 'https://app.project-nexus.net/', 'accessible.app.project-nexus.net'] as $address) {
+            $this->apiPut("/v2/admin/super/tenants/{$this->testTenantId}", ['domain' => $address])
+                ->assertStatus(422);
+        }
+        $this->assertNull(DB::table('tenants')->where('id', $this->testTenantId)->value('domain'));
+    }
+
+    public function test_tenant_update_names_the_field_whose_address_is_malformed(): void
+    {
+        $admin = $this->createSuperAdmin();
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPut(
+            "/v2/admin/super/tenants/{$this->testTenantId}",
+            [
+                'domain' => 'good-host.example.test',
+                'accessible_domain' => 'accessible good-host.example.test',
+            ]
+        );
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.field', 'accessible_domain');
+    }
+
     public function test_tenant_hub_cannot_be_disabled_while_children_are_attached(): void
     {
         $admin = $this->createGlobalSuperAdmin();

@@ -47,6 +47,10 @@ return [
             'api.project-nexus.ie',
             'app.project-nexus.ie',
             'accessible.project-nexus.ie',
+            // The app and accessible site are moving to project-nexus.net
+            // (owner, 10 Nov 2026); both sets are recognised during the move.
+            'app.project-nexus.net',
+            'accessible.app.project-nexus.net',
         ],
         array_map('trim', explode(',', (string) env('TENANT_PLATFORM_HOSTS', '')))
     )))),

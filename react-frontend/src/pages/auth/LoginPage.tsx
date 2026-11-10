@@ -49,6 +49,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { api, tokenManager } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { ACCOUNT_UNDER_MINIMUM_AGE } from '@/lib/minimum-age';
+import { isSharedPlatformHost } from '@/lib/tenant-routing';
 
 interface Tenant {
   id: number;
@@ -264,7 +265,7 @@ export function LoginPage() {
   // If bootstrap just fell back to tenant 1 with no URL hint, we still need
   // the dropdown so regular users can pick their community.
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  const isGenericAppDomain = hostname === 'app.project-nexus.ie' || hostname === 'localhost' || hostname === '127.0.0.1';
+  const isGenericAppDomain = isSharedPlatformHost(hostname);
   const tenantResolvedFromUrl = !tenantLoading && tenant !== null && (!!tenantSlug || !isGenericAppDomain);
 
   // When tenant is resolved from URL/domain, set it directly — no dropdown needed.

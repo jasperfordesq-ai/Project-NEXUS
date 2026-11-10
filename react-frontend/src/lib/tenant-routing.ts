@@ -70,15 +70,51 @@ export const RESERVED_PATHS = new Set([
 ]);
 
 /**
- * Platform domain used for R3 path-based resolution.
- * Path-based tenant slugs only apply on this domain (and localhost for dev).
+ * Platform domains used for R2/R3 resolution.
+ *
+ * The shared React host is moving from app.project-nexus.ie to
+ * app.project-nexus.net (owner decision, 10 Nov 2026). Both are listed so the
+ * same build works on either address during the move; the .ie entry goes only
+ * once that address is a pure redirect.
  */
-const PLATFORM_DOMAIN = 'project-nexus.ie';
+const PLATFORM_DOMAINS = ['project-nexus.ie', 'project-nexus.net'] as const;
 
 /**
- * The shared React host, where every community is reachable at /{slug}.
+ * The shared React hosts, where every community is reachable at /{slug}.
  */
-const PLATFORM_APP_BASE_URL = 'https://app.project-nexus.ie';
+export const PLATFORM_APP_HOSTS: readonly string[] = PLATFORM_DOMAINS.map((d) => `app.${d}`);
+
+/**
+ * The address used when the code is not running on a shared host (a custom
+ * domain, or no browser). A build may set VITE_PLATFORM_APP_URL; otherwise the
+ * current live address.
+ */
+const DEFAULT_PLATFORM_APP_BASE_URL = 'https://app.project-nexus.ie';
+
+/**
+ * True on a host where communities share one address and the first path
+ * segment names the community: either platform app host, or local development.
+ */
+export function isSharedPlatformHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return host === 'localhost' || host === '127.0.0.1' || PLATFORM_APP_HOSTS.includes(host);
+}
+
+/**
+ * The shared React host's base address. When the page is already on one of the
+ * platform app hosts that host is used, so links never send a member from the
+ * new address back to the old one (or the reverse).
+ */
+export function getPlatformAppBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname.toLowerCase();
+    if (PLATFORM_APP_HOSTS.includes(host)) {
+      return `https://${host}`;
+    }
+  }
+  const configured = (import.meta.env.VITE_PLATFORM_APP_URL as string | undefined)?.trim();
+  return (configured || DEFAULT_PLATFORM_APP_BASE_URL).replace(/\/+$/, '');
+}
 
 /**
  * The address a community is reachable at WITHOUT a custom domain of its own.
@@ -104,7 +140,7 @@ export function buildPlatformTenantUrl(
     ?.trim()
     .replace(/^https?:\/\//, '')
     .replace(/\/+$/, '');
-  const base = cleanHub ? `https://${cleanHub}` : PLATFORM_APP_BASE_URL;
+  const base = cleanHub ? `https://${cleanHub}` : getPlatformAppBaseUrl();
 
   return `${base}/${encodeURIComponent(cleanSlug)}`;
 }
@@ -130,9 +166,10 @@ export function detectTenantFromUrl(): { slug: string | null; source: 'subdomain
     return { slug, source: slug ? 'path' : null };
   }
 
-  // R2: Subdomain resolution — {sub}.project-nexus.ie
-  if (hostname.endsWith('.' + PLATFORM_DOMAIN)) {
-    const subdomain = hostname.slice(0, hostname.length - PLATFORM_DOMAIN.length - 1);
+  // R2: Subdomain resolution — {sub}.project-nexus.ie / {sub}.project-nexus.net
+  const platformDomain = PLATFORM_DOMAINS.find((d) => hostname.endsWith('.' + d));
+  if (platformDomain) {
+    const subdomain = hostname.slice(0, hostname.length - platformDomain.length - 1);
     // Must be a single-level subdomain (no dots)
     if (subdomain && !subdomain.includes('.') && !RESERVED_SUBDOMAINS.has(subdomain.toLowerCase())) {
       return { slug: subdomain.toLowerCase(), source: 'subdomain' };

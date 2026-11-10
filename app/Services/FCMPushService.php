@@ -744,7 +744,9 @@ class FCMPushService
             return '/notifications';
         }
         if ($scheme !== '') {
-            $trustedWeb = $scheme === 'https' && $host === 'app.project-nexus.ie';
+            // Both app addresses while the app moves to .net (10 Nov 2026).
+            $trustedWeb = $scheme === 'https'
+                && in_array($host, ['app.project-nexus.ie', 'app.project-nexus.net'], true);
             if (!$trustedWeb && $scheme !== 'nexus') {
                 return '/notifications';
             }

@@ -540,13 +540,13 @@ class AdminSuperController extends BaseApiController
         }
 
         // Validate domain format if provided
-        $domain = trim($input['domain'] ?? '');
+        $domain = self::hostFromPastedAddress($input['domain'] ?? '');
         if ($domain !== '' && !preg_match('/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i', $domain)) {
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.domain_format_invalid'), 'domain', 422);
         }
 
         // Validate accessible (GOV.UK) frontend domain format if provided
-        $accessibleDomain = trim($input['accessible_domain'] ?? '');
+        $accessibleDomain = self::hostFromPastedAddress($input['accessible_domain'] ?? '');
         if ($accessibleDomain !== '' && !preg_match('/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i', $accessibleDomain)) {
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.domain_format_invalid'), 'accessible_domain', 422);
         }
@@ -621,6 +621,21 @@ class AdminSuperController extends BaseApiController
         return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, $result['error'], null, 422);
     }
 
+    /**
+     * Reduce a pasted web address to its bare host: drops the scheme, any
+     * path, query or fragment, a trailing dot and capitals.
+     * Anything still malformed (a space, an underscore) is left for the format
+     * check to refuse — this never turns an invalid host into a valid one.
+     */
+    private static function hostFromPastedAddress(mixed $value): string
+    {
+        $host = strtolower(trim(is_string($value) ? $value : ''));
+        $host = preg_replace('#^https?://#', '', $host) ?? $host;
+        $host = preg_split('#[/?\#]#', $host, 2)[0] ?? $host;
+
+        return rtrim(trim($host), '.');
+    }
+
     /** PUT /api/v2/super-admin/tenants/{id} */
     public function tenantUpdate(int $id): JsonResponse
     {
@@ -641,6 +656,15 @@ class AdminSuperController extends BaseApiController
             $slug = trim($input['slug']);
             if (!preg_match('/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/', $slug)) {
                 return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.slug_format_invalid'), 'slug', 422);
+            }
+        }
+
+        // An operator pastes what the address bar shows ("https://example.org/").
+        // Reduce it to the bare host before validating, and pass the reduced
+        // value on — TenantHierarchyService validates the same field again.
+        foreach (['domain', 'accessible_domain'] as $hostField) {
+            if (isset($input[$hostField]) && is_string($input[$hostField])) {
+                $input[$hostField] = self::hostFromPastedAddress($input[$hostField]);
             }
         }
 
