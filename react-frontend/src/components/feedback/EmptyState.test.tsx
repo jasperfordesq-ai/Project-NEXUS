@@ -84,4 +84,18 @@ describe('EmptyState', () => {
     expect(screen.getByText('No results')).toBeInTheDocument();
     // Should only have the title text
   });
+
+  it('sets the icon in a small decorative scene in the companion colour', () => {
+    render(<EmptyState title="Nothing here yet" />);
+    const scene = screen.getByTestId('empty-state-scene');
+    expect(scene).toHaveAttribute('aria-hidden', 'true');
+    expect(scene).toContainElement(screen.getByTestId('empty-state-icon'));
+    expect(scene.innerHTML).toContain('bg-companion-soft');
+  });
+
+  it('shows a drawing in place of the icon when it is given one', () => {
+    render(<EmptyState title="Nothing here yet" illustration={<svg data-testid="drawing" />} />);
+    expect(screen.getByTestId('empty-state-illustration')).toContainElement(screen.getByTestId('drawing'));
+    expect(screen.queryByTestId('empty-state-icon')).toBeNull();
+  });
 });

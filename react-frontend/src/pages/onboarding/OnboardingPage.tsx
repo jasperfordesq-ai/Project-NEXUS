@@ -55,6 +55,9 @@ import { Chip } from '@/components/ui/Chip';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { CommunityWelcome } from '@/components/auth/CommunityWelcome';
+import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
+import { useSiteAccent } from '@/contexts/SiteAccentContext';
+import { mixHex } from '@/lib/colorContrast';
 import { Spinner } from '@/components/ui/Spinner';
 import { Textarea } from '@/components/ui/Textarea';
 import { usePageTitle } from '@/hooks';
@@ -519,6 +522,12 @@ export function OnboardingPage() {
   // When reduced motion is requested, we cross-fade instead of horizontal slides
   // and skip the celebration spinning animation entirely.
   const prefersReducedMotion = useReducedMotion();
+  // The community's own colour, a lighter shade of it, and warm companions.
+  const siteAccent = useSiteAccent() ?? '#5b5ede';
+  const welcomeConfetti = useMemo(
+    () => [siteAccent, mixHex(siteAccent, '#ffffff', 0.45), '#f59e0b', '#22c55e', '#ec4899'],
+    [siteAccent],
+  );
 
   const slideVariants = prefersReducedMotion
     ? {
@@ -552,7 +561,11 @@ export function OnboardingPage() {
 
   if (isComplete) {
     return (
-      <div className="max-w-2xl mx-auto py-12">
+      <div className="relative max-w-2xl mx-auto py-12">
+        {/* A burst of confetti in the community's colours for the moment a
+            member finishes joining (warmth plan P13) — the same one a
+            completed exchange gets. Left out for reduced motion. */}
+        {!prefersReducedMotion && <ConfettiCelebration show colors={welcomeConfetti} />}
         <motion.div
           initial={prefersReducedMotion ? false : { scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}

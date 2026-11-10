@@ -10,6 +10,7 @@ import ChevronDown from 'lucide-react/icons/chevron-down';
 import { useTranslation } from 'react-i18next';
 import { useTenant, useAuth } from '@/contexts';
 import type { HeroContent } from '@/types';
+import { CommunityPhoto, useCommunityPhotoUrl } from '@/components/branding/CommunityPhoto';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 30 },
@@ -47,6 +48,7 @@ export function HeroSection({ content }: HeroSectionProps) {
   const { branding, tenantPath, hasModule } = useTenant();
   const { isAuthenticated } = useAuth();
 
+  const hasCommunityPhoto = useCommunityPhotoUrl() !== null;
   const badgeText = content?.badge_text || t('home.badge');
   const headline1 = content?.headline_1 || t('home.headline_1');
   const headline2 = content?.headline_2 || t('home.headline_2');
@@ -81,6 +83,19 @@ export function HeroSection({ content }: HeroSectionProps) {
           animate="animate"
           variants={staggerContainer}
         >
+          {/* The community's own photo, when it has uploaded one (warmth plan
+              P11): the front page was text and buttons only, with nothing of
+              the place or its people. Decorative (empty alt), like the same
+              photo on the sign-in page and the dashboard. */}
+          {hasCommunityPhoto && (
+            <motion.div variants={fadeInUp} className="mb-8 flex justify-center">
+              <CommunityPhoto
+                data-testid="landing-hero-photo"
+                className="h-40 w-full max-w-md rounded-3xl object-cover shadow-[var(--shadow-card)] ring-4 ring-[var(--surface-solid)] sm:h-52"
+              />
+            </motion.div>
+          )}
+
           {/* Badge */}
           <motion.div variants={fadeInUp} className="mb-6">
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card backdrop-blur-lg text-sm text-theme-muted">

@@ -217,4 +217,32 @@ describe('HeroSection — authenticated user', () => {
     // The section still renders — no CTA is not a broken page.
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
+
+  describe("the community's own photo", () => {
+    it('is not shown, and leaves no gap, when the community has none', () => {
+      render(<HeroSection />);
+      expect(screen.queryByTestId('landing-hero-photo')).toBeNull();
+    });
+
+    it('is shown above the headline when the community has uploaded one', async () => {
+      const contexts = await import('@/contexts');
+      const useTenant = vi.mocked(contexts.useTenant);
+      const original = useTenant.getMockImplementation()!;
+      useTenant.mockImplementation(() => ({
+        ...original(),
+        branding: { name: 'Test Community', logo_url: null, communityPhoto: '/uploads/tenants/2/community.jpg' },
+      }) as ReturnType<typeof contexts.useTenant>);
+      try {
+        render(<HeroSection />);
+        const photo = screen.getByTestId('landing-hero-photo');
+        // Decorative, like the same photo on the sign-in page: an empty alt.
+        expect(photo).toHaveAttribute('alt', '');
+        expect(photo.getAttribute('src')).toContain('community.jpg');
+        // Still exactly one level-1 heading.
+        expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+      } finally {
+        useTenant.mockImplementation(original);
+      }
+    });
+  });
 });

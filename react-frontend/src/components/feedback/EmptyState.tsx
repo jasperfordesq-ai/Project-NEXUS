@@ -35,6 +35,12 @@ export interface EmptyStateProps {
   icon?: ReactNode;
 
   /**
+   * A drawing to show in place of the icon and its little scene (see
+   * components/illustrations). Decoration: it is hidden from screen readers.
+   */
+  illustration?: ReactNode;
+
+  /**
    * Main heading text shown below the icon.
    */
   title: string;
@@ -97,6 +103,7 @@ export function EmptyState({
   title,
   description,
   message,
+  illustration,
   action,
   actionLabel,
   onAction,
@@ -117,13 +124,28 @@ export function EmptyState({
         and some add text-theme-subtle, which is unlayered CSS, so the colour
         override must be important.
       */}
-      <div
-        data-testid="empty-state-icon"
-        className="mb-6 inline-flex size-20 items-center justify-center rounded-full bg-accent-soft text-accent-soft-foreground ring-8 ring-accent/5 [&_svg]:size-9 [&_svg]:text-accent-soft-foreground!"
-        aria-hidden="true"
-      >
-        {icon || <Inbox />}
-      </div>
+      {illustration ? (
+        <div data-testid="empty-state-illustration" className="mb-6" aria-hidden="true">
+          {illustration}
+        </div>
+      ) : (
+        // A small scene round the icon (warmth plan P14): a soft shape in the
+        // community's companion colour behind the circle and a few dots beside
+        // it, so every empty page has a little drawing rather than an icon in
+        // a ring. All decoration: no text sits on any of it.
+        <div data-testid="empty-state-scene" className="relative mb-8 mt-2" aria-hidden="true">
+          <span className="absolute -inset-4 rotate-6 rounded-[42%_58%_55%_45%/48%_42%_58%_52%] bg-companion-soft" />
+          <span className="absolute -right-5 -top-1 size-3 rounded-full bg-companion/60" />
+          <span className="absolute -left-6 bottom-1 size-2 rounded-full bg-accent/40" />
+          <span className="absolute -right-7 bottom-2 size-4 rounded-full ring-2 ring-accent/25" />
+          <div
+            data-testid="empty-state-icon"
+            className="relative inline-flex size-20 items-center justify-center rounded-full bg-accent-soft text-accent-soft-foreground ring-8 ring-accent/5 [&_svg]:size-9 [&_svg]:text-accent-soft-foreground!"
+          >
+            {icon || <Inbox />}
+          </div>
+        </div>
+      )}
 
       <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>
 
