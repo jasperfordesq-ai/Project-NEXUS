@@ -83,6 +83,31 @@ final class EmailColourReader
         return array_values(array_unique($failures));
     }
 
+    /**
+     * Text below WCAG AA (4.5:1, or 3:1 for large text) in the light look —
+     * what every mail app shows unless it applies dark-mode rules.
+     *
+     * @return list<string>
+     */
+    public static function lightModeFailures(string $html): array
+    {
+        $failures = [];
+        foreach (self::textSamples($html) as $sample) {
+            $light = $sample['light'];
+            $minimum = $sample['large'] ? 3.0 : ColourContrast::AA_NORMAL_TEXT;
+            if ($light['ratio'] < $minimum) {
+                $failures[] = sprintf(
+                    '"%s": %s on %s = %.2f:1%s',
+                    mb_substr($sample['text'], 0, 40),
+                    $light['fg'], $light['bg'], $light['ratio'],
+                    $sample['large'] ? ' (large)' : '',
+                );
+            }
+        }
+
+        return array_values(array_unique($failures));
+    }
+
     /** @return list<array{text: string, large: bool, light: array{fg: string, bg: string, ratio: float}, dark: array{fg: string, bg: string, ratio: float}}> */
     private function samples(): array
     {

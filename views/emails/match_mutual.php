@@ -17,16 +17,21 @@
  * - $tenantName: Organization name
  */
 
+use App\Core\EmailPalette;
 use App\Core\TenantContext;
 use App\Core\Env;
 
-// Theme colors - Mutual match uses green/teal gradient
-$primaryColor = '#10b981';
-$primaryDark = '#059669';
-$accentColor = '#06b6d4';
-$blueColor = '#3b82f6';
+// Theme colours - mutual match keeps its green/teal (and blue for "you
+// offer"), deepened (Nov 2026) until white text on them, and them as text
+// on the pale cards, read at 4.5:1: white on #10b981 was 2.54:1.
+// LightModeEmailReadabilityTest.
+$primaryColor = EmailPalette::ensureContrast('#10b981', '#d1fae5', 4.5, '#000000');
+$primaryDark = EmailPalette::mix($primaryColor, '#000000', 0.15);
+$accentColor = EmailPalette::ensureContrast('#06b6d4', '#ffffff', 4.5, '#000000');
+$blueColor = EmailPalette::ensureContrast('#3b82f6', '#dbeafe', 4.5, '#000000');
+$noticeColor = EmailPalette::ensureContrast('#ca8a04', '#fef9c3', 4.5, '#000000');
 $textColor = '#374151';
-$textMuted = '#6b7280';
+$textMuted = '#4b5563';
 $bgColor = '#f0fdf9';
 $cardBg = '#ffffff';
 $borderColor = '#a7f3d0';
@@ -126,7 +131,7 @@ $matchScore = isset($match['match_score']) ? (int) $match['match_score'] : null;
                                 <span style="font-size: 42px; line-height: 1;">&#129309;</span>
                             </div>
                             <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;"><?= __('emails.match_mutual.heading') ?></h1>
-                            <p style="margin: 12px 0 0; font-size: 18px; color: rgba(255,255,255,0.95); font-weight: 500;">
+                            <p style="margin: 12px 0 0; font-size: 18px; color: #ffffff; font-weight: 500;">
                                 <?= __('emails.match_mutual.subheading') ?>
                             </p>
                         </td>
@@ -235,7 +240,7 @@ $matchScore = isset($match['match_score']) ? (int) $match['match_score'] : null;
                                     <td style="padding: 0 40px 30px;" class="mobile-padding">
                                         <div class="info-box" style="background-color: #fefce8; background-image: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%); border: 1px solid #fde047; border-radius: 12px; padding: 18px 20px; text-align: center;">
                                             <p style="margin: 0; font-size: 15px; color: <?= $textColor ?>; line-height: 1.6;">
-                                                &#128161; <strong style="color: #ca8a04;"><?= __('emails.match_mutual.rare_notice') ?></strong>
+                                                &#128161; <strong style="color: <?= $noticeColor ?>;"><?= __('emails.match_mutual.rare_notice') ?></strong>
                                             </p>
                                         </div>
                                     </td>

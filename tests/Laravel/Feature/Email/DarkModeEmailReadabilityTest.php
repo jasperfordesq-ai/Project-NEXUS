@@ -6,11 +6,7 @@
 
 namespace Tests\Laravel\Feature\Email;
 
-use App\Core\EmailTemplateBuilder;
-use App\Core\TenantContext;
-use App\Services\NotificationDispatcher;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Laravel\TestCase;
 
@@ -24,45 +20,12 @@ use Tests\Laravel\TestCase;
  * over the dark card, and in the three match emails darkened the card while
  * most of the text stayed dark grey. EmailColourReader works out every
  * text colour in both looks; text dark mode changes must reach 4.5:1
- * (3:1 when large).
+ * (3:1 when large). The light look is LightModeEmailReadabilityTest's.
  */
 class DarkModeEmailReadabilityTest extends TestCase
 {
     use DatabaseTransactions;
-
-    private function setCommunityColour(?string $colour): void
-    {
-        $raw = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');
-        $config = json_decode((string) $raw, true) ?: [];
-        if ($colour === null) {
-            unset($config['primary_color']);
-        } else {
-            $config['primary_color'] = $colour;
-        }
-        DB::table('tenants')->where('id', $this->testTenantId)->update(['configuration' => json_encode($config)]);
-        TenantContext::setById($this->testTenantId);
-    }
-
-    /** Every kind of block the builder has, with a link in running text. */
-    private function everyBlock(string $theme): string
-    {
-        $ownLink = EmailTemplateBuilder::tenantUrl('/wallet');
-
-        return EmailTemplateBuilder::make()
-            ->theme($theme)
-            ->title('Title')
-            ->greeting('Sam')
-            ->paragraph('Body text with <a href="' . $ownLink . '">a link to the community</a>.')
-            ->infoCard(['From' => 'Alex Example', 'Hours' => '2'], 'Details')
-            ->statCards([['value' => '12', 'label' => 'Hours', 'icon' => '⏱️']])
-            ->bulletList(['First point', 'Second point'], 'What happens next')
-            ->blockquote('Thank you so much!', 'Alex')
-            ->highlight('A highlighted note', '💡')
-            ->badges([['text' => 'Helper', 'color' => '#10b981'], ['text' => 'Pale', 'color' => '#fde047'], ['text' => 'Deep', 'color' => '#1e3a8a']])
-            ->divider()
-            ->button('Open', $ownLink)
-            ->render();
-    }
+    use RendersSampleEmails;
 
     public function test_the_checker_catches_pale_text_on_a_pale_panel(): void
     {
@@ -143,34 +106,21 @@ class DarkModeEmailReadabilityTest extends TestCase
         $this->assertGreaterThanOrEqual(4.5, $link[0]['dark']['ratio']);
     }
 
-    /** @return array<string, array{string}> */
+    /** @return array<string, array{'hot'|'mutual'|'digest'}> */
     public static function matchEmails(): array
     {
         return ['hot' => ['hot'], 'mutual' => ['mutual'], 'digest' => ['digest']];
     }
 
+    /** @param 'hot'|'mutual'|'digest' $which */
     #[DataProvider('matchEmails')]
     public function test_match_emails_stay_readable_in_dark_mode(string $which): void
     {
         $this->setCommunityColour('#0f766e');
 
-        $match = ['title' => 'Gardening help', 'user_name' => 'Alex', 'match_score' => 90, 'listing_id' => 1, 'match_type' => 'mutual', 'distance_km' => 2.5];
-        $html = match ($which) {
-            'hot' => $this->invokeDispatcher('buildHotMatchEmail', [$match, 90]),
-            'mutual' => $this->invokeDispatcher('buildMutualMatchEmail', [$match, ['they_offer' => 'Gardening', 'you_offer' => 'Bike repair']]),
-            'digest' => $this->invokeDispatcher('buildMatchDigestEmail', [[$match, array_merge($match, ['match_score' => 72, 'match_type' => 'one_way'])], 'weekly', 1, 1, 0]),
-        };
+        $html = $this->matchEmail($which);
 
         $this->assertNotEmpty(EmailColourReader::textSamples($html));
         $this->assertSame([], EmailColourReader::darkModeFailures($html));
-    }
-
-    /** @param list<mixed> $args */
-    private function invokeDispatcher(string $method, array $args): string
-    {
-        $ref = new \ReflectionMethod(NotificationDispatcher::class, $method);
-        $ref->setAccessible(true);
-
-        return (string) $ref->invoke(null, ...$args);
     }
 }

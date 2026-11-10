@@ -16,16 +16,20 @@
  * - $tenantName: Organization name
  */
 
+use App\Core\EmailPalette;
 use App\Core\TenantContext;
 use App\Core\Env;
 
-// Theme colors - Hot match uses orange/red gradient
-$primaryColor = '#f97316';
-$primaryDark = '#ea580c';
-$accentColor = '#ef4444';
-$successColor = '#10b981';
+// Theme colours - hot match keeps its orange/red, deepened (Nov 2026) until
+// white text on it, and it as text on the pale match card, read at 4.5:1:
+// white on #f97316 was 2.80:1. LightModeEmailReadabilityTest.
+$primaryColor = EmailPalette::ensureContrast('#f97316', '#fef3c7', 4.5, '#000000');
+$primaryDark = EmailPalette::mix($primaryColor, '#000000', 0.15);
+$accentColor = EmailPalette::ensureContrast('#ef4444', '#ffffff', 4.5, '#000000');
+$successPill = EmailPalette::fromColour('#10b981');
+$communityPill = EmailPalette::forCommunity();
 $textColor = '#374151';
-$textMuted = '#6b7280';
+$textMuted = '#4b5563';
 $bgColor = '#fef7f0';
 $cardBg = '#ffffff';
 $borderColor = '#fed7aa';
@@ -137,7 +141,7 @@ if ($distance !== null) {
                                 <span style="font-size: 42px; line-height: 1;">&#128293;</span>
                             </div>
                             <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;"><?= __('emails.match_hot.heading') ?></h1>
-                            <p style="margin: 12px 0 0; font-size: 18px; color: rgba(255,255,255,0.95); font-weight: 500;">
+                            <p style="margin: 12px 0 0; font-size: 18px; color: #ffffff; font-weight: 500;">
                                 <strong style="font-size: 24px;"><?= $matchScore ?>%</strong> <?= __('emails.match_hot.compatibility_score') ?>
                             </p>
                         </td>
@@ -176,7 +180,8 @@ if ($distance !== null) {
                                             <div style="padding: 28px;">
                                                 <!-- Type badge -->
                                                 <div style="margin-bottom: 12px;">
-                                                    <span style="display: inline-block; background: <?= $listingTypeKey === 'offer' ? '#dcfce7' : '#dbeafe' ?>; color: <?= $listingTypeKey === 'offer' ? '#16a34a' : '#2563eb' ?>; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                    <?php $typePill = EmailPalette::fromColour($listingTypeKey === 'offer' ? '#16a34a' : '#2563eb'); ?>
+                                                    <span style="display: inline-block; background-color: <?= $typePill['accentBg'] ?>; color: <?= $typePill['primary'] ?>; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
                                                         <?= $listingType ?>
                                                     </span>
                                                 </div>
@@ -196,14 +201,14 @@ if ($distance !== null) {
                                                     <tr>
                                                         <?php if ($distance !== null): ?>
                                                         <td style="padding-right: 20px; vertical-align: middle;">
-                                                            <div style="display: inline-block; background: rgba(16, 185, 129, 0.15); color: <?= $successColor ?>; padding: 8px 14px; border-radius: 10px; font-size: 14px; font-weight: 600;">
+                                                            <div style="display: inline-block; background-color: <?= $successPill['accentBg'] ?>; color: <?= $successPill['primary'] ?>; padding: 8px 14px; border-radius: 10px; font-size: 14px; font-weight: 600;">
                                                                 &#128205; <?= number_format($distance, 1) ?> km &middot; <?= $distanceLabel ?>
                                                             </div>
                                                         </td>
                                                         <?php endif; ?>
                                                         <?php if ($categoryName): ?>
                                                         <td style="vertical-align: middle;">
-                                                            <div style="display: inline-block; background: rgba(99, 102, 241, 0.1); color: #6366f1; padding: 8px 14px; border-radius: 10px; font-size: 14px; font-weight: 600;">
+                                                            <div style="display: inline-block; background-color: <?= $communityPill['accentBg'] ?>; color: <?= $communityPill['primary'] ?>; padding: 8px 14px; border-radius: 10px; font-size: 14px; font-weight: 600;">
                                                                 &#127991; <?= htmlspecialchars($categoryName) ?>
                                                             </div>
                                                         </td>

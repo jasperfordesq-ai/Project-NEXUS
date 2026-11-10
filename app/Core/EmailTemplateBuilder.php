@@ -386,7 +386,7 @@ HTML;
                                                 <div style="background: {$theme['accentBg']}; border: 1px solid {$theme['accentBorder']}; border-radius: 12px; padding: 16px; text-align: center;">
                                                     {$iconHtml}
                                                     <div style="font-size: 28px; font-weight: 800; color: {$theme['primary']}; line-height: 1.2;">{$value}</div>
-                                                    <div style="font-size: 12px; font-weight: 600; color: #6b7280; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">{$label}</div>
+                                                    <div style="font-size: 12px; font-weight: 600; color: #4b5563; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">{$label}</div>
                                                 </div>
                                             </td>
 CARD;
@@ -702,7 +702,7 @@ HTML;
                                 </tr>
                                 <tr>
                                     <td style="text-align: center; padding-bottom: 12px;">
-                                        <p style="margin: 0; font-size: 13px; color: #9ca3af; line-height: 1.6;">
+                                        <p style="margin: 0; font-size: 13px; color: {$mutedColor}; line-height: 1.6;">
                                             {$memberNotice}
                                         </p>
                                     </td>

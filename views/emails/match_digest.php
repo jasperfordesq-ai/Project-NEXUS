@@ -24,15 +24,17 @@ use App\Core\Env;
 
 // Theme colours: the community's own colour (or the standard one), shaded so
 // the white header and button text reads at 4.5:1 — see App\Core\EmailPalette.
-// Hot (orange) and mutual (green) matches keep their meaning colours.
+// Hot (orange) and mutual (green) matches keep their meaning colours, deepened
+// until they read at 4.5:1 on their pale cards and under white text (they
+// were 2.80:1 and 2.54:1). LightModeEmailReadabilityTest.
 $palette = EmailPalette::forCommunity();
 $primaryColor = $palette['button'];
 $primaryDark = $palette['primaryDark'];
 $accentColor = $palette['buttonEnd'];
-$hotColor = '#f97316';
-$mutualColor = '#10b981';
+$hotColor = EmailPalette::ensureContrast('#f97316', '#ffedd5', 4.5, '#000000');
+$mutualColor = EmailPalette::ensureContrast('#10b981', '#d1fae5', 4.5, '#000000');
 $textColor = '#374151';
-$textMuted = '#6b7280';
+$textMuted = '#4b5563';
 $bgColor = $palette['accentBg'];
 $cardBg = '#ffffff';
 $borderColor = $palette['accentBorder'];
@@ -185,7 +187,7 @@ $remainingCount = max(0, $totalCount - 5);
                                                         <div style="font-size: 36px; font-weight: 800; color: <?= $mutualColor ?>; line-height: 1;">
                                                             &#129309; <?= $mutualCount ?>
                                                         </div>
-                                                        <div style="font-size: 14px; color: #059669; margin-top: 8px; font-weight: 600;"><?= __('emails.match_digest.mutual_matches') ?></div>
+                                                        <div style="font-size: 14px; color: <?= $mutualColor ?>; margin-top: 8px; font-weight: 600;"><?= __('emails.match_digest.mutual_matches') ?></div>
                                                         <div style="font-size: 12px; color: <?= $textMuted ?>; margin-top: 4px;"><?= __('emails.match_digest.win_win') ?></div>
                                                     </div>
                                                 </td>
