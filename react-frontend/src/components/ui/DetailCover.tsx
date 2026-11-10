@@ -50,7 +50,7 @@ export function DetailCover({
       {imageUrl ? (
         <img src={imageUrl} alt={imageAlt} className="h-full w-full object-cover" loading="lazy" decoding="async" />
       ) : (
-        <ThemedCover data-testid={testId} colour={colour ?? colourForSeed(seed, palette)} icon={icon} />
+        <ThemedCover data-testid={testId} colour={colour ?? colourForSeed(seed, palette)} icon={icon} seed={seed} />
       )}
     </div>
   );

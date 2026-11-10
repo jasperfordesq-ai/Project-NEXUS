@@ -1528,6 +1528,7 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
             // the labels below.
             <ThemedCover
               data-testid="listing-theme-band"
+              seed={`listing-${listing.id}`}
               colour={themeColour ?? colourForSeed(listing.id, palette)}
               icon={
                 themeIconFor({ icon: listing.category_icon, slug: listing.category_slug, name: listing.category_name })

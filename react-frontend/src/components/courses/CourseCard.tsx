@@ -51,7 +51,7 @@ export function CourseCard({ course, coverColour: givenColour }: CourseCardProps
           ) : (
             // No picture: a cover in a colour from the community palette, as
             // offers, events and blog posts have (was a grey box).
-            <ThemedCover data-testid="course-card-cover" colour={coverColour} icon={GraduationCap} />
+            <ThemedCover data-testid="course-card-cover" colour={coverColour} icon={GraduationCap} seed={`course-${course.id}`} />
           )}
         </div>
         <CardBody className="p-4 flex flex-col gap-2">

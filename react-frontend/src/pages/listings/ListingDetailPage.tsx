@@ -556,6 +556,7 @@ export function ListingDetailPage() {
             <div className="h-64 sm:h-80 lg:h-[24rem]">
               <ThemedCover
                 data-testid="listing-detail-cover"
+                seed={`listing-${listing.id}`}
                 size="lg"
                 colour={
                   (listing.category_slug && themeColours[listing.category_slug])

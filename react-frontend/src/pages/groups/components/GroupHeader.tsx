@@ -170,7 +170,7 @@ export function GroupHeader({
             decoding="async"
           />
         ) : !brandedFallbackStyle && (
-          <ThemedCover data-testid="group-header-cover" colour={colourForSeed(group.id, palette)} />
+          <ThemedCover data-testid="group-header-cover" colour={colourForSeed(group.id, palette)} seed={`group-${group.id}`} />
         )}
       </div>
 

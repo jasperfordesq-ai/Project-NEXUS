@@ -525,7 +525,7 @@ function FeaturedPostCard({ post, categoryColors }: PostCardProps) {
                 height={288}
               />
             ) : (
-              <ThemedCover data-testid="blog-cover" size="lg" colour={coverColour} icon={BookOpen} label={post.category?.name} />
+              <ThemedCover data-testid="blog-cover" size="lg" colour={coverColour} icon={BookOpen} label={post.category?.name} seed={`post-${post.id}`} />
             )}
           </div>
 
@@ -593,7 +593,7 @@ function BlogPostCard({ post, categoryColors }: PostCardProps) {
               decoding="async"
             />
           ) : (
-            <ThemedCover data-testid="blog-cover" colour={coverColour} icon={BookOpen} label={post.category?.name} />
+            <ThemedCover data-testid="blog-cover" colour={coverColour} icon={BookOpen} label={post.category?.name} seed={`post-${post.id}`} />
           )}
         </div>
 

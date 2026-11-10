@@ -717,7 +717,7 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
               // No picture: a cover in a colour from the community palette,
               // chosen by the group's id so it is stable and neighbours differ
               // (was a grey box).
-              <ThemedCover data-testid="group-cover" colour={colourForSeed(group.id, palette)} icon={Users} size="sm" />
+              <ThemedCover data-testid="group-cover" colour={colourForSeed(group.id, palette)} icon={Users} size="sm" seed={`group-${group.id}`} />
             )}
             {/* Shade only a photo, so its lock / globe badge stays readable. */}
             {imageProps && <div className="absolute inset-0 bg-linear-to-t from-black/35 to-transparent" aria-hidden="true" />}

@@ -35,7 +35,7 @@ export function CoverTile({ seed, icon, imageUrl, name, className, 'data-testid'
   }
   return (
     <div className={`group shrink-0 overflow-hidden ${className}`}>
-      <ThemedCover data-testid={testId} size="sm" colour={colourForSeed(seed, palette)} icon={icon} />
+      <ThemedCover data-testid={testId} size="sm" colour={colourForSeed(seed, palette)} icon={icon} seed={seed} />
     </div>
   );
 }

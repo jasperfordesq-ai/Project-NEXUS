@@ -49,7 +49,7 @@ export function ImagePlaceholder({
   return (
     <div className={`relative ${heightClass} w-full overflow-hidden ${className}`} aria-hidden="true">
       {/* Even the small placeholder is 9rem tall, so it keeps the medium icon. */}
-      <ThemedCover colour={chosen} icon={Icon} size={size === 'lg' ? 'lg' : 'md'} />
+      <ThemedCover colour={chosen} icon={Icon} size={size === 'lg' ? 'lg' : 'md'} seed={seed} />
     </div>
   );
 }

@@ -966,6 +966,7 @@ export default function ExplorePage() {
                         <div className="h-32 w-full overflow-hidden rounded-lg">
                           <ThemedCover
                             data-testid="explore-listing-cover"
+                            seed={`listing-${listing.id}`}
                             size="sm"
                             colour={
                               (listing.category_slug && themeColours[listing.category_slug])
@@ -1070,6 +1071,7 @@ export default function ExplorePage() {
                         <div className="h-28 w-full overflow-hidden rounded-lg">
                           <ThemedCover
                             data-testid="explore-event-cover"
+                            seed={`event-${event.id}`}
                             size="sm"
                             colour={eventCategoryColour(event.category_id) ?? colourForSeed(coverSeed.event(event.id, event.category_id), palette)}
                             icon={CalendarDays}
@@ -1135,7 +1137,7 @@ export default function ExplorePage() {
                       {/* A band in the group's own colour — the one its cover
                           uses on the groups page — with its picture over the edge. */}
                       <div className="-mx-4 -mt-4 h-12">
-                        <ThemedCover data-testid="explore-group-band" colour={colourForSeed(group.id, palette)} />
+                        <ThemedCover data-testid="explore-group-band" colour={colourForSeed(group.id, palette)} seed={`group-${group.id}`} />
                       </div>
                       <div className="-mt-9 flex items-end gap-3">
                         <Avatar
@@ -1487,6 +1489,7 @@ export default function ExplorePage() {
                       <div className="h-28 w-full overflow-hidden rounded-lg">
                         <ThemedCover
                           data-testid="explore-blog-cover"
+                          seed={`post-${post.id}`}
                           size="sm"
                           colour={blogCategoryColour(post.category?.id) ?? colourForSeed(coverSeed.blogPost(post.id, post.category?.id), palette)}
                           icon={BookOpen}

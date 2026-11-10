@@ -63,4 +63,39 @@ describe('ThemedCover', () => {
     expect(light).toBeLessThanOrEqual(0.05);
     expect(dark).toBeLessThan(light);
   });
+
+  // Warmth plan W6 (10 Nov 2026): a grid of covers in a few colours looked
+  // stamped out. With a seed, each cover's gradient runs its own way and its
+  // soft light sits in its own corner — the same every time for the same
+  // item — while the icon stays centred, so the grid still lines up.
+  const direction = (el: HTMLElement) => /bg-linear-to-(br|bl|tr|tl)/.exec(el.className)?.[1];
+  const light = (el: HTMLElement) => el.querySelector('[data-cover-light]')?.className ?? '';
+
+  it('varies a cover by its seed, without moving the icon', () => {
+    const seeds = Array.from({ length: 12 }, (_, i) => `item-${i}`);
+    const looks = new Set<string>();
+    for (const seed of seeds) {
+      const { unmount } = render(<ThemedCover colour="green" icon={Users} seed={seed} data-testid="cover" />);
+      const cover = screen.getByTestId('cover');
+      looks.add(`${direction(cover)}|${light(cover)}`);
+      expect(cover.querySelector('[data-cover-icon]')?.parentElement?.className).toContain('justify-center');
+      unmount();
+    }
+    expect(looks.size).toBeGreaterThan(2);
+  });
+
+  it('gives the same item the same look every time', () => {
+    const first = render(<ThemedCover colour="green" seed="listing-42" data-testid="cover" />);
+    const look = `${direction(screen.getByTestId('cover'))}|${light(screen.getByTestId('cover'))}`;
+    first.unmount();
+    render(<ThemedCover colour="green" seed="listing-42" data-testid="cover" />);
+    expect(`${direction(screen.getByTestId('cover'))}|${light(screen.getByTestId('cover'))}`).toBe(look);
+  });
+
+  it('keeps the usual look without a seed', () => {
+    render(<ThemedCover colour="green" data-testid="cover" />);
+    expect(direction(screen.getByTestId('cover'))).toBe('br');
+    expect(light(screen.getByTestId('cover'))).toContain('-top-12');
+    expect(light(screen.getByTestId('cover'))).toContain('-end-10');
+  });
 });
