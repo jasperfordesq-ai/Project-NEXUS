@@ -18,20 +18,24 @@
  * - $tenantName: Organization name
  */
 
+use App\Core\EmailPalette;
 use App\Core\TenantContext;
 use App\Core\Env;
 
-// Theme colors - Digest uses purple/indigo gradient
-$primaryColor = '#6366f1';
-$primaryDark = '#4f46e5';
-$accentColor = '#8b5cf6';
+// Theme colours: the community's own colour (or the standard one), shaded so
+// the white header and button text reads at 4.5:1 — see App\Core\EmailPalette.
+// Hot (orange) and mutual (green) matches keep their meaning colours.
+$palette = EmailPalette::forCommunity();
+$primaryColor = $palette['button'];
+$primaryDark = $palette['primaryDark'];
+$accentColor = $palette['buttonEnd'];
 $hotColor = '#f97316';
 $mutualColor = '#10b981';
 $textColor = '#374151';
 $textMuted = '#6b7280';
-$bgColor = '#f5f3ff';
+$bgColor = $palette['accentBg'];
 $cardBg = '#ffffff';
-$borderColor = '#c4b5fd';
+$borderColor = $palette['accentBorder'];
 
 $tenantName = $tenantName ?? __('emails.common.fallback_tenant_name');
 $userName = $userName ?? __('emails.common.fallback_name');
@@ -103,15 +107,16 @@ $remainingCount = max(0, $totalCount - 5);
             .stat-box { display: block !important; width: 100% !important; margin-bottom: 12px !important; padding-right: 0 !important; padding-left: 0 !important; }
         }
 
-        /* Dark mode */
+        /* Dark mode: neutral greys, as EmailTemplateBuilder uses, so they sit
+           with any community colour (they were fixed indigo until Nov 2026). */
         @media (prefers-color-scheme: dark) {
-            .email-bg { background-color: #1e1b4b !important; }
-            .card-bg { background-color: #312e81 !important; }
-            .text-primary { color: #e0e7ff !important; }
-            .text-secondary { color: #a5b4fc !important; }
-            .border-light { border-color: #4f46e5 !important; }
-            .match-card { background-color: #3730a3 !important; }
-            .stat-card { background-color: #3730a3 !important; border-color: #4f46e5 !important; }
+            .email-bg { background-color: #1f2937 !important; }
+            .card-bg { background-color: #374151 !important; }
+            .text-primary { color: <?= $bgColor ?> !important; }
+            .text-secondary { color: #d1d5db !important; }
+            .border-light { border-color: #4b5563 !important; }
+            .match-card { background-color: #374151 !important; }
+            .stat-card { background-color: #374151 !important; border-color: #4b5563 !important; }
         }
     </style>
 </head>
@@ -131,7 +136,7 @@ $remainingCount = max(0, $totalCount - 5);
                 <!-- Email container -->
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" align="center" class="email-container" style="margin: auto;">
 
-                    <!-- Header with purple gradient -->
+                    <!-- Header in the community colour -->
                     <tr>
                         <td style="background-color: <?= $primaryColor ?>; background-image: linear-gradient(135deg, <?= $primaryColor ?> 0%, <?= $accentColor ?> 100%); padding: 40px 40px 50px; text-align: center; border-radius: 16px 16px 0 0;">
                             <!-- Chart emoji with glow effect -->
@@ -139,7 +144,7 @@ $remainingCount = max(0, $totalCount - 5);
                                 <span style="font-size: 42px; line-height: 1;">&#128202;</span>
                             </div>
                             <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;"><?= __('emails.match_digest.heading', ['period' => $periodTitle]) ?></h1>
-                            <p style="margin: 12px 0 0; font-size: 18px; color: rgba(255,255,255,0.95); font-weight: 500;">
+                            <p style="margin: 12px 0 0; font-size: 18px; color: #ffffff; font-weight: 500;">
                                 <?= __('emails.match_digest.new_matches_waiting', ['count' => $totalCount]) ?>
                             </p>
                         </td>
@@ -212,7 +217,7 @@ $remainingCount = max(0, $totalCount - 5);
                                             $isHot = $score >= 85;
                                             $isMutual = ($match['match_type'] ?? '') === 'mutual';
                                             $scoreColor = $isHot ? $hotColor : ($isMutual ? $mutualColor : ($score >= 70 ? $primaryColor : $textMuted));
-                                            $scoreBg = $isHot ? '#fff7ed' : ($isMutual ? '#ecfdf5' : ($score >= 70 ? '#eef2ff' : '#f8fafc'));
+                                            $scoreBg = $isHot ? '#fff7ed' : ($isMutual ? '#ecfdf5' : ($score >= 70 ? $bgColor : '#f8fafc'));
                                             $listingUrl = $appUrl . $basePath . '/listings/' . ($match['listing_id'] ?? $match['id'] ?? 0);
                                             $distance = $match['distance_km'] ?? null;
                                             $isLast = $index === count($displayMatches) - 1;
@@ -232,7 +237,7 @@ $remainingCount = max(0, $totalCount - 5);
                                                         </p>
                                                     </td>
                                                     <td width="85" style="text-align: right; vertical-align: middle;">
-                                                        <div style="display: inline-block; background: <?= $scoreColor ?>; color: white; padding: 8px 14px; border-radius: 24px; font-weight: 800; font-size: 14px; white-space: nowrap; box-shadow: 0 2px 8px <?= $isHot ? 'rgba(249, 115, 22, 0.3)' : ($isMutual ? 'rgba(16, 185, 129, 0.3)' : 'rgba(99, 102, 241, 0.2)') ?>;">
+                                                        <div style="display: inline-block; background: <?= $scoreColor ?>; color: white; padding: 8px 14px; border-radius: 24px; font-weight: 800; font-size: 14px; white-space: nowrap; box-shadow: 0 2px 8px <?= $isHot ? 'rgba(249, 115, 22, 0.3)' : ($isMutual ? 'rgba(16, 185, 129, 0.3)' : 'rgba(0, 0, 0, 0.12)') ?>;">
                                                             <?php if ($isHot): ?>&#128293;<?php elseif ($isMutual): ?>&#129309;<?php endif; ?>
                                                             <?= $score ?>%
                                                         </div>
@@ -244,7 +249,7 @@ $remainingCount = max(0, $totalCount - 5);
 
                                         <?php if ($remainingCount > 0): ?>
                                         <div style="text-align: center; margin-top: 18px;">
-                                            <span style="display: inline-block; background: #e0e7ff; color: <?= $primaryDark ?>; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600;">
+                                            <span style="display: inline-block; background: <?= $bgColor ?>; color: <?= $primaryDark ?>; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600;">
                                                 <?= __('emails.match_digest.more_matches', ['count' => $remainingCount]) ?>
                                             </span>
                                         </div>
@@ -259,7 +264,7 @@ $remainingCount = max(0, $totalCount - 5);
                                     <td style="padding: 10px 40px 20px; text-align: center;" class="mobile-padding">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
                                             <tr>
-                                                <td class="button-td" style="border-radius: 12px; background-color: <?= $primaryColor ?>; background-image: linear-gradient(135deg, <?= $primaryColor ?> 0%, <?= $accentColor ?> 100%); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);">
+                                                <td class="button-td" style="border-radius: 12px; background-color: <?= $primaryColor ?>; background-image: linear-gradient(135deg, <?= $primaryColor ?> 0%, <?= $accentColor ?> 100%); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);">
                                                     <a href="<?= $matchesUrl ?>" style="display: inline-block; padding: 18px 44px; font-size: 17px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 12px;"><?= __('emails.match_digest.view_all_matches') ?> &#8594;</a>
                                                 </td>
                                             </tr>
@@ -292,7 +297,7 @@ $remainingCount = max(0, $totalCount - 5);
 
                     <!-- Footer -->
                     <tr>
-                        <td style="background-color: #ede9fe; padding: 30px 40px; border-radius: 0 0 16px 16px; border-top: 1px solid <?= $borderColor ?>;" class="mobile-padding">
+                        <td style="background-color: <?= $bgColor ?>; padding: 30px 40px; border-radius: 0 0 16px 16px; border-top: 1px solid <?= $borderColor ?>;" class="mobile-padding">
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                 <tr>
                                     <td style="text-align: center; padding-bottom: 15px;">

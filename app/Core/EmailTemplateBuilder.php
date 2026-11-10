@@ -28,55 +28,22 @@ class EmailTemplateBuilder
     // THEME DEFINITIONS
     // =========================================================================
 
-    private const THEMES = [
-        'brand' => [
-            'gradient'    => 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-            'primary'     => '#6366f1',
-            'primaryDark' => '#4f46e5',
-            'accent'      => '#818cf8',
-            'accentBg'    => '#f5f3ff',
-            'accentBorder'=> '#ede9fe',
-        ],
-        'success' => [
-            'gradient'    => 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            'primary'     => '#10b981',
-            'primaryDark' => '#059669',
-            'accent'      => '#34d399',
-            'accentBg'    => '#ecfdf5',
-            'accentBorder'=> '#d1fae5',
-        ],
-        'warning' => [
-            'gradient'    => 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-            'primary'     => '#f59e0b',
-            'primaryDark' => '#d97706',
-            'accent'      => '#fbbf24',
-            'accentBg'    => '#fffbeb',
-            'accentBorder'=> '#fde68a',
-        ],
-        'danger' => [
-            'gradient'    => 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-            'primary'     => '#dc2626',
-            'primaryDark' => '#b91c1c',
-            'accent'      => '#f87171',
-            'accentBg'    => '#fef2f2',
-            'accentBorder'=> '#fecaca',
-        ],
-        'federation' => [
-            'gradient'    => 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-            'primary'     => '#3b82f6',
-            'primaryDark' => '#2563eb',
-            'accent'      => '#60a5fa',
-            'accentBg'    => '#eff6ff',
-            'accentBorder'=> '#dbeafe',
-        ],
-        'achievement' => [
-            'gradient'    => 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-            'primary'     => '#8b5cf6',
-            'primaryDark' => '#7c3aed',
-            'accent'      => '#a78bfa',
-            'accentBg'    => '#f5f3ff',
-            'accentBorder'=> '#ede9fe',
-        ],
+    /**
+     * Themes whose colour carries a meaning, each as ONE colour. App\Core\EmailPalette
+     * derives every shade from it, so white text on the header band and the
+     * button reads at 4.5:1 (until Nov 2026 only `danger` did: success green
+     * was 2.5:1, warning amber 2.1:1).
+     *
+     * `brand` — and any name not listed here, such as the `info` some callers
+     * pass — is the community's own colour (tenants.configuration.primary_color),
+     * or the standard colour when it has none. Pinned by CommunityColourEmailTest.
+     */
+    private const THEME_COLOURS = [
+        'success'     => '#10b981',
+        'warning'     => '#f59e0b',
+        'danger'      => '#dc2626',
+        'federation'  => '#3b82f6',
+        'achievement' => '#8b5cf6',
     ];
 
     // =========================================================================
@@ -103,7 +70,10 @@ class EmailTemplateBuilder
     // CONFIGURATION
     // =========================================================================
 
-    /** Set the color theme: brand, success, warning, danger, federation, achievement */
+    /**
+     * Set the colour theme: brand (the community's own colour), success,
+     * warning, danger, federation, achievement.
+     */
     public function theme(string $name): self
     {
         $this->themeName = $name;
@@ -255,7 +225,9 @@ class EmailTemplateBuilder
     /** Render the complete HTML email */
     public function render(): string
     {
-        $theme = self::THEMES[$this->themeName] ?? self::THEMES['brand'];
+        $theme = isset(self::THEME_COLOURS[$this->themeName])
+            ? EmailPalette::fromColour(self::THEME_COLOURS[$this->themeName])
+            : EmailPalette::forCommunity();
 
         // Resolve tenant name
         $tenantName = $this->tenantName;
@@ -523,7 +495,7 @@ HTML;
         // Solid colour first: clients that strip the gradient must still paint a
         // background behind the white label. See App\Core\EmailBackground.
         $buttonBg = EmailBackground::gradient((string) $theme['gradient']);
-        $buttonBgColor = EmailBackground::firstColor((string) $theme['gradient']) ?? $theme['primary'];
+        $buttonBgColor = $theme['button'];
 
         // The plain link under the button is not small print: some mail apps hide
         // or disable the styled button, and then it is the only way through.
@@ -608,7 +580,7 @@ HTML;
         // Solid colour first: the header title is white, so a client that strips
         // the gradient must still get a background. See App\Core\EmailBackground.
         $headerBg = EmailBackground::gradient((string) $theme['gradient']);
-        $headerBgColor = EmailBackground::firstColor((string) $theme['gradient']) ?? $theme['primary'];
+        $headerBgColor = $theme['button'];
 
         // Translated footer strings
         $allRightsReserved = __('emails.footer.all_rights_reserved');
@@ -691,7 +663,7 @@ HTML;
                     <tr>
                         <td bgcolor="{$headerBgColor}" style="padding: 32px 40px; text-align: center; {$headerBg}">
                             <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; line-height: 1.3;">{$title}</h1>
-                            <p style="margin: 8px 0 0; font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, 0.85);">{$tenantName}</p>
+                            <p style="margin: 8px 0 0; font-size: 14px; font-weight: 500; color: #ffffff;">{$tenantName}</p>
                         </td>
                     </tr>
 
