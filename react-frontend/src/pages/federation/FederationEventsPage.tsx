@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import { Autocomplete } from '@/components/ui/Autocomplete';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -376,6 +378,9 @@ interface FederatedEventCardProps {
 
 function FederatedEventCard({ event }: FederatedEventCardProps) {
   const { t } = useTranslation('federation');
+  const palette = useSitePalette();
+  // Events from one partner community share its colour (were all amber).
+  const communityTone = categoryColour(colourForSeed(`federated-community-${event.timebank.id}`, palette)).band;
   const startDate = new Date(event.start_date);
   const isPast = startDate < new Date();
   const avatarSrc = resolveAvatarUrl(event.organizer?.avatar);
@@ -416,15 +421,16 @@ function FederatedEventCard({ event }: FederatedEventCardProps) {
             <div className="flex-shrink-0 w-14 sm:w-16 text-center">
               <time
                 dateTime={event.start_date}
-                className="block bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-lg p-2"
+                data-testid="federated-event-date"
+                className={`block rounded-lg p-2 ${communityTone}`}
               >
-                <span className="text-theme-warning text-xs font-medium uppercase block">
+                <span className="text-xs font-medium uppercase block">
                   {startDate.toLocaleString(getFormattingLocale(), { month: 'short' })}
                 </span>
                 <span className="text-theme-primary text-xl sm:text-2xl font-bold block">
                   {startDate.getDate()}
                 </span>
-                <span className="text-theme-subtle text-xs block">
+                <span className="text-xs block opacity-90">
                   {startDate.toLocaleString(getFormattingLocale(), { weekday: 'short' })}
                 </span>
               </time>

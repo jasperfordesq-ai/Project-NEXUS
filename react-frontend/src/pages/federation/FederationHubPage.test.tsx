@@ -284,6 +284,25 @@ describe('FederationHubPage', () => {
     expect(screen.getByText('Partner Community A')).toBeInTheDocument();
   });
 
+  // Recent activity tiles were all grey; each kind now has its own colour.
+  it('colours each kind of recent activity', async () => {
+    mockApiGet.mockResolvedValueOnce({ success: true, data: { enabled: true, tenant_federation_enabled: true, partnerships_count: 1 } });
+    mockApiGet.mockResolvedValueOnce({ success: true, data: [] });
+    mockApiGet.mockResolvedValueOnce({
+      success: true,
+      data: [
+        { id: 1, type: 'transaction_received', title: 'Hours received', description: 'From a partner', created_at: '2026-11-01T10:00:00Z' },
+        { id: 2, type: 'member_joined', title: 'New member', description: 'Joined', created_at: '2026-11-01T11:00:00Z' },
+      ],
+    });
+
+    render(<FederationHubPage />);
+
+    const tiles = await screen.findAllByTestId('federation-activity-tile');
+    expect(tiles[0]!.className).toContain('bg-emerald-100');
+    expect(tiles[1]!.className).toContain('bg-pink-100');
+  });
+
   it('shows quick navigation links when opted in', async () => {
     mockApiGet.mockResolvedValueOnce({
       success: true,

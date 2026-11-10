@@ -159,6 +159,17 @@ const activityIcons: Record<FederationActivityItem['type'], typeof Activity> = {
   member_joined: UserPlus,
 };
 
+// Each kind of activity in its own colour, as the feed does (feedTypeColours):
+// a pale tint with deep colour, written out in full (were all grey).
+const activityTiles: Record<FederationActivityItem['type'], string> = {
+  message_received: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
+  message_sent: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
+  transaction_received: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  transaction_sent: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+  partnership_approved: 'bg-accent-soft text-accent-soft-foreground',
+  member_joined: 'bg-pink-100 text-pink-800 dark:bg-pink-500/15 dark:text-pink-300',
+};
+
 const federationLevelColors: Record<number, 'default' | 'primary' | 'secondary' | 'success' | 'warning'> = {
   1: 'default',
   2: 'primary',
@@ -564,8 +575,8 @@ function RecentActivitySection({ activity }: { activity: FederationActivityItem[
                 transition={{ delay: index * 0.05 }}
                 className="flex items-start gap-3 p-4"
               >
-                <div className="w-9 h-9 rounded-lg bg-surface-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Icon className="w-[18px] h-[18px] text-foreground/70" aria-hidden="true" />
+                <div data-testid="federation-activity-tile" className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${activityTiles[item.type] ?? 'bg-surface-secondary text-foreground/70'}`}>
+                  <Icon className="w-[18px] h-[18px]" aria-hidden="true" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">

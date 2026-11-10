@@ -152,6 +152,15 @@ describe('FederationEventsPage', () => {
     });
   });
 
+  // Every date tile was amber; events from one partner community now share its colour.
+  it('colours the date tile with the partner community\'s colour', async () => {
+    setupMocks();
+    render(<FederationEventsPage />);
+    const tile = await screen.findByTestId('federated-event-date');
+    expect(tile.className).toMatch(/bg-[a-z]+-100/);
+    expect(tile.className).not.toContain('from-amber-500/20');
+  });
+
   it('shows partner community name on event card', async () => {
     setupMocks();
     render(<FederationEventsPage />);
