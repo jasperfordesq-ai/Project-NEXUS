@@ -537,6 +537,19 @@ html[data-simplified-layout="true"] .backdrop-blur-3xl {
 }
 
 /* ─────────────────────────────────────────────
+   SOFT COMMUNITY-COLOUR SURFACES, DARK THEME (warmth plan W5, 10 Nov 2026)
+   HeroUI's dark soft tint is 12% of the colour: on the near-black page a
+   page opening in the community colour read as a plain grey card, while the
+   fixed amber or emerald openings (15%) read as warm. 18% reads as the
+   colour; HeroUI's soft text (text-accent-soft-foreground) keeps 4.5:1 on it.
+   Pinned by src/test/dark-soft-tint.contract.test.ts.
+   ───────────────────────────────────────────── */
+:root[data-theme="dark"] {
+  --accent-soft: color-mix(in oklab, var(--accent) 18%, transparent);
+  --accent-soft-hover: color-mix(in oklab, var(--accent) 22%, transparent);
+}
+
+/* ─────────────────────────────────────────────
    RED (DANGER) ON THE MEMBER SITE — WCAG 2.2 AA (1.4.3)
    Measured with axe on 10 Nov 2026 (warmth plan W4): HeroUI's red was
    #ff383c on the light theme — 3.5:1 as text ("Delete all" on the
