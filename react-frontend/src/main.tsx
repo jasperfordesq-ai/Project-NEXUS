@@ -6,6 +6,11 @@
 import { Component, StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+// The heading typeface (warmth plan P4): Nunito, served from this site's own
+// files — no request leaves for a font service. Each script's file is fetched
+// only when a page uses it; scripts it does not cover (Arabic, Japanese) fall
+// back to the device's own font through --font-display.
+import '@fontsource-variable/nunito/wght.css';
 import './index.css';
 import i18n from './i18n'; // Initialize i18n before App renders
 import type { ErrorInfo, ReactNode } from 'react';

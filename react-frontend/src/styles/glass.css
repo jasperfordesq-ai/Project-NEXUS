@@ -37,7 +37,7 @@
 .glass-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   transition: all var(--transition-slow);
   overflow: hidden;
@@ -47,7 +47,7 @@
 .glass-card-hover {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   transition: all var(--transition-slow);
   overflow: hidden;

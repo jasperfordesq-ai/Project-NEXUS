@@ -4,7 +4,7 @@
 Regenerate with `node scripts/check-licenses.mjs --write`. Summary and human-facing
 attribution live in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-composer prod: 120 · npm prod: 397
+composer prod: 120 · npm prod: 398
 
 | Package | Version | Licence | Ecosystem | Source |
 |---|---|---|---|---|
@@ -153,6 +153,7 @@ composer prod: 120 · npm prod: 397
 | @floating-ui/react-dom@2.1.8 | — | MIT | npm | https://github.com/floating-ui/floating-ui |
 | @floating-ui/react@0.27.19 | — | MIT | npm | https://github.com/floating-ui/floating-ui |
 | @floating-ui/utils@0.2.11 | — | MIT | npm | https://github.com/floating-ui/floating-ui |
+| @fontsource-variable/nunito@5.3.0 | — | OFL-1.1 | npm | https://github.com/fontsource/font-files |
 | @formatjs/ecma402-abstract@2.3.6 | — | MIT | npm | https://github.com/formatjs/formatjs |
 | @formatjs/fast-memoize@2.2.7 | — | MIT | npm | https://github.com/formatjs/formatjs |
 | @formatjs/icu-messageformat-parser@2.11.4 | — | MIT | npm | https://github.com/formatjs/formatjs |
