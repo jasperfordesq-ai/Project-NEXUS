@@ -89,6 +89,47 @@ final class MemberProfileVisibility
             || (int) $viewer->tenant_id === $communityId;
     }
 
+    /**
+     * True when the viewer is STAFF of the community `$communityId` for the
+     * purpose of seeing members' surnames (E-122): an administrator of it or a
+     * platform administrator ({@see viewerIsAdminOf()}), or — owner, 10 Nov
+     * 2026, "Brokers too" — a broker or coordinator whose home community it is.
+     *
+     * The broker tier is the same one the `broker-or-admin` gate admits
+     * (`EnsureIsBrokerOrAdmin`, `BaseApiController::requireBrokerOrAdmin()`):
+     * `users.role` in {@see AdminTier::OPERATIONAL_ROLES}. Unlike that gate
+     * this also requires an active, approved account and the SAME community,
+     * because it is asked on member-facing screens where nothing else has
+     * checked either. A broker of another community is an ordinary visitor.
+     *
+     * One query. Callers that ask repeatedly memoise per request
+     * ({@see \App\Support\Names\NameAudience}).
+     */
+    public static function viewerSeesSurnamesOf(?int $viewerId, int $communityId): bool
+    {
+        if ($viewerId === null || $viewerId <= 0) {
+            return false;
+        }
+
+        $viewer = User::withoutGlobalScope(TenantScope::class)
+            ->select(['id', 'tenant_id', 'role', 'status', 'is_approved', 'is_admin',
+                'is_super_admin', 'is_tenant_super_admin', 'is_god'])
+            ->find($viewerId);
+        if ($viewer?->status !== 'active' || ! $viewer->is_approved) {
+            return false;
+        }
+
+        $sameCommunity = (int) $viewer->tenant_id === $communityId;
+
+        if (AdminTier::allows($viewer)) {
+            // The administrator rule of viewerIsAdminOf(), on the row just read.
+            return AdminTier::securityRank($viewer) >= 3 || $sameCommunity;
+        }
+
+        return $sameCommunity
+            && in_array((string) $viewer->role, AdminTier::OPERATIONAL_ROLES, true);
+    }
+
     /** True when the two members have an accepted connection in the current community. */
     public static function areConnected(int $userId1, int $userId2): bool
     {

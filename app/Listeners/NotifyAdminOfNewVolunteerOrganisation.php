@@ -12,6 +12,7 @@ use App\Events\VolunteerOrganisationRegistered;
 use App\I18n\LocaleContext;
 use App\Models\Notification;
 use App\Services\EmailDispatchService;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
@@ -112,7 +113,8 @@ class NotifyAdminOfNewVolunteerOrganisation implements ShouldQueue
                     ->first(['first_name', 'last_name', 'name', 'profile_type', 'organization_name', 'email']);
 
                 $registrantName = $registrant
-                    ? UserDisplayName::resolve($registrant, __('emails.common.fallback_member_name'))
+                    // E-122: every recipient below is staff of the community.
+                    ? UserDisplayName::full($registrant, NameReason::STAFF_RECIPIENT, __('emails.common.fallback_member_name'))
                     : __('emails.common.fallback_member_name');
 
                 $admins = self::adminRecipients($tenantId);

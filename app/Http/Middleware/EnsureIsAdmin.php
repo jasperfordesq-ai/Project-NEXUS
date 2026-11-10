@@ -7,6 +7,8 @@
 namespace App\Http\Middleware;
 
 use App\Support\Authorization\AdminTier;
+use App\Support\Names\NameAudience;
+use App\Support\Names\NameReason;
 use Closure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -40,6 +42,9 @@ class EnsureIsAdmin
         // coordinator roles before considering legacy admin flags.
         if (! AdminTier::allows($user)) {
             if ($this->allowsScopedVereinAdmin($request, (int) $user->id, (int) ($user->tenant_id ?? 0))) {
+                // E-122: the scoped import manager keeps the names this screen shows it today.
+                NameAudience::grantForRequest($request, NameReason::ADMIN_ROUTE);
+
                 return $next($request);
             }
 
@@ -52,6 +57,10 @@ class EnsureIsAdmin
                 'API-Version' => '2.0',
             ]);
         }
+
+        // E-122: a caller this gate admits sees members' full names on the
+        // screen it guards. Does nothing until the surname switch is on.
+        NameAudience::grantForRequest($request, NameReason::ADMIN_ROUTE);
 
         return $next($request);
     }

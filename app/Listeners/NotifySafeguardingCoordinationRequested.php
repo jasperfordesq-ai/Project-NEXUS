@@ -18,6 +18,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -225,7 +226,8 @@ class NotifySafeguardingCoordinationRequested implements ShouldQueue
             return $fallback;
         }
 
-        $name = UserDisplayName::resolve($user);
+        // E-122: this name goes only to safeguarding staff.
+        $name = UserDisplayName::full($user, NameReason::STAFF_RECIPIENT);
         if ($name !== '') {
             return $name;
         }

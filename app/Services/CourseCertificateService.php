@@ -12,6 +12,7 @@ use App\Models\CourseCertificate;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -82,7 +83,7 @@ class CourseCertificateService
             ->select('first_name', 'last_name', 'profile_type', 'organization_name', 'name')
             ->first();
         $userName = $user
-            ? UserDisplayName::resolve($user) ?: ($user->name ?? '')
+            ? UserDisplayName::full($user, NameReason::OWN_CERTIFICATE) ?: ($user->name ?? '')
             : '';
 
         $e = static fn ($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');

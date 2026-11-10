@@ -10,6 +10,7 @@ use App\Core\SuperPanelAccess;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -344,7 +345,7 @@ class SuperAdminAuditService
             }
 
             $actorName = $actor
-                ? UserDisplayName::resolve($actor)
+                ? UserDisplayName::full($actor, NameReason::AUDIT_LOG)
                 : 'System';
             $actorEmail = $actor->email ?? 'system@project-nexus.ie';
 

@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -206,7 +207,7 @@ class VolunteerCertificateService
             'date_range' => ['start' => $dateRangeStart, 'end' => $dateRangeEnd],
             'verification_url' => self::publicCheckUrl($verificationCode),
             'organizations' => $orgs,
-            'user_name' => $user ? UserDisplayName::resolve($user) : __('api.vol_certificate_volunteer_fallback'),
+            'user_name' => $user ? UserDisplayName::full($user, NameReason::OWN_CERTIFICATE) : __('api.vol_certificate_volunteer_fallback'),
             'generated_at' => now()->toIso8601String(),
         ];
 
@@ -286,7 +287,7 @@ class VolunteerCertificateService
             'date_range' => ['start' => $cert->date_range_start, 'end' => $cert->date_range_end],
             'verification_url' => self::publicCheckUrl((string) $cert->verification_code),
             'organizations' => json_decode($cert->organizations, true) ?? [],
-            'user_name' => UserDisplayName::resolve($cert),
+            'user_name' => UserDisplayName::full($cert, NameReason::OWN_CERTIFICATE),
             'generated_at' => $cert->generated_at,
             'revoked' => $cert->revoked_at !== null,
             'revoked_at' => $cert->revoked_at,

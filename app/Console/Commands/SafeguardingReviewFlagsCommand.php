@@ -17,6 +17,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -206,7 +207,8 @@ class SafeguardingReviewFlagsCommand extends Command
                 $byUser[$key] = [
                     'tenant_id' => (int) $row->tenant_id,
                     'user_id' => (int) $row->user_id,
-                    'name' => UserDisplayName::resolve($row)
+                    // E-122: the escalation goes only to staff of the community.
+                    'name' => UserDisplayName::full($row, NameReason::STAFF_RECIPIENT)
                         ?: ($row->display_name ?? __('emails.common.fallback_member_name')),
                     'preference_ids' => [],
                 ];

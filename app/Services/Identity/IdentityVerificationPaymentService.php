@@ -15,6 +15,7 @@ use App\Services\StripeService;
 use App\Services\TenantSettingsService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -68,7 +69,7 @@ class IdentityVerificationPaymentService
             try {
                 $customer = $client->customers->create([
                     'email' => $user->email,
-                    'name' => UserDisplayName::resolve($user),
+                    'name' => UserDisplayName::full($user, NameReason::EXTERNAL_PROCESSOR),
                     'metadata' => [
                         'nexus_user_id' => (string) $userId,
                         'nexus_tenant_id' => (string) $tenantId,

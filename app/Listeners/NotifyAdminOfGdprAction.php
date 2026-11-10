@@ -17,6 +17,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -187,7 +188,8 @@ class NotifyAdminOfGdprAction implements ShouldQueue
             ->first();
 
         if ($row) {
-            $full = UserDisplayName::resolve($row);
+            // E-122: this name goes only to staff of the community.
+            $full = UserDisplayName::full($row, NameReason::STAFF_RECIPIENT);
             if ($full !== '') {
                 return $full;
             }

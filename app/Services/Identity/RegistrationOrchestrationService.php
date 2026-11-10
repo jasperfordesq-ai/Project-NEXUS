@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use App\Support\Authorization\MinimumAge;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -515,7 +516,8 @@ class RegistrationOrchestrationService
                 ->first();
 
             if ($user) {
-                $userName = UserDisplayName::resolve($user);
+                // E-122: every recipient below is staff of the community.
+                $userName = UserDisplayName::full($user, NameReason::STAFF_RECIPIENT);
                 if (empty($userName)) {
                     $userName = $user->name ?? 'Unknown';
                 }

@@ -979,9 +979,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/WebAuthnController.php:486:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/WebAuthnController.php:487:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/WebAuthnController.php",
-            "line": 486,
+            "line": 487,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -992,9 +992,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/WebAuthnController.php:1254:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/WebAuthnController.php:1255:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/WebAuthnController.php",
-            "line": 1254,
+            "line": 1255,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -1005,9 +1005,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/WebAuthnController.php:1418:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/WebAuthnController.php:1419:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/WebAuthnController.php",
-            "line": 1418,
+            "line": 1419,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -1044,9 +1044,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Listeners/NotifyAdminOfGdprAction.php:116:NotificationDispatcher::fanOutPush",
+            "id": "app/Listeners/NotifyAdminOfGdprAction.php:117:NotificationDispatcher::fanOutPush",
             "file": "app/Listeners/NotifyAdminOfGdprAction.php",
-            "line": 116,
+            "line": 117,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $admin->id",
@@ -1057,9 +1057,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Listeners/NotifyAdminOfNewCommunityEvent.php:319:NotificationDispatcher::fanOutPush",
+            "id": "app/Listeners/NotifyAdminOfNewCommunityEvent.php:321:NotificationDispatcher::fanOutPush",
             "file": "app/Listeners/NotifyAdminOfNewCommunityEvent.php",
-            "line": 319,
+            "line": 321,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "$adminId",
@@ -1070,9 +1070,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Listeners/NotifyAdminOfNewGroup.php:110:NotificationDispatcher::fanOutPush",
+            "id": "app/Listeners/NotifyAdminOfNewGroup.php:112:NotificationDispatcher::fanOutPush",
             "file": "app/Listeners/NotifyAdminOfNewGroup.php",
-            "line": 110,
+            "line": 112,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $admin->id",
@@ -1083,9 +1083,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Listeners/NotifyAdminOfNewListing.php:116:NotificationDispatcher::fanOutPush",
+            "id": "app/Listeners/NotifyAdminOfNewListing.php:118:NotificationDispatcher::fanOutPush",
             "file": "app/Listeners/NotifyAdminOfNewListing.php",
-            "line": 116,
+            "line": 118,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $admin->id",
@@ -1109,9 +1109,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Listeners/NotifyAdminOfNewVolunteerOpportunity.php:118:NotificationDispatcher::fanOutPush",
+            "id": "app/Listeners/NotifyAdminOfNewVolunteerOpportunity.php:120:NotificationDispatcher::fanOutPush",
             "file": "app/Listeners/NotifyAdminOfNewVolunteerOpportunity.php",
-            "line": 118,
+            "line": 120,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $admin->id",
@@ -1122,9 +1122,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Listeners/NotifyAdminOfNewVolunteerOrganisation.php:148:NotificationDispatcher::fanOutPush",
+            "id": "app/Listeners/NotifyAdminOfNewVolunteerOrganisation.php:150:NotificationDispatcher::fanOutPush",
             "file": "app/Listeners/NotifyAdminOfNewVolunteerOrganisation.php",
-            "line": 148,
+            "line": 150,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $admin->id",
@@ -2084,9 +2084,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Identity/RegistrationOrchestrationService.php:243:NotificationDispatcher::dispatchVerificationCompletedToAdmins",
+            "id": "app/Services/Identity/RegistrationOrchestrationService.php:244:NotificationDispatcher::dispatchVerificationCompletedToAdmins",
             "file": "app/Services/Identity/RegistrationOrchestrationService.php",
-            "line": 243,
+            "line": 244,
             "transport": "NotificationDispatcher::dispatchVerificationCompletedToAdmins",
             "role": "producer",
             "recipient_expression": null,
@@ -2097,9 +2097,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Identity/RegistrationOrchestrationService.php:247:NotificationDispatcher::dispatchVerificationPassed",
+            "id": "app/Services/Identity/RegistrationOrchestrationService.php:248:NotificationDispatcher::dispatchVerificationPassed",
             "file": "app/Services/Identity/RegistrationOrchestrationService.php",
-            "line": 247,
+            "line": 248,
             "transport": "NotificationDispatcher::dispatchVerificationPassed",
             "role": "producer",
             "recipient_expression": "$userId",
@@ -2110,9 +2110,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Identity/RegistrationOrchestrationService.php:310:NotificationDispatcher::dispatchVerificationFailed",
+            "id": "app/Services/Identity/RegistrationOrchestrationService.php:311:NotificationDispatcher::dispatchVerificationFailed",
             "file": "app/Services/Identity/RegistrationOrchestrationService.php",
-            "line": 310,
+            "line": 311,
             "transport": "NotificationDispatcher::dispatchVerificationFailed",
             "role": "producer",
             "recipient_expression": "$userId",
@@ -2123,9 +2123,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Identity/RegistrationOrchestrationService.php:549:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/Identity/RegistrationOrchestrationService.php:551:NotificationDispatcher::fanOutPush",
             "file": "app/Services/Identity/RegistrationOrchestrationService.php",
-            "line": 549,
+            "line": 551,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $admin->id",
@@ -2136,9 +2136,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Identity/RegistrationOrchestrationService.php:711:NotificationDispatcher::dispatchVerificationPassed",
+            "id": "app/Services/Identity/RegistrationOrchestrationService.php:713:NotificationDispatcher::dispatchVerificationPassed",
             "file": "app/Services/Identity/RegistrationOrchestrationService.php",
-            "line": 711,
+            "line": 713,
             "transport": "NotificationDispatcher::dispatchVerificationPassed",
             "role": "producer",
             "recipient_expression": "$userId",
@@ -2149,9 +2149,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Identity/RegistrationOrchestrationService.php:749:NotificationDispatcher::dispatchVerificationFailed",
+            "id": "app/Services/Identity/RegistrationOrchestrationService.php:751:NotificationDispatcher::dispatchVerificationFailed",
             "file": "app/Services/Identity/RegistrationOrchestrationService.php",
-            "line": 749,
+            "line": 751,
             "transport": "NotificationDispatcher::dispatchVerificationFailed",
             "role": "producer",
             "recipient_expression": "$userId",
@@ -2890,9 +2890,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/UserService.php:785:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/UserService.php:796:NotificationDispatcher::fanOutPush",
             "file": "app/Services/UserService.php",
-            "line": 785,
+            "line": 796,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $user->id",

@@ -6,6 +6,9 @@
 
 namespace App\Support;
 
+use App\Support\Names\NameAudience;
+use App\Support\Names\NameReason;
+
 /**
  * The single source of truth for a user account's DISPLAY name.
  *
@@ -26,6 +29,17 @@ namespace App\Support;
  * {@see self::forStorage()}'s callers plus a backfill migration; the
  * User::getNameAttribute() accessor is the defence-in-depth layer for rows that
  * predate that sync.
+ *
+ * 🔴 SURNAMES (E-122, owner rule of 10 Nov 2026: "No surnames should be anywhere
+ * on the site apart from for admins"). {@see self::sql()}, {@see self::resolve()},
+ * {@see self::resolvePrefixed()} and {@see self::person()} are the standard ways
+ * to build a name, so they are where the rule lives: once
+ * `config('names.surname_audience_enforced')` is on, they return a first name
+ * (an organisation keeps its trading name) unless {@see NameAudience} says the
+ * person looking is staff of the community, or the name is the viewer's own.
+ * Code that needs a full name regardless says why: {@see self::full()},
+ * {@see self::fullPrefixed()}, {@see self::sqlFull()}. While the switch is off,
+ * all of them return exactly what they always did.
  */
 final class UserDisplayName
 {
@@ -44,6 +58,47 @@ final class UserDisplayName
      *                      (e.g. when embedding in ORDER BY or a WHERE).
      */
     public static function sql(string $alias = '', string $as = 'name'): string
+    {
+        // Decided when the SQL string is BUILT. No single member is named, so
+        // there is no "own name" exemption here.
+        if (NameAudience::enforced() && ! NameAudience::allowsSurnames()) {
+            return self::sqlPublic($alias, $as);
+        }
+
+        return self::fullSql($alias, $as);
+    }
+
+    /**
+     * {@see self::sql()} with the surname, whoever is looking. `$why` is the
+     * greppable record of the reason.
+     */
+    public static function sqlFull(string $alias, string $as, NameReason $why): string
+    {
+        unset($why);
+
+        return self::fullSql($alias, $as);
+    }
+
+    /**
+     * {@see self::sql()} without the surname, whoever is looking: the
+     * organisation name, else the first name.
+     */
+    public static function sqlPublic(string $alias = '', string $as = 'name'): string
+    {
+        $p = $alias === '' ? '' : rtrim($alias, '.') . '.';
+
+        $expr = "CASE
+                WHEN {$p}profile_type = '" . self::ORGANISATION . "'
+                     AND {$p}organization_name IS NOT NULL
+                     AND {$p}organization_name != ''
+                THEN {$p}organization_name
+                ELSE TRIM(COALESCE({$p}first_name, ''))
+            END";
+
+        return $as === '' ? $expr : $expr . ' as ' . $as;
+    }
+
+    private static function fullSql(string $alias, string $as): string
     {
         $p = $alias === '' ? '' : rtrim($alias, '.') . '.';
 
@@ -74,6 +129,165 @@ final class UserDisplayName
         if ($user === null) {
             return (string) $fallback;
         }
+
+        if (NameAudience::enforced() && ! NameAudience::allowsSurnameOf(self::memberIdOf($user))) {
+            return self::publicFromRow($user, '', $fallback);
+        }
+
+        return self::fullName($user, $fallback);
+    }
+
+    /**
+     * {@see self::resolve()} with the surname, whoever is looking. `$why` is
+     * the greppable record of the reason.
+     *
+     * @param array<string, mixed>|object|null $user
+     */
+    public static function full(array|object|null $user, NameReason $why, ?string $fallback = null): string
+    {
+        unset($why);
+
+        return $user === null ? (string) $fallback : self::fullName($user, $fallback);
+    }
+
+    /**
+     * The name anyone may see: an organisation's trading name, else the first
+     * name. Never the surname.
+     *
+     * A row that carries no first name but does carry a stored full `name`
+     * (a `name`-only select) cannot know where the first name ends, so it
+     * degrades to the first word of that name. That is wrong on the safe side
+     * for "Mary Anne", or for an organisation selected without `profile_type`,
+     * and each such call site is noted ({@see self::degradedCallSites()}) so
+     * the select can be widened to `first_name, profile_type,
+     * organization_name`.
+     *
+     * @param array<string, mixed>|object|null $user
+     */
+    public static function publicName(array|object|null $user, ?string $fallback = null): string
+    {
+        return $user === null ? (string) $fallback : self::publicFromRow($user, '', $fallback);
+    }
+
+    /**
+     * {@see self::publicName()} for PREFIXED columns on a joined row.
+     *
+     * @param array<string, mixed>|object|null $row
+     */
+    public static function publicNamePrefixed(array|object|null $row, string $prefix, ?string $fallback = null): string
+    {
+        return $row === null ? (string) $fallback : self::publicFromRow($row, $prefix, $fallback);
+    }
+
+    /**
+     * Call sites (`file:line`) where a first name had to be guessed from a
+     * stored full name. Recorded in the `testing` and `local` environments
+     * only.
+     *
+     * @return list<string>
+     */
+    public static function degradedCallSites(): array
+    {
+        return array_keys(self::$degradedCallSites);
+    }
+
+    public static function forgetDegradedCallSites(): void
+    {
+        self::$degradedCallSites = [];
+    }
+
+    /** @var array<string, true> */
+    private static array $degradedCallSites = [];
+
+    /**
+     * @param array<string, mixed>|object $row
+     */
+    private static function publicFromRow(array|object $row, string $prefix, ?string $fallback): string
+    {
+        $organisation = trim((string) self::field($row, $prefix . 'organization_name'));
+        if (self::field($row, $prefix . 'profile_type') === self::ORGANISATION && $organisation !== '') {
+            return $organisation;
+        }
+
+        $first = trim((string) self::field($row, $prefix . 'first_name'));
+        if ($first !== '') {
+            return $first;
+        }
+
+        $stored = trim((string) self::field($row, $prefix . 'name'));
+        if ($stored !== '') {
+            self::noteDegradedCallSite();
+
+            return (string) (preg_split('/\s+/u', $stored, 2)[0] ?? '');
+        }
+
+        return (string) $fallback;
+    }
+
+    /**
+     * One field of a row, model or array; null when absent. Eloquent models
+     * are read through their raw attributes so the `name` accessor cannot
+     * recurse back into this helper.
+     *
+     * @param array<string, mixed>|object $row
+     */
+    private static function field(array|object $row, string $key): ?string
+    {
+        if (is_array($row)) {
+            return array_key_exists($key, $row) && $row[$key] !== null ? (string) $row[$key] : null;
+        }
+
+        if ($row instanceof \Illuminate\Database\Eloquent\Model) {
+            $attributes = $row->getAttributes();
+
+            return array_key_exists($key, $attributes) && $attributes[$key] !== null
+                ? (string) $attributes[$key]
+                : null;
+        }
+
+        return isset($row->{$key}) ? (string) $row->{$key} : null;
+    }
+
+    /**
+     * The member a row is ABOUT, when that is certain: only a loaded
+     * `App\Models\User` says so. An `id` key on an array or a joined row may
+     * be the id of a listing, an event or a message, so it is never trusted.
+     *
+     * @param array<string, mixed>|object $user
+     */
+    private static function memberIdOf(array|object $user): ?int
+    {
+        if (! $user instanceof \App\Models\User) {
+            return null;
+        }
+
+        $id = $user->getKey();
+
+        return is_numeric($id) ? (int) $id : null;
+    }
+
+    private static function noteDegradedCallSite(): void
+    {
+        $app = \Illuminate\Container\Container::getInstance();
+        if (! $app instanceof \Illuminate\Foundation\Application || ! $app->environment('testing', 'local')) {
+            return;
+        }
+
+        foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 8) as $frame) {
+            $file = (string) ($frame['file'] ?? '');
+            if ($file !== '' && $file !== __FILE__) {
+                self::$degradedCallSites[$file . ':' . (int) ($frame['line'] ?? 0)] = true;
+
+                return;
+            }
+        }
+    }
+
+    /**
+     * @param array<string, mixed>|object $user
+     */
+    private static function fullName(array|object $user, ?string $fallback): string
+    {
 
         $get = static function (string $key) use ($user): ?string {
             if (is_array($user)) {
@@ -120,6 +334,34 @@ final class UserDisplayName
         if ($row === null) {
             return (string) $fallback;
         }
+
+        // A prefixed row never says which member it is about, so there is no
+        // "own name" exemption here.
+        if (NameAudience::enforced() && ! NameAudience::allowsSurnames()) {
+            return self::publicFromRow($row, $prefix, $fallback);
+        }
+
+        return self::fullNamePrefixed($row, $prefix, $fallback);
+    }
+
+    /**
+     * {@see self::resolvePrefixed()} with the surname, whoever is looking.
+     * `$why` is the greppable record of the reason.
+     *
+     * @param array<string, mixed>|object|null $row
+     */
+    public static function fullPrefixed(array|object|null $row, string $prefix, NameReason $why, ?string $fallback = null): string
+    {
+        unset($why);
+
+        return $row === null ? (string) $fallback : self::fullNamePrefixed($row, $prefix, $fallback);
+    }
+
+    /**
+     * @param array<string, mixed>|object $row
+     */
+    private static function fullNamePrefixed(array|object $row, string $prefix, ?string $fallback): string
+    {
 
         $get = static function (string $key) use ($row, $prefix): ?string {
             $field = $prefix . $key;
@@ -254,6 +496,12 @@ final class UserDisplayName
 
             return isset($user->{$key}) ? (string) $user->{$key} : null;
         };
+
+        if (NameAudience::enforced() && ! NameAudience::allowsSurnameOf(self::memberIdOf($user))) {
+            $first = trim((string) $get('first_name'));
+
+            return $first !== '' ? $first : self::publicFromRow($user, '', $fallback);
+        }
 
         $name = trim(trim((string) $get('first_name')) . ' ' . trim((string) $get('last_name')));
         if ($name !== '') {

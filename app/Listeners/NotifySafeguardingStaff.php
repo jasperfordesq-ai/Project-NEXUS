@@ -20,6 +20,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -80,7 +81,8 @@ class NotifySafeguardingStaff implements ShouldQueue
             // Load the flagged member's name
             $flaggedUser = User::find($flaggedUserId);
             $memberName  = $flaggedUser
-                ? UserDisplayName::resolve($flaggedUser) ?: ($flaggedUser->name ?? 'Unknown member')
+                // E-122: this name goes only to safeguarding staff.
+                ? UserDisplayName::full($flaggedUser, NameReason::STAFF_RECIPIENT) ?: ($flaggedUser->name ?? 'Unknown member')
                 : 'Unknown member';
 
             // Build a summary of what was selected

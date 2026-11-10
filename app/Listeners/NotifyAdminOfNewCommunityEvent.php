@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use RuntimeException;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -160,7 +161,8 @@ class NotifyAdminOfNewCommunityEvent implements ShouldQueue
             return null;
         }
 
-        return UserDisplayName::resolve($creator)
+        // E-122: this name goes only to staff of the community.
+        return UserDisplayName::full($creator, NameReason::STAFF_RECIPIENT)
             ?: ($creator->name ?? null);
     }
 

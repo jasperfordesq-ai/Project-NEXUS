@@ -11,6 +11,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -74,7 +75,7 @@ class FederationAuditService
                     ->first();
 
                 if ($actor) {
-                    $actorName = UserDisplayName::resolve($actor);
+                    $actorName = UserDisplayName::full($actor, NameReason::AUDIT_LOG);
                     if (!empty($actor->email)) {
                         $parts = explode('@', $actor->email);
                         $actorEmail = '***@' . ($parts[1] ?? 'unknown');

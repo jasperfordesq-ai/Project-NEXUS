@@ -16,6 +16,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -66,7 +67,8 @@ class NotifyAdminOfNewListing implements ShouldQueue
             $basePath   = TenantContext::getSlugPrefix();
             $listingUrl = $baseUrl . $basePath . '/listings/' . $listing->id;
 
-            $posterName   = UserDisplayName::resolve($poster)
+            // E-122: every recipient below is staff of the community.
+            $posterName   = UserDisplayName::full($poster, NameReason::STAFF_RECIPIENT)
                 ?: ($poster->name ?? __('emails.common.fallback_member_name'));
             $listingTitle = $listing->title ?? 'Untitled';
             $listingType  = ucfirst($listing->type ?? 'listing');

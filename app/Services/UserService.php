@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Support\Members\MemberProfileVisibility;
+use App\Support\Names\NameAudience;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 use App\Support\Wallet\OpeningBalance;
 
@@ -81,7 +83,13 @@ class UserService
             return null;
         }
 
-        $profile = self::formatProfile($user, true);
+        // E-122: the member's OWN account. It must always carry their surname —
+        // the edit-profile forms are prefilled from this, and one that came
+        // back without it could save an empty surname over the real one.
+        $profile = NameAudience::withFullNames(
+            NameReason::SELF,
+            static fn (): array => self::formatProfile($user, true),
+        );
 
         // Add notification preferences
         $profile['notification_preferences'] = self::getNotificationPreferences($userId);
@@ -190,7 +198,10 @@ class UserService
             }
         }
 
-        $profile = self::formatProfile($user, false);
+        // E-122: a member looking at their own profile page keeps their own name.
+        $profile = $viewerId === $userId
+            ? NameAudience::withFullNames(NameReason::SELF, static fn (): array => self::formatProfile($user, false))
+            : self::formatProfile($user, false);
 
         // F-264 (F-088 residual): "Hide my presence" applies to the profile too,
         // exactly as the presence API, messaging and the feed sidebar honour it.

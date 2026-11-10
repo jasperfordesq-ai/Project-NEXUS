@@ -14,6 +14,8 @@ use App\Models\BrokerMessageCopy;
 use App\Models\Message;
 use App\Models\Notification;
 use App\Models\User;
+use App\Support\Names\NameReason;
+use App\Support\UserDisplayName;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -210,7 +212,8 @@ class BrokerMessageVisibilityService
         // Notify admin brokers — in-app bell + email for high-priority reasons
         try {
             $sender = User::find($message->sender_id);
-            $senderDisplayName = $sender ? trim($sender->name ?? '') : 'A user';
+            // E-122: every recipient below is staff of the community.
+            $senderDisplayName = $sender ? trim(UserDisplayName::full($sender, NameReason::STAFF_RECIPIENT)) : 'A user';
             if (empty($senderDisplayName)) {
                 $senderDisplayName = 'A user';
             }

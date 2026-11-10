@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use App\Core\ApiErrorCodes;
 use App\Core\TenantContext;
 use App\Support\Authorization\CrossTenantEntry;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -1014,10 +1015,11 @@ class AuthController extends BaseApiController
             'impersonation' => [
                 'active' => true,
                 'user_id' => $targetId,
-                'user_name' => UserDisplayName::resolve($target),
+                // E-122: returned only to the administrator who started the impersonation.
+                'user_name' => UserDisplayName::full($target, NameReason::ADMIN_ROUTE),
                 'tenant_id' => $tokenTenantId,
                 'admin_id' => $adminId,
-                'admin_name' => UserDisplayName::resolve($admin),
+                'admin_name' => UserDisplayName::full($admin, NameReason::ADMIN_ROUTE),
                 'expires_in' => $session['expires_in'],
             ],
         ]);
@@ -1391,7 +1393,8 @@ class AuthController extends BaseApiController
         }
 
         $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user_name'] = UserDisplayName::resolve($user);
+        // E-122: the session owner's own name.
+        $_SESSION['user_name'] = UserDisplayName::full($user, NameReason::SELF);
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['user_role'] = $user['role'] ?? 'member';
         $_SESSION['role'] = $user['role'] ?? 'member';
@@ -1628,7 +1631,8 @@ class AuthController extends BaseApiController
             return $this->authError(__('api.invalid_or_expired_token'), ApiErrorCodes::AUTH_TOKEN_INVALID, 401);
         }
         $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user_name'] = UserDisplayName::resolve($user);
+        // E-122: the session owner's own name.
+        $_SESSION['user_name'] = UserDisplayName::full($user, NameReason::SELF);
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['user_role'] = $user['role'] ?? 'member';
         $_SESSION['role'] = $user['role'] ?? 'member';

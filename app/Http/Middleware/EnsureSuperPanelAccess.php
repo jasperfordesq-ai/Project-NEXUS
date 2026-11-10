@@ -7,6 +7,8 @@
 namespace App\Http\Middleware;
 
 use App\Core\SuperPanelAccess;
+use App\Support\Names\NameAudience;
+use App\Support\Names\NameReason;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -83,6 +85,10 @@ class EnsureSuperPanelAccess
                 'API-Version' => '2.0',
             ]);
         }
+
+        // E-122: a caller this gate admits sees members' full names on the
+        // screen it guards. Does nothing until the surname switch is on.
+        NameAudience::grantForRequest($request, NameReason::ADMIN_ROUTE);
 
         return $next($request);
     }

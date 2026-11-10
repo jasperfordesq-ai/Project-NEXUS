@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -220,7 +221,7 @@ class StripeDonationService
             try {
                 $customer = $client->customers->create([
                     'email' => $user->email,
-                    'name' => UserDisplayName::resolve($user),
+                    'name' => UserDisplayName::full($user, NameReason::EXTERNAL_PROCESSOR),
                     'metadata' => [
                         'nexus_user_id' => $userId,
                         'nexus_tenant_id' => $tenantId,
@@ -281,7 +282,8 @@ class StripeDonationService
                 'payment_method' => 'stripe',
                 'payment_reference' => '',
                 'payment_route' => $paymentRoute,
-                'donor_name' => UserDisplayName::resolve($user),
+                // E-122: the payment record keeps the donor's full name (receipts, reconciliation).
+                'donor_name' => UserDisplayName::full($user, NameReason::LEGAL_RECORD),
                 'donor_email' => $user->email ?? '',
                 'message' => trim($data['message'] ?? ''),
                 'is_anonymous' => !empty($data['is_anonymous']) ? 1 : 0,
@@ -877,7 +879,8 @@ class StripeDonationService
                     $donorLocale = $userRow->preferred_language ?? null;
                     if (empty($donorEmail)) {
                         $donorEmail = $userRow->email ?? '';
-                        $donorName  = $donorName ?: (UserDisplayName::resolve($userRow) ?: ($userRow->name ?? ''));
+                        // E-122: the donor's own name, on their own receipt.
+                        $donorName  = $donorName ?: (UserDisplayName::full($userRow, NameReason::SELF) ?: ($userRow->name ?? ''));
                     }
                 }
             }

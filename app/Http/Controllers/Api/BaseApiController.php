@@ -9,6 +9,8 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\SafeguardingPolicyException;
 use App\Services\TokenService;
 use App\Support\Authorization\AdminTier;
+use App\Support\Names\NameAudience;
+use App\Support\Names\NameReason;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -747,7 +749,7 @@ abstract class BaseApiController extends Controller
             );
         }
 
-        return $userId;
+        return $this->withStaffNames($userId, NameReason::ADMIN_ROUTE);
     }
 
     /**
@@ -777,15 +779,15 @@ abstract class BaseApiController extends Controller
         // the codebase include 'coordinator' alongside 'broker' — granting
         // them parity here so /broker/* deep-links from those bells work.
         if (in_array($role, ['broker', 'coordinator'], true)) {
-            return $userId;
+            return $this->withStaffNames($userId, NameReason::BROKER_PANEL);
         }
 
         if (in_array($role, ['admin', 'tenant_admin', 'super_admin', 'god'], true)) {
-            return $userId;
+            return $this->withStaffNames($userId, NameReason::BROKER_PANEL);
         }
 
         if (($user->is_admin ?? false) || ($user->is_super_admin ?? false) || ($user->is_tenant_super_admin ?? false) || ($user->is_god ?? false)) {
-            return $userId;
+            return $this->withStaffNames($userId, NameReason::BROKER_PANEL);
         }
 
         throw new \Illuminate\Http\Exceptions\HttpResponseException(
@@ -807,7 +809,7 @@ abstract class BaseApiController extends Controller
         $role = (string) ($user->role ?? 'member');
 
         if ($role === 'broker') {
-            return $userId;
+            return $this->withStaffNames($userId, NameReason::BROKER_PANEL);
         }
 
         if ($role !== 'coordinator' && (
@@ -817,7 +819,7 @@ abstract class BaseApiController extends Controller
             || ($user->is_tenant_super_admin ?? false)
             || ($user->is_god ?? false)
         )) {
-            return $userId;
+            return $this->withStaffNames($userId, NameReason::BROKER_PANEL);
         }
 
         throw new \Illuminate\Http\Exceptions\HttpResponseException(
@@ -870,15 +872,15 @@ abstract class BaseApiController extends Controller
         $role = $user->role ?? 'member';
 
         if (in_array($role, ['super_admin', 'god'])) {
-            return $userId;
+            return $this->withStaffNames($userId, NameReason::ADMIN_ROUTE);
         }
 
         if ($user->is_super_admin ?? false) {
-            return $userId;
+            return $this->withStaffNames($userId, NameReason::ADMIN_ROUTE);
         }
 
         if ($user->is_tenant_super_admin ?? false) {
-            return $userId;
+            return $this->withStaffNames($userId, NameReason::ADMIN_ROUTE);
         }
 
         throw new \Illuminate\Http\Exceptions\HttpResponseException(
@@ -907,7 +909,7 @@ abstract class BaseApiController extends Controller
 
         // Explicitly NOT accepting is_tenant_super_admin.
         if (in_array($role, ['super_admin', 'god'], true) || ($user->is_super_admin ?? false) || ($user->is_god ?? false)) {
-            return $userId;
+            return $this->withStaffNames($userId, NameReason::ADMIN_ROUTE);
         }
 
         throw new \Illuminate\Http\Exceptions\HttpResponseException(
@@ -931,6 +933,21 @@ abstract class BaseApiController extends Controller
                 $this->error(__('api.god_level_access_required'), 403, 'AUTH_INSUFFICIENT_PERMISSIONS')
             );
         }
+
+        return $this->withStaffNames($userId, NameReason::ADMIN_ROUTE);
+    }
+
+    /**
+     * E-122: a caller one of the staff gates above has just admitted sees
+     * members' full names for the rest of this request — the controller-level
+     * twin of the grant the `admin` / `broker-or-admin` / `super-admin` route
+     * middleware place, for endpoints that rely on the controller check alone.
+     * Does nothing until the surname switch is on
+     * ({@see \App\Support\Names\NameAudience}).
+     */
+    private function withStaffNames(int $userId, NameReason $why): int
+    {
+        NameAudience::grantForCurrentRequest($why);
 
         return $userId;
     }

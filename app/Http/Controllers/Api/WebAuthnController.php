@@ -28,6 +28,7 @@ use App\Core\ApiErrorCodes;
 use App\Core\TenantContext;
 use lbuchs\WebAuthn\WebAuthnException;
 use App\Support\Authorization\CrossTenantEntry;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -1564,7 +1565,8 @@ class WebAuthnController extends BaseApiController
     private function getWebAuthnUser(int $userId): ?array
     {
         $row = DB::selectOne(
-            "SELECT id, " . UserDisplayName::sql('', 'name') . ", email FROM users WHERE id = ? AND tenant_id = ?",
+            // E-122: the member's own name, shown by their own device beside their passkey.
+            "SELECT id, " . UserDisplayName::sqlFull('', 'name', NameReason::SELF) . ", email FROM users WHERE id = ? AND tenant_id = ?",
             [$userId, TenantContext::getId()]
         );
         return $row ? (array)$row : null;

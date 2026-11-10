@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Support\Federation;
 
 use App\Support\Members\MemberProfileVisibility;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 use Illuminate\Database\Eloquent\Model;
 
@@ -90,8 +91,11 @@ final class FederatedMemberName
             return (string) $fallback;
         }
 
+        // The viewer was checked against the MEMBER's community on the line
+        // below, which the request-wide audience cannot do — so the full name
+        // is asked for outright rather than through resolvePrefixed().
         return $this->seesSurnameOf($memberId, $memberTenantId)
-            ? UserDisplayName::resolvePrefixed($row, $prefix, $fallback)
+            ? UserDisplayName::fullPrefixed($row, $prefix, NameReason::CHECKED_BY_CALLER, $fallback)
             : self::publicName($row, $prefix, $fallback);
     }
 

@@ -18,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 class VettingRenewalRemindersCommand extends Command
@@ -142,7 +143,8 @@ class VettingRenewalRemindersCommand extends Command
             return false;
         }
 
-        $memberName = UserDisplayName::resolve($row)
+        // E-122: every recipient below is safeguarding staff of the community.
+        $memberName = UserDisplayName::full($row, NameReason::STAFF_RECIPIENT)
             ?: (string) ($row->display_name ?? '');
         $safeMemberName = htmlspecialchars($memberName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $safeCommunityName = htmlspecialchars((string) $row->community_name, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');

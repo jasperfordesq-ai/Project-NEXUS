@@ -16,6 +16,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -76,7 +77,8 @@ class NotifyAdminOfNewVolunteerOpportunity implements ShouldQueue
                         ->select(['first_name', 'last_name', 'profile_type', 'organization_name', 'name'])
                         ->first();
                     if ($poster) {
-                        $posterName = UserDisplayName::resolve($poster)
+                        // E-122: every recipient below is staff of the community.
+                        $posterName = UserDisplayName::full($poster, NameReason::STAFF_RECIPIENT)
                             ?: ($poster->name ?? __('emails.common.fallback_member_name'));
                     }
                 }

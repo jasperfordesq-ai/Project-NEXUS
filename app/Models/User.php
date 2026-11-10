@@ -15,6 +15,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 use App\Core\TenantContext;
+use App\Support\Names\NameAudience;
 use App\Support\UserDisplayName;
 
 class User extends Authenticatable
@@ -32,6 +33,22 @@ class User extends Authenticatable
         'id',
         'first_name',
         'last_name',
+        'profile_type',
+        'organization_name',
+        'avatar_url',
+    ];
+
+    /**
+     * {@see self::PUBLIC_IDENTITY_COLUMNS} without the surname (E-122): what a
+     * member-facing surface needs to name another member — the first name, or
+     * an organisation's trading name. Nothing selects it yet; it is here for
+     * the stage that converts the eager loads.
+     *
+     * @var list<string>
+     */
+    public const PUBLIC_NAME_COLUMNS = [
+        'id',
+        'first_name',
         'profile_type',
         'organization_name',
         'avatar_url',
@@ -134,6 +151,37 @@ class User extends Authenticatable
     public function getNameAttribute(): string
     {
         return UserDisplayName::resolve($this);
+    }
+
+    /**
+     * Serialisation (`toArray()`, `toJson()`, an eager-loaded relation inside
+     * another model's response) drops `last_name` unless the person looking
+     * may see it (E-122: surnames are for staff of the community, and for the
+     * member themself). The appended `name` follows the same rule through
+     * {@see getNameAttribute()}.
+     *
+     * 🔴 Does nothing until `config('names.surname_audience_enforced')` is on.
+     *
+     * Deliberately NOT done with `$hidden`: that cannot depend on the viewer.
+     * And deliberately not an accessor on `last_name`: PHP code that reads
+     * `$user->last_name` to WRITE (profile updates, imports, the stored
+     * `users.name`) must keep getting the real value.
+     *
+     * @return array<string, mixed>
+     */
+    public function attributesToArray()
+    {
+        $attributes = parent::attributesToArray();
+
+        if (
+            array_key_exists('last_name', $attributes)
+            && NameAudience::enforced()
+            && ! NameAudience::allowsSurnameOf(is_numeric($this->getKey()) ? (int) $this->getKey() : null)
+        ) {
+            unset($attributes['last_name']);
+        }
+
+        return $attributes;
     }
 
     /**
