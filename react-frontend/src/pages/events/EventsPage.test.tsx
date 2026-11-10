@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { getFormattingLocale } from '@/lib/helpers';
 import { colourForSeed, paletteFor } from '@/lib/categoryColours';
+import { coverSeed } from '@/lib/coverSeeds';
 import { createCanonicalEventFixture, renderEventRoute } from '@/test/events-test-harness';
 
 const { mockApi, mockToast } = vi.hoisted(() => ({
@@ -218,7 +219,8 @@ describe('EventsPage', () => {
 
     const tiles = screen.getAllByTestId('event-date-tile');
     expect(tiles).toHaveLength(2);
-    expect(tiles[0]).toHaveAttribute('data-colour', colourForSeed('event-category-7', paletteFor(null)));
+    // The same seed Explore uses, so an event wears one colour on both (W2).
+    expect(tiles[0]).toHaveAttribute('data-colour', colourForSeed(coverSeed.event(41, 7), paletteFor(null)));
     // Events of the same kind share a colour.
     expect(tiles[1]).toHaveAttribute('data-colour', tiles[0]!.getAttribute('data-colour'));
     expect(tiles[0]!.className).not.toContain('amber');

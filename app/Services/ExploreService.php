@@ -471,6 +471,7 @@ class ExploreService
                     e.location,
                     e.allow_remote_attendance AS is_online,
                     e.max_attendees,
+                    e.category_id,
                     (SELECT COUNT(*) FROM event_rsvps er WHERE er.event_id = e.id AND er.status = 'going') AS rsvp_count
                 FROM events e
                 WHERE e.tenant_id = ?
@@ -503,6 +504,9 @@ class ExploreService
                 'is_online' => (bool) $row->is_online,
                 'max_attendees' => $row->max_attendees,
                 'rsvp_count' => (int) $row->rsvp_count,
+                // The events page colours an event by its category; Explore
+                // needs it to show the same colour (warmth plan W2).
+                'category_id' => $row->category_id !== null ? (int) $row->category_id : null,
             ], $rows);
         } catch (\Throwable $e) {
             Log::warning('ExploreService::getUpcomingEvents failed', ['error' => $e->getMessage()]);
@@ -1436,48 +1440,42 @@ class ExploreService
     // =========================================================================
 
     /**
-     * Top 4 published blog posts by view count.
+     * The blog's 4 latest published posts ("From the Blog").
+     *
+     * This read `blog_posts` until 10 Nov 2026 — a table nothing writes to (the
+     * admin editor and the blog use `posts`), so the section was always empty.
+     * It now asks BlogService, so Explore shows exactly what the blog index
+     * shows, under the same rules (published, no placeholder posts, this
+     * community only via the Post tenant scope). `posts` keeps no view count.
      */
     private function getTrendingBlogPosts(int $tenantId): array
     {
         try {
-            $tableExists = DB::select("SHOW TABLES LIKE 'blog_posts'");
-            if (empty($tableExists)) {
-                return [];
+            if (TenantContext::getId() !== $tenantId) {
+                return []; // the Post tenant scope follows TenantContext, not $tenantId
             }
 
-            $rows = DB::select("
-                SELECT
-                    bp.id, bp.title, bp.slug,
-                    LEFT(bp.excerpt, 200) AS excerpt,
-                    bp.featured_image AS image_url,
-                    bp.published_at,
-                    COALESCE(bp.views, 0) AS view_count,
-                    COALESCE(u.first_name, '') AS author_first_name,
-                    COALESCE(u.last_name, '') AS author_last_name,
-                    u.profile_type AS author_profile_type,
-                    u.organization_name AS author_organization_name,
-                    u.avatar_url AS author_avatar
-                FROM blog_posts bp
-                JOIN users u ON u.id = bp.author_id AND u.tenant_id = ? AND u.status = 'active'
-                WHERE bp.tenant_id = ?
-                    AND bp.status = 'published'
-                    AND bp.published_at IS NOT NULL
-                ORDER BY bp.views DESC, bp.published_at DESC
-                LIMIT 4
-            ", [$tenantId, $tenantId]);
+            $posts = app(BlogService::class)->getPublicPosts(['limit' => 4])['items'];
 
-            return array_map(fn($row) => [
-                'id' => $row->id,
-                'title' => $row->title,
-                'slug' => $row->slug,
-                'excerpt' => $row->excerpt,
-                'image_url' => $row->image_url,
-                'published_at' => $row->published_at,
-                'view_count' => (int) $row->view_count,
-                'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
-                'author_avatar' => $row->author_avatar,
-            ], $rows);
+            return array_map(fn (array $post) => [
+                'id' => $post['id'],
+                'title' => $post['title'],
+                'slug' => $post['slug'],
+                'excerpt' => $post['excerpt'] !== '' ? mb_substr((string) $post['excerpt'], 0, 200) : null,
+                'image_url' => $post['featured_image'],
+                'published_at' => $post['published_at'],
+                'reading_time' => $post['reading_time'],
+                'view_count' => 0,
+                // The blog never says which account wrote a post
+                // (BlogService::PUBLIC_SUMMARY_COLUMNS); neither does Explore.
+                'author_name' => '',
+                'author_avatar' => null,
+                // The blog page colours a post by its category; Explore needs it
+                // to show the same colour (warmth plan W2).
+                'category' => $post['category'] !== null
+                    ? ['id' => $post['category']['id'], 'name' => $post['category']['name']]
+                    : null,
+            ], $posts);
         } catch (\Throwable $e) {
             Log::warning('ExploreService::getTrendingBlogPosts failed', ['error' => $e->getMessage()]);
             return [];

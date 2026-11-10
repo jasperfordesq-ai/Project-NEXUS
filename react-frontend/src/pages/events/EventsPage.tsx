@@ -71,6 +71,7 @@ import {
   type EventCalendarView,
 } from './components/EventCalendarViews';
 import { CalendarSubscriptionPanel } from './components/CalendarSubscriptionPanel';
+import { coverSeed } from '@/lib/coverSeeds';
 
 const LazyProximityFilter = lazy(() =>
   import('@/components/proximity/ProximityFilter').then((module) => ({
@@ -999,10 +1000,7 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
         timeZoneName: 'short',
       });
   const goingPreview = event.going_preview ?? [];
-  const dateTileColour = colourForSeed(
-    event.category?.id != null ? `event-category-${event.category.id}` : `event-${event.id}`,
-    palette,
-  );
+  const dateTileColour = colourForSeed(coverSeed.event(event.id, event.category?.id), palette);
   // "Maeve, Tom and Ann" in the reader's language, for screen readers.
   const goingNames = joinList(goingPreview.map((person) => person.name), getFormattingLocale());
   const coverImageProps = event.primary_image?.url

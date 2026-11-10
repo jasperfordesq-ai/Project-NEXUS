@@ -978,7 +978,7 @@ function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) {
             )}
             {categoryName && (() => {
               // Each category in its own colour, the same on every card (was grey).
-              const colour = colourForSeed(`volunteering-category-${categoryName.toLowerCase()}`, palette);
+              const colour = colourForSeed(coverSeed.volunteeringCategory(categoryName), palette);
               return (
                 <span
                   data-testid="opportunity-category"

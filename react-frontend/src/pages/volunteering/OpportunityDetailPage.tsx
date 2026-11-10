@@ -1163,7 +1163,7 @@ export function OpportunityDetailPage() {
             the same wherever it appears (AWID: "attractive visuals"). */}
         <DetailCover
           data-testid="opportunity-detail-cover"
-          seed={coverSeed.opportunity(opp.id)}
+          seed={coverSeed.opportunity(opp.id, getOpportunityCategoryName(opp.category))}
           icon={Briefcase}
           className="mb-6 h-28 rounded-2xl sm:h-40"
         />

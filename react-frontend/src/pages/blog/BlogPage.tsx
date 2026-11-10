@@ -46,6 +46,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { usePrerenderReady } from '@/hooks/usePrerenderReady';
+import { coverSeed } from '@/lib/coverSeeds';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -485,7 +486,7 @@ interface PostCardProps {
 
 function useBlogCoverColour(post: PostCardProps['post']): string {
   const palette = useSitePalette();
-  return colourForSeed(post.category ? `category-${post.category.id ?? post.category.name}` : `post-${post.id}`, palette);
+  return colourForSeed(coverSeed.blogPost(post.id, post.category ? (post.category.id ?? post.category.name) : null), palette);
 }
 
 function FeaturedPostCard({ post, categoryColors }: PostCardProps) {

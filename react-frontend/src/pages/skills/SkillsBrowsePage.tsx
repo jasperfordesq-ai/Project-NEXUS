@@ -44,6 +44,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import type { SkillCategory } from '@/components/skills/SkillSelector';
+import { coverSeed } from '@/lib/coverSeeds';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -414,8 +415,8 @@ export function SkillsBrowsePage() {
                           {/* Each category in its own colour (AWID: "clear categories"; all were one tint). */}
                           <div
                             data-testid="skills-category-tile"
-                            data-colour={colourForSeed(`skills-category-${category.name.toLowerCase()}`, palette)}
-                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${categoryColour(colourForSeed(`skills-category-${category.name.toLowerCase()}`, palette)).band}`}
+                            data-colour={colourForSeed(coverSeed.skillsCategory(category.name), palette)}
+                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${categoryColour(colourForSeed(coverSeed.skillsCategory(category.name), palette)).band}`}
                           >
                             {category.icon || <FolderTree className="h-5 w-5" aria-hidden="true" />}
                           </div>

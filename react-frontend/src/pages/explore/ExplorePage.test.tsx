@@ -556,6 +556,43 @@ describe('ExplorePage — warmth', () => {
     expect(screen.queryByText('offer')).toBeNull();
   });
 
+  // Warmth plan W2 (10 Nov 2026): an event or a blog post without a picture
+  // wore one colour here and another on the events or blog page. Both now
+  // follow the category, as those pages do.
+  it('gives events and blog posts the colour they wear on their own pages', async () => {
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/v2/explore/for-you')) return Promise.resolve({ success: true, data: [], meta: { per_page: 15, total: 0, has_more: false } });
+      if (url.includes('/v2/explore')) {
+        return Promise.resolve({
+          success: true,
+          data: {
+            ...makeExploreData(),
+            upcoming_events: [{
+              id: 81, title: 'Repair Cafe', description: null, image_url: null, image_alt: null,
+              start_at: '2026-12-01T10:00:00Z', end_at: null, location: 'Hall', is_online: false,
+              max_attendees: null, rsvp_count: 0, category_id: 7,
+            }],
+            trending_blog_posts: [{
+              id: 55, title: 'Garden morning', slug: 'garden-morning', excerpt: null, image_url: null,
+              published_at: '2026-11-01T10:00:00Z', reading_time: 3, view_count: 0,
+              author_name: '', author_avatar: null, category: { id: 4, name: 'News' },
+            }],
+          },
+        });
+      }
+      return Promise.resolve({ success: true, data: null });
+    });
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    const { default: ExplorePage } = await import('./ExplorePage');
+    render(<ExplorePage />);
+
+    const eventCover = await screen.findByTestId('explore-event-cover');
+    expect(eventCover).toHaveAttribute('data-colour', colourForSeed(coverSeed.event(81, 7), paletteFor(null)));
+    const blogCover = screen.getByTestId('explore-blog-cover');
+    expect(blogCover).toHaveAttribute('data-colour', colourForSeed(coverSeed.blogPost(55, 4), paletteFor(null)));
+  });
+
   it('names what each For You item is in words, not the raw "listing"', async () => {
     window.history.pushState({}, '', '/?tab=for_you');
     const { default: ExplorePage } = await import('./ExplorePage');

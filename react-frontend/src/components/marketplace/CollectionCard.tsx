@@ -21,6 +21,7 @@ import { ThemedCover } from '@/components/ui/ThemedCover';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { colourForSeed } from '@/lib/categoryColours';
 import type { MarketplaceCollection } from '@/types/marketplace';
+import { coverSeed } from '@/lib/coverSeeds';
 
 interface CollectionCardProps {
   collection: MarketplaceCollection;
@@ -64,7 +65,7 @@ export function CollectionCard({ collection, thumbnails = [], onClick }: Collect
           ) : (
             // Empty: a cover in the collection's own colour (was a grey box).
             <div className="group h-full w-full">
-              <ThemedCover data-testid="collection-card-cover" colour={colourForSeed(`collection-${collection.id}`, palette)} icon={FolderHeart} />
+              <ThemedCover data-testid="collection-card-cover" colour={colourForSeed(coverSeed.collection(collection.id), palette)} icon={FolderHeart} />
             </div>
           )}
         </div>

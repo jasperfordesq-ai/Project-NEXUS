@@ -44,6 +44,7 @@ import { logError } from '@/lib/logger';
 import { formatRelativeTime } from '@/lib/helpers';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { categoryColour, colourForSeed } from '@/lib/categoryColours';
+import { coverSeed } from '@/lib/coverSeeds';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -330,7 +331,7 @@ export function KnowledgeBasePage() {
               {groupedArticles.map(([category, catArticles]) => {
                 // Each category in its own colour, shared by its heading and its
                 // articles' tiles (AWID: "clear categories"; all were blue).
-                const colour = colourForSeed(`kb-category-${category.toLowerCase()}`, palette);
+                const colour = colourForSeed(coverSeed.kbCategory(catArticles[0]?.category_name), palette);
                 const tone = categoryColour(colour);
                 return (
                 <motion.div key={category} variants={itemVariants}>

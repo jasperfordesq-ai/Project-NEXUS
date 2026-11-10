@@ -283,7 +283,7 @@ export default function PodcastsPage() {
                       // Each category in its own colour (was grey).
                       <span
                         data-testid="podcast-card-category"
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryColour(colourForSeed(`podcast-category-${show.category.toLowerCase()}`, palette)).band}`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryColour(colourForSeed(coverSeed.podcastCategory(show.category), palette)).band}`}
                       >
                         {show.category}
                       </span>

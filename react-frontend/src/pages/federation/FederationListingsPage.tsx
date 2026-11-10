@@ -56,6 +56,7 @@ import { FederationOptInNotice } from '@/components/federation/FederationOptInNo
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
 import type { FederatedListing, FederationPartner } from '@/types/api';
+import { coverSeed } from '@/lib/coverSeeds';
 
 type ListingTypeFilter = 'all' | 'offer' | 'request';
 
@@ -704,7 +705,7 @@ function FederatedListingCard({ listing, onViewDetails }: FederatedListingCardPr
         <div className="group w-full h-36 rounded-lg overflow-hidden mb-3">
           <ThemedCover
             data-testid="federated-listing-cover"
-            colour={colourForSeed(`listing-category-${(listing.category_name ?? listing.type).toLowerCase()}`, palette)}
+            colour={colourForSeed(coverSeed.federatedListing(listing.category_name ?? listing.type), palette)}
             icon={(listing.category_name ? themeIconFor({ name: listing.category_name }) : null) ?? Hand}
             label={listing.category_name}
           />

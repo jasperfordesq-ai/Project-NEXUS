@@ -284,7 +284,7 @@ export function KBArticlePage() {
       {/* A cover in the article's own colour. */}
       <DetailCover
         data-testid="kb-article-cover"
-        seed={coverSeed.article(article.id)}
+        seed={coverSeed.article(article)}
         icon={BookOpen}
         className="mb-6 h-28 rounded-2xl sm:h-40"
       />

@@ -8,19 +8,50 @@
  * place, so an item has the same colour on its card, its page and anywhere
  * else it appears (AWID feedback, Nov 2026: "clear categories, attractive
  * visuals"). Change a seed here and every place follows.
+ *
+ * The rule (warmth plan W2, 10 Nov 2026): where a list colours its items by
+ * category, the item's own page — and every other place it appears — follows
+ * its category too. An item with no category keeps a colour of its own.
  */
+const lower = (name: string): string => name.trim().toLowerCase();
+
+/** Knowledge-base category. No category is the "general" group, whatever its translated label. */
+const kbCategory = (name: string | null | undefined): string =>
+  `kb-category-${name && name.trim() !== '' ? lower(name) : 'general'}`;
+
+const volunteeringCategory = (name: string): string => `volunteering-category-${lower(name)}`;
+
 export const coverSeed = {
   /** Courses in one category share a colour; others have their own. */
   course: (course: { id: number | string; category?: { name?: string | null } | null }): string =>
     course.category?.name ? `course-category-${course.category.name.toLowerCase()}` : `course-${course.id}`,
   podcastShow: (slug: string): string => `podcast-show-${slug}`,
+  podcastCategory: (name: string): string => `podcast-category-${lower(name)}`,
   jobType: (type: string): string => `job-type-${type}`,
   organisation: (id: number | string): string => `organisation-${id}`,
-  opportunity: (id: number | string): string => `opportunity-${id}`,
+  volunteeringCategory,
+  /** A volunteering role wears its category's colour, as on its card. */
+  opportunity: (id: number | string, categoryName?: string | null): string =>
+    categoryName && categoryName.trim() !== '' ? volunteeringCategory(categoryName) : `opportunity-${id}`,
   goal: (id: number | string): string => `goal-${id}`,
   idea: (id: number | string): string => `idea-${id}`,
   challenge: (id: number | string): string => `challenge-${id}`,
   campaign: (id: number | string): string => `campaign-${id}`,
   groupExchange: (id: number | string): string => `group-exchange-${id}`,
-  article: (id: number | string): string => `article-${id}`,
+  kbCategory,
+  /** An article wears its knowledge-base category's colour, as in the list. */
+  article: (article: { id: number | string; category_name?: string | null }): string =>
+    kbCategory(article.category_name),
+  /** Events in one category share a colour (events page date tiles, Explore). */
+  event: (id: number | string, categoryId?: number | string | null): string =>
+    categoryId != null ? `event-category-${categoryId}` : `event-${id}`,
+  /** Blog posts in one category share a colour (blog page, Explore). */
+  blogPost: (id: number | string, categoryId?: number | string | null): string =>
+    categoryId != null ? `category-${categoryId}` : `post-${id}`,
+  marketplaceCategory: (slugOrId: number | string): string => `marketplace-${slugOrId}`,
+  collection: (id: number | string): string => `collection-${id}`,
+  skillsCategory: (name: string): string => `skills-category-${lower(name)}`,
+  /** A federated listing's colour follows its category, or its type when it has none. */
+  federatedListing: (categoryOrType: string): string => `listing-category-${lower(categoryOrType)}`,
+  federatedCommunity: (id: number | string): string => `federated-community-${id}`,
 } as const;

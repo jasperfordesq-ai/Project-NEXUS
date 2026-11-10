@@ -193,6 +193,12 @@ describe('KnowledgeBasePage', () => {
     expect(headings).toHaveLength(2);
     headings.forEach((heading) => expect(heading.getAttribute('data-colour')).toBeTruthy());
     expect(tiles.map((tile) => tile.getAttribute('data-colour'))).toEqual(headings.map((h) => h.getAttribute('data-colour')));
+    // The article's own page uses the same seed (warmth plan W2).
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    const expected = [mockArticle, mockArticle2]
+      .map((article) => colourForSeed(coverSeed.article(article), paletteFor(null)));
+    expect(headings.map((h) => h.getAttribute('data-colour')).sort()).toEqual(expected.sort());
   });
 
   it('displays article excerpts when present', async () => {

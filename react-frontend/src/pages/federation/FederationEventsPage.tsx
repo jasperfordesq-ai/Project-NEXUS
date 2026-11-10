@@ -51,6 +51,7 @@ import { FederationOptInNotice } from '@/components/federation/FederationOptInNo
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
 import type { FederatedEvent, FederationPartner } from '@/types/api';
+import { coverSeed } from '@/lib/coverSeeds';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const PER_PAGE = 20;
@@ -380,7 +381,7 @@ function FederatedEventCard({ event }: FederatedEventCardProps) {
   const { t } = useTranslation('federation');
   const palette = useSitePalette();
   // Events from one partner community share its colour (were all amber).
-  const communityTone = categoryColour(colourForSeed(`federated-community-${event.timebank.id}`, palette)).band;
+  const communityTone = categoryColour(colourForSeed(coverSeed.federatedCommunity(event.timebank.id), palette)).band;
   const startDate = new Date(event.start_date);
   const isPast = startDate < new Date();
   const avatarSrc = resolveAvatarUrl(event.organizer?.avatar);

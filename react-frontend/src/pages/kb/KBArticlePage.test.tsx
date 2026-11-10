@@ -222,15 +222,16 @@ describe('KBArticlePage', () => {
   });
 
   // AWID: "attractive visuals". The article opened with plain text; it now
-  // opens with a cover in the article's own colour.
-  it('opens with a cover in the article\'s own colour', async () => {
+  // opens with a cover — in its category's colour, the colour its heading and
+  // tile wear in the knowledge base list (warmth plan W2, 10 Nov 2026).
+  it('opens with a cover in its category\'s colour, as in the list', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: mockArticle });
     render(<KBArticlePage />);
     const cover = await screen.findByTestId('kb-article-cover');
     const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
     const { coverSeed } = await import('@/lib/coverSeeds');
     expect(cover).toHaveAttribute('aria-hidden', 'true');
-    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.article(42), paletteFor(null)));
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.kbCategory('Guides'), paletteFor(null)));
   });
 
   it('submits helpful feedback when thumbs up is clicked', async () => {

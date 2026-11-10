@@ -185,15 +185,25 @@ describe('OpportunityDetailPage', () => {
   });
 
   // AWID: "attractive visuals". The page opened with plain text; it now opens
-  // with a cover in the opportunity's own colour, the same wherever it appears.
-  it("opens with a cover in the opportunity's own colour", async () => {
+  // with a cover — in its category's colour, the colour of the category label
+  // on its card in the volunteering list (warmth plan W2, 10 Nov 2026).
+  it("opens with a cover in its category's colour, as on its card", async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: mockOpportunity });
     render(<OpportunityDetailPage />);
     const cover = await screen.findByTestId('opportunity-detail-cover');
     const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
     const { coverSeed } = await import('@/lib/coverSeeds');
     expect(cover).toHaveAttribute('aria-hidden', 'true');
-    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.opportunity(42), paletteFor(null)));
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.volunteeringCategory('Environment'), paletteFor(null)));
+  });
+
+  it('opens with a colour of its own when it has no category', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...mockOpportunity, category: null } });
+    render(<OpportunityDetailPage />);
+    const cover = await screen.findByTestId('opportunity-detail-cover');
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.opportunity(42, null), paletteFor(null)));
   });
 
   it('shows error state when API fails', async () => {

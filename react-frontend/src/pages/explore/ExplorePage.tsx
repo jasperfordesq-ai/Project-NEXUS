@@ -72,6 +72,7 @@ import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import Smile from 'lucide-react/icons/smile';
 import Target from 'lucide-react/icons/target';
 import { ExploreSection, ExploreStatCard, HorizontalScroll } from '@/components/explore';
+import { coverSeed } from '@/lib/coverSeeds';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -135,6 +136,8 @@ interface UpcomingEvent {
   is_online: boolean;
   max_attendees: number | null;
   rsvp_count: number;
+  /** Its category, so it wears the colour it has on the events page. */
+  category_id?: number | null;
 }
 
 interface TopContributor {
@@ -218,6 +221,8 @@ interface BlogPost {
   view_count: number;
   author_name: string;
   author_avatar: string | null;
+  /** Its category, so it wears the colour it has on the blog page. */
+  category?: { id: number; name: string } | null;
 }
 
 interface VolunteeringOpportunity {
@@ -1061,7 +1066,7 @@ export default function ExplorePage() {
                           <ThemedCover
                             data-testid="explore-event-cover"
                             size="sm"
-                            colour={colourForSeed(`event-${event.id}`, palette)}
+                            colour={colourForSeed(coverSeed.event(event.id, event.category_id), palette)}
                             icon={CalendarDays}
                           />
                         </div>
@@ -1478,7 +1483,7 @@ export default function ExplorePage() {
                         <ThemedCover
                           data-testid="explore-blog-cover"
                           size="sm"
-                          colour={colourForSeed(`blog-${post.id}`, palette)}
+                          colour={colourForSeed(coverSeed.blogPost(post.id, post.category?.id), palette)}
                           icon={BookOpen}
                         />
                       </div>
@@ -1491,10 +1496,13 @@ export default function ExplorePage() {
                         <Clock className="w-3.5 h-3.5" aria-hidden="true" />
                         {t('blog_posts.read_time', { count: post.reading_time || 3 })}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <Eye className="w-3.5 h-3.5" aria-hidden="true" />
-                        {t('blog_posts.views', { count: post.view_count })}
-                      </span>
+                      {/* The blog keeps no view count; "0 views" on every post said nothing. */}
+                      {post.view_count > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+                          {t('blog_posts.views', { count: post.view_count })}
+                        </span>
+                      )}
                     </div>
                   </CardBody>
                 </Card>

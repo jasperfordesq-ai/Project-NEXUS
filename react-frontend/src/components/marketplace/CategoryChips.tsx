@@ -11,6 +11,7 @@ import { DynamicIcon, ICON_MAP } from '@/components/ui/DynamicIcon';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import type { MarketplaceCategory } from '@/types/marketplace';
+import { coverSeed } from '@/lib/coverSeeds';
 
 interface CategoryChipsProps {
   categories: MarketplaceCategory[];
@@ -51,7 +52,7 @@ export function CategoryChips({ categories, activeId, onSelect }: CategoryChipsP
       {categories.map((category) => {
         // Each category has its own colour from the community palette, the
         // same on every visit (AWID: "clear categories"; were all one grey).
-        const colour = colourForSeed(`marketplace-${category.slug || category.id}`, palette);
+        const colour = colourForSeed(coverSeed.marketplaceCategory(category.slug || category.id), palette);
         const hasIcon = Boolean(category.icon && ICON_MAP[category.icon]);
         return (
           <ToggleButton
