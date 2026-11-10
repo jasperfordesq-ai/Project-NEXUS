@@ -38,7 +38,7 @@
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-card);
   transition: all var(--transition-slow);
   overflow: hidden;
   max-width: 100%;
@@ -48,7 +48,7 @@
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-card);
   transition: all var(--transition-slow);
   overflow: hidden;
   max-width: 100%;
@@ -57,7 +57,7 @@
 .glass-card-hover:hover {
   background: var(--glass-bg-hover);
   border-color: var(--glass-border-hover);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .glass-card:focus-visible,
@@ -65,7 +65,7 @@
   border-color: var(--glass-border-focus);
   box-shadow:
     0 0 0 3px var(--glow-primary-subtle),
-    0 16px 40px rgba(0, 0, 0, 0.2);
+    var(--shadow-card);
 }
 
 
@@ -178,10 +178,35 @@
 }
 
 /* ─────────────────────────────────────────────
+   HERO GLOW (warmth plan P1)
+   The soft blurred patch of a second colour in a page opening's corner
+   (components/public/PublicPageHero.tsx sets --glow-hue). It is a SOLID pale
+   mix, not a see-through layer of colour: laid over the panel's tint, a
+   see-through -400 at 25% darkened it enough to take a small label from
+   4.64:1 to 3.88:1 (measured with a pale-yellow community colour, 10 Nov
+   2026). At these strengths the patch is no darker than the light panel and
+   no brighter than the dark one, for every hue on the colour wheel — pinned
+   by src/test/hero-glow.contract.test.ts. The dark share is set by the
+   dimmest dark panel, a red community's: at 22% an amber glow over it took a
+   red "Delete all" label to 4.43:1.
+   ───────────────────────────────────────────── */
+.hero-glow {
+  background-color: color-mix(in oklab, var(--glow-hue, var(--companion)) 16%, white);
+}
+
+:root[data-theme="dark"] .hero-glow {
+  background-color: color-mix(in oklab, var(--glow-hue, var(--companion)) 12%, var(--background));
+}
+
+html[data-high-contrast="true"] .hero-glow {
+  display: none;
+}
+
+/* ─────────────────────────────────────────────
    TEXT GRADIENT UTILITIES
    ───────────────────────────────────────────── */
 .text-gradient {
-  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-gradient-end) 50%, var(--color-accent) 100%);
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-gradient-end) 45%, var(--companion-text) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -195,7 +220,7 @@
 }
 
 .text-gradient-accent {
-  background: linear-gradient(135deg, var(--color-secondary), var(--color-accent));
+  background: linear-gradient(135deg, var(--color-secondary), var(--companion-text));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

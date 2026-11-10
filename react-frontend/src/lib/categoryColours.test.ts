@@ -8,11 +8,61 @@ import {
   accentLineClasses,
   categoryColour,
   colourForSeed,
+  companionColourName,
+  companionPaint,
   paletteFor,
   themeColourNames,
   HUE_WHEEL,
 } from './categoryColours';
 import { getContrastRatio } from './colorContrast';
+import fs from 'node:fs';
+import path from 'node:path';
+
+describe('companionColourName — the second colour that goes with the community colour', () => {
+  it('is a near neighbour on the colour wheel, so the two blend rather than clash', () => {
+    expect(companionColourName('#0f766e')).toBe('sky');
+    expect(companionColourName('#a3195b')).toBe('red');
+    expect(companionColourName('#6366f1')).toBe('pink');
+  });
+
+  it("is never the community's own hue, and is one of the palette's colours", () => {
+    for (const accent of ['#a3195b', '#0f766e', '#6366f1', '#facc15', '#ef4444', '#16a34a', '#1e3a8a']) {
+      const palette = paletteFor(accent);
+      expect(companionColourName(accent)).not.toBe(palette[0]);
+      expect(palette).toContain(companionColourName(accent));
+    }
+  });
+
+  it('uses the standard colour when there is none, or it is invalid, or it is grey', () => {
+    expect(companionColourName(null)).toBe('pink');
+    expect(companionColourName('not-a-colour')).toBe('pink');
+    expect(companionColourName('#777777')).toBe('pink');
+  });
+});
+
+describe('companionPaint — the companion colour as a CSS value', () => {
+  it('is the -500 shade on the light theme and the lighter -400 on the dark theme', () => {
+    expect(companionPaint('#0f766e', 'light')).toBe('var(--color-sky-500)');
+    expect(companionPaint('#0f766e', 'dark')).toBe('var(--color-sky-400)');
+  });
+
+  it('only names colours Tailwind defines and tokens.css keeps, never indigo or purple', () => {
+    const theme = fs.readFileSync(path.resolve(__dirname, '../../node_modules/tailwindcss/theme.css'), 'utf8');
+    const tokens = fs.readFileSync(path.resolve(__dirname, '../styles/tokens.css'), 'utf8');
+    for (const { name } of HUE_WHEEL) {
+      for (const mode of ['light', 'dark'] as const) {
+        const paint = companionPaint(null, mode, name);
+        const variable = /^var\((--color-[a-z]+-\d+)\)$/.exec(paint)?.[1];
+        expect(variable, paint).toBeDefined();
+        expect(theme).toContain(`${variable}:`);
+        // Tailwind drops theme variables that no utility uses; tokens.css
+        // names each shade so the companion colour never resolves to nothing.
+        expect(tokens, `${variable} is kept in tokens.css`).toContain(`var(${variable})`);
+        expect(paint).not.toMatch(/indigo|purple/);
+      }
+    }
+  });
+});
 
 const RASPBERRY = '#a3195b';
 const TEAL = '#0f766e';

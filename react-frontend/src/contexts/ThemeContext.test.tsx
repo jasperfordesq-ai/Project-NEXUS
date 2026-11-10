@@ -296,6 +296,27 @@ describe('ThemeContext', () => {
       expect(document.documentElement.style.getPropertyValue('--accent-foreground')).toBe('#ffffff');
     });
 
+    it('brings a companion colour with it: a near neighbour on the colour wheel', async () => {
+      const companion = () => document.documentElement.style.getPropertyValue('--companion');
+      const { rerender } = render(
+        <ThemeProvider>
+          <CommunityProbe colour="#0f766e" />
+        </ThemeProvider>
+      );
+
+      await act(async () => {});
+      // Teal's companion is sky; the standard colour's is pink.
+      expect(companion()).toMatch(/^var\(--color-sky-[45]00\)$/);
+
+      rerender(
+        <ThemeProvider>
+          <CommunityProbe colour={null} />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(companion()).toMatch(/^var\(--color-pink-[45]00\)$/);
+    });
+
     it('steps aside for a colour the member picked themselves', async () => {
       render(
         <ThemeProvider>

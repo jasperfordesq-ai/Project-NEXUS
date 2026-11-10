@@ -29,6 +29,7 @@ import { logWarn } from '@/lib/logger';
 import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageSetJSON } from '@/lib/safeStorage';
 import { AA_NORMAL_TEXT_CONTRAST, ensureContrast, getAccessibleForegroundColor } from '@/lib/colorContrast';
 import { SiteAccentContext } from '@/contexts/SiteAccentContext';
+import { companionPaint } from '@/lib/categoryColours';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -199,6 +200,7 @@ function applyPreferencesToDOM(
   accent: string,
   accentStrong: string,
   resolvedTheme: ResolvedTheme,
+  companion: string,
 ): void {
   if (typeof document === 'undefined') return;
 
@@ -210,6 +212,10 @@ function applyPreferencesToDOM(
   // HeroUI's primary buttons via index.css). Guarded by
   // src/test/accent-white-text.contract.test.ts.
   html.style.setProperty('--accent-strong', accentStrong);
+
+  // The colour that goes with it (warmth plan P1): decoration only — soft
+  // glows and gradient ends. Never text, never under text.
+  html.style.setProperty('--companion', companion);
 
   // A phone's browser bar wears the community colour on the light theme; on
   // the dark theme it stays the page colour, so the bar does not glare.
@@ -365,10 +371,13 @@ export function ThemeProvider({
     [baseAccent],
   );
 
+  // The second, decorative colour: a near neighbour of the colour in force.
+  const companion = useMemo(() => companionPaint(baseAccent, resolvedTheme), [baseAccent, resolvedTheme]);
+
   // Apply preferences to DOM when they change
   useEffect(() => {
-    applyPreferencesToDOM(preferences, effectiveAccent, accentStrong, resolvedTheme);
-  }, [preferences, effectiveAccent, accentStrong, resolvedTheme]);
+    applyPreferencesToDOM(preferences, effectiveAccent, accentStrong, resolvedTheme, companion);
+  }, [preferences, effectiveAccent, accentStrong, resolvedTheme, companion]);
 
   const setCommunityAccent = useCallback((color: string | null) => {
     setCommunityAccentState(typeof color === 'string' && HEX_COLOUR.test(color) ? color.toLowerCase() : null);

@@ -209,6 +209,57 @@ export function paletteFor(accent?: string | null): string[] {
   return palette;
 }
 
+/**
+ * How far round the wheel the companion colour sits from the community's own
+ * hue: two steps, a near neighbour. Close enough that a gradient from one to
+ * the other blends (violet into pink, green into teal, red into amber) instead
+ * of passing through grey, as a gradient to the opposite colour would.
+ */
+const COMPANION_STEP = 2;
+
+/**
+ * The name of the colour that goes with the community colour: a second,
+ * decorative colour for gradients and soft glows (warmth plan P1). Before it,
+ * the site's "second colour" was a fixed cyan whatever the community chose.
+ */
+export function companionColourName(accent?: string | null): string {
+  const size = HUE_WHEEL.length;
+  return HUE_WHEEL[(nearestWheelIndex(accent) + COMPANION_STEP) % size]!.name;
+}
+
+// Tailwind's own colour variables, written out in full so nothing is built at
+// run time. tokens.css keeps every one of them in the compiled CSS (Tailwind
+// drops theme variables no utility uses) — see its "companion shades" block.
+const COMPANION_PAINT: Record<string, { light: string; dark: string }> = {
+  red: { light: 'var(--color-red-500)', dark: 'var(--color-red-400)' },
+  orange: { light: 'var(--color-orange-500)', dark: 'var(--color-orange-400)' },
+  amber: { light: 'var(--color-amber-500)', dark: 'var(--color-amber-400)' },
+  yellow: { light: 'var(--color-yellow-500)', dark: 'var(--color-yellow-400)' },
+  green: { light: 'var(--color-green-500)', dark: 'var(--color-green-400)' },
+  emerald: { light: 'var(--color-emerald-500)', dark: 'var(--color-emerald-400)' },
+  teal: { light: 'var(--color-teal-500)', dark: 'var(--color-teal-400)' },
+  cyan: { light: 'var(--color-cyan-500)', dark: 'var(--color-cyan-400)' },
+  sky: { light: 'var(--color-sky-500)', dark: 'var(--color-sky-400)' },
+  blue: { light: 'var(--color-blue-500)', dark: 'var(--color-blue-400)' },
+  violet: { light: 'var(--color-violet-500)', dark: 'var(--color-violet-400)' },
+  fuchsia: { light: 'var(--color-fuchsia-500)', dark: 'var(--color-fuchsia-400)' },
+  pink: { light: 'var(--color-pink-500)', dark: 'var(--color-pink-400)' },
+  rose: { light: 'var(--color-rose-500)', dark: 'var(--color-rose-400)' },
+};
+
+/**
+ * The companion colour as a CSS value for `--companion` (set by ThemeContext).
+ * Decoration only: it is never used as text and never carries text.
+ * `name` overrides the lookup (tests walk every colour with it).
+ */
+export function companionPaint(
+  accent: string | null | undefined,
+  theme: 'light' | 'dark',
+  name: string = companionColourName(accent),
+): string {
+  return (COMPANION_PAINT[name] ?? COMPANION_PAINT.pink!)[theme];
+}
+
 // Gradient end stops for the header line, written out so Tailwind sees them.
 const LINE_FROM: Record<string, string> = {
   red: 'from-red-500 dark:from-red-400', orange: 'from-orange-500 dark:from-orange-400',

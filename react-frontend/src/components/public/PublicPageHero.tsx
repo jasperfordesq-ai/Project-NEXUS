@@ -63,38 +63,44 @@ const accentClasses = {
     chipColor: 'success',
     chipText: 'text-emerald-800! dark:text-emerald-200!',
     panel: 'bg-emerald-500/10 dark:bg-emerald-500/15',
+    glow: '[--glow-hue:var(--color-teal-500)] dark:[--glow-hue:var(--color-teal-400)]',
   },
   indigo: {
-    icon: 'from-accent/20 to-sky-500/20 text-accent dark:text-accent',
+    icon: 'from-accent/20 to-companion/20 text-accent dark:text-accent',
     chipColor: 'accent',
     chipText: '',
     panel: 'bg-accent-soft',
+    glow: '[--glow-hue:var(--companion)]',
   },
   amber: {
     icon: 'from-amber-500/20 to-orange-500/20 text-amber-500 dark:text-amber-300',
     chipColor: 'warning',
     chipText: 'text-amber-800! dark:text-amber-200!',
     panel: 'bg-amber-500/10 dark:bg-amber-500/15',
+    glow: '[--glow-hue:var(--color-orange-500)] dark:[--glow-hue:var(--color-orange-400)]',
   },
   blue: {
     icon: 'from-blue-500/20 to-accent-gradient-end/20 text-blue-500 dark:text-blue-300',
     chipColor: 'accent',
     chipText: '',
     panel: 'bg-blue-500/10 dark:bg-blue-500/15',
+    glow: '[--glow-hue:var(--color-violet-500)] dark:[--glow-hue:var(--color-violet-400)]',
   },
   rose: {
     icon: 'from-rose-500/20 to-fuchsia-500/20 text-rose-500 dark:text-rose-300',
     chipColor: 'danger',
     chipText: 'text-rose-800! dark:text-rose-200!',
     panel: 'bg-rose-500/10 dark:bg-rose-500/15',
+    glow: '[--glow-hue:var(--color-fuchsia-500)] dark:[--glow-hue:var(--color-fuchsia-400)]',
   },
   // Used on every page once a community has chosen its own colour: HeroUI's
   // accent token only, so no fixed sky/cyan clashes with the community colour.
   community: {
-    icon: 'from-accent/20 to-accent/5 text-accent dark:text-accent',
+    icon: 'from-accent/20 to-companion/20 text-accent dark:text-accent',
     chipColor: 'accent',
     chipText: '',
     panel: 'bg-accent-soft',
+    glow: '[--glow-hue:var(--companion)]',
   },
 } satisfies Record<string, {
   icon: string;
@@ -106,6 +112,14 @@ const accentClasses = {
   chipText: string;
   /** The panel's soft tint (light and dark). Text on it uses the darker secondary token. */
   panel: string;
+  /**
+   * The hue of the soft blurred glow in the panel's top corner: the colour that
+   * goes with the panel's own (the community's companion colour once it has
+   * chosen one) — warmth plan P1. `.hero-glow` (styles/glass.css) paints it
+   * pale on the light theme and dim on the dark one, so a label that happens
+   * to sit over it reads as well as it does on the plain panel.
+   */
+  glow: string;
 }>;
 
 export function PublicPageHero({
@@ -136,7 +150,12 @@ export function PublicPageHero({
       data-size={size}
       className={`relative overflow-hidden rounded-3xl ${sized.section} ${classes.panel}`}
     >
-      <div className={sized.layout}>
+      <div
+        aria-hidden="true"
+        data-hero-glow="true"
+        className={`hero-glow pointer-events-none absolute -right-16 -top-24 size-48 rounded-full blur-3xl sm:size-72 ${classes.glow}`}
+      />
+      <div className={`relative ${sized.layout}`}>
         <div className="min-w-0 max-w-3xl">
           {/* The icon goes in startContent, NOT in children: children are wrapped
               in <Chip.Label>, and Tailwind's reset makes an <svg> display:block,
