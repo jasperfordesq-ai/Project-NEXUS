@@ -323,7 +323,7 @@ export function PostTab({ onSuccess, onClose, isOpen, groupId, templateData, onC
 
       {/* Schedule indicator */}
       {isScheduled && scheduleDate && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent-soft dark:bg-accent-soft text-accent dark:text-accent text-sm">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent-soft dark:bg-accent-soft text-accent-soft-foreground text-sm">
           <Calendar className="w-4 h-4 flex-shrink-0" />
           <span>{t('compose.schedule_set', { date: toScheduleIso(scheduleDate, scheduleTime) })}</span>
           <Button

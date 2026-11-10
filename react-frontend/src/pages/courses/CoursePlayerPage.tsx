@@ -127,7 +127,7 @@ export default function CoursePlayerPage() {
                 fullWidth
                 onPress={() => setActiveLessonId(lesson.id)}
                 className={`h-auto justify-start gap-2 rounded-md px-3 py-2 text-left text-sm font-normal transition-colors ${
-                  active ? 'bg-accent-soft text-accent' : 'text-theme-primary hover:bg-[var(--color-surface-2)]'
+                  active ? 'bg-accent-soft text-accent-soft-foreground' : 'text-theme-primary hover:bg-[var(--color-surface-2)]'
                 }`}
               >
                 {done

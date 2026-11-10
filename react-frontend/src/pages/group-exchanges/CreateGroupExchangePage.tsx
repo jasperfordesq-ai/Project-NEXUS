@@ -517,7 +517,7 @@ export function CreateGroupExchangePage() {
                   ${isComplete
                     ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white'
                     : isCurrent
-                      ? 'bg-accent/20 text-accent ring-2 ring-accent'
+                      ? 'bg-accent/20 text-accent-soft-foreground ring-2 ring-accent'
                       : 'bg-theme-elevated text-theme-subtle'}
                 `}>
                   {isComplete ? <CheckCircle className="w-4 h-4" aria-hidden="true" /> : stepNum}

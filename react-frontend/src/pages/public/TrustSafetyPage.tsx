@@ -160,7 +160,7 @@ export function TrustSafetyPage() {
                       className="text-theme-muted flex gap-3"
                     >
                       <span
-                        className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/10 text-accent text-xs font-semibold inline-flex items-center justify-center mt-0.5"
+                        className="flex-shrink-0 w-6 h-6 rounded-full bg-accent/10 text-accent-soft-foreground text-xs font-semibold inline-flex items-center justify-center mt-0.5"
                         aria-hidden="true"
                       >
                         {i + 1}

@@ -236,7 +236,7 @@ export function ConnectionSuggestionsWidget({ layout = 'sidebar' }: ConnectionSu
                   <Button
                     size="sm"
                     variant="flat"
-                    className="w-full text-[10px] bg-accent/10 text-accent hover:bg-accent/20"
+                    className="w-full text-[10px] bg-accent/10 text-accent-soft-foreground hover:bg-accent/20"
                     startContent={<UserPlus className="w-3 h-3" />}
                     onPress={() => handleConnect(suggestion)}
                     isLoading={connectingIds.has(suggestion.id)}
@@ -334,7 +334,7 @@ export function ConnectionSuggestionsWidget({ layout = 'sidebar' }: ConnectionSu
               <Button
                 size="sm"
                 variant="flat"
-                className="text-[10px] bg-accent/10 text-accent hover:bg-accent/20 flex-shrink-0"
+                className="text-[10px] bg-accent/10 text-accent-soft-foreground hover:bg-accent/20 flex-shrink-0"
                 startContent={<UserPlus className="w-3 h-3" />}
                 onPress={() => handleConnect(suggestion)}
                 isLoading={connectingIds.has(suggestion.id)}

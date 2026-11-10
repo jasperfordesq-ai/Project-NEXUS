@@ -127,7 +127,7 @@ export function ImpactSummaryPage() {
             {[
               { value: '€16', label: t('impact_summary.stat_return_label'), icon: TrendingUp, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-500/15' },
               { value: formatNumber(1, { style: 'percent', maximumFractionDigits: 0 }), label: t('impact_summary.stat_wellbeing_label'), icon: Heart, color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-500/15' },
-              { value: formatNumber(0.95, { style: 'percent', maximumFractionDigits: 0 }), label: t('impact_summary.stat_connected_label'), icon: Users, color: 'text-accent dark:text-accent', bg: 'bg-accent/15' },
+              { value: formatNumber(0.95, { style: 'percent', maximumFractionDigits: 0 }), label: t('impact_summary.stat_connected_label'), icon: Users, color: 'text-accent-soft-foreground', bg: 'bg-accent/15' },
               { value: '€803K', label: t('impact_summary.stat_value_label'), icon: ShieldCheck, color: 'text-[var(--color-warning)]', bg: 'bg-amber-500/15' },
             ].map((stat) => (
               <motion.div key={stat.label} variants={fadeInUp}>

@@ -86,7 +86,7 @@ export function PeopleYouMayKnowWidget({ members }: PeopleYouMayKnowWidgetProps)
               to={tenantPath(`/profile/${member.id}`)}
               size="sm"
               variant="flat"
-              className="text-xs text-accent bg-accent/10 hover:bg-accent/20 flex-shrink-0"
+              className="text-xs text-accent-soft-foreground bg-accent/10 hover:bg-accent/20 flex-shrink-0"
             >
               {t('sidebar.people.view')}
             </Button>

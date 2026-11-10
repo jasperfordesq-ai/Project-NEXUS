@@ -215,7 +215,7 @@ export function BadgeConfiguration() {
                       <CardBody className="gap-3 p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent-soft-foreground">
                               <IconComp size={20} />
                             </div>
                             <div className="min-w-0">

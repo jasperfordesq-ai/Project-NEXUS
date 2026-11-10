@@ -132,8 +132,8 @@ interface StatusConfig {
 const STATUS_CONFIGS: Record<GroupExchangeStatus, StatusConfig> = {
   draft: { color: 'default', bgClass: 'bg-gray-500/20 text-gray-600 dark:text-gray-400' },
   pending_participants: { color: 'warning', bgClass: 'bg-amber-500/20 text-amber-700 dark:text-amber-400' },
-  pending_broker: { color: 'secondary', bgClass: 'bg-accent/20 text-accent dark:text-accent' },
-  active: { color: 'primary', bgClass: 'bg-accent/20 text-accent dark:text-accent' },
+  pending_broker: { color: 'secondary', bgClass: 'bg-accent/20 text-accent-soft-foreground' },
+  active: { color: 'primary', bgClass: 'bg-accent/20 text-accent-soft-foreground' },
   pending_confirmation: { color: 'warning', bgClass: 'bg-amber-500/20 text-amber-700 dark:text-amber-400' },
   completed: { color: 'success', bgClass: 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' },
   cancelled: { color: 'danger', bgClass: 'bg-red-500/20 text-red-600 dark:text-red-400' },

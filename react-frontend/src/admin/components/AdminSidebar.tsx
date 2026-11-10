@@ -907,7 +907,7 @@ export function AdminSidebar({ collapsed = false, onToggle = () => undefined }: 
         aria-current={active ? 'page' : undefined}
         className={`group relative flex min-h-9 items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
           active
-            ? 'bg-accent/10 text-accent font-semibold shadow-sm'
+            ? 'bg-accent/10 text-accent-soft-foreground font-semibold shadow-sm'
             : 'text-muted hover:bg-surface-secondary hover:text-foreground'
         } ${compact ? 'justify-center px-2' : ''}`}
       >
@@ -931,7 +931,7 @@ export function AdminSidebar({ collapsed = false, onToggle = () => undefined }: 
           aria-label={section.label}
           aria-current={active ? 'page' : undefined}
           className={`flex items-center justify-center rounded-lg px-2 py-2 transition-colors ${
-            active ? 'bg-accent/10 text-accent' : 'text-muted hover:bg-surface-secondary hover:text-foreground'
+            active ? 'bg-accent/10 text-accent-soft-foreground' : 'text-muted hover:bg-surface-secondary hover:text-foreground'
           }`}
         >
           <Icon size={18} aria-hidden="true" />
@@ -976,7 +976,7 @@ export function AdminSidebar({ collapsed = false, onToggle = () => undefined }: 
           itemClasses={{
             base: 'py-0',
             trigger: `rounded-lg px-3 py-2 text-sm transition-colors ${
-              active ? 'bg-accent/10 text-accent font-semibold' : 'text-muted hover:bg-surface-secondary hover:text-foreground'
+              active ? 'bg-accent/10 text-accent-soft-foreground font-semibold' : 'text-muted hover:bg-surface-secondary hover:text-foreground'
             }`,
             title: 'text-sm font-medium',
             content: 'pb-1 pt-0',
@@ -1093,7 +1093,7 @@ export function AdminSidebar({ collapsed = false, onToggle = () => undefined }: 
                       onClick={() => setSearchQuery('')}
                       className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors ${
                         isActive(item.href)
-                          ? 'bg-accent/10 text-accent font-semibold'
+                          ? 'bg-accent/10 text-accent-soft-foreground font-semibold'
                           : 'text-muted hover:bg-surface-secondary hover:text-foreground'
                       }`}
                     >
@@ -1148,7 +1148,7 @@ export function AdminSidebar({ collapsed = false, onToggle = () => undefined }: 
               aria-current={isActive(caringCommunity.href ?? '/caring') ? 'page' : undefined}
               className={`mb-1 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
                 isActive(caringCommunity.href ?? '/caring')
-                  ? 'border-accent/30 bg-accent/10 text-accent'
+                  ? 'border-accent/30 bg-accent/10 text-accent-soft-foreground'
                   : 'border-warning/30 bg-warning/10 text-warning hover:bg-warning/15'
               } ${collapsed ? 'justify-center' : ''}`}
               title={caringCommunity.label}

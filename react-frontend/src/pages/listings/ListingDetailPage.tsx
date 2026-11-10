@@ -898,7 +898,7 @@ export function ListingDetailPage() {
             </Button>
             <Button
               variant="secondary"
-              className={`w-full ${showComments ? 'bg-accent/20 text-accent' : 'bg-theme-elevated text-theme-primary'}`}
+              className={`w-full ${showComments ? 'bg-accent/20 text-accent-soft-foreground' : 'bg-theme-elevated text-theme-primary'}`}
               startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}
               onPress={toggleComments}
               aria-expanded={showComments}
@@ -908,7 +908,7 @@ export function ListingDetailPage() {
             </Button>
             <Button
               variant="secondary"
-              className={`w-full ${isSaved ? 'bg-accent/20 text-accent' : 'bg-theme-elevated text-theme-primary'}`}
+              className={`w-full ${isSaved ? 'bg-accent/20 text-accent-soft-foreground' : 'bg-theme-elevated text-theme-primary'}`}
               startContent={isSaved ? <Bookmark className="w-4 h-4 fill-current" aria-hidden="true" /> : <Bookmark className="w-4 h-4" aria-hidden="true" />}
               onPress={() => void handleSave()}
               isDisabled={isSaving}
@@ -952,7 +952,7 @@ export function ListingDetailPage() {
             </Button>
             <Button
               variant="secondary"
-              className={`w-full ${showComments ? 'bg-accent/20 text-accent' : 'bg-theme-elevated text-theme-primary'}`}
+              className={`w-full ${showComments ? 'bg-accent/20 text-accent-soft-foreground' : 'bg-theme-elevated text-theme-primary'}`}
               startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}
               onPress={toggleComments}
               aria-expanded={showComments}
@@ -1171,7 +1171,7 @@ export function ListingDetailPage() {
                 key={tag}
                 size="sm"
                 variant="secondary"
-                className="max-w-full bg-accent/10 text-accent"
+                className="max-w-full bg-accent/10 text-accent-soft-foreground"
               >
                 <span className="truncate">{tag}</span>
               </Chip>

@@ -119,7 +119,7 @@ const categoryColorMap: Record<string, string> = {
   blue: 'bg-blue-500/10 text-[var(--color-info)]',
   gray: 'bg-gray-500/10 text-gray-500',
   fuchsia: 'bg-fuchsia-500/10 text-fuchsia-500',
-  purple: 'bg-accent/10 text-accent',
+  purple: 'bg-accent/10 text-accent-soft-foreground',
   green: 'bg-emerald-500/10 text-emerald-500',
   red: 'bg-rose-500/10 text-rose-500',
   yellow: 'bg-amber-500/10 text-[var(--color-warning)]',

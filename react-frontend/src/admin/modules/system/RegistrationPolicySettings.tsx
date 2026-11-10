@@ -391,7 +391,7 @@ export function RegistrationPolicySettings() {
             )}
 
             {policy.registration_mode === 'waitlist' && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-accent-soft text-accent dark:bg-accent-soft dark:text-accent">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-accent-soft text-accent-soft-foreground dark:bg-accent-soft">
                 <Users size={16} className="shrink-0" />
                 <span className="text-sm">{t('system.reg.waitlist_info')}</span>
               </div>

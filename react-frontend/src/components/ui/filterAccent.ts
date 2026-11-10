@@ -50,11 +50,11 @@ export interface FilterAccentClasses {
 const THEME_ACCENT: FilterAccentClasses = {
   filtersButtonActive: 'bg-accent-strong text-white shadow-sm',
   filtersButtonIdle:
-    'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent',
-  appliedChip: 'bg-accent/15 text-accent transition-colors hover:bg-accent/25',
-  chip: 'hover:bg-accent/5 hover:text-accent data-[selected=true]:bg-accent-strong!',
+    'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent-soft-foreground',
+  appliedChip: 'bg-accent/15 text-accent-soft-foreground transition-colors hover:bg-accent/25',
+  chip: 'hover:bg-accent/5 hover:text-accent-soft-foreground data-[selected=true]:bg-accent-strong!',
   applyButton: 'bg-accent-strong text-white shadow-sm hover:bg-accent-strong-end',
-  linkAction: 'text-accent hover:bg-accent/10',
+  linkAction: 'text-accent-soft-foreground hover:bg-accent/10',
 };
 
 /**

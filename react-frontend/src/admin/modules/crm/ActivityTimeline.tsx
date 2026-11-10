@@ -71,13 +71,13 @@ const ACTIVITY_ICONS: Record<ActivityType, LucideIcon> = {
 // The tinted tile in front of each entry. Only the theme's soft tokens are
 // used: numbered shades (bg-warning-50 …) do not exist in this theme.
 const ACTIVITY_TILE_CLASSES: Record<ActivityType, string> = {
-  login: 'bg-accent-soft text-accent',
+  login: 'bg-accent-soft text-accent-soft-foreground',
   signup: 'bg-success-soft text-[color:var(--success-soft-foreground)]',
   listing_created: 'bg-warning-soft text-[color:var(--warning-soft-foreground)]',
   exchange_completed: 'bg-success-soft text-[color:var(--success-soft-foreground)]',
   note_added: 'bg-surface-secondary text-foreground',
   task_created: 'bg-surface-secondary text-foreground',
-  profile_updated: 'bg-accent-soft text-accent',
+  profile_updated: 'bg-accent-soft text-accent-soft-foreground',
   group_joined: 'bg-warning-soft text-[color:var(--warning-soft-foreground)]',
 };
 const DEFAULT_TILE_CLASSES = 'bg-surface-secondary text-foreground';

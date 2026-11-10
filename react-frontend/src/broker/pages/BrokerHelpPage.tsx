@@ -265,7 +265,7 @@ function BrokerHelpIndex() {
           {sections.map((section) => (
             <Card key={section.id} className="rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
               <CardHeader className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent-soft-foreground">
                   <HelpIcon name={section.icon} className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">

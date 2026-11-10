@@ -229,7 +229,7 @@ export function LegalDocList() {
       {showEmptyState ? (
         <Card>
           <CardBody className="flex flex-col items-center text-center gap-4 py-14 px-6">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-accent-soft text-accent-soft-foreground">
               <Scale size={28} />
             </div>
             <div className="space-y-1 max-w-md">

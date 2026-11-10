@@ -87,7 +87,7 @@ const SEVERITY_BANNER_CLASSES: Record<FlagSeverity, string> = {
 };
 
 const SEVERITY_MEDALLION_CLASSES: Record<FlagSeverity, string> = {
-  info: 'bg-accent/10 text-accent',
+  info: 'bg-accent/10 text-accent-soft-foreground',
   warning: 'bg-warning/10 text-warning',
   concern: 'bg-danger/10 text-danger',
   urgent: 'bg-danger/10 text-danger',

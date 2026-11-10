@@ -96,7 +96,7 @@ export function HelpCardLink({
       <GlassCard className="h-full p-5 transition-colors group-hover:border-accent/40 group-hover:bg-theme-hover/30">
         <span className="flex items-start gap-4">
         {icon && (
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/12 text-accent">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/12 text-accent-soft-foreground">
             <HelpIcon name={icon} className="h-5 w-5" />
           </span>
         )}
@@ -119,7 +119,7 @@ export function HelpContactPanel() {
   return (
     <GlassCard className="flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-4">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/12 text-accent">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/12 text-accent-soft-foreground">
           <LifeBuoy className="h-5 w-5" aria-hidden="true" />
         </span>
         <div>

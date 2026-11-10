@@ -91,7 +91,7 @@ export function PostAnalyticsModal({ isOpen, onClose, postId }: PostAnalyticsMod
     { label: t('analytics.views'), value: data.views_count, icon: Eye, color: 'text-[var(--color-info)]', bg: 'bg-blue-500/10' },
     { label: t('analytics.likes'), value: data.likes_count, icon: Heart, color: 'text-rose-500', bg: 'bg-rose-500/10' },
     { label: t('analytics.comments'), value: data.comments_count, icon: MessageCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-    { label: t('analytics.shares'), value: data.shares_count, icon: Repeat2, color: 'text-accent', bg: 'bg-accent/10' },
+    { label: t('analytics.shares'), value: data.shares_count, icon: Repeat2, color: 'text-accent-soft-foreground', bg: 'bg-accent/10' },
     { label: t('analytics.reach'), value: data.reach_estimate, icon: Users, color: 'text-[var(--color-warning)]', bg: 'bg-amber-500/10' },
   ] : [];
 

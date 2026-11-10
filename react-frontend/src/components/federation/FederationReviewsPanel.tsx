@@ -106,12 +106,12 @@ function reviewerName(r: FederationReviewItem['reviewer']): string {
 function partnerChipClass(partnerId: number | string | undefined): string {
   // Deterministic color-coding by partner id
   const palette = [
-    'bg-accent/10 text-accent dark:text-accent',
+    'bg-accent/10 text-accent-soft-foreground',
     'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
     'bg-amber-500/10 text-amber-600 dark:text-amber-400',
     'bg-rose-500/10 text-rose-600 dark:text-rose-400',
     'bg-sky-500/10 text-sky-600 dark:text-sky-400',
-    'bg-accent/10 text-accent dark:text-accent',
+    'bg-accent/10 text-accent-soft-foreground',
   ];
   const str = String(partnerId ?? '0');
   let hash = 0;

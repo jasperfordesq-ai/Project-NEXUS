@@ -233,7 +233,7 @@ export function GamificationHub() {
             <Link to={tenantPath("/admin/gamification/campaigns")} className="block">
               <Card className="bg-surface-secondary hover:bg-surface-tertiary transition-colors cursor-pointer">
                 <CardBody className="flex flex-row items-center gap-3 p-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent-soft-foreground">
                     <Megaphone aria-hidden="true" size={20} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -263,7 +263,7 @@ export function GamificationHub() {
             <Link to={tenantPath("/admin/gamification/badge-config")} className="block">
               <Card className="bg-surface-secondary hover:bg-surface-tertiary transition-colors cursor-pointer">
                 <CardBody className="flex flex-row items-center gap-3 p-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-soft-foreground">
                     <Settings2 aria-hidden="true" size={20} />
                   </div>
                   <div className="flex-1 min-w-0">

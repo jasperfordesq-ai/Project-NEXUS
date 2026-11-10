@@ -314,7 +314,7 @@ export function AdvancedSearchFilters({
                       size="sm"
                       variant="tertiary"
                       onPress={() => handleAddSkill(tag)}
-                      className="min-h-7 min-w-0 rounded-full bg-theme-hover px-2 py-0.5 text-xs text-theme-muted transition-colors hover:bg-accent/20 hover:text-accent"
+                      className="min-h-7 min-w-0 rounded-full bg-theme-hover px-2 py-0.5 text-xs text-theme-muted transition-colors hover:bg-accent/20 hover:text-accent-soft-foreground"
                     >
                       {tag}
                     </Button>

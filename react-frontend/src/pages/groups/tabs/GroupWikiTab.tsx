@@ -397,7 +397,7 @@ export function GroupWikiTab({ groupId, isAdmin, isMember = true }: GroupWikiTab
                       variant="light"
                       className={`w-full min-h-[40px] text-start px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 justify-start ${
                         selectedPage?.id === page.id
-                          ? 'bg-accent/10 text-accent font-medium'
+                          ? 'bg-accent/10 text-accent-soft-foreground font-medium'
                           : 'text-theme-secondary hover:bg-theme-hover'
                       }`}
                       style={{ paddingInlineStart: `${page.depth * 16 + 12}px` }}

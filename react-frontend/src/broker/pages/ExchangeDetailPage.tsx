@@ -123,7 +123,7 @@ function StatusPipeline({ status }: { status: string }) {
                 done
                   ? 'bg-success/15 text-success ring-success/30'
                   : current
-                    ? 'bg-accent/15 text-accent ring-2 ring-accent/60'
+                    ? 'bg-accent/15 text-accent-soft-foreground ring-2 ring-accent/60'
                     : 'bg-surface-tertiary text-muted ring-divider'
               }`}
             >

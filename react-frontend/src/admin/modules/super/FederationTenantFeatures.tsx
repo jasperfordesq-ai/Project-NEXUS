@@ -288,7 +288,7 @@ export function FederationTenantFeatures() {
                   className="flex items-center justify-between p-3 rounded-lg bg-surface-secondary"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent-soft-foreground">
                       <Icon size={18} />
                     </div>
                     <div className="min-w-0">

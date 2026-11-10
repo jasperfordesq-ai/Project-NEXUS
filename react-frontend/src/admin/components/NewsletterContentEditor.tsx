@@ -223,7 +223,7 @@ export function NewsletterContentEditor({
         )}
         {format === 'builder' && onOpenDesigner && (
           <div className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed border-border bg-surface px-6 py-10 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent">
+            <div className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent-soft-foreground">
               <Maximize size={22} />
             </div>
             <div>

@@ -1191,7 +1191,7 @@ export function RegisterPage() {
                 size="sm"
                 className={`flex min-h-11 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 leading-none ${
                   step.id === currentStep
-                    ? 'bg-accent-soft text-accent'
+                    ? 'bg-accent-soft text-accent-soft-foreground'
                     : step.id < currentStep
                       ? 'text-theme-muted'
                       : 'text-theme-subtle'

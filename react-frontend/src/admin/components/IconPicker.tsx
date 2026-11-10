@@ -110,7 +110,7 @@ export function IconPicker({ value, onChange, label }: IconPickerProps) {
                       variant="tertiary"
                       className={`flex min-h-14 min-w-0 flex-col items-center gap-1 rounded-lg p-2 text-center transition-all hover:bg-theme-hover ${
                         isSelected
-                          ? 'bg-accent/10 ring-2 ring-accent text-accent dark:text-accent'
+                          ? 'bg-accent/10 ring-2 ring-accent text-accent-soft-foreground'
                           : 'text-theme-muted'
                       }`}
                       title={iconLabel}

@@ -600,7 +600,7 @@ export function ImpactReportPage() {
                               ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
                               : row.priority === 'High'
                               ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                              : 'bg-accent/15 text-accent dark:text-accent'
+                              : 'bg-accent/15 text-accent-soft-foreground'
                           }`}>
                             {row.priority}
                           </span>
@@ -726,7 +726,7 @@ const colorMap = {
     bg: 'bg-accent/5',
     border: 'border-accent/20',
     icon: 'text-accent/60',
-    badge: 'bg-accent/15 text-accent dark:text-accent',
+    badge: 'bg-accent/15 text-accent-soft-foreground',
   },
   amber: {
     bg: 'bg-amber-500/5',

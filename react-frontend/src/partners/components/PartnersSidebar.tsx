@@ -207,7 +207,7 @@ export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
           aria-current={active ? 'page' : undefined}
           className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors motion-reduce:transition-none ${
             active
-              ? 'bg-accent/10 text-accent'
+              ? 'bg-accent/10 text-accent-soft-foreground'
               : 'text-muted hover:bg-surface-secondary hover:text-foreground'
           } ${collapsed ? 'justify-center px-2' : ''}`}
         >
@@ -246,7 +246,7 @@ export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
       <div className="flex h-16 items-center justify-between border-b border-divider px-3">
         {!collapsed && (
           <Link to={tenantPath('/partner-timebanks')} className="flex min-w-0 items-center gap-2.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent ring-1 ring-inset ring-accent/20">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent-soft-foreground ring-1 ring-inset ring-accent/20">
               <Globe size={18} />
             </span>
             <span className="truncate text-base font-semibold tracking-tight text-foreground">

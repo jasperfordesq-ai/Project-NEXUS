@@ -401,7 +401,7 @@ export const UserHoverCard = memo(function UserHoverCard({
                 <Button
                   size="sm"
                   variant="flat"
-                  className="h-8 min-w-0 w-full px-2 bg-accent/10 text-accent dark:text-accent hover:bg-accent/20"
+                  className="h-8 min-w-0 w-full px-2 bg-accent/10 text-accent-soft-foreground hover:bg-accent/20"
                   startContent={<UserPlus className="w-3.5 h-3.5 shrink-0" />}
                   onPress={handleConnect}
                   isLoading={isConnecting}

@@ -1077,7 +1077,7 @@ export function FederationMessagesPage() {
                         size="sm"
                         className={
                           autoTranslateOn
-                            ? 'bg-accent/20 text-accent ring-1 ring-accent/30 ml-auto'
+                            ? 'bg-accent/20 text-accent-soft-foreground ring-1 ring-accent/30 ml-auto'
                             : 'bg-theme-elevated text-theme-muted ml-auto'
                         }
                         aria-label={
@@ -1374,7 +1374,7 @@ export function FederationMessagesPage() {
                     </Button>
                   </div>
                   {selectedRecipient.is_external && (
-                    <div className="flex items-center gap-2 p-2.5 rounded-lg bg-accent/10 text-accent dark:text-accent text-sm">
+                    <div className="flex items-center gap-2 p-2.5 rounded-lg bg-accent/10 text-accent-soft-foreground text-sm">
                       <Globe className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                       <span>{t('messages.external_recipient_info')}</span>
                     </div>
@@ -1426,7 +1426,7 @@ export function FederationMessagesPage() {
                                   <Chip
                                     size="sm"
                                     variant="flat"
-                                    className="bg-accent/10 text-accent dark:text-accent h-4 text-[10px]"
+                                    className="bg-accent/10 text-accent-soft-foreground h-4 text-[10px]"
                                     startContent={<Globe className="w-2.5 h-2.5" aria-hidden="true" />}
                                   >
                                     {t('external')}

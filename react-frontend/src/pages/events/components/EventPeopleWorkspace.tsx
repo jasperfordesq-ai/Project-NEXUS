@@ -406,7 +406,7 @@ export function EventPeopleWorkspace({ eventId }: { eventId: number }) {
       <Card className="border border-theme-default bg-theme-surface">
         <CardBody className="space-y-4 p-4 sm:p-6">
           <div className="flex items-start gap-3">
-            <span className="rounded-xl bg-accent/10 p-2 text-accent" aria-hidden="true">
+            <span className="rounded-xl bg-accent/10 p-2 text-accent-soft-foreground" aria-hidden="true">
               <UserPlus className="h-5 w-5" />
             </span>
             <div>

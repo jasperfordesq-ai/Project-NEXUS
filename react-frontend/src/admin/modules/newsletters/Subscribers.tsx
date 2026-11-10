@@ -420,7 +420,7 @@ export function Subscribers() {
       {/* Sync Platform Members card */}
       <Card>
         <CardBody className="flex flex-row items-center gap-4 p-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent-soft-foreground">
             <Users aria-hidden="true" size={20} />
           </div>
           <div className="min-w-0 flex-1">

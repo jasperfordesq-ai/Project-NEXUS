@@ -692,7 +692,7 @@ export function MembersPage() {
         <ToggleButton
           id="all"
           variant="ghost"
-          className="bg-theme-elevated text-theme-secondary transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:bg-accent-strong! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
+          className="bg-theme-elevated text-theme-secondary transition-colors hover:bg-accent/5 hover:text-accent-soft-foreground data-[selected=true]:bg-accent-strong! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
         >
           <Users className="w-3.5 h-3.5" aria-hidden="true" />
           {t('members.all')}
@@ -827,7 +827,7 @@ export function MembersPage() {
                 isIconOnly
                 variant="ghost"
                 aria-label={t('aria.grid_view')}
-                className="rounded-none bg-theme-elevated text-theme-muted transition-colors data-[selected=true]:bg-accent/10! data-[selected=true]:text-accent! dark:data-[selected=true]:text-accent!"
+                className="rounded-none bg-theme-elevated text-theme-muted transition-colors data-[selected=true]:bg-accent/10! data-[selected=true]:text-accent-soft-foreground! dark:data-[selected=true]:text-accent-soft-foreground!"
               >
                 <Grid className="w-4 h-4" aria-hidden="true" />
               </ToggleButton>
@@ -836,7 +836,7 @@ export function MembersPage() {
                 isIconOnly
                 variant="ghost"
                 aria-label={t('aria.list_view')}
-                className="rounded-none bg-theme-elevated text-theme-muted transition-colors data-[selected=true]:bg-accent/10! data-[selected=true]:text-accent! dark:data-[selected=true]:text-accent!"
+                className="rounded-none bg-theme-elevated text-theme-muted transition-colors data-[selected=true]:bg-accent/10! data-[selected=true]:text-accent-soft-foreground! dark:data-[selected=true]:text-accent-soft-foreground!"
               >
                 <List className="w-4 h-4" aria-hidden="true" />
               </ToggleButton>
@@ -846,7 +846,7 @@ export function MembersPage() {
                   isIconOnly
                   variant="ghost"
                   aria-label={t('aria.map_view')}
-                  className="rounded-none bg-theme-elevated text-theme-muted transition-colors data-[selected=true]:bg-accent/10! data-[selected=true]:text-accent! dark:data-[selected=true]:text-accent!"
+                  className="rounded-none bg-theme-elevated text-theme-muted transition-colors data-[selected=true]:bg-accent/10! data-[selected=true]:text-accent-soft-foreground! dark:data-[selected=true]:text-accent-soft-foreground!"
                 >
                   <MapIcon className="w-4 h-4" aria-hidden="true" />
                 </ToggleButton>
@@ -1206,7 +1206,7 @@ const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: Member
                     </Tooltip>
                   )}
                   {hasGamification && level > 0 && (
-                    <Chip size="sm" variant="soft" className="bg-accent-soft dark:bg-accent/40 text-accent dark:text-accent text-xs h-5 min-w-0">
+                    <Chip size="sm" variant="soft" className="bg-accent-soft text-accent-soft-foreground text-xs h-5 min-w-0">
                       {t('level_short', { level })}
                     </Chip>
                   )}
@@ -1300,7 +1300,7 @@ const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: Member
               </Tooltip>
             )}
             {hasGamification && level > 0 && (
-              <Chip size="sm" variant="soft" className="bg-accent-soft dark:bg-accent/40 text-accent dark:text-accent text-xs h-5 min-w-0">
+              <Chip size="sm" variant="soft" className="bg-accent-soft text-accent-soft-foreground text-xs h-5 min-w-0">
                 {t('level_short', { level })}
               </Chip>
             )}

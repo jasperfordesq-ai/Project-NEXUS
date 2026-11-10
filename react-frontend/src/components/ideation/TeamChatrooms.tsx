@@ -437,7 +437,7 @@ export function TeamChatrooms({ groupId, isGroupAdmin }: TeamChatroomsProps) {
               aria-current={activeChatroomId === room.id ? 'page' : undefined}
               className={`min-h-11 min-w-[9rem] flex-none justify-start gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors md:min-h-9 md:w-full md:min-w-0 ${
                 activeChatroomId === room.id
-                  ? 'bg-accent/10 text-accent font-medium'
+                  ? 'bg-accent/10 text-accent-soft-foreground font-medium'
                   : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]'
               }`}
             >

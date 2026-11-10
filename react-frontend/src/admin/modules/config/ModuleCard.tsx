@@ -42,8 +42,8 @@ export default function ModuleCard({ module, enabled, onToggle, onConfigure, tog
           <div
             className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
               module.type === 'core'
-                ? 'bg-accent-soft text-accent'
-                : 'bg-accent/10 text-accent'
+                ? 'bg-accent-soft text-accent-soft-foreground'
+                : 'bg-accent/10 text-accent-soft-foreground'
             }`}
           >
             <Icon size={20} aria-hidden="true" />

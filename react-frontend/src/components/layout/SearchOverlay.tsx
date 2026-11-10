@@ -281,7 +281,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   // ─── Type badges ───────────────────────────────────────────────────────
   const typeLabels: Record<string, { label: string; color: string }> = {
     listing: { label: t('search.type_listing'), color: 'bg-success/10 text-success-soft-foreground' },
-    user: { label: t('search.type_member'), color: 'bg-accent-soft text-accent dark:bg-accent-soft dark:text-accent' },
+    user: { label: t('search.type_member'), color: 'bg-accent-soft text-accent-soft-foreground dark:bg-accent-soft' },
     event: { label: t('search.type_event'), color: 'bg-warning/10 text-warning-soft-foreground' },
     group: { label: t('search.type_group'), color: 'bg-surface-secondary text-accent dark:bg-surface-secondary dark:text-accent' },
   };

@@ -21,7 +21,7 @@ import type { ConfigFormValues } from './configurationForm';
 
 // Tailwind JIT needs full class names at build time.
 const sectionTileClass: Record<BrokerStatColor, string> = {
-  accent: 'text-accent bg-accent/10',
+  accent: 'text-accent-soft-foreground bg-accent/10',
   success: 'text-success bg-success/10',
   warning: 'text-warning bg-warning/10',
   danger: 'text-danger bg-danger/10',

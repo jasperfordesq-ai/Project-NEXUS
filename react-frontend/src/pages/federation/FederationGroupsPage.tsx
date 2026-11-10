@@ -395,7 +395,7 @@ function FederatedGroupCard({ group }: FederatedGroupCardProps) {
               <Chip
                 size="sm"
                 variant="flat"
-                className="bg-accent/10 text-accent dark:text-accent"
+                className="bg-accent/10 text-accent-soft-foreground"
                 startContent={<Globe className="w-3 h-3" aria-hidden="true" />}
               >
                 {group.timebank.name}

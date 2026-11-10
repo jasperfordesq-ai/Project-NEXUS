@@ -102,7 +102,7 @@ export function InsuranceCertificateViewModal({ item, onClose }: InsuranceCertif
                 href={resolveAssetUrl(item.certificate_file_path)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent hover:underline dark:bg-accent-soft"
+                className="inline-flex items-center gap-2 rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent-soft-foreground hover:underline dark:bg-accent-soft"
               >
                 <FileText size={16} aria-hidden="true" />
                 {t('insurance.view_certificate_file')}

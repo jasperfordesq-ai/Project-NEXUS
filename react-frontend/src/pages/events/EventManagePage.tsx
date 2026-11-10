@@ -403,7 +403,7 @@ export function EventManagePage() {
       <header className="rounded-2xl border border-theme-default bg-theme-surface p-5 shadow-sm sm:p-7">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
-            <span className="rounded-xl bg-accent/10 p-2.5 text-accent" aria-hidden="true">
+            <span className="rounded-xl bg-accent/10 p-2.5 text-accent-soft-foreground" aria-hidden="true">
               <Settings className="h-6 w-6" />
             </span>
             <div className="min-w-0">

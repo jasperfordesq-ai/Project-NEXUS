@@ -764,7 +764,7 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
             {group.tags && group.tags.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-3">
                 {group.tags.slice(0, MAX_VISIBLE_TAGS).map((tag: { id: number; name: string }) => (
-                  <span key={tag.id} className="inline-flex max-w-full items-center break-all rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
+                  <span key={tag.id} className="inline-flex max-w-full items-center break-all rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent-soft-foreground">
                     {tag.name}
                   </span>
                 ))}
@@ -823,7 +823,7 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
           {/* Member Status */}
           {(group.is_member || group.viewer_membership?.status === 'active') && (
             <div className="mt-4 pt-4 border-t border-theme-default">
-              <Chip size="sm" variant="flat" className="bg-accent/20 text-accent dark:text-accent">
+              <Chip size="sm" variant="flat" className="bg-accent/20 text-accent-soft-foreground">
                 {t('member_status')}
               </Chip>
             </div>

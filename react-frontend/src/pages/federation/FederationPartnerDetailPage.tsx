@@ -62,7 +62,7 @@ const FEDERATION_LEVELS: Record<number, FederationLevelMeta> = {
   },
   3: {
     label: 'partners.level_economic',
-    className: 'bg-accent/20 text-accent dark:text-accent',
+    className: 'bg-accent/20 text-accent-soft-foreground',
   },
   4: {
     label: 'partners.level_integrated',

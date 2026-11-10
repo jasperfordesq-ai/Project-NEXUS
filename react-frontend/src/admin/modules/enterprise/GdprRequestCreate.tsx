@@ -259,7 +259,7 @@ export function GdprRequestCreate() {
                   >
                     <div className={`
                       flex h-10 w-10 items-center justify-center rounded-lg
-                      ${isSelected ? 'bg-accent/20 text-accent' : 'bg-surface text-muted'}
+                      ${isSelected ? 'bg-accent/20 text-accent-soft-foreground' : 'bg-surface text-muted'}
                     `}>
                       <Icon size={20} />
                     </div>

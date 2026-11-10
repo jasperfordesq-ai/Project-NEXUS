@@ -92,9 +92,9 @@ function isJobPredictionsData(value: unknown): value is JobPredictionsData {
 
 const STAGE_COLORS: Record<string, string> = {
   applied: 'bg-warning/20 text-warning',
-  screening: 'bg-accent/20 text-accent',
-  reviewed: 'bg-accent/20 text-accent',
-  interview: 'bg-accent-soft text-accent',
+  screening: 'bg-accent/20 text-accent-soft-foreground',
+  reviewed: 'bg-accent/20 text-accent-soft-foreground',
+  interview: 'bg-accent-soft text-accent-soft-foreground',
   offer: 'bg-success/20 text-success',
   accepted: 'bg-success/20 text-success',
   rejected: 'bg-danger/20 text-danger',
@@ -473,7 +473,7 @@ export function JobAnalyticsPage() {
                       className="min-w-24"
                     />
                   </div>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STAGE_COLORS[item.stage] ?? 'bg-accent/20 text-accent'}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STAGE_COLORS[item.stage] ?? 'bg-accent/20 text-accent-soft-foreground'}`}>
                     {item.count}
                   </span>
                   <span className="text-xs text-theme-subtle w-12 text-right">{pct}%</span>

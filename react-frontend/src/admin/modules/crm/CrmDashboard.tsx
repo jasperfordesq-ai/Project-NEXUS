@@ -135,11 +135,11 @@ interface Tool {
 }
 
 const TOOLS: readonly Tool[] = [
-  { key: 'notes', labelKey: 'crm.qa_member_notes', descKey: 'crm.tool_notes_desc', path: '/admin/crm/notes', icon: StickyNote, accentClassName: 'bg-accent/10 text-accent' },
+  { key: 'notes', labelKey: 'crm.qa_member_notes', descKey: 'crm.tool_notes_desc', path: '/admin/crm/notes', icon: StickyNote, accentClassName: 'bg-accent/10 text-accent-soft-foreground' },
   { key: 'tasks', labelKey: 'crm.qa_crm_tasks', descKey: 'crm.tool_tasks_desc', path: '/admin/crm/tasks', icon: ClipboardList, accentClassName: 'bg-warning/10 text-warning' },
-  { key: 'tags', labelKey: 'crm.qa_member_tags', descKey: 'crm.tool_tags_desc', path: '/admin/crm/tags', icon: Tag, accentClassName: 'bg-accent-soft text-accent' },
+  { key: 'tags', labelKey: 'crm.qa_member_tags', descKey: 'crm.tool_tags_desc', path: '/admin/crm/tags', icon: Tag, accentClassName: 'bg-accent-soft text-accent-soft-foreground' },
   { key: 'timeline', labelKey: 'crm.qa_activity_timeline', descKey: 'crm.tool_timeline_desc', path: '/admin/crm/timeline', icon: Activity, accentClassName: 'bg-success/10 text-success' },
-  { key: 'funnel', labelKey: 'crm.qa_onboarding_funnel', descKey: 'crm.tool_funnel_desc', path: '/admin/crm/funnel', icon: Filter, accentClassName: 'bg-accent/10 text-accent' },
+  { key: 'funnel', labelKey: 'crm.qa_onboarding_funnel', descKey: 'crm.tool_funnel_desc', path: '/admin/crm/funnel', icon: Filter, accentClassName: 'bg-accent/10 text-accent-soft-foreground' },
   { key: 'members', labelKey: 'crm.qa_all_members', descKey: 'crm.tool_members_desc', path: '/admin/users', icon: Users, accentClassName: 'bg-surface-tertiary text-muted' },
 ];
 
@@ -576,7 +576,7 @@ export function CrmDashboard() {
           >
             {data.recent_notes.length === 0 ? (
               <div className="flex flex-col items-center gap-2 rounded-xl bg-surface-secondary px-4 py-8 text-center">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent-soft-foreground">
                   <StickyNote size={22} aria-hidden="true" />
                 </span>
                 <p className="font-medium text-foreground">{t('crm.recent_notes_empty')}</p>

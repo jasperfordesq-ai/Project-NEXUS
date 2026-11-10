@@ -573,7 +573,7 @@ export function GoalsPage() {
       <section className="rounded-lg border border-theme-default bg-theme-elevated/60 p-4 sm:p-5">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-4 lg:items-center">
           <div className="flex gap-3">
-            <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+            <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent-soft-foreground">
               <Users className="w-5 h-5" aria-hidden="true" />
             </div>
             <div>
@@ -593,7 +593,7 @@ export function GoalsPage() {
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+              <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent-soft-foreground">
                 <Target className="w-3.5 h-3.5" aria-hidden="true" />
               </div>
               <div>
@@ -1305,7 +1305,7 @@ function GoalCard({
             <Button
               size="sm"
               variant="flat"
-              className="bg-accent/10 text-accent dark:text-accent"
+              className="bg-accent/10 text-accent-soft-foreground"
               startContent={<ClipboardCheck className="w-4 h-4" aria-hidden="true" />}
               onPress={() => onCheckin(goal)}
             >
@@ -1343,7 +1343,7 @@ function GoalCard({
             <Button
               size="sm"
               variant="flat"
-              className="bg-accent/10 text-accent dark:text-accent"
+              className="bg-accent/10 text-accent-soft-foreground"
               startContent={<UserPlus className="w-4 h-4" aria-hidden="true" />}
               onPress={() => onBecomeBuddy(goal)}
             >
@@ -1355,7 +1355,7 @@ function GoalCard({
             <Button
               size="sm"
               variant="flat"
-              className="bg-accent/10 text-accent dark:text-accent"
+              className="bg-accent/10 text-accent-soft-foreground"
               startContent={<MessageCircle className="w-4 h-4" aria-hidden="true" />}
               onPress={() => onBuddyAction(goal, 'nudge')}
             >

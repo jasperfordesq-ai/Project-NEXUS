@@ -2376,7 +2376,7 @@ export function ConversationPage() {
                   variant="secondary"
                   size="sm"
                   className={autoTranslateOn
-                    ? 'hidden sm:flex bg-accent/20 text-accent ring-1 ring-accent/30'
+                    ? 'hidden sm:flex bg-accent/20 text-accent-soft-foreground ring-1 ring-accent/30'
                     : 'hidden sm:flex bg-theme-elevated text-theme-muted'
                   }
                   aria-label={autoTranslateOn ? t('auto_translate.tooltip_on') : t('auto_translate.tooltip_off')}

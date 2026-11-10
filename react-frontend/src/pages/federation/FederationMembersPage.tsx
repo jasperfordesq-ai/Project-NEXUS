@@ -628,7 +628,7 @@ const FederatedMemberCard = memo(function FederatedMemberCard({
             <Chip
               size="sm"
               variant="flat"
-              className="bg-accent/10 text-accent dark:text-accent"
+              className="bg-accent/10 text-accent-soft-foreground"
               startContent={<Globe className="w-3 h-3" aria-hidden="true" />}
             >
               {member.timebank.name}
@@ -637,7 +637,7 @@ const FederatedMemberCard = memo(function FederatedMemberCard({
               <Chip
                 size="sm"
                 variant="flat"
-                className="bg-accent/10 text-accent dark:text-accent"
+                className="bg-accent/10 text-accent-soft-foreground"
                 startContent={<Globe className="w-3 h-3" aria-hidden="true" />}
               >
                 {t('external')}

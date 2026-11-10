@@ -42,7 +42,7 @@ import { useTranslation } from 'react-i18next';
  */
 
 const colorClasses: Record<string, { bg: string; text: string }> = {
-  accent: { bg: 'bg-accent/10', text: 'text-accent' },
+  accent: { bg: 'bg-accent/10', text: 'text-accent-soft-foreground' },
   success: { bg: 'bg-success/10', text: 'text-success' },
   default: { bg: 'bg-surface-tertiary', text: 'text-muted' },
   warning: { bg: 'bg-warning/10', text: 'text-warning' },

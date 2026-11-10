@@ -72,7 +72,7 @@ const FEDERATION_LEVELS: Record<number, FederationLevelMeta> = {
   3: {
     label: 'partners.level_economic',
     color: 'secondary',
-    className: 'bg-accent/20 text-accent dark:text-accent',
+    className: 'bg-accent/20 text-accent-soft-foreground',
   },
   4: {
     label: 'partners.level_integrated',
@@ -463,7 +463,7 @@ function PartnerCard({ partner, onViewDetails }: PartnerCardProps) {
             <Chip
               size="sm"
               variant="flat"
-              className="bg-accent/10 text-accent dark:text-accent"
+              className="bg-accent/10 text-accent-soft-foreground"
               startContent={<Globe className="w-3 h-3" aria-hidden="true" />}
             >
               {t('external')}

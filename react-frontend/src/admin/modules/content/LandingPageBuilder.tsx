@@ -146,7 +146,7 @@ function OutlineRow({
         {/* Name row: icon, name, Shown switch. The switch stops the row's select. */}
         <div className="flex items-center gap-2">
           <span
-            className={`inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent ${section.enabled ? '' : 'opacity-60'}`}
+            className={`inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent-soft-foreground ${section.enabled ? '' : 'opacity-60'}`}
           >
             <Icon size={14} aria-hidden="true" />
           </span>
@@ -268,7 +268,7 @@ function BlockEditor({
         {/* Block header */}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-3">
-            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent-soft-foreground">
               <Icon size={20} aria-hidden="true" />
             </span>
             <div className="min-w-0">
@@ -521,7 +521,7 @@ export function LandingPageBuilder() {
       {/* How this page works */}
       <Card className="mb-4 border border-border bg-surface">
         <CardBody className="flex flex-row items-start gap-3 p-4">
-          <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent">
+          <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent-soft-foreground">
             <Info size={16} aria-hidden="true" />
           </span>
           <div className="min-w-0 text-sm">

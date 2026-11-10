@@ -223,7 +223,7 @@ export function NotificationFlyout() {
                 ) : (
                   <div className={`mt-0.5 p-1.5 rounded-full shrink-0 ${
                     isUnread
-                      ? 'bg-accent-soft dark:bg-accent/20 text-accent dark:text-accent'
+                      ? 'bg-accent-soft dark:bg-accent/20 text-accent-soft-foreground'
                       : 'bg-[var(--surface-elevated)] text-theme-subtle'
                   }`}>
                     {getIcon(notification.type)}

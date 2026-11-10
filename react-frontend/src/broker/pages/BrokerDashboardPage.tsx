@@ -105,7 +105,7 @@ const queuePillClass: Record<BrokerStatColor, string> = {
   danger: 'border-danger/30 bg-danger/10 text-danger hover:bg-danger/15',
   warning: 'border-warning/30 bg-warning/10 text-warning hover:bg-warning/15',
   success: 'border-success/30 bg-success/10 text-success hover:bg-success/15',
-  accent: 'border-accent/30 bg-accent/10 text-accent hover:bg-accent/15',
+  accent: 'border-accent/30 bg-accent/10 text-accent-soft-foreground hover:bg-accent/15',
   neutral: 'border-divider bg-surface-secondary text-muted hover:bg-surface-tertiary',
 };
 
@@ -409,7 +409,7 @@ export function BrokerDashboard() {
                   <div className="flex shrink-0 items-center gap-4">
                     <span
                       className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ring-inset ring-current/20 ${
-                        hasDanger ? 'bg-danger/15 text-danger' : 'bg-accent/15 text-accent'
+                        hasDanger ? 'bg-danger/15 text-danger' : 'bg-accent/15 text-accent-soft-foreground'
                       }`}
                     >
                       <Zap size={26} />

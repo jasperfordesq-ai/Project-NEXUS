@@ -254,7 +254,7 @@ export function EventFederationStatusPanel({ eventId }: EventFederationStatusPan
       <CardBody className="space-y-5 p-5 sm:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
-            <div className="rounded-xl bg-accent-soft p-2.5 text-accent">
+            <div className="rounded-xl bg-accent-soft p-2.5 text-accent-soft-foreground">
               <Network className="h-5 w-5" aria-hidden="true" />
             </div>
             <div className="min-w-0">

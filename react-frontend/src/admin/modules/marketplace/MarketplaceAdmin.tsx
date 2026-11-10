@@ -232,7 +232,7 @@ export function MarketplaceAdmin() {
         <Link to={tenantPath('/admin/marketplace/sellers')}>
           <Card isPressable className="w-full border border-divider/70 bg-surface transition-transform hover:-translate-y-0.5">
             <CardBody className="flex flex-row items-center gap-4 p-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-accent bg-accent/10">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-accent-soft-foreground bg-accent/10">
                 <Users size={24} />
               </div>
               <div className="flex-1 min-w-0">

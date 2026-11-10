@@ -170,7 +170,7 @@ export function JobDescriptionCard({
                   key={skill}
                   variant="tertiary"
                   color={isMatched ? 'success' : isMissing ? 'danger' : 'accent'}
-                  className={isMatched ? 'bg-success/10 text-success' : isMissing ? 'bg-danger/10 text-danger' : 'bg-accent/10 text-accent'}
+                  className={isMatched ? 'bg-success/10 text-success' : isMissing ? 'bg-danger/10 text-danger' : 'bg-accent/10 text-accent-soft-foreground'}
                 >
                   {isMatched ? <Check className="w-3 h-3" aria-hidden="true" /> : isMissing ? <X className="w-3 h-3" aria-hidden="true" /> : null}
                   {skill}

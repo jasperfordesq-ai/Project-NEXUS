@@ -1191,7 +1191,7 @@ export function ChallengeDetailPage() {
                       isDisabled={!isAuthenticated || votingIds.has(idea.id)}
                       className={`p-1.5 rounded-lg transition-colors min-w-0 w-auto min-h-9 ${
                         idea.has_voted
-                          ? 'bg-accent/10 text-accent'
+                          ? 'bg-accent/10 text-accent-soft-foreground'
                           : 'hover:bg-[var(--color-surface-hover)] text-[var(--color-text-tertiary)]'
                       }`}
                       aria-label={idea.has_voted ? t('ideas.unvote') : t('ideas.vote')}

@@ -71,11 +71,11 @@ const brokerColor: Record<StatColor, BrokerStatColor> = {
 };
 
 const colorMap = {
-  primary: 'text-accent bg-accent/10',
+  primary: 'text-accent-soft-foreground bg-accent/10',
   success: 'text-success bg-success/10',
   warning: 'text-warning bg-warning/10',
   danger: 'text-danger bg-danger/10',
-  secondary: 'text-accent bg-accent-soft',
+  secondary: 'text-accent-soft-foreground bg-accent-soft',
   default: 'text-muted bg-surface-tertiary',
 };
 

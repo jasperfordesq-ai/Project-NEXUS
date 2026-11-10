@@ -128,7 +128,7 @@ export function TopEndorsedWidget({ limit = 5 }: { limit?: number }) {
               <Chip
                 size="sm"
                 variant="flat"
-                className="bg-accent/10 text-accent dark:text-accent"
+                className="bg-accent/10 text-accent-soft-foreground"
                 startContent={<ThumbsUp className="w-3 h-3" aria-hidden="true" />}
               >
                 {member.total_endorsements ?? 0}

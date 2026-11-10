@@ -488,7 +488,7 @@ export function FederationMemberProfilePage() {
               <Chip
                 size="sm"
                 variant="flat"
-                className="mt-2 bg-accent/10 text-accent dark:text-accent"
+                className="mt-2 bg-accent/10 text-accent-soft-foreground"
                 startContent={<Globe className="w-3.5 h-3.5" aria-hidden="true" />}
               >
                 {member.timebank.name}
@@ -675,7 +675,7 @@ export function FederationMemberProfilePage() {
                 <Chip
                   key={skill}
                   variant="flat"
-                  className="bg-accent/10 text-accent dark:text-accent"
+                  className="bg-accent/10 text-accent-soft-foreground"
                 >
                   {skill}
                 </Chip>

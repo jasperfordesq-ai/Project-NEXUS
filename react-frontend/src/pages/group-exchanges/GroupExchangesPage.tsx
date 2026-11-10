@@ -343,7 +343,7 @@ export function GroupExchangesPage() {
                                 size="sm"
                                 variant="flat"
                                 className={isOrganizer
-                                  ? 'bg-accent/20 text-accent dark:text-accent'
+                                  ? 'bg-accent/20 text-accent-soft-foreground'
                                   : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'}
                               >
                                 {isOrganizer ? t('role_organizer') : t('role_participant')}

@@ -128,7 +128,7 @@ export function GroupAnalytics() {
               {data.most_active_groups.map((group, index) => (
                 <div key={group.id} className="flex items-center justify-between py-3">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 text-sm font-bold text-accent">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 text-sm font-bold text-accent-soft-foreground">
                       {index + 1}
                     </span>
                     <span className="font-medium text-foreground">{group.name}</span>

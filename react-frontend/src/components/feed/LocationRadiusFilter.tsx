@@ -37,7 +37,7 @@ export function LocationRadiusFilter({
       variant={isNearby ? 'flat' : 'light'}
       className={
         isNearby
-          ? 'bg-accent/10 text-accent border border-accent/20'
+          ? 'bg-accent/10 text-accent-soft-foreground border border-accent/20'
           : 'text-[var(--text-muted)]'
       }
       startContent={isNearby ? <MapPin className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5" />}

@@ -108,7 +108,7 @@ const ALL_THEMES_KEY = '__all__';
  */
 const VIEW_TOGGLE_SELECTED = {
   page: 'data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600! dark:data-[selected=true]:text-emerald-300!',
-  community: 'data-[selected=true]:bg-accent/15 data-[selected=true]:text-accent!',
+  community: 'data-[selected=true]:bg-accent/15 data-[selected=true]:text-accent-soft-foreground!',
 } as const;
 
 const validTypes: ListingType[] = ['all', 'offer', 'request'];

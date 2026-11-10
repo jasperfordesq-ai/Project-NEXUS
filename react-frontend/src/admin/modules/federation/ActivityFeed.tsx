@@ -89,15 +89,15 @@ const EVENT_TYPE_I18N_KEYS: Record<string, string> = {
 };
 
 const EVENT_TYPE_STYLES: Record<string, Omit<EventTypeConfig, 'label'>> = {
-  cross_tenant_message: { icon: Mail, color: 'primary', bgClass: 'bg-accent-soft text-accent dark:bg-accent-soft dark:text-accent' },
-  api_message_sent: { icon: Mail, color: 'primary', bgClass: 'bg-accent-soft text-accent dark:bg-accent-soft dark:text-accent' },
+  cross_tenant_message: { icon: Mail, color: 'primary', bgClass: 'bg-accent-soft text-accent-soft-foreground dark:bg-accent-soft' },
+  api_message_sent: { icon: Mail, color: 'primary', bgClass: 'bg-accent-soft text-accent-soft-foreground dark:bg-accent-soft' },
   cross_tenant_transaction: { icon: CreditCard, color: 'success', bgClass: 'bg-success/10 text-success-soft-foreground' },
   api_transaction_initiated: { icon: CreditCard, color: 'success', bgClass: 'bg-success/10 text-success-soft-foreground' },
   connection_request: { icon: UserPlus, color: 'secondary', bgClass: 'bg-surface-secondary text-accent dark:bg-surface-secondary dark:text-accent' },
   listing_federated: { icon: Package, color: 'warning', bgClass: 'bg-warning/10 text-warning-soft-foreground' },
   listing_unfederated: { icon: Package, color: 'warning', bgClass: 'bg-warning/10 text-warning-soft-foreground' },
   listing_viewed: { icon: Package, color: 'warning', bgClass: 'bg-warning/10 text-warning-soft-foreground' },
-  partnership_requested: { icon: Handshake, color: 'primary', bgClass: 'bg-accent-soft text-accent dark:bg-accent-soft dark:text-accent' },
+  partnership_requested: { icon: Handshake, color: 'primary', bgClass: 'bg-accent-soft text-accent-soft-foreground dark:bg-accent-soft' },
   partnership_approved: { icon: Handshake, color: 'success', bgClass: 'bg-success/10 text-success-soft-foreground' },
   partnership_rejected: { icon: Handshake, color: 'danger', bgClass: 'bg-danger/10 text-danger-soft-foreground' },
   partnership_status_changed: { icon: Handshake, color: 'warning', bgClass: 'bg-warning/10 text-warning-soft-foreground' },

@@ -371,7 +371,7 @@ export function MemberTags() {
                     <CardBody className="flex flex-col gap-3 p-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex min-w-0 items-center gap-2">
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-soft-foreground">
                             <Tag size={15} aria-hidden="true" />
                           </span>
                           <Link
@@ -432,7 +432,7 @@ export function MemberTags() {
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-soft-foreground">
             <Tag size={20} aria-hidden="true" />
           </span>
           <div className="min-w-0">

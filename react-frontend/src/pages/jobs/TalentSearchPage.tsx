@@ -445,7 +445,7 @@ export function TalentSearchPage() {
                           size="sm"
                           variant="tertiary"
                           color="accent"
-                          className="bg-accent/10 text-accent"
+                          className="bg-accent/10 text-accent-soft-foreground"
                         >
                           {skill}
                         </Chip>

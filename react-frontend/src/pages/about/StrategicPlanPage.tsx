@@ -166,7 +166,7 @@ export function StrategicPlanPage() {
                     type="button"
                     variant="tertiary"
                     onPress={() => scrollTo(section.id)}
-                    className="flex min-h-10 min-w-0 items-center gap-2 rounded-lg px-3 py-2 text-sm text-theme-muted transition-colors hover:bg-accent/10 hover:text-accent dark:hover:text-accent"
+                    className="flex min-h-10 min-w-0 items-center gap-2 rounded-lg px-3 py-2 text-sm text-theme-muted transition-colors hover:bg-accent/10 hover:text-accent-soft-foreground dark:hover:text-accent-soft-foreground"
                   >
                     <span className="flex-shrink-0 w-6 h-6 rounded-md bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 flex items-center justify-center text-xs font-bold text-accent dark:text-accent">
                       {index + 1}
@@ -391,7 +391,7 @@ export function StrategicPlanPage() {
                       <TableRow key={idx}>
                         <TableCell className="text-theme-muted">{t(`strategic_plan.pillar_2_row_${idx}_initiative`)}</TableCell>
                         <TableCell>
-                          <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/15 text-accent dark:text-accent">
+                          <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/15 text-accent-soft-foreground">
                             {t(`strategic_plan.pillar_2_row_${idx}_priority`)}
                           </span>
                         </TableCell>
@@ -566,7 +566,7 @@ export function StrategicPlanPage() {
                               ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
                               : row.impact === 'High'
                               ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                              : 'bg-accent/15 text-accent dark:text-accent'
+                              : 'bg-accent/15 text-accent-soft-foreground'
                           }`}>
                             {t(`strategic_plan.risk_${idx}_impact`)}
                           </span>
@@ -736,9 +736,9 @@ interface RoadmapBadgeProps {
 }
 
 const styles = {
-  submit: 'bg-accent/15 text-accent dark:text-accent',
+  submit: 'bg-accent/15 text-accent-soft-foreground',
   secure: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
-  launch: 'bg-accent/15 text-accent dark:text-accent',
+  launch: 'bg-accent/15 text-accent-soft-foreground',
   ongoing: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400',
   pitch: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
 };

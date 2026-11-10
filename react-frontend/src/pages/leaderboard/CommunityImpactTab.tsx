@@ -114,7 +114,7 @@ export default function CommunityImpactTab() {
     { label: t('community.total_members'), value: num(data.total_members), icon: <Users className="w-5 h-5" />, color: 'text-[var(--color-info)]', bg: 'bg-blue-500/10' },
     { label: t('community.total_badges'), value: num(data.total_badges_awarded), icon: <Award className="w-5 h-5" />, color: 'text-[var(--color-warning)]', bg: 'bg-amber-500/10' },
     { label: t('community.volunteer_hours'), value: num(data.total_volunteer_hours), icon: <Clock className="w-5 h-5" />, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-    { label: t('community.total_xp'), value: num(data.total_xp).toLocaleString(getFormattingLocale()), icon: <Zap className="w-5 h-5" />, color: 'text-accent', bg: 'bg-accent/10' },
+    { label: t('community.total_xp'), value: num(data.total_xp).toLocaleString(getFormattingLocale()), icon: <Zap className="w-5 h-5" />, color: 'text-accent-soft-foreground', bg: 'bg-accent/10' },
   ];
 
   const secondaryStats = [

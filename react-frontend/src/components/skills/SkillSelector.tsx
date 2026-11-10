@@ -347,7 +347,7 @@ export function SkillSelector({
       {/* Add Skill Button */}
       <Button
         variant="flat"
-        className="bg-accent/10 text-accent dark:text-accent"
+        className="bg-accent/10 text-accent-soft-foreground"
         startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
         onPress={onOpen}
       >
@@ -446,7 +446,7 @@ export function SkillSelector({
                 <Button
                   size="sm"
                   variant="flat"
-                  className="mt-2 bg-accent/10 text-accent"
+                  className="mt-2 bg-accent/10 text-accent-soft-foreground"
                   onPress={() => setSelectedSkill(searchQuery)}
                 >
                   {tc('skills.use_custom', { query: searchQuery })}
@@ -505,7 +505,7 @@ export function SkillSelector({
               <div className="p-3 rounded-lg bg-theme-elevated border border-theme-default">
                 <p className="text-xs text-theme-subtle mb-1">{tc('skills.skill_to_add')}</p>
                 <div className="flex items-center gap-3">
-                  <Chip variant="flat" className="bg-accent/20 text-accent dark:text-accent">
+                  <Chip variant="flat" className="bg-accent/20 text-accent-soft-foreground">
                     {selectedSkill || searchQuery}
                   </Chip>
                   <ProficiencyDots level={proficiency} />

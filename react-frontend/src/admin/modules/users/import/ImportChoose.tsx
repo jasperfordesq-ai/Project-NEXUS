@@ -65,7 +65,7 @@ export function ImportChoose({ file, checkFailure, onFile, onCheck, onDownloadTe
             accept=".csv,text/csv"
             aria-describedby="member-import-file-hint"
             onChange={(e) => onFile(e.target.files?.[0] ?? null)}
-            className="block w-full text-sm text-muted file:me-4 file:rounded-lg file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent"
+            className="block w-full text-sm text-muted file:me-4 file:rounded-lg file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-soft-foreground"
           />
           {file && <p className="mt-2 text-sm font-medium">{t('member_import.chosen_file', { name: file.name })}</p>}
           <p id="member-import-file-hint" className="mt-1 text-xs text-muted">{t('member_import.file_hint')}</p>

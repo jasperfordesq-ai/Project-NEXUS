@@ -914,7 +914,7 @@ export function SubAccountsManager() {
         <Button
           size="sm"
           variant="flat"
-          className="shrink-0 bg-accent/10 text-accent dark:text-accent"
+          className="shrink-0 bg-accent/10 text-accent-soft-foreground"
           startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
           onPress={onOpen}
         >
@@ -964,7 +964,7 @@ export function SubAccountsManager() {
           action={
             <Button
               variant="flat"
-              className="bg-accent/10 text-accent dark:text-accent"
+              className="bg-accent/10 text-accent-soft-foreground"
               startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
               onPress={onOpen}
             >

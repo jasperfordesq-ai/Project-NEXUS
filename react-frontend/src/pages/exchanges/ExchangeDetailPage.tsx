@@ -112,7 +112,7 @@ function getTimelineColor(action: string, newStatus?: string | null): string {
     return 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30';
   }
   // Blue for neutral actions
-  return 'bg-accent/20 text-accent dark:text-accent border-accent/30';
+  return 'bg-accent/20 text-accent-soft-foreground border-accent/30';
 }
 
 function getTimelineLabelKey(action: string, newStatus?: string | null): string {
@@ -542,7 +542,7 @@ export function ExchangeDetailPage() {
           <div className="mb-6">
             <Button as={Link} to={tenantPath(`/messages/new/${otherPartyId}`)}
               variant="flat"
-              className="bg-accent/10 text-accent hover:bg-accent/20"
+              className="bg-accent/10 text-accent-soft-foreground hover:bg-accent/20"
               startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}
             >
               {t('detail.message_party', { name: otherParty.name || t('detail.other_party') })}

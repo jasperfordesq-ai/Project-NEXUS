@@ -112,9 +112,9 @@ interface DashboardData {
 
 const activityIcons: Record<string, { icon: React.ReactNode; color: string }> = {
   exchange: { icon: <ArrowUpRight className="w-4 h-4" aria-hidden="true" />, color: 'text-emerald-500 bg-emerald-500/10' },
-  listing: { icon: <ListTodo className="w-4 h-4" aria-hidden="true" />, color: 'text-accent bg-accent/10' },
+  listing: { icon: <ListTodo className="w-4 h-4" aria-hidden="true" />, color: 'text-accent-soft-foreground bg-accent/10' },
   connection: { icon: <Users className="w-4 h-4" aria-hidden="true" />, color: 'text-[var(--color-info)] bg-blue-500/10' },
-  event: { icon: <CalendarCheck className="w-4 h-4" aria-hidden="true" />, color: 'text-accent bg-accent/10' },
+  event: { icon: <CalendarCheck className="w-4 h-4" aria-hidden="true" />, color: 'text-accent-soft-foreground bg-accent/10' },
   message: { icon: <MessageSquare className="w-4 h-4" aria-hidden="true" />, color: 'text-cyan-500 bg-cyan-500/10' },
   review: { icon: <Star className="w-4 h-4" aria-hidden="true" />, color: 'text-[var(--color-warning)] bg-amber-500/10' },
   post: { icon: <Activity className="w-4 h-4" aria-hidden="true" />, color: 'text-rose-500 bg-rose-500/10' },

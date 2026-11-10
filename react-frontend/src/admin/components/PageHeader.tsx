@@ -85,7 +85,7 @@ export function PageHeader({ title, description, subtitle, icon, actions }: Page
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 items-center gap-3">
                 {icon && (
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent-soft-foreground">
                     {icon}
                   </span>
                 )}

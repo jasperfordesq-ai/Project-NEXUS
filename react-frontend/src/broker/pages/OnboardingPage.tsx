@@ -446,7 +446,7 @@ export default function OnboardingPage() {
         <Card className={`${cardClass} mb-6`}>
           <CardHeader className="flex items-center gap-3 pb-0">
             <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent ring-1 ring-inset ring-current/10"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent-soft-foreground ring-1 ring-inset ring-current/10"
               aria-hidden="true"
             >
               <Filter size={18} />
@@ -572,7 +572,7 @@ export default function OnboardingPage() {
         <Card className={`${cardClass} mb-6`}>
           <CardHeader className="flex items-center gap-3 pb-0">
             <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent ring-1 ring-inset ring-current/10"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent-soft-foreground ring-1 ring-inset ring-current/10"
               aria-hidden="true"
             >
               <CalendarDays size={18} />

@@ -517,8 +517,8 @@ export default function ModuleConfigModal({ module, isOpen, onClose }: ModuleCon
           <div
             className={`row-span-2 flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
               module.type === 'core'
-                ? 'bg-accent-soft text-accent'
-                : 'bg-accent/10 text-accent'
+                ? 'bg-accent-soft text-accent-soft-foreground'
+                : 'bg-accent/10 text-accent-soft-foreground'
             }`}
           >
             <Icon size={20} aria-hidden="true" />

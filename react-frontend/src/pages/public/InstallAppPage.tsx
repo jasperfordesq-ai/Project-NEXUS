@@ -361,7 +361,7 @@ export function InstallAppPage() {
             <p className="flex-1 text-sm text-theme-secondary">{t('install_app.email_links_hint')}</p>
             <Button
               variant="flat"
-              className="w-full shrink-0 bg-accent/10 text-accent hover:bg-accent/20 sm:w-auto"
+              className="w-full shrink-0 bg-accent/10 text-accent-soft-foreground hover:bg-accent/20 sm:w-auto"
               startContent={<Mail className="h-4 w-4" aria-hidden="true" />}
               isLoading={emailState === 'sending'}
               isDisabled={emailState === 'sent'}
@@ -426,7 +426,7 @@ export function InstallAppPage() {
             as={Link}
             to={tenantPath('/contact')}
             variant="flat"
-            className="w-full shrink-0 bg-accent/10 text-accent hover:bg-accent/20 sm:w-auto"
+            className="w-full shrink-0 bg-accent/10 text-accent-soft-foreground hover:bg-accent/20 sm:w-auto"
             data-testid="install-feedback-cta"
           >
             {t('install_app.feedback_cta')}
@@ -499,7 +499,7 @@ export function InstallAppPage() {
               as="a"
               href="#install-steps"
               variant="flat"
-              className="w-full bg-accent/10 text-accent hover:bg-accent/20 sm:w-auto"
+              className="w-full bg-accent/10 text-accent-soft-foreground hover:bg-accent/20 sm:w-auto"
               data-testid="install-web-stable-steps"
             >
               {t('install_app.web_stable_steps_cta')}
@@ -580,7 +580,7 @@ export function InstallAppPage() {
                     {config.steps.map((stepKey, index) => (
                       <li key={stepKey} className="flex items-start gap-3">
                         <span
-                          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/15 text-sm font-semibold text-accent"
+                          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/15 text-sm font-semibold text-accent-soft-foreground"
                           aria-hidden="true"
                         >
                           {index + 1}

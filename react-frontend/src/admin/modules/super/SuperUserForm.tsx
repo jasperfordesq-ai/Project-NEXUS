@@ -255,7 +255,7 @@ export function SuperUserForm() {
               </CardHeader>
               <Separator />
               <CardBody className="flex flex-col gap-4">
-                <div className="bg-accent-soft border border-accent text-accent rounded-[12px] p-3">
+                <div className="bg-accent-soft border border-accent text-accent-soft-foreground rounded-[12px] p-3">
                   <p className="text-sm font-medium mb-2">{t('super.how_it_works')}</p>
                   <ol className="text-xs opacity-90 space-y-1 list-decimal list-inside">
                     <li>{t('super.move_step_1')}</li>

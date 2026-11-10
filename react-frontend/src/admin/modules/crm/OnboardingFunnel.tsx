@@ -348,7 +348,7 @@ export default function OnboardingFunnel() {
             label={t('crm.funnel_stat_members')}
             value={formatNumber(total)}
             hint={cohort === 'all' ? t('crm.funnel_stat_members_hint') : t('crm.funnel_stat_members_cohort_hint')}
-            accentClassName="bg-accent/10 text-accent"
+            accentClassName="bg-accent/10 text-accent-soft-foreground"
           />
           <StatTile
             icon={Repeat}
@@ -369,7 +369,7 @@ export default function OnboardingFunnel() {
             label={t('crm.funnel_stat_new')}
             value={formatNumber(data.new_last_30_days ?? 0)}
             hint={cohort === 'all' ? t('crm.funnel_stat_new_hint') : t('crm.funnel_stat_new_hint_cohort')}
-            accentClassName="bg-accent/10 text-accent"
+            accentClassName="bg-accent/10 text-accent-soft-foreground"
           />
         </div>
 
@@ -437,7 +437,7 @@ export default function OnboardingFunnel() {
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                           <div className="flex min-w-0 items-start gap-3">
                             <span
-                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-sm font-semibold text-accent"
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-sm font-semibold text-accent-soft-foreground"
                               aria-hidden="true"
                             >
                               {step.index + 1}
@@ -550,7 +550,7 @@ export default function OnboardingFunnel() {
 
         <Card className="border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
           <CardHeader className="flex flex-row items-start gap-3 px-6 pb-0 pt-6">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent-soft-foreground">
               <CalendarDays size={18} aria-hidden="true" />
             </div>
             <div>

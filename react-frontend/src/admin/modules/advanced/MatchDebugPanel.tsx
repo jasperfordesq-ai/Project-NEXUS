@@ -355,7 +355,7 @@ export function MatchDebugPanel() {
               <CardHeader className="flex items-start justify-between gap-4 pb-2">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   {/* Rank badge */}
-                  <div className="shrink-0 w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-xs font-bold text-accent">
+                  <div className="shrink-0 w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-xs font-bold text-accent-soft-foreground">
                     {index + 1}
                   </div>
 

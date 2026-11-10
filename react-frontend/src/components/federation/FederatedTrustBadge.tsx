@@ -39,7 +39,7 @@ function getTier(score: number): Tier {
 
 const TIER_CLASSES: Record<Tier, string> = {
   success: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
-  primary: 'bg-accent/10 text-accent dark:text-accent border border-accent/20',
+  primary: 'bg-accent/10 text-accent-soft-foreground border border-accent/20',
   warning: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
   default: 'bg-theme-elevated text-theme-muted border border-theme-default',
 };

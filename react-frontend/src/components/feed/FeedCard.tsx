@@ -634,7 +634,7 @@ const FeedCardInner = React.memo(function FeedCardInner({
                     size="sm"
                     variant="flat"
                     startContent={<Landmark className="w-3 h-3" aria-hidden="true" />}
-                    className="text-[10px] h-5 bg-accent/15 text-accent dark:text-accent border border-accent/30"
+                    className="text-[10px] h-5 bg-accent/15 text-accent-soft-foreground border border-accent/30"
                   >
                     {t('feed.official_badge', { ns: 'common' })}
                   </Chip>
@@ -1571,7 +1571,7 @@ const FeedCardInner = React.memo(function FeedCardInner({
                 <Button
                   size="sm"
                   variant="light"
-                  className={`transition-all ${showComments ? 'text-accent font-medium bg-accent/5' : 'text-theme-muted hover:text-accent hover:bg-accent/5'}`}
+                  className={`transition-all ${showComments ? 'text-accent-soft-foreground font-medium bg-accent/5' : 'text-theme-muted hover:text-accent-soft-foreground hover:bg-accent/5'}`}
                   startContent={<MessageCircle className={`w-[18px] h-[18px] ${showComments ? 'fill-accent/20' : ''}`} aria-hidden="true" />}
                   onPress={toggleComments}
                 >

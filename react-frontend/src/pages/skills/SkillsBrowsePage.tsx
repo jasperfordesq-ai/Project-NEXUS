@@ -528,7 +528,7 @@ export function SkillsBrowsePage() {
                                             <Chip
                                               size="sm"
                                               variant="flat"
-                                              className="bg-accent/10 text-accent"
+                                              className="bg-accent/10 text-accent-soft-foreground"
                                             >
                                               <Users className="w-3 h-3" aria-hidden="true" />
                                               {skill.user_count}

@@ -426,7 +426,7 @@ export function BrokerCommandPalette({ isOpen, onClose }: BrokerCommandPalettePr
                         }}
                         onMouseEnter={() => setActiveIndex(idx)}
                         className={`flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors motion-reduce:transition-none ${
-                          active ? 'bg-accent/10 text-accent' : 'text-foreground hover:bg-surface-secondary'
+                          active ? 'bg-accent/10 text-accent-soft-foreground' : 'text-foreground hover:bg-surface-secondary'
                         }`}
                       >
                         <Icon size={18} className={active ? 'text-accent' : 'text-muted'} aria-hidden="true" />

@@ -53,7 +53,7 @@ export function EventReminderSettings() {
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 text-accent text-xs font-medium">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 text-accent-soft-foreground text-xs font-medium">
             <Clock className="w-3.5 h-3.5" aria-hidden="true" />
             {t('reminder.coming_soon_badge')}
           </div>

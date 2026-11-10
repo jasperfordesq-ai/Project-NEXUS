@@ -41,7 +41,7 @@ export function ManualInstallModal({ isOpen, onClose, browser }: ManualInstallMo
           <ol className="space-y-3 mt-2">
             {steps.map((step, i) => (
               <li key={step.text} className="flex items-start gap-3">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-accent/15 text-accent text-xs font-semibold inline-flex items-center justify-center">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-accent/15 text-accent-soft-foreground text-xs font-semibold inline-flex items-center justify-center">
                   {i + 1}
                 </span>
                 <span className="text-sm flex flex-wrap items-center gap-1">

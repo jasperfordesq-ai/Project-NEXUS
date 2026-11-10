@@ -940,7 +940,7 @@ export function SearchPage() {
                           <Link to={tenantPath(path)}>
                             <GlassCard className="h-full p-5 transition-transform hover:scale-[1.02]">
                               <div className="flex items-start gap-3">
-                                <span className="rounded-full bg-accent/15 p-2 text-accent" aria-hidden="true">
+                                <span className="rounded-full bg-accent/15 p-2 text-accent-soft-foreground" aria-hidden="true">
                                   <Podcast className="h-5 w-5" />
                                 </span>
                                 <div className="min-w-0 flex-1">

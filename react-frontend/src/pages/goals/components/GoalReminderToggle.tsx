@@ -133,7 +133,7 @@ export function GoalReminderToggle({ goalId, className = '' }: GoalReminderToggl
           isIconOnly
           size="sm"
           variant="flat"
-          className={`${hasReminder ? 'bg-accent/10 text-accent dark:text-accent' : 'bg-theme-elevated text-theme-muted'} ${className}`}
+          className={`${hasReminder ? 'bg-accent/10 text-accent-soft-foreground' : 'bg-theme-elevated text-theme-muted'} ${className}`}
           isLoading={isLoading}
           aria-label={hasReminder ? t('reminder.aria_active') : t('reminder.aria_set')}
         >
@@ -166,7 +166,7 @@ export function GoalReminderToggle({ goalId, className = '' }: GoalReminderToggl
                 variant="flat"
                 className={`w-full justify-start text-sm ${
                   reminder?.frequency === freq.value
-                    ? 'bg-accent/10 text-accent dark:text-accent'
+                    ? 'bg-accent/10 text-accent-soft-foreground'
                     : 'bg-transparent text-theme-muted hover:bg-theme-hover'
                 }`}
                 onPress={() => handleSetReminder(freq.value)}

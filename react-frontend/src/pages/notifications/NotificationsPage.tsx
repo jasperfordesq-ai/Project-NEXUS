@@ -448,7 +448,7 @@ export function NotificationsPage() {
             <Button
               size="sm"
               variant="flat"
-              className="bg-accent/10 text-accent dark:text-accent"
+              className="bg-accent/10 text-accent-soft-foreground"
               onPress={handleUndoDelete}
             >
               {t('undo')}

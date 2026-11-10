@@ -1096,7 +1096,7 @@ export function FeedPage() {
                 key={opt.key}
                 id={opt.key}
                 variant="ghost"
-                className="group shrink-0 rounded-full border border-theme-default bg-theme-elevated px-3 text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:border-transparent! data-[selected=true]:bg-accent-strong! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
+                className="group shrink-0 rounded-full border border-theme-default bg-theme-elevated px-3 text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent-soft-foreground data-[selected=true]:border-transparent! data-[selected=true]:bg-accent-strong! data-[selected=true]:text-white! data-[selected=true]:shadow-sm"
               >
                 {opt.dotClass && (
                   <span data-filter-dot aria-hidden="true" className={`${FILTER_DOT_CLASS} ${opt.dotClass}`} />

@@ -208,7 +208,7 @@ function ListEditor<T extends { _key?: string }>({
         <ol className="flex flex-col gap-2">
           {standardItems.map((item, index) => (
             <li key={index} className="flex items-start gap-3 rounded-lg bg-surface px-3 py-2">
-              <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-semibold text-accent">
+              <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-semibold text-accent-soft-foreground">
                 {index + 1}
               </span>
               <div className="min-w-0 text-sm">{renderStandard(item, index)}</div>

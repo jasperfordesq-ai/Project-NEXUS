@@ -255,7 +255,7 @@ export function NewsletterAnalytics() {
       {totals && hasData && (
         <Card className="mt-6">
           <CardHeader className="flex items-center gap-3 px-6 pb-0 pt-5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-soft-foreground">
               <BarChart3 aria-hidden="true" size={20} />
             </div>
             <div>
@@ -304,7 +304,7 @@ export function NewsletterAnalytics() {
       {chartData.length > 0 && (
         <Card className="mt-6">
           <CardHeader className="flex items-center gap-3 px-6 pb-0 pt-5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent-soft-foreground">
               <TrendingUp aria-hidden="true" size={20} />
             </div>
             <div>

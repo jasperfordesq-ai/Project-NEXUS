@@ -675,7 +675,7 @@ export function AdCampaignAdminPage() {
                               <p className="font-semibold text-foreground">{creative.headline}</p>
                               <p className="mt-0.5 text-sm text-muted">{creative.body}</p>
                               {creative.cta_text && (
-                                <span className="mt-1 inline-block rounded bg-accent/10 px-2 py-0.5 text-xs text-accent">
+                                <span className="mt-1 inline-block rounded bg-accent/10 px-2 py-0.5 text-xs text-accent-soft-foreground">
                                   {creative.cta_text}
                                 </span>
                               )}

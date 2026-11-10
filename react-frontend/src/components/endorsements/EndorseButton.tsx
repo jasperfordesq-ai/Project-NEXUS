@@ -102,8 +102,8 @@ export function EndorseButton({
           isDisabled={isLoading}
           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all min-h-9 min-w-0 ${
             localIsEndorsed
-              ? 'bg-accent/20 text-accent dark:text-accent'
-              : 'bg-theme-elevated text-theme-subtle hover:bg-accent/10 hover:text-accent'
+              ? 'bg-accent/20 text-accent-soft-foreground'
+              : 'bg-theme-elevated text-theme-subtle hover:bg-accent/10 hover:text-accent-soft-foreground'
           }`}
           aria-label={localIsEndorsed ? t('endorse.aria_remove', { skillName }) : t('endorse.aria_endorse', { skillName })}
         >
@@ -120,7 +120,7 @@ export function EndorseButton({
       variant={localIsEndorsed ? 'flat' : 'bordered'}
       className={
         localIsEndorsed
-          ? 'bg-accent/20 text-accent dark:text-accent'
+          ? 'bg-accent/20 text-accent-soft-foreground'
           : 'border-theme-default text-theme-muted hover:border-accent/30 hover:text-accent'
       }
       startContent={

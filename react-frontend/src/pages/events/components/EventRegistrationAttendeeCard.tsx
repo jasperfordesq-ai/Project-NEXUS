@@ -438,7 +438,7 @@ export default function EventRegistrationAttendeeCard({ eventId }: EventRegistra
     <Card className="border border-theme-default">
       <CardHeader className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="rounded-xl bg-accent-soft p-2 text-accent">
+          <span className="rounded-xl bg-accent-soft p-2 text-accent-soft-foreground">
             <ClipboardList className="h-5 w-5" aria-hidden="true" />
           </span>
           <div>
