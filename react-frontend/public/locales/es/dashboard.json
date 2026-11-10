@@ -196,5 +196,16 @@
     "title": "¡Feliz aniversario!",
     "body": "Te uniste a {{community}} el {{date}}. Gracias por formar parte.",
     "close": "Cerrar"
+  },
+  "milestone": {
+    "title": "{{hours}} horas compartidas entre todos",
+    "body": "Los miembros de {{community}} ya se han dado más de {{hours}} horas de ayuda. Gracias por formar parte.",
+    "close": "Cerrar"
+  },
+  "photo_prompt": {
+    "title": "Añade una foto tuya",
+    "body": "Una cara amable ayuda a tus vecinos a reconocerte y confiar en ti. Solo lleva un momento.",
+    "action": "Añadir una foto",
+    "close": "Ahora no"
   }
 }

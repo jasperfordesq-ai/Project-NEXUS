@@ -86,6 +86,12 @@ class FeedSidebarController extends BaseApiController
      * community fund), members who joined and are approved and active, and
      * offers and requests posted that are live or completed. Totals only, no
      * names. Signed-in members only; cached for ten minutes per community.
+     *
+     * `monthly_hours` is that same hours figure for each of the last six
+     * calendar months, oldest first and ending with this month, as
+     * [{ month: 'YYYY-MM', hours: float }]. A month with nothing shared is
+     * present with 0, and the last entry always equals `hours_shared`.
+     * Community totals only — never a figure for one member.
      */
     public function thisMonth(): JsonResponse
     {
@@ -116,11 +122,32 @@ class FeedSidebarController extends BaseApiController
                     ->where('created_at', '>=', $start)
                     ->count();
 
+                // The months before this one, in one grouped query. This month's
+                // bar is the figure above, so the two can never disagree.
+                $firstMonth = $start->copy()->subMonthsNoOverflow(self::MONTHLY_HOURS_MONTHS - 1);
+                $earlier = DB::table('transactions')
+                    ->where('tenant_id', $tenantId)
+                    ->whereIn('transaction_type', ['exchange', 'transfer'])
+                    ->where('status', 'completed')
+                    ->where('created_at', '>=', $firstMonth)
+                    ->where('created_at', '<', $start)
+                    ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month_key, SUM(amount) as hours")
+                    ->groupBy('month_key')
+                    ->pluck('hours', 'month_key');
+
+                $monthlyHours = [];
+                for ($i = 0; $i < self::MONTHLY_HOURS_MONTHS - 1; $i++) {
+                    $key = $firstMonth->copy()->addMonthsNoOverflow($i)->format('Y-m');
+                    $monthlyHours[] = ['month' => $key, 'hours' => round((float) ($earlier[$key] ?? 0), 2)];
+                }
+                $monthlyHours[] = ['month' => $start->format('Y-m'), 'hours' => round($hours, 2)];
+
                 return [
                     'month' => $start->format('Y-m'),
                     'hours_shared' => round($hours, 2),
                     'new_members' => $members,
                     'new_listings' => $listings,
+                    'monthly_hours' => $monthlyHours,
                 ];
             });
 
@@ -130,6 +157,9 @@ class FeedSidebarController extends BaseApiController
             return $this->respondWithError('INTERNAL_ERROR', __('api.failed_load_community_stats'), null, 500);
         }
     }
+
+    /** How many calendar months `monthly_hours` covers, this month included. */
+    private const MONTHLY_HOURS_MONTHS = 6;
 
     /** The cache key for a community's monthly highlight (one per calendar month). */
     public static function thisMonthCacheKey(int $tenantId): string

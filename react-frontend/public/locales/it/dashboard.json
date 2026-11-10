@@ -196,5 +196,16 @@
     "title": "Buon anniversario!",
     "body": "Sei entrato in {{community}} il {{date}}. Grazie di farne parte.",
     "close": "Chiudi"
+  },
+  "milestone": {
+    "title": "{{hours}} ore condivise insieme",
+    "body": "I membri di {{community}} si sono ormai scambiati più di {{hours}} ore di aiuto. Grazie di farne parte.",
+    "close": "Chiudi"
+  },
+  "photo_prompt": {
+    "title": "Aggiungi una tua foto",
+    "body": "Un volto amichevole aiuta i vicini a riconoscerti e a fidarsi di te. Basta un attimo.",
+    "action": "Aggiungi una foto",
+    "close": "Non ora"
   }
 }

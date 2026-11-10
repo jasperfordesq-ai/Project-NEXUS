@@ -360,8 +360,10 @@ describe('DashboardPage', () => {
 
       expect(screen.getByText('Tell us where you are based')).toBeInTheDocument();
       expect(screen.getByPlaceholderText('Your town or city')).toBeInTheDocument();
-      // Can never be hidden: nothing on the card closes it.
-      expect(screen.queryByRole('button', { name: /dismiss|close|hide|not now|later/i })).not.toBeInTheDocument();
+      // Can never be hidden: nothing on the card closes it. (Scoped to the card:
+      // other prompts on the page, like "add a photo", can be put away.)
+      const card = screen.getByRole('region', { name: 'Tell us where you are based' });
+      expect(within(card).queryByRole('button', { name: /dismiss|close|hide|not now|later/i })).not.toBeInTheDocument();
     });
 
     it('does not show it to a member who has a location', async () => {
@@ -444,6 +446,46 @@ describe('DashboardPage', () => {
     expect(await screen.findByRole('img', { name: 'Three people planting leeks' })).toBeInTheDocument();
     // Nothing written: the Avatar keeps its usual label, the group name.
     expect(screen.getByRole('img', { name: 'Book Club' })).toBeInTheDocument();
+  });
+
+  it('shows up to three faces of the people who endorsed each skill, as decoration beside the count', async () => {
+    mockApiGet.mockImplementation((endpoint: string) => {
+      if (endpoint === '/v2/members/1/endorsements') {
+        return Promise.resolve({
+          success: true,
+          data: {
+            endorsements: [
+              {
+                skill_name: 'Gardening',
+                count: 4,
+                endorsements: [
+                  { endorser_id: 31, endorser_name: 'Maeve', endorser_avatar: '/uploads/maeve.png' },
+                  { endorser_id: 32, endorser_name: 'Tom', endorser_avatar: '/uploads/tom.png' },
+                  { endorser_id: 33, endorser_name: 'Ann', endorser_avatar: '/uploads/ann.png' },
+                  { endorser_id: 34, endorser_name: 'Fourth', endorser_avatar: '/uploads/fourth.png' },
+                ],
+              },
+              // An older server response without the people: the row still shows, with no faces.
+              { skill_name: 'Baking', count: 1 },
+            ],
+          },
+        });
+      }
+      return Promise.resolve(buildApiResponse(endpoint));
+    });
+    render(<DashboardPage />);
+
+    const row = (await screen.findByText('Gardening')).parentElement as HTMLElement;
+    expect(within(row).getByAltText('Maeve')).toBeInTheDocument();
+    expect(within(row).getByAltText('Tom')).toBeInTheDocument();
+    expect(within(row).getByAltText('Ann')).toBeInTheDocument();
+    expect(within(row).queryByAltText('Fourth')).not.toBeInTheDocument();
+    expect(within(row).getByAltText('Maeve').closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(within(row).getByText('4')).toBeInTheDocument();
+
+    const plainRow = screen.getByText('Baking').parentElement as HTMLElement;
+    expect(within(plainRow).queryByRole('img', { hidden: true })).not.toBeInTheDocument();
+    expect(within(plainRow).getByText('1')).toBeInTheDocument();
   });
 
   it('falls back to 0% when gamification progress is missing', async () => {

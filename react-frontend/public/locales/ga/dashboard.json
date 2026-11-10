@@ -204,5 +204,16 @@
     "title": "Comóradh sona!",
     "body": "Chuaigh tú isteach in {{community}} ar {{date}}. Go raibh maith agat as a bheith páirteach ann.",
     "close": "Dún"
+  },
+  "milestone": {
+    "title": "{{hours}} uair an chloig roinnte le chéile",
+    "body": "Tá níos mó ná {{hours}} uair an chloig de chabhair tugtha ag baill {{community}} dá chéile anois. Go raibh maith agat as a bheith páirteach ann.",
+    "close": "Dún"
+  },
+  "photo_prompt": {
+    "title": "Cuir grianghraf díot féin leis",
+    "body": "Cabhraíonn aghaidh chairdiúil le do chomharsana tú a aithint agus muinín a chur ionat. Ní thógann sé ach nóiméad.",
+    "action": "Cuir grianghraf leis",
+    "close": "Ní anois"
   }
 }

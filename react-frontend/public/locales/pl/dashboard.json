@@ -200,5 +200,16 @@
     "title": "Szczęśliwej rocznicy!",
     "body": "Dołączasz do {{community}} od {{date}}. Dziękujemy, że jesteś z nami.",
     "close": "Zamknij"
+  },
+  "milestone": {
+    "title": "{{hours}} godzin wspólnie podzielonych",
+    "body": "Członkowie {{community}} podarowali sobie już ponad {{hours}} godzin pomocy. Dziękujemy, że jesteś z nami.",
+    "close": "Zamknij"
+  },
+  "photo_prompt": {
+    "title": "Dodaj swoje zdjęcie",
+    "body": "Przyjazna twarz pomaga sąsiadom rozpoznać Cię i Ci zaufać. To zajmie tylko chwilę.",
+    "action": "Dodaj zdjęcie",
+    "close": "Nie teraz"
   }
 }

@@ -11,7 +11,10 @@ import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { NewMembersStrip } from './NewMembersStrip';
 import { CommunityMonthHighlight } from './CommunityMonthHighlight';
+import { CommunityHoursChart } from './CommunityHoursChart';
 import { MembershipAnniversary } from './MembershipAnniversary';
+import { CommunityMilestone } from './CommunityMilestone';
+import { PhotoPrompt } from './PhotoPrompt';
 import { Card, CardBody } from '@/components/ui/Card';
 import { useGreeting } from '@/hooks/useGreeting';
 import { GuardianConsentPrompt } from '@/components/safeguarding/GuardianConsentPrompt';
@@ -91,7 +94,7 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '').trim();
 }
 
-interface EndorsementEntry { skill: string; count: number; }
+interface EndorsementEntry { skill: string; count: number; endorsers: Array<{ id: number; name: string | null; avatar_url: string | null }>; }
 
 /** Normalized shape the "Suggested for You" card renders — built either from
  * a Smart Matching /v2/matches/all listing match or a plain Listing fallback. */
@@ -346,9 +349,11 @@ export function DashboardPage() {
       if (optionalResults.events) { const eRes = optionalResults.events as { success?: boolean; data?: Event[] }; if (eRes?.success && Array.isArray(eRes.data)) eventsData = eRes.data; }
       let endorsementsData: EndorsementEntry[] = [];
       if (optionalResults.endorsements) {
-        const eRes = optionalResults.endorsements as { success?: boolean; data?: { endorsements?: Array<{ skill_name: string; count: number }> } };
+        const eRes = optionalResults.endorsements as { success?: boolean; data?: { endorsements?: Array<{ skill_name: string; count: number; endorsements?: Array<{ endorser_id: number; endorser_name?: string | null; endorser_avatar?: string | null }> }> } };
         if (eRes?.success && Array.isArray(eRes.data?.endorsements)) {
-          endorsementsData = eRes.data.endorsements.map((e) => ({ skill: e.skill_name, count: Number(e.count) || 0 })).filter((e) => e.count > 0).sort((a, b) => b.count - a.count).slice(0, 6);
+          // The newest three people who endorsed each skill — the same names and
+          // photos the member's own profile endorsements already carry.
+          endorsementsData = eRes.data.endorsements.map((e) => ({ skill: e.skill_name, count: Number(e.count) || 0, endorsers: (Array.isArray(e.endorsements) ? e.endorsements : []).slice(0, 3).map((r) => ({ id: r.endorser_id, name: r.endorser_name ?? null, avatar_url: r.endorser_avatar ?? null })) })).filter((e) => e.count > 0).sort((a, b) => b.count - a.count).slice(0, 6);
         }
       }
 
@@ -463,6 +468,12 @@ export function DashboardPage() {
         {/* The member's own joining anniversary; renders nothing on other days. */}
         <MembershipAnniversary />
 
+        {/* A round number of hours shared by the whole community (seen once per
+            milestone), and a nudge to add a profile photo for a member without
+            one. Each renders nothing when it has nothing to say. */}
+        <CommunityMilestone />
+        <PhotoPrompt />
+
         {hasCaringCommunity && (
           <motion.div variants={itemVariants}>
             <GlassCard className="border-l-4 border-l-emerald-500 p-5 sm:p-6">
@@ -506,6 +517,7 @@ export function DashboardPage() {
 
           {/* This month in the community (span 2); renders nothing in a quiet month */}
           <CommunityMonthHighlight className="md:col-span-2" />
+          <CommunityHoursChart className="md:col-span-2" />
 
           {/* New members to say hello to (span 2); renders nothing when nobody is new */}
           <NewMembersStrip className="md:col-span-2" />
@@ -786,10 +798,14 @@ export function DashboardPage() {
                   </div>
                 ) : (
                   <div className="divide-y divide-[var(--glass-border)]">
-                    {stats.myEndorsements.map(({ skill, count }) => (
+                    {stats.myEndorsements.map(({ skill, count, endorsers }) => (
                       <div key={skill} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
                         <span className="text-sm text-theme-primary truncate">{skill}</span>
-                        <span className="flex items-center gap-1 text-xs font-semibold text-accent dark:text-accent ml-2 shrink-0"><ThumbsUp className="w-3 h-3" aria-hidden="true" />{count}</span>
+                        <span className="flex items-center gap-2 ml-2 shrink-0">
+                          {/* A few faces of the people who endorsed this skill. Decoration: the count beside them carries the meaning. */}
+                          <FaceStack people={endorsers} max={3} data-testid="dashboard-endorser-face" />
+                          <span className="flex items-center gap-1 text-xs font-semibold text-accent dark:text-accent"><ThumbsUp className="w-3 h-3" aria-hidden="true" />{count}</span>
+                        </span>
                       </div>
                     ))}
                   </div>

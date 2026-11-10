@@ -192,5 +192,16 @@
     "title": "Alles Gute zum Jubiläum!",
     "body": "Sie sind {{community}} am {{date}} beigetreten. Danke, dass Sie dabei sind.",
     "close": "Schließen"
+  },
+  "milestone": {
+    "title": "{{hours}} gemeinsam geteilte Stunden",
+    "body": "Die Mitglieder von {{community}} haben einander inzwischen mehr als {{hours}} Stunden geholfen. Danke, dass du dabei bist.",
+    "close": "Schließen"
+  },
+  "photo_prompt": {
+    "title": "Füge ein Foto von dir hinzu",
+    "body": "Ein freundliches Gesicht hilft deinen Nachbarn, dich zu erkennen und dir zu vertrauen. Es dauert nur einen Moment.",
+    "action": "Foto hinzufügen",
+    "close": "Nicht jetzt"
   }
 }

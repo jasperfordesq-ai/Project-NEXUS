@@ -192,5 +192,16 @@
     "title": "Gefeliciteerd met je jubileum!",
     "body": "Je bent op {{date}} lid geworden van {{community}}. Bedankt dat je erbij bent.",
     "close": "Sluiten"
+  },
+  "milestone": {
+    "title": "{{hours}} uur samen gedeeld",
+    "body": "De leden van {{community}} hebben elkaar inmiddels meer dan {{hours}} uur geholpen. Bedankt dat je erbij hoort.",
+    "close": "Sluiten"
+  },
+  "photo_prompt": {
+    "title": "Voeg een foto van jezelf toe",
+    "body": "Een vriendelijk gezicht helpt buren je te herkennen en te vertrouwen. Het kost maar even.",
+    "action": "Foto toevoegen",
+    "close": "Niet nu"
   }
 }
