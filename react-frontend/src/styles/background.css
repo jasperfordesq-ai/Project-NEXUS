@@ -228,8 +228,24 @@ main, article, section {
     --page-wash-a: oklch(from var(--accent-color) 0.995 0.015 h);
     --page-wash-b: oklch(from var(--companion) 0.995 0.015 h);
   }
+
+  /* The same idea behind a conversation (warmth plan P17): the message area
+     wears a flat, faint tint of the community's hue at the same two fixed
+     lightnesses, so date lines and names that sit straight on it read as well
+     as they do on the page. */
+  .chat-backdrop {
+    background-color: oklch(from var(--accent-color) 0.18 0.04 h);
+  }
+
+  :root[data-theme="light"] .chat-backdrop {
+    background-color: oklch(from var(--accent-color) 0.995 0.015 h);
+  }
 }
 
 html[data-high-contrast="true"] .page-wash {
   background-image: none;
+}
+
+html[data-high-contrast="true"] .chat-backdrop {
+  background-color: transparent;
 }

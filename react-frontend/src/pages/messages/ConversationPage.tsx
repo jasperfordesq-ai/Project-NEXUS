@@ -2773,7 +2773,7 @@ export function ConversationPage() {
         <div className="relative flex min-h-0 flex-1 flex-col">
         <div
           ref={messagesContainerRef}
-          className="min-h-0 flex-1 scroll-pb-6 space-y-4 overflow-y-auto p-3 [scrollbar-gutter:stable] sm:p-5"
+          className="chat-backdrop min-h-0 flex-1 scroll-pb-6 space-y-4 overflow-y-auto p-3 [scrollbar-gutter:stable] sm:p-5"
           onScroll={handleScroll}
           role="log"
           aria-live="polite"

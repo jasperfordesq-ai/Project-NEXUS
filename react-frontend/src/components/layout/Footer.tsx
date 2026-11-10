@@ -22,6 +22,8 @@ import { SourceRepositoryLink } from './SourceRepositoryLink';
 import { Button } from '@/components/ui/Button';
 import { resolveBrandingImageUrl } from '@/lib/helpers';
 import { safeHref } from '@/lib/safeHref';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { accentLineClasses } from '@/lib/categoryColours';
 
 
 /**
@@ -49,6 +51,7 @@ export interface FooterProps {
  */
 export function Footer({ children, copyright }: FooterProps) {
   const { t } = useTranslation('common');
+  const footerLineClasses = accentLineClasses(useSitePalette());
   const { tenant, branding, tenantPath, hasModule } = useTenant();
   const { resolvedTheme } = useTheme();
   const hasConnections = useFeature('connections');
@@ -106,6 +109,13 @@ export function Footer({ children, copyright }: FooterProps) {
 
   return (
     <footer className="relative z-10 hidden border-t border-theme-default mt-auto glass-surface backdrop-blur-sm md:block" data-nosnippet>
+      {/* The same thin line in the community's colours as under the header, so
+          the page is framed top and bottom (warmth plan P19). Decoration. */}
+      <div
+        aria-hidden="true"
+        data-testid="footer-accent-line"
+        className={`pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-linear-to-r ${footerLineClasses}`}
+      />
       <div className="hidden px-4 py-6 pb-[calc(var(--safe-area-bottom)+5rem)]">
         <div className="flex flex-col items-center gap-4">
           {/* Powered-by banner — always shown; defaults to NEXUS branding, overridable by God */}

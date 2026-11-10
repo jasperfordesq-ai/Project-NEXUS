@@ -89,4 +89,15 @@ describe('the soft glow behind the page', () => {
     expect(CSS).toMatch(/html\[data-high-contrast="true"\] \.page-wash\s*\{\s*background-image:\s*none/);
     expect(CSS).toMatch(/@supports \(color: oklch\(from red l c h\)\)\s*\{\s*\.page-wash \{/);
   });
+
+  it('gives a conversation the same two fixed lightnesses, and none in high-contrast mode', () => {
+    const { L: lightL, C: lightC } = light();
+    const { L: darkL, C: darkC } = dark();
+    expect(CSS).toContain(`:root[data-theme="light"] .chat-backdrop {
+    background-color: oklch(from var(--accent-color) ${lightL} ${lightC} h);`);
+    expect(CSS).toContain(`
+  .chat-backdrop {
+    background-color: oklch(from var(--accent-color) ${darkL} ${darkC} h);`);
+    expect(CSS).toMatch(/html\[data-high-contrast="true"\] \.chat-backdrop\s*\{\s*background-color:\s*transparent/);
+  });
 });

@@ -991,10 +991,13 @@ export function FeedPage() {
           A soft panel in the community colour with a greeting for the time of
           day, like the offers page and the dashboard (AWID: warmth). Text on
           the tint uses the darker secondary token so it stays readable. */}
-      <section data-testid="feed-header" className="hidden overflow-hidden rounded-3xl bg-accent-soft sm:block">
+      <section data-testid="feed-header" className="relative hidden overflow-hidden rounded-3xl bg-accent-soft sm:block">
+        {/* The same soft glow of the companion colour as every other page
+            opening; in the bottom corner here, clear of the photo band. */}
+        <div aria-hidden="true" data-hero-glow="true" className="hero-glow pointer-events-none absolute -bottom-24 -right-16 size-72 rounded-full blur-3xl" />
         {/* The community's own photo, when it has one, as a band across the top. */}
-        <CommunityPhoto data-testid="feed-header-photo" className="block h-28 w-full lg:h-36" />
-        <div className="flex items-center gap-4 px-5 py-5 sm:px-6">
+        <CommunityPhoto data-testid="feed-header-photo" className="relative block h-28 w-full lg:h-36" />
+        <div className="relative flex items-center gap-4 px-5 py-5 sm:px-6">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-accent shadow-sm ring-1 ring-accent/15 dark:bg-white/10">
             <Newspaper className="w-6 h-6" aria-hidden="true" />
           </span>

@@ -108,4 +108,11 @@ describe('the glow in a page opening', () => {
     }
     expect(HERO).toMatch(/aria-hidden="true"\s+data-hero-glow="true"\s+className=\{`hero-glow pointer-events-none/);
   });
+
+  it('is on the three welcome panels that are not page openings, too', () => {
+    for (const file of ['pages/dashboard/DashboardPage.tsx', 'pages/listings/ListingsPage.tsx', 'pages/feed/FeedPage.tsx']) {
+      const source = fs.readFileSync(path.resolve(__dirname, '..', file), 'utf8');
+      expect(source, file).toMatch(/aria-hidden="true" data-hero-glow="true" className="hero-glow pointer-events-none absolute/);
+    }
+  });
 });

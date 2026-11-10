@@ -641,8 +641,10 @@ export function ListingsPage() {
           it is the page's header, so it holds the page's only <h1>; on a phone
           the title is in the app bar and the greeting is the heading. */}
       {isAuthenticated && (
-        <Card data-testid="listings-welcome" className="border-0 bg-accent-soft shadow-none">
-          <CardBody className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 lg:p-8">
+        <Card data-testid="listings-welcome" className="relative overflow-hidden border-0 bg-accent-soft shadow-none">
+          {/* The same soft glow of the companion colour as every other page opening. */}
+          <div aria-hidden="true" data-hero-glow="true" className="hero-glow pointer-events-none absolute -right-16 -top-24 size-48 rounded-full blur-3xl sm:size-72" />
+          <CardBody className="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 lg:p-8">
             <div className="min-w-0">
               {isPhone ? (
                 <h2 className="text-xl font-bold tracking-tight text-theme-primary">{greeting}</h2>

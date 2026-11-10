@@ -439,8 +439,10 @@ export function DashboardPage() {
         {/* Welcome Header — a soft panel in the community colour with a
             greeting for the time of day, like the offers page (AWID: warmth). */}
         <motion.div variants={itemVariants}>
-          <Card data-testid="dashboard-welcome" className="border-0 bg-accent-soft shadow-none">
-            <CardBody className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 lg:p-8">
+          <Card data-testid="dashboard-welcome" className="relative overflow-hidden border-0 bg-accent-soft shadow-none">
+            {/* The same soft glow of the companion colour as every other page opening. */}
+            <div aria-hidden="true" data-hero-glow="true" className="hero-glow pointer-events-none absolute -right-16 -top-24 size-48 rounded-full blur-3xl sm:size-72" />
+            <CardBody className="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 lg:p-8">
               {/* The community's own photo, when it has one: above the greeting
                   on a phone, at the far end of the panel on wider screens. */}
               <CommunityPhoto

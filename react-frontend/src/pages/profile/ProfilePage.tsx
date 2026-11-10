@@ -649,7 +649,7 @@ export function ProfilePage() {
               initials everywhere (the palette follows the community colour).
               Was a thin bar in a fixed colour. */}
           <div className="h-20 sm:h-28">
-            <ThemedCover data-testid="profile-cover" colour={coverColour} />
+            <ThemedCover data-testid="profile-cover" colour={coverColour} seed={`member-${profile.id}`} />
           </div>
           <div className="p-5 sm:p-8">
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
