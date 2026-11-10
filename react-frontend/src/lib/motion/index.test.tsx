@@ -3,12 +3,50 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import { act, render, screen, waitFor } from '@testing-library/react';
 
-import { motion } from './index';
+import { motion, useReducedMotion } from './index';
 
 describe('motion proxy', () => {
   it('does not create motion components for symbol metadata probes', () => {
     expect(() => Object.prototype.toString.call(motion)).not.toThrow();
+  });
+});
+
+describe('useReducedMotion — the member\'s own setting counts too', () => {
+  function Probe() {
+    return <span data-testid="reduced">{String(useReducedMotion())}</span>;
+  }
+
+  afterEach(() => {
+    document.documentElement.removeAttribute('data-reduced-motion');
+  });
+
+  it('is true when the member switched reduced motion on in the app', () => {
+    document.documentElement.setAttribute('data-reduced-motion', 'true');
+    render(<Probe />);
+    expect(screen.getByTestId('reduced').textContent).toBe('true');
+  });
+
+  it('follows the setting when it changes while the page is open', async () => {
+    render(<Probe />);
+    expect(screen.getByTestId('reduced').textContent).toBe('false');
+    await act(async () => {
+      document.documentElement.setAttribute('data-reduced-motion', 'true');
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(screen.getByTestId('reduced').textContent).toBe('true'));
+  });
+});
+
+describe('the hover lift on cards', () => {
+  it('is left out for anyone who asked for less movement', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const css = fs.readFileSync(path.resolve(__dirname, '../../styles/glass.css'), 'utf8');
+    expect(css).toMatch(/\.glass-card-hover:hover \{[^}]*transform: translateY\(-2px\)/);
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\.glass-card-hover:hover \{\s*transform: none/);
+    expect(css).toMatch(/html\[data-reduced-motion="true"\] \.glass-card-hover:hover \{\s*transform: none/);
   });
 });

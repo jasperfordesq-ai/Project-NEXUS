@@ -58,6 +58,21 @@
   background: var(--glass-bg-hover);
   border-color: var(--glass-border-hover);
   box-shadow: var(--shadow-card-hover);
+  /* A small lift on every card that responds to the pointer (warmth plan P6).
+     Was only on cards that also asked for the entrance animation. */
+  transform: translateY(-2px);
+}
+
+/* No movement for anyone who asked for less of it: the transition rules
+   elsewhere make it instant, this keeps the card where it is. */
+@media (prefers-reduced-motion: reduce) {
+  .glass-card-hover:hover {
+    transform: none;
+  }
+}
+
+html[data-reduced-motion="true"] .glass-card-hover:hover {
+  transform: none;
 }
 
 .glass-card:focus-visible,

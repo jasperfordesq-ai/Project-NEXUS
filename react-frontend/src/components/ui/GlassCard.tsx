@@ -5,7 +5,8 @@
 
 import { type ReactNode, type HTMLAttributes, type MouseEvent, type Ref } from 'react';
 
-import { motion, type Variants } from '@/lib/motion';
+import { motion } from '@/lib/motion';
+import { ENTER, fadeUp } from '@/lib/motion/presets';
 import { Card } from '@/components/ui/Card';
 
 /** Exclude HTML event props that conflict with Framer Motion's signatures */
@@ -20,11 +21,6 @@ export interface GlassCardProps extends SafeHtmlProps {
   /** Use Framer Motion for smooth animations */
   animated?: boolean;
 }
-
-const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
 
 /**
  * GlassCard - Glassmorphism card component built on HeroUI Card
@@ -64,11 +60,10 @@ export function GlassCard(
       return (
         <motion.div
           ref={ref}
-          variants={cardVariants}
+          variants={fadeUp}
           initial="hidden"
           animate="visible"
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-          whileHover={hoverable ? { y: -4, transition: { duration: 0.2 } } : undefined}
+          transition={ENTER}
           {...(rest as object)}
         >
           <Card

@@ -229,19 +229,35 @@ const VariantContext = React.createContext<VariantCtx | null>(null);
 
 /* --------------------------------------------------------- reduced motion */
 
-const get = () =>
-  typeof window !== 'undefined' &&
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/**
+ * True when movement should be left out: the device asks for reduced motion,
+ * or the member switched it on in the app (Settings → Accessibility, which
+ * ThemeContext writes to `data-reduced-motion` on <html>). Until Nov 2026
+ * only the device setting was read, so a member who chose it in the app still
+ * got components that decide for themselves whether to move (warmth plan P6).
+ */
+const get = () => {
+  if (typeof window === 'undefined') return false;
+  if (typeof document !== 'undefined' && document.documentElement.getAttribute('data-reduced-motion') === 'true') {
+    return true;
+  }
+  return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+};
 
 export function useReducedMotion(): boolean {
   const [reduced, setReduced] = React.useState<boolean>(get);
   React.useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
-    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handler = () => setReduced(mql.matches);
-    mql.addEventListener?.('change', handler);
-    return () => mql.removeEventListener?.('change', handler);
+    if (typeof window === 'undefined') return;
+    const handler = () => setReduced(get());
+    handler();
+    const mql = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    mql?.addEventListener?.('change', handler);
+    const observer = typeof MutationObserver === 'function' ? new MutationObserver(handler) : null;
+    observer?.observe(document.documentElement, { attributes: true, attributeFilter: ['data-reduced-motion'] });
+    return () => {
+      mql?.removeEventListener?.('change', handler);
+      observer?.disconnect();
+    };
   }, []);
   return reduced;
 }
