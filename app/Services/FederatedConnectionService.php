@@ -11,7 +11,7 @@ use App\I18n\LocaleContext;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Support\UserDisplayName;
+use App\Support\Federation\FederatedMemberName;
 
 /**
  * FederatedConnectionService — Manages cross-tenant connection requests between federated members.
@@ -162,14 +162,19 @@ class FederatedConnectionService
             // Notify the recipient (cross-tenant bell notification)
             try {
                 $sender = DB::selectOne(
-                    "SELECT first_name, last_name FROM users WHERE id = ? AND tenant_id = ?",
+                    "SELECT first_name, last_name, profile_type, organization_name FROM users WHERE id = ? AND tenant_id = ?",
                     [$requesterId, $requesterTenantId]
                 );
                 $community = DB::selectOne(
                     "SELECT name FROM tenants WHERE id = ?",
                     [$requesterTenantId]
                 );
-                $senderName = $sender ? UserDisplayName::resolve($sender) : __('emails.common.fallback_someone');
+                // E-122: the recipient belongs to another community, so the
+                // bell and push name the requester by first name only (an
+                // organisation by its trading name) unless the recipient
+                // administers the requester's community.
+                $senderName = (new FederatedMemberName($receiverId, $receiverTenantId))
+                    ->name($sender, $requesterId, $requesterTenantId, '', __('emails.common.fallback_someone'));
                 $communityName = $community->name ?? __('emails.common.fallback_partner_community');
 
                 // Render the bell message in the RECEIVER's preferred locale
@@ -293,10 +298,15 @@ class FederatedConnectionService
             // Notify the original requester (cross-tenant bell notification)
             try {
                 $accepter = DB::selectOne(
-                    "SELECT first_name, last_name FROM users WHERE id = ? AND tenant_id = ?",
+                    "SELECT first_name, last_name, profile_type, organization_name FROM users WHERE id = ? AND tenant_id = ?",
                     [$userId, $tenantId]
                 );
-                $accepterName = $accepter ? UserDisplayName::resolve($accepter) : __('emails.common.fallback_someone');
+                // E-122: the original requester belongs to another community —
+                // first name only, as above.
+                $accepterName = (new FederatedMemberName(
+                    (int) $connection->requester_user_id,
+                    (int) $connection->requester_tenant_id,
+                ))->name($accepter, $userId, (int) $tenantId, '', __('emails.common.fallback_someone'));
 
                 // Render the bell message in the ORIGINAL REQUESTER's preferred locale
                 // (cross-tenant: they live on connection->requester_tenant_id).
@@ -612,8 +622,13 @@ class FederatedConnectionService
 
             $rows = DB::select($sql, $params);
 
+            // E-122: the other party belongs to another community — first name
+            // only (an organisation keeps its trading name), unless the viewer
+            // administers that community.
+            $names = new FederatedMemberName($userId, (int) $tenantId);
+
             // Map field names to match frontend FederationConnection interface
-            return array_map(function ($row) use ($userId, $tenantId) {
+            return array_map(function ($row) use ($userId, $tenantId, $names) {
                 $direction = ($row->requester_user_id == $userId && $row->requester_tenant_id == $tenantId) ? 'outgoing' : 'incoming';
 
                 // F-351: a counterparty who has switched off being visible to
@@ -628,7 +643,7 @@ class FederatedConnectionService
                     'id' => (int) $row->id,
                     'user_id' => (int) $row->other_user_id,
                     'name' => $otherVisible
-                        ? UserDisplayName::resolvePrefixed($row, 'other_')
+                        ? $names->name($row, (int) $row->other_user_id, (int) $row->other_tenant_id, 'other_')
                         : __('emails.common.fallback_someone'),
                     'avatar_url' => $otherVisible ? $row->other_avatar : null,
                     'tenant_id' => (int) $row->other_tenant_id,

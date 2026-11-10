@@ -589,9 +589,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/FederationV2Controller.php:2946:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/FederationV2Controller.php:3006:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/FederationV2Controller.php",
-            "line": 2946,
+            "line": 3006,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $receiverId",
@@ -602,9 +602,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/FederationV2Controller.php:4049:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/FederationV2Controller.php:4114:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/FederationV2Controller.php",
-            "line": 4049,
+            "line": 4114,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $receiverIdInt",
@@ -1811,9 +1811,9 @@
             "data_expression": "$data"
         },
         {
-            "id": "app/Services/FederatedConnectionService.php:191:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/FederatedConnectionService.php:196:NotificationDispatcher::fanOutPush",
             "file": "app/Services/FederatedConnectionService.php",
-            "line": 191,
+            "line": 196,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $receiverId",
@@ -1824,9 +1824,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/FederatedConnectionService.php:317:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/FederatedConnectionService.php:327:NotificationDispatcher::fanOutPush",
             "file": "app/Services/FederatedConnectionService.php",
-            "line": 317,
+            "line": 327,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $connection->requester_user_id",
@@ -1837,9 +1837,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/FederatedConnectionService.php:413:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/FederatedConnectionService.php:423:NotificationDispatcher::fanOutPush",
             "file": "app/Services/FederatedConnectionService.php",
-            "line": 413,
+            "line": 423,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $connection->requester_user_id",

@@ -27,6 +27,7 @@ use App\Services\FederationPartnershipService;
 use App\Services\FederationSearchService;
 use App\Services\MessageService;
 use App\Services\SafeguardingInteractionPolicy;
+use App\Support\Federation\FederatedMemberName;
 use App\Support\UserDisplayName;
 
 /**
@@ -1006,7 +1007,8 @@ class FederationV2Controller extends BaseApiController
             $sql = "
                 SELECT e.id, e.title, e.description, e.start_time as start_date, e.end_time as end_date,
                     e.location, e.allow_remote_attendance as is_online, e.cover_image, e.max_attendees,
-                    e.user_id, e.tenant_id, u.first_name, u.last_name, u.avatar_url, t.name as tenant_name,
+                    e.user_id, e.tenant_id, u.first_name, u.last_name, u.profile_type, u.organization_name,
+                    u.avatar_url, t.name as tenant_name,
                     (SELECT COUNT(*) FROM event_rsvps er WHERE er.event_id = e.id AND er.status = 'going') as attendees_count
                 FROM events e
                 JOIN users u ON u.id = e.user_id AND u.tenant_id = e.tenant_id
@@ -1069,7 +1071,9 @@ class FederationV2Controller extends BaseApiController
                 $rows = array_slice($rows, 0, $perPage);
             }
 
-            $formatted = array_map(function ($e) {
+            // E-122: the organiser belongs to another community — first name only.
+            $names = new FederatedMemberName($this->getUserId(), $tenantId);
+            $formatted = array_map(function ($e) use ($names) {
                 return [
                     'id' => (int) $e['id'],
                     'title' => $e['title'],
@@ -1083,7 +1087,7 @@ class FederationV2Controller extends BaseApiController
                     'max_attendees' => $e['max_attendees'] ? (int) $e['max_attendees'] : null,
                     'organizer' => [
                         'id' => (int) $e['user_id'],
-                        'name' => UserDisplayName::resolve($e),
+                        'name' => $names->name($e, (int) $e['user_id'], (int) $e['tenant_id']),
                         'avatar' => $e['avatar_url'] ?: null,
                     ],
                     'timebank' => [
@@ -1406,7 +1410,8 @@ class FederationV2Controller extends BaseApiController
                 SELECT l.id, l.title, l.description, l.type, c.name as category_name,
                     l.image_url, l.price as estimated_hours, l.location,
                     l.user_id, l.tenant_id, l.created_at,
-                    u.first_name, u.last_name, u.avatar_url, t.name as tenant_name
+                    u.first_name, u.last_name, u.profile_type, u.organization_name,
+                    u.avatar_url, t.name as tenant_name
                 " . $fromWhere;
             if ($cursorId) {
                 $sql .= " AND l.id < :cursor_id";
@@ -1428,7 +1433,9 @@ class FederationV2Controller extends BaseApiController
                 $rows = array_slice($rows, 0, $perPage);
             }
 
-            $formatted = array_map(function ($l) {
+            // E-122: the author belongs to another community — first name only.
+            $names = new FederatedMemberName($this->getUserId(), $tenantId);
+            $formatted = array_map(function ($l) use ($names) {
                 return [
                     'id' => (int) $l['id'],
                     'title' => $l['title'],
@@ -1440,7 +1447,7 @@ class FederationV2Controller extends BaseApiController
                     'location' => $l['location'] ?? null,
                     'author' => [
                         'id' => (int) $l['user_id'],
-                        'name' => UserDisplayName::resolve($l),
+                        'name' => $names->name($l, (int) $l['user_id'], (int) $l['tenant_id']),
                         'avatar' => $l['avatar_url'] ?: null,
                     ],
                     'timebank' => [
@@ -1679,13 +1686,26 @@ class FederationV2Controller extends BaseApiController
             " . $partnerClause;
             $filterParams = array_merge([':tid1' => $tenantId, ':tid2' => $tenantId, ':tid3' => $tenantId], $partnerParams);
 
+            // E-122: these members belong to other communities, so the viewer
+            // gets first names only — and must not be able to confirm a
+            // surname by searching for it either. Only a platform
+            // administrator, who sees the surnames, may search on them.
+            $names = new FederatedMemberName($this->getUserId(), $tenantId);
+
             if (!empty($q)) {
-                $fromWhere .= " AND (u.first_name LIKE :q1 OR u.last_name LIKE :q2 OR (fus.show_skills_federated = 1 AND u.skills LIKE :q3) OR u.bio LIKE :q4)";
                 $searchTerm = "%{$q}%";
+                $surnameClause = '';
+                if ($names->seesEverySurname()) {
+                    $surnameClause = ' OR u.last_name LIKE :q2';
+                    $filterParams[':q2'] = $searchTerm;
+                }
+                $fromWhere .= " AND (u.first_name LIKE :q1{$surnameClause}"
+                    . " OR (u.profile_type = 'organisation' AND u.organization_name LIKE :q5)"
+                    . " OR (fus.show_skills_federated = 1 AND u.skills LIKE :q3) OR u.bio LIKE :q4)";
                 $filterParams[':q1'] = $searchTerm;
-                $filterParams[':q2'] = $searchTerm;
                 $filterParams[':q3'] = $searchTerm;
                 $filterParams[':q4'] = $searchTerm;
+                $filterParams[':q5'] = $searchTerm;
             }
             if ($partnerId) {
                 $fromWhere .= " AND u.tenant_id = :partner_id";
@@ -1729,7 +1749,8 @@ class FederationV2Controller extends BaseApiController
 
             // Data query with cursor and limit
             $params = $filterParams;
-            $sql = "SELECT u.id, u.first_name, u.last_name, u.avatar_url, u.bio, u.skills,
+            $sql = "SELECT u.id, u.first_name, u.last_name, u.profile_type, u.organization_name,
+                    u.avatar_url, u.bio, u.skills,
                     u.location, u.tenant_id, t.name as tenant_name,
                     fus.service_reach, fus.messaging_enabled_federated,
                     fus.transactions_enabled_federated,
@@ -1753,12 +1774,18 @@ class FederationV2Controller extends BaseApiController
                 $rows = array_slice($rows, 0, $perPage);
             }
 
-            $formatted = array_map(function ($m) {
+            $formatted = array_map(function ($m) use ($names) {
+                // The `last_name` key is sent only to a viewer who may see the
+                // surname; every client reads it as optional.
+                $surname = $names->seesSurnameOf((int) $m['id'], (int) $m['tenant_id'])
+                    ? ['last_name' => $m['last_name'] ?? '']
+                    : [];
+
                 return [
                     'id' => (int) $m['id'],
-                    'name' => UserDisplayName::resolve($m),
+                    'name' => $names->name($m, (int) $m['id'], (int) $m['tenant_id']),
                     'first_name' => $m['first_name'] ?? '',
-                    'last_name' => $m['last_name'] ?? '',
+                    ...$surname,
                     'avatar' => $m['avatar_url'] ?: null,
                     'bio' => $m['bio'] ?? '',
                     'skills' => ($m['show_skills_federated'] && !empty($m['skills'])) ? array_map('trim', explode(',', $m['skills'])) : [],
@@ -1943,7 +1970,8 @@ class FederationV2Controller extends BaseApiController
             [$partnerClause, $partnerParams] = $this->partnerTenantInClause('u.tenant_id', $allowedPartners);
 
             $sql = "
-                SELECT u.id, u.first_name, u.last_name, u.avatar_url, u.bio, u.skills,
+                SELECT u.id, u.first_name, u.last_name, u.profile_type, u.organization_name,
+                    u.avatar_url, u.bio, u.skills,
                     u.location, u.tenant_id, t.name as tenant_name,
                     fus.service_reach, fus.messaging_enabled_federated,
                     fus.transactions_enabled_federated, fus.show_skills_federated,
@@ -1980,11 +2008,19 @@ class FederationV2Controller extends BaseApiController
                 return $this->respondWithError('MEMBER_NOT_FOUND', __('api.fed_member_not_found'), null, 404);
             }
 
+            // E-122: a member of another community — first name only (an
+            // organisation keeps its trading name). `last_name` is sent only
+            // to a viewer who may see it; every client reads it as optional.
+            $names = new FederatedMemberName($this->getUserId(), $tenantId);
+            $surname = $names->seesSurnameOf((int) $m['id'], (int) $m['tenant_id'])
+                ? ['last_name' => $m['last_name'] ?? '']
+                : [];
+
             $member = [
                 'id' => (int) $m['id'],
-                'name' => UserDisplayName::resolve($m),
+                'name' => $names->name($m, (int) $m['id'], (int) $m['tenant_id']),
                 'first_name' => $m['first_name'] ?? '',
-                'last_name' => $m['last_name'] ?? '',
+                ...$surname,
                 'avatar' => $m['avatar_url'] ?: null,
                 'bio' => $m['bio'] ?? '',
                 'skills' => ($m['show_skills_federated'] && !empty($m['skills']))
@@ -2374,7 +2410,7 @@ class FederationV2Controller extends BaseApiController
             // (getForUser returns a formatted projection without those fields).
             $rawRows = \App\Models\Review::query()
                 ->withoutGlobalScope(\App\Scopes\TenantScope::class)
-                ->with(['reviewer:id,first_name,last_name,avatar_url,organization_name,profile_type'])
+                ->with(['reviewer:id,tenant_id,first_name,last_name,avatar_url,organization_name,profile_type'])
                 ->where('receiver_id', $userId)
                 ->where(function ($q) use ($memberTenantId) {
                     $q->where('receiver_tenant_id', $memberTenantId)
@@ -2390,10 +2426,16 @@ class FederationV2Controller extends BaseApiController
                 ->limit(100)
                 ->get();
 
-            $formatted = $rawRows->map(function (\App\Models\Review $r) use ($resolvePartner) {
+            // E-122: a reviewer is named in full only to themself or to an
+            // administrator of the REVIEWER's community; otherwise first name.
+            $names = new FederatedMemberName($this->getUserId(), $tenantId);
+
+            $formatted = $rawRows->map(function (\App\Models\Review $r) use ($resolvePartner, $names) {
                 $reviewer = $r->reviewer;
                 $isAnon = (bool) ($r->is_anonymous ?? false);
-                $reviewerName = UserDisplayName::resolve($reviewer);
+                $reviewerName = $reviewer === null
+                    ? ''
+                    : $names->name($reviewer, (int) $reviewer->id, (int) $reviewer->getAttribute('tenant_id'));
                 $reviewerTenantId = (int) ($r->reviewer_tenant_id ?? 0) ?: null;
                 $partner = $resolvePartner($reviewerTenantId);
 
@@ -2476,7 +2518,17 @@ class FederationV2Controller extends BaseApiController
             ", [$tenantId, $userId, $tenantId, $userId, $userId, $tenantId, $userId, $tenantId]);
             $rows = array_map(fn($r) => (array)$r, $rowResults);
 
-            $formatted = array_map(function ($msg) {
+            // E-122: the other party belongs to another community — first name
+            // only. The member's own name is unchanged.
+            $names = new FederatedMemberName($userId, $tenantId);
+            $senderName = static fn (array $msg): string => $names->name(
+                $msg, (int) $msg['sender_user_id'], (int) $msg['sender_tenant_id'], 'sender_'
+            );
+            $receiverName = static fn (array $msg): string => $names->name(
+                $msg, (int) $msg['receiver_user_id'], (int) $msg['receiver_tenant_id'], 'receiver_'
+            );
+
+            $formatted = array_map(function ($msg) use ($senderName, $receiverName) {
                 $isExternal = !empty($msg['external_partner_id']);
                 $extPartnerId = $isExternal ? (int) $msg['external_partner_id'] : null;
                 $direction = $msg['direction'] === 'outbound' ? 'outbound' : 'inbound';
@@ -2487,7 +2539,7 @@ class FederationV2Controller extends BaseApiController
                     // Outbound to external: sender is local, receiver is external
                     $senderInfo = [
                         'id' => (int) $msg['sender_user_id'],
-                        'name' => UserDisplayName::resolvePrefixed($msg, 'sender_'),
+                        'name' => $senderName($msg),
                         'avatar' => $msg['sender_avatar'] ?: null,
                         'tenant_id' => (int) $msg['sender_tenant_id'],
                         'tenant_name' => $msg['sender_tenant_name'] ?? '',
@@ -2510,7 +2562,7 @@ class FederationV2Controller extends BaseApiController
                     ];
                     $receiverInfo = [
                         'id' => (int) $msg['receiver_user_id'],
-                        'name' => UserDisplayName::resolvePrefixed($msg, 'receiver_'),
+                        'name' => $receiverName($msg),
                         'avatar' => $msg['receiver_avatar'] ?: null,
                         'tenant_id' => (int) $msg['receiver_tenant_id'],
                         'tenant_name' => $msg['receiver_tenant_name'] ?? '',
@@ -2519,14 +2571,14 @@ class FederationV2Controller extends BaseApiController
                     // Internal message
                     $senderInfo = [
                         'id' => (int) $msg['sender_user_id'],
-                        'name' => UserDisplayName::resolvePrefixed($msg, 'sender_'),
+                        'name' => $senderName($msg),
                         'avatar' => $msg['sender_avatar'] ?: null,
                         'tenant_id' => (int) $msg['sender_tenant_id'],
                         'tenant_name' => $msg['sender_tenant_name'] ?? '',
                     ];
                     $receiverInfo = [
                         'id' => (int) $msg['receiver_user_id'],
-                        'name' => UserDisplayName::resolvePrefixed($msg, 'receiver_'),
+                        'name' => $receiverName($msg),
                         'avatar' => $msg['receiver_avatar'] ?: null,
                         'tenant_id' => (int) $msg['receiver_tenant_id'],
                         'tenant_name' => $msg['receiver_tenant_name'] ?? '',
@@ -2665,7 +2717,8 @@ class FederationV2Controller extends BaseApiController
         try {
             // Verify the receiver exists and accepts federated messages
             $receiverRow = DB::selectOne("
-                SELECT u.id, u.first_name, u.last_name, u.avatar_url, u.tenant_id, u.preferred_language,
+                SELECT u.id, u.first_name, u.last_name, u.profile_type, u.organization_name,
+                       u.avatar_url, u.tenant_id, u.preferred_language,
                        fus.messaging_enabled_federated, fus.federation_optin,
                        t.name as tenant_name
                 FROM users u
@@ -2737,14 +2790,21 @@ class FederationV2Controller extends BaseApiController
 
             // Get sender info
             $senderRow = DB::selectOne("
-                SELECT u.first_name, u.last_name, u.avatar_url, t.name as tenant_name
+                SELECT u.first_name, u.last_name, u.profile_type, u.organization_name,
+                       u.avatar_url, t.name as tenant_name
                 FROM users u
                 JOIN tenants t ON t.id = u.tenant_id
                 WHERE u.id = ? AND u.tenant_id = ?
             ", [$userId, $tenantId]);
             $sender = $senderRow ? (array)$senderRow : [];
 
+            // The sender's own name, for the sender's own copy of the message.
             $senderName = UserDisplayName::resolve($sender);
+            // E-122: what the RECEIVER — a member of another community — is
+            // told (realtime event, bell, push): first name only, unless the
+            // receiver administers the sender's community.
+            $senderNameForReceiver = (new FederatedMemberName((int) $receiverId, (int) $receiverTenantId))
+                ->name($sender, $userId, $tenantId);
 
             $messageMutation = DB::transaction(function () use (
                 $tenantId,
@@ -2910,7 +2970,7 @@ class FederationV2Controller extends BaseApiController
                         [
                             'message_id' => $inboundId,
                             'outbound_message_id' => $outboundId,
-                            'sender_name' => $senderName,
+                            'sender_name' => $senderNameForReceiver,
                             'sender_tenant_name' => $senderTenantName,
                             'subject' => $subject,
                             'body' => $body,
@@ -2924,13 +2984,13 @@ class FederationV2Controller extends BaseApiController
             // 3. In-app notification + push notification
             if (! $isReplay) {
                 try {
-                    LocaleContext::withLocale($receiver['preferred_language'] ?? null, function () use ($receiverId, $receiverTenantId, $senderName, $senderTenantName, $subject) {
+                    LocaleContext::withLocale($receiver['preferred_language'] ?? null, function () use ($receiverId, $receiverTenantId, $senderNameForReceiver, $senderTenantName, $subject) {
                         $subjectPreview = mb_substr($subject ?: __('api.federation_no_subject'), 0, 50);
                         if (mb_strlen($subject) > 50) {
                             $subjectPreview .= '...';
                         }
                         $notifMessage = __('api.federation_new_message_notif', [
-                            'sender' => $senderName,
+                            'sender' => $senderNameForReceiver,
                             'community' => $senderTenantName,
                             'subject' => $subjectPreview,
                         ]);
@@ -2975,7 +3035,9 @@ class FederationV2Controller extends BaseApiController
                 ],
                 'receiver' => [
                     'id' => (int)$receiverId,
-                    'name' => UserDisplayName::resolve($receiver),
+                    // E-122: the receiver belongs to another community.
+                    'name' => (new FederatedMemberName($userId, $tenantId))
+                        ->name($receiver, (int) $receiverId, (int) $receiverTenantId),
                     'avatar' => $receiver['avatar_url'] ?: null,
                     'tenant_id' => (int)$receiverTenantId,
                     'tenant_name' => $receiver['tenant_name'] ?? '',
@@ -4019,15 +4081,18 @@ class FederationV2Controller extends BaseApiController
             // or break the already-committed financial transaction.
             try {
                 $senderInfo = DB::selectOne(
-                    "SELECT TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))) AS sender_name,
+                    "SELECT u.first_name, u.last_name, u.profile_type, u.organization_name,
                             t.name AS sender_tenant_name
                      FROM users u JOIN tenants t ON t.id = u.tenant_id
                      WHERE u.id = ? AND u.tenant_id = ?",
                     [$userId, $tenantId]
                 );
-                $senderName = trim((string) ($senderInfo->sender_name ?? '')) !== ''
-                    ? (string) $senderInfo->sender_name
-                    : __('api.external_user_fallback');
+                // E-122: the recipient belongs to another community, so the
+                // bell and push name the sender by first name only (an
+                // organisation by its trading name) unless the recipient
+                // administers the sender's community.
+                $senderName = (new FederatedMemberName($receiverIdInt, $receiverTenantIdInt))
+                    ->name($senderInfo, $userId, $tenantId, '', __('api.external_user_fallback'));
                 $sourceCommunity = (string) ($senderInfo->sender_tenant_name ?? __('api.external_partner_fallback'));
 
                 // Render the bell text in the RECIPIENT's preferred_language, not

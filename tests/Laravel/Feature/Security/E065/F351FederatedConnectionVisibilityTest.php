@@ -189,10 +189,12 @@ final class F351FederatedConnectionVisibilityTest extends TestCase
         Sanctum::actingAs($viewer, ['*']);
         $rows = $this->apiGet('/v2/federation/connections?status=accepted')->assertOk()->json('data') ?? [];
 
-        // CONTROL — the member who is still visible is still named in full.
+        // CONTROL — the member who is still visible is still named. Since
+        // E-122 (10 Nov 2026) a member of another community is named by first
+        // name only; until then this control expected 'Still F351visible'.
         $visibleRow = $this->rowFor($rows, $visible);
         $this->assertNotNull($visibleRow, 'CONTROL: the still-visible connection is listed');
-        $this->assertSame('Still F351visible', $visibleRow['name'], 'CONTROL: a visible counterparty is still named');
+        $this->assertSame('Still', $visibleRow['name'], 'CONTROL: a visible counterparty is still named');
         $this->assertSame('/uploads/f351-visible-avatar.png', $visibleRow['avatar_url'], 'CONTROL: and still shows their avatar');
 
         // FIXED — the hidden counterparty's row survives so the viewer can

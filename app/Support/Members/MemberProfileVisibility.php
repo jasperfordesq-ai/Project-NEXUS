@@ -55,6 +55,19 @@ final class MemberProfileVisibility
      */
     public static function viewerIsAdmin(?int $viewerId): bool
     {
+        return self::viewerIsAdminOf($viewerId, (int) TenantContext::getId());
+    }
+
+    /**
+     * True when the viewer is an administrator of the community
+     * `$communityId`, or a platform administrator. The same rule as
+     * {@see viewerIsAdmin()}, for a surface that shows members of a community
+     * OTHER than the one the request resolved to (internal federation, E-122):
+     * there an administrator of the viewer's community is not the
+     * administrator of the member being shown.
+     */
+    public static function viewerIsAdminOf(?int $viewerId, int $communityId): bool
+    {
         if ($viewerId === null || $viewerId <= 0) {
             return false;
         }
@@ -73,7 +86,7 @@ final class MemberProfileVisibility
         // ordinary community administrator is an administrator of their own
         // community, not of every community the request may resolve to.
         return AdminTier::securityRank($viewer) >= 3
-            || (int) $viewer->tenant_id === (int) TenantContext::getId();
+            || (int) $viewer->tenant_id === $communityId;
     }
 
     /** True when the two members have an accepted connection in the current community. */
