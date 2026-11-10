@@ -20,7 +20,7 @@ export function AuthLayout() {
   const year = new Date().getFullYear();
 
   return (
-    <div className="min-h-screen max-w-[100vw] flex flex-col overflow-x-clip">
+    <div className="page-wash min-h-screen max-w-[100vw] flex flex-col overflow-x-clip">
       <a
         href="#main-content"
         className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-4 focus-visible:left-4 focus-visible:z-[9999] focus-visible:px-4 focus-visible:py-2 focus-visible:bg-[var(--color-primary)] focus-visible:text-white focus-visible:rounded-lg focus-visible:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"

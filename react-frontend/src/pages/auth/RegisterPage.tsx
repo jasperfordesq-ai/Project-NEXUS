@@ -1279,7 +1279,10 @@ export function RegisterPage() {
           transition={{ duration: 0.5 }}
           className="w-full max-w-md relative z-10"
         >
-          <GlassCard className="p-6 sm:p-8">
+          <GlassCard className="overflow-hidden p-6 sm:p-8">
+            {/* The community first, as on the form itself: this screen was the
+                one step of joining that showed no sign of the community. */}
+            <CommunityWelcome className="-mx-6 -mt-6 mb-6 sm:-mx-8 sm:-mt-8" />
             <div className="text-center">
               <motion.div
                 initial={{ scale: 0.8 }}
