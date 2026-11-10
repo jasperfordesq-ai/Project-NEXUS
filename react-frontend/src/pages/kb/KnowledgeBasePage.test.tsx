@@ -201,6 +201,11 @@ describe('KnowledgeBasePage', () => {
     const { paletteFor } = await import('@/lib/categoryColours');
     await waitFor(() => expect(screen.getAllByTestId('kb-category-heading')[0]).toHaveAttribute('data-colour', paletteFor(null)[0]));
     expect(screen.getAllByTestId('kb-category-heading')[1]).toHaveAttribute('data-colour', paletteFor(null)[1]);
+    // The filter tabs carry a dot in the same colours (checked in a browser,
+    // 10 Nov 2026: they were grey while the headings were coloured).
+    const dots = screen.getAllByTestId('kb-category-tab-dot');
+    expect(dots.map((dot) => dot.getAttribute('data-colour'))).toEqual([paletteFor(null)[0], paletteFor(null)[1]]);
+    for (const dot of dots) expect(dot).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('displays article excerpts when present', async () => {

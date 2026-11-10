@@ -196,6 +196,10 @@ export function EventsPage() {
 
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<EventCategory[]>([]);
+  // Each kind of event in its colour on its filter button, as on its cards
+  // (warmth plan W3; the seed is the fallback).
+  const eventCategoryColour = useCategoryListColours('/v2/categories?type=event');
+  const sitePalette = useSitePalette();
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -764,6 +768,7 @@ export function EventsPage() {
         </ToggleButton>
         {categories.map((cat) => {
           const IconComp = CATEGORY_ICONS[cat.slug] ?? Tag;
+          const colour = eventCategoryColour(cat.id) ?? colourForSeed(coverSeed.event(cat.id, cat.id), sitePalette);
           return (
             <ToggleButton
               key={cat.id}
@@ -771,7 +776,14 @@ export function EventsPage() {
               variant="ghost"
               className="bg-theme-elevated text-theme-muted transition-colors hover:bg-theme-hover data-[selected=true]:bg-linear-to-r data-[selected=true]:from-accent-strong data-[selected=true]:to-accent-strong-end data-[selected=true]:text-white!"
             >
-              <IconComp className="w-3.5 h-3.5" aria-hidden="true" />
+              <span
+                aria-hidden="true"
+                data-testid="event-category-filter-mark"
+                data-colour={colour}
+                className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${categoryColour(colour).band}`}
+              >
+                <IconComp className="w-3 h-3" />
+              </span>
               {cat.name}
             </ToggleButton>
           );
@@ -1063,10 +1075,15 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold text-theme-primary text-base sm:text-lg leading-snug">{event.title}</h3>
+                    {/* The kind of event in its colour — the date tile's (was faint grey). */}
                     {event.category?.name && (
-                      <Chip size="sm" variant="flat" color="secondary" className="text-xs">
+                      <span
+                        data-testid="event-category-label"
+                        data-colour={dateTileColour}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryColour(dateTileColour).band}`}
+                      >
                         {event.category.name}
-                      </Chip>
+                      </span>
                     )}
                   </div>
                   <MemberPlainText content={event.description ?? ''} className="text-theme-muted text-sm line-clamp-2 mt-1" as="p" />

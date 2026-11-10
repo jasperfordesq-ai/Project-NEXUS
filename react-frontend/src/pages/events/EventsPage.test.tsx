@@ -244,6 +244,30 @@ describe('EventsPage', () => {
     expect(screen.getAllByTestId('event-date-tile')[1]).toHaveAttribute('data-colour', palette[1]);
   });
 
+  // Checked in a browser (10 Nov 2026): the date tile had its kind's colour,
+  // but the kind's name beside the title and the filter buttons stayed grey.
+  it('shows the kind of event in its colour beside the title and on its filter button', async () => {
+    const repair = createCanonicalEventFixture({ id: 41, title: 'Repair Cafe', category: { id: 7, name: 'Skills', slug: 'skills', colour: null } });
+    const choir = createCanonicalEventFixture({ id: 42, title: 'Choir', category: { id: 8, name: 'Music', slug: 'music', colour: null } });
+    mockApi.get.mockImplementation((url: string) => (url.startsWith('/v2/categories')
+      ? Promise.resolve({ success: true, data: [{ id: 8, name: 'Music', slug: 'music', color: 'blue' }, { id: 7, name: 'Skills', slug: 'skills', color: 'blue' }] })
+      : Promise.resolve({ success: true, data: [repair, choir], meta: { has_more: false, total_items: 2 } })));
+
+    renderEventRoute(<EventsPage />);
+    await screen.findByRole('heading', { name: 'Repair Cafe' });
+
+    const palette = paletteFor(null);
+    await waitFor(() => expect(screen.getAllByTestId('event-category-label')[0]).toHaveAttribute('data-colour', palette[0]));
+    const labels = screen.getAllByTestId('event-category-label');
+    expect(labels[0]).toHaveTextContent('Skills');
+    expect(labels[1]).toHaveAttribute('data-colour', palette[1]);
+    expect(labels[0]!.className).toMatch(/bg-[a-z]+-100/);
+    // The filter buttons, in the order the community lists its kinds.
+    const marks = screen.getAllByTestId('event-category-filter-mark');
+    expect(marks.map((mark) => mark.getAttribute('data-colour'))).toEqual([palette[1], palette[0]]);
+    for (const mark of marks) expect(mark).toHaveAttribute('aria-hidden', 'true');
+  });
+
   it('shows no faces when nobody the member may see is going', async () => {
     const event = createCanonicalEventFixture({ going_preview: [] });
     mockApi.get.mockResolvedValue({ success: true, data: [event], meta: { has_more: false, total_items: 1 } });

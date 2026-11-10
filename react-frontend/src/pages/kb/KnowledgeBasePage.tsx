@@ -176,6 +176,16 @@ export function KnowledgeBasePage() {
     return () => clearTimeout(timer);
   }, [searchQuery, handleSearch]);
 
+  // Each category's id, by its shown name, for the filter tabs' colour dots.
+  const categoryIdByName = useMemo(() => {
+    const ids = new Map<string, number | null>();
+    for (const a of articles) {
+      const name = a.category_name || t('general_category');
+      if (!ids.has(name)) ids.set(name, a.category_id ?? null);
+    }
+    return ids;
+  }, [articles, t]);
+
   // Extract unique categories from articles
   const categories = useMemo(() => {
     const cats = new Map<string, number>();
@@ -282,6 +292,18 @@ export function KnowledgeBasePage() {
                 key={name}
                 title={
                   <span className="flex items-center gap-1.5">
+                    {(() => {
+                      const id = categoryIdByName.get(name) ?? null;
+                      const colour = kbCategoryColour(id) ?? colourForSeed(coverSeed.kbCategory(id), palette);
+                      return (
+                        <span
+                          aria-hidden="true"
+                          data-testid="kb-category-tab-dot"
+                          data-colour={colour}
+                          className={`h-2.5 w-2.5 shrink-0 rounded-full ${categoryColour(colour).dot}`}
+                        />
+                      );
+                    })()}
                     {name}
                     <Chip size="sm" variant="flat" className="text-[10px] min-w-5 h-4 bg-theme-elevated text-theme-subtle">
                       {count}

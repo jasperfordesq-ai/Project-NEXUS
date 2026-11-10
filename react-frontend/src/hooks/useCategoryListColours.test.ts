@@ -21,6 +21,33 @@ const list = [
 describe('useCategoryListColours', () => {
   beforeEach(() => {
     mockGet.mockReset();
+    localStorage.clear();
+  });
+
+  // Checked in a browser (10 Nov 2026): when the page's items arrived before
+  // the category list, covers showed a stand-in colour and then changed. The
+  // last list is kept, so a later visit has the right colours from the start.
+  it('remembers the list, so the next visit has its colours before the list arrives', async () => {
+    mockGet.mockResolvedValue({ success: true, data: list });
+    const first = renderHook(() => useCategoryListColours('/v2/categories?type=event'));
+    await waitFor(() => expect(first.result.current(2)).toBeDefined());
+    const colour = first.result.current(2);
+    first.unmount();
+
+    mockGet.mockReturnValue(new Promise(() => {})); // the list never arrives this time
+    const second = renderHook(() => useCategoryListColours('/v2/categories?type=event'));
+    expect(second.result.current(2)).toBe(colour);
+  });
+
+  it('keeps each list apart', async () => {
+    mockGet.mockResolvedValue({ success: true, data: list });
+    const events = renderHook(() => useCategoryListColours('/v2/categories?type=event'));
+    await waitFor(() => expect(events.result.current(2)).toBeDefined());
+    events.unmount();
+
+    mockGet.mockReturnValue(new Promise(() => {}));
+    const blog = renderHook(() => useCategoryListColours('/v2/blog/categories'));
+    expect(blog.result.current(2)).toBeUndefined();
   });
 
   it("gives each category of the list its distinct colour, once the list arrives", async () => {
