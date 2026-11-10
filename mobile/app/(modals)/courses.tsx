@@ -31,7 +31,7 @@ import ItemCover from '@/components/ui/ItemCover';
 import CategoryLabel from '@/components/ui/CategoryLabel';
 import RemoteImage from '@/components/ui/RemoteImage';
 import { colourForSeed, coverSeed } from '@/lib/theme/itemColours';
-import { useItemPalette } from '@/lib/theme/useItemColours';
+import { useCategoryListColours, useItemPalette } from '@/lib/theme/useItemColours';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 
 type CourseTab = 'browse' | 'learning';
@@ -44,6 +44,7 @@ function CoursesScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const palette = useItemPalette();
+  const courseCategoryColour = useCategoryListColours('course');
   const [activeTab, setActiveTab] = useState<CourseTab>(tab === 'learning' ? 'learning' : 'browse');
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
@@ -173,7 +174,8 @@ function CoursesScreen() {
             if (!course?.id || !course.title) return null;
             const enrollment = activeTab === 'learning' ? item as CourseEnrollment : null;
             // Its picture, else its own colour — courses in one category share it — as on the website.
-            const courseColour = colourForSeed(coverSeed.course({ id: course.id, category: course.category }), palette);
+            const courseColour = courseCategoryColour(course.category_id ?? course.category?.id)
+              ?? colourForSeed(coverSeed.course({ id: course.id, category: course.category }), palette);
             const coverImage = resolveImageUrl(course.cover_image);
             const cover = <ItemCover colour={courseColour} icon="school-outline" style={{ width: '100%', height: 96 }} testID={`course-${course.id}-cover`} />;
             return (

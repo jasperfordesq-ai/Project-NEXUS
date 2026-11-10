@@ -32,7 +32,7 @@ import ItemCover from '@/components/ui/ItemCover';
 import CategoryLabel from '@/components/ui/CategoryLabel';
 import RemoteImage from '@/components/ui/RemoteImage';
 import { colourForSeed, coverSeed } from '@/lib/theme/itemColours';
-import { useItemPalette } from '@/lib/theme/useItemColours';
+import { useCategoryListColours, useItemPalette } from '@/lib/theme/useItemColours';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 
 function CourseDetailScreen() {
@@ -54,6 +54,7 @@ function CourseDetailScreenInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const palette = useItemPalette();
+  const courseCategoryColour = useCategoryListColours('course');
   const { show } = useAppToast();
   const { confirm, confirmDialog, dismiss } = useConfirm();
   const [enrolling, setEnrolling] = useState(false);
@@ -138,6 +139,12 @@ function CourseDetailScreenInner() {
     });
   }
 
+  // Its category's colour from the course category list (no two alike), else its own —
+  // the same as its card and the website.
+  const courseColour = course
+    ? courseCategoryColour(course.category_id ?? course.category?.id) ?? colourForSeed(coverSeed.course(course), palette)
+    : 'slate';
+
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={course?.title ?? t('title')} backLabel={t('common:back')} fallbackHref="/(modals)/courses" />
@@ -156,10 +163,10 @@ function CourseDetailScreenInner() {
             <RefreshFailedNotice error={course ? error : null} onRetry={refresh} />
             <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
               {/* Its picture, else its own colour — the same as its card and on the website. */}
-              <CourseCover course={course} colour={colourForSeed(coverSeed.course(course), palette)} />
+              <CourseCover course={course} colour={courseColour} />
               <HeroCard.Body className="gap-3 p-5">
                 <View testID="course-detail-status" className={`${largeText ? 'items-start' : 'flex-row flex-wrap'} gap-2`}>
-                  {course.category?.name ? <CategoryLabel label={course.category.name} colour={colourForSeed(coverSeed.course(course), palette)} testID="course-detail-category" /> : null}
+                  {course.category?.name ? <CategoryLabel label={course.category.name} colour={courseColour} testID="course-detail-category" /> : null}
                   <Chip testID="course-detail-level" size={largeText ? 'md' : 'sm'} variant="secondary"><Chip.Label>{t(`level.${course.level}`)}</Chip.Label></Chip>
                   <Chip size={largeText ? 'md' : 'sm'} variant="secondary"><Chip.Label>{(parseDecimalInput(String(course.credit_cost ?? '')) ?? 0) === 0 ? t('detail.free') : t('detail.cost', { credits: parseDecimalInput(String(course.credit_cost ?? '')) ?? 0 })}</Chip.Label></Chip>
                 </View>

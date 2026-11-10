@@ -84,7 +84,7 @@ import RemoteImage from '@/components/ui/RemoteImage';
 import ItemCover from '@/components/ui/ItemCover';
 import CategoryLabel from '@/components/ui/CategoryLabel';
 import { colourForSeed, coverColours, coverSeed } from '@/lib/theme/itemColours';
-import { useColourScheme, useItemPalette } from '@/lib/theme/useItemColours';
+import { useCategoryListColours, useColourScheme, useItemPalette } from '@/lib/theme/useItemColours';
 import { imageDescription } from '@/lib/utils/imageDescription';
 
 const REMINDER_OPTIONS = [60, 1440, 10080] as const;
@@ -121,6 +121,7 @@ function EventDetailScreenInner() {
   const primary = usePrimaryColor();
   const palette = useItemPalette();
   const scheme = useColourScheme();
+  const eventCategoryColour = useCategoryListColours('event');
   const theme = useTheme();
   const bottomInset = useBottomInset();
   const { show: showToast } = useAppToast();
@@ -264,7 +265,7 @@ function EventDetailScreenInner() {
     : null;
   // The event's colour, as on its card here and on the website (`category.colour` is a
   // stored name such as 'blue', not a hex, and painted the strip pure #0000ff).
-  const colour = colourForSeed(coverSeed.event(event.id, event.category?.id), palette);
+  const colour = eventCategoryColour(event.category?.id) ?? colourForSeed(coverSeed.event(event.id, event.category?.id), palette);
   const accent = coverColours(colour, scheme).dot;
   const cover = <ItemCover colour={colour} icon="calendar-outline" size="lg" style={{ width: '100%', height: 150 }} testID="event-detail-cover-colour" />;
   const coverImage = resolveImageUrl(event.primary_image?.url);

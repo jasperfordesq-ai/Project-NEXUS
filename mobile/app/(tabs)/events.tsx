@@ -35,7 +35,7 @@ import RemoteImage from '@/components/ui/RemoteImage';
 import ItemCover from '@/components/ui/ItemCover';
 import CategoryLabel from '@/components/ui/CategoryLabel';
 import { bandColours, colourForSeed, coverColours, coverSeed } from '@/lib/theme/itemColours';
-import { useColourScheme, useItemPalette } from '@/lib/theme/useItemColours';
+import { useCategoryListColours, useColourScheme, useItemPalette } from '@/lib/theme/useItemColours';
 import { labelWithImageDescription } from '@/lib/utils/imageDescription';
 
 function extractEventsPage(r: CanonicalEventsResponse) {
@@ -368,6 +368,7 @@ function EventCard({
   const theme = useTheme();
   const palette = useItemPalette();
   const scheme = useColourScheme();
+  const eventCategoryColour = useCategoryListColours('event');
   const schedule = formatEventSchedule(event.schedule, dateLocale());
   const month = schedule.monthLabel ?? '-';
   const day = schedule.dayLabel ?? '-';
@@ -378,7 +379,9 @@ function EventCard({
   // it, others have their own (AWID: "clear categories"). 🔴 `category.colour` is a
   // stored NAME ('blue' by default), not a hex: used as a colour it painted the strip
   // pure #0000ff and, through withAlpha's fallback, the date tile grey.
-  const colour = colourForSeed(coverSeed.event(event.id, event.category?.id), palette);
+  // Its category's colour from the community's list of event categories (no two alike),
+  // else the event's own seed colour — exactly as the website's events page.
+  const colour = eventCategoryColour(event.category?.id) ?? colourForSeed(coverSeed.event(event.id, event.category?.id), palette);
   const band = bandColours(colour, scheme);
   const accent = coverColours(colour, scheme).dot;
   const cover = (

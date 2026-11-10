@@ -53,3 +53,12 @@ export function getBlogPosts(
 export function getBlogPost(slug: string): Promise<{ data: BlogPost }> {
   return api.get<{ data: BlogPost }>(`${API_V2}/blog/${slug}`);
 }
+
+/**
+ * GET /api/v2/blog/categories
+ * The community's blog categories (id, name, colour), for colouring posts by category
+ * exactly as the website's blog page does (`categoryListColours`).
+ */
+export function getBlogCategories(): Promise<{ data: BlogCategory[] }> {
+  return api.get<{ data: BlogCategory[] }>(`${API_V2}/blog/categories`);
+}

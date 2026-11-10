@@ -10,18 +10,83 @@ jest.mock('@sentry/react-native', () => ({ addBreadcrumb: jest.fn(), captureExce
 const mockGetCategories = jest.fn();
 let mockTenant: { id: number; slug: string; branding: { primary_color?: string } } | null = null;
 
+const mockGetEventCategories = jest.fn();
+const mockGetBlogCategories = jest.fn();
+const mockGetCourseCategories = jest.fn();
+const mockGetMarketplaceCategories = jest.fn();
+
 jest.mock('@/lib/api/exchanges', () => ({ getExchangeCategories: () => mockGetCategories() }));
+jest.mock('@/lib/api/events', () => ({ getEventCategories: () => mockGetEventCategories() }));
+jest.mock('@/lib/api/blog', () => ({ getBlogCategories: () => mockGetBlogCategories() }));
+jest.mock('@/lib/api/courses', () => ({ getCourseCategories: () => mockGetCourseCategories() }));
+jest.mock('@/lib/api/marketplace', () => ({ getMarketplaceCategories: () => mockGetMarketplaceCategories() }));
 jest.mock('@/lib/context/TenantContext', () => ({
   useOptionalTenantContext: () => (mockTenant ? { tenant: mockTenant } : null),
 }));
 
-import { colourForSeed, paletteFor, themeColourNames } from './itemColours';
-import { forgetListingThemes, listingColour, useItemPalette, useListingThemeColours } from './useItemColours';
+import { categoryListColours, colourForSeed, paletteFor, themeColourNames } from './itemColours';
+import { forgetListingThemes, listingColour, useCategoryListColours, useItemPalette, useListingThemeColours } from './useItemColours';
 
 beforeEach(() => {
-  mockGetCategories.mockReset();
+  for (const mock of [mockGetCategories, mockGetEventCategories, mockGetBlogCategories, mockGetCourseCategories, mockGetMarketplaceCategories]) mock.mockReset();
   mockTenant = null;
   forgetListingThemes();
+});
+
+/**
+ * Warmth plan W3 (website, 10 Nov 2026): a list's categories share the palette out in id
+ * order, so no two categories of the events (or blog, courses, marketplace) list share a
+ * colour by chance. The app reads the same lists and colours them the same way.
+ */
+describe('useCategoryListColours', () => {
+  const eventCategories = [{ id: 9, name: 'Walks', color: 'blue' }, { id: 2, name: 'Social', color: 'blue' }, { id: 5, name: 'Learning', color: 'blue' }];
+
+  it('colours each event category as the website does, reading the list once per community', async () => {
+    mockTenant = { id: 2, slug: 'hour-timebank', branding: { primary_color: '#0d9488' } };
+    mockGetEventCategories.mockResolvedValue({ data: eventCategories });
+    const expected = categoryListColours(eventCategories, '#0d9488');
+
+    const first = renderHook(() => useCategoryListColours('event'));
+    await waitFor(() => expect(first.result.current(2)).toBe(expected.get('2')));
+    expect(first.result.current(9)).toBe(expected.get('9'));
+    expect(new Set([2, 5, 9].map((id) => first.result.current(id))).size).toBe(3);
+    const second = renderHook(() => useCategoryListColours('event'));
+    await waitFor(() => expect(second.result.current(5)).toBe(expected.get('5')));
+
+    expect(mockGetEventCategories).toHaveBeenCalledTimes(1);
+  });
+
+  it('answers nothing for a category not in the list, for no category, and before the list loads — the item keeps its own colour', async () => {
+    mockTenant = { id: 2, slug: 'hour-timebank', branding: {} };
+    let release: (value: unknown) => void = () => {};
+    mockGetBlogCategories.mockReturnValue(new Promise((resolve) => { release = resolve; }));
+
+    const { result } = renderHook(() => useCategoryListColours('blog'));
+    expect(result.current(2)).toBeUndefined();
+    release({ data: [{ id: 2, name: 'News', color: 'blue' }] });
+    await waitFor(() => expect(result.current(2)).toBeDefined());
+    expect(result.current(404)).toBeUndefined();
+    expect(result.current(null)).toBeUndefined();
+  });
+
+  it('keeps every item on its own colour when a list cannot load, and asks again next time', async () => {
+    mockTenant = { id: 2, slug: 'hour-timebank', branding: {} };
+    mockGetCourseCategories.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce([{ id: 1, name: 'Craft', slug: 'craft' }]);
+
+    const failed = renderHook(() => useCategoryListColours('course'));
+    await waitFor(() => expect(mockGetCourseCategories).toHaveBeenCalledTimes(1));
+    expect(failed.result.current(1)).toBeUndefined();
+
+    const again = renderHook(() => useCategoryListColours('course'));
+    await waitFor(() => expect(again.result.current(1)).toBeDefined());
+    expect(mockGetCourseCategories).toHaveBeenCalledTimes(2);
+  });
+
+  it('asks nothing without a community', () => {
+    const { result } = renderHook(() => useCategoryListColours('marketplace'));
+    expect(result.current(1)).toBeUndefined();
+    expect(mockGetMarketplaceCategories).not.toHaveBeenCalled();
+  });
 });
 
 describe('useItemPalette', () => {

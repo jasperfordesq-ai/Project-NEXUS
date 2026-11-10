@@ -16,12 +16,16 @@
  * component tests) simply gets the standard palette.
  */
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
+import { getBlogCategories } from '@/lib/api/blog';
+import { getCourseCategories } from '@/lib/api/courses';
+import { getEventCategories } from '@/lib/api/events';
 import { getExchangeCategories } from '@/lib/api/exchanges';
+import { getMarketplaceCategories } from '@/lib/api/marketplace';
 import { useOptionalTenantContext } from '@/lib/context/TenantContext';
 import { themeStore } from '@/lib/theme/themeStore';
-import { appSeed, colourForSeed, paletteFor, themeColourNames } from './itemColours';
+import { appSeed, categoryListColours, colourForSeed, paletteFor, themeColourNames } from './itemColours';
 
 /** The colour names that go with the community colour, as on the website. */
 export function useItemPalette(): string[] {
@@ -93,7 +97,77 @@ export function listingColour(
     || colourForSeed(appSeed.listing(listing.id), palette);
 }
 
+interface CategoryRow {
+  id: number | string;
+  color?: string | null;
+}
+
+/** The category lists the website colours with `categoryListColours`, and where each comes from. */
+const CATEGORY_LISTS: Readonly<Record<'event' | 'blog' | 'course' | 'marketplace', () => Promise<unknown>>> = {
+  event: () => getEventCategories().then((response) => response?.data),
+  blog: () => getBlogCategories().then((response) => response?.data),
+  course: () => getCourseCategories(),
+  marketplace: () => getMarketplaceCategories().then((response) => response?.data),
+};
+
+export type CategoryList = keyof typeof CATEGORY_LISTS;
+
+const categoryRequests = new Map<string, Promise<CategoryRow[]>>();
+
+function readCategoryList(list: CategoryList, tenantKey: string): Promise<CategoryRow[]> {
+  const key = `${tenantKey}:${list}`;
+  let request = categoryRequests.get(key);
+  if (!request) {
+    // Promise.resolve().then: a failure of any kind, even a synchronous one,
+    // only leaves the seed colours in place.
+    request = Promise.resolve()
+      .then(() => CATEGORY_LISTS[list]())
+      .then((rows: unknown) => (Array.isArray(rows) ? (rows as unknown[]).filter(
+        (row): row is CategoryRow => Boolean(row) && typeof row === 'object' && (row as CategoryRow).id != null,
+      ) : []))
+      .catch(() => {
+        // Without the list each item keeps its own seed colour. Ask again next time.
+        categoryRequests.delete(key);
+        return [] as CategoryRow[];
+      });
+    categoryRequests.set(key, request);
+  }
+  return request;
+}
+
+/**
+ * The colour of each category in one list, by id — distinct within the list, and
+ * exactly the website's (`useCategoryListColours`, warmth plan W3): events, blog posts,
+ * courses and marketplace items in one category share a colour, and no two categories
+ * of a list share one by chance. Each list is read once per community while the app runs.
+ *
+ * Returns undefined for an id the list does not have, and for every id until the list
+ * has loaded or when it cannot load: callers then use the item's own seed colour, as
+ * the website does.
+ */
+export function useCategoryListColours(list: CategoryList): (id?: number | string | null) => string | undefined {
+  const tenant = useOptionalTenantContext()?.tenant ?? null;
+  const accent = tenant?.branding?.primary_color ?? null;
+  const tenantKey = String(tenant?.id ?? tenant?.slug ?? '');
+  const [rows, setRows] = useState<CategoryRow[]>([]);
+
+  useEffect(() => {
+    if (!tenantKey) return undefined;
+    let cancelled = false;
+    void readCategoryList(list, tenantKey).then((loaded) => {
+      if (!cancelled) setRows(loaded);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [list, tenantKey]);
+
+  const colours = useMemo(() => categoryListColours(rows, accent), [rows, accent]);
+  return useCallback((id?: number | string | null) => (id == null ? undefined : colours.get(String(id))), [colours]);
+}
+
 /** For tests. */
 export function forgetListingThemes(): void {
   themesRequest = null;
+  categoryRequests.clear();
 }

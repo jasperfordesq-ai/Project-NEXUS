@@ -38,7 +38,7 @@ import { withRouteGate } from '@/components/withRouteGate';
 import ItemCover from '@/components/ui/ItemCover';
 import CategoryLabel from '@/components/ui/CategoryLabel';
 import { colourForSeed, coverSeed } from '@/lib/theme/itemColours';
-import { useItemPalette } from '@/lib/theme/useItemColours';
+import { useCategoryListColours, useItemPalette } from '@/lib/theme/useItemColours';
 import RemoteImage from '@/components/ui/RemoteImage';
 
 function extractBlogPage(response: BlogListResponse) {
@@ -98,6 +98,7 @@ function BlogScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const palette = useItemPalette();
+  const blogCategoryColour = useCategoryListColours('blog');
   const [search, setSearch] = useState('');
   const [committedSearch, setCommittedSearch] = useState('');
   const requestedCursor = useRef<string | null>(null);
@@ -193,7 +194,9 @@ function BlogScreen() {
   function renderPost({ item, index }: { item: BlogPost; index: number }) {
     const imageHeight = index === 0 && !committedSearch ? 190 : 150;
     const coverImage = resolveImageUrl(item.featured_image);
-    const postColour = colourForSeed(coverSeed.blogPost(item.id, item.category ? (item.category.id ?? item.category.name) : null), palette);
+    // Its category's colour from the blog's category list (no two alike), else its own — as the website.
+    const postColour = blogCategoryColour(item.category?.id)
+      ?? colourForSeed(coverSeed.blogPost(item.id, item.category ? (item.category.id ?? item.category.name) : null), palette);
     const publishedLabel = item.published_at
       ? t('publishedOn', { date: new Date(item.published_at).toLocaleDateString(dateLocale()) })
       : null;

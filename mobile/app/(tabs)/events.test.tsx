@@ -74,6 +74,13 @@ jest.mock('@/lib/hooks/usePaginatedApi', () => ({
   usePaginatedApi: (...args: unknown[]) => mockUsePaginatedApi(...args),
 }));
 
+// The community's event-category colours (loaded list). Empty unless a test sets one.
+let mockEventCategoryColours: Record<string, string> = {};
+jest.mock('@/lib/theme/useItemColours', () => ({
+  ...jest.requireActual('@/lib/theme/useItemColours'),
+  useCategoryListColours: () => (id?: number | string | null) => (id == null ? undefined : mockEventCategoryColours[String(id)]),
+}));
+
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn().mockResolvedValue(undefined),
   notificationAsync: jest.fn().mockResolvedValue(undefined),
@@ -155,6 +162,22 @@ describe('EventsScreen', () => {
     expect(StyleSheet.flatten(screen.getByText('Social').props.style)).toEqual(expect.objectContaining({ color: band.text }));
     // No picture: a cover in the event's colour, not an empty space.
     expect(screen.getByTestId('event-card-cover', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it("takes its category's colour from the community's event categories once they are loaded, as the website does", () => {
+    const { bandColours } = require('@/lib/theme/itemColours');
+    const { themeStore } = require('@/lib/theme/themeStore');
+    const { StyleSheet } = require('react-native');
+    mockEventCategoryColours = { 4: 'rose' };
+    const event = { ...mockEvent, category: { id: 4, name: 'Social', slug: 'social', colour: 'blue' }, primary_image: null };
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [event] });
+
+    const screen = render(<EventsScreen />);
+    const band = bandColours('rose', themeStore.getSnapshot());
+
+    expect(StyleSheet.flatten(screen.getByTestId('event-card-date').props.style).backgroundColor).toBe(band.background);
+    expect(StyleSheet.flatten(screen.getByText('Social').props.style)).toEqual(expect.objectContaining({ color: band.text }));
+    mockEventCategoryColours = {};
   });
 
   it('renders Upcoming and Past tab buttons', () => {

@@ -41,7 +41,7 @@ import { withRouteGate } from '@/components/withRouteGate';
 import ItemCover from '@/components/ui/ItemCover';
 import CategoryLabel from '@/components/ui/CategoryLabel';
 import { colourForSeed, coverSeed } from '@/lib/theme/itemColours';
-import { useItemPalette } from '@/lib/theme/useItemColours';
+import { useCategoryListColours, useItemPalette } from '@/lib/theme/useItemColours';
 import RemoteImage from '@/components/ui/RemoteImage';
 
 
@@ -94,6 +94,7 @@ function BlogPostContent({ slug }: { slug: string }) {
   const { tenant } = useTenant();
   const theme = useTheme();
   const palette = useItemPalette();
+  const blogCategoryColour = useCategoryListColours('blog');
   const { show: showToast } = useAppToast();
   const isMounted = useRef(true);
   useEffect(() => {
@@ -207,7 +208,8 @@ function BlogPostContent({ slug }: { slug: string }) {
     );
   }
 
-  const postColour = colourForSeed(coverSeed.blogPost(post.id, post.category ? (post.category.id ?? post.category.name) : null), palette);
+  const postColour = blogCategoryColour(post.category?.id)
+    ?? colourForSeed(coverSeed.blogPost(post.id, post.category ? (post.category.id ?? post.category.name) : null), palette);
   const publishedDate = post.published_at
     ? new Date(post.published_at).toLocaleDateString(dateLocale(), {
         year: 'numeric',

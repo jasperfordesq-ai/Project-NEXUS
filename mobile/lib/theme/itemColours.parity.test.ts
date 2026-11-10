@@ -16,6 +16,7 @@
 import * as app from './itemColours';
 import * as web from '../../../react-frontend/src/lib/categoryColours';
 import { coverSeed as webCoverSeed } from '../../../react-frontend/src/lib/coverSeeds';
+import { categoryListColours as webCategoryListColours } from '../../../react-frontend/src/lib/categoryListColours';
 
 const ACCENTS: (string | null | undefined)[] = [
   null, undefined, '', 'not-a-colour', '#6366f1', '#5b5ede', '#006fee', '#0d9488', '#e11d48', '#f59e0b',
@@ -61,15 +62,15 @@ describe('item colours match the website', () => {
       podcastCategory: [[' Arts '], ['News']],
       jobType: [['volunteer'], ['paid']],
       organisation: [[12]],
-      volunteeringCategory: [[' Outdoors ']],
-      opportunity: [[7, 'Outdoors'], [7, '  '], [7, null], [7]],
+      volunteeringCategory: [[5], ['5']],
+      opportunity: [[7, 5], [7, null], [7]],
       goal: [[3]],
       idea: [[3]],
       challenge: [[3]],
       campaign: [[3]],
       groupExchange: [[3]],
-      kbCategory: [['Getting started'], [null], ['  ']],
-      article: [[{ id: 1, category_name: 'FAQ' }], [{ id: 1, category_name: null }]],
+      kbCategory: [[3], [null], [undefined]],
+      article: [[{ id: 1, category_id: 4 }], [{ id: 1, category_id: null }], [{ id: 1 }]],
       event: [[10, 4], [10, null], [10]],
       blogPost: [[5, 2], [5, 'News'], [5, null]],
       marketplaceCategory: [['tools'], [9]],
@@ -85,6 +86,21 @@ describe('item colours match the website', () => {
       const inputs = (samples as Record<string, unknown[][] | undefined>)[key];
       expect({ key, hasSamples: Boolean(inputs?.length) }).toEqual({ key, hasSamples: true });
       for (const args of inputs ?? []) expect({ key, seed: appSeeds[key]!(...args) }).toEqual({ key, seed: webSeeds[key]!(...args) });
+    }
+  });
+
+  it("colours a list's categories the same way — no two alike by chance, an admin's colours first", () => {
+    const lists: { id: number | string; color?: string | null }[][] = [
+      [],
+      [{ id: 3, color: 'blue' }, { id: 1, color: 'blue' }, { id: 2, color: 'blue' }],
+      Array.from({ length: 11 }, (_, i) => ({ id: 20 - i, color: null })),
+      [{ id: 1, color: 'red' }, { id: 2, color: 'teal' }, { id: 3, color: 'nonsense' }, { id: 4, color: null }],
+      [{ id: 'b', color: 'blue' }, { id: 'a', color: 'blue' }, { id: 10, color: 'blue' }],
+    ];
+    for (const accent of ACCENTS) {
+      for (const list of lists) {
+        expect([...app.categoryListColours(list, accent)]).toEqual([...webCategoryListColours(list, accent)]);
+      }
     }
   });
 

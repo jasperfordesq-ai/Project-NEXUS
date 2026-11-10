@@ -23,7 +23,7 @@ import RemoteImage from '@/components/ui/RemoteImage';
 import ItemCover from '@/components/ui/ItemCover';
 import CategoryLabel from '@/components/ui/CategoryLabel';
 import { appSeed, colourForSeed, coverSeed } from '@/lib/theme/itemColours';
-import { useItemPalette } from '@/lib/theme/useItemColours';
+import { useCategoryListColours, useItemPalette } from '@/lib/theme/useItemColours';
 
 /**
  * The price a member sees on a card and at the top of a listing.
@@ -74,6 +74,7 @@ function MarketplaceListingCardRow({
   const primary = usePrimaryColor();
   const theme = useTheme();
   const palette = useItemPalette();
+  const marketplaceCategoryColour = useCategoryListColours('marketplace');
   // The item's own colour, as on the website, where it has no photo (was a grey box).
   const cover = <ItemCover colour={colourForSeed(appSeed.marketplaceItem(item.id), palette)} icon="bag-handle-outline" style={{ width: '100%', height: '100%' }} testID="marketplace-card-cover" />;
   const accent =
@@ -159,7 +160,7 @@ function MarketplaceListingCardRow({
             // Each category in its own colour, as on the website's category chips.
             <CategoryLabel
               label={item.category.name}
-              colour={colourForSeed(coverSeed.marketplaceCategory(item.category.slug || item.category.id), palette)}
+              colour={marketplaceCategoryColour(item.category.id) ?? colourForSeed(coverSeed.marketplaceCategory(item.category.slug || item.category.id), palette)}
               testID="marketplace-card-category"
             />
           ) : null}
