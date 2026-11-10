@@ -161,6 +161,32 @@ describe('FederationEventsPage', () => {
     expect(tile.className).not.toContain('from-amber-500/20');
   });
 
+  // Warmth plan W8 (10 Nov 2026): the test above still passed when every
+  // partner's events were drawn in one fixed colour (checked by breaking the
+  // code on purpose). This one pins the rule: one colour per partner
+  // community, from that community, and different communities apart.
+  it("gives each partner community's events that community's colour", async () => {
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    const colourOf = (id: number) => colourForSeed(coverSeed.federatedCommunity(id), paletteFor(null));
+    let other = 4;
+    while (colourOf(other) === colourOf(3)) other += 1;
+    const events = [
+      mockEvent,
+      { ...mockEvent, id: 101, title: 'Repair Cafe' },
+      { ...mockEvent, id: 102, title: 'Choir Night', timebank: { id: other, name: 'Galway Timebank' } },
+    ];
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.includes('/v2/federation/partners')) return Promise.resolve({ success: true, data: [mockPartner] });
+      if (url.includes('/v2/federation/events')) return Promise.resolve({ success: true, data: events, meta: { cursor: null, has_more: false } });
+      return Promise.resolve({ success: true, data: [] });
+    });
+    render(<FederationEventsPage />);
+    await screen.findByText('Choir Night');
+    const tiles = screen.getAllByTestId('federated-event-date');
+    expect(tiles.map((tile) => tile.getAttribute('data-colour'))).toEqual([colourOf(3), colourOf(3), colourOf(other)]);
+  });
+
   it('shows partner community name on event card', async () => {
     setupMocks();
     render(<FederationEventsPage />);

@@ -381,7 +381,8 @@ function FederatedEventCard({ event }: FederatedEventCardProps) {
   const { t } = useTranslation('federation');
   const palette = useSitePalette();
   // Events from one partner community share its colour (were all amber).
-  const communityTone = categoryColour(colourForSeed(coverSeed.federatedCommunity(event.timebank.id), palette)).band;
+  const communityColour = colourForSeed(coverSeed.federatedCommunity(event.timebank.id), palette);
+  const communityTone = categoryColour(communityColour).band;
   const startDate = new Date(event.start_date);
   const isPast = startDate < new Date();
   const avatarSrc = resolveAvatarUrl(event.organizer?.avatar);
@@ -423,6 +424,7 @@ function FederatedEventCard({ event }: FederatedEventCardProps) {
               <time
                 dateTime={event.start_date}
                 data-testid="federated-event-date"
+                data-colour={communityColour}
                 className={`block rounded-lg p-2 ${communityTone}`}
               >
                 <span className="text-xs font-medium uppercase block">

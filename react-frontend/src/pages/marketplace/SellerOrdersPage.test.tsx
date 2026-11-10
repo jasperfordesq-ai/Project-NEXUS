@@ -110,6 +110,21 @@ describe('SellerOrdersPage', () => {
     });
   });
 
+  // Warmth plan W8: as for purchases — the photo-less item's own cover.
+  it("gives an item with no photo the same cover as its marketplace card", async () => {
+    mockApi.get.mockResolvedValue(makeResponse([makeOrder()]));
+    const { SellerOrdersPage } = await import('./SellerOrdersPage');
+    render(<SellerOrdersPage />);
+    const holder = await screen.findByTestId('order-item-cover');
+    const cover = holder.querySelector('[data-colour]') as HTMLElement;
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { render: renderCard } = await import('@testing-library/react');
+    const { ImagePlaceholder } = await import('@/components/ui/ImagePlaceholder');
+    expect(cover).toHaveAttribute('data-colour', colourForSeed(7, paletteFor(null)));
+    const card = renderCard(<ImagePlaceholder seed={7} />).container.querySelector('[data-colour]') as HTMLElement;
+    expect(cover.className).toBe(card.className);
+  });
+
   it('renders order cards when orders are returned', async () => {
     mockApi.get.mockResolvedValue(makeResponse([makeOrder()]));
     const { SellerOrdersPage } = await import('./SellerOrdersPage');

@@ -127,7 +127,7 @@ function SellerOrderCard({
           ) : (
             // No photo: the same coloured cover as the item's card (was grey).
             <div className="group h-full w-full" data-testid="order-item-cover">
-              <ThemedCover size="sm" colour={colourForSeed(order.listing.id, palette)} icon={Package} />
+              <ThemedCover size="sm" colour={colourForSeed(order.listing.id, palette)} icon={Package} seed={order.listing.id} />
             </div>
           )}
         </Link> : (

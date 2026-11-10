@@ -120,6 +120,23 @@ describe('BuyerOrdersPage', () => {
     expect(screen.getByText(/Bob Seller/)).toBeInTheDocument();
   });
 
+  // Warmth plan W8 (10 Nov 2026): the thumbnail of an item with no photo was
+  // given a cover (it was grey) but never tested. It is the same cover as the
+  // item's card in the marketplace: colour and look from the item's id.
+  it("gives an item with no photo the same cover as its marketplace card", async () => {
+    mockApi.get.mockResolvedValue(makeResponse([makeOrder()]));
+    const { BuyerOrdersPage } = await import('./BuyerOrdersPage');
+    render(<BuyerOrdersPage />);
+    const holder = await screen.findByTestId('order-item-cover');
+    const cover = holder.querySelector('[data-colour]') as HTMLElement;
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { render: renderCard } = await import('@testing-library/react');
+    const { ImagePlaceholder } = await import('@/components/ui/ImagePlaceholder');
+    expect(cover).toHaveAttribute('data-colour', colourForSeed(5, paletteFor(null)));
+    const card = renderCard(<ImagePlaceholder seed={5} />).container.querySelector('[data-colour]') as HTMLElement;
+    expect(cover.className).toBe(card.className);
+  });
+
   it('renders historical orders whose listing has been removed', async () => {
     mockApi.get.mockResolvedValue(makeResponse([makeOrder({ listing: null })]));
     const { BuyerOrdersPage } = await import('./BuyerOrdersPage');
