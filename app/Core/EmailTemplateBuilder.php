@@ -333,10 +333,12 @@ HTML;
             $safeLabel = self::esc($label);
             $safeValue = self::esc($value);
             $borderTop = $isFirst ? '' : 'border-top: 1px solid ' . $theme['accentBorder'] . ';';
+            // No dark-mode classes here: the card keeps its pale tint in dark
+            // mode, so its text must stay dark (DarkModeEmailReadabilityTest).
             $rowsHtml .= <<<ROW
                                                     <tr>
-                                                        <td style="padding: 10px 16px; {$borderTop} font-size: 13px; font-weight: 600; color: #6b7280; white-space: nowrap; vertical-align: top;" class="text-muted">{$safeLabel}</td>
-                                                        <td style="padding: 10px 16px; {$borderTop} font-size: 15px; font-weight: 600; color: #111827;" class="text-dark">{$safeValue}</td>
+                                                        <td style="padding: 10px 16px; {$borderTop} font-size: 13px; font-weight: 600; color: #4b5563; white-space: nowrap; vertical-align: top;">{$safeLabel}</td>
+                                                        <td style="padding: 10px 16px; {$borderTop} font-size: 15px; font-weight: 600; color: #111827;">{$safeValue}</td>
                                                     </tr>
 ROW;
             $isFirst = false;
@@ -459,7 +461,7 @@ HTML;
                                 <tr>
                                     <td style="padding: 8px 40px;" class="mobile-padding">
                                         <div style="background: #f9fafb; border-left: 4px solid {$theme['primary']}; border-radius: 0 8px 8px 0; padding: 16px 20px;">
-                                            <p style="margin: 0; font-size: 15px; color: #374151; font-style: italic; line-height: 1.7;" class="text-dark">&ldquo;{$text}&rdquo;</p>
+                                            <p style="margin: 0; font-size: 15px; color: #374151; font-style: italic; line-height: 1.7;">&ldquo;{$text}&rdquo;</p>
                                             {$attrHtml}
                                         </div>
                                     </td>
@@ -547,14 +549,20 @@ HTML;
         $badgesHtml = '';
         foreach ($block['badges'] as $badge) {
             $text = self::esc($badge['text']);
-            // The colour lands inside a style attribute and gets an alpha suffix
-            // appended, so only a six-digit hex value is accepted (F-322).
-            $color = (string) ($badge['color'] ?? '');
-            if (preg_match('/^#[0-9a-fA-F]{6}$/', $color) !== 1) {
+            // The colour lands inside a style attribute, so only a six-digit hex
+            // value is accepted (F-322).
+            $color = strtolower((string) ($badge['color'] ?? ''));
+            if (preg_match('/^#[0-9a-f]{6}$/', $color) !== 1) {
                 $color = '#6366f1';
             }
-            // Compute a soft background from the color by adding alpha
-            $badgesHtml .= '<span style="display: inline-block; padding: 5px 14px; margin: 3px 4px; background: ' . $color . '1a; color: ' . $color . '; font-size: 13px; font-weight: 700; border-radius: 20px; border: 1px solid ' . $color . '33;">' . $text . '</span>';
+            // A solid pale pill with the colour deepened until it reads at
+            // 4.5:1 on it. It was a see-through tint (`#rrggbb1a`), so in dark
+            // mode the dark card showed through and dark badge colours vanished;
+            // some mail apps also ignore eight-digit hex.
+            $pillBg = EmailPalette::mix($color, '#ffffff', 0.88);
+            $pillBorder = EmailPalette::mix($color, '#ffffff', 0.6);
+            $pillText = EmailPalette::ensureContrast($color, $pillBg, 4.5, '#000000');
+            $badgesHtml .= '<span style="display: inline-block; padding: 5px 14px; margin: 3px 4px; background-color: ' . $pillBg . '; color: ' . $pillText . '; font-size: 13px; font-weight: 700; border-radius: 20px; border: 1px solid ' . $pillBorder . ';">' . $text . '</span>';
         }
 
         return <<<HTML
@@ -581,6 +589,11 @@ HTML;
         // the gradient must still get a background. See App\Core\EmailBackground.
         $headerBg = EmailBackground::gradient((string) $theme['gradient']);
         $headerBgColor = $theme['button'];
+
+        // Links in running text sit on the content card, which dark mode turns
+        // #374151: lighten the link colour just enough to read there.
+        $darkCard = '#374151';
+        $linkOnDark = EmailPalette::ensureContrast((string) $theme['primary'], $darkCard, 4.5, '#ffffff');
 
         // Translated footer strings
         $allRightsReserved = __('emails.footer.all_rights_reserved');
@@ -634,12 +647,14 @@ HTML;
             .mobile-padding { padding-left: 20px !important; padding-right: 20px !important; }
         }
 
-        /* Dark mode */
+        /* Dark mode. Only text sitting straight on the content card carries
+           .text-dark; the pale panels (cards, quotes, highlights, badges) keep
+           their light look and dark text. Pinned by DarkModeEmailReadabilityTest. */
         @media (prefers-color-scheme: dark) {
             .email-bg { background-color: #1f2937 !important; }
-            .email-container-inner { background-color: #374151 !important; }
+            .email-container-inner { background-color: {$darkCard} !important; }
             .text-dark { color: #f3f4f6 !important; }
-            .text-muted { color: #9ca3af !important; }
+            .text-dark a { color: {$linkOnDark} !important; }
         }
     </style>
 </head>

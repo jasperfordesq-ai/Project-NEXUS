@@ -95,16 +95,9 @@ $matchScore = isset($match['match_score']) ? (int) $match['match_score'] : null;
             .exchange-box { display: block !important; width: 100% !important; }
         }
 
-        /* Dark mode */
-        @media (prefers-color-scheme: dark) {
-            .email-bg { background-color: #0a1f1a !important; }
-            .card-bg { background-color: #134e4a !important; }
-            .text-primary { color: #f0fdfa !important; }
-            .text-secondary { color: #99f6e4 !important; }
-            .border-light { border-color: #2dd4bf !important; }
-            .exchange-card { background-color: #1e3a3a !important; border-color: #2dd4bf !important; }
-            .info-box { background-color: #1e3a3a !important; }
-        }
+        /* No dark-mode rules (removed Nov 2026): they darkened the card while
+           most text kept its dark inline colour, so parts became unreadable.
+           The light look stays readable everywhere. DarkModeEmailReadabilityTest. */
     </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: <?= $bgColor ?>;">

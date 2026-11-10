@@ -6,6 +6,7 @@
 
 namespace Tests\Laravel\Unit\Services;
 
+use App\Core\EmailPalette;
 use App\Core\EmailTemplateBuilder;
 use Tests\Laravel\TestCase;
 
@@ -48,7 +49,7 @@ class EmailTemplateBuilderRawInputsTest extends TestCase
 
         $this->assertStringNotContainsString('onmouseover', $html);
         // Falls back to the builder's default colour.
-        $this->assertStringContainsString('color: #6366f1;', $html);
+        $this->assertStringContainsString($this->pillStyle('#6366f1'), $html);
     }
 
     public function test_control_hex_badge_colour_still_renders(): void
@@ -57,7 +58,16 @@ class EmailTemplateBuilderRawInputsTest extends TestCase
             ->badges([['text' => 'Badge', 'color' => '#8b5cf6']])
             ->render();
 
-        $this->assertStringContainsString('background: #8b5cf61a; color: #8b5cf6;', $html);
-        $this->assertStringContainsString('border: 1px solid #8b5cf633;', $html);
+        // Since Nov 2026 a solid pale pill derived from the colour (it was a
+        // see-through `#rrggbb1a` tint that vanished in dark mode).
+        $this->assertStringContainsString($this->pillStyle('#8b5cf6'), $html);
+        $this->assertStringContainsString('border: 1px solid ' . EmailPalette::mix('#8b5cf6', '#ffffff', 0.6) . ';', $html);
+    }
+
+    private function pillStyle(string $colour): string
+    {
+        $bg = EmailPalette::mix($colour, '#ffffff', 0.88);
+
+        return 'background-color: ' . $bg . '; color: ' . EmailPalette::ensureContrast($colour, $bg, 4.5, '#000000') . ';';
     }
 }

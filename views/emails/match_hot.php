@@ -108,15 +108,9 @@ if ($distance !== null) {
             .hide-mobile { display: none !important; }
         }
 
-        /* Dark mode */
-        @media (prefers-color-scheme: dark) {
-            .email-bg { background-color: #1c1917 !important; }
-            .card-bg { background-color: #292524 !important; }
-            .text-primary { color: #f5f5f4 !important; }
-            .text-secondary { color: #a8a29e !important; }
-            .border-light { border-color: #44403c !important; }
-            .match-card { background-color: #44403c !important; border-color: #57534e !important; }
-        }
+        /* No dark-mode rules (removed Nov 2026): they darkened the card while
+           most text kept its dark inline colour, so parts became unreadable.
+           The light look stays readable everywhere. DarkModeEmailReadabilityTest. */
     </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: <?= $bgColor ?>;">

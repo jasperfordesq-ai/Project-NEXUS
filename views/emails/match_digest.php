@@ -107,17 +107,10 @@ $remainingCount = max(0, $totalCount - 5);
             .stat-box { display: block !important; width: 100% !important; margin-bottom: 12px !important; padding-right: 0 !important; padding-left: 0 !important; }
         }
 
-        /* Dark mode: neutral greys, as EmailTemplateBuilder uses, so they sit
-           with any community colour (they were fixed indigo until Nov 2026). */
-        @media (prefers-color-scheme: dark) {
-            .email-bg { background-color: #1f2937 !important; }
-            .card-bg { background-color: #374151 !important; }
-            .text-primary { color: <?= $bgColor ?> !important; }
-            .text-secondary { color: #d1d5db !important; }
-            .border-light { border-color: #4b5563 !important; }
-            .match-card { background-color: #374151 !important; }
-            .stat-card { background-color: #374151 !important; border-color: #4b5563 !important; }
-        }
+        /* No dark-mode rules (removed Nov 2026): they darkened the card while
+           match titles, names and distances kept their dark inline colours, so
+           a title read at 1:1. The light look stays readable everywhere.
+           DarkModeEmailReadabilityTest. */
     </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: <?= $bgColor ?>;">
