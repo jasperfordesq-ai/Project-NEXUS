@@ -193,6 +193,19 @@ class TenantEmailLinkShapesTest extends TestCase
         $master = UserTenantResolver::resolve(['tenant_id' => 1]);
         $this->assertSame(self::PLATFORM, $master['frontend_url']);
 
+        // Nor do the master's image and file addresses go to the sales site
+        // (UrlHelper::getBaseUrl, used for uploads in API responses).
+        TenantContext::runForTenant(1, function (): void {
+            $this->assertStringNotContainsString('sales.example.test', \App\Helpers\UrlHelper::getBaseUrl());
+            $this->assertStringNotContainsString('sales.example.test', (string) \App\Helpers\UrlHelper::absolute('/uploads/x.png'));
+        });
+
+        // Nor is a new community's welcome link (provisioning) built on it.
+        $mailer = new \ReflectionMethod(TenantProvisioningMailer::class, 'tenantUrl');
+        $mailer->setAccessible(true);
+        $row = DB::table('tenants')->where('id', (int) $child->id)->first();
+        $this->assertSame(self::PLATFORM . '/' . $slug, $mailer->invoke(app(TenantProvisioningMailer::class), $row));
+
         // Nor is the master's accessible domain borrowed for the accessible link.
         DB::table('tenants')->where('id', 1)->update(['accessible_domain' => 'accessible.sales.example.test']);
         $accessible = \App\Support\Tenancy\AccessibleFrontendUrl::base(

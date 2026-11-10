@@ -188,8 +188,10 @@ class UrlHelper
      */
     public static function getBaseUrl(): string
     {
-        // Try tenant domain first
-        $tenantDomain = TenantContext::getDomain();
+        // Try tenant domain first — never the platform master's: its `domain`
+        // is the sales site, which serves none of our files (same rule as
+        // TenantContext::getFrontendUrl() and the sitemap, id > 1).
+        $tenantDomain = TenantContext::getId() > 1 ? TenantContext::getDomain() : '';
         if (!empty($tenantDomain)) {
             return $tenantDomain;
         }

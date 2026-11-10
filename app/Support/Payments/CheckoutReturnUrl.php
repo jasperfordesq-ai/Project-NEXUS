@@ -48,16 +48,51 @@ final class CheckoutReturnUrl
             return $fallback;
         }
 
-        if (self::isWithin($returnUrl, rtrim(TenantContext::getFrontendUrl(), '/') . TenantContext::getSlugPrefix())) {
+        $website = rtrim(TenantContext::getFrontendUrl(), '/') . TenantContext::getSlugPrefix();
+        if (self::isWithinAnyPlatformHost($returnUrl, $website, 'platform_app_hosts')) {
             return $returnUrl;
         }
 
         $accessible = AccessibleFrontendUrl::base();
-        if ($accessible !== null && self::isWithin($returnUrl, $accessible)) {
+        if ($accessible !== null && self::isWithinAnyPlatformHost($returnUrl, $accessible, 'platform_accessible_hosts')) {
             return $returnUrl;
         }
 
         return $fallback;
+    }
+
+    /**
+     * Within $base, or — only when $base is on one of the platform's own shared
+     * hosts — within the same path on another of those hosts. While the app is
+     * served on both app.project-nexus.ie and app.project-nexus.net, a member
+     * must return to the address they paid from: sign-in belongs to one address,
+     * so the other one would have them signed out. A community on its own
+     * domain never gains the platform hosts.
+     */
+    private static function isWithinAnyPlatformHost(string $url, string $base, string $hostListKey): bool
+    {
+        if (self::isWithin($url, $base)) {
+            return true;
+        }
+
+        $baseHost = strtolower((string) (parse_url($base, PHP_URL_HOST) ?? ''));
+        $hosts = config('tenancy.' . $hostListKey, []);
+        $hosts = is_array($hosts) ? array_map(static fn ($h): string => strtolower((string) $h), $hosts) : [];
+        if ($baseHost === '' || !in_array($baseHost, $hosts, true)) {
+            return false;
+        }
+
+        foreach ($hosts as $host) {
+            if ($host === '' || $host === $baseHost) {
+                continue;
+            }
+            $alternate = preg_replace('#^(https?://)[^/]+#i', '${1}' . $host, $base, 1);
+            if (is_string($alternate) && self::isWithin($url, $alternate)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

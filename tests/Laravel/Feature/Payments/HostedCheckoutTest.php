@@ -105,6 +105,68 @@ class HostedCheckoutTest extends TestCase
         $this->assertNotSame($other, CheckoutReturnUrl::safe($other, '/fallback'));
     }
 
+    /**
+     * While the shared app is served on both app.project-nexus.ie and
+     * app.project-nexus.net (move decided 10 Nov 2026), a member paying from the
+     * address that is not FRONTEND_URL must come back to THAT address: sign-in
+     * belongs to one address, so being sent to the other one signs them out.
+     * Still confined to this community's path, and only for the platform's own
+     * app/accessible hosts.
+     */
+    public function test_return_address_on_either_platform_app_address_is_kept(): void
+    {
+        $saved = [$_ENV['FRONTEND_URL'] ?? null, $_SERVER['FRONTEND_URL'] ?? null, getenv('FRONTEND_URL')];
+        $_ENV['FRONTEND_URL'] = $_SERVER['FRONTEND_URL'] = 'https://app.project-nexus.ie';
+        putenv('FRONTEND_URL=https://app.project-nexus.ie');
+        config([
+            'tenancy.platform_app_hosts' => ['app.project-nexus.ie', 'app.project-nexus.net'],
+            'tenancy.platform_accessible_hosts' => ['accessible.project-nexus.ie', 'accessible-app.project-nexus.net'],
+            'app.accessible_frontend_url' => 'https://accessible.project-nexus.ie',
+        ]);
+        try {
+            DB::table('tenants')->where('id', $this->testTenantId)
+                ->update(['domain' => null, 'accessible_domain' => null, 'parent_id' => null]);
+            TenantContext::reset();
+            TenantContext::setById($this->testTenantId);
+            $slug = (string) TenantContext::get()['slug'];
+
+            foreach ([
+                "https://app.project-nexus.net/{$slug}/volunteering/donations?x=1",
+                "https://app.project-nexus.ie/{$slug}/premium/return",
+                "https://accessible-app.project-nexus.net/{$slug}/accessible/me/verein-dues",
+            ] as $kept) {
+                $this->assertSame($kept, CheckoutReturnUrl::safe($kept, '/fallback'), $kept);
+            }
+
+            $fallback = "https://app.project-nexus.ie/{$slug}/fallback";
+            foreach ([
+                'https://app.project-nexus.net/another-community/premium/return',
+                'https://project-nexus.net/' . $slug . '/premium/return',
+                'https://app.project-nexus.net.evil.test/' . $slug . '/x',
+                'http://app.project-nexus.net/' . $slug . '/x',
+                'https://accessible-app.project-nexus.net/another-community/accessible/x',
+            ] as $refused) {
+                $this->assertNotSame($refused, CheckoutReturnUrl::safe($refused, '/fallback'), $refused);
+            }
+            $this->assertSame($fallback, CheckoutReturnUrl::safe('https://evil.example.test/x', '/fallback'));
+
+            // A community on its own domain does not gain the platform addresses.
+            DB::table('tenants')->where('id', $this->testTenantId)->update(['domain' => 'own-hosted.example.test']);
+            TenantContext::reset();
+            TenantContext::setById($this->testTenantId);
+            $this->assertSame(
+                'https://own-hosted.example.test/fallback',
+                CheckoutReturnUrl::safe("https://app.project-nexus.net/{$slug}/x", '/fallback')
+            );
+        } finally {
+            [$env, $server, $put] = $saved;
+            if ($env === null) { unset($_ENV['FRONTEND_URL']); } else { $_ENV['FRONTEND_URL'] = $env; }
+            if ($server === null) { unset($_SERVER['FRONTEND_URL']); } else { $_SERVER['FRONTEND_URL'] = $server; }
+            $put === false ? putenv('FRONTEND_URL') : putenv('FRONTEND_URL=' . $put);
+            TenantContext::reset();
+        }
+    }
+
     public function test_query_is_appended_correctly_and_the_session_placeholder_stays_literal(): void
     {
         $this->assertSame(

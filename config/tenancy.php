@@ -57,4 +57,15 @@ return [
 
     'internal_host_suffixes' => ['.localhost', '.test', '.internal', '.local'],
 
+    /*
+    | The platform's own shared React hosts and shared accessible hosts — the
+    | addresses a community WITHOUT its own domain is reached at. More than one
+    | while the platform moves from project-nexus.ie to project-nexus.net
+    | (decided 10 Nov 2026), so a member on either keeps their address, e.g.
+    | after a card payment (App\Support\Payments\CheckoutReturnUrl). The hosts
+    | of FRONTEND_URL / ACCESSIBLE_FRONTEND_URL are added at runtime.
+    */
+    'platform_app_hosts' => ['app.project-nexus.ie', 'app.project-nexus.net'],
+    'platform_accessible_hosts' => ['accessible.project-nexus.ie', 'accessible-app.project-nexus.net'],
+
 ];

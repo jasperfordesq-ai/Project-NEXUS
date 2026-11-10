@@ -186,8 +186,9 @@ class TenantProvisioningMailer
             return 'https://' . rtrim((string) $tenant->domain, '/');
         }
 
-        // Sub-tenant sharing a parent's custom domain (e.g. timebanking.uk/cardiff)
-        if (! empty($tenant->parent_id)) {
+        // Sub-tenant sharing a parent's custom domain (e.g. timebanking.uk/cardiff).
+        // Never the platform master's (id 1): its `domain` is the sales site.
+        if ((int) ($tenant->parent_id ?? 0) > 1) {
             $parentDomain = DB::table('tenants')
                 ->where('id', (int) $tenant->parent_id)
                 ->where('is_active', 1)

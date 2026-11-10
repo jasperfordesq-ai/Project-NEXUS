@@ -79,6 +79,23 @@ class SitemapServiceTest extends TestCase
         $this->assertStringContainsString('sitemap-main.xml', $xml);
     }
 
+    /**
+     * The master's own `domain` may be the sales site, which serves no
+     * sitemap of ours — its entry must stay on the platform app address.
+     */
+    public function test_generateIndex_never_puts_the_masters_sitemap_on_its_own_domain(): void
+    {
+        DB::table('tenants')->updateOrInsert(
+            ['id' => 1],
+            ['name' => 'Master', 'slug' => '', 'domain' => 'sales.example.test', 'is_active' => 1, 'depth' => 0, 'allows_subtenants' => true, 'created_at' => now(), 'updated_at' => now()]
+        );
+
+        Cache::flush();
+        $xml = $this->service->generateIndex();
+        $this->assertStringContainsString('sitemap-main.xml', $xml);
+        $this->assertStringNotContainsString('sales.example.test', $xml);
+    }
+
     public function test_generateIndex_excludes_inactive_tenants(): void
     {
         DB::table('tenants')->insertOrIgnore([
