@@ -8,7 +8,7 @@ import Palette from 'lucide-react/icons/palette';
 import { useTenant } from '@/contexts';
 import { SettingsSection } from '../SettingsSection';
 import { ColorSettingField } from '../ColorSettingField';
-import { DEFAULT_HEADER_ACCENT, DEFAULT_HEADER_BG, readableHeaderText } from '../headerPreview';
+import { DEFAULT_HEADER_BG, defaultHeaderLineColour, headerLineColour, readableHeaderText } from '../headerPreview';
 import type { AdminSettingsFormState } from '../useAdminSettingsForm';
 
 export const HEADER_COLORS_SECTION_ID = 'header-colours';
@@ -20,7 +20,9 @@ export function HeaderColorsSection({ state }: { state: AdminSettingsFormState }
   const { form, setField } = state;
 
   const bg = form.header_bg_color || DEFAULT_HEADER_BG;
-  const accent = form.header_accent_color || form.header_bg_color || DEFAULT_HEADER_ACCENT;
+  // With no line colour chosen the accessible site draws the line in the header
+  // colour, else the community colour (since 10 Nov 2026), else blue.
+  const accent = headerLineColour(form);
 
   return (
     <SettingsSection
@@ -31,7 +33,7 @@ export function HeaderColorsSection({ state }: { state: AdminSettingsFormState }
     >
       {/* Live preview of the accessible header bar. Inline colours are the
           content being edited, not styling — there is no token for them. */}
-      <div className="overflow-hidden rounded-xl border border-divider" aria-hidden="true">
+      <div className="overflow-hidden rounded-xl border border-divider" aria-hidden="true" data-testid="header-colour-preview">
         <div
           className="flex items-center justify-between px-4 py-3"
           style={{ backgroundColor: bg, borderBottom: `8px solid ${accent}`, color: readableHeaderText(bg) }}
@@ -55,7 +57,7 @@ export function HeaderColorsSection({ state }: { state: AdminSettingsFormState }
           label={t('admin_settings.header_accent_color_label')}
           hint={t('admin_settings.header_accent_color_hint')}
           value={form.header_accent_color}
-          fallback={form.header_bg_color || DEFAULT_HEADER_ACCENT}
+          fallback={defaultHeaderLineColour(form)}
           onChange={(hex) => setField('header_accent_color', hex)}
         />
       </div>

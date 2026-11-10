@@ -31,3 +31,32 @@ export function readableHeaderText(hex: string): string {
     0.0722 * lin(parseInt(v.slice(4, 6), 16));
   return 1.05 / (L + 0.05) >= (L + 0.05) / 0.05 ? '#ffffff' : '#0b0c0c';
 }
+
+/** Strict `#rrggbb` only — the form the accessible site accepts. */
+function strictHex(value: string | null | undefined): string {
+  const colour = (value ?? '').trim().toLowerCase();
+  return /^#[0-9a-f]{6}$/.test(colour) ? colour : '';
+}
+
+/**
+ * The colour the accessible site draws its header line in, when no line
+ * colour is chosen: the header colour, else the community colour, else the
+ * standard blue. Mirrors web-uk/src/lib/accessible-shell.js
+ * (buildHeaderThemeStyle), which uses the community colour since 10 Nov 2026,
+ * so the admin preview shows what members will see.
+ */
+export function defaultHeaderLineColour(form: {
+  header_bg_color?: string | null;
+  community_color?: string | null;
+}): string {
+  return strictHex(form.header_bg_color) || strictHex(form.community_color) || DEFAULT_HEADER_ACCENT;
+}
+
+/** The line colour shown: the chosen line colour, else the default above. */
+export function headerLineColour(form: {
+  header_accent_color?: string | null;
+  header_bg_color?: string | null;
+  community_color?: string | null;
+}): string {
+  return strictHex(form.header_accent_color) || defaultHeaderLineColour(form);
+}
