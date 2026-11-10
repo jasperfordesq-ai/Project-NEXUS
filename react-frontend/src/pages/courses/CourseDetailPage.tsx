@@ -25,9 +25,13 @@ import { CourseReviews } from '@/components/courses/CourseReviews';
 import CircleCheck from 'lucide-react/icons/circle-check';
 import Lock from 'lucide-react/icons/lock';
 import { useLoginRedirect } from '@/hooks/useLoginRedirect';
+import { useCategoryListColours } from '@/hooks/useCategoryListColours';
 
 export default function CourseDetailPage() {
   const { t } = useTranslation('courses');
+  // Its category's colour from the community's course categories, as on its
+  // card (warmth plan W3).
+  const courseCategoryColour = useCategoryListColours('/v2/courses/categories');
   const { idOrSlug } = useParams<{ idOrSlug: string }>();
   const navigate = useNavigate();
   const { tenantPath } = useTenant();
@@ -114,6 +118,7 @@ export default function CourseDetailPage() {
       <DetailCover
         data-testid="course-detail-cover"
         seed={coverSeed.course(course)}
+        colour={courseCategoryColour(course.category_id)}
         icon={GraduationCap}
         imageUrl={coverImage ? resolveThumbnailUrl(coverImage, { width: 1200, height: 400 }) : null}
         className="mb-6 h-28 rounded-2xl sm:h-40"

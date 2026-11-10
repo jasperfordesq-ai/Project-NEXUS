@@ -593,6 +593,42 @@ describe('ExplorePage — warmth', () => {
     expect(blogCover).toHaveAttribute('data-colour', colourForSeed(coverSeed.blogPost(55, 4), paletteFor(null)));
   });
 
+  // Warmth plan W3: the colour comes from the community's own list of event
+  // and blog categories, shared out in id order — as on the events and blog pages.
+  it("takes event and blog colours from the community's category lists", async () => {
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.startsWith('/v2/categories?type=event')) return Promise.resolve({ success: true, data: [{ id: 3, color: 'blue' }, { id: 7, color: 'blue' }] });
+      if (url.startsWith('/v2/blog/categories')) return Promise.resolve({ success: true, data: [{ id: 2, color: 'blue' }, { id: 4, color: 'blue' }] });
+      if (url.includes('/v2/explore/for-you')) return Promise.resolve({ success: true, data: [], meta: { per_page: 15, total: 0, has_more: false } });
+      if (url.includes('/v2/explore')) {
+        return Promise.resolve({
+          success: true,
+          data: {
+            ...makeExploreData(),
+            upcoming_events: [{
+              id: 81, title: 'Repair Cafe', description: null, image_url: null, image_alt: null,
+              start_at: '2026-12-01T10:00:00Z', end_at: null, location: 'Hall', is_online: false,
+              max_attendees: null, rsvp_count: 0, category_id: 7,
+            }],
+            trending_blog_posts: [{
+              id: 55, title: 'Garden morning', slug: 'garden-morning', excerpt: null, image_url: null,
+              published_at: '2026-11-01T10:00:00Z', reading_time: 3, view_count: 0,
+              author_name: '', author_avatar: null, category: { id: 4, name: 'News' },
+            }],
+          },
+        });
+      }
+      return Promise.resolve({ success: true, data: null });
+    });
+    const { paletteFor } = await import('@/lib/categoryColours');
+    const { default: ExplorePage } = await import('./ExplorePage');
+    render(<ExplorePage />);
+
+    const palette = paletteFor(null);
+    await waitFor(() => expect(screen.getByTestId('explore-event-cover')).toHaveAttribute('data-colour', palette[1]));
+    expect(screen.getByTestId('explore-blog-cover')).toHaveAttribute('data-colour', palette[1]);
+  });
+
   it('names what each For You item is in words, not the raw "listing"', async () => {
     window.history.pushState({}, '', '/?tab=for_you');
     const { default: ExplorePage } = await import('./ExplorePage');

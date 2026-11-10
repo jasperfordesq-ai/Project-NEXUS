@@ -68,7 +68,8 @@ import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { getOpportunityCategoryName, type OpportunityCategory } from '@/lib/volunteering';
+import { getOpportunityCategoryId, getOpportunityCategoryName, type OpportunityCategory } from '@/lib/volunteering';
+import { useCategoryListColours } from '@/hooks/useCategoryListColours';
 import { ShiftManager } from '@/components/volunteering/ShiftManager';
 
 import { useTranslation } from 'react-i18next';
@@ -118,6 +119,7 @@ interface OpportunityDetail {
   is_remote: boolean;
   /** String on some endpoints, { id, name, color } object on others — always unwrap via getOpportunityCategoryName(). */
   category: OpportunityCategory;
+  category_id?: number | null;
   organization: { id: number; name: string; logo_url: string | null };
   created_at: string;
   shifts: Shift[];
@@ -871,6 +873,9 @@ export function OpportunityDetailPage() {
   const { tenantPath, hasFeature, volunteeringConfig } = useTenant();
   const toast = useToast();
   const { t } = useTranslation('volunteering');
+  // Its category's colour from the community's volunteering list, as on its
+  // card (warmth plan W3).
+  const volunteeringCategoryColour = useCategoryListColours('/v2/categories?type=volunteering');
 
   usePageTitle(t('opportunity.page_title'));
 
@@ -1163,7 +1168,8 @@ export function OpportunityDetailPage() {
             the same wherever it appears (AWID: "attractive visuals"). */}
         <DetailCover
           data-testid="opportunity-detail-cover"
-          seed={coverSeed.opportunity(opp.id, getOpportunityCategoryName(opp.category))}
+          seed={coverSeed.opportunity(opp.id, getOpportunityCategoryId(opp))}
+          colour={volunteeringCategoryColour(getOpportunityCategoryId(opp))}
           icon={Briefcase}
           className="mb-6 h-28 rounded-2xl sm:h-40"
         />

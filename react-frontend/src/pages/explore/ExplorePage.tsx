@@ -60,6 +60,7 @@ import { ThemedCover } from '@/components/ui/ThemedCover';
 import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import { themeIconFor } from '@/lib/themeIcons';
 import { useListingThemeColours } from '@/hooks/useListingThemeColours';
+import { useCategoryListColours } from '@/hooks/useCategoryListColours';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 import Gift from 'lucide-react/icons/gift';
 import HandHelping from 'lucide-react/icons/hand-helping';
@@ -456,6 +457,10 @@ export default function ExplorePage() {
   // Theme colours exactly as the offers page shows them, and the community's palette.
   const themeColours = useListingThemeColours();
   const palette = useSitePalette();
+  // Event and blog colours from the community's own category lists, as on
+  // the events and blog pages (warmth plan W3); the seed is the fallback.
+  const eventCategoryColour = useCategoryListColours(hasFeature('events') ? '/v2/categories?type=event' : null);
+  const blogCategoryColour = useCategoryListColours(hasFeature('blog') ? '/v2/blog/categories' : null);
   // A soft ring in each member's own colour (the seed their initials and
   // profile cover use), around their photo in the people sections.
   const memberHalo = (name: string | null | undefined) =>
@@ -1066,7 +1071,7 @@ export default function ExplorePage() {
                           <ThemedCover
                             data-testid="explore-event-cover"
                             size="sm"
-                            colour={colourForSeed(coverSeed.event(event.id, event.category_id), palette)}
+                            colour={eventCategoryColour(event.category_id) ?? colourForSeed(coverSeed.event(event.id, event.category_id), palette)}
                             icon={CalendarDays}
                           />
                         </div>
@@ -1483,7 +1488,7 @@ export default function ExplorePage() {
                         <ThemedCover
                           data-testid="explore-blog-cover"
                           size="sm"
-                          colour={colourForSeed(coverSeed.blogPost(post.id, post.category?.id), palette)}
+                          colour={blogCategoryColour(post.category?.id) ?? colourForSeed(coverSeed.blogPost(post.id, post.category?.id), palette)}
                           icon={BookOpen}
                         />
                       </div>

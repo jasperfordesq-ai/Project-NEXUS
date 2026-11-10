@@ -209,6 +209,14 @@ describe('CourseCard', () => {
     expect(screen.getByTestId('course-card-cover').getAttribute('data-colour')).toBe(first);
   });
 
+  // Warmth plan W3: the page hands each card its category's colour from the
+  // community's course categories, shared out in id order.
+  it('uses the colour its page gives it', async () => {
+    const { CourseCard } = await import('./CourseCard');
+    render(<CourseCard course={makeCourse({ cover_image: null })} coverColour="teal" />);
+    expect(screen.getByTestId('course-card-cover')).toHaveAttribute('data-colour', 'teal');
+  });
+
   it('shows the picture, not a cover, when the course has one', async () => {
     const { CourseCard } = await import('./CourseCard');
     render(<CourseCard course={makeCourse({ cover_image: '/uploads/course.jpg' })} />);

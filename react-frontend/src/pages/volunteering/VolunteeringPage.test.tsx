@@ -328,8 +328,10 @@ describe('VolunteeringPage', () => {
       expect(screen.queryByText('Welcome to volunteering')).not.toBeInTheDocument();
       // How it works is still one tap away.
       expect(screen.getByText(/1 time credit for every hour/i)).toBeInTheDocument();
-      // Nothing member-only is even asked for.
-      expect(vi.mocked(api.get).mock.calls.map(([url]) => url).filter((url) => !String(url).startsWith('/v2/volunteering/opportunities'))).toEqual([]);
+      // Nothing member-only is even asked for (the category list, for the
+      // labels' colours, is public).
+      expect(vi.mocked(api.get).mock.calls.map(([url]) => String(url))
+        .filter((url) => !url.startsWith('/v2/volunteering/opportunities') && !url.startsWith('/v2/categories?type=volunteering'))).toEqual([]);
     });
 
     it('leads with the first three opportunities, then the hub, then the rest', async () => {
@@ -611,6 +613,28 @@ describe('VolunteeringPage', () => {
     await waitFor(() => {
       expect(screen.getByText('No opportunities found')).toBeInTheDocument();
     });
+  });
+
+  // Warmth plan W3 (10 Nov 2026): two categories could share a colour by
+  // chance; the community's volunteering categories now share the palette out
+  // in id order, and a role's page uses the same list.
+  it('never gives two volunteering categories the same colour by chance', async () => {
+    const role = (id: number, title: string, category: string, categoryId: number) => ({
+      id, title, description: 'Help out', location: 'Dublin', skills_needed: null,
+      start_date: '2026-03-01', end_date: null, is_active: true, is_remote: false,
+      category, category_id: categoryId,
+      organization: { id: 1, name: 'Green Org', logo_url: null }, created_at: '2026-02-01', has_applied: false,
+    });
+    vi.mocked(api.get).mockImplementation((url: string) => Promise.resolve(url.startsWith('/v2/categories')
+      ? { success: true, data: [{ id: 3, color: 'blue' }, { id: 1, color: 'blue' }] }
+      : { success: true, data: [role(1, 'Garden helper', 'Environment', 3), role(2, 'Reading buddy', 'Education', 1)], meta: { cursor: null, has_more: false } }) as ReturnType<typeof api.get>);
+    render(<VolunteeringPage />);
+    await screen.findByText('Garden helper');
+
+    const { paletteFor } = await import('@/lib/categoryColours');
+    const palette = paletteFor(null);
+    await waitFor(() => expect(screen.getAllByTestId('opportunity-category')[0]).toHaveAttribute('data-colour', palette[1]));
+    expect(screen.getAllByTestId('opportunity-category')[1]).toHaveAttribute('data-colour', palette[0]);
   });
 
   it('renders opportunity cards with Apply button', async () => {

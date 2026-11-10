@@ -226,6 +226,24 @@ describe('EventsPage', () => {
     expect(tiles[0]!.className).not.toContain('amber');
   });
 
+  // Warmth plan W3 (10 Nov 2026): two kinds of event could share a colour by
+  // chance. The community's event categories now share the palette out in id
+  // order, so kinds side by side never match until the palette runs out.
+  it('never gives two kinds of event the same colour by chance', async () => {
+    const repair = createCanonicalEventFixture({ id: 41, title: 'Repair Cafe', category: { id: 7, name: 'Skills', slug: 'skills', colour: null } });
+    const choir = createCanonicalEventFixture({ id: 42, title: 'Choir', category: { id: 8, name: 'Music', slug: 'music', colour: null } });
+    mockApi.get.mockImplementation((url: string) => (url.startsWith('/v2/categories')
+      ? Promise.resolve({ success: true, data: [{ id: 8, color: 'blue' }, { id: 7, color: 'blue' }] })
+      : Promise.resolve({ success: true, data: [repair, choir], meta: { has_more: false, total_items: 2 } })));
+
+    renderEventRoute(<EventsPage />);
+    await screen.findByRole('heading', { name: 'Repair Cafe' });
+
+    const palette = paletteFor(null);
+    await waitFor(() => expect(screen.getAllByTestId('event-date-tile')[0]).toHaveAttribute('data-colour', palette[0]));
+    expect(screen.getAllByTestId('event-date-tile')[1]).toHaveAttribute('data-colour', palette[1]);
+  });
+
   it('shows no faces when nobody the member may see is going', async () => {
     const event = createCanonicalEventFixture({ going_preview: [] });
     mockApi.get.mockResolvedValue({ success: true, data: [event], meta: { has_more: false, total_items: 1 } });

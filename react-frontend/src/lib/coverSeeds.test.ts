@@ -13,18 +13,21 @@ import { coverSeed } from './coverSeeds';
  * its category too; an item with no category keeps a colour of its own.
  */
 describe('coverSeed', () => {
+  // Keyed by the category's id: help-centre category names are translated
+  // for each reader, so a name-based colour would change with the language.
   it('gives an article the colour of its knowledge-base category', () => {
-    expect(coverSeed.article({ id: 1, category_name: 'Gardening' })).toBe(coverSeed.kbCategory('Gardening'));
-    expect(coverSeed.article({ id: 2, category_name: 'Gardening' })).toBe(coverSeed.article({ id: 1, category_name: 'Gardening' }));
+    expect(coverSeed.article({ id: 1, category_id: 5 })).toBe(coverSeed.kbCategory(5));
+    expect(coverSeed.article({ id: 2, category_id: 5 })).toBe(coverSeed.article({ id: 1, category_id: 5 }));
   });
 
-  it('puts an article without a category in the general group, in any language', () => {
-    expect(coverSeed.article({ id: 3, category_name: null })).toBe(coverSeed.kbCategory(null));
+  it('puts an article without a category in the general group', () => {
+    expect(coverSeed.article({ id: 3, category_id: null })).toBe(coverSeed.kbCategory(null));
     expect(coverSeed.kbCategory(null)).toBe(coverSeed.kbCategory(undefined));
   });
 
+  // By the category's id too: volunteering category names are translated.
   it('gives a volunteering role the colour of its category, or its own when it has none', () => {
-    expect(coverSeed.opportunity(42, 'Environment')).toBe(coverSeed.volunteeringCategory('Environment'));
+    expect(coverSeed.opportunity(42, 3)).toBe(coverSeed.volunteeringCategory(3));
     expect(coverSeed.opportunity(42, null)).not.toBe(coverSeed.opportunity(43, null));
   });
 
@@ -39,7 +42,6 @@ describe('coverSeed', () => {
   });
 
   it('ignores letter case in category names', () => {
-    expect(coverSeed.kbCategory('Gardening')).toBe(coverSeed.kbCategory('gardening'));
-    expect(coverSeed.volunteeringCategory('Environment')).toBe(coverSeed.volunteeringCategory('ENVIRONMENT'));
+    expect(coverSeed.skillsCategory('Gardening')).toBe(coverSeed.skillsCategory('GARDENING '));
   });
 });

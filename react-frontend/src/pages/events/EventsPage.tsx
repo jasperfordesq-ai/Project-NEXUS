@@ -63,6 +63,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useCategoryListColours } from '@/hooks/useCategoryListColours';
 import { useFilterDraft } from '@/hooks/useFilterDraft';
 import { PageMeta } from '@/components/seo/PageMeta';
 import type { ProximityFilterParams } from '@/components/proximity/ProximityFilter';
@@ -959,6 +960,7 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
   const { t } = useTranslation('events');
   const { tenantPath } = useTenant();
   const palette = useSitePalette();
+  const eventCategoryColour = useCategoryListColours('/v2/categories?type=event');
   const startDate = new Date(event.schedule.start_at ?? event.created_at ?? 0);
   const formattingLocale = getFormattingLocale();
   let eventTimezone = event.schedule.timezone || 'UTC';
@@ -1000,7 +1002,10 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
         timeZoneName: 'short',
       });
   const goingPreview = event.going_preview ?? [];
-  const dateTileColour = colourForSeed(coverSeed.event(event.id, event.category?.id), palette);
+  // The community's event categories share the palette out, so two kinds
+  // never match by chance (warmth plan W3); the seed is the fallback.
+  const dateTileColour = eventCategoryColour(event.category?.id)
+    ?? colourForSeed(coverSeed.event(event.id, event.category?.id), palette);
   // "Maeve, Tom and Ann" in the reader's language, for screen readers.
   const goingNames = joinList(goingPreview.map((person) => person.name), getFormattingLocale());
   const coverImageProps = event.primary_image?.url

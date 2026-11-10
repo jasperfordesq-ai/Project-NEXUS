@@ -128,6 +128,26 @@ describe('SkillsBrowsePage', () => {
     const tiles = screen.getAllByTestId('skills-category-tile');
     expect(tiles).toHaveLength(2);
     expect(new Set(tiles.map((tile) => tile.getAttribute('data-colour'))).size).toBe(2);
+    // Warmth plan W3: shared out in id order, so never the same by chance.
+    const { paletteFor } = await import('@/lib/categoryColours');
+    expect(tiles.map((tile) => tile.getAttribute('data-colour'))).toEqual(paletteFor(null).slice(0, 2));
+  });
+
+  it('never gives two skill categories the same colour until the palette runs out', async () => {
+    const { paletteFor } = await import('@/lib/categoryColours');
+    const palette = paletteFor(null);
+    // Eight categories, arriving out of id order.
+    const ids = [8, 3, 5, 1, 7, 2, 6, 4];
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: ids.map((id) => ({ id, name: `Category ${id}`, icon: '🌱', skills_count: 1, children: [] })),
+    });
+    render(<SkillsBrowsePage />);
+    await waitFor(() => expect(screen.getAllByTestId('skills-category-tile')).toHaveLength(8));
+    const byId = new Map(screen.getAllByTestId('skills-category-tile').map((tile, index) => [ids[index], tile.getAttribute('data-colour')]));
+    expect(new Set(byId.values()).size).toBe(palette.length);
+    expect(byId.get(1)).toBe(palette[0]);
+    expect(byId.get(8)).toBe(palette[7]);
   });
 
   it('renders empty state when no categories', async () => {

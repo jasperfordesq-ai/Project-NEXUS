@@ -40,8 +40,8 @@ vi.mock('@/lib/api/courses', () => ({
 
 // Mock the CourseCard component to keep tests simple
 vi.mock('@/components/courses/CourseCard', () => ({
-  CourseCard: ({ course }: { course: { title: string } }) => (
-    <div data-testid="course-card">{course.title}</div>
+  CourseCard: ({ course, coverColour }: { course: { title: string }; coverColour?: string }) => (
+    <div data-testid="course-card" data-colour={coverColour}>{course.title}</div>
   ),
 }));
 
@@ -102,6 +102,25 @@ describe('CoursesPage', () => {
     await waitFor(() => expect(screen.getAllByTestId('course-card')).toHaveLength(2));
     expect(screen.getByText('Intro to Timebanking')).toBeInTheDocument();
     expect(screen.getByText('Advanced Matching')).toBeInTheDocument();
+  });
+
+  // Warmth plan W3 (10 Nov 2026): course categories share the palette out in
+  // id order, so two never match by chance.
+  it('gives the courses of two categories different colours', async () => {
+    vi.mocked(coursesApi.categories).mockResolvedValue({
+      success: true,
+      data: [{ id: 5, name: 'Cooking', slug: 'cooking', position: 1 }, { id: 2, name: 'Technology', slug: 'tech', position: 2 }],
+    });
+    const course = (id: number, title: string, categoryId: number) => ({ id, title, slug: `c${id}`, level: 'beginner', author_user_id: 10, category_id: categoryId, visibility: 'public', enrollment_type: 'self_paced', status: 'published', moderation_status: 'approved', credit_cost: '0', learner_credit_reward: '1', instructor_credit_reward: '1', enrollment_count: 0, completion_count: 0, rating_avg: '0', rating_count: 0 });
+    vi.mocked(coursesApi.browse).mockResolvedValue({
+      success: true,
+      data: { items: [course(1, 'Bread', 5), course(2, 'Spreadsheets', 2)], total: 2, page: 1, per_page: 20, total_pages: 1, has_more: false },
+    } as Awaited<ReturnType<typeof coursesApi.browse>>);
+
+    render(<CoursesPage />);
+    const { paletteFor } = await import('@/lib/categoryColours');
+    await waitFor(() => expect(screen.getAllByTestId('course-card')[0]).toHaveAttribute('data-colour', paletteFor(null)[1]));
+    expect(screen.getAllByTestId('course-card')[1]).toHaveAttribute('data-colour', paletteFor(null)[0]);
   });
 
   it('populates category select when categories load', async () => {

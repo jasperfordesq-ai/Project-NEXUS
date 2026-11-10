@@ -23,9 +23,15 @@ import type { Course } from '@/lib/api/courses';
 
 interface CourseCardProps {
   course: Course;
+  /**
+   * The colour of the course's category, from the community's course
+   * categories (`categoryListColours`, warmth plan W3) — the page that lists
+   * the courses knows it. Without it the category's seed colour is used.
+   */
+  coverColour?: string;
 }
 
-export function CourseCard({ course }: CourseCardProps) {
+export function CourseCard({ course, coverColour: givenColour }: CourseCardProps) {
   const { t } = useTranslation('courses');
   const { tenantPath } = useTenant();
   const coverImage = normalizeCourseMediaUrl(course.cover_image);
@@ -34,7 +40,7 @@ export function CourseCard({ course }: CourseCardProps) {
     : '';
   const palette = useSitePalette();
   // Courses in one category share a colour; the course page uses the same one.
-  const coverColour = colourForSeed(coverSeed.course(course), palette);
+  const coverColour = givenColour ?? colourForSeed(coverSeed.course(course), palette);
 
   return (
     <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">

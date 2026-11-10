@@ -184,7 +184,9 @@ describe('KnowledgeBasePage', () => {
   // AWID: "clear categories". Every category and article was the same blue;
   // each category now has its own colour, shared by its heading and articles.
   it('gives each category its own colour, shared by its articles', async () => {
-    vi.mocked(api.get).mockResolvedValue({ success: true, data: [mockArticle, mockArticle2] });
+    vi.mocked(api.get).mockImplementation((url: string) => Promise.resolve(url.startsWith('/v2/categories')
+      ? { success: true, data: [{ id: 2, color: 'blue' }, { id: 1, color: 'blue' }] }
+      : { success: true, data: [mockArticle, mockArticle2] }) as ReturnType<typeof api.get>);
     render(<KnowledgeBasePage />);
     await waitFor(() => expect(screen.getByText('How to Create a Listing')).toBeInTheDocument());
 
@@ -193,12 +195,12 @@ describe('KnowledgeBasePage', () => {
     expect(headings).toHaveLength(2);
     headings.forEach((heading) => expect(heading.getAttribute('data-colour')).toBeTruthy());
     expect(tiles.map((tile) => tile.getAttribute('data-colour'))).toEqual(headings.map((h) => h.getAttribute('data-colour')));
-    // The article's own page uses the same seed (warmth plan W2).
-    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
-    const { coverSeed } = await import('@/lib/coverSeeds');
-    const expected = [mockArticle, mockArticle2]
-      .map((article) => colourForSeed(coverSeed.article(article), paletteFor(null)));
-    expect(headings.map((h) => h.getAttribute('data-colour')).sort()).toEqual(expected.sort());
+    // The community's help-centre categories share the palette out in id
+    // order, so two never match by chance; the article page uses the same
+    // list (warmth plan W2/W3). Getting Started is category 1, Wallet 2.
+    const { paletteFor } = await import('@/lib/categoryColours');
+    await waitFor(() => expect(screen.getAllByTestId('kb-category-heading')[0]).toHaveAttribute('data-colour', paletteFor(null)[0]));
+    expect(screen.getAllByTestId('kb-category-heading')[1]).toHaveAttribute('data-colour', paletteFor(null)[1]);
   });
 
   it('displays article excerpts when present', async () => {

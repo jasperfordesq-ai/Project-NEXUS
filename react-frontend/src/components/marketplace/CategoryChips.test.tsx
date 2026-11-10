@@ -118,6 +118,19 @@ describe('CategoryChips', () => {
     expect(new Set(marks.map((m) => m.getAttribute('data-colour'))).size).toBeGreaterThan(1);
   });
 
+  // Warmth plan W3 (10 Nov 2026): with colours picked from each name alone,
+  // two categories often matched. They now share the palette out in id order.
+  it('never gives two categories the same colour until the palette runs out', async () => {
+    const { CategoryChips } = await import('./CategoryChips');
+    const { paletteFor } = await import('@/lib/categoryColours');
+    const palette = paletteFor(null);
+    const many = Array.from({ length: palette.length }, (_, i) => ({ id: i + 1, name: `Category ${i + 1}`, slug: `category-${i + 1}`, listing_count: 1 }));
+    render(<CategoryChips categories={many} onSelect={onSelect} />);
+    const colours = screen.getAllByTestId('category-chip-mark').map((m) => m.getAttribute('data-colour'));
+    expect(new Set(colours).size).toBe(palette.length);
+    expect(colours[0]).toBe(palette[0]);
+  });
+
   it("keeps a category's colour the same from one visit to the next", async () => {
     const { CategoryChips } = await import('./CategoryChips');
     const { unmount } = render(<CategoryChips categories={CATEGORIES} onSelect={onSelect} />);

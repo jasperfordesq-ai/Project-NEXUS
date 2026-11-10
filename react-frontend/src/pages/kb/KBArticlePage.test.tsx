@@ -108,6 +108,7 @@ const mockArticle = {
   video_url: null,
   excerpt: 'A guide to get started.',
   category: 'Guides',
+  category_id: 9,
   category_name: 'Guides',
   parent_id: null as number | null,
   parent_article_id: null as number | null,
@@ -225,13 +226,16 @@ describe('KBArticlePage', () => {
   // opens with a cover — in its category's colour, the colour its heading and
   // tile wear in the knowledge base list (warmth plan W2, 10 Nov 2026).
   it('opens with a cover in its category\'s colour, as in the list', async () => {
-    vi.mocked(api.get).mockResolvedValue({ success: true, data: mockArticle });
+    // The community's help-centre categories share the palette out in id
+    // order (warmth plan W3): category 9 is the second.
+    vi.mocked(api.get).mockImplementation((url: string) => Promise.resolve(url.startsWith('/v2/categories')
+      ? { success: true, data: [{ id: 9, color: 'blue' }, { id: 5, color: 'blue' }] }
+      : { success: true, data: mockArticle }) as ReturnType<typeof api.get>);
     render(<KBArticlePage />);
     const cover = await screen.findByTestId('kb-article-cover');
-    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
-    const { coverSeed } = await import('@/lib/coverSeeds');
+    const { paletteFor } = await import('@/lib/categoryColours');
     expect(cover).toHaveAttribute('aria-hidden', 'true');
-    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.kbCategory('Guides'), paletteFor(null)));
+    await waitFor(() => expect(screen.getByTestId('kb-article-cover').getAttribute('data-colour')).toBe(paletteFor(null)[1]));
   });
 
   it('submits helpful feedback when thumbs up is clicked', async () => {

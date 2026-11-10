@@ -7,7 +7,7 @@
  * Skills Browse Page - Explore skill categories, skills, and skilled members
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from '@/lib/motion';
 
@@ -37,7 +37,8 @@ import { EmptyState } from '@/components/feedback';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
-import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { useSiteAccent, useSitePalette } from '@/contexts/SiteAccentContext';
+import { categoryListColours } from '@/lib/categoryListColours';
 import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import { useAuth, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
@@ -134,6 +135,10 @@ export function SkillsBrowsePage() {
 
   // State
   const [categories, setCategories] = useState<SkillCategory[]>([]);
+  // The categories share the palette out in id order, so two never match by
+  // chance (warmth plan W3); from the full list, so a search never recolours one.
+  const siteAccent = useSiteAccent();
+  const categoryColours = useMemo(() => categoryListColours(categories, siteAccent), [categories, siteAccent]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -415,8 +420,8 @@ export function SkillsBrowsePage() {
                           {/* Each category in its own colour (AWID: "clear categories"; all were one tint). */}
                           <div
                             data-testid="skills-category-tile"
-                            data-colour={colourForSeed(coverSeed.skillsCategory(category.name), palette)}
-                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${categoryColour(colourForSeed(coverSeed.skillsCategory(category.name), palette)).band}`}
+                            data-colour={categoryColours.get(String(category.id)) ?? colourForSeed(coverSeed.skillsCategory(category.name), palette)}
+                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${categoryColour(categoryColours.get(String(category.id)) ?? colourForSeed(coverSeed.skillsCategory(category.name), palette)).band}`}
                           >
                             {category.icon || <FolderTree className="h-5 w-5" aria-hidden="true" />}
                           </div>

@@ -27,6 +27,20 @@ export interface OpportunityCategoryObject {
 export type OpportunityCategory = string | OpportunityCategoryObject | null;
 
 /**
+ * The id of an opportunity's category: `category_id` where the response has
+ * it, else the id inside an object category. Null when neither is known.
+ */
+export function getOpportunityCategoryId(opportunity: {
+  category?: OpportunityCategory | undefined;
+  category_id?: number | null;
+}): number | null {
+  if (opportunity.category_id != null) return opportunity.category_id;
+  const category = opportunity.category;
+  if (category != null && typeof category === 'object' && category.id != null) return category.id;
+  return null;
+}
+
+/**
  * Unwraps an opportunity category (string or object) into a displayable name.
  * Returns null when there is no usable name so callers can skip rendering.
  */

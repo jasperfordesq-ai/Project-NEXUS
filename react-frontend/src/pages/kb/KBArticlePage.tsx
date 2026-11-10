@@ -48,6 +48,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Spinner } from '@/components/ui/Spinner';
 import { useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
+import { useCategoryListColours } from '@/hooks/useCategoryListColours';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { api, API_BASE } from '@/lib/api';
 import { coverSeed } from '@/lib/coverSeeds';
@@ -75,6 +76,7 @@ interface KBArticleFull {
   video_url: string | null;
   excerpt: string | null;
   category: string | null;
+  category_id?: number | null;
   category_name: string | null;
   parent_id: number | null;
   parent_article_id: number | null;
@@ -132,6 +134,9 @@ export function KBArticlePage() {
   const { tenantPath } = useTenant();
   const toast = useToast();
   const { t } = useTranslation('kb');
+  // Its category's colour from the community's help-centre list, as in the
+  // list (warmth plan W3).
+  const kbCategoryColour = useCategoryListColours('/v2/categories?type=resource');
 
   const [article, setArticle] = useState<KBArticleFull | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -285,6 +290,7 @@ export function KBArticlePage() {
       <DetailCover
         data-testid="kb-article-cover"
         seed={coverSeed.article(article)}
+        colour={kbCategoryColour(article.category_id)}
         icon={BookOpen}
         className="mb-6 h-28 rounded-2xl sm:h-40"
       />

@@ -15,11 +15,16 @@
  */
 const lower = (name: string): string => name.trim().toLowerCase();
 
-/** Knowledge-base category. No category is the "general" group, whatever its translated label. */
-const kbCategory = (name: string | null | undefined): string =>
-  `kb-category-${name && name.trim() !== '' ? lower(name) : 'general'}`;
+/**
+ * Knowledge-base category, by id: its names are translated for each reader,
+ * so a name would give a different colour in each language. No category is
+ * the "general" group.
+ */
+const kbCategory = (categoryId: number | string | null | undefined): string =>
+  `kb-category-${categoryId ?? 'general'}`;
 
-const volunteeringCategory = (name: string): string => `volunteering-category-${lower(name)}`;
+/** Volunteering category, by id: its names are translated for each reader too. */
+const volunteeringCategory = (categoryId: number | string): string => `volunteering-category-${categoryId}`;
 
 export const coverSeed = {
   /** Courses in one category share a colour; others have their own. */
@@ -31,8 +36,8 @@ export const coverSeed = {
   organisation: (id: number | string): string => `organisation-${id}`,
   volunteeringCategory,
   /** A volunteering role wears its category's colour, as on its card. */
-  opportunity: (id: number | string, categoryName?: string | null): string =>
-    categoryName && categoryName.trim() !== '' ? volunteeringCategory(categoryName) : `opportunity-${id}`,
+  opportunity: (id: number | string, categoryId?: number | string | null): string =>
+    categoryId != null ? volunteeringCategory(categoryId) : `opportunity-${id}`,
   goal: (id: number | string): string => `goal-${id}`,
   idea: (id: number | string): string => `idea-${id}`,
   challenge: (id: number | string): string => `challenge-${id}`,
@@ -40,8 +45,8 @@ export const coverSeed = {
   groupExchange: (id: number | string): string => `group-exchange-${id}`,
   kbCategory,
   /** An article wears its knowledge-base category's colour, as in the list. */
-  article: (article: { id: number | string; category_name?: string | null }): string =>
-    kbCategory(article.category_name),
+  article: (article: { id: number | string; category_id?: number | null }): string =>
+    kbCategory(article.category_id),
   /** Events in one category share a colour (events page date tiles, Explore). */
   event: (id: number | string, categoryId?: number | string | null): string =>
     categoryId != null ? `event-category-${categoryId}` : `event-${id}`,

@@ -19,6 +19,8 @@ import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth, useTenant } from '@/contexts';
 import { coursesApi, type Course, type CourseCategory } from '@/lib/api/courses';
 import { CourseCard } from '@/components/courses/CourseCard';
+import { useSiteAccent } from '@/contexts/SiteAccentContext';
+import { categoryListColours } from '@/lib/categoryListColours';
 
 export default function CoursesPage() {
   const { t } = useTranslation('courses');
@@ -28,6 +30,10 @@ export default function CoursesPage() {
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [categories, setCategories] = useState<CourseCategory[]>([]);
+  // Course categories share the palette out in id order, so two never match
+  // by chance (warmth plan W3); the course page uses the same list.
+  const siteAccent = useSiteAccent();
+  const categoryColours = useMemo(() => categoryListColours(categories, siteAccent), [categories, siteAccent]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [categoryId, setCategoryId] = useState<string>('');
@@ -175,7 +181,11 @@ export default function CoursesPage() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {courses.map((course) => (
-              <CourseCard key={course.id} course={course} />
+              <CourseCard
+                key={course.id}
+                course={course}
+                coverColour={course.category_id != null ? categoryColours.get(String(course.category_id)) : undefined}
+              />
             ))}
           </div>
           {hasMore ? (

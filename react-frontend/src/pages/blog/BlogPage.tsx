@@ -47,6 +47,7 @@ import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { usePrerenderReady } from '@/hooks/usePrerenderReady';
 import { coverSeed } from '@/lib/coverSeeds';
+import { useCategoryListColours } from '@/hooks/useCategoryListColours';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -486,7 +487,10 @@ interface PostCardProps {
 
 function useBlogCoverColour(post: PostCardProps['post']): string {
   const palette = useSitePalette();
-  return colourForSeed(coverSeed.blogPost(post.id, post.category ? (post.category.id ?? post.category.name) : null), palette);
+  // The community's blog categories share the palette out, so two never
+  // match by chance (warmth plan W3); the seed is the fallback.
+  const categoryColourFor = useCategoryListColours('/v2/blog/categories');
+  return categoryColourFor(post.category?.id) ?? colourForSeed(coverSeed.blogPost(post.id, post.category ? (post.category.id ?? post.category.name) : null), palette);
 }
 
 function FeaturedPostCard({ post, categoryColors }: PostCardProps) {

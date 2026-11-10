@@ -11,6 +11,12 @@ import { colourForSeed } from '@/lib/categoryColours';
 interface DetailCoverProps {
   /** From `coverSeed` (lib/coverSeeds.ts), so the page matches the item's card. */
   seed: string;
+  /**
+   * A colour name the page already knows for the item — such as its
+   * category's colour from the community's category list (`useCategoryListColours`).
+   * Wins over the seed; the seed is used while this is undefined.
+   */
+  colour?: string;
   /** What the item is (a course, a podcast…). */
   icon: LucideIcon;
   /** The item's own picture; when set it is shown instead of the cover. */
@@ -31,6 +37,7 @@ interface DetailCoverProps {
  */
 export function DetailCover({
   seed,
+  colour,
   icon,
   imageUrl,
   imageAlt = '',
@@ -43,7 +50,7 @@ export function DetailCover({
       {imageUrl ? (
         <img src={imageUrl} alt={imageAlt} className="h-full w-full object-cover" loading="lazy" decoding="async" />
       ) : (
-        <ThemedCover data-testid={testId} colour={colourForSeed(seed, palette)} icon={icon} />
+        <ThemedCover data-testid={testId} colour={colour ?? colourForSeed(seed, palette)} icon={icon} />
       )}
     </div>
   );

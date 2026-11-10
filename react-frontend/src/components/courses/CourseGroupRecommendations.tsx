@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts';
 import { coursesApi, type Course } from '@/lib/api/courses';
 import { CourseCard } from '@/components/courses/CourseCard';
+import { useCategoryListColours } from '@/hooks/useCategoryListColours';
 
 interface CourseGroupRecommendationsProps {
   groupId: number;
@@ -25,6 +26,8 @@ export function CourseGroupRecommendations({ groupId }: CourseGroupRecommendatio
   const [courses, setCourses] = useState<Course[]>([]);
 
   const enabled = hasFeature('courses');
+  // The colours the courses page gives them (warmth plan W3).
+  const courseCategoryColour = useCategoryListColours(enabled ? '/v2/courses/categories' : null);
 
   useEffect(() => {
     if (!enabled || !groupId) return;
@@ -44,7 +47,7 @@ export function CourseGroupRecommendations({ groupId }: CourseGroupRecommendatio
       <h2 className="text-lg font-semibold mb-3">{t('group.recommended_courses')}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {courses.map((course) => (
-          <CourseCard key={course.id} course={course} />
+          <CourseCard key={course.id} course={course} coverColour={courseCategoryColour(course.category_id)} />
         ))}
       </div>
     </section>

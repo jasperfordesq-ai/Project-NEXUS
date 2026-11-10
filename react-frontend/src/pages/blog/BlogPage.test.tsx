@@ -158,13 +158,37 @@ describe('BlogPage', () => {
     await screen.findByText('Third post');
     const covers = screen.getAllByTestId('blog-cover');
     expect(covers).toHaveLength(3);
-    const expected = colourForSeed('category-3', paletteFor(null));
+    // The community's only blog category takes the palette's first colour (W3).
+    const expected = paletteFor(null)[0];
+    await waitFor(() => expect(covers[0]).toHaveAttribute('data-colour', expected));
     for (const cover of covers) {
       expect(cover).toHaveAttribute('data-colour', expected);
       expect(cover).toHaveTextContent('Community News');
     }
     // The old fixed blue gradient is gone from the cards.
     for (const cover of covers) expect(cover.parentElement?.className).not.toMatch(/from-blue-500/);
+  });
+
+  // Warmth plan W3 (10 Nov 2026): two categories could share a colour by
+  // chance; the community's blog categories now share the palette out in id order.
+  it('never gives two blog categories the same colour by chance', async () => {
+    const other = { ...CATEGORY, id: 5, name: 'Stories', slug: 'stories' };
+    const posts = [
+      { ...POST, id: 9, title: 'First post', slug: 'first', category: CATEGORY },
+      { ...POST, id: 10, title: 'Second post', slug: 'second', category: other },
+    ];
+    mockApiGet.mockImplementation((url: string) => Promise.resolve({
+      success: true,
+      data: url.includes('/categories') ? [other, CATEGORY] : posts,
+      meta: {},
+    }) as ReturnType<typeof api.get>);
+
+    render(<BlogPage />);
+
+    await screen.findByText('Second post');
+    const palette = paletteFor(null);
+    await waitFor(() => expect(screen.getAllByTestId('blog-cover')[0]).toHaveAttribute('data-colour', palette[0]));
+    expect(screen.getAllByTestId('blog-cover')[1]).toHaveAttribute('data-colour', palette[1]);
   });
 
   describe('phone layout', () => {

@@ -121,6 +121,7 @@ const mockOpportunity = {
   is_active: true,
   is_remote: false,
   category: 'Environment',
+  category_id: 3,
   organization: { id: 7, name: 'Green Dublin', logo_url: null },
   created_at: '2026-01-10T12:00:00Z',
   shifts: [
@@ -188,17 +189,20 @@ describe('OpportunityDetailPage', () => {
   // with a cover — in its category's colour, the colour of the category label
   // on its card in the volunteering list (warmth plan W2, 10 Nov 2026).
   it("opens with a cover in its category's colour, as on its card", async () => {
-    vi.mocked(api.get).mockResolvedValue({ success: true, data: mockOpportunity });
+    // The community's volunteering categories share the palette out in id
+    // order (warmth plan W3): category 3 is the second.
+    vi.mocked(api.get).mockImplementation((url: string) => Promise.resolve(url.startsWith('/v2/categories')
+      ? { success: true, data: [{ id: 3, color: 'blue' }, { id: 1, color: 'blue' }] }
+      : { success: true, data: mockOpportunity }) as ReturnType<typeof api.get>);
     render(<OpportunityDetailPage />);
     const cover = await screen.findByTestId('opportunity-detail-cover');
-    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
-    const { coverSeed } = await import('@/lib/coverSeeds');
+    const { paletteFor } = await import('@/lib/categoryColours');
     expect(cover).toHaveAttribute('aria-hidden', 'true');
-    expect(cover.getAttribute('data-colour')).toBe(colourForSeed(coverSeed.volunteeringCategory('Environment'), paletteFor(null)));
+    await waitFor(() => expect(screen.getByTestId('opportunity-detail-cover').getAttribute('data-colour')).toBe(paletteFor(null)[1]));
   });
 
   it('opens with a colour of its own when it has no category', async () => {
-    vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...mockOpportunity, category: null } });
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...mockOpportunity, category: null, category_id: null } });
     render(<OpportunityDetailPage />);
     const cover = await screen.findByTestId('opportunity-detail-cover');
     const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
@@ -421,9 +425,15 @@ describe('OpportunityDetailPage', () => {
   });
 
   it('retry button refetches data after error', async () => {
-    vi.mocked(api.get)
-      .mockRejectedValueOnce(new Error('Network failure'))
-      .mockResolvedValueOnce({ success: true, data: mockOpportunity });
+    // The page also asks for the public category list (its cover colour).
+    let opportunityCalls = 0;
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.startsWith('/v2/categories')) return Promise.resolve({ success: true, data: [] }) as ReturnType<typeof api.get>;
+      opportunityCalls += 1;
+      return (opportunityCalls === 1
+        ? Promise.reject(new Error('Network failure'))
+        : Promise.resolve({ success: true, data: mockOpportunity })) as ReturnType<typeof api.get>;
+    });
     render(<OpportunityDetailPage />);
     await waitFor(() => {
       expect(screen.getByText('opportunity.try_again')).toBeInTheDocument();

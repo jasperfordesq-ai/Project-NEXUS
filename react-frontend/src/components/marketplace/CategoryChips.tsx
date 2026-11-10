@@ -8,7 +8,9 @@ import { useTranslation } from 'react-i18next';
 import type { Key } from '@heroui/react/rac';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
 import { DynamicIcon, ICON_MAP } from '@/components/ui/DynamicIcon';
-import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { useMemo } from 'react';
+import { useSiteAccent, useSitePalette } from '@/contexts/SiteAccentContext';
+import { categoryListColours } from '@/lib/categoryListColours';
 import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import type { MarketplaceCategory } from '@/types/marketplace';
 import { coverSeed } from '@/lib/coverSeeds';
@@ -23,6 +25,10 @@ export function CategoryChips({ categories, activeId, onSelect }: CategoryChipsP
   const { t } = useTranslation('marketplace');
   const selectedKey = activeId == null ? 'all' : String(activeId);
   const palette = useSitePalette();
+  // The categories share the palette out in id order, so two never match by
+  // chance (warmth plan W3).
+  const siteAccent = useSiteAccent();
+  const colours = useMemo(() => categoryListColours(categories, siteAccent), [categories, siteAccent]);
 
   const handleSelectionChange = (keys: Set<Key>) => {
     const nextKey = Array.from(keys)[0];
@@ -52,7 +58,8 @@ export function CategoryChips({ categories, activeId, onSelect }: CategoryChipsP
       {categories.map((category) => {
         // Each category has its own colour from the community palette, the
         // same on every visit (AWID: "clear categories"; were all one grey).
-        const colour = colourForSeed(coverSeed.marketplaceCategory(category.slug || category.id), palette);
+        const colour = colours.get(String(category.id))
+          ?? colourForSeed(coverSeed.marketplaceCategory(category.slug || category.id), palette);
         const hasIcon = Boolean(category.icon && ICON_MAP[category.icon]);
         return (
           <ToggleButton

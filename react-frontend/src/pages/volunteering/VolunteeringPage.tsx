@@ -81,7 +81,8 @@ import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { getOpportunityCategoryName, type OpportunityCategory } from '@/lib/volunteering';
+import { getOpportunityCategoryId, getOpportunityCategoryName, type OpportunityCategory } from '@/lib/volunteering';
+import { useCategoryListColours } from '@/hooks/useCategoryListColours';
 import type { VolunteeringConfig } from '@/types';
 import type { ProximityFilterParams } from '@/components/proximity/ProximityFilter';
 import { extractCollectionItems } from './extractCollectionItems';
@@ -130,6 +131,7 @@ interface Opportunity {
   is_remote: boolean;
   /** String on some endpoints, { id, name, color } object on others — always unwrap via getOpportunityCategoryName(). */
   category: OpportunityCategory;
+  category_id?: number | null;
   organization: Organization;
   created_at: string;
   has_applied?: boolean;
@@ -905,6 +907,11 @@ function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) {
   const startDate = opportunity.start_date ? new Date(opportunity.start_date) : null;
   const endDate = opportunity.end_date ? new Date(opportunity.end_date) : null;
   const categoryName = getOpportunityCategoryName(opportunity.category);
+  // The community's volunteering categories share the palette out in id
+  // order, so two never match by chance (warmth plan W3); a role's page uses
+  // the same list. The seed is the fallback.
+  const volunteeringCategoryColour = useCategoryListColours('/v2/categories?type=volunteering');
+  const categoryId = getOpportunityCategoryId(opportunity);
 
   return (
     <GlassCard className="p-5">
@@ -978,7 +985,8 @@ function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) {
             )}
             {categoryName && (() => {
               // Each category in its own colour, the same on every card (was grey).
-              const colour = colourForSeed(coverSeed.volunteeringCategory(categoryName), palette);
+              const colour = volunteeringCategoryColour(categoryId)
+                ?? colourForSeed(coverSeed.opportunity(opportunity.id, categoryId), palette);
               return (
                 <span
                   data-testid="opportunity-category"
