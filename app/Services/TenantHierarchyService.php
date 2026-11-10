@@ -362,7 +362,7 @@ class TenantHierarchyService
             'app.project-nexus.net',
             'api.project-nexus.net',
             'accessible.project-nexus.net',
-            'accessible.app.project-nexus.net',
+            'accessible-app.project-nexus.net',
         ];
         foreach ([
             config('app.url'),

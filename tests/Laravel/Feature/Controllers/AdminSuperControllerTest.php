@@ -226,7 +226,7 @@ class AdminSuperControllerTest extends TestCase
         DB::table('tenants')->where('id', $this->testTenantId)->update(['domain' => null]);
         Sanctum::actingAs($admin);
 
-        foreach (['project-nexus.net', 'https://app.project-nexus.net/', 'accessible.app.project-nexus.net'] as $address) {
+        foreach (['project-nexus.net', 'https://app.project-nexus.net/', 'accessible-app.project-nexus.net'] as $address) {
             $this->apiPut("/v2/admin/super/tenants/{$this->testTenantId}", ['domain' => $address])
                 ->assertStatus(422);
         }

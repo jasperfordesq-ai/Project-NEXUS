@@ -196,7 +196,7 @@ class UnrecognisedHostRefusalTest extends TestCase
         $hosts = \App\Support\Tenancy\PlatformHostPolicy::platformHosts();
         // The .net pair: the app and accessible site move there (owner, 10 Nov 2026).
         foreach (['api.project-nexus.ie', 'app.project-nexus.ie', 'project-nexus.ie', 'accessible.project-nexus.ie',
-            'app.project-nexus.net', 'accessible.app.project-nexus.net'] as $host) {
+            'app.project-nexus.net', 'accessible-app.project-nexus.net'] as $host) {
             $this->assertContains($host, $hosts);
         }
         $this->assertTrue($shipped['refuse_unknown_hosts']);
