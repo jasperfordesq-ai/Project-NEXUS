@@ -306,8 +306,9 @@ export function SocialPrescribingPage() {
                 transition={{ delay: index * 0.12 }}
               >
                 <GlassCard className="p-6 h-full relative group hover:scale-[1.01] transition-transform">
-                  {/* Step number badge */}
-                  <div className={`absolute -top-3 -right-3 w-9 h-9 rounded-full bg-gradient-to-br ${step.color} flex items-center justify-center text-white text-sm font-bold shadow-lg`}>
+                  {/* Step number badge. Sits inside the corner: GlassCard clips
+                      its overflow, so a badge hung outside the edge gets cut off. */}
+                  <div className={`absolute top-4 right-4 w-9 h-9 rounded-full bg-gradient-to-br ${step.color} flex items-center justify-center text-white text-sm font-bold shadow-lg`}>
                     {index + 1}
                   </div>
 
@@ -316,7 +317,7 @@ export function SocialPrescribingPage() {
                       <step.icon className={`w-6 h-6 ${step.textAccent}`} aria-hidden="true" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-theme-primary text-lg mb-2">
+                      <h3 className="font-semibold text-theme-primary text-lg mb-2 pr-10">
                         {t(`social_prescribing.referral_step_${index}_title`)}
                       </h3>
                       <p className="text-theme-muted text-sm leading-relaxed">

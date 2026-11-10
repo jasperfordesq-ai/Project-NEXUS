@@ -238,6 +238,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Admin — the Volunteering → Settings page (`/admin/volunteering/config`) is gone.** Its reminder settings are in the Module Configuration window, its webhooks on the Integrations page and its reminder delivery log on the volunteering Overview; the old address, and `/admin/volunteering/settings`, open the Module Configuration window on volunteering. Its twelve remaining strings leave all eleven languages.
 
 ### Fixed
+- **Step numbers cut off on the Social Prescribing page (10 Nov 2026)**: the numbered circles on the four referral-pathway cards hung 12px outside the card corner, and `GlassCard` clips its overflow, so only a sliver showed. They now sit inside the corner, and the step title leaves room for them.
 - **Faint labels on partner-community offers (9 Nov 2026)**: the offer/request label (-600 on a -500/20 tint, about 3.3:1) and the community chips now use a pale tint with deep text.
 - **CI accessibility gate expected the old dashboard and offers-page headings in Irish**: `e2e/tests/accessibility-audit.spec.ts` now accepts the time-of-day greeting ("Maidin mhaith" / "Tráthnóna maith") and "Tairiscintí agus iarratais" (run 42720305124).
 - **CI accessibility gate: the dashboard's monthly figures broke description-list rules (9 Nov 2026)**: each figure's `<dt>`/`<dd>` sat in a second wrapper beside the icon (axe `definition-list`, `dlitem`, run 42712795791); they now sit directly in their group, with the icon inside the `<dt>`.
