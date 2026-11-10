@@ -10,7 +10,7 @@
  * Theme-aware styling for light and dark modes.
  */
 
-import { lazy, Suspense, useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { lazy, Suspense, useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 
 import Wallet from 'lucide-react/icons/wallet';
@@ -41,6 +41,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useNotificationsOptional } from '@/contexts/NotificationsContext';
+import { estimatedNavCount, navCountAfterMeasure } from './navFit';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { accentLineClasses } from '@/lib/categoryColours';
@@ -144,7 +145,7 @@ const utilityBarDividerClass = 'text-[var(--border-default)] text-xs select-none
 export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChange, isMobileMenuOpen }: NavbarProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { t } = useTranslation(['common', 'broker']);
+  const { t, i18n } = useTranslation(['common', 'broker']);
   const { user, isAuthenticated, logout } = useAuth();
   const { tenant, hasFeature, hasModule, tenantPath } = useTenant();
   const { counts } = useNotificationsOptional();
@@ -163,21 +164,21 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   const navRef = useRef<HTMLElement>(null);
   const [maxVisibleNav, setMaxVisibleNav] = useState(6);
 
+  // Start from an estimate whenever the space (or the language, so the labels'
+  // length) changes; the layout effect below then measures (see navFit.ts).
   useEffect(() => {
     const el = navRef.current;
     if (!el) return;
-    const observer = new ResizeObserver(() => {
-      const availableWidth = el.offsetWidth;
-      // Each nav item is ~110px avg, Community dropdown ~130px, More ~90px
-      // Reserve 220px for Community + More
-      const itemWidth = 110;
-      const reserved = 220;
-      const count = Math.max(1, Math.floor((availableWidth - reserved) / itemWidth));
-      setMaxVisibleNav(count);
-    });
+    // Only once the header has a width (not before layout, nor in tests).
+    const estimate = () => {
+      if (el.offsetWidth > 0) setMaxVisibleNav(estimatedNavCount(el.offsetWidth));
+    };
+    estimate();
+    const observer = new ResizeObserver(estimate);
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [i18n.language]);
+
 
   // Compute privileged panel access once.
   const isAdmin = hasAdminPanelAccess(user);
@@ -362,6 +363,17 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   const feedNavigationItem = primaryNavigationItems.find(item => item.id === 'feed');
   const exploreNavigationItem = primaryNavigationItems.find(item => item.id === 'explore');
   const messagesNavigationItem = primaryNavigationItems.find(item => item.id === 'messages');
+
+  // While the links still spill out of their space, show one fewer (the rest
+  // go under More), before the browser paints. Re-checked whenever what
+  // decides their width changes: the count, the links, their language, the
+  // unread-messages badge.
+  useLayoutEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const next = navCountAfterMeasure(maxVisibleNav, el.scrollWidth, el.clientWidth);
+    if (next !== maxVisibleNav) setMaxVisibleNav(next);
+  }, [maxVisibleNav, primaryNavigationItems, i18n.language, counts.messages]);
   const overflowNavItems = useMemo(() => {
     const slotThreshold: Partial<Record<NavigationItemPolicy['id'], number>> = {
       feed: 1,
