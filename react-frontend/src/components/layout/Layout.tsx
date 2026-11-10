@@ -82,7 +82,7 @@ export function Layout({
   const { branding, hasFeature } = useTenant();
 
   return (
-    <div className="min-h-screen max-w-[100vw] flex flex-col overflow-x-clip">
+    <div className="page-wash min-h-screen max-w-[100vw] flex flex-col overflow-x-clip">
       {/* Global SEO tags (verification meta, Organization JSON-LD) */}
       <SeoHead />
 
@@ -221,7 +221,7 @@ export function AuthLayout() {
   const year = new Date().getFullYear();
 
   return (
-    <div className="min-h-screen max-w-[100vw] flex flex-col overflow-x-clip">
+    <div className="page-wash min-h-screen max-w-[100vw] flex flex-col overflow-x-clip">
       {/* Skip navigation — visible on keyboard focus only (WCAG 2.4.1 + 2.4.7) */}
       <a
         href="#main-content"

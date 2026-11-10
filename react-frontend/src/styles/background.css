@@ -199,3 +199,37 @@ main, article, section {
   background: var(--glow-primary);
   color: var(--text-inverse);
 }
+
+/* ─────────────────────────────────────────────
+   PAGE WASH (warmth plan P2)
+   A faint wash of the community's hue across the top of the member pages
+   (components/layout/Layout.tsx), fading into the plain page: the community
+   colour on the left, its companion on the right. The page was flat.
+
+   It takes only the HUE of each colour and fixes its own lightness, so it is
+   never darker than the light page and never lighter than a dark card,
+   whatever colour a community picks. Text that sits straight on the page has
+   no contrast to spare (grey helper text 4.59:1; community-coloured text is
+   set to exactly 4.5:1), so a wash that darkened the light page at all would
+   fail it. Pinned by src/test/page-wash.contract.test.ts. Browsers without
+   relative colours simply show the plain page.
+   ───────────────────────────────────────────── */
+@supports (color: oklch(from red l c h)) {
+  .page-wash {
+    --page-wash-a: oklch(from var(--accent-color) 0.18 0.04 h);
+    --page-wash-b: oklch(from var(--companion) 0.18 0.04 h);
+    background-image:
+      radial-gradient(ellipse 65% 26rem at 8% 0, var(--page-wash-a), transparent 72%),
+      radial-gradient(ellipse 55% 22rem at 96% 0, var(--page-wash-b), transparent 72%);
+    background-repeat: no-repeat;
+  }
+
+  :root[data-theme="light"] .page-wash {
+    --page-wash-a: oklch(from var(--accent-color) 0.995 0.015 h);
+    --page-wash-b: oklch(from var(--companion) 0.995 0.015 h);
+  }
+}
+
+html[data-high-contrast="true"] .page-wash {
+  background-image: none;
+}
