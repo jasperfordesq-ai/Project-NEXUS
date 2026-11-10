@@ -32,15 +32,25 @@ const TILE_PADDING = { sm: 'p-2.5', md: 'p-4', lg: 'p-5' } as const;
 const DIRECTIONS = ['bg-linear-to-br', 'bg-linear-to-bl', 'bg-linear-to-tr', 'bg-linear-to-tl'] as const;
 const LIGHTS = ['-end-10 -top-12', '-start-10 -top-12', '-end-10 -bottom-12', '-start-10 -bottom-12'] as const;
 
-/** A stable 0–15 for a seed: which direction (low 2 bits) and which light (next 2). */
-function variantOf(seed: string | number): number {
+// The faint texture laid over the gradient, in the cover's own colour. Dots
+// were the only one; a page of covers now mixes four quiet textures (warmth
+// plan P15). All stay a whisper — see the opacity where they are drawn.
+const TEXTURES = [
+  ['dots', 'bg-[radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] bg-[length:22px_22px]'],
+  ['rings', 'bg-[radial-gradient(circle_at_center,transparent_0_9px,currentColor_9px_10px,transparent_10px)] bg-[length:30px_30px]'],
+  ['lines', 'bg-[repeating-linear-gradient(45deg,currentColor_0_1px,transparent_1px_14px)]'],
+  ['weave', 'bg-[repeating-linear-gradient(-45deg,currentColor_0_1px,transparent_1px_18px),repeating-linear-gradient(45deg,currentColor_0_1px,transparent_1px_18px)]'],
+] as const;
+
+/** A stable number for a seed; its parts pick the cover's direction, light and texture. */
+function hashOf(seed: string | number): number {
   const text = String(seed);
   let hash = 2166136261;
   for (let i = 0; i < text.length; i++) {
     hash ^= text.charCodeAt(i);
     hash = Math.imul(hash, 16777619);
   }
-  return (hash >>> 0) % 16;
+  return hash >>> 0;
 }
 
 /**
@@ -63,7 +73,11 @@ export function ThemedCover({
   'data-testid': testId,
 }: ThemedCoverProps) {
   const known = categoryColour(colour);
-  const variant = seed === undefined ? 0 : variantOf(seed);
+  const hash = seed === undefined ? 0 : hashOf(seed);
+  // 0–15: which direction (low 2 bits) and which light (next 2) — unchanged
+  // from before textures, so every existing cover keeps its direction and light.
+  const variant = hash % 16;
+  const [textureName, textureClass] = TEXTURES[Math.floor(hash / 16) % TEXTURES.length]!;
   const cover = known.cover.replace(DIRECTIONS[0], DIRECTIONS[variant % 4]!);
   const lightPlace = LIGHTS[Math.floor(variant / 4)]!;
   const iconClass = `${ICON_SIZE[size]} shrink-0 opacity-80 transition-transform duration-500 motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110`;
@@ -75,10 +89,10 @@ export function ThemedCover({
       data-colour={colour}
       className={`relative isolate flex h-full w-full overflow-hidden ${cover} ${className}`}
     >
-      {/* A faint dot texture in the cover's own colour. */}
+      {/* A faint texture in the cover's own colour (one of four, by seed). */}
       {/* Kept a whisper (owner, 9 Nov 2026: stronger, it read as "loads of
           white dots"), and fainter on dark, where the dots are light on dark. */}
-      <div data-cover-texture className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] bg-[length:22px_22px] opacity-[0.05] dark:opacity-[0.035]" />
+      <div data-cover-texture={textureName} className={`pointer-events-none absolute inset-0 ${textureClass} opacity-[0.05] dark:opacity-[0.035]`} />
       {/* A soft light in the top corner. */}
       <div data-cover-light className={`pointer-events-none absolute ${lightPlace} h-40 w-40 rounded-full bg-white/60 blur-3xl dark:bg-white/5`} />
 

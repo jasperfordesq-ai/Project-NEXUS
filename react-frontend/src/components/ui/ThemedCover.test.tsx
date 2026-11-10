@@ -98,4 +98,30 @@ describe('ThemedCover', () => {
     expect(light(screen.getByTestId('cover'))).toContain('-top-12');
     expect(light(screen.getByTestId('cover'))).toContain('-end-10');
   });
+
+  describe('textures (warmth plan P15)', () => {
+    const textureOf = (seed?: string | number) => {
+      const { container, unmount } = render(<ThemedCover colour="teal" seed={seed} />);
+      const name = container.querySelector('[data-cover-texture]')?.getAttribute('data-cover-texture');
+      unmount();
+      return name;
+    };
+
+    it('keeps the usual dots when no item is given', () => {
+      expect(textureOf()).toBe('dots');
+    });
+
+    it('gives the same item the same texture every time', () => {
+      expect(textureOf('listing-42')).toBe(textureOf('listing-42'));
+    });
+
+    it('spreads items across several textures, all of them faint', () => {
+      const names = new Set(Array.from({ length: 60 }, (_, i) => textureOf(`item-${i}`)));
+      expect(names.size).toBeGreaterThanOrEqual(3);
+      const { container } = render(<ThemedCover colour="teal" seed="item-7" />);
+      const cls = container.querySelector('[data-cover-texture]')?.className ?? '';
+      expect(cls).toContain('opacity-[0.05]');
+      expect(cls).toContain('dark:opacity-[0.035]');
+    });
+  });
 });

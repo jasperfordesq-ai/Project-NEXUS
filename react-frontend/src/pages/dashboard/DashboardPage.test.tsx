@@ -268,6 +268,19 @@ describe('DashboardPage', () => {
     expect(screen.queryByText('Pending')).not.toBeInTheDocument();
   });
 
+  it("puts each shortcut's icon on the colour of the kind of thing it leads to", async () => {
+    render(<DashboardPage />);
+    await screen.findByText('Quick Actions');
+    const tiles = screen.getAllByTestId('quick-action-tile');
+    expect(tiles.length).toBeGreaterThanOrEqual(2);
+    // Each tile wears a kind colour's readable label classes, not plain accent text.
+    for (const tile of tiles) {
+      expect(tile.className).toMatch(/ bg-\S+ text-\S+/);
+    }
+    // Different kinds, different colours.
+    expect(new Set(tiles.map((tile) => tile.className)).size).toBeGreaterThan(1);
+  });
+
   it('renders Quick Actions section', () => {
     render(<DashboardPage />);
     expect(screen.getByText('Quick Actions')).toBeInTheDocument();
