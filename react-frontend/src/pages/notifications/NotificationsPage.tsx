@@ -351,7 +351,7 @@ export function NotificationsPage() {
         icon={<Bell className="h-6 w-6" aria-hidden="true" />}
         accent="indigo"
         action={
-          <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-stretch">
+          <div className="flex flex-row flex-wrap gap-2 sm:gap-3 lg:flex-col lg:items-stretch">
             {unreadCount > 0 && (
               <Button
                 variant="flat"

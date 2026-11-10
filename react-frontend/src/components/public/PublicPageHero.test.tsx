@@ -224,6 +224,25 @@ describe('PublicPageHero', () => {
       expect(tile?.className).not.toMatch(/(^|\s)hidden(\s|$)/);
     });
 
+    // Warmth plan W7 (10 Nov 2026), measured at 375px wide: the notifications
+    // opening took 288px of an 812px phone screen, settings 215px. On phones
+    // a compact opening keeps its title, picture, description and buttons but
+    // drops the small label above the title and some padding.
+    it('is slimmer on phones: less padding, no small label above the title', () => {
+      render(<PublicPageHero {...defaultProps} size="compact" />);
+      const section = document.querySelector('[data-public-page-hero="true"]');
+      expect(section?.className).toMatch(/(^|\s)py-4(\s|$)/);
+      expect(section?.className).toContain('sm:py-5');
+      expect(document.querySelector('[data-slot="chip"]')?.className).toContain('max-sm:hidden');
+      expect(screen.getByTestId('test-icon')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 1, name: 'Welcome to the Platform' })).toBeInTheDocument();
+    });
+
+    it('keeps the small label on phones for a full-size opening', () => {
+      render(<PublicPageHero {...defaultProps} />);
+      expect(document.querySelector('[data-slot="chip"]')?.className).not.toContain('max-sm:hidden');
+    });
+
     it('can open a page without the small label above the title', () => {
       render(<PublicPageHero {...defaultProps} eyebrow={undefined} size="compact" />);
       expect(document.querySelector('[data-slot="chip"]')).toBeNull();

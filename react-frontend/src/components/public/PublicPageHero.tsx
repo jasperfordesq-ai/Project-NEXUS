@@ -45,9 +45,12 @@ const sizeClasses = {
     title: 'text-3xl font-bold tracking-tight text-theme-primary sm:text-4xl',
     description: 'mt-3 max-w-2xl text-base leading-7 text-theme-secondary',
   },
+  // Slimmer on phones (warmth plan W7): an everyday page's opening took up to a
+  // third of a phone screen. The small label above the title is left out there
+  // (see `eyebrow` below); title, picture, description and buttons stay.
   compact: {
-    section: 'px-4 py-5 sm:px-6',
-    layout: 'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between',
+    section: 'px-4 py-4 sm:px-6 sm:py-5',
+    layout: 'flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between',
     tile: 'inline-flex shrink-0 rounded-2xl bg-gradient-to-br p-2.5 shadow-sm',
     title: 'text-2xl font-bold tracking-tight text-theme-primary sm:text-3xl',
     description: 'mt-1 max-w-2xl text-sm leading-6 text-theme-secondary sm:text-base',
@@ -144,7 +147,7 @@ export function PublicPageHero({
               color={classes.chipColor}
               size="sm"
               variant="soft"
-              className={`${size === 'compact' ? 'mb-3' : 'mb-4'} py-1 font-medium ${classes.chipText}`}
+              className={`${size === 'compact' ? 'mb-3 max-sm:hidden' : 'mb-4'} py-1 font-medium ${classes.chipText}`}
               startContent={<Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
             >
               {eyebrow}

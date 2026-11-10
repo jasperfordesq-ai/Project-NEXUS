@@ -1068,7 +1068,7 @@ export function SettingsPage() {
           icon={<Settings className="h-6 w-6" aria-hidden="true" />}
           accent="indigo"
           action={
-            <div className="flex flex-col items-start gap-2 sm:items-end">
+            <div className="flex flex-row flex-wrap items-center gap-2 sm:flex-col sm:items-end">
               <Chip size="sm" variant="soft" color={isDirty ? 'warning' : 'accent'} className="font-medium">
                 {isDirty ? t('header.unsaved_badge') : t('header.badge')}
               </Chip>
