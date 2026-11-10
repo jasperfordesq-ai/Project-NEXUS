@@ -299,8 +299,9 @@ describe('FederationHubPage', () => {
     render(<FederationHubPage />);
 
     const tiles = await screen.findAllByTestId('federation-activity-tile');
-    expect(tiles[0]!.className).toContain('bg-emerald-100');
-    expect(tiles[1]!.className).toContain('bg-pink-100');
+    const { kindColour } = await import('@/components/feed/feedTypeColours');
+    for (const cls of kindColour('hours').label.split(' ')) expect(tiles[0]!.className).toContain(cls);
+    for (const cls of kindColour('member').label.split(' ')) expect(tiles[1]!.className).toContain(cls);
   });
 
   it('shows quick navigation links when opted in', async () => {

@@ -113,10 +113,19 @@ describe('UpcomingEventsWidget', () => {
     // start_time = 2026-10-04 => month short label should be "Oct" (or locale equiv)
     const { UpcomingEventsWidget } = await import('./UpcomingEventsWidget');
     render(<UpcomingEventsWidget events={[makeEvent({ start_time: '2026-10-04 09:00:00' })]} />);
-    // The month abbreviation will appear somewhere in the card — it's in a <span>
-    const monthEl = document.querySelector('span.text-pink-500');
+    // The month abbreviation is the first line of the date card.
+    const monthEl = screen.getByTestId('upcoming-event-date').querySelector('span');
     expect(monthEl).not.toBeNull();
     expect(monthEl!.textContent?.length).toBeGreaterThan(0);
+  });
+
+  // Warmth plan W1 (10 Nov 2026): events are one colour everywhere — here too.
+  it('shows the date card in the event colour used across the site', async () => {
+    const { UpcomingEventsWidget } = await import('./UpcomingEventsWidget');
+    const { kindColour } = await import('@/components/feed/feedTypeColours');
+    render(<UpcomingEventsWidget events={[makeEvent({ start_time: '2026-10-04 09:00:00' })]} />);
+    const card = screen.getByTestId('upcoming-event-date');
+    for (const cls of kindColour('event').label.split(' ')) expect(card.className).toContain(cls);
   });
 
   it('renders day of month for the event date', async () => {

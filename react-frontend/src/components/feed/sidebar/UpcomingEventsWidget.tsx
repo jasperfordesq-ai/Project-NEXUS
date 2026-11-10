@@ -7,6 +7,7 @@
  * UpcomingEventsWidget - Shows next upcoming events in the sidebar
  */
 
+import { kindColour } from '@/components/feed/feedTypeColours';
 import { Link } from 'react-router-dom';
 import CalendarDays from 'lucide-react/icons/calendar-days';
 import Clock from 'lucide-react/icons/clock';
@@ -47,7 +48,9 @@ export function UpcomingEventsWidget({ events }: UpcomingEventsWidgetProps) {
     <GlassCard className="p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <CalendarDays className="w-4 h-4 text-pink-500" aria-hidden="true" />
+          <span className={`inline-flex rounded-md p-1 ${kindColour('event').label}`} aria-hidden="true">
+            <CalendarDays className="w-3.5 h-3.5" aria-hidden="true" />
+          </span>
           <h3 className="font-semibold text-sm text-[var(--text-primary)]">
             {t('sidebar.events.title')}
           </h3>
@@ -68,9 +71,10 @@ export function UpcomingEventsWidget({ events }: UpcomingEventsWidgetProps) {
             className="flex items-start gap-3 p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors duration-200 group"
           >
             {/* Calendar date card */}
-            <div className="w-11 h-12 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-default)] flex flex-col items-center justify-center overflow-hidden flex-shrink-0">
-              <div className="w-full h-1 bg-gradient-to-r from-pink-500 to-rose-500" />
-              <span className="text-[10px] font-bold text-pink-500 mt-1 leading-none">
+            {/* In events' own colour, the same as in the feed (was pink here, green there). */}
+            <div data-testid="upcoming-event-date" className={`w-11 h-12 rounded-lg flex flex-col items-center justify-center overflow-hidden flex-shrink-0 ${kindColour('event').label}`}>
+              <div className={`w-full h-1 ${kindColour('event').dot}`} />
+              <span className="text-[10px] font-bold mt-1 leading-none">
                 {formatMonth(event.start_time)}
               </span>
               <span className="text-sm font-bold text-[var(--text-primary)] leading-none">

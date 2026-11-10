@@ -91,3 +91,14 @@ describe('ExploreStatCard', () => {
     expect(screen.getByText('0')).toBeInTheDocument();
   });
 });
+
+// Warmth plan W1 (10 Nov 2026): a figure for one kind of thing uses that kind's colour.
+describe('ExploreStatCard — kind colour', () => {
+  it('takes the colour of the kind it counts', async () => {
+    const { kindColour } = await import('@/components/feed/feedTypeColours');
+    const Icon = (() => null) as unknown as LucideIcon;
+    const { container } = render(<ExploreStatCard icon={Icon} label="Members" value={3} kind="member" />);
+    const tile = container.querySelector('.rounded-xl')!;
+    for (const cls of kindColour('member').label.split(' ')) expect(tile.className).toContain(cls);
+  });
+});

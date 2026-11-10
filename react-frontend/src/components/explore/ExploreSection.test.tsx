@@ -127,3 +127,15 @@ describe('ExploreSection', () => {
     expect(screen.queryByTestId('explore-section-icon')).toBeNull();
   });
 });
+
+// Warmth plan W1 (10 Nov 2026): a section that lists one kind of thing uses
+// that kind's colour, the same as the feed, sidebar and notifications.
+describe('ExploreSection — kind colour', () => {
+  it('takes the colour of the kind it lists', async () => {
+    const { kindColour } = await import('@/components/feed/feedTypeColours');
+    render(<ExploreSection title="Upcoming events" icon={CalendarDays} kind="event"><p>x</p></ExploreSection>);
+    const tile = screen.getByTestId('explore-section-icon');
+    expect(tile).toHaveAttribute('data-kind', 'event');
+    for (const cls of kindColour('event').label.split(' ')) expect(tile.className).toContain(cls);
+  });
+});

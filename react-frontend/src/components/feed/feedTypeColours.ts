@@ -86,6 +86,39 @@ const COLOURS: Record<string, FeedTypeColour> = {
     label: 'bg-violet-100 text-violet-800 dark:bg-violet-500/15 dark:text-violet-300',
     dot: 'bg-violet-500',
   },
+  // Kinds shown outside the feed (warmth plan W1, 10 Nov 2026): the sidebar,
+  // notifications, Explore and federation pages read their colours from here,
+  // so an event, a group or a member is the same colour everywhere.
+  group: {
+    label: 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300',
+    dot: 'bg-orange-500',
+  },
+  member: {
+    label: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
+    dot: 'bg-rose-500',
+  },
+  message: {
+    label: 'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300',
+    dot: 'bg-blue-500',
+  },
+  hours: {
+    label: 'bg-lime-100 text-lime-800 dark:bg-lime-500/15 dark:text-lime-300',
+    dot: 'bg-lime-500',
+  },
+  exchange: {
+    label: 'bg-lime-100 text-lime-800 dark:bg-lime-500/15 dark:text-lime-300',
+    dot: 'bg-lime-500',
+  },
+  // Volunteering organisations share volunteering's green.
+  organisation: {
+    label: 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300',
+    dot: 'bg-green-500',
+  },
+  // Recognition shares reviews' yellow.
+  achievement: {
+    label: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-300',
+    dot: 'bg-yellow-500',
+  },
 };
 
 const NEUTRAL: FeedTypeColour = {
@@ -97,6 +130,9 @@ const NEUTRAL: FeedTypeColour = {
 export function feedTypeColour(type: string): FeedTypeColour {
   return COLOURS[type] ?? NEUTRAL;
 }
+
+/** The colour for one kind of thing anywhere on the site — the same list as the feed's. */
+export const kindColour = feedTypeColour;
 
 /** Which kind of post each feed filter shows (FeedPage's filter keys). */
 export const FEED_FILTER_KINDS: Record<string, string> = {

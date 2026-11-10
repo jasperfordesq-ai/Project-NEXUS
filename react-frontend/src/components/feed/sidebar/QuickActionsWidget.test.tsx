@@ -106,14 +106,16 @@ describe('QuickActionsWidget', () => {
   });
 
   // axe (9 Nov 2026): the -500 words on -500/10 tints measured 2.2–4.5:1 at
-  // 11px. Each action is now a pale tint with its colour's deep shade.
-  it('draws each action as a pale tint with deep, readable text', async () => {
+  // 11px. Each action is now a pale tint with its colour's deep shade — and
+  // (warmth plan W1, 10 Nov) the colour of its kind, the same as in the feed.
+  it('draws each action in its kind\'s colour, as a pale tint with deep text', async () => {
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
+    const { kindColour } = await import('@/components/feed/feedTypeColours');
     render(<QuickActionsWidget />);
     const hostEvent = screen.getByText('Host Event').closest('a')!;
-    expect(hostEvent.className).toContain('bg-pink-100');
-    expect(hostEvent.className).toContain('text-pink-800');
-    expect(hostEvent.className).not.toMatch(/text-pink-500/);
+    for (const cls of kindColour('event').label.split(' ')) expect(hostEvent.className).toContain(cls);
+    const groups = screen.getByText('Groups').closest('a')!;
+    for (const cls of kindColour('group').label.split(' ')) expect(groups.className).toContain(cls);
   });
 
   it('renders the Create Poll action when polls feature is enabled', async () => {

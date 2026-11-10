@@ -16,6 +16,21 @@ describe('feed type colours', () => {
     expect(new Set(dots).size).toBe(FILTERABLE_KINDS.length);
   });
 
+  // Owner, 10 Nov 2026 (warmth plan W1): one colour per kind of thing,
+  // everywhere — the sidebar, notifications, Explore and federation pages use
+  // this list too, so it covers the kinds they show.
+  it('has a colour for every kind the rest of the site shows', () => {
+    const SITE_KINDS = ['group', 'member', 'message', 'hours', 'exchange', 'organisation', 'achievement', 'resource', 'review'];
+    for (const kind of SITE_KINDS) {
+      const { label } = feedTypeColour(kind);
+      expect(label, kind).not.toContain('surface-elevated');
+      expect(label, kind).toMatch(/(^|\s)text-[a-z]+-800(\s|$)/);
+    }
+    // The kinds a member most often meets side by side stay distinct.
+    const together = ['listing', 'event', 'group', 'member', 'message', 'hours'].map((kind) => feedTypeColour(kind).label);
+    expect(new Set(together).size).toBe(together.length);
+  });
+
   it('keeps offers and requests in the community colour', () => {
     expect(feedTypeColour('listing').label).toContain('bg-accent-soft');
     expect(feedTypeColour('listing').dot).toBe('bg-accent');

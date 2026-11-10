@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { kindColour } from '@/components/feed/feedTypeColours';
 import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +22,12 @@ interface ExploreSectionProps {
   icon?: LucideIcon;
   /** Which colour of the community palette the picture sits on. */
   colourIndex?: number;
+  /**
+   * The kind of thing the section lists (event, group, member…): its picture
+   * then takes that kind's colour, the same as everywhere else on the site
+   * (warmth plan W1). Wins over colourIndex.
+   */
+  kind?: string;
   children: ReactNode;
   className?: string;
 }
@@ -39,6 +46,7 @@ export function ExploreSection({
   seeAllLabel,
   icon: Icon,
   colourIndex = 0,
+  kind,
   children,
   className = '',
 }: ExploreSectionProps) {
@@ -60,9 +68,10 @@ export function ExploreSection({
           {Icon && (
             <span
               data-testid="explore-section-icon"
-              data-colour={colour}
+              data-colour={kind ? undefined : colour}
+              data-kind={kind}
               aria-hidden="true"
-              className={`flex size-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-black/5 dark:ring-white/10 ${categoryColour(colour).band}`}
+              className={`flex size-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-black/5 dark:ring-white/10 ${kind ? kindColour(kind).label : categoryColour(colour).band}`}
             >
               <Icon className="size-5" />
             </span>

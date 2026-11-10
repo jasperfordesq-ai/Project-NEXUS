@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { kindColour } from '@/components/feed/feedTypeColours';
 import { getFormattingLocale } from '@/lib/helpers';
 import { useEffect, useRef, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
@@ -15,13 +16,15 @@ interface ExploreStatCardProps {
   suffix?: string;
   /** A colour from the community palette for the icon tile (default: the accent). */
   colour?: string;
+  /** The kind of thing counted (member, hours, listing…): the tile takes that kind's colour (W1). */
+  kind?: string;
 }
 
 /**
  * Animated counter card for community stats.
  * Counts up when the value changes from 0 to a real number.
  */
-export function ExploreStatCard({ icon: Icon, label, value, suffix = '', colour }: ExploreStatCardProps) {
+export function ExploreStatCard({ icon: Icon, label, value, suffix = '', colour, kind }: ExploreStatCardProps) {
   const [displayValue, setDisplayValue] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -70,7 +73,7 @@ export function ExploreStatCard({ icon: Icon, label, value, suffix = '', colour 
       <div
         data-testid="explore-stat-icon"
         className={`flex items-center justify-center w-10 h-10 rounded-xl ${
-          colour ? categoryColour(colour).band : 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
+          kind ? kindColour(kind).label : colour ? categoryColour(colour).band : 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
         }`}
       >
         <Icon className="w-5 h-5" aria-hidden="true" />

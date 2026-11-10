@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { kindColour } from '@/components/feed/feedTypeColours';
 import { AlgorithmLabel } from '@/components/ui/AlgorithmLabel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -722,7 +723,7 @@ export function SearchPage() {
                 <section>
                   {activeTab === 'all' && (
                     <h2 className="text-lg font-semibold text-theme-primary mb-4 flex items-center gap-2">
-                      <ListTodo className="w-5 h-5 text-accent dark:text-accent" aria-hidden="true" />
+                      <span data-testid="search-section-kind" data-kind="listing" className={`inline-flex rounded-lg p-1.5 ${kindColour('listing').label}`} aria-hidden="true"><ListTodo className="w-4 h-4" aria-hidden="true" /></span>
                       {t('section_listings', { count: results.listings.length })}
                     </h2>
                   )}
@@ -786,7 +787,7 @@ export function SearchPage() {
                 <section>
                   {activeTab === 'all' && (
                     <h2 className="text-lg font-semibold text-theme-primary mb-4 flex items-center gap-2">
-                      <User className="w-5 h-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                      <span data-testid="search-section-kind" data-kind="member" className={`inline-flex rounded-lg p-1.5 ${kindColour('member').label}`} aria-hidden="true"><User className="w-4 h-4" aria-hidden="true" /></span>
                       {t('section_members', { count: results.users.length })}
                     </h2>
                   )}
@@ -839,7 +840,7 @@ export function SearchPage() {
                 <section>
                   {activeTab === 'all' && (
                     <h2 className="text-lg font-semibold text-theme-primary mb-4 flex items-center gap-2">
-                      <Calendar className="w-5 h-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                      <span data-testid="search-section-kind" data-kind="event" className={`inline-flex rounded-lg p-1.5 ${kindColour('event').label}`} aria-hidden="true"><Calendar className="w-4 h-4" aria-hidden="true" /></span>
                       {t('section_events', { count: results.events.length })}
                     </h2>
                   )}
@@ -886,7 +887,7 @@ export function SearchPage() {
                 <section>
                   {activeTab === 'all' && (
                     <h2 className="text-lg font-semibold text-theme-primary mb-4 flex items-center gap-2">
-                      <Users className="w-5 h-5 text-accent dark:text-accent" aria-hidden="true" />
+                      <span data-testid="search-section-kind" data-kind="group" className={`inline-flex rounded-lg p-1.5 ${kindColour('group').label}`} aria-hidden="true"><Users className="w-4 h-4" aria-hidden="true" /></span>
                       {t('section_groups', { count: results.groups.length })}
                     </h2>
                   )}
@@ -925,7 +926,7 @@ export function SearchPage() {
                 <section>
                   {activeTab === 'all' && (
                     <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-theme-primary">
-                      <Podcast className="h-5 w-5 text-accent" aria-hidden="true" />
+                      <span data-testid="search-section-kind" data-kind="podcast_show" className={`inline-flex rounded-lg p-1.5 ${kindColour('podcast_show').label}`} aria-hidden="true"><Podcast className="h-4 w-4" aria-hidden="true" /></span>
                       {t('section_podcasts', { count: results.podcasts.length })}
                     </h2>
                   )}

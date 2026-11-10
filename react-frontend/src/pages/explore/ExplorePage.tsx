@@ -829,10 +829,10 @@ export default function ExplorePage() {
                 ))
               ) : (
                 <>
-                  <ExploreStatCard icon={Users} label={t('stats.members')} value={stats?.total_members ?? 0} colour={palette[0]} />
-                  <ExploreStatCard icon={ArrowRightLeft} label={t('stats.exchanges_this_month')} value={stats?.exchanges_this_month ?? 0} colour={palette[1]} />
-                  <ExploreStatCard icon={Clock} label={t('stats.hours_exchanged')} value={stats?.hours_exchanged ?? 0} suffix="h" colour={palette[2]} />
-                  <ExploreStatCard icon={ListTodo} label={t('stats.active_listings')} value={stats?.active_listings ?? 0} colour={palette[3]} />
+                  <ExploreStatCard icon={Users} label={t('stats.members')} value={stats?.total_members ?? 0} kind="member" />
+                  <ExploreStatCard icon={ArrowRightLeft} label={t('stats.exchanges_this_month')} value={stats?.exchanges_this_month ?? 0} kind="exchange" />
+                  <ExploreStatCard icon={Clock} label={t('stats.hours_exchanged')} value={stats?.hours_exchanged ?? 0} suffix="h" kind="hours" />
+                  <ExploreStatCard icon={ListTodo} label={t('stats.active_listings')} value={stats?.active_listings ?? 0} kind="listing" />
                 </>
               )}
             </div>
@@ -918,7 +918,7 @@ export default function ExplorePage() {
           title={t('popular_listings.title')}
           subtitle={t('popular_listings.subtitle')}
           icon={Gift}
-          colourIndex={1}
+          kind="listing"
           seeAllLink={tenantPath('/listings?sort=popular')}
         >
           {isLoading ? (
@@ -1019,7 +1019,7 @@ export default function ExplorePage() {
           title={t('upcoming_events.title')}
           subtitle={t('upcoming_events.subtitle')}
           icon={CalendarDays}
-          colourIndex={2}
+          kind="event"
           seeAllLink={tenantPath('/events')}
         >
           {isLoading ? (
@@ -1101,7 +1101,7 @@ export default function ExplorePage() {
           title={t('active_groups.title')}
           subtitle={t('active_groups.subtitle')}
           icon={UsersRound}
-          colourIndex={3}
+          kind="group"
           seeAllLink={tenantPath('/groups')}
         >
           {isLoading ? (
@@ -1173,7 +1173,7 @@ export default function ExplorePage() {
           title={t('top_contributors.title')}
           subtitle={t('top_contributors.subtitle')}
           icon={Trophy}
-          colourIndex={4}
+          kind="member"
           seeAllLink={tenantPath('/leaderboard')}
         >
           {isLoading ? (
@@ -1348,7 +1348,7 @@ export default function ExplorePage() {
           title={t('near_you.title')}
           subtitle={t('near_you.subtitle')}
           icon={MapPin}
-          colourIndex={1}
+          kind="listing"
           seeAllLink={tenantPath('/listings?sort=nearby')}
         >
           <HorizontalScroll>
@@ -1394,7 +1394,7 @@ export default function ExplorePage() {
           title={t('suggested_connections.title')}
           subtitle={t('suggested_connections.subtitle')}
           icon={UserPlus}
-          colourIndex={2}
+          kind="member"
           seeAllLink={tenantPath('/members')}
         >
           <HorizontalScroll>
@@ -1449,7 +1449,7 @@ export default function ExplorePage() {
           title={t('blog_posts.title')}
           subtitle={t('blog_posts.subtitle')}
           icon={Newspaper}
-          colourIndex={3}
+          kind="blog"
           seeAllLink={tenantPath('/blog')}
         >
           <HorizontalScroll>
@@ -1510,7 +1510,7 @@ export default function ExplorePage() {
           title={t('volunteering.title')}
           subtitle={t('volunteering.subtitle')}
           icon={HeartHandshake}
-          colourIndex={4}
+          kind="volunteer"
           seeAllLink={tenantPath('/volunteering')}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1562,7 +1562,7 @@ export default function ExplorePage() {
           title={t('polls.title')}
           subtitle={t('polls.subtitle')}
           icon={BarChart3}
-          colourIndex={5}
+          kind="poll"
           seeAllLink={tenantPath('/polls')}
         >
           <HorizontalScroll>
@@ -1640,7 +1640,7 @@ export default function ExplorePage() {
           title={t('organisations.title')}
           subtitle={t('organisations.subtitle')}
           icon={Building2}
-          colourIndex={1}
+          kind="organisation"
           seeAllLink={tenantPath('/organisations')}
         >
           <HorizontalScroll>
@@ -1682,7 +1682,7 @@ export default function ExplorePage() {
           title={t('jobs.title')}
           subtitle={t('jobs.subtitle')}
           icon={Briefcase}
-          colourIndex={2}
+          kind="job"
           seeAllLink={tenantPath('/jobs')}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1728,7 +1728,7 @@ export default function ExplorePage() {
           title={t('resources.title')}
           subtitle={t('resources.subtitle')}
           icon={BookOpen}
-          colourIndex={3}
+          kind="resource"
           seeAllLink={tenantPath('/resources')}
         >
           <HorizontalScroll>
@@ -1821,7 +1821,7 @@ export default function ExplorePage() {
           title={t('new_members.title')}
           subtitle={t('new_members.subtitle')}
           icon={Smile}
-          colourIndex={5}
+          kind="member"
           seeAllLink={tenantPath('/members')}
         >
           {isLoading ? (
@@ -1887,7 +1887,7 @@ export default function ExplorePage() {
           title={t('featured_challenges.title')}
           subtitle={t('featured_challenges.subtitle')}
           icon={Target}
-          colourIndex={0}
+          kind="challenge"
           seeAllLink={tenantPath('/ideation')}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

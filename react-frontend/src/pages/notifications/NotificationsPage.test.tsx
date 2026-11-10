@@ -165,6 +165,12 @@ describe('NotificationsPage', () => {
     expect(screen.getByText('Your listing got a response')).toBeInTheDocument();
     // Check timestamps rendered
     expect(screen.getAllByText('5 minutes ago').length).toBeGreaterThanOrEqual(2);
+    // Warmth plan W1: each notification's icon is in its kind's colour, the
+    // same as the feed and the rest of the site.
+    const { kindColour } = await import('@/components/feed/feedTypeColours');
+    const tiles = screen.getAllByTestId('notification-kind-tile');
+    for (const cls of kindColour('message').label.split(' ')) expect(tiles[0]!.className).toContain(cls);
+    for (const cls of kindColour('listing').label.split(' ')) expect(tiles[1]!.className).toContain(cls);
   });
 
   it('shows unread count badge when there are unread notifications', async () => {
@@ -349,7 +355,8 @@ describe('NotificationsPage', () => {
     const { container } = render(<NotificationsPage />);
     await waitFor(() => expect(screen.getByText('Pat would like someone to get in touch')).toBeInTheDocument());
     expect(container.querySelector('.lucide-heart-pulse')).not.toBeNull();
-    expect(container.querySelector('.bg-red-500\\/20')).not.toBeNull();
+    // The safeguarding red, as a pale tint with deep text (readable at 6:1+).
+    expect(container.querySelector('.bg-red-100.text-red-800')).not.toBeNull();
   });
 
   // ─── Clear all notifications (R4) ────────────────────────────────────────

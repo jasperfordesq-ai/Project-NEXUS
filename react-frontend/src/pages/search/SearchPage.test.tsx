@@ -150,6 +150,23 @@ describe('SearchPage', () => {
     expect(screen.getByText('Hidden listing')).toBeInTheDocument();
   });
 
+  // Warmth plan W1 (10 Nov 2026): each group of results is marked in its
+  // kind's colour, the same as everywhere else (offers were the community
+  // colour here but members green and events amber).
+  it('marks each group of results in its kind\'s colour', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [
+      { type: 'listing', id: 1, title: 'Garden help', description: 'Example', listing_type: 'offer' },
+    ] });
+    render(<SearchPage />);
+    const input = screen.getByPlaceholderText('Search for anything...');
+    fireEvent.change(input, { target: { value: 'garden' } });
+    fireEvent.submit(input.closest('form')!);
+    await waitFor(() => expect(screen.getByText('Garden help')).toBeInTheDocument());
+    const { kindColour } = await import('@/components/feed/feedTypeColours');
+    const tile = screen.getAllByTestId('search-section-kind').find((el) => el.getAttribute('data-kind') === 'listing')!;
+    for (const cls of kindColour('listing').label.split(' ')) expect(tile.className).toContain(cls);
+  });
+
   it('shows initial state prompt before searching', () => {
     render(<SearchPage />);
     expect(screen.getByText('Start searching')).toBeInTheDocument();

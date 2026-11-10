@@ -18,6 +18,7 @@
  *   5. Opt-out footer link
  */
 
+import { kindColour } from '@/components/feed/feedTypeColours';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from '@/lib/motion';
@@ -159,15 +160,15 @@ const activityIcons: Record<FederationActivityItem['type'], typeof Activity> = {
   member_joined: UserPlus,
 };
 
-// Each kind of activity in its own colour, as the feed does (feedTypeColours):
-// a pale tint with deep colour, written out in full (were all grey).
+// Each kind of activity in the colour of its kind everywhere on the site
+// (kindColour — warmth plan W1): messages, hours, members (were all grey).
 const activityTiles: Record<FederationActivityItem['type'], string> = {
-  message_received: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
-  message_sent: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
-  transaction_received: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
-  transaction_sent: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+  message_received: kindColour('message').label,
+  message_sent: kindColour('message').label,
+  transaction_received: kindColour('hours').label,
+  transaction_sent: kindColour('hours').label,
   partnership_approved: 'bg-accent-soft text-accent-soft-foreground',
-  member_joined: 'bg-pink-100 text-pink-800 dark:bg-pink-500/15 dark:text-pink-300',
+  member_joined: kindColour('member').label,
 };
 
 const federationLevelColors: Record<number, 'default' | 'primary' | 'secondary' | 'success' | 'warning'> = {

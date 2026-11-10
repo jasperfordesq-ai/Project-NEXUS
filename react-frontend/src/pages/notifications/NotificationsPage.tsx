@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { kindColour } from '@/components/feed/feedTypeColours';
 import { Avatar, AvatarGroup } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -537,35 +538,28 @@ interface NotificationCardProps {
   onDelete: () => void;
 }
 
-const iconMap: Record<string, { icon: React.ReactNode; color: string }> = {
-  message: { icon: <MessageSquare className="w-5 h-5" aria-hidden="true" />, color: 'indigo' },
-  listing: { icon: <ListTodo className="w-5 h-5" aria-hidden="true" />, color: 'emerald' },
-  transaction: { icon: <Wallet className="w-5 h-5" aria-hidden="true" />, color: 'amber' },
-  connection: { icon: <User className="w-5 h-5" aria-hidden="true" />, color: 'purple' },
-  event: { icon: <Calendar className="w-5 h-5" aria-hidden="true" />, color: 'rose' },
-  group: { icon: <Users className="w-5 h-5" aria-hidden="true" />, color: 'teal' },
-  achievement: { icon: <Award className="w-5 h-5" aria-hidden="true" />, color: 'orange' },
-  safeguarding_flag: { icon: <ShieldAlert className="w-5 h-5" aria-hidden="true" />, color: 'red' },
-  safeguarding_assignment: { icon: <Shield className="w-5 h-5" aria-hidden="true" />, color: 'blue' },
+// Each kind of notification in the colour of its kind everywhere on the site
+// (kindColour — warmth plan W1, 10 Nov 2026): a pale tint with deep colour,
+// light on a dark tint in dark mode. Safeguarding and review notices keep
+// their own warning colours; they are not a kind of community activity.
+const iconMap: Record<string, { icon: React.ReactNode; tile: string }> = {
+  message: { icon: <MessageSquare className="w-5 h-5" aria-hidden="true" />, tile: kindColour('message').label },
+  listing: { icon: <ListTodo className="w-5 h-5" aria-hidden="true" />, tile: kindColour('listing').label },
+  transaction: { icon: <Wallet className="w-5 h-5" aria-hidden="true" />, tile: kindColour('hours').label },
+  connection: { icon: <User className="w-5 h-5" aria-hidden="true" />, tile: kindColour('member').label },
+  event: { icon: <Calendar className="w-5 h-5" aria-hidden="true" />, tile: kindColour('event').label },
+  group: { icon: <Users className="w-5 h-5" aria-hidden="true" />, tile: kindColour('group').label },
+  achievement: { icon: <Award className="w-5 h-5" aria-hidden="true" />, tile: kindColour('achievement').label },
+  safeguarding_flag: { icon: <ShieldAlert className="w-5 h-5" aria-hidden="true" />, tile: 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300' },
+  safeguarding_assignment: { icon: <Shield className="w-5 h-5" aria-hidden="true" />, tile: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300' },
   // A volunteer asked for someone to get in touch, or the nightly check raised
   // a high-risk wellbeing alert: a safeguarding matter, not a system notice.
-  volunteer_wellbeing: { icon: <HeartPulse className="w-5 h-5" aria-hidden="true" />, color: 'red' },
-  broker_review: { icon: <Eye className="w-5 h-5" aria-hidden="true" />, color: 'amber' },
-  group_exchange: { icon: <ArrowLeftRight className="w-5 h-5" aria-hidden="true" />, color: 'indigo' },
+  volunteer_wellbeing: { icon: <HeartPulse className="w-5 h-5" aria-hidden="true" />, tile: 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300' },
+  broker_review: { icon: <Eye className="w-5 h-5" aria-hidden="true" />, tile: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300' },
+  group_exchange: { icon: <ArrowLeftRight className="w-5 h-5" aria-hidden="true" />, tile: kindColour('exchange').label },
 };
 
-const colorClasses: Record<string, string> = {
-  indigo: 'bg-accent/20 text-accent dark:text-accent',
-  emerald: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400',
-  amber: 'bg-amber-500/20 text-amber-600 dark:text-amber-400',
-  purple: 'bg-accent/20 text-accent dark:text-accent',
-  rose: 'bg-rose-500/20 text-rose-600 dark:text-rose-400',
-  teal: 'bg-teal-500/20 text-teal-600 dark:text-teal-400',
-  orange: 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
-  red: 'bg-red-500/20 text-red-600 dark:text-red-400',
-  blue: 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
-  gray: 'bg-theme-elevated text-theme-muted',
-};
+const DEFAULT_TILE = 'bg-theme-elevated text-theme-muted';
 
 const NotificationCard = memo(function NotificationCard({ notification, onMarkRead, onDelete }: NotificationCardProps) {
   const { t } = useTranslation('notifications');
@@ -597,7 +591,7 @@ const NotificationCard = memo(function NotificationCard({ notification, onMarkRe
     navigate(tenantPath(notification.link));
   }
 
-  const { icon, color } = iconMap[notification.type] || { icon: <Bell className="w-5 h-5" aria-hidden="true" />, color: 'gray' };
+  const { icon, tile } = iconMap[notification.type] || { icon: <Bell className="w-5 h-5" aria-hidden="true" />, tile: DEFAULT_TILE };
 
   return (
     <GlassCard className={`p-4 ${isUnread ? 'ring-1 ring-accent/30' : ''} ${hasLink ? 'hover:bg-theme-hover/50 transition-colors' : ''}`}>
@@ -625,7 +619,7 @@ const NotificationCard = memo(function NotificationCard({ notification, onMarkRe
               </AvatarGroup>
             </div>
           ) : (
-            <div className={`p-2.5 rounded-full flex-shrink-0 ${colorClasses[color]}`}>
+            <div data-testid="notification-kind-tile" className={`p-2.5 rounded-full flex-shrink-0 ${tile}`}>
               {icon}
             </div>
           )}

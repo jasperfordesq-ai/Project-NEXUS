@@ -7,6 +7,7 @@
  * QuickActionsWidget - Shows quick action buttons in the sidebar
  */
 
+import { kindColour } from '@/components/feed/feedTypeColours';
 import { Link } from 'react-router-dom';import Plus from 'lucide-react/icons/plus';
 import CalendarDays from 'lucide-react/icons/calendar-days';
 import BarChart3 from 'lucide-react/icons/chart-column';
@@ -30,28 +31,28 @@ export function QuickActionsWidget() {
       label: t('sidebar.actions.host_event'),
       icon: CalendarDays,
       path: '/events/create',
-      tone: 'bg-pink-100 text-pink-800 dark:bg-pink-500/15 dark:text-pink-300',
+      tone: kindColour('event').label,
       feature: 'events' as const,
     },
     {
       label: t('sidebar.actions.create_poll'),
       icon: BarChart3,
       path: '/polls',
-      tone: 'bg-accent-soft text-accent-soft-foreground',
+      tone: kindColour('poll').label,
       feature: 'polls' as const,
     },
     {
       label: t('sidebar.actions.set_goal'),
       icon: Target,
       path: '/goals',
-      tone: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+      tone: kindColour('goal').label,
       feature: 'goals' as const,
     },
     {
       label: t('sidebar.actions.groups'),
       icon: UsersRound,
       path: '/groups',
-      tone: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+      tone: kindColour('group').label,
       feature: 'groups' as const,
     },
   ];
@@ -82,8 +83,9 @@ export function QuickActionsWidget() {
             <Link
               key={action.path}
               to={tenantPath(action.path)}
-              // A soft tint with deep text in each action's colour (axe: the
-              // -500 text on a -500/10 tint was 2.2–4.5:1 at 11px).
+              // Each action in its kind's colour, the same as in the feed and
+              // everywhere else (pale tint, deep text; axe: the old -500 text on a
+              // -500/10 tint was 2.2–4.5:1 at 11px).
               className={`flex flex-col items-center gap-1.5 p-3 rounded-lg ${action.tone} transition-[filter] duration-200 hover:brightness-95 dark:hover:brightness-125`}
             >
               <action.icon className="w-4 h-4" aria-hidden="true" />

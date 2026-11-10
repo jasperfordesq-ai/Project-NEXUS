@@ -7,6 +7,7 @@
  * CommunityPulseWidget - Shows community stats in a compact 2x2 grid
  */
 
+import { kindColour } from '@/components/feed/feedTypeColours';
 import { getFormattingLocale } from '@/lib/helpers';
 import { Link } from 'react-router-dom';
 import HeartPulse from 'lucide-react/icons/heart-pulse';
@@ -39,28 +40,28 @@ export function CommunityPulseWidget({ stats }: CommunityPulseWidgetProps) {
       count: stats.members,
       label: t('sidebar.pulse.members'),
       path: '/members',
-      tone: 'bg-accent-soft text-accent-soft-foreground',
+      tone: kindColour('member').label,
     },
     {
       icon: Tag,
       count: stats.listings,
       label: t('sidebar.pulse.listings'),
       path: '/listings',
-      tone: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+      tone: kindColour('listing').label,
     },
     {
       icon: CalendarDays,
       count: stats.events,
       label: t('sidebar.pulse.events'),
       path: '/events',
-      tone: 'bg-pink-100 text-pink-800 dark:bg-pink-500/15 dark:text-pink-300',
+      tone: kindColour('event').label,
     },
     {
       icon: UsersRound,
       count: stats.groups,
       label: t('sidebar.pulse.groups'),
       path: '/groups',
-      tone: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+      tone: kindColour('group').label,
     },
   ];
 
