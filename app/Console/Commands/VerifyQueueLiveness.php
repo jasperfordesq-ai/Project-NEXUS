@@ -38,10 +38,38 @@ class VerifyQueueLiveness extends Command
 
     public const STATUS_KEY = 'queue_heartbeat:status';
 
+    /**
+     * When heartbeat dispatching last (re)started after a gap. A blue/green
+     * deploy stops the old colour's scheduler and workers before the new
+     * scheduler starts, so the first heartbeat afterwards is checked within
+     * seconds of being dispatched — before any worker could run it. That raised
+     * a false "workers dead" alarm on every deploy (Sentry NEXUS-PHP-2F).
+     */
+    public const RESUMED_AT_KEY = 'queue_heartbeat:resumed_at';
+
     private const ALERT_THROTTLE_KEY = 'queue_heartbeat:alerted';
 
     /** Heartbeats run every 5 min; 15 min of silence = at least 2 missed. */
     private const STALE_AFTER_SECONDS = 900;
+
+    /** A dispatch gap longer than two heartbeat intervals means dispatching stopped and resumed. */
+    private const RESUME_GAP_SECONDS = 600;
+
+    /**
+     * Stamp a heartbeat dispatch. Called by the scheduler (bootstrap/app.php)
+     * right before QueueHeartbeatJob is dispatched.
+     */
+    public static function recordDispatch(): void
+    {
+        $now = now()->getTimestamp();
+        $previous = Cache::get(self::DISPATCHED_AT_KEY);
+
+        if ($previous === null || $now - (int) $previous > self::RESUME_GAP_SECONDS) {
+            Cache::put(self::RESUMED_AT_KEY, $now, QueueHeartbeatJob::STAMP_TTL_SECONDS);
+        }
+
+        Cache::put(self::DISPATCHED_AT_KEY, $now, QueueHeartbeatJob::STAMP_TTL_SECONDS);
+    }
 
     /** One alert per 6 hours. */
     private const ALERT_THROTTLE_SECONDS = 21600;
@@ -62,6 +90,19 @@ class VerifyQueueLiveness extends Command
 
         // Workers only get blamed once a heartbeat has had time to round-trip.
         $oldestExpected = $now - self::STALE_AFTER_SECONDS;
+
+        // Dispatching only just resumed after a gap (e.g. the scheduler swap in
+        // a blue/green deploy): the heartbeats so far have not had a full window
+        // to come back. Judge on a later run — a real outage still alarms once
+        // dispatching has been continuous for STALE_AFTER_SECONDS.
+        $resumedAt = Cache::get(self::RESUMED_AT_KEY);
+        if ($resumedAt !== null && (int) $resumedAt > $oldestExpected
+            && ($processedAt === null || (int) $processedAt < (int) $resumedAt)) {
+            Cache::put(self::STATUS_KEY, ['state' => 'pending', 'checked_at' => $now, 'resumed_at' => (int) $resumedAt], QueueHeartbeatJob::STAMP_TTL_SECONDS);
+            $this->info('Heartbeat dispatching only just resumed — waiting for a full round trip.');
+
+            return self::SUCCESS;
+        }
         $healthy = ($dispatchedAt > $oldestExpected) // dispatch side alive recently…
             ? ($processedAt !== null && $processedAt > $oldestExpected) // …so a recent processing stamp is required
             : true; // dispatch side itself idle/stale — scheduler problem, not worker death; don't false-alarm

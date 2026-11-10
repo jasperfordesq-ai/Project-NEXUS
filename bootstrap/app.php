@@ -340,11 +340,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
         // Queue worker liveness: dispatch a heartbeat through a real worker…
         $schedule->call(function () {
-            \Illuminate\Support\Facades\Cache::put(
-                \App\Console\Commands\VerifyQueueLiveness::DISPATCHED_AT_KEY,
-                now()->getTimestamp(),
-                \App\Jobs\QueueHeartbeatJob::STAMP_TTL_SECONDS
-            );
+            \App\Console\Commands\VerifyQueueLiveness::recordDispatch();
             \App\Jobs\QueueHeartbeatJob::dispatch();
         })
             ->everyFiveMinutes()
