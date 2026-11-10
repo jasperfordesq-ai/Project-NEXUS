@@ -417,6 +417,12 @@ return [
         'community_slug' => 'コミュニティリンク: :slug',
     ],
     'dashboard' => [
+        // Monthly community figures (GET /v2/community/this-month), as on the React dashboard.
+        'month_highlight_title' => ':communityの:month',
+        'month_highlight_subtitle' => '今月これまでにみんなで分かち合ったこと。',
+        'month_highlight_hours' => '分かち合った時間',
+        'month_highlight_members' => '新しいメンバー',
+        'month_highlight_listings' => '新しいオファーとリクエスト',
         'welcome' => 'おかえりなさい、 :nameさん。',
         'new_listing' => '出品を作成する',
         'onboarding_title' => 'プロフィールの設定を完了させましょう',
@@ -920,6 +926,12 @@ return [
         'share_link_label' => 'このリスティングを共有',
     ],
     'exchanges' => [
+        // The thank-you after the confirmation that completes an exchange.
+        'thanks_title' => 'ありがとうございます',
+        'thanks_body' => '交換が完了し、時間が移りました。交換のひとつひとつがコミュニティを少しずつ強くします。',
+        'thanks_neighbours_label' => '今年交換した人',
+        'thanks_hours_label' => '今年交換した時間',
+        'thanks_send_message' => ':nameさんにお礼のメッセージを送る',
         'confirm_hours_hint' => '実際に提供した時間を0.25から24の間で、15分単位で入力してください。',
         'review_rating_hint' => '1（不満）から5（大変満足）でご体験を評価してください。',
         'review_comment_hint' => '任意。他の方の参考になることがあればご記入ください。',
@@ -3892,6 +3904,7 @@ return [
         'idea_vote_aria' => ':title に投票する',
     ],
     'members' => [
+        'new_here' => '新メンバー',
         'connection_connected' => '接続済み',
         'connection_request_sent' => 'リクエスト送信済み',
         'connection_request_received' => 'つながりを希望しています',

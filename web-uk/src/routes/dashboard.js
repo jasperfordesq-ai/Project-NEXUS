@@ -16,6 +16,7 @@ const {
   getExchangeAttentionCount,
   getMemberEndorsements,
   getFeedSidebar,
+  getCommunityThisMonth,
   getTopEndorsedMembers,
   getConnectionSuggestions,
   updateProfile,
@@ -29,6 +30,7 @@ const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 const { getRequestProfile } = require('../lib/request-profile');
+const { communityMonthHighlight } = require('../lib/community-month');
 
 const router = express.Router();
 
@@ -476,7 +478,7 @@ router.get('/', asyncRoute(async (req, res) => {
   // Also absorbs a synchronous throw, so no panel can take the page down.
   const guarded = (read) => Promise.resolve().then(read).catch(quiet);
   const sidePanelsOn = dashboardFeatures.feed;
-  const [exchangeAttentionData, endorsementsData, sidebarData, topEndorsedData, suggestionsData, guardiansData, supportActionsData, myGroupsData] = await Promise.all([
+  const [exchangeAttentionData, endorsementsData, sidebarData, topEndorsedData, suggestionsData, guardiansData, supportActionsData, myGroupsData, thisMonthData] = await Promise.all([
     dashboardFeatures.listings && dashboardFeatures.exchangeWorkflow
       ? getExchangeAttentionCount(req.token).catch(track({ data: { count: 0, items: [] } }))
       : Promise.resolve({ data: { count: 0, items: [] } }),
@@ -497,7 +499,9 @@ router.get('/', asyncRoute(async (req, res) => {
     // React's "My groups" panel: GET /v2/groups?user_id={me}&per_page=3.
     dashboardFeatures.groups && currentProfileId
       ? guarded(() => getGroups(req.token, { user_id: currentProfileId, per_page: 3 }))
-      : Promise.resolve(null)
+      : Promise.resolve(null),
+    // React's CommunityMonthHighlight: the community's figures so far this month.
+    guarded(() => getCommunityThisMonth(req.token))
   ]);
   const pendingCount = (result) => {
     const value = Number((result && (dataFrom(result) || {}).pending_count) ?? 0);
@@ -514,7 +518,11 @@ router.get('/', asyncRoute(async (req, res) => {
       : []
   };
 
+  const communityName = res.locals.tenantName || res.locals.serviceName || 'Project NEXUS Accessible';
   res.render('dashboard/index', {
+    monthHighlight: communityMonthHighlight(thisMonthData, {
+      listings: dashboardFeatures.listings, locale: getRequestIntlLocale(), t, community: communityName
+    }),
     myGroups: myGroupsData
       ? collectionFrom(myGroupsData).slice(0, 3)
         .map((group) => ({ id: Number(group && group.id) || null, name: String((group && group.name) || '').trim() }))
@@ -543,7 +551,7 @@ router.get('/', asyncRoute(async (req, res) => {
     // React lists the next three community events (when=upcoming), not only
     // ones the member is going to, which left this panel short or empty.
     upcomingEvents: collectionFrom(eventsData).filter(Boolean).slice(0, 3).map((event) => normalizeEvent(event, t)),
-    communityName: res.locals.tenantName || res.locals.serviceName || 'Project NEXUS Accessible',
+    communityName,
     dashboardFeatures,
     sidePanels,
     status: String(req.query.status || ''),

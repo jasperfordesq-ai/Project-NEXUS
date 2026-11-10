@@ -258,6 +258,14 @@
   align-self: flex-start;
 }
 
+// A theme (category) tag on an offer card. GOV.UK caps tags at 160px so
+// overflow-wrap has a box to work in; with large text that splits a theme
+// name mid-word ("Gardenin / g" at 200%). The card is the box instead, so
+// names wrap between words and only break when one word is wider than it.
+.nexus-alpha-theme-tag {
+  max-width: 100%;
+}
+
 @include govuk-media-query($until: tablet) {
   .nexus-alpha-module-row {
     display: block;

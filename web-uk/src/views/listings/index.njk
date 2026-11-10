@@ -81,6 +81,8 @@
               {% if listing.imageUrl %}<div class="nexus-alpha-listing-row__media"><img class="nexus-alpha-card-thumb" src="{{ listing.imageUrl }}" alt="{{ listing.image_alt or t('listings.image_alt', { title: listing.title }) }}" width="120" height="90" loading="lazy" decoding="async"></div>{% endif %}
               <div class="nexus-alpha-listing-row__body">
                 {{ govukTag({ text: t("listings." + listingType), classes: ('govuk-tag--purple' if listingType == 'request' else 'govuk-tag--blue') }) }}
+                {# The theme in its own colour (lib/theme-tags.js); the hidden words keep "Category:" for screen readers. #}
+                {% if listing.categoryName %}{{ govukTag({ html: '<span class="govuk-visually-hidden">' ~ (t("listings.category") | escape) ~ ': </span>' ~ (listing.categoryName | escape), classes: (listing.themeTagClass ~ " nexus-alpha-theme-tag") | trim }) }}{% endif %}
                 {% if listing.is_featured %}{{ govukTag({ text: t("listings.featured"), classes: "govuk-tag--yellow" }) }}{% endif %}
                 {% if listing.service_type and listing.service_type != "physical_only" %}{{ govukTag({ text: t("listings.service_types." + listing.service_type), classes: "govuk-tag--turquoise" }) }}{% endif %}
                 {% if listing.isSaved %}{{ govukTag({ text: t("polish_listings.saved_tag"), classes: "govuk-tag--green" }) }}{% endif %}
@@ -88,7 +90,6 @@
                 {% if listing.authorName %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("listings.posted_by", { name: listing.authorName }) }}</p>{% endif %}
                 {% if listing.description %}<p class="govuk-body" dir="auto">{{ listing.description | striptags | truncate(220) }}</p>{% endif %}
                 <dl class="nexus-alpha-inline-list">
-                  {% if listing.categoryName %}<div><dt>{{ t("listings.category") }}</dt><dd>{{ listing.categoryName }}</dd></div>{% endif %}
                   {% if listing.location %}<div><dt>{{ t("listings.location") }}</dt><dd>{{ listing.location }}</dd></div>{% endif %}
                   {% if listing.hoursEstimate %}<div><dt>{{ t("listings.hours_label") }}</dt><dd>{{ tc("listings.hours", listing.hoursEstimate, { count: listing.hoursEstimate }) }}</dd></div>{% endif %}
                 </dl>

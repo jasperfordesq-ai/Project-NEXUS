@@ -39,7 +39,7 @@ const {
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { translationNeeded } = require('../lib/text-language');
+const { needsTranslationForRequest } = require('../lib/text-language/server-check');
 const { translationFailureStatus } = require('../lib/translate-failure');
 const { readDate, splitDate, readDateTime, splitDateTime } = require('../lib/date-input');
 const { POST_REACTION_TYPES } = require('../lib/feed-reactions');
@@ -1558,7 +1558,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   res.render('groups/detail', {
     contentTranslation,
     translationAvailable: (req.accessibleRouting?.tenant || res.locals.tenant)?.translation?.enabled !== false
-      && translationNeeded([group.name, group.description], req.locale || res.locals.locale),
+      && await needsTranslationForRequest(req, res, [group.name, group.description], req.locale || res.locals.locale),
     translationFailed: req.query.status === 'translate-failed',
     membershipRefusal: req.query.status === 'group-failed' ? consumeApiRefusal(req, `group-${Number(id)}-membership`) : '',
     title: group.name,

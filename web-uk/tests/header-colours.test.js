@@ -52,6 +52,32 @@ describe('accessible header colours', () => {
     expect(style).toContain('--nexus-alpha-header-accent:#5b2a86');
   });
 
+  // AWID feedback (Nov 2026): "more vibrant … warmth, and community". The
+  // community colour (Admin → Settings → "Community colour", the colour the
+  // member website is painted in) now draws the header's stripe too, unless the
+  // admin chose an accessible header colour, which always wins.
+  it('draws the stripe in the community colour when no header colour is chosen', () => {
+    const style = shellFor({ primary_color: '#c2185b' }).headerThemeStyle;
+    expect(style).toBe('--nexus-alpha-header-accent:#c2185b');
+  });
+
+  it('keeps the accessible header colours ahead of the community colour', () => {
+    expect(shellFor({ primary_color: '#c2185b', header_accent_color: '#ffffff' }).headerThemeStyle)
+      .toContain('--nexus-alpha-header-accent:#ffffff');
+    expect(shellFor({ primary_color: '#c2185b', header_bg_color: '#5b2a86' }).headerThemeStyle)
+      .toContain('--nexus-alpha-header-accent:#5b2a86');
+  });
+
+  it('never lets the community colour change the header background or text', () => {
+    const style = shellFor({ primary_color: '#c2185b' }).headerThemeStyle;
+    expect(style).not.toContain('--nexus-alpha-header-bg');
+    expect(style).not.toContain('--nexus-alpha-header-fg');
+  });
+
+  it('ignores a community colour that is not a #rrggbb colour', () => {
+    expect(shellFor({ primary_color: 'red;background:url(x)' }).headerThemeStyle).toBe('');
+  });
+
   it('ignores anything that is not a #rrggbb colour', () => {
     expect(shellFor({ header_bg_color: 'red;background:url(x)' }).headerThemeStyle).toBe('');
   });

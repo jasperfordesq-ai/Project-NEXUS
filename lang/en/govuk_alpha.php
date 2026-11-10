@@ -440,6 +440,12 @@ return [
         'load_error' => 'We could not load the available communities. Try again later.',
     ],
     'dashboard' => [
+        // Monthly community figures (GET /v2/community/this-month), as on the React dashboard.
+        'month_highlight_title' => ':month in :community',
+        'month_highlight_subtitle' => 'What everyone has shared so far this month.',
+        'month_highlight_hours' => 'Hours shared',
+        'month_highlight_members' => 'New members',
+        'month_highlight_listings' => 'New offers and requests',
         'welcome' => 'Welcome back, :name.',
         'new_listing' => 'Create a listing',
         'onboarding_title' => 'Finish setting up your profile',
@@ -948,6 +954,12 @@ return [
         'share_link_label' => 'Share this listing',
     ],
     'exchanges' => [
+        // The thank-you after the confirmation that completes an exchange.
+        'thanks_title' => 'Thank you',
+        'thanks_body' => 'Your exchange is complete and the hours have moved. Every exchange makes the community a little stronger.',
+        'thanks_neighbours_label' => 'People you\'ve exchanged with this year',
+        'thanks_hours_label' => 'Hours exchanged this year',
+        'thanks_send_message' => 'Send :name a thank-you message',
         'confirm_hours_hint' => 'Enter the hours actually given, between 0.25 and 24, in quarter-hour steps.',
         'review_rating_hint' => 'Rate your experience from 1 (poor) to 5 (excellent).',
         'review_comment_hint' => 'Optional. Share anything that would help others.',
@@ -3958,6 +3970,7 @@ return [
         'notifications_delete_confirm_button' => 'Yes, delete all notifications',
         'idea_vote_aria' => 'Vote for :title',
     ],    'members' => [
+        'new_here' => 'New here',
         'connection_connected' => 'Connected',
         'connection_request_sent' => 'Request sent',
         'connection_request_received' => 'Wants to connect',

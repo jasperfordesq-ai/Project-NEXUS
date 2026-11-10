@@ -1455,6 +1455,11 @@
                 "community_slug": "Collegamento alla comunità: :slug"
             },
             "dashboard": {
+                "month_highlight_title": ":month a :community",
+                "month_highlight_subtitle": "Quello che tutti hanno condiviso finora questo mese.",
+                "month_highlight_hours": "Ore condivise",
+                "month_highlight_members": "Nuovi membri",
+                "month_highlight_listings": "Nuove offerte e richieste",
                 "welcome": "Bentornato, :name.",
                 "new_listing": "Crea un annuncio",
                 "onboarding_title": "Completa la configurazione del tuo profilo",
@@ -1958,6 +1963,11 @@
                 "share_link_label": "Condividi questo annuncio"
             },
             "exchanges": {
+                "thanks_title": "Grazie",
+                "thanks_body": "Il tuo scambio è completato e le ore sono state trasferite. Ogni scambio rende la comunità un po’ più forte.",
+                "thanks_neighbours_label": "Persone con cui hai fatto scambi quest’anno",
+                "thanks_hours_label": "Ore scambiate quest’anno",
+                "thanks_send_message": "Invia a :name un messaggio di ringraziamento",
                 "confirm_hours_hint": "Inserisci le ore effettivamente prestate, tra 0,25 e 24, in incrementi di un quarto d'ora.",
                 "review_rating_hint": "Valuta la tua esperienza da 1 (scarsa) a 5 (eccellente).",
                 "review_comment_hint": "Facoltativo. Condividi qualcosa che possa essere utile ad altri.",
@@ -4929,6 +4939,7 @@
                 "idea_vote_aria": "Vota per :title"
             },
             "members": {
+                "new_here": "Nuovo arrivo",
                 "connection_connected": "Connesso",
                 "connection_request_sent": "Richiesta inviata",
                 "connection_request_received": "Vuole connettersi",

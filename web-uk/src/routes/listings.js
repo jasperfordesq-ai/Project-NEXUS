@@ -39,6 +39,7 @@ const { audit } = require('../lib/auditLogger');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 const { resolveBackendMediaUrl, flagEnabled } = require('../lib/accessible-shell');
+const { themeTagClasses, tagClassForColour } = require('../lib/theme-tags');
 
 const { translateFields, preferences, translationBinding, validSavedTranslation, translateCommentTree } = require('../lib/ugc-translation');
 const router = express.Router();
@@ -1423,13 +1424,19 @@ router.get('/', asyncRoute(async (req, res) => {
     getListingCategories(token).catch(() => ({ data: [] }))
   ]);
   const result = listingResult.result;
-  const listings = collectionFrom(result).map(listing => ({
-    ...listing,
-    imageUrl: resolveBackendMediaUrl(listing && (listing.image_url || listing.imageUrl)),
-    authorName: trimmed(listing && ((listing.user && listing.user.name) || listing.author_name)),
-    categoryName: trimmed(listing && (listing.category_name || (listing.category && listing.category.name))),
-    hoursEstimate: listing && (listing.hours_estimate ?? listing.hoursEstimate)
-  }));
+  // Each theme in its own GOV.UK tag colour, the same rule as React (lib/theme-tags.js).
+  const themeClasses = themeTagClasses(collectionFrom(categoriesResult));
+  const listings = collectionFrom(result).map(listing => {
+    const categoryId = positiveInteger(listing && (listing.category_id ?? (listing.category && listing.category.id)));
+    return {
+      ...listing,
+      imageUrl: resolveBackendMediaUrl(listing && (listing.image_url || listing.imageUrl)),
+      authorName: trimmed(listing && ((listing.user && listing.user.name) || listing.author_name)),
+      categoryName: trimmed(listing && (listing.category_name || (listing.category && listing.category.name))),
+      themeTagClass: themeClasses.has(categoryId) ? themeClasses.get(categoryId) : tagClassForColour(listing && listing.category_color),
+      hoursEstimate: listing && (listing.hours_estimate ?? listing.hoursEstimate)
+    };
+  });
   const categories = collectionFrom(categoriesResult)
     .map(category => ({ id: positiveInteger(category && category.id), name: trimmed(category && category.name) }))
     .filter(category => category.id && category.name);

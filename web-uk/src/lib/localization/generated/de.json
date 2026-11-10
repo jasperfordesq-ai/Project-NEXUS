@@ -1455,6 +1455,11 @@
                 "community_slug": "Community-Link: :slug"
             },
             "dashboard": {
+                "month_highlight_title": "Diesen :month in :community",
+                "month_highlight_subtitle": "Was alle in diesem Monat bisher geteilt haben.",
+                "month_highlight_hours": "Geteilte Stunden",
+                "month_highlight_members": "Neue Mitglieder",
+                "month_highlight_listings": "Neue Angebote und Anfragen",
                 "welcome": "Willkommen zurück, :name.",
                 "new_listing": "Inserat erstellen",
                 "onboarding_title": "Richten Sie Ihr Profil fertig ein",
@@ -1958,6 +1963,11 @@
                 "share_link_label": "Diese Anzeige teilen"
             },
             "exchanges": {
+                "thanks_title": "Danke",
+                "thanks_body": "Ihr Tausch ist abgeschlossen und die Stunden wurden übertragen. Jeder Tausch macht die Gemeinschaft ein Stück stärker.",
+                "thanks_neighbours_label": "Menschen, mit denen Sie dieses Jahr getauscht haben",
+                "thanks_hours_label": "Getauschte Stunden in diesem Jahr",
+                "thanks_send_message": ":name eine Dankesnachricht senden",
                 "confirm_hours_hint": "Geben Sie die tatsächlich geleisteten Stunden zwischen 0,25 und 24 in Viertelstundenschritten an.",
                 "review_rating_hint": "Bewerten Sie Ihre Erfahrung von 1 (schlecht) bis 5 (ausgezeichnet).",
                 "review_comment_hint": "Optional. Teilen Sie etwas mit, das anderen helfen könnte.",
@@ -4929,6 +4939,7 @@
                 "idea_vote_aria": "Für :title abstimmen"
             },
             "members": {
+                "new_here": "Neu hier",
                 "connection_connected": "Verbunden",
                 "connection_request_sent": "Anfrage gesendet",
                 "connection_request_received": "Möchte sich verbinden",

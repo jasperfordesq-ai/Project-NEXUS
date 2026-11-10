@@ -5,6 +5,8 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/exchanges') }}">{{ t("actions.back_to_exchanges") }}</a>
@@ -13,7 +15,23 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-  {% if statusMessage or successMessage %}
+  {# The thank-you after the confirmation that completed this exchange (lib/exchange-thanks.js):
+     a GOV.UK confirmation panel, then the member's own figures for this year. #}
+  {% if thanks %}
+    {{ govukPanel({ titleText: t("exchanges.thanks_title"), headingLevel: 2, text: t("exchanges.thanks_body"), attributes: { id: "exchange-thanks" } }) }}
+    {% if thanks.figures %}
+      {{ govukSummaryList({
+        classes: "govuk-!-margin-bottom-6",
+        rows: [
+          { key: { text: t("exchanges.thanks_neighbours_label") }, value: { text: thanks.figures.neighboursLabel } },
+          { key: { text: t("exchanges.thanks_hours_label") }, value: { text: thanks.figures.hoursLabel } }
+        ]
+      }) }}
+    {% endif %}
+    {% if messagingAvailable and exchange.otherUserId %}
+      <p class="govuk-body govuk-!-margin-bottom-8"><a class="govuk-link" href="{{ urlFor('/messages/' + (exchange.otherUserId | string)) }}">{{ t("exchanges.thanks_send_message", { name: exchange.otherName }) }}</a></p>
+    {% endif %}
+  {% elif statusMessage or successMessage %}
     {% if status == 'exchange-action-failed' or status == 'exchange-hours-invalid' or status == 'rating-failed' or status == 'rating-invalid' %}
       <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
         <div role="alert">

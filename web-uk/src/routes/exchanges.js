@@ -18,6 +18,9 @@ const {
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
 const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 const { getRequestProfile } = require('../lib/request-profile');
+const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { flagEnabled } = require('../lib/accessible-shell');
+const { rememberExchangeThanks, takeExchangeThanks } = require('../lib/exchange-thanks');
 
 const router = express.Router();
 
@@ -205,6 +208,7 @@ function statusMessage(status, t) {
     case 'exchange-created':
       return t('exchanges.created');
     case 'exchange-updated':
+    case 'exchange-completed':
       return t('exchanges.updated');
     case 'rating-submitted':
       return t('exchanges.rating_submitted');
@@ -284,8 +288,17 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const currentUserId = toNumber(firstPresent(profilePayload?.id, profilePayload?.data?.id), null);
   const exchange = normalizeExchange(unwrapObject(exchangePayload), currentUserId, res.locals.t);
   const ratings = unwrapRatings(ratingsPayload);
+  // The thank-you panel, once, after the confirmation that completed it (lib/exchange-thanks.js).
+  const thanks = takeExchangeThanks(req, id, exchange.status, req.query.status);
+  if (thanks && thanks.figures) {
+    const locale = getRequestIntlLocale();
+    thanks.figures.neighboursLabel = thanks.figures.neighbours.toLocaleString(locale);
+    thanks.figures.hoursLabel = thanks.figures.hours.toLocaleString(locale, { maximumFractionDigits: 2 });
+  }
 
   res.render('exchanges/detail', {
+    thanks,
+    messagingAvailable: flagEnabled((req.accessibleRouting && req.accessibleRouting.tenant) || {}, 'messages', 'modules', true),
     title: exchange.listingTitle,
     exchange,
     ratings: ratings.ratings.map(rating => normalizeRating(rating, res.locals.t)),
@@ -322,7 +335,10 @@ router.post('/:id(\\d+)', asyncRoute(async (req, res) => {
       return redirectTo(res, `/exchanges/${id}?status=exchange-action-failed`);
     }
 
-    await performExchangeAction(req.token, id, action, actionPayload);
+    const result = await performExchangeAction(req.token, id, action, actionPayload);
+    if (action === 'confirm' && rememberExchangeThanks(req, id, result)) {
+      return redirectTo(res, `/exchanges/${id}?status=exchange-completed`);
+    }
     return redirectTo(res, `/exchanges/${id}?status=exchange-updated`);
   } catch (error) {
     if (error instanceof ApiError || error instanceof ApiOfflineError) {

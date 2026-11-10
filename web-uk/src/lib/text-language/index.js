@@ -42,4 +42,4 @@ function translationNeeded(parts, locale) {
   return !alreadyInLanguage(parts, locale);
 }
 
-module.exports = { alreadyInLanguage, translationNeeded };
+module.exports = { alreadyInLanguage, translationNeeded, vocabularyFor };

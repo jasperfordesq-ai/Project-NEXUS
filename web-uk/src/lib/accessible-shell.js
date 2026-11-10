@@ -1012,6 +1012,14 @@ function buildShellLocals(req, isAuthenticated) {
 // higher WCAG contrast against the background (the admin preview uses the same
 // rule, react-frontend/src/admin/modules/system/settings/headerPreview.ts).
 // With no accent chosen the line matches the background, as the preview shows.
+//
+// AWID feedback (Nov 2026, "warmth, and community"): with neither header colour
+// chosen, the line takes the community colour (Admin → Settings → "Community
+// colour", branding.primary_color — the colour the member website is painted
+// in), so both sites carry it. It only ever colours the line: the background
+// and its text stay the stock near-black and white. The line is decoration
+// (the header's links sit on the background, not on it), so it has no
+// contrast requirement of its own.
 // ---------------------------------------------------------------------------
 const HEX_COLOUR = /^#[0-9a-f]{6}$/;
 
@@ -1031,7 +1039,7 @@ function readableHeaderText(hex) {
 
 function buildHeaderThemeStyle(branding) {
   const bg = hexColour(branding.header_bg_color);
-  const accent = hexColour(branding.header_accent_color) || bg;
+  const accent = hexColour(branding.header_accent_color) || bg || hexColour(branding.primary_color);
   if (!bg && !accent) return '';
   const declarations = [];
   if (bg) {

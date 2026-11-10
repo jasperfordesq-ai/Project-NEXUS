@@ -417,6 +417,12 @@ return [
         'community_slug' => 'Lien communautaire: :slug',
     ],
     'dashboard' => [
+        // Monthly community figures (GET /v2/community/this-month), as on the React dashboard.
+        'month_highlight_title' => ':month à :community',
+        'month_highlight_subtitle' => 'Ce que chacun a partagé depuis le début du mois.',
+        'month_highlight_hours' => 'Heures partagées',
+        'month_highlight_members' => 'Nouveaux membres',
+        'month_highlight_listings' => 'Nouvelles offres et demandes',
         'welcome' => 'Bienvenue, :name.',
         'new_listing' => 'Créer une annonce',
         'onboarding_title' => 'Finalisez la configuration de votre profil',
@@ -920,6 +926,12 @@ return [
         'share_link_label' => 'Partager cette annonce',
     ],
     'exchanges' => [
+        // The thank-you after the confirmation that completes an exchange.
+        'thanks_title' => 'Merci',
+        'thanks_body' => 'Votre échange est terminé et les heures ont été transférées. Chaque échange rend la communauté un peu plus forte.',
+        'thanks_neighbours_label' => 'Personnes avec qui vous avez échangé cette année',
+        'thanks_hours_label' => 'Heures échangées cette année',
+        'thanks_send_message' => 'Envoyer un message de remerciement à :name',
         'confirm_hours_hint' => 'Saisissez les heures réellement effectuées, entre 0,25 et 24, par tranches d\'un quart d\'heure.',
         'review_rating_hint' => 'Évaluez votre expérience de 1 (médiocre) à 5 (excellent).',
         'review_comment_hint' => 'Facultatif. Partagez ce qui pourrait être utile aux autres.',
@@ -3892,6 +3904,7 @@ return [
         'idea_vote_aria' => 'Voter pour :title',
     ],
     'members' => [
+        'new_here' => 'Vient d’arriver',
         'connection_connected' => 'Connecté',
         'connection_request_sent' => 'Demande envoyée',
         'connection_request_received' => 'Souhaite se connecter',

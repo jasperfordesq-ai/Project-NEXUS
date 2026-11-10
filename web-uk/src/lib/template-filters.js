@@ -5,7 +5,7 @@
 
 const { splitDate } = require('./date-input');
 const { resolveBackendThumbnailUrl } = require('./accessible-shell');
-const { translationNeeded } = require('./text-language');
+const { needsTranslation } = require('./text-language/server-check');
 
 /**
  * Filters that TEMPLATES DEPEND ON, registered from one place.
@@ -27,8 +27,10 @@ function registerTemplateFilters(env) {
   // reader's language (owner, 31 Oct 2026). Usable everywhere, imported macros
   // included: {% if needsTranslation([title, body], locale or t.locale) %}.
   // Without a language it answers true: the button stays.
+  // On a member's page it also uses the server's language answers (owner, 9 Nov
+  // 2026), gathered once per page — see lib/text-language/server-check.js.
   if (typeof env.addGlobal === 'function') {
-    env.addGlobal('needsTranslation', (parts, locale) => translationNeeded(parts, locale));
+    env.addGlobal('needsTranslation', (parts, locale) => needsTranslation(parts, locale));
   }
 
   // Split a stored 'YYYY-MM-DD' into the day/month/year parts the GOV.UK date input needs:

@@ -9174,3 +9174,43 @@ describe('Support preparation and instant data download helpers', () => {
     expect(options.headers.Authorization).toBe('Bearer test-token');
   });
 });
+
+// AWID warmth pass (Nov 2026): the dashboard's monthly community figures and
+// the Translate button's language question, each through its own helper.
+describe('Community month and content language helpers', () => {
+  let api;
+
+  function jsonOk(body = { data: {} }) {
+    return { ok: true, status: 200, headers: { get: () => 'application/json' }, json: async () => body };
+  }
+
+  beforeEach(() => {
+    jest.resetModules();
+    mockFetch.mockReset();
+    api = require('../src/lib/api');
+  });
+
+  it('reads the community\'s figures for this month', async () => {
+    mockFetch.mockResolvedValueOnce(jsonOk({ data: { month: '2026-11', hours_shared: 4, new_members: 1, new_listings: 2 } }));
+
+    await api.getCommunityThisMonth('test-token');
+
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toBe('http://localhost:5000/api/v2/community/this-month');
+    expect(options.method).toBeUndefined();
+    expect(options.headers.Authorization).toBe('Bearer test-token');
+  });
+
+  it('asks which language member texts are written in, as one POST of the texts', async () => {
+    mockFetch.mockResolvedValueOnce(jsonOk({ data: { detections: [{ language: 'en', confidence: 0.9 }, null] } }));
+
+    const result = await api.detectContentLanguages('test-token', ['Media Test Group', 'Bonjour à tous']);
+
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toBe('http://localhost:5000/api/v2/ugc-language');
+    expect(options.method).toBe('POST');
+    expect(options.headers.Authorization).toBe('Bearer test-token');
+    expect(JSON.parse(options.body)).toEqual({ texts: ['Media Test Group', 'Bonjour à tous'] });
+    expect(result.data.detections[0]).toEqual({ language: 'en', confidence: 0.9 });
+  });
+});

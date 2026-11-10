@@ -417,6 +417,12 @@ return [
         'community_slug' => 'رابط المجتمع: :slug',
     ],
     'dashboard' => [
+        // Monthly community figures (GET /v2/community/this-month), as on the React dashboard.
+        'month_highlight_title' => ':month في :community',
+        'month_highlight_subtitle' => 'ما شاركه الجميع حتى الآن هذا الشهر.',
+        'month_highlight_hours' => 'الساعات المشتركة',
+        'month_highlight_members' => 'أعضاء جدد',
+        'month_highlight_listings' => 'عروض وطلبات جديدة',
         'welcome' => 'مرحبًا بعودتك، :name.',
         'new_listing' => 'إنشاء إعلان',
         'onboarding_title' => 'أكمل إعداد ملفك الشخصي',
@@ -920,6 +926,12 @@ return [
         'share_link_label' => 'مشاركة هذه القائمة',
     ],
     'exchanges' => [
+        // The thank-you after the confirmation that completes an exchange.
+        'thanks_title' => 'شكرًا لك',
+        'thanks_body' => 'اكتمل تبادلك وانتقلت الساعات. كل تبادل يجعل المجتمع أقوى قليلًا.',
+        'thanks_neighbours_label' => 'الأشخاص الذين تبادلت معهم هذا العام',
+        'thanks_hours_label' => 'الساعات المتبادلة هذا العام',
+        'thanks_send_message' => 'أرسل رسالة شكر إلى :name',
         'confirm_hours_hint' => 'أدخل الساعات المُقدَّمة فعلياً، بين 0.25 و24، بخطوات ربع ساعة.',
         'review_rating_hint' => 'قيّم تجربتك من 1 (ضعيف) إلى 5 (ممتاز).',
         'review_comment_hint' => 'اختياري. شارك أي ملاحظات قد تفيد الآخرين.',
@@ -3892,6 +3904,7 @@ return [
         'idea_vote_aria' => 'التصويت على :title',
     ],
     'members' => [
+        'new_here' => 'جديد هنا',
         'connection_connected' => 'متصل',
         'connection_request_sent' => 'تم إرسال الطلب',
         'connection_request_received' => 'يريد التواصل',

@@ -10,6 +10,7 @@ require('dotenv').config();
 // normal state in development and in every test run.
 const { initSentry, attachExpressErrorHandler, flushSentry } = require('./lib/sentry');
 const { registerTemplateFilters } = require('./lib/template-filters');
+const { installTextLanguageRender } = require('./lib/text-language/server-check');
 
 initSentry();
 
@@ -685,6 +686,10 @@ app.use(async (req, res, next) => {
     }
     return renderPage(view, options, callback);
   };
+  // "Translate" only for text in another language than the reader's: lets the
+  // template global ask the server about texts the word check cannot settle,
+  // once per page (lib/text-language/server-check.js). Private messages never.
+  installTextLanguageRender(req, res);
 
   // Defense in depth: any response rendered for a signed-in member is
   // personal (wallet, messages, profile, notifications, settings, CSV

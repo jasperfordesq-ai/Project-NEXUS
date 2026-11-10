@@ -417,6 +417,12 @@ return [
         'community_slug' => 'Communitylink: :slug',
     ],
     'dashboard' => [
+        // Monthly community figures (GET /v2/community/this-month), as on the React dashboard.
+        'month_highlight_title' => 'In :month bij :community',
+        'month_highlight_subtitle' => 'Wat iedereen deze maand tot nu toe heeft gedeeld.',
+        'month_highlight_hours' => 'Gedeelde uren',
+        'month_highlight_members' => 'Nieuwe leden',
+        'month_highlight_listings' => 'Nieuwe aanbiedingen en verzoeken',
         'welcome' => 'Welkom terug, :name.',
         'new_listing' => 'Een aanbieding maken',
         'onboarding_title' => 'Stel uw profiel in',
@@ -920,6 +926,12 @@ return [
         'share_link_label' => 'Deel deze vermelding',
     ],
     'exchanges' => [
+        // The thank-you after the confirmation that completes an exchange.
+        'thanks_title' => 'Bedankt',
+        'thanks_body' => 'Je ruil is voltooid en de uren zijn overgemaakt. Elke ruil maakt de gemeenschap een beetje sterker.',
+        'thanks_neighbours_label' => 'Mensen met wie je dit jaar hebt geruild',
+        'thanks_hours_label' => 'Uren geruild dit jaar',
+        'thanks_send_message' => 'Stuur :name een bedankbericht',
         'confirm_hours_hint' => 'Voer het werkelijk gegeven aantal uren in, tussen 0,25 en 24, in stappen van een kwartier.',
         'review_rating_hint' => 'Beoordeel uw ervaring van 1 (slecht) tot 5 (uitstekend).',
         'review_comment_hint' => 'Optioneel. Deel iets wat anderen kan helpen.',
@@ -3892,6 +3904,7 @@ return [
         'idea_vote_aria' => 'Stem op :title',
     ],
     'members' => [
+        'new_here' => 'Nieuw hier',
         'connection_connected' => 'Verbonden',
         'connection_request_sent' => 'Verzoek verzonden',
         'connection_request_received' => 'Wil verbinden',

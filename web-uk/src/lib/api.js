@@ -1887,6 +1887,19 @@ async function callUgcTranslateApi(token, data) {
   });
 }
 
+// Which language each piece of member content is written in, so "Translate"
+// shows only when it differs from the reader's (React detectLanguage.ts).
+// POST /api/v2/ugc-language { texts } (at most 50) → { detections: [...] }.
+// Never called with private messages: lib/text-language/server-check.js.
+async function detectContentLanguages(token, texts, options = {}) {
+  return request('/api/v2/ugc-language', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ texts }),
+    ...(options.signal ? { signal: options.signal } : {})
+  });
+}
+
 async function callUserSettingsApi(token, method, path = '', data = undefined) {
   const normalizedPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
   const options = {
@@ -3111,6 +3124,13 @@ async function getMemberEndorsements(token, userId) {
 // suggested listings, top categories, upcoming events, popular groups).
 async function getFeedSidebar(token) {
   return request('/api/v2/feed/sidebar', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+// React CommunityMonthHighlight.tsx: what the community has shared so far this month.
+async function getCommunityThisMonth(token) {
+  return request('/api/v2/community/this-month', {
     headers: { Authorization: `Bearer ${token}` }
   });
 }
@@ -5050,6 +5070,7 @@ module.exports = {
   getGoal,
   callGoalApi,
   callUgcTranslateApi,
+  detectContentLanguages,
   callUserSettingsApi,
   requestAccountDeletion,
   callProfileApi,
@@ -5182,6 +5203,7 @@ module.exports = {
   removeMemberEndorsement,
   getMemberEndorsements,
   getFeedSidebar,
+  getCommunityThisMonth,
   getTopEndorsedMembers,
   getConnectionSuggestions,
   acceptConnection,

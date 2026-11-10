@@ -62,12 +62,13 @@ async function mentionUsernameFor(token, member) {
 }
 const { requireAuth, withTokenRefresh } = require('../middleware/auth');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
-const { translationNeeded } = require('../lib/text-language');
+const { needsTranslationForRequest } = require('../lib/text-language/server-check');
 const { rememberClientRefusal, consumeApiRefusal, firstApiError } = require('../lib/api-refusal');
 const { PLATFORM_MAX_TRANSFER, walletMaxTransfer } = require('../lib/wallet-limits');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
+const { isNewMember } = require('../lib/new-member');
 const { profileAvailabilityFrom, profileActivityFrom } = require('../lib/profile-sections');
 const {
   KEY: CONCERN_REPORT_KEY,
@@ -433,6 +434,8 @@ function normalizeDiscoverMember(member, t) {
     hoursReceivedLabel: received.toLocaleString(getRequestIntlLocale()),
     ratingLabel: Number.isFinite(rating) && rating > 0 ? rating.toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '',
     isVerified: !!(member.is_verified || member.identity_verified),
+    // Joined in the last 30 days (lib/new-member.js, the React directory's rule).
+    isNewHere: isNewMember(member.created_at || member.createdAt),
     level,
     levelLabel: level > 0 ? t('polish_members.member_level_label', { n: level }) : '',
     connectionLabel: connectionLabel(member.connection_state || member.connectionState, t),
@@ -1288,7 +1291,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     profileTranslation,
     translationFailed: req.query.status === 'translate-unavailable' ? 'unavailable' : req.query.status === 'translate-failed',
     translationAvailable: tenant?.translation?.enabled !== false && Boolean(user.bio || user.tagline)
-      && translationNeeded([user.tagline, user.bio], req.locale || res.locals.locale),
+      && await needsTranslationForRequest(req, res, [user.tagline, user.bio], req.locale || res.locals.locale),
     feedEnabled,
     title: displayName,
     user,

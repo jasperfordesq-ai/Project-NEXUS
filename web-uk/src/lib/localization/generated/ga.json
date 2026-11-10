@@ -1455,6 +1455,11 @@
                 "community_slug": "Nasc pobail: :slug"
             },
             "dashboard": {
+                "month_highlight_title": ":month – :community",
+                "month_highlight_subtitle": "An méid atá roinnte ag cách go dtí seo an mhí seo.",
+                "month_highlight_hours": "Uaireanta roinnte",
+                "month_highlight_members": "Baill nua",
+                "month_highlight_listings": "Tairiscintí agus iarratais nua",
                 "welcome": "Fáilte ar ais, :name.",
                 "new_listing": "Cruthaigh liostú",
                 "onboarding_title": "Críochnaigh do phróifíl a shocrú",
@@ -1958,6 +1963,11 @@
                 "share_link_label": "Roinn an liostáil seo"
             },
             "exchanges": {
+                "thanks_title": "Go raibh maith agat",
+                "thanks_body": "Tá do mhalartú críochnaithe agus aistríodh na huaireanta. Neartaíonn gach malartú an pobal beagán.",
+                "thanks_neighbours_label": "Daoine ar mhalartaigh tú leo i mbliana",
+                "thanks_hours_label": "Uaireanta malartaithe i mbliana",
+                "thanks_send_message": "Seol teachtaireacht bhuíochais chuig :name",
                 "confirm_hours_hint": "Iontráil na huaireanta a tugadh iarbhír, idir 0.25 agus 24, i gcéimeanna ceathrú uaire.",
                 "review_rating_hint": "Rátáil do thaithí ó 1 (lag) go 5 (den scoth).",
                 "review_comment_hint": "Roghnach. Roinn aon rud a chuideodh le daoine eile.",
@@ -4929,6 +4939,7 @@
                 "idea_vote_aria": "Vótáil ar son :title"
             },
             "members": {
+                "new_here": "Nua anseo",
                 "connection_connected": "Ceangailte",
                 "connection_request_sent": "Iarratas seolta",
                 "connection_request_received": "Ag iarraidh ceangal",
