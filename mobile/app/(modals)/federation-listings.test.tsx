@@ -179,6 +179,24 @@ describe('FederationListingsScreen', () => {
     expect(mockLoadMore).toHaveBeenCalledTimes(1);
   });
 
+  it('shows a partner offer written on a website as plain text on its card and its page', () => {
+    mockUsePaginatedApi.mockReturnValue({
+      items: [{ ...listing, description: '<p>Borrow a <strong>drill</strong> &amp; bits.</p>' }],
+      isLoading: false,
+      isLoadingMore: false,
+      error: null,
+      hasMore: false,
+      loadMore: mockLoadMore,
+      refresh: mockRefresh,
+    });
+    const screen = render(<FederationListingsScreen />);
+
+    expect(screen.getByTestId('federation-listing-90624-description')).toHaveTextContent('Borrow a drill & bits.');
+    fireEvent.press(screen.getByLabelText('Open details for Shared drill'));
+    expect(screen.getAllByText('Borrow a drill & bits.').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/<p>|<strong>|&amp;/)).toBeNull();
+  });
+
   it('opens listing detail content from a card press', () => {
     const { router } = require('expo-router');
     const { getByLabelText, getByText } = render(<FederationListingsScreen />);

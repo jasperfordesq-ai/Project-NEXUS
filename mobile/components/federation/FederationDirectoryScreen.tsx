@@ -61,6 +61,7 @@ import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { responsiveActionStyle } from '@/lib/layout/responsiveActions';
 import { appResolvedMember, rememberAppResolvedMember } from '@/lib/federation/appResolvedMembers';
 import { alreadyInReaderLanguage, useReaderVocabulary } from '@/lib/textLanguage/readerVocabulary';
+import { toPlainText } from '@/lib/utils/plainText';
 import {
   completeFederationMessageCreationOperation,
   reserveFederationMessageCreationOperation,
@@ -738,8 +739,9 @@ function ListingCard({
               <Ionicons name="chevron-forward-outline" size={17} color={primary} />
             </View> : null}
           </View>
-          {listing.description ? (
-            <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 2} testID={`federation-listing-${listing.id}-description`}>{listing.description}</Text>
+          {/* Written on a website, so stored as HTML: plain text here, never its web code. */}
+          {toPlainText(listing.description) ? (
+            <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 2} testID={`federation-listing-${listing.id}-description`}>{toPlainText(listing.description)}</Text>
           ) : null}
           <View className="flex-row flex-wrap gap-2">
             <Chip size="sm" variant="secondary">
@@ -845,7 +847,7 @@ function ListingDetailView({
             </View>
             <Text className="text-2xl font-bold leading-8" style={{ color: theme.text }}>{listing.title}</Text>
             <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
-              {listing.description?.trim() ? listing.description : t('directory.listings.noDescription')}
+              {toPlainText(listing.description) || t('directory.listings.noDescription')}
             </Text>
           </View>
 

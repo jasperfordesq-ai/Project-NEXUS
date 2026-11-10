@@ -137,6 +137,26 @@ describe('ExchangeCard', () => {
     expect(screen.queryByTestId('exchange-card-cover', { includeHiddenElements: true })).toBeNull();
   });
 
+  /**
+   * Descriptions written on the website are stored as HTML. The card printed them as they
+   * were, so a member read "<p>Garden help available. <a href=…>" — the offer's own page
+   * already showed plain text. Found on the emulator on 10 Nov 2026.
+   */
+  it('shows a description written on the website as plain text, never its web code', () => {
+    const screen = render(
+      <ExchangeCard exchange={{ ...exchange, description: '<p>Garden help <strong>available</strong>.</p><p>Ask &amp; book.</p>' }} />,
+    );
+
+    expect(screen.getByText('Garden help available.\n\nAsk & book.')).toBeTruthy();
+    expect(screen.queryByText(/<p>|<strong>|&amp;/)).toBeNull();
+  });
+
+  it('leaves no empty description when the web code had no words in it', () => {
+    const screen = render(<ExchangeCard exchange={{ ...exchange, description: '<p><br></p>' }} />);
+    expect(screen.queryByText(/<p>|<br>/)).toBeNull();
+    expect(screen.queryByTestId('exchange-card-description')).toBeNull();
+  });
+
   it('shows distance returned by nearby listing searches', () => {
     const { getByText } = render(<ExchangeCard exchange={exchange} />);
 

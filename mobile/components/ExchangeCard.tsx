@@ -24,6 +24,7 @@ import { listingColour, useItemPalette, useListingThemeColours } from '@/lib/the
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { labelWithImageDescription } from '@/lib/utils/imageDescription';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
+import { toPlainText } from '@/lib/utils/plainText';
 import Avatar from '@/components/ui/Avatar';
 import NativePressable from '@/components/ui/NativePressable';
 
@@ -60,6 +61,7 @@ function ExchangeCardRow({ exchange, onToggleSave }: ExchangeCardProps) {
     avatar_url: exchange.author_avatar ?? null,
   };
   const imageUrl = resolveImageUrl(exchange.image_url);
+  const description = toPlainText(exchange.description);
   const isOffer = exchange.type === 'offer';
   const accent = isOffer ? '#10B981' : '#F59E0B';
   const accentSoft = isOffer ? 'rgba(16, 185, 129, 0.14)' : 'rgba(245, 158, 11, 0.14)';
@@ -142,9 +144,11 @@ function ExchangeCardRow({ exchange, onToggleSave }: ExchangeCardProps) {
         </HeroCard.Header>
 
         <HeroCard.Body className="gap-3 px-4 pb-4 pt-0">
-          {exchange.description ? (
-            <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
-              {exchange.description}
+          {/* Stored as HTML when written on the website: shown as plain text, as on the
+              offer's own page (a member read "<p>Garden help…" here until 10 Nov 2026). */}
+          {description ? (
+            <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3} testID="exchange-card-description">
+              {description}
             </Text>
           ) : null}
 
