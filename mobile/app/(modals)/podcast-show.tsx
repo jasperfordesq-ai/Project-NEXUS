@@ -27,6 +27,12 @@ import { useApi } from '@/lib/hooks/useApi';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { withRouteGate } from '@/components/withRouteGate';
+import CategoryLabel from '@/components/ui/CategoryLabel';
+import ItemCover from '@/components/ui/ItemCover';
+import RemoteImage from '@/components/ui/RemoteImage';
+import { colourForSeed, coverSeed } from '@/lib/theme/itemColours';
+import { useItemPalette } from '@/lib/theme/useItemColours';
+import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 
 function PodcastShowScreen() {
   const { slug } = useLocalSearchParams<{ slug?: string }>();
@@ -43,6 +49,7 @@ function PodcastShowScreenInner() {
   const { slug } = useLocalSearchParams<{ slug?: string }>();
   const { t } = useTranslation(['podcasts', 'common']);
   const theme = useTheme();
+  const palette = useItemPalette();
   const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
   const [subscribed, setSubscribed] = useState(false);
@@ -86,7 +93,14 @@ function PodcastShowScreenInner() {
 
   if (state.isLoading) return <SafeAreaView className="flex-1 items-center justify-center bg-background" style={{ flex: 1, backgroundColor: theme.bg }}><LoadingSpinner /></SafeAreaView>;
   const podcast = state.data;
-  return <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}><AppTopBar title={podcast?.title ?? t('title')} backLabel={t('common:back')} fallbackHref="/(modals)/podcasts" />{!podcast && isRefusalStatus(state.errorStatus) ? <EmptyState icon="lock-closed-outline" title={t('common:errors.notAvailableTitle')} subtitle={t('common:errors.notAvailableHint')} testID="podcast-show-refused" /> : !podcast ? <EmptyState icon="warning-outline" title={state.error ?? t('show.not_found')} actionLabel={t('show.retry')} onAction={() => state.refresh()} /> : <FlatList<PodcastEpisode> data={podcast.episodes ?? []} keyExtractor={(item) => String(item.id)} contentContainerStyle={{ padding: 16, paddingBottom: 44 }} refreshControl={<RefreshControl refreshing={state.isLoading} onRefresh={() => state.refresh()} tintColor={primary} colors={[primary]} />} ListHeaderComponent={<View className="mb-5 gap-3"><Text className="text-2xl font-bold" style={{ color: theme.text }}>{podcast.title}</Text><Text className="leading-6" style={{ color: theme.textSecondary }}>{podcast.summary || t('show.no_summary')}</Text><View className="flex-row flex-wrap gap-2"><Chip size="sm" variant="secondary"><Chip.Label>{t('show.episode_count', { count: podcast.episode_count })}</Chip.Label></Chip><Chip size="sm" variant="secondary"><Chip.Label>{t('show.follower_count', { count: podcast.subscriber_count })}</Chip.Label></Chip></View><HeroButton isDisabled={saving} variant={subscribed ? 'secondary' : 'primary'} onPress={() => void follow()}><HeroButton.Label>{t(subscribed ? 'show.unsubscribe' : 'show.subscribe')}</HeroButton.Label></HeroButton><Text className="mt-2 text-lg font-bold" style={{ color: theme.text }}>{t('show.episodes')}</Text></View>} renderItem={({ item }) => <NativePressable accessibilityLabel={item.title} feedback="highlight" onPress={() => router.push({ pathname: '/(modals)/podcast-episode', params: { showSlug: podcast.slug, episodeSlug: item.slug } })}><HeroCard className="mb-3 rounded-panel"><HeroCard.Body className="gap-2 p-4"><Text className="text-lg font-bold" style={{ color: theme.text }}>{item.title}</Text>{item.summary ? <Text style={{ color: theme.textSecondary }} numberOfLines={3}>{item.summary}</Text> : null}</HeroCard.Body></HeroCard></NativePressable>} ListEmptyComponent={<EmptyState icon="mic-outline" title={t('show.no_episodes')} />} />}</SafeAreaView>;
+  return <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}><AppTopBar title={podcast?.title ?? t('title')} backLabel={t('common:back')} fallbackHref="/(modals)/podcasts" />{!podcast && isRefusalStatus(state.errorStatus) ? <EmptyState icon="lock-closed-outline" title={t('common:errors.notAvailableTitle')} subtitle={t('common:errors.notAvailableHint')} testID="podcast-show-refused" /> : !podcast ? <EmptyState icon="warning-outline" title={state.error ?? t('show.not_found')} actionLabel={t('show.retry')} onAction={() => state.refresh()} /> : <FlatList<PodcastEpisode> data={podcast.episodes ?? []} keyExtractor={(item) => String(item.id)} contentContainerStyle={{ padding: 16, paddingBottom: 44 }} refreshControl={<RefreshControl refreshing={state.isLoading} onRefresh={() => state.refresh()} tintColor={primary} colors={[primary]} />} ListHeaderComponent={<View className="mb-5 gap-3"><ShowCover artworkUrl={podcast.artwork_url} colour={colourForSeed(coverSeed.podcastShow(podcast.slug), palette)} />{podcast.category ? <View className="flex-row"><CategoryLabel label={podcast.category} colour={colourForSeed(coverSeed.podcastCategory(podcast.category), palette)} testID="podcast-show-category" /></View> : null}<Text className="text-2xl font-bold" style={{ color: theme.text }}>{podcast.title}</Text><Text className="leading-6" style={{ color: theme.textSecondary }}>{podcast.summary || t('show.no_summary')}</Text><View className="flex-row flex-wrap gap-2"><Chip size="sm" variant="secondary"><Chip.Label>{t('show.episode_count', { count: podcast.episode_count })}</Chip.Label></Chip><Chip size="sm" variant="secondary"><Chip.Label>{t('show.follower_count', { count: podcast.subscriber_count })}</Chip.Label></Chip></View><HeroButton isDisabled={saving} variant={subscribed ? 'secondary' : 'primary'} onPress={() => void follow()}><HeroButton.Label>{t(subscribed ? 'show.unsubscribe' : 'show.subscribe')}</HeroButton.Label></HeroButton><Text className="mt-2 text-lg font-bold" style={{ color: theme.text }}>{t('show.episodes')}</Text></View>} renderItem={({ item }) => <NativePressable accessibilityLabel={item.title} feedback="highlight" onPress={() => router.push({ pathname: '/(modals)/podcast-episode', params: { showSlug: podcast.slug, episodeSlug: item.slug } })}><HeroCard className="mb-3 rounded-panel"><HeroCard.Body className="gap-2 p-4"><Text className="text-lg font-bold" style={{ color: theme.text }}>{item.title}</Text>{item.summary ? <Text style={{ color: theme.textSecondary }} numberOfLines={3}>{item.summary}</Text> : null}</HeroCard.Body></HeroCard></NativePressable>} ListEmptyComponent={<EmptyState icon="mic-outline" title={t('show.no_episodes')} />} />}</SafeAreaView>;
+}
+
+/** The show's artwork, or a cover in the show's own colour (as on the website and its card). */
+function ShowCover({ artworkUrl, colour }: { artworkUrl?: string | null; colour: string }) {
+  const artwork = resolveImageUrl(artworkUrl);
+  const cover = <ItemCover colour={colour} icon="mic-outline" size="lg" style={{ width: '100%', height: 150, borderRadius: 20 }} testID="podcast-show-cover" />;
+  return artwork ? <RemoteImage uri={artwork} style={{ width: '100%', height: 180, borderRadius: 20 }} fallback={cover} /> : cover;
 }
 
 export default withRouteGate(PodcastShowScreen, 'podcast-show');

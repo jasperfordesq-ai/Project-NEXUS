@@ -29,6 +29,9 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
+import ItemCover from '@/components/ui/ItemCover';
+import { colourForSeed, coverSeed } from '@/lib/theme/itemColours';
+import { useItemPalette } from '@/lib/theme/useItemColours';
 
 type ReportReason = 'safety' | 'spam' | 'rights' | 'other';
 const REPORT_REASONS: ReportReason[] = ['safety', 'spam', 'rights', 'other'];
@@ -51,6 +54,7 @@ function PodcastEpisodeScreenInner() {
   const { tenant } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const palette = useItemPalette();
   const { show: showToast } = useAppToast();
   const [reacted, setReacted] = useState(false);
   const [savingReaction, setSavingReaction] = useState(false);
@@ -121,6 +125,9 @@ function PodcastEpisodeScreenInner() {
           : !episode ? <EmptyState icon="warning-outline" title={state.error ?? t('episode.not_found')} actionLabel={t('episode.retry')} onAction={() => state.refresh()} /> : <>
           <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 44 }} refreshControl={<RefreshControl refreshing={state.isLoading && Boolean(state.data)} onRefresh={state.refresh} tintColor={primary} colors={[primary]} />}>
             <RefreshFailedNotice error={state.data ? state.error : null} onRetry={state.refresh} />
+            {/* A band in the show's colour — the same as the show page and the website. Square
+                artwork would be cropped hard in a band, so it is not used here (as on the website). */}
+            <ItemCover colour={colourForSeed(coverSeed.podcastShow(episode.show?.slug || showSlug || ''), palette)} icon="mic-outline" size="lg" style={{ width: '100%', height: 112, borderRadius: 20, marginBottom: 12 }} testID="podcast-episode-cover" />
             <HeroCard className="rounded-panel"><HeroCard.Body className="gap-4 p-5">
               <View className="flex-row flex-wrap gap-2"><Chip size="sm" variant="secondary"><Chip.Label>{t(`episode.type.${episode.episode_type}`)}</Chip.Label></Chip>{episode.explicit ? <Chip size="sm" variant="secondary"><Chip.Label>{t('episode.explicit')}</Chip.Label></Chip> : null}</View>
               <Text className="text-2xl font-bold" style={{ color: theme.text }}>{episode.title}</Text>

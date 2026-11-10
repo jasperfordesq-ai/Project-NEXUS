@@ -254,3 +254,18 @@ jest.mock('@/components/ui/Skeleton', () => {
 jest.mock('@/lib/textLanguage/bundledText', () => ({
   readBundledText: (module: unknown) => Promise.resolve(module as string),
 }));
+
+// The server's language check (POST /api/v2/ugc-language) knows nothing in
+// tests, so every Translate button behaves exactly as before it existed: the
+// word check alone decides. A test of the check itself opts in with
+// jest.unmock('@/lib/textLanguage/detectLanguage'). Same as the website's
+// shared test setup.
+jest.mock('@/lib/textLanguage/detectLanguage', () => {
+  const actual = jest.requireActual('@/lib/textLanguage/detectLanguage');
+  return {
+    ...actual,
+    detectTextLanguage: () => Promise.resolve(null),
+    knownTextLanguage: () => null,
+    useTextLanguages: () => ({ settled: true, answers: [] }),
+  };
+});

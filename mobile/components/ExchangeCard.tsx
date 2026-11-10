@@ -14,10 +14,13 @@ import { Ionicons } from '@/components/ui/Icon';
 import { Card as HeroCard, Separator, Surface } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
+import CategoryLabel from '@/components/ui/CategoryLabel';
+import ItemCover from '@/components/ui/ItemCover';
 
 import { type Exchange } from '@/lib/api/exchanges';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { listingColour, useItemPalette, useListingThemeColours } from '@/lib/theme/useItemColours';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { labelWithImageDescription } from '@/lib/utils/imageDescription';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
@@ -33,6 +36,8 @@ function ExchangeCardRow({ exchange, onToggleSave }: ExchangeCardProps) {
   const { t } = useTranslation('exchanges');
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const palette = useItemPalette();
+  const themeColours = useListingThemeColours();
 
   function openDetail() {
     router.push({ pathname: '/(modals)/exchange-detail', params: { id: String(exchange.id) } });
@@ -61,6 +66,16 @@ function ExchangeCardRow({ exchange, onToggleSave }: ExchangeCardProps) {
   const isFavorited = exchange.is_favorited === true;
   const serviceType = exchange.service_type ?? null;
   const distanceKm = typeof exchange.distance_km === 'number' ? exchange.distance_km : null;
+  // Its theme's colour, as on the website's offers page (AWID: "clear categories").
+  const colour = listingColour(exchange, themeColours, palette);
+  const cover = (
+    <ItemCover
+      colour={colour}
+      icon={isOffer ? 'gift-outline' : 'hand-left-outline'}
+      style={{ width: '100%', height: 112 }}
+      testID="exchange-card-cover"
+    />
+  );
 
   function toggleSave() {
     onToggleSave?.(exchange.id, isFavorited);
@@ -77,9 +92,10 @@ function ExchangeCardRow({ exchange, onToggleSave }: ExchangeCardProps) {
     >
       <HeroCard variant="default" className="w-full overflow-hidden">
         <View className="h-1 w-full" style={{ backgroundColor: accent }} />
+        {/* No photo: a cover in the offer's own colour, never an empty space or a grey box. */}
         {imageUrl ? (
-          <RemoteImage uri={imageUrl} style={{ width: '100%', height: 150 }} fallbackIcon="pricetag-outline" testID="exchange-card-image" />
-        ) : null}
+          <RemoteImage uri={imageUrl} style={{ width: '100%', height: 150 }} fallback={cover} testID="exchange-card-image" />
+        ) : cover}
 
         <HeroCard.Header className="flex-row items-start justify-between gap-3 px-4 pb-2 pt-4">
           <View className="min-w-0 flex-1 gap-2">
@@ -89,9 +105,7 @@ function ExchangeCardRow({ exchange, onToggleSave }: ExchangeCardProps) {
                 <Chip.Label>{isOffer ? t('offering') : t('requesting')}</Chip.Label>
               </Chip>
               {exchange.category_name ? (
-                <Chip size="sm" variant="soft" color="default">
-                  <Chip.Label>{exchange.category_name}</Chip.Label>
-                </Chip>
+                <CategoryLabel label={exchange.category_name} colour={colour} testID="exchange-card-category" />
               ) : null}
             </View>
             <Text className="text-lg font-bold leading-6" style={{ color: theme.text }} numberOfLines={2}>

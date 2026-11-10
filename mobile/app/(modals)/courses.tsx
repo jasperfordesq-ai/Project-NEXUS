@@ -27,6 +27,12 @@ import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
+import ItemCover from '@/components/ui/ItemCover';
+import CategoryLabel from '@/components/ui/CategoryLabel';
+import RemoteImage from '@/components/ui/RemoteImage';
+import { colourForSeed, coverSeed } from '@/lib/theme/itemColours';
+import { useItemPalette } from '@/lib/theme/useItemColours';
+import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 
 type CourseTab = 'browse' | 'learning';
 
@@ -37,6 +43,7 @@ function CoursesScreen() {
   const { t } = useTranslation(['courses', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const palette = useItemPalette();
   const [activeTab, setActiveTab] = useState<CourseTab>(tab === 'learning' ? 'learning' : 'browse');
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
@@ -165,11 +172,17 @@ function CoursesScreen() {
             const course = activeTab === 'browse' ? item as Course : (item as CourseEnrollment).course;
             if (!course?.id || !course.title) return null;
             const enrollment = activeTab === 'learning' ? item as CourseEnrollment : null;
+            // Its picture, else its own colour — courses in one category share it — as on the website.
+            const courseColour = colourForSeed(coverSeed.course({ id: course.id, category: course.category }), palette);
+            const coverImage = resolveImageUrl(course.cover_image);
+            const cover = <ItemCover colour={courseColour} icon="school-outline" style={{ width: '100%', height: 96 }} testID={`course-${course.id}-cover`} />;
             return (
               <NativePressable accessibilityLabel={course.title} onPress={() => openCourse(course as Course)} feedback="highlight">
-                <HeroCard className="mb-3 rounded-panel">
+                <HeroCard className="mb-3 overflow-hidden rounded-panel p-0">
+                  {coverImage ? <RemoteImage uri={coverImage} style={{ width: '100%', height: 140 }} fallback={cover} /> : cover}
                   <HeroCard.Body className="gap-2 p-4">
                     <View className="flex-row flex-wrap items-center gap-2">
+                      {course.category?.name ? <CategoryLabel label={course.category.name} colour={courseColour} testID={`course-${course.id}-category`} /> : null}
                       {course.level ? <Chip size={largeText ? 'md' : 'sm'} variant="secondary"><Chip.Label>{t(`level.${course.level}`)}</Chip.Label></Chip> : null}
                       {enrollment ? <Chip size={largeText ? 'md' : 'sm'} variant="secondary"><Chip.Label>{Math.round(Number(enrollment.progress_percent))}%</Chip.Label></Chip> : null}
                     </View>

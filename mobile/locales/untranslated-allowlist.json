@@ -10,6 +10,7 @@
       "event_communications.json:version": "Version is the same word in German",
       "event_recurrence_blueprints.json:history_version": "Version is the same word in German",
       "event_templates.json:templates.mobile.optionalDatePlaceholder": "Literal machine-readable date-time format",
+      "home.json:monthHighlight.title": "\"in\" is the same word in German (\"November in hOUR Timebank\"); the rest are placeholders. Same as the website's German.",
       "volunteeringVolunteer.json:incident.organisationLabel": "Organisation and optional are both standard German"
     },
     "fr": {
@@ -44,6 +45,7 @@
       "gamification.json:challenges.xpReward": "Product XP unit",
       "gamification.json:journeys.xpReward": "Product XP unit",
       "gamification.json:shop.xpCost": "Product XP unit",
+      "home.json:monthHighlight.title": "Irish \"in\" (the preposition, as before a name); the rest are placeholders. Same as the website's Irish.",
       "marketplace.json:map.radiusOption": "International kilometre unit"
     },
     "es": {

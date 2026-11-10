@@ -349,5 +349,12 @@
     "errorRequired": "Bitte gib deine Stadt oder deinen Ort ein.",
     "errorLocation": "Wir konnten diesen Ort nicht speichern. Bitte prüfe die Eingabe und versuche es erneut.",
     "errorGeneric": "Dein Standort konnte nicht gespeichert werden. Bitte versuche es erneut."
+  },
+  "monthHighlight": {
+    "title": "{{month}} in {{community}}",
+    "subtitle": "Was alle in diesem Monat bisher geteilt haben.",
+    "hours": "Geteilte Stunden",
+    "members": "Neue Mitglieder",
+    "listings": "Neue Angebote und Anfragen"
   }
 }

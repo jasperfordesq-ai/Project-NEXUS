@@ -349,5 +349,12 @@
     "errorRequired": "Indique a sua localidade.",
     "errorLocation": "Não foi possível guardar esse local. Verifique-o e tente novamente.",
     "errorGeneric": "Não foi possível guardar a sua localização. Tente novamente."
+  },
+  "monthHighlight": {
+    "title": "{{month}} em {{community}}",
+    "subtitle": "O que todos partilharam até agora este mês.",
+    "hours": "Horas partilhadas",
+    "members": "Novos membros",
+    "listings": "Novas ofertas e pedidos"
   }
 }

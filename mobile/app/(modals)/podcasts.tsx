@@ -20,11 +20,17 @@ import NativePressable from '@/components/ui/NativePressable';
 import { Ionicons } from '@/components/ui/Icon';
 import SearchInput from '@/components/ui/SearchInput';
 import { Chip } from '@/components/ui/StatusChip';
+import CategoryLabel from '@/components/ui/CategoryLabel';
+import ItemCover from '@/components/ui/ItemCover';
+import RemoteImage from '@/components/ui/RemoteImage';
 import { getPodcastShows, type PodcastPage, type PodcastShow } from '@/lib/api/podcasts';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
+import { colourForSeed, coverSeed } from '@/lib/theme/itemColours';
+import { useItemPalette } from '@/lib/theme/useItemColours';
+import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 
 function PodcastsScreen() {
   const { t } = useTranslation(['podcasts', 'common']);
@@ -97,11 +103,40 @@ function PodcastsScreen() {
           ListFooterComponent={error && items.length > 0
             ? <ErrorState subtitle={error} onRetry={requestedCursor.current ? loadMore : refresh} isRetrying={isLoading || isLoadingMore} />
             : isLoadingMore ? <View className="py-6"><LoadingSpinner /></View> : null}
-          renderItem={({ item }) => <NativePressable accessibilityLabel={item.title} feedback="highlight" onPress={() => router.push({ pathname: '/(modals)/podcast-show', params: { slug: item.slug } })}><HeroCard className="mb-3 rounded-panel"><HeroCard.Body className="gap-2 p-4"><View className="flex-row flex-wrap gap-2">{item.category ? <Chip size="sm" variant="secondary"><Chip.Label>{item.category}</Chip.Label></Chip> : null}<Chip size="sm" variant="secondary"><Chip.Label>{t('show.episode_count', { count: item.episode_count })}</Chip.Label></Chip></View><Text className="text-lg font-bold" style={{ color: theme.text }}>{item.title}</Text>{item.summary ? <Text className="leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>{item.summary}</Text> : null}</HeroCard.Body></HeroCard></NativePressable>}
+          renderItem={({ item }) => <PodcastShowCard show={item} />}
           ListEmptyComponent={isLoading ? <View className="py-12"><LoadingSpinner /></View> : <EmptyState icon={error ? 'warning-outline' : 'mic-outline'} title={error ?? t('browse.empty')} subtitle={error ? undefined : t('browse.empty_hint')} actionLabel={error ? t('browse.retry') : undefined} onAction={error ? () => refresh() : undefined} />}
         />
       </SafeAreaView>
     </ModalErrorBoundary>
+  );
+}
+
+/**
+ * A show in the list: its artwork, or a cover in the show's own colour (the same as its
+ * page here and on the website), and its category in that category's colour.
+ */
+function PodcastShowCard({ show }: { show: PodcastShow }) {
+  const { t } = useTranslation('podcasts');
+  const theme = useTheme();
+  const palette = useItemPalette();
+  const artwork = resolveImageUrl(show.artwork_url);
+  const cover = <ItemCover colour={colourForSeed(coverSeed.podcastShow(show.slug), palette)} icon="mic-outline" size="sm" style={{ width: 64, height: 64, borderRadius: 16 }} testID="podcast-card-cover" />;
+  return (
+    <NativePressable accessibilityLabel={show.title} feedback="highlight" onPress={() => router.push({ pathname: '/(modals)/podcast-show', params: { slug: show.slug } })}>
+      <HeroCard className="mb-3 rounded-panel">
+        <HeroCard.Body className="flex-row gap-3 p-4">
+          {artwork ? <RemoteImage uri={artwork} style={{ width: 64, height: 64, borderRadius: 16 }} fallback={cover} /> : cover}
+          <View className="min-w-0 flex-1 gap-2">
+            <View className="flex-row flex-wrap gap-2">
+              {show.category ? <CategoryLabel label={show.category} colour={colourForSeed(coverSeed.podcastCategory(show.category), palette)} testID="podcast-card-category" /> : null}
+              <Chip size="sm" variant="secondary"><Chip.Label>{t('show.episode_count', { count: show.episode_count })}</Chip.Label></Chip>
+            </View>
+            <Text className="text-lg font-bold" style={{ color: theme.text }}>{show.title}</Text>
+            {show.summary ? <Text className="leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>{show.summary}</Text> : null}
+          </View>
+        </HeroCard.Body>
+      </HeroCard>
+    </NativePressable>
   );
 }
 

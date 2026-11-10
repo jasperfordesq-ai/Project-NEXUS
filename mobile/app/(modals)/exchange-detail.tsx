@@ -64,6 +64,9 @@ import { ApiResponseError } from '@/lib/api/client';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { withRouteGate } from '@/components/withRouteGate';
 import RemoteImage from '@/components/ui/RemoteImage';
+import ItemCover from '@/components/ui/ItemCover';
+import CategoryLabel from '@/components/ui/CategoryLabel';
+import { listingColour, useItemPalette, useListingThemeColours } from '@/lib/theme/useItemColours';
 
 interface DetailStateProps {
   title: string;
@@ -110,6 +113,8 @@ function ExchangeDetailModalInner() {
   const { t } = useTranslation(['exchanges', 'common']);
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const primary = usePrimaryColor();
+  const palette = useItemPalette();
+  const themeColours = useListingThemeColours();
   const onPrimary = contrastText(primary);
   const theme = useTheme();
   const bottomInset = useBottomInset();
@@ -299,6 +304,17 @@ function ExchangeDetailModalInner() {
   const activeImage = listingImages[Math.min(activeImageIndex, Math.max(listingImages.length - 1, 0))] ?? null;
   const accent = listing.type === 'offer' ? theme.success : theme.warning;
   const categoryLabel = listing.category_name ?? t('category');
+  // The same colour as this offer's card and its page on the website.
+  const colour = listingColour(listing, themeColours, palette);
+  const cover = (
+    <ItemCover
+      colour={colour}
+      icon={listing.type === 'offer' ? 'gift-outline' : 'hand-left-outline'}
+      size="lg"
+      style={{ width: '100%', height: 160 }}
+      testID="exchange-detail-cover"
+    />
+  );
   const locationLabel = listing.location ?? t('detail.onlineOrFlexible');
   const serviceTypeLabel = listing.service_type ? t(`serviceType.${listing.service_type}`) : null;
   const tags = Array.isArray(listing.skill_tags) ? listing.skill_tags.filter(Boolean) : [];
@@ -611,7 +627,7 @@ function ExchangeDetailModalInner() {
           <View className="h-1 w-full" style={{ backgroundColor: accent }} />
           {activeImage ? (
             <View className="gap-2">
-              <RemoteImage uri={activeImage.url} style={{ width: '100%', height: 180 }} contentFit="cover" accessibilityLabel={activeImage.altText ?? listing.title} />
+              <RemoteImage uri={activeImage.url} style={{ width: '100%', height: 180 }} contentFit="cover" accessibilityLabel={activeImage.altText ?? listing.title} fallback={cover} />
               {listingImages.length > 1 ? (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 12, paddingBottom: 10 }}>
                   {listingImages.map((image, index) => {
@@ -634,17 +650,14 @@ function ExchangeDetailModalInner() {
                 </ScrollView>
               ) : null}
             </View>
-          ) : null}
+          ) : cover}
           <HeroCard.Body className="gap-4 px-4 py-4">
             <View className="flex-row flex-wrap gap-2">
               <Chip color={exchange.type === 'offer' ? 'success' : 'warning'} size="sm" variant="soft">
                 <Ionicons name={exchange.type === 'offer' ? 'gift-outline' : 'help-circle-outline'} size={12} color={accent} />
                 <Chip.Label>{exchange.type === 'offer' ? t('offering') : t('requesting')}</Chip.Label>
               </Chip>
-              <Chip color="default" size="sm" variant="soft">
-                <Ionicons name="pricetag-outline" size={12} color={theme.textMuted} />
-                <Chip.Label>{categoryLabel}</Chip.Label>
-              </Chip>
+              <CategoryLabel label={categoryLabel} colour={colour} icon="pricetag-outline" testID="exchange-detail-category" />
             </View>
             <HeroCard.Title className="text-2xl leading-8">{exchange.title ?? ''}</HeroCard.Title>
             {exchange.description ? (

@@ -173,11 +173,21 @@ export function completeExchangeRequest(id: number): Promise<{ data: ExchangeReq
 export function confirmExchangeRequest(
   id: number,
   hours: number,
-): Promise<{ data: ExchangeRequest & { message?: string } }> {
-  return api.post<{ data: ExchangeRequest & { message?: string } }>(
+): Promise<{ data: ExchangeRequest & { message?: string; thanks?: ExchangeYearThanks } }> {
+  return api.post<{ data: ExchangeRequest & { message?: string; thanks?: ExchangeYearThanks } }>(
     `${API_V2}/exchanges/${id}/confirm`,
     { hours },
   );
+}
+
+/**
+ * The member's own year so far, sent with a confirmation that completed the exchange
+ * (`thanks`): how many different people they have exchanged with this calendar year in
+ * this community, and how many hours.
+ */
+export interface ExchangeYearThanks {
+  neighbours_this_year: number;
+  hours_this_year: number;
 }
 
 /**

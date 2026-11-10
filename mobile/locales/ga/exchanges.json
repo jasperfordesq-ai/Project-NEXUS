@@ -593,5 +593,13 @@
     },
     "rejectedReason": "An chúis a tugadh: {{reason}}",
     "newListing": "Liostáil nua"
+  },
+  "thanks": {
+    "title": "Go raibh maith agat!",
+    "body": "Tá do mhalartú críochnaithe agus aistríodh na huaireanta. Neartaíonn gach malartú an pobal beagán.",
+    "neighboursLabel": "Daoine ar mhalartaigh tú leo i mbliana",
+    "hoursLabel": "Uaireanta malartaithe i mbliana",
+    "close": "Dún",
+    "sendMessage": "Seol teachtaireacht bhuíochais chuig {{name}}"
   }
 }

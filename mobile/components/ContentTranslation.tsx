@@ -12,7 +12,16 @@ import { useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useUgcTranslationPreferences } from '@/lib/context/UgcTranslationPreferencesContext';
 import { toPlainText } from '@/lib/utils/plainText';
-import { alreadyInReaderLanguage, useReaderVocabulary } from '@/lib/textLanguage/readerVocabulary';
+import { alreadyInReaderLanguage, readerVocabulary, useReaderVocabulary } from '@/lib/textLanguage/readerVocabulary';
+import { useTextLanguages, writtenInReaderLanguage } from '@/lib/textLanguage/detectLanguage';
+
+/**
+ * 🔴 Private conversations are never sent to the server's language check
+ * (POST /v2/ugc-language) — they keep the word check alone, as on the website.
+ * `message` is a member-to-member message (thread.tsx). Federated messages do not
+ * use this component at all (FederationDirectoryScreen keeps its own word check).
+ */
+const PRIVATE_CONTENT_TYPES: ReadonlySet<string> = new Set(['message']);
 
 type Props = {
   contentType: string;
@@ -51,7 +60,21 @@ export default function ContentTranslation({ contentType, contentId, fields, com
     // The serialised entries stand for their contents.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [JSON.stringify(entries), locale, vocabularyReady]);
-  const enabled = !disabled && tenant?.translation?.enabled !== false && entries.length > 0 && !inReaderLanguage;
+  const couldShow = !disabled && tenant?.translation?.enabled !== false && entries.length > 0 && !inReaderLanguage;
+  // Owner, 9 Nov 2026: Translate only when the text is in another language. Where the
+  // words alone cannot tell (short texts such as a group's name), the server's language
+  // service is asked — every text on a screen in one request, each remembered. The button
+  // waits while it answers, and stays whenever the answer is not known (no engine, a
+  // failure, no signed-in member, a private message). Same rule as the website.
+  const judgedParts = useMemo(() => entries.map(([, text]) => text),
+    // The serialised entries stand for their contents.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(entries)]);
+  const mayAsk = preferences.identity !== '' && !PRIVATE_CONTENT_TYPES.has(contentType);
+  const languages = useTextLanguages(judgedParts, couldShow && mayAsk);
+  const languageIsReaders = languages.settled
+    && writtenInReaderLanguage(judgedParts, languages.answers, locale, readerVocabulary(locale));
+  const enabled = couldShow && languages.settled && !languageIsReaders;
   const key = JSON.stringify([tenant?.id, preferences.identity, preferences.automatic, i18n?.language, locale, contentType, contentId, entries, companionEntries, enabled]);
   const currentKey = useRef(key); currentKey.current = key;
   const generation = useRef(0);

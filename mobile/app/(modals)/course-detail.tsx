@@ -28,6 +28,12 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
+import ItemCover from '@/components/ui/ItemCover';
+import CategoryLabel from '@/components/ui/CategoryLabel';
+import RemoteImage from '@/components/ui/RemoteImage';
+import { colourForSeed, coverSeed } from '@/lib/theme/itemColours';
+import { useItemPalette } from '@/lib/theme/useItemColours';
+import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 
 function CourseDetailScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -47,6 +53,7 @@ function CourseDetailScreenInner() {
   const { t } = useTranslation(['courses', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const palette = useItemPalette();
   const { show } = useAppToast();
   const { confirm, confirmDialog, dismiss } = useConfirm();
   const [enrolling, setEnrolling] = useState(false);
@@ -148,9 +155,11 @@ function CourseDetailScreenInner() {
           <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 44 }} refreshControl={<RefreshControl refreshing={isLoading && Boolean(course)} onRefresh={refresh} tintColor={primary} colors={[primary]} />}>
             <RefreshFailedNotice error={course ? error : null} onRetry={refresh} />
             <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
-              <View className="h-1" style={{ backgroundColor: primary }} />
+              {/* Its picture, else its own colour — the same as its card and on the website. */}
+              <CourseCover course={course} colour={colourForSeed(coverSeed.course(course), palette)} />
               <HeroCard.Body className="gap-3 p-5">
                 <View testID="course-detail-status" className={`${largeText ? 'items-start' : 'flex-row flex-wrap'} gap-2`}>
+                  {course.category?.name ? <CategoryLabel label={course.category.name} colour={colourForSeed(coverSeed.course(course), palette)} testID="course-detail-category" /> : null}
                   <Chip testID="course-detail-level" size={largeText ? 'md' : 'sm'} variant="secondary"><Chip.Label>{t(`level.${course.level}`)}</Chip.Label></Chip>
                   <Chip size={largeText ? 'md' : 'sm'} variant="secondary"><Chip.Label>{(parseDecimalInput(String(course.credit_cost ?? '')) ?? 0) === 0 ? t('detail.free') : t('detail.cost', { credits: parseDecimalInput(String(course.credit_cost ?? '')) ?? 0 })}</Chip.Label></Chip>
                 </View>
@@ -191,6 +200,12 @@ function CourseDetailScreenInner() {
         {course && !refused ? confirmDialog : null}
     </SafeAreaView>
   );
+}
+
+function CourseCover({ course, colour }: { course: { cover_image?: string | null }; colour: string }) {
+  const image = resolveImageUrl(course.cover_image);
+  const cover = <ItemCover colour={colour} icon="school-outline" size="lg" style={{ width: '100%', height: 120 }} testID="course-detail-cover" />;
+  return image ? <RemoteImage uri={image} style={{ width: '100%', height: 180 }} fallback={cover} /> : cover;
 }
 
 export default withRouteGate(CourseDetailScreen, 'course-detail');

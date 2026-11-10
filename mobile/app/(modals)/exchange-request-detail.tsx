@@ -42,6 +42,7 @@ import {
   type DisputeReason,
   type ExchangeRequest,
   type ExchangeRequestStatus,
+  type ExchangeYearThanks,
 } from '@/lib/api/exchangeRequests';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { isRefusalStatus } from '@/lib/api/refusal';
@@ -58,6 +59,7 @@ import ErrorState from '@/components/ui/ErrorState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import ExchangeThanks from '@/components/exchanges/ExchangeThanks';
 import { dateLocale } from '@/lib/utils/dateLocale';
 
 import { formatDecimal, parseDecimalInput } from '@/lib/utils/decimal';
@@ -115,6 +117,9 @@ function ExchangeRequestDetailScreen() {
 
   const exchange = (data?.data ?? null) as ExchangeRequest | null;
   const viewerId = user?.id ?? null;
+  const thanksPartner = exchange && viewerId
+    ? (exchange.requester?.id === viewerId ? exchange.provider : exchange.requester)
+    : null;
 
   const actions = useMemo(
     () =>
@@ -134,6 +139,10 @@ function ExchangeRequestDetailScreen() {
   );
 
   const [busy, setBusy] = useState<string | null>(null);
+  // The thank-you shown when THIS member's confirmation completed the exchange (AWID
+  // feedback, Nov 2026: "warmth, and community"), with their year so far.
+  const [thanks, setThanks] = useState<ExchangeYearThanks | null>(null);
+  const { hasModule } = useTenant();
   const pendingActionRef = useRef(false);
   const mountedRef = useRef(true);
   useEffect(() => {
@@ -249,11 +258,19 @@ function ExchangeRequestDetailScreen() {
       return;
     }
     setConfirmSheetOpen(false);
-    await run(
+    // Filled inside the request, read after it (an object, so the type is not narrowed to null).
+    const outcome: { thanks: ExchangeYearThanks | null } = { thanks: null };
+    const confirmed = await run(
       'confirm',
-      () => confirmExchangeRequest(exchange.id, hours),
+      async () => {
+        const response = await confirmExchangeRequest(exchange.id, hours);
+        // Only when this confirmation completed it: the server then adds the member's year.
+        const result = response?.data;
+        if (result?.status === 'completed' && result.thanks) outcome.thanks = result.thanks;
+      },
       t('requests.confirmedToast'),
     );
+    if (confirmed && outcome.thanks && mountedRef.current) setThanks(outcome.thanks);
   }, [exchange, hoursInput, run, showToast, t]);
 
   /**
@@ -490,6 +507,19 @@ function ExchangeRequestDetailScreen() {
           contentContainerStyle={{ paddingBottom: 40 }}
           refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
         >
+          {thanks ? (
+            <ExchangeThanks
+              neighbours={thanks.neighbours_this_year}
+              hours={thanks.hours_this_year}
+              onClose={() => setThanks(null)}
+              partnerName={thanksPartner?.name?.split(' ')[0] ?? null}
+              // Only where members can message one another, as on the website.
+              onSendMessage={thanksPartner?.id && hasModule('messages') ? () => router.push({
+                pathname: '/(modals)/thread',
+                params: { recipientId: String(thanksPartner.id), ...(thanksPartner.name ? { name: thanksPartner.name } : {}) },
+              } as never) : null}
+            />
+          ) : null}
           <Surface variant="secondary" className="mt-4 rounded-2xl p-4">
             <Chip size="sm" variant="soft">
               <Chip.Label>{t(`requests.status.${exchange.status}`)}</Chip.Label>

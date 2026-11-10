@@ -349,5 +349,12 @@
     "errorRequired": "Inserisci la tua città o il tuo paese.",
     "errorLocation": "Non siamo riusciti a salvare quel luogo. Controllalo e riprova.",
     "errorGeneric": "Non siamo riusciti a salvare la tua posizione. Riprova."
+  },
+  "monthHighlight": {
+    "title": "{{month}} a {{community}}",
+    "subtitle": "Quello che tutti hanno condiviso finora questo mese.",
+    "hours": "Ore condivise",
+    "members": "Nuovi membri",
+    "listings": "Nuove offerte e richieste"
   }
 }

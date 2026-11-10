@@ -20,6 +20,10 @@ import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import RemoteImage from '@/components/ui/RemoteImage';
+import ItemCover from '@/components/ui/ItemCover';
+import CategoryLabel from '@/components/ui/CategoryLabel';
+import { appSeed, colourForSeed, coverSeed } from '@/lib/theme/itemColours';
+import { useItemPalette } from '@/lib/theme/useItemColours';
 
 /**
  * The price a member sees on a card and at the top of a listing.
@@ -69,6 +73,9 @@ function MarketplaceListingCardRow({
   const { tenant } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const palette = useItemPalette();
+  // The item's own colour, as on the website, where it has no photo (was a grey box).
+  const cover = <ItemCover colour={colourForSeed(appSeed.marketplaceItem(item.id), palette)} icon="bag-handle-outline" style={{ width: '100%', height: '100%' }} testID="marketplace-card-cover" />;
   const accent =
     item.price_type === 'free'
       ? theme.success
@@ -101,13 +108,11 @@ function MarketplaceListingCardRow({
               <RemoteImage
                 uri={imageUrl}
                 className="h-full w-full"
-                fallbackIcon="bag-handle-outline"
+                fallback={cover}
                 // What the seller wrote for screen-reader users, else the listing title.
                 accessibilityLabel={(item.image ? item.image.alt_text : item.images?.[0]?.alt_text)?.trim() || item.title}
               />
-            ) : (
-              <Ionicons name="bag-handle-outline" size={30} color={accent} />
-            )}
+            ) : cover}
           </Surface>
 
           <View className="min-w-0 flex-1">
@@ -151,9 +156,12 @@ function MarketplaceListingCardRow({
             </Chip>
           ) : null}
           {item.category?.name ? (
-            <Chip size="sm" variant="secondary">
-              <Chip.Label>{item.category.name}</Chip.Label>
-            </Chip>
+            // Each category in its own colour, as on the website's category chips.
+            <CategoryLabel
+              label={item.category.name}
+              colour={colourForSeed(coverSeed.marketplaceCategory(item.category.slug || item.category.id), palette)}
+              testID="marketplace-card-category"
+            />
           ) : null}
           {inventory ? (
             <Chip size="sm" variant="secondary">

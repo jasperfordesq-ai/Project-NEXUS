@@ -30,6 +30,9 @@ import SearchInput from '@/components/ui/SearchInput';
 import { SkeletonBox } from '@/components/ui/Skeleton';
 import { withRouteGate } from '@/components/withRouteGate';
 import RemoteImage from '@/components/ui/RemoteImage';
+import ItemCover from '@/components/ui/ItemCover';
+import { appSeed, colourForSeed } from '@/lib/theme/itemColours';
+import { useItemPalette } from '@/lib/theme/useItemColours';
 import { groupPictureDescription, labelWithImageDescription } from '@/lib/utils/imageDescription';
 
 /** `joined` is "My Groups": the groups the signed-in member belongs to. */
@@ -176,23 +179,17 @@ function FilterButton({
   );
 }
 
-function GroupImage({
-  group,
-  primary,
-}: {
-  group: ApiGroup;
-  primary: string;
-}) {
+function GroupImage({ group }: { group: ApiGroup }) {
   const image = groupCover(group);
+  // The group's own colour, as on the website (each group its own, not all the
+  // community's one colour, so a list of groups is not a column of identical tiles).
+  const colour = colourForSeed(appSeed.group(group.id), useItemPalette());
+  const cover = <ItemCover colour={colour} icon="people-outline" size="sm" style={{ width: 64, height: 64, borderRadius: 16 }} testID="group-card-cover" />;
   if (image) {
-    return <RemoteImage uri={image} className="size-16 rounded-2xl bg-surface-secondary" fallbackIcon="people-outline" />;
+    return <RemoteImage uri={image} className="size-16 rounded-2xl bg-surface-secondary" fallback={cover} />;
   }
 
-  return (
-    <View className="size-16 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
-      <Ionicons name="people-outline" size={26} color={primary} />
-    </View>
-  );
+  return cover;
 }
 
 function GroupCard({
@@ -223,7 +220,7 @@ function GroupCard({
       <HeroCard className="min-h-[148px] w-full rounded-panel p-0">
         <HeroCard.Body className="gap-4 p-4">
           <View className="flex-row gap-3">
-            <GroupImage group={item} primary={primary} />
+            <GroupImage group={item} />
             <View className="min-w-0 flex-1 gap-2">
               <View className="flex-row items-start gap-2">
                 <View className="min-w-0 flex-1">

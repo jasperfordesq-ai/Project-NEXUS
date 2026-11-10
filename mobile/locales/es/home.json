@@ -349,5 +349,12 @@
     "errorRequired": "Escribe tu pueblo o ciudad.",
     "errorLocation": "No pudimos guardar ese lugar. Revísalo e inténtalo de nuevo.",
     "errorGeneric": "No pudimos guardar tu ubicación. Inténtalo de nuevo."
+  },
+  "monthHighlight": {
+    "title": "{{month}} en {{community}}",
+    "subtitle": "Lo que todos han compartido en lo que va de mes.",
+    "hours": "Horas compartidas",
+    "members": "Nuevos miembros",
+    "listings": "Nuevas ofertas y solicitudes"
   }
 }

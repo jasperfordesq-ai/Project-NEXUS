@@ -112,6 +112,31 @@ describe('ExchangeCard', () => {
     expect(getByLabelText('Garden help')).toBeTruthy();
   });
 
+  /**
+   * AWID feedback, Nov 2026 ("attractive visuals… clear categories"): an offer with no photo
+   * shows a cover in its own colour (the website's colour for it), and its category label
+   * wears the same colour — where it used to leave an empty space and a grey label.
+   */
+  it("shows a cover in the offer's own colour when it has no photo, and its category in that colour", () => {
+    const { bandColours, colourForSeed, coverColours, paletteFor } = require('@/lib/theme/itemColours');
+    const { themeStore } = require('@/lib/theme/themeStore');
+    const { Stop } = require('react-native-svg');
+    const { StyleSheet } = require('react-native');
+    const scheme = themeStore.getSnapshot();
+    const colour = colourForSeed(42, paletteFor(null));
+
+    const screen = render(<ExchangeCard exchange={exchange} />);
+
+    expect(screen.getByTestId('exchange-card-cover', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.UNSAFE_getAllByType(Stop)[0].props.stopColor).toBe(coverColours(colour, scheme).stops[0]);
+    expect(StyleSheet.flatten(screen.getByText('Gardening').props.style)).toEqual(expect.objectContaining({ color: bandColours(colour, scheme).text }));
+  });
+
+  it('shows the photo rather than a cover when there is one', () => {
+    const screen = render(<ExchangeCard exchange={{ ...exchange, image_url: '/uploads/listings/garden.jpg' }} />);
+    expect(screen.queryByTestId('exchange-card-cover', { includeHiddenElements: true })).toBeNull();
+  });
+
   it('shows distance returned by nearby listing searches', () => {
     const { getByText } = render(<ExchangeCard exchange={exchange} />);
 

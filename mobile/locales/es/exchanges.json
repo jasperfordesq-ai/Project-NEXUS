@@ -593,5 +593,13 @@
     },
     "rejectedReason": "Motivo indicado: {{reason}}",
     "newListing": "Nuevo anuncio"
+  },
+  "thanks": {
+    "title": "¡Gracias!",
+    "body": "Tu intercambio se ha completado y las horas se han transferido. Cada intercambio hace la comunidad un poco más fuerte.",
+    "neighboursLabel": "Personas con las que has intercambiado este año",
+    "hoursLabel": "Horas intercambiadas este año",
+    "close": "Cerrar",
+    "sendMessage": "Enviar a {{name}} un mensaje de agradecimiento"
   }
 }

@@ -32,6 +32,10 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatEventSchedule } from '@/lib/utils/eventDateTime';
 import { withRouteGate } from '@/components/withRouteGate';
 import RemoteImage from '@/components/ui/RemoteImage';
+import ItemCover from '@/components/ui/ItemCover';
+import CategoryLabel from '@/components/ui/CategoryLabel';
+import { bandColours, colourForSeed, coverColours, coverSeed } from '@/lib/theme/itemColours';
+import { useColourScheme, useItemPalette } from '@/lib/theme/useItemColours';
 import { labelWithImageDescription } from '@/lib/utils/imageDescription';
 
 function extractEventsPage(r: CanonicalEventsResponse) {
@@ -362,13 +366,24 @@ function EventCard({
   onPress: () => void;
 }) {
   const theme = useTheme();
+  const palette = useItemPalette();
+  const scheme = useColourScheme();
   const schedule = formatEventSchedule(event.schedule, dateLocale());
   const month = schedule.monthLabel ?? '-';
   const day = schedule.dayLabel ?? '-';
   const weekday = schedule.weekdayLabel ?? '';
   const time = schedule.allDay ? t('allDay') : schedule.timeLabel ?? '-';
   const coverImage = resolveImageUrl(event.primary_image?.url);
-  const accent = event.category?.colour ?? '#F59E0B';
+  // The website's colour for this event's date tile: events in one category share
+  // it, others have their own (AWID: "clear categories"). 🔴 `category.colour` is a
+  // stored NAME ('blue' by default), not a hex: used as a colour it painted the strip
+  // pure #0000ff and, through withAlpha's fallback, the date tile grey.
+  const colour = colourForSeed(coverSeed.event(event.id, event.category?.id), palette);
+  const band = bandColours(colour, scheme);
+  const accent = coverColours(colour, scheme).dot;
+  const cover = (
+    <ItemCover colour={colour} icon="calendar-outline" style={{ width: '100%', height: 104 }} testID="event-card-cover" />
+  );
   const lifecycleChip = event.schedule.operational_state === 'cancelled'
     ? { label: t('cancelled'), color: 'danger' as const }
     : event.schedule.operational_state === 'postponed'
@@ -394,25 +409,24 @@ function EventCard({
       <HeroCard variant="default" className="w-full overflow-hidden">
         <View className="h-1 w-full" style={{ backgroundColor: accent }} />
         {coverImage ? (
-          <RemoteImage uri={coverImage} style={{ width: '100%', height: 138 }} contentFit="cover" fallbackIcon="calendar-outline" />
-        ) : null}
+          <RemoteImage uri={coverImage} style={{ width: '100%', height: 138 }} contentFit="cover" fallback={cover} />
+        ) : cover}
         <HeroCard.Body className="gap-3 px-4 py-4">
           <View className="flex-row gap-3">
             <View
               className="w-14 items-center justify-center rounded-xl border px-2 py-2"
-              style={{ backgroundColor: withAlpha(accent, 0.12), borderColor: withAlpha(accent, 0.28) }}
+              style={{ backgroundColor: band.background, borderColor: withAlpha(accent, 0.28) }}
+              testID="event-card-date"
             >
-              <Text className="text-[11px] font-semibold uppercase" style={{ color: accent }}>{month}</Text>
-              <Text className="text-2xl font-bold" style={{ color: theme.text }}>{day}</Text>
-              {weekday ? <Text className="text-[10px]" style={{ color: theme.textSecondary }}>{weekday}</Text> : null}
+              <Text className="text-[11px] font-semibold uppercase" style={{ color: band.text }}>{month}</Text>
+              <Text className="text-2xl font-bold" style={{ color: band.text }}>{day}</Text>
+              {weekday ? <Text className="text-[10px]" style={{ color: band.text }}>{weekday}</Text> : null}
             </View>
 
             <View className="min-w-0 flex-1 gap-2">
               <View className="flex-row flex-wrap items-center gap-2">
-                {event.category ? (
-                  <Chip size="sm" variant="soft" color="warning">
-                    <Chip.Label>{event.category.name}</Chip.Label>
-                  </Chip>
+                {event.category?.name ? (
+                  <CategoryLabel label={event.category.name} colour={colour} testID="event-card-category" />
                 ) : null}
                 {lifecycleChip ? (
                   <Chip size="sm" variant="soft" color={lifecycleChip.color}>

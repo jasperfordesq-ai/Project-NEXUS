@@ -28,6 +28,7 @@ import CommentSheet from '@/components/comments/CommentSheet';
 import ReactorsSheet from '@/components/reactions/ReactorsSheet';
 import LocationMissingCard from '@/components/LocationMissingCard';
 import PushPermissionCard from '@/components/PushPermissionCard';
+import CommunityMonthHighlight from '@/components/CommunityMonthHighlight';
 import TenantBanner from '@/components/TenantBanner';
 import { FeedItemSkeleton } from '@/components/ui/Skeleton';
 import FAB from '@/components/ui/FAB';
@@ -117,10 +118,13 @@ export default function HomeScreen() {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const wasRefreshingRef = useRef(false);
+  // Pull to refresh also re-reads the month's community totals.
+  const [highlightRefreshKey, setHighlightRefreshKey] = useState(0);
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     wasRefreshingRef.current = true;
+    setHighlightRefreshKey((key) => key + 1);
     refresh();
   }, [refresh]);
 
@@ -530,6 +534,13 @@ export default function HomeScreen() {
                 </Surface>
               </NativePressable>
             ) : null}
+            {/*
+              "November in {community}": what everyone has shared so far this month, as on the
+              website's dashboard (AWID feedback, Nov 2026: "energy, warmth, and community").
+              Not part of the feed, so it shows where the feed is switched off too, and it
+              renders nothing in a quiet month or when the totals cannot load.
+            */}
+            <CommunityMonthHighlight refreshKey={highlightRefreshKey} />
           </View>
         }
         ListEmptyComponent={

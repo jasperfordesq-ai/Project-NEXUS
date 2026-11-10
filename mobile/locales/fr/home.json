@@ -349,5 +349,12 @@
     "errorRequired": "Veuillez saisir votre ville ou commune.",
     "errorLocation": "Nous n'avons pas pu enregistrer ce lieu. Vérifiez-le et réessayez.",
     "errorGeneric": "Nous n'avons pas pu enregistrer votre localisation. Veuillez réessayer."
+  },
+  "monthHighlight": {
+    "title": "{{month}} à {{community}}",
+    "subtitle": "Ce que chacun a partagé depuis le début du mois.",
+    "hours": "Heures partagées",
+    "members": "Nouveaux membres",
+    "listings": "Nouvelles offres et demandes"
   }
 }

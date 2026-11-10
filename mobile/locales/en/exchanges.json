@@ -593,5 +593,13 @@
     },
     "rejectedReason": "Reason given: {{reason}}",
     "newListing": "New listing"
+  },
+  "thanks": {
+    "title": "Thank you!",
+    "body": "Your exchange is complete and the hours have moved. Every exchange makes the community a little stronger.",
+    "neighboursLabel": "People you've exchanged with this year",
+    "hoursLabel": "Hours exchanged this year",
+    "close": "Close",
+    "sendMessage": "Send {{name}} a thank-you message"
   }
 }

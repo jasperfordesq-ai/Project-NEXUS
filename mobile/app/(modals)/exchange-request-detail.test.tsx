@@ -16,6 +16,8 @@ const mockConfirm = jest.fn();
 const mockCancel = jest.fn();
 const mockShowToast = jest.fn();
 const mockBack = jest.fn();
+const mockPush = jest.fn();
+let mockMessagesOn = true;
 let mockViewerId = 674;
 let mockRouteId = '61';
 let mockTenantSlug = 'hour-timebank';
@@ -75,7 +77,7 @@ jest.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: mockViewerId } }),
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: mockTenantSlug } }),
+  useTenant: () => ({ tenant: { slug: mockTenantSlug }, hasModule: (name: string) => name !== 'messages' || mockMessagesOn }),
 }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({ bg: '#fff', surface: '#f8f9fa', text: '#000', border: '#ddd', warning: '#aa4c00' }),
@@ -112,7 +114,7 @@ jest.mock('@/lib/api/describeApiError', () => ({
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
-  router: { back: (...args: unknown[]) => mockBack(...args) },
+  router: { back: (...args: unknown[]) => mockBack(...args), push: (...args: unknown[]) => mockPush(...args) },
   useLocalSearchParams: () => ({ id: mockRouteId }),
   // Runs the effect once on mount, which is what focus does on a freshly opened screen.
   useFocusEffect: (cb: () => void) => {
@@ -211,6 +213,7 @@ beforeEach(() => {
   mockViewerId = 674;
   mockRouteId = '61';
   mockTenantSlug = 'hour-timebank';
+  mockMessagesOn = true;
   mockAccept.mockResolvedValue({ data: exchange({ status: 'accepted' }) });
   mockConfirm.mockResolvedValue({ data: exchange({ status: 'completed' }) });
 });
@@ -368,6 +371,57 @@ describe('ExchangeRequestDetailScreen', () => {
     fireEvent.press(getByTestId('exchange-confirm-submit'));
 
     await waitFor(() => expect(mockConfirm).toHaveBeenCalledWith(61, 1.5));
+  });
+
+  /**
+   * AWID feedback, Nov 2026 ("warmth, and community"): when THIS member's confirmation
+   * completes the exchange, the server adds their year so far, and the app says thank you
+   * with it — as the website does.
+   */
+  it('thanks the member, with their year so far, when their confirmation completes the exchange', async () => {
+    mockConfirm.mockResolvedValueOnce({ data: exchange({ status: 'completed', thanks: { neighbours_this_year: 4, hours_this_year: 12.5 } }) });
+    const screen = mount(exchange({ status: 'pending_confirmation' }));
+
+    fireEvent.press(screen.getByTestId('exchange-action-confirm'));
+    fireEvent.press(screen.getByTestId('exchange-confirm-submit'));
+
+    expect(await screen.findByTestId('exchange-thanks')).toBeTruthy();
+    expect(screen.getByText('thanks.title')).toBeTruthy();
+    expect(screen.getByText('4')).toBeTruthy();
+    expect(screen.getByText('12.5')).toBeTruthy();
+
+    // A thank-you message to the other member (the requester, as the viewer provided).
+    fireEvent.press(screen.getByTestId('exchange-thanks-message'));
+    expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({
+      pathname: '/(modals)/thread',
+      params: expect.objectContaining({ recipientId: '675' }),
+    }));
+
+    fireEvent.press(screen.getByTestId('exchange-thanks-close'));
+    expect(screen.queryByTestId('exchange-thanks')).toBeNull();
+  });
+
+  it('says no thank-you yet while the other member still has to confirm', async () => {
+    mockConfirm.mockResolvedValueOnce({ data: exchange({ status: 'pending_confirmation' }) });
+    const screen = mount(exchange({ status: 'pending_confirmation' }));
+
+    fireEvent.press(screen.getByTestId('exchange-action-confirm'));
+    fireEvent.press(screen.getByTestId('exchange-confirm-submit'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' })));
+    expect(screen.queryByTestId('exchange-thanks')).toBeNull();
+  });
+
+  it('offers no thank-you message where the community has messaging off', async () => {
+    mockMessagesOn = false;
+    mockConfirm.mockResolvedValueOnce({ data: exchange({ status: 'completed', thanks: { neighbours_this_year: 1, hours_this_year: 1 } }) });
+    const screen = mount(exchange({ status: 'pending_confirmation' }));
+
+    fireEvent.press(screen.getByTestId('exchange-action-confirm'));
+    fireEvent.press(screen.getByTestId('exchange-confirm-submit'));
+
+    expect(await screen.findByTestId('exchange-thanks')).toBeTruthy();
+    expect(screen.queryByTestId('exchange-thanks-message')).toBeNull();
   });
 
   it.each([0, 500, 502, 503, 504])('reloads after uncertain confirmation status %s instead of retaining stale actions', async (status) => {

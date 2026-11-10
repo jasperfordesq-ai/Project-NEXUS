@@ -593,5 +593,13 @@
     },
     "rejectedReason": "Motivo indicato: {{reason}}",
     "newListing": "Nuovo annuncio"
+  },
+  "thanks": {
+    "title": "Grazie!",
+    "body": "Il tuo scambio è completato e le ore sono state trasferite. Ogni scambio rende la comunità un po’ più forte.",
+    "neighboursLabel": "Persone con cui hai fatto scambi quest’anno",
+    "hoursLabel": "Ore scambiate quest’anno",
+    "close": "Chiudi",
+    "sendMessage": "Invia a {{name}} un messaggio di ringraziamento"
   }
 }

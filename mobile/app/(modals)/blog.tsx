@@ -35,6 +35,10 @@ import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { withRouteGate } from '@/components/withRouteGate';
+import ItemCover from '@/components/ui/ItemCover';
+import CategoryLabel from '@/components/ui/CategoryLabel';
+import { colourForSeed, coverSeed } from '@/lib/theme/itemColours';
+import { useItemPalette } from '@/lib/theme/useItemColours';
 import RemoteImage from '@/components/ui/RemoteImage';
 
 function extractBlogPage(response: BlogListResponse) {
@@ -93,6 +97,7 @@ function BlogScreen() {
   const { t } = useTranslation(['blog', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const palette = useItemPalette();
   const [search, setSearch] = useState('');
   const [committedSearch, setCommittedSearch] = useState('');
   const requestedCursor = useRef<string | null>(null);
@@ -188,6 +193,7 @@ function BlogScreen() {
   function renderPost({ item, index }: { item: BlogPost; index: number }) {
     const imageHeight = index === 0 && !committedSearch ? 190 : 150;
     const coverImage = resolveImageUrl(item.featured_image);
+    const postColour = colourForSeed(coverSeed.blogPost(item.id, item.category ? (item.category.id ?? item.category.name) : null), palette);
     const publishedLabel = item.published_at
       ? t('publishedOn', { date: new Date(item.published_at).toLocaleDateString(dateLocale()) })
       : null;
@@ -202,20 +208,17 @@ function BlogScreen() {
           className="mb-3 overflow-hidden rounded-panel p-0"
           style={{ borderWidth: 1, borderColor: index === 0 && !committedSearch ? withAlpha(primary, 0.18) : withAlpha(primary, 0.10) }}
         >
+          {/* No picture: the post's own colour (posts in one category share it), as on the
+              website — was the community colour on every post alike. */}
           {coverImage ? (
-            <RemoteImage uri={coverImage} className="w-full" style={{ height: imageHeight }} fallbackIcon="newspaper-outline" />
+            <RemoteImage uri={coverImage} className="w-full" style={{ height: imageHeight }} fallback={<ItemCover colour={postColour} icon="newspaper-outline" style={{ width: '100%', height: imageHeight }} />} />
           ) : (
-            <View className="w-full items-center justify-center" style={{ height: imageHeight, backgroundColor: withAlpha(primary, 0.10) }}>
-              <Ionicons name="newspaper-outline" size={36} color={primary} />
-            </View>
+            <ItemCover colour={postColour} icon="newspaper-outline" style={{ width: '100%', height: imageHeight }} testID="blog-card-cover" />
           )}
           <HeroCard.Body className="gap-3 p-4">
             <View className="flex-row flex-wrap items-center gap-2">
               {item.category ? (
-                <Chip size="sm" variant="secondary">
-                  <Ionicons name="folder-open-outline" size={12} color={primary} />
-                  <Chip.Label>{item.category.name}</Chip.Label>
-                </Chip>
+                <CategoryLabel label={item.category.name} colour={postColour} icon="folder-open-outline" testID="blog-card-category" />
               ) : null}
               {item.reading_time ? (
                 <Chip size="sm" variant="secondary">

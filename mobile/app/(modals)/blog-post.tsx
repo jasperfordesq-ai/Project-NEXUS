@@ -38,6 +38,10 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import CommentSheet from '@/components/comments/CommentSheet';
 import { withRouteGate } from '@/components/withRouteGate';
+import ItemCover from '@/components/ui/ItemCover';
+import CategoryLabel from '@/components/ui/CategoryLabel';
+import { colourForSeed, coverSeed } from '@/lib/theme/itemColours';
+import { useItemPalette } from '@/lib/theme/useItemColours';
 import RemoteImage from '@/components/ui/RemoteImage';
 
 
@@ -89,6 +93,7 @@ function BlogPostContent({ slug }: { slug: string }) {
   const primary = usePrimaryColor();
   const { tenant } = useTenant();
   const theme = useTheme();
+  const palette = useItemPalette();
   const { show: showToast } = useAppToast();
   const isMounted = useRef(true);
   useEffect(() => {
@@ -202,6 +207,7 @@ function BlogPostContent({ slug }: { slug: string }) {
     );
   }
 
+  const postColour = colourForSeed(coverSeed.blogPost(post.id, post.category ? (post.category.id ?? post.category.name) : null), palette);
   const publishedDate = post.published_at
     ? new Date(post.published_at).toLocaleDateString(dateLocale(), {
         year: 'numeric',
@@ -237,23 +243,17 @@ function BlogPostContent({ slug }: { slug: string }) {
               <RemoteImage
                 uri={resolveImageUrl(post.featured_image) ?? post.featured_image}
                 className="h-[240px] w-full"
-                fallbackIcon="newspaper-outline"
+                fallback={<ItemCover colour={postColour} icon="newspaper-outline" size="lg" style={{ width: '100%', height: 240 }} />}
                 accessibilityLabel={post.title}
               />
             ) : (
-              <View className="h-[150px] w-full items-center justify-center" style={{ backgroundColor: withAlpha(primary, 0.10) }}>
-                <View className="size-16 items-center justify-center rounded-3xl" style={{ backgroundColor: withAlpha(primary, 0.12) }}>
-                  <Ionicons name="newspaper-outline" size={34} color={primary} />
-                </View>
-              </View>
+              // The post's own colour, the same as its card and on the website.
+              <ItemCover colour={postColour} icon="newspaper-outline" size="lg" style={{ width: '100%', height: 150 }} testID="blog-post-cover" />
             )}
             <HeroCard.Body className="gap-5 p-5">
               <View className="flex-row flex-wrap gap-2">
                 {post.category ? (
-                  <Chip size="sm" variant="secondary">
-                    <Ionicons name="folder-open-outline" size={12} color={primary} />
-                    <Chip.Label>{post.category.name}</Chip.Label>
-                  </Chip>
+                  <CategoryLabel label={post.category.name} colour={postColour} icon="folder-open-outline" testID="blog-post-category" />
                 ) : null}
                 {post.reading_time ? (
                   <Chip size="sm" variant="secondary">

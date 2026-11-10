@@ -66,6 +66,9 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
+import ItemCover from '@/components/ui/ItemCover';
+import { appSeed, colourForSeed } from '@/lib/theme/itemColours';
+import { useItemPalette } from '@/lib/theme/useItemColours';
 import RemoteImage from '@/components/ui/RemoteImage';
 import { acknowledgeMarketplaceCheckout, readMarketplaceCheckout, reserveMarketplaceCheckout, reviseMarketplaceCheckout, type CheckoutIdentity, type CheckoutPayload, type CheckoutOperation } from '@/lib/marketplaceCheckoutOperation';
 
@@ -202,6 +205,7 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
   const { hasFeature, tenant } = useTenant();
   const bottomInset = useBottomInset();
   const theme = useTheme();
+  const palette = useItemPalette();
   const { user } = useAuth();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -874,15 +878,13 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
                   <RemoteImage
                     uri={activeImageUrl}
                     className="h-full w-full"
-                    fallbackIcon="bag-handle-outline"
+                    fallback={<ItemCover colour={colourForSeed(appSeed.marketplaceItem(listing.id), palette)} icon="bag-handle-outline" size="lg" style={{ width: '100%', height: '100%' }} />}
                     // The seller's description for screen-reader users (AWID report, Oct 2026).
                     accessibilityLabel={images[activeImage]?.alt_text?.trim() || undefined}
                   />
                 ) : (
-                  <View className="items-center gap-2">
-                    <Ionicons name="bag-handle-outline" size={44} color={accent} />
-                    <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('detail.noImages')}</Text>
-                  </View>
+                  // No photos: the item's own colour, the same as its card and on the website (was a grey box).
+                  <ItemCover colour={colourForSeed(appSeed.marketplaceItem(listing.id), palette)} icon="bag-handle-outline" size="lg" style={{ width: '100%', height: '100%' }} testID="marketplace-detail-cover" />
                 )}
               </Surface>
             ) : null}

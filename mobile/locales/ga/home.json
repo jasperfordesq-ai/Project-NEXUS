@@ -349,5 +349,12 @@
     "errorRequired": "Cuir isteach do bhaile nó do chathair le do thoil.",
     "errorLocation": "Níorbh fhéidir an áit sin a shábháil. Seiceáil é agus bain triail eile as.",
     "errorGeneric": "Níorbh fhéidir do shuíomh a shábháil. Bain triail eile as."
+  },
+  "monthHighlight": {
+    "title": "{{month}} in {{community}}",
+    "subtitle": "An méid atá roinnte ag cách go dtí seo an mhí seo.",
+    "hours": "Uaireanta roinnte",
+    "members": "Baill nua",
+    "listings": "Tairiscintí agus iarratais nua"
   }
 }

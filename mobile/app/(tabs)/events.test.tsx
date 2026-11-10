@@ -133,6 +133,30 @@ const mockEvent = {
 };
 
 describe('EventsScreen', () => {
+  /**
+   * 🔴 An event category's colour arrives as a stored NAME ('blue' is the default), not a
+   * hex. Used as a colour it painted the card's strip pure #0000ff and, through withAlpha's
+   * fallback, the date tile grey. The card now takes the website's colour for the event
+   * (events in one category share it) and draws its date on that colour's band.
+   */
+  it("colours an event's date tile and category as the website does, never the stored name", () => {
+    const { bandColours, colourForSeed, coverSeed, paletteFor } = require('@/lib/theme/itemColours');
+    const { themeStore } = require('@/lib/theme/themeStore');
+    const { StyleSheet } = require('react-native');
+    const event = { ...mockEvent, category: { id: 4, name: 'Social', slug: 'social', colour: 'blue' }, primary_image: null };
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [event] });
+
+    const screen = render(<EventsScreen />);
+    const band = bandColours(colourForSeed(coverSeed.event(event.id, event.category.id), paletteFor(null)), themeStore.getSnapshot());
+    const tile = StyleSheet.flatten(screen.getByTestId('event-card-date').props.style);
+
+    expect(tile.backgroundColor).toBe(band.background);
+    expect(tile.backgroundColor).not.toBe('blue');
+    expect(StyleSheet.flatten(screen.getByText('Social').props.style)).toEqual(expect.objectContaining({ color: band.text }));
+    // No picture: a cover in the event's colour, not an empty space.
+    expect(screen.getByTestId('event-card-cover', { includeHiddenElements: true })).toBeTruthy();
+  });
+
   it('renders Upcoming and Past tab buttons', () => {
     const { getByText } = render(<EventsScreen />);
     expect(getByText('Upcoming')).toBeTruthy();

@@ -169,6 +169,9 @@ import { formatDecimal } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 import RemoteImage from '@/components/ui/RemoteImage';
+import ItemCover from '@/components/ui/ItemCover';
+import { appSeed, colourForSeed } from '@/lib/theme/itemColours';
+import { useItemPalette } from '@/lib/theme/useItemColours';
 import { groupPictureDescription } from '@/lib/utils/imageDescription';
 
 const CARD_MIN_HEIGHT = 118;
@@ -400,6 +403,7 @@ function GroupDetailScreenInner() {
   const { hasFeature, hasGroupTab, hasModule, tenant } = useTenant();
   const { id, tab, chatroom_id: chatroomIdParam } = useLocalSearchParams<{ id: string; tab?: string | string[]; chatroom_id?: string }>();
   const primary = usePrimaryColor();
+  const palette = useItemPalette();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -815,6 +819,10 @@ function GroupDetailScreenInner() {
   const isUpdating = joining || leaving;
   const displayDescription = loadedGroup.long_description ?? loadedGroup.description;
   const image = groupImage(loadedGroup);
+  // The group's own colour, the same as its card and its page on the website.
+  const groupCover = (
+    <ItemCover colour={colourForSeed(appSeed.group(loadedGroup.id), palette)} icon="people-outline" size="lg" style={{ width: '100%', height: 112 }} testID="group-detail-cover" />
+  );
   const userCanSeeMemberContent = currentIsMember;
 
   function openEditGroup() {
@@ -1179,12 +1187,8 @@ function GroupDetailScreenInner() {
           {image ? (
             // The group name sits right under the picture, so an undescribed picture stays
             // silent; a written description is read.
-            <RemoteImage uri={image} className="h-44 w-full bg-surface-secondary" fallbackIcon="people-outline" accessibilityLabel={groupPictureDescription(loadedGroup) ?? undefined} />
-          ) : (
-            <View className="h-28 items-center justify-center" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
-              <Ionicons name="people-outline" size={42} color={primary} />
-            </View>
-          )}
+            <RemoteImage uri={image} className="h-44 w-full bg-surface-secondary" fallback={groupCover} accessibilityLabel={groupPictureDescription(loadedGroup) ?? undefined} />
+          ) : groupCover}
           <HeroCard.Body className="gap-5 p-4">
             <View className="gap-3">
               <View className="flex-row items-start gap-3">

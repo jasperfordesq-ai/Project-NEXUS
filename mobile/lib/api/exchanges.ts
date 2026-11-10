@@ -43,6 +43,8 @@ export interface Exchange {
   hours_estimate: number | null;
   category_name: string | null;
   category_color: string | null;
+  /** The theme's slug; picks its colour from the community's theme list, as on the website. */
+  category_slug?: string | null;
   category_id?: number | null;
   image_url: string | null;
   images?: ExchangeImage[];

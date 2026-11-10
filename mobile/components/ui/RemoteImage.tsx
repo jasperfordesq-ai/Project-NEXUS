@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { View, type StyleProp, type ImageStyle, type ViewStyle } from 'react-native';
 import { Image, type ImageContentFit } from 'expo-image';
 
@@ -22,6 +22,12 @@ interface RemoteImageProps {
   /** Screen-reader label. Omit for decoration that a nearby caption already names. */
   accessibilityLabel?: string;
   testID?: string;
+  /**
+   * Drawn instead of the muted placeholder when the picture is missing or fails to load,
+   * in a box of the same `style` — an item's own coloured cover (`ItemCover`), so a broken
+   * photo looks like the same item without one rather than a grey hole.
+   */
+  fallback?: ReactNode;
 }
 
 /**
@@ -45,10 +51,19 @@ export default function RemoteImage({
   fallbackIcon = 'image-outline',
   accessibilityLabel,
   testID,
+  fallback,
 }: RemoteImageProps) {
   const theme = useTheme();
   const [failedUri, setFailedUri] = useState<string | null>(null);
   const failed = Boolean(uri) && failedUri === uri;
+
+  if ((!uri || failed) && fallback) {
+    return (
+      <View style={style as StyleProp<ViewStyle>} className={className} testID={testID ? `${testID}-fallback` : undefined}>
+        {fallback}
+      </View>
+    );
+  }
 
   if (!uri || failed) {
     return (
