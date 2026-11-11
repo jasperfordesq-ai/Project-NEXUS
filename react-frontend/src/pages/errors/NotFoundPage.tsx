@@ -18,6 +18,7 @@ import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Search from 'lucide-react/icons/search';
 import { useTranslation } from 'react-i18next';
 import { PageMeta } from '@/components/seo';
+import { SearchEmptyIllustration } from '@/components/illustrations';
 import { useTenant } from '@/contexts/TenantContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { api } from '@/lib/api';
@@ -58,9 +59,10 @@ export function NotFoundPage() {
         className="w-full max-w-md"
       >
         <GlassCard className="p-8 text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 mb-6">
-            <span className="text-5xl font-bold text-gradient">404</span>
-          </div>
+          {/* A drawing rather than a bare number (warmth plan Phase 4 B8); the
+              "404" stays as a small label for those who look for it. */}
+          <SearchEmptyIllustration className="mx-auto mb-2 h-36 w-36" />
+          <p className="mb-4 font-display text-sm font-bold tracking-widest text-accent-soft-foreground" aria-hidden="true">404</p>
 
           <h1 className="text-2xl font-bold text-theme-primary mb-2">{t('not_found.heading')}</h1>
           <p className="text-theme-muted mb-8">

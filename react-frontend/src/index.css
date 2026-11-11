@@ -332,6 +332,27 @@
   }
 }
 
+/* Pop-up windows (warmth plan Phase 4 B8): every HeroUI modal gets the site's
+   heading face, a slightly larger title and a faint wash of the community
+   colour fading down from the top — one rule for the ~220 windows, most of
+   which pass a plain title. The wash stays under 7% so header text keeps its
+   contrast; off in high-contrast mode. */
+@layer components {
+  .modal__dialog {
+    background-image: linear-gradient(to bottom, color-mix(in oklab, var(--accent) 7%, transparent), transparent 7rem);
+  }
+
+  .modal__heading {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+
+  html[data-high-contrast="true"] .modal__dialog {
+    background-image: none;
+  }
+}
+
 /* A "done" toast's tick draws itself in (ToastViewport, warmth plan A5). */
 @layer components {
   .toast-tick {
