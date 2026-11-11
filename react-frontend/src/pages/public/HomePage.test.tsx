@@ -122,12 +122,14 @@ describe('HomePage', () => {
     render(<HomePage />);
     await waitFor(() => {
       // members: 100 → formatStatNumber(100) = '100'
-      expect(screen.getByText('100')).toBeInTheDocument();
+      expect(screen.getByText('100', { selector: '.sr-only' })).toBeInTheDocument();
     });
     // …under the real "Active Members" label (public.home.stats.active_members),
     // so the value is proven to land in the members tile, not just anywhere.
     expect(screen.getByText('Active Members')).toBeInTheDocument();
-    expect(screen.getByText('100').parentElement).toContainElement(
+    // The number is drawn by CountUp (a hidden rolling copy + this screen-reader
+    // copy), so prove the tile by the nearest tile wrapper.
+    expect(screen.getByText('100', { selector: '.sr-only' }).closest('div')).toContainElement(
       screen.getByText('Active Members')
     );
   });

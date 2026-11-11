@@ -14,6 +14,7 @@
  * row of zeros is discouraging, not warm) or when the totals cannot be loaded.
  */
 
+import { CountUp } from '@/components/ui/CountUp';
 import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
 import Clock from 'lucide-react/icons/clock';
@@ -113,7 +114,7 @@ export function CommunityMonthHighlight({ className = '' }: { className?: string
                 {tile.label}
               </dt>
               <dd className="text-2xl font-bold leading-tight">
-                {tile.value.toLocaleString(locale, { maximumFractionDigits: 1 })}
+                <CountUp value={tile.value} decimals={1} format={(n) => n.toLocaleString(locale, { maximumFractionDigits: 1 })} />
               </dd>
             </div>
           );

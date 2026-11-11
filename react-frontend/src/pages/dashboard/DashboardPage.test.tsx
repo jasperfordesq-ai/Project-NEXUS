@@ -221,7 +221,7 @@ describe('DashboardPage', () => {
   it("shows what the community has shared this month", async () => {
     render(<DashboardPage />);
     const card = await screen.findByTestId('community-month-highlight');
-    expect(within(card).getByText('42')).toBeInTheDocument();
+    expect(within(card).getByText('42', { selector: '.sr-only' })).toBeInTheDocument();
     expect(within(card).getByText('Hours shared')).toBeInTheDocument();
   });
 

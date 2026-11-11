@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { CountUp } from '@/components/ui/CountUp';
 import { motion } from '@/lib/motion';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
@@ -73,10 +74,10 @@ export function StatsSection({ content }: StatsSectionProps) {
 
   const stats = platformStats
     ? [
-        { value: formatStatNumber(platformStats.members), label: t('home.stats.active_members') },
-        { value: formatStatNumber(platformStats.hours_exchanged), label: t('home.stats.hours_exchanged') },
-        { value: formatStatNumber(platformStats.listings), label: t('home.stats.active_listings') },
-        { value: formatStatNumber(platformStats.communities), label: t('home.stats.communities') },
+        { value: <CountUp value={platformStats.members} format={formatStatNumber} />, label: t('home.stats.active_members') },
+        { value: <CountUp value={platformStats.hours_exchanged} format={formatStatNumber} />, label: t('home.stats.hours_exchanged') },
+        { value: <CountUp value={platformStats.listings} format={formatStatNumber} />, label: t('home.stats.active_listings') },
+        { value: <CountUp value={platformStats.communities} format={formatStatNumber} />, label: t('home.stats.communities') },
       ]
     : [
         { value: '\u2014', label: t('home.stats.active_members') },

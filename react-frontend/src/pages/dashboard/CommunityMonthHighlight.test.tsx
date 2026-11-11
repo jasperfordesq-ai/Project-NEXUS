@@ -44,11 +44,11 @@ describe('CommunityMonthHighlight', () => {
     const card = await screen.findByTestId('community-month-highlight');
     expect(mockApi.get).toHaveBeenCalledWith('/v2/community/this-month');
     expect(within(card).getByRole('heading', { name: /Hour Timebank/ })).toBeInTheDocument();
-    expect(within(card).getByText('42.5')).toBeInTheDocument();
+    expect(within(card).getByText('42.5', { selector: '.sr-only' })).toBeInTheDocument();
     expect(within(card).getByText('Hours shared')).toBeInTheDocument();
-    expect(within(card).getByText('9')).toBeInTheDocument();
+    expect(within(card).getByText('9', { selector: '.sr-only' })).toBeInTheDocument();
     expect(within(card).getByText('New members')).toBeInTheDocument();
-    expect(within(card).getByText('12')).toBeInTheDocument();
+    expect(within(card).getByText('12', { selector: '.sr-only' })).toBeInTheDocument();
     expect(within(card).getByText('New offers and requests')).toBeInTheDocument();
   });
 

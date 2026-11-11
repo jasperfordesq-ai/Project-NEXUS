@@ -80,14 +80,14 @@ describe('StatsSection', () => {
     render(<StatsSection />);
     await waitFor(() => {
       // 1200 → "1.2K+"
-      expect(screen.getByText('1.2K+')).toBeInTheDocument();
+      expect(screen.getByText('1.2K+', { selector: '.sr-only' })).toBeInTheDocument();
     });
     // 4500 → "4.5K+"
-    expect(screen.getByText('4.5K+')).toBeInTheDocument();
+    expect(screen.getByText('4.5K+', { selector: '.sr-only' })).toBeInTheDocument();
     // 89 → "89"
-    expect(screen.getByText('89')).toBeInTheDocument();
+    expect(screen.getByText('89', { selector: '.sr-only' })).toBeInTheDocument();
     // 12 → "12"
-    expect(screen.getByText('12')).toBeInTheDocument();
+    expect(screen.getByText('12', { selector: '.sr-only' })).toBeInTheDocument();
   });
 
   it('renders em-dash placeholders when API returns no data', async () => {
