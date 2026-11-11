@@ -36,7 +36,12 @@
     "merely that something returned 200. The entry named 'not a silent fallback'",
     "did not actually verify that: a React SPA answers 200 on any path, so a vhost",
     "pointed at the wrong container would have passed a status-only check while",
-    "serving members the wrong application."
+    "serving members the wrong application.",
+    "",
+    "🔴 11 Nov 2026: the app moved to app.project-nexus.net and the accessible",
+    "site to accessible-app.project-nexus.net. The .ie addresses now redirect",
+    "(same path). The checker follows redirects, so the kept app.project-nexus.ie",
+    "entry proves an old link still reaches the app; the .net entries are primary."
   ],
   "timeoutMs": 15000,
   "attempts": 3,
@@ -52,6 +57,14 @@
     },
     {
       "name": "React app",
+      "url": "https://app.project-nexus.net",
+      "track": "production",
+      "expectStatus": [
+        200
+      ]
+    },
+    {
+      "name": "Old app address still reaches the app (redirects to .net)",
       "url": "https://app.project-nexus.ie",
       "track": "production",
       "expectStatus": [
@@ -68,7 +81,7 @@
     },
     {
       "name": "Accessible frontend",
-      "url": "https://accessible.project-nexus.ie",
+      "url": "https://accessible-app.project-nexus.net",
       "track": "production",
       "expectStatus": [
         200
@@ -76,7 +89,7 @@
     },
     {
       "name": "Accessible frontend is web-uk (not a silent fallback)",
-      "url": "https://accessible.project-nexus.ie/version",
+      "url": "https://accessible-app.project-nexus.net/version",
       "track": "production",
       "expectStatus": [
         200
