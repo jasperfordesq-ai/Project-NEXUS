@@ -161,7 +161,8 @@
     "admin": "Administracja",
     "admin_panel": "Panel administracyjny",
     "legacy_admin": "Stary panel administracyjny",
-    "log_out": "Wyloguj się"
+    "log_out": "Wyloguj się",
+    "balance": "Saldo {{hours}}"
   },
   "auth": {
     "log_out": "Wyloguj się",

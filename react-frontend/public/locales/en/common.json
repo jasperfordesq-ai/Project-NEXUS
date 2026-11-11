@@ -159,7 +159,8 @@
     "admin": "Admin",
     "admin_panel": "Admin Panel",
     "legacy_admin": "Legacy Admin",
-    "log_out": "Log Out"
+    "log_out": "Log Out",
+    "balance": "Balance {{hours}}"
   },
   "auth": {
     "log_out": "Log Out",

@@ -160,7 +160,8 @@
     "admin": "Administração",
     "admin_panel": "Painel de Administração",
     "legacy_admin": "Administração Legada",
-    "log_out": "Terminar Sessão"
+    "log_out": "Terminar Sessão",
+    "balance": "Saldo {{hours}}"
   },
   "auth": {
     "log_out": "Terminar Sessão",

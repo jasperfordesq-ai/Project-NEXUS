@@ -960,16 +960,40 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                         }}
                       >
                       <DropdownSection showDivider>
+                        {/* The member's own face, first name and balance (warmth
+                            plan D2). First name only, as everywhere a member
+                            sees a name (E-122); the balance is their own, the
+                            same figure the wallet shows them. */}
                         <DropdownItem
                           key="profile-header" id="profile-header"
-                          className="h-14 gap-2 cursor-default"
+                          // Read-only rows are drawn at half strength like disabled
+                          // ones; this one carries the member's name and balance.
+                          className="cursor-default py-2 opacity-100!"
                           textValue={t('user_menu.my_profile')}
                           isReadOnly
                         >
-                          <p className="font-semibold text-theme-primary truncate">
-                            {user?.first_name} {user?.last_name}
-                          </p>
-                          <p className="text-sm text-theme-subtle truncate">{user?.email}</p>
+                          <div data-testid="user-menu-header" className="flex min-w-0 items-center gap-3">
+                            <Avatar
+                              name={user?.first_name || resolveUserDisplayName(user)}
+                              src={resolveAvatarUrl(user?.avatar_url || user?.avatar)}
+                              size="md"
+                              className="size-11 shrink-0 ring-2 ring-accent/40"
+                              showFallback
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate font-semibold text-theme-primary">{user?.first_name}</p>
+                              <p className="truncate text-xs text-theme-subtle">{user?.email}</p>
+                              {hasModule('wallet') && (
+                                <p
+                                  data-testid="user-menu-balance"
+                                  className="mt-1 inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent-soft-foreground"
+                                >
+                                  <Wallet className="h-3 w-3" aria-hidden="true" />
+                                  {t('user_menu.balance', { hours: t('hours_short', { count: user?.balance ?? 0 }) })}
+                                </p>
+                              )}
+                            </div>
+                          </div>
                         </DropdownItem>
                       </DropdownSection>
 
@@ -984,11 +1008,6 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                           <DropdownItem
                             key={tenantPath('/wallet')} id={tenantPath('/wallet')}
                             startContent={<Wallet className="w-4 h-4" aria-hidden="true" />}
-                            endContent={
-                              <span className="text-xs text-theme-subtle">
-                                {t('hours_short', { count: user?.balance ?? 0 })}
-                              </span>
-                            }
                           >
                             {t('user_menu.wallet')}
                           </DropdownItem>

@@ -476,6 +476,17 @@ describe('Navbar', () => {
       expect(screen.getByText('Dark Mode')).toBeInTheDocument();
     });
 
+    it('opens the account menu on the member face, first name and balance, no surname (D2, E-122)', async () => {
+      const user = userEvent.setup();
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'Open user menu' }));
+      const header = await screen.findByTestId('user-menu-header');
+      expect(header).toHaveTextContent('John');
+      expect(header).not.toHaveTextContent('Doe');
+      expect(header).toHaveTextContent('john@example.com');
+      expect(screen.getByTestId('user-menu-balance')).toBeInTheDocument();
+    });
+
     it('renders Create new button', () => {
       render(<Navbar />);
       expect(screen.getByLabelText('Create new')).toBeInTheDocument();

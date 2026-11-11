@@ -159,7 +159,8 @@
     "admin": "Admin",
     "admin_panel": "Admin-Panel",
     "legacy_admin": "Legacy-Admin",
-    "log_out": "Abmelden"
+    "log_out": "Abmelden",
+    "balance": "Guthaben {{hours}}"
   },
   "auth": {
     "log_out": "Abmelden",

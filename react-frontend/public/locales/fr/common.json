@@ -160,7 +160,8 @@
     "admin": "Administrateur",
     "admin_panel": "Panneau d'administration",
     "legacy_admin": "Admin classique",
-    "log_out": "Se déconnecter"
+    "log_out": "Se déconnecter",
+    "balance": "Solde {{hours}}"
   },
   "auth": {
     "log_out": "Se déconnecter",

@@ -159,7 +159,8 @@
     "admin": "Beheer",
     "admin_panel": "Beheerpaneel",
     "legacy_admin": "Oud beheerpaneel",
-    "log_out": "Uitloggen"
+    "log_out": "Uitloggen",
+    "balance": "Saldo {{hours}}"
   },
   "auth": {
     "log_out": "Uitloggen",

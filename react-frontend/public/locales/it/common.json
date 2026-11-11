@@ -160,7 +160,8 @@
     "admin": "Amministrazione",
     "admin_panel": "Pannello Admin",
     "legacy_admin": "Admin legacy",
-    "log_out": "Esci"
+    "log_out": "Esci",
+    "balance": "Saldo {{hours}}"
   },
   "auth": {
     "log_out": "Esci",

@@ -159,7 +159,8 @@
     "admin": "管理",
     "admin_panel": "管理パネル",
     "legacy_admin": "旧管理パネル",
-    "log_out": "ログアウト"
+    "log_out": "ログアウト",
+    "balance": "残高 {{hours}}"
   },
   "auth": {
     "log_out": "ログアウト",

@@ -40996,6 +40996,7 @@ export default interface Resources {
     "user_menu": {
       "admin": "Admin",
       "admin_panel": "Admin Panel",
+      "balance": "Balance {{hours}}",
       "dark_mode": "Dark Mode",
       "help_center": "Help Center",
       "legacy_admin": "Legacy Admin",

@@ -162,7 +162,8 @@
     "admin": "Riarachán",
     "admin_panel": "Painéal Riaracháin",
     "legacy_admin": "Sean-Riarachán",
-    "log_out": "Logáil Amach"
+    "log_out": "Logáil Amach",
+    "balance": "{{hours}} san iarmhéid"
   },
   "auth": {
     "log_out": "Logáil Amach",
