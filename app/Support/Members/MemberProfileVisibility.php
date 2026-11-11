@@ -130,6 +130,48 @@ final class MemberProfileVisibility
             && in_array((string) $viewer->role, AdminTier::OPERATIONAL_ROLES, true);
     }
 
+    /**
+     * {@see viewerSeesSurnamesOf()} for the community the request resolved to.
+     *
+     * 🔴 This answers ONE question: may this viewer see members' surnames. It
+     * is wider than {@see viewerIsAdmin()} (it admits brokers and coordinators
+     * of the community), so never use it to decide anything else — who may
+     * open a private profile, see an email address, a hidden member or exact
+     * coordinates is still {@see viewerIsAdmin()}.
+     */
+    public static function viewerSeesSurnames(?int $viewerId): bool
+    {
+        return self::viewerSeesSurnamesOf($viewerId, (int) TenantContext::getId());
+    }
+
+    /**
+     * The viewer's OWN display name in full, for the viewer's own row in a
+     * list (E-122). Lists are built from joined rows and SQL expressions,
+     * which cannot say whose row is whose, so the central rule gives every row
+     * a first name; a list that promises "your own row is unchanged" puts the
+     * viewer's name back with this. Null when there is no such account.
+     *
+     * By id alone: it is the signed-in viewer's own id, and a manager working
+     * in a community below their own has their account in their home one.
+     */
+    public static function ownFullName(?int $viewerId): ?string
+    {
+        if ($viewerId === null || $viewerId <= 0) {
+            return null;
+        }
+
+        $viewer = DB::table('users')
+            ->where('id', $viewerId)
+            ->first(['first_name', 'last_name', 'profile_type', 'organization_name', 'name']);
+        if ($viewer === null) {
+            return null;
+        }
+
+        $name = UserDisplayName::full($viewer, \App\Support\Names\NameReason::SELF);
+
+        return $name !== '' ? $name : null;
+    }
+
     /** True when the two members have an accepted connection in the current community. */
     public static function areConnected(int $userId1, int $userId2): bool
     {

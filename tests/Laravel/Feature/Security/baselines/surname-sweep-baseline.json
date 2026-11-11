@@ -2,19 +2,10 @@
     "_about": "E-122 surname sweep baseline (tests/Laravel/Feature/Security/SurnameSweepTest.php). known_leaks: member-facing GET routes that show another member's surname TODAY and are tolerated until fixed. SHRINK-ONLY, enforced both ways: a leaking route not listed fails; a listed route that no longer leaks fails until removed. Never add an entry to make a red run green. Regenerate with SURNAME_SWEEP_WRITE_BASELINE=shrink (see the test docblock). Routes and JSON field paths only; no response bodies.",
     "coverage_floor": {
         "called": 603,
-        "served_with_data": 258,
+        "served_with_data": 262,
         "served_with_data_naming_a_seeded_person": 79
     },
     "known_leaks": {
-        "GET api/events": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.user.last_name",
-                "data.*.user.name"
-            ]
-        },
         "GET api/leaderboard/widget": {
             "surnames": [
                 "other"
@@ -22,49 +13,6 @@
             "fields": [
                 "data.summary.credits_earned.*.last_name",
                 "data.summary.credits_earned.*.name"
-            ]
-        },
-        "GET api/polls": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.creator.name",
-                "data.*.user.name"
-            ]
-        },
-        "GET api/v2/comments": {
-            "surnames": [
-                "other",
-                "owner"
-            ],
-            "fields": [
-                "data.comments.*.author.name"
-            ]
-        },
-        "GET api/v2/courses": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.author.name"
-            ]
-        },
-        "GET api/v2/courses/{idOrSlug}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.author.name"
-            ]
-        },
-        "GET api/v2/events": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.user.last_name",
-                "data.*.user.name"
             ]
         },
         "GET api/v2/events/series": {
@@ -81,14 +29,6 @@
             ],
             "fields": [
                 "data.series.creator"
-            ]
-        },
-        "GET api/v2/events/{id}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.user.name"
             ]
         },
         "GET api/v2/events/{id}/people": {
@@ -109,44 +49,6 @@
                 "(non-JSON body)"
             ]
         },
-        "GET api/v2/explore": {
-            "surnames": [
-                "factory",
-                "owner"
-            ],
-            "fields": [
-                "data.active_polls.*.author_name",
-                "data.popular_listings.*.author_name",
-                "data.recommended_listings.*.author_name",
-                "data.trending_posts.*.author_name"
-            ]
-        },
-        "GET api/v2/explore/for-you": {
-            "surnames": [
-                "factory",
-                "owner"
-            ],
-            "fields": [
-                "data.*.subtitle"
-            ]
-        },
-        "GET api/v2/explore/popular-listings": {
-            "surnames": [
-                "factory",
-                "owner"
-            ],
-            "fields": [
-                "data.*.author_name"
-            ]
-        },
-        "GET api/v2/explore/trending": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.author_name"
-            ]
-        },
         "GET api/v2/feed": {
             "surnames": [
                 "factory",
@@ -154,15 +56,6 @@
             ],
             "fields": [
                 "data.*.author.name"
-            ]
-        },
-        "GET api/v2/feed/polls/{id}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.creator.name",
-                "data.user.name"
             ]
         },
         "GET api/v2/feed/sidebar": {
@@ -175,59 +68,6 @@
             "fields": [
                 "data.friends.*.last_name",
                 "data.suggested_listings.*.owner_name"
-            ]
-        },
-        "GET api/v2/gamification/profile": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.user.name"
-            ]
-        },
-        "GET api/v2/goals/discover": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.user.last_name",
-                "data.*.user.name",
-                "data.*.user_name"
-            ]
-        },
-        "GET api/v2/goals/{id}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.user.last_name",
-                "data.user.name",
-                "data.user_name"
-            ]
-        },
-        "GET api/v2/group-chatrooms/{id}/messages": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.author.name"
-            ]
-        },
-        "GET api/v2/groups": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.creator.last_name",
-                "data.*.creator.name"
-            ]
-        },
-        "GET api/v2/groups/{id}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.creator.name"
             ]
         },
         "GET api/v2/groups/{id}/analytics/export/members": {
@@ -245,30 +85,6 @@
             ],
             "fields": [
                 "data.items.*.author.name"
-            ]
-        },
-        "GET api/v2/groups/{id}/challenges": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.creator.name"
-            ]
-        },
-        "GET api/v2/groups/{id}/discussions": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.author.name"
-            ]
-        },
-        "GET api/v2/groups/{id}/discussions/{discussionId}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.discussion.author.name"
             ]
         },
         "GET api/v2/groups/{id}/files": {
@@ -322,115 +138,6 @@
                 "data.*.last_name"
             ]
         },
-        "GET api/v2/ideation-challenges/{id}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.creator.name"
-            ]
-        },
-        "GET api/v2/jobs": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.creator.name"
-            ]
-        },
-        "GET api/v2/jobs/{id}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.creator.name"
-            ]
-        },
-        "GET api/v2/kb": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.author.name"
-            ]
-        },
-        "GET api/v2/kb/{id}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.author.name"
-            ]
-        },
-        "GET api/v2/listings": {
-            "surnames": [
-                "factory",
-                "owner"
-            ],
-            "fields": [
-                "data.*.author_name",
-                "data.*.user.name"
-            ]
-        },
-        "GET api/v2/listings/{id}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.author_name",
-                "data.user.name"
-            ]
-        },
-        "GET api/v2/marketplace/groups/{groupId}/listings": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.user.name"
-            ]
-        },
-        "GET api/v2/marketplace/listings": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.user.name"
-            ]
-        },
-        "GET api/v2/marketplace/listings/{id}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.user.name"
-            ]
-        },
-        "GET api/v2/podcasts": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.owner.name"
-            ]
-        },
-        "GET api/v2/polls": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.creator.name",
-                "data.*.user.name"
-            ]
-        },
-        "GET api/v2/polls/{id}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.creator.name",
-                "data.user.name"
-            ]
-        },
         "GET api/v2/resources": {
             "surnames": [
                 "owner"
@@ -439,43 +146,12 @@
                 "data.*.uploader.name"
             ]
         },
-        "GET api/v2/reviews/pending": {
-            "surnames": [
-                "other",
-                "owner"
-            ],
-            "fields": [
-                "data.*.receiver_name"
-            ]
-        },
-        "GET api/v2/search": {
-            "surnames": [
-                "contact",
-                "other",
-                "owner"
-            ],
-            "fields": [
-                "data.*.last_name",
-                "data.*.name",
-                "data.*.user.last_name",
-                "data.*.user.name"
-            ]
-        },
-        "GET api/v2/stories": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.*.name"
-            ]
-        },
         "GET api/v2/users/blocked": {
             "surnames": [
                 "blocked"
             ],
             "fields": [
-                "data.*.last_name",
-                "data.*.name"
+                "data.*.last_name"
             ]
         },
         "GET api/v2/users/me/activity/dashboard": {
@@ -498,49 +174,12 @@
                 "data.*.description"
             ]
         },
-        "GET api/v2/users/search": {
-            "surnames": [
-                "factory"
-            ],
-            "fields": [
-                "data.items.*.name"
-            ]
-        },
-        "GET api/v2/volunteering/opportunities": {
-            "surnames": [
-                "factory",
-                "owner"
-            ],
-            "fields": [
-                "data.*.creator.last_name",
-                "data.*.creator.name"
-            ]
-        },
         "GET api/v2/volunteering/opportunities/{id}/applications": {
             "surnames": [
                 "other"
             ],
             "fields": [
                 "data.items.*.user.name"
-            ]
-        },
-        "GET api/v2/volunteering/organisations": {
-            "surnames": [
-                "factory",
-                "owner"
-            ],
-            "fields": [
-                "data.*.owner.last_name",
-                "data.*.owner.name"
-            ]
-        },
-        "GET api/v2/volunteering/organisations/{id}": {
-            "surnames": [
-                "owner"
-            ],
-            "fields": [
-                "data.owner.last_name",
-                "data.owner.name"
             ]
         },
         "GET api/v2/volunteering/organisations/{id}/applications": {
@@ -558,39 +197,6 @@
             ],
             "fields": [
                 "message"
-            ]
-        },
-        "GET api/v2/wallet/transactions": {
-            "surnames": [
-                "other",
-                "owner"
-            ],
-            "fields": [
-                "data.*.other_user.name",
-                "data.*.receiver.name",
-                "data.*.sender.name"
-            ]
-        },
-        "GET api/v2/wallet/transactions/{id}": {
-            "surnames": [
-                "other",
-                "owner"
-            ],
-            "fields": [
-                "data.other_user.name",
-                "data.receiver.name",
-                "data.sender.name"
-            ]
-        },
-        "GET api/wallet/transactions": {
-            "surnames": [
-                "other",
-                "owner"
-            ],
-            "fields": [
-                "data.*.other_user.name",
-                "data.*.receiver.name",
-                "data.*.sender.name"
             ]
         }
     }

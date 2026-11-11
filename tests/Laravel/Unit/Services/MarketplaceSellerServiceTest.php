@@ -113,8 +113,9 @@ class MarketplaceSellerServiceTest extends TestCase
         TenantContext::reset();
         TenantContext::setById($tenantId);
         $this->assertNull(MarketplaceSellerService::getPublicProfile($profileId));
+        // E-122: what other members see of a private seller is the first name.
         $this->assertSame(
-            'Private Member',
+            'Private',
             MarketplaceSellerService::getMemberProfile($profileId)['display_name'] ?? null
         );
     }

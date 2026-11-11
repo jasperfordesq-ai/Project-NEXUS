@@ -409,7 +409,7 @@ class GroupConversationService
             [$userId],
         )));
 
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($userId);
 
         return $participants
             ->map(function ($p) use ($hiddenIds, $userId, $viewerIsAdmin) {
@@ -447,7 +447,7 @@ class GroupConversationService
             ->get();
 
         $hiddenSenderIds = self::hiddenGroupSenderIds($userId);
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($userId);
 
         return $conversations->map(function ($conv) use ($userId, $hiddenSenderIds, $viewerIsAdmin) {
             $data = self::formatConversation($conv, $userId, $viewerIsAdmin);
@@ -564,7 +564,7 @@ class GroupConversationService
                 ->keyBy('id');
         }
 
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($userId);
         $items = $messages->map(function ($msg) use ($senders, $userId, $viewerIsAdmin) {
             $sender = $senders[$msg->sender_id] ?? null;
             return [
@@ -808,6 +808,17 @@ class GroupConversationService
     private static function withoutMemberSurname(array $row, object $member, int $viewerId, bool $viewerIsAdmin): array
     {
         if ($viewerIsAdmin || (int) ($row['id'] ?? 0) === $viewerId) {
+            // E-122: the caller has just decided this viewer may see this
+            // member's full name (staff of the community, or their own row).
+            // The row's `name` was built from a joined row, which cannot say
+            // whose it is, so the central rule gave it a first name.
+            if (array_key_exists('name', $row)) {
+                $full = UserDisplayName::full($member, \App\Support\Names\NameReason::CHECKED_BY_CALLER);
+                if ($full !== '') {
+                    $row['name'] = $full;
+                }
+            }
+
             return $row;
         }
 
@@ -830,7 +841,7 @@ class GroupConversationService
      */
     private static function formatConversation(Conversation $conversation, int $viewerId, ?bool $viewerIsAdmin = null): array
     {
-        $viewerIsAdmin ??= MemberProfileVisibility::viewerIsAdmin($viewerId);
+        $viewerIsAdmin ??= MemberProfileVisibility::viewerSeesSurnames($viewerId);
 
         $participants = ConversationParticipant::where('conversation_id', $conversation->id)
             ->whereNull('left_at')

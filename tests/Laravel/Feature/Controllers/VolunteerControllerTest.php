@@ -679,7 +679,8 @@ public function test_apply_requires_auth(): void
         $this->assertSame('/uploads/tenants/hour-timebank/organisations/care-collective.png', $contract['logo_image']['url']);
         $this->assertSame('https://example.test/care', $contract['website']);
         $this->assertSame('hello@example.test', $contract['contact_email']);
-        $this->assertSame('Organisation Owner', $contract['owner']['display_name']);
+        // E-122: surnames are for staff of the community; a member or a visitor sees the first name.
+        $this->assertSame('Organisation', $contract['owner']['display_name']);
         // The owner's internal user id must never be exposed on the PUBLIC contract.
         $this->assertArrayNotHasKey('id', $contract['owner']);
         $this->assertSame('organisation', $contract['org_type']);
@@ -781,7 +782,8 @@ public function test_apply_requires_auth(): void
         $this->assertSame('Community Kitchen', $contract['name']);
         $this->assertSame('A detailed organisation profile for a community kitchen.', $contract['description']);
         $this->assertSame('https://example.test/kitchen', $contract['website']);
-        $this->assertSame('Detail Owner', $contract['owner']['display_name']);
+        // E-122: surnames are for staff of the community; a member or a visitor sees the first name.
+        $this->assertSame('Detail', $contract['owner']['display_name']);
         $this->assertSame(1, $contract['stats']['opportunity_count']);
         $this->assertSame(1, $contract['stats']['volunteer_count']);
         $this->assertSame(3.5, $contract['stats']['total_hours']);

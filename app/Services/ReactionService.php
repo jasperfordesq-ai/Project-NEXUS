@@ -449,10 +449,15 @@ class ReactionService
         if ($reactors !== []) {
             $names = $this->publicReactorNames($reactors, $userId);
             if ($names !== null) {
+                // E-122: the viewer's own row keeps their own name in full.
+                $ownName = null;
                 foreach ($result as $key => $entry) {
                     foreach ($entry['top_reactors'] as $i => $reactor) {
                         if (isset($names[$reactor['id']])) {
                             $result[$key]['top_reactors'][$i]['name'] = $names[$reactor['id']];
+                        } elseif ($userId !== null && (int) $reactor['id'] === (int) $userId) {
+                            $ownName ??= MemberProfileVisibility::ownFullName((int) $userId) ?? (string) $reactor['name'];
+                            $result[$key]['top_reactors'][$i]['name'] = $ownName;
                         }
                     }
                 }
@@ -478,9 +483,16 @@ class ReactionService
             return $rows;
         }
 
+        // E-122: the viewer's own row keeps their own name in full. The rows
+        // come from a SQL expression, which gives a first name to everyone
+        // who is not staff, the viewer included.
+        $ownName = null;
         foreach ($rows as $i => $row) {
             if (isset($names[(int) $row['id']])) {
                 $rows[$i]['name'] = $names[(int) $row['id']];
+            } elseif ($viewerId !== null && (int) $row['id'] === (int) $viewerId) {
+                $ownName ??= MemberProfileVisibility::ownFullName((int) $viewerId) ?? (string) $row['name'];
+                $rows[$i]['name'] = $ownName;
             }
         }
 
@@ -496,7 +508,7 @@ class ReactionService
      */
     private function publicReactorNames(array $rows, ?int $viewerId): ?array
     {
-        if (MemberProfileVisibility::viewerIsAdmin($viewerId)) {
+        if (MemberProfileVisibility::viewerSeesSurnames($viewerId)) {
             return null;
         }
 

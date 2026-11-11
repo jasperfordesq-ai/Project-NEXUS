@@ -71,11 +71,14 @@ class SurnameSwitchTest extends TestCase
     }
 
     // ------------------------------------------------------------------
-    // Switch off, as shipped
+    // Switch off — no longer as shipped
     // ------------------------------------------------------------------
 
-    public function test_as_shipped_the_switch_is_off_and_a_member_facing_route_is_unchanged(): void
+    // E-122 stage 4 turned the switch on, so this test now forces it OFF. It
+    // stays as the proof that reverting the flip restores the old behaviour.
+    public function test_with_the_switch_off_a_member_facing_route_is_unchanged(): void
     {
+        config([NameAudience::CONFIG_KEY => false]);
         $this->assertFalse(NameAudience::enforced());
 
         $pollId = $this->pollBy($this->poster());
@@ -83,8 +86,7 @@ class SurnameSwitchTest extends TestCase
 
         $poll = $this->apiGet("/v2/polls/{$pollId}")->assertStatus(200)->json('data');
 
-        // Today's behaviour (a known leak in the sweep baseline), untouched by
-        // stages 2 and 3.
+        // The behaviour before stage 4 (full names to everyone).
         $this->assertSame(self::FIRST . ' ' . self::LAST, $poll['creator']['name']);
         $this->assertSame(self::FIRST . ' ' . self::LAST, $poll['user']['name']);
     }
@@ -152,16 +154,15 @@ class SurnameSwitchTest extends TestCase
      */
     public static function switchStates(): array
     {
-        return ['switch off (as shipped)' => [false], 'switch forced on' => [true]];
+        return ['switch forced off (a revert)' => [false], 'switch on (as shipped since stage 4)' => [true]];
     }
 
     #[DataProvider('switchStates')]
     public function test_a_members_own_account_and_profile_always_carry_their_surname(bool $on): void
     {
         $me = $this->me();
-        if ($on) {
-            $this->switchOn();
-        }
+        // Set both ways explicitly: since stage 4 "on" is the shipped default.
+        config([NameAudience::CONFIG_KEY => $on]);
         $this->signInAs($me);
 
         foreach (['/v2/users/me', '/v2/users/' . $me->id] as $uri) {
@@ -177,9 +178,8 @@ class SurnameSwitchTest extends TestCase
     public function test_saving_the_profile_returns_and_keeps_the_members_own_surname(bool $on): void
     {
         $me = $this->me();
-        if ($on) {
-            $this->switchOn();
-        }
+        // Set both ways explicitly: since stage 4 "on" is the shipped default.
+        config([NameAudience::CONFIG_KEY => $on]);
         $this->signInAs($me);
 
         // An edit screen that sends only what it changed.

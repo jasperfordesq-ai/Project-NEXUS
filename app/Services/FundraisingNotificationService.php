@@ -55,7 +55,10 @@ class FundraisingNotificationService
                     $params = [
                         'organisation' => (string) $campaign->organization_name,
                         'campaign' => (string) $campaign->title,
-                        'person' => $actor ? UserDisplayName::resolve($actor) : (string) $campaign->organization_name,
+                        // E-122: recipients are the community's administrators only.
+                        'person' => $actor
+                            ? UserDisplayName::full($actor, \App\Support\Names\NameReason::STAFF_RECIPIENT)
+                            : (string) $campaign->organization_name,
                         'goal' => self::money((float) $campaign->goal_amount, $currency),
                         'dates' => $dates,
                     ];

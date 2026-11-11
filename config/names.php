@@ -28,6 +28,6 @@ return [
     | config(['names.surname_audience_enforced' => true]).
     |
     */
-    'surname_audience_enforced' => false,
+    'surname_audience_enforced' => true,
 
 ];

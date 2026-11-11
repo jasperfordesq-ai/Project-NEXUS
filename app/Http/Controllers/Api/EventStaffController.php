@@ -54,7 +54,7 @@ final class EventStaffController extends BaseApiController
         }
 
         $viewerId = $this->getActingUserId();
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($viewerId);
 
         return $this->respondWithData(
             $assignments
@@ -232,7 +232,7 @@ final class EventStaffController extends BaseApiController
             'assignment' => EventStaffResource::fromModel(
                 $result['assignment'],
                 $this->getActingUserId(),
-                MemberProfileVisibility::viewerIsAdmin($this->getActingUserId()),
+                MemberProfileVisibility::viewerSeesSurnames($this->getActingUserId()),
             ),
             'changed' => $result['changed'],
             'idempotent_replay' => ! $result['changed']

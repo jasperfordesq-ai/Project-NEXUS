@@ -163,7 +163,8 @@ class ListingsControllerTest extends TestCase
         $this->assertNull($contract['location']['longitude']);
         $this->assertSame(2.5, (float) $contract['time_credit_value']['hours']);
         $this->assertSame('hour', $contract['time_credit_value']['unit']);
-        $this->assertSame('Public Provider', $contract['provider']['display_name']);
+        // E-122: surnames are for staff of the community; a member or a visitor sees the first name.
+        $this->assertSame('Public', $contract['provider']['display_name']);
     }
 
     public function test_public_index_omits_next_public_contract_without_explicit_flag(): void
@@ -441,7 +442,8 @@ class ListingsControllerTest extends TestCase
         $this->assertSame('Garden mentoring', $contract['primary_image']['alt_text']);
         $this->assertCount(2, $contract['gallery']);
         $this->assertSame('/uploads/tenants/hour-timebank/listings/garden-1.jpg', $contract['gallery'][0]['url']);
-        $this->assertSame('Gallery Provider', $contract['provider']['display_name']);
+        // E-122: surnames are for staff of the community; a member or a visitor sees the first name.
+        $this->assertSame('Gallery', $contract['provider']['display_name']);
         $this->assertSame('active', $contract['status']);
     }
 

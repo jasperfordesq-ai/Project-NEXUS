@@ -231,7 +231,7 @@ class ConnectionSuggestionController extends BaseApiController
         }
 
         // The directory's surname rule: non-admin viewers see a first name only.
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($userId);
 
         $suggestions = [];
         foreach ($candidates as $candidate) {

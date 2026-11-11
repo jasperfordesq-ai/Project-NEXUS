@@ -1562,7 +1562,10 @@ class SafeguardingService
             $reporter = User::where('tenant_id', $tenantId)
                 ->where('id', $reporterId)
                 ->first(['first_name', 'last_name', 'profile_type', 'organization_name']);
-            $reporterName = $reporter ? UserDisplayName::resolve($reporter) : __('emails_misc.safeguarding.reporter_fallback_name');
+            // E-122: told to safeguarding staff only (the query below).
+            $reporterName = $reporter
+                ? UserDisplayName::full($reporter, \App\Support\Names\NameReason::STAFF_RECIPIENT)
+                : __('emails_misc.safeguarding.reporter_fallback_name');
             $context = $this->incidentContext($tenantId, $incident);
 
             $staffUsers = DB::select(

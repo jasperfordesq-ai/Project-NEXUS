@@ -362,7 +362,7 @@ class MentionService
         $results = DB::select($sql, $bindings);
 
         // The directory's surname rule: non-admin viewers see a first name only.
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($currentUserId > 0 ? $currentUserId : null);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($currentUserId > 0 ? $currentUserId : null);
 
         return array_map(function ($user) use ($viewerIsAdmin) {
             $name = $user->name ?? UserDisplayName::resolve($user);

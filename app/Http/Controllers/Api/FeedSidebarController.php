@@ -200,7 +200,7 @@ class FeedSidebarController extends BaseApiController
                 ->select('id', 'first_name', 'last_name', 'organization_name', 'profile_type', 'avatar_url', 'location', 'last_active_at')
                 ->get();
 
-            $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+            $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($userId);
             $now = now();
             $hiddenPresence = array_flip(PresenceService::hiddenUserIds($members->pluck('id')->all()));
             $filtered = $members->map(function ($m) use ($now, $viewerIsAdmin, $hiddenPresence) {
@@ -452,7 +452,7 @@ class FeedSidebarController extends BaseApiController
                     $connectedIds = array_merge($connectedIds, array_map('intval', $cids));
                 } catch (\Exception $e) { Log::warning('Stats query failed in ' . __METHOD__, ['error' => $e->getMessage()]); }
 
-                $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+                $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($userId);
                 $suggested = $this->suggestedMembersQuery($tenantId, $userId, $connectedIds)
                     ->limit(5)
                     ->select('id', 'first_name', 'last_name', 'organization_name', 'profile_type', 'avatar_url', 'location', 'last_active_at')

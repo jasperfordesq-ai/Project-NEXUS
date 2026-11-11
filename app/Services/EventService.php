@@ -2587,7 +2587,9 @@ class EventService
                 'rsvp_at' => null,
                 'checked_in_at' => null,
                 'checked_out_at' => null,
-            ], $row, $viewerId, $viewerIsAdmin);
+                // E-122: surnames are for staff of the community (brokers too);
+                // $viewerIsAdmin above still decides whose private profile is listed.
+            ], $row, $viewerId, MemberProfileVisibility::viewerSeesSurnames($viewerId));
         }
 
         return [
@@ -2629,6 +2631,7 @@ class EventService
 
         $tenantId = (int) TenantContext::getId();
         $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+        $viewerSeesSurnames = MemberProfileVisibility::viewerSeesSurnames($viewerId);
 
         $ranked = DB::table('event_rsvps as r')
             ->join('users as u', function ($join): void {
@@ -2664,7 +2667,9 @@ class EventService
                 'organization_name' => $row->organization_name,
                 'name' => UserDisplayName::resolve($row),
             ];
-            if (! $viewerIsAdmin) {
+            // E-122: surnames are for staff of the community (brokers too);
+            // $viewerIsAdmin above still decides whose private profile is listed.
+            if (! $viewerSeesSurnames) {
                 $person = MemberProfileVisibility::withoutSurname($person);
             }
             $preview[(int) $row->event_id][] = [
@@ -3591,7 +3596,7 @@ class EventService
 
         $items = [];
         $lastId = null;
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($viewerId);
 
         foreach ($attendees as $att) {
             $lastId = $att['rsvp_id'];
@@ -4760,7 +4765,7 @@ class EventService
         }
 
         $formatted = [];
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($viewerId);
         foreach ($items as $item) {
             $formatted[] = self::withoutRosterSurname([
                 'id' => (int) $item['user_id'],
@@ -5120,7 +5125,7 @@ class EventService
             );
 
             $items = [];
-            $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+            $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($viewerId);
             foreach ($rows as $r) {
                 $checkedInBy = $r->checked_in_by_name ?? null;
                 if ($checkedInBy !== null && ! $viewerIsAdmin && (int) ($r->checked_in_by ?? 0) !== (int) $viewerId) {

@@ -120,7 +120,14 @@ class F243ErasureRemovesRemainingPersonalDataTest extends TestCase
         $this->assertNull(DB::table('users')->where('id', $second->id)->value('username'));
 
         // The model accessor used by most display paths now shows the deleted form.
-        $this->assertSame('Deleted User', User::query()->find($erased->id)?->name);
+        // E-122: with nobody signed in the accessor gives the first word only
+        // (the placeholder is stored as first name "Deleted", surname "User");
+        // staff of the community still see "Deleted User".
+        $this->assertSame('Deleted', User::query()->find($erased->id)?->name);
+        $this->assertSame(
+            'Deleted User',
+            \App\Support\UserDisplayName::full(User::query()->find($erased->id), \App\Support\Names\NameReason::AUDIT_LOG),
+        );
     }
 
     public function test_other_members_no_longer_see_the_erased_members_comments_or_name(): void
@@ -152,7 +159,9 @@ class F243ErasureRemovesRemainingPersonalDataTest extends TestCase
         $this->assertStringNotContainsString('ERASED-AUTHOR', $v2Body);
         $this->assertStringNotContainsString('Uniquesurname', $v2Body);
         $this->assertStringContainsString('CONTROL-AUTHOR words', $v2Body);
-        $this->assertStringContainsString('Cora Control', $v2Body);
+        // E-122: an ordinary member sees the other author's first name only.
+        $this->assertStringContainsString('"name":"Cora"', $v2Body);
+        $this->assertStringNotContainsString('Cora Control', $v2Body);
 
         $legacy = $this->apiPost('/social/comments', [
             'action' => 'fetch',
@@ -217,6 +226,10 @@ class F243ErasureRemovesRemainingPersonalDataTest extends TestCase
 
         $body = $response->getContent();
         $this->assertStringNotContainsString('Uniquesurname', $body);
-        $this->assertStringContainsString('Deleted User', $body);
+        // E-122: an ordinary member sees first names, and the erased-account
+        // placeholder is stored as first name "Deleted", surname "User" — so
+        // it now reads "Deleted" to members ("Deleted User" to staff).
+        $this->assertStringContainsString('"name":"Deleted"', $body);
+        $this->assertStringNotContainsString('Ursula', $body);
     }
 }

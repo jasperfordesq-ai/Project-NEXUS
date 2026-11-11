@@ -77,7 +77,10 @@ class ReviewService
         // Format reviews to match the React contract
         $viewerId = ($viewerId !== null && $viewerId > 0) ? $viewerId : null;
         $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
-        $formatted = $items->map(function (Review $r) use ($viewerId, $viewerIsAdmin) {
+        // E-122: surnames are for staff of the community (brokers too). Who
+        // wrote an ANONYMOUS review stays with administrators ($viewerIsAdmin).
+        $viewerSeesSurnames = MemberProfileVisibility::viewerSeesSurnames($viewerId);
+        $formatted = $items->map(function (Review $r) use ($viewerId, $viewerIsAdmin, $viewerSeesSurnames) {
             $reviewer = $r->reviewer;
             $anonymous = (bool) ($r->is_anonymous ?? false);
             $isReviewer = $viewerId !== null && (int) $r->reviewer_id === $viewerId;
@@ -103,7 +106,7 @@ class ReviewService
                     'avatar'     => $reviewer?->avatar_url,
                     'avatar_url' => $reviewer?->avatar_url,
                 ];
-                if (! $viewerIsAdmin && ! $isReviewer) {
+                if (! $viewerSeesSurnames && ! $isReviewer) {
                     $reviewerRow = self::withoutMemberSurname($reviewerRow, $reviewer);
                 }
             }
@@ -187,7 +190,7 @@ class ReviewService
         // Format reviews to match the React contract — the `receiver` block
         // describes the member the review is ABOUT. First names only unless
         // the author is an administrator (F-084).
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($userId);
         $formatted = $items->map(function (Review $r) use ($viewerIsAdmin) {
             $receiver = $r->receiver;
             $receiverName = ($receiver && $receiver->profile_type === 'organisation' && $receiver->organization_name)
@@ -457,8 +460,12 @@ class ReviewService
 
         $anonymous = (bool) ($review->is_anonymous ?? false);
         $revealReviewer = ! $anonymous || $isReviewer || $viewerIsAdmin;
+        // E-122: surnames are for staff of the community (brokers too). Seeing
+        // an unpublished review, an anonymous author or the transaction stays
+        // with administrators ($viewerIsAdmin).
+        $viewerSeesSurnames = MemberProfileVisibility::viewerSeesSurnames($viewerId);
 
-        $reviewer = $revealReviewer ? $this->shapeMember($review->reviewer, $viewerIsAdmin) : [
+        $reviewer = $revealReviewer ? $this->shapeMember($review->reviewer, $viewerSeesSurnames) : [
             'id'         => null,
             'name'       => __('api.review_anonymous'),
             'first_name' => null,
@@ -477,7 +484,7 @@ class ReviewService
                 'is_anonymous'   => $anonymous,
                 'transaction_id' => ($isReviewer || $isReceiver || $viewerIsAdmin) ? $review->transaction_id : null,
                 'reviewer'       => $reviewer,
-                'receiver'       => $this->shapeMember($review->receiver, $viewerIsAdmin),
+                'receiver'       => $this->shapeMember($review->receiver, $viewerSeesSurnames),
                 'created_at'     => $review->created_at?->toIso8601String(),
             ],
             'reason' => null,
@@ -490,7 +497,7 @@ class ReviewService
      *
      * @return array<string, mixed>
      */
-    private function shapeMember(?\App\Models\User $user, bool $viewerIsAdmin): array
+    private function shapeMember(?\App\Models\User $user, bool $viewerSeesSurnames): array
     {
         $row = [
             'id'                => $user?->id,
@@ -503,7 +510,7 @@ class ReviewService
             'avatar_url'        => $user?->avatar_url,
         ];
 
-        if (! $viewerIsAdmin) {
+        if (! $viewerSeesSurnames) {
             $row = MemberProfileVisibility::withoutSurname($row);
         }
         unset($row['profile_type'], $row['organization_name']);

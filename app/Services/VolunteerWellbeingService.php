@@ -1774,7 +1774,12 @@ class VolunteerWellbeingService
             if (!$volunteer) {
                 return;
             }
-            $name = UserDisplayName::person($volunteer);
+            // E-122: built by the nightly scan (no viewer) for safeguarding
+            // staff only — the query below picks nobody else.
+            $name = \App\Support\Names\NameAudience::withFullNames(
+                \App\Support\Names\NameReason::STAFF_RECIPIENT,
+                static fn (): string => UserDisplayName::person($volunteer),
+            );
             $staff = \App\Models\User::where('tenant_id', $tenantId)
                 ->where('status', 'active')
                 ->where('id', '!=', $volunteerId)

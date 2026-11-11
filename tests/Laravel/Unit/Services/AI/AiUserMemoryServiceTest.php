@@ -112,7 +112,10 @@ class AiUserMemoryServiceTest extends TestCase
 
         $prompt = $this->service->buildPrompt(self::TENANT_ID, $userId);
 
-        $this->assertStringContainsString('Bob Jones', $prompt);
+        // E-122: the prompt goes to the AI provider, which is never given a
+        // surname — the member is named by first name.
+        $this->assertStringContainsString('Bob', $prompt);
+        $this->assertStringNotContainsString('Jones', $prompt);
     }
 
     public function test_prompt_contains_role(): void

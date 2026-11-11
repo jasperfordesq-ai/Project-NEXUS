@@ -70,7 +70,8 @@ class ConnectionService
 
         // Map to include the partner user info (shaped for the viewer — F-083/F-084)
         $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
-        $result = $items->map(fn (Connection $conn) => self::formatConnectionRow($conn, $userId, $viewerIsAdmin))
+        $viewerSeesSurnames = MemberProfileVisibility::viewerSeesSurnames($userId);
+        $result = $items->map(fn (Connection $conn) => self::formatConnectionRow($conn, $userId, $viewerIsAdmin, $viewerSeesSurnames))
             ->filter(fn ($d) => $d['user'] !== null)->values()->all(); // drop deleted-account partners (frontend contract: user is non-null)
 
         return [
@@ -504,7 +505,8 @@ class ConnectionService
         }
 
         $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
-        $result = $items->map(fn (Connection $conn) => self::formatConnectionRow($conn, $userId, $viewerIsAdmin))
+        $viewerSeesSurnames = MemberProfileVisibility::viewerSeesSurnames($userId);
+        $result = $items->map(fn (Connection $conn) => self::formatConnectionRow($conn, $userId, $viewerIsAdmin, $viewerSeesSurnames))
             ->filter(fn ($d) => $d['user'] !== null)->values()->all(); // drop deleted-account partners (frontend contract: user is non-null)
 
         return [
@@ -531,7 +533,7 @@ class ConnectionService
      *
      * @return array<string, mixed>
      */
-    private static function formatConnectionRow(Connection $conn, int $viewerId, bool $viewerIsAdmin): array
+    private static function formatConnectionRow(Connection $conn, int $viewerId, bool $viewerIsAdmin, bool $viewerSeesSurnames): array
     {
         $data = $conn->toArray();
         unset($data['requester'], $data['receiver']);
@@ -562,7 +564,9 @@ class ConnectionService
                 $shaped['location'] = null;
             }
 
-            if (! $viewerIsAdmin) {
+            // E-122: the surname is for staff of the community (brokers too);
+            // the private-profile rule above stays with administrators.
+            if (! $viewerSeesSurnames) {
                 $shaped = MemberProfileVisibility::withoutSurname($shaped);
             }
         }

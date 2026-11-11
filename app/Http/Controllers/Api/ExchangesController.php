@@ -26,7 +26,14 @@ class ExchangesController extends BaseApiController
     /** @var array<int, string> First names already looked up this request (F-084). */
     private array $publicPartyNames = [];
 
-    private ?bool $viewerIsAdmin = null;
+    /**
+     * Whether a viewer sees surnames, by viewer id. Keyed by viewer because a
+     * controller object can outlive one request (E-122: a single flag answered
+     * for the first caller was reused for the next one).
+     *
+     * @var array<int, bool>
+     */
+    private array $viewerSeesSurnames = [];
 
     public function __construct(
         private readonly ExchangeService $exchangeService,
@@ -538,8 +545,7 @@ class ExchangesController extends BaseApiController
         if ($storedName === null || $partyId === (int) $viewerId) {
             return $storedName;
         }
-        $this->viewerIsAdmin ??= MemberProfileVisibility::viewerIsAdmin($viewerId);
-        if ($this->viewerIsAdmin) {
+        if ($this->viewerSeesSurnames((int) $viewerId)) {
             return $storedName;
         }
         if (! array_key_exists($partyId, $this->publicPartyNames)) {
@@ -549,6 +555,13 @@ class ExchangesController extends BaseApiController
         return $this->publicPartyNames[$partyId] ?? $storedName;
     }
 
+    /** Staff of the community see full names (E-122: brokers and coordinators too). */
+    private function viewerSeesSurnames(int $viewerId): bool
+    {
+        return $this->viewerSeesSurnames[$viewerId]
+            ??= MemberProfileVisibility::viewerSeesSurnames($viewerId > 0 ? $viewerId : null);
+    }
+
     /**
      * One name lookup for a page of exchanges.
      *
@@ -556,8 +569,7 @@ class ExchangesController extends BaseApiController
      */
     private function primePublicPartyNames(array $items, int $viewerId): void
     {
-        $this->viewerIsAdmin ??= MemberProfileVisibility::viewerIsAdmin($viewerId);
-        if ($this->viewerIsAdmin || $items === []) {
+        if ($items === [] || $this->viewerSeesSurnames($viewerId)) {
             return;
         }
         $ids = [];

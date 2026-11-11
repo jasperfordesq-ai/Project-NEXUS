@@ -267,7 +267,7 @@ class LeaderboardSeasonService
      */
     private function withoutOtherMembersSurnames(array $rows, ?int $viewerId): array
     {
-        if ($rows === [] || MemberProfileVisibility::viewerIsAdmin($viewerId)) {
+        if ($rows === [] || MemberProfileVisibility::viewerSeesSurnames($viewerId)) {
             return $rows;
         }
 

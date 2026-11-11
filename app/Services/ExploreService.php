@@ -155,7 +155,11 @@ class ExploreService
         } catch (\Throwable $e) {
             Log::debug("[ExploreService] Cache::get failed for section '{$section}': " . $e->getMessage());
         }
-        $data = $compute();
+        // E-122: this payload is cached for the WHOLE community, so it is built
+        // with the names anyone may see. Without this, a section first loaded by
+        // an administrator or broker would be cached with surnames and handed to
+        // every member until it expired.
+        $data = \App\Support\Names\NameAudience::withPublicNames($compute);
         try {
             Cache::put($key, $data, $ttl);
         } catch (\Throwable $e) {

@@ -62,7 +62,11 @@ class UserDisplayNameAudienceTest extends TestCase
     }
 
     // ------------------------------------------------------------------
-    // Switch OFF (as shipped): nothing changes, for anyone.
+    // Switch OFF: nothing changes, for anyone.
+    //
+    // E-122 stage 4 turned the switch ON as shipped, so these three tests
+    // now force it OFF themselves. They stay because they are the proof that
+    // reverting the one-line flip restores exactly the old behaviour.
     // ------------------------------------------------------------------
 
     /**
@@ -82,6 +86,7 @@ class UserDisplayNameAudienceTest extends TestCase
     #[DataProvider('everyKindOfViewer')]
     public function test_with_the_switch_off_every_helper_returns_the_full_name_as_before(?array $viewer): void
     {
+        config([NameAudience::CONFIG_KEY => false]);
         $this->assertFalse(NameAudience::enforced());
         if ($viewer !== null) {
             $this->signInAs($this->person($viewer));
@@ -111,6 +116,7 @@ class UserDisplayNameAudienceTest extends TestCase
 
     public function test_with_the_switch_off_the_sql_expression_is_the_one_it_always_was(): void
     {
+        config([NameAudience::CONFIG_KEY => false]);
         $expected = "CASE
                 WHEN u.profile_type = 'organisation'
                      AND u.organization_name IS NOT NULL
@@ -130,6 +136,7 @@ class UserDisplayNameAudienceTest extends TestCase
 
     public function test_with_the_switch_off_no_query_is_added_to_building_a_name(): void
     {
+        config([NameAudience::CONFIG_KEY => false]);
         $this->signInAs($this->person());
         $row = $this->row($this->bea);
         $loaded = User::query()->find($this->bea->id);
@@ -377,6 +384,36 @@ class UserDisplayNameAudienceTest extends TestCase
 
         UserDisplayName::forgetDegradedCallSites();
         $this->assertSame([], UserDisplayName::degradedCallSites());
+    }
+
+    /**
+     * E-122 stage 4. Dozens of lists load a member as `author:id,name,avatar_url`.
+     * Guessing the first word of that stored name turned the organisation
+     * "Zqx Helping Hands" into "Zqx" and "Mary Anne" into "Mary". A loaded
+     * User says which member it is, so the public name is looked up instead.
+     */
+    public function test_a_loaded_member_carrying_only_a_stored_name_is_looked_up_not_guessed(): void
+    {
+        $this->switchOn();
+        $this->signInAs($this->person());
+        $maryAnne = $this->person(['first_name' => 'Mary Anne', 'last_name' => 'Zqxsurnamemary', 'name' => 'Mary Anne Zqxsurnamemary']);
+
+        $organisation = User::query()->select(['id', 'name', 'avatar_url'])->find($this->organisation->id);
+        $member = User::query()->select(['id', 'name', 'avatar_url'])->find($maryAnne->id);
+
+        $this->assertSame(self::ORGANISATION, UserDisplayName::resolve($organisation));
+        $this->assertSame(self::ORGANISATION, $organisation->name);
+        $this->assertSame(self::ORGANISATION, $organisation->toArray()['name']);
+        $this->assertSame('Mary Anne', UserDisplayName::resolve($member));
+        $this->assertSame('Mary Anne', $member->toArray()['name']);
+        $this->assertStringNotContainsString('Zqxsurnamemary', (string) $member->toJson());
+
+        // Still noted: the select should carry first_name, profile_type and
+        // organization_name so that no extra query is needed.
+        $this->assertNotSame([], UserDisplayName::degradedCallSites());
+
+        // A plain row cannot say whose it is, so it is still guessed.
+        $this->assertSame('Mary', UserDisplayName::publicName(['id' => $maryAnne->id, 'name' => 'Mary Anne Zqxsurnamemary']));
     }
 
     public function test_switched_on_the_stored_name_is_still_written_in_full(): void

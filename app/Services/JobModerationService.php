@@ -83,8 +83,11 @@ class JobModerationService
                 'spam_score' => $job->spam_score,
                 'spam_flags' => $job->spam_flags,
                 'created_at' => $job->created_at?->toIso8601String(),
+                // E-122: the moderation queue is an administrators' screen
+                // (its only caller is AdminJobsController), so the poster
+                // is named in full however it is run.
                 'poster_name' => $job->creator
-                    ? UserDisplayName::resolve($job->creator)
+                    ? UserDisplayName::full($job->creator, \App\Support\Names\NameReason::ADMIN_ROUTE)
                     : null,
                 'poster_avatar' => $job->creator?->avatar_url,
                 'user_id' => $job->user_id,

@@ -380,9 +380,10 @@ class ListingServiceTest extends TestCase
 
         $this->assertNotEmpty($result['items']);
         $item = $result['items'][0];
-        $this->assertSame('Aoife Nolan', $item['author_name']);
+        // E-122: a listing names its author by first name to anyone who is not staff.
+        $this->assertSame('Aoife', $item['author_name']);
         $this->assertSame('https://example.test/avatar.png', $item['author_avatar']);
-        $this->assertSame('Aoife Nolan', $item['user']['name']);
+        $this->assertSame('Aoife', $item['user']['name']); // E-122: as author_name above
     }
 
     public function test_getAll_uses_organisation_name_as_author_name(): void
@@ -452,8 +453,19 @@ class ListingServiceTest extends TestCase
         $matchId     = $this->insertListing($userId, ['title' => 'UniqueXyzSearchableTitleABC']);
         $noMatchId   = $this->insertListing($userId, ['title' => 'Completely different title']);
 
-        // Meilisearch is unavailable in test → falls through to SQL LIKE path
-        $result = ListingService::getAll(['search' => 'UniqueXyz', 'user_id' => $userId]);
+        // This test is about the SQL LIKE path, which runs when Meilisearch is
+        // unavailable. That is true in CI but not on a workstation whose search
+        // container is up, where the index knows nothing of rows inserted in
+        // this transaction — so the precondition is set here, not inherited.
+        $available = new \ReflectionProperty(\App\Services\SearchService::class, 'available');
+        $available->setAccessible(true);
+        $before = $available->getValue();
+        $available->setValue(null, false);
+        try {
+            $result = ListingService::getAll(['search' => 'UniqueXyz', 'user_id' => $userId]);
+        } finally {
+            $available->setValue(null, $before);
+        }
 
         $returnedIds = array_map('intval', array_column($result['items'], 'id'));
 

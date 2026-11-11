@@ -222,7 +222,7 @@ class UsersController extends BaseApiController
         $results = $this->userService->search($q, $limit, $viewerId);
 
         // Hide surnames from non-admin viewers
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($viewerId);
         if (!$viewerIsAdmin && isset($results['items'])) {
             $results['items'] = array_map(static function (array $u): array {
                 unset($u['last_name']);
@@ -1547,6 +1547,10 @@ class UsersController extends BaseApiController
         $viewerId = $this->getOptionalUserId();
         $viewer = Auth::user();
         $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+        // E-122: surnames are for staff of the community — brokers and
+        // coordinators too. $viewerIsAdmin above still decides, alone, whose
+        // connections-only profile is listed.
+        $viewerSeesSurnames = MemberProfileVisibility::viewerSeesSurnames($viewerId);
 
         $limit = min((int) $request->query('limit', 50), 100);
         $offset = max((int) $request->query('offset', 0), 0);
@@ -1708,9 +1712,9 @@ class UsersController extends BaseApiController
                 unset($user);
             }
 
-            $users = array_map(static function (array $u) use ($viewerIsAdmin): array {
+            $users = array_map(static function (array $u) use ($viewerSeesSurnames): array {
                 unset($u['hours_given'], $u['offer_count'], $u['request_count'], $u['last_login_at']);
-                if (!$viewerIsAdmin) {
+                if (!$viewerSeesSurnames) {
                     unset($u['last_name']);
                     if (($u['profile_type'] ?? 'individual') !== 'organisation') {
                         $u['name'] = $u['first_name'] ?? '';
@@ -1883,9 +1887,9 @@ class UsersController extends BaseApiController
         }
 
         // Clean up internal fields before returning
-        $users = array_map(static function (array $u) use ($viewerIsAdmin): array {
+        $users = array_map(static function (array $u) use ($viewerSeesSurnames): array {
             unset($u['hours_given'], $u['offer_count'], $u['request_count'], $u['last_login_at']);
-            if (!$viewerIsAdmin) {
+            if (!$viewerSeesSurnames) {
                 unset($u['last_name']);
                 if (($u['profile_type'] ?? 'individual') !== 'organisation') {
                     $u['name'] = $u['first_name'] ?? '';

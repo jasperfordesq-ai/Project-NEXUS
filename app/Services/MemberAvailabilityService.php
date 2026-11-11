@@ -376,6 +376,9 @@ class MemberAvailabilityService
     {
         $tenantId = (int) TenantContext::getId();
         $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+        // E-122: surnames are for staff of the community (brokers too);
+        // $viewerIsAdmin still decides whose private profile is listed.
+        $viewerSeesSurnames = MemberProfileVisibility::viewerSeesSurnames($viewerId);
 
         $query = $this->availability->newQuery()
             ->join('users as u', 'member_availability.user_id', '=', 'u.id')
@@ -415,12 +418,12 @@ class MemberAvailabilityService
             ->orderBy('member_availability.start_time')
             ->limit($limit)
             ->get()
-            ->map(function ($r) use ($viewerIsAdmin): array {
+            ->map(function ($r) use ($viewerSeesSurnames): array {
                 $row = $r->toArray();
                 // F-084: the directory shows other members a first name only
                 // (an organisation keeps its trading name); administrators see
                 // the full name, as in the member directory.
-                if (! $viewerIsAdmin) {
+                if (! $viewerSeesSurnames) {
                     $row = MemberProfileVisibility::withoutSurname($row, 'member_name');
                 }
                 unset($row['first_name'], $row['profile_type'], $row['organization_name']);

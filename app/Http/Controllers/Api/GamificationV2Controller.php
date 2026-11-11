@@ -374,7 +374,7 @@ class GamificationV2Controller extends BaseApiController
      */
     private function withoutLeaderboardSurnames(array $leaderboard, int $tenantId, int $viewerId): array
     {
-        if ($leaderboard === [] || MemberProfileVisibility::viewerIsAdmin($viewerId)) {
+        if ($leaderboard === [] || MemberProfileVisibility::viewerSeesSurnames($viewerId)) {
             return $leaderboard;
         }
 

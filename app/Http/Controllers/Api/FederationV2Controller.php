@@ -2798,8 +2798,9 @@ class FederationV2Controller extends BaseApiController
             ", [$userId, $tenantId]);
             $sender = $senderRow ? (array)$senderRow : [];
 
-            // The sender's own name, for the sender's own copy of the message.
-            $senderName = UserDisplayName::resolve($sender);
+            // The sender's own name, for the sender's own copy of the message
+            // (E-122: a plain row cannot say whose it is, so the reason is stated).
+            $senderName = UserDisplayName::full($sender, \App\Support\Names\NameReason::SELF);
             // E-122: what the RECEIVER — a member of another community — is
             // told (realtime event, bell, push): first name only, unless the
             // receiver administers the sender's community.

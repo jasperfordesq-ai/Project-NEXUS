@@ -57,7 +57,7 @@ final class GroupExchangePreviewTest extends TestCase
             ->assertJsonPath('data.totals.paid', 8)
             ->assertJsonPath('data.totals.to_fund', 6)
             ->assertJsonPath('data.lines.0.user_id', $mary->id)
-            ->assertJsonPath('data.lines.0.name', 'Mary Byrne')
+            ->assertJsonPath('data.lines.0.name', 'Mary') // E-122: another member, so the first name only
             ->assertJsonPath('data.lines.0.verb', 'earns')
             ->assertJsonPath('data.lines.1.verb', 'pays');
         $this->assertCount(5, $response->json('data.lines'));
@@ -135,7 +135,9 @@ final class GroupExchangePreviewTest extends TestCase
         $response->assertStatus(200);
         $names = array_column($response->json('data.lines'), 'name', 'user_id');
         $this->assertSame('Org Aniser', $names[$caller->id]);
-        $this->assertSame('Vera Visible', $names[$visible->id]);
+        // E-122: another member is shown to an ordinary member by first name only
+        // (the caller's own name, asserted just above, stays whole).
+        $this->assertSame('Vera', $names[$visible->id]);
         $this->assertNull($names[$banned->id]);
         $this->assertNull($names[$hidden->id]);
         $this->assertNull($names[$deleted->id]);

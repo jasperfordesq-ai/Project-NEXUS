@@ -375,7 +375,7 @@ class StoryService
 
         // F-084 (E-027): viewers by first name (an organisation by its trading
         // name) unless the owner is an administrator, as on the directory.
-        $ownerIsAdmin = MemberProfileVisibility::viewerIsAdmin($ownerId);
+        $ownerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($ownerId);
 
         return array_map(fn($v) => [
             'id' => (int) $v->id,

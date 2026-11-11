@@ -338,7 +338,7 @@ class EndorsementService
      */
     private static function publicNamesFor(array $userIds, ?int $viewerId): ?array
     {
-        if (MemberProfileVisibility::viewerIsAdmin($viewerId)) {
+        if (MemberProfileVisibility::viewerSeesSurnames($viewerId)) {
             return null;
         }
 

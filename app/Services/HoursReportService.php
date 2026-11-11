@@ -151,7 +151,10 @@ class HoursReportService
         $total = (int) ($totalResult->total ?? 0);
 
         $members = array_map(function ($row) {
-            $name = UserDisplayName::resolve($row);
+            // E-122: an administrators' report — its only callers are the admin
+            // analytics screen and the admin report export — so members are
+            // named in full however it is run.
+            $name = UserDisplayName::full($row, \App\Support\Names\NameReason::ADMIN_ROUTE);
             if (empty($name)) {
                 $name = $row->name ?? 'Unknown';
             }

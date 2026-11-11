@@ -155,12 +155,13 @@ final class UserDisplayName
      * name. Never the surname.
      *
      * A row that carries no first name but does carry a stored full `name`
-     * (a `name`-only select) cannot know where the first name ends, so it
-     * degrades to the first word of that name. That is wrong on the safe side
-     * for "Mary Anne", or for an organisation selected without `profile_type`,
-     * and each such call site is noted ({@see self::degradedCallSites()}) so
-     * the select can be widened to `first_name, profile_type,
-     * organization_name`.
+     * (a `name`-only select) cannot know where the first name ends. A loaded
+     * `App\Models\User` is looked up by its own id (one extra query); any
+     * other row degrades to the first word of that name, which is wrong on
+     * the safe side for "Mary Anne" or for an organisation selected without
+     * `profile_type`. Either way the call site is noted
+     * ({@see self::degradedCallSites()}) so the select can be widened to
+     * `first_name, profile_type, organization_name`.
      *
      * @param array<string, mixed>|object|null $user
      */
@@ -180,8 +181,8 @@ final class UserDisplayName
     }
 
     /**
-     * Call sites (`file:line`) where a first name had to be guessed from a
-     * stored full name. Recorded in the `testing` and `local` environments
+     * Call sites (`file:line`) where a first name had to be looked up or
+     * guessed because the row carried only a stored full name. Recorded in the `testing` and `local` environments
      * only.
      *
      * @return list<string>
@@ -218,10 +219,73 @@ final class UserDisplayName
         if ($stored !== '') {
             self::noteDegradedCallSite();
 
-            return (string) (preg_split('/\s+/u', $stored, 2)[0] ?? '');
+            // A loaded User says which member it is, so its public name can be
+            // read instead of guessed. Anything else gets the first word.
+            return self::lookedUpPublicName($row, $prefix)
+                ?? (string) (preg_split('/\s+/u', $stored, 2)[0] ?? '');
         }
 
         return (string) $fallback;
+    }
+
+    /**
+     * The public name of a loaded `App\Models\User` that was selected without
+     * its name parts (`author:id,name,avatar_url`; there are dozens): one
+     * query by its own id for the organisation name or the first name. Null
+     * when the row is not such a model, or the lookup finds nothing usable.
+     *
+     * The id is trusted because the model was loaded with it; where the model
+     * also carries its community, the lookup is held to that community.
+     * Remembered for the rest of the request only (never in a static: one
+     * feature test makes several requests, and a queue worker lives long).
+     *
+     * @param array<string, mixed>|object $row
+     */
+    private static function lookedUpPublicName(array|object $row, string $prefix): ?string
+    {
+        if ($prefix !== '' || ! $row instanceof \App\Models\User) {
+            return null;
+        }
+        $id = $row->getKey();
+        if (! is_numeric($id) || (int) $id <= 0) {
+            return null;
+        }
+        $id = (int) $id;
+
+        $app = \Illuminate\Container\Container::getInstance();
+        if (! $app->bound('db')) {
+            return null;
+        }
+        $request = $app->bound('request') ? $app->make('request') : null;
+        $memoise = $request instanceof \Illuminate\Http\Request && $request->route() !== null;
+        /** @var array<int, string|null> $memo */
+        $memo = $memoise ? $request->attributes->get('names.public_lookup', []) : [];
+        if (array_key_exists($id, $memo)) {
+            return $memo[$id];
+        }
+
+        $query = \Illuminate\Support\Facades\DB::table('users')->where('id', $id);
+        $tenantId = $row->getAttributes()['tenant_id'] ?? null;
+        if (is_numeric($tenantId)) {
+            $query->where('tenant_id', (int) $tenantId);
+        }
+        $found = $query->first(['first_name', 'profile_type', 'organization_name']);
+
+        $name = null;
+        if ($found !== null) {
+            $organisation = trim((string) ($found->organization_name ?? ''));
+            $first = trim((string) ($found->first_name ?? ''));
+            $name = ($found->profile_type === self::ORGANISATION && $organisation !== '')
+                ? $organisation
+                : ($first !== '' ? $first : null);
+        }
+
+        if ($memoise) {
+            $memo[$id] = $name;
+            $request->attributes->set('names.public_lookup', $memo);
+        }
+
+        return $name;
     }
 
     /**
@@ -273,13 +337,28 @@ final class UserDisplayName
             return;
         }
 
-        foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 8) as $frame) {
+        // The first frame that is the application's own code and is neither
+        // this helper nor the User model's `name` accessor / serialisation,
+        // which only relay the call: the place that SELECTED too little is
+        // above them, often past several framework frames.
+        $relays = [__FILE__, (string) (new \ReflectionClass(\App\Models\User::class))->getFileName()];
+        $fallback = null;
+        foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 40) as $frame) {
             $file = (string) ($frame['file'] ?? '');
-            if ($file !== '' && $file !== __FILE__) {
-                self::$degradedCallSites[$file . ':' . (int) ($frame['line'] ?? 0)] = true;
-
-                return;
+            if ($file === '' || $file === __FILE__) {
+                continue;
             }
+            $site = $file . ':' . (int) ($frame['line'] ?? 0);
+            $fallback ??= $site;
+            if (in_array($file, $relays, true) || str_contains($file, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR)) {
+                continue;
+            }
+            self::$degradedCallSites[$site] = true;
+
+            return;
+        }
+        if ($fallback !== null) {
+            self::$degradedCallSites[$fallback] = true;
         }
     }
 

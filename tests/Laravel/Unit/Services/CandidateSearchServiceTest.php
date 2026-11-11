@@ -210,7 +210,9 @@ class CandidateSearchServiceTest extends TestCase
         $this->assertSame(42, $item['id']);
         $this->assertSame('Jane', $item['first_name']);
         $this->assertSame('Doe', $item['last_name']);
-        $this->assertSame('Jane Doe', $item['name']);
+        // E-122: a job poster is not staff, so the display name is the first
+        // name. (The raw `last_name` key above is a later stage of E-122.)
+        $this->assertSame('Jane', $item['name']);
         $this->assertSame('https://example.com/avatar.jpg', $item['avatar_url']);
         $this->assertSame('Senior Engineer', $item['headline']);
         $this->assertSame(['PHP', 'Laravel', 'React'], $item['skills']);
@@ -266,7 +268,8 @@ class CandidateSearchServiceTest extends TestCase
 
         $this->assertNotNull($result);
         $this->assertSame(42, $result['id']);
-        $this->assertSame('Jane Doe', $result['name']);
+        // E-122: a job poster is not staff, so the display name is the first name.
+        $this->assertSame('Jane', $result['name']);
         $this->assertSame('Senior Engineer', $result['headline']);
         $this->assertSame('I build things.', $result['summary']);
         $this->assertSame(['PHP', 'React', 'TypeScript'], $result['skills']);

@@ -257,7 +257,8 @@ class EventsControllerTest extends TestCase
         $this->assertSame('Remote or local', $contract['location']['label']);
         $this->assertNull($contract['location']['latitude']);
         $this->assertNull($contract['location']['longitude']);
-        $this->assertSame('Event Organiser', $contract['organiser']['display_name']);
+        // E-122: surnames are for staff of the community; a member or a visitor sees the first name.
+        $this->assertSame('Event', $contract['organiser']['display_name']);
         $this->assertSame(\Illuminate\Support\Carbon::parse($startStr, 'UTC')->toIso8601String(), $contract['start_at']);
         $this->assertSame(\Illuminate\Support\Carbon::parse($endStr, 'UTC')->toIso8601String(), $contract['end_at']);
         $this->assertSame('active', $contract['status']);
@@ -342,7 +343,8 @@ class EventsControllerTest extends TestCase
         $this->assertSame('A detailed public event description for newcomers.', $contract['description']);
         $this->assertSame('/uploads/tenants/hour-timebank/events/welcome.jpg', $contract['primary_image']['url']);
         $this->assertSame('Online', $contract['location']['label']);
-        $this->assertSame('Detail Organiser', $contract['organiser']['display_name']);
+        // E-122: surnames are for staff of the community; a member or a visitor sees the first name.
+        $this->assertSame('Detail', $contract['organiser']['display_name']);
         $this->assertSame('2026-08-01T18:30:00+00:00', $contract['start_at']);
         $this->assertSame('2026-08-01T20:00:00+00:00', $contract['end_at']);
     }

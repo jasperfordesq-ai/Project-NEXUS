@@ -280,8 +280,10 @@ class JobVacancyServiceTest extends TestCase
             $this->assertIsArray($result, $method . '() should return the vacancy');
             $this->assertArrayHasKey('creator', $result);
             $this->assertSame($userId, (int) $result['creator']['id']);
+            // E-122: a vacancy read names its poster by first name (this
+            // service is asked with nobody signed in here, as a member would see it).
             $this->assertSame(
-                'Test User',
+                'Test',
                 trim((string) $result['creator']['name']),
                 $method . '() must join users so the poster has a name, not an empty string',
             );

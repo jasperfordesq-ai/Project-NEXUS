@@ -179,7 +179,7 @@ class MessageService
         $response = self::withoutParticipantSurnames(
             $message->toArray(),
             $senderId,
-            MemberProfileVisibility::viewerIsAdmin($senderId),
+            MemberProfileVisibility::viewerSeesSurnames($senderId),
         );
         $response['_idempotent_replay'] = true;
 
@@ -230,7 +230,7 @@ class MessageService
         $search = trim((string) ($filters['q'] ?? ''));
         if ($search !== '') {
             $like = '%' . addcslashes(mb_substr($search, 0, 100), '%_\\') . '%';
-            $viewerSeesSurnames = MemberProfileVisibility::viewerIsAdmin($userId);
+            $viewerSeesSurnames = MemberProfileVisibility::viewerSeesSurnames($userId);
             $matchingPartners = DB::table('users')
                 ->select('id')
                 ->where('tenant_id', $tenantId)
@@ -306,7 +306,7 @@ class MessageService
         // "Hide my presence" applies here too (F-088): is_online is derived
         // from last_active_at, which the setting does not touch.
         $hiddenPartnerIds = PresenceService::hiddenUserIds($partnerIds);
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($userId);
 
         $items = $messages->map(function (Message $msg) use ($userId, $unreadCounts, $reactionCounts, $hiddenPartnerIds, $viewerIsAdmin) {
             // F-193: the latest message can be a deleted-for-everyone voice
@@ -437,7 +437,7 @@ class MessageService
         // Note: markAsRead is called by the controller, not here, to avoid double-calling.
 
         $reactionCounts = self::publicReactionCountsForMessages($messages, $userId);
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($userId);
         $items = $messages->map(function (Message $msg) use ($reactionCounts, $userId, $viewerIsAdmin): array {
             $data = self::withDeletedMessageTombstone(
                 self::withoutParticipantSurnames($msg->toArray(), $userId, $viewerIsAdmin),
@@ -947,7 +947,7 @@ class MessageService
             $persisted = self::withoutParticipantSurnames(
                 $message->fresh(self::messageResponseRelations())->toArray(),
                 $senderId,
-                MemberProfileVisibility::viewerIsAdmin($senderId),
+                MemberProfileVisibility::viewerSeesSurnames($senderId),
             );
             if ($idempotencyKey !== '') {
                 DB::table('message_send_receipts')->insert([
@@ -1537,7 +1537,7 @@ class MessageService
                 'avatar_url' => $otherUser->avatar_url,
                 'is_online'  => PresenceService::hiddenUserIds([(int) $otherUser->id]) === []
                     && ($otherUser->last_active_at && $otherUser->last_active_at->gt(now()->subMinutes(5))),
-            ], $otherUser, MemberProfileVisibility::viewerIsAdmin($userId)),
+            ], $otherUser, MemberProfileVisibility::viewerSeesSurnames($userId)),
             'unread_count'  => $unreadCount,
             'message_count' => $messageCount,
             'safeguarding'  => $safeguarding,

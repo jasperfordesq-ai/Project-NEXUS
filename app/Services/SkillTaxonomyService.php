@@ -540,6 +540,8 @@ class SkillTaxonomyService
         MemberDirectoryVisibility::applyToQuery($query, $tenantId, 'u');
         $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
         MemberProfileVisibility::applyToQuery($query, $tenantId, $viewerId, 'u', $viewerIsAdmin);
+        // E-122: surnames are for staff of the community (brokers too).
+        $viewerSeesSurnames = MemberProfileVisibility::viewerSeesSurnames($viewerId);
 
         if ($viewerId !== null && $viewerId > 0) {
             $blockedIds = array_map('intval', BlockUserService::getBlockedPairIds($viewerId));
@@ -558,9 +560,9 @@ class SkillTaxonomyService
                 'us.is_offering', 'us.is_requesting'
             )
             ->get()
-            ->map(static function ($r) use ($viewerIsAdmin): array {
+            ->map(static function ($r) use ($viewerSeesSurnames): array {
                 $row = (array) $r;
-                if (! $viewerIsAdmin) {
+                if (! $viewerSeesSurnames) {
                     unset($row['last_name']);
                 }
 

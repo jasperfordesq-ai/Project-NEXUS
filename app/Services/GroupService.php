@@ -257,7 +257,7 @@ class GroupService
                 array_merge([$tenantId, $tenantId], $visibleIds, [$viewerId])
             );
 
-            $viewerSeesSurnames = MemberProfileVisibility::viewerIsAdmin($viewerId);
+            $viewerSeesSurnames = MemberProfileVisibility::viewerSeesSurnames($viewerId);
             foreach ($rows as $m) {
                 $row = [
                     'id'         => (int) $m->id,
@@ -443,7 +443,7 @@ class GroupService
 
                 // F-084: surnames for platform administrators only, as on the
                 // group member list; the viewer's own row is unchanged.
-                $viewerIsPlatformAdmin = MemberProfileVisibility::viewerIsAdmin($currentUserId);
+                $viewerIsPlatformAdmin = MemberProfileVisibility::viewerSeesSurnames($currentUserId);
                 $data['recent_members'] = $recentMembers->map(function ($m) use ($currentUserId, $viewerIsPlatformAdmin): array {
                     $row = [
                         'id'         => (int) $m->id,
@@ -454,6 +454,10 @@ class GroupService
                         'avatar'     => $m->avatar_url,
                     ];
                     if ($viewerIsPlatformAdmin || (int) $m->id === (int) $currentUserId) {
+                        // E-122: staff of the community, or the viewer's own
+                        // row — decided here, so the full name is stated.
+                        $row['name'] = UserDisplayName::full($m, \App\Support\Names\NameReason::CHECKED_BY_CALLER);
+
                         return $row;
                     }
                     $row = MemberProfileVisibility::withoutSurname($row + [
@@ -2023,7 +2027,7 @@ class GroupService
 
         // F-084: surnames are for platform administrators only, as on the
         // profile and member directory (group owners are not exempt).
-        $viewerIsPlatformAdmin = MemberProfileVisibility::viewerIsAdmin($viewerUserId);
+        $viewerIsPlatformAdmin = MemberProfileVisibility::viewerSeesSurnames($viewerUserId);
 
         if ($role) {
             $query->where('group_members.role', $role);
@@ -2094,8 +2098,10 @@ class GroupService
 
             return [
                 'id' => $targetUserId,
+                // E-122: staff of the community, or the viewer's own row —
+                // decided here, so the full name is stated.
                 'name' => ($viewerIsPlatformAdmin || $isSelf)
-                    ? UserDisplayName::resolve($m)
+                    ? UserDisplayName::full($m, \App\Support\Names\NameReason::CHECKED_BY_CALLER)
                     : (string) MemberProfileVisibility::withoutSurname((array) $m)['name'],
                 'avatar_url' => $m->avatar_url,
                 'role' => $targetRole,

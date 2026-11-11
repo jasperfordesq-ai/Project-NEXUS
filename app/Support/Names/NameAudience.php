@@ -54,7 +54,7 @@ use Illuminate\Support\Facades\Auth;
  */
 final class NameAudience
 {
-    /** The single switch. Off until E-122 stage 4. */
+    /** The single switch. On since E-122 stage 4 (owner, 10 Nov 2026: "Yes, switch it on"). */
     public const CONFIG_KEY = 'names.surname_audience_enforced';
 
     private const GRANT_ATTRIBUTE = 'names.full_reason';

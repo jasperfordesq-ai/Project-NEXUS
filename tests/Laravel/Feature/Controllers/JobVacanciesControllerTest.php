@@ -489,7 +489,8 @@ class JobVacanciesControllerTest extends TestCase
         $this->assertSame('Coordinate a weekly repair cafe.', $contract['excerpt']);
         $this->assertSame('Online', $contract['location']['label']);
         $this->assertTrue($contract['location']['is_remote']);
-        $this->assertSame('Detail Employer', $contract['employer']['display_name']);
+        // E-122: surnames are for staff of the community; a member or a visitor sees the first name.
+        $this->assertSame('Detail', $contract['employer']['display_name']);
         $this->assertSame('timebank', $contract['job_type']);
         $this->assertSame('flexible', $contract['commitment']);
         $this->assertEquals(3.0, $contract['compensation']['time_credits']);

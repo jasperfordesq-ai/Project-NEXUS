@@ -210,14 +210,18 @@ class UserService
             $profile['online_status'] = 'offline';
         }
 
-        // Hide last name from non-admin viewers — surnames are private by default
+        // Surnames are for staff of the community — administrators, and
+        // (E-122, owner 10 Nov 2026: "Brokers too") its brokers and coordinators.
         if ($viewerId !== $userId) {
-            if (!$viewerId || !self::isViewerAdmin($viewerId)) {
+            if (!$viewerId || !MemberProfileVisibility::viewerSeesSurnames($viewerId)) {
                 unset($profile['last_name']);
                 if (($user->profile_type ?? 'individual') !== 'organisation') {
                     $profile['name'] = $user->first_name ?? '';
                 }
+            }
 
+            // The exact location stays with the owner and administrators only.
+            if (!$viewerId || !self::isViewerAdmin($viewerId)) {
                 // F-082: other members see coordinates rounded to ~1 km — the
                 // stored values are often a home address from the location
                 // picker. The owner and administrators keep the exact values.
@@ -271,6 +275,8 @@ class UserService
         ];
 
         $fields = collect($data)->only($allowed)->all();
+        // E-122: a blank surname never erases a surname (see withoutBlankSurname()).
+        $fields = self::withoutBlankSurname($fields);
         // An empty photo description is no description: store NULL so the
         // websites fall back to the member's name (AWID report item 6).
         if (array_key_exists('avatar_alt', $fields)) {
@@ -293,6 +299,40 @@ class UserService
         $user->save();
 
         return $user->fresh();
+    }
+
+    /**
+     * A blank `last_name` in a profile save means "unchanged" (E-122).
+     *
+     * Surnames are shown to staff only, so an edit screen can be holding a
+     * profile it was sent without one and post the field back empty; the
+     * framework turns "" and "   " into null on the way in. Before this, that
+     * stored NULL and the observer rewrote `users.name` to the first name
+     * alone — the surname was gone for everyone, administrators included.
+     *
+     * No member-facing screen offers "remove my surname": registration
+     * requires one. The admin member screen has its own update path
+     * (AdminUsersController) and does not come through here.
+     *
+     * @param  array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private static function withoutBlankSurname(array $data): array
+    {
+        if (! array_key_exists('last_name', $data)) {
+            return $data;
+        }
+
+        $surname = $data['last_name'];
+        if (! is_string($surname) || trim($surname) === '') {
+            unset($data['last_name']);
+
+            return $data;
+        }
+
+        $data['last_name'] = trim($surname);
+
+        return $data;
     }
 
     /**
@@ -495,6 +535,10 @@ class UserService
     public static function updateProfile(int $userId, array $data): bool
     {
         self::$errors = [];
+
+        // E-122: a blank surname never erases a surname. Dropped here, before
+        // the changed-fields diff, so a blank is not recorded as an edit either.
+        $data = self::withoutBlankSurname($data);
 
         // If user has id_verified badge, lock name and DOB fields
         if (array_key_exists('first_name', $data)
@@ -1202,7 +1246,10 @@ class UserService
             }
         }
 
-        $result = $items->map(function (User $user) use ($badgesByUser, $viewerIsAdmin) {
+        // E-122: surnames are for staff of the community (brokers too). The
+        // private-profile rule and exact coordinates stay with $viewerIsAdmin.
+        $viewerSeesSurnames = MemberProfileVisibility::viewerSeesSurnames($currentUserId);
+        $result = $items->map(function (User $user) use ($badgesByUser, $viewerIsAdmin, $viewerSeesSurnames) {
             $row = [
                 'id'                   => $user->id,
                 'name'                 => ($user->profile_type === 'organisation' && $user->organization_name)
@@ -1228,7 +1275,7 @@ class UserService
             ];
 
             // The directory's surname rule applies to nearby members too.
-            return $viewerIsAdmin ? $row : MemberProfileVisibility::withoutSurname($row);
+            return $viewerSeesSurnames ? $row : MemberProfileVisibility::withoutSurname($row);
         })->all();
 
         return [

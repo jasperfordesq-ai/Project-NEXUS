@@ -449,7 +449,8 @@ class MarketplaceListingControllerTest extends TestCase
         $this->assertEquals(25.0, $contract['price']['amount']);
         $this->assertSame('EUR', $contract['price']['currency']);
         $this->assertEquals(2.0, $contract['price']['time_credits']);
-        $this->assertSame('Market Seller', $contract['seller']['display_name']);
+        // E-122: surnames are for staff of the community; a member or a visitor sees the first name.
+        $this->assertSame('Market', $contract['seller']['display_name']);
         $this->assertSame('both', $contract['delivery']['method']);
         $this->assertTrue($contract['delivery']['shipping_available']);
         $this->assertTrue($contract['delivery']['local_pickup']);
@@ -496,7 +497,8 @@ class MarketplaceListingControllerTest extends TestCase
         $this->assertSame('Shared Tools', $contract['category']['name']);
         $this->assertSame('Online', $contract['location']['label']);
         $this->assertSame('free', $contract['price']['price_type']);
-        $this->assertSame('Detail Seller', $contract['seller']['display_name']);
+        // E-122: surnames are for staff of the community; a member or a visitor sees the first name.
+        $this->assertSame('Detail', $contract['seller']['display_name']);
     }
 
     /**

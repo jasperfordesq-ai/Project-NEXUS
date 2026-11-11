@@ -155,7 +155,7 @@ class ExchangeService
             ]);
 
         // F-084: the counterparty by first name unless the viewer is an admin.
-        $publicNames = MemberProfileVisibility::viewerIsAdmin($userId)
+        $publicNames = MemberProfileVisibility::viewerSeesSurnames($userId)
             ? null
             : MemberProfileVisibility::publicNames(
                 $rows->map(fn ($r) => (int) $r->requester_id === $userId ? (int) $r->provider_id : (int) $r->requester_id)->all(),

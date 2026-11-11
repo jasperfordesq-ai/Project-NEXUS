@@ -1365,7 +1365,8 @@ class SafeguardingPreferenceService
                         $optionLabel,
                     );
                     if ($hasName) {
-                        $revokerName = UserDisplayName::resolve($revoker);
+                        // E-122: this bell goes to safeguarding staff only.
+                        $revokerName = UserDisplayName::full($revoker, \App\Support\Names\NameReason::STAFF_RECIPIENT);
                     } elseif (!empty($legacyName)) {
                         $revokerName = $legacyName;
                     } else {

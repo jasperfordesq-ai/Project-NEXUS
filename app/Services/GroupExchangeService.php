@@ -566,7 +566,11 @@ class GroupExchangeService
                 }
             })
             ->get(['id', 'first_name', 'last_name', 'profile_type', 'organization_name'])
-            ->mapWithKeys(static fn ($u): array => [(int) $u->id => UserDisplayName::resolve($u)])
+            // E-122: the caller's own name in full; everyone else as the
+            // central rule allows (first name unless the caller is staff).
+            ->mapWithKeys(static fn ($u): array => [(int) $u->id => $viewerId !== null && (int) $u->id === $viewerId
+                ? UserDisplayName::full($u, \App\Support\Names\NameReason::SELF)
+                : UserDisplayName::resolve($u)])
             ->all();
 
         $message = $this->problemMessage($calc);

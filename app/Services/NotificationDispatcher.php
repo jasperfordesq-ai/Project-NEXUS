@@ -1701,7 +1701,10 @@ class NotificationDispatcher
             return;
         }
 
-        $userName = UserDisplayName::resolve($user);
+        // E-122: the recipients below are administrators by the query that
+        // picks them, and this runs from the provider webhook with nobody
+        // signed in — so the full name is stated, not left to the viewer.
+        $userName = UserDisplayName::full($user, \App\Support\Names\NameReason::STAFF_RECIPIENT);
         $email = $user->email ?? '';
         $isPassed = $status === 'passed';
         $link = "/admin/users"; // /admin/members is not a page

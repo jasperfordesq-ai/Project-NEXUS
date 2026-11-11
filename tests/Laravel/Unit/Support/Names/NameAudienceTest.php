@@ -49,13 +49,15 @@ class NameAudienceTest extends TestCase
         TenantContext::setById($this->testTenantId);
     }
 
-    public function test_the_switch_is_off(): void
+    // E-122 stage 4 (owner, 10 Nov 2026: "Yes, switch it on"): this test pinned
+    // the switch OFF while the rule was being built; it now pins it ON.
+    public function test_the_switch_is_on(): void
     {
-        $this->assertFalse(
+        $this->assertTrue(
             config(NameAudience::CONFIG_KEY),
-            'E-122 stage 4 turns this on in its own commit. Until then every name helper must behave as before.'
+            'E-122 stage 4 turned the surname rule on. Turning it off again is a reviewed revert, not a setting.'
         );
-        $this->assertFalse(NameAudience::enforced());
+        $this->assertTrue(NameAudience::enforced());
     }
 
     /**

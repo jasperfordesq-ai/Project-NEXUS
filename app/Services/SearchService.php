@@ -18,6 +18,8 @@ use App\Models\User;
 use App\Support\Events\EventContractMapper;
 use App\Support\Events\EventSearchVisibility;
 use App\Support\Members\MemberDirectoryVisibility;
+use App\Support\Members\MemberProfileVisibility;
+use App\Support\Names\NameAudience;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -946,6 +948,57 @@ class SearchService
         ));
     }
 
+    /**
+     * E-122: a hit from the members index is the document AS INDEXED, and the
+     * index holds every member's `last_name`. The display name beside it is
+     * already built for whoever is looking; this removes the raw field for
+     * everyone who is not staff of the community. (Taking surnames out of the
+     * index itself is a later stage; until then this is what stands between
+     * the index and a member.)
+     *
+     * @param  array<string, mixed> $hit
+     * @return array<string, mixed>
+     */
+    private static function publicUserHit(array $hit): array
+    {
+        if (NameAudience::enforced() && ! NameAudience::allowsSurnames()) {
+            unset($hit['last_name']);
+        }
+
+        return $hit;
+    }
+
+    /**
+     * E-122: a hit from the listings index carries `author_name` as it was
+     * when the listing was last indexed — a full name for every document
+     * indexed before the surname rule, and whenever the author's own save
+     * re-indexed it. For everyone who is not staff of the community the
+     * author is named afresh from the database: first name, or an
+     * organisation's trading name.
+     *
+     * @param  list<array<string, mixed>> $hits
+     * @return list<array<string, mixed>>
+     */
+    private static function publicListingHits(array $hits, int $tenantId): array
+    {
+        if ($hits === [] || ! NameAudience::enforced() || NameAudience::allowsSurnames()) {
+            return $hits;
+        }
+
+        $names = MemberProfileVisibility::publicNames(
+            array_map(static fn (array $hit): int => (int) ($hit['user_id'] ?? 0), $hits),
+            $tenantId,
+        );
+
+        foreach ($hits as $i => $hit) {
+            if (array_key_exists('author_name', $hit)) {
+                $hits[$i]['author_name'] = $names[(int) ($hit['user_id'] ?? 0)] ?? '';
+            }
+        }
+
+        return $hits;
+    }
+
     private function searchViaMeilisearch(string $term, ?string $type, int $limit, ?int $viewerId = null): array
     {
         $client   = static::client();
@@ -969,7 +1022,7 @@ class SearchService
                 $name = ($h['profile_type'] ?? '') === 'organisation' && !empty($h['organization_name'])
                     ? $h['organization_name']
                     : UserDisplayName::resolve($h);
-                return [...$h, 'result_type' => 'user', 'name' => $name, 'avatar' => $h['avatar_url'] ?? null, 'tagline' => $h['bio'] ?? null];
+                return [...self::publicUserHit($h), 'result_type' => 'user', 'name' => $name, 'avatar' => $h['avatar_url'] ?? null, 'tagline' => $h['bio'] ?? null];
             }, $hits);
         }
 
@@ -979,7 +1032,7 @@ class SearchService
                 'limit'  => $limit,
             ])->getHits();
 
-            $results['listings'] = array_map(fn(array $h) => [...$h, 'result_type' => 'listing'], $hits);
+            $results['listings'] = array_map(fn(array $h) => [...$h, 'result_type' => 'listing'], self::publicListingHits($hits, (int) $tenantId));
         }
 
         if ($type === null || $type === 'events') {
@@ -1190,7 +1243,7 @@ class SearchService
                 'filter' => implode(' AND ', $filterParts),
                 'limit'  => $limit,
             ])->getHits();
-            foreach ($hits as $h) {
+            foreach (self::publicListingHits($hits, (int) $tenantId) as $h) {
                 $allItems[] = [...$h, 'type' => 'listing', 'listing_type' => $h['type'] ?? null];
             }
         }
@@ -1206,7 +1259,7 @@ class SearchService
                 $name = ($h['profile_type'] ?? '') === 'organisation' && !empty($h['organization_name'])
                     ? $h['organization_name']
                     : UserDisplayName::resolve($h);
-                $allItems[] = [...$h, 'type' => 'user', 'name' => $name, 'avatar' => $h['avatar_url'] ?? null, 'tagline' => $h['bio'] ?? null];
+                $allItems[] = [...self::publicUserHit($h), 'type' => 'user', 'name' => $name, 'avatar' => $h['avatar_url'] ?? null, 'tagline' => $h['bio'] ?? null];
             }
         }
 
@@ -1561,7 +1614,7 @@ class SearchService
             $name = ($h['profile_type'] ?? '') === 'organisation' && !empty($h['organization_name'])
                 ? $h['organization_name']
                 : UserDisplayName::resolve($h);
-            return [...$h, 'name' => $name];
+            return [...self::publicUserHit($h), 'name' => $name];
         }, $userHits);
 
         $now = now()->timestamp;

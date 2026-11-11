@@ -253,11 +253,15 @@ class OrganisationDisplayNameTest extends TestCase
             'profile_type' => 'individual',
         ]);
 
+        // E-122: with nobody signed in (as here) the standard expression gives
+        // the first name only; the full person name needs a stated reason.
         $row = DB::table('users')
             ->where('id', $user->id)
             ->selectRaw(UserDisplayName::sql('users', 'resolved_name'))
+            ->selectRaw(UserDisplayName::sqlFull('users', 'full_name', \App\Support\Names\NameReason::AUDIT_LOG))
             ->first();
 
-        self::assertSame('Ada Lovelace', $row->resolved_name);
+        self::assertSame('Ada', $row->resolved_name);
+        self::assertSame('Ada Lovelace', $row->full_name);
     }
 }

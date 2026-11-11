@@ -211,7 +211,7 @@ class MemberActivityService
 
         // Connections — surnames only for the member themselves and for
         // administrators (F-084), as on the profile route.
-        $fullNames = ! $filterForViewer || MemberProfileVisibility::viewerIsAdmin($viewerId);
+        $fullNames = ! $filterForViewer || MemberProfileVisibility::viewerSeesSurnames($viewerId);
         $u1Name = $fullNames ? "CONCAT(u1.first_name, ' ', u1.last_name)" : self::publicNameSql('u1');
         $u2Name = $fullNames ? "CONCAT(u2.first_name, ' ', u2.last_name)" : self::publicNameSql('u2');
         try {

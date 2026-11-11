@@ -275,6 +275,68 @@ class SurnameSweepTest extends AccessSweepTestCase
         $this->assertGreaterThan(0, $summary['served_with_data'], 'No route returned data — nothing was proved.');
     }
 
+    /**
+     * E-122 stage 4 — the same sweep, after STAFF have been everywhere first.
+     *
+     * Since the central rule was switched on, a name is built for whoever is
+     * looking. A payload that is cached for the whole community and built
+     * while an administrator or broker is looking would therefore hold
+     * surnames, and be handed to the next member (Explore did exactly that).
+     * So an administrator and then a broker call every member-facing route,
+     * nothing is flushed, and the member pass is run on top of whatever they
+     * left behind. No route may leak that is not already in the baseline.
+     *
+     * One-directional on purpose: this pass never shrinks or rewrites the
+     * baseline, and it does not care which baseline routes still leak.
+     */
+    public function test_a_member_sees_no_new_surname_after_staff_have_warmed_every_cache(): void
+    {
+        $routes = $this->classifyGetRoutes();
+        $inPass = array_filter($routes, static fn (array $r): bool => $r['pass'] === 'member');
+        $this->assertNotEmpty($inPass);
+
+        $viewer = $this->seedCommunity();
+
+        foreach ([['role' => 'admin'], ['role' => 'broker']] as $staffAttributes) {
+            $staff = $this->actAs($staffAttributes + [
+                'first_name' => 'Zqxfirststaff',
+                'last_name' => 'Zqxstaffnotscanned',
+                'name' => 'Zqxfirststaff Zqxstaffnotscanned',
+            ]);
+            TenantContext::setById($this->testTenantId);
+            foreach ($inPass as $route) {
+                $this->exerciseRoute($route, $staff);
+            }
+        }
+
+        // Back to the ordinary member — with every cache as staff left it.
+        auth()->forgetGuards();
+        $this->flushHeaders();
+        \Laravel\Sanctum\Sanctum::actingAs($viewer, ['*']);
+        TenantContext::setById($this->testTenantId);
+
+        $known = $this->readBaseline()['known_leaks'];
+        $new = [];
+        $withData = 0;
+        foreach ($inPass as $key => $route) {
+            $r = $this->exerciseRoute($route, $viewer);
+            if ($r['outcome'] === 'data') {
+                $withData++;
+            }
+            if ($r['surnames'] !== [] && ! array_key_exists($key, $known)) {
+                $new[] = $key . ' -> ' . implode(',', $r['surnames']) . ' in ' . implode(' | ', array_slice($r['fields'], 0, 4));
+            }
+        }
+
+        $this->assertGreaterThan(100, $withData, 'The member pass returned data on too few routes to prove anything.');
+        $this->assertSame([], $new, sprintf(
+            '%d member-facing GET route(s) show a member a surname ONLY after staff have loaded them first: '
+            . 'a payload shared by the whole community is being built with the names staff may see. '
+            . 'Build it inside NameAudience::withPublicNames().',
+            count($new)
+        ));
+    }
+
     // ================================================================
     // Guards that must stay green through every later E-122 stage
     // ================================================================
@@ -1071,6 +1133,17 @@ class SurnameSweepTest extends AccessSweepTestCase
             if ($r['surnames'] !== []) {
                 $lines[] = sprintf('  %s  [%s]  %s', $key, implode(',', $r['surnames']), implode(' | ', array_slice($r['fields'], 0, 3)));
             }
+        }
+        // E-122 stage 4: places where a first name had to be LOOKED UP or GUESSED from a
+        // stored full name because the select carried `name` only. Safe (never
+        // a surname) but wrong for "Mary Anne" and for an organisation selected
+        // without profile_type. Printed, not asserted: this is the work list
+        // for widening those selects.
+        $degraded = \App\Support\UserDisplayName::degradedCallSites();
+        sort($degraded);
+        $lines[] = sprintf('--- first name looked up or guessed from a stored full name: %d call site(s) ---', count($degraded));
+        foreach ($degraded as $site) {
+            $lines[] = '  ' . str_replace(base_path() . DIRECTORY_SEPARATOR, '', $site);
         }
         $lines[] = '================================================================';
 

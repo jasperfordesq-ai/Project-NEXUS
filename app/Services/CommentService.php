@@ -712,7 +712,7 @@ class CommentService
         }
         MemberDirectoryVisibility::applyToQuery($query, $tenantId);
 
-        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($currentUserId > 0 ? $currentUserId : null);
+        $viewerIsAdmin = MemberProfileVisibility::viewerSeesSurnames($currentUserId > 0 ? $currentUserId : null);
 
         return $query
             ->select(['id', 'name', 'first_name', 'username', 'avatar_url', 'profile_type', 'organization_name'])

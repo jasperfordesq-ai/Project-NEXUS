@@ -181,7 +181,7 @@ class ExploreServiceTest extends TestCase
         $this->assertEquals(42, $item['id']);
         $this->assertEquals(7, $item['user_id']);
         $this->assertEquals('Great community event!', $item['excerpt']);
-        $this->assertEquals('Jane Smith', $item['author_name']);
+        $this->assertEquals('Jane', $item['author_name']); // E-122: Explore names members by first name only
         $this->assertSame(12, $item['likes_count']);
         $this->assertSame(3, $item['comments_count']);
     }
@@ -298,7 +298,7 @@ class ExploreServiceTest extends TestCase
         $this->assertEquals(99, $item['id']);
         $this->assertEquals('Dog Walking', $item['title']);
         $this->assertEquals('request', $item['type']);
-        $this->assertEquals('Bob Wilson', $item['author_name']);
+        $this->assertEquals('Bob', $item['author_name']); // E-122: first name only
         $this->assertSame(45, $item['view_count']);
         $this->assertSame(8, $item['save_count']);
         $this->assertEquals('Pets', $item['category_name']);
@@ -448,7 +448,7 @@ class ExploreServiceTest extends TestCase
         $this->assertEquals(2, $result['total']);
         $this->assertCount(1, $result['items']);
         $this->assertEquals('Lawn Mowing', $result['items'][0]['title']);
-        $this->assertEquals('Tom Green', $result['items'][0]['author_name']);
+        $this->assertEquals('Tom', $result['items'][0]['author_name']); // E-122: first name only
     }
 
     public function test_getListingsByCategory_calculates_pagination(): void

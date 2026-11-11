@@ -267,7 +267,10 @@ class FederationV2InternalTransferTest extends TestCase
         $this->assertCount(1, $fedRows, 'Receiver wallet list must show the internal federated credit');
         $this->assertSame('credit', $fedRows[0]['type']);
         $this->assertEqualsWithDelta(10.0, $fedRows[0]['amount'], 0.001);
-        $this->assertStringContainsString('Fed Member', $fedRows[0]['other_user']['name']);
+        // E-122: the sender is a member of ANOTHER community, so the receiver
+        // sees their first name (and community), never the surname "Member".
+        $this->assertStringStartsWith('Fed (', $fedRows[0]['other_user']['name']);
+        $this->assertStringNotContainsString('Fed Member', $fedRows[0]['other_user']['name']);
 
         // Detail view resolves the sender-tenant row for the receiver.
         $detail = $wallet->getTransaction($txId, $receiver);

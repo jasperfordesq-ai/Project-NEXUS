@@ -123,6 +123,9 @@ class CommunityDashboardService
     {
         $tenantId = $tenantId ?? TenantContext::getId();
         $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+        // E-122: surnames are for staff of the community (brokers too);
+        // $viewerIsAdmin still decides whose private profile is listed.
+        $viewerSeesSurnames = MemberProfileVisibility::viewerSeesSurnames($viewerId);
 
         try {
             // Find members with real activity: XP > 0 OR badges earned recently OR vol hours
@@ -151,7 +154,7 @@ class CommunityDashboardService
                 return [];
             }
 
-            return $activeUsers->map(function ($user) use ($viewerIsAdmin, $viewerId) {
+            return $activeUsers->map(function ($user) use ($viewerSeesSurnames, $viewerId) {
                 $badgeCount = (int) UserBadge::where('user_id', $user->id)->count();
                 $activity = $badgeCount > 0
                     ? "Earned {$badgeCount} " . ($badgeCount === 1 ? 'badge' : 'badges')
@@ -162,7 +165,7 @@ class CommunityDashboardService
                     'first_name' => $user->first_name,
                     // F-607 (F-084 rule): surnames are for administrators and the
                     // member themself. The key stays, null, for client schemas (F-591).
-                    'last_name' => ($viewerIsAdmin || (int) $user->id === (int) $viewerId) ? $user->last_name : null,
+                    'last_name' => ($viewerSeesSurnames || (int) $user->id === (int) $viewerId) ? $user->last_name : null,
                     'avatar_url' => $user->avatar_url,
                     'bio' => $user->bio ? mb_substr($user->bio, 0, 120) : null,
                     'member_since' => $user->created_at?->format('M Y'),
