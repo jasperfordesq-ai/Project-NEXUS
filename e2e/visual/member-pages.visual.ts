@@ -170,7 +170,9 @@ async function prepare(page: Page, colourScheme: 'light' | 'dark'): Promise<void
  * map tiles keep the network busy on several pages for ever.
  */
 /** API calls that never stop on a live page (presence, realtime) and so never count as "loading". */
-const BACKGROUND_API = /\/api\/v2\/(presence|realtime|notifications\/counts|messages\/unread-count)/;
+// Unread counts are NOT background: they draw the header's red dots, and a
+// picture taken before they land differs by ~860 pixels (seen 11 Nov).
+const BACKGROUND_API = /\/api\/v2\/(presence|realtime)/;
 const inFlight = new WeakMap<Page, Set<object>>();
 
 function trackRequests(page: Page): Set<object> {
