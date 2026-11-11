@@ -103,7 +103,10 @@ class AppreciationService
                 ->where('tenant_id', $tenantId)
                 ->select(['name'])
                 ->first();
-            $senderName = $sender->name ?? null;
+            // E-122: named as the receiver may see them (`users.name` is a full name).
+            $senderName = $sender !== null
+                ? (\App\Support\Names\RecipientName::of((int) $appreciation->sender_id, (int) $appreciation->receiver_id, '') ?: null)
+                : null;
 
             $receiver = DB::table('users')
                 ->where('id', $appreciation->receiver_id)

@@ -329,13 +329,13 @@ class GroupNotificationService
      */
     private function getUserName(int $userId, int $tenantId): ?string
     {
-        $user = DB::selectOne(
-            "SELECT CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) as name
-             FROM users WHERE id = ? AND tenant_id = ?",
-            [$userId, $tenantId]
-        );
+        // E-122: these notifications fan out to a group's members, so the
+        // name is the one anyone may see — first name, or an organisation's
+        // trading name. (It was first name + surname.)
+        unset($tenantId);
+        $name = trim(\App\Support\Names\RecipientName::of($userId, null, ''));
 
-        return $user ? trim($user->name) : null;
+        return $name !== '' ? $name : null;
     }
 
     /**

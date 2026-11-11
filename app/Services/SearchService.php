@@ -801,6 +801,7 @@ class SearchService
                 'limit'                => max(0, $limit),
                 'offset'               => $offset,
                 'attributesToRetrieve' => ['id'],
+                ...self::userSearchScope(),
             ]);
             return [
                 'ids'   => array_column($result->getHits(), 'id'),
@@ -959,6 +960,23 @@ class SearchService
      * @param  array<string, mixed> $hit
      * @return array<string, mixed>
      */
+    /**
+     * E-122: search options for the members index. The index holds every
+     * member's surname as a searchable field, so a member could confirm a
+     * surname by typing it even though it is never displayed. Anyone who is
+     * not staff of the community searches every field except the surname.
+     *
+     * @return array<string, list<string>>
+     */
+    private static function userSearchScope(): array
+    {
+        if (! NameAudience::enforced() || NameAudience::allowsSurnames()) {
+            return [];
+        }
+
+        return ['attributesToSearchOn' => ['first_name', 'organization_name', 'bio', 'skills', 'location']];
+    }
+
     private static function publicUserHit(array $hit): array
     {
         if (NameAudience::enforced() && ! NameAudience::allowsSurnames()) {
@@ -1010,6 +1028,7 @@ class SearchService
                 'filter'               => "tenant_id = {$tenantId} AND status != 'banned' AND status != 'suspended'",
                 'limit'                => $limit,
                 'attributesToRetrieve' => ['id', 'first_name', 'last_name', 'avatar_url', 'organization_name', 'profile_type', 'bio'],
+                ...self::userSearchScope(),
             ])->getHits();
 
             // The users index carries no `privacy_search` attribute, so the
@@ -1073,9 +1092,9 @@ class SearchService
             $userQuery = $this->user->newQuery()
                 ->where(function (Builder $q) use ($like) {
                     $q->where('first_name', 'LIKE', $like)
-                      ->orWhere('last_name', 'LIKE', $like)
+                      ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
                       ->orWhere('organization_name', 'LIKE', $like)
-                      ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]);
+                      ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
                 })
                 ->whereNotIn('status', ['banned', 'suspended']);
             MemberDirectoryVisibility::applyToEloquent($userQuery, (int) TenantContext::getId());
@@ -1253,6 +1272,7 @@ class SearchService
                 'filter'               => "tenant_id = {$tenantId} AND status != 'banned' AND status != 'suspended'",
                 'limit'                => $limit,
                 'attributesToRetrieve' => ['id', 'first_name', 'last_name', 'avatar_url', 'organization_name', 'profile_type', 'bio', 'created_at'],
+                ...self::userSearchScope(),
             ])->getHits();
             $hits = $this->visibleUserHits($hits, (int) $tenantId);
             foreach ($hits as $h) {
@@ -1386,9 +1406,9 @@ class SearchService
             $uq = $this->user->newQuery()
                 ->where(function (Builder $q) use ($like) {
                     $q->where('first_name', 'LIKE', $like)
-                      ->orWhere('last_name', 'LIKE', $like)
+                      ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
                       ->orWhere('organization_name', 'LIKE', $like)
-                      ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]);
+                      ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
                 })
                 ->whereNotIn('status', ['banned', 'suspended']);
             MemberDirectoryVisibility::applyToEloquent($uq, (int) TenantContext::getId());
@@ -1608,6 +1628,7 @@ class SearchService
             'filter'               => "tenant_id = {$tenantId} AND status != 'banned' AND status != 'suspended'",
             'limit'                => $limit,
             'attributesToRetrieve' => ['id', 'first_name', 'last_name', 'avatar_url', 'organization_name', 'profile_type'],
+            ...self::userSearchScope(),
         ])->getHits();
         $userHits = $this->visibleUserHits($userHits, (int) $tenantId);
         $users = array_map(function (array $h) {
@@ -1677,7 +1698,7 @@ class SearchService
         $userQuery = $this->user->newQuery()
             ->where(function (Builder $q) use ($like) {
                 $q->where('first_name', 'LIKE', $like)
-                  ->orWhere('last_name', 'LIKE', $like)
+                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
                   ->orWhere('organization_name', 'LIKE', $like);
             })
             ->whereNotIn('status', ['banned', 'suspended']);
@@ -1793,9 +1814,9 @@ class SearchService
         return User::where('tenant_id', $tenantId)
             ->where(function ($q) use ($like) {
                 $q->where('first_name', 'LIKE', $like)
-                  ->orWhere('last_name', 'LIKE', $like)
+                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
                   ->orWhere('organization_name', 'LIKE', $like)
-                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]);
+                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
             })
             ->where('status', 'active')
             ->where('is_approved', true)

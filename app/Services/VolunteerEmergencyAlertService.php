@@ -241,7 +241,9 @@ class VolunteerEmergencyAlertService
                 // Notify the coordinator (best-effort)
                 try {
                     $user = User::where('tenant_id', $tenantId)->where('id', $userId)->first();
-                    $userName = $user->name ?? __('api.vol_alert_volunteer_fallback');
+                    // E-122: named as the coordinator who raised the alert may see them.
+                    $userName = ($user ? \App\Support\Names\RecipientName::of($user, (int) $alert->created_by, '') : '')
+                        ?: __('api.vol_alert_volunteer_fallback');
 
                     $coordinator = User::where('tenant_id', $tenantId)->where('id', (int) $alert->created_by)->first(['id', 'preferred_language']);
                     TenantContext::runForTenant($tenantId, function () use ($alert, $coordinator, $userName): void {

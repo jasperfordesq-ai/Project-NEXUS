@@ -138,7 +138,9 @@ class GroupWelcomeServiceTest extends TestCase
             ->first();
         $this->assertNotNull($notification);
         $this->assertSame(
-            'Hi Alice, welcome to Timebank from Admin Bob',
+            // E-122: the group owner ("Admin Bob") is named to the new member
+            // by first name only.
+            'Hi Alice, welcome to Timebank from Admin',
             (string) $notification->message,
         );
         $this->assertSame('/groups/' . $group->id, (string) $notification->link);

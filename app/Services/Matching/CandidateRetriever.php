@@ -112,7 +112,7 @@ class CandidateRetriever
                        u.first_name, u.last_name, u.avatar_url, u.location as author_location,
                        u.latitude as author_latitude, u.longitude as author_longitude,
                        u.is_verified as author_verified,
-                       TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))) as user_name,
+                       " . \App\Support\UserDisplayName::sql('u', 'user_name') . ",
                        (SELECT AVG(rating) FROM reviews WHERE receiver_id = u.id AND tenant_id = u.tenant_id) as author_rating,
                        c.name as category_name, c.color as category_color";
 

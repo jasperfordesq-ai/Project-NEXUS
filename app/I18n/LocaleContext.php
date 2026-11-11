@@ -48,6 +48,17 @@ final class LocaleContext
      */
     public static function withLocale(string|object|null $locale, callable $fn): mixed
     {
+        // E-122: text rendered for a recipient is also NAMED for that
+        // recipient. When the caller hands over the recipient's own user
+        // record (not a bare locale string), names built inside `$fn` follow
+        // what that person may see — first names, unless they are staff of
+        // the community — instead of what the sender of the request may see.
+        $recipientId = self::recipientUserId($locale);
+        if ($recipientId !== null) {
+            $render = $fn;
+            $fn = static fn (): mixed => \App\Support\Names\NameAudience::forRecipient($recipientId, $render);
+        }
+
         $resolved = self::resolve($locale);
 
         // Null means "no switch" — caller passed null explicitly, run as-is.
@@ -82,6 +93,36 @@ final class LocaleContext
             Translator::setLocale($previousJsonLocale);
             Carbon::setLocale($previousDateLocale);
         }
+    }
+
+    /**
+     * The user id of a recipient handed to {@see withLocale()}, or null when
+     * the argument is a locale string, null, or an object that is not
+     * recognisably a user record. Deliberately narrow: a `User` model, or a
+     * row that carries an `id` together with a user's own columns.
+     */
+    private static function recipientUserId(string|object|null $input): ?int
+    {
+        if (! is_object($input)) {
+            return null;
+        }
+
+        $id = $input->id ?? null;
+        if (! is_numeric($id) || (int) $id <= 0) {
+            return null;
+        }
+
+        if ($input instanceof \App\Models\User) {
+            return (int) $id;
+        }
+
+        foreach (['email', 'first_name', 'preferred_language'] as $userColumn) {
+            if (property_exists($input, $userColumn)) {
+                return (int) $id;
+            }
+        }
+
+        return null;
     }
 
     /**

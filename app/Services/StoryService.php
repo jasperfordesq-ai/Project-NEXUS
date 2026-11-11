@@ -471,7 +471,10 @@ class StoryService
                     'SELECT first_name, last_name FROM users WHERE id = ? AND tenant_id = ?',
                     [$userId, $tenantId]
                 );
-                $reactorName = $reactor ? UserDisplayName::resolve($reactor) : __('emails.common.fallback_someone');
+                // E-122: named as the story owner (the recipient) may see them.
+                $reactorName = $reactor
+                    ? (\App\Support\Names\RecipientName::of((int) $userId, (int) $story->user_id, '') ?: __('emails.common.fallback_someone'))
+                    : __('emails.common.fallback_someone');
 
                 $emojiMap = [
                     'heart' => "\u{2764}\u{FE0F}",
@@ -1334,7 +1337,9 @@ class StoryService
             return;
         }
 
-        $userName = UserDisplayName::resolve($user);
+        // E-122: this goes to every connection, so it is the name anyone may
+        // see — first name, or an organisation's trading name.
+        $userName = \App\Support\Names\RecipientName::of((int) $userId, null, '');
 
         // Get all accepted connections for this user (tenant-scoped) with their preferred_language
         // so the notification body renders in each recipient's own locale.

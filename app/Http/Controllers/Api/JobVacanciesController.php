@@ -655,7 +655,7 @@ class JobVacanciesController extends BaseApiController
                         $community     = TenantContext::getName();
                         $jobTitle      = htmlspecialchars($job->title, ENT_QUOTES, 'UTF-8');
                         $applicantName = $applicant
-                            ? UserDisplayName::resolve($applicant) ?: ($applicant->name ?? __('emails.common.fallback_someone'))
+                            ? \App\Support\Names\RecipientName::of($applicant, $posterUser, '') ?: __('emails.common.fallback_someone') // E-122: as the poster may see them
                             : __('emails.common.fallback_someone');
                         $reviewUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/jobs/' . $id . '#applications';
                         $html = EmailTemplateBuilder::make()

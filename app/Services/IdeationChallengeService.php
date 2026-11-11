@@ -1668,8 +1668,8 @@ class IdeationChallengeService
                 return;
             }
 
-            LocaleContext::withLocale($owner, function () use ($owner, $submitter, $challenge, $challengeId, $ideaId, $ideaTitle, $tenantId) {
-                $submitterName = $submitter->name ?? __('emails.common.fallback_someone');
+            LocaleContext::withLocale($owner, function () use ($owner, $submitter, $submitterId, $challenge, $challengeId, $ideaId, $ideaTitle, $tenantId) {
+                $submitterName = \App\Support\Names\RecipientName::of((int) $submitterId, null, '') ?: __('emails.common.fallback_someone'); // E-122: first name
 
                 $message = __('notifications.ideation_idea_submitted', [
                     'name' => $submitterName,
@@ -1758,8 +1758,8 @@ class IdeationChallengeService
             }
             $challengeId = $idea->challenge_id ?? 0;
 
-            LocaleContext::withLocale($owner, function () use ($owner, $voter, $ideaAuthorId, $ideaTitle, $challengeId, $tenantId) {
-                $voterName = $voter->name ?? __('emails.common.fallback_someone');
+            LocaleContext::withLocale($owner, function () use ($owner, $voter, $voterId, $ideaAuthorId, $ideaTitle, $challengeId, $tenantId) {
+                $voterName = \App\Support\Names\RecipientName::of((int) $voterId, null, '') ?: __('emails.common.fallback_someone'); // E-122: first name
 
                 $message = __('notifications.ideation_idea_voted', [
                     'name' => $voterName,
@@ -1822,8 +1822,8 @@ class IdeationChallengeService
             }
             $challengeId = $idea->challenge_id ?? 0;
 
-            LocaleContext::withLocale($owner, function () use ($owner, $commenter, $idea, $ideaAuthorId, $commentText, $challengeId, $tenantId, $ideaId) {
-                $commenterName = $commenter->name ?? __('emails.common.fallback_someone');
+            LocaleContext::withLocale($owner, function () use ($owner, $commenter, $commenterId, $idea, $ideaAuthorId, $commentText, $challengeId, $tenantId, $ideaId) {
+                $commenterName = \App\Support\Names\RecipientName::of((int) $commenterId, null, '') ?: __('emails.common.fallback_someone'); // E-122: first name
 
                 $shortComment = strlen($commentText) > 50 ? substr($commentText, 0, 50) . '...' : $commentText;
                 $message = __('notifications.ideation_idea_commented', [

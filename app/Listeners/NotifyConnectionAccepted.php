@@ -81,9 +81,10 @@ class NotifyConnectionAccepted implements ShouldQueue
                 ->where('tenant_id', $event->tenantId)
                 ->value('preferred_language');
 
-            [$content, $receiverName] = LocaleContext::withLocale($requesterLocale, function () use ($receiver): array {
-                $receiverName = UserDisplayName::resolve($receiver)
-                    ?: ($receiver->name ?? __('emails.common.fallback_someone'));
+            [$content, $receiverName] = LocaleContext::withLocale($requesterLocale, function () use ($receiver, $requesterId): array {
+                // E-122: named as the requester (the recipient) may see them.
+                $receiverName = \App\Support\Names\RecipientName::of($receiver, (int) $requesterId, '')
+                    ?: __('emails.common.fallback_someone');
                 return [__('emails_misc.social.connection_accepted', ['name' => $receiverName]), $receiverName];
             });
             $link = '/connections';

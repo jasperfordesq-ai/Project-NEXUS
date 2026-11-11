@@ -76,7 +76,9 @@ class VolunteerApplicationNotificationService
         foreach ($managers as $manager) {
             self::guarded((int) $manager->id, 'vol_application_received', function () use ($manager, $applicant, $application, $orgId, $link, $applicantId) {
                 LocaleContext::withLocale($manager, function () use ($manager, $applicant, $application, $orgId, $link, $applicantId) {
-                    $name = $applicant ? trim(UserDisplayName::resolve($applicant)) : '';
+                    // E-122: named as this manager may see them — a manager who is
+                    // not staff of the community gets the first name (O-269).
+                    $name = $applicant ? trim(\App\Support\Names\RecipientName::of($applicant, (int) $manager->id, '')) : '';
                     $name = $name !== '' ? $name : __('emails.common.fallback_someone');
 
                     return NotificationDispatcher::dispatch(

@@ -465,7 +465,9 @@ class VolunteerController extends BaseApiController
                 $volunteer = User::find($userId);
                 $organizer = User::find((int) $shift->opportunity->created_by);
                 LocaleContext::withLocale($organizer, function () use ($volunteer, $shift) {
-                    $volunteerName = $volunteer->name ?? __('emails.common.fallback_someone');
+                    // E-122: named as the organiser (the recipient) may see them.
+                    $volunteerName = ($volunteer ? \App\Support\Names\RecipientName::of($volunteer, (int) $shift->opportunity->created_by, '') : '')
+                        ?: __('emails.common.fallback_someone');
                     Notification::createNotification(
                         (int) $shift->opportunity->created_by,
                         __('notifications.vol_shift_signup_body', ['name' => $volunteerName]),

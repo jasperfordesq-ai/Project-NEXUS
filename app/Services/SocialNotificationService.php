@@ -85,6 +85,11 @@ class SocialNotificationService
                 ->where('tenant_id', $tenantId)
                 ->select(['name', 'avatar_url'])
                 ->first();
+            // E-122: named as the RECIPIENT may see them — first name unless the
+            // recipient is staff of the community. `users.name` is a full name.
+            if ($liker !== null) {
+                $liker->name = \App\Support\Names\RecipientName::of((int) $likerId, (int) $contentOwnerId, '');
+            }
             $likerName = $liker->name ?? __('emails.common.fallback_someone');
 
             $owner = DB::table('users')
@@ -138,6 +143,11 @@ class SocialNotificationService
                 ->where('tenant_id', $tenantId)
                 ->select(['name', 'avatar_url'])
                 ->first();
+            // E-122: named as the RECIPIENT may see them — first name unless the
+            // recipient is staff of the community. `users.name` is a full name.
+            if ($commenter !== null) {
+                $commenter->name = \App\Support\Names\RecipientName::of((int) $commenterId, (int) $contentOwnerId, '');
+            }
             // '' is a real value for an account without a personal name; `??` would keep it.
             $commenterName = trim((string) ($commenter->name ?? '')) !== ''
                 ? (string) $commenter->name
@@ -204,6 +214,11 @@ class SocialNotificationService
                 ->where('tenant_id', $tenantId)
                 ->select(['name', 'avatar_url'])
                 ->first();
+            // E-122: named as the RECIPIENT may see them — first name unless the
+            // recipient is staff of the community. `users.name` is a full name.
+            if ($replier !== null) {
+                $replier->name = \App\Support\Names\RecipientName::of((int) $replierId, (int) $commentOwnerId, '');
+            }
             $replierName = trim((string) ($replier->name ?? '')) !== ''
                 ? (string) $replier->name
                 : __('emails.common.fallback_someone');
@@ -257,6 +272,11 @@ class SocialNotificationService
                 ->where('tenant_id', $tenantId)
                 ->select(['name'])
                 ->first();
+            // E-122: named as the RECIPIENT may see them — first name unless the
+            // recipient is staff of the community. `users.name` is a full name.
+            if ($sharer !== null) {
+                $sharer->name = \App\Support\Names\RecipientName::of((int) $sharerId, (int) $contentOwnerId, '');
+            }
             $sharerName = $sharer->name ?? __('emails.common.fallback_someone');
 
             $owner = DB::table('users')

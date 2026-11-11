@@ -168,7 +168,8 @@ class GroupNotificationReliabilityTest extends TestCase
             . '/notification-contract'
             . $relative;
         $expectedMessage = LocaleContext::withLocale('de', fn (): string => __('notifications.group_new_announcement', [
-            'author' => trim($author->first_name . ' ' . $author->last_name),
+            // E-122: a group announcement names its author to the members by first name only.
+            'author' => trim((string) $author->first_name),
             'title' => 'Werkzeugabend',
             'group' => 'Repair Circle',
         ]));

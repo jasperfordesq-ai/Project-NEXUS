@@ -1507,8 +1507,11 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
                 ->where('tenant_id', (int) $event->tenant_id)
                 ->where('id', $subjectUserId)
                 ->first(['name', 'first_name', 'last_name', 'profile_type', 'organization_name']);
-            $params['name'] = UserDisplayName::resolve(
+            // E-122: the organiser reads this; the name is the one anyone may
+            // see (first name, or an organisation's trading name).
+            $params['name'] = \App\Support\Names\RecipientName::of(
                 $subjectUser,
+                null,
                 __('emails.common.fallback_member_name'),
             );
             $params['state'] = __("event_notifications.states.{$descriptor['state']}");

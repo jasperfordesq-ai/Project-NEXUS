@@ -734,9 +734,11 @@ class ListingsController extends BaseApiController
                 LocaleContext::withLocale($owner, function () use ($saver, $listing, $id) {
                     $saverName = __('emails.common.fallback_someone');
                     if ($saver) {
+                        // E-122: resolved for the listing owner (withLocale opens
+                        // the recipient's audience); never fall back to the full `name`.
                         $saverName = UserDisplayName::resolve($saver);
                         if (empty($saverName)) {
-                            $saverName = $saver->name ?? __('emails.common.fallback_someone');
+                            $saverName = __('emails.common.fallback_someone');
                         }
                     }
 

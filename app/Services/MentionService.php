@@ -119,11 +119,10 @@ class MentionService
             ->first();
 
         // '' is a real value for an account without a personal name; `??` would keep it.
-        $mentionerName = trim((string) ($mentioner->name ?? '')) !== ''
-            ? (string) $mentioner->name
-            : (trim((string) ($mentioner->first_name ?? '')) !== ''
-                ? (string) $mentioner->first_name
-                : __('emails.common.fallback_someone'));
+        // Fallback only; the name itself is built per recipient below (E-122).
+        $mentionerName = trim((string) ($mentioner->first_name ?? '')) !== ''
+            ? (string) $mentioner->first_name
+            : __('emails.common.fallback_someone');
 
         // Batch-load preferred_language for every mentioned user so we can render
         // each recipient's bell text in their own locale.
@@ -167,7 +166,9 @@ class MentionService
                 $link = self::getEntityLink($entityType, $entityId);
                 $recipientLocale = $recipientLocales[(int) $mentionedUserId] ?? null;
 
-                LocaleContext::withLocale($recipientLocale, function () use ($entityType, $mentionerName, $shortPreview, $mentionedUserId, $link) {
+                LocaleContext::withLocale($recipientLocale, function () use ($entityType, $mentionerName, $mentionerId, $shortPreview, $mentionedUserId, $link) {
+                    // E-122: named as THIS recipient may see them.
+                    $mentionerName = \App\Support\Names\RecipientName::of((int) $mentionerId, (int) $mentionedUserId, $mentionerName);
                     $entityLabel = self::getEntityLabel($entityType);
                     if ($shortPreview) {
                         $message = __('svc_notifications.mention.mentioned_in_with_preview', ['name' => $mentionerName, 'entity' => $entityLabel, 'preview' => $shortPreview]);
@@ -306,6 +307,12 @@ class MentionService
             $bindings[] = $currentUserId;
         }
 
+        // E-122: `name` and `last_name` hold the surname; only staff of the
+        // community may find a member by typing it.
+        $nameMatch = \App\Support\Names\NameAudience::allowsSurnames()
+            ? 'u.name LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.username LIKE ?'
+            : "u.first_name LIKE ? OR u.username LIKE ? OR (u.profile_type = 'organisation' AND u.organization_name LIKE ?)";
+
         $sql = "SELECT u.id, COALESCE(u.name, CONCAT(u.first_name, ' ', COALESCE(u.last_name, ''))) as name,
                        u.username, u.avatar_url, u.first_name, u.last_name,
                        u.profile_type, u.organization_name
@@ -315,14 +322,13 @@ class MentionService
                   AND u.status = 'active'
                   AND u.is_approved = 1
                   AND u.deleted_at IS NULL
-                  AND (u.name LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.username LIKE ?)";
+                  AND ({$nameMatch})";
 
         // WHERE bindings
         $bindings[] = $tenantId;
-        $bindings[] = $searchTerm;
-        $bindings[] = $searchTerm;
-        $bindings[] = $searchTerm;
-        $bindings[] = $searchTerm;
+        foreach (range(1, substr_count($nameMatch, '?')) as $unused) {
+            $bindings[] = $searchTerm;
+        }
 
         // F-080: autocomplete is a DISCOVERY surface — typing a few letters
         // lists members the searcher did not name. It therefore lists only

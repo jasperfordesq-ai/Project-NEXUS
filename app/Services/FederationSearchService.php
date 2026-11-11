@@ -171,12 +171,14 @@ class FederationSearchService
         }
 
         if (!empty($filters['search'])) {
+            // E-122: a member of another community is never found by
+            // surname — surnames do not pass between communities (F-612).
             $sql .= " AND (
-                u.first_name LIKE ? OR u.last_name LIKE ? OR u.name LIKE ? OR
+                u.first_name LIKE ? OR
                 u.bio LIKE ? OR (fus.show_skills_federated = 1 AND u.skills LIKE ?)
             )";
             $searchTerm = '%' . $filters['search'] . '%';
-            $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm]);
+            $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
             $filtersApplied[] = 'search';
         }
 

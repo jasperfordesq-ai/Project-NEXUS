@@ -285,9 +285,10 @@ class StoryController extends BaseApiController
                         [(int) $story->user_id, $tenantId]
                     );
 
-                    LocaleContext::withLocale($recipient, function () use ($reactor, $story, $reactionType) {
+                    LocaleContext::withLocale($recipient, function () use ($reactor, $story, $reactionType, $userId) {
+                        // E-122: named as the story owner (the recipient) may see them.
                         $reactorName = $reactor
-                            ? UserDisplayName::resolve($reactor)
+                            ? (\App\Support\Names\RecipientName::of((int) $userId, (int) $story->user_id, '') ?: __('emails.common.fallback_someone'))
                             : __('emails.common.fallback_someone');
                         $emoji = [
                             'heart' => "\u{2764}\u{FE0F}",
@@ -526,9 +527,10 @@ class StoryController extends BaseApiController
                         [(int) $story->user_id, $tenantId]
                     );
 
-                    LocaleContext::withLocale($recipient, function () use ($replier, $story) {
+                    LocaleContext::withLocale($recipient, function () use ($replier, $story, $userId) {
+                        // E-122: named as the story owner (the recipient) may see them.
                         $replierName = $replier
-                            ? UserDisplayName::resolve($replier)
+                            ? (\App\Support\Names\RecipientName::of((int) $userId, (int) $story->user_id, '') ?: __('emails.common.fallback_someone'))
                             : __('emails.common.fallback_someone');
                         $message = __('svc_notifications.story.reply', ['name' => $replierName]);
 

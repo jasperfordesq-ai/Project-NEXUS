@@ -1025,10 +1025,8 @@ class NotificationDispatcher
         if (! $owner) {
             return;
         }
-        $memberName = trim((string) DB::table('users')
-            ->where('id', $memberId)
-            ->where('tenant_id', $tenantId)
-            ->value(DB::raw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))")));
+        // E-122: named as the listing owner (the recipient) may see them.
+        $memberName = trim(\App\Support\Names\RecipientName::of((int) $memberId, (int) $ownerId, ''));
 
         LocaleContext::withLocale($owner, function () use ($ownerId, $memberId, $memberName, $listingTitle) {
             $content = __('notifications.match_approved_owner', [

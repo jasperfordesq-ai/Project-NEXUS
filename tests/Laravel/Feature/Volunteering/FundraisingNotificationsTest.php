@@ -231,7 +231,10 @@ class FundraisingNotificationsTest extends TestCase
 
         $mail = $this->emailsTo($this->orgAdmin);
         $this->assertCount(1, $mail);
-        $this->assertStringContainsString('Dana Donor', $mail[0]['body']);
+        // E-122 (owner decision O-269): an organisation manager who is not staff
+        // of the community is told the donor's first name only.
+        $this->assertStringContainsString('Dana', $mail[0]['body']);
+        $this->assertStringNotContainsString('Dana Donor', $mail[0]['body']);
         $this->assertStringNotContainsString((string) $this->donor->email, $mail[0]['body'], 'never the donor\'s email');
         $this->assertCount(1, $this->emailsTo($this->owner));
 

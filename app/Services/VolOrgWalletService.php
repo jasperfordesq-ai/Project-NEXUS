@@ -320,7 +320,10 @@ class VolOrgWalletService
                 // member-facing wallet ledger. Keeping both inserts inside this
                 // transaction means balances and histories either all commit or all
                 // roll back together.
-                $orgDescription = $note ?: __('svc_notifications_2.vol_org_wallet.deposit_from_user', ['name' => $user->name]);
+                $orgDescription = $note ?: __('svc_notifications_2.vol_org_wallet.deposit_from_user', [
+                    // E-122: stored ledger text, read by whoever manages the organisation.
+                    'name' => \App\Support\Names\RecipientName::of($user, null, ''),
+                ]);
                 $memberDescription = $note ?: __('emails_misc.vol_org_wallet.deposit_subject', ['org' => $org->name]);
 
                 DB::insert("

@@ -753,7 +753,8 @@ class ShiftGroupReservationService
             }
 
             $leader = DB::table('users')->where('id', $leaderUserId)->where('tenant_id', $tenantId)->first();
-            $leaderName = $leader ? UserDisplayName::resolve($leader) : $context['leader_name'];
+            // E-122: named as the member being told may see them.
+            $leaderName = $leader ? \App\Support\Names\RecipientName::of($leader, (int) $memberId, (string) $context['leader_name']) : $context['leader_name'];
             $link = '/volunteering?tab=group-signups&reservation=' . $reservationId;
 
             LocaleContext::withLocale($recipient, function () use ($memberId, $context, $leaderName, $link): void {

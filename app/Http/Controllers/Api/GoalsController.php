@@ -293,7 +293,7 @@ class GoalsController extends BaseApiController
                     $owner = User::find($userId);
                     $mentor = User::find($mentorId);
                     LocaleContext::withLocale($mentor, function () use ($owner, $goal, $mentorId, $id) {
-                        $ownerName = $owner->name ?? __('emails.common.fallback_someone');
+                        $ownerName = ($owner ? \App\Support\Names\RecipientName::of($owner, null, '') : '') ?: __('emails.common.fallback_someone'); // E-122: first name
                         $goalTitle = $goal->title ?? 'their goal';
 
                         // If progress caused auto-completion, send completion message
@@ -385,7 +385,7 @@ class GoalsController extends BaseApiController
                     $owner = User::find($userId);
                     $mentor = User::find($mentorId);
                     LocaleContext::withLocale($mentor, function () use ($owner, $goal, $mentorId, $id) {
-                        $ownerName = $owner->name ?? __('emails.common.fallback_someone');
+                        $ownerName = ($owner ? \App\Support\Names\RecipientName::of($owner, null, '') : '') ?: __('emails.common.fallback_someone'); // E-122: first name
                         Notification::createNotification(
                             $mentorId,
                             __('api_controllers_3.goals.completed_mentor', ['name' => $ownerName, 'title' => $goal->title]),
@@ -493,7 +493,7 @@ class GoalsController extends BaseApiController
             $buddy = User::find($userId);
             $goalOwner = User::find($goalOwnerId);
             LocaleContext::withLocale($goalOwner, function () use ($buddy, $goal, $goalOwnerId, $id) {
-                $buddyName = $buddy->name ?? __('emails.common.fallback_someone');
+                $buddyName = ($buddy ? \App\Support\Names\RecipientName::of($buddy, null, '') : '') ?: __('emails.common.fallback_someone'); // E-122: first name
                 $message = __('api_controllers_3.goals.buddy_requested_owner', ['name' => $buddyName, 'title' => $goal->title]);
                 Notification::createNotification($goalOwnerId, $message, "/goals/{$id}", 'goal_buddy');
                 \App\Services\NotificationDispatcher::fanOutPush($goalOwnerId, 'goal_buddy', $message, "/goals/{$id}");
@@ -557,7 +557,7 @@ class GoalsController extends BaseApiController
             $owner = User::find($userId);
             $requester = User::find($requesterId);
             LocaleContext::withLocale($requester, function () use ($owner, $goal, $requesterId, $id) {
-                $ownerName = $owner->name ?? __('emails.common.fallback_someone');
+                $ownerName = ($owner ? \App\Support\Names\RecipientName::of($owner, null, '') : '') ?: __('emails.common.fallback_someone'); // E-122: first name
                 $message = __('api_controllers_3.goals.buddy_request_accepted_requester', ['name' => $ownerName, 'title' => $goal->title]);
                 Notification::createNotification($requesterId, $message, "/goals/{$id}", 'goal_buddy');
                 \App\Services\NotificationDispatcher::fanOutPush($requesterId, 'goal_buddy', $message, "/goals/{$id}");
@@ -655,7 +655,7 @@ class GoalsController extends BaseApiController
                 $ownerId = (int) $goal->user_id;
                 $owner = User::find($ownerId);
                 LocaleContext::withLocale($owner, function () use ($buddy, $goal, $ownerId, $id, $note) {
-                    $buddyName = $buddy->name ?? __('emails.common.fallback_someone');
+                    $buddyName = ($buddy ? \App\Support\Names\RecipientName::of($buddy, null, '') : '') ?: __('emails.common.fallback_someone'); // E-122: first name
                     $pushBody = __('api_controllers_3.goals.buddy_action_owner', [
                         'name' => $buddyName,
                         'title' => $goal->title,
@@ -700,7 +700,7 @@ class GoalsController extends BaseApiController
                 $owner = User::find($userId);
                 $mentor = User::find($mentorId);
                 LocaleContext::withLocale($mentor, function () use ($owner, $goal, $mentorId, $id) {
-                    $ownerName = $owner->name ?? __('emails.common.fallback_someone');
+                    $ownerName = ($owner ? \App\Support\Names\RecipientName::of($owner, null, '') : '') ?: __('emails.common.fallback_someone'); // E-122: first name
                     Notification::createNotification(
                         $mentorId,
                         __('api_controllers_3.goals.checkin_mentor', ['name' => $ownerName, 'title' => $goal->title]),

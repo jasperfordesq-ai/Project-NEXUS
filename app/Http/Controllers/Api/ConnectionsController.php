@@ -237,8 +237,10 @@ class ConnectionsController extends BaseApiController
                 $tenantName = TenantContext::get()['name'] ?? __('emails.common.platform_name');
 
                 LocaleContext::withLocale($requester, function () use ($decliner, $requester, $requesterId, $tenantName, $tenantId) {
+                    // E-122: resolved for the requester (withLocale opens the
+                    // recipient's audience); never fall back to the full `name`.
                     $declinerName = UserDisplayName::resolve($decliner)
-                        ?: ($decliner->name ?? __('emails.common.fallback_someone'));
+                        ?: __('emails.common.fallback_someone');
 
                     // Bell notification
                     $declinerProfile = '/profile/' . (int) $decliner->id;

@@ -2471,7 +2471,7 @@ class CronJobRunner
             // Find listings created in the last hour that haven't been processed.
             // Keep the scan tenant-scoped so category IDs cannot match users
             // from another tenant.
-            $sql = "SELECT l.*, u.name as user_name, c.name as category_name
+            $sql = "SELECT l.*, " . \App\Support\UserDisplayName::sqlPublic('u', 'user_name') . ", c.name as category_name
                     FROM listings l
                     JOIN users u ON l.user_id = u.id AND u.tenant_id = l.tenant_id
                     LEFT JOIN categories c ON l.category_id = c.id

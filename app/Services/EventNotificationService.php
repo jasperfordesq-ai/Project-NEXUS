@@ -439,7 +439,11 @@ class EventNotificationService
                 return;
             }
 
-            $userName = $user->name ?? UserDisplayName::resolve($user);
+            // E-122: the organiser reads this. `users.name` is a full name, so
+            // the row's name becomes the one anyone may see (first name, or an
+            // organisation's trading name); the email below reads the same row.
+            $user->name = \App\Support\Names\RecipientName::of($user, null, '');
+            $userName = $user->name;
             $eventTitle = $event->title;
             $organizerId = (int) $event->user_id;
             $policy = app(SafeguardingInteractionPolicy::class);

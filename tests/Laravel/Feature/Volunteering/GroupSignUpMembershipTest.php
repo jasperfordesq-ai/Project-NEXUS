@@ -71,14 +71,18 @@ class GroupSignUpMembershipTest extends TestCase
         // The member is told — bell + email — in THEIR language (de), not the leader's (en).
         $bell = DB::table('notifications')->where('user_id', $member->id)->where('type', 'vol_group_signup_added')->first();
         $this->assertNotNull($bell, 'the member gets a bell');
-        $this->assertStringContainsString('Lena Leader', $bell->message);
+        // E-122: the member is told the leader's first name only.
+        $this->assertStringContainsString('Lena ', $bell->message);
+        $this->assertStringNotContainsString('Leader', $bell->message);
         $this->assertStringContainsString('Les Jardiniers', $bell->message);
         $this->assertStringContainsString('hat Sie zur Gruppe', $bell->message);
         $queued = DB::table('notification_queue')->where('user_id', $member->id)->where('activity_type', 'vol_group_signup_added')->first();
         $this->assertNotNull($queued, 'the member gets an email');
         $this->assertSame('instant', $queued->frequency);
         $this->assertStringContainsString('Les Jardiniers', (string) $queued->email_body);
-        $this->assertStringContainsString('Lena Leader', (string) $queued->email_body);
+        // E-122: first name only in the email too.
+        $this->assertStringContainsString('Lena ', (string) $queued->email_body);
+        $this->assertStringNotContainsString('Lena Leader', (string) $queued->email_body);
     }
 
     public function test_reserved_places_and_ordinary_sign_ups_are_not_double_counted(): void
@@ -197,7 +201,9 @@ class GroupSignUpMembershipTest extends TestCase
 
         $bell = DB::table('notifications')->where('user_id', $leader->id)->where('type', 'vol_group_signup_left')->first();
         $this->assertNotNull($bell, 'the leader is told');
-        $this->assertStringContainsString('Molly Member', $bell->message);
+        // E-122: a leader who is not staff is told the member's first name only.
+        $this->assertStringContainsString('Molly ', $bell->message);
+        $this->assertStringNotContainsString('Molly Member', $bell->message);
     }
 
     public function test_cancelling_the_reservation_cancels_every_members_sign_up(): void

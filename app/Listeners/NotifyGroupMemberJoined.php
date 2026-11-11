@@ -95,8 +95,9 @@ class NotifyGroupMemberJoined implements ShouldQueue
                 ->value('preferred_language');
 
             LocaleContext::withLocale($ownerLocale, function () use ($joiner, $group, $event, $ownerId) {
-                $joinerName = UserDisplayName::resolve($joiner)
-                    ?: ($joiner->name ?? __('emails.common.fallback_someone'));
+                // E-122: named as the group owner (the recipient) may see them.
+                $joinerName = \App\Support\Names\RecipientName::of($joiner, (int) $ownerId, '')
+                    ?: __('emails.common.fallback_someone');
 
                 $groupName = $group->name ?? '';
                 $content = __('notifications.group_new_member', ['name' => $joinerName, 'group' => $groupName]);

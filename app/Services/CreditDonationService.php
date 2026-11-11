@@ -182,10 +182,8 @@ class CreditDonationService
             // Rendered in the recipient's preferred_language; never breaks the
             // already-committed financial transaction.
             try {
-                $donorName = trim(
-                    UserDisplayName::resolve($donor)
-                        ?: (string) ($donor->name ?? '')
-                );
+                // E-122: named as the recipient may see them.
+                $donorName = trim(\App\Support\Names\RecipientName::of($donor, (int) $toUserId, ''));
 
                 LocaleContext::withLocale($recipient, function () use ($toUserId, $amount, $donorName, $tenantId) {
                     $message = $donorName !== ''

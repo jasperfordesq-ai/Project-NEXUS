@@ -119,9 +119,11 @@ class GroupWelcomeService
         $message = str_replace(
             ['{member_name}', '{group_name}', '{admin_name}'],
             [
+                // E-122: the new member reads this; their own name is theirs to
+                // see, the group owner's is shown as that member may see it.
                 $user->name ?? __('api.group_welcome_member_fallback'),
                 $group->name,
-                $owner->name ?? __('api.group_welcome_admin_fallback'),
+                ($owner ? \App\Support\Names\RecipientName::of($owner, (int) $userId, '') : '') ?: __('api.group_welcome_admin_fallback'),
             ],
             $config['message']
         );

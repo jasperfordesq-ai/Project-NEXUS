@@ -1756,14 +1756,27 @@ class UsersController extends BaseApiController
             } elseif ($memberIds !== false) {
                 $whereClause .= ' AND 1=0';
             } else {
-                $whereClause .= ' AND (
-                    MATCH(u.first_name, u.last_name, u.bio, u.skills) AGAINST(? IN BOOLEAN MODE)
-                    OR u.name LIKE ?
-                    OR u.location LIKE ?
-                )';
-                $params[] = $search;
-                $params[] = "%$search%";
-                $params[] = "%$search%";
+                // E-122: the full-text index and `name` both contain the
+                // surname, so only staff of the community search them.
+                if (\App\Support\Names\NameAudience::allowsSurnames()) {
+                    $whereClause .= ' AND (
+                        MATCH(u.first_name, u.last_name, u.bio, u.skills) AGAINST(? IN BOOLEAN MODE)
+                        OR u.name LIKE ?
+                        OR u.location LIKE ?
+                    )';
+                    $params[] = $search;
+                    $params[] = "%$search%";
+                    $params[] = "%$search%";
+                } else {
+                    $whereClause .= ' AND (
+                        u.first_name LIKE ?
+                        OR u.organization_name LIKE ?
+                        OR u.bio LIKE ?
+                        OR u.skills LIKE ?
+                        OR u.location LIKE ?
+                    )';
+                    array_push($params, "%$search%", "%$search%", "%$search%", "%$search%", "%$search%");
+                }
             }
         }
 

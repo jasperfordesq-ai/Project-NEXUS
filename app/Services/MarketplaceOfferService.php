@@ -761,8 +761,11 @@ class MarketplaceOfferService
         if (!$user) {
             return '';
         }
-        $full = UserDisplayName::resolve($user);
-        return $full ?: ($user->name ?? '');
+        // E-122: this name goes into a notification or email read by the
+        // OTHER party to the offer, so it is the name anyone may see — first
+        // name, or an organisation's trading name. (`name` is a full name and
+        // must not be the fallback.)
+        return \App\Support\Names\RecipientName::of($user, null, '');
     }
 
     /**
