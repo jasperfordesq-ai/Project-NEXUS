@@ -78,6 +78,7 @@ import { MAPS_ENABLED } from '@/lib/map-config';
 import { resolveAvatarUrl, resolveThumbnailUrl, responsiveThumbnailProps, getFormattingLocale, formatRelativeTime } from '@/lib/helpers';
 import { categoryColour, colourForSeed, themeColourNames } from '@/lib/categoryColours';
 import { ThemedCover } from '@/components/ui/ThemedCover';
+import { SmartImage } from '@/components/ui/SmartImage';
 import { themeIconFor } from '@/lib/themeIcons';
 import type { EntityMapViewProps } from '@/components/location/EntityMapView';
 import type { ProximityFilterParams } from '@/components/proximity/ProximityFilter';
@@ -1510,10 +1511,14 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
         {/* Listing Image with hover overlay and floating save button */}
         <div className="relative aspect-video overflow-hidden bg-theme-elevated">
           {showsPhoto && imageProps ? (
-            <img
+            // Fades in from the card's own colour (warmth plan C1).
+            <SmartImage
               {...imageProps}
               alt={imageAlt}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              colour={themeColour}
+              seed={listing.id}
+              frameClassName="h-full w-full"
+              imgClassName="group-hover:scale-105"
               width={800}
               height={450}
               loading="lazy"

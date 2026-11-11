@@ -37,6 +37,7 @@ import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { ThemedCover } from '@/components/ui/ThemedCover';
+import { SmartImage } from '@/components/ui/SmartImage';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { colourForSeed } from '@/lib/categoryColours';
 import { useTenant } from '@/contexts/TenantContext';
@@ -726,10 +727,11 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
         <GlassCard className={`overflow-hidden hover:scale-[1.01] transition-transform h-full flex flex-col${featured ? ' ring-1 ring-amber-500/30' : ''}`}>
           <div className="relative h-24 bg-theme-elevated">
             {imageProps ? (
-              <img
+              <SmartImage
                 {...imageProps}
                 alt={imageDescription}
-                className="h-full w-full object-cover"
+                seed={group.id}
+                frameClassName="h-full w-full"
                 loading="lazy"
                 decoding="async"
               />

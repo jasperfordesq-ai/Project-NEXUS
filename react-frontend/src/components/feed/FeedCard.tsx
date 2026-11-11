@@ -23,6 +23,7 @@ import { feedTypeColour } from './feedTypeColours';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Stars } from '@/components/ui/Stars';
+import { SmartImage } from '@/components/ui/SmartImage';
 import { Separator } from '@/components/ui/Separator';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -1152,21 +1153,24 @@ const FeedCardInner = React.memo(function FeedCardInner({
             <HeartOverlay show={showHeartOverlay} />
             {detailPath ? (
               <Link to={tenantPath(detailPath)} onClick={doubleTapHandler}>
-                <img
+                <SmartImage
                   src={resolveThumbnailUrl(imageUrl, { width: 960, height: 540 })}
                   alt={imageDescription || t('card.image_alt', { type: typeLabel ?? t('card.type_post'), name: author.name })}
-                  className="w-full max-h-[28rem] object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                  seed={item.id}
+                  frameClassName="aspect-video max-h-[28rem] w-full"
+                  imgClassName="group-hover:scale-[1.02]"
                   loading="lazy"
                   width={800}
                   height={448}
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
               </Link>
             ) : (
-              <img
+              <SmartImage
                 src={resolveThumbnailUrl(imageUrl, { width: 960, height: 540 })}
                 alt={imageDescription || t('card.image_alt', { type: t('card.type_post'), name: author.name })}
-                className="w-full max-h-[28rem] object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                seed={item.id}
+                frameClassName="aspect-video max-h-[28rem] w-full"
+                imgClassName="group-hover:scale-[1.02]"
                 loading="lazy"
                 width={800}
                 height={448}

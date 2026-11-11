@@ -10,6 +10,7 @@ import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { SmartImage } from '@/components/ui/SmartImage';
 import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
 import { Progress } from '@/components/ui/Progress';
 import { SearchField } from '@/components/ui/SearchField';
@@ -1058,10 +1059,12 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
       <article>
         <GlassCard className={`overflow-hidden hover:border-accent/40 hover:shadow-lg transition ${isPast || isCancelled ? 'opacity-65' : ''}`}>
           {coverImageProps && (
-            <img
+            <SmartImage
               {...coverImageProps}
               alt={t('detail.cover_alt', { title: event.title })}
-              className="h-36 w-full object-cover sm:hidden"
+              colour={dateTileColour}
+              seed={event.id}
+              frameClassName="h-36 w-full sm:hidden"
               loading="lazy"
               decoding="async"
             />
@@ -1109,10 +1112,12 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
                   <MemberPlainText content={event.description ?? ''} className="text-theme-muted text-sm line-clamp-2 mt-1" as="p" />
                 </div>
                 {coverImageProps && (
-                  <img
+                  <SmartImage
                     {...coverImageProps}
                     alt={t('detail.cover_alt', { title: event.title })}
-                    className="hidden h-20 w-28 flex-shrink-0 rounded-lg object-cover sm:block"
+                    colour={dateTileColour}
+                    seed={event.id}
+                    frameClassName="hidden h-20 w-28 flex-shrink-0 rounded-lg sm:block"
                     loading="lazy"
                     decoding="async"
                   />
