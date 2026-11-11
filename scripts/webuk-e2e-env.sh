@@ -13,6 +13,8 @@
 #   bash scripts/webuk-e2e-env.sh up      provision database, seed, start containers
 #   bash scripts/webuk-e2e-env.sh reset   drop + reload schema + reseed (fast wipe)
 #   bash scripts/webuk-e2e-env.sh seed    reseed only, leaving schema in place
+#   bash scripts/webuk-e2e-env.sh showcase  add/refresh the "Riverside Timebank" show community
+#                                          (ShowcaseCommunitySeeder: realistic synthetic content)
 #   bash scripts/webuk-e2e-env.sh down    stop the containers (database survives)
 #   bash scripts/webuk-e2e-env.sh status  report what is running and seeded
 set -uo pipefail
@@ -325,6 +327,17 @@ case "$ACTION" in
     seed_synthetic
     assert_no_real_data || true
     ;;
+  showcase)
+    # A separate, lively synthetic community for seeing the member website as a
+    # real community would. Kept apart from the journey fixtures so their counts
+    # never change. Re-runnable; dates are relative to today.
+    require_db_container
+    assert_laravel_targets_e2e_db
+    docker exec "$APP_CONTAINER" php artisan db:seed --class='Database\Seeders\ShowcaseCommunitySeeder' --force 2>&1 | tail -3
+    showcase_id=$(mysql_e2e -N -e "SELECT id FROM tenants WHERE slug='riverside' LIMIT 1;")
+    docker exec "$APP_CONTAINER" php -r "require 'vendor/autoload.php'; \$app = require 'bootstrap/app.php'; \$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); Illuminate\Support\Facades\Cache::store('redis')->forget('t'.\$argv[1].':tenant_bootstrap');" "$showcase_id" >/dev/null 2>&1 || true
+    echo "    show community: /riverside (tenant $showcase_id)"
+    ;;
   seed)
     require_db_container
     seed_synthetic
@@ -345,7 +358,7 @@ case "$ACTION" in
     done
     ;;
   *)
-    echo "Usage: bash scripts/webuk-e2e-env.sh {up|reset|seed|down|status}" >&2
+    echo "Usage: bash scripts/webuk-e2e-env.sh {up|reset|seed|showcase|down|status}" >&2
     exit 1
     ;;
 esac
