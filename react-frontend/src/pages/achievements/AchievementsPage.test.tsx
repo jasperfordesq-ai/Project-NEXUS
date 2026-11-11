@@ -197,6 +197,24 @@ describe('AchievementsPage', () => {
     expect(screen.getAllByText('Locked Badge').length).toBeGreaterThan(0);
   });
 
+  // Warmth plan Phase 4 A4: a once-only celebration for badges earned since the
+  // last visit. The first visit only records; old badges never celebrate.
+  it('celebrates only badges earned since the last visit, and not on the first visit', async () => {
+    localStorage.removeItem('nexus_badges_seen_2_1');
+    const first = render(<AchievementsPage />);
+    await waitFor(() => expect(screen.getAllByText('First Post').length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('badge-unlocked')).toBeNull();
+    expect(JSON.parse(localStorage.getItem('nexus_badges_seen_2_1') ?? '[]')).toEqual(['first_post', 'helper']);
+    first.unmount();
+
+    localStorage.setItem('nexus_badges_seen_2_1', JSON.stringify(['first_post']));
+    render(<AchievementsPage />);
+    const banner = await screen.findByTestId('badge-unlocked');
+    expect(banner).toHaveTextContent('Helper');
+    expect(banner).not.toHaveTextContent('First Post');
+    localStorage.removeItem('nexus_badges_seen_2_1');
+  });
+
   it('shows XP profile card with level and XP info', async () => {
     render(<AchievementsPage />);
     await waitFor(() => {

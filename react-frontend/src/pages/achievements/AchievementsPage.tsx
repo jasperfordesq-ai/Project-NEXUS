@@ -48,6 +48,9 @@ import { EmptyState } from '@/components/feedback';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
+import { BadgeMedallion } from '@/components/achievements/BadgeMedallion';
+import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
+import { useAuth, useTenant } from '@/contexts';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -1311,13 +1314,9 @@ function BadgeDetailModal({ isOpen, onClose, badgeKey }: BadgeDetailModalProps) 
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  className={`w-24 h-24 rounded-full flex items-center justify-center text-5xl mb-4 ${
-                    badge.earned
-                      ? 'bg-gradient-to-br from-amber-500/30 to-orange-500/30 shadow-lg shadow-amber-500/10'
-                      : 'bg-gradient-to-br from-gray-500/20 to-gray-600/20 grayscale'
-                  }`}
+                  className="mb-4"
                 >
-                  {badge.icon || <Medal className="w-12 h-12 text-amber-400" aria-hidden="true" />}
+                  <BadgeMedallion icon={badge.icon} kind={badge.type} rarity={badge.rarity} earned={badge.earned} size="lg" />
                 </motion.div>
 
                 {/* Badge Name */}
@@ -1533,7 +1532,8 @@ function ShowcaseModal({ isOpen, onClose, badges, onSave, isSaving }: ShowcaseMo
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function AchievementsPage() {
-  const { t } = useTranslation('gamification');
+  // 'feed' for the shared "Badge unlocked" wording.
+  const { t } = useTranslation(['gamification', 'feed']);
   const { badgeName, badgeDescription } = useBadgeCopy();
   usePageTitle(t('achievements.page_title'));
   const toast = useToast();
@@ -1547,6 +1547,33 @@ export function AchievementsPage() {
   const [isShowcaseOpen, setIsShowcaseOpen] = useState(false);
   const [isSavingShowcase, setIsSavingShowcase] = useState(false);
   const [selectedBadgeKey, setSelectedBadgeKey] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  const [newBadgeNames, setNewBadgeNames] = useState<string[]>([]);
+
+  // A small celebration for badges earned since the member last opened this
+  // page (warmth plan Phase 4 A4). The first visit only records what they
+  // already have, so old badges never trigger it. Confetti obeys the site's
+  // reduced-motion rules.
+  useEffect(() => {
+    if (!user?.id || badges.length === 0) return;
+    const key = `nexus_badges_seen_${String(tenant?.id ?? '')}_${String(user.id)}`;
+    const earned = badges.filter((b) => b.earned_at || b.earned === true);
+    let seen: string[] | null = null;
+    try {
+      const raw = localStorage.getItem(key);
+      seen = raw ? (JSON.parse(raw) as string[]) : null;
+    } catch {
+      return; // No storage: no celebration rather than one every visit.
+    }
+    const fresh = seen === null ? [] : earned.filter((b) => !seen.includes(b.badge_key));
+    if (fresh.length > 0) setNewBadgeNames(fresh.map((b) => badgeName(b)));
+    try {
+      localStorage.setItem(key, JSON.stringify(earned.map((b) => b.badge_key)));
+    } catch {
+      // Storage full or blocked: nothing to remember.
+    }
+  }, [badges, user?.id, tenant?.id, badgeName]);
 
   // AbortController ref to cancel stale requests
   const abortRef = useRef<AbortController | null>(null);
@@ -1647,6 +1674,24 @@ export function AchievementsPage() {
         icon={<Trophy className="h-6 w-6" aria-hidden="true" />}
         accent="amber"
       />
+
+      {newBadgeNames.length > 0 && (
+        <GlassCard
+          className="relative overflow-hidden border-0 bg-accent-soft p-4 sm:p-5"
+          role="status"
+          data-testid="badge-unlocked"
+        >
+          <ConfettiCelebration show />
+          <div className="relative flex items-center gap-3">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-accent-strong text-white shadow-sm" aria-hidden="true">
+              <Trophy className="size-5" />
+            </span>
+            <p className="font-display text-lg font-semibold text-accent-soft-foreground">
+              {t('badge_unlocked', { ns: 'feed' })}: {newBadgeNames.join(', ')}
+            </p>
+          </div>
+        </GlassCard>
+      )}
 
       {/* Error State */}
       {error && !isLoading && (
@@ -1879,9 +1924,12 @@ export function AchievementsPage() {
                             onClick={() => setSelectedBadgeKey(badge.badge_key)}
                             aria-label={badgeName(badge)}
                           >
-                            <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center text-2xl">
-                              {badge.icon || <Medal className="w-7 h-7 text-amber-400" aria-hidden="true" />}
-                            </div>
+                            <BadgeMedallion
+                              icon={badge.icon}
+                              kind={badge.type}
+                              earned={!(badge.earned === false && !badge.earned_at)}
+                              className="mx-auto mb-3"
+                            />
                             <h3 className="font-semibold text-theme-primary text-sm mb-1 line-clamp-2">{badgeName(badge)}</h3>
                             <p className="text-xs text-theme-muted line-clamp-2">{badgeDescription(badge)}</p>
                             {!!badge.is_showcased && (

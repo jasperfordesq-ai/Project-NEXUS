@@ -782,11 +782,15 @@ class ShowcaseCommunitySeeder extends Seeder
 
     private function seedBadges(): void
     {
+        // Real badge keys (GamificationService definitions): the badge list
+        // drops any key the platform does not define.
         $badges = [
-            ['first_exchange', 'First exchange', '🤝'],
-            ['helpful_neighbour', 'Helpful neighbour', '💛'],
-            ['event_goer', 'Event goer', '🎉'],
-            ['green_fingers', 'Green fingers', '🌱'],
+            ['offer_1', 'First Offer', '🎁'],
+            ['request_1', 'First Request', '🙋'],
+            ['earn_1', 'First Earn', '🪙'],
+            ['transaction_1', 'First Exchange', '🔄'],
+            ['earn_10', 'Go Getter', '🚀'],
+            ['vol_1h', 'First Steps', '👣'],
         ];
         foreach (array_slice(array_column($this->memberData(), 0), 0, 18) as $i => $local) {
             foreach ($badges as $j => [$key, $name, $icon]) {
