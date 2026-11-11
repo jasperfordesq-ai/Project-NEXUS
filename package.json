@@ -53,6 +53,8 @@
     "dev:frontend": "npm --prefix react-frontend run dev:laravel -- --host 127.0.0.1 --port 5173 --strictPort",
     "dev:frontend:docker": "docker compose --profile docker-frontend up -d frontend",
     "test:e2e": "npx playwright test",
+    "visual:check": "npx playwright test --config=playwright.visual.config.ts",
+    "visual:approve": "npx playwright test --config=playwright.visual.config.ts --update-snapshots",
     "test:mfa:journeys": "node scripts/test-mfa-journeys.mjs",
     "test:events": "node scripts/test-events.mjs",
     "test:events:php": "node scripts/test-events.mjs --php-only",
