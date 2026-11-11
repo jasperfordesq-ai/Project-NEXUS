@@ -25,6 +25,8 @@ import Moon from 'lucide-react/icons/moon';
 import UserCircle from 'lucide-react/icons/circle-user';
 import HelpCircle from 'lucide-react/icons/circle-help';
 import Clock from 'lucide-react/icons/clock';
+import Users from 'lucide-react/icons/users';
+import { kindColour } from '@/components/feed/feedTypeColours';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useTenant, useTheme } from '@/contexts';
@@ -284,11 +286,13 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   };
 
   // ─── Type badges ───────────────────────────────────────────────────────
-  const typeLabels: Record<string, { label: string; color: string }> = {
-    listing: { label: t('search.type_listing'), color: 'bg-success/10 text-success-soft-foreground' },
-    user: { label: t('search.type_member'), color: 'bg-accent-soft text-accent-soft-foreground dark:bg-accent-soft' },
-    event: { label: t('search.type_event'), color: 'bg-warning/10 text-warning-soft-foreground' },
-    group: { label: t('search.type_group'), color: 'bg-surface-secondary text-accent dark:bg-surface-secondary dark:text-accent' },
+  // Each kind in its colour everywhere on the site (kindColour), with its icon
+  // for results that have no face (warmth plan Phase 4 B2).
+  const typeLabels: Record<string, { label: string; color: string; Icon?: typeof ListTodo }> = {
+    listing: { label: t('search.type_listing'), color: kindColour('listing').label, Icon: ListTodo },
+    user: { label: t('search.type_member'), color: kindColour('member').label },
+    event: { label: t('search.type_event'), color: kindColour('event').label, Icon: Calendar },
+    group: { label: t('search.type_group'), color: kindColour('group').label, Icon: Users },
   };
 
   return (
@@ -434,6 +438,11 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                         onPress={() => goToSuggestion(suggestion)}
                       >
                         <span className="flex min-w-0 items-center gap-2">
+                          {suggestion.type !== 'user' && type.Icon && (
+                            <span aria-hidden="true" className={`flex size-8 shrink-0 items-center justify-center rounded-full ${type.color}`}>
+                              <type.Icon className="size-4" />
+                            </span>
+                          )}
                           {suggestion.type === 'user' && (
                             <Avatar
                               aria-hidden="true"

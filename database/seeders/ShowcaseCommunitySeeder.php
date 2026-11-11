@@ -89,6 +89,7 @@ class ShowcaseCommunitySeeder extends Seeder
         $this->seedConnections();
         $this->seedFeedPosts();
         $this->seedMessages();
+        $this->seedNotifications();
         $this->seedBlog();
         $this->seedBadges();
 
@@ -713,6 +714,41 @@ class ShowcaseCommunitySeeder extends Seeder
                         'is_read' => $i === $last ? 0 : 1,
                         'read_at' => $i === $last ? null : $at->copy()->addMinutes(2),
                         'is_federated' => 0,
+                        'created_at' => $at,
+                    ]
+                );
+            }
+        }
+    }
+
+    /**
+     * A handful of notifications of different kinds for the members the picture
+     * check signs in as, so the bell has something real to show. Keyed by
+     * idempotency_key, so a re-run does not duplicate them.
+     */
+    private function seedNotifications(): void
+    {
+        // [type, text, link, minutes ago, read]
+        $items = [
+            ['message', 'Tomás sent you a message', '/messages', 12, false],
+            ['transaction', 'You received 1 hour from Tomás', '/wallet', 80, false],
+            ['event', 'Thursday soup swap is the day after tomorrow', '/events', 240, false],
+            ['connection', 'Grace accepted your connection request', '/connections', 1500, true],
+            ['achievement', 'You earned the Helpful neighbour badge', '/achievements', 2900, true],
+            ['listing', 'Your offer "Help planting a vegetable bed" was saved 3 times', '/listings', 4300, true],
+        ];
+        foreach (['maeve', 'tomas', 'priya', 'amara'] as $local) {
+            // Oldest first, as real notifications arrive (lists order by id).
+            foreach (array_reverse($items, true) as $i => [$type, $text, $link, $minutesAgo, $read]) {
+                $at = $this->now->copy()->subMinutes($minutesAgo);
+                DB::table('notifications')->updateOrInsert(
+                    ['tenant_id' => $this->tenantId, 'user_id' => $this->users[$local], 'idempotency_key' => "showcase:{$local}:{$i}"],
+                    [
+                        'type' => $type,
+                        'message' => $text,
+                        'link' => $link,
+                        'is_read' => $read ? 1 : 0,
+                        'read_at' => $read ? $at : null,
                         'created_at' => $at,
                     ]
                 );

@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { kindColour } from '@/components/feed/feedTypeColours';
+import { notificationKind } from '@/components/notifications/notificationKinds';
 import { Avatar, AvatarGroup } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -19,22 +19,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from '@/lib/motion';
 
 import Bell from 'lucide-react/icons/bell';
-import MessageSquare from 'lucide-react/icons/message-square';
-import ListTodo from 'lucide-react/icons/list-todo';
-import Wallet from 'lucide-react/icons/wallet';
-import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
-import User from 'lucide-react/icons/user';
-import Calendar from 'lucide-react/icons/calendar';
-import Users from 'lucide-react/icons/users';
-import Award from 'lucide-react/icons/award';
 import Check from 'lucide-react/icons/check';
 import CheckCheck from 'lucide-react/icons/check-check';
 import Trash2 from 'lucide-react/icons/trash-2';
 import Settings from 'lucide-react/icons/settings';
-import ShieldAlert from 'lucide-react/icons/shield-alert';
-import Shield from 'lucide-react/icons/shield';
-import HeartPulse from 'lucide-react/icons/heart-pulse';
-import Eye from 'lucide-react/icons/eye';
 import ChevronDown from 'lucide-react/icons/chevron-down';
 import ChevronUp from 'lucide-react/icons/chevron-up';
 import { useTranslation } from 'react-i18next';
@@ -538,28 +526,8 @@ interface NotificationCardProps {
   onDelete: () => void;
 }
 
-// Each kind of notification in the colour of its kind everywhere on the site
-// (kindColour — warmth plan W1, 10 Nov 2026): a pale tint with deep colour,
-// light on a dark tint in dark mode. Safeguarding and review notices keep
-// their own warning colours; they are not a kind of community activity.
-const iconMap: Record<string, { icon: React.ReactNode; tile: string }> = {
-  message: { icon: <MessageSquare className="w-5 h-5" aria-hidden="true" />, tile: kindColour('message').label },
-  listing: { icon: <ListTodo className="w-5 h-5" aria-hidden="true" />, tile: kindColour('listing').label },
-  transaction: { icon: <Wallet className="w-5 h-5" aria-hidden="true" />, tile: kindColour('hours').label },
-  connection: { icon: <User className="w-5 h-5" aria-hidden="true" />, tile: kindColour('member').label },
-  event: { icon: <Calendar className="w-5 h-5" aria-hidden="true" />, tile: kindColour('event').label },
-  group: { icon: <Users className="w-5 h-5" aria-hidden="true" />, tile: kindColour('group').label },
-  achievement: { icon: <Award className="w-5 h-5" aria-hidden="true" />, tile: kindColour('achievement').label },
-  safeguarding_flag: { icon: <ShieldAlert className="w-5 h-5" aria-hidden="true" />, tile: 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300' },
-  safeguarding_assignment: { icon: <Shield className="w-5 h-5" aria-hidden="true" />, tile: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300' },
-  // A volunteer asked for someone to get in touch, or the nightly check raised
-  // a high-risk wellbeing alert: a safeguarding matter, not a system notice.
-  volunteer_wellbeing: { icon: <HeartPulse className="w-5 h-5" aria-hidden="true" />, tile: 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300' },
-  broker_review: { icon: <Eye className="w-5 h-5" aria-hidden="true" />, tile: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300' },
-  group_exchange: { icon: <ArrowLeftRight className="w-5 h-5" aria-hidden="true" />, tile: kindColour('exchange').label },
-};
+// Each kind's icon and colour: one shared map with the bell drop-down.
 
-const DEFAULT_TILE = 'bg-theme-elevated text-theme-muted';
 
 const NotificationCard = memo(function NotificationCard({ notification, onMarkRead, onDelete }: NotificationCardProps) {
   const { t } = useTranslation('notifications');
@@ -591,7 +559,8 @@ const NotificationCard = memo(function NotificationCard({ notification, onMarkRe
     navigate(tenantPath(notification.link));
   }
 
-  const { icon, tile } = iconMap[notification.type] || { icon: <Bell className="w-5 h-5" aria-hidden="true" />, tile: DEFAULT_TILE };
+  const { Icon: KindIcon, tile } = notificationKind(notification.type);
+  const icon = <KindIcon className="w-5 h-5" aria-hidden="true" />;
 
   return (
     <GlassCard className={`p-4 ${isUnread ? 'ring-1 ring-accent/30' : ''} ${hasLink ? 'hover:bg-theme-hover/50 transition-colors' : ''}`}>

@@ -12,16 +12,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Popover, PopoverTrigger, PopoverContent, PopoverHeading } from '@/components/ui/Popover';
 import Bell from 'lucide-react/icons/bell';
-import MessageSquare from 'lucide-react/icons/message-square';
-import ListTodo from 'lucide-react/icons/list-todo';
-import Wallet from 'lucide-react/icons/wallet';
-import User from 'lucide-react/icons/user';
-import Calendar from 'lucide-react/icons/calendar';
-import Users from 'lucide-react/icons/users';
-import Award from 'lucide-react/icons/award';
 import CheckCheck from 'lucide-react/icons/check-check';
 import ExternalLink from 'lucide-react/icons/external-link';
-import Info from 'lucide-react/icons/info';
 import X from 'lucide-react/icons/x';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useTranslation } from 'react-i18next';
@@ -33,26 +25,11 @@ import { logError } from '@/lib/logger';
 import { getNotificationDisplayText } from '@/lib/notificationText';
 import { isNavigationPathEnabled } from '@/components/navigation/navigationRegistry';
 import type { Notification } from '@/types/api';
+import { notificationKind } from '@/components/notifications/notificationKinds';
 import { Avatar, AvatarGroup } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerBody } from '@/components/ui/Drawer';
 import { Skeleton } from '@/components/ui/Skeleton';
-
-const TYPE_ICONS: Record<string, typeof Bell> = {
-  message: MessageSquare,
-  listing: ListTodo,
-  transaction: Wallet,
-  connection: User,
-  event: Calendar,
-  group: Users,
-  achievement: Award,
-  system: Info,
-};
-
-const getIcon = (type: string) => {
-  const Icon = TYPE_ICONS[type] || Bell;
-  return <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />;
-};
 
 export function NotificationFlyout() {
   const { t } = useTranslation('notifications');
@@ -189,8 +166,10 @@ export function NotificationFlyout() {
         </div>
       ) : notifications.length === 0 ? (
         <div className="py-8 text-center bg-[var(--surface-solid)]">
-          <Bell className="w-8 h-8 mx-auto text-theme-subtle mb-2 opacity-40" />
-          <p className="text-sm text-theme-subtle">{t('flyout.empty')}</p>
+          <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-accent-soft text-accent-soft-foreground" aria-hidden="true">
+            <Bell className="size-6" />
+          </div>
+          <p className="text-sm font-medium text-theme-secondary">{t('flyout.empty')}</p>
         </div>
       ) : (
         <div className="py-1 bg-[var(--surface-solid)]">
@@ -203,7 +182,7 @@ export function NotificationFlyout() {
                 variant="light"
                 onPress={() => handleNotificationClick(notification)}
                 className={`w-full flex items-start gap-3 px-4 py-3 text-start transition-colors hover:bg-theme-hover h-auto min-h-14 justify-start rounded-none ${
-                  isUnread ? 'bg-accent/50 dark:bg-accent/5' : ''
+                  isUnread ? 'bg-accent-soft/60' : ''
                 }`}
               >
                 {isGrouped && notification.actors && notification.actors.length > 1 ? (
@@ -221,12 +200,9 @@ export function NotificationFlyout() {
                     </AvatarGroup>
                   </div>
                 ) : (
-                  <div className={`mt-0.5 p-1.5 rounded-full shrink-0 ${
-                    isUnread
-                      ? 'bg-accent-soft dark:bg-accent/20 text-accent-soft-foreground'
-                      : 'bg-[var(--surface-elevated)] text-theme-subtle'
-                  }`}>
-                    {getIcon(notification.type)}
+                  // Its kind's colour, as on the notifications page (shared map).
+                  <div className={`mt-0.5 flex size-8 items-center justify-center rounded-full shrink-0 ${notificationKind(notification.type).tile}`}>
+                    {(() => { const { Icon } = notificationKind(notification.type); return <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />; })()}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
