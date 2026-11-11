@@ -3390,5 +3390,8 @@
     "done": "gotowe",
     "current": "bieżący krok",
     "exchange_progress": "Postęp wymiany"
+  },
+  "stars": {
+    "rating_label": "Ocena {{rating}} na {{max}}"
   }
 }

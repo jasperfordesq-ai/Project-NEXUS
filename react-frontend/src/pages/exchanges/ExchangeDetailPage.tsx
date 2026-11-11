@@ -7,6 +7,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { Stars } from '@/components/ui/Stars';
 import { Input } from '@/components/ui/Input';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Textarea } from '@/components/ui/Textarea';
@@ -635,15 +636,7 @@ export function ExchangeDetailPage() {
                 <div key={r.id} className="bg-theme-elevated rounded-lg p-3">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium text-theme-primary">{r.rater.name}</span>
-                    <span className="flex gap-0.5" aria-label={t('detail.rating_value', { rating: r.rating })}>
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star
-                          key={s}
-                          className={`w-4 h-4 ${s <= r.rating ? 'text-amber-400 fill-amber-400' : 'text-theme-muted'}`}
-                          aria-hidden="true"
-                        />
-                      ))}
-                    </span>
+                    <Stars rating={r.rating} label={t('detail.rating_value', { rating: r.rating })} />
                   </div>
                   {r.comment && <p className="text-sm text-theme-muted">{r.comment}</p>}
                 </div>

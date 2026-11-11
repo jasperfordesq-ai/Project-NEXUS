@@ -3476,5 +3476,8 @@
     "done": "تم",
     "current": "الخطوة الحالية",
     "exchange_progress": "تقدّم التبادل"
+  },
+  "stars": {
+    "rating_label": "التقييم {{rating}} من {{max}}"
   }
 }

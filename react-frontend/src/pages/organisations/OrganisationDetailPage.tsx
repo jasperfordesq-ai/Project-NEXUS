@@ -37,6 +37,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { Stars } from '@/components/ui/Stars';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Textarea } from '@/components/ui/Textarea';
 import { ThemedCover } from '@/components/ui/ThemedCover';
@@ -606,16 +607,7 @@ export function OrganisationDetailPage() {
                         {review.author.name}
                       </span>
                     )}
-                    <div className="flex items-center gap-0.5">
-                      <span className="sr-only">{t('organisation_detail.rating_sr', { n: review.rating })}</span>
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-3 h-3 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-theme-subtle'}`}
-                          aria-hidden="true"
-                        />
-                      ))}
-                    </div>
+                    <Stars rating={review.rating} size="xs" label={t('organisation_detail.rating_sr', { n: review.rating })} />
                     <span className="text-xs text-theme-subtle">
                       {new Date(review.created_at).toLocaleDateString(getFormattingLocale())}
                     </span>

@@ -3304,5 +3304,8 @@
     "done": "done",
     "current": "current step",
     "exchange_progress": "Exchange progress"
+  },
+  "stars": {
+    "rating_label": "Rated {{rating}} out of {{max}}"
   }
 }

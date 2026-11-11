@@ -3304,5 +3304,8 @@
     "done": "klaar",
     "current": "huidige stap",
     "exchange_progress": "Voortgang van de ruil"
+  },
+  "stars": {
+    "rating_label": "Beoordeeld met {{rating}} van {{max}}"
   }
 }

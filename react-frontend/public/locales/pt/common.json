@@ -3347,5 +3347,8 @@
     "done": "concluído",
     "current": "passo atual",
     "exchange_progress": "Progresso da troca"
+  },
+  "stars": {
+    "rating_label": "Classificação {{rating}} de {{max}}"
   }
 }

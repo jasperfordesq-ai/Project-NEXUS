@@ -3304,5 +3304,8 @@
     "done": "erledigt",
     "current": "aktueller Schritt",
     "exchange_progress": "Fortschritt des Tauschs"
+  },
+  "stars": {
+    "rating_label": "Bewertet mit {{rating}} von {{max}}"
   }
 }

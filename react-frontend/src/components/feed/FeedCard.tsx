@@ -22,6 +22,7 @@ import { Chip } from '@/components/ui/Chip';
 import { feedTypeColour } from './feedTypeColours';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { Stars } from '@/components/ui/Stars';
 import { Separator } from '@/components/ui/Separator';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -1434,15 +1435,7 @@ const FeedCardInner = React.memo(function FeedCardInner({
                     </div>
                   </div>
                 </Link>
-                <div className="flex items-center gap-1" aria-label={t('card.review.rating_aria', { rating: item.rating })}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`w-6 h-6 transition-colors ${star <= item.rating! ? 'text-amber-400 fill-amber-400 drop-shadow-sm' : 'text-[var(--border-default)]'}`}
-                      aria-hidden="true"
-                    />
-                  ))}
-                </div>
+                <Stars rating={item.rating ?? 0} size="lg" label={t('card.review.rating_aria', { rating: item.rating })} className="gap-1 drop-shadow-sm" />
               </div>
               {item.content && (
                 <blockquote className="relative border-s-4 border-amber-500/60 ps-4 py-1 text-[15px] text-theme-secondary italic leading-relaxed">

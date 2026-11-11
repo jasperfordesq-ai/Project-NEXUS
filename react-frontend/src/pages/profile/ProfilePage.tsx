@@ -12,6 +12,9 @@ import { Chip } from '@/components/ui/Chip';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { ProfileTimeShared } from './ProfileTimeShared';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { Stars } from '@/components/ui/Stars';
+import { BadgeMedallion } from '@/components/achievements/BadgeMedallion';
+import { kindColour } from '@/components/feed/feedTypeColours';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tabs, Tab } from '@/components/ui/Tabs';
@@ -81,6 +84,9 @@ interface ProfileBadge {
   tier: string;
   earned: boolean;
   earned_at: string | null;
+  /** Kind of badge (its type): decides the medallion's colour. */
+  kind?: string | null;
+  rarity?: string | null;
 }
 
 interface GamificationSummary {
@@ -128,6 +134,8 @@ interface GamificationBadgeResponse {
   description?: string;
   icon?: string;
   earned_at?: string | null;
+  type?: string | null;
+  rarity?: string | null;
 }
 
 const containerVariants = {
@@ -325,7 +333,7 @@ export function ProfilePage() {
                   .map((b) => {
                     const key = b.badge_key || b.key;
                     if (!key || !b.name) return null;
-                    return {
+                    const badge: ProfileBadge = {
                       key,
                       name: b.name,
                       description: b.description || '',
@@ -333,7 +341,10 @@ export function ProfilePage() {
                       tier: '',
                       earned: true,
                       earned_at: b.earned_at ?? null,
+                      kind: b.type ?? null,
+                      rarity: b.rarity ?? null,
                     };
+                    return badge;
                   })
                   .filter((b): b is ProfileBadge => b !== null)
               : [];
@@ -949,14 +960,14 @@ export function ProfilePage() {
                 icon={<ArrowUpRight className="w-5 h-5" aria-hidden="true" />}
                 label={t('stats.hours_given')}
                 value={profile.total_hours_given ?? 0}
-                color="emerald"
+                kind="hours"
                 to={isOwnProfile && hasWallet ? tenantPath('/wallet') : undefined}
               />
               <ProfileStatCard
                 icon={<ArrowDownLeft className="w-5 h-5" aria-hidden="true" />}
                 label={t('stats.hours_received')}
                 value={profile.total_hours_received ?? 0}
-                color="indigo"
+                kind="blog"
                 to={isOwnProfile && hasWallet ? tenantPath('/wallet') : undefined}
               />
             </>
@@ -965,21 +976,21 @@ export function ProfilePage() {
             icon={<ListTodo className="w-5 h-5" aria-hidden="true" />}
             label={t('stats.active_listings')}
             value={profile.stats?.listings_count ?? listings.length}
-            color="purple"
+            kind="listing"
             to={isOwnProfile && hasListings ? tenantPath('/listings/mine') : undefined}
           />
           <ProfileStatCard
             icon={<Users className="w-5 h-5" aria-hidden="true" />}
             label={t('stats.groups')}
             value={profile.groups_count ?? 0}
-            color="amber"
+            kind="group"
             to={isOwnProfile && hasGroups ? tenantPath('/groups?scope=joined') : undefined}
           />
           <ProfileStatCard
             icon={<CalendarCheck className="w-5 h-5" aria-hidden="true" />}
             label={t('stats.events')}
             value={profile.events_attended ?? 0}
-            color="rose"
+            kind="event"
             to={isOwnProfile && hasEvents ? tenantPath('/events?scope=mine') : undefined}
           />
         </dl>
@@ -1305,19 +1316,11 @@ export function ProfilePage() {
                       <div className="flex items-center gap-4">
                         <div className="text-center">
                           <div className="text-3xl font-bold text-theme-primary">{profile.rating.toFixed(1)}</div>
-                          <div className="flex items-center gap-0.5 mt-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className={`w-4 h-4 ${
-                                  star <= Math.round(profile.rating ?? 0)
-                                    ? 'text-amber-400 fill-amber-400'
-                                    : 'text-theme-subtle'
-                                }`}
-                                aria-hidden="true"
-                              />
-                            ))}
-                          </div>
+                          <Stars
+                            rating={profile.rating ?? 0}
+                            label={t('aria.rating_summary', { rating: profile.rating.toFixed(1) })}
+                            className="mt-1"
+                          />
                           <p className="text-xs text-theme-subtle mt-1">
                             {t('reviews_count', { count: reviews.length })}
                           </p>
@@ -1386,13 +1389,14 @@ export function ProfilePage() {
                         key={badge.key}
                         className={`min-w-0 p-4 text-center ${badge.earned ? '' : 'opacity-50'}`}
                       >
-                        <div className="mb-2 flex h-8 items-center justify-center">
-                          {badge.icon ? (
-                            <span className="text-3xl leading-none" aria-hidden="true">{badge.icon}</span>
-                          ) : (
-                            <Trophy className="h-7 w-7 text-[var(--color-warning)]" aria-hidden="true" />
-                          )}
-                        </div>
+                        {/* The same medallion as the achievements page (A4/B7). */}
+                        <BadgeMedallion
+                          icon={badge.icon || null}
+                          kind={badge.kind}
+                          rarity={badge.rarity}
+                          earned={badge.earned}
+                          className="mx-auto mb-2"
+                        />
                         <Tooltip content={badgeName(badge)}>
                           <p className="truncate text-sm font-medium text-theme-primary">{badgeName(badge)}</p>
                         </Tooltip>
@@ -1537,27 +1541,24 @@ interface ProfileStatCardProps {
   icon: React.ReactNode;
   label: string;
   value: number;
-  color: 'emerald' | 'indigo' | 'purple' | 'amber' | 'rose';
+  /**
+   * Which kind colour the icon takes (`kindColour()`): offers, groups and
+   * events wear the same colour here as on the feed and in search (B7).
+   */
+  kind: 'hours' | 'blog' | 'listing' | 'group' | 'event';
   /** When set, the whole card links here (own profile only). */
   to?: string;
 }
 
-const colorClasses: Record<string, string> = {
-  emerald: 'from-emerald-500/20 to-teal-500/20 text-emerald-500',
-  indigo: 'from-accent/20 to-blue-500/20 text-accent',
-  purple: 'from-accent/20 to-fuchsia-500/20 text-accent',
-  amber: 'from-amber-500/20 to-orange-500/20 text-[var(--color-warning)]',
-  rose: 'from-rose-500/20 to-pink-500/20 text-rose-500',
-};
 
-function ProfileStatCard({ icon, label, value, color, to }: ProfileStatCardProps) {
+function ProfileStatCard({ icon, label, value, kind, to }: ProfileStatCardProps) {
   return (
     <GlassCard
       className={`relative p-4 text-center hover:bg-theme-hover transition-colors${to ? ' focus-within:ring-2 focus-within:ring-[var(--color-primary)]' : ''}`}
     >
       {/* A coloured circle, centred above the number. (An inline-flex box that
           the card's column layout stretched into a wide, empty colour bar.) */}
-      <div data-testid="profile-stat-icon" className={`mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br ${colorClasses[color]}`}>
+      <div data-testid="profile-stat-icon" className={`mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-full ${kindColour(kind).label}`}>
         {icon}
       </div>
       {/* The link stretches over the whole card (after:inset-0) so the card is
@@ -1631,19 +1632,7 @@ function ReviewCard({ review }: ReviewCardProps) {
           </div>
 
           {/* Star Rating */}
-          <div className="flex items-center gap-0.5 mt-2" aria-label={t('aria.rating_summary', { rating: review.rating })}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
-                className={`w-4 h-4 ${
-                  star <= review.rating
-                    ? 'text-amber-400 fill-amber-400'
-                    : 'text-theme-subtle'
-                }`}
-                aria-hidden="true"
-              />
-            ))}
-          </div>
+          <Stars rating={review.rating} label={t('aria.rating_summary', { rating: review.rating })} className="mt-2" />
 
           {/* Comment */}
           {review.comment && (

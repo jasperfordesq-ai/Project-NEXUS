@@ -40911,6 +40911,9 @@ export default interface Resources {
       "use_custom": "Use \"{{query}}\"",
       "wants": "Wants"
     },
+    "stars": {
+      "rating_label": "Rated {{rating}} out of {{max}}"
+    },
     "stats": {
       "alerts": "Alerts",
       "credits": "Credits",

@@ -3433,5 +3433,8 @@
     "done": "déanta",
     "current": "céim reatha",
     "exchange_progress": "Dul chun cinn an mhalartaithe"
+  },
+  "stars": {
+    "rating_label": "Rátáil {{rating}} as {{max}}"
   }
 }

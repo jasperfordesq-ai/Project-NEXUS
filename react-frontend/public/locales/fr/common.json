@@ -3347,5 +3347,8 @@
     "done": "terminé",
     "current": "étape en cours",
     "exchange_progress": "Avancement de l'échange"
+  },
+  "stars": {
+    "rating_label": "Noté {{rating}} sur {{max}}"
   }
 }

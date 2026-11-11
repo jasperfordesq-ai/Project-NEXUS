@@ -31,6 +31,7 @@ import { ReviewModal } from '@/components/reviews/ReviewModal';
 import { SocialInteractionPanel } from '@/components/social/SocialInteractionPanel';
 import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { Button, Chip, Avatar, Tabs, Tab, Skeleton, useConfirm } from '@/components/ui';
+import { Stars } from '@/components/ui/Stars';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -77,15 +78,7 @@ interface PendingReview {
 function StarRating({ rating }: { rating: number }): ReactNode {
   const { t } = useTranslation('reviews');
   return (
-    <div className="flex items-center gap-0.5" aria-label={t('rating_aria', { n: rating })}>
-      {Array.from({ length: 5 }, (_, i) => (
-        <Star
-          key={i}
-          aria-hidden="true"
-          className={`w-4 h-4 ${i < rating ? 'fill-amber-400 text-amber-400' : 'text-theme-subtle'}`}
-        />
-      ))}
-    </div>
+    <Stars rating={rating} label={t('rating_aria', { n: rating })} />
   );
 }
 

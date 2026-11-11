@@ -286,6 +286,16 @@ describe('ProfilePage', () => {
     }
   });
 
+  it('colours each figure by its kind, as the feed and search do (warmth B7)', async () => {
+    render(<ProfilePage />);
+    await waitFor(() => expect(screen.getAllByTestId('profile-stat-icon').length).toBeGreaterThan(0));
+    const classes = screen.getAllByTestId('profile-stat-icon').map((icon) => icon.className).join(' ');
+    // Groups are orange and events emerald everywhere on the site.
+    expect(classes).toContain('bg-orange-100');
+    expect(classes).toContain('bg-emerald-100');
+    expect(classes).not.toContain('bg-gradient-to-br');
+  });
+
   it('shows hours given and received together in one ring card once there are hours', async () => {
     const original = mockApiGet.getMockImplementation()!;
     mockApiGet.mockImplementation((url: string) =>

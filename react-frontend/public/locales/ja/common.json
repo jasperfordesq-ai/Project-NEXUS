@@ -3304,5 +3304,8 @@
     "done": "完了",
     "current": "現在のステップ",
     "exchange_progress": "交換の進み具合"
+  },
+  "stars": {
+    "rating_label": "評価 {{rating}} / {{max}}"
   }
 }
