@@ -116,6 +116,36 @@ class LeaderboardService
             foreach ($results as &$row) {
                 $row['is_current_user'] = ($currentUserId && (int) $row['user_id'] === (int) $currentUserId);
             }
+            unset($row);
+
+            // E-122: the cached rows carry stored full names and `last_name`
+            // and are shared by every viewer, so the surname rule is applied
+            // here, per request: anyone who is not staff of the community gets
+            // first names (or an organisation's trading name) and no surname.
+            if (\App\Support\Names\NameAudience::enforced() && ! \App\Support\Names\NameAudience::allowsSurnames()) {
+                // The lookup only decides between a first name and an
+                // organisation's trading name. If it fails, the first name
+                // already on the row is used — the surname stays hidden.
+                try {
+                    $publicNames = \App\Support\Members\MemberProfileVisibility::publicNames(
+                        array_map(static fn (array $r): int => (int) ($r['user_id'] ?? 0), $results),
+                        $tenantId,
+                    );
+                } catch (\Throwable $e) {
+                    Log::warning('Leaderboard public-name lookup failed: ' . $e->getMessage());
+                    $publicNames = [];
+                }
+                foreach ($results as &$row) {
+                    if ($currentUserId && (int) $row['user_id'] === (int) $currentUserId) {
+                        continue;
+                    }
+                    unset($row['last_name']);
+                    if (array_key_exists('name', $row)) {
+                        $row['name'] = $publicNames[(int) $row['user_id']] ?? (string) ($row['first_name'] ?? '');
+                    }
+                }
+                unset($row);
+            }
 
             return $results;
         } catch (\Throwable $e) {

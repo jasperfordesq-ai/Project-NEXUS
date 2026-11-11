@@ -1225,7 +1225,7 @@ class VolunteerService
         $cursorId = self::decodeCursor($filters['cursor'] ?? null);
 
         $sql = "
-            SELECT a.*, a.org_note, u.name as user_name, u.email as user_email, u.avatar_url as user_avatar,
+            SELECT a.*, a.org_note, " . \App\Support\UserDisplayName::sql('u', 'user_name') . ", u.email as user_email, u.avatar_url as user_avatar,
                    s.start_time as shift_start, s.end_time as shift_end
             FROM vol_applications a
             JOIN users u ON a.user_id = u.id AND u.tenant_id = a.tenant_id

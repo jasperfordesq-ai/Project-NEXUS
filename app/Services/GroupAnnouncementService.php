@@ -55,7 +55,7 @@ class GroupAnnouncementService
             ->join('users as u', 'ga.created_by', '=', 'u.id')
             ->where('ga.group_id', $groupId)
             ->where('ga.tenant_id', $tenantId)
-            ->select('ga.*', 'u.name as author_name', 'u.avatar_url as author_avatar');
+            ->select('ga.*', DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name')), 'u.avatar_url as author_avatar');
 
         if (!$includeExpired) {
             $query->where(function ($q) {
@@ -133,7 +133,7 @@ class GroupAnnouncementService
             ->where('ga.id', $announcementId)
             ->where('ga.group_id', $groupId)
             ->where('ga.tenant_id', $tenantId)
-            ->select('ga.*', 'u.name as author_name', 'u.avatar_url as author_avatar')
+            ->select('ga.*', DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name')), 'u.avatar_url as author_avatar')
             ->first();
 
         if (!$row) {

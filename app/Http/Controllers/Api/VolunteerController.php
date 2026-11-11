@@ -1058,7 +1058,7 @@ class VolunteerController extends BaseApiController
 
         $rows = DB::select("
             SELECT va.id, va.status, va.message, va.org_note, va.created_at, va.shift_id,
-                   u.id as user_id, u.name as user_name, u.avatar_url as user_avatar,
+                   u.id as user_id, " . \App\Support\UserDisplayName::sql('u', 'user_name') . ", u.avatar_url as user_avatar,
                    u.email as user_email,
                    vo.id as opportunity_id, vo.title as opportunity_title,
                    vs.start_time as shift_start, vs.end_time as shift_end
@@ -1194,7 +1194,7 @@ class VolunteerController extends BaseApiController
 
         $rows = DB::select("
             SELECT vl.id, vl.hours, vl.date_logged as date, vl.description, vl.status, vl.created_at,
-                   u.id as user_id, u.name as user_name, u.avatar_url as user_avatar,
+                   u.id as user_id, " . \App\Support\UserDisplayName::sql('u', 'user_name') . ", u.avatar_url as user_avatar,
                    vo.id as opportunity_id, vo.title as opportunity_title
             FROM vol_logs vl
             INNER JOIN users u ON vl.user_id = u.id AND u.tenant_id = vl.tenant_id

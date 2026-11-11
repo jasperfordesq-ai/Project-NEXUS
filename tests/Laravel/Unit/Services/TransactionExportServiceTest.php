@@ -87,7 +87,10 @@ class TransactionExportServiceTest extends TestCase
         $result = $this->service->exportPersonalStatementCSV(1);
 
         $this->assertTrue($result['success']);
-        $this->assertStringContainsString('Bob Jones', $result['csv']);
+        // E-122: the other party's surname is for staff of the community;
+        // a member's own statement names them by first name.
+        $this->assertStringContainsString(',Bob,', $result['csv']);
+        $this->assertStringNotContainsString('Jones', $result['csv']);
         $this->assertStringContainsString('2.50', $result['csv']);
     }
 }

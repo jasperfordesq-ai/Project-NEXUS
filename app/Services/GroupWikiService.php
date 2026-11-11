@@ -53,7 +53,7 @@ final class GroupWikiService
                 'wp.last_edited_by',
                 'wp.created_at',
                 'wp.updated_at',
-                'u.name as author_name',
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name')),
             ]);
 
         if (! $canManage) {
@@ -85,7 +85,7 @@ final class GroupWikiService
         $tenantId = (int) TenantContext::getId();
         $page = $this->pageQuery($groupId, $tenantId)
             ->where('wp.slug', $slug)
-            ->select(['wp.*', 'u.name as author_name'])
+            ->select(['wp.*', DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name'))])
             ->first();
 
         if ($page === null || ! $this->canSeePage($groupId, $userId, $page)) {
@@ -436,7 +436,7 @@ final class GroupWikiService
                 'r.page_id',
                 'r.content',
                 'r.edited_by',
-                'u.name as editor_name',
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'editor_name')),
                 'r.change_summary',
                 'r.created_at',
             ])
@@ -523,7 +523,7 @@ final class GroupWikiService
         /** @var object $page */
         $page = $this->pageQuery($groupId, $tenantId)
             ->where('wp.id', $pageId)
-            ->select(['wp.*', 'u.name as author_name'])
+            ->select(['wp.*', DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name'))])
             ->firstOrFail();
 
         return $page;

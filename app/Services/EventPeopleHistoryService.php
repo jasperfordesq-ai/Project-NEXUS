@@ -77,7 +77,8 @@ final class EventPeopleHistoryService
             $join->on('history_actor.id', '=', 'people_history.actor_user_id')
                 ->where('history_actor.tenant_id', '=', $tenantId);
         })->selectRaw(
-            <<<'SQL'
+            // E-122: audience-aware actor name (first name unless staff).
+            \App\Support\UserDisplayName::sql('history_actor', 'actor_display_name') . ",\n" . <<<'SQL'
 people_history.axis,
 people_history.entry_id,
 people_history.version,
@@ -86,10 +87,6 @@ people_history.action,
 people_history.from_state,
 people_history.to_state,
 people_history.actor_user_id,
-COALESCE(
-    NULLIF(TRIM(history_actor.name), ''),
-    NULLIF(TRIM(CONCAT_WS(' ', NULLIF(history_actor.first_name, ''), NULLIF(history_actor.last_name, ''))), '')
-) AS actor_display_name,
 people_history.reason,
 people_history.created_at
 SQL,

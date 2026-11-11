@@ -5532,7 +5532,7 @@ class EventService
 
         try {
             $rows = DB::select(
-                "SELECT s.*, u.name as creator_name,
+                "SELECT s.*, " . UserDisplayName::sql('u', 'creator_name') . ",
                         COALESCE(s.created_at, '1970-01-01 00:00:00') as sort_created_at,
                         (SELECT COUNT(*) FROM events series_events
                          WHERE series_events.series_id = s.id AND series_events.tenant_id = ?
@@ -5639,7 +5639,7 @@ class EventService
 
         try {
             $series = DB::selectOne(
-                "SELECT s.*, u.name as creator_name,
+                "SELECT s.*, " . UserDisplayName::sql('u', 'creator_name') . ",
                         (SELECT COUNT(*) FROM events series_events
                          WHERE series_events.series_id = s.id AND series_events.tenant_id = ?
                            AND (series_events.status IS NULL OR series_events.status = 'active')

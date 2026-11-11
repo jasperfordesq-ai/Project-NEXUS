@@ -471,13 +471,13 @@ final class EventPeopleService
                 '=',
                 'participant_ids.user_id',
             )
+            // E-122: the name is audience-aware — an organiser who is not staff
+            // of the community gets first names here and in the CSV (owner
+            // decision O-269); administrators, brokers and coordinators get
+            // full names.
             ->selectRaw(
-                <<<'SQL'
+                \App\Support\UserDisplayName::sql('people_user', 'display_name') . ",\n" . <<<'SQL'
 participant_ids.user_id,
-COALESCE(
-    NULLIF(TRIM(people_user.name), ''),
-    NULLIF(TRIM(CONCAT_WS(' ', NULLIF(people_user.first_name, ''), NULLIF(people_user.last_name, ''))), '')
-) AS display_name,
 people_user.username,
 people_user.avatar_url,
 CASE WHEN legacy_rsvp.status IN ('interested', 'maybe') THEN 'interested' ELSE 'none' END AS engagement_state,

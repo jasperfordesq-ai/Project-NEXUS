@@ -175,7 +175,12 @@ class F239MemberActivityDashboardVisibilityTest extends TestCase
         $this->assertStringNotContainsString($surname, $outsiderView);
         $this->assertStringContainsString($first, $outsiderView, 'the connection is still listed by first name');
 
-        $this->assertStringContainsString($surname, $this->dashboardAs($this->author), 'the member sees their own connection in full');
+        // E-122 (owner, 10 Nov 2026): the connection is ANOTHER member, so the
+        // member reading their own timeline gets the first name too. Until
+        // then this asserted the surname was present.
+        $ownView = $this->dashboardAs($this->author);
+        $this->assertStringNotContainsString($surname, $ownView);
+        $this->assertStringContainsString($first, $ownView, 'the member still sees their own connection, by first name');
     }
 
     public function test_rsvp_is_shown_only_for_events_the_viewer_can_open(): void

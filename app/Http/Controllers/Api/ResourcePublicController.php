@@ -95,7 +95,8 @@ class ResourcePublicController extends BaseApiController
                 'r.id', 'r.title', 'r.description', 'r.file_path', 'r.file_type', 'r.file_size',
                 'r.downloads', 'r.category_id', 'r.user_id', 'r.created_at',
                 'r.sort_order', 'r.content_type', 'r.content_body',
-                DB::raw("CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, '')) as uploader_name"),
+                // E-122: audience-aware — first name for members.
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'uploader_name')),
                 'u.avatar_url as uploader_avatar',
                 'c.name as category_name',
                 'c.slug as category_slug',

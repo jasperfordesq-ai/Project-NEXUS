@@ -165,6 +165,7 @@ class GroupMentionService
 
         $tenantId = TenantContext::getId();
         $searchTerm = '%' . $query . '%';
+        $seesSurnames = \App\Support\Names\NameAudience::allowsSurnames();
 
         $results = DB::table('group_members as gm')
             ->join('users as u', function ($join) use ($tenantId) {
@@ -175,18 +176,26 @@ class GroupMentionService
             ->where('gm.group_id', $groupId)
             ->where('gm.status', 'active')
             ->where('u.status', '!=', 'banned')
-            ->where(function ($builder) use ($searchTerm) {
-                $builder->where('u.name', 'LIKE', $searchTerm)
-                    ->orWhere('u.first_name', 'LIKE', $searchTerm)
-                    ->orWhere('u.last_name', 'LIKE', $searchTerm)
-                    ->orWhere('u.username', 'LIKE', $searchTerm);
+            ->where(function ($builder) use ($searchTerm, $seesSurnames) {
+                // E-122: only staff of the community may match on a surname;
+                // for everyone else a surname must not be findable by typing it.
+                $builder->where('u.first_name', 'LIKE', $searchTerm)
+                    ->orWhere('u.username', 'LIKE', $searchTerm)
+                    ->orWhere(function ($org) use ($searchTerm) {
+                        $org->where('u.profile_type', 'organisation')
+                            ->where('u.organization_name', 'LIKE', $searchTerm);
+                    });
+                if ($seesSurnames) {
+                    $builder->orWhere('u.name', 'LIKE', $searchTerm)
+                        ->orWhere('u.last_name', 'LIKE', $searchTerm);
+                }
             })
             ->select([
                 'u.id',
                 'u.username',
                 'u.avatar_url',
             ])
-            ->selectRaw("COALESCE(u.name, CONCAT(u.first_name, ' ', COALESCE(u.last_name, ''))) as name")
+            ->selectRaw(\App\Support\UserDisplayName::sql('u', 'name'))
             ->orderBy('u.first_name')
             ->limit(max(1, min($limit, 50)))
             ->get()

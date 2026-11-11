@@ -33,6 +33,31 @@ use App\Support\UserDisplayName;
  */
 class FeedService
 {
+    /** @var array<int, string|null> The signed-in viewer's own full name, looked up once per request. */
+    private static array $ownNames = [];
+
+    /**
+     * E-122: feed rows name their author through SQL, which gives members a
+     * first name for every row — the viewer's own posts included. A member's
+     * own name is never hidden from them, so their own rows get it back here.
+     */
+    private static function authorName(int $authorId, ?string $name): ?string
+    {
+        $viewerId = (int) (\Illuminate\Support\Facades\Auth::id() ?? 0);
+        if ($viewerId <= 0 || $viewerId !== $authorId
+            || ! \App\Support\Names\NameAudience::enforced()
+            || \App\Support\Names\NameAudience::allowsSurnames()
+        ) {
+            return $name;
+        }
+
+        if (! array_key_exists($viewerId, self::$ownNames)) {
+            self::$ownNames[$viewerId] = \App\Support\Members\MemberProfileVisibility::ownFullName($viewerId);
+        }
+
+        return self::$ownNames[$viewerId] ?? $name;
+    }
+
     /**
      * Fix 6: Maximum allowed post body length (50 KB) to prevent oversized payload abuse.
      */
@@ -232,7 +257,8 @@ class FeedService
                 // never reaches the first/last fallback and an empty name ('')
                 // renders as a nameless post. Same expression as the admin
                 // moderation list in AdminFeedController::index.
-                DB::raw("COALESCE(NULLIF(u.name, ''), NULLIF(TRIM(CONCAT_WS(' ', u.first_name, u.last_name)), '')) as author_name"),
+                // E-122: audience-aware — first name for members, full name for staff.
+                DB::raw(UserDisplayName::sql('u', 'author_name')),
                 'u.avatar_url as author_avatar',
                 'u.location as user_location',
                 // A listing's own type (offer / request), from the same community.
@@ -547,7 +573,7 @@ class FeedService
                 'image_url' => $imageUrl,
                 'author' => [
                     'id' => (int) $row->user_id,
-                    'name' => $row->author_name,
+                    'name' => self::authorName((int) $row->user_id, $row->author_name),
                     'avatar_url' => $row->author_avatar ?? '/assets/img/defaults/default_avatar.png',
                 ],
                 'likes_count' => $likeCounts[$likeKey] ?? 0,
@@ -890,7 +916,7 @@ class FeedService
                                 'feed_posts.image_url',
                                 'feed_posts.created_at',
                                 'feed_posts.user_id',
-                                DB::raw("COALESCE(users.name, CONCAT(users.first_name, ' ', users.last_name)) as author_name"),
+                                DB::raw(UserDisplayName::sql('users', 'author_name')),
                                 'users.avatar_url as author_avatar',
                             ])
                             ->get()
@@ -1971,7 +1997,7 @@ class FeedService
                 $rows = DB::select(
                     "SELECT p.id, p.content, p.image_url, p.created_at, p.likes_count, p.user_id,
                            'post' as type,
-                           COALESCE(u.name, CONCAT(u.first_name, ' ', u.last_name)) as author_name,
+                           " . UserDisplayName::sql('u', 'author_name') . ",
                            u.avatar_url as author_avatar,
                            (SELECT COUNT(*) FROM comments WHERE target_type = 'post' AND target_id = p.id AND tenant_id = ?{$commentDeleteClause}) as comments_count
                     FROM feed_posts p
@@ -1986,7 +2012,7 @@ class FeedService
                 $rows = DB::select(
                     "SELECT p.id, p.slug, p.title, p.content, p.featured_image as image_url, p.created_at,
                            0 as likes_count, p.author_id as user_id, 'blog' as type,
-                           COALESCE(u.name, CONCAT(u.first_name, ' ', u.last_name)) as author_name,
+                           " . UserDisplayName::sql('u', 'author_name') . ",
                            u.avatar_url as author_avatar,
                            (SELECT COUNT(*) FROM comments WHERE target_type = 'blog' AND target_id = p.id AND tenant_id = ?{$commentDeleteClause}) as comments_count
                     FROM posts p
@@ -2001,7 +2027,7 @@ class FeedService
                 $rows = DB::select(
                     "SELECT gd.id, gd.title, gp_first.content, NULL as image_url, gd.created_at,
                            0 as likes_count, gd.user_id, 'discussion' as type,
-                           COALESCE(u.name, CONCAT(u.first_name, ' ', u.last_name)) as author_name,
+                           " . UserDisplayName::sql('u', 'author_name') . ",
                            u.avatar_url as author_avatar,
                            (SELECT COUNT(*) FROM group_posts gpc WHERE gpc.discussion_id = gd.id AND gpc.tenant_id = gd.tenant_id) as comments_count
                     FROM group_discussions gd
@@ -2048,7 +2074,7 @@ class FeedService
             'image_url' => $item['image_url'] ?? null,
             'author' => [
                 'id' => (int) $item['user_id'],
-                'name' => $item['author_name'],
+                'name' => self::authorName((int) $item['user_id'], $item['author_name'] ?? null),
                 'avatar_url' => $item['author_avatar'] ?? '/assets/img/defaults/default_avatar.png',
             ],
             'likes_count' => (int) ($item['likes_count'] ?? 0),

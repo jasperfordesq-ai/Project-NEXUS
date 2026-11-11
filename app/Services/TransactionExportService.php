@@ -142,9 +142,11 @@ class TransactionExportService
         foreach ($rows as $row) {
             $isSender = ((int) $row->sender_id === $userId);
 
+            // E-122: the other party's surname is for staff of the community.
+            $withSurname = \App\Support\Names\NameAudience::allowsSurnames();
             $otherParty = $isSender
-                ? trim(($row->receiver_first ?? '') . ' ' . ($row->receiver_last ?? ''))
-                : trim(($row->sender_first ?? '') . ' ' . ($row->sender_last ?? ''));
+                ? trim(($row->receiver_first ?? '') . ' ' . ($withSurname ? ($row->receiver_last ?? '') : ''))
+                : trim(($row->sender_first ?? '') . ' ' . ($withSurname ? ($row->sender_last ?? '') : ''));
 
             // System transactions (starting_balance, admin_grant) may not have an other party
             if (trim($otherParty) === '') {

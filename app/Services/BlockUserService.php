@@ -415,7 +415,8 @@ class BlockUserService
                     'user_id' => $row->user_id,
                     'name' => $name,
                     'first_name' => $row->first_name,
-                    'last_name' => $row->last_name,
+                    // E-122: surnames are for staff of the community.
+                    'last_name' => \App\Support\Names\NameAudience::allowsSurnames() ? $row->last_name : '',
                     'avatar_url' => $row->avatar_url,
                     'reason' => $row->reason,
                     'blocked_at' => $row->blocked_at,

@@ -486,9 +486,13 @@ class GroupAnalyticsService
     {
         $tenantId = TenantContext::getId();
 
+        // E-122: a group owner who is not staff of the community gets first
+        // names in the export (owner decision O-269); staff get full names.
+        $nameSql = \App\Support\UserDisplayName::sql('u', 'name');
+
         $columns = $includeContactDetails
-            ? ['u.name', 'u.email', 'gm.role', 'gm.status', 'gm.created_at as joined_at']
-            : ['u.name', 'gm.role', 'gm.status', 'gm.created_at as joined_at'];
+            ? [new \Illuminate\Database\Query\Expression($nameSql), 'u.email', 'gm.role', 'gm.status', 'gm.created_at as joined_at']
+            : [new \Illuminate\Database\Query\Expression($nameSql), 'gm.role', 'gm.status', 'gm.created_at as joined_at'];
         $statuses = $includeContactDetails
             ? ['active', 'pending', 'invited', 'banned']
             : ['active'];

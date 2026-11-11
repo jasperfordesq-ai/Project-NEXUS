@@ -190,6 +190,10 @@ class IdeationChallengeService
             'items'    => $items->map(function ($i) {
                 $item = (array) $i;
                 $item['tags'] = isset($item['tags']) ? (json_decode($item['tags'], true) ?? []) : [];
+                // E-122: the creator's surname is for staff and the creator.
+                if (! \App\Support\Names\NameAudience::allowsSurnameOf(isset($item['user_id']) ? (int) $item['user_id'] : null)) {
+                    unset($item['last_name']);
+                }
                 return $item;
             })->values()->all(),
             'cursor'   => $hasMore && $items->isNotEmpty() ? base64_encode((string) $items->last()->id) : null,

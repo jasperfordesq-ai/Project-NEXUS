@@ -180,8 +180,8 @@ class MemberActivityService
                      CONCAT(
                          CASE WHEN transactions.sender_id = ? THEN 'Gave ' ELSE 'Received ' END,
                          transactions.amount, ' hour(s)',
-                         CASE WHEN transactions.sender_id = ? THEN CONCAT(' to ', COALESCE(r.first_name, ''), ' ', COALESCE(r.last_name, ''))
-                              ELSE CONCAT(' from ', COALESCE(s.first_name, ''), ' ', COALESCE(s.last_name, ''))
+                         CASE WHEN transactions.sender_id = ? THEN CONCAT(' to ', " . \App\Support\UserDisplayName::sql('r', '') . ")
+                              ELSE CONCAT(' from ', " . \App\Support\UserDisplayName::sql('s', '') . ")
                          END
                      ) as description,
                      transactions.created_at",
@@ -209,9 +209,10 @@ class MemberActivityService
             report($e);
         }
 
-        // Connections — surnames only for the member themselves and for
-        // administrators (F-084), as on the profile route.
-        $fullNames = ! $filterForViewer || MemberProfileVisibility::viewerSeesSurnames($viewerId);
+        // Connections — the people named are OTHER members, so their surnames
+        // are for staff of the community only (E-122). Until 11 Nov 2026 a
+        // member reading their own timeline got full names here.
+        $fullNames = \App\Support\Names\NameAudience::allowsSurnames();
         $u1Name = $fullNames ? "CONCAT(u1.first_name, ' ', u1.last_name)" : self::publicNameSql('u1');
         $u2Name = $fullNames ? "CONCAT(u2.first_name, ' ', u2.last_name)" : self::publicNameSql('u2');
         try {

@@ -381,7 +381,8 @@ class FeedSidebarController extends BaseApiController
                     ->limit(4)
                     ->select(
                         'l.id', 'l.title', 'l.type', 'l.image_url',
-                        DB::raw("COALESCE(NULLIF(u.name, ''), CONCAT(u.first_name, ' ', u.last_name)) as owner_name")
+                        // E-122: audience-aware — first name for members.
+                        DB::raw(UserDisplayName::sql('u', 'owner_name'))
                     )
                     ->get()
                     ->map(fn ($r) => (array) $r)
@@ -416,6 +417,10 @@ class FeedSidebarController extends BaseApiController
                         unset($arr['last_active_at']);
                         $arr['is_online'] = $lastActive && $lastActive->gt($now->copy()->subMinutes(5));
                         $arr['is_recent'] = $lastActive && $lastActive->gt($now->copy()->subDay());
+                        // E-122: a friend's surname is for staff of the community.
+                        if (! \App\Support\Names\NameAudience::allowsSurnames()) {
+                            unset($arr['last_name']);
+                        }
                         return $arr;
                     })
                     ->all();

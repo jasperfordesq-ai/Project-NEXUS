@@ -107,7 +107,7 @@ final class GroupFileService
                 'gf.download_count',
                 'gf.created_at',
                 'gf.updated_at',
-                'u.name as uploader_name',
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'uploader_name')),
                 'u.avatar_url as uploader_avatar',
             ]);
 
@@ -327,7 +327,7 @@ final class GroupFileService
             ->select([
                 'gf.id', 'gf.group_id', 'gf.file_name', 'gf.file_type', 'gf.file_size',
                 'gf.uploaded_by', 'gf.folder', 'gf.description', 'gf.download_count',
-                'gf.created_at', 'gf.updated_at', 'u.name as uploader_name',
+                'gf.created_at', 'gf.updated_at', DB::raw(\App\Support\UserDisplayName::sql('u', 'uploader_name')),
                 'u.avatar_url as uploader_avatar',
             ])
             ->first();

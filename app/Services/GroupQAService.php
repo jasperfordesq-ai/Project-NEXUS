@@ -73,7 +73,7 @@ final class GroupQAService
                 'gq.created_at',
                 'gq.updated_at',
                 'u.id as author_id',
-                'u.name as author_name',
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name')),
                 'u.avatar_url as author_avatar',
                 DB::raw('COALESCE(viewer_vote.vote, 0) as user_vote'),
             );
@@ -141,7 +141,7 @@ final class GroupQAService
             ->select(
                 'gq.*',
                 'u.id as author_id',
-                'u.name as author_name',
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name')),
                 'u.avatar_url as author_avatar',
                 DB::raw('COALESCE(viewer_vote.vote, 0) as user_vote'),
             )
@@ -178,7 +178,7 @@ final class GroupQAService
             ->select(
                 'ga.*',
                 'u.id as author_id',
-                'u.name as author_name',
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name')),
                 'u.avatar_url as author_avatar',
                 DB::raw('COALESCE(viewer_vote.vote, 0) as user_vote'),
             )
