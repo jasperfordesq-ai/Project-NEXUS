@@ -79,7 +79,7 @@ class SearchMembersTool extends AbstractTool
                   ->orWhere('bio', 'LIKE', $like)
                   ->orWhere('tagline', 'LIKE', $like)
                   ->orWhere('first_name', 'LIKE', $like)
-                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
+                  ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
                   ->orWhere('organization_name', 'LIKE', $like);
             });
 

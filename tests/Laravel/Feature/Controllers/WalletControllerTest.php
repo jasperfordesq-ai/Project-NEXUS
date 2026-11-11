@@ -337,12 +337,10 @@ class WalletControllerTest extends TestCase
     }
 
     /**
-     * E-122 (owner, 10 Nov 2026: "No surnames should be anywhere on the site
-     * apart from for admins"): a surname that is never shown must not be
-     * confirmable by typing it either. Until 11 Nov 2026 this test asserted
-     * the opposite — that a member could still find someone by surname.
+     * E-122, owner 11 Nov 2026: a member who already knows someone's surname
+     * may find them by it; the result shows the photo and first name only.
      */
-    public function test_user_search_does_not_match_a_surname_for_a_member(): void
+    public function test_user_search_matches_a_surname_without_echoing_it(): void
     {
         $this->authenticatedUser();
 
@@ -356,10 +354,9 @@ class WalletControllerTest extends TestCase
 
         $response = $this->apiGet('/v2/wallet/user-search?q=Kowalczyk');
         $response->assertStatus(200);
-        $this->assertNull(
-            collect($response->json('data.users'))->firstWhere('username', 'marzena_k'),
-            'A member must not find someone by surname.',
-        );
+        $bySurname = collect($response->json('data.users'))->firstWhere('username', 'marzena_k');
+        $this->assertNotNull($bySurname, 'A surname search finds the member.');
+        $this->assertStringNotContainsString('Kowalczyk', json_encode($response->json('data'), JSON_THROW_ON_ERROR));
 
         $response = $this->apiGet('/v2/wallet/user-search?q=Marzena');
         $response->assertStatus(200);

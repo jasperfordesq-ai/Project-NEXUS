@@ -351,9 +351,9 @@ class UserService
                      'xp', 'level', 'status', 'onboarding_completed')
             ->where(function (Builder $q) use ($like) {
                 $q->where('first_name', 'LIKE', $like)
-                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
+                  ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
                   ->orWhere('organization_name', 'LIKE', $like)
-                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
+                  ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
             })
             // Search must not bypass the pending/unapproved profile guard.
             // Staff review has its own authenticated administration route.
@@ -1192,7 +1192,7 @@ class UserService
                 $query->where(function ($subQuery) use ($search, $like) {
                     // E-122: the full-text index and `name` both contain the
                     // surname, so only staff of the community search them.
-                    if (\App\Support\Names\NameAudience::allowsSurnames()) {
+                    if (\App\Support\Names\NameAudience::mayFindBySurname()) {
                         $subQuery->whereRaw(
                             "MATCH(first_name, last_name, bio, skills) AGAINST(? IN BOOLEAN MODE)",
                             [$search]

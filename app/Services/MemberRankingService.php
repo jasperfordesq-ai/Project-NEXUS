@@ -107,7 +107,7 @@ class MemberRankingService
                 $like = '%' . $search . '%';
                 $usersQuery->where(function (Builder $query) use ($search, $like) {
                     // E-122: only staff of the community search the surname.
-                    if (\App\Support\Names\NameAudience::allowsSurnames()) {
+                    if (\App\Support\Names\NameAudience::mayFindBySurname()) {
                         $query->whereRaw(
                             "MATCH(first_name, last_name, bio, skills) AGAINST(? IN BOOLEAN MODE)",
                             [$search]

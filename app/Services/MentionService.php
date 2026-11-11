@@ -309,7 +309,7 @@ class MentionService
 
         // E-122: `name` and `last_name` hold the surname; only staff of the
         // community may find a member by typing it.
-        $nameMatch = \App\Support\Names\NameAudience::allowsSurnames()
+        $nameMatch = \App\Support\Names\NameAudience::mayFindBySurname()
             ? 'u.name LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.username LIKE ?'
             : "u.first_name LIKE ? OR u.username LIKE ? OR (u.profile_type = 'organisation' AND u.organization_name LIKE ?)";
 

@@ -1055,10 +1055,10 @@ class WalletService
             ->whereNull('deleted_at')
             ->where(function (Builder $q) use ($like) {
                 $q->where('first_name', 'LIKE', $like)
-                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
+                  ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
                   ->orWhere('username', 'LIKE', $like)
                   ->orWhere('organization_name', 'LIKE', $like)
-                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
+                  ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
             })
             ->select('id', 'first_name', 'last_name', 'username', 'avatar_url', 'organization_name', 'profile_type')
             ->limit($limit)

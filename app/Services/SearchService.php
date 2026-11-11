@@ -970,7 +970,7 @@ class SearchService
      */
     private static function userSearchScope(): array
     {
-        if (! NameAudience::enforced() || NameAudience::allowsSurnames()) {
+        if (! NameAudience::enforced() || NameAudience::mayFindBySurname()) {
             return [];
         }
 
@@ -1092,9 +1092,9 @@ class SearchService
             $userQuery = $this->user->newQuery()
                 ->where(function (Builder $q) use ($like) {
                     $q->where('first_name', 'LIKE', $like)
-                      ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
+                      ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
                       ->orWhere('organization_name', 'LIKE', $like)
-                      ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
+                      ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
                 })
                 ->whereNotIn('status', ['banned', 'suspended']);
             MemberDirectoryVisibility::applyToEloquent($userQuery, (int) TenantContext::getId());
@@ -1406,9 +1406,9 @@ class SearchService
             $uq = $this->user->newQuery()
                 ->where(function (Builder $q) use ($like) {
                     $q->where('first_name', 'LIKE', $like)
-                      ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
+                      ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
                       ->orWhere('organization_name', 'LIKE', $like)
-                      ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
+                      ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
                 })
                 ->whereNotIn('status', ['banned', 'suspended']);
             MemberDirectoryVisibility::applyToEloquent($uq, (int) TenantContext::getId());
@@ -1698,7 +1698,7 @@ class SearchService
         $userQuery = $this->user->newQuery()
             ->where(function (Builder $q) use ($like) {
                 $q->where('first_name', 'LIKE', $like)
-                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
+                  ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
                   ->orWhere('organization_name', 'LIKE', $like);
             })
             ->whereNotIn('status', ['banned', 'suspended']);
@@ -1814,9 +1814,9 @@ class SearchService
         return User::where('tenant_id', $tenantId)
             ->where(function ($q) use ($like) {
                 $q->where('first_name', 'LIKE', $like)
-                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
+                  ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhere('last_name', 'LIKE', $like))
                   ->orWhere('organization_name', 'LIKE', $like)
-                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
+                  ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]));
             })
             ->where('status', 'active')
             ->where('is_approved', true)

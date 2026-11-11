@@ -165,7 +165,7 @@ class GroupMentionService
 
         $tenantId = TenantContext::getId();
         $searchTerm = '%' . $query . '%';
-        $seesSurnames = \App\Support\Names\NameAudience::allowsSurnames();
+        $seesSurnames = \App\Support\Names\NameAudience::mayFindBySurname();
 
         $results = DB::table('group_members as gm')
             ->join('users as u', function ($join) use ($tenantId) {

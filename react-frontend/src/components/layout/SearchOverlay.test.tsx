@@ -30,6 +30,13 @@ vi.mock('@/lib/safeStorage', () => ({
   safeLocalStorageRemove: vi.fn(),
 }));
 
+// ─── Avatar (jsdom never loads images, so the photo is checked by its src) ──
+vi.mock('@/components/ui/Avatar', () => ({
+  Avatar: ({ src, name }: { src?: string; name?: string }) => (
+    <span data-testid="suggestion-avatar" data-src={src ?? ''} data-name={name ?? ''} />
+  ),
+}));
+
 // ─── Toast / Auth / Tenant / Theme ───────────────────────────────────────────
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), showToast: vi.fn() };
 const mockNavigate = vi.fn();
@@ -153,6 +160,30 @@ describe('SearchOverlay — async search and activation', () => {
       expect(input).toHaveAttribute('aria-busy', 'true');
       expect(screen.getAllByRole('status').some(status => status.getAttribute('aria-busy') === 'true')).toBe(true);
     }, { timeout: 1000 });
+  });
+
+  it('shows a member suggestion with their photo and first name only', async () => {
+    // E-122 (owner, 11 Nov 2026): a member may be FOUND by surname, but the
+    // suggestion shows their face and first name — never the surname.
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: {
+        listings: [],
+        users: [{ id: 7, name: 'Mary', avatar_url: '/uploads/avatars/mary.jpg', type: 'user' }],
+        events: [],
+        groups: [],
+      },
+    });
+    const { SearchOverlay } = await import('./SearchOverlay');
+    render(<SearchOverlay isOpen onClose={onClose} />);
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'murphy' } });
+
+    const option = await screen.findByRole('option', { name: /mary/i }, { timeout: 1000 });
+    expect(option.textContent).toContain('Mary');
+    expect(option.textContent).not.toContain('Murphy');
+    const photo = option.querySelector('[data-testid="suggestion-avatar"]');
+    expect(photo?.getAttribute('data-src')).toContain('mary.jpg');
+    expect(photo?.getAttribute('data-name')).toBe('Mary');
   });
 
   it('relates returned suggestions to the combobox', async () => {

@@ -30,4 +30,25 @@ return [
     */
     'surname_audience_enforced' => true,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Members may FIND someone by surname, never SEE it (E-122)
+    |--------------------------------------------------------------------------
+    |
+    | Owner decision, 11 November 2026: "we should allow people to search for
+    | someone by their surname if that person already knows their surname" —
+    | with the person's photo beside each suggestion, so they can be recognised
+    | "without showing the surnames to the public".
+    |
+    | true: a member's search matches on surnames in their own community; the
+    | results still show first names only. Accepted consequence: a member who
+    | guesses a surname can confirm it by whether anyone comes back.
+    | false: only staff of the community match on surnames.
+    |
+    | Cross-community (federated) search never matches on a surname whatever
+    | this says: surnames do not pass between communities (F-612).
+    |
+    */
+    'members_find_by_surname' => true,
+
 ];

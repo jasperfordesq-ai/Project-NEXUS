@@ -103,6 +103,24 @@ final class NameAudience
     }
 
     /**
+     * May the current audience MATCH a search on surnames (in its own
+     * community)? Matching is not seeing: results are still named through
+     * {@see allowsSurnames()}. Staff always may; members may while
+     * `names.members_find_by_surname` is on (owner, 11 Nov 2026).
+     */
+    public static function mayFindBySurname(): bool
+    {
+        if (self::allowsSurnames()) {
+            return true;
+        }
+
+        $app = Container::getInstance();
+
+        return $app->bound('config')
+            && (bool) $app->make('config')->get('names.members_find_by_surname', false);
+    }
+
+    /**
      * May the current audience see the surname of member `$memberId`?
      * True for the audience of {@see allowsSurnames()}, and for the member
      * themself.

@@ -31,6 +31,8 @@ import { useAuth, useTenant, useTheme } from '@/contexts';
 import { canCreateEvents } from '@/lib/access';
 import { api } from '@/lib/api';
 import { safeLocalStorageGetJSON, safeLocalStorageSetJSON, safeLocalStorageRemove } from '@/lib/safeStorage';
+import { resolveAvatarUrl } from '@/lib/helpers';
+import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Kbd } from '@/components/ui/Kbd';
 import { Modal, ModalBody, ModalContent } from '@/components/ui/Modal';
@@ -41,6 +43,9 @@ interface SearchSuggestion {
   id: number;
   title?: string;
   name?: string;
+  /** Members only. A face lets a member recognise the right person, since
+   *  results never show surnames (E-122, owner 11 Nov 2026). */
+  avatar_url?: string | null;
   type: 'listing' | 'user' | 'event' | 'group';
 }
 
@@ -428,8 +433,19 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                         onHover={() => setSelectedIndex(i)}
                         onPress={() => goToSuggestion(suggestion)}
                       >
-                        <span className="min-w-0 truncate text-sm text-foreground">
-                          {suggestion.title || suggestion.name}
+                        <span className="flex min-w-0 items-center gap-2">
+                          {suggestion.type === 'user' && (
+                            <Avatar
+                              aria-hidden="true"
+                              className="shrink-0"
+                              name={suggestion.name ?? ''}
+                              size="sm"
+                              src={resolveAvatarUrl(suggestion.avatar_url) || undefined}
+                            />
+                          )}
+                          <span className="min-w-0 truncate text-sm text-foreground">
+                            {suggestion.title || suggestion.name}
+                          </span>
                         </span>
                         <span className={`ms-2 shrink-0 rounded-full px-2 py-0.5 text-[10px] ${type.color}`}>
                           {type.label}

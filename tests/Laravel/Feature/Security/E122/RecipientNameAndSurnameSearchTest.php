@@ -153,21 +153,38 @@ class RecipientNameAndSurnameSearchTest extends TestCase
     // Finding a member by typing their surname
     // ------------------------------------------------------------------
 
-    public function test_a_member_cannot_find_someone_by_surname_and_staff_can(): void
+    /**
+     * Owner, 11 November 2026: "we should allow people to search for someone
+     * by their surname if that person already knows their surname" — the
+     * result shows a face and a first name, never the surname.
+     */
+    public function test_a_member_can_find_someone_by_surname_but_is_shown_only_the_first_name(): void
     {
         $target = $this->actor();
         $member = $this->person();
         $broker = $this->person(['role' => 'broker']);
 
         $this->signInAs($member);
-        $this->assertNotContains($target->id, $this->searchIds(self::LAST, $member), 'member, by surname');
+        $rows = $this->searchRows(self::LAST, $member);
+        $this->assertContains($target->id, array_map(static fn ($r): int => (int) data_get($r, 'id'), $rows), 'member, by surname');
+        $this->assertStringNotContainsString(self::LAST, json_encode($rows, JSON_THROW_ON_ERROR), 'the surname is never shown');
         $this->assertContains($target->id, $this->searchIds(self::FIRST, $member), 'member, by first name');
 
         $this->signInAs($broker);
         $this->assertContains($target->id, $this->searchIds(self::LAST, $broker), 'broker, by surname');
     }
 
-    public function test_group_mention_suggestions_do_not_match_a_surname_for_a_member(): void
+    public function test_with_the_owner_switch_off_only_staff_find_by_surname(): void
+    {
+        config(['names.members_find_by_surname' => false]);
+        $target = $this->actor();
+        $member = $this->person();
+
+        $this->signInAs($member);
+        $this->assertNotContains($target->id, $this->searchIds(self::LAST, $member));
+    }
+
+    public function test_group_mention_suggestions_match_a_surname_but_show_the_first_name(): void
     {
         $target = $this->actor();
         $member = $this->person();
@@ -175,7 +192,9 @@ class RecipientNameAndSurnameSearchTest extends TestCase
         $groupId = $this->groupWith($member, $target, $admin);
 
         $this->signInAs($member);
-        $this->assertSame([], GroupMentionService::getMemberSuggestions($groupId, $member->id, self::LAST));
+        $bySurnameForMember = GroupMentionService::getMemberSuggestions($groupId, $member->id, self::LAST);
+        $this->assertSame([$target->id], array_column($bySurnameForMember, 'id'));
+        $this->assertSame(self::FIRST, $bySurnameForMember[0]['name']);
         $byFirst = GroupMentionService::getMemberSuggestions($groupId, $member->id, self::FIRST);
         $this->assertSame([$target->id], array_column($byFirst, 'id'));
         $this->assertSame(self::FIRST, $byFirst[0]['name']);
@@ -189,6 +208,12 @@ class RecipientNameAndSurnameSearchTest extends TestCase
 
     /** @return list<int> */
     private function searchIds(string $term, User $viewer): array
+    {
+        return array_map(static fn ($row): int => (int) data_get($row, 'id'), $this->searchRows($term, $viewer));
+    }
+
+    /** @return list<mixed> */
+    private function searchRows(string $term, User $viewer): array
     {
         // The SQL path: the search engine knows nothing of rows created in
         // this transaction, so its availability is switched off for the call.
@@ -204,7 +229,7 @@ class RecipientNameAndSurnameSearchTest extends TestCase
 
         $rows = $result['items'] ?? $result['data'] ?? $result;
 
-        return array_map(static fn ($row): int => (int) data_get($row, 'id'), is_array($rows) ? $rows : $rows->all());
+        return array_values(is_array($rows) ? $rows : $rows->all());
     }
 
     private function signInAs(User $user): void

@@ -55,7 +55,7 @@ class CandidateSearchService
                   ->orWhere('skills', 'LIKE', $term)
                   ->orWhere('resume_headline', 'LIKE', $term)
                   ->orWhere('resume_summary', 'LIKE', $term)
-                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$term]));
+                  ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$term]));
             });
         }
 

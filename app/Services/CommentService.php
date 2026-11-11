@@ -702,7 +702,7 @@ class CommentService
             ->where(function ($q) use ($searchTerm) {
                 // E-122: `name` holds the surname; only staff match on it.
                 $q->where('first_name', 'LIKE', $searchTerm)
-                  ->when(\App\Support\Names\NameAudience::allowsSurnames(), fn ($surname) => $surname->orWhere('name', 'LIKE', $searchTerm))
+                  ->when(\App\Support\Names\NameAudience::mayFindBySurname(), fn ($surname) => $surname->orWhere('name', 'LIKE', $searchTerm))
                   ->orWhere(fn ($org) => $org->where('profile_type', 'organisation')->where('organization_name', 'LIKE', $searchTerm))
                   ->orWhere('username', 'LIKE', $searchTerm);
             });

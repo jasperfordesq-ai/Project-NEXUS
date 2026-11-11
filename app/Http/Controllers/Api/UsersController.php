@@ -1758,7 +1758,7 @@ class UsersController extends BaseApiController
             } else {
                 // E-122: the full-text index and `name` both contain the
                 // surname, so only staff of the community search them.
-                if (\App\Support\Names\NameAudience::allowsSurnames()) {
+                if (\App\Support\Names\NameAudience::mayFindBySurname()) {
                     $whereClause .= ' AND (
                         MATCH(u.first_name, u.last_name, u.bio, u.skills) AGAINST(? IN BOOLEAN MODE)
                         OR u.name LIKE ?
