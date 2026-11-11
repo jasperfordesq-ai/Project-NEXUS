@@ -47,7 +47,6 @@ vi.mock('@/contexts/CookieConsentContext', () => ({
 
 import { Footer, FooterLink } from './Footer';
 import { PROJECT_NEXUS_REPO_URL } from './SourceRepositoryLink';
-import { PROJECT_NEXUS_DOCS_URL } from '@/config/externalLinks';
 
 const getSourceRepoLinks = () => screen.getAllByRole('link', {
   name: 'Open the Project NEXUS GitHub repository',
@@ -149,14 +148,14 @@ describe('Footer', () => {
       });
     });
 
-    it('links to the documentation site, in a new tab, from the release strip', () => {
+    it('shows the release stage and changelog link in the bottom legal strip only', () => {
+      // Owner, 11 Nov 2026: the separate release strip was folded into the
+      // legal strip, dropping the Features and Documentation links.
       render(<Footer />);
-      const link = screen.getByRole('link', { name: 'Documentation (opens in a new tab)' });
-      // The docs site is on its own domain on purpose — a URL derived from the
-      // GitHub repository name broke with no redirect when the repo was renamed.
-      expect(link).toHaveAttribute('href', PROJECT_NEXUS_DOCS_URL);
-      expect(link).toHaveAttribute('target', '_blank');
-      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+      expect(screen.getByRole('link', { name: 'Changelog' })).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Features' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Documentation (opens in a new tab)' })).not.toBeInTheDocument();
+      expect(screen.queryByText('Always evolving.', { exact: false })).not.toBeInTheDocument();
     });
 
     it('renders the full AGPL attribution notice', () => {

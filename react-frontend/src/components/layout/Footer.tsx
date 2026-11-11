@@ -15,9 +15,6 @@ import MapPin from 'lucide-react/icons/map-pin';
 import Cookie from 'lucide-react/icons/cookie';
 import { TenantLogo } from '@/components/branding';
 import Sparkles from 'lucide-react/icons/sparkles';
-import ExternalLink from 'lucide-react/icons/external-link';
-import { RELEASE_STATUS } from '@/config/releaseStatus';
-import { PROJECT_NEXUS_DOCS_URL } from '@/config/externalLinks';
 import { SourceRepositoryLink } from './SourceRepositoryLink';
 import { Button } from '@/components/ui/Button';
 import { resolveBrandingImageUrl } from '@/lib/helpers';
@@ -261,43 +258,6 @@ export function Footer({ children, copyright }: FooterProps) {
               </Button>
             </div>
 
-            {/* Release status — GA strip with Features + Changelog links */}
-            <div className="border-t border-theme-default pt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-xs text-theme-subtle">
-              <Sparkles className="w-3.5 h-3.5 shrink-0 text-success" aria-hidden="true" />
-              <span>
-                <span className="font-semibold text-theme-primary">{t('release_stage')}</span>
-                {' — '}
-                {t('release_status.summary')}
-              </span>
-              <span aria-hidden="true">&middot;</span>
-              <Link
-                to={RELEASE_STATUS.readMorePath}
-                className="underline font-medium hover:text-theme-primary transition-colors focus:outline-none focus:ring-2 focus:ring-accent rounded whitespace-nowrap"
-              >
-                {t('release_status.features_link')}
-              </Link>
-              <span aria-hidden="true">&middot;</span>
-              <Link
-                to={tenantPath('/changelog')}
-                className="underline font-medium hover:text-theme-primary transition-colors focus:outline-none focus:ring-2 focus:ring-accent rounded whitespace-nowrap"
-              >
-                {t('release_status.changelog_link')}
-              </Link>
-              <span aria-hidden="true">&middot;</span>
-              {/* External: the documentation site is a separate domain, so this
-                  opens in a new tab and says so to screen readers. */}
-              <a
-                href={PROJECT_NEXUS_DOCS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={t('release_status.docs_link_aria')}
-                className="inline-flex items-center gap-1 underline font-medium hover:text-theme-primary transition-colors focus:outline-none focus:ring-2 focus:ring-accent rounded whitespace-nowrap"
-              >
-                {t('release_status.docs_link')}
-                <ExternalLink className="h-3 w-3 shrink-0 opacity-70" aria-hidden="true" />
-              </a>
-            </div>
-
             {/* Platform Attribution — 3-column grid */}
             <div className="border-t border-theme-default pt-6 flex flex-col gap-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 items-start">
@@ -372,6 +332,16 @@ export function Footer({ children, copyright }: FooterProps) {
                 <span aria-hidden="true">&middot;</span>
                 <Link to={tenantPath('/platform/privacy')} className="hover:text-theme-primary transition-colors">
                   {t('footer.privacy')}
+                </Link>
+                {/* Release status — folded into the legal strip (owner, 11 Nov 2026). */}
+                <span aria-hidden="true">&middot;</span>
+                <span className="inline-flex items-center gap-1">
+                  <Sparkles className="h-3 w-3 shrink-0 text-success" aria-hidden="true" />
+                  {t('release_stage')}
+                </span>
+                <span aria-hidden="true">&middot;</span>
+                <Link to={tenantPath('/changelog')} className="hover:text-theme-primary transition-colors">
+                  {t('release_status.changelog_link')}
                 </Link>
                 <span
                   className="hidden"
