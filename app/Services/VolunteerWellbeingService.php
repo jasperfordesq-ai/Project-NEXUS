@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Services\Volunteering\WellbeingRecipientResolver;
 use Illuminate\Support\Facades\DB;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -899,7 +900,9 @@ class VolunteerWellbeingService
                 'alert_id' => (int) $row->id,
                 'volunteer' => [
                     'id' => (int) $row->user_id,
-                    'name' => UserDisplayName::person($row),
+                    // Only the organisation's owner, admins and safeguarding
+                    // lead reach this list: full name (NameReason::SAFEGUARDING).
+                    'name' => UserDisplayName::full($row, NameReason::SAFEGUARDING),
                     'avatar_url' => $row->avatar_url,
                 ],
                 'mood' => $mood,

@@ -54,6 +54,16 @@ enum NameReason: string
     /** Rows written to audit tables that only administrators read. */
     case AUDIT_LOG = 'audit_log';
 
+    /**
+     * Safeguarding and welfare: the people responsible for keeping a member
+     * safe see who they are dealing with. Owner, 11 Nov 2026: O-279 ("Keep
+     * full names" — reports, trainings, DLP names, guardian arrangements) and
+     * "Important people should be able to see a surname for safeguarding
+     * issues" (an organisation's welfare list for its owner, admins and lead).
+     * Use only where the route itself already limits who may look.
+     */
+    case SAFEGUARDING = 'safeguarding';
+
     /** Writing the stored `users.name` column. */
     case STORAGE = 'storage';
 

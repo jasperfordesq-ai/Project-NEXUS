@@ -457,7 +457,7 @@ class GuardianArrangementService
                     'id'                   => (int) $r->id,
                     // O-279 (owner, 11 Nov 2026): guardian arrangements keep
                     // full names, outside the E-122 surname rule.
-                    'guardian_name'        => UserDisplayName::full($r, NameReason::CHECKED_BY_CALLER),
+                    'guardian_name'        => UserDisplayName::full($r, NameReason::SAFEGUARDING),
                     'assigned_at'          => $r->created_at,
                     'consent_given_at'     => $r->approved_at,
                     'consent_declined_at'  => $r->declined_at,
@@ -498,7 +498,7 @@ class GuardianArrangementService
             ->map(fn ($r) => [
                 'id'          => (int) $r->id,
                 // O-279 (owner, 11 Nov 2026): full names, see forWard().
-                'ward_name'   => UserDisplayName::full($r, NameReason::CHECKED_BY_CALLER),
+                'ward_name'   => UserDisplayName::full($r, NameReason::SAFEGUARDING),
                 'assigned_at' => $r->created_at,
                 'state'       => self::stateOf($r),
             ])
