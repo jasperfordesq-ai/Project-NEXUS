@@ -450,13 +450,34 @@ class ShowcaseCommunitySeeder extends Seeder
                 ->update(['occurrence_key' => "event:{$this->tenantId}:{$eventId}"]);
 
             foreach (array_merge([$organiser], $going) as $j => $member) {
+                $rsvpAt = $this->now->copy()->subDays(8 - min(7, $j));
                 DB::table('event_rsvps')->updateOrInsert(
                     ['tenant_id' => $this->tenantId, 'event_id' => $eventId, 'user_id' => $this->users[$member]],
                     [
                         'status' => $inDays < 0 ? 'attended' : 'going',
                         'is_federated' => 0,
-                        'created_at' => $this->now->copy()->subDays(8 - min(7, $j)),
+                        'created_at' => $rsvpAt,
                         'updated_at' => $this->now,
+                    ]
+                );
+                // The real "I'm going" flow also writes a confirmed registration
+                // (EventRegistrationService); the check-in card looks for it.
+                DB::table('event_registrations')->updateOrInsert(
+                    [
+                        'tenant_id' => $this->tenantId,
+                        'event_id' => $eventId,
+                        'user_id' => $this->users[$member],
+                        'capacity_pool_key' => 'event',
+                    ],
+                    [
+                        'registration_state' => 'confirmed',
+                        'registration_version' => 1,
+                        'party_size' => 1,
+                        'state_changed_at' => $rsvpAt,
+                        'state_changed_by' => $this->users[$member],
+                        'confirmed_at' => $rsvpAt,
+                        'created_at' => $rsvpAt,
+                        'updated_at' => $rsvpAt,
                     ]
                 );
             }
