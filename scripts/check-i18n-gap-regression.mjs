@@ -102,6 +102,7 @@ const NO_TRANSLATE_VALUES = new Set([
   '⌘',
   'Project NEXUS',
   'AGPL-3.0 — Copyright © 2024–{{year}} Jasper Ford',
+  'AGPL-3.0 — Copyright © {{year}} Jasper Ford',
   'you@example.com',
   'P@ssw0rd!',
   '••••••••',

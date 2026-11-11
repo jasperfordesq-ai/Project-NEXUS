@@ -39135,6 +39135,7 @@ export default interface Resources {
     "footer": {
       "about": "About",
       "agpl_notice": "AGPL-3.0 — Copyright © 2024–{{year}} Jasper Ford",
+      "agpl_notice_short": "AGPL-3.0 — Copyright © {{year}} Jasper Ford",
       "agpl_short": "Free and open-source software. Licensed under AGPL-3.0.",
       "built_on_nexus": "Built on Project NEXUS — Open Source Community Platform",
       "community_partner": "Community Partner",

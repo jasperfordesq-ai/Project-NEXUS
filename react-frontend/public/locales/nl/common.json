@@ -315,6 +315,7 @@
     "cookie_settings": "Cookie-instellingen",
     "built_on_nexus": "Gebouwd op Project NEXUS — Open Source Gemeenschapsplatform",
     "agpl_notice": "AGPL-3.0 — Auteursrecht © 2024–{{year}} Jasper Ford",
+    "agpl_notice_short": "AGPL-3.0 — Auteursrecht © {{year}} Jasper Ford",
     "terms": "Voorwaarden",
     "privacy": "Privacy",
     "trust_safety": "Vertrouwen en veiligheid",

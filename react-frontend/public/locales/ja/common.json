@@ -315,6 +315,7 @@
     "cookie_settings": "Cookie設定",
     "built_on_nexus": "Project NEXUS上に構築 — オープンソースコミュニティプラットフォーム",
     "agpl_notice": "AGPL-3.0 — 著作権 © 2024–{{year}} ジャスパー・フォード",
+    "agpl_notice_short": "AGPL-3.0 — 著作権 © {{year}} ジャスパー・フォード",
     "terms": "利用規約",
     "privacy": "プライバシー",
     "trust_safety": "信頼と安全",

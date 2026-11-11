@@ -324,7 +324,8 @@ export function Footer({ children, copyright }: FooterProps) {
 
               {/* Legal strip */}
               <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-theme-subtle/70">
-                <span>{t('footer.agpl_notice', { year })}</span>
+                {/* Current year only — owner, 11 Nov 2026: drop the start year here. */}
+                <span>{t('footer.agpl_notice_short', { year })}</span>
                 <span aria-hidden="true">&middot;</span>
                 <Link to={tenantPath('/platform/terms')} className="hover:text-theme-primary transition-colors">
                   {t('footer.terms')}
