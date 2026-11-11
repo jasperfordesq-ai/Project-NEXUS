@@ -23,6 +23,8 @@ export interface ShareButtonProps {
   isAuthenticated: boolean;
   canShareToFeed?: boolean;
   shareToFeedDisabledReason?: string;
+  /** Small, background-free trigger for a row of quiet actions. */
+  quiet?: boolean;
 }
 
 export function ShareButton({
@@ -33,6 +35,7 @@ export function ShareButton({
   isAuthenticated,
   canShareToFeed = true,
   shareToFeedDisabledReason,
+  quiet = false,
 }: ShareButtonProps) {
   const { t } = useTranslation('social');
   const toast = useToast();
@@ -89,8 +92,9 @@ export function ShareButton({
     <Dropdown placement="bottom-end">
       <DropdownTrigger>
         <Button
-          variant="flat"
-          className={`bg-theme-elevated text-theme-primary ${className}`}
+          variant={quiet ? 'ghost' : 'flat'}
+          size={quiet ? 'sm' : undefined}
+          className={`${quiet ? '' : 'bg-theme-elevated '}text-theme-primary ${className}`}
           startContent={<Share2 className="w-4 h-4" aria-hidden="true" />}
           isLoading={isSharing}
         >

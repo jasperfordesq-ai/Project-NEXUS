@@ -442,6 +442,8 @@ export function ListingDetailPage() {
   }
 
   const isOwner = user && listing && user.id === listing.user_id;
+  // The person behind the offer, as the server names them to this viewer.
+  const ownerName = listing ? (resolveUserDisplayName(listing.user) || listing.author_name || '') : '';
   // Admins, brokers and coordinators may edit a member's listing (and add a
   // photo); the server decides and says so in `can_edit`.
   const canStaffEdit = !isOwner && listing?.can_edit === true;
@@ -839,57 +841,85 @@ export function ListingDetailPage() {
           </div>
         )}
 
-        {/* Action Buttons */}
+        {/* Action panel: one clear main action in the community colour, the
+            quieter ones (like, comment, save, share) in a row beneath it, and
+            "Report" set apart (warmth plan Phase 4 B3). */}
         {isAuthenticated && !isOwner && (
-          <div className="rounded-2xl border border-theme-default bg-theme-hover/70 p-3 sm:p-4">
-            <div className="mb-3">
-              <h2 className="text-sm font-semibold text-theme-primary">{t('detail_cta_title')}</h2>
-              <p className="text-sm text-theme-muted">{t('detail_cta_body')}</p>
+          <section
+            aria-labelledby="listing-cta-title"
+            className="hero-glow relative overflow-hidden rounded-2xl border border-accent/25 bg-accent-soft p-4 sm:p-6"
+            data-testid="listing-cta-panel"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <Avatar
+                  src={resolveAvatarUrl(listing.user?.avatar || listing.author_avatar)}
+                  name={ownerName || undefined}
+                  size="md"
+                  className="shrink-0 ring-2 ring-white/70 dark:ring-black/30"
+                />
+                <div className="min-w-0">
+                  <h2 id="listing-cta-title" className="font-display text-lg font-semibold text-accent-soft-foreground">
+                    {listing.type === 'offer'
+                      ? t('detail_cta_offer_title')
+                      : t('detail_cta_request_title', { name: ownerName || t('detail_cta_someone') })}
+                  </h2>
+                  <p className="text-sm text-theme-secondary">
+                    {listing.type === 'offer'
+                      ? t('detail_cta_offer_body', { name: ownerName || t('detail_cta_someone') })
+                      : t('detail_cta_request_body', { name: ownerName || t('detail_cta_someone') })}
+                  </p>
+                </div>
+              </div>
+              {exchangeConfig?.exchange_workflow_enabled ? (
+                activeExchange ? (
+                  <Button as={Link} to={tenantPath(`/exchanges/${activeExchange.id}`)}
+                    size="lg"
+                    className="w-full sm:w-auto bg-theme-elevated text-theme-primary"
+                    startContent={<ArrowRightLeft className="w-4 h-4" aria-hidden="true" />}
+                    endContent={
+                      <Chip size="sm" variant="soft" color={
+                        activeExchange.status === 'accepted' || activeExchange.status === 'in_progress' ? 'success' :
+                        activeExchange.status === 'pending_provider' || activeExchange.status === 'pending_broker' ? 'warning' :
+                        activeExchange.status === 'pending_confirmation' ? 'primary' :
+                        'default'
+                      }>
+                        {activeExchange.status === 'pending_provider' ? t('exchange_status_pending_provider') :
+                         activeExchange.status === 'pending_broker' ? t('exchange_status_pending_broker') :
+                         activeExchange.status === 'accepted' ? t('exchange_status_accepted') :
+                         activeExchange.status === 'in_progress' ? t('exchange_status_in_progress') :
+                         activeExchange.status === 'pending_confirmation' ? t('exchange_status_pending_confirmation') :
+                         activeExchange.status === 'disputed' ? t('exchange_status_disputed') :
+                         activeExchange.status.replace(/_/g, ' ')}
+                      </Chip>
+                    }
+                  >
+                    {t('detail_exchange')}
+                  </Button>
+                ) : (
+                  <Button as={Link} to={tenantPath(`/listings/${listing.id}/request-exchange`)}
+                    size="lg"
+                    className="w-full sm:w-auto bg-linear-to-r from-accent-strong to-accent-strong-end text-white shadow-md"
+                    startContent={<ArrowRightLeft className="w-4 h-4" aria-hidden="true" />}
+                  >
+                    {t('detail_request_exchange')}
+                  </Button>
+                )
+              ) : canMessage ? (
+                <Button as={Link} to={tenantPath(`/messages?to=${listing.user_id}&listing=${listing.id}`)}
+                  size="lg"
+                  className="w-full sm:w-auto bg-linear-to-r from-accent-strong to-accent-strong-end text-white shadow-md"
+                  startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}
+                >
+                  {t('detail_send_message')}
+                </Button>
+              ) : null}
             </div>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {exchangeConfig?.exchange_workflow_enabled ? (
-              activeExchange ? (
-                <Button as={Link} to={tenantPath(`/exchanges/${activeExchange.id}`)}
-                  className="w-full bg-theme-elevated text-theme-primary"
-                  startContent={<ArrowRightLeft className="w-4 h-4" aria-hidden="true" />}
-                  endContent={
-                    <Chip size="sm" variant="soft" color={
-                      activeExchange.status === 'accepted' || activeExchange.status === 'in_progress' ? 'success' :
-                      activeExchange.status === 'pending_provider' || activeExchange.status === 'pending_broker' ? 'warning' :
-                      activeExchange.status === 'pending_confirmation' ? 'primary' :
-                      'default'
-                    }>
-                      {activeExchange.status === 'pending_provider' ? t('exchange_status_pending_provider') :
-                       activeExchange.status === 'pending_broker' ? t('exchange_status_pending_broker') :
-                       activeExchange.status === 'accepted' ? t('exchange_status_accepted') :
-                       activeExchange.status === 'in_progress' ? t('exchange_status_in_progress') :
-                       activeExchange.status === 'pending_confirmation' ? t('exchange_status_pending_confirmation') :
-                       activeExchange.status === 'disputed' ? t('exchange_status_disputed') :
-                       activeExchange.status.replace(/_/g, ' ')}
-                    </Chip>
-                  }
-                >
-                  {t('detail_exchange')}
-                </Button>
-              ) : (
-                <Button as={Link} to={tenantPath(`/listings/${listing.id}/request-exchange`)}
-                  className="w-full bg-linear-to-r from-emerald-700 to-teal-700 text-white"
-                  startContent={<ArrowRightLeft className="w-4 h-4" aria-hidden="true" />}
-                >
-                  {t('detail_request_exchange')}
-                </Button>
-              )
-            ) : canMessage ? (
-              <Button as={Link} to={tenantPath(`/messages?to=${listing.user_id}&listing=${listing.id}`)}
-                className="w-full bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
-                startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}
-              >
-                {t('detail_send_message')}
-              </Button>
-            ) : null}
+            <div className="mt-4 flex flex-wrap items-center gap-1 border-t border-accent/20 pt-3">
             <Button
-              variant="secondary"
-              className={`w-full ${social.isLiked ? 'bg-rose-500/20 text-rose-500' : 'bg-theme-elevated text-theme-primary'}`}
+              variant="ghost"
+              size="sm"
+              className={`${social.isLiked ? 'text-rose-700 dark:text-rose-300' : 'text-theme-primary'}`}
               startContent={<Heart className={`w-4 h-4 ${social.isLiked ? 'fill-current' : ''}`} aria-hidden="true" />}
               onPress={() => void social.toggleLike()}
               isDisabled={social.isLiking}
@@ -898,8 +928,9 @@ export function ListingDetailPage() {
               {social.likesCount > 0 ? `${social.likesCount} ` : ''}{social.isLiked ? t('detail_liked') : t('detail_like')}
             </Button>
             <Button
-              variant="secondary"
-              className={`w-full ${showComments ? 'bg-accent/20 text-accent-soft-foreground' : 'bg-theme-elevated text-theme-primary'}`}
+              variant="ghost"
+              size="sm"
+              className={`${showComments ? 'bg-accent/20 text-accent-soft-foreground' : 'text-theme-primary'}`}
               startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}
               onPress={toggleComments}
               aria-expanded={showComments}
@@ -908,8 +939,9 @@ export function ListingDetailPage() {
               {social.commentsCount > 0 ? `${social.commentsCount} ` : ''}{t('detail_comments')}
             </Button>
             <Button
-              variant="secondary"
-              className={`w-full ${isSaved ? 'bg-accent/20 text-accent-soft-foreground' : 'bg-theme-elevated text-theme-primary'}`}
+              variant="ghost"
+              size="sm"
+              className={`${isSaved ? 'bg-accent/20 text-accent-soft-foreground' : 'text-theme-primary'}`}
               startContent={isSaved ? <Bookmark className="w-4 h-4 fill-current" aria-hidden="true" /> : <Bookmark className="w-4 h-4" aria-hidden="true" />}
               onPress={() => void handleSave()}
               isDisabled={isSaving}
@@ -924,11 +956,12 @@ export function ListingDetailPage() {
               isAuthenticated={isAuthenticated}
               canShareToFeed={!isOwner}
               shareToFeedDisabledReason={t('cannot_share_own_content', { ns: 'social' })}
-              className="w-full"
+              quiet
             />
             <Button
-              variant="secondary"
-              className={`w-full ${isReported ? 'bg-orange-500/20 text-orange-500' : 'bg-theme-elevated text-theme-primary'}`}
+              variant="ghost"
+              size="sm"
+              className={`sm:ml-auto ${isReported ? 'text-[var(--color-warning)]' : 'text-theme-secondary'}`}
               startContent={<Flag className="w-4 h-4" aria-hidden="true" />}
               onPress={onReportOpen}
               isDisabled={isReported}
@@ -936,7 +969,7 @@ export function ListingDetailPage() {
               {isReported ? t('detail_reported') : t('detail_report')}
             </Button>
             </div>
-          </div>
+          </section>
         )}
 
         {isAuthenticated && isOwner && (

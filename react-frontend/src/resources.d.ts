@@ -388,7 +388,7 @@ export default interface Resources {
     },
     "timebanking_guide": {
       "breadcrumb_about": "About",
-      "cta_browse_listings": "Browse Listings",
+      "cta_browse_listings": "Browse offers and requests",
       "cta_heading": "Ready to Start Timebanking?",
       "cta_join_free": "Join Free Today",
       "cta_partner": "Partner With Us",
@@ -430,7 +430,7 @@ export default interface Resources {
       "default": "Activity",
       "event": "Event",
       "exchange": "Exchange",
-      "listing": "Listing",
+      "listing": "Offer or request",
       "message": "Message",
       "post": "Post",
       "review": "Review"
@@ -8617,10 +8617,42 @@ export default interface Resources {
       "label_created": "Created",
       "label_listings": "Listings",
       "label_name": "Name",
+      "label_picture": "Picture",
       "label_slug": "Slug",
       "label_type": "Type",
       "listings": "Listings",
       "page_title": "Categories",
+      "picture_auto_guess": "Automatic: {{picture}}, from the theme's name",
+      "picture_auto_none": "Automatic: no picture fits this name, so offers and requests show their own",
+      "picture_automatic": "Choose automatically",
+      "picture_hint": "Shown on this theme's tile on the offers page, and on offers and requests that have no photo.",
+      "picture_names": {
+        "arts": "Arts and crafts",
+        "beauty": "Hair and beauty",
+        "building": "Building and DIY",
+        "care": "Care and support",
+        "cleaning": "Cleaning",
+        "clothes": "Clothes and sewing",
+        "company": "Company and chats",
+        "cycling": "Cycling",
+        "errands": "Shopping and errands",
+        "fitness": "Health and fitness",
+        "food": "Food and cooking",
+        "garden": "Garden",
+        "home": "Home",
+        "languages": "Languages",
+        "learning": "Learning",
+        "money": "Money and paperwork",
+        "moving": "Moving and lifting",
+        "music": "Music",
+        "office": "Admin and business",
+        "outdoors": "Outdoors and nature",
+        "pets": "Pets",
+        "photography": "Photography",
+        "repairs": "Repairs",
+        "technology": "Technology",
+        "transport": "Transport"
+      },
       "placeholder_name": "e.g. Arts & Crafts",
       "save_changes": "Save changes",
       "search_placeholder": "Search categories...",
@@ -29794,6 +29826,13 @@ export default interface Resources {
       "community_colour_suggested": "Suggested colours",
       "community_colour_suggested_hint": "Every suggestion is easy to read on a white page.",
       "community_colour_too_light": "This colour is too light to read on a white page. Choose a darker shade before saving.",
+      "community_photo_consent": "Only use a photo that everyone in it has agreed to share. Anyone can see the sign-in page, not just members.",
+      "community_photo_desc": "A photo of your community, such as members together at an event. It appears at the top of the sign-in and join pages, on the dashboard and on the feed. Without one, those places use your community colour.",
+      "community_photo_hint": "JPEG, PNG or WebP, up to 8 MB. A wide photo works best. Location details stored in the photo are removed when it uploads.",
+      "community_photo_label": "Photo",
+      "community_photo_removed": "Community photo removed",
+      "community_photo_section": "Community photo",
+      "community_photo_uploaded": "Community photo updated",
       "content_section": "Content & moderation",
       "discard_changes": "Discard",
       "fix_errors_before_saving": "Fix the highlighted fields before saving",
@@ -38809,7 +38848,7 @@ export default interface Resources {
     "create": {
       "new_course": "New Course",
       "new_event": "New Event",
-      "new_listing": "New Listing",
+      "new_listing": "New offer or request",
       "new_podcast": "New Podcast",
       "section": {
         "community": "Community",
@@ -39690,6 +39729,7 @@ export default interface Resources {
       "near_me_no_location": "Set your location in your profile to use Near me",
       "nearby_filter": "Within {{radius}} km",
       "new": "New Members",
+      "new_here": "New here",
       "no_location": "No members with location data",
       "no_members": "No members found",
       "no_members_community": "No members in this community yet",
@@ -39856,13 +39896,14 @@ export default interface Resources {
       "jobs": "Jobs",
       "knowledge_base": "Knowledge Base",
       "leaderboard": "Leaderboard",
-      "listings": "Listings",
+      "listings": "Offers and requests",
+      "listings_short": "Offers",
       "marketplace": "Marketplace & Freecycle",
       "matches": "Matches",
       "members": "Members",
       "messages": "Messages",
       "more": "More",
-      "my_listings": "My listings",
+      "my_listings": "My offers and requests",
       "nexus_score": "NexusScore",
       "organisations": "Organisations",
       "our_impact": "Our Impact",
@@ -40427,7 +40468,7 @@ export default interface Resources {
       "new_group_desc": "Start a community group",
       "new_job": "New Job Vacancy",
       "new_job_desc": "Advertise a paid role",
-      "new_listing": "New Listing",
+      "new_listing": "New offer or request",
       "new_listing_desc": "Offer or request a service",
       "new_marketplace_listing": "New Marketplace Listing",
       "new_marketplace_listing_desc": "Sell, give away or lend an item",
@@ -40786,7 +40827,7 @@ export default interface Resources {
       "suggestions": "Suggestions",
       "type_event": "Event",
       "type_group": "Group",
-      "type_listing": "Listing",
+      "type_listing": "Offer or request",
       "type_member": "Member",
       "view_all": "View all results"
     },
@@ -41871,6 +41912,11 @@ export default interface Resources {
       "empty": "No recent activity",
       "empty_description": "Community updates will appear here once people start posting."
     },
+    "anniversary": {
+      "body": "You joined {{community}} on {{date}}. Thank you for being part of it.",
+      "close": "Close",
+      "title": "Happy anniversary!"
+    },
     "aria": {
       "browse_all_listings": "Browse all listings",
       "loading_activity": "Loading activity",
@@ -41952,8 +41998,8 @@ export default interface Resources {
     "likes_count_one": "{{count}} likes",
     "likes_count_other": "{{count}} likes",
     "listings": {
-      "create_first": "Create your first listing",
-      "empty": "No recent listings",
+      "create_first": "Create your first offer or request",
+      "empty": "No recent offers or requests",
       "empty_description": "Create a request or offer to start matching with people nearby.",
       "offer": "Offer",
       "offering": "Offering",
@@ -41977,16 +42023,42 @@ export default interface Resources {
       "description": "Your personal dashboard. View your balance, listings, and activity.",
       "title": "Dashboard"
     },
-    "new_listing": "New Listing",
+    "milestone": {
+      "body": "Members of {{community}} have now given each other more than {{hours}} hours of help. Thank you for being part of it.",
+      "close": "Close",
+      "title": "{{hours}} hours shared together"
+    },
+    "month_highlight": {
+      "hours": "Hours shared",
+      "listings": "New offers and requests",
+      "members": "New members",
+      "subtitle": "What everyone has shared so far this month.",
+      "title": "{{month}} in {{community}}"
+    },
+    "new_listing": "New offer or request",
+    "new_members": {
+      "description": "They joined {{community}} recently. A friendly hello helps them settle in.",
+      "joined": "Joined {{when}}",
+      "say_hello": "Say hello",
+      "say_hello_aria": "Say hello to {{name}}",
+      "see_all": "See all members",
+      "title": "Say hello to new members"
+    },
     "onboarding": {
       "banner_subtitle": "Tell us about your interests and skills to get personalized matches",
       "banner_title": "Complete your profile setup",
       "get_started": "Get Started"
     },
+    "photo_prompt": {
+      "action": "Add a photo",
+      "body": "A friendly face helps neighbours recognise and trust you. It only takes a moment.",
+      "close": "Not now",
+      "title": "Add a photo of yourself"
+    },
     "quick_actions": {
       "browse_events": "Browse Events",
       "caring_community": "Care Hub",
-      "create_listing": "Create Listing",
+      "create_listing": "Create an offer or request",
       "find_members": "Find Members",
       "messages": "Messages",
       "notifications": "Notifications",
@@ -42005,17 +42077,17 @@ export default interface Resources {
       "endorsements": "Endorsements",
       "exchanges_attention": "Needs your attention",
       "my_groups": "My Groups",
-      "my_listings": "Your listings",
+      "my_listings": "Your offers and requests",
       "pending_reviews": "Pending Reviews",
       "quick_actions": "Quick Actions",
       "recent_activity": "Recent Activity",
-      "recent_listings": "Recent Listings",
+      "recent_listings": "Recent offers and requests",
       "suggested_for_you": "Suggested for You",
       "upcoming_events": "Upcoming Events",
       "your_progress": "Your Progress"
     },
     "stats": {
-      "active_listings": "Active Listings",
+      "active_listings": "Active offers and requests",
       "balance": "Balance",
       "hours_value": "{{value}}h",
       "messages": "Messages",
@@ -45835,6 +45907,7 @@ export default interface Resources {
       "weekday_wed": "Wed"
     },
     "going": "{{count}} going",
+    "going_including": "including {{names}}",
     "going_one": "{{count}} going",
     "going_other": "{{count}} going",
     "hero_events_label": "Events",
@@ -46425,7 +46498,7 @@ export default interface Resources {
       "exchange": "Exchange",
       "exchanges": "Exchanges"
     },
-    "browse_listings": "Browse Listings",
+    "browse_listings": "Browse offers and requests",
     "card": {
       "aria_label": "Exchange: {{title}} - {{status}}",
       "confirm_hours": "Confirm Hours",
@@ -46527,8 +46600,8 @@ export default interface Resources {
     },
     "page_title": "Exchanges",
     "request": {
-      "breadcrumb_listing": "Listing",
-      "breadcrumb_listings": "Listings",
+      "breadcrumb_listing": "Offer or request",
+      "breadcrumb_listings": "Offers and requests",
       "breadcrumb_request": "Request Exchange",
       "broker_approval_description": "This exchange will need to be approved by a community coordinator before it can proceed.",
       "broker_approval_title": "Broker Approval Required",
@@ -46538,7 +46611,7 @@ export default interface Resources {
       "form_description": "Confirm the proposed hours and add context so the other member can respond confidently.",
       "form_heading": "Request details",
       "hours_unit": "hours",
-      "listing_not_found": "Listing not found",
+      "listing_not_found": "Offer or request not found",
       "load_failed": "Failed to load listing",
       "loading": "Loading...",
       "message_description": "Explain your needs or ask any questions",
@@ -46546,7 +46619,7 @@ export default interface Resources {
       "message_placeholder": "Add a message to the service provider...",
       "not_available": "This listing is not available for exchange requests.",
       "own_listing_description": "You cannot request an exchange for your own listing.",
-      "own_listing_title": "This is Your Listing",
+      "own_listing_title": "This is your own offer or request",
       "page_title": "Request Exchange",
       "prep_time_description": "Additional time needed for preparation (optional)",
       "prep_time_label": "Preparation Time",
@@ -46560,7 +46633,7 @@ export default interface Resources {
       "subtitle": "Send a request to exchange time credits for this service",
       "summary_estimate": "Estimated time",
       "title": "Request Exchange",
-      "view_listing": "View Listing",
+      "view_listing": "View offer or request",
       "workflow_not_enabled": "Exchange workflow is not enabled"
     },
     "service_exchange": "Service Exchange",
@@ -46611,6 +46684,14 @@ export default interface Resources {
       "needs_confirmation": "Needs Confirmation",
       "needs_confirmation_aria": "Show exchanges needing confirmation"
     },
+    "thanks": {
+      "body": "Your exchange is complete and the hours have moved. Every exchange makes the community a little stronger.",
+      "close": "Close",
+      "hours_label": "Hours exchanged this year",
+      "neighbours_label": "People you've exchanged with this year",
+      "send_message": "Send {{name}} a thank-you message",
+      "title": "Thank you!"
+    },
     "title": "My Exchanges",
     "toast": {
       "accept_failed": "Failed to accept exchange",
@@ -46647,6 +46728,7 @@ export default interface Resources {
       "view_group_named": "View group: {{name}}"
     },
     "aria": {
+      "browse_by_theme": "Browse by theme",
       "content_tabs": "Explore content tabs"
     },
     "blog_posts": {
@@ -46659,9 +46741,18 @@ export default interface Resources {
       "views_one": "{{count}} views",
       "views_other": "{{count}} views"
     },
+    "content_type": {
+      "blog": "Blog post",
+      "event": "Event",
+      "group": "Group",
+      "listing": "Offer or request",
+      "member": "Member",
+      "other": "Something new",
+      "post": "Post"
+    },
     "create_event": "Create Event",
     "create_group": "Create Group",
-    "create_listing": "Create Listing",
+    "create_listing": "Create an offer or request",
     "dismiss": "Not interested",
     "dismiss_reasons": {
       "already_seen": "Already seen",
@@ -46700,11 +46791,15 @@ export default interface Resources {
       "subtitle": "Latest openings from community partners",
       "title": "Job Opportunities"
     },
+    "listing_type": {
+      "offer": "Offer",
+      "request": "Request"
+    },
     "loading": "Loading discover content...",
     "match_score": "{{score}}% match",
     "near_you": {
       "distance": "{{distance}} km away",
-      "subtitle": "Listings close to your location",
+      "subtitle": "Offers and requests close to you",
       "title": "Near You"
     },
     "new_members": {
@@ -46736,7 +46831,7 @@ export default interface Resources {
     },
     "popular_listings": {
       "subtitle": "Most viewed offers and requests",
-      "title": "Popular Listings"
+      "title": "Popular offers and requests"
     },
     "recently_viewed": {
       "clear": "Clear",
@@ -46760,7 +46855,7 @@ export default interface Resources {
     "sections_loaded": "Discover content loaded",
     "see_all": "See All",
     "stats": {
-      "active_listings": "Active Listings",
+      "active_listings": "Active offers and requests",
       "exchanges_this_month": "Exchanges This Month",
       "hours_exchanged": "Hours Exchanged",
       "members": "Members"
@@ -46779,7 +46874,7 @@ export default interface Resources {
       "events": "Events",
       "for_you": "For You",
       "groups": "Groups",
-      "listings": "Listings",
+      "listings": "Offers and requests",
       "people": "People"
     },
     "time_ago": {
@@ -47475,7 +47570,7 @@ export default interface Resources {
       "detail_event": "View Event",
       "detail_goals": "View Goals",
       "detail_job": "View Job",
-      "detail_listing": "View Listing",
+      "detail_listing": "View offer or request",
       "detail_podcast_episode": "Listen to episode",
       "detail_podcast_show": "View podcast show",
       "detail_profile": "View Profile",
@@ -47544,11 +47639,13 @@ export default interface Resources {
       "type_goal": "Goal",
       "type_job": "Job",
       "type_level_up": "Level Up",
-      "type_listing": "Listing",
+      "type_listing": "Offer or request",
+      "type_offer": "Offer",
       "type_podcast_episode": "Podcast episode",
       "type_podcast_show": "Podcast show",
       "type_poll": "Poll",
       "type_post": "Post",
+      "type_request": "Request",
       "type_resource": "Resource",
       "type_review": "Review",
       "type_volunteer": "Volunteer",
@@ -47608,7 +47705,7 @@ export default interface Resources {
       "content_too_long": "Post is too long (max {{max}} characters).",
       "create_event": "Create Event",
       "create_goal": "Create Goal",
-      "create_listing": "Create Listing",
+      "create_listing": "Post offer or request",
       "create_poll": "Create Poll",
       "create_post": "Create post",
       "create_title": "Create {{type}}",
@@ -47664,15 +47761,15 @@ export default interface Resources {
       "italic": "Italic",
       "link_preview_loading": "Loading preview...",
       "link_preview_remove": "Remove preview",
-      "listing_created": "Listing created!",
+      "listing_created": "Offer or request posted!",
       "listing_desc_placeholder": "Describe your listing...",
       "listing_failed": "Failed to create listing.",
       "listing_looking_for": "Looking For",
       "listing_offering": "Offering",
-      "listing_preview_alt": "Listing preview",
+      "listing_preview_alt": "Preview of your offer or request",
       "listing_title_label": "Title",
       "listing_title_placeholder": "What are you offering or looking for?",
-      "listing_type_label": "Listing type",
+      "listing_type_label": "Offer or request",
       "location_from_profile": "From your profile — update in Settings",
       "location_label": "Location",
       "location_placeholder": "Search for a location...",
@@ -47716,7 +47813,7 @@ export default interface Resources {
       "start_time_label": "Start Time",
       "tab_event": "Event",
       "tab_goal": "Goal",
-      "tab_listing": "Listing",
+      "tab_listing": "Offer or request",
       "tab_poll": "Poll",
       "tab_post": "Post",
       "target_value_label": "Target Value",
@@ -47798,7 +47895,7 @@ export default interface Resources {
       "following": "Following",
       "goals": "Goals",
       "jobs": "Jobs",
-      "listings": "Listings",
+      "listings": "Offers and requests",
       "more": "More",
       "polls": "Polls",
       "posts": "Posts",
@@ -47956,7 +48053,7 @@ export default interface Resources {
     },
     "sidebar": {
       "actions": {
-        "create_listing": "Create New Listing",
+        "create_listing": "Create an offer or request",
         "create_listing_desc": "Share your skills with the community",
         "create_poll": "Create Poll",
         "groups": "Groups",
@@ -47966,7 +48063,7 @@ export default interface Resources {
       },
       "by_owner": "by {{name}}",
       "categories": {
-        "all_listings": "All Listings",
+        "all_listings": "All offers and requests",
         "title": "Top Categories"
       },
       "events": {
@@ -47994,7 +48091,7 @@ export default interface Resources {
       },
       "profile": {
         "given": "Given",
-        "listings": "Listings",
+        "listings": "Offers and requests",
         "offers": "Offers",
         "received": "Received",
         "requests": "Requests"
@@ -48002,7 +48099,7 @@ export default interface Resources {
       "pulse": {
         "events": "Events",
         "groups": "Groups",
-        "listings": "Listings",
+        "listings": "Offers and requests",
         "members": "Members",
         "title": "Community Pulse"
       },
@@ -48419,7 +48516,7 @@ export default interface Resources {
       "load_error": "Failed to load community data",
       "new_connections": "New Connections",
       "new_exchanges": "New Exchanges",
-      "new_listings": "New Listings",
+      "new_listings": "New offers and requests",
       "new_members": "New Members",
       "new_posts": "New Posts",
       "no_change": "No change",
@@ -48429,7 +48526,7 @@ export default interface Resources {
       "total_connections": "Connections",
       "total_exchanges": "Exchanges Completed",
       "total_hours": "Total Hours Exchanged",
-      "total_listings": "Listings",
+      "total_listings": "Offers and requests",
       "total_members": "Community Members",
       "total_reviews": "Reviews",
       "total_xp": "Total XP Earned",
@@ -48572,7 +48669,7 @@ export default interface Resources {
       "hours_earned": "Hours Earned",
       "hours_given": "Hours Given",
       "level": "Level {{level}}",
-      "listings": "Listings",
+      "listings": "Offers and requests",
       "load_error": "Failed to load journey data",
       "member_since": "Member Since",
       "milestones": "Milestones",
@@ -49180,6 +49277,9 @@ export default interface Resources {
       "primary_color": "Primary Color",
       "reset": "Use platform colors",
       "title": "Group Branding"
+    },
+    "card": {
+      "members_including": "Members include {{names}}"
     },
     "challenges": {
       "active_list_aria": "Active challenges",
@@ -50671,7 +50771,7 @@ export default interface Resources {
             "title": "How do I get the ID Verified badge?"
           },
           "saved_items": {
-            "body": "Everything you save with the bookmark icon is kept on your **Saved Items** page. Only you can see it.\n\nOpen [Saved](/saved). You can also find **Saved** in the main menu.\n\n## Showing one kind of item\n\nUse the tabs at the top: **All**, **Post**, **Listing**, **Event**, **Job**, **Blog** and **Discussion**. The page shows how many items match, for example **12 saved items**.\n\nPress an item's title to open it.\n\n## Making a collection\n\nCollections are folders for your saved items.\n\n1. Press **New Collection**.\n2. Type a **Name**. You can add a **Description (optional)**.\n3. Press **Create**.\n\nTo show only one collection, choose it under **Collection**. To show everything again, clear the choice.\n\n## Changing or deleting a collection\n\n1. Press the small menu button next to the collection's name.\n2. Choose **Edit** to rename it, then press **Save**.\n3. Or choose **Delete**, then press **Delete Collection** to confirm.\n\nDeleting a collection does not delete the items in it. They stay on your Saved Items page.\n\n## Removing an item\n\nPress the bin button next to the item, labelled **Remove from saved**. The item itself is not deleted, only your bookmark.\n\nIf the page says **No saved items yet**, you have not saved anything so far.",
+            "body": "Everything you save with the bookmark icon is kept on your **Saved Items** page. Only you can see it.\n\nOpen [Saved](/saved). You can also find **Saved** in the main menu.\n\n## Showing one kind of item\n\nUse the tabs at the top: **All**, **Post**, **Offer or request**, **Event**, **Job**, **Blog** and **Discussion**. The page shows how many items match, for example **12 saved items**.\n\nPress an item's title to open it.\n\n## Making a collection\n\nCollections are folders for your saved items.\n\n1. Press **New Collection**.\n2. Type a **Name**. You can add a **Description (optional)**.\n3. Press **Create**.\n\nTo show only one collection, choose it under **Collection**. To show everything again, clear the choice.\n\n## Changing or deleting a collection\n\n1. Press the small menu button next to the collection's name.\n2. Choose **Edit** to rename it, then press **Save**.\n3. Or choose **Delete**, then press **Delete Collection** to confirm.\n\nDeleting a collection does not delete the items in it. They stay on your Saved Items page.\n\n## Removing an item\n\nPress the bin button next to the item, labelled **Remove from saved**. The item itself is not deleted, only your bookmark.\n\nIf the page says **No saved items yet**, you have not saved anything so far.",
             "summary": "See everything you have saved in one place, sort it into collections and remove what you no longer need.",
             "title": "Finding and organising your saved items"
           },
@@ -50978,7 +51078,7 @@ export default interface Resources {
             "title": "Adding photos and links to a post"
           },
           "feed_post_update": {
-            "body": "You post updates from the [community feed](/feed).\n\n1. Open the [feed](/feed).\n2. Press the box that says **What's on your mind?**. A window opens.\n3. If the window shows a different form, such as **Listing**, press the **Post** tab at the top.\n4. Write your message. You can use up to 5,000 characters. The buttons above the text let you add bold, italics, lists and links.\n5. Use the buttons under the text to add an emoji or a GIF. Some browsers also let you speak your post with voice input.\n6. If your community uses groups, you see **Post to**. Leave **Public Feed** to share with the whole community, or choose one of your groups.\n7. Press **Post**.\n\nA quicker way to reach the **Post** form is the **+** button at the top of the page. Choose **New Post**.\n\n## Other things you can create here\n\nThe same window has tabs along the top. Depending on what your community uses, you may see **Listing**, **Event**, **Goal** and **Poll** as well as **Post**. Each tab opens a short form for that kind of item.\n\n> If you close the window part-way through, your browser keeps a draft on this device. It comes back the next time you open the post box.\n\n## Who sees your post\n\nA post to the **Public Feed** is seen by members of your community. A post to a group appears inside that group, for its members.\n\nIf you type @ followed by someone's username, they are told you mentioned them.",
+            "body": "You post updates from the [community feed](/feed).\n\n1. Open the [feed](/feed).\n2. Press the box that says **What's on your mind?**. A window opens.\n3. If the window shows a different form, such as **Offer or request**, press the **Post** tab at the top.\n4. Write your message. You can use up to 5,000 characters. The buttons above the text let you add bold, italics, lists and links.\n5. Use the buttons under the text to add an emoji or a GIF. Some browsers also let you speak your post with voice input.\n6. If your community uses groups, you see **Post to**. Leave **Public Feed** to share with the whole community, or choose one of your groups.\n7. Press **Post**.\n\nA quicker way to reach the **Post** form is the **+** button at the top of the page. Choose **New Post**.\n\n## Other things you can create here\n\nThe same window has tabs along the top. Depending on what your community uses, you may see **Offer or request**, **Event**, **Goal** and **Poll** as well as **Post**. Each tab opens a short form for that kind of item.\n\n> If you close the window part-way through, your browser keeps a draft on this device. It comes back the next time you open the post box.\n\n## Who sees your post\n\nA post to the **Public Feed** is seen by members of your community. A post to a group appears inside that group, for its members.\n\nIf you type @ followed by someone's username, they are told you mentioned them.",
             "summary": "Write a post for your community feed or for one of your groups.",
             "title": "How do I post an update?"
           },
@@ -51009,7 +51109,7 @@ export default interface Resources {
             "title": "Connecting with other members"
           },
           "explore_page": {
-            "body": "**Explore** is a starting point for finding out what is happening in your community. It opens a page called **Discover**.\n\nDepending on what your community uses, you may see sections such as:\n\n- **Popular Listings** and **Near You**\n- **Upcoming Events** and **Active Groups**\n- **Welcome Our Newest Members** and **People You May Know**, each with a **Connect** button\n- **Trending Posts**, **Trending Hashtags** and **From the Blog**\n- **Volunteer Opportunities** and **Organisations**\n\nPress **See All** next to a section to open the full list.\n\nThe top of the page shows community figures, such as the number of members and the hours exchanged.\n\n> If you cannot find **Explore** in the menu, your community is not using it.",
+            "body": "**Explore** is a starting point for finding out what is happening in your community. It opens a page called **Discover**.\n\nDepending on what your community uses, you may see sections such as:\n\n- **Popular offers and requests** and **Near You**\n- **Upcoming Events** and **Active Groups**\n- **Welcome Our Newest Members** and **People You May Know**, each with a **Connect** button\n- **Trending Posts**, **Trending Hashtags** and **From the Blog**\n- **Volunteer Opportunities** and **Organisations**\n\nPress **See All** next to a section to open the full list.\n\nThe top of the page shows community figures, such as the number of members and the hours exchanged.\n\n> If you cannot find **Explore** in the menu, your community is not using it.",
             "summary": "See popular listings, events, groups and new members in one place.",
             "title": "Using the Explore page"
           },
@@ -51019,7 +51119,7 @@ export default interface Resources {
             "title": "Changing your match preferences"
           },
           "matches": {
-            "body": "The **Matches** page suggests listings, groups, volunteering opportunities and events that may suit you.\n\n1. Open [Matches](/matches).\n2. Use the tabs to show **All** matches or one kind: **Listings**, **Group** or **Volunteering**. A tab only appears when you have matches of that kind.\n3. Turn on **Mutual matches only** to see matches that work both ways: they want what you offer, and offer what you need.\n\nEach card shows a match score and the main reasons. Some cards show **Why this score?** with more detail. Some include an explanation written by AI, which is labelled. Treat scores and explanations as a guide only.\n\nPress a card to open the listing, group, opportunity or event. On a card you can also:\n\n- press **Message** to write to the member who posted a listing;\n- press **Save match** to keep a listing match;\n- press **Not interested** and choose a reason, so you see fewer matches like it;\n- press **Join** on a group match.\n\n## Event matches\n\nEvent matches are upcoming events that you have not replied to yet. They are shown under **All**, marked **Event**. Open the event to see the details and say if you are going.\n\n## Getting better matches\n\nListing matches are based on your own listings. If you have none, the page asks you to **Create a listing**. Group, volunteering and event matches also use the categories of your listings and the skills and bio on your profile. Adding a location to your profile helps with distance.",
+            "body": "The **Matches** page suggests listings, groups, volunteering opportunities and events that may suit you.\n\n1. Open [Matches](/matches).\n2. Use the tabs to show **All** matches or one kind: **Offers and requests**, **Group** or **Volunteering**. A tab only appears when you have matches of that kind.\n3. Turn on **Mutual matches only** to see matches that work both ways: they want what you offer, and offer what you need.\n\nEach card shows a match score and the main reasons. Some cards show **Why this score?** with more detail. Some include an explanation written by AI, which is labelled. Treat scores and explanations as a guide only.\n\nPress a card to open the listing, group, opportunity or event. On a card you can also:\n\n- press **Message** to write to the member who posted a listing;\n- press **Save match** to keep a listing match;\n- press **Not interested** and choose a reason, so you see fewer matches like it;\n- press **Join** on a group match.\n\n## Event matches\n\nEvent matches are upcoming events that you have not replied to yet. They are shown under **All**, marked **Event**. Open the event to see the details and say if you are going.\n\n## Getting better matches\n\nListing matches are based on your own listings. If you have none, the page asks you to **Create a listing**. Group, volunteering and event matches also use the categories of your listings and the skills and bio on your profile. Adding a location to your profile helps with distance.",
             "summary": "See listings, groups, volunteering and events that may suit you, based on your listings and profile.",
             "title": "Your matches and suggestions"
           },
@@ -51055,7 +51155,7 @@ export default interface Resources {
             "title": "Confirming your email and waiting for approval"
           },
           "finding_your_way_around": {
-            "body": "The menu only shows the parts of the site your community uses. So what you see may be a little different from what other communities see.\n\n## On a computer\n\nAlong the top of the screen you will usually find:\n\n- **Feed**: news and posts from your community\n- **Explore**: a place to discover what is going on, if your community uses it\n- **Timebanking**: your **Listings**, **Exchanges** and **Wallet**\n- **Messages**: private conversations with other members\n- **Community**: your **Dashboard**, **Members**, **Events**, **Groups** and more\n\nOn the right is the bell for your notifications, and a button with your name or photo. Press it for **My Profile**, **Wallet**, **Settings**, **Get the app** and **Log Out**.\n\n## On a phone\n\nA bar along the bottom of the screen has **Feed**, **Listings**, **Create**, **Messages** and **Menu**. Press **Menu** to see everything else, including **Settings**, **Help Center** and **Log Out**.\n\n## Your dashboard\n\nYour [Dashboard](/dashboard) gives you a summary: your balance, your listings, your messages and anything that needs your attention.\n\n> Looking for something? Press **Search** at the top of the screen, if your community uses it.",
+            "body": "The menu only shows the parts of the site your community uses. So what you see may be a little different from what other communities see.\n\n## On a computer\n\nAlong the top of the screen you will usually find:\n\n- **Feed**: news and posts from your community\n- **Explore**: a place to discover what is going on, if your community uses it\n- **Timebanking**: your **Offers and requests**, **Exchanges** and **Wallet**\n- **Messages**: private conversations with other members\n- **Community**: your **Dashboard**, **Members**, **Events**, **Groups** and more\n\nOn the right is the bell for your notifications, and a button with your name or photo. Press it for **My Profile**, **Wallet**, **Settings**, **Get the app** and **Log Out**.\n\n## On a phone\n\nA bar along the bottom of the screen has **Feed**, **Offers**, **Create**, **Messages** and **Menu**. Press **Menu** to see everything else, including **Settings**, **Help Center** and **Log Out**.\n\n## Your dashboard\n\nYour [Dashboard](/dashboard) gives you a summary: your balance, your listings, your messages and anything that needs your attention.\n\n> Looking for something? Press **Search** at the top of the screen, if your community uses it.",
             "summary": "The menu at the top of the screen, or at the bottom on a phone, takes you to every part of your community.",
             "title": "Finding your way around"
           },
@@ -51275,7 +51375,7 @@ export default interface Resources {
             "title": "Browsing and filtering listings"
           },
           "create_listing": {
-            "body": "You create a listing from the Listings page.\n\n1. Open [Listings](/listings) and press **Create Listing**.\n2. Under **Start with intent**, choose **Offer Help** or **Request Help**.\n3. Type a **Title**. Be specific, for example \"Weekly help with food shopping\" rather than one word.\n4. Write a **Description** of what you offer or need.\n5. Choose a **Category**. Add **Skill Tags** if you like.\n6. Under **Service delivery**, choose **In-person only**, **Remote only**, **Remote available** or **Depends on service**.\n7. Enter the **Estimated Hours** one exchange may take.\n8. Add a photo if you like.\n9. Press **Create Listing**.\n\nYour new listing then opens so you can check it.\n\nIf a field is missing or too short, a message appears under that field. Fix it and press **Create Listing** again.\n\nThe **Location** comes from your profile. To change it, update your location in your profile settings.\n\n> If your community checks new listings first, your listing shows the status **Pending** until a coordinator approves it. Your community may also limit how many listings each member can have.",
+            "body": "You create a listing from the Listings page.\n\n1. Open [Listings](/listings) and press **Create an offer or request**.\n2. Under **Start with intent**, choose **Offer Help** or **Request Help**.\n3. Type a **Title**. Be specific, for example \"Weekly help with food shopping\" rather than one word.\n4. Write a **Description** of what you offer or need.\n5. Choose a **Category**. Add **Skill Tags** if you like.\n6. Under **Service delivery**, choose **In-person only**, **Remote only**, **Remote available** or **Depends on service**.\n7. Enter the **Estimated Hours** one exchange may take.\n8. Add a photo if you like.\n9. Press **Create an offer or request**.\n\nYour new listing then opens so you can check it.\n\nIf a field is missing or too short, a message appears under that field. Fix it and press **Create an offer or request** again.\n\nThe **Location** comes from your profile. To change it, update your location in your profile settings.\n\n> If your community checks new listings first, your listing shows the status **Pending** until a coordinator approves it. Your community may also limit how many listings each member can have.",
             "summary": "Post an offer or a request in a few steps from the Listings page.",
             "title": "How do I create a listing?"
           },
@@ -51300,7 +51400,7 @@ export default interface Resources {
             "title": "Adding a photo to your listing"
           },
           "manage_listing": {
-            "body": "Your own listings are on your profile, in the **Listings** tab. Open one to manage it.\n\nWhen you view your own listing, these buttons appear near the title:\n\n- **Edit** opens the form. Make your changes and press **Update Listing**.\n- **Analytics** shows how many people viewed, contacted or saved the listing.\n- **Renew Listing** appears when a listing has expired. **Extend** appears when a listing has an end date. Both give it more time.\n- **Delete** removes the listing. Press **Delete listing** to confirm.\n\n> Deleting a listing cannot be undone.\n\n## Can I pause a listing?\n\nThere is no pause button. If you need a break, you can delete the listing and create it again later.\n\n## Expiry\n\nYour community may set listings to end after a while. The listing page shows the end date, for example \"Expires\" followed by the date. A listing can only be renewed a limited number of times. If renewing does not work, ask your coordinator.",
+            "body": "Your own listings are on your profile, in the **Offers and requests** tab. Open one to manage it.\n\nWhen you view your own listing, these buttons appear near the title:\n\n- **Edit** opens the form. Make your changes and press **Save changes**.\n- **Analytics** shows how many people viewed, contacted or saved the listing.\n- **Renew** appears when a listing has expired. **Extend** appears when a listing has an end date. Both give it more time.\n- **Delete** removes the listing. Press **Delete listing** to confirm.\n\n> Deleting a listing cannot be undone.\n\n## Can I pause a listing?\n\nThere is no pause button. If you need a break, you can delete the listing and create it again later.\n\n## Expiry\n\nYour community may set listings to end after a while. The listing page shows the end date, for example \"Expires\" followed by the date. A listing can only be renewed a limited number of times. If renewing does not work, ask your coordinator.",
             "summary": "Change your listing, give it more time, see how it is doing, or remove it.",
             "title": "Editing, renewing or deleting your listing"
           },
@@ -51428,7 +51528,7 @@ export default interface Resources {
             "title": "Getting a summary email instead"
           },
           "email_notification_settings": {
-            "body": "You decide which emails you get.\n\n1. Open [Settings](/settings) and choose the **Notifications** tab.\n2. Turn each switch on or off.\n3. Press **Save Preferences**.\n\n## What you can choose\n\nThe switches you see depend on what your community uses. They include:\n\n- **New Messages**: when someone sends you a message\n- **Connection Requests**\n- **Event emails**: changes, cancellations and reminders for events\n- **Listing Activity**: responses to your listings\n- **Credit Transactions**: when time credits move in or out of your wallet\n- **New Reviews**\n- **Monthly Digest**: a monthly summary of community activity\n- **Marketing Emails**: newsletters and community updates\n\nIf you have an organisation account, you may also see **Organisation Notifications**.\n\n## Emails you cannot turn off\n\nSome emails are needed to keep your account working, so there is no switch for them. For example, emails that confirm your email address or reset your password.\n\n> Want fewer emails? See **Getting a summary email instead**.",
+            "body": "You decide which emails you get.\n\n1. Open [Settings](/settings) and choose the **Notifications** tab.\n2. Turn each switch on or off.\n3. Press **Save Preferences**.\n\n## What you can choose\n\nThe switches you see depend on what your community uses. They include:\n\n- **New Messages**: when someone sends you a message\n- **Connection Requests**\n- **Event emails**: changes, cancellations and reminders for events\n- **Activity on offers and requests**: responses to your listings\n- **Credit Transactions**: when time credits move in or out of your wallet\n- **New Reviews**\n- **Monthly Digest**: a monthly summary of community activity\n- **Marketing Emails**: newsletters and community updates\n\nIf you have an organisation account, you may also see **Organisation Notifications**.\n\n## Emails you cannot turn off\n\nSome emails are needed to keep your account working, so there is no switch for them. For example, emails that confirm your email address or reset your password.\n\n> Want fewer emails? See **Getting a summary email instead**.",
             "summary": "Turn email notifications on or off for messages, listings, events, reviews and more.",
             "title": "Choosing which emails you get"
           },
@@ -54418,7 +54518,7 @@ export default interface Resources {
     "aria_location": "Location: {{location}}",
     "aria_map_view": "Map view",
     "ask_for_help": "Ask for help",
-    "browse": "Browse Listings",
+    "browse": "Browse offers and requests",
     "browse_by_theme": "Browse by theme",
     "cancel": "Cancel",
     "category_back": "Back",
@@ -54428,20 +54528,23 @@ export default interface Resources {
     "comments": "comments",
     "comments_error": "Comments could not be loaded.",
     "community_member": "Community Member",
-    "create": "Create Listing",
+    "create": "Create an offer or request",
     "create_first": "Create your first listing",
     "delete_confirm": "Are you sure you want to delete this listing?",
     "delete_confirm_body": "Are you sure you want to delete this listing? This cannot be undone.",
     "delete_confirm_button": "Delete listing",
     "delete_confirm_title": "Delete listing",
     "delete_error_title": "Failed to delete",
-    "delete_success_title": "Listing deleted",
+    "delete_success_title": "Deleted",
     "delivery_mode": "Delivery Mode",
     "detail_also_offers": "Also offers",
     "detail_analytics": "Analytics",
     "detail_comments": "Comments",
-    "detail_cta_body": "Start with a message or exchange request, then keep the conversation in NEXUS.",
-    "detail_cta_title": "Respond to this listing",
+    "detail_cta_offer_body": "Ask {{name}} for this. You'll agree a time together, and an hour of help is worth an hour.",
+    "detail_cta_offer_title": "Would this help you?",
+    "detail_cta_request_body": "Offer {{name}} your time. You'll agree the details together, and every hour you give is an hour you can receive.",
+    "detail_cta_request_title": "Could you help {{name}}?",
+    "detail_cta_someone": "this member",
     "detail_delete": "Delete",
     "detail_description": "Description",
     "detail_duration": "Duration",
@@ -54450,7 +54553,7 @@ export default interface Resources {
     "detail_expired_on": "Expired on {{date}}",
     "detail_expires_on": "Expires {{date}}",
     "detail_extend": "Extend",
-    "detail_fallback_label": "Listing",
+    "detail_fallback_label": "Offer or request",
     "detail_flexible": "Flexible",
     "detail_hours": "{{count}} hours",
     "detail_hours_available": "{{count}} hours available in total",
@@ -54468,7 +54571,7 @@ export default interface Resources {
     "detail_offer_eyebrow": "Community offer",
     "detail_offered_by": "Offered by",
     "detail_posted": "Posted",
-    "detail_renew": "Renew Listing",
+    "detail_renew": "Renew",
     "detail_renewed_count": "Renewed {{count}} time",
     "detail_renewed_count_one": "renewed {{count}} time",
     "detail_renewed_count_other": "renewed {{count}} times",
@@ -54564,13 +54667,13 @@ export default interface Resources {
       "character_count_one": "{{count}}/{{max}}",
       "character_count_other": "{{count}}/{{max}}",
       "create_intro": "Share a useful offer or ask for help with enough detail for the right community members to respond.",
-      "create_success": "Listing created successfully",
-      "create_title": "Create New Listing",
+      "create_success": "Your offer or request has been created",
+      "create_title": "Create an offer or request",
       "description_label": "Description",
       "description_min_length": "Description must be at least 20 characters",
       "description_placeholder": "Describe what you're offering or requesting in detail...",
       "description_required": "Description is required",
-      "edit_title": "Edit Listing",
+      "edit_title": "Edit offer or request",
       "equipment_bring_own": "You'll need to provide your own",
       "equipment_label": "Equipment",
       "equipment_na": "Not applicable",
@@ -54599,7 +54702,7 @@ export default interface Resources {
       "image_alt_placeholder": "For example: two people repairing a bicycle together",
       "image_formats": "JPG, PNG, WebP — max 8MB",
       "image_label": "Photo (optional)",
-      "image_preview_alt": "Listing preview",
+      "image_preview_alt": "Photo preview",
       "image_too_large": "Image must be under 8MB",
       "image_upload_failed": "Image upload failed. Your listing was saved without an image.",
       "image_upload_hint": "Click to add a photo",
@@ -54614,7 +54717,7 @@ export default interface Resources {
       "logistics_section_hint": "Clarify how the help can happen and how much time it may take.",
       "media_section": "Add a photo",
       "media_section_hint": "A relevant image can make the listing easier to recognise in the community feed.",
-      "new_title": "New Listing",
+      "new_title": "New offer or request",
       "offer_badge": "Offering help",
       "offer_subtitle": "I want to help others",
       "offer_title": "Offer Help",
@@ -54636,7 +54739,7 @@ export default interface Resources {
       "service_type_physical_hint": "Needs a shared physical place",
       "service_type_remote": "Remote only",
       "service_type_remote_hint": "Can happen by phone, chat, or video",
-      "submit": "Post Listing",
+      "submit": "Post",
       "summary_category": "Category",
       "summary_not_set": "Not set",
       "summary_type": "Type",
@@ -54648,15 +54751,15 @@ export default interface Resources {
       "title_too_generic_hint": "Try adding a few words about what you'd actually offer — location, frequency, or who it suits. It helps people decide whether to reach out.",
       "type_label": "Type",
       "type_question": "What would you like to do?",
-      "update": "Update Listing",
-      "update_success": "Listing updated successfully"
+      "update": "Save changes",
+      "update_success": "Your changes are saved"
     },
     "hero_eyebrow": "People helping people",
     "hero_results_label": "Showing now",
     "hours_short": "{{hours}}h",
     "like": "like",
     "likes": "likes",
-    "listing_image_alt": "Listing image",
+    "listing_image_alt": "Photo for this offer or request",
     "listings_loaded_count": "{{count}} offers and requests loaded",
     "listings_loaded_count_one": "{{count}} offer or request loaded",
     "listings_loaded_count_other": "{{count}} offers and requests loaded",
@@ -54694,33 +54797,33 @@ export default interface Resources {
       "delete_confirm": "Delete listing",
       "delete_failed": "We could not delete this listing.",
       "delete_title": "Delete this listing?",
-      "deleted": "Listing deleted.",
+      "deleted": "Deleted.",
       "description": "Everything you have offered or asked for, and whether other members can see it.",
-      "empty_closed_body": "Listings that have been closed will appear here.",
+      "empty_closed_body": "Offers and requests that have been closed will appear here.",
       "empty_closed_title": "No closed listings",
       "empty_expired_body": "When a listing reaches its end date it moves here, so you can renew it.",
       "empty_expired_title": "Nothing has expired",
       "empty_filtered_body": "You have none of this kind here. Try showing all your listings.",
       "empty_live_body": "Offer a skill or ask for help, and it will appear here.",
       "empty_live_title": "You have no live listings",
-      "empty_rejected_body": "Listings that were not approved will appear here, with the reason.",
+      "empty_rejected_body": "Offers and requests that were not approved will appear here, with the reason.",
       "empty_rejected_title": "Nothing here",
-      "empty_review_body": "Listings an administrator still needs to check will appear here.",
+      "empty_review_body": "Offers and requests an administrator still needs to check will appear here.",
       "empty_review_title": "Nothing is waiting for review",
       "expires_in_days_one": "Expires in {{count}} day",
       "expires_in_days_other": "Expires in {{count}} days",
       "expires_today": "Expires today",
-      "extended": "Listing extended.",
+      "extended": "Extended.",
       "eyebrow": "Your offers and requests",
       "list_aria": "Your listings",
       "load_error": "We could not load your listings.",
       "load_more": "Show more",
       "new_listing": "New listing",
-      "page_title": "My listings",
+      "page_title": "My offers and requests",
       "posted_on": "Posted {{date}}",
       "rejected_reason": "Reason given: {{reason}}",
       "renew_failed": "We could not renew this listing.",
-      "renewed": "Listing renewed. Other members can see it again.",
+      "renewed": "Renewed. Other members can see it again.",
       "retry": "Try again",
       "saves_one": "{{count}} save",
       "saves_other": "{{count}} saves",
@@ -54748,22 +54851,22 @@ export default interface Resources {
       "visible_until": "Visible until {{date}}"
     },
     "more_filters": "More filters",
-    "my_listings": "My Listings",
+    "my_listings": "My offers and requests",
     "near_me": "Near me",
     "near_me_no_location": "Enable location to use this feature",
-    "not_found_error": "Listing not found or has been removed",
+    "not_found_error": "This offer or request was not found or has been removed",
     "not_found_fallback": "The listing you are looking for does not exist",
-    "not_found_title": "Listing Not Found",
+    "not_found_title": "Offer or request not found",
     "offer": "Offer",
     "offer_help": "Offer help",
     "offering": "Offering",
     "open_listing_aria": "Details for {{title}}",
     "page_meta": {
       "create": {
-        "title": "Create Listing"
+        "title": "Create an offer or request"
       },
       "edit": {
-        "title": "Edit Listing"
+        "title": "Edit offer or request"
       }
     },
     "page_meta_description": "Browse skills and services offered by community members — from gardening and tutoring to tech help and care. Every hour of help earns a time credit.",
@@ -54781,7 +54884,7 @@ export default interface Resources {
     "reciprocity_one_way_title": "Matches your offer or request",
     "remove_filter": "Remove filter: {{filter}}",
     "renew_error": "Failed to renew listing",
-    "renew_success": "Listing renewed successfully",
+    "renew_success": "Renewed",
     "report_already": "You have already reported this listing",
     "report_details_label": "Additional details",
     "report_details_placeholder": "Tell us more (optional)",
@@ -54807,8 +54910,8 @@ export default interface Resources {
     "save_error": "Failed to update saved listing",
     "save_listing": "Save for later",
     "save_success_subtitle": "You can find it in your saved items",
-    "save_success_title": "Listing saved",
-    "saved_success": "Listing saved",
+    "save_success_title": "Saved",
+    "saved_success": "Saved to your list",
     "search_action": "Search offers and requests",
     "search_label": "Search offers and requests",
     "search_placeholder": "Search by title, description, location or name...",
@@ -54853,7 +54956,7 @@ export default interface Resources {
     "try_again": "Try Again",
     "unsave_listing": "Remove from saved",
     "unsave_title": "Removed from saved",
-    "unsaved_success": "Listing removed from saved",
+    "unsaved_success": "Removed from your saved list",
     "user_fallback": "User",
     "welcome_intro": "Share what you know, ask for what you need. Every hour you give comes back to the community."
   },
@@ -55927,7 +56030,7 @@ export default interface Resources {
       },
       "title": "Why this score?"
     },
-    "browse_listings": "Browse Listings",
+    "browse_listings": "Browse offers and requests",
     "card": {
       "dismiss": "Not interested",
       "distance_km": "{{value}} km",
@@ -55966,7 +56069,7 @@ export default interface Resources {
     },
     "filter_all": "All",
     "filter_mutual_only": "Mutual matches only",
-    "filter_people_listings": "Listings",
+    "filter_people_listings": "Offers and requests",
     "filter_tabs_aria": "Match module filter",
     "heading": "Your Matches",
     "load_error_title": "Unable to load matches",
@@ -56033,7 +56136,7 @@ export default interface Resources {
     "score_percent": "{{score}}% match",
     "source_event": "Event",
     "source_group": "Group",
-    "source_listing": "Listing",
+    "source_listing": "Offer or request",
     "source_volunteering": "Volunteering",
     "stats_avg_score": "Avg Score",
     "stats_hot_matches": "Hot Matches",
@@ -56175,7 +56278,7 @@ export default interface Resources {
     "context_request": "request",
     "context_type_event": "Event",
     "context_type_job": "Job",
-    "context_type_listing": "Listing",
+    "context_type_listing": "Offer or request",
     "context_type_volunteering": "Volunteering",
     "context_untitled": "Untitled",
     "conversation_archived": "Conversation archived",
@@ -56536,7 +56639,7 @@ export default interface Resources {
       "toast_job_offer_received": "Job Offer Received!",
       "toast_job_offer_rejected": "Offer Rejected",
       "toast_job_offer_withdrawn": "Offer Withdrawn",
-      "toast_listing": "Listing Update",
+      "toast_listing": "Update on an offer or request",
       "toast_message": "New Message",
       "toast_safeguarding_assignment": "Safeguarding Assignment",
       "toast_safeguarding_flag": "Safeguarding Alert",
@@ -56575,7 +56678,7 @@ export default interface Resources {
       "default": "Notification",
       "event": "Event",
       "group": "Group",
-      "listing": "Listing",
+      "listing": "Offer or request",
       "message": "Message",
       "system": "System",
       "transaction": "Transaction"
@@ -57482,7 +57585,7 @@ export default interface Resources {
     "cancel_request": "Cancel Request",
     "connect": "Connect",
     "connected": "Connected",
-    "create_listing": "Create Listing",
+    "create_listing": "Create an offer or request",
     "credits": "Time Credits",
     "credits_sent_success": "Credits sent to {{name}}",
     "delete_failed": "Delete failed",
@@ -57504,16 +57607,19 @@ export default interface Resources {
     "hide_failed": "Failed to hide",
     "hours_abbrev": "{{hours}}h",
     "identity_verified_lock": "Your name is locked because your identity has been verified.",
+    "impact": {
+      "title": "Time shared"
+    },
     "interests": "Interests",
     "joined": "Joined {{date}}",
     "level": "Lvl {{level}}",
     "like_failed": "Failed to update like",
-    "listing_image_alt": "Listing image",
+    "listing_image_alt": "Photo for this offer or request",
     "listing_type": {
       "offer": "Offering",
       "request": "Requesting"
     },
-    "listings": "Listings",
+    "listings": "Offers and requests",
     "load_error": "Failed to load profile. Please try again.",
     "load_more": "Load more",
     "loading": "Loading profile...",
@@ -57586,7 +57692,7 @@ export default interface Resources {
     "show_more_skills_other": "Show {{count}} more",
     "skills": "Skills",
     "stats": {
-      "active_listings": "Active Listings",
+      "active_listings": "Active offers and requests",
       "events": "Events",
       "groups": "Groups",
       "hours_given": "Hours Given",
@@ -57597,7 +57703,7 @@ export default interface Resources {
       "achievements": "Achievements",
       "activity": "Activity",
       "availability": "Availability",
-      "listings": "Listings",
+      "listings": "Offers and requests",
       "reviews": "Reviews"
     },
     "title": "Profile",
@@ -57793,7 +57899,7 @@ export default interface Resources {
       "meta_description": "Learn how {{name}} brings neighbours together to share skills using time credits. Every hour given earns an hour back — a fairer way to support each other.",
       "meta_title": "About {{name}}",
       "stats": {
-        "active_listings": "Active Listings",
+        "active_listings": "Active offers and requests",
         "communities": "Communities",
         "hours_exchanged": "Hours Exchanged",
         "members": "Members"
@@ -58553,7 +58659,7 @@ export default interface Resources {
             },
             "service_listings": {
               "description": "Post offers and requests, browse and smart-match listings.",
-              "title": "Service Listings"
+              "title": "Offers and requests"
             },
             "skills_browse": {
               "description": "Explore the skill taxonomy and discover expertise.",
@@ -58738,7 +58844,7 @@ export default interface Resources {
       "meta_title": "Community Timebanking Platform",
       "scroll_down": "Scroll down",
       "stats": {
-        "active_listings": "Active Listings",
+        "active_listings": "Active offers and requests",
         "active_members": "Active Members",
         "communities": "Communities",
         "hours_exchanged": "Hours Exchanged"
@@ -58946,7 +59052,7 @@ export default interface Resources {
     "filter_events": "Events",
     "filter_from_date": "From Date",
     "filter_groups": "Groups",
-    "filter_listings": "Listings",
+    "filter_listings": "Offers and requests",
     "filter_location": "Location",
     "filter_location_placeholder": "e.g. London, Bristol...",
     "filter_members": "Members",
@@ -58969,7 +59075,7 @@ export default interface Resources {
     "initial_tip_people": "People",
     "initial_tip_services": "Services",
     "initial_title": "Start searching",
-    "listing_image_alt": "Listing image",
+    "listing_image_alt": "Photo for this offer or request",
     "listing_offering": "Offering",
     "listing_requesting": "Requesting",
     "load_more": "Load more",
@@ -59007,9 +59113,9 @@ export default interface Resources {
     "section_groups": "Groups ({{count}})",
     "section_groups_one": "Groups ({{count}})",
     "section_groups_other": "Groups ({{count}})",
-    "section_listings": "Listings ({{count}})",
-    "section_listings_one": "Listings ({{count}})",
-    "section_listings_other": "Listings ({{count}})",
+    "section_listings": "Offers and requests ({{count}})",
+    "section_listings_one": "Offers and requests ({{count}})",
+    "section_listings_other": "Offers and requests ({{count}})",
     "section_members": "Members ({{count}})",
     "section_members_one": "Members ({{count}})",
     "section_members_other": "Members ({{count}})",
@@ -59026,9 +59132,9 @@ export default interface Resources {
     "tab_groups": "Groups ({{count}})",
     "tab_groups_one": "Groups ({{count}})",
     "tab_groups_other": "Groups ({{count}})",
-    "tab_listings": "Listings ({{count}})",
-    "tab_listings_one": "Listings ({{count}})",
-    "tab_listings_other": "Listings ({{count}})",
+    "tab_listings": "Offers and requests ({{count}})",
+    "tab_listings_one": "Offers and requests ({{count}})",
+    "tab_listings_other": "Offers and requests ({{count}})",
     "tab_members": "Members ({{count}})",
     "tab_members_one": "Members ({{count}})",
     "tab_members_other": "Members ({{count}})",
@@ -59393,7 +59499,7 @@ export default interface Resources {
       "federation_notifications": "Cross-platform federation notifications",
       "gamification_digest": "Gamification Digest",
       "hot_match_alerts": "Hot Match Alerts",
-      "listing_activity": "Listing Activity",
+      "listing_activity": "Activity on offers and requests",
       "marketing_emails": "Marketing Emails",
       "membership_updates": "Membership Updates",
       "mutual_match_alerts": "Mutual Match Alerts",
@@ -59404,7 +59510,7 @@ export default interface Resources {
       "weekly_digest": "Monthly Digest"
     },
     "notification_sections": {
-      "activity_listings": "Activity & Listings",
+      "activity_listings": "Activity, offers and requests",
       "community_achievements": "Community & Achievements",
       "marketing_communications": "Marketing & Communications",
       "match_digest": "Match Digest Emails",
@@ -60095,7 +60201,7 @@ export default interface Resources {
       "type_discussion": "Discussion",
       "type_event": "Event",
       "type_job": "Job",
-      "type_listing": "Listing",
+      "type_listing": "Offer or request",
       "type_post": "Post"
     },
     "cancel": "Cancel",
@@ -61536,13 +61642,13 @@ export default interface Resources {
       "faq_cat_0_q_1": "How do I create an account?",
       "faq_cat_0_q_2": "How do I get started after signing up?",
       "faq_cat_0_title": "Getting Started",
-      "faq_cat_1_a_0": "Go to the Listings page and click \"Create Listing\". Choose whether you're offering a service or requesting one, add a title, description, category, and estimated time. Your listing will be visible to other community members.",
+      "faq_cat_1_a_0": "Go to the Offers and requests page and click \"Create an offer or request\". Choose whether you're offering a service or asking for one, add a title, description, category, and estimated time. Your offer or request will be visible to other community members.",
       "faq_cat_1_a_1": "When you find a listing you're interested in, you can request an exchange. The other member accepts or declines. Once accepted, you coordinate the service, and when complete, time credits are transferred automatically.",
       "faq_cat_1_a_2": "The actual time spent is what gets recorded. Before confirming the exchange, both parties agree on the actual hours. The estimate is just a guide to help members plan.",
       "faq_cat_1_q_0": "How do I create a listing?",
       "faq_cat_1_q_1": "How does an exchange work?",
       "faq_cat_1_q_2": "What happens if a service takes longer than estimated?",
-      "faq_cat_1_title": "Listings & Exchanges",
+      "faq_cat_1_title": "Offers, requests and exchanges",
       "faq_cat_2_a_0": "You earn credits by providing services to other members. When an exchange is completed and confirmed, the agreed-upon hours are added to your wallet balance.",
       "faq_cat_2_a_1": "Yes! Go to your Wallet page and use the \"Transfer\" option. You can send credits to any member in your community. This is useful for gifting or adjusting balances.",
       "faq_cat_2_a_2": "You can still request services even with a zero balance. Timebanking is built on trust and reciprocity. Most communities allow negative balances to encourage participation.",
@@ -61582,7 +61688,7 @@ export default interface Resources {
       "no_results_description_before": "Try different search terms or",
       "no_results_found": "No results found",
       "page_title": "Help Center",
-      "quick_browse_listings": "Browse Listings",
+      "quick_browse_listings": "Browse offers and requests",
       "quick_contact_us": "Contact Us",
       "quick_events": "Events",
       "quick_my_wallet": "My Wallet",
