@@ -217,7 +217,7 @@ export function StoriesBar({ friends: _friends }: StoriesBarProps) {
               <div className="relative">
                 <div className={`w-14 h-14 rounded-full p-[2px] ${
                   hasOwnStory
-                    ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-accent-gradient-end'
+                    ? 'bg-linear-to-tr from-companion via-accent to-accent-strong'
                     : 'bg-[var(--border-default)]'
                 }`}>
                   <div className="w-full h-full rounded-full bg-[var(--surface-elevated)] p-[2px]">
@@ -259,7 +259,7 @@ export function StoriesBar({ friends: _friends }: StoriesBarProps) {
                     {/* Ring: gradient for unseen, gray for seen */}
                     <div className={`w-14 h-14 rounded-full p-[2px] ${
                       storyUser.has_unseen
-                        ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-accent-gradient-end'
+                        ? 'bg-linear-to-tr from-companion via-accent to-accent-strong'
                         : 'bg-[var(--border-default)]'
                     }`}>
                       <div className="w-full h-full rounded-full bg-[var(--surface-elevated)] p-[2px]">

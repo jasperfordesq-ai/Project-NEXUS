@@ -700,7 +700,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                   className={({ isActive }) =>
                     `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-theme-active text-theme-primary'
+                        ? 'bg-accent-soft text-accent-soft-foreground'
                         : 'text-theme-muted hover:text-theme-primary hover:bg-theme-hover'
                     }`
                   }
@@ -717,7 +717,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                   className={({ isActive }) =>
                     `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-theme-active text-theme-primary'
+                        ? 'bg-accent-soft text-accent-soft-foreground'
                         : 'text-theme-muted hover:text-theme-primary hover:bg-theme-hover'
                     }`
                   }
@@ -736,7 +736,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                       size="sm"
                       className={`flex items-center gap-1 px-3 py-2 text-sm font-medium transition-all ${
                         isActiveGroup(timebankingPaths)
-                          ? 'bg-theme-active text-theme-primary'
+                          ? 'bg-accent-soft text-accent-soft-foreground'
                           : 'text-theme-muted hover:text-theme-primary hover:bg-theme-hover'
                       }`}
                       endContent={<ChevronDown className="w-3 h-3" aria-hidden="true" />}
@@ -787,7 +787,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                   className={({ isActive }) =>
                     `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-theme-active text-theme-primary'
+                        ? 'bg-accent-soft text-accent-soft-foreground'
                         : 'text-theme-muted hover:text-theme-primary hover:bg-theme-hover'
                     }`
                   }

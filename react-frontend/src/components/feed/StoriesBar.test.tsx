@@ -194,7 +194,7 @@ describe('StoriesBar', () => {
       expect(screen.getByText('Alice')).toBeInTheDocument();
     });
     // Unseen story (Alice) gets gradient ring
-    const gradientRings = container.querySelectorAll('.bg-gradient-to-tr');
+    const gradientRings = container.querySelectorAll('.bg-linear-to-tr');
     expect(gradientRings.length).toBeGreaterThanOrEqual(1);
   });
 });
