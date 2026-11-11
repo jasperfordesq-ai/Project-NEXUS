@@ -3298,5 +3298,10 @@
     "sorted_for_you": "Voor jou gesorteerd",
     "how_sorted": "Hoe dit gesorteerd is",
     "method": "Methode: {{name}}"
+  },
+  "step_tracker": {
+    "done": "klaar",
+    "current": "huidige stap",
+    "exchange_progress": "Voortgang van de ruil"
   }
 }

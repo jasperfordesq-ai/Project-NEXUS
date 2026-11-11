@@ -3298,5 +3298,10 @@
     "sorted_for_you": "Sorted for you",
     "how_sorted": "How this is sorted",
     "method": "Method: {{name}}"
+  },
+  "step_tracker": {
+    "done": "done",
+    "current": "current step",
+    "exchange_progress": "Exchange progress"
   }
 }

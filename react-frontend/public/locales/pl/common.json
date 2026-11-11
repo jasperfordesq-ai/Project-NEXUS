@@ -3384,5 +3384,10 @@
     "sorted_for_you": "Posortowane dla Ciebie",
     "how_sorted": "Jak to jest sortowane",
     "method": "Metoda: {{name}}"
+  },
+  "step_tracker": {
+    "done": "gotowe",
+    "current": "bieżący krok",
+    "exchange_progress": "Postęp wymiany"
   }
 }

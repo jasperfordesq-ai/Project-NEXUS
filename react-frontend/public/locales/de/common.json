@@ -3298,5 +3298,10 @@
     "sorted_for_you": "Für Sie sortiert",
     "how_sorted": "So wird sortiert",
     "method": "Methode: {{name}}"
+  },
+  "step_tracker": {
+    "done": "erledigt",
+    "current": "aktueller Schritt",
+    "exchange_progress": "Fortschritt des Tauschs"
   }
 }

@@ -3298,5 +3298,10 @@
     "sorted_for_you": "あなた向けの並び順",
     "how_sorted": "並び順について",
     "method": "方式: {{name}}"
+  },
+  "step_tracker": {
+    "done": "完了",
+    "current": "現在のステップ",
+    "exchange_progress": "交換の進み具合"
   }
 }

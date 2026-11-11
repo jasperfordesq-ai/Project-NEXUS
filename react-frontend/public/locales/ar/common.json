@@ -3470,5 +3470,10 @@
     "sorted_for_you": "مرتّب لك",
     "how_sorted": "كيف يتم الترتيب",
     "method": "الطريقة: {{name}}"
+  },
+  "step_tracker": {
+    "done": "تم",
+    "current": "الخطوة الحالية",
+    "exchange_progress": "تقدّم التبادل"
   }
 }

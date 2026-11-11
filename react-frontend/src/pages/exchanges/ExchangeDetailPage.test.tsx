@@ -167,8 +167,17 @@ describe('ExchangeDetailPage', () => {
   it('renders status chip for exchange status', async () => {
     render(<ExchangeDetailPage />);
     await waitFor(() => {
-      expect(screen.getByText('Pending Provider')).toBeInTheDocument();
+      // Outside the step line, which also names the current step.
+      expect(screen.getAllByText('Pending Provider').filter((el) => !el.closest('ol'))).toHaveLength(1);
     });
+  });
+
+  it('shows where the exchange is on its four steps (warmth plan B5)', async () => {
+    render(<ExchangeDetailPage />);
+    const steps = await screen.findAllByRole('listitem');
+    const tracker = steps[0]!.closest('ol')!;
+    expect(tracker.querySelectorAll('li')).toHaveLength(4);
+    expect(tracker.querySelector('li')).toHaveAttribute('aria-current', 'step');
   });
 
   it('renders requester and provider names', async () => {
@@ -182,7 +191,8 @@ describe('ExchangeDetailPage', () => {
   it('renders proposed hours', async () => {
     render(<ExchangeDetailPage />);
     await waitFor(() => {
-      expect(screen.getByText('3')).toBeInTheDocument();
+      // Outside the step line, whose third step is numbered 3.
+      expect(screen.getAllByText('3').filter((el) => !el.closest('ol'))).toHaveLength(1);
     });
   });
 

@@ -50,6 +50,7 @@ import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, formatRelativeTime, getFormattingLocale } from '@/lib/helpers';
+import { StepTracker } from '@/components/ui/StepTracker';
 import { EXCHANGE_STATUS_CONFIG, MAX_EXCHANGE_HOURS, getStatusIconBgClass } from '@/lib/exchange-status';
 import type { Exchange, ExchangeHistoryEntry, ExchangeRating } from '@/types/api';
 
@@ -409,6 +410,9 @@ export function ExchangeDetailPage() {
   }
 
   const statusConfig = EXCHANGE_STATUS_CONFIG[exchange.status];
+  const trackerStep: number | null = (({
+    pending_provider: 0, pending_broker: 0, accepted: 1, in_progress: 1, pending_confirmation: 2, completed: 3,
+  } as Record<string, number>)[exchange.status]) ?? null;
 
   // Determine which actions are available
   const canAccept = isProvider && exchange.status === 'pending_provider';
@@ -469,6 +473,25 @@ export function ExchangeDetailPage() {
             <p className="text-sm text-theme-muted mt-1">{t(statusConfig.description)}</p>
           </div>
         </div>
+        {/* "Where are we" (warmth plan Phase 4 B5): the four steps of a normal
+            exchange, finished ones filled. Not shown for a disputed or
+            cancelled exchange, which has left the normal path. */}
+        {trackerStep !== null && (
+          <StepTracker
+            className="mt-2"
+            label={t('step_tracker.exchange_progress', { ns: 'common' })}
+            doneText={t('step_tracker.done', { ns: 'common' })}
+            currentText={t('step_tracker.current', { ns: 'common' })}
+            current={trackerStep}
+            complete={exchange.status === 'completed'}
+            steps={[
+              { key: 'requested', label: t(EXCHANGE_STATUS_CONFIG[exchange.status === 'pending_broker' ? 'pending_broker' : 'pending_provider'].label) },
+              { key: 'accepted', label: t(EXCHANGE_STATUS_CONFIG[exchange.status === 'in_progress' ? 'in_progress' : 'accepted'].label) },
+              { key: 'confirm', label: t(EXCHANGE_STATUS_CONFIG.pending_confirmation.label) },
+              { key: 'completed', label: t(EXCHANGE_STATUS_CONFIG.completed.label) },
+            ]}
+          />
+        )}
       </GlassCard>
 
       {/* Exchange Details */}

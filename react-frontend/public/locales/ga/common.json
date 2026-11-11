@@ -3427,5 +3427,10 @@
     "sorted_for_you": "Sórtáilte duitse",
     "how_sorted": "Conas a shórtáiltear é seo",
     "method": "Modh: {{name}}"
+  },
+  "step_tracker": {
+    "done": "déanta",
+    "current": "céim reatha",
+    "exchange_progress": "Dul chun cinn an mhalartaithe"
   }
 }

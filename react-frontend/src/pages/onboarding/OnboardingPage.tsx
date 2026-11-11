@@ -1211,9 +1211,9 @@ function StepIndicator({ currentStep, totalSteps, visitedSteps, completedSteps, 
                 className={`
                   w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 shrink-0
                   ${isCurrent
-                    ? 'bg-gradient-to-r from-emerald-700 to-teal-700 text-white shadow-md shadow-emerald-500/30 scale-110'
+                    ? 'bg-linear-to-r from-accent-strong to-accent-strong-end text-white shadow-md scale-110'
                     : isCompleted
-                      ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                      ? 'bg-accent-soft text-accent-soft-foreground'
                       : 'bg-theme-elevated text-theme-subtle'
                   }
                 `}
@@ -1227,7 +1227,7 @@ function StepIndicator({ currentStep, totalSteps, visitedSteps, completedSteps, 
               <span
                 className={`
                   text-[10px] font-medium hidden sm:block
-                  ${isCurrent ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-subtle'}
+                  ${isCurrent ? 'text-accent-soft-foreground' : 'text-theme-subtle'}
                 `}
               >
                 {t(stepLabelKeys[i] ?? '')}
@@ -1241,7 +1241,7 @@ function StepIndicator({ currentStep, totalSteps, visitedSteps, completedSteps, 
                   className={`
                     h-0.5 rounded-full transition-all duration-500
                     ${completedSteps.has(step) && (completedSteps.has(step + 1) || step + 1 === currentStep)
-                      ? 'bg-emerald-500'
+                      ? 'bg-accent-strong'
                       : 'bg-theme-elevated'
                     }
                   `}

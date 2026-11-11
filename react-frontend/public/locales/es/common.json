@@ -3341,5 +3341,10 @@
     "sorted_for_you": "Ordenado para ti",
     "how_sorted": "Cómo se ordena",
     "method": "Método: {{name}}"
+  },
+  "step_tracker": {
+    "done": "hecho",
+    "current": "paso actual",
+    "exchange_progress": "Progreso del intercambio"
   }
 }
