@@ -26,23 +26,12 @@ import Sun from 'lucide-react/icons/sun';
 import Moon from 'lucide-react/icons/moon';
 import Monitor from 'lucide-react/icons/monitor';
 import Check from 'lucide-react/icons/check';
+import { ACCENT_PRESETS } from '@/lib/accentPresets';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Presets
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ACCENT_PRESETS = [
-  { name: 'indigo', hex: '#6366f1' },
-  { name: 'purple', hex: '#a855f7' },
-  { name: 'blue', hex: '#3b82f6' },
-  { name: 'teal', hex: '#14b8a6' },
-  { name: 'green', hex: '#22c55e' },
-  { name: 'amber', hex: '#f59e0b' },
-  { name: 'orange', hex: '#f97316' },
-  { name: 'rose', hex: '#f43f5e' },
-  { name: 'pink', hex: '#ec4899' },
-  { name: 'cyan', hex: '#06b6d4' },
-] as const;
 
 const SCHEMES: Array<{ key: ThemeMode; icon: typeof Sun }> = [
   { key: 'light', icon: Sun },

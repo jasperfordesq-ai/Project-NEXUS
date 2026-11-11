@@ -847,7 +847,13 @@
     "reduced_motion": "Reduced Motion",
     "reduced_motion_desc": "Reduce animation and scrolling effects throughout the interface",
     "simplified_layout": "Simplified Layout",
-    "simplified_layout_desc": "Reduce blur, shadows, and decorative depth while keeping the same navigation"
+    "simplified_layout_desc": "Reduce blur, shadows, and decorative depth while keeping the same navigation",
+    "color_scheme_desc": "Choose light, dark, or follow your device.",
+    "preview": "How it looks",
+    "preview_label": "Offer",
+    "preview_title": "Help with the garden",
+    "preview_body": "This is how cards, text and buttons look with your choices.",
+    "preview_button": "Get in touch"
   },
   "blocked_users": {
     "title": "Blocked Users",

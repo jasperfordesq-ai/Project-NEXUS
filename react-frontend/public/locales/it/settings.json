@@ -847,7 +847,13 @@
     "reduced_motion": "Movimento ridotto",
     "reduced_motion_desc": "Riduci le animazioni e gli effetti di scorrimento in tutta l'interfaccia",
     "simplified_layout": "Layout semplificato",
-    "simplified_layout_desc": "Riduci sfocatura, ombre e profondità decorativa mantenendo la stessa navigazione"
+    "simplified_layout_desc": "Riduci sfocatura, ombre e profondità decorativa mantenendo la stessa navigazione",
+    "color_scheme_desc": "Scegli chiaro, scuro o come il tuo dispositivo.",
+    "preview": "Anteprima",
+    "preview_label": "Offerta",
+    "preview_title": "Aiuto in giardino",
+    "preview_body": "Ecco come appaiono schede, testo e pulsanti con le tue scelte.",
+    "preview_button": "Mettiti in contatto"
   },
   "blocked_users": {
     "title": "Utenti bloccati",

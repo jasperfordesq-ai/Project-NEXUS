@@ -847,7 +847,13 @@
     "reduced_motion": "Verminderde beweging",
     "reduced_motion_desc": "Verminder animatie- en scrolleffecten in de hele interface",
     "simplified_layout": "Vereenvoudigd lay-out",
-    "simplified_layout_desc": "Verminder vervaging, schaduwen en decoratieve diepte terwijl dezelfde navigatie behouden blijft"
+    "simplified_layout_desc": "Verminder vervaging, schaduwen en decoratieve diepte terwijl dezelfde navigatie behouden blijft",
+    "color_scheme_desc": "Kies licht, donker of volg je apparaat.",
+    "preview": "Zo ziet het eruit",
+    "preview_label": "Aanbod",
+    "preview_title": "Hulp in de tuin",
+    "preview_body": "Zo zien kaarten, tekst en knoppen eruit met jouw keuzes.",
+    "preview_button": "Contact opnemen"
   },
   "blocked_users": {
     "title": "Geblokkeerde Gebruikers",

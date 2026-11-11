@@ -847,7 +847,13 @@
     "reduced_motion": "Gluaiseacht Laghdaithe",
     "reduced_motion_desc": "Laghdaigh éifeachtaí beochana agus scrollaithe ar fud an chomhéadain",
     "simplified_layout": "Leagan Amach Simplí",
-    "simplified_layout_desc": "Laghdaigh doiléireacht, scáthanna agus doimhneacht maisiúil agus an nascleanúint chéanna á coimeád"
+    "simplified_layout_desc": "Laghdaigh doiléireacht, scáthanna agus doimhneacht maisiúil agus an nascleanúint chéanna á coimeád",
+    "color_scheme_desc": "Roghnaigh geal, dorcha, nó lean do ghléas.",
+    "preview": "An chuma atá air",
+    "preview_label": "Tairiscint",
+    "preview_title": "Cabhair leis an ngairdín",
+    "preview_body": "Seo mar a bhreathnaíonn cártaí, téacs agus cnaipí le do roghanna.",
+    "preview_button": "Déan teagmháil"
   },
   "blocked_users": {
     "title": "Úsáideoirí a bhfuil bac orthu",

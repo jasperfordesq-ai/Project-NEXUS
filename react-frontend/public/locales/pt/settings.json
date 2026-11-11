@@ -847,7 +847,13 @@
     "reduced_motion": "Movimento reduzido",
     "reduced_motion_desc": "Reduzir animação e efeitos de rolagem em toda a interface",
     "simplified_layout": "Esquema simplificado",
-    "simplified_layout_desc": "Reduzir desfoque, sombras e profundidade decorativa mantendo a mesma navegação"
+    "simplified_layout_desc": "Reduzir desfoque, sombras e profundidade decorativa mantendo a mesma navegação",
+    "color_scheme_desc": "Escolha claro, escuro ou como o seu dispositivo.",
+    "preview": "Pré-visualização",
+    "preview_label": "Oferta",
+    "preview_title": "Ajuda no jardim",
+    "preview_body": "É assim que os cartões, o texto e os botões ficam com as suas escolhas.",
+    "preview_button": "Entrar em contacto"
   },
   "blocked_users": {
     "title": "Usuários Bloqueados",

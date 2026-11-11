@@ -169,3 +169,19 @@ describe('AppearanceSettings', () => {
     expect(container.firstChild).not.toBeNull();
   });
 });
+
+describe('AppearanceSettings — light/dark choice and live preview (warmth D3)', () => {
+  it('shows a live preview card that is not a control', () => {
+    render(<AppearanceSettings />);
+    const preview = screen.getByTestId('appearance-preview');
+    expect(preview.querySelector('button')).toBeNull();
+  });
+
+  it('offers light, dark and system as one radio group, with the current choice checked', () => {
+    render(<AppearanceSettings />);
+    const options = screen.getAllByRole('radio');
+    expect(options).toHaveLength(3);
+    expect(screen.getByTestId('scheme-system')).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByTestId('scheme-dark')).toHaveAttribute('aria-checked', 'false');
+  });
+});

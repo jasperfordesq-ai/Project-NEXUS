@@ -847,7 +847,13 @@
     "reduced_motion": "Ograniczony ruch",
     "reduced_motion_desc": "Zmniejsz animacje i efekty przewijania w całym interfejsie",
     "simplified_layout": "Uproszczony układ",
-    "simplified_layout_desc": "Zmniejsz rozmycie, cienie i ozdobną głębię przy zachowaniu tej samej nawigacji"
+    "simplified_layout_desc": "Zmniejsz rozmycie, cienie i ozdobną głębię przy zachowaniu tej samej nawigacji",
+    "color_scheme_desc": "Wybierz jasny, ciemny lub zgodny z urządzeniem.",
+    "preview": "Podgląd",
+    "preview_label": "Oferta",
+    "preview_title": "Pomoc w ogrodzie",
+    "preview_body": "Tak wyglądają karty, tekst i przyciski przy Twoich ustawieniach.",
+    "preview_button": "Skontaktuj się"
   },
   "blocked_users": {
     "title": "Zablokowani użytkownicy",

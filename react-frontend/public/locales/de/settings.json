@@ -847,7 +847,13 @@
     "reduced_motion": "Reduzierte Bewegung",
     "reduced_motion_desc": "Reduziert Animationen und Scroll-Effekte in der gesamten Oberfläche",
     "simplified_layout": "Vereinfachtes Layout",
-    "simplified_layout_desc": "Reduziert Unschärfe, Schatten und dekorative Tiefe — die Navigation bleibt gleich"
+    "simplified_layout_desc": "Reduziert Unschärfe, Schatten und dekorative Tiefe — die Navigation bleibt gleich",
+    "color_scheme_desc": "Wähle hell, dunkel oder wie dein Gerät.",
+    "preview": "So sieht es aus",
+    "preview_label": "Angebot",
+    "preview_title": "Hilfe im Garten",
+    "preview_body": "So sehen Karten, Text und Schaltflächen mit deiner Auswahl aus.",
+    "preview_button": "Kontakt aufnehmen"
   },
   "blocked_users": {
     "title": "Blockierte Benutzer",

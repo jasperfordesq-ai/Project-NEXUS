@@ -847,7 +847,13 @@
     "reduced_motion": "動きを減らす",
     "reduced_motion_desc": "インターフェース全体のアニメーションとスクロール効果を減らす",
     "simplified_layout": "シンプルなレイアウト",
-    "simplified_layout_desc": "同じナビゲーションを保ちながら、ぼかし、影、装飾的な深みを減らす"
+    "simplified_layout_desc": "同じナビゲーションを保ちながら、ぼかし、影、装飾的な深みを減らす",
+    "color_scheme_desc": "ライト、ダーク、またはデバイスの設定に合わせるかを選びます。",
+    "preview": "表示イメージ",
+    "preview_label": "提供",
+    "preview_title": "庭仕事のお手伝い",
+    "preview_body": "選んだ設定でカード、文字、ボタンがこのように表示されます。",
+    "preview_button": "連絡する"
   },
   "blocked_users": {
     "title": "ブロックしたユーザー",

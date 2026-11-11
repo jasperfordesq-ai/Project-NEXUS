@@ -847,7 +847,13 @@
     "reduced_motion": "Mouvements réduits",
     "reduced_motion_desc": "Réduit les animations et les effets de défilement dans toute l'interface",
     "simplified_layout": "Mise en page simplifiée",
-    "simplified_layout_desc": "Réduit le flou, les ombres et la profondeur décorative — la navigation reste identique"
+    "simplified_layout_desc": "Réduit le flou, les ombres et la profondeur décorative — la navigation reste identique",
+    "color_scheme_desc": "Choisissez clair, sombre ou comme votre appareil.",
+    "preview": "Aperçu",
+    "preview_label": "Offre",
+    "preview_title": "Aide au jardin",
+    "preview_body": "Voici l'apparence des cartes, du texte et des boutons avec vos choix.",
+    "preview_button": "Prendre contact"
   },
   "blocked_users": {
     "title": "Utilisateurs bloqués",

@@ -847,7 +847,13 @@
     "reduced_motion": "Movimiento reducido",
     "reduced_motion_desc": "Reducir las animaciones y efectos de desplazamiento en toda la interfaz",
     "simplified_layout": "Diseño simplificado",
-    "simplified_layout_desc": "Reducir el desenfoque, las sombras y la profundidad decorativa manteniendo la misma navegación"
+    "simplified_layout_desc": "Reducir el desenfoque, las sombras y la profundidad decorativa manteniendo la misma navegación",
+    "color_scheme_desc": "Elige claro, oscuro o según tu dispositivo.",
+    "preview": "Así se ve",
+    "preview_label": "Oferta",
+    "preview_title": "Ayuda con el jardín",
+    "preview_body": "Así se ven las tarjetas, el texto y los botones con tus opciones.",
+    "preview_button": "Ponerse en contacto"
   },
   "blocked_users": {
     "title": "Usuarios bloqueados",
