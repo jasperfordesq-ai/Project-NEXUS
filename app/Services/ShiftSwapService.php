@@ -724,8 +724,8 @@ class ShiftSwapService
             ->where('sr.tenant_id', $tenantId)
             ->select(
                 'sr.*',
-                'fu.name as from_user_name', 'fu.avatar_url as from_user_avatar',
-                'tu.name as to_user_name', 'tu.avatar_url as to_user_avatar',
+                DB::raw(\App\Support\UserDisplayName::sql('fu', 'from_user_name')), 'fu.avatar_url as from_user_avatar',
+                DB::raw(\App\Support\UserDisplayName::sql('tu', 'to_user_name')), 'tu.avatar_url as to_user_avatar',
                 'fs.start_time as from_shift_start', 'fs.end_time as from_shift_end',
                 'ts.start_time as to_shift_start', 'ts.end_time as to_shift_end',
                 'fo.title as from_opp_title', 'forg.name as from_org_name',
@@ -1019,8 +1019,8 @@ class ShiftSwapService
             ->where('sr.status', 'admin_pending')
             ->select(
                 'sr.*',
-                'fu.name as from_user_name',
-                'tu.name as to_user_name',
+                DB::raw(\App\Support\UserDisplayName::sql('fu', 'from_user_name')),
+                DB::raw(\App\Support\UserDisplayName::sql('tu', 'to_user_name')),
                 'fs.start_time as from_shift_start', 'fs.end_time as from_shift_end',
                 'ts.start_time as to_shift_start', 'ts.end_time as to_shift_end',
                 'fo.title as from_opp_title',

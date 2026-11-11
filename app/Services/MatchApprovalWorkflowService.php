@@ -89,10 +89,9 @@ class MatchApprovalWorkflowService
             $userName = null;
             $listingTitle = null;
             try {
-                $userName = DB::table('users')
-                    ->where('id', $userId)
-                    ->where('tenant_id', $tenantId)
-                    ->value(DB::raw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))"));
+                // E-122: goes into notifications to other members, so the
+                // name anyone may see (first name, or an organisation's name).
+                $userName = \App\Support\Names\RecipientName::of((int) $userId, null, '');
                 $listingTitle = DB::table('listings')
                     ->where('id', $listingId)
                     ->where('tenant_id', $tenantId)

@@ -535,7 +535,7 @@ class ReportExportService
         $query = "SELECT
                 e.id, e.title, e.location, e.start_time, e.end_time,
                 e.max_attendees, e.status,
-                u.name AS organizer_name,
+                " . \App\Support\UserDisplayName::sql('u', 'organizer_name') . ",
                 (SELECT COUNT(*) FROM event_attendees ea WHERE ea.event_id = e.id) AS attendee_count
             FROM events e
             LEFT JOIN users u ON u.id = e.user_id AND u.tenant_id = e.tenant_id
@@ -577,7 +577,7 @@ class ReportExportService
         $query = "SELECT
                 l.id, l.title, l.type, l.status, l.location, l.created_at,
                 l.price, l.view_count, l.contact_count,
-                u.name AS owner_name,
+                " . \App\Support\UserDisplayName::sql('u', 'owner_name') . ",
                 c.name AS category_name
             FROM listings l
             LEFT JOIN users u ON u.id = l.user_id AND u.tenant_id = l.tenant_id

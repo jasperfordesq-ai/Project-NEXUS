@@ -82,7 +82,7 @@ class VolOrgWalletService
         $rows = DB::select("
             SELECT t.id, t.type, t.amount, t.balance_after, t.description, t.created_at,
                    t.user_id, t.vol_log_id,
-                   u.name as user_name, u.avatar_url as user_avatar_url
+                   " . \App\Support\UserDisplayName::sql('u', 'user_name') . ", u.avatar_url as user_avatar_url
             FROM vol_org_transactions t
             LEFT JOIN users u ON t.user_id = u.id AND u.tenant_id = t.tenant_id
             WHERE t.vol_organization_id = ? AND t.tenant_id = ?

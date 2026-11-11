@@ -325,7 +325,7 @@ class ShiftWaitlistService
             ->where('w.status', 'waiting')
             ->where('w.tenant_id', $tenantId)
             ->orderBy('w.position')
-            ->select('w.*', 'u.name as user_name', 'u.avatar_url as user_avatar')
+            ->select('w.*', DB::raw(\App\Support\UserDisplayName::sql('u', 'user_name')), 'u.avatar_url as user_avatar')
             ->get();
 
         return $entries->map(function ($e) {

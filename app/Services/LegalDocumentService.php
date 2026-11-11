@@ -140,7 +140,7 @@ class LegalDocumentService
             ->where('ldv.document_id', $documentId)
             ->where('ld.tenant_id', TenantContext::getId())
             ->orderByDesc('ldv.created_at')
-            ->select('ldv.*', 'u.name as created_by_name', 'u2.name as published_by_name')
+            ->select('ldv.*', DB::raw(\App\Support\UserDisplayName::sql('u', 'created_by_name')), DB::raw(\App\Support\UserDisplayName::sql('u2', 'published_by_name')))
             ->get()
             ->map(fn ($r) => (array) $r)
             ->all();
@@ -672,7 +672,7 @@ class LegalDocumentService
             ->orderByDesc('ula.accepted_at')
             ->limit($limit)
             ->offset($offset)
-            ->select('ula.*', 'u.name as user_name', 'u.email as user_email')
+            ->select('ula.*', DB::raw(\App\Support\UserDisplayName::sql('u', 'user_name')), 'u.email as user_email')
             ->get()
             ->map(fn ($r) => (array) $r)
             ->all();
@@ -692,7 +692,7 @@ class LegalDocumentService
             ->where('ld.tenant_id', TenantContext::getId())
             ->orderByDesc('ula.accepted_at')
             ->select(
-                'ula.id as acceptance_id', 'u.id as user_id', 'u.name as user_name', 'u.email as user_email',
+                'ula.id as acceptance_id', 'u.id as user_id', DB::raw(\App\Support\UserDisplayName::sql('u', 'user_name')), 'u.email as user_email',
                 'ldv.version_number', 'ula.accepted_at', 'ula.acceptance_method', 'ula.ip_address'
             );
 

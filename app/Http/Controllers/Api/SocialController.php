@@ -1197,7 +1197,7 @@ class SocialController extends BaseApiController
 
         try {
             $likers = DB::select(
-                "SELECT u.id, COALESCE(u.name, CONCAT(u.first_name, ' ', u.last_name)) as name,
+                "SELECT u.id, " . \App\Support\UserDisplayName::sql('u', 'name') . ",
                         u.avatar_url, l.created_at as liked_at
                  FROM likes l JOIN users u ON l.user_id = u.id
                  WHERE l.target_type = ? AND l.target_id = ? AND l.tenant_id = ?

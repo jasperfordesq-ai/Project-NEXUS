@@ -697,7 +697,7 @@ class VolunteerQualificationService
     {
         $query->select([
             'q.*',
-            'u.name as volunteer_name',
+            DB::raw(\App\Support\UserDisplayName::sql('u', 'volunteer_name')),
             'u.first_name as volunteer_first_name',
             'u.last_name as volunteer_last_name',
             'u.profile_type as volunteer_profile_type',

@@ -104,7 +104,9 @@ final class EventCheckinManifestServiceTest extends TestCase
             'attendance_status',
             'attendance_version',
         ], array_keys($payload['registrations'][0]));
-        self::assertSame('Manifest Attendee', $payload['registrations'][0]['display_name']);
+        // E-122 (owner decision O-269): an organiser who is not staff of the
+        // community gets first names in the check-in list.
+        self::assertSame('Manifest', $payload['registrations'][0]['display_name']);
         self::assertSame('checked_in', $payload['registrations'][0]['attendance_status']);
         self::assertSame(3, $payload['registrations'][0]['attendance_version']);
         self::assertSame(

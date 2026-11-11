@@ -47,9 +47,9 @@ class ExchangeService
                 'er.*',
                 'l.title as listing_title',
                 'l.type as listing_type',
-                'req.name as requester_name',
+                DB::raw(\App\Support\UserDisplayName::sql('req', 'requester_name')),
                 'req.avatar_url as requester_avatar',
-                'prov.name as provider_name',
+                DB::raw(\App\Support\UserDisplayName::sql('prov', 'provider_name')),
                 'prov.avatar_url as provider_avatar'
             );
 
@@ -150,8 +150,8 @@ class ExchangeService
                 'er.id', 'er.status', 'er.requester_id', 'er.provider_id',
                 'er.requester_confirmed_at', 'er.provider_confirmed_at',
                 'l.title as listing_title',
-                'req.name as requester_name', 'req.avatar_url as requester_avatar',
-                'prov.name as provider_name', 'prov.avatar_url as provider_avatar',
+                DB::raw(\App\Support\UserDisplayName::sql('req', 'requester_name')), 'req.avatar_url as requester_avatar',
+                DB::raw(\App\Support\UserDisplayName::sql('prov', 'provider_name')), 'prov.avatar_url as provider_avatar',
             ]);
 
         // F-084: the counterparty by first name unless the viewer is an admin.

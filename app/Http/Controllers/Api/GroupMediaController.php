@@ -88,7 +88,7 @@ final class GroupMediaController extends BaseApiController
                 'm.id', 'm.group_id', 'm.file_path', 'm.url', 'm.media_type as type',
                 'm.original_name', 'm.mime_type', 'm.thumbnail_path', 'm.caption',
                 'm.file_size', 'm.width', 'm.height', 'm.uploaded_by', 'm.created_at',
-                'm.updated_at', 'u.name as uploader_name', 'u.avatar_url as uploader_avatar',
+                'm.updated_at', DB::raw(\App\Support\UserDisplayName::sql('u', 'uploader_name')), 'u.avatar_url as uploader_avatar',
             ]);
 
         if ($type !== null) {
@@ -289,7 +289,7 @@ final class GroupMediaController extends BaseApiController
                 'm.id', 'm.group_id', 'm.file_path', 'm.url', 'm.media_type as type',
                 'm.original_name', 'm.mime_type', 'm.thumbnail_path', 'm.caption',
                 'm.file_size', 'm.width', 'm.height', 'm.uploaded_by', 'm.created_at',
-                'm.updated_at', 'u.name as uploader_name', 'u.avatar_url as uploader_avatar',
+                'm.updated_at', DB::raw(\App\Support\UserDisplayName::sql('u', 'uploader_name')), 'u.avatar_url as uploader_avatar',
             ])
             ->first();
         if ($row === null) {

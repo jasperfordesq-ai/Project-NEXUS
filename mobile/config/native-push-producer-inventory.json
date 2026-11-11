@@ -2422,9 +2422,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/MatchApprovalWorkflowService.php:126:NotificationDispatcher::dispatchMatchApprovalRequest",
+            "id": "app/Services/MatchApprovalWorkflowService.php:125:NotificationDispatcher::dispatchMatchApprovalRequest",
             "file": "app/Services/MatchApprovalWorkflowService.php",
-            "line": 126,
+            "line": 125,
             "transport": "NotificationDispatcher::dispatchMatchApprovalRequest",
             "role": "producer",
             "recipient_expression": "(int) $broker->id",
@@ -2435,9 +2435,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/MatchApprovalWorkflowService.php:219:NotificationDispatcher::dispatchMatchApproved",
+            "id": "app/Services/MatchApprovalWorkflowService.php:218:NotificationDispatcher::dispatchMatchApproved",
             "file": "app/Services/MatchApprovalWorkflowService.php",
-            "line": 219,
+            "line": 218,
             "transport": "NotificationDispatcher::dispatchMatchApproved",
             "role": "producer",
             "recipient_expression": "(int) $approval->user_id",
@@ -2448,9 +2448,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/MatchApprovalWorkflowService.php:379:NotificationDispatcher::dispatchMatchApproved",
+            "id": "app/Services/MatchApprovalWorkflowService.php:378:NotificationDispatcher::dispatchMatchApproved",
             "file": "app/Services/MatchApprovalWorkflowService.php",
-            "line": 379,
+            "line": 378,
             "transport": "NotificationDispatcher::dispatchMatchApproved",
             "role": "producer",
             "recipient_expression": "(int) $row->user_id",

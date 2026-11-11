@@ -296,7 +296,7 @@ class AppreciationService
             ->where('a.is_public', true)
             ->select(
                 'a.receiver_id as user_id',
-                'u.name as name',
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'name')),
                 'u.avatar_url as avatar_url',
                 DB::raw('COUNT(a.id) as count')
             )

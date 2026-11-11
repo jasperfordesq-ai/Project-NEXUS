@@ -185,7 +185,7 @@ class ContextualMessageService
             ->join('users as u', 'l.user_id', '=', 'u.id')
             ->where('l.id', $id)
             ->where('l.tenant_id', $tenantId)
-            ->select('l.id', 'l.title', 'l.type', 'l.description', 'u.name as user_name')
+            ->select('l.id', 'l.title', 'l.type', 'l.description', new \Illuminate\Database\Query\Expression(\App\Support\UserDisplayName::sql('u', 'user_name')))
             ->first();
 
         if (!$row) {

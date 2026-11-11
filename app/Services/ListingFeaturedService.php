@@ -128,11 +128,7 @@ class ListingFeaturedService
             "SELECT l.id, l.title, l.description, l.type, l.category_id, l.image_url,
                     l.location, l.status, l.is_featured, l.featured_until,
                     l.created_at, l.user_id, l.view_count,
-                    CASE
-                        WHEN u.profile_type = 'organisation' AND u.organization_name IS NOT NULL
-                        THEN u.organization_name
-                        ELSE CONCAT(u.first_name, ' ', u.last_name)
-                    END as author_name,
+                    " . \App\Support\UserDisplayName::sql('u', 'author_name') . ",
                     u.avatar_url as author_avatar,
                     c.name as category_name, c.color as category_color
              FROM listings l

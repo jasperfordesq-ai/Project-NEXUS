@@ -641,7 +641,7 @@ class FeedService
             $nameMap = DB::table('users')
                 ->whereIn('id', array_unique($receiverIds))
                 ->where('tenant_id', $tenantId)
-                ->pluck(DB::raw("COALESCE(name, CONCAT(first_name, ' ', last_name))"), 'id');
+                ->pluck(DB::raw(UserDisplayName::sql('', '')), 'id'); // E-122: audience-aware
             foreach ($items as &$item) {
                 if ($item['type'] === 'review' && isset($item['receiver']['id'])) {
                     $item['receiver']['name'] = $nameMap[$item['receiver']['id']] ?? 'Unknown';

@@ -1368,7 +1368,7 @@ class PodcastService
             ->select([
                 'reports.id', 'reports.episode_id', 'reports.reporter_user_id', 'reports.reason', 'reports.details',
                 'reports.status', 'reports.reviewed_by', 'reports.reviewed_at',
-                'reports.created_at', 'reporter.name as reporter_name',
+                'reports.created_at', DB::raw(\App\Support\UserDisplayName::sql('reporter', 'reporter_name')),
             ])
             ->get()
             ->groupBy('episode_id');
@@ -1529,7 +1529,7 @@ class PodcastService
                 'episodes.slug as episode_slug',
                 'shows.title as show_title',
                 'shows.slug as show_slug',
-                'reporter.name as reporter_name',
+                DB::raw(\App\Support\UserDisplayName::sql('reporter', 'reporter_name')),
             ])
             ->get()
             ->map(fn ($row) => (array) $row)

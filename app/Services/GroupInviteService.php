@@ -547,7 +547,7 @@ final class GroupInviteService
                 'gi.created_at',
                 'u.first_name as inviter_first_name',
                 'u.last_name as inviter_last_name', 'u.profile_type as inviter_profile_type', 'u.organization_name as inviter_organization_name',
-                'u.name as inviter_name',
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'inviter_name')),
             ])
             ->orderByDesc('gi.created_at')
             ->get()

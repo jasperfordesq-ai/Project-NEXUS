@@ -219,7 +219,7 @@ final class GroupScheduledPostService
             ->where('sp.group_id', $groupId)
             ->where('sp.tenant_id', $tenantId)
             ->whereIn('sp.status', ['scheduled', 'processing'])
-            ->select('sp.*', 'u.name as author_name')
+            ->select('sp.*', DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name')))
             ->orderBy('sp.scheduled_at')
             ->orderBy('sp.id')
             ->get()

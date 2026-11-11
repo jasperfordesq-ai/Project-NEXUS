@@ -60,7 +60,7 @@ final class EventRegistrationProductQueryService
             'event_invitations.id', 'event_invitations.event_id', 'event_invitations.campaign_id',
             'event_invitations.target_type', 'event_invitations.status', 'event_invitations.invitation_version',
             'event_invitations.token_expires_at', 'event_invitations.accepted_at', 'event_invitations.revoked_at',
-            'event_invitations.expired_at', 'event_invitations.email_ciphertext', 'member.name as member_name',
+            'event_invitations.expired_at', 'event_invitations.email_ciphertext', DB::raw(\App\Support\UserDisplayName::sql('member', 'member_name')),
         ])->map(function (EventInvitation $invitation) use ($canViewRoster, $canViewEmail): array {
             $row = $invitation->only(['id', 'event_id', 'campaign_id', 'target_type', 'status', 'invitation_version',
                 'token_expires_at', 'accepted_at', 'revoked_at', 'expired_at']);
@@ -154,7 +154,7 @@ final class EventRegistrationProductQueryService
                 'submission.supersedes_submission_id', 'submission.lineage_root_submission_id',
                 'submission.superseded_at',
                 'submission.submitted_at', 'submission.withdrawn_at', 'submission.updated_at',
-                'member.name as member_name',
+                DB::raw(\App\Support\UserDisplayName::sql('member', 'member_name')),
             ])
             ->map(static function (object $row) use ($canViewRoster): array {
                 $result = (array) $row;

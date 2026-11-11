@@ -245,11 +245,7 @@ class ListingRankingService
         $sql = "
             SELECT
                 l.*,
-                CASE
-                    WHEN u.profile_type = 'organisation' AND u.organization_name IS NOT NULL AND u.organization_name != ''
-                    THEN u.organization_name
-                    ELSE CONCAT(u.first_name, ' ', u.last_name)
-                END as author_name,
+                " . \App\Support\UserDisplayName::sql('u', 'author_name') . ",
                 u.avatar_url,
                 u.location as user_location,
                 u.latitude as owner_lat,

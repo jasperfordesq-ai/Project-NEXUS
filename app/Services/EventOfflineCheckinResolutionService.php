@@ -104,7 +104,7 @@ final class EventOfflineCheckinResolutionService
                 'batch.client_batch_id',
                 'batch.device_id',
                 'device.label as device_label',
-                'member.name as member_name',
+                DB::raw(\App\Support\UserDisplayName::sql('member', 'member_name')),
                 'member.first_name as member_first_name',
                 'member.last_name as member_last_name', 'member.profile_type as member_profile_type', 'member.organization_name as member_organization_name',
                 'member.username as member_username',

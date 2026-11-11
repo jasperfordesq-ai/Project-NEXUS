@@ -1990,10 +1990,10 @@ class NotificationDispatcher
                     'l.title as listing_title',
                     'l.type as listing_type',
                     'l.description as listing_description',
-                    'req.name as requester_name',
+                    DB::raw(\App\Support\UserDisplayName::sql('req', 'requester_name')),
                     'req.first_name as requester_first_name',
                     'req.avatar_url as requester_avatar',
-                    'prov.name as provider_name',
+                    DB::raw(\App\Support\UserDisplayName::sql('prov', 'provider_name')),
                     'prov.first_name as provider_first_name',
                     'prov.avatar_url as provider_avatar',
                 ])

@@ -239,7 +239,7 @@ class MentionService
                 'm.entity_type',
                 'm.entity_id',
                 'm.mentioning_user_id as mentioner_id',
-                DB::raw("COALESCE(mu.name, CONCAT(mu.first_name, ' ', mu.last_name)) as mentioner_name"),
+                DB::raw(\App\Support\UserDisplayName::sql('mu', 'mentioner_name')),
                 'mu.avatar_url as mentioner_avatar',
                 'm.seen_at',
                 'm.created_at',
@@ -313,7 +313,7 @@ class MentionService
             ? 'u.name LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.username LIKE ?'
             : "u.first_name LIKE ? OR u.username LIKE ? OR (u.profile_type = 'organisation' AND u.organization_name LIKE ?)";
 
-        $sql = "SELECT u.id, COALESCE(u.name, CONCAT(u.first_name, ' ', COALESCE(u.last_name, ''))) as name,
+        $sql = "SELECT u.id, " . \App\Support\UserDisplayName::sql('u', 'name') . ",
                        u.username, u.avatar_url, u.first_name, u.last_name,
                        u.profile_type, u.organization_name
                        {$connectionSubquery}

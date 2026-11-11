@@ -154,7 +154,7 @@ class ConnectionSuggestionController extends BaseApiController
         $sql = "
             SELECT
                 u.id,
-                COALESCE(u.name, CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))) AS name,
+                " . \App\Support\UserDisplayName::sql('u', 'name') . ",
                 u.first_name,
                 u.last_name,
                 u.profile_type,

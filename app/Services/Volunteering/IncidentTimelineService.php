@@ -64,7 +64,7 @@ final class IncidentTimelineService
             ->where('e.tenant_id', $tenantId)
             ->where('e.incident_id', $incidentId)
             ->orderBy('e.id')
-            ->get(['e.*', 'u.name as actor_name'])
+            ->get(['e.*', DB::raw(\App\Support\UserDisplayName::sql('u', 'actor_name'))])
             ->map(function ($row) {
                 $row->data = $row->data ? (json_decode((string) $row->data, true) ?: []) : [];
 

@@ -297,7 +297,7 @@ class ListingModerationService
                 'l.id', 'l.title', 'l.description', 'l.type', 'l.category_id',
                 'l.image_url', 'l.location', 'l.status', 'l.moderation_status',
                 'l.created_at', 'l.user_id',
-                DB::raw("CASE WHEN u.profile_type = 'organisation' AND u.organization_name IS NOT NULL THEN u.organization_name ELSE CONCAT(u.first_name, ' ', u.last_name) END as author_name"),
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name')),
                 'u.avatar_url as author_avatar',
                 'u.email as author_email',
                 'c.name as category_name',

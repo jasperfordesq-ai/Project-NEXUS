@@ -163,7 +163,7 @@ class VolunteerCheckInService
                     'c.status',
                     'c.checked_in_at',
                     'c.checked_out_at',
-                    'u.name as user_name',
+                    DB::raw(\App\Support\UserDisplayName::sql('u', 'user_name')),
                     'u.avatar_url',
                 ])
                 ->map(fn ($c) => [
@@ -365,7 +365,7 @@ class VolunteerCheckInService
                 'c.checked_in_at',
                 's.start_time',
                 's.end_time',
-                'u.name as user_name',
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'user_name')),
                 'u.avatar_url',
             ])
             ->first();
@@ -511,7 +511,7 @@ class VolunteerCheckInService
                 'c.status',
                 'c.checked_in_at',
                 'c.checked_out_at',
-                'u.name as user_name',
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'user_name')),
                 'u.avatar_url',
             ])
             ->map(fn ($c) => [

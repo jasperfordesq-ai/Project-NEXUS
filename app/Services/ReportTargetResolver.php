@@ -171,7 +171,7 @@ class ReportTargetResolver
         ?string $label = null,
         bool $hasSoftDelete = false,
     ): array {
-        $columns = ['c.id', 'c.user_id', 'u.name as author_name', 'u.avatar_url as author_avatar'];
+        $columns = ['c.id', 'c.user_id', DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name')), 'u.avatar_url as author_avatar'];
         if ($preview !== null) {
             $columns[] = "c.{$preview} as preview";
         }
@@ -235,7 +235,7 @@ class ReportTargetResolver
             'm.id',
             'm.sender_id',
             'm.body as preview',
-            'u.name as author_name',
+            DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name')),
             'u.avatar_url as author_avatar',
         ]);
 
@@ -267,7 +267,7 @@ class ReportTargetResolver
             'c.id',
             'c.reviewer_id',
             'c.comment as preview',
-            'u.name as author_name',
+            DB::raw(\App\Support\UserDisplayName::sql('u', 'author_name')),
             'u.avatar_url as author_avatar',
         ]);
 

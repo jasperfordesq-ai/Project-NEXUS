@@ -334,7 +334,7 @@ class VolunteerEmergencyAlertService
                 'o.title as opp_title',
                 'o.location as opp_location',
                 'org.name as org_name',
-                'u.name as coordinator_name',
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'coordinator_name')),
             ]);
 
         if ($cursor !== null && ($cid = base64_decode($cursor, true)) !== false) {

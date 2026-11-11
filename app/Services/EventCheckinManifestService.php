@@ -115,7 +115,7 @@ final class EventCheckinManifestService
                 ->get([
                     'registrations.id as registration_id',
                     'registrations.user_id',
-                    'users.name as display_name',
+                    DB::raw(\App\Support\UserDisplayName::sql('users', 'display_name')),
                     'credentials.credential_version',
                     'credentials.token_fingerprint as credential_fingerprint',
                     'credentials.token_hash as credential_verifier',
