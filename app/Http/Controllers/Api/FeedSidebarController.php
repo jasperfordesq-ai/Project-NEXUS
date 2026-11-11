@@ -417,6 +417,9 @@ class FeedSidebarController extends BaseApiController
                         unset($arr['last_active_at']);
                         $arr['is_online'] = $lastActive && $lastActive->gt($now->copy()->subMinutes(5));
                         $arr['is_recent'] = $lastActive && $lastActive->gt($now->copy()->subDay());
+                        // The friends box shows `name`; it was never sent, so every friend
+                        // read "?". Audience-aware like every other member-facing name.
+                        $arr['name'] = UserDisplayName::resolve($f);
                         // E-122: a friend's surname is for staff of the community.
                         if (! \App\Support\Names\NameAudience::allowsSurnames()) {
                             unset($arr['last_name']);
