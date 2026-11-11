@@ -86,3 +86,40 @@ describe('MessageBubble translate — allowance used up', () => {
     await waitFor(() => expect(screen.getAllByText('translate.limit_reached').length).toBeGreaterThan(0));
   });
 });
+
+describe('MessageBubble translate — your own message', () => {
+  // Found 11 Nov 2026 on the show community: "Translate to English" appeared on
+  // the member's OWN message, as white text on a near-white pill (unreadable).
+  // You wrote it, so there is nothing to translate for you.
+  it('never offers to translate a message you sent', () => {
+    render(
+      <MessageBubble
+        message={{ ...message, sender_id: 10, is_own: true } as unknown as Message}
+        isOwn
+        showAvatar
+        otherUser={{ id: 20, name: 'Ana', avatar_url: null }}
+        onReact={vi.fn()}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: /translate\.translate_to/ })).toBeNull();
+  });
+
+  it('still offers it on a message you received in another language', () => {
+    render(
+      <MessageBubble
+        message={message}
+        isOwn={false}
+        showAvatar
+        otherUser={{ id: 20, name: 'Ana', avatar_url: null }}
+        onReact={vi.fn()}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByRole('button', { name: /translate\.translate_to/ }).length).toBeGreaterThan(0);
+  });
+});

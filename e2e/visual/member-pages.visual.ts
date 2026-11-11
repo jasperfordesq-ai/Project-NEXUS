@@ -139,6 +139,8 @@ const DETAIL_PAGES: Array<[name: string, listPath: string, linkText: RegExp]> = 
   ['event-detail', '/events', /Thursday soup swap/],
   ['group-detail', '/groups', /Riverside Growers/],
   ['member-profile', '/members', /Grace/],
+  // Each view's member has a different conversation partner; any will do.
+  ['conversation', '/messages', /\S/],
 ];
 
 /** Signed-out pages. */

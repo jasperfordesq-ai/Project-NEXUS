@@ -88,6 +88,7 @@ class ShowcaseCommunitySeeder extends Seeder
         $this->seedExchanges($listingIds);
         $this->seedConnections();
         $this->seedFeedPosts();
+        $this->seedMessages();
         $this->seedBlog();
         $this->seedBadges();
 
@@ -667,6 +668,55 @@ class ShowcaseCommunitySeeder extends Seeder
             $postId = (int) DB::table('feed_posts')
                 ->where('tenant_id', $this->tenantId)->where('user_id', $this->users[$author])->where('content', $content)->value('id');
             $this->upsertFeedActivity('post', $postId, $this->users[$author], null, $content, $created, null);
+        }
+    }
+
+    /**
+     * A few friendly conversations across two days, so the messages list and the
+     * conversation screen have something real to show (day markers, both sides,
+     * one unread reply).
+     */
+    private function seedMessages(): void
+    {
+        // [from, to, text, minutes ago]
+        $threads = [
+            [
+                ['maeve', 'tomas', 'Hi Tomás! My bike brakes are squeaking terribly. Could you have a look this week?', 1560],
+                ['tomas', 'maeve', 'Of course! I could come by on Wednesday morning, would 10 suit you?', 1530],
+                ['maeve', 'tomas', 'Perfect, I will put the kettle on ☕', 1500],
+                ['tomas', 'maeve', 'All done — new brake pads and a bit of oil on the chain. She rides like new!', 95],
+                ['maeve', 'tomas', 'Thank you so much, that made my week. I have sent you the hours.', 80],
+                ['tomas', 'maeve', 'Any time. Enjoy the river path this weekend!', 12],
+            ],
+            [
+                ['priya', 'maeve', 'Hello Maeve, I saw your request about sending photos to your grandchildren. I can help!', 2900],
+                ['maeve', 'priya', 'Oh wonderful. I am free most afternoons.', 2880],
+                ['priya', 'maeve', 'How about Thursday at 3? Bring your phone and its charger.', 2860],
+                ['maeve', 'priya', 'Thursday at 3 it is. See you then!', 2850],
+            ],
+            [
+                ['grace', 'maeve', 'Are you coming to knit and natter next month? I have spare wool for you.', 300],
+                ['maeve', 'grace', "Wouldn't miss it! Save me a seat by the window.", 280],
+            ],
+            [
+                ['amara', 'tomas', 'Could you bring a few spare bike lights to the repair café? People keep asking.', 400],
+                ['tomas', 'amara', 'Good idea — I will bring a box of them.', 370],
+            ],
+        ];
+        foreach ($threads as $thread) {
+            $last = count($thread) - 1;
+            foreach ($thread as $i => [$from, $to, $text, $minutesAgo]) {
+                $at = $this->now->copy()->subMinutes($minutesAgo);
+                DB::table('messages')->updateOrInsert(
+                    ['tenant_id' => $this->tenantId, 'sender_id' => $this->users[$from], 'receiver_id' => $this->users[$to], 'body' => $text],
+                    [
+                        'is_read' => $i === $last ? 0 : 1,
+                        'read_at' => $i === $last ? null : $at->copy()->addMinutes(2),
+                        'is_federated' => 0,
+                        'created_at' => $at,
+                    ]
+                );
+            }
         }
     }
 

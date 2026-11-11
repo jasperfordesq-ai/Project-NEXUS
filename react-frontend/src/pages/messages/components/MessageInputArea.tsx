@@ -288,7 +288,7 @@ export function MessageInputArea({
                 type="button"
                 isIconOnly
                 variant="secondary"
-                className="shrink-0 bg-theme-elevated text-theme-muted hover:text-theme-primary"
+                className="shrink-0 rounded-full bg-theme-elevated text-theme-muted hover:text-theme-primary"
                 onPress={() => fileInputRef.current?.click()}
                 aria-label={t('aria_add_attachment')}
                 isDisabled={attachments.length >= 5}
@@ -306,7 +306,7 @@ export function MessageInputArea({
               type="button"
               isIconOnly
               variant="secondary"
-              className="shrink-0 bg-theme-elevated text-theme-muted"
+              className="shrink-0 rounded-full bg-theme-elevated text-theme-muted"
               onPress={() => setMobileToolsOpen(true)}
               aria-label={t('aria_show_compose_tools')}
             >
@@ -348,7 +348,7 @@ export function MessageInputArea({
               maxRows={6}
               classNames={{
                 input: 'bg-transparent text-theme-primary placeholder:text-theme-subtle rounded-2xl px-4 py-2.5 leading-6',
-                inputWrapper: 'bg-theme-elevated border-theme-default hover:bg-theme-hover',
+                inputWrapper: 'rounded-3xl bg-theme-elevated border-theme-default hover:bg-theme-hover',
               }}
               aria-label={t('aria_message_input')}
             />
@@ -364,7 +364,7 @@ export function MessageInputArea({
               type="button"
               isIconOnly
               variant="secondary"
-              className="shrink-0 bg-theme-elevated text-theme-muted hover:text-theme-primary"
+              className="shrink-0 rounded-full bg-theme-elevated text-theme-muted hover:text-theme-primary"
               onPress={onStartRecording}
               aria-label={t('aria_record_voice')}
             >
@@ -383,7 +383,7 @@ export function MessageInputArea({
               // so a test must type first and then locate it.
               data-message-send=""
               aria-label={t('aria_send_message')}
-              className="shrink-0 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white dark:text-white"
+              className="shrink-0 rounded-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white shadow-md dark:text-white"
               isLoading={isSending}
             >
               <Send className="w-4 h-4" />

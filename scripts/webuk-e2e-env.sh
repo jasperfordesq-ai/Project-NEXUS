@@ -333,7 +333,13 @@ case "$ACTION" in
     # never change. Re-runnable; dates are relative to today.
     require_db_container
     assert_laravel_targets_e2e_db
-    docker exec "$APP_CONTAINER" php artisan db:seed --class='Database\Seeders\ShowcaseCommunitySeeder' --force 2>&1 | tail -3
+    # Fail loudly: piping into tail would hide a seeder error behind a success line.
+    if ! seed_output=$(docker exec "$APP_CONTAINER" php artisan db:seed --class='Database\Seeders\ShowcaseCommunitySeeder' --force 2>&1)        || ! grep -q 'Showcase community' <<<"$seed_output"; then
+      echo "$seed_output" >&2
+      echo "ERROR: the show community seeder failed (output above)." >&2
+      exit 1
+    fi
+    grep 'Showcase community' <<<"$seed_output"
     showcase_id=$(mysql_e2e -N -e "SELECT id FROM tenants WHERE slug='riverside' LIMIT 1;")
     docker exec "$APP_CONTAINER" php -r "require 'vendor/autoload.php'; \$app = require 'bootstrap/app.php'; \$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); Illuminate\Support\Facades\Cache::store('redis')->forget('t'.\$argv[1].':tenant_bootstrap');" "$showcase_id" >/dev/null 2>&1 || true
     echo "    show community: /riverside (tenant $showcase_id)"

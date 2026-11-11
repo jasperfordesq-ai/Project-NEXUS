@@ -2832,10 +2832,12 @@ export function ConversationPage() {
                 return (
                   <Fragment key={message.id}>
                     {dateSeparatorLabel && (
-                      <div className="flex justify-center py-1" role="separator" aria-label={dateSeparatorLabel}>
-                        <span className="rounded-full bg-theme-elevated px-3 py-1 text-xs font-medium text-theme-subtle">
+                      <div className="flex items-center gap-3 py-1" role="separator" aria-label={dateSeparatorLabel}>
+                        <span className="h-px flex-1 bg-linear-to-r from-transparent to-accent/25" aria-hidden="true" />
+                        <span className="rounded-full border border-accent/20 bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-soft-foreground">
                           {dateSeparatorLabel}
                         </span>
+                        <span className="h-px flex-1 bg-linear-to-l from-transparent to-accent/25" aria-hidden="true" />
                       </div>
                     )}
                     <MessageBubble

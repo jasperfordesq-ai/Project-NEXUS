@@ -309,7 +309,7 @@ export const MessageBubble = memo(function MessageBubble({
             ${isMobileSheet && canUseActions ? 'select-none [-webkit-touch-callout:none]' : ''}
             ${isOwn
               ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white rounded-br-md'
-              : 'bg-theme-elevated text-theme-primary rounded-bl-md'
+              : 'bg-theme-elevated text-theme-primary rounded-bl-md border border-theme-default shadow-sm'
             }
           `}
         >
@@ -354,7 +354,7 @@ export const MessageBubble = memo(function MessageBubble({
                 transcriptLanguage={message.transcript_language}
               />
               {/* Translate button for voice messages with transcripts */}
-              {translationEnabled && message.transcript && !isAlreadyInUserLanguage && (
+              {translationEnabled && !isOwn && message.transcript && !isAlreadyInUserLanguage && (
                 <div className="mt-1">
                   <div className="flex items-center gap-1.5">
                     <Button
@@ -407,7 +407,8 @@ export const MessageBubble = memo(function MessageBubble({
                 <span className="text-[10px] opacity-40 ml-1">{t('message_edited_indicator')}</span>
               )}
               {/* Translate button for text messages */}
-              {translationEnabled && !isDeleted && (message.body || message.content) && (translatedText || !isAlreadyInUserLanguage) && (
+              {/* Never on your own message: you wrote it (it also read white on white there). */}
+              {translationEnabled && !isOwn && !isDeleted && (message.body || message.content) && (translatedText || !isAlreadyInUserLanguage) && (
                 <div className="mt-1 flex items-center gap-1.5">
                   <Button
                     size="sm"
@@ -446,22 +447,6 @@ export const MessageBubble = memo(function MessageBubble({
               {/* Link preview for URLs in message */}
               <MessageLinkPreview text={message.body || message.content || ''} />
             </>
-          )}
-
-          {/* Mobile: one compact button opens the unified action sheet
-              (long-press on the bubble does the same). */}
-          {canUseActions && isMobileSheet && (
-            <div className={`absolute -bottom-2 ${isOwn ? '-left-12' : '-right-12'} flex`}>
-              <Button
-                isIconOnly
-                variant="tertiary"
-                className="size-11 min-h-11 min-w-11 p-0 bg-theme-elevated rounded-full border border-theme-default"
-                onPress={() => setShowActionSheet(true)}
-                aria-label={t('aria_message_options')}
-              >
-                <MoreVertical className="size-4 text-theme-muted" aria-hidden="true" />
-              </Button>
-            </div>
           )}
 
           {/* Desktop: action buttons shown on hover (only when not editing) */}
@@ -720,6 +705,23 @@ export const MessageBubble = memo(function MessageBubble({
           )}
         </div>
       </div>
+
+      {/* Phones: the options button sits BESIDE the bubble in the row, so a wide
+          bubble can never push it past the conversation's edge (it hung outside
+          the bubble and was cut in half there). Long-press does the same. */}
+      {canUseActions && isMobileSheet && (
+        <div className="flex shrink-0 items-end pb-6">
+          <Button
+            isIconOnly
+            variant="ghost"
+            className="size-11 min-h-11 min-w-11 p-0 rounded-full text-theme-muted"
+            onPress={() => setShowActionSheet(true)}
+            aria-label={t('aria_message_options')}
+          >
+            <MoreVertical className="size-4" aria-hidden="true" />
+          </Button>
+        </div>
+      )}
     </motion.div>
   );
 });
