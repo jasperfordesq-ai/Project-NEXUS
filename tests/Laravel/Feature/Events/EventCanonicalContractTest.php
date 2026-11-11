@@ -192,7 +192,7 @@ final class EventCanonicalContractTest extends TestCase
         $response->assertOk()->assertHeader('X-Events-Contract', '2');
         $response->assertJsonPath('data.contract_version', 2);
         $response->assertJsonPath('data.organizer.id', $organizer->id);
-        $response->assertJsonPath('data.organizer.display_name', 'Actual Organizer');
+        $response->assertJsonPath('data.organizer.display_name', 'Actual');  // first name only: surnames are admin-only (E-122)
         $response->assertJsonPath('data.category.id', $categoryId);
         $response->assertJsonPath('data.category.slug', 'repair-workshops');
         $response->assertJsonPath('data.location.mode', 'hybrid');
@@ -435,6 +435,34 @@ final class EventCanonicalContractTest extends TestCase
             ->assertJsonPath('data.relationship.capacity.remaining', 0)
             ->assertJsonPath('data.relationship.capacity.is_full', true)
             ->assertJsonPath('data.relationship.capacity.waitlist_count', 2);
+    }
+
+    public function test_going_rsvp_without_a_registration_is_not_reported_as_registered(): void
+    {
+        // An old RSVP row saying "going", with no event_registrations row,
+        // used to project as a confirmed registration. The page then offered
+        // a check-in code the server refuses to make (it needs a real
+        // confirmed registration), so the member saw "We could not check
+        // whether you already have a code." The registration record is the
+        // only source for the registration state.
+        Carbon::setTestNow('2030-05-01 08:00:00 UTC');
+        $organizer = $this->user(['first_name' => 'Orphan', 'last_name' => 'Organizer']);
+        $viewer = $this->user(['first_name' => 'Orphan', 'last_name' => 'Viewer']);
+        $eventId = $this->event($organizer->id, ['max_attendees' => 5]);
+        DB::table('event_rsvps')->insert([
+            'tenant_id' => $this->testTenantId,
+            'event_id' => $eventId,
+            'user_id' => $viewer->id,
+            'status' => 'going',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Sanctum::actingAs($viewer, ['*']);
+        $this->apiGet("/v2/events/{$eventId}", ['X-Events-Contract' => '2'])
+            ->assertOk()
+            ->assertJsonPath('data.relationship.registration.state', 'none')
+            ->assertJsonPath('data.relationship.registration.can_withdraw', false);
     }
 
     public function test_v2_collection_matches_shared_list_envelope_with_nullable_category_and_image(): void

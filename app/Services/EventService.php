@@ -3058,11 +3058,18 @@ class EventService
                 ? 'interested'
                 : 'none';
             $canonicalRegistration = $canonicalRegistrations->get($eventId);
+            // Only a real registration row makes someone registered. An old
+            // "going"/"attended" RSVP with no row behind it used to project as
+            // confirmed, so the page offered actions (check-in code, withdraw)
+            // that the server then refused for lack of a registration.
+            $legacyRegistration = EventRegistrationCompatibility::registrationFromLegacy(
+                is_string($rawLegacyStatus) ? $rawLegacyStatus : null,
+            );
             $registrationState = is_object($canonicalRegistration)
                 ? (string) $canonicalRegistration->registration_state
-                : EventRegistrationCompatibility::registrationFromLegacy(
-                    is_string($rawLegacyStatus) ? $rawLegacyStatus : null,
-                )?->value;
+                : ($legacyRegistration === EventCapacityRegistrationState::Confirmed
+                    ? null
+                    : $legacyRegistration?->value);
             $legacyStatus = $rawLegacyStatus;
             $registrationEnum = is_string($registrationState)
                 ? EventCapacityRegistrationState::tryFrom($registrationState)

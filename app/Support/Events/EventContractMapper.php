@@ -166,6 +166,10 @@ final class EventContractMapper
         $explicitRegistration = EventRegistrationState::tryFrom(
             self::nullableString($facts['registration_state'] ?? null) ?? '',
         );
+        // A caller that looked up the viewer's registration passes the key,
+        // even as null. Then an old "going"/"attended" RSVP must not stand in
+        // for a confirmed registration the database does not hold.
+        $registrationLookedUp = array_key_exists('registration_state', $facts);
         $waitlistState = self::nullableString($facts['waitlist_state'] ?? null);
         $waitlistPosition = self::nullableInt($facts['waitlist_position'] ?? null);
         $attendance = is_array($facts['attendance'] ?? null) ? $facts['attendance'] : [];
@@ -182,7 +186,8 @@ final class EventContractMapper
                 $waitlistPosition !== null,
                 $legacyStatus === 'waitlisted' => EventRegistrationState::Waitlisted,
                 $legacyStatus === 'invited' => EventRegistrationState::Invited,
-                in_array($legacyStatus, ['going', 'attended'], true) => EventRegistrationState::Confirmed,
+                ! $registrationLookedUp
+                    && in_array($legacyStatus, ['going', 'attended'], true) => EventRegistrationState::Confirmed,
                 in_array($legacyStatus, ['not_going', 'declined'], true) => EventRegistrationState::Declined,
                 $legacyStatus === 'cancelled' => EventRegistrationState::Cancelled,
                 default => EventRegistrationState::None,
