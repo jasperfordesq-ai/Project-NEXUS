@@ -153,7 +153,7 @@ const PUBLIC_PAGES: Array<[name: string, path: string]> = [
 async function prepare(page: Page, colourScheme: 'light' | 'dark'): Promise<void> {
   // No fixed clock: freezing time ahead of the sign-in ticket's expiry makes the
   // site discard the session. Relative times ("1 hr ago") and the greeting
-  // change a few dozen pixels between runs, well inside maxDiffPixelRatio.
+  // are masked in shoot() instead.
   // The member's own saved theme would otherwise win over the browser's.
   await page.addInitScript((theme) => {
     try {
@@ -251,7 +251,15 @@ async function shoot(page: Page, name: string, signedIn = true): Promise<void> {
     // A signed-out picture must never pass as a signed-in one.
     await expect(page.getByRole('banner').getByRole('link', { name: /^log in$/i }), 'still signed in').toHaveCount(0);
   }
-  await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true, timeout: 20_000 });
+  // Words that follow the clock, not the code: "Good afternoon/evening" and
+  // "6 hours ago". Unmasked, the same build failed 38 of 116 pictures a few
+  // hours after approval (11 Nov), which hid real changes in the noise.
+  const clockText = [
+    page.locator('time'),
+    page.getByText(/^Good (morning|afternoon|evening)\b/),
+    page.getByText(/^\d+\s+(second|minute|hour|day|week)s?\s+ago$/i),
+  ];
+  await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true, timeout: 20_000, mask: clockText });
 }
 
 function scheme(projectName: string): 'light' | 'dark' {
