@@ -61,36 +61,43 @@ interface ToastItemProps {
   onRemove: (id: string) => void;
 }
 
+// Light card in the page's own surface colour with a tinted icon tile per
+// kind (warmth plan Phase 4 A5). Until 11 Nov 2026 every toast was a dark
+// slate box, in light mode too, with a faint white close button.
 const config: Record<ToastType, {
   icon: typeof CheckCircle;
-  borderColor: string;
-  iconColor: string;
+  tile: string;
 }> = {
   success: {
     icon: CheckCircle,
-    borderColor: 'border-emerald-500/40',
-    iconColor: 'text-emerald-400',
+    tile: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
   },
   error: {
     icon: AlertCircle,
-    borderColor: 'border-red-500/40',
-    iconColor: 'text-red-400',
+    tile: 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300',
   },
   warning: {
     icon: AlertTriangle,
-    borderColor: 'border-amber-500/40',
-    iconColor: 'text-amber-400',
+    tile: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
   },
   info: {
     icon: Info,
-    borderColor: 'border-blue-500/40',
-    iconColor: 'text-blue-400',
+    tile: 'bg-accent-soft text-accent-soft-foreground',
   },
 };
 
+/** A tick that draws itself in (still under reduced motion — see .toast-tick in index.css). */
+function DrawnTick() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path className="toast-tick" d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+  );
+}
+
 function ToastItem({ toast, onRemove, ref }: ToastItemProps & { ref?: Ref<HTMLDivElement> }) {
   const { t } = useTranslation('common');
-  const { icon: Icon, borderColor, iconColor } = config[toast.type];
+  const { icon: Icon, tile } = config[toast.type];
 
   return (
     <motion.div
@@ -108,20 +115,22 @@ function ToastItem({ toast, onRemove, ref }: ToastItemProps & { ref?: Ref<HTMLDi
       // therefore passes when the action FAILED and merely rendered an error —
       // a false pass, which is worse than a dead selector.
       data-toast={toast.type}
-      className={`pointer-events-auto bg-slate-900 ${borderColor} border rounded-lg p-4 shadow-lg`}
+      className="pointer-events-auto rounded-2xl border border-theme-default bg-[var(--surface-solid)] p-3 shadow-[var(--shadow-card-hover)]"
     >
       <div className="flex items-start gap-3">
-        <Icon className={`w-5 h-5 ${iconColor} flex-shrink-0 mt-0.5`} aria-hidden="true" />
-        <div className="flex-1 min-w-0">
-          <p className="font-medium text-white text-sm">{toast.title}</p>
+        <span className={`flex size-9 flex-shrink-0 items-center justify-center rounded-full ${tile}`} aria-hidden="true">
+          {toast.type === 'success' ? <DrawnTick /> : <Icon className="size-5" />}
+        </span>
+        <div className="flex-1 min-w-0 pt-1.5">
+          <p className="font-semibold text-theme-primary text-sm">{toast.title}</p>
           {toast.message && (
-            <p className="text-white/60 text-sm mt-1">{toast.message}</p>
+            <p className="text-theme-secondary text-sm mt-0.5">{toast.message}</p>
           )}
         </div>
         <button
           type="button"
           onClick={() => onRemove(toast.id)}
-          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full p-0 text-white/40 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full p-0 text-theme-muted transition-colors hover:bg-theme-hover hover:text-theme-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           aria-label={t('toast.aria_dismiss_notification')}
         >
           <X className="w-4 h-4" aria-hidden="true" />

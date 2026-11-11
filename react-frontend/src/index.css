@@ -332,6 +332,26 @@
   }
 }
 
+/* A "done" toast's tick draws itself in (ToastViewport, warmth plan A5). */
+@layer components {
+  .toast-tick {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 0;
+    animation: toast-tick-draw 420ms ease-out 80ms both;
+  }
+
+  @keyframes toast-tick-draw {
+    from { stroke-dashoffset: 24; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toast-tick { animation: none; }
+  }
+
+  [data-reduced-motion="true"] .toast-tick { animation: none; }
+}
+
 /* ─────────────────────────────────────────────
    LEGAL DOCUMENT CONTENT
    Styles for HTML rendered via dangerouslySetInnerHTML
