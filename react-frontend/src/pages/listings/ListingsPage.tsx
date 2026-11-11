@@ -8,7 +8,8 @@
  */
 
 import { lazy, Suspense, useState, useEffect, useCallback, memo, useRef, useMemo, type ComponentType, type ReactNode } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { navigateWithSharedListingMedia } from '@/lib/sharedMediaTransition';
 import { useTranslation } from 'react-i18next';
 import { AlgorithmLabel } from '@/components/ui/AlgorithmLabel';
 import { Avatar } from '@/components/ui/Avatar';
@@ -1341,6 +1342,7 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
   const { t } = useTranslation('listings');
   const { tenantPath } = useTenant();
   const palette = useSitePalette();
+  const navigate = useNavigate();
   const isGrid = viewMode === 'grid';
   const [imgError, setImgError] = useState(false);
   // The API sends the database decimal as a string ("2.00"), which the card
@@ -1509,7 +1511,7 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
   return (
       <GlassCard data-testid="listing-card" className="group relative flex h-full cursor-pointer flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
         {/* Listing Image with hover overlay and floating save button */}
-        <div className="relative aspect-video overflow-hidden bg-theme-elevated">
+        <div data-listing-media={listing.id} className="relative aspect-video overflow-hidden bg-theme-elevated">
           {showsPhoto && imageProps ? (
             // Fades in from the card's own colour (warmth plan C1).
             <SmartImage
@@ -1599,6 +1601,14 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
             to={tenantPath(`/listings/${listing.id}`)}
             className="outline-none after:absolute after:inset-0"
             aria-label={t('open_listing_aria', { title: listing.title })}
+            onClick={(event) => {
+              // The picture grows into the offer's page (warmth plan A1);
+              // a plain link when the browser or the member says no.
+              if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+              if (navigateWithSharedListingMedia(navigate, tenantPath(`/listings/${listing.id}`), listing.id)) {
+                event.preventDefault();
+              }
+            }}
           >
             {listing.title}
           </Link>
