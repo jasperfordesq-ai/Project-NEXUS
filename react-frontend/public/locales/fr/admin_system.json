@@ -170,7 +170,20 @@
     "reset_confirm_body": "Cette action remet la configuration supplémentaire (localisation, accueil, portefeuille, modération, notifications, limites) aux valeurs par défaut de la plateforme. Le nom, les coordonnées, les logos et les couleurs de votre communauté sont conservés.",
     "reload_done": "Réglages rechargés",
     "reset_done": "Configuration supplémentaire réinitialisée",
-    "section_related_pill": "Pages associées"
+    "section_related_pill": "Pages associées",
+    "community_look_title": "Choisir un style",
+    "community_look_hint": "Une couleur, une seconde couleur assortie et l’arrondi des coins, choisis ensemble. Vous pouvez toujours modifier la couleur ci-dessous.",
+    "community_look_none": "Aucun style",
+    "community_look_none_hint": "Votre couleur seule, avec la seconde couleur et les coins standard.",
+    "community_look_harbour": "Port",
+    "community_look_meadow": "Prairie",
+    "community_look_hearth": "Foyer",
+    "community_look_heather": "Bruyère",
+    "community_look_berry": "Baie",
+    "community_look_slate": "Ardoise",
+    "community_look_corners_soft": "Coins doux",
+    "community_look_corners_round": "Coins arrondis",
+    "community_look_corners_square": "Coins carrés"
   },
   "operations": {
     "description": "Statistiques de cache et contrôles des tâches en arrière-plan.",

@@ -986,6 +986,8 @@ class AdminConfigController extends BaseApiController
         // The community colour (member website buttons, links, highlights; also
         // the round-up email and volunteer certificate). Stored as primary_color.
         $generalSettings['community_color'] = $this->normalizeHexColor($config['primary_color'] ?? null);
+        // The ready-made look chosen with it (warmth plan D1), or null.
+        $generalSettings['community_look'] = \App\Support\CommunityLook::normalize($config['community_look'] ?? null);
 
         return $this->respondWithData([
             'tenant_id' => $tenantId,
@@ -1199,7 +1201,10 @@ class AdminConfigController extends BaseApiController
      * highlights. It must be readable as text on white (4.5:1), because that
      * is exactly how the website uses it.
      *
-     * Each of the three keys is optional: a key that is not sent keeps its
+     * Also saves the ready-made look (`community_look`, warmth plan D1): one of
+     * App\Support\CommunityLook::ALLOWED, stored as configuration.community_look.
+     *
+     * Each of the four keys is optional: a key that is not sent keeps its
      * stored value; a key sent empty clears it.
      */
     public function saveHeaderColors(): JsonResponse
@@ -1213,6 +1218,7 @@ class AdminConfigController extends BaseApiController
         $sentBg = array_key_exists('bg_color', $input);
         $sentAccent = array_key_exists('accent_color', $input);
         $sentCommunity = array_key_exists('community_color', $input);
+        $sentLook = array_key_exists('community_look', $input);
 
         $rawBg = $input['bg_color'] ?? null;
         $rawAccent = $input['accent_color'] ?? null;
@@ -1220,6 +1226,20 @@ class AdminConfigController extends BaseApiController
         $bg = $sentBg ? $this->normalizeHexColor($rawBg) : $this->normalizeHexColor($config['header_bg_color'] ?? null);
         $accent = $sentAccent ? $this->normalizeHexColor($rawAccent) : $this->normalizeHexColor($config['header_accent_color'] ?? null);
         $community = $sentCommunity ? $this->normalizeHexColor($rawCommunity) : $this->normalizeHexColor($config['primary_color'] ?? null);
+        $rawLook = $input['community_look'] ?? null;
+        $look = $sentLook
+            ? \App\Support\CommunityLook::normalize($rawLook)
+            : \App\Support\CommunityLook::normalize($config['community_look'] ?? null);
+
+        // A look must be one of ours: its name reaches the page's theme.
+        if ($sentLook && is_string($rawLook) && trim($rawLook) !== '' && $look === null) {
+            return $this->respondWithError(
+                'VALIDATION_ERROR',
+                __('api.invalid_community_look'),
+                'community_look',
+                422,
+            );
+        }
 
         if ($sentCommunity && is_string($rawCommunity) && trim($rawCommunity) !== '') {
             if ($community === null) {
@@ -1261,7 +1281,7 @@ class AdminConfigController extends BaseApiController
         }
 
         try {
-            DB::transaction(function () use ($tenantId, $bg, $accent, $community, $sentBg, $sentAccent, $sentCommunity): void {
+            DB::transaction(function () use ($tenantId, $bg, $accent, $community, $look, $sentBg, $sentAccent, $sentCommunity, $sentLook): void {
                 if ($sentBg) {
                     $this->setTenantConfigValue($tenantId, 'header_bg_color', $bg);
                 }
@@ -1270,6 +1290,9 @@ class AdminConfigController extends BaseApiController
                 }
                 if ($sentCommunity) {
                     $this->setTenantConfigValue($tenantId, 'primary_color', $community);
+                }
+                if ($sentLook) {
+                    $this->setTenantConfigValue($tenantId, 'community_look', $look);
                 }
                 app(PrerenderContentInvalidator::class)->refreshTenantOrFail($tenantId, true);
             });
@@ -1282,6 +1305,7 @@ class AdminConfigController extends BaseApiController
             'header_bg_color' => $bg,
             'header_accent_color' => $accent,
             'community_color' => $community,
+            'community_look' => $look,
         ]);
     }
 

@@ -21,6 +21,8 @@ import { SettingsSection, settingsSectionAnchor } from '../SettingsSection';
 import { ColorSettingField } from '../ColorSettingField';
 import { isHexColor } from '../headerPreview';
 import type { AdminSettingsFormState } from '../useAdminSettingsForm';
+import Check from 'lucide-react/icons/check';
+import { COMMUNITY_LOOKS, type CornerStyle } from '@/lib/communityLooks';
 
 export const COMMUNITY_COLOUR_SECTION_ID = 'community-colour';
 
@@ -45,6 +47,32 @@ export const COMMUNITY_COLOUR_PRESETS = [
 ] as const;
 
 /**
+ * Each look's picture: a band from its colour to its companion, written out
+ * so Tailwind generates the classes (warmth plan D1).
+ */
+const LOOK_BAND: Record<string, string> = {
+  harbour: 'from-[#1d4ed8] to-teal-500',
+  meadow: 'from-[#15803d] to-amber-500',
+  hearth: 'from-[#b3441e] to-amber-500',
+  heather: 'from-[#6d28d9] to-pink-500',
+  berry: 'from-[#a3195b] to-orange-500',
+  slate: 'from-[#334155] to-sky-500',
+};
+const LOOK_BUTTON: Record<string, string> = {
+  harbour: 'bg-[#1d4ed8]',
+  meadow: 'bg-[#15803d]',
+  hearth: 'bg-[#b3441e]',
+  heather: 'bg-[#6d28d9]',
+  berry: 'bg-[#a3195b]',
+  slate: 'bg-[#334155]',
+};
+const CORNER_CLASS: Record<CornerStyle, string> = {
+  soft: 'rounded-lg',
+  round: 'rounded-2xl',
+  square: 'rounded-sm',
+};
+
+/**
  * A ColorSwatchPicker value no suggestion matches, so no swatch shows as
  * selected while the community uses the standard colour or a custom one.
  */
@@ -65,6 +93,7 @@ export function CommunityColourSection({ state }: { state: AdminSettingsFormStat
   const tooLight = communityColourTooLight(chosen);
   const preview = chosen || STANDARD_ACCENT;
   const matchesSuggestion = (COMMUNITY_COLOUR_PRESETS as readonly string[]).includes(chosen);
+  const chosenLook = form.community_look || '';
 
   return (
     <SettingsSection
@@ -73,6 +102,66 @@ export function CommunityColourSection({ state }: { state: AdminSettingsFormStat
       title={t('admin_settings.community_colour_section')}
       description={t('admin_settings.community_colour_desc')}
     >
+      {/* Ready-made looks (warmth plan D1): colour, companion colour and
+          corners chosen together. Choosing one fills in the colour below,
+          which can still be changed; "No look" keeps the standard companion
+          and corners. */}
+      <div className="space-y-2">
+        <Label id="community-look-label" className="text-sm font-medium text-foreground">
+          {t('admin_settings.community_look_title')}
+        </Label>
+        <p className="text-xs leading-5 text-muted">{t('admin_settings.community_look_hint')}</p>
+        <div role="radiogroup" aria-labelledby="community-look-label" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {COMMUNITY_LOOKS.map((look) => {
+            const isSelected = chosenLook === look.id;
+            return (
+              <button
+                key={look.id}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                data-testid={`community-look-${look.id}`}
+                onClick={() => {
+                  setField('community_color', look.colour);
+                  setField('community_look', look.id);
+                }}
+                className={`rounded-xl border-2 bg-surface p-2 text-start transition-colors outline-solid outline-transparent focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 ${
+                  isSelected ? 'border-accent' : 'border-divider hover:border-accent/50'
+                }`}
+              >
+                <span aria-hidden="true" className={`block h-10 rounded-lg bg-linear-to-r ${LOOK_BAND[look.id]}`} />
+                <span aria-hidden="true" className="mt-2 flex items-center gap-2">
+                  <span className={`inline-flex px-2 py-0.5 text-[11px] font-semibold text-white ${LOOK_BUTTON[look.id]} ${CORNER_CLASS[look.corners]}`}>
+                    {t('admin_settings.community_colour_preview_button')}
+                  </span>
+                </span>
+                <span className="mt-2 flex items-center gap-1 text-sm font-medium text-foreground">
+                  {t(`admin_settings.community_look_${look.id}`)}
+                  {isSelected && <Check className="ms-auto h-4 w-4 text-accent" aria-hidden="true" />}
+                </span>
+                <span className="block text-xs text-muted">{t(`admin_settings.community_look_corners_${look.corners}`)}</span>
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            role="radio"
+            aria-checked={chosenLook === ''}
+            data-testid="community-look-none"
+            onClick={() => setField('community_look', '')}
+            className={`rounded-xl border-2 border-dashed bg-surface p-2 text-start transition-colors outline-solid outline-transparent focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 ${
+              chosenLook === '' ? 'border-accent' : 'border-divider hover:border-accent/50'
+            }`}
+          >
+            <span className="flex items-center gap-1 text-sm font-medium text-foreground">
+              {t('admin_settings.community_look_none')}
+              {chosenLook === '' && <Check className="ms-auto h-4 w-4 text-accent" aria-hidden="true" />}
+            </span>
+            <span className="mt-1 block text-xs text-muted">{t('admin_settings.community_look_none_hint')}</span>
+          </button>
+        </div>
+      </div>
+
       <div className="space-y-2">
         <Label id="community-colour-suggestions-label" className="text-sm font-medium text-foreground">
           {t('admin_settings.community_colour_suggested')}

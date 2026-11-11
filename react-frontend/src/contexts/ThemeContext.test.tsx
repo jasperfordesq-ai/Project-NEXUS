@@ -505,4 +505,55 @@ describe('ThemeContext', () => {
       expect(getContrastRatio(darkAccent, '#18181b')).toBeGreaterThanOrEqual(4.5);
     });
   });
+
+  describe('community look (warmth plan D1)', () => {
+    function LookProbe({ colour, look }: { colour: string | null; look: string | null }) {
+      const { setCommunityAccent, setCommunityLook } = useTheme();
+      useEffect(() => {
+        setCommunityAccent(colour);
+        setCommunityLook(look);
+      }, [colour, look, setCommunityAccent, setCommunityLook]);
+      return null;
+    }
+    const radius = () => document.documentElement.style.getPropertyValue('--radius');
+    const companion = () => document.documentElement.style.getPropertyValue('--companion');
+
+    it('brings its own companion colour and corners, and takes them away again', async () => {
+      const { rerender } = render(
+        <ThemeProvider>
+          <LookProbe colour="#334155" look="slate" />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(companion()).toMatch(/^var\(--color-sky-[45]00\)$/);
+      expect(radius()).toBe('0.25rem');
+
+      rerender(
+        <ThemeProvider>
+          <LookProbe colour="#15803d" look="meadow" />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(companion()).toMatch(/^var\(--color-amber-[45]00\)$/);
+      expect(radius()).toBe('0.875rem');
+
+      rerender(
+        <ThemeProvider>
+          <LookProbe colour="#15803d" look={null} />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(radius()).toBe('');
+    });
+
+    it('ignores a name that is not one of ours', async () => {
+      render(
+        <ThemeProvider>
+          <LookProbe colour={null} look="neon;x" />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(radius()).toBe('');
+    });
+  });
 });

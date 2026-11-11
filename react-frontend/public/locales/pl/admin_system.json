@@ -170,7 +170,20 @@
     "reset_confirm_body": "Przywraca dodatkową konfigurację (lokalizacja, wprowadzenie, portfel, moderacja, powiadomienia, limity) do ustawień domyślnych platformy. Nazwa, dane kontaktowe, logotypy i kolory społeczności zostają zachowane.",
     "reload_done": "Ustawienia wczytane ponownie",
     "reset_done": "Przywrócono domyślną dodatkową konfigurację",
-    "section_related_pill": "Powiązane strony"
+    "section_related_pill": "Powiązane strony",
+    "community_look_title": "Wybierz styl",
+    "community_look_hint": "Kolor, pasujący do niego drugi kolor i zaokrąglenie rogów, wybrane razem. Kolor poniżej nadal można zmienić.",
+    "community_look_none": "Bez stylu",
+    "community_look_none_hint": "Tylko Twój kolor, ze standardowym drugim kolorem i rogami.",
+    "community_look_harbour": "Port",
+    "community_look_meadow": "Łąka",
+    "community_look_hearth": "Ognisko",
+    "community_look_heather": "Wrzos",
+    "community_look_berry": "Jagoda",
+    "community_look_slate": "Łupek",
+    "community_look_corners_soft": "Łagodne rogi",
+    "community_look_corners_round": "Zaokrąglone rogi",
+    "community_look_corners_square": "Kwadratowe rogi"
   },
   "operations": {
     "description": "Statystyki pamięci podręcznej i kontrola zadań w tle.",

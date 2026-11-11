@@ -170,7 +170,20 @@
     "reset_confirm_body": "Repõe a configuração adicional (localização, boas-vindas, carteira, moderação, notificações, limites) nas predefinições da plataforma. O nome, os contactos, os logótipos e as cores da sua comunidade mantêm-se.",
     "reload_done": "Definições recarregadas",
     "reset_done": "Configuração adicional reposta",
-    "section_related_pill": "Páginas relacionadas"
+    "section_related_pill": "Páginas relacionadas",
+    "community_look_title": "Escolha um estilo",
+    "community_look_hint": "Uma cor, uma segunda cor que combina e o arredondamento dos cantos, escolhidos em conjunto. Pode continuar a alterar a cor abaixo.",
+    "community_look_none": "Sem estilo",
+    "community_look_none_hint": "Apenas a sua cor, com a segunda cor e os cantos padrão.",
+    "community_look_harbour": "Porto",
+    "community_look_meadow": "Prado",
+    "community_look_hearth": "Lareira",
+    "community_look_heather": "Urze",
+    "community_look_berry": "Baga",
+    "community_look_slate": "Ardósia",
+    "community_look_corners_soft": "Cantos suaves",
+    "community_look_corners_round": "Cantos arredondados",
+    "community_look_corners_square": "Cantos retos"
   },
   "operations": {
     "description": "Estatísticas de cache e controles de trabalho em segundo plano.",

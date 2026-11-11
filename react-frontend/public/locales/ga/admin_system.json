@@ -170,7 +170,20 @@
     "reset_confirm_body": "Cuireann sé seo an chumraíocht bhreise (logánú, fáiltiú, sparán, modhnóireacht, fógraí, teorainneacha) ar ais go réamhshocruithe an ardáin. Coinnítear ainm, sonraí teagmhála, lógónna agus dathanna do phobail.",
     "reload_done": "Socruithe athlódáilte",
     "reset_done": "Cumraíocht bhreise athshocraithe go réamhshocruithe",
-    "section_related_pill": "Leathanaigh ghaolmhara"
+    "section_related_pill": "Leathanaigh ghaolmhara",
+    "community_look_title": "Roghnaigh cuma",
+    "community_look_hint": "Dath, an dara dath a oireann dó, agus cé chomh cruinn is atá na coirnéil, roghnaithe le chéile. Is féidir leat an dath thíos a athrú fós.",
+    "community_look_none": "Gan chuma",
+    "community_look_none_hint": "Do dhath féin amháin, leis an dara dath agus na coirnéil chaighdeánacha.",
+    "community_look_harbour": "Cuan",
+    "community_look_meadow": "Móinéar",
+    "community_look_hearth": "Teallach",
+    "community_look_heather": "Fraoch",
+    "community_look_berry": "Caor",
+    "community_look_slate": "Slinn",
+    "community_look_corners_soft": "Coirnéil bhoga",
+    "community_look_corners_round": "Coirnéil chruinne",
+    "community_look_corners_square": "Coirnéil chearnacha"
   },
   "operations": {
     "description": "Staitisticí taisce agus rialuithe poist chúlra.",

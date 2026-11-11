@@ -170,7 +170,20 @@
     "reset_confirm_body": "This puts the additional configuration (localisation, onboarding, wallet, moderation, notifications, limits) back to platform defaults. Your community name, contact details, logos and colours are kept.",
     "reload_done": "Settings reloaded",
     "reset_done": "Additional configuration reset to defaults",
-    "section_related_pill": "Related pages"
+    "section_related_pill": "Related pages",
+    "community_look_title": "Choose a look",
+    "community_look_hint": "A colour, a second colour that goes with it, and how round the corners are, chosen together. You can still change the colour below.",
+    "community_look_none": "No look",
+    "community_look_none_hint": "Your colour only, with the standard second colour and corners.",
+    "community_look_harbour": "Harbour",
+    "community_look_meadow": "Meadow",
+    "community_look_hearth": "Hearth",
+    "community_look_heather": "Heather",
+    "community_look_berry": "Berry",
+    "community_look_slate": "Slate",
+    "community_look_corners_soft": "Soft corners",
+    "community_look_corners_round": "Round corners",
+    "community_look_corners_square": "Square corners"
   },
   "operations": {
     "title": "Operations",

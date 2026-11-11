@@ -887,6 +887,13 @@ class TenantBootstrapController extends BaseApiController
             $branding['primary_color'] = strtolower($communityColor);
         }
 
+        // The ready-made look chosen with it (warmth plan D1): only a name from
+        // the allow-list ever reaches the page's theme.
+        $communityLook = \App\Support\CommunityLook::normalize($config['community_look'] ?? null);
+        if ($communityLook !== null) {
+            $branding['community_look'] = $communityLook;
+        }
+
         // Accessible (web-uk) header colours, set on Admin → Settings → "Accessible
         // header colour" (AdminConfigController::saveHeaderColors). Published only
         // as strict #rrggbb so a frontend can put them straight into CSS. Until

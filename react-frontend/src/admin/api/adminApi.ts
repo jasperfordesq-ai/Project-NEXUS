@@ -2396,10 +2396,22 @@ export const adminSettings = {
   // Accessible (GOV.UK alpha) header colours and the community colour (the
   // member website's accent). Pass null / '' to clear an override: the header
   // reverts to the stock GOV.UK black + blue, the website to its standard colour.
-  saveHeaderColors: (bgColor: string | null, accentColor: string | null, communityColor: string | null) =>
-    api.put<{ header_bg_color: string | null; header_accent_color: string | null; community_color: string | null }>(
+  saveHeaderColors: (
+    bgColor: string | null,
+    accentColor: string | null,
+    communityColor: string | null,
+    communityLook?: string | null,
+  ) =>
+    api.put<{ header_bg_color: string | null; header_accent_color: string | null; community_color: string | null; community_look?: string | null }>(
       '/v2/admin/settings/header-colors',
-      { bg_color: bgColor ?? '', accent_color: accentColor ?? '', community_color: communityColor ?? '' },
+      {
+        bg_color: bgColor ?? '',
+        accent_color: accentColor ?? '',
+        community_color: communityColor ?? '',
+        // Sent only when the form knows it (warmth plan D1); left out, the
+        // stored look is kept.
+        ...(communityLook === undefined ? {} : { community_look: communityLook ?? '' }),
+      },
     ),
 
   getAiConfig: () => api.get<Record<string, unknown>>('/v2/admin/config/ai'),

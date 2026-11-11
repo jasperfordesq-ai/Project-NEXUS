@@ -170,7 +170,20 @@
     "reset_confirm_body": "Riporta la configurazione aggiuntiva (localizzazione, benvenuto, portafoglio, moderazione, notifiche, limiti) ai valori predefiniti della piattaforma. Nome, contatti, loghi e colori della comunità vengono mantenuti.",
     "reload_done": "Impostazioni ricaricate",
     "reset_done": "Configurazione aggiuntiva ripristinata",
-    "section_related_pill": "Pagine correlate"
+    "section_related_pill": "Pagine correlate",
+    "community_look_title": "Scegli uno stile",
+    "community_look_hint": "Un colore, un secondo colore abbinato e quanto sono arrotondati gli angoli, scelti insieme. Puoi comunque cambiare il colore qui sotto.",
+    "community_look_none": "Nessuno stile",
+    "community_look_none_hint": "Solo il tuo colore, con il secondo colore e gli angoli standard.",
+    "community_look_harbour": "Porto",
+    "community_look_meadow": "Prato",
+    "community_look_hearth": "Focolare",
+    "community_look_heather": "Erica",
+    "community_look_berry": "Bacca",
+    "community_look_slate": "Ardesia",
+    "community_look_corners_soft": "Angoli morbidi",
+    "community_look_corners_round": "Angoli arrotondati",
+    "community_look_corners_square": "Angoli squadrati"
   },
   "operations": {
     "description": "Statistiche della cache e controlli del lavoro in background.",

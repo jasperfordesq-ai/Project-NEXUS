@@ -68,6 +68,7 @@ export interface SettingsForm {
   header_bg_color: string;        // tenants.configuration.header_bg_color ('' = default black)
   header_accent_color: string;    // tenants.configuration.header_accent_color ('' = match background)
   community_color: string;        // tenants.configuration.primary_color ('' = the standard colour)
+  community_look: string;         // tenants.configuration.community_look ('' = no ready-made look)
 }
 
 export type SettingsFormKey = keyof SettingsForm;
@@ -135,6 +136,7 @@ export const DEFAULT_SETTINGS: SettingsForm = {
   header_bg_color: '',
   header_accent_color: '',
   community_color: '',
+  community_look: '',
 };
 
 /**
@@ -201,6 +203,7 @@ export function settingsFromResponse(data: AdminSettingsResponse): SettingsForm 
     header_bg_color: str(settings.header_bg_color),
     header_accent_color: str(settings.header_accent_color),
     community_color: str(settings.community_color),
+    community_look: str(settings.community_look),
   };
 }
 
@@ -247,9 +250,10 @@ export const PAYLOAD_RULES: Partial<Record<SettingsFormKey, PayloadRule>> = {
   header_bg_color: { endpoint: 'colors' },
   header_accent_color: { endpoint: 'colors' },
   community_color: { endpoint: 'colors' },
+  community_look: { endpoint: 'colors' },
 };
 
-export const COLOR_KEYS: SettingsFormKey[] = ['header_bg_color', 'header_accent_color', 'community_color'];
+export const COLOR_KEYS: SettingsFormKey[] = ['header_bg_color', 'header_accent_color', 'community_color', 'community_look'];
 
 export function changedKeys(form: SettingsForm, original: SettingsForm): SettingsFormKey[] {
   return (Object.keys(form) as SettingsFormKey[]).filter((k) => form[k] !== original[k]);

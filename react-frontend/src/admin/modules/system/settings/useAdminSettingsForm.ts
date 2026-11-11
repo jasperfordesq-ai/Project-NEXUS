@@ -161,6 +161,7 @@ export function useAdminSettingsForm(): AdminSettingsFormState {
         form.header_bg_color || null,
         form.header_accent_color || null,
         form.community_color || null,
+        form.community_look || null,
       );
       if (res.success === false) {
         // admin-i18n-ignore: localized server message — AdminConfigController

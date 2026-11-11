@@ -170,7 +170,20 @@
     "reset_confirm_body": "Esto devuelve la configuración adicional (localización, bienvenida, monedero, moderación, notificaciones, límites) a los valores predeterminados de la plataforma. El nombre, los datos de contacto, los logotipos y los colores de tu comunidad se conservan.",
     "reload_done": "Ajustes recargados",
     "reset_done": "Configuración adicional restablecida",
-    "section_related_pill": "Páginas relacionadas"
+    "section_related_pill": "Páginas relacionadas",
+    "community_look_title": "Elige un estilo",
+    "community_look_hint": "Un color, un segundo color que combina y lo redondeadas que son las esquinas, elegidos juntos. Puedes seguir cambiando el color de abajo.",
+    "community_look_none": "Sin estilo",
+    "community_look_none_hint": "Solo tu color, con el segundo color y las esquinas estándar.",
+    "community_look_harbour": "Puerto",
+    "community_look_meadow": "Pradera",
+    "community_look_hearth": "Hogar",
+    "community_look_heather": "Brezo",
+    "community_look_berry": "Baya",
+    "community_look_slate": "Pizarra",
+    "community_look_corners_soft": "Esquinas suaves",
+    "community_look_corners_round": "Esquinas redondeadas",
+    "community_look_corners_square": "Esquinas rectas"
   },
   "operations": {
     "description": "Estadísticas de caché y controles de trabajos en segundo plano.",

@@ -18,6 +18,7 @@
  * @see docs/TRS-001-TENANT-RESOLUTION-SPEC.md
  */
 
+import { findCommunityLook } from '@/lib/communityLooks';
 import {
   createContext,
   use,
@@ -603,6 +604,8 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
       favicon,
       primaryColor,
       communityColor,
+      // Only one of our own look names (warmth plan D1), else null.
+      communityLook: findCommunityLook(raw.community_look)?.id ?? null,
       communityPhoto,
     };
   }, [state.tenant]);
@@ -615,6 +618,10 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
   useEffect(() => {
     setCommunityAccent?.(branding.communityColor ?? null);
   }, [branding.communityColor, setCommunityAccent]);
+  const setCommunityLook = theme?.setCommunityLook;
+  useEffect(() => {
+    setCommunityLook?.(branding.communityLook ?? null);
+  }, [branding.communityLook, setCommunityLook]);
 
   /**
    * Get listing config with fallback to defaults

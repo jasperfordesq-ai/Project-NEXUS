@@ -170,7 +170,20 @@
     "reset_confirm_body": "Dies setzt die zusätzliche Konfiguration (Lokalisierung, Einführung, Konto, Moderation, Benachrichtigungen, Grenzwerte) auf die Plattformstandards zurück. Name, Kontaktdaten, Logos und Farben Ihrer Community bleiben erhalten.",
     "reload_done": "Einstellungen neu geladen",
     "reset_done": "Zusätzliche Konfiguration auf Standard zurückgesetzt",
-    "section_related_pill": "Verwandte Seiten"
+    "section_related_pill": "Verwandte Seiten",
+    "community_look_title": "Stil wählen",
+    "community_look_hint": "Eine Farbe, eine passende zweite Farbe und wie rund die Ecken sind – zusammen gewählt. Die Farbe unten können Sie weiterhin ändern.",
+    "community_look_none": "Kein Stil",
+    "community_look_none_hint": "Nur Ihre Farbe, mit der normalen zweiten Farbe und normalen Ecken.",
+    "community_look_harbour": "Hafen",
+    "community_look_meadow": "Wiese",
+    "community_look_hearth": "Herd",
+    "community_look_heather": "Heide",
+    "community_look_berry": "Beere",
+    "community_look_slate": "Schiefer",
+    "community_look_corners_soft": "Weiche Ecken",
+    "community_look_corners_round": "Runde Ecken",
+    "community_look_corners_square": "Eckige Ecken"
   },
   "operations": {
     "description": "Cache-Statistiken und Hintergrundjobkontrollen.",

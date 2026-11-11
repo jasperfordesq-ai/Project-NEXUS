@@ -161,4 +161,47 @@ class CommunityColourSettingTest extends TestCase
         $this->apiPut('/v2/admin/settings', ['primary_color' => '#a3195b'])
             ->assertStatus(422);
     }
+
+    // ── Ready-made looks (warmth plan Phase 4 D1) ──────────────────────────
+
+    public function test_an_admin_saves_a_look_and_the_member_site_receives_its_name(): void
+    {
+        $this->actAsAdmin();
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['community_color' => '#15803d', 'community_look' => 'Meadow'])
+            ->assertOk()
+            ->assertJsonPath('data.community_look', 'meadow');
+
+        $this->assertSame('meadow', $this->storedConfig()['community_look'] ?? null);
+        $this->apiGet('/v2/admin/settings')->assertOk()->assertJsonPath('data.settings.community_look', 'meadow');
+        $this->assertSame('meadow', $this->bootstrapBranding()['community_look'] ?? null);
+    }
+
+    public function test_an_empty_look_clears_it_and_leaving_it_out_keeps_it(): void
+    {
+        $this->storeConfig(array_merge($this->storedConfig(), ['community_look' => 'slate']));
+        $this->actAsAdmin();
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['bg_color' => '#5b2a86'])->assertOk();
+        $this->assertSame('slate', $this->storedConfig()['community_look'] ?? null);
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['community_look' => ''])
+            ->assertOk()
+            ->assertJsonPath('data.community_look', null);
+        $this->assertArrayNotHasKey('community_look', $this->storedConfig());
+        $this->assertArrayNotHasKey('community_look', $this->bootstrapBranding());
+    }
+
+    public function test_a_look_that_is_not_one_of_ours_is_refused_and_never_published(): void
+    {
+        $this->actAsAdmin();
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['community_look' => 'neon;x'])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.field', 'community_look');
+        $this->assertArrayNotHasKey('community_look', $this->storedConfig());
+
+        $this->storeConfig(array_merge($this->storedConfig(), ['community_look' => '<script>']));
+        $this->assertArrayNotHasKey('community_look', $this->bootstrapBranding());
+    }
 }

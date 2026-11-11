@@ -2891,6 +2891,7 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'glossary_terms_too_long' => '用語集の用語は :max 文字以内にしてください。',
     'invalid_date_format' => ':field は :format 形式で入力してください。',
     'community_color_low_contrast' => 'この色は明るすぎて、白いページの上では読みにくくなります。リンクやボタンが読みやすいよう、もっと濃い色を選んでください。',
+    'invalid_community_look' => '表示されているスタイルから1つ選んでください。',
     'invalid_hex_color' => ':field は :example のような有効な16進数カラーである必要があります。',
     'invalid_risk_category' => 'risk_category の値が無効です。',
     'landing_card_field_required' => 'セクション :section のカード :card に :field がありません。',

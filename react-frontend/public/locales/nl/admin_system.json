@@ -170,7 +170,20 @@
     "reset_confirm_body": "Dit zet de aanvullende configuratie (lokalisatie, kennismaking, portemonnee, moderatie, meldingen, limieten) terug naar de platformstandaarden. De naam, contactgegevens, logo’s en kleuren van uw community blijven behouden.",
     "reload_done": "Instellingen opnieuw geladen",
     "reset_done": "Aanvullende configuratie teruggezet naar standaard",
-    "section_related_pill": "Gerelateerde pagina’s"
+    "section_related_pill": "Gerelateerde pagina’s",
+    "community_look_title": "Kies een stijl",
+    "community_look_hint": "Een kleur, een tweede kleur die erbij past en hoe rond de hoeken zijn, samen gekozen. U kunt de kleur hieronder nog steeds wijzigen.",
+    "community_look_none": "Geen stijl",
+    "community_look_none_hint": "Alleen uw kleur, met de standaard tweede kleur en hoeken.",
+    "community_look_harbour": "Haven",
+    "community_look_meadow": "Weide",
+    "community_look_hearth": "Haard",
+    "community_look_heather": "Heide",
+    "community_look_berry": "Bes",
+    "community_look_slate": "Leisteen",
+    "community_look_corners_soft": "Zachte hoeken",
+    "community_look_corners_round": "Ronde hoeken",
+    "community_look_corners_square": "Vierkante hoeken"
   },
   "operations": {
     "description": "Cachestatistieken en taakcontroles op de achtergrond.",

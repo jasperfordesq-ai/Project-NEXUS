@@ -3379,6 +3379,7 @@ return [
     'glossary_terms_too_long' => 'Glossary terms must be :max characters or fewer.',
     'invalid_date_format' => ':field must use the :format format.',
     'community_color_low_contrast' => 'That colour is too light to read on a white page. Choose a darker shade so links and buttons stay easy to read.',
+    'invalid_community_look' => 'Choose one of the looks shown.',
     'invalid_hex_color' => ':field must be a valid hexadecimal colour, such as :example.',
     'invalid_risk_category' => 'Invalid risk_category value.',
     'landing_card_field_required' => 'Section :section, card :card is missing :field.',

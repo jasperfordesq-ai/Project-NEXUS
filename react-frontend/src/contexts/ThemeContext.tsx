@@ -30,6 +30,7 @@ import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageSetJSON } fro
 import { AA_NORMAL_TEXT_CONTRAST, ensureContrast, getAccessibleForegroundColor } from '@/lib/colorContrast';
 import { SiteAccentContext } from '@/contexts/SiteAccentContext';
 import { companionPaint } from '@/lib/categoryColours';
+import { CORNER_TOKENS, CORNER_TOKEN_NAMES, findCommunityLook, type CommunityLook } from '@/lib/communityLooks';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -63,6 +64,12 @@ interface ThemeContextValue extends ThemeState, ThemePreferences {
    */
   communityAccent: string | null;
   setCommunityAccent: (color: string | null) => void;
+  /**
+   * The community's ready-made look (warmth plan D1), or null. Brings its
+   * companion colour and corner style. Set by TenantProvider from the bootstrap.
+   */
+  communityLook: CommunityLook | null;
+  setCommunityLook: (id: string | null) => void;
   setTheme: (theme: ThemeMode) => Promise<void>;
   toggleTheme: () => Promise<void>;
   setAccentColor: (color: string) => void;
@@ -328,6 +335,7 @@ export function ThemeProvider({
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [communityAccent, setCommunityAccentState] = useState<string | null>(null);
+  const [communityLook, setCommunityLookState] = useState<CommunityLook | null>(null);
 
   // Debounce timer for backend sync
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -371,8 +379,28 @@ export function ThemeProvider({
     [baseAccent],
   );
 
-  // The second, decorative colour: a near neighbour of the colour in force.
-  const companion = useMemo(() => companionPaint(baseAccent, resolvedTheme), [baseAccent, resolvedTheme]);
+  // The second, decorative colour: a near neighbour of the colour in force,
+  // or the one the community's chosen look brings with it (warmth plan D1)
+  // while the member has not picked an accent colour of their own.
+  const memberPickedAccent = preferences.accentColor.toLowerCase() !== DEFAULT_PREFERENCES.accentColor;
+  const lookCompanion = communityLook && !memberPickedAccent ? communityLook.companion : undefined;
+  const companion = useMemo(
+    () => companionPaint(baseAccent, resolvedTheme, lookCompanion),
+    [baseAccent, resolvedTheme, lookCompanion],
+  );
+
+  // The look's corners: HeroUI's --radius and the site's radius scale; no
+  // look (or "soft") leaves the site's own values in place.
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const html = document.documentElement;
+    const tokens = communityLook ? CORNER_TOKENS[communityLook.corners] : null;
+    for (const name of CORNER_TOKEN_NAMES) {
+      const value = tokens?.[name];
+      if (value) html.style.setProperty(name, value);
+      else html.style.removeProperty(name);
+    }
+  }, [communityLook]);
 
   // Apply preferences to DOM when they change
   useEffect(() => {
@@ -381,6 +409,10 @@ export function ThemeProvider({
 
   const setCommunityAccent = useCallback((color: string | null) => {
     setCommunityAccentState(typeof color === 'string' && HEX_COLOUR.test(color) ? color.toLowerCase() : null);
+  }, []);
+
+  const setCommunityLook = useCallback((id: string | null) => {
+    setCommunityLookState(findCommunityLook(id));
   }, []);
 
   // Load preferences from backend on mount (if authenticated)
@@ -578,6 +610,8 @@ export function ThemeProvider({
       isLoading,
       communityAccent,
       setCommunityAccent,
+      communityLook,
+      setCommunityLook,
       accentColor: preferences.accentColor,
       fontSize: preferences.fontSize,
       density: preferences.density,
@@ -594,7 +628,7 @@ export function ThemeProvider({
       setSimplifiedLayout,
     }),
     [theme, resolvedTheme, isInitialized, setTheme, toggleTheme, isLoading,
-     communityAccent, setCommunityAccent,
+     communityAccent, setCommunityAccent, communityLook, setCommunityLook,
      preferences, setAccentColor, setFontSize, setDensity, setLargeText,
      setHighContrast, setReducedMotion, setSimplifiedLayout]
   );

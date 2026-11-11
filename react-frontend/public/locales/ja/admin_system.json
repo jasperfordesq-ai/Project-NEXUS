@@ -170,7 +170,20 @@
     "reset_confirm_body": "追加設定（地域設定、オンボーディング、ウォレット、モデレーション、通知、上限）をプラットフォームの初期値に戻します。コミュニティ名、連絡先、ロゴ、色は保持されます。",
     "reload_done": "設定を再読み込みしました",
     "reset_done": "追加設定を初期値に戻しました",
-    "section_related_pill": "関連ページ"
+    "section_related_pill": "関連ページ",
+    "community_look_title": "スタイルを選ぶ",
+    "community_look_hint": "色、それに合う2つ目の色、角の丸みをまとめて選べます。下の色は後から変更できます。",
+    "community_look_none": "スタイルなし",
+    "community_look_none_hint": "選んだ色のみ。2つ目の色と角は標準のままです。",
+    "community_look_harbour": "ハーバー",
+    "community_look_meadow": "メドウ",
+    "community_look_hearth": "ハース",
+    "community_look_heather": "ヘザー",
+    "community_look_berry": "ベリー",
+    "community_look_slate": "スレート",
+    "community_look_corners_soft": "やわらかい角",
+    "community_look_corners_round": "丸い角",
+    "community_look_corners_square": "四角い角"
   },
   "operations": {
     "description": "キャッシュ統計とバックグラウンド ジョブ制御。",

@@ -381,6 +381,12 @@ describe('TenantContext', () => {
       document.documentElement.style.removeProperty('--accent');
     });
 
+    it('hands a ready-made look to the theme (D1)', async () => {
+      await renderWithTheme({ primary_color: '#334155', community_look: 'slate' });
+      await waitFor(() => expect(document.documentElement.style.getPropertyValue('--radius')).toBe('0.25rem'));
+      document.documentElement.style.removeProperty('--radius');
+    });
+
     it('hands the community colour to the theme, so the whole site uses it', async () => {
       await renderWithTheme({ primary_color: '#a3195b' });
 

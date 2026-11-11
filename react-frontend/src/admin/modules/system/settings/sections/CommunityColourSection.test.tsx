@@ -7,6 +7,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@/test/test-utils';
 import { getContrastRatio, AA_NORMAL_TEXT_CONTRAST } from '@/lib/colorContrast';
 import { DEFAULT_SETTINGS, type SettingsForm } from '../settingsForm';
+import { COMMUNITY_LOOKS } from '@/lib/communityLooks';
 import type { AdminSettingsFormState } from '../useAdminSettingsForm';
 import {
   CommunityColourSection,
@@ -60,4 +61,29 @@ describe('CommunityColourSection', () => {
     expect(preview.style.getPropertyValue('--accent')).toBe('#a3195b');
     expect(screen.getByRole('button', { name: 'Offer help' })).toBeInTheDocument();
   });
+
+  // Ready-made looks (warmth plan D1)
+  it('fills in the colour and the look together when a look is chosen', () => {
+    const setField = vi.fn();
+    render(<CommunityColourSection state={stateWith({}, setField)} />);
+    fireEvent.click(screen.getByTestId('community-look-meadow'));
+    expect(setField).toHaveBeenCalledWith('community_color', '#15803d');
+    expect(setField).toHaveBeenCalledWith('community_look', 'meadow');
+  });
+
+  it('marks the chosen look, and "no look" clears it', () => {
+    const setField = vi.fn();
+    render(<CommunityColourSection state={stateWith({ community_look: 'slate' }, setField)} />);
+    expect(screen.getByTestId('community-look-slate')).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByTestId('community-look-none')).toHaveAttribute('aria-checked', 'false');
+    fireEvent.click(screen.getByTestId('community-look-none'));
+    expect(setField).toHaveBeenCalledWith('community_look', '');
+  });
+
+  it('only offers looks whose colour reads on white', () => {
+    for (const look of COMMUNITY_LOOKS) {
+      expect(getContrastRatio(look.colour, '#ffffff')).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_CONTRAST);
+    }
+  });
 });
+

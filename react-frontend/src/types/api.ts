@@ -1346,6 +1346,9 @@ export interface TenantBranding {
    * component can tell "chosen" from "standard".
    */
   communityColor?: string | null;
+  /** The community's ready-made look (warmth plan D1), one of ours, or null. */
+  communityLook?: string | null;
+  community_look?: string; // raw backend field
   /**
    * The community's own photo (Admin → Settings → "Community photo"), an
    * uploads path, or null. Normalised from community_photo_url.

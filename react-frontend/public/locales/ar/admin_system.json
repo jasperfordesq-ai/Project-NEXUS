@@ -170,7 +170,20 @@
     "reset_confirm_body": "يعيد هذا الإعدادات الإضافية (الإعدادات الإقليمية، الترحيب، المحفظة، الإشراف، الإشعارات، الحدود) إلى القيم الافتراضية للمنصة. يُحتفظ باسم مجتمعك وبيانات التواصل والشعارات والألوان.",
     "reload_done": "تمت إعادة تحميل الإعدادات",
     "reset_done": "تمت إعادة الإعدادات الإضافية إلى الوضع الافتراضي",
-    "section_related_pill": "صفحات ذات صلة"
+    "section_related_pill": "صفحات ذات صلة",
+    "community_look_title": "اختر مظهرًا",
+    "community_look_hint": "لون، ولون ثانٍ يناسبه، ومدى استدارة الزوايا، تُختار معًا. لا يزال بإمكانك تغيير اللون أدناه.",
+    "community_look_none": "بلا مظهر",
+    "community_look_none_hint": "لونك فقط، مع اللون الثاني والزوايا القياسية.",
+    "community_look_harbour": "الميناء",
+    "community_look_meadow": "المرج",
+    "community_look_hearth": "الموقد",
+    "community_look_heather": "الخلنج",
+    "community_look_berry": "التوت",
+    "community_look_slate": "الأردواز",
+    "community_look_corners_soft": "زوايا ناعمة",
+    "community_look_corners_round": "زوايا مستديرة",
+    "community_look_corners_square": "زوايا مربعة"
   },
   "operations": {
     "description": "إحصائيات ذاكرة التخزين المؤقت وضوابط العمل في الخلفية.",
