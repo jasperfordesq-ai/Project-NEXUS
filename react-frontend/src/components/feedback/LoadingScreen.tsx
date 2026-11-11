@@ -8,10 +8,6 @@
  * Full-page loading indicator
  */
 
-import { motion } from '@/lib/motion';
-import { Card } from '@/components/ui/Card';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { Spinner } from '@/components/ui/Spinner';
 import i18n from 'i18next';
 
 interface LoadingScreenProps {
@@ -32,30 +28,19 @@ export function LoadingScreen({ message }: LoadingScreenProps) {
       aria-busy="true"
       aria-label={displayMessage}
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="relative z-10 w-full max-w-sm px-4"
-      >
-        <Card className="rounded-lg border border-theme-default bg-theme-surface/80 shadow-xl">
-          <Card.Content className="items-center px-6 py-8 text-center">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-accent/20 to-cyan-500/20"
-              aria-hidden="true"
-            >
-              <Spinner size="lg" />
-            </motion.div>
-            <p className="text-sm font-medium text-theme-secondary">{displayMessage}</p>
-            <div className="mt-5 w-full space-y-2" aria-hidden="true">
-              <Skeleton className="mx-auto h-2.5 w-3/4 rounded-full" />
-              <Skeleton className="mx-auto h-2.5 w-1/2 rounded-full" />
-            </div>
-            <span className="sr-only">{displayMessage}</span>
-          </Card.Content>
-        </Card>
-      </motion.div>
+      {/* Three gently pulsing dots — the same shape as the start screen in
+          index.html, now in the community's own colours (warmth plan Phase 4
+          A3). Still under reduced motion. Replaced a card whose whole tile
+          span round a spinner in a fixed cyan. */}
+      <div className="flex flex-col items-center gap-4 px-4 text-center">
+        <div className="flex items-center gap-2.5" aria-hidden="true">
+          <span className="size-3 rounded-full bg-accent animate-pulse motion-reduce:animate-none" />
+          <span className="size-3 rounded-full bg-companion animate-pulse [animation-delay:200ms] motion-reduce:animate-none" />
+          <span className="size-3 rounded-full bg-accent-strong animate-pulse [animation-delay:400ms] motion-reduce:animate-none" />
+        </div>
+        <p className="text-sm font-medium text-theme-secondary">{displayMessage}</p>
+        <span className="sr-only">{displayMessage}</span>
+      </div>
     </div>
   );
 }

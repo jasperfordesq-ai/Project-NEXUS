@@ -32,6 +32,30 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Start screen (warmth plan Phase 4 A3): shown only until the app draws
+         into #root, then hidden by the `#root:not(:empty)` rule below — CSS
+         only, because inline scripts are refused by the security policy.
+         🔴 It must stay OUTSIDE #root: scripts/check-prerender-delivery.mjs
+         recognises a blank page by the literal empty root element. The
+         community's colour is not known yet, so it uses the platform's own. -->
+    <div id="nexus-boot" aria-hidden="true">
+      <span class="nexus-boot-dot"></span><span class="nexus-boot-dot"></span><span class="nexus-boot-dot"></span>
+    </div>
+    <style>
+      #nexus-boot { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; background: #fafaf9; }
+      #root:not(:empty) + #nexus-boot { display: none; }
+      .nexus-boot-dot { width: 12px; height: 12px; border-radius: 9999px; background: #5b5ede; opacity: 0.35; animation: nexus-boot-pulse 1.2s ease-in-out infinite; }
+      .nexus-boot-dot:nth-child(2) { background: #db2777; animation-delay: 0.2s; }
+      .nexus-boot-dot:nth-child(3) { background: #0d9488; animation-delay: 0.4s; }
+      @keyframes nexus-boot-pulse { 0%, 100% { opacity: 0.35; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
+      @media (prefers-color-scheme: dark) {
+        #nexus-boot { background: #0c0a09; }
+        .nexus-boot-dot { background: #818cf8; }
+        .nexus-boot-dot:nth-child(2) { background: #f472b6; }
+        .nexus-boot-dot:nth-child(3) { background: #2dd4bf; }
+      }
+      @media (prefers-reduced-motion: reduce) { .nexus-boot-dot { animation: none; opacity: 0.7; } }
+    </style>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
