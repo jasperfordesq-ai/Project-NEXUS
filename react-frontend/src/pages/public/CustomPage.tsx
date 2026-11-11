@@ -189,7 +189,7 @@ export function CustomPage() {
               {page.content_format !== 'plaintext' && page.content && (
                 <div
                   className="
-                    prose prose-neutral dark:prose-invert max-w-none
+                    typography-prose max-w-none
                     [&_a]:text-accent [&_a]:underline
                     [&_img]:rounded-xl [&_img]:max-w-full
                     [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-8 [&_h2]:mb-4

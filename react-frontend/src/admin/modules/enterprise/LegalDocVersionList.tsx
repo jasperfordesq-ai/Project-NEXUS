@@ -469,7 +469,7 @@ export default function LegalDocVersionList() {
                   </div>
                 )}
                 <div
-                  className="prose prose-sm max-w-none dark:prose-invert border rounded-lg p-4 overflow-auto"
+                  className="typography-prose typography-prose--sm max-w-none border rounded-lg p-4 overflow-auto"
                   dangerouslySetInnerHTML={{ __html: sanitizeRichText(viewingVersion?.content ?? '') }}
                 />
               </ModalBody>

@@ -128,7 +128,7 @@ export default function LegalDocVersionComparison({
             <div>
               <h3 className="font-semibold mb-3">{t('enterprise.comparison.content_comparison')}</h3>
               <div
-                className="version-diff-content prose dark:prose-invert max-w-none p-4 border rounded-lg bg-[var(--color-surface)]"
+                className="version-diff-content typography-prose max-w-none p-4 border rounded-lg bg-[var(--color-surface)]"
                 dangerouslySetInnerHTML={{ __html: sanitizeRichText(comparison.diff_html) }}
               />
             </div>

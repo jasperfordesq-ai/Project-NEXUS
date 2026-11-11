@@ -774,7 +774,7 @@ export function ListingDetailPage() {
         {/* Description */}
         <div className="mb-8 rounded-2xl border border-theme-default bg-theme-surface/60 p-4 sm:p-5">
           <h2 className="text-lg font-semibold text-theme-primary mb-3">{t('detail_description')}</h2>
-          <div className="prose prose-invert max-w-none">
+          <div className="typography-prose max-w-none">
             {(() => {
               const isLongDesc = (listing.description?.length ?? 0) > 500;
               return (

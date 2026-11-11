@@ -251,7 +251,7 @@ function LessonContent({ lesson }: { lesson: CourseLesson }) {
       return <QuizLesson lesson={lesson} />;
     case 'text':
     default:
-      return <div className="prose prose-sm max-w-none whitespace-pre-wrap">{lesson.body}</div>;
+      return <div className="typography-prose typography-prose--sm max-w-none whitespace-pre-wrap">{lesson.body}</div>;
   }
 }
 

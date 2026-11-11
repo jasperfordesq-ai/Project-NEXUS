@@ -1400,7 +1400,7 @@ export function EventDetailPage() {
               {/* Description */}
               <div className="mb-8">
                 <h2 className="text-lg font-semibold text-theme-primary mb-3">{t('detail.about')}</h2>
-                <div className="prose prose-invert max-w-none">
+                <div className="typography-prose max-w-none">
                   <MemberPlainText content={translatedEventDesc ?? event.description ?? ''} className="text-theme-muted whitespace-pre-wrap" as="div" />
                 </div>
                 <TranslateButton

@@ -13,20 +13,12 @@ interface MarkdownRendererProps {
 }
 
 const proseClasses = [
-  "prose prose-sm dark:prose-invert max-w-none text-theme-primary",
-  "prose-headings:text-theme-primary prose-p:text-theme-secondary",
-  "prose-a:text-blue-700 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline",
-  "prose-strong:text-theme-primary prose-code:text-blue-700 dark:prose-code:text-blue-400",
-  "prose-pre:bg-theme-elevated prose-pre:border prose-pre:border-theme-default",
-  "prose-img:rounded-lg prose-blockquote:border-blue-400",
-  "prose-li:text-theme-secondary",
+  "typography-prose typography-prose--sm max-w-none text-theme-primary",
 ].join(" ");
 
 const changelogProseClasses = [
   "changelog-markdown",
-  "prose prose-sm sm:prose-base dark:prose-invert max-w-none text-theme-primary",
-  "prose-p:text-theme-secondary prose-a:text-accent prose-a:no-underline hover:prose-a:underline",
-  "prose-strong:text-theme-primary prose-img:rounded-md prose-blockquote:border-accent",
+  "typography-prose typography-prose--sm max-w-none text-theme-primary",
   "[&_h1]:sr-only",
   "[&_h2]:scroll-mt-24 [&_h2]:mt-12 [&_h2]:mb-4 [&_h2]:border-t [&_h2]:border-theme-default [&_h2]:pt-8 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:tracking-normal [&_h2]:text-theme-primary",
   "[&_h2:first-of-type]:mt-0 [&_h2:first-of-type]:border-t-0 [&_h2:first-of-type]:pt-0",

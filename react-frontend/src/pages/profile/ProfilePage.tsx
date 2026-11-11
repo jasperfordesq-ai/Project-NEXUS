@@ -1055,7 +1055,7 @@ export function ProfilePage() {
                   <MemberPlainText
                     content={translatedBio ?? profile.bio}
                     as="div"
-                    className={`text-theme-muted whitespace-pre-wrap prose prose-sm max-w-none dark:prose-invert${!isOwnProfile && !bioExpanded && profile.bio.length > 300 ? ' line-clamp-4' : ''}`}
+                    className={`text-theme-muted whitespace-pre-wrap typography-prose typography-prose--sm max-w-none${!isOwnProfile && !bioExpanded && profile.bio.length > 300 ? ' line-clamp-4' : ''}`}
                   />
                   {!isOwnProfile && profile.bio.length > 300 && (
                     <Button

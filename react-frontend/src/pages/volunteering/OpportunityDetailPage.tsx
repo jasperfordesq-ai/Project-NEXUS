@@ -1257,7 +1257,7 @@ export function OpportunityDetailPage() {
           {/* Description */}
           {opp.description && (
             <div>
-              <div className="prose prose-sm dark:prose-invert max-w-none">
+              <div className="typography-prose typography-prose--sm max-w-none">
                 <p className="text-theme-secondary whitespace-pre-wrap">{translatedDesc ?? opp.description}</p>
               </div>
               <TranslateButton

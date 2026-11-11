@@ -942,7 +942,7 @@ export function MarketplaceListingPage() {
         {/* Description */}
         <GlassCard className="p-6 space-y-4">
           <h2 className="text-lg font-semibold text-foreground">{t('listing.description')}</h2>
-          <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 whitespace-pre-wrap">
+          <div className="typography-prose typography-prose--sm max-w-none text-foreground/90 whitespace-pre-wrap">
             {translatedDesc ?? listing.description}
           </div>
           <TranslateButton

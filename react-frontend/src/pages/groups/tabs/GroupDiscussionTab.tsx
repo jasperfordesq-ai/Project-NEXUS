@@ -329,7 +329,7 @@ export function GroupDiscussionTab({
                                         contentType="group_discussion_reply"
                                         contentId={msg.id}
                                         content={msg.content}
-                                        className="text-sm text-theme-muted mt-1 whitespace-pre-wrap prose prose-sm max-w-none dark:prose-invert"
+                                        className="text-sm text-theme-muted mt-1 whitespace-pre-wrap typography-prose typography-prose--sm max-w-none"
                                       />
                                     </div>
                                   </div>

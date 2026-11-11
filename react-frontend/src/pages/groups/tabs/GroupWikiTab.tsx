@@ -583,7 +583,7 @@ export function GroupWikiTab({ groupId, isAdmin, isMember = true }: GroupWikiTab
                   </div>
                 </div>
               ) : (
-                <div className="prose prose-sm dark:prose-invert max-w-none text-theme-secondary whitespace-pre-wrap">
+                <div className="typography-prose typography-prose--sm max-w-none text-theme-secondary whitespace-pre-wrap">
                   {selectedPage.content}
                 </div>
               )}

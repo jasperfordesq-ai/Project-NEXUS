@@ -136,7 +136,7 @@ export default function CourseDetailPage() {
           <Card className="mb-6">
             <CardBody className="p-4">
               <h2 className="text-lg font-semibold mb-2">{t('detail.about')}</h2>
-              <div className="prose prose-sm max-w-none whitespace-pre-wrap">{course.description}</div>
+              <div className="typography-prose typography-prose--sm max-w-none whitespace-pre-wrap">{course.description}</div>
             </CardBody>
           </Card>
 

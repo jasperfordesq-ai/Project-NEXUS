@@ -347,13 +347,7 @@ export function KBArticlePage() {
             </Suspense>
           ) : (
             <div
-              className="prose prose-sm dark:prose-invert max-w-none text-theme-primary
-                prose-headings:text-theme-primary prose-p:text-theme-secondary
-                prose-a:text-blue-700 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
-                prose-strong:text-theme-primary prose-code:text-blue-700 dark:prose-code:text-blue-400
-                prose-pre:bg-theme-elevated prose-pre:border prose-pre:border-theme-default
-                prose-img:rounded-lg prose-blockquote:border-blue-400
-                prose-li:text-theme-secondary"
+              className="typography-prose max-w-none text-theme-primary"
               dangerouslySetInnerHTML={{ __html: sanitizeRichText(article.content || '') }}
             />
           )}
