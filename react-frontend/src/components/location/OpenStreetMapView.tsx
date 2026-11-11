@@ -15,9 +15,15 @@
  * For high-traffic deployments, switch the TileLayer URL to a paid host
  * (MapTiler, Stadia Maps) in this file.
  *
- * Dark mode: not supported with free OSM raster tiles. Tenants requiring
- * dark map tiles should stay on Google or upgrade to a paid tile host
- * with a dark style.
+ * Dark mode (warmth plan C3): the raster tiles have no dark style, so in the
+ * site's dark theme (the `.dark` class on the page) the tile layer alone is inverted and hue-rotated with a
+ * CSS filter — water stays blue-ish, land goes dark. Pins, clusters, popups
+ * and the attribution are not filtered. Works for every tile host the server
+ * may pick (OSM, MapTiler, Ordnance Survey).
+ *
+ * Pins and clusters wear the site's colours: each pin its kind's colour and
+ * picture (`pinStyleFor`), clusters the community's button colour with its
+ * companion colour as a ring.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -29,6 +35,8 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { LocationMapProps } from './LocationMap';
 import { fetchMapsRuntimeConfig } from './GoogleMapsProvider';
+import type { LucideIcon } from 'lucide-react';
+import { pinStyleFor, resolveCssColour } from '@/lib/map-styles';
 
 const DEFAULT_CENTER: [number, number] = [20, 0];
 const DEFAULT_ZOOM = 12;
@@ -44,28 +52,32 @@ const FALLBACK_TILE_ATTRIBUTION =
  * identically across Chrome / Firefox / Safari, unlike CSS clip-path which
  * has subpixel rounding differences. Using DivIcon also avoids the
  * well-known leaflet image-asset path problem in bundlers like Vite.
+ *
+ * `color` must be a plain colour: SVG attributes cannot read a CSS token, so
+ * callers resolve `var(--…)` first (`resolveCssColour`). A two-letter glyph,
+ * when given, replaces the kind's picture.
  */
-function buildPinIcon(color: string, glyph?: string): L.DivIcon {
+function buildPinIcon(color: string, Icon: LucideIcon, glyph?: string): L.DivIcon {
   const safeGlyph = (glyph ?? '').replace(/[<>&"]/g, '').slice(0, 2);
   const svg = renderToStaticMarkup(
     <svg
-      width="28"
-      height="36"
-      viewBox="0 0 28 36"
+      width="30"
+      height="40"
+      viewBox="0 0 30 40"
       xmlns="http://www.w3.org/2000/svg"
       role="presentation"
     >
       <path
-        d="M14 0C6.27 0 0 6.27 0 14c0 9.5 14 22 14 22s14-12.5 14-22C28 6.27 21.73 0 14 0z"
+        d="M15 0C6.72 0 0 6.72 0 15c0 10.2 15 25 15 25s15-14.8 15-25C30 6.72 23.28 0 15 0z"
         fill={color}
-        stroke="rgba(0,0,0,0.15)"
+        stroke="rgba(0,0,0,0.2)"
         strokeWidth="1"
       />
-      <circle cx="14" cy="14" r="5" fill="white" />
+      <circle cx="15" cy="15" r="9" fill="white" />
       {safeGlyph ? (
         <text
-          x="14"
-          y="18"
+          x="15"
+          y="19"
           textAnchor="middle"
           fontSize="10"
           fontFamily="system-ui, sans-serif"
@@ -74,15 +86,28 @@ function buildPinIcon(color: string, glyph?: string): L.DivIcon {
         >
           {safeGlyph}
         </text>
-      ) : null}
+      ) : (
+        <Icon x={9} y={9} width={12} height={12} strokeWidth={2.5} color={color} aria-hidden="true" />
+      )}
     </svg>
   );
   return L.divIcon({
     className: 'nexus-osm-pin-wrapper',
     html: svg,
-    iconSize: [28, 36],
-    iconAnchor: [14, 36],
-    popupAnchor: [0, -32],
+    iconSize: [30, 40],
+    iconAnchor: [15, 40],
+    popupAnchor: [0, -34],
+  });
+}
+
+/** A cluster bubble in the community colour, sized by how many it holds. */
+function buildClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
+  const count = cluster.getChildCount();
+  const size = count < 10 ? 34 : count < 100 ? 40 : 46;
+  return L.divIcon({
+    className: 'nexus-osm-cluster',
+    html: `<span>${count}</span>`,
+    iconSize: [size, size],
   });
 }
 
@@ -181,12 +206,15 @@ export function OpenStreetMapView({
     if (!mapReady || !map) return;
 
     const layer = useCluster
-      ? L.markerClusterGroup({ chunkedLoading: true, showCoverageOnHover: false })
+      ? L.markerClusterGroup({ chunkedLoading: true, showCoverageOnHover: false, iconCreateFunction: buildClusterIcon })
       : L.layerGroup();
 
     for (const marker of markers) {
       const leafletMarker = L.marker([marker.lat, marker.lng], {
-        icon: buildPinIcon(marker.pinColor ?? '#1976D2', marker.pinGlyph),
+        icon: (() => {
+          const style = pinStyleFor(marker.pinKind);
+          return buildPinIcon(resolveCssColour(marker.pinColor ?? style.colour), style.icon, marker.pinGlyph);
+        })(),
         title: marker.title,
       });
       const popupHtml = marker.title.replace(/[<>&"]/g, (character) =>
@@ -236,6 +264,16 @@ export function OpenStreetMapView({
           background: var(--color-surface, #f5f5f5);
         }
         .nexus-osm-map-wrapper .leaflet-popup-content-wrapper { border-radius: 12px; }
+        .dark .nexus-osm-map-wrapper .leaflet-tile-pane {
+          filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.6);
+        }
+        .dark .nexus-osm-map-wrapper .leaflet-container { background: #1b1b1f; }
+        .nexus-osm-cluster {
+          display: flex; align-items: center; justify-content: center;
+          border-radius: 9999px; font: 700 12px/1 system-ui, sans-serif;
+          background: var(--accent-strong); color: var(--accent-foreground, #fff);
+          box-shadow: 0 0 0 3px var(--companion), 0 2px 6px rgba(0,0,0,0.3);
+        }
       `}</style>
       <div ref={containerRef} data-testid="map-container" className="h-full w-full" />
     </div>

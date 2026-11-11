@@ -1035,6 +1035,7 @@ export function MembersPage() {
                   getMarkerConfig={(m: User) => ({
                     id: m.id,
                     title: resolveUserDisplayName(m) || t('members.fallback_name'),
+                    pinKind: 'member',
                   })}
                   renderInfoContent={(m: User) => (
                     <div className="p-2 max-w-[200px]">

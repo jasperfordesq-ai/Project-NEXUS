@@ -1175,7 +1175,7 @@ export function ListingsPage() {
               getMarkerConfig={(l: Listing) => ({
                 id: l.id,
                 title: l.title,
-                pinColor: l.type === 'offer' ? '#10b981' : '#f59e0b',
+                pinKind: l.type === 'offer' ? 'offer' : 'request',
               })}
               renderInfoContent={(l: Listing) => (
                 <div className="p-2 max-w-[250px]">

@@ -26,7 +26,7 @@ const LazyLocationMap = lazy(() =>
 export interface EntityMapViewProps<T> {
   items: T[];
   getCoordinates: (item: T) => { lat: number; lng: number } | null;
-  getMarkerConfig: (item: T) => { id: number | string; title: string; pinColor?: string; pinGlyph?: string };
+  getMarkerConfig: (item: T) => { id: number | string; title: string; pinColor?: string; pinGlyph?: string; pinKind?: string };
   renderInfoContent: (item: T) => ReactNode;
   height?: string;
   center?: { lat: number; lng: number };
@@ -65,6 +65,7 @@ export function EntityMapView<T>({
         title: config.title,
         pinColor: config.pinColor,
         pinGlyph: config.pinGlyph,
+        pinKind: config.pinKind,
         infoContent: renderInfoContent(item),
       });
     }

@@ -47,7 +47,8 @@ vi.mock('@/contexts/ThemeContext', () => ({
   useTheme: vi.fn(() => ({ resolvedTheme: 'light', theme: 'light', setTheme: vi.fn() })),
 }));
 
-vi.mock('@/lib/map-styles', () => ({
+vi.mock('@/lib/map-styles', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/map-styles')>()),
   DARK_MAP_STYLES: [],
 }));
 
@@ -62,6 +63,7 @@ vi.mock('@vis.gl/react-google-maps', () => ({
   Marker: () => <div data-testid="marker" />,
   AdvancedMarker: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) => <div data-testid="marker" {...props}>{children}</div>,
   InfoWindow: ({ children }: { children: React.ReactNode }) => <div data-testid="info-window">{children}</div>,
+  Pin: ({ background }: { background?: string }) => <span data-testid="pin" data-background={background} />,
   useMap: vi.fn(() => ({
     setCenter: vi.fn(),
     setZoom: vi.fn(),

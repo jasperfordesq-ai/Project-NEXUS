@@ -31,6 +31,7 @@ import {
   useApiLoadingStatus,
   useAdvancedMarkerRef,
   APILoadingStatus,
+  Pin,
 } from '@vis.gl/react-google-maps';
 import { Skeleton } from '@/components/ui/Skeleton';
 import {
@@ -40,7 +41,7 @@ import {
 } from '@googlemaps/markerclusterer';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/contexts/ThemeContext';
-import { DARK_MAP_STYLES } from '@/lib/map-styles';
+import { DARK_MAP_STYLES, pinStyleFor, resolveCssColour } from '@/lib/map-styles';
 import { GoogleMapsProvider, useGoogleMapsConfig } from './GoogleMapsProvider';
 import { useTenant } from '@/contexts/TenantContext';
 import { MAPS_ENABLED } from '@/lib/map-config';
@@ -60,6 +61,12 @@ export interface MapMarker {
   infoContent?: ReactNode;
   pinColor?: string;
   pinGlyph?: string;
+  /**
+   * What the pin stands for ('offer', 'request', 'event', 'group',
+   * 'member'): gives it that kind's colour and picture (`pinStyleFor`).
+   * `pinColor` still wins when set.
+   */
+  pinKind?: string;
 }
 
 export interface LocationMapProps {
@@ -106,8 +113,11 @@ function readToken(name: string, fallback: string): string {
 const clusterRenderer: Renderer = {
   render({ count, position }) {
     const size = count < 10 ? 32 : count < 100 ? 38 : 44;
-    const bg = readToken('--color-primary', '#4f46e5');
-    const fg = readToken('--text-inverse', '#ffffff');
+    // The community's own button colour with its companion as a ring
+    // (warmth plan C3); white on --accent-strong is checked to 4.5:1.
+    const bg = readToken('--accent-strong', '#4f46e5');
+    const fg = readToken('--accent-foreground', '#ffffff');
+    const ring = readToken('--companion', '#ec4899');
     const shadow = readToken('--shadow-md', '0 2px 6px rgba(0,0,0,0.35)');
     const el = document.createElement('div');
     el.style.cssText = [
@@ -121,7 +131,7 @@ const clusterRenderer: Renderer = {
       'display:flex',
       'align-items:center',
       'justify-content:center',
-      `box-shadow:${shadow}`,
+      `box-shadow:0 0 0 3px ${ring}, ${shadow}`,
       'cursor:pointer',
     ].join(';');
     el.textContent = String(count);
@@ -135,6 +145,12 @@ const clusterRenderer: Renderer = {
     });
   },
 };
+
+/** A Google pin in its kind's colour (or the community colour) — warmth plan C3. */
+function KindPin({ marker }: { marker: MapMarker }) {
+  const colour = resolveCssColour(marker.pinColor ?? pinStyleFor(marker.pinKind).colour);
+  return <Pin background={colour} borderColor="rgba(0,0,0,0.2)" glyphColor="#ffffff" />;
+}
 
 // ---------------------------------------------------------------------------
 // Single AdvancedMarker that registers itself with a MarkerClusterer
@@ -173,7 +189,9 @@ function ClusteredMarkerItem({ marker, clusterer, onClick, registerElement }: Cl
       position={{ lat: marker.lat, lng: marker.lng }}
       title={marker.title}
       onClick={() => onClick(marker, advancedMarker)}
-    />
+    >
+      <KindPin marker={marker} />
+    </AdvancedMarker>
   );
 }
 
@@ -261,7 +279,9 @@ function PlainMarkerItem({
       position={{ lat: marker.lat, lng: marker.lng }}
       title={marker.title}
       onClick={() => onMarkerClick(marker, advancedMarker)}
-    />
+    >
+      <KindPin marker={marker} />
+    </AdvancedMarker>
   );
 }
 
