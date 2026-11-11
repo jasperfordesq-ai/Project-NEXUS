@@ -124,7 +124,13 @@
     "character_count_one": "{{count}}/{{max}}",
     "character_count_other": "{{count}}/{{max}}",
     "character_count_few": "{{count}}/{{max}}",
-    "character_count_many": "{{count}}/{{max}}"
+    "character_count_many": "{{count}}/{{max}}",
+    "preview_heading_offer": "Tak będzie wyglądać Twoja oferta",
+    "preview_heading_request": "Tak będzie wyglądać Twoja prośba",
+    "preview_title_placeholder": "Tutaj pojawi się Twój tytuł",
+    "preview_description_placeholder": "Tutaj pojawi się Twój opis. Wystarczy kilka życzliwych zdań o tym, czym możesz się podzielić.",
+    "preview_photo_nudge": "Oferty i prośby ze zdjęciem bardziej się wyróżniają.",
+    "preview_author_fallback": "Ty"
   },
   "page_subtitle": "Zobacz, co mogą zaoferować osoby z tej społeczności i w czym potrzebują pomocy.",
   "hero_eyebrow": "Ludzie pomagają ludziom",

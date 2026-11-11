@@ -122,7 +122,13 @@
     "service_type_remote": "Nur online",
     "service_type_remote_hint": "Kann per Telefon, Chat oder Video stattfinden",
     "character_count_one": "{{count}}/{{max}}",
-    "character_count_other": "{{count}}/{{max}}"
+    "character_count_other": "{{count}}/{{max}}",
+    "preview_heading_offer": "So sieht dein Angebot aus",
+    "preview_heading_request": "So sieht deine Anfrage aus",
+    "preview_title_placeholder": "Hier erscheint dein Titel",
+    "preview_description_placeholder": "Hier erscheint deine Beschreibung. Ein paar freundliche Zeilen darüber, was du teilen kannst, genügen.",
+    "preview_photo_nudge": "Angebote und Anfragen mit Foto fallen auf der Übersicht auf.",
+    "preview_author_fallback": "Du"
   },
   "page_subtitle": "Sehen Sie, was Menschen in dieser Gemeinschaft anbieten können und wobei sie Hilfe brauchen.",
   "hero_eyebrow": "Menschen helfen Menschen",

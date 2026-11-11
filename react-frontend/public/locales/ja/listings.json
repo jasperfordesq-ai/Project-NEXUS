@@ -122,7 +122,13 @@
     "service_type_remote": "リモートのみ",
     "service_type_remote_hint": "電話、チャット、ビデオで対応可能",
     "character_count_one": "{{count}}/{{max}}",
-    "character_count_other": "{{count}}/{{max}}"
+    "character_count_other": "{{count}}/{{max}}",
+    "preview_heading_offer": "あなたの提供はこのように表示されます",
+    "preview_heading_request": "あなたのリクエストはこのように表示されます",
+    "preview_title_placeholder": "ここにタイトルが表示されます",
+    "preview_description_placeholder": "ここに説明が表示されます。共有できることを数行で気軽に書けば十分です。",
+    "preview_photo_nudge": "写真付きの提供やリクエストは掲示板で目立ちます。",
+    "preview_author_fallback": "あなた"
   },
   "page_subtitle": "このコミュニティの人たちが提供できること、そして助けを必要としていることを見てみましょう。",
   "hero_eyebrow": "人と人とが助け合う",

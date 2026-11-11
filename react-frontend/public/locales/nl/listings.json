@@ -122,7 +122,13 @@
     "service_type_remote": "Alleen op afstand",
     "service_type_remote_hint": "Kan via telefoon, chat of video plaatsvinden",
     "character_count_one": "{{count}}/{{max}}",
-    "character_count_other": "{{count}}/{{max}}"
+    "character_count_other": "{{count}}/{{max}}",
+    "preview_heading_offer": "Zo ziet je aanbod eruit",
+    "preview_heading_request": "Zo ziet je verzoek eruit",
+    "preview_title_placeholder": "Hier komt je titel",
+    "preview_description_placeholder": "Hier komt je beschrijving. Een paar vriendelijke regels over wat je kunt delen is genoeg.",
+    "preview_photo_nudge": "Aanbiedingen en verzoeken met een foto vallen meer op.",
+    "preview_author_fallback": "Jij"
   },
   "page_subtitle": "Bekijk wat mensen in deze gemeenschap kunnen aanbieden, en waarbij ze hulp nodig hebben.",
   "hero_eyebrow": "Mensen helpen mensen",

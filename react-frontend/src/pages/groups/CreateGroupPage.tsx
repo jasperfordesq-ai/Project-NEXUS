@@ -6,6 +6,7 @@
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
+import { FormSectionHeading } from '@/components/ui/FormSectionHeading';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectItem } from '@/components/ui/Select';
@@ -490,10 +491,10 @@ export function CreateGroupPage() {
 
       {/* Form */}
       <GlassCard className="p-5 sm:p-8">
-        <h2 className="mb-6 flex items-center gap-3 text-xl font-bold text-theme-primary">
-          <Users className="w-7 h-7 text-accent dark:text-accent" aria-hidden="true" />
-          {t('form.essentials_section')}
-        </h2>
+        {/* The kind's own colour, as on the feed and in search (warmth plan B6). */}
+        <div className="mb-6">
+          <FormSectionHeading icon={Users} kind="group" title={t('form.essentials_section')} />
+        </div>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-8">
           {/* Avatar and cover are staged locally until Save. */}

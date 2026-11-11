@@ -8,6 +8,7 @@ import { CheckboxGroup, Checkbox } from '@/components/ui/Checkbox';
 import { Chip } from '@/components/ui/Chip';
 import { DatePicker } from '@/components/ui/DatePicker';
 import type { DateInputValue } from '@/components/ui/DatePicker';
+import { FormSectionHeading } from '@/components/ui/FormSectionHeading';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
@@ -1132,10 +1133,10 @@ export function CreateEventPage() {
 
       {/* Form */}
       <GlassCard className="p-5 sm:p-8">
-        <h2 className="mb-6 flex items-center gap-3 text-xl font-bold text-theme-primary">
-          <Calendar className="w-7 h-7 text-amber-600 dark:text-amber-400" aria-hidden="true" />
-          {t('form.essentials_section')}
-        </h2>
+        {/* The kind's own colour, as on the feed and in search (warmth plan B6). */}
+        <div className="mb-6">
+          <FormSectionHeading icon={Calendar} kind="event" title={t('form.essentials_section')} />
+        </div>
 
         {groupId && !isEditing && (
           <div className="flex items-center gap-3 p-3 mb-4 rounded-lg bg-accent/5 border border-accent/20">

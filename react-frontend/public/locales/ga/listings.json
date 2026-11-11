@@ -125,7 +125,13 @@
     "character_count_other": "{{count}}/{{max}}",
     "character_count_few": "{{count}}/{{max}}",
     "character_count_many": "{{count}}/{{max}}",
-    "character_count_two": "{{count}}/{{max}}"
+    "character_count_two": "{{count}}/{{max}}",
+    "preview_heading_offer": "Mar a bheidh do thairiscint",
+    "preview_heading_request": "Mar a bheidh d'iarratas",
+    "preview_title_placeholder": "Beidh do theideal anseo",
+    "preview_description_placeholder": "Beidh do chur síos anseo. Is leor cúpla líne chairdiúil faoin méid is féidir leat a roinnt.",
+    "preview_photo_nudge": "Seasann tairiscintí agus iarratais le grianghraf amach ar an gclár.",
+    "preview_author_fallback": "Tusa"
   },
   "page_subtitle": "Féach cad is féidir le daoine sa phobal seo a thairiscint, agus cén chabhair atá uathu.",
   "hero_eyebrow": "Daoine ag cabhrú le daoine",

@@ -126,7 +126,13 @@
     "character_count_few": "{{count}}/{{max}}",
     "character_count_many": "{{count}}/{{max}}",
     "character_count_two": "{{count}}/{{max}}",
-    "character_count_zero": "{{count}}/{{max}}"
+    "character_count_zero": "{{count}}/{{max}}",
+    "preview_heading_offer": "هكذا سيظهر عرضك",
+    "preview_heading_request": "هكذا سيظهر طلبك",
+    "preview_title_placeholder": "سيظهر عنوانك هنا",
+    "preview_description_placeholder": "سيظهر وصفك هنا. تكفي بضعة أسطر ودية عمّا يمكنك مشاركته.",
+    "preview_photo_nudge": "تبرز العروض والطلبات التي تحتوي على صورة في اللوحة.",
+    "preview_author_fallback": "أنت"
   },
   "page_subtitle": "اطّلع على ما يمكن لأعضاء هذا المجتمع تقديمه، وما يحتاجون إليه من مساعدة.",
   "hero_eyebrow": "الناس يساعدون الناس",

@@ -14,7 +14,7 @@
  *   overlay header button can drive submission.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -41,6 +41,8 @@ import { Radio, RadioGroup } from '@/components/ui/Radio';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { SkillTagsInput } from '@/components/listings/SkillTagsInput';
+import { ListingPreviewCard } from '@/components/listings/ListingPreviewCard';
+import { FormSectionHeading } from '@/components/ui/FormSectionHeading';
 import { LoadingScreen } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { aiDescriptionAvailable } from '@/lib/aiDescriptions';
@@ -48,6 +50,8 @@ import { api, type ApiErrorDetail } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveThumbnailUrl } from '@/lib/helpers';
 import { safeImageSource } from '@/lib/safeImageSource';
+import { themeColourNames } from '@/lib/categoryColours';
+import { useSiteAccent } from '@/contexts/SiteAccentContext';
 import type { Listing, Category } from '@/types/api';
 
 interface FormData {
@@ -276,7 +280,16 @@ export function ListingForm({
   const isEditingOthersListing = isEditing && listingOwner !== null && listingOwner.id !== user?.id;
   const [removeExistingImage, setRemoveExistingImage] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const selectedCategoryName = categories.find((c) => c.id.toString() === formData.category_id)?.name;
+  const selectedCategory = categories.find((c) => c.id.toString() === formData.category_id);
+  const selectedCategoryName = selectedCategory?.name;
+  const siteAccent = useSiteAccent();
+  // The theme's colour as its tile on the offers page shows it.
+  const themeColours = useMemo(() => themeColourNames(categories, siteAccent), [categories, siteAccent]);
+  // First name only (E-122). Staff editing someone else's offer see a
+  // neutral name rather than their own.
+  const previewAuthorName = isEditingOthersListing
+    ? t('form.preview_author_fallback')
+    : (user?.first_name || user?.name?.split(' ')[0] || t('form.preview_author_fallback'));
   const safeLocalImagePreview = safeImageSource(imagePreview, { allowBlob: true });
   const safeExistingImagePreview = existingImageUrl
     ? safeImageSource(resolveThumbnailUrl(existingImageUrl, { width: 640, height: 360 }))
@@ -664,18 +677,12 @@ export function ListingForm({
   const sectionClass = isSheet
     ? 'space-y-3 border-t border-theme-default pt-5'
     : 'space-y-4 border-t border-theme-default pt-8';
-  const headingClass = isSheet
-    ? 'text-base font-semibold text-theme-primary'
-    : 'text-lg font-semibold text-theme-primary';
 
   const formBody = (
     <form onSubmit={handleSubmit} className={isSheet ? 'space-y-5' : 'space-y-8'} noValidate>
       {/* Type Selection */}
       <section className={isSheet ? 'space-y-3' : 'space-y-4'}>
-        <div>
-          <h2 className={headingClass}>{t('form.intent_section')}</h2>
-          <p className="mt-1 text-sm text-theme-muted">{t('form.intent_section_hint')}</p>
-        </div>
+        <FormSectionHeading icon={ArrowRightLeft} kind="listing" compact={isSheet} title={t('form.intent_section')} hint={t('form.intent_section_hint')} />
         <RadioGroup
           aria-label={t('form.type_question')}
           value={formData.type}
@@ -716,10 +723,7 @@ export function ListingForm({
       </section>
 
       <section className={sectionClass}>
-        <div>
-          <h2 className={headingClass}>{t('form.essentials_section')}</h2>
-          <p className="mt-1 text-sm text-theme-muted">{t('form.essentials_section_hint')}</p>
-        </div>
+        <FormSectionHeading icon={FileText} kind="blog" compact={isSheet} title={t('form.essentials_section')} hint={t('form.essentials_section_hint')} />
 
         {/* Title */}
         <div>
@@ -885,10 +889,7 @@ export function ListingForm({
 
       {/* Service Delivery Mode */}
       <section className={sectionClass}>
-        <div>
-          <h2 className={headingClass}>{t('form.logistics_section')}</h2>
-          <p className="mt-1 text-sm text-theme-muted">{t('form.logistics_section_hint')}</p>
-        </div>
+        <FormSectionHeading icon={MapPin} kind="hours" compact={isSheet} title={t('form.logistics_section')} hint={t('form.logistics_section_hint')} />
         <RadioGroup
           label={t('form.service_type_label')}
           value={formData.service_type}
@@ -962,10 +963,7 @@ export function ListingForm({
       </section>
 
       <section className={sectionClass}>
-        <div>
-          <h2 className={headingClass}>{t('form.organise_section')}</h2>
-          <p className="mt-1 text-sm text-theme-muted">{t('form.organise_section_hint')}</p>
-        </div>
+        <FormSectionHeading icon={Tag} kind="resource" compact={isSheet} title={t('form.organise_section')} hint={t('form.organise_section_hint')} />
         <div className="grid gap-5 md:grid-cols-2">
           {/* Category */}
           <div>
@@ -1069,10 +1067,7 @@ export function ListingForm({
 
       {/* Image Upload */}
       <section className={sectionClass}>
-        <div>
-          <h2 className={headingClass}>{t('form.media_section')}</h2>
-          <p className="mt-1 text-sm text-theme-muted">{t('form.media_section_hint')}</p>
-        </div>
+        <FormSectionHeading icon={ImagePlus} kind="goal" compact={isSheet} title={t('form.media_section')} hint={t('form.media_section_hint')} />
         {previewImageSource ? (
           <>
             <div className="relative inline-block">
@@ -1206,10 +1201,30 @@ export function ListingForm({
         </div>
       </header>
 
-      {/* Form */}
-      <GlassCard className="p-5 sm:p-8">
-        {formBody}
-      </GlassCard>
+      {/* Form, with a live picture of the finished card beside it (warmth
+          plan B6). On a phone the picture follows the form. */}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <GlassCard className="p-5 sm:p-8">
+          {formBody}
+        </GlassCard>
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <ListingPreviewCard
+            title={formData.title}
+            description={formData.description}
+            type={formData.type}
+            serviceType={formData.service_type}
+            hours={formData.hours_estimate}
+            location={formData.location}
+            categoryName={selectedCategory?.name}
+            categorySlug={selectedCategory?.slug}
+            categoryIcon={selectedCategory?.icon}
+            categoryColour={selectedCategory ? themeColours[selectedCategory.slug] : null}
+            imageSrc={previewImageSource}
+            authorName={previewAuthorName}
+            authorAvatar={!isEditingOthersListing && user?.avatar ? resolveThumbnailUrl(user.avatar, { width: 96, height: 96 }) : null}
+          />
+        </aside>
+      </div>
     </>
   );
 }

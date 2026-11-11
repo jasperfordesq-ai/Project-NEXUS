@@ -122,7 +122,13 @@
     "service_type_remote": "Remote only",
     "service_type_remote_hint": "Can happen by phone, chat, or video",
     "character_count_one": "{{count}}/{{max}}",
-    "character_count_other": "{{count}}/{{max}}"
+    "character_count_other": "{{count}}/{{max}}",
+    "preview_heading_offer": "How your offer will look",
+    "preview_heading_request": "How your request will look",
+    "preview_title_placeholder": "Your title will appear here",
+    "preview_description_placeholder": "Your description will appear here. A few friendly lines about what you can share are plenty.",
+    "preview_photo_nudge": "Offers and requests with a photo stand out on the board.",
+    "preview_author_fallback": "You"
   },
   "page_subtitle": "See what people in this community can offer, and what they need help with.",
   "hero_eyebrow": "People helping people",

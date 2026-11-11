@@ -123,7 +123,13 @@
     "service_type_remote_hint": "Pode ocorrer por telefone, chat ou vídeo",
     "character_count_one": "{{count}}/{{max}}",
     "character_count_other": "{{count}}/{{max}}",
-    "character_count_many": "{{count}}/{{max}}"
+    "character_count_many": "{{count}}/{{max}}",
+    "preview_heading_offer": "Assim ficará a sua oferta",
+    "preview_heading_request": "Assim ficará o seu pedido",
+    "preview_title_placeholder": "O seu título aparecerá aqui",
+    "preview_description_placeholder": "A sua descrição aparecerá aqui. Bastam algumas linhas simpáticas sobre o que pode partilhar.",
+    "preview_photo_nudge": "Ofertas e pedidos com fotografia destacam-se no quadro.",
+    "preview_author_fallback": "Você"
   },
   "page_subtitle": "Veja o que as pessoas desta comunidade podem oferecer e em que precisam de ajuda.",
   "hero_eyebrow": "Pessoas a ajudar pessoas",
