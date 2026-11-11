@@ -40915,6 +40915,11 @@ export default interface Resources {
       "credits": "Credits",
       "messages": "Messages"
     },
+    "step_tracker": {
+      "current": "current step",
+      "done": "done",
+      "exchange_progress": "Exchange progress"
+    },
     "sub_region": {
       "all_areas": "All areas",
       "label": "Area",
@@ -51415,7 +51420,7 @@ export default interface Resources {
             "title": "Reporting a listing"
           },
           "respond_to_listing": {
-            "body": "Open a listing to see the full details and who posted it. Under **Respond to this listing** you will find these buttons:\n\n- **Request Exchange**: if your community uses exchange requests, this sends a request with the hours you propose. See the Exchanges section of this guide.\n- **Send Message**: if your community does not use exchange requests, this opens a private conversation with the member instead.\n- **Like** and **Comments**: show appreciation, or ask a question that everyone can see.\n- **Save**: keeps the listing in your [Saved](/saved) items so you can find it again.\n- **Share**: lets you share the listing or copy a link to it.\n- **Report listing**: tells the community team about a problem.\n\nIf you already have an exchange for this listing, the first button shows **Exchange** and its current status instead.\n\nPress the member's name to see their profile. It shows their reviews and other listings, under **More from** followed by their name.",
+            "body": "Open a listing to see the full details and who posted it. In the coloured panel under the description you will find these buttons:\n\n- **Request Exchange**: if your community uses exchange requests, this sends a request with the hours you propose. See the Exchanges section of this guide.\n- **Send Message**: if your community does not use exchange requests, this opens a private conversation with the member instead.\n- **Like** and **Comments**: show appreciation, or ask a question that everyone can see.\n- **Save**: keeps the listing in your [Saved](/saved) items so you can find it again.\n- **Share**: lets you share the listing or copy a link to it.\n- **Report listing**: tells the community team about a problem.\n\nIf you already have an exchange for this listing, the first button shows **Exchange** and its current status instead.\n\nPress the member's name to see their profile. It shows their reviews and other listings, under **More from** followed by their name.",
             "summary": "Ask for help, send a message, save, share or comment on a listing.",
             "title": "Responding to a listing"
           }
