@@ -140,7 +140,8 @@ class OrganisationWellbeingViewTest extends TestCase
             $this->assertCount(1, $data['items'], $who);
             $row = $data['items'][0];
             $this->assertSame((int) $pat->id, $row['volunteer']['id']);
-            $this->assertSame('Pat Murphy', $row['volunteer']['name']);
+            // E-122: organisation managers and the lead are not community staff.
+            $this->assertSame('Pat', $row['volunteer']['name']);
             $this->assertSame(1, $row['mood']);
             $this->assertSame('active', $row['status']);
             $this->assertNotNull($row['checkin_at']);
@@ -174,7 +175,7 @@ class OrganisationWellbeingViewTest extends TestCase
         $this->checkin($quiet, 1, false);
 
         $names = array_column(array_column($this->openView($o['owner'], $o['org'])->assertOk()->json('data.items'), 'volunteer'), 'name');
-        $this->assertSame(['Pat Murphy'], $names);
+        $this->assertSame(['Pat'], $names); // E-122: first names to the organisation
     }
 
     public function test_an_unknown_organisation_is_not_found_and_an_org_contact_of_another_community_is_refused(): void

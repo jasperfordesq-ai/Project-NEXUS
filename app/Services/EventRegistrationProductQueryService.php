@@ -65,7 +65,10 @@ final class EventRegistrationProductQueryService
             $row = $invitation->only(['id', 'event_id', 'campaign_id', 'target_type', 'status', 'invitation_version',
                 'token_expires_at', 'accepted_at', 'revoked_at', 'expired_at']);
             if ($canViewRoster) {
-                $row['member_name'] = $invitation->member_name;
+                // The name expression yields '' when no member is joined (an
+                // email-only invitation); keep that as null, as before E-122.
+                $memberName = trim((string) $invitation->member_name);
+                $row['member_name'] = $memberName !== '' ? $memberName : null;
             }
             if ($canViewEmail) {
                 $row['recipient_email'] = is_string($invitation->email_ciphertext)

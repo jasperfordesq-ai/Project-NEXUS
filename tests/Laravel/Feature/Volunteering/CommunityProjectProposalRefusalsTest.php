@@ -117,7 +117,8 @@ class CommunityProjectProposalRefusalsTest extends TestCase
         $project = $items->firstWhere('id', $id);
 
         $this->assertNotNull($project);
-        $this->assertSame('Avery Stone', $project['proposer_name']);
+        // E-122: an ordinary member sees the proposer's first name only.
+        $this->assertSame('Avery', $project['proposer_name']);
     }
 
     public function test_supporting_a_project_that_does_not_exist_is_not_found(): void

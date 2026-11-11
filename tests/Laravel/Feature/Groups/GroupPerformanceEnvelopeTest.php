@@ -89,7 +89,9 @@ final class GroupPerformanceEnvelopeTest extends TestCase
         $smallMembers = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/members?per_page=20");
         $largeMembers = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/members?per_page=20");
         $measurements['members'] = [$smallMembers['queries'], $largeMembers['queries']];
-        $this->assertBoundedGrowth('members tab', $smallMembers['queries'], $largeMembers['queries'], 36, 1);
+        // 37: E-122 adds one fixed query (may this viewer see surnames?). Measured
+        // 11 Nov 2026 as 37 for both the small and the large group — no growth.
+        $this->assertBoundedGrowth('members tab', $smallMembers['queries'], $largeMembers['queries'], 37, 1);
 
         $smallDiscussions = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/discussions?per_page=20");
         $largeDiscussions = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/discussions?per_page=20");
@@ -119,7 +121,8 @@ final class GroupPerformanceEnvelopeTest extends TestCase
         $smallWiki = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/wiki");
         $largeWiki = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/wiki");
         $measurements['wiki'] = [$smallWiki['queries'], $largeWiki['queries']];
-        $this->assertBoundedGrowth('wiki tab', $smallWiki['queries'], $largeWiki['queries'], 18, 1);
+        // 19: one fixed E-122 surname-audience query; measured 19 for both sizes.
+        $this->assertBoundedGrowth('wiki tab', $smallWiki['queries'], $largeWiki['queries'], 19, 1);
 
         $smallMedia = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/media?per_page=20");
         $largeMedia = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/media?per_page=20");

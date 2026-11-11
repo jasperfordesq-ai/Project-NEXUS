@@ -15,6 +15,7 @@ use App\Models\EventStaffAssignmentHistory;
 use BackedEnum;
 use DateTimeInterface;
 use App\Support\Members\MemberProfileVisibility;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /** Canonical, audit-bearing representation of one delegated Events role. */
@@ -42,9 +43,15 @@ final class EventStaffResource
             : collect();
         $latestHistory = $history->last();
         $user = $assignment->relationLoaded('user') ? $assignment->user : null;
+        $isOwnRow = $viewerId !== null && $viewerId === (int) $assignment->user_id;
+        // The caller has already decided whether this viewer sees surnames
+        // (MemberProfileVisibility::viewerSeesSurnames()), so honour that
+        // decision here instead of asking the request-wide audience again.
         $name = $user === null
             ? null
-            : UserDisplayName::resolve($user);
+            : (($viewerIsAdmin || $isOwnRow)
+                ? UserDisplayName::full($user, NameReason::CHECKED_BY_CALLER)
+                : UserDisplayName::resolve($user));
         $member = [
             'id' => (int) $assignment->user_id,
             'name' => $name !== '' ? $name : null,
@@ -52,7 +59,6 @@ final class EventStaffResource
             'last_name' => $user?->last_name,
             'avatar_url' => $user?->avatar_url,
         ];
-        $isOwnRow = $viewerId !== null && $viewerId === (int) $assignment->user_id;
         if (! $viewerIsAdmin && ! $isOwnRow) {
             $isOrganisation = UserDisplayName::isOrganisation($user);
             $member = MemberProfileVisibility::withoutSurname($member + [

@@ -378,6 +378,7 @@ export function TenantForm() {
           : refusedField === 'accessible_domain'
             ? t('tenant_form.accessible_domain_label')
             : null;
+        // admin-i18n-ignore: localized server message (see the note above).
         const reason = res.error || generic;
         toast.error(refusedLabel ? `${refusedLabel}: ${reason}` : reason);
       }

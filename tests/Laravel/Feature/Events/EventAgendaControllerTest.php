@@ -61,7 +61,9 @@ final class EventAgendaControllerTest extends TestCase
             ->assertJsonPath('data.session.title', 'Opening workshop')
             ->assertJsonPath('data.session.type', 'workshop')
             ->assertJsonPath('data.session.visibility', 'registered')
-            ->assertJsonPath('data.session.speakers.0.display_name', 'Linked Speaker')
+            // E-122 / O-269: an organiser who is not staff sees a linked
+            // member speaker by first name only.
+            ->assertJsonPath('data.session.speakers.0.display_name', 'Linked')
             ->assertJsonPath('data.session.speakers.1.display_name', 'External Expert');
         $firstId = (int) $created->json('data.session.id');
         $firstHistoryId = (int) $created->json('data.history_entry_id');

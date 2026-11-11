@@ -28,6 +28,11 @@ module.exports = {
     '^@expo/vector-icons/Ionicons$': '<rootDir>/__mocks__/expo-ionicons.js',
     '^react-native-reanimated$': '<rootDir>/__mocks__/react-native-reanimated.js',
     '^react-native-worklets$': '<rootDir>/__mocks__/react-native-worklets.js',
+    // Parity tests import the website's own files (../react-frontend). Babel
+    // injects @babel/runtime helpers into them, which Jest would otherwise
+    // resolve from react-frontend/node_modules — not installed in the mobile
+    // CI job. Resolve them from this app's copy instead.
+    '^@babel/runtime/(.*)$': '<rootDir>/node_modules/@babel/runtime/$1',
   },
 
   // Coverage must count files NO test imports. Without this, jest only

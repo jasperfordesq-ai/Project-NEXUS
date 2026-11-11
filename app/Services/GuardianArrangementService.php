@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Support\Safeguarding\SupportTiers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
 
 /**
@@ -454,7 +455,9 @@ class GuardianArrangementService
 
                 return [
                     'id'                   => (int) $r->id,
-                    'guardian_name'        => UserDisplayName::resolve($r),
+                    // O-279 (owner, 11 Nov 2026): guardian arrangements keep
+                    // full names, outside the E-122 surname rule.
+                    'guardian_name'        => UserDisplayName::full($r, NameReason::CHECKED_BY_CALLER),
                     'assigned_at'          => $r->created_at,
                     'consent_given_at'     => $r->approved_at,
                     'consent_declined_at'  => $r->declined_at,
@@ -494,7 +497,8 @@ class GuardianArrangementService
             ->get()
             ->map(fn ($r) => [
                 'id'          => (int) $r->id,
-                'ward_name'   => UserDisplayName::resolve($r),
+                // O-279 (owner, 11 Nov 2026): full names, see forWard().
+                'ward_name'   => UserDisplayName::full($r, NameReason::CHECKED_BY_CALLER),
                 'assigned_at' => $r->created_at,
                 'state'       => self::stateOf($r),
             ])

@@ -39,7 +39,9 @@ const SIZE = {
 } as const;
 
 function displayName(person: FaceStackPerson): string {
-  return person.name?.trim() || [person.first_name, person.last_name].filter(Boolean).join(' ').trim();
+  // The server decides who may see a surname (E-122) and puts the result in
+  // `name`; the fallback never adds a surname back.
+  return person.name?.trim() || person.first_name?.trim() || '';
 }
 
 /**

@@ -641,7 +641,11 @@ class FeedService
             $nameMap = DB::table('users')
                 ->whereIn('id', array_unique($receiverIds))
                 ->where('tenant_id', $tenantId)
-                ->pluck(DB::raw(UserDisplayName::sql('', '')), 'id'); // E-122: audience-aware
+                // E-122: audience-aware. Alias the expression and pluck the alias:
+                // pluck() on a raw CASE expression reads the result row by the
+                // expression's own text and crashes ("Undefined property $CASE").
+                ->selectRaw('id, ' . UserDisplayName::sql('', 'receiver_display_name'))
+                ->pluck('receiver_display_name', 'id');
             foreach ($items as &$item) {
                 if ($item['type'] === 'review' && isset($item['receiver']['id'])) {
                     $item['receiver']['name'] = $nameMap[$item['receiver']['id']] ?? 'Unknown';

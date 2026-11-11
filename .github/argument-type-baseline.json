@@ -235,25 +235,9 @@
       "note": ""
     },
     {
-      "file": "app/Services/MatchApprovalWorkflowService.php",
-      "identifier": "argument.type",
-      "message": "Parameter #1 $column of method Illuminate\\Database\\Query\\Builder::value() expects string, Illuminate\\Contracts\\Database\\Query\\Expression given.",
-      "count": 1,
-      "status": "pre-existing — not yet reviewed",
-      "note": ""
-    },
-    {
       "file": "app/Services/MessageService.php",
       "identifier": "argument.type",
       "message": "Parameter #2 $user of static method App\\Services\\MessageService::withoutOtherUserSurname() expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model given.",
-      "count": 1,
-      "status": "pre-existing — not yet reviewed",
-      "note": ""
-    },
-    {
-      "file": "app/Services/NotificationDispatcher.php",
-      "identifier": "argument.type",
-      "message": "Parameter #1 $column of method Illuminate\\Database\\Query\\Builder::value() expects string, Illuminate\\Contracts\\Database\\Query\\Expression given.",
       "count": 1,
       "status": "pre-existing — not yet reviewed",
       "note": ""

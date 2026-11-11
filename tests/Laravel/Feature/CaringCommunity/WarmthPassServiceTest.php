@@ -71,7 +71,8 @@ class WarmthPassServiceTest extends TestCase
         $this->assertSame(2, $pass['tier']);
         $this->assertSame('trusted', $pass['tier_label']);
         $this->assertNotNull($pass['pass_active_since']);
-        $this->assertSame('Warm Pass', trim($pass['member_name']));
+        // E-122: built with no signed-in viewer, so the public (first) name.
+        $this->assertSame('Warm', trim($pass['member_name']));
     }
 
     public function test_pass_includes_member_since_date(): void

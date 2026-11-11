@@ -9,6 +9,8 @@ namespace App\Services;
 use App\Models\SupportReport;
 use App\Models\SupportReportAttachment;
 use App\Models\User;
+use App\Support\Names\NameReason;
+use App\Support\UserDisplayName;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
@@ -493,7 +495,9 @@ class SupportJiraTicketService
         ];
 
         if ($member !== null) {
-            $memberName = trim((string) $member->name);
+            // The ticket is read by support-desk staff, and only when the
+            // member chose to be named (send_member_email): full name (E-122).
+            $memberName = trim(UserDisplayName::full($member, NameReason::STAFF_RECIPIENT));
             if ($memberName !== '') {
                 $lines[] = 'Member: ' . $memberName;
             }
