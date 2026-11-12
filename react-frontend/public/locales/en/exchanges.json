@@ -219,6 +219,7 @@
     "neighbours_label": "People you've exchanged with this year",
     "hours_label": "Hours exchanged this year",
     "close": "Close",
-    "send_message": "Send {{name}} a thank-you message"
+    "send_message": "Send {{name}} a thank-you message",
+    "write_note": "Write {{name}} a thank-you note"
   }
 }

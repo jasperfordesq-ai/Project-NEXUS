@@ -110,6 +110,9 @@ const defaultFeatures: TenantFeatures = {
   federation: true,
   connections: true,
   reviews: true,
+  // Thank-you notes. Default ON (they were already live on the phone app and
+  // the accessible site); a community can switch them off.
+  appreciations: true,
   polls: true,
   job_vacancies: true,
   ideation_challenges: true,

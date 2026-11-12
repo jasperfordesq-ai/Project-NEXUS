@@ -12506,7 +12506,11 @@
                 "from_someone": "Członek",
                 "reactions_count": "{0} Brak reakcji|{1} 1 reakcja|[2,*] :count reakcje",
                 "empty_title": "Nie ma jeszcze uznania",
-                "empty_body": "Gdy członkowie podziękują tej osobie, notatki publiczne pojawią się tutaj."
+                "empty_body": "Gdy członkowie podziękują tej osobie, notatki publiczne pojawią się tutaj.",
+                "own_description": "Podziękowania, które wysłali Ci inni członkowie. Notatkę widzisz tylko Ty, dopóki nie zdecydujesz się pokazać jej na swoim profilu.",
+                "own_empty_body": "Gdy członkowie Ci podziękują, ich notatki pojawią się tutaj. Tylko Ty będziesz je widzieć, dopóki nie zdecydujesz się pokazać ich na swoim profilu.",
+                "visibility_private": "Widoczne tylko dla Ciebie",
+                "visibility_public": "Widoczne na Twoim profilu"
             },
             "react": {
                 "legend": "Zareaguj na tę notatkę",
@@ -12517,14 +12521,22 @@
                 "remove_label": "Usuń swoją reakcję :reaction",
                 "your_reaction": "Twoja reakcja: :reaction"
             },
+            "manage": {
+                "show": "Pokaż na moim profilu",
+                "hide": "Ukryj na moim profilu",
+                "remove": "Usuń",
+                "for_note": "(notatka od: :name)",
+                "remove_heading": "Usunąć to podziękowanie?",
+                "remove_warning": "Notatka zostanie trwale usunięta. Tej czynności nie można cofnąć.",
+                "remove_confirm": "Usuń notatkę"
+            },
             "send": {
                 "heading": "Powiedz dziękuję",
                 "heading_to": "Podziękuj :name",
-                "intro": "Wyślij publiczne lub prywatne podziękowanie do tego członka.",
+                "intro": "Wyślij podziękowanie do tego członka.",
                 "message_label": "Twoja wiadomość",
                 "message_hint": "Do 500 znaków.",
-                "public_label": "Upublicznij to podziękowanie",
-                "public_hint": "Notatki publiczne pojawiają się na ścianie uznania dla członków. Prywatne notatki są widoczne tylko dla nich.",
+                "private_hint": "Twoją notatkę zobaczy tylko ta osoba, chyba że zdecyduje się pokazać ją na swoim profilu.",
                 "submit": "Wyślij podziękowanie",
                 "self_notice": "Nie możesz wysłać podziękowania sobie."
             },
@@ -12548,7 +12560,12 @@
                 "appreciation_rate_limited": "Osiągnąłeś dzienny limit wysyłania podziękowań. Spróbuj ponownie jutro.",
                 "appreciation_failed": "Przepraszamy, Twoje podziękowanie nie mogło zostać wysłane. Spróbuj ponownie.",
                 "reaction_updated": "Twoja reakcja została zaktualizowana.",
-                "reaction_failed": "Przepraszamy, nie można zapisać Twojej reakcji."
+                "reaction_failed": "Przepraszamy, nie można zapisać Twojej reakcji.",
+                "appreciation_shown": "Ta notatka jest teraz widoczna na Twoim profilu.",
+                "appreciation_hidden": "Ta notatka jest teraz ukryta. Widzisz ją tylko Ty.",
+                "appreciation_removed": "Podziękowanie zostało usunięte.",
+                "appreciation_visibility_failed": "Przepraszamy, nie udało się zmienić tej notatki. Spróbuj ponownie.",
+                "appreciation_remove_failed": "Przepraszamy, nie udało się usunąć tej notatki. Spróbuj ponownie."
             },
             "errors": {
                 "summary_title": "Jest problem"

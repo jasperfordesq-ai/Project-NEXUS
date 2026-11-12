@@ -156,7 +156,7 @@ class AppreciationServiceTest extends TestCase
         $this->assertTrue($exists);
     }
 
-    public function test_send_with_valid_context_type_succeeds(): void
+    public function test_send_with_valid_context_type_succeeds_and_keeps_no_id(): void
     {
         $sender   = $this->insertUser('s');
         $receiver = $this->insertUser('r');
@@ -164,7 +164,40 @@ class AppreciationServiceTest extends TestCase
         $appr = $this->svc->send($sender, $receiver, 'Nice event help!', 'event_help', 42);
 
         $this->assertSame('event_help', $appr->context_type);
-        $this->assertEquals(42, (int) $appr->context_id);
+        // Only a completed exchange between the two people keeps its id.
+        $this->assertNull($appr->context_id);
+    }
+
+    public function test_send_always_stores_a_private_note(): void
+    {
+        $sender   = $this->insertUser('s');
+        $receiver = $this->insertUser('r');
+
+        $appr = $this->svc->send($sender, $receiver, 'Private until the receiver says so');
+
+        $this->assertFalse($appr->is_public);
+        $this->assertSame(0, (int) DB::table('appreciations')->where('id', $appr->id)->value('is_public'));
+    }
+
+    public function test_send_throws_when_receiver_is_not_an_active_member(): void
+    {
+        $sender   = $this->insertUser('s');
+        $receiver = $this->insertUser('r');
+        DB::table('users')->where('id', $receiver)->update(['status' => 'suspended']);
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('receiver_not_found');
+        $this->svc->send($sender, $receiver, 'Hi');
+    }
+
+    public function test_send_refuses_an_exchange_context_that_is_not_theirs(): void
+    {
+        $sender   = $this->insertUser('s');
+        $receiver = $this->insertUser('r');
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('invalid_context');
+        $this->svc->send($sender, $receiver, 'Thanks', 'listing_completion', 2147480000);
     }
 
     public function test_send_increments_cache_counter_after_success(): void
@@ -190,6 +223,7 @@ class AppreciationServiceTest extends TestCase
             'receiver_id'    => $this->insertUser('r'),
             'tenant_id'      => self::TENANT_ID,
             'message'        => 'Thanks',
+            'is_public'      => true,
             'reactions_count'=> 0,
         ]);
         $user = $this->insertUser('reactor');
@@ -208,6 +242,7 @@ class AppreciationServiceTest extends TestCase
             'receiver_id'    => $receiver,
             'tenant_id'      => self::TENANT_ID,
             'message'        => 'Great job!',
+            'is_public'      => true,
             'reactions_count'=> 0,
         ]);
         $reactor = $this->insertUser('reactor');
@@ -230,6 +265,7 @@ class AppreciationServiceTest extends TestCase
             'receiver_id'    => $receiver,
             'tenant_id'      => self::TENANT_ID,
             'message'        => 'Brilliant!',
+            'is_public'      => true,
             'reactions_count'=> 0,
         ]);
         $reactor = $this->insertUser('reactor');
@@ -255,6 +291,7 @@ class AppreciationServiceTest extends TestCase
             'receiver_id'    => $receiver,
             'tenant_id'      => self::TENANT_ID,
             'message'        => 'Amazing!',
+            'is_public'      => true,
             'reactions_count'=> 0,
         ]);
         $reactor = $this->insertUser('reactor');
@@ -271,6 +308,132 @@ class AppreciationServiceTest extends TestCase
             ->where('user_id', $reactor)
             ->first();
         $this->assertSame('star', $row->reaction_type);
+    }
+
+    public function test_react_refuses_a_note_the_receiver_has_not_shown(): void
+    {
+        $appr = Appreciation::create([
+            'sender_id' => $this->insertUser('s'), 'receiver_id' => $this->insertUser('r'),
+            'tenant_id' => self::TENANT_ID, 'message' => 'Private', 'is_public' => false,
+            'reactions_count' => 0,
+        ]);
+
+        $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+        $this->svc->react($appr->id, $this->insertUser('reactor'), 'heart');
+    }
+
+    // ── setVisibility() / delete() ────────────────────────────────────────────
+
+    public function test_only_the_receiver_can_show_or_hide_a_note(): void
+    {
+        $sender   = $this->insertUser('s');
+        $receiver = $this->insertUser('r');
+        $appr = Appreciation::create([
+            'sender_id' => $sender, 'receiver_id' => $receiver,
+            'tenant_id' => self::TENANT_ID, 'message' => 'Show me', 'is_public' => false,
+            'reactions_count' => 0,
+        ]);
+
+        $shown = $this->svc->setVisibility($appr->id, $receiver, true);
+        $this->assertTrue($shown->is_public);
+        $this->assertSame($sender, $shown->toArray()['sender']['id']);
+        $this->assertSame($receiver, $shown->toArray()['receiver']['id']);
+        $this->assertFalse($this->svc->setVisibility($appr->id, $receiver, false)->is_public);
+
+        foreach ([$sender, $this->insertUser('other')] as $notTheReceiver) {
+            try {
+                $this->svc->setVisibility($appr->id, $notTheReceiver, true);
+                $this->fail('Someone other than the receiver changed who can see a note.');
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+                $this->assertSame(0, (int) DB::table('appreciations')->where('id', $appr->id)->value('is_public'));
+            }
+        }
+    }
+
+    public function test_setVisibility_and_delete_ignore_a_note_of_another_tenant(): void
+    {
+        $sender   = $this->insertUser('s');
+        $receiver = $this->insertUser('r');
+        $appr = Appreciation::create([
+            'sender_id' => $sender, 'receiver_id' => $receiver,
+            'tenant_id' => self::TENANT_ID, 'message' => 'Mine', 'is_public' => false,
+            'reactions_count' => 0,
+        ]);
+
+        TenantContext::setById(999);
+        try {
+            $this->assertFalse($this->svc->delete($appr->id, $receiver));
+            try {
+                $this->svc->setVisibility($appr->id, $receiver, true);
+                $this->fail('A note was changed from another tenant.');
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+                // expected
+            }
+        } finally {
+            TenantContext::setById(self::TENANT_ID);
+        }
+
+        $row = DB::table('appreciations')->where('id', $appr->id)->first();
+        $this->assertNotNull($row);
+        $this->assertSame(0, (int) $row->is_public);
+    }
+
+    public function test_the_receiver_or_the_sender_can_delete_and_nobody_else(): void
+    {
+        $sender   = $this->insertUser('s');
+        $receiver = $this->insertUser('r');
+        $make = fn () => Appreciation::create([
+            'sender_id' => $sender, 'receiver_id' => $receiver,
+            'tenant_id' => self::TENANT_ID, 'message' => 'Delete me', 'is_public' => true,
+            'reactions_count' => 1,
+        ]);
+
+        $first = $make();
+        AppreciationReaction::create([
+            'appreciation_id' => $first->id, 'user_id' => $sender,
+            'tenant_id' => self::TENANT_ID, 'reaction_type' => 'heart', 'created_at' => now(),
+        ]);
+        $this->assertFalse($this->svc->delete($first->id, $this->insertUser('other')));
+        $this->assertTrue(DB::table('appreciations')->where('id', $first->id)->exists());
+        $this->assertTrue(DB::table('appreciation_reactions')->where('appreciation_id', $first->id)->exists());
+
+        $this->assertTrue($this->svc->delete($first->id, $receiver));
+        $this->assertFalse(DB::table('appreciations')->where('id', $first->id)->exists());
+        $this->assertFalse(DB::table('appreciation_reactions')->where('appreciation_id', $first->id)->exists());
+
+        $second = $make();
+        $this->assertTrue($this->svc->delete($second->id, $sender));
+        $this->assertFalse(DB::table('appreciations')->where('id', $second->id)->exists());
+    }
+
+    // ── lists ─────────────────────────────────────────────────────────────────
+
+    public function test_sent_and_received_lists_name_both_people_by_first_name_only(): void
+    {
+        $sender   = $this->insertUser('s');
+        $receiver = $this->insertUser('r');
+        Appreciation::create([
+            'sender_id' => $sender, 'receiver_id' => $receiver,
+            'tenant_id' => self::TENANT_ID, 'message' => 'Names', 'is_public' => false,
+            'reactions_count' => 0,
+        ]);
+
+        // Nobody is signed in here, so nobody may see a surname (E-122).
+        foreach ([
+            $this->svc->getSentAppreciations($sender),
+            $this->svc->getReceivedAppreciations($receiver, 1, 20, false, $receiver),
+            $this->svc->getMyAppreciations($sender),
+        ] as $result) {
+            $this->assertCount(1, $result['data']);
+            $item = $result['data'][0]->toArray();
+            $this->assertSame(['id' => $sender, 'name' => 'Appr', 'avatar_url' => null], $item['sender']);
+            $this->assertSame(['id' => $receiver, 'name' => 'Appr', 'avatar_url' => null], $item['receiver']);
+            $this->assertStringNotContainsString('User', json_encode($item['sender']) . json_encode($item['receiver']));
+        }
+
+        // A private note is in neither person's public wall.
+        $this->assertSame([], $this->svc->getReceivedAppreciations($receiver)['data']);
+        $this->assertSame([], $this->svc->getSentAppreciations($receiver)['data']);
     }
 
     // ── getReceivedAppreciations() ────────────────────────────────────────────

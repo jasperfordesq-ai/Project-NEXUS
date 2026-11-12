@@ -23,6 +23,23 @@ function optionToken(optionKey: string): string {
   return optionKey.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 }
 
+describe('module registry thank-you notes', () => {
+  it('registers thank-you notes as a switch with a name and a description in every language', () => {
+    const module = getFeatureModules().find(candidate => candidate.id === 'appreciations');
+    expect(module).toBeDefined();
+    expect(module?.type).toBe('feature');
+    expect(module?.configSource).toBe('tenant_features');
+
+    for (const locale of ['en', 'ar', 'de', 'es', 'fr', 'ga', 'it', 'ja', 'nl', 'pl', 'pt']) {
+      const config = (JSON.parse(
+        readFileSync(`public/locales/${locale}/admin_config.json`, 'utf8')
+      ) as { config: Record<string, string> }).config;
+      expect(config.module_name_appreciations, locale).toBeTypeOf('string');
+      expect(config.module_desc_appreciations, locale).toBeTypeOf('string');
+    }
+  });
+});
+
 describe('module registry podcast module', () => {
   it('registers podcasts with editable member authoring and moderation options', () => {
     const modules = getFeatureModules();

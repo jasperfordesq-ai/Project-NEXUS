@@ -17,7 +17,8 @@ use Illuminate\Support\Facades\Schema;
 use Tests\Laravel\TestCase;
 
 /**
- * SOC14 — Sending an appreciation creates a row.
+ * SOC14 — Sending an appreciation creates a row. Every new note is private:
+ * only its receiver can later choose to show it on their profile.
  */
 class SendAppreciationTest extends TestCase
 {
@@ -34,18 +35,19 @@ class SendAppreciationTest extends TestCase
         $receiver = User::factory()->forTenant($this->testTenantId)->create();
 
         $svc = new AppreciationService();
-        $a = $svc->send($sender->id, $receiver->id, 'Thanks for the help!', 'general', null, true);
+        $a = $svc->send($sender->id, $receiver->id, 'Thanks for the help!', 'general');
 
         $this->assertNotNull($a->id);
         $this->assertSame($sender->id, $a->sender_id);
         $this->assertSame($receiver->id, $a->receiver_id);
         $this->assertSame($this->testTenantId, $a->tenant_id);
-        $this->assertTrue((bool) $a->is_public);
+        $this->assertFalse((bool) $a->is_public);
 
         $this->assertDatabaseHas('appreciations', [
             'id' => $a->id,
             'sender_id' => $sender->id,
             'receiver_id' => $receiver->id,
+            'is_public' => 0,
         ]);
     }
 

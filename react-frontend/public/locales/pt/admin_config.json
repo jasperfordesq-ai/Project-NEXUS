@@ -225,6 +225,8 @@
     "module_desc_reviews": "Avaliações e classificações de membros",
     "module_name_polls": "Enquetes",
     "module_desc_polls": "Pesquisas comunitárias e votação",
+    "module_name_appreciations": "Mensagens de agradecimento",
+    "module_desc_appreciations": "Os membros podem agradecer uns aos outros. Uma mensagem fica privada até o membro que a recebeu decidir mostrá-la no próprio perfil.",
     "module_name_job_vacancies": "Vagas de emprego",
     "module_desc_job_vacancies": "Anúncios de emprego e gerenciamento de candidaturas",
     "module_name_ideation_challenges": "Desafios de Ideação",

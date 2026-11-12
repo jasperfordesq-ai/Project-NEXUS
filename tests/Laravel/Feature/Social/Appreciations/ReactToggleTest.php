@@ -31,6 +31,8 @@ class ReactToggleTest extends TestCase
         $reactor = User::factory()->forTenant($this->testTenantId)->create();
         $svc = new AppreciationService();
         $a = $svc->send($sender->id, $receiver->id, 'Thanks!');
+        // A note can only be reacted to once its receiver has shown it.
+        $svc->setVisibility($a->id, $receiver->id, true);
         return [$svc, $a, $reactor];
     }
 

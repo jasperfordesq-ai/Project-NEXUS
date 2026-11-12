@@ -44,6 +44,7 @@ import { Breadcrumbs } from '@/components/navigation';
 import { LoadingScreen, EmptyState } from '@/components/feedback';
 import { RatingModal } from '@/components/wallet';
 import { ExchangeThanks } from '@/components/exchanges/ExchangeThanks';
+import { AppreciationModal } from '@/components/social/AppreciationModal';
 import { VerificationBadgeRow } from '@/components/verification/VerificationBadge';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { PageMeta } from '@/components/seo';
@@ -153,6 +154,8 @@ export function ExchangeDetailPage() {
   const { user } = useAuth();
   const { tenantPath, hasFeature, hasModule } = useTenant();
   const canMessage = hasModule('messages') && hasFeature('direct_messaging');
+  // Thank-you notes can be switched off per community.
+  const canThank = hasFeature('appreciations');
   const toast = useToast();
 
   const [exchange, setExchange] = useState<Exchange | null>(null);
@@ -178,6 +181,7 @@ export function ExchangeDetailPage() {
   const [declineReason, setDeclineReason] = useState('');
   const [confirmHours, setConfirmHours] = useState('');
   const [thanks, setThanks] = useState<ExchangeYearThanks | null>(null);
+  const [isThanksNoteOpen, setIsThanksNoteOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadExchange = useCallback(async () => {
@@ -454,6 +458,7 @@ export function ExchangeDetailPage() {
           partnerName={otherParty?.first_name || otherParty?.name}
           partnerAvatar={otherParty?.avatar}
           messageHref={canMessage && otherPartyId ? tenantPath(`/messages/new/${otherPartyId}`) : undefined}
+          onWriteNote={canThank && otherPartyId ? () => setIsThanksNoteOpen(true) : undefined}
         />
       )}
 
@@ -938,6 +943,19 @@ export function ExchangeDetailPage() {
           loadExchange();
         }}
       />
+
+      {/* A thank-you note for the other person. It stays private until they
+          choose to show it on their profile. */}
+      {canThank && otherPartyId ? (
+        <AppreciationModal
+          isOpen={isThanksNoteOpen}
+          onClose={() => setIsThanksNoteOpen(false)}
+          receiverId={otherPartyId}
+          receiverName={otherParty?.first_name || otherParty?.name || undefined}
+          contextType="listing_completion"
+          contextId={exchange.id}
+        />
+      ) : null}
     </motion.div>
   );
 }

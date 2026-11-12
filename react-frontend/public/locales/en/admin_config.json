@@ -258,6 +258,8 @@
     "module_desc_reviews": "Member reviews and ratings",
     "module_name_polls": "Polls",
     "module_desc_polls": "Community polls and voting",
+    "module_name_appreciations": "Thank-you notes",
+    "module_desc_appreciations": "Members can thank each other. A note stays private until the member who received it chooses to show it on their profile.",
     "module_name_job_vacancies": "Job Vacancies",
     "module_desc_job_vacancies": "Job postings and application management",
     "module_name_ideation_challenges": "Ideation Challenges",

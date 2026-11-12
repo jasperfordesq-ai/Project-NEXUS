@@ -9,6 +9,12 @@ const FEATURE_ROUTE_GATES = [
   { pattern: /^\/events\/[^/]+\/map\/?$/, featureKey: 'maps' },
   { pattern: /^\/organisations\/[^/]+\/jobs\/?$/, featureKey: 'job_vacancies' },
   { pattern: /^\/messages\/groups(?:\/|$)/, featureKey: 'connections' },
+  // Thank-you notes. A community can switch them off (`features.appreciations`);
+  // a bootstrap without the key means ON. Laravel refuses every appreciation
+  // endpoint with FEATURE_DISABLED as well — routes/saved-social.js handles that
+  // for a bootstrap that is out of date.
+  { pattern: /^\/users\/\d+\/appreciations\/?$/, featureKey: 'appreciations' },
+  { prefix: '/appreciations', featureKey: 'appreciations' },
   { prefix: '/dashboard', moduleKey: 'dashboard' },
   { prefix: '/feed', moduleKey: 'feed' },
   { prefix: '/listings', moduleKey: 'listings' },

@@ -226,6 +226,8 @@
     "module_desc_reviews": "会員のレビューと評価",
     "module_name_polls": "投票",
     "module_desc_polls": "コミュニティの投票と投票",
+    "module_name_appreciations": "お礼メッセージ",
+    "module_desc_appreciations": "メンバー同士でお礼を伝えられます。メッセージは、受け取ったメンバーがプロフィールに表示すると決めるまで非公開です。",
     "module_name_job_vacancies": "求人情報",
     "module_desc_job_vacancies": "求人情報の掲載と応募管理",
     "module_name_ideation_challenges": "アイデアの課題",

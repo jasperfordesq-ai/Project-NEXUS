@@ -45,6 +45,9 @@ jest.mock('../src/lib/api', () => {
     getBookmarks: jest.fn(),
     getUserPublicCollections: jest.fn(),
     getUserAppreciations: jest.fn(),
+    getMyAppreciations: jest.fn(),
+    setAppreciationVisibility: jest.fn(),
+    deleteAppreciation: jest.fn(),
     toggleBookmark: jest.fn(),
     reactToAppreciation: jest.fn(),
     sendAppreciation: jest.fn(),
@@ -413,7 +416,7 @@ describe('account deletion keeps the reason but never the password', () => {
 // appreciations — six of seven failures are server-side, and none was the member's fault
 // --------------------------------------------------------------------------------------
 
-describe('appreciation form keeps the message and the public/private choice', () => {
+describe('appreciation form keeps the message', () => {
   const MOUNT = PREFIX;
   const MESSAGE = 'Thank you for driving me to the hospital in February. It made a hard week easier.';
 
@@ -445,30 +448,40 @@ describe('appreciation form keeps the message and the public/private choice', ()
     const page = await agent.get(`${MOUNT}/users/88/appreciations?status=appreciation-rate-limited`);
     expect(page.status).toBe(200);
     expect(textareaValue(page.text, 'appreciation-message')).toBe(MESSAGE);
-    expect(isChecked(page.text, 'appreciation-public')).toBe(true);
   });
 
-  // 🔴 The `checked` attribute was hardcoded, so a deliberate "keep this private" flipped
-  // back to public on every failure — the opposite of what the member chose.
-  it('keeps an unticked public box unticked after a failure', async () => {
+  // 🔴 There used to be a "make this public" checkbox here, and two tests that its
+  // ticked/unticked state survived a failure. The choice is gone (owner, 12 Nov 2026):
+  // every note is private until the RECEIVER shows it on their profile. What must hold
+  // now is that the box does not come back, and that a stale form still posting
+  // `is_public` cannot make a note public.
+  it('offers no public/private choice, and never sends one', async () => {
     const agent = request.agent(buildApp());
     await agent
       .post(`${MOUNT}/users/88/appreciations`)
       .type('form')
-      .send({ _csrf: 'test-csrf-token', message: MESSAGE, is_public: '0' });
+      .send({ _csrf: 'test-csrf-token', message: MESSAGE, is_public: '1' });
+
+    expect(api.sendAppreciation).toHaveBeenCalledWith('test-token', {
+      receiver_id: 88,
+      message: MESSAGE,
+      context_type: 'general'
+    });
 
     const page = await agent.get(`${MOUNT}/users/88/appreciations?status=appreciation-rate-limited`);
     expect(textareaValue(page.text, 'appreciation-message')).toBe(MESSAGE);
-    expect(isChecked(page.text, 'appreciation-public')).toBe(false);
+    expect(page.text).not.toContain('appreciation-public');
+    expect(page.text).not.toContain('name="is_public"');
+    expect(page.text).not.toContain('type="checkbox"');
+    expect(page.text).toContain('id="appreciation-private-hint"');
   });
 
-  it('consumes the stash once, and defaults back to public', async () => {
+  it('consumes the stash once', async () => {
     const agent = request.agent(buildApp());
     await agent.post(`${MOUNT}/users/88/appreciations`).type('form')
       .send({ _csrf: 'test-csrf-token', message: MESSAGE, is_public: '0' });
     await agent.get(`${MOUNT}/users/88/appreciations?status=appreciation-rate-limited`);
     const second = await agent.get(`${MOUNT}/users/88/appreciations`);
     expect(textareaValue(second.text, 'appreciation-message')).toBe('');
-    expect(isChecked(second.text, 'appreciation-public')).toBe(true);
   });
 });

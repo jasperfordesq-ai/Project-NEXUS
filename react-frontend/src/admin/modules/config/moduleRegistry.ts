@@ -11,6 +11,7 @@
 
 import type { LucideIcon } from 'lucide-react';
 import ListChecks from 'lucide-react/icons/list-checks';
+import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import Wallet from 'lucide-react/icons/wallet';
 import MessageSquare from 'lucide-react/icons/message-square';
 import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
@@ -511,6 +512,16 @@ const FEATURE_MODULES: ModuleDefinition[] = [
       { key: 'reviews.require_exchange', type: 'boolean', defaultValue: true, category: 'rules', comingSoon: true },
       { key: 'reviews.allow_anonymous', type: 'boolean', defaultValue: false, category: 'features', comingSoon: true },
     ],
+  },
+  {
+    // Thank-you notes: on by default. A note is private until the member who
+    // received it chooses to show it on their profile. The server refuses
+    // every thank-you route when this is off.
+    id: 'appreciations',
+    icon: HeartHandshake,
+    type: 'feature',
+    configSource: 'tenant_features',
+    configOptions: [],
   },
   {
     id: 'polls',

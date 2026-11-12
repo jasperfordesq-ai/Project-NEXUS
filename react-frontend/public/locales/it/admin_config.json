@@ -226,6 +226,8 @@
     "module_desc_reviews": "Recensioni e valutazioni dei membri",
     "module_name_polls": "Sondaggi",
     "module_desc_polls": "Sondaggi e votazioni comunitari",
+    "module_name_appreciations": "Messaggi di ringraziamento",
+    "module_desc_appreciations": "I membri possono ringraziarsi a vicenda. Un messaggio resta privato finché chi lo ha ricevuto non sceglie di mostrarlo sul proprio profilo.",
     "module_name_job_vacancies": "Offerte di lavoro",
     "module_desc_job_vacancies": "Annunci di lavoro e gestione delle candidature",
     "module_name_ideation_challenges": "Sfide di ideazione",

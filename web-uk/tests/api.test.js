@@ -5237,8 +5237,7 @@ describe('API Request Functions', () => {
       await api.sendAppreciation('test-token', {
         receiver_id: 77,
         message: 'Thank you',
-        context_type: 'general',
-        is_public: true
+        context_type: 'general'
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -5251,9 +5250,84 @@ describe('API Request Functions', () => {
           body: JSON.stringify({
             receiver_id: 77,
             message: 'Thank you',
-            context_type: 'general',
-            is_public: true
+            context_type: 'general'
           })
+        })
+      );
+    });
+
+    it('should read the signed-in member own received notes, private ones included', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: [{ id: 55, is_public: false }], meta: { current_page: 2, last_page: 3 } })
+      });
+
+      await expect(api.getMyAppreciations('test-token', { tab: 'received', page: 2, per_page: 20 }))
+        .resolves.toEqual({ data: [{ id: 55, is_public: false }], meta: { current_page: 2, last_page: 3 } });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/me/appreciations?tab=received&page=2&per_page=20',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+
+    it('should default the own-notes list to the received tab', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: [] })
+      });
+
+      await api.getMyAppreciations('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/me/appreciations?tab=received',
+        expect.anything()
+      );
+    });
+
+    it('should show or hide a note through the Laravel v2 visibility endpoint', async () => {
+      const answer = {
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { id: 55, is_public: true } })
+      };
+      mockFetch.mockResolvedValueOnce(answer).mockResolvedValueOnce(answer);
+
+      await api.setAppreciationVisibility('test-token', 55, true);
+      await api.setAppreciationVisibility('test-token', 55, false);
+
+      const calls = mockFetch.mock.calls.filter(([url]) => String(url).endsWith('/api/v2/appreciations/55/visibility'));
+      expect(calls).toHaveLength(2);
+      expect(calls[0][1]).toEqual(expect.objectContaining({
+        method: 'PUT',
+        headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
+        body: JSON.stringify({ is_public: true })
+      }));
+      expect(calls[1][1]).toEqual(expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify({ is_public: false })
+      }));
+    });
+
+    it('should delete a note through the Laravel v2 endpoint and accept an empty 204', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 204,
+        headers: { get: () => null },
+        text: async () => ''
+      });
+
+      await expect(api.deleteAppreciation('test-token', 55)).resolves.toBe('');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/appreciations/55',
+        expect.objectContaining({
+          method: 'DELETE',
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
         })
       );
     });

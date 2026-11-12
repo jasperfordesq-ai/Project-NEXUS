@@ -2,6 +2,8 @@
 {{-- SPDX-License-Identifier: AGPL-3.0-or-later --}}
 {{-- Author: Jasper Ford --}}
 {{-- See NOTICE file for attribution and acknowledgements. --}}
+{{-- A thank-you note is private when it is sent: only the receiver sees it
+     until they choose to show it on their profile. There is no public form. --}}
 @component('mail::message')
 # {{ __('emails.appreciation.title') }}
 
@@ -11,11 +13,7 @@
 {{ $message ?? '' }}
 @endcomponent
 
-@if (!empty($isPublic))
-{{ __('emails.appreciation.public_note') }}
-@else
 {{ __('emails.appreciation.private_note') }}
-@endif
 
 @component('mail::button', ['url' => $url ?? '#'])
 {{ __('emails.appreciation.cta_view') }}

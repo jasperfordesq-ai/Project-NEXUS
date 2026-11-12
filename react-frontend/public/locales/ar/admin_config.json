@@ -226,6 +226,8 @@
     "module_desc_reviews": "تقييمات ومراجعات الأعضاء",
     "module_name_polls": "استطلاعات الرأي",
     "module_desc_polls": "استطلاعات المجتمع والتصويت",
+    "module_name_appreciations": "رسائل الشكر",
+    "module_desc_appreciations": "يمكن للأعضاء شكر بعضهم بعضًا. تبقى الرسالة خاصة إلى أن يختار العضو الذي استلمها عرضها في ملفه الشخصي.",
     "module_name_job_vacancies": "وظائف شاغرة",
     "module_desc_job_vacancies": "إعلانات الوظائف وإدارة التطبيقات",
     "module_name_ideation_challenges": "تحديات التفكير",

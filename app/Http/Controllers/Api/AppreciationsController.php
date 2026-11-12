@@ -17,9 +17,14 @@ use App\Support\Members\MemberProfileVisibility;
 /**
  * SOC14 — Appreciations / thank-you HTTP controller.
  *
+ * Every route carries `feature:appreciations` (routes/api.php): a community
+ * that has switched thank-you notes off answers 403 FEATURE_DISABLED.
+ *
  *   POST   /v2/appreciations
+ *   PUT    /v2/appreciations/{id}/visibility   (the receiver only)
+ *   DELETE /v2/appreciations/{id}              (the receiver or the sender)
  *   GET    /v2/users/{userId}/appreciations
- *   GET    /v2/me/appreciations
+ *   GET    /v2/me/appreciations?tab=received|sent|all
  *   POST   /v2/appreciations/{id}/react
  *   DELETE /v2/appreciations/{id}/react
  *   GET    /v2/appreciations/most-appreciated
@@ -40,23 +45,62 @@ class AppreciationsController extends BaseApiController
         if ($receiverId === 0 || $message === '') {
             return $this->respondWithError('VALIDATION_ERROR', 'receiver_id and message required', null, 422);
         }
+        $contextType = $this->input('context_type');
         try {
+            // `is_public` in the body is ignored on purpose: a note is private
+            // until its receiver chooses to show it (see visibility()).
             $appreciation = $this->service->send(
                 $senderId,
                 $receiverId,
                 $message,
-                $this->input('context_type'),
+                is_string($contextType) && $contextType !== '' ? $contextType : null,
                 $this->inputInt('context_id'),
-                $this->inputBool('is_public', true),
             );
+            $this->service->decorate([$appreciation], $senderId);
+
             return $this->respondWithData($appreciation, null, 201);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         } catch (\DomainException $e) {
             $code = $e->getMessage();
-            $status = $code === 'rate_limit_exceeded' ? 422 : 422;
-            return $this->respondWithError(strtoupper($code), $code, null, $status);
+
+            return $this->respondWithError(strtoupper($code), $code, null, 422);
         }
+    }
+
+    /**
+     * The receiver shows a note on their profile, or hides it again. For
+     * anyone else — the sender and administrators included — it is a 404.
+     */
+    public function visibility(int $id): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $raw = $this->input('is_public');
+        $isPublic = is_bool($raw) ? $raw : (
+            is_scalar($raw) ? filter_var($raw, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) : null
+        );
+        if ($isPublic === null) {
+            return $this->respondWithError(
+                'VALIDATION_ERROR',
+                __('api.missing_required_field', ['field' => 'is_public']),
+                'is_public',
+                422,
+            );
+        }
+
+        try {
+            return $this->respondWithData($this->service->setVisibility($id, $userId, $isPublic));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return $this->respondNotFound();
+        }
+    }
+
+    /** The receiver or the sender removes a note. For anyone else it is a 404. */
+    public function destroy(int $id): JsonResponse
+    {
+        $userId = $this->requireAuth();
+
+        return $this->service->delete($id, $userId) ? $this->noContent() : $this->respondNotFound();
     }
 
     public function publicForUser(int $userId): JsonResponse
@@ -78,12 +122,13 @@ class AppreciationsController extends BaseApiController
         $page = $this->queryInt('page', 1, 1) ?? 1;
         $perPage = $this->queryInt('per_page', 20, 1, 100) ?? 20;
 
-        if ($tab === 'all') {
-            $result = $this->service->getMyAppreciations($userId, $page, $perPage);
-        } else {
-            // received tab: include private since it's the receiver
-            $result = $this->service->getReceivedAppreciations($userId, $page, $perPage, false, $userId);
-        }
+        $result = match ($tab) {
+            'all' => $this->service->getMyAppreciations($userId, $page, $perPage),
+            'sent' => $this->service->getSentAppreciations($userId, $page, $perPage),
+            // received (the default): private ones included, since it is the receiver asking
+            default => $this->service->getReceivedAppreciations($userId, $page, $perPage, false, $userId),
+        };
+
         return $this->respondWithData($result['data'], $result['meta']);
     }
 

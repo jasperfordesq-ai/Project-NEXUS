@@ -30,6 +30,18 @@ describe('ExchangeThanks', () => {
     expect(screen.queryByRole('link')).toBeNull();
   });
 
+  it('offers to write the other person a thank-you note', () => {
+    const onWriteNote = vi.fn();
+    render(<ExchangeThanks neighbours={1} hours={1} onClose={vi.fn()} partnerName="Ciaran" onWriteNote={onWriteNote} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Write Ciaran a thank-you note' }));
+    expect(onWriteNote).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers no thank-you note button when thank-you notes are switched off', () => {
+    render(<ExchangeThanks neighbours={1} hours={1} onClose={vi.fn()} partnerName="Ciaran" messageHref="/test/messages/new/9" />);
+    expect(screen.queryByTestId('exchange-thanks-note')).toBeNull();
+  });
+
   it('can be closed', () => {
     const onClose = vi.fn();
     render(<ExchangeThanks neighbours={1} hours={1} onClose={onClose} />);

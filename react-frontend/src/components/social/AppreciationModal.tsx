@@ -6,7 +6,10 @@
 /**
  * AppreciationModal — SOC14 "Say thanks" modal.
  *
- * HeroUI Modal with: message Textarea (500 char), public/private toggle, [Send].
+ * HeroUI Modal with: message Textarea (500 char) and [Send]. There is no
+ * public/private choice: a note is private until the person who receives it
+ * chooses to show it on their profile (owner decision, 12 Nov 2026), and the
+ * server ignores any `is_public` a client sends.
  */
 
 import { useState, useCallback } from 'react';
@@ -16,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts';
 import { logError } from '@/lib/logger';
-import { Button, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch } from '@/components/ui';
+import { Button, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui';
 
 interface AppreciationModalProps {
   isOpen: boolean;
@@ -42,13 +45,11 @@ export function AppreciationModal({
   const { t } = useTranslation('common');
   const toast = useToast();
   const [message, setMessage] = useState('');
-  const [isPublic, setIsPublic] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   const handleClose = useCallback(() => {
     if (submitting) return;
     setMessage('');
-    setIsPublic(true);
     onClose();
   }, [submitting, onClose]);
 
@@ -63,7 +64,6 @@ export function AppreciationModal({
         message: text,
         context_type: contextType,
         context_id: contextId,
-        is_public: isPublic,
       });
       if (res.success) {
         toast.success(t('appreciations.sent_success'));
@@ -71,9 +71,12 @@ export function AppreciationModal({
         setMessage('');
         onClose();
       } else {
-        const err = (res as unknown as { error?: string }).error || '';
-        if (err.includes('rate_limit')) {
+        const failure = res as unknown as { error?: string; code?: string };
+        const reason = `${failure.code ?? ''} ${failure.error ?? ''}`.toLowerCase();
+        if (reason.includes('rate_limit')) {
           toast.error(t('appreciations.rate_limited'));
+        } else if (reason.includes('receiver_not_found') || reason.includes('safeguarding') || reason.includes('blocked')) {
+          toast.error(t('appreciations.thanks_cannot_send'));
         } else {
           toast.error(t('appreciations.send_failed'));
         }
@@ -84,7 +87,7 @@ export function AppreciationModal({
     } finally {
       setSubmitting(false);
     }
-  }, [message, receiverId, contextType, contextId, isPublic, onSent, onClose, toast, t]);
+  }, [message, receiverId, contextType, contextId, onSent, onClose, toast, t]);
 
   const remaining = MAX_LEN - message.length;
   const titleStr = receiverName
@@ -109,16 +112,11 @@ export function AppreciationModal({
             variant="bordered"
             description={t('appreciations.chars_remaining', { n: remaining })}
           />
-          <div className="flex items-center justify-between pt-2">
-            <span className="text-sm text-[var(--text-muted)]">
-              {isPublic
-                ? t('appreciations.public_hint')
-                : t('appreciations.private_hint')}
-            </span>
-            <Switch isSelected={isPublic} onValueChange={setIsPublic} size="sm">
-              {t('appreciations.public_toggle')}
-            </Switch>
-          </div>
+          <p data-testid="thanks-privacy-hint" className="pt-2 text-sm text-[var(--text-muted)]">
+            {receiverName
+              ? t('appreciations.thanks_privacy_hint_named', { name: receiverName })
+              : t('appreciations.thanks_privacy_hint')}
+          </p>
         </ModalBody>
         <ModalFooter>
           <Button variant="light" onPress={handleClose} isDisabled={submitting}>

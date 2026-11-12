@@ -219,6 +219,7 @@
     "neighbours_label": "今年交換した人",
     "hours_label": "今年交換した時間",
     "close": "閉じる",
-    "send_message": "{{name}}さんにお礼のメッセージを送る"
+    "send_message": "{{name}}さんにお礼のメッセージを送る",
+    "write_note": "{{name}}さんにお礼メッセージを書く"
   }
 }

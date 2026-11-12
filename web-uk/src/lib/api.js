@@ -2142,11 +2142,43 @@ async function getUserAppreciations(token, userId, params = {}) {
   });
 }
 
+// The signed-in member's own thank-you notes, INCLUDING the ones only they can
+// see. GET /users/{id}/appreciations returns only the notes the receiver has
+// chosen to show, so a member's own page has to read this one instead.
+async function getMyAppreciations(token, params = {}) {
+  const query = new URLSearchParams();
+  query.set('tab', params.tab === 'sent' ? 'sent' : 'received');
+  if (params.page) query.set('page', params.page);
+  if (params.per_page) query.set('per_page', params.per_page);
+
+  return request(`/api/v2/me/appreciations?${query.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 async function sendAppreciation(token, data) {
   return request('/api/v2/appreciations', {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(data)
+  });
+}
+
+// Receiver only: show a note on their profile, or hide it again. Anyone else
+// gets a 404 from Laravel.
+async function setAppreciationVisibility(token, id, isPublic) {
+  return request(`/api/v2/appreciations/${encodeURIComponent(id)}/visibility`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ is_public: isPublic === true })
+  });
+}
+
+// Receiver or sender. Laravel answers 204 with no body.
+async function deleteAppreciation(token, id) {
+  return request(`/api/v2/appreciations/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
   });
 }
 
@@ -5099,7 +5131,10 @@ module.exports = {
   getSavedCollectionItems,
   getUserPublicCollections,
   getUserAppreciations,
+  getMyAppreciations,
   sendAppreciation,
+  setAppreciationVisibility,
+  deleteAppreciation,
   reactToAppreciation,
   getResources,
   getResourceCategories,

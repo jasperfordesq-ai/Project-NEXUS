@@ -219,6 +219,7 @@
     "neighbours_label": "Mensen met wie je dit jaar hebt geruild",
     "hours_label": "Uren geruild dit jaar",
     "close": "Sluiten",
-    "send_message": "Stuur {{name}} een bedankbericht"
+    "send_message": "Stuur {{name}} een bedankbericht",
+    "write_note": "Schrijf {{name}} een bedankbericht"
   }
 }

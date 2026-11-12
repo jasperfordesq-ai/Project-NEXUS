@@ -11,14 +11,26 @@ use App\I18n\LocaleContext;
 use App\Models\Notification;
 use App\Models\Social\Appreciation;
 use App\Models\Social\AppreciationReaction;
+use App\Models\User;
+use App\Scopes\TenantScope;
 use App\Services\BlockUserService;
 use App\Services\SafeguardingInteractionPolicy;
+use App\Support\UserDisplayName;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
  * AppreciationService — SOC14 Thank-you / appreciation system.
+ *
+ * Rules (owner, 12 Nov 2026):
+ *  - every new note is PRIVATE. Whatever the sender asks for is ignored;
+ *  - only the RECEIVER can show a note on their profile, hide it again or
+ *    remove it. The sender can delete a note they sent;
+ *  - the people on a note are named as the person looking may see them:
+ *    first names for members, full names for staff of the community (E-122).
  */
 class AppreciationService
 {
@@ -26,12 +38,25 @@ class AppreciationService
     public const ALLOWED_REACTIONS = ['heart', 'clap', 'star'];
     public const DAILY_SEND_LIMIT = 10;
 
+    /** The one context whose id is kept: a completed exchange between the two people. */
+    private const EXCHANGE_CONTEXT = 'listing_completion';
+
     /**
-     * Send an appreciation; rate-limit 10 per sender per day.
+     * Send a thank-you note; rate-limit 10 per sender per day.
      *
-     * @throws \DomainException on rate-limit / sender==receiver
+     * The note is always stored private: there is deliberately no way for the
+     * sender to publish it. {@see setVisibility()} is the receiver's choice.
+     *
+     * `$contextId` is kept only for `listing_completion`, and only when it is
+     * a completed exchange in this community between exactly these two
+     * people. For every other context it is dropped, so a note can never
+     * point at a record its sender made up.
+     *
+     * @throws \DomainException on rate-limit / sender==receiver / a party who
+     *                          is not an active member / an exchange that is
+     *                          not theirs
      */
-    public function send(int $senderId, int $receiverId, string $message, ?string $contextType = null, ?int $contextId = null, bool $isPublic = true): Appreciation
+    public function send(int $senderId, int $receiverId, string $message, ?string $contextType = null, ?int $contextId = null): Appreciation
     {
         if ($senderId === $receiverId) {
             throw new \DomainException('cannot_thank_self');
@@ -44,18 +69,20 @@ class AppreciationService
         }
         $participants = DB::table('users')
             ->whereIn('id', [$senderId, $receiverId])
-            ->select(['id', 'tenant_id'])
+            ->select(['id', 'tenant_id', 'status', 'is_approved'])
             ->get()
             ->keyBy('id');
 
-        $senderTenantId = $participants->get($senderId)?->tenant_id;
-        if ($senderTenantId === null) {
+        $sender = $participants->get($senderId);
+        if (! self::isActiveMember($sender)) {
             throw new \DomainException('sender_not_found');
         }
 
-        $tenantId = (int) $senderTenantId;
-        $receiverTenantId = $participants->get($receiverId)?->tenant_id;
-        if ($receiverTenantId === null || (int) $receiverTenantId !== $tenantId) {
+        $tenantId = (int) $sender->tenant_id;
+        $receiver = $participants->get($receiverId);
+        // An active, approved member of the sender's own community. A manager's
+        // delegate (`status = 'delegate'`) is never a member, so it never passes.
+        if (! self::isActiveMember($receiver) || (int) $receiver->tenant_id !== $tenantId) {
             throw new \DomainException('receiver_not_found');
         }
 
@@ -68,6 +95,8 @@ class AppreciationService
             $tenantId,
             'appreciation',
         );
+
+        $contextId = $this->contextIdToKeep($contextType, $contextId, $senderId, $receiverId, $tenantId);
 
         $today = now()->toDateString();
         $rateKey = "appreciation_sent:{$tenantId}:{$senderId}:{$today}";
@@ -83,7 +112,7 @@ class AppreciationService
             'message' => $message,
             'context_type' => $contextType,
             'context_id' => $contextId,
-            'is_public' => $isPublic,
+            'is_public' => false,
             'reactions_count' => 0,
         ]);
 
@@ -92,6 +121,44 @@ class AppreciationService
         $this->notifyReceiver($appreciation);
 
         return $appreciation;
+    }
+
+    /** `status = 'active'` and approved: the same test a profile uses to exist for other members. */
+    private static function isActiveMember(?object $user): bool
+    {
+        return $user !== null
+            && (string) ($user->status ?? '') === 'active'
+            && (bool) ($user->is_approved ?? false);
+    }
+
+    /**
+     * @throws \DomainException `invalid_context` when a `listing_completion`
+     *                          id is not a completed exchange between the two
+     */
+    private function contextIdToKeep(?string $contextType, ?int $contextId, int $senderId, int $receiverId, int $tenantId): ?int
+    {
+        if ($contextType !== self::EXCHANGE_CONTEXT || $contextId === null) {
+            return null;
+        }
+
+        $theirs = $contextId > 0 && DB::table('exchange_requests')
+            ->where('id', $contextId)
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'completed')
+            ->where(function ($parties) use ($senderId, $receiverId) {
+                $parties->where(function ($q) use ($senderId, $receiverId) {
+                    $q->where('requester_id', $senderId)->where('provider_id', $receiverId);
+                })->orWhere(function ($q) use ($senderId, $receiverId) {
+                    $q->where('requester_id', $receiverId)->where('provider_id', $senderId);
+                });
+            })
+            ->exists();
+
+        if (! $theirs) {
+            throw new \DomainException('invalid_context');
+        }
+
+        return $contextId;
     }
 
     private function notifyReceiver(Appreciation $appreciation): void
@@ -138,11 +205,67 @@ class AppreciationService
                 ],
                 $senderName,
                 $appreciation->message,
-                (bool) $appreciation->is_public,
             );
         } catch (\Throwable $e) {
             Log::warning('AppreciationService::notifyReceiver: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * The receiver shows a note on their profile, or hides it again.
+     *
+     * Only the receiver, only in the current community. For anyone else the
+     * note does not exist.
+     *
+     * @throws ModelNotFoundException
+     */
+    public function setVisibility(int $appreciationId, int $receiverId, bool $isPublic): Appreciation
+    {
+        $tenantId = TenantContext::getId();
+        $mine = fn (): Builder => Appreciation::where('id', $appreciationId)
+            ->where('tenant_id', $tenantId)
+            ->where('receiver_id', $receiverId);
+
+        $mine()->firstOrFail();
+        $mine()->update(['is_public' => $isPublic]);
+
+        $appreciation = $mine()->firstOrFail();
+        $this->decorate([$appreciation], $receiverId);
+
+        return $appreciation;
+    }
+
+    /**
+     * Remove a note and its reactions: the receiver, or the sender, in the
+     * current community. False when it is not theirs (or does not exist).
+     */
+    public function delete(int $appreciationId, int $userId): bool
+    {
+        $tenantId = TenantContext::getId();
+
+        return DB::transaction(function () use ($appreciationId, $userId, $tenantId) {
+            $appreciation = Appreciation::where('id', $appreciationId)
+                ->where('tenant_id', $tenantId)
+                ->where(function ($q) use ($userId) {
+                    $q->where('receiver_id', $userId)->orWhere('sender_id', $userId);
+                })
+                ->lockForUpdate()
+                ->first();
+            if (! $appreciation) {
+                return false;
+            }
+
+            // The foreign key cascades too; this keeps the removal explicit
+            // and scoped to the community.
+            AppreciationReaction::where('appreciation_id', $appreciation->id)
+                ->where('tenant_id', $tenantId)
+                ->delete();
+            Appreciation::where('id', $appreciation->id)
+                ->where('tenant_id', $tenantId)
+                ->delete();
+
+            return true;
+        });
     }
 
     public function react(int $appreciationId, int $userId, string $reactionType): array
@@ -151,8 +274,11 @@ class AppreciationService
             throw new \DomainException('invalid_reaction');
         }
         $tenantId = TenantContext::getId();
+        // A note its receiver has not shown does not exist for reactions —
+        // not even for the two people on it.
         $appreciation = Appreciation::where('id', $appreciationId)
             ->where('tenant_id', $tenantId)
+            ->where('is_public', true)
             ->firstOrFail();
 
         return DB::transaction(function () use ($appreciation, $userId, $reactionType, $tenantId) {
@@ -224,6 +350,10 @@ class AppreciationService
         });
     }
 
+    /**
+     * Notes a member received. `$publicOnly` (a profile wall) keeps only the
+     * ones the receiver has shown; the receiver's own list passes false.
+     */
     public function getReceivedAppreciations(int $userId, int $page = 1, int $perPage = 20, bool $publicOnly = true, ?int $viewerId = null): array
     {
         $q = Appreciation::where('receiver_id', $userId)
@@ -232,39 +362,42 @@ class AppreciationService
         if ($publicOnly) {
             $q->where('is_public', true);
         }
-        $paginator = $q->paginate($perPage, ['*'], 'page', $page);
-        $items = $paginator->items();
-        $this->attachSenderInfo($items);
-        $reactions = $viewerId === null ? collect() : AppreciationReaction::query()
-            ->where('tenant_id', TenantContext::getId())
-            ->where('user_id', $viewerId)
-            ->whereIn('appreciation_id', array_map(fn ($item) => $item->id, $items))
-            ->pluck('reaction_type', 'appreciation_id');
-        foreach ($items as $item) {
-            $item->setAttribute('my_reaction', $reactions->get($item->id));
-        }
-        return [
-            'data' => $items,
-            'meta' => [
-                'current_page' => $paginator->currentPage(),
-                'last_page' => $paginator->lastPage(),
-                'per_page' => $paginator->perPage(),
-                'total' => $paginator->total(),
-            ],
-        ];
+
+        return $this->page($q, $page, $perPage, $viewerId);
     }
 
+    /** Notes a member sent — for that member only: it includes private ones. */
+    public function getSentAppreciations(int $userId, int $page = 1, int $perPage = 20): array
+    {
+        $q = Appreciation::where('sender_id', $userId)
+            ->where('tenant_id', TenantContext::getId())
+            ->orderByDesc('created_at');
+
+        return $this->page($q, $page, $perPage, $userId);
+    }
+
+    /** Notes a member received or sent — for that member only: it includes private ones. */
     public function getMyAppreciations(int $userId, int $page = 1, int $perPage = 20): array
     {
-        $tenantId = TenantContext::getId();
-        $paginator = Appreciation::where('tenant_id', $tenantId)
+        $q = Appreciation::where('tenant_id', TenantContext::getId())
             ->where(function ($q) use ($userId) {
                 $q->where('receiver_id', $userId)->orWhere('sender_id', $userId);
             })
-            ->orderByDesc('created_at')
-            ->paginate($perPage, ['*'], 'page', $page);
+            ->orderByDesc('created_at');
+
+        return $this->page($q, $page, $perPage, $userId);
+    }
+
+    /**
+     * @param Builder<Appreciation> $query
+     * @return array{data: Appreciation[], meta: array{current_page:int,last_page:int,per_page:int,total:int}}
+     */
+    private function page(Builder $query, int $page, int $perPage, ?int $viewerId): array
+    {
+        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
         $items = $paginator->items();
-        $this->attachSenderInfo($items);
+        $this->decorate($items, $viewerId);
+
         return [
             'data' => $items,
             'meta' => [
@@ -325,21 +458,60 @@ class AppreciationService
             ->all();
     }
 
-    /** @param Appreciation[] $items */
-    private function attachSenderInfo(array $items): void
+    /**
+     * Put what a client shows onto each note: who sent it, who received it,
+     * and the viewer's own reaction.
+     *
+     * 🔴 E-122 — `users.name` is a FULL name. The two people are loaded as
+     * models with their name parts and named through
+     * {@see UserDisplayName::resolve()}, which asks who is signed in: a member
+     * gets first names (an organisation keeps its trading name), staff of the
+     * community get surnames, and a member's own name stays whole. With nobody
+     * signed in (a job, a unit test) everyone gets first names.
+     *
+     * @param Appreciation[] $items
+     */
+    public function decorate(array $items, ?int $viewerId = null): void
     {
-        if (empty($items)) return;
+        if (empty($items)) {
+            return;
+        }
         $tenantId = TenantContext::getId();
-        $senderIds = array_unique(array_map(fn ($a) => $a->sender_id, $items));
-        $rows = DB::table('users')
-            ->where('tenant_id', $tenantId)
-            ->whereIn('id', $senderIds)
-            ->select(['id', 'name', 'avatar_url'])
-            ->get()
-            ->keyBy('id');
+
+        $peopleIds = [];
         foreach ($items as $a) {
-            $u = $rows->get($a->sender_id);
-            $a->sender = $u ? ['id' => $u->id, 'name' => $u->name, 'avatar_url' => $u->avatar_url] : null;
+            $peopleIds[] = (int) $a->sender_id;
+            $peopleIds[] = (int) $a->receiver_id;
+        }
+        $people = User::withoutGlobalScope(TenantScope::class)
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', array_values(array_unique($peopleIds)))
+            ->get(['id', 'tenant_id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'name', 'avatar_url'])
+            ->keyBy('id');
+        $card = static function (int $userId) use ($people): ?array {
+            $user = $people->get($userId);
+            if ($user === null) {
+                return null;
+            }
+            $name = UserDisplayName::resolve($user);
+
+            return [
+                'id' => (int) $user->id,
+                'name' => $name !== '' ? $name : null,
+                'avatar_url' => $user->getAttributes()['avatar_url'] ?? null,
+            ];
+        };
+
+        $reactions = $viewerId === null ? collect() : AppreciationReaction::query()
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $viewerId)
+            ->whereIn('appreciation_id', array_map(fn ($item) => $item->id, $items))
+            ->pluck('reaction_type', 'appreciation_id');
+
+        foreach ($items as $a) {
+            $a->setAttribute('sender', $card((int) $a->sender_id));
+            $a->setAttribute('receiver', $card((int) $a->receiver_id));
+            $a->setAttribute('my_reaction', $reactions->get($a->id));
         }
     }
 }

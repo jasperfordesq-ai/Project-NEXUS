@@ -223,6 +223,7 @@
     "neighbours_label": "Osoby, z którymi wymieniłeś się w tym roku",
     "hours_label": "Godziny wymienione w tym roku",
     "close": "Zamknij",
-    "send_message": "Wyślij podziękowanie: {{name}}"
+    "send_message": "Wyślij podziękowanie: {{name}}",
+    "write_note": "Napisz podziękowanie dla: {{name}}"
   }
 }

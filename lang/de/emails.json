@@ -625,9 +625,8 @@
     "title": "Sie haben eine Danksagung erhalten",
     "body": "{{sender}} hat Ihnen gerade eine Danksagung gesendet. Ihr Beitrag wurde bemerkt und geschätzt.",
     "message_label": "Ihre Nachricht",
-    "public_note": "Diese Wertschätzung ist öffentlich — andere können sie auf Ihrem Profil sehen.",
-    "private_note": "Diese Wertschätzung ist privat — nur Sie können sie sehen.",
-    "cta_view": "Auf Ihrem Profil anzeigen"
+    "private_note": "Nur Sie können diese Nachricht sehen. Wenn andere sie auch sehen sollen, können Sie auf der Seite mit Ihren Dankesnachrichten festlegen, dass sie in Ihrem Profil angezeigt wird.",
+    "cta_view": "Ihre Dankesnachrichten ansehen"
   },
   "support_report": {
     "created_subject": "Neuer Support-Bericht :reference",

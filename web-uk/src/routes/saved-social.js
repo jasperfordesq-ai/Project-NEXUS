@@ -10,8 +10,11 @@ const {
   getBookmarks,
   getUserPublicCollections,
   getUserAppreciations,
+  getMyAppreciations,
   toggleBookmark,
   sendAppreciation,
+  setAppreciationVisibility,
+  deleteAppreciation,
   reactToAppreciation,
   ApiError
 } = require('../lib/api');
@@ -53,9 +56,18 @@ function savedRedirect(status) {
   return `/saved?status=${encodeURIComponent(status)}`;
 }
 
-function appreciationRedirect(userId, status, fragment = '') {
-  const target = `/users/${userId}/appreciations?status=${encodeURIComponent(status)}`;
+function appreciationRedirect(userId, status, fragment = '', page = 1) {
+  // No page to go back to (the profile gave no id): the account hub, never /users/0.
+  if (!userId) return '/account';
+  const pageQuery = page > 1 ? `&page=${page}` : '';
+  const target = `/users/${userId}/appreciations?status=${encodeURIComponent(status)}${pageQuery}`;
   return fragment ? `${target}${fragment}` : target;
+}
+
+// The page of their own list a member acted from, so "Hide" on page 2 returns to page 2.
+function listPage(value) {
+  const number = Number.parseInt(String(value || ''), 10);
+  return Number.isInteger(number) && number > 1 ? number : 1;
 }
 
 function trimmed(value, limit = null) {
@@ -100,10 +112,11 @@ function safeColor(value) {
 function normalizeOwner(result, fallbackId) {
   const data = dataFrom(result) || {};
   const row = data.user || data.member || data.profile || data;
-  const firstLast = `${trimmed(row.first_name ?? row.firstName)} ${trimmed(row.last_name ?? row.lastName)}`.trim();
+  // 🔴 Members see first names only (owner, 10 Nov 2026). The API's `name` is already
+  // the first name; the fallback must never rebuild a full name from `last_name`.
   return {
     id: positiveInteger(row.id) || fallbackId,
-    name: trimmed(row.name) || firstLast
+    name: trimmed(row.name) || trimmed(row.first_name ?? row.firstName)
   };
 }
 
@@ -186,16 +199,38 @@ function normalizeAppreciation(item) {
     message: trimmed(row.message),
     receivedOn: formatDate(row.created_at ?? row.createdAt),
     reactionCount,
-    myReaction: trimmed(row.my_reaction ?? row.myReaction)
+    myReaction: trimmed(row.my_reaction ?? row.myReaction),
+    // Every note starts private; only the receiver can show it on their profile.
+    // Anything that is not an explicit "yes" is treated as private.
+    isPublic: [true, 1, '1', 'true'].includes(row.is_public ?? row.isPublic)
   };
 }
 
-function appreciationStatus(error) {
+function apiErrorCode(error) {
   const errors = Array.isArray(error?.data?.errors) ? error.data.errors : [];
   const firstError = errors.find((item) => item && typeof item === 'object') || {};
-  const code = trimmed(
+  return trimmed(
     firstError.code || error?.data?.code || error?.data?.error_code || error?.data?.error
   ).toUpperCase();
+}
+
+// A community can switch thank-you notes off. Laravel then answers every
+// appreciation endpoint with 403 FEATURE_DISABLED.
+function isFeatureDisabled(error) {
+  return error instanceof ApiError && error.status === 403 && apiErrorCode(error) === 'FEATURE_DISABLED';
+}
+
+// The same "not available in this community" page the tenant feature gate shows
+// (middleware/tenant-feature-gates.js): a settled state, not an error to retry.
+function featureOff(res) {
+  return res.status(403).render('errors/403', {
+    title: res.locals.t('govuk_alpha.error_pages.403_title'),
+    reason: 'feature-disabled'
+  });
+}
+
+function appreciationStatus(error) {
+  const code = apiErrorCode(error);
 
   if (code === 'SAFEGUARDING_POLICY_UNAVAILABLE') return 'appreciation-safeguarding-unavailable';
   if (code === 'SAFEGUARDING_CONTACT_RESTRICTED') return 'appreciation-safeguarding-restricted';
@@ -284,13 +319,27 @@ router.get('/users/:userId(\\d+)/appreciations', asyncRoute(async (req, res) => 
   const userId = Number(req.params.userId);
   const page = Math.max(1, Number(req.query.page || 1));
   const status = trimmed(req.query.status);
-  const [viewerResult, ownerResult, appreciationsResult] = await Promise.all([
+  const [viewerResult, ownerResult] = await Promise.all([
     getRequestProfile(req, token),
-    getUserV2(token, userId),
-    getUserAppreciations(token, userId, { page, per_page: 20 })
+    getUserV2(token, userId)
   ]);
   const viewer = normalizeOwner(viewerResult, 0);
   const owner = normalizeOwner(ownerResult, userId);
+  const isSelf = viewer.id === owner.id;
+
+  // Who is looking decides which list is read. Everyone else sees only the notes
+  // the receiver has chosen to show; the receiver reads their own list, which
+  // also holds the notes only they can see.
+  let appreciationsResult;
+  try {
+    appreciationsResult = isSelf
+      ? await getMyAppreciations(token, { tab: 'received', page, per_page: 20 })
+      : await getUserAppreciations(token, userId, { page, per_page: 20 });
+  } catch (error) {
+    if (isFeatureDisabled(error)) return featureOff(res);
+    throw error;
+  }
+
   const meta = metaFrom(appreciationsResult);
   const currentPage = Number(meta.current_page || page || 1);
   const lastPage = Number(meta.last_page || 1);
@@ -298,11 +347,21 @@ router.get('/users/:userId(\\d+)/appreciations', asyncRoute(async (req, res) => 
     .map(normalizeAppreciation)
     .filter((appreciation) => appreciation.id !== null);
 
+  // Removing the last note on the last page leaves that page number pointing past
+  // the end. Go to the real last page rather than showing "no notes yet".
+  if (appreciations.length === 0 && page > 1 && lastPage < page) {
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    if (lastPage > 1) params.set('page', String(lastPage));
+    const query = params.toString();
+    return redirectTo(res, `/users/${userId}/appreciations${query ? `?${query}` : ''}`);
+  }
+
   return res.render('saved-social/appreciations', {
     title: res.locals.t('govuk_alpha_saved.wall.title'),
     activeNav: 'members',
     owner,
-    isSelf: viewer.id === owner.id,
+    isSelf,
     appreciations,
     appreciationForm: consumeFormReplay(req, 'appreciation', owner.id),
     reactionTypes: APPRECIATION_REACTION_TYPES,
@@ -332,16 +391,15 @@ router.post('/saved/destroy', requireAuth, asyncRoute(async (req, res) => {
 router.post('/users/:userId(\\d+)/appreciations', requireAuth, asyncRoute(async (req, res) => {
   const userId = Number(req.params.userId);
   const message = String(req.body.message || '').trim();
-  const isPublic = req.body.is_public === undefined
-    ? true
-    : ['1', 'on', 'true'].includes(String(req.body.is_public).toLowerCase());
 
   // Six of the seven failure statuses are server-side conditions (rate limit,
   // safeguarding, a generic failure) that a member did nothing wrong to trigger, and every
-  // one of them used to discard the message they had written. The public/private choice is
-  // stored too: the checkbox is hardcoded `checked`, so a deliberate "keep this private"
-  // silently flipped back to public on every failure.
-  rememberFormReplay(req, 'appreciation', userId, { message, isPublic });
+  // one of them used to discard the message they had written.
+  //
+  // 🔴 There is no public/private choice to keep any more (owner, 12 Nov 2026): every
+  // note is private until the RECEIVER shows it on their profile. `is_public` is not
+  // read from the form and not sent — Laravel ignores it.
+  rememberFormReplay(req, 'appreciation', userId, { message });
 
   if (!message) {
     return redirectTo(res, appreciationRedirect(userId, 'appreciation-message-required'));
@@ -352,15 +410,99 @@ router.post('/users/:userId(\\d+)/appreciations', requireAuth, asyncRoute(async 
     await sendAppreciation(req.token, {
       receiver_id: userId,
       message,
-      context_type: 'general',
-      is_public: isPublic
+      context_type: 'general'
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
+    if (isFeatureDisabled(error)) {
+      // Nothing to refill: there is no form to come back to.
+      consumeFormReplay(req, 'appreciation', userId);
+      return featureOff(res);
+    }
     status = appreciationStatus(error);
   }
 
   return redirectTo(res, appreciationRedirect(userId, status));
+}));
+
+// Where to send a member back to after they act on one of their own notes. The
+// form carries the page owner's id (as the reaction form does); without it, the
+// only page these controls exist on is the signed-in member's own.
+async function ownAppreciationsOwnerId(req) {
+  const fromForm = positiveInteger(req.body && req.body.owner_id);
+  if (fromForm) return fromForm;
+  return normalizeOwner(await getRequestProfile(req, req.token), 0).id;
+}
+
+// The receiver shows a note on their profile, or hides it again.
+router.post('/appreciations/:id(\\d+)/visibility', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const choice = String(req.body.is_public ?? '').trim();
+  const page = listPage(req.body.page);
+  const ownerId = await ownAppreciationsOwnerId(req);
+  const back = (status) => redirectTo(res, appreciationRedirect(ownerId, status, `#appreciation-${id}`, page));
+
+  if (choice !== '1' && choice !== '0') {
+    return back('appreciation-visibility-failed');
+  }
+
+  const show = choice === '1';
+  try {
+    await setAppreciationVisibility(req.token, id, show);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) throw error;
+    if (isFeatureDisabled(error)) return featureOff(res);
+    // 404 included: Laravel answers 404 to anyone but the receiver, and to a note
+    // that has since been removed. Either way the member is told it did not work.
+    return back('appreciation-visibility-failed');
+  }
+
+  return back(show ? 'appreciation-shown' : 'appreciation-hidden');
+}));
+
+// Removing a note is permanent, so it goes through the shared confirmation page
+// (views/confirm-delete.njk), like every other destructive action here.
+router.get('/appreciations/:id(\\d+)/remove', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const id = Number(req.params.id);
+  const page = listPage(req.query.page);
+  const viewer = normalizeOwner(await getRequestProfile(req, token), 0);
+  const t = res.locals.t;
+  const pageQuery = page > 1 ? `?page=${page}` : '';
+
+  return res.render('confirm-delete', {
+    title: t('govuk_alpha_saved.manage.remove_heading'),
+    activeNav: 'members',
+    confirmHeading: t('govuk_alpha_saved.manage.remove_heading'),
+    confirmWarning: t('govuk_alpha_saved.manage.remove_warning'),
+    confirmButton: t('govuk_alpha_saved.manage.remove_confirm'),
+    confirmAction: `/appreciations/${id}/remove`,
+    confirmFields: [
+      { name: 'owner_id', value: viewer.id },
+      { name: 'page', value: page }
+    ],
+    cancelHref: viewer.id
+      ? `/users/${viewer.id}/appreciations${pageQuery}#appreciation-${id}`
+      : '/account'
+  });
+}, { redirectOn401: loginRedirect() }));
+
+router.post('/appreciations/:id(\\d+)/remove', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const page = listPage(req.body.page);
+  const ownerId = await ownAppreciationsOwnerId(req);
+
+  try {
+    await deleteAppreciation(req.token, id);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) throw error;
+    if (isFeatureDisabled(error)) return featureOff(res);
+    return redirectTo(res, appreciationRedirect(ownerId, 'appreciation-remove-failed', `#appreciation-${id}`, page));
+  }
+
+  return redirectTo(res, appreciationRedirect(ownerId, 'appreciation-removed', '', page));
 }));
 
 router.post('/appreciations/:id(\\d+)/react', requireAuth, asyncRoute(async (req, res) => {
@@ -384,6 +526,7 @@ router.post('/appreciations/:id(\\d+)/react', requireAuth, asyncRoute(async (req
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
     if (error instanceof ApiError && error.status === 404) throw error;
+    if (isFeatureDisabled(error)) return featureOff(res);
     status = 'reaction-failed';
   }
 

@@ -226,6 +226,8 @@
     "module_desc_reviews": "Reseñas y calificaciones de miembros",
     "module_name_polls": "Encuestas",
     "module_desc_polls": "Encuestas y votaciones comunitarias",
+    "module_name_appreciations": "Notas de agradecimiento",
+    "module_desc_appreciations": "Los miembros pueden darse las gracias. Una nota es privada hasta que quien la recibió decide mostrarla en su perfil.",
     "module_name_job_vacancies": "Ofertas de empleo",
     "module_desc_job_vacancies": "Ofertas de empleo y gestión de solicitudes.",
     "module_name_ideation_challenges": "Desafíos de ideación",

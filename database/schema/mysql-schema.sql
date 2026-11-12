@@ -780,7 +780,7 @@ CREATE TABLE `appreciations` (
   `message` text NOT NULL,
   `context_type` varchar(32) DEFAULT NULL,
   `context_id` bigint(20) unsigned DEFAULT NULL,
-  `is_public` tinyint(1) NOT NULL DEFAULT 1,
+  `is_public` tinyint(1) NOT NULL DEFAULT 0,
   `reactions_count` int(10) unsigned NOT NULL DEFAULT 0,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,

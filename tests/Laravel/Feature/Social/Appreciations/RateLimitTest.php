@@ -34,13 +34,13 @@ class RateLimitTest extends TestCase
 
         for ($i = 0; $i < AppreciationService::DAILY_SEND_LIMIT; $i++) {
             $r = User::factory()->forTenant($this->testTenantId)->create();
-            $svc->send($sender->id, $r->id, "msg {$i}", 'general', null, true);
+            $svc->send($sender->id, $r->id, "msg {$i}", 'general');
         }
 
         $r11 = User::factory()->forTenant($this->testTenantId)->create();
         $caught = null;
         try {
-            $svc->send($sender->id, $r11->id, 'one too many', 'general', null, true);
+            $svc->send($sender->id, $r11->id, 'one too many', 'general');
         } catch (\DomainException $e) {
             $caught = $e->getMessage();
         }

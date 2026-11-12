@@ -12506,7 +12506,11 @@
                 "from_someone": "A member",
                 "reactions_count": "{0} No reactions|{1} 1 reaction|[2,*] :count reactions",
                 "empty_title": "No appreciation yet",
-                "empty_body": "When members thank this person, the public notes will appear here."
+                "empty_body": "When members thank this person, the public notes will appear here.",
+                "own_description": "Thank-you notes other members have sent you. Only you can see a note until you choose to show it on your profile.",
+                "own_empty_body": "When members thank you, their notes will appear here. Only you will see them until you choose to show them on your profile.",
+                "visibility_private": "Only you can see this",
+                "visibility_public": "Shown on your profile"
             },
             "react": {
                 "legend": "React to this note",
@@ -12517,14 +12521,22 @@
                 "remove_label": "Remove your :reaction reaction",
                 "your_reaction": "Your reaction: :reaction"
             },
+            "manage": {
+                "show": "Show on my profile",
+                "hide": "Hide from my profile",
+                "remove": "Remove",
+                "for_note": "(note from :name)",
+                "remove_heading": "Remove this thank-you note?",
+                "remove_warning": "The note will be deleted for good. You cannot undo this.",
+                "remove_confirm": "Remove note"
+            },
             "send": {
                 "heading": "Say thank you",
                 "heading_to": "Say thank you to :name",
-                "intro": "Send a public or private thank-you note to this member.",
+                "intro": "Send a thank-you note to this member.",
                 "message_label": "Your message",
                 "message_hint": "Up to 500 characters.",
-                "public_label": "Make this thank-you public",
-                "public_hint": "Public notes appear on this member appreciation wall. Private notes are seen only by them.",
+                "private_hint": "Only this person will see your note, unless they choose to show it on their profile.",
                 "submit": "Send thank you",
                 "self_notice": "You cannot send a thank-you to yourself."
             },
@@ -12548,7 +12560,12 @@
                 "appreciation_rate_limited": "You have reached the daily limit for sending thank-you notes. Try again tomorrow.",
                 "appreciation_failed": "Sorry, your thank-you could not be sent. Please try again.",
                 "reaction_updated": "Your reaction has been updated.",
-                "reaction_failed": "Sorry, your reaction could not be saved."
+                "reaction_failed": "Sorry, your reaction could not be saved.",
+                "appreciation_shown": "This note is now shown on your profile.",
+                "appreciation_hidden": "This note is now hidden. Only you can see it.",
+                "appreciation_removed": "The thank-you note has been removed.",
+                "appreciation_visibility_failed": "Sorry, that note could not be changed. Please try again.",
+                "appreciation_remove_failed": "Sorry, that note could not be removed. Please try again."
             },
             "errors": {
                 "summary_title": "There is a problem"

@@ -12506,7 +12506,11 @@
                 "from_someone": "Een lid",
                 "reactions_count": "{0} Geen reacties|{1} 1 reactie|[2,*] :count reacties",
                 "empty_title": "Nog geen waardering",
-                "empty_body": "Wanneer leden deze persoon bedanken, verschijnen de openbare notities hier."
+                "empty_body": "Wanneer leden deze persoon bedanken, verschijnen de openbare notities hier.",
+                "own_description": "Bedankbriefjes die andere leden u hebben gestuurd. Alleen u kunt een briefje zien totdat u ervoor kiest het op uw profiel te tonen.",
+                "own_empty_body": "Wanneer leden u bedanken, verschijnen hun briefjes hier. Alleen u ziet ze totdat u ervoor kiest ze op uw profiel te tonen.",
+                "visibility_private": "Alleen u kunt dit zien",
+                "visibility_public": "Zichtbaar op uw profiel"
             },
             "react": {
                 "legend": "Reageer op deze notitie",
@@ -12517,14 +12521,22 @@
                 "remove_label": "Verwijder uw :reaction-reactie",
                 "your_reaction": "Jouw reactie: :reaction"
             },
+            "manage": {
+                "show": "Tonen op mijn profiel",
+                "hide": "Verbergen op mijn profiel",
+                "remove": "Verwijderen",
+                "for_note": "(briefje van :name)",
+                "remove_heading": "Dit bedankbriefje verwijderen?",
+                "remove_warning": "Het briefje wordt definitief verwijderd. U kunt dit niet ongedaan maken.",
+                "remove_confirm": "Briefje verwijderen"
+            },
             "send": {
                 "heading": "Zeg dankje",
                 "heading_to": "Zeg dank aan :name",
-                "intro": "Stuur een openbaar of privé bedankbriefje naar dit lid.",
+                "intro": "Stuur een bedankbriefje naar dit lid.",
                 "message_label": "Jouw bericht",
                 "message_hint": "Maximaal 500 tekens.",
-                "public_label": "Maak dit bedankje openbaar",
-                "public_hint": "Openbare notities verschijnen op deze ledenwaarderingsmuur. Privénotities worden alleen door hen gezien.",
+                "private_hint": "Alleen deze persoon ziet uw briefje, tenzij die ervoor kiest het op het eigen profiel te tonen.",
                 "submit": "Stuur een bedankje",
                 "self_notice": "Je kunt geen bedankje naar jezelf sturen."
             },
@@ -12548,7 +12560,12 @@
                 "appreciation_rate_limited": "U heeft de dagelijkse limiet voor het verzenden van bedankbriefjes bereikt. Probeer het morgen opnieuw.",
                 "appreciation_failed": "Sorry, uw bedankje kon niet worden verzonden. Probeer het opnieuw.",
                 "reaction_updated": "Uw reactie is bijgewerkt.",
-                "reaction_failed": "Sorry, uw reactie kon niet worden opgeslagen."
+                "reaction_failed": "Sorry, uw reactie kon niet worden opgeslagen.",
+                "appreciation_shown": "Dit briefje is nu zichtbaar op uw profiel.",
+                "appreciation_hidden": "Dit briefje is nu verborgen. Alleen u kunt het zien.",
+                "appreciation_removed": "Het bedankbriefje is verwijderd.",
+                "appreciation_visibility_failed": "Sorry, dat briefje kon niet worden gewijzigd. Probeer het opnieuw.",
+                "appreciation_remove_failed": "Sorry, dat briefje kon niet worden verwijderd. Probeer het opnieuw."
             },
             "errors": {
                 "summary_title": "Er is een probleem"

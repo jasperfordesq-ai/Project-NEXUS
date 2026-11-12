@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-11-10T08:51:40.477Z",
+  "generatedAt": "2026-11-12T16:25:32.453Z",
   "provenance": {
-    "generatedAt": "2026-11-10T08:51:40.477Z",
+    "generatedAt": "2026-11-12T16:25:32.453Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "f8ac667ff042ac3220651022266e2a31a2032805",
+    "laravelCommitSha": "aad1a58c5528c4cb0ca6ad255f6315080cc316e3",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "f8ac667ff042ac3220651022266e2a31a2032805",
+    "webUkRepositoryCommitSha": "aad1a58c5528c4cb0ca6ad255f6315080cc316e3",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-11-10T08:51:40.477Z",
+    "generatedAt": "2026-11-12T16:25:32.453Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 1094,
+    "webUkRoutes": 1097,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 384,
+    "extraWebUkRoutes": 387,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -30,6 +30,12 @@
       },
       "advertise": {
         "matched": 0,
+        "missing": 0,
+        "extraWebUk": 3,
+        "ignoredInfrastructure": 0
+      },
+      "appreciations": {
+        "matched": 1,
         "missing": 0,
         "extraWebUk": 3,
         "ignoredInfrastructure": 0
@@ -400,12 +406,6 @@
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
       },
-      "appreciations": {
-        "matched": 1,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
       "blog": {
         "matched": 12,
         "missing": 0,
@@ -671,6 +671,69 @@
       "webUkPath": "/advertise/campaigns/new",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/advertise-campaigns.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/appreciations/{param}/remove",
+      "family": "appreciations",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/appreciations/{param}/remove",
+      "webUkView": "confirm-delete",
+      "webUkFile": "web-uk/src/routes/saved-social.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/appreciations/{param}/remove",
+      "family": "appreciations",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/appreciations/{param}/remove",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/saved-social.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/appreciations/{param}/visibility",
+      "family": "appreciations",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/appreciations/{param}/visibility",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/saved-social.js",
       "webUkRouteKind": ""
     },
     {

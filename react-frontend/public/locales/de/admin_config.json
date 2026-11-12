@@ -225,6 +225,8 @@
     "module_desc_reviews": "Rezensionen und Bewertungen von Mitgliedern",
     "module_name_polls": "Umfragen",
     "module_desc_polls": "Community-Umfragen und Abstimmungen",
+    "module_name_appreciations": "Dankesnachrichten",
+    "module_desc_appreciations": "Mitglieder können einander danken. Eine Nachricht bleibt privat, bis das Mitglied, das sie erhalten hat, sie im eigenen Profil zeigt.",
     "module_name_job_vacancies": "Stellenangebote",
     "module_desc_job_vacancies": "Stellenausschreibungen und Bewerbungsmanagement",
     "module_name_ideation_challenges": "Herausforderungen bei der Ideenfindung",

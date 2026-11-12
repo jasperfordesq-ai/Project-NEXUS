@@ -87,6 +87,12 @@ class TenantFeatureConfig
         // keeps showing where it already does; admins can turn it off per tenant in
         // Module Configuration, which hides the navbar link and blocks the route.
         'explore' => true,
+        // Thank-you notes (SOC14 "appreciations"). Default ON so nothing is lost
+        // for communities already using them on the phone app and the accessible
+        // site; a community can switch them off, which refuses every
+        // /v2/appreciations route with 403 FEATURE_DISABLED. A note is private
+        // until the member who RECEIVED it chooses to show it on their profile.
+        'appreciations' => true,
     ];
 
     /**

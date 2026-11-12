@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-11-10T08:51:40.477Z
-Laravel commit SHA: `f8ac667ff042ac3220651022266e2a31a2032805`
-Web UK repository commit SHA: `f8ac667ff042ac3220651022266e2a31a2032805`
+Generated: 2026-11-12T16:25:32.453Z
+Laravel commit SHA: `aad1a58c5528c4cb0ca6ad255f6315080cc316e3`
+Web UK repository commit SHA: `aad1a58c5528c4cb0ca6ad255f6315080cc316e3`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1094 |
+| web-uk routes | 1097 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 384 |
+| Extra web-uk routes | 387 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -29,7 +29,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | achievements | 10 | 0 | 0 | 0 |
 | activity | 2 | 0 | 0 | 0 |
 | advertise | 0 | 0 | 3 | 0 |
-| appreciations | 1 | 0 | 0 | 0 |
+| appreciations | 1 | 0 | 3 | 0 |
 | blog | 12 | 0 | 0 | 0 |
 | caring | 0 | 0 | 9 | 0 |
 | changelog | 0 | 0 | 2 | 0 |
@@ -131,6 +131,9 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/advertise/campaigns` | advertise | advertise/campaigns | web-uk/src/routes/advertise-campaigns.js |
 | GET | `/advertise/campaigns/new` | advertise |  | web-uk/src/routes/advertise-campaigns.js |
 | POST | `/advertise/campaigns/new` | advertise |  | web-uk/src/routes/advertise-campaigns.js |
+| GET | `/appreciations/{param}/remove` | appreciations | confirm-delete | web-uk/src/routes/saved-social.js |
+| POST | `/appreciations/{param}/remove` | appreciations |  | web-uk/src/routes/saved-social.js |
+| POST | `/appreciations/{param}/visibility` | appreciations |  | web-uk/src/routes/saved-social.js |
 | GET | `/caring` | caring | caring/hub | web-uk/src/routes/caring.js |
 | GET | `/caring/caregiver` | caring | caring/caregiver | web-uk/src/routes/caring.js |
 | GET | `/caring/caregiver/link` | caring | caring/link | web-uk/src/routes/caring.js |

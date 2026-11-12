@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import X from 'lucide-react/icons/x';
 import MessageCircleHeart from 'lucide-react/icons/message-circle-heart';
+import PenLine from 'lucide-react/icons/pen-line';
 import { Link } from 'react-router-dom';
 import { Button, Card, CardBody } from '@/components/ui';
 import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
@@ -37,11 +38,16 @@ interface ExchangeThanksProps {
   messageHref?: string;
   /** The other person's photo; with no photo their coloured initials show. */
   partnerAvatar?: string | null;
+  /**
+   * Opens the thank-you note for the other person (a note they can choose to
+   * show on their profile). No button when thank-you notes are switched off.
+   */
+  onWriteNote?: () => void;
 }
 
 const STANDARD_ACCENT = '#5b5ede';
 
-export function ExchangeThanks({ neighbours, hours, onClose, partnerName, messageHref, partnerAvatar }: ExchangeThanksProps) {
+export function ExchangeThanks({ neighbours, hours, onClose, partnerName, messageHref, partnerAvatar, onWriteNote }: ExchangeThanksProps) {
   const { t } = useTranslation('exchanges');
   const accent = useSiteAccent() ?? STANDARD_ACCENT;
   const panelRef = useRef<HTMLDivElement>(null);
@@ -95,16 +101,31 @@ export function ExchangeThanks({ neighbours, hours, onClose, partnerName, messag
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-bold leading-tight text-theme-primary">{t('thanks.title')}</h2>
             <p className="mt-1 text-sm leading-6 text-theme-secondary">{t('thanks.body')}</p>
-            {partnerName && messageHref && (
-              <Button
-                as={Link}
-                to={messageHref}
-                size="sm"
-                className="mt-3 bg-accent-strong text-white shadow-sm"
-                startContent={<MessageCircleHeart className="size-4" aria-hidden="true" />}
-              >
-                {t('thanks.send_message', { name: partnerName })}
-              </Button>
+            {partnerName && (messageHref || onWriteNote) && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {messageHref && (
+                  <Button
+                    as={Link}
+                    to={messageHref}
+                    size="sm"
+                    className="bg-accent-strong text-white shadow-sm"
+                    startContent={<MessageCircleHeart className="size-4" aria-hidden="true" />}
+                  >
+                    {t('thanks.send_message', { name: partnerName })}
+                  </Button>
+                )}
+                {onWriteNote && (
+                  <Button
+                    size="sm"
+                    data-testid="exchange-thanks-note"
+                    className="bg-white/70 text-theme-primary shadow-sm dark:bg-white/10"
+                    startContent={<PenLine className="size-4" aria-hidden="true" />}
+                    onPress={onWriteNote}
+                  >
+                    {t('thanks.write_note', { name: partnerName })}
+                  </Button>
+                )}
+              </div>
             )}
           </div>
           <dl className="grid shrink-0 grid-cols-2 gap-2 sm:w-72">

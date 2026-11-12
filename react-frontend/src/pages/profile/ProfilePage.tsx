@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Tabs, Tab } from '@/components/ui/Tabs';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, Link, Navigate } from 'react-router-dom';
+import { useParams, Link, Navigate, useNavigate } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 
 import User from 'lucide-react/icons/user';
@@ -54,6 +54,8 @@ import { LoadingScreen, EmptyState } from '@/components/feedback';
 import { LocationMapCard } from '@/components/location/LocationMapCard';
 import { ReviewModal } from '@/components/reviews';
 import { ReportConcernModal } from '@/components/safety/ReportConcernModal';
+import { AppreciationModal } from '@/components/social/AppreciationModal';
+import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { TransferModal } from '@/components/wallet';
 import { ProfileFeed } from '@/components/profile/ProfileFeed';
@@ -159,6 +161,7 @@ export function ProfilePage() {
   const { user: currentUser, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { tenantPath, hasModule } = useTenant();
   const { loginTarget } = useLoginRedirect(tenantPath);
+  const navigate = useNavigate();
   const hasConnections = useFeature('connections');
   const hasGamification = useFeature('gamification');
   const hasReviews = useFeature('reviews');
@@ -166,6 +169,8 @@ export function ProfilePage() {
   const hasListings = hasModule('listings');
   const hasFeed = hasModule('feed');
   const hasSettings = hasModule('settings');
+  // Thank-you notes can be switched off per community.
+  const hasThanks = useFeature('appreciations');
   const hasDirectMessaging = useFeature('direct_messaging');
   const hasGroups = useFeature('groups');
   const hasEvents = useFeature('events');
@@ -235,6 +240,7 @@ export function ProfilePage() {
   const [reviewsAvailable, setReviewsAvailable] = useState(true);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isThanksOpen, setIsThanksOpen] = useState(false);
   const [currentBalance, setCurrentBalance] = useState(0);
 
   // Resolve "me" alias (from gamification notification links) to own profile
@@ -781,17 +787,33 @@ export function ProfilePage() {
 
               {/* Actions */}
               <div className="mt-6 grid w-full grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:justify-start sm:gap-3">
-                {isOwnProfile ? (hasSettings ? (
-                  <Button
-                    as={Link}
-                    to={tenantPath('/settings')}
-                    color="primary"
-                    startContent={<Settings className="w-4 h-4" aria-hidden="true" />}
-                    className="w-full sm:w-auto"
-                  >
-                    {t('settings')}
-                  </Button>
-                ) : null) : isBlocked ? (
+                {isOwnProfile ? (
+                  <>
+                    {hasSettings ? (
+                      <Button
+                        as={Link}
+                        to={tenantPath('/settings')}
+                        color="primary"
+                        startContent={<Settings className="w-4 h-4" aria-hidden="true" />}
+                        className="w-full sm:w-auto"
+                      >
+                        {t('settings')}
+                      </Button>
+                    ) : null}
+                    {hasThanks && profile.id ? (
+                      <Button
+                        as={Link}
+                        to={tenantPath(`/users/${profile.id}/appreciations`)}
+                        variant="flat"
+                        data-testid="profile-my-thanks"
+                        className="w-full bg-theme-elevated text-theme-primary sm:w-auto"
+                        startContent={<HeartHandshake className="w-4 h-4" aria-hidden="true" />}
+                      >
+                        {t('appreciations.thanks_own_title', { ns: 'common' })}
+                      </Button>
+                    ) : null}
+                  </>
+                ) : isBlocked ? (
                   // Blocked state — show only unblock option and a notice
                   <>
                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-rose-500/10 text-theme-danger text-sm">
@@ -841,6 +863,17 @@ export function ProfilePage() {
                         {t('login_to_message')}
                       </Button>
                     )}
+                    {hasThanks && isAuthenticated && profile.id ? (
+                      <Button
+                        variant="flat"
+                        data-testid="profile-say-thanks"
+                        className="w-full bg-accent-soft text-accent-soft-foreground sm:w-auto"
+                        startContent={<HeartHandshake className="w-4 h-4" aria-hidden="true" />}
+                        onPress={() => setIsThanksOpen(true)}
+                      >
+                        {t('appreciations.say_thanks', { ns: 'common' })}
+                      </Button>
+                    ) : null}
                     {hasConnections && isAuthenticated && connectionStatus !== 'connected' && (
                       <Button
                         variant="flat"
@@ -892,6 +925,7 @@ export function ProfilePage() {
                           aria-label={t('profile_actions')}
                           onAction={(key) => {
                             if (key === 'review') setIsReviewModalOpen(true);
+                            if (key === 'thanks' && profile.id) navigate(tenantPath(`/users/${profile.id}/appreciations`));
                             if (key === 'disconnect') setIsDisconnectConfirmOpen(true);
                             if (key === 'report') setIsReportOpen(true);
                             if (key === 'block') setIsBlockConfirmOpen(true);
@@ -900,6 +934,11 @@ export function ProfilePage() {
                           {hasReviews ? (
                             <DropdownItem key="review" id="review" startContent={<Star className="w-4 h-4" />}>
                               {t('write_review')}
+                            </DropdownItem>
+                          ) : null}
+                          {hasThanks ? (
+                            <DropdownItem key="thanks" id="thanks" startContent={<HeartHandshake className="w-4 h-4" />}>
+                              {t('appreciations.thanks_tabs_label', { ns: 'common' })}
                             </DropdownItem>
                           ) : null}
                           {hasConnections && connectionStatus === 'connected' ? (
@@ -1458,6 +1497,16 @@ export function ProfilePage() {
           initialRecipientId={profile.id}
         />
       )}
+
+      {/* A thank-you note. It stays private until this member chooses to show it. */}
+      {hasThanks && !isOwnProfile && isAuthenticated && profile?.id ? (
+        <AppreciationModal
+          isOpen={isThanksOpen}
+          onClose={() => setIsThanksOpen(false)}
+          receiverId={profile.id}
+          receiverName={profile.first_name || profile.name || undefined}
+        />
+      ) : null}
 
       {/* Report a concern about this member to the community's coordinators */}
       {!isOwnProfile && isAuthenticated && profile?.id ? (

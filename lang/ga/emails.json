@@ -625,9 +625,8 @@
     "title": "Fuair tú buíochas",
     "body": "Sheol {{sender}} nóta buíochais chugat díreach anois. Tugadh faoi deara d'rannchuidiú agus cuireadh luach air.",
     "message_label": "A dteachtaireacht",
-    "public_note": "Tá an buíochas seo poiblí — is féidir le daoine eile é a fheiceáil ar do phróifíl.",
-    "private_note": "Tá an buíochas seo príobháideach — ní féidir ach tú féin é a fheiceáil.",
-    "cta_view": "Féach ar do phróifíl"
+    "private_note": "Ní féidir ach leatsa an nóta seo a fheiceáil. Más mian leat go bhfeicfeadh daoine eile é, is féidir leat é a thaispeáint ar do phróifíl ó leathanach do nótaí buíochais.",
+    "cta_view": "Féach ar do nótaí buíochais"
   },
   "support_report": {
     "created_subject": "Tuarascail tacaiochta nua :reference",

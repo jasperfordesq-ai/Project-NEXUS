@@ -12506,7 +12506,11 @@
                 "from_someone": "Un membre",
                 "reactions_count": "{0} Aucune réaction|{1} 1 réaction|[2,*] :count réactions",
                 "empty_title": "Pas encore d'appréciation",
-                "empty_body": "Lorsque les membres remercieront cette personne, les notes publiques apparaîtront ici."
+                "empty_body": "Lorsque les membres remercieront cette personne, les notes publiques apparaîtront ici.",
+                "own_description": "Les notes de remerciement que d'autres membres vous ont envoyées. Vous êtes la seule personne à voir une note tant que vous ne choisissez pas de l'afficher sur votre profil.",
+                "own_empty_body": "Lorsque des membres vous remercieront, leurs notes apparaîtront ici. Vous serez la seule personne à les voir tant que vous ne choisirez pas de les afficher sur votre profil.",
+                "visibility_private": "Visible uniquement par vous",
+                "visibility_public": "Affichée sur votre profil"
             },
             "react": {
                 "legend": "Réagissez à cette note",
@@ -12517,14 +12521,22 @@
                 "remove_label": "Supprimez votre réaction :reaction",
                 "your_reaction": "Votre réaction : :reaction"
             },
+            "manage": {
+                "show": "Afficher sur mon profil",
+                "hide": "Masquer de mon profil",
+                "remove": "Supprimer",
+                "for_note": "(note de :name)",
+                "remove_heading": "Supprimer cette note de remerciement ?",
+                "remove_warning": "La note sera supprimée définitivement. Cette action est irréversible.",
+                "remove_confirm": "Supprimer la note"
+            },
             "send": {
                 "heading": "Dire merci",
                 "heading_to": "Dites merci à :name",
-                "intro": "Envoyez une note de remerciement publique ou privée à ce membre.",
+                "intro": "Envoyez une note de remerciement à ce membre.",
                 "message_label": "Votre message",
                 "message_hint": "Jusqu'à 500 caractères.",
-                "public_label": "Rendre ce remerciement public",
-                "public_hint": "Les notes publiques apparaissent sur ce mur d’appréciation des membres. Les notes privées ne sont vues que par eux.",
+                "private_hint": "Seule cette personne verra votre note, sauf si elle choisit de l'afficher sur son profil.",
                 "submit": "Envoyez merci",
                 "self_notice": "Vous ne pouvez pas vous envoyer un remerciement."
             },
@@ -12548,7 +12560,12 @@
                 "appreciation_rate_limited": "Vous avez atteint la limite quotidienne d'envoi de notes de remerciement. Réessayez demain.",
                 "appreciation_failed": "Désolé, votre remerciement n'a pas pu être envoyé. Veuillez réessayer.",
                 "reaction_updated": "Votre réaction a été mise à jour.",
-                "reaction_failed": "Désolé, votre réaction n'a pas pu être enregistrée."
+                "reaction_failed": "Désolé, votre réaction n'a pas pu être enregistrée.",
+                "appreciation_shown": "Cette note est maintenant affichée sur votre profil.",
+                "appreciation_hidden": "Cette note est maintenant masquée. Vous êtes la seule personne à la voir.",
+                "appreciation_removed": "La note de remerciement a été supprimée.",
+                "appreciation_visibility_failed": "Désolé, cette note n'a pas pu être modifiée. Veuillez réessayer.",
+                "appreciation_remove_failed": "Désolé, cette note n'a pas pu être supprimée. Veuillez réessayer."
             },
             "errors": {
                 "summary_title": "Il y a un problème"

@@ -73,11 +73,19 @@ class TenantFeatureConfigTest extends TestCase
             'connections', 'reviews', 'polls', 'job_vacancies', 'ideation_challenges',
             'direct_messaging', 'group_exchanges', 'search', 'ai_chat',
             'fadp_compliance', 'local_advertising', 'identity_verification',
-            'two_factor_authentication', 'biometric_login'];
+            'two_factor_authentication', 'biometric_login', 'appreciations'];
 
         foreach ($expected as $key) {
             $this->assertArrayHasKey($key, TenantFeatureConfig::FEATURE_DEFAULTS);
         }
+    }
+
+    public function test_thank_you_notes_default_on_and_can_be_switched_off(): void
+    {
+        // Default ON: communities already using thank-you notes lose nothing.
+        $this->assertTrue(TenantFeatureConfig::FEATURE_DEFAULTS['appreciations']);
+        $this->assertTrue(TenantFeatureConfig::mergeFeatures([])['appreciations']);
+        $this->assertFalse(TenantFeatureConfig::mergeFeatures(['appreciations' => false])['appreciations']);
     }
 
     public function test_module_defaults_has_expected_keys(): void

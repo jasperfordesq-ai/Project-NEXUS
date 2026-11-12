@@ -225,6 +225,8 @@
     "module_desc_reviews": "Avis et notes des membres",
     "module_name_polls": "Sondages",
     "module_desc_polls": "Sondages et vote communautaires",
+    "module_name_appreciations": "Mots de remerciement",
+    "module_desc_appreciations": "Les membres peuvent se remercier. Un mot reste privé tant que le membre qui l’a reçu ne choisit pas de l’afficher sur son profil.",
     "module_name_job_vacancies": "Offres d'emploi",
     "module_desc_job_vacancies": "Gestion des offres d'emploi et des candidatures",
     "module_name_ideation_challenges": "Défis d’idéation",

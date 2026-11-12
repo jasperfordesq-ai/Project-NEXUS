@@ -1112,9 +1112,11 @@ export function AppRoutes() {
           } />
           {/* SOC14 â€” Appreciation wall */}
           <Route path="users/:userId/appreciations" element={
-            <FeatureErrorBoundary featureName="Appreciations">
-              <AppreciationWallPage />
-            </FeatureErrorBoundary>
+            <FeatureGate feature="appreciations" redirect="/dashboard">
+              <FeatureErrorBoundary featureName="Appreciations">
+                <AppreciationWallPage />
+              </FeatureErrorBoundary>
+            </FeatureGate>
           } />
           <Route path="settings" element={
             <FeatureGate module="settings" redirect="/dashboard">

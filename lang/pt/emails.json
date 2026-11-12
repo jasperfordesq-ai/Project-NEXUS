@@ -625,9 +625,8 @@
     "title": "Recebeu um agradecimento",
     "body": "{{sender}} acabou de lhe enviar uma nota de agradecimento. A sua contribuição foi notada e apreciada.",
     "message_label": "A sua mensagem",
-    "public_note": "Este agradecimento é público — outros podem vê-lo no seu perfil.",
-    "private_note": "Este agradecimento é privado — apenas você pode vê-lo.",
-    "cta_view": "Ver no seu perfil"
+    "private_note": "Só você pode ver esta nota. Se quiser que outras pessoas a vejam, pode optar por mostrá-la no seu perfil a partir da sua página de notas de agradecimento.",
+    "cta_view": "Ver as suas notas de agradecimento"
   },
   "support_report": {
     "created_subject": "Novo relatório de suporte :reference",

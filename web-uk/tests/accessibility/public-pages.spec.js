@@ -772,7 +772,12 @@ test.describe('representative authenticated-page accessibility gate', () => {
           await expect(page.locator('#appreciation-message'))
             .toHaveAttribute('aria-describedby', /appreciation-message-info/);
           await expect(page.locator('#appreciation-message-info')).toHaveCount(1);
-          await expect(page.locator('#appreciation-public')).toHaveAttribute('aria-describedby', 'appreciation-public-hint');
+          // The sender no longer chooses public or private: every note is private
+          // until the receiver shows it, and the form says so instead of asking.
+          await expect(page.locator('#appreciation-public')).toHaveCount(0);
+          await expect(page.locator('#appreciation-message'))
+            .toHaveAttribute('aria-describedby', /appreciation-private-hint/);
+          await expect(page.locator('#appreciation-private-hint')).toHaveCount(1);
         }
         if (route.name === 'saved items') {
           await expect(page.locator('h1')).toHaveText(translate('en', 'saved.title'));

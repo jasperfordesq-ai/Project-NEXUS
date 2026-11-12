@@ -625,9 +625,8 @@
     "title": "U heeft een bedankje ontvangen",
     "body": "{{sender}} heeft u zojuist een bedankje gestuurd. Uw bijdrage is opgemerkt en gewaardeerd.",
     "message_label": "Hun bericht",
-    "public_note": "Deze waardering is openbaar — anderen kunnen het zien op uw profiel.",
-    "private_note": "Deze waardering is privé — alleen u kunt het zien.",
-    "cta_view": "Bekijken op uw profiel"
+    "private_note": "Alleen u kunt dit bericht zien. Wilt u dat anderen het ook zien, dan kunt u op de pagina met uw bedankjes kiezen om het op uw profiel te tonen.",
+    "cta_view": "Uw bedankjes bekijken"
   },
   "support_report": {
     "created_subject": "Nieuw ondersteuningsrapport :reference",

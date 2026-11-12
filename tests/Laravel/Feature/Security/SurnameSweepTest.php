@@ -677,6 +677,15 @@ class SurnameSweepTest extends AccessSweepTestCase
             ]);
         }
 
+        // Thank-you notes shown on a profile (E-122 L44): the viewer's own
+        // received and sent lists, and the owner's profile wall.
+        foreach ([[$other, $viewer], [$viewer, $other], [$owner, $viewer], [$other, $owner]] as [$from, $to]) {
+            $this->plant('appreciations', [
+                'tenant_id' => $t, 'sender_id' => $from->id, 'receiver_id' => $to->id, 'message' => 'Sweep thank-you',
+                'is_public' => 1, 'reactions_count' => 0, 'created_at' => $now, 'updated_at' => $now,
+            ]);
+        }
+
         foreach ([$other, $owner, $organisation] as $person) {
             $this->plant('connections', [
                 'tenant_id' => $t, 'requester_id' => $person->id, 'receiver_id' => $viewer->id,

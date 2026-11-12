@@ -12506,7 +12506,11 @@
                 "from_someone": "Um membro",
                 "reactions_count": "{0} Nenhuma reação|{1} 1 reação|[2,*] :count reações",
                 "empty_title": "Nenhuma apreciação ainda",
-                "empty_body": "Quando os membros agradecerem a esta pessoa, as notas públicas aparecerão aqui."
+                "empty_body": "Quando os membros agradecerem a esta pessoa, as notas públicas aparecerão aqui.",
+                "own_description": "Notas de agradecimento que outros membros enviaram a você. Só você pode ver uma nota até escolher mostrá-la no seu perfil.",
+                "own_empty_body": "Quando os membros agradecerem a você, as notas deles aparecerão aqui. Só você as verá até escolher mostrá-las no seu perfil.",
+                "visibility_private": "Só você pode ver",
+                "visibility_public": "Mostrada no seu perfil"
             },
             "react": {
                 "legend": "Reaja a esta nota",
@@ -12517,14 +12521,22 @@
                 "remove_label": "Remova sua reação :reaction",
                 "your_reaction": "Sua reação: :reaction"
             },
+            "manage": {
+                "show": "Mostrar no meu perfil",
+                "hide": "Ocultar do meu perfil",
+                "remove": "Remover",
+                "for_note": "(nota enviada por :name)",
+                "remove_heading": "Remover esta nota de agradecimento?",
+                "remove_warning": "A nota será excluída para sempre. Não é possível desfazer.",
+                "remove_confirm": "Remover nota"
+            },
             "send": {
                 "heading": "Diga obrigado",
                 "heading_to": "Agradeça a :name",
-                "intro": "Envie uma nota de agradecimento pública ou privada a este membro.",
+                "intro": "Envie uma nota de agradecimento a este membro.",
                 "message_label": "Sua mensagem",
                 "message_hint": "Até 500 caracteres.",
-                "public_label": "Torne este agradecimento público",
-                "public_hint": "Notas públicas aparecem neste mural de agradecimento aos membros. As notas privadas são vistas apenas por eles.",
+                "private_hint": "Só esta pessoa verá a sua nota, a menos que ela escolha mostrá-la no perfil dela.",
                 "submit": "Enviar obrigado",
                 "self_notice": "Você não pode enviar um agradecimento a si mesmo."
             },
@@ -12548,7 +12560,12 @@
                 "appreciation_rate_limited": "Você atingiu o limite diário de envio de notas de agradecimento. Tente novamente amanhã.",
                 "appreciation_failed": "Desculpe, não foi possível enviar seu agradecimento. Por favor, tente novamente.",
                 "reaction_updated": "Sua reação foi atualizada.",
-                "reaction_failed": "Desculpe, sua reação não pôde ser salva."
+                "reaction_failed": "Desculpe, sua reação não pôde ser salva.",
+                "appreciation_shown": "Esta nota agora é mostrada no seu perfil.",
+                "appreciation_hidden": "Esta nota agora está oculta. Só você pode vê-la.",
+                "appreciation_removed": "A nota de agradecimento foi removida.",
+                "appreciation_visibility_failed": "Desculpe, não foi possível alterar essa nota. Tente novamente.",
+                "appreciation_remove_failed": "Desculpe, não foi possível remover essa nota. Tente novamente."
             },
             "errors": {
                 "summary_title": "Há um problema"

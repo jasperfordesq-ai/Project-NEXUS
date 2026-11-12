@@ -225,6 +225,7 @@
     "neighbours_label": "Daoine ar mhalartaigh tú leo i mbliana",
     "hours_label": "Uaireanta malartaithe i mbliana",
     "close": "Dún",
-    "send_message": "Seol teachtaireacht bhuíochais chuig {{name}}"
+    "send_message": "Seol teachtaireacht bhuíochais chuig {{name}}",
+    "write_note": "Scríobh nóta buíochais chuig {{name}}"
   }
 }

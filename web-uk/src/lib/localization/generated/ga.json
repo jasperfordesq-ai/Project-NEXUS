@@ -12506,7 +12506,11 @@
                 "from_someone": "Ball",
                 "reactions_count": "{0} Gan frithghníomh ar bith|{1} 1 fhrithghníomh|[2,*] :count frithghníomh",
                 "empty_title": "Gan meas fós",
-                "empty_body": "Nuair a ghabhfaidh comhaltaí buíochas leis an duine seo, beidh na nótaí poiblí le feiceáil anseo."
+                "empty_body": "Nuair a ghabhfaidh comhaltaí buíochas leis an duine seo, beidh na nótaí poiblí le feiceáil anseo.",
+                "own_description": "Nótaí buíochais a sheol baill eile chugat. Ní féidir ach leatsa nóta a fheiceáil go dtí go roghnaíonn tú é a thaispeáint ar do phróifíl.",
+                "own_empty_body": "Nuair a ghabhfaidh baill buíochas leat, beidh a gcuid nótaí le feiceáil anseo. Ní fheicfidh ach tusa iad go dtí go roghnaíonn tú iad a thaispeáint ar do phróifíl.",
+                "visibility_private": "Ní féidir ach leatsa é seo a fheiceáil",
+                "visibility_public": "Á thaispeáint ar do phróifíl"
             },
             "react": {
                 "legend": "Freagair an nóta seo",
@@ -12517,14 +12521,22 @@
                 "remove_label": "Bain d'imoibriú :reaction",
                 "your_reaction": "Do fhreagairt: :reaction"
             },
+            "manage": {
+                "show": "Taispeáin ar mo phróifíl",
+                "hide": "Folaigh ó mo phróifíl",
+                "remove": "Bain",
+                "for_note": "(nóta ó :name)",
+                "remove_heading": "An bhfuil fonn ort an nóta buíochais seo a bhaint?",
+                "remove_warning": "Scriosfar an nóta go buan. Ní féidir é seo a chealú.",
+                "remove_confirm": "Bain an nóta"
+            },
             "send": {
                 "heading": "Abair go raibh maith agat",
                 "heading_to": "Gabh buíochas le :name",
-                "intro": "Seol nóta buíochais poiblí nó príobháideach chuig an mball seo.",
+                "intro": "Seol nóta buíochais chuig an mball seo.",
                 "message_label": "Do theachtaireacht",
                 "message_hint": "Suas le 500 carachtar.",
-                "public_label": "Déan an buíochas seo poiblí",
-                "public_hint": "Tá nótaí poiblí le feiceáil ar an mballa léirthuiscint ball seo. Ní fheiceann siad ach nótaí príobháideacha.",
+                "private_hint": "Ní fheicfidh ach an duine seo do nóta, mura roghnaíonn siad é a thaispeáint ar a bpróifíl féin.",
                 "submit": "Seol go raibh maith agat",
                 "self_notice": "Ní féidir leat buíochas a chur chugat féin."
             },
@@ -12548,7 +12560,12 @@
                 "appreciation_rate_limited": "Tá an teorainn laethúil maidir le nótaí buíochais a sheoladh sroichte agat. Bain triail eile as amárach.",
                 "appreciation_failed": "Ár leithscéal, níorbh fhéidir do bhuíochas a chur chugat. Bain triail eile as.",
                 "reaction_updated": "Nuashonraíodh d'fhreagairt.",
-                "reaction_failed": "Ár leithscéal, níorbh fhéidir d'fhreagairt a shábháil."
+                "reaction_failed": "Ár leithscéal, níorbh fhéidir d'fhreagairt a shábháil.",
+                "appreciation_shown": "Tá an nóta seo á thaispeáint ar do phróifíl anois.",
+                "appreciation_hidden": "Tá an nóta seo i bhfolach anois. Ní féidir ach leatsa é a fheiceáil.",
+                "appreciation_removed": "Baineadh an nóta buíochais.",
+                "appreciation_visibility_failed": "Ár leithscéal, níorbh fhéidir an nóta sin a athrú. Bain triail eile as.",
+                "appreciation_remove_failed": "Ár leithscéal, níorbh fhéidir an nóta sin a bhaint. Bain triail eile as."
             },
             "errors": {
                 "summary_title": "Tá fadhb ann"

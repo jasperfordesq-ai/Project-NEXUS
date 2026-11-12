@@ -240,6 +240,32 @@ describe('ProfilePage', () => {
     expect(screen.queryByRole('link', { name: /send message/i })).not.toBeInTheDocument();
   });
 
+  // Thank-you notes (warmth phase 5): a button on someone else's profile, a
+  // link to your own notes on yours, and neither when the community has
+  // switched thank-you notes off.
+  it("offers Say thanks on someone else's profile", async () => {
+    render(<ProfilePage />);
+    await screen.findByText('Test bio');
+    expect(screen.getByTestId('profile-say-thanks')).toBeInTheDocument();
+    expect(screen.queryByTestId('profile-my-thanks')).toBeNull();
+  });
+
+  it('links to my own thank-you notes on my own profile', async () => {
+    routeState.id = '1';
+    render(<ProfilePage />);
+    const link = await screen.findByTestId('profile-my-thanks');
+    expect(link.getAttribute('href')).toMatch(/^\/test\/users\/\d+\/appreciations$/);
+    expect(screen.queryByTestId('profile-say-thanks')).toBeNull();
+  });
+
+  it('offers nothing about thank-you notes when they are switched off', async () => {
+    mockUseFeature.mockImplementation((feature: string) => feature !== 'appreciations');
+    render(<ProfilePage />);
+    await screen.findByText('Test bio');
+    expect(screen.queryByTestId('profile-say-thanks')).toBeNull();
+    expect(screen.queryByTestId('profile-my-thanks')).toBeNull();
+  });
+
   it("links the stat cards to the member's own wallet, listings, groups and events", async () => {
     routeState.id = '1';
     const { container } = render(<ProfilePage />);

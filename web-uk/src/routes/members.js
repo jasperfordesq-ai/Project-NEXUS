@@ -1322,6 +1322,8 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     isBlockedBy: !isOwnProfile && !!blockStatus.is_blocked_by,
     reviewsEnabled: reviewsEnabledFor(req, res),
     directMessagingEnabled: flagEnabled(tenant, 'direct_messaging', 'features', true),
+    // Thank-you notes can be switched off per community; a missing key counts as on.
+    appreciationsEnabled: flagEnabled(tenant, 'appreciations', 'features', true),
     walletEnabled,
     maxTransfer,
     transferIdempotencyKey: randomUUID(),

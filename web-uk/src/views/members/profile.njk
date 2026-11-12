@@ -74,6 +74,10 @@
           </div>
           {% if user.tagline %}<p class="govuk-body-l govuk-!-margin-top-2" dir="auto">{{ user.tagline }}</p>{% endif %}
           <p class="govuk-body govuk-!-margin-top-2"><a class="govuk-link" href="{{ urlFor('/members/' + (user.id | string) + '/insights') }}">{{ t("govuk_alpha_members.nav.reputation") }}</a></p>
+          {# Thank-you notes: nothing linked to this page before, so the only way in
+             was to type the address. On your own profile it is where you choose
+             which notes show. Not offered when the community has switched them off. #}
+          {% if appreciationsEnabled %}<p class="govuk-body"><a class="govuk-link" data-testid="profile-thanks-link" href="{{ urlFor('/users/' + (user.id | string) + '/appreciations') }}">{{ t("govuk_alpha_saved.wall.title") }}</a></p>{% endif %}
 
           {% if isOwnProfile %}
             <div class="govuk-button-group govuk-!-margin-top-4"><a class="govuk-button" href="{{ urlFor('/profile/settings') }}" role="button" draggable="false" data-module="govuk-button">{{ t("actions.edit_profile") }}</a></div>

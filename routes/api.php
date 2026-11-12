@@ -4637,12 +4637,19 @@ Route::middleware('auth:sanctum')->group(function () {
     // SOC10 — view another user's public collections
     Route::get('/v2/users/{userId}/public-collections', [\App\Http\Controllers\Api\SavedCollectionsController::class, 'publicCollections'])->whereNumber('userId');
 
-    // SOC14 — appreciations
-    Route::post('/v2/appreciations', [\App\Http\Controllers\Api\AppreciationsController::class, 'send']);
-    Route::get('/v2/appreciations/most-appreciated', [\App\Http\Controllers\Api\AppreciationsController::class, 'mostAppreciated']);
-    Route::get('/v2/me/appreciations', [\App\Http\Controllers\Api\AppreciationsController::class, 'mine']);
-    Route::get('/v2/users/{userId}/appreciations', [\App\Http\Controllers\Api\AppreciationsController::class, 'publicForUser'])->whereNumber('userId');
-    Route::post('/v2/appreciations/{id}/react', [\App\Http\Controllers\Api\AppreciationsController::class, 'react'])->whereNumber('id');
-    Route::delete('/v2/appreciations/{id}/react', [\App\Http\Controllers\Api\AppreciationsController::class, 'removeReaction'])->whereNumber('id');
+    // SOC14 — appreciations (thank-you notes). One community switch covers
+    // every route: `appreciations`, default ON. Off => 403 FEATURE_DISABLED.
+    Route::middleware('feature:appreciations')->group(function () {
+        Route::post('/v2/appreciations', [\App\Http\Controllers\Api\AppreciationsController::class, 'send']);
+        Route::get('/v2/appreciations/most-appreciated', [\App\Http\Controllers\Api\AppreciationsController::class, 'mostAppreciated']);
+        Route::get('/v2/me/appreciations', [\App\Http\Controllers\Api\AppreciationsController::class, 'mine']);
+        Route::get('/v2/users/{userId}/appreciations', [\App\Http\Controllers\Api\AppreciationsController::class, 'publicForUser'])->whereNumber('userId');
+        // The receiver shows a note on their profile or hides it again.
+        Route::put('/v2/appreciations/{id}/visibility', [\App\Http\Controllers\Api\AppreciationsController::class, 'visibility'])->whereNumber('id');
+        // The receiver or the sender removes a note.
+        Route::delete('/v2/appreciations/{id}', [\App\Http\Controllers\Api\AppreciationsController::class, 'destroy'])->whereNumber('id');
+        Route::post('/v2/appreciations/{id}/react', [\App\Http\Controllers\Api\AppreciationsController::class, 'react'])->whereNumber('id');
+        Route::delete('/v2/appreciations/{id}/react', [\App\Http\Controllers\Api\AppreciationsController::class, 'removeReaction'])->whereNumber('id');
+    });
 });
 Route::post('/csp-report', [\App\Http\Controllers\Api\SecurityReportController::class, 'csp']);

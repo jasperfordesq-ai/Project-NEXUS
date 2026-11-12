@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "_character-count.njk" import characterCount %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/members/' + (owner.id | string)) }}">{{ t("govuk_alpha_saved.wall.back_to_profile") }}</a>
@@ -12,7 +13,8 @@
 
 {% block content %}
   {% set messageError = status == "appreciation-message-required" %}
-  {% set errorStatuses = ["appreciation-message-required", "appreciation-self", "appreciation-too-long", "appreciation-rate-limited", "appreciation-safeguarding-restricted", "appreciation-safeguarding-unavailable", "appreciation-failed", "reaction-failed"] %}
+  {% set errorStatuses = ["appreciation-message-required", "appreciation-self", "appreciation-too-long", "appreciation-rate-limited", "appreciation-safeguarding-restricted", "appreciation-safeguarding-unavailable", "appreciation-failed", "reaction-failed", "appreciation-visibility-failed", "appreciation-remove-failed"] %}
+  {% set successStatuses = ["appreciation-sent", "reaction-updated", "appreciation-shown", "appreciation-hidden", "appreciation-removed"] %}
   {% set ownerLabel = owner.name or t("govuk_alpha_saved.wall.from_someone") %}
 
 
@@ -22,20 +24,21 @@
         <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_saved.errors.summary_title") }}</h2>
         <div class="govuk-error-summary__body">
           <ul class="govuk-list govuk-error-summary__list">
-            <li>{% if messageError %}<a href="#appreciation-message">{% endif %}{% if status == "appreciation-message-required" %}{{ t("govuk_alpha_saved.status.appreciation_message_required") }}{% elif status == "appreciation-self" %}{{ t("govuk_alpha_saved.status.appreciation_self") }}{% elif status == "appreciation-too-long" %}{{ t("govuk_alpha_saved.status.appreciation_too_long") }}{% elif status == "appreciation-rate-limited" %}{{ t("govuk_alpha_saved.status.appreciation_rate_limited") }}{% elif status == "appreciation-safeguarding-restricted" %}{{ t("safeguarding.errors.interaction_not_allowed") }}{% elif status == "appreciation-safeguarding-unavailable" %}{{ t("safeguarding.errors.policy_unavailable") }}{% elif status == "reaction-failed" %}{{ t("govuk_alpha_saved.status.reaction_failed") }}{% else %}{{ t("govuk_alpha_saved.status.appreciation_failed") }}{% endif %}{% if messageError %}</a>{% endif %}</li>
+            <li>{% if messageError %}<a href="#appreciation-message">{% endif %}{% if status == "appreciation-message-required" %}{{ t("govuk_alpha_saved.status.appreciation_message_required") }}{% elif status == "appreciation-self" %}{{ t("govuk_alpha_saved.status.appreciation_self") }}{% elif status == "appreciation-too-long" %}{{ t("govuk_alpha_saved.status.appreciation_too_long") }}{% elif status == "appreciation-rate-limited" %}{{ t("govuk_alpha_saved.status.appreciation_rate_limited") }}{% elif status == "appreciation-safeguarding-restricted" %}{{ t("safeguarding.errors.interaction_not_allowed") }}{% elif status == "appreciation-safeguarding-unavailable" %}{{ t("safeguarding.errors.policy_unavailable") }}{% elif status == "reaction-failed" %}{{ t("govuk_alpha_saved.status.reaction_failed") }}{% elif status == "appreciation-visibility-failed" %}{{ t("govuk_alpha_saved.status.appreciation_visibility_failed") }}{% elif status == "appreciation-remove-failed" %}{{ t("govuk_alpha_saved.status.appreciation_remove_failed") }}{% else %}{{ t("govuk_alpha_saved.status.appreciation_failed") }}{% endif %}{% if messageError %}</a>{% endif %}</li>
           </ul>
         </div>
       </div>
     </div>
   {% endif %}
 
-  {% if status == "appreciation-sent" or status == "reaction-updated" %}
+  {% if status in successStatuses %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="saved-wall-status-title">
       <div class="govuk-notification-banner__header">
-        <h2 class="govuk-notification-banner__title" id="saved-wall-status-title">{{ t("govuk_alpha_saved.errors.summary_title") }}</h2>
+        {# Was errors.summary_title — "There is a problem" above a success message. #}
+        <h2 class="govuk-notification-banner__title" id="saved-wall-status-title">{{ t("states.success_title") }}</h2>
       </div>
       <div class="govuk-notification-banner__content">
-        <p class="govuk-notification-banner__heading">{% if status == "appreciation-sent" %}{{ t("govuk_alpha_saved.status.appreciation_sent") }}{% else %}{{ t("govuk_alpha_saved.status.reaction_updated") }}{% endif %}</p>
+        <p class="govuk-notification-banner__heading">{% if status == "appreciation-sent" %}{{ t("govuk_alpha_saved.status.appreciation_sent") }}{% elif status == "appreciation-shown" %}{{ t("govuk_alpha_saved.status.appreciation_shown") }}{% elif status == "appreciation-hidden" %}{{ t("govuk_alpha_saved.status.appreciation_hidden") }}{% elif status == "appreciation-removed" %}{{ t("govuk_alpha_saved.status.appreciation_removed") }}{% else %}{{ t("govuk_alpha_saved.status.reaction_updated") }}{% endif %}</p>
       </div>
     </div>
   {% endif %}
@@ -43,7 +46,9 @@
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_saved.wall.heading", { name: ownerLabel }) }}</h1>
 
 
-  <p class="govuk-body-l">{{ t("govuk_alpha_saved.wall.description") }}</p>
+  {# A member's own page lists every note they have received, including the ones
+     only they can see, so it cannot be described as "public notes". #}
+  <p class="govuk-body-l">{% if isSelf %}{{ t("govuk_alpha_saved.wall.own_description") }}{% else %}{{ t("govuk_alpha_saved.wall.description") }}{% endif %}</p>
 
   {% if not isSelf %}
     <h2 class="govuk-heading-l">{{ t("govuk_alpha_saved.send.heading_to", { name: ownerLabel }) }}</h2>
@@ -57,23 +62,13 @@
         {% if messageError %}
           <p id="appreciation-message-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_saved.errors.summary_title") }}:</span> {{ t("govuk_alpha_saved.status.appreciation_message_required") }}</p>
         {% endif %}
-        <textarea class="govuk-textarea govuk-!-width-two-thirds govuk-js-character-count" id="appreciation-message" name="message" rows="4" maxlength="500" aria-describedby="appreciation-message-hint{% if messageError %} appreciation-message-error{% endif %} appreciation-message-info">{% if appreciationForm %}{{ appreciationForm.message }}{% endif %}</textarea>
+        <textarea class="govuk-textarea govuk-!-width-two-thirds govuk-js-character-count" id="appreciation-message" name="message" rows="4" maxlength="500" aria-describedby="appreciation-message-hint{% if messageError %} appreciation-message-error{% endif %} appreciation-private-hint appreciation-message-info">{% if appreciationForm %}{{ appreciationForm.message }}{% endif %}</textarea>
       </div>
       {% endcall %}
-      <div class="govuk-form-group">
-        <fieldset class="govuk-fieldset">
-          <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ t("govuk_alpha_saved.send.public_label") }}</legend>
-          <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
-            <div class="govuk-checkboxes__item">
-              {# 🔴 `checked` was hardcoded, so an intentionally UNticked "public" box flipped
-                 back to public on every failure — the opposite of what the member chose. #}
-              <input class="govuk-checkboxes__input" id="appreciation-public" name="is_public" type="checkbox" value="1"{% if appreciationForm.isPublic if appreciationForm else true %} checked{% endif %} aria-describedby="appreciation-public-hint">
-              <label class="govuk-label govuk-checkboxes__label" for="appreciation-public">{{ t("govuk_alpha_saved.send.public_label") }}</label>
-              <div id="appreciation-public-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_saved.send.public_hint") }}</div>
-            </div>
-          </div>
-        </fieldset>
-      </div>
+      {# 🔴 There is no "make this public" choice (owner, 12 Nov 2026). Every note is
+         private until the person who RECEIVES it shows it on their profile, so the
+         sender is told that instead of being asked. Do not bring the checkbox back. #}
+      <p id="appreciation-private-hint" class="govuk-hint">{{ t("govuk_alpha_saved.send.private_hint") }}</p>
       <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_saved.send.submit") }}</button>
     </form>
     <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
@@ -92,6 +87,27 @@
             {% if appreciation.receivedOn %}<span class="govuk-!-margin-left-1">{{ t("govuk_alpha_saved.wall.received_on", { date: appreciation.receivedOn }) }}</span>{% endif %}
           </p>
           <p class="govuk-body">{{ appreciation.message }}</p>
+          {% if isSelf %}
+            {# The receiver's own controls. Nobody else is ever sent a private note,
+               and Laravel refuses these actions (404) to anyone but the receiver. #}
+            {% set noteFrom = t("govuk_alpha_saved.manage.for_note", { name: appreciation.sender.name or t("govuk_alpha_saved.wall.from_someone") }) %}
+            <p class="govuk-body govuk-!-margin-bottom-2">
+              {% if appreciation.isPublic %}{{ govukTag({ text: t("govuk_alpha_saved.wall.visibility_public"), classes: "govuk-tag--blue" }) }}{% else %}{{ govukTag({ text: t("govuk_alpha_saved.wall.visibility_private"), classes: "govuk-tag--grey" }) }}{% endif %}
+            </p>
+            <div class="govuk-button-group govuk-!-margin-bottom-2">
+              <form method="post" action="{{ urlFor('/appreciations/' + (appreciation.id | string) + '/visibility') }}" class="nexus-alpha-linkform govuk-!-display-inline-block" novalidate>
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="is_public" value="{{ '0' if appreciation.isPublic else '1' }}">
+                <input type="hidden" name="owner_id" value="{{ owner.id }}">
+                <input type="hidden" name="page" value="{{ currentPage }}">
+                <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0 govuk-!-font-size-16" data-module="govuk-button" data-prevent-double-click="true">{% if appreciation.isPublic %}{{ t("govuk_alpha_saved.manage.hide") }}{% else %}{{ t("govuk_alpha_saved.manage.show") }}{% endif %}<span class="govuk-visually-hidden"> {{ noteFrom }}</span></button>
+              </form>
+              <a class="govuk-link govuk-!-font-size-16" href="{{ urlFor('/appreciations/' + (appreciation.id | string) + '/remove' + ('?page=' + (currentPage | string) if currentPage > 1 else '')) }}">{{ t("govuk_alpha_saved.manage.remove") }}<span class="govuk-visually-hidden"> {{ noteFrom }}</span></a>
+            </div>
+          {% endif %}
+          {# A note only its receiver can see takes no reactions: nobody else can see
+             it, and Laravel answers 404 to a reaction on a private note. #}
+          {% if not isSelf or appreciation.isPublic %}
           <fieldset class="govuk-fieldset govuk-!-margin-bottom-0">
             <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ t("govuk_alpha_saved.react.legend") }}</legend>
             <div class="govuk-button-group govuk-!-margin-bottom-0">
@@ -108,13 +124,14 @@
             </div>
           </fieldset>
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-top-1 govuk-!-margin-bottom-0">{{ tc("govuk_alpha_saved.wall.reactions_count", appreciation.reactionCount, { count: appreciation.reactionCount }) }}</p>
+          {% endif %}
         </li>
       {% endfor %}
     </ul>
   {% else %}
     <div class="govuk-inset-text">
       <h2 class="govuk-heading-m">{{ t("govuk_alpha_saved.wall.empty_title") }}</h2>
-      <p class="govuk-body">{{ t("govuk_alpha_saved.wall.empty_body") }}</p>
+      <p class="govuk-body">{% if isSelf %}{{ t("govuk_alpha_saved.wall.own_empty_body") }}{% else %}{{ t("govuk_alpha_saved.wall.empty_body") }}{% endif %}</p>
     </div>
   {% endif %}
 

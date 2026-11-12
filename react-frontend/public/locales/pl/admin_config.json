@@ -226,6 +226,8 @@
     "module_desc_reviews": "Recenzje i oceny użytkowników",
     "module_name_polls": "Ankiety",
     "module_desc_polls": "Sondaże społecznościowe i głosowanie",
+    "module_name_appreciations": "Podziękowania",
+    "module_desc_appreciations": "Członkowie mogą sobie dziękować. Podziękowanie jest prywatne, dopóki osoba, która je otrzymała, nie zdecyduje się pokazać go na swoim profilu.",
     "module_name_job_vacancies": "Oferty pracy",
     "module_desc_job_vacancies": "Oferty pracy i zarządzanie aplikacjami",
     "module_name_ideation_challenges": "Wyzwania związane z ideami",

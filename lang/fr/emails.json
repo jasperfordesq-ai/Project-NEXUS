@@ -625,9 +625,8 @@
     "title": "Vous avez reçu un remerciement",
     "body": "{{sender}} vient de vous envoyer une note de remerciement. Votre contribution a été remarquée et appréciée.",
     "message_label": "Son message",
-    "public_note": "Cette appréciation est publique — les autres peuvent la voir sur votre profil.",
-    "private_note": "Cette appréciation est privée — vous seul(e) pouvez la voir.",
-    "cta_view": "Voir sur votre profil"
+    "private_note": "Vous seul(e) pouvez voir ce message. Si vous souhaitez que d'autres le voient, vous pouvez choisir de l'afficher sur votre profil depuis votre page de remerciements.",
+    "cta_view": "Voir vos remerciements"
   },
   "support_report": {
     "created_subject": "Nouveau rapport de support :reference",

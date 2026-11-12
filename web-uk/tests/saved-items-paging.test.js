@@ -32,6 +32,9 @@ jest.mock('../src/lib/api', () => {
     getBookmarks: jest.fn(),
     getUserPublicCollections: jest.fn(),
     getUserAppreciations: jest.fn(),
+    getMyAppreciations: jest.fn(),
+    setAppreciationVisibility: jest.fn(),
+    deleteAppreciation: jest.fn(),
     toggleBookmark: jest.fn(),
     sendAppreciation: jest.fn(),
     reactToAppreciation: jest.fn()

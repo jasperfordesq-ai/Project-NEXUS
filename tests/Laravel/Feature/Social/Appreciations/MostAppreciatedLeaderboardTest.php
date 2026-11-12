@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Schema;
 use Tests\Laravel\TestCase;
 
 /**
- * SOC14 — Top recipients ordered by count within the period window.
+ * SOC14 — Top recipients ordered by count within the period window. Only notes
+ * their receiver has shown on their profile are counted.
  */
 class MostAppreciatedLeaderboardTest extends TestCase
 {
@@ -41,14 +42,14 @@ class MostAppreciatedLeaderboardTest extends TestCase
         // 3 senders thank top, 2 thank mid, 1 thanks low
         for ($i = 0; $i < 3; $i++) {
             $s = User::factory()->forTenant($this->testTenantId)->create();
-            $svc->send($s->id, $top->id, "t{$i}", 'general', null, true);
+            $svc->setVisibility($svc->send($s->id, $top->id, "t{$i}", 'general')->id, $top->id, true);
         }
         for ($i = 0; $i < 2; $i++) {
             $s = User::factory()->forTenant($this->testTenantId)->create();
-            $svc->send($s->id, $mid->id, "m{$i}", 'general', null, true);
+            $svc->setVisibility($svc->send($s->id, $mid->id, "m{$i}", 'general')->id, $mid->id, true);
         }
         $s = User::factory()->forTenant($this->testTenantId)->create();
-        $svc->send($s->id, $low->id, 'l0', 'general', null, true);
+        $svc->setVisibility($svc->send($s->id, $low->id, 'l0', 'general')->id, $low->id, true);
 
         $rows = $svc->getMostAppreciatedMembers(null, 'last_30d', 10);
         $this->assertNotEmpty($rows);

@@ -1263,6 +1263,8 @@ export interface TenantFeatures {
   federation: boolean;
   connections: boolean;
   reviews: boolean;
+  /** Thank-you notes between members — default ON; a community can switch them off. */
+  appreciations: boolean;
   polls: boolean;
   job_vacancies: boolean;
   ideation_challenges: boolean;

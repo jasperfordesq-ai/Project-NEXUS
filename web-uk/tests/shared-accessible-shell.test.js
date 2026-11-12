@@ -195,7 +195,10 @@ jest.mock('../src/lib/api', () => ({
   toggleBookmark: jest.fn().mockResolvedValue({}),
   getUserPublicCollections: jest.fn().mockResolvedValue({ data: [] }),
   getUserAppreciations: jest.fn().mockResolvedValue({ data: [], meta: { current_page: 1, last_page: 1, total: 0, per_page: 20 } }),
+  getMyAppreciations: jest.fn().mockResolvedValue({ data: [], meta: { current_page: 1, last_page: 1, total: 0, per_page: 20 } }),
   sendAppreciation: jest.fn().mockResolvedValue({ data: { id: 55 } }),
+  setAppreciationVisibility: jest.fn().mockResolvedValue({ data: { id: 55, is_public: true } }),
+  deleteAppreciation: jest.fn().mockResolvedValue(''),
   reactToAppreciation: jest.fn().mockResolvedValue({ data: { reaction_type: 'heart' } }),
   getResources: jest.fn().mockResolvedValue({ data: [{ id: 10, sort_order: 0 }, { id: 20, sort_order: 1 }] }),
   getResourceCategories: jest.fn().mockResolvedValue({ data: [] }),
@@ -508,7 +511,10 @@ describe('shared accessible frontend shell', () => {
     api.toggleBookmark.mockReset().mockResolvedValue({});
     api.getUserPublicCollections.mockReset().mockResolvedValue({ data: [] });
     api.getUserAppreciations.mockReset().mockResolvedValue({ data: [], meta: { current_page: 1, last_page: 1, total: 0, per_page: 20 } });
+    api.getMyAppreciations.mockReset().mockResolvedValue({ data: [], meta: { current_page: 1, last_page: 1, total: 0, per_page: 20 } });
     api.sendAppreciation.mockReset().mockResolvedValue({ data: { id: 55 } });
+    api.setAppreciationVisibility.mockReset().mockResolvedValue({ data: { id: 55, is_public: true } });
+    api.deleteAppreciation.mockReset().mockResolvedValue('');
     api.reactToAppreciation.mockReset().mockResolvedValue({ data: { reaction_type: 'heart' } });
     api.getResources.mockReset().mockResolvedValue({ data: [{ id: 10, sort_order: 0 }, { id: 20, sort_order: 1 }] });
     api.getResourceCategories.mockReset().mockResolvedValue({ data: [] });
@@ -8551,7 +8557,15 @@ describe('shared accessible frontend shell', () => {
     expect(appreciations.text).toContain('method="post" action="/users/77/appreciations"');
     expect(appreciations.text).toContain('maxlength="500"');
     expect(appreciations.text).toContain('Up to 500 characters.');
-    expect(appreciations.text).toContain('aria-describedby="appreciation-public-hint"');
+    // The sender no longer chooses: every note is private until the receiver shows it.
+    expect(appreciations.text).not.toContain('appreciation-public');
+    expect(appreciations.text).not.toContain('name="is_public"');
+    expect(appreciations.text).toContain('id="appreciation-private-hint"');
+    expect(appreciations.text).toContain('Only this person will see your note, unless they choose to show it on their profile.');
+    // Someone else's page: none of the receiver's own controls.
+    expect(appreciations.text).not.toContain('/appreciations/55/visibility');
+    expect(appreciations.text).not.toContain('/appreciations/55/remove');
+    expect(api.getMyAppreciations).not.toHaveBeenCalled();
     expect(appreciations.text).toContain('Thanks for running the tool library.');
     expect(appreciations.text).toContain('Avery Stone');
     expect(appreciations.text).toContain('method="post" action="/appreciations/55/react"');
@@ -17089,11 +17103,11 @@ describe('shared accessible frontend shell', () => {
 
     expect(response.status).toBe(302);
     expect(response.headers.location).toBe('/users/77/appreciations?status=appreciation-sent');
+    // `is_public` is never sent, even when a stale form still posts it.
     expect(api.sendAppreciation).toHaveBeenCalledWith('test-token', {
       receiver_id: 77,
       message: 'Thank you for helping',
-      context_type: 'general',
-      is_public: true
+      context_type: 'general'
     });
   });
 
@@ -17188,11 +17202,11 @@ describe('shared accessible frontend shell', () => {
     expect(sent.headers.location).toBe('/acme/accessible/users/77/appreciations?status=appreciation-sent');
     expect(reacted.status).toBe(302);
     expect(reacted.headers.location).toBe('/acme/accessible/users/77/appreciations?status=reaction-updated#appreciation-55');
+    // `is_public` is never sent, even when a stale form still posts it.
     expect(api.sendAppreciation).toHaveBeenCalledWith('test-token', {
       receiver_id: 77,
       message: 'Thank you for helping',
-      context_type: 'general',
-      is_public: true
+      context_type: 'general'
     });
     expect(api.reactToAppreciation).toHaveBeenCalledWith('test-token', 55, 'heart');
   });

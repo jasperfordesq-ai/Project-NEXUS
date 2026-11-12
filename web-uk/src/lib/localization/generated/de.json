@@ -12506,7 +12506,11 @@
                 "from_someone": "Ein Mitglied",
                 "reactions_count": "{0} Keine Reaktionen|{1} 1 Reaktion|[2,*] :count Reaktionen",
                 "empty_title": "Noch keine Wertschätzung",
-                "empty_body": "Wenn Mitglieder dieser Person danken, werden die öffentlichen Notizen hier angezeigt."
+                "empty_body": "Wenn Mitglieder dieser Person danken, werden die öffentlichen Notizen hier angezeigt.",
+                "own_description": "Dankesnachrichten, die andere Mitglieder Ihnen gesendet haben. Eine Nachricht können nur Sie sehen, bis Sie sich entscheiden, sie in Ihrem Profil zu zeigen.",
+                "own_empty_body": "Wenn Mitglieder Ihnen danken, erscheinen ihre Nachrichten hier. Nur Sie sehen sie, bis Sie sich entscheiden, sie in Ihrem Profil zu zeigen.",
+                "visibility_private": "Nur für Sie sichtbar",
+                "visibility_public": "In Ihrem Profil sichtbar"
             },
             "react": {
                 "legend": "Reagieren Sie auf diesen Hinweis",
@@ -12517,14 +12521,22 @@
                 "remove_label": "Entfernen Sie Ihre :reaction-Reaktion",
                 "your_reaction": "Ihre Reaktion: :reaction"
             },
+            "manage": {
+                "show": "In meinem Profil zeigen",
+                "hide": "In meinem Profil ausblenden",
+                "remove": "Entfernen",
+                "for_note": "(Nachricht von :name)",
+                "remove_heading": "Diese Dankesnachricht entfernen?",
+                "remove_warning": "Die Nachricht wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.",
+                "remove_confirm": "Nachricht entfernen"
+            },
             "send": {
                 "heading": "Sagen Sie Danke",
                 "heading_to": "Bedanken Sie sich bei :name",
-                "intro": "Senden Sie diesem Mitglied eine öffentliche oder private Dankesnachricht.",
+                "intro": "Senden Sie diesem Mitglied eine Dankesnachricht.",
                 "message_label": "Ihre Nachricht",
                 "message_hint": "Bis zu 500 Zeichen.",
-                "public_label": "Machen Sie dieses Dankeschön öffentlich",
-                "public_hint": "Öffentliche Notizen erscheinen auf dieser Pinnwand zur Anerkennung von Mitgliedern. Private Notizen sind nur für sie sichtbar.",
+                "private_hint": "Nur diese Person sieht Ihre Nachricht, es sei denn, sie entscheidet sich, sie in ihrem Profil zu zeigen.",
                 "submit": "Senden Sie Danke",
                 "self_notice": "Sie können kein Dankeschön an sich selbst senden."
             },
@@ -12548,7 +12560,12 @@
                 "appreciation_rate_limited": "Sie haben das Tageslimit für den Versand von Dankesbriefen erreicht. Versuchen Sie es morgen noch einmal.",
                 "appreciation_failed": "Leider konnte Ihr Dankeschön nicht gesendet werden. Bitte versuchen Sie es erneut.",
                 "reaction_updated": "Ihre Reaktion wurde aktualisiert.",
-                "reaction_failed": "Leider konnte Ihre Reaktion nicht gespeichert werden."
+                "reaction_failed": "Leider konnte Ihre Reaktion nicht gespeichert werden.",
+                "appreciation_shown": "Diese Nachricht wird jetzt in Ihrem Profil gezeigt.",
+                "appreciation_hidden": "Diese Nachricht ist jetzt ausgeblendet. Nur Sie können sie sehen.",
+                "appreciation_removed": "Die Dankesnachricht wurde entfernt.",
+                "appreciation_visibility_failed": "Leider konnte diese Nachricht nicht geändert werden. Bitte versuchen Sie es erneut.",
+                "appreciation_remove_failed": "Leider konnte diese Nachricht nicht entfernt werden. Bitte versuchen Sie es erneut."
             },
             "errors": {
                 "summary_title": "Es gibt ein Problem"

@@ -221,6 +221,7 @@
     "neighbours_label": "Persone con cui hai fatto scambi quest’anno",
     "hours_label": "Ore scambiate quest’anno",
     "close": "Chiudi",
-    "send_message": "Invia a {{name}} un messaggio di ringraziamento"
+    "send_message": "Invia a {{name}} un messaggio di ringraziamento",
+    "write_note": "Scrivi un messaggio di ringraziamento a {{name}}"
   }
 }

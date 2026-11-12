@@ -219,6 +219,7 @@
     "neighbours_label": "Menschen, mit denen Sie dieses Jahr getauscht haben",
     "hours_label": "Getauschte Stunden in diesem Jahr",
     "close": "Schließen",
-    "send_message": "{{name}} eine Dankesnachricht senden"
+    "send_message": "{{name}} eine Dankesnachricht senden",
+    "write_note": "{{name}} eine Dankesnachricht schreiben"
   }
 }

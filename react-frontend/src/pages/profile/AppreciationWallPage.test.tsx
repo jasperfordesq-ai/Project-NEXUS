@@ -50,6 +50,14 @@ vi.mock('react-router-dom', async () => {
 
 import { api } from '@/lib/api';
 import AppreciationWallPage from './AppreciationWallPage';
+import { ConfirmDialogProvider } from '@/components/ui/ConfirmDialog';
+
+// The page asks before removing a note, so it needs the app's confirm dialog.
+const renderWall = () => render(
+  <ConfirmDialogProvider>
+    <AppreciationWallPage />
+  </ConfirmDialogProvider>,
+);
 
 const makeAppreciation = (overrides = {}) => ({
   id: 1,
@@ -72,7 +80,7 @@ describe('AppreciationWallPage', () => {
   it('shows loading state initially', () => {
     // Never resolves → stays in loading
     vi.mocked(api.get).mockReturnValue(new Promise(() => {}));
-    render(<AppreciationWallPage />);
+    renderWall();
     // LoadingScreen renders a spinner/loading indicator; we confirm the data hasn't appeared yet
     expect(screen.queryByText('Thank you so much!')).not.toBeInTheDocument();
   });
@@ -83,7 +91,7 @@ describe('AppreciationWallPage', () => {
       data: [makeAppreciation({ id: 1, message: 'Great job!', reactions_count: 5 })],
     });
 
-    render(<AppreciationWallPage />);
+    renderWall();
 
     await waitFor(() => {
       expect(screen.getByText('Great job!')).toBeInTheDocument();
@@ -99,7 +107,7 @@ describe('AppreciationWallPage', () => {
   it('shows empty state when no appreciations exist', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: [] });
 
-    render(<AppreciationWallPage />);
+    renderWall();
 
     await waitFor(() => {
       // EmptyState renders both title and description
@@ -116,7 +124,7 @@ describe('AppreciationWallPage', () => {
     // the page used to render "No appreciations yet" as if the wall were empty.
     vi.mocked(api.get).mockResolvedValueOnce({ success: false, error: 'Not found' });
 
-    render(<AppreciationWallPage />);
+    renderWall();
 
     expect(await screen.findByText("Couldn't load appreciations")).toBeInTheDocument();
     expect(screen.getByText('Try again')).toBeInTheDocument();
@@ -129,7 +137,7 @@ describe('AppreciationWallPage', () => {
       .mockResolvedValueOnce({ success: false, error: 'Not found' })
       .mockResolvedValueOnce({ success: true, data: [makeAppreciation()] });
 
-    render(<AppreciationWallPage />);
+    renderWall();
 
     fireEvent.click(await screen.findByText('Try again'));
 
@@ -144,7 +152,7 @@ describe('AppreciationWallPage', () => {
     });
     vi.mocked(api.post).mockResolvedValueOnce({ success: true });
 
-    render(<AppreciationWallPage />);
+    renderWall();
 
     await waitFor(() => {
       expect(screen.getByText('Thank you so much!')).toBeInTheDocument();
@@ -172,7 +180,7 @@ describe('AppreciationWallPage', () => {
     });
     vi.mocked(api.post).mockResolvedValueOnce({ success: true });
 
-    render(<AppreciationWallPage />);
+    renderWall();
 
     await waitFor(() => expect(screen.getByText('Thank you so much!')).toBeInTheDocument());
 
@@ -199,7 +207,7 @@ describe('AppreciationWallPage', () => {
     });
     vi.mocked(api.post).mockResolvedValueOnce({ success: false, error: 'Rate limited' });
 
-    render(<AppreciationWallPage />);
+    renderWall();
 
     await waitFor(() => expect(screen.getByText('Thank you so much!')).toBeInTheDocument());
     expect(screen.getByText('3')).toBeInTheDocument();
@@ -230,7 +238,7 @@ describe('AppreciationWallPage', () => {
     });
     vi.mocked(api.post).mockResolvedValueOnce({ success: true });
 
-    render(<AppreciationWallPage />);
+    renderWall();
 
     await waitFor(() => expect(screen.getByText('Thank you so much!')).toBeInTheDocument());
 
@@ -249,7 +257,7 @@ describe('AppreciationWallPage', () => {
       ],
     });
 
-    render(<AppreciationWallPage />);
+    renderWall();
 
     await waitFor(() => {
       expect(screen.getByText('First message')).toBeInTheDocument();
@@ -258,5 +266,45 @@ describe('AppreciationWallPage', () => {
 
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByText('Bob')).toBeInTheDocument();
+  });
+
+  // Someone else's page shows only notes that member chose to show, so there
+  // is nothing to show, hide or report here.
+  it("offers no show, hide or report controls on someone else's page", async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: [makeAppreciation()] });
+    renderWall();
+    await waitFor(() => expect(screen.getByText('Thank you so much!')).toBeInTheDocument());
+    expect(api.get).toHaveBeenCalledWith('/v2/users/7/appreciations?page=1');
+    expect(screen.queryByTestId('thanks-status-1')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Hide from my profile' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Report' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Remove' })).toBeNull();
+  });
+
+  it('lets me delete a note I sent, after asking', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: [makeAppreciation({ id: 5, sender_id: 42, sender: { id: 42, name: 'Test', avatar_url: null } })],
+    });
+    vi.mocked(api.delete).mockResolvedValueOnce({ success: true });
+    renderWall();
+    await waitFor(() => expect(screen.getByText('Thank you so much!')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Remove note' }));
+
+    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/v2/appreciations/5'));
+    await waitFor(() => expect(screen.queryByText('Thank you so much!')).not.toBeInTheDocument());
+  });
+
+  it('reads the number of pages the server sends (last_page)', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: [makeAppreciation()],
+      meta: { current_page: 1, last_page: 3, per_page: 20, total: 55, has_more: true },
+    });
+    renderWall();
+    await waitFor(() => expect(screen.getByText('Thank you so much!')).toBeInTheDocument());
+    expect(screen.getByRole('navigation')).toBeInTheDocument();
   });
 });

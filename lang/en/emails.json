@@ -663,9 +663,8 @@
     "title": "You received a thank-you",
     "body": "{{sender}} just sent you a thank-you note. Your contribution was noticed and appreciated.",
     "message_label": "Their message",
-    "public_note": "This appreciation is public — others can see it on your profile.",
-    "private_note": "This appreciation is private — only you can see it.",
-    "cta_view": "View on your profile"
+    "private_note": "Only you can see this note. If you would like others to see it, you can choose to show it on your profile from your thank-you notes page.",
+    "cta_view": "See your thank-you notes"
   },
   "event_guardian_consent": {
     "subject": "Guardian consent needed for :event",

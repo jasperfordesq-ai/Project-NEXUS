@@ -625,9 +625,8 @@
     "title": "Otrzymałeś/aś podziękowanie",
     "body": "{{sender}} właśnie wysłał/a Ci notatkę z podziękowaniem. Twój wkład został zauważony i doceniony.",
     "message_label": "Ich wiadomość",
-    "public_note": "To podziękowanie jest publiczne — inni mogą je zobaczyć na Twoim profilu.",
-    "private_note": "To podziękowanie jest prywatne — tylko Ty możesz je zobaczyć.",
-    "cta_view": "Zobacz na swoim profilu"
+    "private_note": "Tylko Ty widzisz tę wiadomość. Jeśli chcesz, aby zobaczyli ją inni, możesz wybrać jej wyświetlanie na swoim profilu na stronie z podziękowaniami.",
+    "cta_view": "Zobacz swoje podziękowania"
   },
   "support_report": {
     "created_subject": "Nowe zgłoszenie pomocy technicznej :reference",

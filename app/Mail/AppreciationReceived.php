@@ -21,13 +21,20 @@ use App\Support\UserDisplayName;
  *
  * Always wrapped in LocaleContext::withLocale() so it renders in the
  * recipient's preferred_language, regardless of caller / queue worker locale.
+ *
+ * A thank-you note is private when it is sent: only the person who received it
+ * can see it, until THEY choose to show it on their profile (owner decision,
+ * 12 Nov 2026). The email says so and links to their thank-you notes page,
+ * where that choice is made. It no longer has a "this note is public" form.
  */
 class AppreciationReceived
 {
     /**
-     * @param object $recipient User-like object with email/first_name/last_name/preferred_language
+     * @param object      $recipient  User-like object with email/first_name/last_name/preferred_language
+     * @param string|null $senderName The sender as the RECIPIENT may see them (E-122: a first name for a
+     *                                member); null or empty when the sender cannot be named
      */
-    public static function send(object $recipient, string $senderName, string $message, bool $isPublic): void
+    public static function send(object $recipient, ?string $senderName, string $message): void
     {
         if (empty($recipient->email)) {
             return;
@@ -41,9 +48,12 @@ class AppreciationReceived
             return;
         }
 
-        LocaleContext::withLocale($recipient->preferred_language ?? null, function () use ($recipient, $senderName, $message, $isPublic, $tenantId): void {
+        LocaleContext::withLocale($recipient->preferred_language ?? null, function () use ($recipient, $senderName, $message, $tenantId): void {
             try {
-                TenantContext::runForTenant($tenantId, function () use ($recipient, $senderName, $message, $isPublic, $tenantId): void {
+                TenantContext::runForTenant($tenantId, function () use ($recipient, $senderName, $message, $tenantId): void {
+                    $senderName = trim((string) $senderName) !== ''
+                        ? (string) $senderName
+                        : __('emails.common.fallback_someone');
                     $url = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/users/' . ($recipient->id ?? 'me') . '/appreciations';
 
                     $name = UserDisplayName::resolve($recipient);
@@ -60,9 +70,7 @@ class AppreciationReceived
                         ->infoCard([
                             __('emails.appreciation.message_label') => $message,
                         ])
-                        ->paragraph($isPublic
-                            ? __('emails.appreciation.public_note')
-                            : __('emails.appreciation.private_note'))
+                        ->paragraph(__('emails.appreciation.private_note'))
                         ->button(__('emails.appreciation.cta_view'), $url);
 
                     $subject = __('emails.appreciation.subject', ['sender' => $senderName]);
