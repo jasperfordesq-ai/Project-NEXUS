@@ -2409,7 +2409,7 @@
     "reaction_clap": "Applaus",
     "reaction_star": "Stern",
     "say_thanks": "Danke sagen",
-    "thanks_privacy_hint_named": "Nur {{name}} sieht Ihre Nachricht – es sei denn, {{name}} zeigt sie im eigenen Profil.",
+    "thanks_privacy_hint_named": "Nur {{name}} sieht Ihre Nachricht – es sei denn, die Person zeigt sie im eigenen Profil.",
     "thanks_privacy_hint": "Nur die Empfängerin oder der Empfänger sieht Ihre Nachricht – es sei denn, sie wird im eigenen Profil gezeigt.",
     "thanks_cannot_send": "Sie können diesem Mitglied keine Dankesnachricht senden.",
     "thanks_own_title": "Ihre Dankesnachrichten",

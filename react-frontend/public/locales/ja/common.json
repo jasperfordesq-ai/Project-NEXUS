@@ -2409,7 +2409,7 @@
     "reaction_clap": "拍手",
     "reaction_star": "スター",
     "say_thanks": "感謝を伝える",
-    "thanks_privacy_hint_named": "このメッセージは{{name}}さんだけに表示されます。{{name}}さんがプロフィールに表示することを選んだ場合を除きます。",
+    "thanks_privacy_hint_named": "このメッセージは{{name}}さんだけに表示されます。ご本人がプロフィールに表示することを選んだ場合を除きます。",
     "thanks_privacy_hint": "このメッセージは相手だけに表示されます。相手がプロフィールに表示することを選んだ場合を除きます。",
     "thanks_cannot_send": "このメンバーにはお礼のメッセージを送れません。",
     "thanks_own_title": "あなたのお礼メッセージ",
