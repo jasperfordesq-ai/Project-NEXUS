@@ -233,6 +233,7 @@
     "section_title": "プロフィール情報",
     "preview_heading": "ほかのメンバーからの見え方",
     "preview_name_placeholder": "ここに名前（名）が表示されます",
+    "preview_org_name_placeholder": "ここに組織名が表示されます",
     "preview_bio_placeholder": "ここに自己紹介の短い文章が表示されます。",
     "preview_first_name_note": "ほかのメンバーに表示されるのは名のみで、姓は表示されません。",
     "preview_photo_nudge": "親しみやすい写真があると、ご近所の方に覚えてもらいやすく、信頼にもつながります。",

@@ -233,6 +233,7 @@
     "section_title": "Información del Perfil",
     "preview_heading": "Así te ven los demás miembros",
     "preview_name_placeholder": "Tu nombre aparecerá aquí",
+    "preview_org_name_placeholder": "El nombre de tu organización aparecerá aquí",
     "preview_bio_placeholder": "Aquí aparecerán unas líneas amables sobre ti.",
     "preview_first_name_note": "Los demás miembros solo ven tu nombre, nunca tus apellidos.",
     "preview_photo_nudge": "Una foto amable ayuda a tus vecinos a reconocerte y confiar en ti.",

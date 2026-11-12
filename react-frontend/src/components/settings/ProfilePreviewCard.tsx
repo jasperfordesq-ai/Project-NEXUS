@@ -66,7 +66,7 @@ export function ProfilePreviewCard({
             data-testid="profile-preview-name"
             className={`truncate text-lg font-semibold ${name ? 'text-theme-primary' : 'text-theme-subtle'}`}
           >
-            {name || t('profile.preview_name_placeholder')}
+            {name || (isOrganisation ? t('profile.preview_org_name_placeholder') : t('profile.preview_name_placeholder'))}
           </p>
           {tagline.trim() !== '' && (
             <p data-testid="profile-preview-tagline" className="truncate text-sm text-theme-secondary">{tagline}</p>

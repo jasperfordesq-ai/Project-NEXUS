@@ -53,6 +53,16 @@ describe('ProfilePreviewCard — how other members see you, as you edit', () => 
     expect(screen.queryByTestId('profile-preview-first-name-note')).toBeNull();
   });
 
+  // An organisation profile was told "Your first name will appear here"
+  // until its name was typed (audit of the live previews, 12 Nov 2026).
+  it("invites the organisation's name, not a first name, for an organisation profile", () => {
+    render(<ProfilePreviewCard {...base} profileType="organisation" firstName="Maeve" organisationName="  " />);
+    const name = screen.getByTestId('profile-preview-name');
+    expect(name).toHaveTextContent("Your organisation's name will appear here");
+    expect(name.textContent).not.toMatch(/first name/i);
+    expect(name.className).toContain('text-theme-subtle');
+  });
+
   it('invites a name and a few words before anything is typed, in a quieter colour', () => {
     render(<ProfilePreviewCard {...base} />);
     expect(screen.getByTestId('profile-preview-name').className).toContain('text-theme-subtle');
