@@ -38,6 +38,7 @@ import UsersIcon from 'lucide-react/icons/users';
 import { CreateGroupModal } from './components/CreateGroupModal';
 import { PresenceIndicator } from '@/components/social/PresenceIndicator';
 import { EmptyState } from '@/components/feedback';
+import { Doodle } from '@/components/illustrations/Doodle';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { usePusherOptional, type MessageReadEvent, type NewMessageEvent } from '@/contexts/PusherContext';
 import { usePresenceOptional } from '@/contexts/PresenceContext';
@@ -768,6 +769,7 @@ export function MessagesPage() {
         ) : filteredConversations.length === 0 ? (
           <EmptyState
             icon={<MessageSquare className="w-12 h-12" />}
+            illustration={<Doodle name="coffee" className="w-48 max-w-full h-auto sm:w-56" />}
             title={hasSearchQuery ? t('search_empty') : t('empty')}
             description={hasSearchQuery ? t('search_empty_subtitle') : t('empty_subtitle')}
             action={!hasSearchQuery && (

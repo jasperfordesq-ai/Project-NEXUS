@@ -30,6 +30,7 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
+import { Doodle } from '@/components/illustrations/Doodle';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { PageMeta } from '@/components/seo';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
@@ -379,6 +380,7 @@ export function ExchangesPage() {
             <EmptyState
               icon={<ArrowRightLeft className="w-12 h-12" />}
               title={t('empty.title')}
+              illustration={<Doodle name="chilling" className="w-48 max-w-full h-auto sm:w-56" />}
               description={
                 selectedTab === 'active'
                   ? t('empty.active_description')

@@ -58,6 +58,7 @@ import { useTranslation } from 'react-i18next';
 import { useBadgeCopy } from '@/hooks/useBadgeCopy';
 import { PresenceIndicator } from '@/components/social/PresenceIndicator';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
+import { Doodle } from '@/components/illustrations/Doodle';
 import { PublicPageHero, PublicPageHeroStrip } from '@/components/public/PublicPageHero';
 import { PageMeta } from '@/components/seo';
 import { useAuth, useToast, useTenant, useFeature } from '@/contexts';
@@ -926,6 +927,7 @@ export function MembersPage() {
           ) : members.length === 0 ? (
             <PublicEmptyState
               icon={<Users className="w-12 h-12" />}
+              illustration={<Doodle name="strolling" className="w-48 max-w-full h-auto sm:w-56" />}
               title={t('members.no_members')}
               description={debouncedQuery ? t('members.no_members_search') : t('members.no_members_community')}
               tips={[t('members.empty_tip_profiles'), t('members.empty_tip_skills'), t('members.empty_tip_location')]}

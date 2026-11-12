@@ -27,6 +27,7 @@ import ChevronDown from 'lucide-react/icons/chevron-down';
 import ChevronUp from 'lucide-react/icons/chevron-up';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
+import { Doodle } from '@/components/illustrations/Doodle';
 import { useToast, useTenant, useNotifications } from '@/contexts';
 import { usePusherOptional } from '@/contexts/PusherContext';
 import { api } from '@/lib/api';
@@ -478,6 +479,7 @@ export function NotificationsPage() {
       ) : filteredNotifications.length === 0 ? (
         <EmptyState
           icon={<Bell className="w-12 h-12" />}
+          illustration={<Doodle name="reading" className="w-48 max-w-full h-auto sm:w-56" />}
           title={filter === 'unread' ? t('empty_caught_up') : t('empty_title')}
           description={filter === 'unread' ? t('empty_caught_up_desc') : t('empty_desc')}
         />
