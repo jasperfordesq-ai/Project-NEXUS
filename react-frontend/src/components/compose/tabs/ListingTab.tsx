@@ -61,10 +61,6 @@ export function ListingTab({ onSuccess, onClose, templateData, onContentChange }
     [clearDraft, onClose, onSuccess],
   );
 
-  const gradientClass = (submitState?.type ?? initialDraft.type) === 'offer'
-    ? 'from-emerald-500 to-teal-600'
-    : 'from-amber-500 to-orange-600';
-
   // Register submit capabilities for the mobile overlay header button
   const submitStateRef = useRef(submitState);
   submitStateRef.current = submitState;
@@ -74,10 +70,12 @@ export function ListingTab({ onSuccess, onClose, templateData, onContentChange }
       isSubmitting: submitState?.isSubmitting ?? false,
       onSubmit: () => submitStateRef.current?.submit(),
       buttonLabel: t('compose.create_listing'),
-      gradientClass,
+      // A main button: the community colour, as on the form's own submit
+      // button (it was green for an offer and amber for a request).
+      gradientClass: 'from-accent-strong to-accent-strong-end',
     });
     return unregister;
-  }, [submitState?.canSubmit, submitState?.isSubmitting, gradientClass, register, unregister, t]);
+  }, [submitState?.canSubmit, submitState?.isSubmitting, register, unregister, t]);
 
   return (
     <ListingForm

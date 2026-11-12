@@ -159,7 +159,7 @@ export function EventTab({ onSuccess, onClose, groupId, templateData }: TabSubmi
       isSubmitting,
       onSubmit: () => submitRef.current(),
       buttonLabel: t('compose.create_event'),
-      gradientClass: 'from-emerald-500 to-teal-600',
+      gradientClass: 'from-accent-strong to-accent-strong-end',
     });
     return unregister;
   }, [canSubmit, isSubmitting, register, unregister, t]);

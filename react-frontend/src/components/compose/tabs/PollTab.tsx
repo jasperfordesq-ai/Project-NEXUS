@@ -154,7 +154,7 @@ export function PollTab({ onSuccess, onClose, groupId, templateData }: TabSubmit
       isSubmitting,
       onSubmit: () => submitRef.current(),
       buttonLabel: t('compose.create_poll'),
-      gradientClass: 'from-amber-500 to-orange-600',
+      gradientClass: 'from-accent-strong to-accent-strong-end',
     });
     return unregister;
   }, [canSubmit, isSubmitting, register, unregister, t]);

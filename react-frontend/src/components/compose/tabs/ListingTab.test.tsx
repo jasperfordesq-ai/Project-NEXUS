@@ -229,7 +229,8 @@ describe('ListingTab', () => {
           canSubmit: false,
           isSubmitting: false,
           buttonLabel: expect.any(String),
-          gradientClass: expect.stringContaining('emerald'),
+          // A main button: the community colour (warmth phase 5; was green for an offer).
+          gradientClass: 'from-accent-strong to-accent-strong-end',
         })
       );
     });

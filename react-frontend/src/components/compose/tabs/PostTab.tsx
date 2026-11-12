@@ -257,7 +257,7 @@ export function PostTab({ onSuccess, onClose, isOpen, groupId, templateData, onC
       isSubmitting,
       onSubmit: () => submitRef.current(),
       buttonLabel: isEditing ? t('compose.save_changes') : t('compose.post_button'),
-      gradientClass: 'from-accent to-accent-gradient-end',
+      gradientClass: 'from-accent-strong to-accent-strong-end',
     });
     return unregister;
   }, [canSubmit, isEditing, isSubmitting, register, unregister, t]);

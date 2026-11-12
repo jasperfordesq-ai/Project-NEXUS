@@ -150,4 +150,15 @@ describe('GoalTab', () => {
     expect(createBtn).toBeDefined();
     expect(createBtn).toBeDisabled();
   });
+
+  // Warmth phase 5: the button's blend ended on a fixed pink.
+  it('paints the create button in the community colour', () => {
+    render(<GoalTab {...defaultProps} />);
+    const createBtn = screen.getAllByRole('button').find((b) =>
+      b.textContent?.toLowerCase().includes('goal'),
+    );
+    expect(createBtn?.className).toContain('from-accent-strong');
+    expect(createBtn?.className).toContain('to-accent-strong-end');
+    expect(createBtn?.className).not.toMatch(/pink-/);
+  });
 });
