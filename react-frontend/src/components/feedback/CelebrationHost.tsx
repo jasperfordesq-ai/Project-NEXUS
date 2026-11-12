@@ -70,10 +70,23 @@ export function CelebrationHost({ memberId }: { memberId: number | null | undefi
     };
   }, [memberId]);
 
-  if (!kind) return null;
+  // A polite live region is announced when its content changes, so it is on
+  // the page, empty, from the start and the words go into it. The card below
+  // is what people see; it is hidden from screen readers so the words are
+  // read once.
+  const announcer = (
+    <div data-testid="celebration-announcer" role="status" className="sr-only">
+      {kind ? `${t(WORDS[kind].title)} ${t(WORDS[kind].text)}` : ''}
+    </div>
+  );
+
+  if (!kind) return announcer;
 
   return (
+    <>
+    {announcer}
     <div
+      aria-hidden="true"
       data-testid="celebration-layer"
       className="pointer-events-none fixed inset-x-0 top-24 z-[60] flex justify-center px-4"
     >
@@ -81,7 +94,6 @@ export function CelebrationHost({ memberId }: { memberId: number | null | undefi
         {!reducedMotion && <ConfettiCelebration show />}
         <div
           data-testid="celebration"
-          role="status"
           className="relative flex items-center gap-3 rounded-2xl border border-accent/25 bg-surface p-4 shadow-lg"
         >
           <span
@@ -97,6 +109,7 @@ export function CelebrationHost({ memberId }: { memberId: number | null | undefi
         </div>
       </div>
     </div>
+    </>
   );
 }
 

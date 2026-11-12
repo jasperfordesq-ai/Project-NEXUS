@@ -52,13 +52,33 @@ describe('first-time celebrations', () => {
     act(() => celebrate('first_listing'));
 
     const message = screen.getByTestId('celebration');
-    expect(message).toHaveAttribute('role', 'status');
+    // Seen here; read out through the status region (next test).
+    expect(screen.getByTestId('celebration-layer')).toHaveAttribute('aria-hidden', 'true');
     expect(message).toHaveTextContent('celebration_first_listing_title');
     expect(message).toHaveTextContent('celebration_first_listing_text');
     expect(screen.getByTestId('confetti')).toBeInTheDocument();
 
     act(() => vi.advanceTimersByTime(7000));
     expect(screen.queryByTestId('celebration')).toBeNull();
+  });
+
+  // A polite live region is announced when its content CHANGES. One added to
+  // the page already holding its words is missed by several screen readers,
+  // so the region is there, empty, from the start and the words go into it
+  // (audit of warmth phase 5, 12 Nov 2026).
+  it('announces through a status region that is already on the page before the words arrive', () => {
+    render(<CelebrationHost memberId={7} />);
+    const region = screen.getByTestId('celebration-announcer');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toBeEmptyDOMElement();
+
+    act(() => celebrate('first_group'));
+
+    expect(screen.getByTestId('celebration-announcer')).toBe(region);
+    expect(region).toHaveTextContent('celebration_first_group_title');
+    expect(region).toHaveTextContent('celebration_first_group_text');
+    // Read once: the card people see is not a second live region.
+    expect(screen.getAllByRole('status')).toHaveLength(1);
   });
 
   it('never blocks the page: clicks pass through it', () => {
