@@ -48,6 +48,8 @@ import Save from 'lucide-react/icons/save';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
+import { FormWithPreview } from '@/components/ui/FormWithPreview';
+import { MarketplacePreviewCard } from '@/components/marketplace/MarketplacePreviewCard';
 import { aiDescriptionAvailable } from '@/lib/aiDescriptions';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -609,7 +611,24 @@ export function EditMarketplaceListingPage() {
     <>
       <PageMeta title={t('edit.page_title')} noIndex={true} />
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+      {/* The form, with a live picture of the finished card beside it (as the
+          "sell an item" form has); on a phone the picture follows the form. */}
+      <div className="max-w-5xl mx-auto px-4 py-6">
+      <FormWithPreview
+        preview={
+          <MarketplacePreviewCard
+            title={title}
+            price={price}
+            currency={currency}
+            priceType={priceType}
+            condition={condition}
+            location={location}
+            imageSrc={images[0]?.url ?? null}
+            sellerName={user?.first_name ?? null}
+          />
+        }
+      >
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-start gap-3">
           <Button
@@ -1041,6 +1060,8 @@ export function EditMarketplaceListingPage() {
             {t('edit.save_changes')}
           </Button>
         </div>
+      </div>
+      </FormWithPreview>
       </div>
     </>
   );
