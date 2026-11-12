@@ -23,6 +23,8 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { FormWithPreview } from '@/components/ui/FormWithPreview';
+import { OpportunityPreviewCard } from '@/components/volunteering/OpportunityPreviewCard';
 import { Input } from '@/components/ui/Input';
 import { ListBoxItem as AutocompleteItem } from '@/components/ui/ListBox';
 import { Switch } from '@/components/ui/Switch';
@@ -407,7 +409,20 @@ export default function CreateOpportunityPage() {
         { label: pageTitle },
       ]} />
 
-      {/* Form */}
+      {/* Form, with a live picture of the finished card beside it (as the
+          offer, group and event forms have); on a phone it follows the form. */}
+      <FormWithPreview
+        preview={
+          <OpportunityPreviewCard
+            title={formData.title}
+            description={formData.description}
+            location={formData.location}
+            isRemote={formData.is_remote}
+            organisationId={formData.organization_id ? Number(formData.organization_id) : null}
+            organisationName={approvedOrgs.find((org) => String(org.id) === String(formData.organization_id))?.name ?? null}
+          />
+        }
+      >
       <GlassCard className="p-6 sm:p-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
@@ -644,6 +659,7 @@ export default function CreateOpportunityPage() {
           </div>
         </form>
       </GlassCard>
+      </FormWithPreview>
     </motion.div>
   );
 }
