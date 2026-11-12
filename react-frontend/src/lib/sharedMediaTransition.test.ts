@@ -68,6 +68,39 @@ describe('offer picture grows into its page (warmth plan A1)', () => {
     expect(document.documentElement.hasAttribute(SHARED_TRANSITION_ATTR)).toBe(false);
   });
 
+  it('finds the offer page picture while the browser has paused drawing', async () => {
+    // REGRESSION (12 Nov 2026, seen in a recording): during a view transition's
+    // update the browser stops drawing, so requestAnimationFrame never fires.
+    // The wait for the offer page's picture was built on it, so the screen froze
+    // on the list for the browser's 4-second limit before the page appeared.
+    const raf = vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0);
+    try {
+      let update: (() => Promise<void> | void) | undefined;
+      (document as unknown as Doc).startViewTransition = vi.fn((cb: () => Promise<void> | void) => {
+        update = cb;
+        return { finished: new Promise<void>(() => {}) };
+      });
+      const navigate = vi.fn(() => {
+        card.remove();
+        // The offer page draws its picture a moment after the address changes.
+        window.setTimeout(() => {
+          const detail = document.createElement('div');
+          detail.setAttribute('data-listing-media-detail', '42');
+          document.body.appendChild(detail);
+        }, 50);
+      });
+
+      navigateWithSharedListingMedia(navigate, '/t/listings/42', 42);
+      const started = performance.now();
+      await update!();
+      expect(performance.now() - started).toBeLessThan(600);
+      const detail = document.querySelector<HTMLElement>('[data-listing-media-detail="42"]');
+      expect(detail?.style.viewTransitionName).toBe('listing-media-42');
+    } finally {
+      raf.mockRestore();
+    }
+  });
+
   it('still opens the page when the browser never starts the transition', () => {
     vi.useFakeTimers();
     const skipTransition = vi.fn();

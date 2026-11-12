@@ -50,18 +50,35 @@ function reducedMotion(): boolean {
   return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+/**
+ * Waits for an element without requestAnimationFrame: inside a view
+ * transition's update the browser stops drawing, so animation frames never
+ * come, and a frame-based wait froze the screen for the browser's 4-second
+ * limit (12 Nov 2026). Page changes and timers keep running, so watch those.
+ */
 function waitForElement(selector: string, timeoutMs: number): Promise<HTMLElement | null> {
   return new Promise((resolve) => {
-    const started = performance.now();
-    const look = () => {
-      const found = document.querySelector<HTMLElement>(selector);
-      if (found || performance.now() - started > timeoutMs) {
-        resolve(found);
-        return;
-      }
-      requestAnimationFrame(look);
+    const existing = document.querySelector<HTMLElement>(selector);
+    if (existing) {
+      resolve(existing);
+      return;
+    }
+    let done = false;
+    const finish = (found: HTMLElement | null) => {
+      if (done) return;
+      done = true;
+      observer?.disconnect();
+      window.clearTimeout(timer);
+      resolve(found);
     };
-    look();
+    const observer = typeof MutationObserver === 'function'
+      ? new MutationObserver(() => {
+          const found = document.querySelector<HTMLElement>(selector);
+          if (found) finish(found);
+        })
+      : null;
+    observer?.observe(document.body, { childList: true, subtree: true, attributes: true });
+    const timer = window.setTimeout(() => finish(document.querySelector<HTMLElement>(selector)), timeoutMs);
   });
 }
 
