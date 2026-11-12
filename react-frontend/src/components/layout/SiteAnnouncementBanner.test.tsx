@@ -140,6 +140,27 @@ describe('SiteAnnouncementBanner', () => {
     expect(link.getAttribute('rel')).toContain('noopener');
   });
 
+  // Closing it removes the button that had the keyboard focus. Focus then
+  // fell to the top of the document; it now goes to the page's main area,
+  // where the banner was (audit of warmth phase 5, 12 Nov 2026).
+  it('keeps a keyboard user in the page when it is closed', () => {
+    tenantState.announcement = base;
+    render(
+      <MemoryRouter>
+        <main id="main-content" tabIndex={-1}>
+          <SiteAnnouncementBanner />
+          <p>Page content</p>
+        </main>
+      </MemoryRouter>,
+    );
+    const close = screen.getByRole('button', { name: 'announcement_dismiss' });
+    close.focus();
+    fireEvent.click(close);
+
+    expect(screen.queryByRole('region')).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('main'));
+  });
+
   it('can be closed, and stays closed on this device until the notice is changed', () => {
     const { unmount } = show(base);
     fireEvent.click(screen.getByRole('button', { name: 'announcement_dismiss' }));

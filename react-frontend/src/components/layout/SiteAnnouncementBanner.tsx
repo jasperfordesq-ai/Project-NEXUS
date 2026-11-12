@@ -151,6 +151,10 @@ export function SiteAnnouncementBanner() {
       onDismiss={() => {
         safeLocalStorageSet(dismissKey, new Date().toISOString());
         setClosedKey(dismissKey);
+        // The close button is about to go: keep a keyboard user in the page
+        // (the main area the banner sits at the top of) rather than letting
+        // focus fall back to the start of the document.
+        if (typeof document !== 'undefined') document.getElementById('main-content')?.focus();
       }}
     />
   );
