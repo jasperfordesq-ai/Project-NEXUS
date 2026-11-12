@@ -480,7 +480,7 @@ function createWebServer(requests, {
       ['/groups/482/discussions/new', 'Start a discussion'],
       ['/groups/482/invite', 'Invite members'],
       ['/groups/482/notifications', 'Notification preferences'],
-      ['/users/14/appreciations', 'Public thank-you notes other members have sent to this person.']
+      ['/users/14/appreciations', 'Thank-you notes this member has chosen to show on their profile.']
     ]);
 
     const modulePages = new Set([
@@ -1683,7 +1683,7 @@ describe('Laravel runtime smoke harness', () => {
       { path: '/groups/482/discussions/new', text: 'Start a discussion' },
       { path: '/groups/482/invite', text: 'Invite members' },
       { path: '/groups/482/notifications', text: 'Notification preferences' },
-      { path: '/users/14/appreciations', text: 'Public thank-you notes other members have sent to this person.' }
+      { path: '/users/14/appreciations', text: 'Thank-you notes this member has chosen to show on their profile.' }
     ]));
     for (const path of [
       '/federation/members',
@@ -2593,7 +2593,7 @@ describe('Laravel runtime smoke harness', () => {
       'body-text-page-groups-482-discussions-new-contains-start-a-discussion': true,
       'body-text-page-groups-482-invite-contains-invite-members': true,
       'body-text-page-groups-482-notifications-contains-notification-preferences': true,
-      'body-text-page-users-14-appreciations-contains-public-thank-you-notes-other-members-have-sent-to-this-person': true
+      'body-text-page-users-14-appreciations-contains-thank-you-notes-this-member-has-chosen-to-show-on-their-profile': true
     }));
     expect(checkByName['body-text-page-chat-contains-ai-assistant'].text).toBe('AI assistant');
     expect(requests.filter((request) => request.method === 'GET' && request.url === '/chat').at(-1).cookie).toContain('token=signed-token');

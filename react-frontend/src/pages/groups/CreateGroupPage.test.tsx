@@ -271,7 +271,7 @@ describe('CreateGroupPage', () => {
   // its creator; an existing one shows its real count.
   it('shows the group\'s real member count in the preview when editing', async () => {
     routeId = '7';
-    api.get.mockResolvedValue({
+    vi.mocked(api.get).mockResolvedValue({
       success: true,
       data: { id: 7, name: 'Existing Group', description: 'An existing description that is long enough.', visibility: 'public', location: '', member_count: 40 },
     });
