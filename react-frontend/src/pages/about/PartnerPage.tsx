@@ -208,7 +208,7 @@ export function PartnerPage() {
             transition={{ duration: 0.6 }}
           >
             <GlassCard className="p-8 sm:p-10 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-emerald-500" aria-hidden="true" />
+              <div className="absolute top-0 left-0 right-0 h-1 vivid:h-1.5 bg-gradient-to-r from-rose-500 to-emerald-500" aria-hidden="true" />
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 p-3 rounded-xl bg-rose-500/10">
                   <HeartHandshake className="w-6 h-6 text-rose-500 dark:text-rose-400" aria-hidden="true" />
@@ -240,7 +240,7 @@ export function PartnerPage() {
             transition={{ duration: 0.6 }}
           >
             <GlassCard className="p-8 sm:p-10 text-center relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent to-accent-gradient-end" aria-hidden="true" />
+              <div className="absolute top-0 left-0 right-0 h-1 vivid:h-1.5 bg-gradient-to-r from-accent to-accent-gradient-end" aria-hidden="true" />
               <div className="inline-flex items-center justify-center p-2 rounded-xl bg-accent/10 mb-4">
                 <Laptop className="w-5 h-5 text-accent" aria-hidden="true" />
               </div>
@@ -281,7 +281,7 @@ export function PartnerPage() {
             <GlassCard className="p-8 sm:p-10 relative overflow-hidden">
               {/* Accent bar */}
               <div
-                className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500"
+                className="absolute top-0 left-0 right-0 h-1 vivid:h-1.5 bg-gradient-to-r from-amber-500 to-orange-500"
                 aria-hidden="true"
               />
 
@@ -335,7 +335,7 @@ export function PartnerPage() {
                 <GlassCard className="p-6 h-full text-center relative overflow-hidden group hover:scale-[1.02] transition-transform">
                   {/* Gradient top bar */}
                   <div
-                    className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${card.color}`}
+                    className={`absolute top-0 left-0 right-0 h-1 vivid:h-1.5 bg-gradient-to-r ${card.color}`}
                     aria-hidden="true"
                   />
 

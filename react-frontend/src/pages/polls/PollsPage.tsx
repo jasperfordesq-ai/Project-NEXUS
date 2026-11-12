@@ -162,8 +162,8 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
 
   return (
     <GlassCard hoverable className="overflow-hidden">
-      {/* Status accent bar */}
-      <div className={`h-0.5 bg-gradient-to-r ${isOpen ? 'from-amber-500/30 to-orange-500/30' : 'from-gray-400/20 to-gray-500/20'}`} />
+      {/* Status accent bar (thicker in the vivid colour strength) */}
+      <div className={`h-0.5 vivid:h-1 bg-gradient-to-r ${isOpen ? 'from-amber-500/30 to-orange-500/30' : 'from-gray-400/20 to-gray-500/20'}`} />
 
       <div className="p-5">
         {/* Header */}

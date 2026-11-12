@@ -28,7 +28,7 @@ import { api, tokenManager } from '@/lib/api';
 import { logWarn } from '@/lib/logger';
 import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageSetJSON } from '@/lib/safeStorage';
 import { AA_NORMAL_TEXT_CONTRAST, ensureContrast, getAccessibleForegroundColor } from '@/lib/colorContrast';
-import { SiteAccentContext } from '@/contexts/SiteAccentContext';
+import { SiteAccentContext, SiteVividContext } from '@/contexts/SiteAccentContext';
 import { companionPaint } from '@/lib/categoryColours';
 import {
   CORNER_TOKENS,
@@ -672,7 +672,11 @@ export function ThemeProvider({
     <ThemeContext.Provider value={value}>
       {/* The colour the site shows, for components that follow it (avatars,
           covers, the header line); see SiteAccentContext for why it is apart. */}
-      <SiteAccentContext.Provider value={effectiveAccent}>{children}</SiteAccentContext.Provider>
+      <SiteAccentContext.Provider value={effectiveAccent}>
+        {/* Vivid as a value, for the few components whose vivid fill is a
+            palette colour the `vivid:` variant may not paint (covers, kind tiles). */}
+        <SiteVividContext.Provider value={showVivid}>{children}</SiteVividContext.Provider>
+      </SiteAccentContext.Provider>
     </ThemeContext.Provider>
   );
 }

@@ -229,6 +229,18 @@ main, article, section {
     --page-wash-b: oklch(from var(--companion) 0.995 0.015 h);
   }
 
+  /* VIVID colour strength (warmth phase 5), dark theme only: the wash carries
+     more of the community's colour at the same lightness. It is still never
+     lighter than a dark card for any hue, so no text on it loses contrast.
+     Only the two colours change: the picture is the soft one's, so the
+     high-contrast rule below still removes it. The light wash is left as it
+     is — it has no room to darken. Pinned by
+     src/test/page-wash-vivid.contract.test.ts. */
+  :root[data-theme="dark"][data-colour-strength="vivid"] .page-wash {
+    --page-wash-a: oklch(from var(--accent-color) 0.18 0.07 h);
+    --page-wash-b: oklch(from var(--companion) 0.18 0.07 h);
+  }
+
   /* The same idea behind a conversation (warmth plan P17): the message area
      wears a flat, faint tint of the community's hue at the same two fixed
      lightnesses, so date lines and names that sit straight on it read as well

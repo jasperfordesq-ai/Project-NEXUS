@@ -5,7 +5,7 @@
 
 import { Avatar } from '@/components/ui/Avatar';
 import { FaceStack } from '@/components/ui/FaceStack';
-import { kindColour } from '@/components/feed/feedTypeColours';
+import { kindTile } from '@/components/feed/feedTypeColours';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -63,6 +63,7 @@ import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { CommunityPhoto } from '@/components/branding/CommunityPhoto';
 import { vivid } from '@/lib/vivid';
+import { useSiteVivid } from '@/contexts/SiteAccentContext';
 import { logError } from '@/lib/logger';
 import { formatDayOfMonth, formatMonthShort, formatRelativeTime, resolveAvatarUrl } from '@/lib/helpers';
 import type { WalletBalance, Listing, Event, Group } from '@/types/api';
@@ -217,9 +218,23 @@ const iconContainerColors = {
   emerald: 'bg-emerald-500/15 dark:bg-emerald-500/20',
 } as const;
 
+// The VIVID colour strength (warmth phase 5): the tile filled with its colour
+// and the picture in it white. Each fill carries white at 4.5:1 — the
+// community's button shade, or the lightest shade of the tile's hue that does
+// (amber/teal/emerald -700, rose -600; palette-white-text.contract.test.ts).
+const vividIconContainerColors: Record<keyof typeof iconContainerColors, string> = {
+  indigo: 'bg-accent-strong [&>svg]:text-white!',
+  purple: 'bg-accent-strong [&>svg]:text-white!',
+  amber: 'bg-amber-700 [&>svg]:text-white!',
+  teal: 'bg-teal-700 [&>svg]:text-white!',
+  rose: 'bg-rose-600 [&>svg]:text-white!',
+  emerald: 'bg-emerald-700 [&>svg]:text-white!',
+};
+
 function SectionIcon({ children, color }: { children: React.ReactNode; color: keyof typeof iconContainerColors }) {
+  const isVivid = useSiteVivid();
   return (
-    <div className={`w-8 h-8 rounded-lg ${iconContainerColors[color]} flex items-center justify-center shrink-0`}>
+    <div className={`w-8 h-8 rounded-lg ${(isVivid ? vividIconContainerColors : iconContainerColors)[color]} flex items-center justify-center shrink-0`}>
       {children}
     </div>
   );
@@ -952,6 +967,7 @@ interface QuickActionLinkProps {
 }
 
 function QuickActionLink({ to, icon, label, kind }: QuickActionLinkProps) {
+  const isVivid = useSiteVivid();
   return (
     <Button
       as={Link}
@@ -963,7 +979,7 @@ function QuickActionLink({ to, icon, label, kind }: QuickActionLinkProps) {
       {kind ? (
         <span
           data-testid="quick-action-tile"
-          className={`flex size-10 items-center justify-center rounded-full [&>svg]:h-5 [&>svg]:w-5 ${kindColour(kind).label}`}
+          className={`flex size-10 items-center justify-center rounded-full [&>svg]:h-5 [&>svg]:w-5 ${kindTile(kind, isVivid)}`}
         >
           {icon}
         </span>

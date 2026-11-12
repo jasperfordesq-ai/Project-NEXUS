@@ -22,6 +22,12 @@
  *  - the pale corner glow is hidden: it would lighten the fill under the text.
  * Guarded by src/test/vivid-fill.contract.test.ts.
  *
+ * A few vivid fills are a FIXED palette colour, not the community's: a
+ * cover's own colour at full strength, a kind's solid picture tile. The
+ * `vivid:` variant may not paint those, so the component reads
+ * `useSiteVivid()` (contexts/SiteAccentContext) and picks a finished class
+ * set; see categoryColours `vividCover` and feedTypeColours `kindTile`.
+ *
  * Every value is a complete literal class string so Tailwind generates it.
  */
 export const vivid = {

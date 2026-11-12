@@ -107,11 +107,12 @@ export function Footer({ children, copyright }: FooterProps) {
   return (
     <footer className="relative z-10 hidden border-t border-theme-default mt-auto glass-surface backdrop-blur-sm md:block" data-nosnippet>
       {/* The same thin line in the community's colours as under the header, so
-          the page is framed top and bottom (warmth plan P19). Decoration. */}
+          the page is framed top and bottom (warmth plan P19), and twice as
+          thick in the vivid colour strength (warmth phase 5). Decoration. */}
       <div
         aria-hidden="true"
         data-testid="footer-accent-line"
-        className={`pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-linear-to-r ${footerLineClasses}`}
+        className={`pointer-events-none absolute inset-x-0 top-0 h-[3px] vivid:h-1.5 bg-linear-to-r ${footerLineClasses}`}
       />
       <div className="hidden px-4 py-6 pb-[calc(var(--safe-area-bottom)+5rem)]">
         <div className="flex flex-col items-center gap-4">

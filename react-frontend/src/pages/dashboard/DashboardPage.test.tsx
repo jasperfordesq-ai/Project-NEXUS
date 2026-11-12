@@ -109,6 +109,7 @@ vi.mock('@/lib/motion', () => {  const motionProps = new Set(['variants', 'initi
 
 import { useTenant } from '@/contexts';
 import { DashboardPage } from './DashboardPage';
+import { SiteVividContext } from '@/contexts/SiteAccentContext';
 
 function buildApiResponse(endpoint: string) {
   switch (endpoint) {
@@ -279,6 +280,26 @@ describe('DashboardPage', () => {
     }
     // Different kinds, different colours.
     expect(new Set(tiles.map((tile) => tile.className)).size).toBeGreaterThan(1);
+  });
+
+  // Warmth phase 5: a vivid community's shortcut and section tiles are filled,
+  // with a white picture.
+  it('fills the shortcut and section tiles in vivid, with white pictures', async () => {
+    render(
+      <SiteVividContext.Provider value>
+        <DashboardPage />
+      </SiteVividContext.Provider>,
+    );
+    await screen.findByText('Quick Actions');
+    const tiles = screen.getAllByTestId('quick-action-tile');
+    for (const tile of tiles) {
+      expect(tile.className).toMatch(/(^|\s)bg-(accent-strong|[a-z]+-[67]00)(\s|$)/);
+      expect(tile.className).toMatch(/(^|\s)text-white(\s|$)/);
+    }
+    const heading = screen.getByRole('heading', { name: 'Quick Actions' });
+    const sectionTile = heading.querySelector('div');
+    expect(sectionTile?.className).toContain('bg-emerald-700');
+    expect(sectionTile?.className).toContain('[&>svg]:text-white!');
   });
 
   it('renders Quick Actions section', () => {

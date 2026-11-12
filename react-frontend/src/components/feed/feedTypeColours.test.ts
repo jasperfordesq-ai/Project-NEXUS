@@ -4,7 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect } from 'vitest';
-import { feedFilterDot, feedTypeColour, FEED_FILTER_KINDS } from './feedTypeColours';
+import fs from 'node:fs';
+import path from 'node:path';
+import { feedFilterDot, feedTypeColour, FEED_FILTER_KINDS, kindTile } from './feedTypeColours';
+import { getContrastRatio } from '@/lib/colorContrast';
 
 const FILTERABLE_KINDS = ['listing', 'event', 'poll', 'goal', 'job', 'challenge', 'volunteer', 'blog', 'discussion'] as const;
 
@@ -64,8 +67,83 @@ describe('feed type colours', () => {
 
   it('never uses the brand-reserved indigo or purple utilities', () => {
     for (const kind of [...FILTERABLE_KINDS, 'review', 'resource', 'course', 'podcast_show', 'podcast_episode', 'volunteer_hours']) {
-      const { label, dot } = feedTypeColour(kind);
-      expect(`${label} ${dot}`, kind).not.toMatch(/-(indigo|purple)-/);
+      const { label, dot, solid } = feedTypeColour(kind);
+      expect(`${label} ${dot} ${solid ?? ''}`, kind).not.toMatch(/-(indigo|purple)-/);
     }
+  });
+});
+
+/** A Tailwind colour as #rrggbb, from the installed theme's oklch value. */
+function tailwindHex(family: string, step: string): string {
+  const theme = fs.readFileSync(path.resolve(__dirname, '../../../node_modules/tailwindcss/theme.css'), 'utf8');
+  const m = new RegExp(String.raw`--color-${family}-${step}:\s*oklch\(([\d.]+)%\s+([\d.]+)\s+([\d.]+)\)`).exec(theme);
+  expect(m, `Tailwind defines ${family}-${step}`).not.toBeNull();
+  const L = Number(m![1]) / 100;
+  const h = (Number(m![3]) * Math.PI) / 180;
+  const a = Number(m![2]) * Math.cos(h);
+  const b = Number(m![2]) * Math.sin(h);
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const mm = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  const linear = [
+    4.0767416621 * l - 3.3077115913 * mm + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * mm - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * mm + 1.707614701 * s,
+  ];
+  return `#${linear.map((v) => {
+    const c = Math.min(1, Math.max(0, v));
+    const srgb = c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055;
+    return Math.round(srgb * 255).toString(16).padStart(2, '0');
+  }).join('')}`;
+}
+
+const ALL_KINDS = [...FILTERABLE_KINDS, 'review', 'resource', 'course', 'podcast_show', 'podcast_episode', 'volunteer_hours',
+  'group', 'member', 'message', 'hours', 'exchange', 'organisation', 'achievement'];
+
+// Warmth phase 5: in the VIVID colour strength a kind's picture tile (form
+// sections, dashboard shortcuts) is filled with its colour and the picture is
+// white — but only where that fill carries white at 4.5:1. Any other kind,
+// and the kinds that wear the community colour, use its button shade.
+describe('kind tiles in vivid', () => {
+  it('fill with a shade that carries a white picture at 4.5:1 or better', () => {
+    for (const kind of ALL_KINDS) {
+      const { solid } = feedTypeColour(kind);
+      if (!solid) continue;
+      const fill = /(?:^|\s)bg-([a-z]+)-(\d{3})(?:\s|$)/.exec(solid);
+      expect(fill, `${kind}: one plain palette fill`).not.toBeNull();
+      expect(solid.split(/\s+/), kind).toContain('text-white');
+      const ratio = getContrastRatio(tailwindHex(fill![1]!, fill![2]!), '#ffffff')!;
+      expect(ratio, `${kind}: white on ${fill![1]}-${fill![2]}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('keep each kind in its own colour', () => {
+    for (const kind of ALL_KINDS) {
+      const { solid, dot } = feedTypeColour(kind);
+      if (!solid) continue;
+      const family = /bg-([a-z]+)-500/.exec(dot)?.[1];
+      expect(solid, kind).toContain(`bg-${family}-`);
+    }
+  });
+
+  it('give most kinds their own fill, not the community colour', () => {
+    const own = ALL_KINDS.filter((kind) => feedTypeColour(kind).solid);
+    expect(own.length).toBeGreaterThanOrEqual(ALL_KINDS.length - 1);
+  });
+
+  it('use the button shade for offers and requests and for an unknown kind', () => {
+    expect(feedTypeColour('listing').solid).toBeUndefined();
+    expect(kindTile('listing', true)).toBe('bg-accent-strong text-white');
+    expect(kindTile('something_new', true)).toBe('bg-accent-strong text-white');
+  });
+
+  it('are the pale label in soft strength', () => {
+    for (const kind of ALL_KINDS) {
+      expect(kindTile(kind, false), kind).toBe(feedTypeColour(kind).label);
+    }
+  });
+
+  it('are the solid fill in vivid', () => {
+    expect(kindTile('event', true)).toBe(feedTypeColour('event').solid);
   });
 });

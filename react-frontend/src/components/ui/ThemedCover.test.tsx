@@ -5,8 +5,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import Users from 'lucide-react/icons/users';
 import { ThemedCover } from './ThemedCover';
+import { SiteVividContext } from '@/contexts/SiteAccentContext';
+import { vivid } from '@/lib/vivid';
 
 describe('ThemedCover', () => {
   it('fills the space with the colour it is given, in light and dark mode', () => {
@@ -122,6 +125,52 @@ describe('ThemedCover', () => {
       const cls = container.querySelector('[data-cover-texture]')?.className ?? '';
       expect(cls).toContain('opacity-[0.05]');
       expect(cls).toContain('dark:opacity-[0.035]');
+    });
+  });
+
+  // Warmth phase 5: a community that chose the VIVID colour strength gets its
+  // covers at full strength, with every word and the picture on solid ground.
+  describe('in vivid', () => {
+    const renderVivid = (node: ReactElement) =>
+      render(<SiteVividContext.Provider value>{node}</SiteVividContext.Provider>);
+
+    it('paints the cover in its colour at full strength instead of the soft tint', () => {
+      renderVivid(<ThemedCover colour="teal" icon={Users} data-testid="cover" />);
+      const cls = screen.getByTestId('cover').className;
+      expect(cls).toContain('from-teal-400');
+      expect(cls).toContain('to-teal-600');
+      expect(cls).toContain('dark:from-teal-700');
+      expect(cls).not.toContain('from-teal-100');
+      expect(cls).not.toContain('dark:from-teal-500/45');
+    });
+
+    it('keeps the way the gradient runs for the same item', () => {
+      const direction = (el: HTMLElement) => /bg-linear-to-(br|bl|tr|tl)/.exec(el.className)?.[1];
+      const soft = render(<ThemedCover colour="teal" seed="item-3" data-testid="cover" />);
+      const softWay = direction(screen.getByTestId('cover'));
+      soft.unmount();
+      renderVivid(<ThemedCover colour="teal" seed="item-3" data-testid="cover" />);
+      expect(direction(screen.getByTestId('cover'))).toBe(softWay);
+    });
+
+    it('puts the label on the vivid chip, with no dark see-through left on it', () => {
+      renderVivid(<ThemedCover colour="rose" icon={Users} label="Gardening" data-testid="cover" />);
+      const label = screen.getByText('Gardening');
+      for (const token of vivid.chip.split(' ')) expect(label.className).toContain(token);
+      expect(label.className).not.toMatch(/dark:bg-/);
+    });
+
+    it('puts the picture on an opaque tile', () => {
+      renderVivid(<ThemedCover colour="rose" icon={Users} data-testid="cover" />);
+      const tile = screen.getByTestId('cover').querySelector('[data-cover-icon]')!;
+      expect(tile.className).toContain('bg-surface');
+      expect(tile.className).not.toMatch(/bg-white\/|backdrop-blur/);
+    });
+
+    it('is unchanged in soft strength', () => {
+      render(<ThemedCover colour="rose" icon={Users} label="Gardening" data-testid="cover" />);
+      expect(screen.getByTestId('cover').className).toContain('from-rose-100');
+      expect(screen.getByText('Gardening').className).toContain('dark:bg-black/30');
     });
   });
 });

@@ -207,7 +207,7 @@ export function TimebankingGuidePage() {
                 <GlassCard className="p-6 text-center h-full relative overflow-hidden group hover:scale-[1.02] transition-transform">
                   {/* Gradient top bar */}
                   <div
-                    className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.color}`}
+                    className={`absolute top-0 left-0 right-0 h-1 vivid:h-1.5 bg-gradient-to-r ${stat.color}`}
                     aria-hidden="true"
                   />
 

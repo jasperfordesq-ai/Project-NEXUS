@@ -213,4 +213,23 @@ describe('class sets stay readable in light and dark mode', () => {
       }
     }
   });
+
+  // Warmth phase 5: a vivid community's covers are the colour at full
+  // strength, solid in both themes. The cover carries no words of its own —
+  // ThemedCover puts them on the vivid chip and the picture on an opaque
+  // tile (cover-label.contract.test.ts) — and its text shade, which colours
+  // the picture on that tile, stays the deep / pale one of the soft cover.
+  it('every vivid cover is its own colour at full strength, solid in both themes', () => {
+    for (const { name } of [...HUE_WHEEL, { name: 'slate' }, { name: 'gray' }]) {
+      const strong = categoryColour(name).vividCover;
+      expect(strong, name).toMatch(/^bg-linear-to-br /);
+      for (const stop of [`from-${name}-400`, `via-${name}-500`, `to-${name}-600`, `dark:from-${name}-700`, `dark:via-${name}-800`, `dark:to-${name}-900`]) {
+        expect(strong.split(' '), name).toContain(stop);
+      }
+      expect(strong.split(' '), name).toContain(`text-${name}-800`);
+      expect(strong.split(' '), name).toContain(`dark:text-${name}-200`);
+      expect(strong, name).not.toMatch(/\/\d+(\s|$)/);
+      expect(strong, name).not.toMatch(/text-white/);
+    }
+  });
 });

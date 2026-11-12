@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 import { render, screen, act } from '@testing-library/react';
 import { getContrastRatio } from '@/lib/colorContrast';
 import { ThemeProvider, useTheme } from './ThemeContext';
+import { useSiteVivid } from './SiteAccentContext';
 
 // Mock the API module
 vi.mock('@/lib/api', () => ({
@@ -612,6 +613,32 @@ describe('ThemeContext', () => {
         </ThemeProvider>
       );
       await act(async () => {});
+      expect(strength()).toBeNull();
+    });
+
+    // Covers and kind tiles choose their vivid palette fills in code
+    // (useSiteVivid), so the value must follow the same rule as <html>.
+    it('tells components that read it as a value the same thing as the page', async () => {
+      function VividValue() {
+        return <span data-testid="vivid-value">{useSiteVivid() ? 'vivid' : 'soft'}</span>;
+      }
+      const { rerender } = render(
+        <ThemeProvider>
+          <StrengthProbe strength="vivid" />
+          <VividValue />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(screen.getByTestId('vivid-value')).toHaveTextContent('vivid');
+
+      rerender(
+        <ThemeProvider>
+          <StrengthProbe strength="vivid" highContrast />
+          <VividValue />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(screen.getByTestId('vivid-value')).toHaveTextContent('soft');
       expect(strength()).toBeNull();
     });
   });

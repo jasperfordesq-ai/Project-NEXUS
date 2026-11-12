@@ -1093,11 +1093,13 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
             on every page and screen size. It follows the community colour (or
             the member's own) and its two neighbours on the colour wheel, with
             lighter shades in dark mode. Absolutely placed over the bottom
-            border, so the header keeps its height and nothing below moves. */}
+            border, so the header keeps its height and nothing below moves.
+            Twice as thick for a community that chose the vivid colour
+            strength (warmth phase 5). Decoration only. */}
         <div
           data-testid="site-header-accent-line"
           aria-hidden="true"
-          className={`pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-linear-to-r ${headerLineClasses}`}
+          className={`pointer-events-none absolute inset-x-0 bottom-0 h-[3px] vivid:h-1.5 bg-linear-to-r ${headerLineClasses}`}
         />
 
         {/* Search Overlay */}

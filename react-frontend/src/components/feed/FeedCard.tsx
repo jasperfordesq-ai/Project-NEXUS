@@ -563,10 +563,11 @@ const FeedCardInner = React.memo(function FeedCardInner({
       {/*
         Accent strip on every card. Typed cards use their saturated type colour
         (green=event, amber=poll, etc.); native posts use a neutral border-coloured
-        strip so every card has matching anatomy in the feed.
+        strip so every card has matching anatomy in the feed. Thicker in the
+        vivid colour strength (warmth phase 5).
       */}
       {config.accentGradient && (
-        <div className={`h-1 bg-gradient-to-r ${config.accentGradient}`} aria-hidden="true" />
+        <div className={`h-1 vivid:h-1.5 bg-gradient-to-r ${config.accentGradient}`} aria-hidden="true" />
       )}
 
       <div className="p-5">
@@ -1236,7 +1237,7 @@ const FeedCardInner = React.memo(function FeedCardInner({
                 return (
                   <div className="rounded-2xl border border-theme-default bg-theme-elevated overflow-hidden shadow-sm">
                     {/* Gradient accent bar */}
-                    <div className={`h-1 bg-gradient-to-r ${pollExpired ? 'from-gray-400/30 to-gray-500/30' : 'from-amber-500 via-orange-500 to-amber-500'}`} />
+                    <div className={`h-1 vivid:h-1.5 bg-gradient-to-r ${pollExpired ? 'from-gray-400/30 to-gray-500/30' : 'from-amber-500 via-orange-500 to-amber-500'}`} />
 
                     {/* Header: pill + status */}
                     <div className="flex items-center justify-between gap-2 px-5 pt-4">

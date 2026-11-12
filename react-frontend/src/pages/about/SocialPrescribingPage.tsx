@@ -192,7 +192,7 @@ export function SocialPrescribingPage() {
                 <GlassCard className="p-6 text-center h-full relative overflow-hidden group hover:scale-[1.02] transition-transform">
                   {/* Gradient top bar */}
                   <div
-                    className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.color}`}
+                    className={`absolute top-0 left-0 right-0 h-1 vivid:h-1.5 bg-gradient-to-r ${stat.color}`}
                     aria-hidden="true"
                   />
 
@@ -249,7 +249,7 @@ export function SocialPrescribingPage() {
           >
             <GlassCard className="p-8 sm:p-10 relative overflow-hidden">
               {/* Decorative gradient */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500" aria-hidden="true" />
+              <div className="absolute top-0 left-0 w-full h-1 vivid:h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500" aria-hidden="true" />
 
               {/* Quote icon */}
               <div className="flex justify-center mb-6">
