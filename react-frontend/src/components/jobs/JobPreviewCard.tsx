@@ -12,12 +12,11 @@
  * tile in the colour of the job's type (the same seed as the real card), the
  * title, the type and commitment labels, two lines of description and the
  * place. It is a picture of a card, not a card: nothing in it is a link or a
- * button. The tile's picture is a plain briefcase here; the real card draws
- * a different picture per type.
+ * button. The tile's picture and the type label come from jobTypeLook, as
+ * the real card's do.
  */
 
 import { useTranslation } from 'react-i18next';
-import Briefcase from 'lucide-react/icons/briefcase';
 import Eye from 'lucide-react/icons/eye';
 import MapPin from 'lucide-react/icons/map-pin';
 import Wifi from 'lucide-react/icons/wifi';
@@ -27,7 +26,7 @@ import { MemberPlainText, memberPlainText } from '@/components/ui/MemberPlainTex
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import { coverSeed } from '@/lib/coverSeeds';
-import { JOB_TYPE_CHIP_COLOURS } from './jobTypeLook';
+import { JOB_TYPE_CHIP_COLOURS, jobTypeIcon } from './jobTypeLook';
 
 const TYPES = ['paid', 'volunteer', 'timebank'] as const;
 const COMMITMENTS = ['full_time', 'part_time', 'flexible', 'one_off'] as const;
@@ -44,6 +43,8 @@ export interface JobPreviewCardProps {
 export function JobPreviewCard({ title, description, type, commitment, location, isRemote }: JobPreviewCardProps) {
   const { t } = useTranslation('jobs');
   const palette = useSitePalette();
+  // The same picture per type as the list's card (a briefcase for none).
+  const TypeIcon = jobTypeIcon(type);
   const typeColour = colourForSeed(coverSeed.jobType(type || 'paid'), palette);
   const hasTitle = title.trim() !== '';
   const hasDescription = Boolean(memberPlainText(description));
@@ -64,7 +65,7 @@ export function JobPreviewCard({ title, description, type, commitment, location,
             aria-hidden="true"
             className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${categoryColour(typeColour).band}`}
           >
-            <Briefcase className="h-6 w-6" />
+            <TypeIcon className="h-6 w-6" />
           </div>
           <div className="min-w-0 flex-1">
             <p

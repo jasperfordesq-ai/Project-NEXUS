@@ -55,6 +55,17 @@ describe('JobPreviewCard — how the vacancy will look, as it is typed', () => {
     }
   });
 
+  // The list's card draws a picture per type on its tile; the preview drew a
+  // briefcase for every type (warmth phase 5 plan, left out on 12 Nov).
+  it('draws the same picture on the tile as the list does for each type', () => {
+    for (const [type, picture] of [['paid', 'lucide-dollar-sign'], ['volunteer', 'lucide-heart'], ['timebank', 'lucide-timer']]) {
+      const { unmount } = render(<JobPreviewCard {...base} type={type} />);
+      const svg = screen.getByTestId('job-preview-type-tile').querySelector('svg');
+      expect(svg?.getAttribute('class') ?? '', type).toContain(picture);
+      unmount();
+    }
+  });
+
   it('shows the description as plain words, never as markup', () => {
     render(<JobPreviewCard {...base} description="<p>Hello <strong>there</strong></p>" />);
     const preview = screen.getByTestId('job-preview');
