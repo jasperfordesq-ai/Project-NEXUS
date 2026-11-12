@@ -95,6 +95,16 @@ describe('PublicPageHero', () => {
     expect(screen.getByText('Exchanges')).toBeInTheDocument();
   });
 
+  // On a Vivid opening the panel is the community's strong colour. The
+  // figures' card was the theme's elevated tint (5% white in dark mode), so
+  // their pale text sat almost on the fill. Like buttons there, they get the
+  // page's own solid surface (audit of warmth phase 5, 12 Nov 2026).
+  it('puts figures on their own solid surface when the opening is vivid', () => {
+    render(<PublicPageHero {...defaultProps} stats={[{ label: 'Members', value: '1,234' }]} />);
+    const card = screen.getByText('1,234').parentElement as HTMLElement;
+    expect(card.className).toContain('vivid:bg-surface');
+  });
+
   it('renders multiple stats', () => {
     render(
       <PublicPageHero

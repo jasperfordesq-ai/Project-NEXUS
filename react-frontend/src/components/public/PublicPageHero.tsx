@@ -221,7 +221,7 @@ export function PublicPageHero({
                 {stats.map((stat) => (
                   <div
                     key={`${stat.label}-${stat.value}`}
-                    className="rounded-xl border border-theme-default bg-theme-elevated px-3 py-2 text-left shadow-sm"
+                    className={`rounded-xl border border-theme-default bg-theme-elevated px-3 py-2 text-left shadow-sm ${vivid.control}`}
                   >
                     <p className="text-lg font-bold leading-none text-theme-primary">{stat.value}</p>
                     <p className="mt-1 text-xs text-theme-subtle">{stat.label}</p>
