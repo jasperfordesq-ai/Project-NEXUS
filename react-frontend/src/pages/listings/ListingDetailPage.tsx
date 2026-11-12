@@ -533,8 +533,8 @@ export function ListingDetailPage() {
 
       {/* Main Content */}
       <GlassCard className="overflow-hidden p-0">
-        {/* Listing Image — the card's picture grows into it (warmth plan A1). */}
-        <div data-listing-media-detail={listing.id} className="relative overflow-hidden bg-theme-hover">
+        {/* Listing Image */}
+        <div className="relative overflow-hidden bg-theme-hover">
           {listing.image_url && !imageError ? (
             <img
               {...responsiveThumbnailProps(listing.image_url, {

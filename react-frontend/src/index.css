@@ -1078,33 +1078,6 @@
 }
 
 /* ─────────────────────────────────────────────
-   SHARED PICTURE (warmth plan Phase 4 A1, offers only)
-   An offer card's picture grows into the top of
-   the offer's page through the browser's view
-   transitions (lib/sharedMediaTransition.ts). The
-   page itself switches at once; only the named
-   picture moves. Nothing moves with reduced motion
-   (the helper also never starts one then).
-   ───────────────────────────────────────────── */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-}
-
-::view-transition-group(*) {
-  animation-duration: 340ms;
-  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
-  }
-}
-
-/* ─────────────────────────────────────────────
    PAGE TRANSITIONS (mobile route navigation)
    Material "shared axis X": forward navigations
    slide in from the right, back (POP) from the

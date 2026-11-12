@@ -28,7 +28,6 @@
 
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
-import { SHARED_TRANSITION_ATTR } from '@/lib/sharedMediaTransition';
 
 const ANIMATION_CLASSES = ['nexus-page-enter-forward', 'nexus-page-enter-back'] as const;
 
@@ -50,13 +49,6 @@ export function PageTransition({ children }: { children: ReactNode }) {
       return;
     }
     if (lastAnimatedPath === pathname) return;
-
-    // An offer card's picture is already growing into this page (warmth plan
-    // A1): a slide on top of it would fight it.
-    if (document.documentElement.hasAttribute(SHARED_TRANSITION_ATTR)) {
-      lastAnimatedPath = pathname;
-      return;
-    }
 
     // Direction by path depth: drilling deeper (list → detail) slides in from
     // the right, going shallower slides in from the left. This is deliberate
