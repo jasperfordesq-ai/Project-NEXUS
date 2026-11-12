@@ -4,8 +4,11 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect } from 'vitest';
+import Users from 'lucide-react/icons/users';
 import { render, screen } from '@/test/test-utils';
 import { FormWithPreview } from '@/components/ui/FormWithPreview';
+import { ThemedCover } from '@/components/ui/ThemedCover';
+import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 import { GroupPreviewCard } from './GroupPreviewCard';
 
 describe('GroupPreviewCard — how the group will look, as it is typed', () => {
@@ -43,6 +46,21 @@ describe('GroupPreviewCard — how the group will look, as it is typed', () => {
     expect(screen.queryByTestId('group-preview-cover')).toBeNull();
     expect(screen.queryByTestId('group-preview-cover-nudge')).toBeNull();
     expect(screen.getByTestId('group-preview').querySelector('img')).toHaveAttribute('src', 'blob:picture');
+  });
+
+  // Editing a group with no picture showed a different colour from its card
+  // on the groups page: the preview used a fixed seed, the card the group's
+  // id (audit of the live previews, 12 Nov 2026).
+  it('when editing, wears the colour and cover of the real group card, chosen by its id', () => {
+    const palette = paletteFor(null);
+    const id = [7, 42, 3, 11, 19].find((n) => colourForSeed(n, palette) !== colourForSeed('group-preview', palette))!;
+    render(<GroupPreviewCard id={id} name="Walkers" description="x" visibility="public" coverSrc={null} />);
+    const cover = screen.getByTestId('group-preview-cover');
+    expect(cover).toHaveAttribute('data-colour', colourForSeed(id, palette));
+
+    // The same texture as the real card's cover, which is seeded `group-<id>`.
+    render(<ThemedCover data-testid="expected-cover" colour={colourForSeed(id, palette)} icon={Users} size="sm" seed={`group-${id}`} />);
+    expect(cover.innerHTML).toBe(screen.getByTestId('expected-cover').innerHTML);
   });
 
   it('prefers the cover to the picture, as the list does', () => {

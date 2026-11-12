@@ -268,6 +268,50 @@ describe('CreateEventPage', () => {
     expect(screen.getByLabelText('Describe this photo (optional)')).toBeInTheDocument();
   });
 
+  // The preview used a fixed seed, so an event with no kind showed a
+  // different colour from its card on the events page (audit, 12 Nov 2026).
+  it('colours the preview date tile by the event being edited, as its card on the events page', async () => {
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const { coverSeed } = await import('@/lib/coverSeeds');
+    const palette = paletteFor(null);
+    expect(colourForSeed(coverSeed.event(5), palette)).not.toBe(colourForSeed('event-preview', palette));
+    const existing = { ...createCanonicalEventFixture({ id: 5, title: 'Existing Event' }), category: null };
+    mockApi.get.mockImplementation((endpoint: string) => Promise.resolve(
+      endpoint.startsWith('/v2/events/5')
+        ? { success: true, data: existing }
+        : { success: true, data: [] },
+    ));
+
+    await renderEventRoute(<CreateEventPage />, { route: '/test/events/edit/5', path: '/test/events/edit/:id' });
+
+    expect(await screen.findByDisplayValue('Existing Event')).toBeInTheDocument();
+    expect(screen.getByTestId('event-preview-date-tile')).toHaveAttribute('data-colour', colourForSeed(coverSeed.event(5), palette));
+  });
+
+  // The real card names the event's time zone after its time; the preview
+  // showed the bare time (audit, 12 Nov 2026).
+  it("names the event's chosen time zone after the time in the preview, as its card does", async () => {
+    const { formatDateTime } = await import('@/lib/helpers');
+    const fixture = createCanonicalEventFixture({ id: 5, title: 'Existing Event' });
+    const existing = {
+      ...fixture,
+      schedule: { ...fixture.schedule, start_at: '2030-06-01T14:00:00Z', end_at: '2030-06-01T16:00:00Z', timezone: 'America/New_York' },
+    };
+    mockApi.get.mockImplementation((endpoint: string) => Promise.resolve(
+      endpoint.startsWith('/v2/events/5')
+        ? { success: true, data: existing }
+        : { success: true, data: [] },
+    ));
+
+    await renderEventRoute(<CreateEventPage />, { route: '/test/events/edit/5', path: '/test/events/edit/:id' });
+
+    expect(await screen.findByDisplayValue('Existing Event')).toBeInTheDocument();
+    const asTheCardFormatsIt = formatDateTime('2030-06-01T14:00:00Z', {
+      hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York', timeZoneName: 'short',
+    });
+    expect(screen.getByTestId('event-preview-time')).toHaveTextContent(asTheCardFormatsIt);
+  });
+
   it('bounds the start date from today to five years ahead (E-104 FN-10)', async () => {
     await renderCreateEventPage();
 

@@ -35,10 +35,15 @@ export interface MarketplacePreviewCardProps {
   imageSrc: string | null;
   /** The seller's first name. */
   sellerName?: string | null;
+  /**
+   * The item's id when editing. With no photo, the real card colours its
+   * placeholder by the id, so the preview does too; a new item has none yet.
+   */
+  id?: number | string | null;
 }
 
 export function MarketplacePreviewCard({
-  title, price, currency, priceType, condition, location, imageSrc, sellerName,
+  title, price, currency, priceType, condition, location, imageSrc, sellerName, id = null,
 }: MarketplacePreviewCardProps) {
   const { t } = useTranslation('marketplace');
   const hasTitle = title.trim() !== '';
@@ -57,7 +62,7 @@ export function MarketplacePreviewCard({
             // Decorative here: the same photo, with its description, is in the form.
             <img src={imageSrc} alt="" className="h-full w-full object-cover" />
           ) : (
-            <ImagePlaceholder className="h-full w-full" seed="marketplace-preview" />
+            <ImagePlaceholder className="h-full w-full" seed={id ?? 'marketplace-preview'} />
           )}
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/55 via-black/20 to-transparent" aria-hidden="true" />
           <div data-testid="marketplace-preview-price" className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)]">

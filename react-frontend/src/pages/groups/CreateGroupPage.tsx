@@ -500,6 +500,7 @@ export function CreateGroupPage() {
       <FormWithPreview
         preview={
           <GroupPreviewCard
+            id={isEditing ? id : null}
             name={formData.name}
             description={formData.description}
             visibility={formData.visibility}

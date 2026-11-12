@@ -110,6 +110,7 @@ vi.mock('@/components/location/PlaceAutocompleteInput', () => ({
 vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
 
 import { CreateGroupPage } from './CreateGroupPage';
+import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 
 function fillValidForm() {
   fireEvent.change(
@@ -279,6 +280,22 @@ describe('CreateGroupPage', () => {
 
     await screen.findByDisplayValue('Existing Group');
     expect(screen.getByTestId('group-preview-members')).toHaveTextContent('40');
+  });
+
+  // The preview's cover used a fixed seed, so a group with no picture showed
+  // a different colour from its card on the groups page (audit, 12 Nov 2026).
+  it('colours the preview cover by the group being edited, as its card on the groups page', async () => {
+    const palette = paletteFor(null);
+    routeId = '7';
+    expect(colourForSeed('7', palette)).not.toBe(colourForSeed('group-preview', palette));
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { id: 7, name: 'Existing Group', description: 'An existing description that is long enough.', visibility: 'public', location: '', member_count: 40 },
+    });
+    render(<CreateGroupPage />);
+
+    await screen.findByDisplayValue('Existing Group');
+    expect(screen.getByTestId('group-preview-cover')).toHaveAttribute('data-colour', colourForSeed(7, palette));
   });
 
   it('counts the creator as the one member of a new group in the preview', () => {

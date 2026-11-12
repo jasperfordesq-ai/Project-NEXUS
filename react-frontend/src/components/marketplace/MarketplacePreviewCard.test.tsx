@@ -5,6 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@/test/test-utils';
+import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 import { MarketplacePreviewCard, type MarketplacePreviewCardProps } from './MarketplacePreviewCard';
 
 const base: MarketplacePreviewCardProps = {
@@ -50,6 +51,17 @@ describe('MarketplacePreviewCard — how the item will look, as it is typed', ()
     rerender(<MarketplacePreviewCard {...base} imageSrc="blob:photo" />);
     expect(screen.queryByTestId('marketplace-preview-photo-nudge')).toBeNull();
     expect(screen.getByTestId('marketplace-preview').querySelector('img')).toHaveAttribute('alt', '');
+  });
+
+  // Editing an item with no photo showed a different colour from its card on
+  // the marketplace page: the preview used a fixed seed, the card the item's
+  // id (audit of the live previews, 12 Nov 2026).
+  it("when editing, colours the photo placeholder by the item's id, as its card does", () => {
+    const palette = paletteFor(null);
+    const id = [77, 42, 7, 3, 11].find((n) => colourForSeed(n, palette) !== colourForSeed('marketplace-preview', palette))!;
+    render(<MarketplacePreviewCard {...base} id={id} />);
+    const placeholder = screen.getByTestId('marketplace-preview').querySelector('[data-colour]');
+    expect(placeholder).toHaveAttribute('data-colour', colourForSeed(id, palette));
   });
 
   it('is a picture of a card, not a card: nothing in it can be clicked', () => {

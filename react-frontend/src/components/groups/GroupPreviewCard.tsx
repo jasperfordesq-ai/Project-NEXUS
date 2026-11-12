@@ -38,12 +38,21 @@ export interface GroupPreviewCardProps {
   pictureSrc?: string | null;
   /** The real count when editing; a new group has its creator, 1. */
   memberCount?: number;
+  /**
+   * The group's id when editing. With no picture, the real card colours its
+   * cover by the id, so the preview does too; a new group has none yet.
+   */
+  id?: number | string | null;
 }
 
-export function GroupPreviewCard({ name, description, visibility, coverSrc, pictureSrc = null, memberCount = 1 }: GroupPreviewCardProps) {
+export function GroupPreviewCard({ name, description, visibility, coverSrc, pictureSrc = null, memberCount = 1, id = null }: GroupPreviewCardProps) {
   const shownSrc = coverSrc || pictureSrc || null;
   const { t } = useTranslation('groups');
   const palette = useSitePalette();
+  // The real card's seeds (GroupCard): its colour by the id, its cover's
+  // texture by `group-<id>`. A new group keeps a fixed seed of its own.
+  const coverColour = colourForSeed(id ?? 'group-preview', palette);
+  const coverSeed = id != null ? `group-${id}` : 'group-preview';
   const isPrivate = visibility === 'private' || visibility === 'secret';
   const VisibilityIcon = isPrivate ? Lock : Globe;
   const hasName = name.trim() !== '';
@@ -67,10 +76,10 @@ export function GroupPreviewCard({ name, description, visibility, coverSrc, pict
           ) : (
             <ThemedCover
               data-testid="group-preview-cover"
-              colour={colourForSeed('group-preview', palette)}
+              colour={coverColour}
               icon={Users}
               size="sm"
-              seed="group-preview"
+              seed={coverSeed}
             />
           )}
           {shownSrc && <div className="absolute inset-0 bg-linear-to-t from-black/35 to-transparent" aria-hidden="true" />}

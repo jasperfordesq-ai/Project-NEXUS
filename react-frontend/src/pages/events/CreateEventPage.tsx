@@ -1141,11 +1141,13 @@ export function CreateEventPage() {
       <FormWithPreview
         preview={
           <EventPreviewCard
+            id={isEditing ? id : null}
             title={formData.title}
             description={formData.description}
             startDate={formData.startDate ? { year: formData.startDate.year, month: formData.startDate.month, day: formData.startDate.day } : null}
             startTime={formData.startTime ? { hour: formData.startTime.hour, minute: formData.startTime.minute } : null}
             allDay={formData.allDay}
+            timeZone={formData.timezone.trim() || null}
             location={formData.location}
             categoryId={formData.category ? Number(formData.category) : null}
             categoryName={formData.category ? categories.find((category) => String(category.id) === formData.category)?.name ?? null : null}
