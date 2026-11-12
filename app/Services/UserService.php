@@ -1372,7 +1372,13 @@ class UserService
             'avatar_url'        => $user->avatar_url,
             'avatar_alt'        => $user->avatar_alt ?? null,
             'bio'               => $user->bio,
-            'tagline'           => $user->tagline ?? null,
+            // The member's own profile feeds the settings form, so it carries
+            // the real tagline: the model's accessor falls back to a bio
+            // excerpt (for display to others), and one save of the form then
+            // wrote that excerpt into the tagline for good (audit, 12 Nov).
+            'tagline'           => $includePrivate
+                ? (($raw = $user->getRawOriginal('tagline')) !== null && $raw !== '' ? (string) $raw : null)
+                : ($user->tagline ?? null),
             'location'          => $user->location,
             'latitude'          => $user->latitude,
             'longitude'         => $user->longitude,
