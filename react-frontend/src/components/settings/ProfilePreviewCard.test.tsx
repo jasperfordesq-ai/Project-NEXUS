@@ -12,6 +12,16 @@ const base: ProfilePreviewCardProps = {
 };
 
 describe('ProfilePreviewCard — how other members see you, as you edit', () => {
+  // It sits inside the "Profile information" section (an h2), so its own
+  // heading is the next level down; a second h2 broke the outline (audit of
+  // warmth phase 5, 12 Nov 2026).
+  it('is headed one level below the profile section it sits in', () => {
+    render(<ProfilePreviewCard {...base} />);
+    const heading = screen.getByRole('heading', { level: 3 });
+    expect(screen.getByTestId('profile-preview')).toHaveAttribute('aria-labelledby', heading.id);
+    expect(screen.queryByRole('heading', { level: 2 })).toBeNull();
+  });
+
   it('shows the first name, tagline, bio and place as they are typed', () => {
     render(
       <ProfilePreviewCard

@@ -47,10 +47,10 @@ export function ProfilePreviewCard({
 
   return (
     <section aria-labelledby="profile-preview-heading" data-testid="profile-preview">
-      <h2 id="profile-preview-heading" className="mb-3 flex items-center gap-2 text-sm font-semibold text-theme-secondary">
+      <h3 id="profile-preview-heading" className="mb-3 flex items-center gap-2 text-sm font-semibold text-theme-secondary">
         <Eye className="h-4 w-4 text-accent" aria-hidden="true" />
         {t('profile.preview_heading')}
-      </h2>
+      </h3>
       <div className="flex items-start gap-4 rounded-2xl border border-theme-default bg-theme-elevated p-4">
         {/* Decorative here: the same photo, with its description, is in the form below. */}
         <span aria-hidden="true" className="shrink-0">
