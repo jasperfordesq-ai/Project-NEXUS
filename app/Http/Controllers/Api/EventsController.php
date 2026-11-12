@@ -944,7 +944,9 @@ class EventsController extends BaseApiController
             $event !== null
                 ? $this->serializeDetailEvent($event, $facts[$eventId] ?? [])
                 : null,
-            null,
+            // The member's very first event here: said in `meta`, so the
+            // website can celebrate it; the event's own shape is unchanged.
+            \App\Support\FirstTimeCelebration::metaFor('event', $tenantId, $userId),
             201
         );
     }

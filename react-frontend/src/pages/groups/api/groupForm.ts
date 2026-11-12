@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { api } from '@/lib/api';
+import { celebrateFromMeta } from '@/lib/celebrate';
 import type { GroupVisibility } from '@/types/api';
 import { normalizeGroupApiError, unwrapGroupResponse } from './core';
 
@@ -291,7 +292,10 @@ export async function createGroupFromDraft(draft: GroupFormDraft): Promise<{ id:
     appendImageDescription(formData, 'avatar', draft.avatar);
     appendImageDescription(formData, 'cover', draft.cover);
     const response = await api.upload<unknown>('/v2/groups', formData);
-    return normalizeSavedGroup(unwrapGroupResponse(response));
+    const saved = normalizeSavedGroup(unwrapGroupResponse(response));
+    // The member's very first group: the layout celebrates it.
+    celebrateFromMeta((response as { meta?: unknown } | null | undefined)?.meta);
+    return saved;
   } catch (error) {
     throw normalizeGroupApiError(error);
   }

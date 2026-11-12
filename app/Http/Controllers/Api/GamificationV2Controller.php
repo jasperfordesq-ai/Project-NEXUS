@@ -116,6 +116,15 @@ class GamificationV2Controller extends BaseApiController
         if ($currentUserId !== null && $targetUserId === $currentUserId) {
             $profile['xp_values'] = GamificationService::XP_VALUES;
             $profile['level_thresholds'] = GamificationService::LEVEL_THRESHOLDS;
+            // The member's own sign-in streak, for the dashboard's "Your
+            // progress" card (warmth phase 5). Own profile only: another
+            // member's streak is not published here. UserStreak is
+            // tenant-scoped (HasTenantScope); the tenant is named as well.
+            $profile['current_streak'] = (int) (\App\Models\UserStreak::query()
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $targetUserId)
+                ->where('streak_type', 'login')
+                ->value('current_streak') ?? 0);
         }
 
         return $this->respondWithData($profile);

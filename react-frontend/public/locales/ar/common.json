@@ -2820,6 +2820,12 @@
   },
   "max_characters_one": "بحد أقصى {{count}} حرفًا",
   "max_characters_other": "بحد أقصى {{count}} حرفًا",
+  "celebration_first_listing_title": "أول عرض أو طلب لك أصبح منشورًا!",
+  "celebration_first_listing_text": "شكرًا لمشاركتك. يمكن لجيرانك العثور عليه الآن.",
+  "celebration_first_event_title": "أول فعالية لك أصبحت منشورة!",
+  "celebration_first_event_text": "شكرًا لأنك تجمع الناس معًا.",
+  "celebration_first_group_title": "أول مجموعة لك أصبحت جاهزة!",
+  "celebration_first_group_text": "شكرًا لأنك بدأت شيئًا جديدًا. ادعُ بعض الجيران للانضمام.",
   "volunteering": {
     "time_just_now": "الآن",
     "time_minutes_ago_one": "{{count}}منذ دقيقة",

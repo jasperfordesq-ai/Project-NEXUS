@@ -507,6 +507,37 @@ class ListingsControllerTest extends TestCase
         Event::assertDispatched(ListingCreated::class);
     }
 
+    /**
+     * Warmth phase 5: a member's very first offer or request is said in the
+     * response's `meta` (so the website can celebrate it); the second is not.
+     * The listing's own shape (`data`) is untouched.
+     */
+    public function test_store_says_when_it_is_the_members_first_listing_and_only_then(): void
+    {
+        Event::fake([ListingCreated::class]);
+        $this->authenticatedUser(['email' => '']);
+        $this->ensureListingCategory();
+
+        $payload = [
+            'title' => 'Help in the garden',
+            'description' => 'An hour of weeding and planting in your garden.',
+            'type' => 'offer',
+            'category_id' => 1,
+            'location' => 'Dublin',
+            'price' => 1.0,
+            'service_type' => 'physical_only',
+        ];
+
+        $first = $this->apiPost('/v2/listings', $payload);
+        $first->assertStatus(201);
+        $first->assertJsonPath('meta.celebrate', 'first_listing');
+        $this->assertArrayNotHasKey('celebrate', (array) $first->json('data'));
+
+        $second = $this->apiPost('/v2/listings', array_merge($payload, ['title' => 'Help with shopping']));
+        $second->assertStatus(201);
+        $this->assertArrayNotHasKey('celebrate', (array) $second->json('meta'));
+    }
+
     public function test_store_replays_the_original_listing_after_an_accepted_response_is_lost(): void
     {
         Event::fake([ListingCreated::class]);

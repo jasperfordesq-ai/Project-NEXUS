@@ -18,6 +18,7 @@ import { Footer } from './Footer';
 import { SourceRepositoryLink } from './SourceRepositoryLink';
 import { BackToTop } from '@/components/ui/BackToTop';
 import { OfflineIndicator } from '@/components/feedback/OfflineIndicator';
+import { CelebrationHost } from '@/components/feedback/CelebrationHost';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { InstallModalHost } from '@/components/pwa/InstallModalHost';
 import { SessionExpiredModal } from '@/components/feedback/SessionExpiredModal';
@@ -78,7 +79,7 @@ export function Layout({
   // Scroll state for dynamic padding — when utility bar hides, reduce top padding
   const { isUtilityBarVisible } = useHeaderScroll(48);
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { branding, hasFeature } = useTenant();
 
   return (
@@ -105,6 +106,10 @@ export function Layout({
 
       {/* Global install-instructions modal host — survives when triggers unmount */}
       <InstallModalHost />
+
+      {/* A member's first offer, event or group (warmth phase 5): here, not in
+          the form, so it is still showing after the form has navigated away. */}
+      <CelebrationHost memberId={isAuthenticated ? user?.id : null} />
 
       {/* Navigation */}
       {showNavbar && (

@@ -2744,6 +2744,12 @@
   },
   "max_characters_one": "max. {{count}} Zeichen",
   "max_characters_other": "max. {{count}} Zeichen",
+  "celebration_first_listing_title": "Ihr erstes Angebot oder Gesuch ist online!",
+  "celebration_first_listing_text": "Danke, dass Sie mitmachen. Ihre Nachbarn können es jetzt finden.",
+  "celebration_first_event_title": "Ihre erste Veranstaltung ist online!",
+  "celebration_first_event_text": "Danke, dass Sie Menschen zusammenbringen.",
+  "celebration_first_group_title": "Ihre erste Gruppe ist eingerichtet!",
+  "celebration_first_group_text": "Danke, dass Sie etwas Neues anstoßen. Laden Sie ein paar Nachbarn ein.",
   "volunteering": {
     "time_just_now": "Gerade eben",
     "time_minutes_ago_one": "{{count}}vor einer Minute",

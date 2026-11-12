@@ -2801,6 +2801,12 @@
   },
   "max_characters_one": "uas. {{count}} carachtar",
   "max_characters_other": "uas. {{count}} carachtar",
+  "celebration_first_listing_title": "Tá do chéad tairiscint nó iarratas foilsithe!",
+  "celebration_first_listing_text": "Go raibh maith agat as páirt a ghlacadh. Is féidir le do chomharsana é a aimsiú anois.",
+  "celebration_first_event_title": "Tá do chéad imeacht foilsithe!",
+  "celebration_first_event_text": "Go raibh maith agat as daoine a thabhairt le chéile.",
+  "celebration_first_group_title": "Tá do chéad ghrúpa curtha ar bun!",
+  "celebration_first_group_text": "Go raibh maith agat as rud éigin a thosú. Tabhair cuireadh do roinnt comharsan páirt a ghlacadh.",
   "volunteering": {
     "time_just_now": "Anois díreach",
     "time_minutes_ago_one": "{{count}} nóiméad ó shin",

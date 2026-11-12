@@ -2763,6 +2763,12 @@
   },
   "max_characters_one": "máx. {{count}} caracteres",
   "max_characters_other": "máx. {{count}} caracteres",
+  "celebration_first_listing_title": "¡Tu primera oferta o solicitud ya está publicada!",
+  "celebration_first_listing_text": "Gracias por participar. Tus vecinos ya pueden encontrarla.",
+  "celebration_first_event_title": "¡Tu primer evento ya está publicado!",
+  "celebration_first_event_text": "Gracias por reunir a la gente.",
+  "celebration_first_group_title": "¡Tu primer grupo ya está creado!",
+  "celebration_first_group_text": "Gracias por poner algo en marcha. Invita a algunos vecinos a unirse.",
   "volunteering": {
     "time_just_now": "Justo ahora",
     "time_minutes_ago_one": "{{count}}hace un minuto",

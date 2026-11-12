@@ -488,6 +488,62 @@ describe('DashboardPage', () => {
     expect(within(plainRow).getByText('1')).toBeInTheDocument();
   });
 
+  // The server sends level_progress as an OBJECT (GamificationV2Controller);
+  // the page read it as a number, so the bar showed 0% for every member
+  // until 12 Nov 2026 — and this file's mock used a number, so it passed.
+  it('shows how far the member is through their level, from the shape the server really sends', async () => {
+    mockApiGet.mockImplementation((endpoint: string) => {
+      if (endpoint === '/v2/gamification/profile') {
+        return Promise.resolve({
+          success: true,
+          data: {
+            level: 3,
+            xp: 372,
+            level_progress: { current_xp: 372, xp_for_current_level: 300, xp_for_next_level: 600, progress_percentage: 24 },
+            badges_count: 3,
+            current_streak: 6,
+          },
+        });
+      }
+      return Promise.resolve(buildApiResponse(endpoint));
+    });
+
+    render(<DashboardPage />);
+
+    expect(await screen.findByText('24%')).toBeInTheDocument();
+    expect(screen.queryByText('0%')).not.toBeInTheDocument();
+  });
+
+  it("shows the member's own streak beside their badges, and leaves it out when they have none", async () => {
+    mockApiGet.mockImplementation((endpoint: string) => {
+      if (endpoint === '/v2/gamification/profile') {
+        return Promise.resolve({
+          success: true,
+          data: { level: 3, xp: 372, level_progress: { progress_percentage: 24 }, badges_count: 3, current_streak: 6 },
+        });
+      }
+      return Promise.resolve(buildApiResponse(endpoint));
+    });
+
+    const { unmount } = render(<DashboardPage />);
+    const streak = await screen.findByTestId('dashboard-streak');
+    expect(streak).toHaveTextContent('6');
+    unmount();
+
+    mockApiGet.mockImplementation((endpoint: string) => {
+      if (endpoint === '/v2/gamification/profile') {
+        return Promise.resolve({
+          success: true,
+          data: { level: 1, xp: 0, level_progress: { progress_percentage: 0 }, badges_count: 0, current_streak: 0 },
+        });
+      }
+      return Promise.resolve(buildApiResponse(endpoint));
+    });
+    render(<DashboardPage />);
+    await screen.findByText('0%');
+    expect(screen.queryByTestId('dashboard-streak')).not.toBeInTheDocument();
+  });
+
   it('falls back to 0% when gamification progress is missing', async () => {
     mockApiGet.mockImplementation((endpoint: string) => {
       if (endpoint === '/v2/gamification/profile') {

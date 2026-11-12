@@ -80,6 +80,51 @@ class GamificationV2ControllerTest extends TestCase
         $response->assertJsonPath('data.level_name', 'Contributor');
     }
 
+    /**
+     * The dashboard's "Your progress" card shows the member's own streak
+     * (warmth phase 5). It rides on the profile the dashboard already fetches,
+     * for the member's OWN profile only: another member's streak is theirs.
+     */
+    public function test_own_profile_carries_the_members_current_streak(): void
+    {
+        $user = $this->authenticatedUser();
+
+        $this->apiGet('/v2/gamification/profile')
+            ->assertStatus(200)
+            ->assertJsonPath('data.current_streak', 0);
+
+        \App\Models\UserStreak::query()->create([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $user->id,
+            'streak_type' => 'login',
+            'current_streak' => 6,
+            'longest_streak' => 9,
+            'last_activity_date' => now()->toDateString(),
+        ]);
+
+        $this->apiGet('/v2/gamification/profile')
+            ->assertStatus(200)
+            ->assertJsonPath('data.current_streak', 6);
+    }
+
+    public function test_another_members_profile_does_not_carry_their_streak(): void
+    {
+        $this->authenticatedUser();
+        $other = \App\Models\User::factory()->forTenant($this->testTenantId)->create();
+        \App\Models\UserStreak::query()->create([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $other->id,
+            'streak_type' => 'login',
+            'current_streak' => 12,
+            'longest_streak' => 12,
+            'last_activity_date' => now()->toDateString(),
+        ]);
+
+        $response = $this->apiGet('/v2/gamification/profile?user_id=' . $other->id);
+        $response->assertStatus(200);
+        $this->assertArrayNotHasKey('current_streak', $response->json('data'));
+    }
+
     // ------------------------------------------------------------------
     //  GET /v2/gamification/badges
     // ------------------------------------------------------------------

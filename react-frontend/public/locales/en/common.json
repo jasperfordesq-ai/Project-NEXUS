@@ -2744,6 +2744,12 @@
   },
   "max_characters_one": "max {{count}} characters",
   "max_characters_other": "max {{count}} characters",
+  "celebration_first_listing_title": "Your first offer or request is up!",
+  "celebration_first_listing_text": "Thank you for joining in. Your neighbours can now find it.",
+  "celebration_first_event_title": "Your first event is up!",
+  "celebration_first_event_text": "Thank you for bringing people together.",
+  "celebration_first_group_title": "Your first group is set up!",
+  "celebration_first_group_text": "Thank you for starting something. Invite a few neighbours to join.",
   "volunteering": {
     "time_just_now": "Just now",
     "time_minutes_ago_one": "{{count}} minute ago",

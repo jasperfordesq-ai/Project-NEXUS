@@ -2744,6 +2744,12 @@
   },
   "max_characters_one": "最大 {{count}} 文字",
   "max_characters_other": "最大{{count}}文字",
+  "celebration_first_listing_title": "はじめての提供・リクエストを掲載しました！",
+  "celebration_first_listing_text": "ご参加ありがとうございます。ご近所の方が見つけられるようになりました。",
+  "celebration_first_event_title": "はじめてのイベントを掲載しました！",
+  "celebration_first_event_text": "みんなが集まる場をつくってくださり、ありがとうございます。",
+  "celebration_first_group_title": "はじめてのグループができました！",
+  "celebration_first_group_text": "新しい集まりを始めてくださり、ありがとうございます。ご近所の方を誘ってみましょう。",
   "volunteering": {
     "time_just_now": "たった今",
     "time_minutes_ago_one": "{{count}} 分前",

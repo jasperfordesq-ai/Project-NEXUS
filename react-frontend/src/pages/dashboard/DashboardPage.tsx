@@ -54,6 +54,7 @@ import Heart from 'lucide-react/icons/heart';
 import MessageCircle from 'lucide-react/icons/message-circle';
 import UserPlus from 'lucide-react/icons/user-plus';
 import Award from 'lucide-react/icons/award';
+import Flame from 'lucide-react/icons/flame';
 import ThumbsUp from 'lucide-react/icons/thumbs-up';
 import { PageMeta } from '@/components/seo';
 import { useAuth, useTenant, useFeature, useModule, useNotifications } from '@/contexts';
@@ -69,8 +70,14 @@ import { CARING_COMMUNITY_ROUTE } from '@/pages/caring-community/config';
 interface GamificationProfile {
   level: number;
   xp: number;
-  level_progress: number;
+  /**
+   * How far through the current level. The server sends an object
+   * (GamificationV2Controller::profile); a bare number is still accepted.
+   */
+  level_progress?: { progress_percentage?: number } | number | null;
   badges_count: number;
+  /** The member's own sign-in streak in days (own profile only). */
+  current_streak?: number;
   level_thresholds?: Record<number, number>;
 }
 
@@ -159,7 +166,12 @@ interface DashboardStats {
 }
 
 function normalizePercent(value: unknown): number {
-  const percent = typeof value === 'number' ? value : Number(value);
+  // The server's shape is { progress_percentage }. Reading the object itself
+  // as a number gave NaN → 0%, so the bar was empty for every member.
+  const raw = value !== null && typeof value === 'object'
+    ? (value as { progress_percentage?: unknown }).progress_percentage
+    : value;
+  const percent = typeof raw === 'number' ? raw : Number(raw);
   if (!Number.isFinite(percent)) return 0;
   return Math.min(Math.max(percent, 0), 100);
 }
@@ -378,6 +390,7 @@ export function DashboardPage() {
   useEffect(() => { loadDashboardData(); }, [loadDashboardData]);
 
   const levelProgress = normalizePercent(stats.gamification?.level_progress);
+  const currentStreak = Math.max(0, Math.floor(Number(stats.gamification?.current_streak) || 0));
   const walletBalanceValue = stats.walletBalance ? t('stats.hours_value', { value: stats.walletBalance.balance }) : '\u2014';
 
   if (error) {
@@ -727,11 +740,22 @@ export function DashboardPage() {
                         </div>
                         <Progress value={levelProgress} color="warning" size="sm" aria-label={t('gamification.xp_progress')} className="h-2" />
                       </div>
-                      <div className="flex justify-center pt-2">
+                      <div className="flex justify-center gap-2 pt-2">
                         <div className="text-center p-2 rounded-lg bg-theme-elevated w-full">
                           <div className="text-lg font-bold text-theme-primary">{stats.gamification.badges_count}</div>
                           <div className="text-xs text-theme-subtle">{t('gamification.badges')}</div>
                         </div>
+                        {/* The member's own streak, once they have one: a
+                            second figure beside the badges. */}
+                        {currentStreak > 0 && (
+                          <div data-testid="dashboard-streak" className="text-center p-2 rounded-lg bg-theme-elevated w-full">
+                            <div className="flex items-center justify-center gap-1 text-lg font-bold text-theme-primary">
+                              <Flame className="h-4 w-4 text-orange-500" aria-hidden="true" />
+                              {t('gamification.streak_days', { count: currentStreak })}
+                            </div>
+                            <div className="text-xs text-theme-subtle">{t('gamification.streak')}</div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : (

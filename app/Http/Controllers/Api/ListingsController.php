@@ -404,7 +404,13 @@ class ListingsController extends BaseApiController
             }
         }
 
-        return $this->respondWithData($result, null, 201);
+        // The member's very first offer or request here: say so in `meta`, so
+        // the website can celebrate it. Never on the idempotent replay above.
+        return $this->respondWithData(
+            $result,
+            \App\Support\FirstTimeCelebration::metaFor('listing', (int) \App\Core\TenantContext::getId(), $userId),
+            201,
+        );
     }
 
     // -----------------------------------------------------------------

@@ -207,7 +207,13 @@ class GroupsController extends BaseApiController
             }
         }
 
-        return $this->respondWithData($group, null, 201);
+        // The member's very first group here: said in `meta`, so the website
+        // can celebrate it. Not on an idempotent replay.
+        $celebration = (bool) $createdGroup->getAttribute('_idempotent_replay')
+            ? null
+            : \App\Support\FirstTimeCelebration::metaFor('group', (int) \App\Core\TenantContext::getId(), $userId);
+
+        return $this->respondWithData($group, $celebration, 201);
     }
 
     /**

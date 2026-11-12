@@ -2744,6 +2744,12 @@
   },
   "max_characters_one": "max. {{count}} tekens",
   "max_characters_other": "max. {{count}} tekens",
+  "celebration_first_listing_title": "Je eerste aanbod of verzoek staat erop!",
+  "celebration_first_listing_text": "Bedankt dat je meedoet. Je buren kunnen het nu vinden.",
+  "celebration_first_event_title": "Je eerste evenement staat erop!",
+  "celebration_first_event_text": "Bedankt dat je mensen samenbrengt.",
+  "celebration_first_group_title": "Je eerste groep is aangemaakt!",
+  "celebration_first_group_text": "Bedankt dat je iets start. Nodig een paar buren uit om mee te doen.",
   "volunteering": {
     "time_just_now": "Zojuist",
     "time_minutes_ago_one": "{{count}}minuut geleden",

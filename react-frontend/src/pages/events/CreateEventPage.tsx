@@ -57,6 +57,7 @@ import {
 } from '@/lib/events-api';
 import { eventIsoToLocalInput, eventLocalInputToIso } from '@/lib/eventLocalDateTime';
 import { logError } from '@/lib/logger';
+import { celebrateFromMeta } from '@/lib/celebrate';
 import { getFormattingLocale, resolveAssetUrl, responsiveThumbnailProps } from '@/lib/helpers';
 import type { TFunction } from 'i18next';
 import {
@@ -887,6 +888,8 @@ export function CreateEventPage() {
         }
 
         toast.success(isEditing ? t('form.toast.updated') : t('form.toast.created'));
+        // The member's very first event: the layout celebrates it.
+        if (!isEditing) celebrateFromMeta(response.meta);
         navigate(tenantPath(!isEditing && eventId && !isRecurringSubmission ? `/events/${eventId}` : '/events'));
       } else {
         toast.error(response.error || t('form.toast.error'));

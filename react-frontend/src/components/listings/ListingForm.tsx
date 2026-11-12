@@ -48,6 +48,7 @@ import { useAuth, useToast, useTenant } from '@/contexts';
 import { aiDescriptionAvailable } from '@/lib/aiDescriptions';
 import { api, type ApiErrorDetail } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { celebrateFromMeta } from '@/lib/celebrate';
 import { resolveThumbnailUrl } from '@/lib/helpers';
 import { safeImageSource } from '@/lib/safeImageSource';
 import { themeColourNames } from '@/lib/categoryColours';
@@ -573,6 +574,8 @@ export function ListingForm({
           handleSaveFailure(response);
           return;
         }
+        // The member's very first offer or request: the layout celebrates it.
+        celebrateFromMeta(response.meta);
         if (response.data) {
           savedId = String(response.data.id);
         }
