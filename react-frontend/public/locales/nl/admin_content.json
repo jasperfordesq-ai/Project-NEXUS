@@ -1036,6 +1036,7 @@
     "announcements_link_url": "Link (optioneel)",
     "announcements_link_url_hint": "Een pagina op deze site, zoals /events, of een volledig adres dat begint met https://",
     "announcements_link_label": "Tekst voor de link",
+    "announcements_link_label_required": "Vul de woorden voor de link in, of laat de link leeg.",
     "announcements_starts": "Tonen vanaf",
     "announcements_ends": "Tonen tot",
     "announcements_dismissible": "Leden kunnen haar sluiten",

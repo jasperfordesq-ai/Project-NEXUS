@@ -3062,6 +3062,7 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'site_announcement_style_invalid' => 'اختر أحد أنماط الإعلان المتاحة.',
     'site_announcement_link_url_invalid' => 'يجب أن يكون الرابط صفحة في هذا الموقع تبدأ بـ "/" أو عنوانًا كاملًا يبدأ بـ "https://".',
     'site_announcement_link_label_invalid' => 'يجب أن يكون نص الرابط نصًا عاديًا لا يزيد على :max حرفًا.',
+    'site_announcement_link_label_required' => 'أضف الكلمات التي ستظهر للرابط، أو اترك الرابط فارغًا.',
     'site_announcement_date_invalid' => 'أدخل تاريخًا ووقتًا صالحين.',
     'site_announcement_ends_before_starts' => 'يجب أن يكون وقت الانتهاء بعد وقت البدء.',
     'site_announcement_flag_invalid' => 'يجب أن يكون هذا الإعداد مفعّلًا أو معطّلًا.',

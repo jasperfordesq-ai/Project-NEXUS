@@ -3571,6 +3571,7 @@ return [
     'site_announcement_style_invalid' => 'Choose one of the available announcement styles.',
     'site_announcement_link_url_invalid' => 'The link must be a page on this site that starts with "/", or a full address that starts with "https://".',
     'site_announcement_link_label_invalid' => 'The link text must be plain text of :max characters or fewer.',
+    'site_announcement_link_label_required' => 'Add the words to show for the link, or leave the link empty.',
     'site_announcement_date_invalid' => 'Enter a valid date and time.',
     'site_announcement_ends_before_starts' => 'The end must be later than the start.',
     'site_announcement_flag_invalid' => 'This setting must be either on or off.',

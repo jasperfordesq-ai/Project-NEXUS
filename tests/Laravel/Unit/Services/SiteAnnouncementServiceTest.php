@@ -206,6 +206,36 @@ class SiteAnnouncementServiceTest extends TestCase
         }
     }
 
+    /**
+     * The banner shows a link only with its words, so a link saved without
+     * them vanished from the page while the save said it worked (audit of
+     * warmth phase 5, 12 Nov 2026). Now the admin is told.
+     */
+    public function test_a_link_needs_words_to_show(): void
+    {
+        $author = User::factory()->forTenant($this->testTenantId)->admin()->create();
+
+        $result = $this->service->create($this->testTenantId, (int) $author->id, [
+            'message' => 'Repair café on Saturday',
+            'link_url' => '/events',
+            'link_label' => '   ',
+        ]);
+        $this->assertArrayHasKey('errors', $result);
+        $this->assertSame(['link_label'], array_column($result['errors'], 'field'));
+
+        $saved = $this->service->create($this->testTenantId, (int) $author->id, [
+            'message' => 'Repair café on Saturday',
+            'link_url' => '/events',
+            'link_label' => 'See the events',
+        ]);
+        $this->assertArrayHasKey('announcement', $saved);
+
+        // Removing the words from a saved link is refused the same way.
+        $update = $this->service->update($this->testTenantId, (int) $saved['announcement']['id'], ['link_label' => '']);
+        $this->assertArrayHasKey('errors', $update);
+        $this->assertSame(['link_label'], array_column($update['errors'], 'field'));
+    }
+
     public function test_create_saves_against_the_given_community_and_author(): void
     {
         $author = User::factory()->forTenant($this->testTenantId)->admin()->create();

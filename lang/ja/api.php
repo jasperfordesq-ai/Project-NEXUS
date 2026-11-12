@@ -3062,6 +3062,7 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'site_announcement_style_invalid' => '利用できるお知らせのスタイルから選んでください。',
     'site_announcement_link_url_invalid' => 'リンクは、「/」で始まるこのサイト内のページか、「https://」で始まる完全なアドレスにしてください。',
     'site_announcement_link_label_invalid' => 'リンクの文字は、:max 文字以内のプレーンテキストにしてください。',
+    'site_announcement_link_label_required' => 'リンクに表示する言葉を入力するか、リンクを空欄にしてください。',
     'site_announcement_date_invalid' => '有効な日付と時刻を入力してください。',
     'site_announcement_ends_before_starts' => '終了日時は開始日時より後にしてください。',
     'site_announcement_flag_invalid' => 'この設定はオンかオフのどちらかにしてください。',

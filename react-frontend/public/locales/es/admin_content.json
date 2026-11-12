@@ -1036,6 +1036,7 @@
     "announcements_link_url": "Enlace (opcional)",
     "announcements_link_url_hint": "Una página de este sitio, como /events, o una dirección completa que empiece por https://",
     "announcements_link_label": "Texto del enlace",
+    "announcements_link_label_required": "Añade las palabras que mostrará el enlace o deja el enlace vacío.",
     "announcements_starts": "Mostrar desde",
     "announcements_ends": "Mostrar hasta",
     "announcements_dismissible": "Los miembros pueden cerrarlo",

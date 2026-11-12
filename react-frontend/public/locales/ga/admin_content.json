@@ -1036,6 +1036,7 @@
     "announcements_link_url": "Nasc (roghnach)",
     "announcements_link_url_hint": "Leathanach ar an suíomh seo, mar shampla /events, nó seoladh iomlán a thosaíonn le https://",
     "announcements_link_label": "Focail don nasc",
+    "announcements_link_label_required": "Cuir isteach na focail a thaispeánfar don nasc, nó fág an nasc folamh.",
     "announcements_starts": "Taispeáin ó",
     "announcements_ends": "Taispeáin go dtí",
     "announcements_dismissible": "Is féidir le baill é a dhúnadh",

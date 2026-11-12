@@ -139,6 +139,25 @@ describe('AnnouncementsAdmin', () => {
     expect(api.create).not.toHaveBeenCalled();
   });
 
+  // The banner shows a link only with its words: a link without them used to
+  // save and then vanish from the page (audit of warmth phase 5, 12 Nov 2026).
+  it('asks for the words to show when a link is given', async () => {
+    api.list.mockResolvedValue({ success: true, data: { items: [] } });
+    render(<AnnouncementsAdmin />);
+    await screen.findByText('No notices yet');
+    fireEvent.click(screen.getAllByRole('button', { name: 'New notice' })[0]!);
+    await screen.findByTestId('announcement-preview');
+    const saveButton = screen.getByRole('button', { name: SAVE });
+
+    fireEvent.change(screen.getByLabelText(/^Notice/), { target: { value: 'Repair café on Saturday' } });
+    fireEvent.change(screen.getByLabelText(/^Link \(optional\)/), { target: { value: '/events' } });
+    await waitFor(() => expect(saveButton).toBeDisabled());
+    expect(screen.getByText('Add the words to show for the link, or leave the link empty.')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/^Words for the link/), { target: { value: 'See the events' } });
+    await waitFor(() => expect(saveButton).not.toBeDisabled());
+  });
+
   it("shows the server's own words when it refuses a notice", async () => {
     api.list.mockResolvedValue({ success: true, data: { items: [] } });
     api.create.mockResolvedValue({ success: false, error: 'The end must be after the start.' });

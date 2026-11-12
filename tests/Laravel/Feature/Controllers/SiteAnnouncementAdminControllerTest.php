@@ -304,7 +304,8 @@ class SiteAnnouncementAdminControllerTest extends TestCase
         $this->actAsAdmin();
 
         foreach (['/events/12?tab=details#top', 'https://example.org/page?x=1'] as $link) {
-            $this->apiPost('/v2/admin/announcements', ['message' => 'Hello', 'link_url' => $link])
+            // A link needs words to show (12 Nov 2026), so each one has them.
+            $this->apiPost('/v2/admin/announcements', ['message' => 'Hello', 'link_url' => $link, 'link_label' => 'Details'])
                 ->assertStatus(201)
                 ->assertJsonPath('data.announcement.link_url', $link);
         }

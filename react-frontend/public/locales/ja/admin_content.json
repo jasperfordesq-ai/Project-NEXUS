@@ -1036,6 +1036,7 @@
     "announcements_link_url": "リンク（任意）",
     "announcements_link_url_hint": "このサイト内のページ（例：/events）、または https:// で始まる完全なアドレス",
     "announcements_link_label": "リンクの文言",
+    "announcements_link_label_required": "リンクに表示する言葉を入力するか、リンクを空欄にしてください。",
     "announcements_starts": "表示開始",
     "announcements_ends": "表示終了",
     "announcements_dismissible": "メンバーが閉じられる",

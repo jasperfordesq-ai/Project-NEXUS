@@ -345,6 +345,18 @@ class SiteAnnouncementService
             $values['link_label'] = null;
         }
 
+        // A link with no words is not shown (the banner needs something to
+        // click), so it is refused rather than saved and silently left out.
+        $finalLabel = array_key_exists('link_label', $values) ? $values['link_label'] : ($existing->link_label ?? null);
+        if ($finalLink !== null && ($finalLabel === null || $finalLabel === '')
+            && !in_array('link_label', array_column($errors, 'field'), true)) {
+            $errors[] = self::error(
+                ApiErrorCodes::VALIDATION_REQUIRED_FIELD,
+                'link_label',
+                __('api.site_announcement_link_label_required'),
+            );
+        }
+
         // Dates — optional. Null or an empty string removes one.
         $dateErrors = false;
         foreach (['starts_at', 'ends_at'] as $field) {

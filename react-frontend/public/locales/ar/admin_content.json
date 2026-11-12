@@ -1036,6 +1036,7 @@
     "announcements_link_url": "رابط (اختياري)",
     "announcements_link_url_hint": "صفحة في هذا الموقع مثل ‎/events‏ أو عنوان كامل يبدأ بـ ‎https://",
     "announcements_link_label": "نص الرابط",
+    "announcements_link_label_required": "أضف الكلمات التي ستظهر للرابط، أو اترك الرابط فارغًا.",
     "announcements_starts": "يظهر من",
     "announcements_ends": "يظهر حتى",
     "announcements_dismissible": "يمكن للأعضاء إغلاقه",

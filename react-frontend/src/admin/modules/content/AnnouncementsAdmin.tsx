@@ -156,7 +156,9 @@ export function AnnouncementsAdmin() {
 
   const message = form.message.trim();
   const linkOk = form.link_url.trim() === '' || safeAnnouncementLink(form.link_url) !== null;
-  const canSave = message !== '' && message.length <= MAX_MESSAGE && linkOk && !saving;
+  // The banner shows a link only with its words, so a link needs them.
+  const labelOk = form.link_url.trim() === '' || form.link_label.trim() !== '';
+  const canSave = message !== '' && message.length <= MAX_MESSAGE && linkOk && labelOk && !saving;
 
   // The real banner, from what is in the form right now.
   const preview = useMemo<SiteAnnouncement>(() => {
@@ -344,6 +346,8 @@ export function AnnouncementsAdmin() {
               label={t('content.announcements_link_label')}
               value={form.link_label}
               onValueChange={(v) => setForm((prev) => ({ ...prev, link_label: v }))}
+              isInvalid={!labelOk}
+              errorMessage={!labelOk ? t('content.announcements_link_label_required') : undefined}
               maxLength={60}
               variant="secondary"
             />
