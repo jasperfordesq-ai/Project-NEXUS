@@ -93,13 +93,11 @@ class GamificationV2ControllerTest extends TestCase
             ->assertStatus(200)
             ->assertJsonPath('data.current_streak', 0);
 
-        \App\Models\UserStreak::query()->create([
-            'tenant_id' => $this->testTenantId,
-            'user_id' => $user->id,
-            'streak_type' => 'login',
-            'current_streak' => 6,
-            'longest_streak' => 9,
-            'last_activity_date' => now()->toDateString(),
+        // The streak a member actually builds: the daily sign-in reward
+        // (DailyRewardService) keeps it on the user row. Claimed today.
+        \Illuminate\Support\Facades\DB::table('users')->where('id', $user->id)->update([
+            'login_streak' => 6,
+            'last_daily_reward' => now()->toDateString(),
         ]);
 
         $this->apiGet('/v2/gamification/profile')
@@ -107,17 +105,52 @@ class GamificationV2ControllerTest extends TestCase
             ->assertJsonPath('data.current_streak', 6);
     }
 
+    /**
+     * A streak whose last day was before yesterday is over, even though the
+     * nightly reset has not run yet: the card must not show a stale count.
+     */
+    public function test_a_broken_streak_shows_as_none(): void
+    {
+        $user = $this->authenticatedUser();
+        \Illuminate\Support\Facades\DB::table('users')->where('id', $user->id)->update([
+            'login_streak' => 6,
+            'last_daily_reward' => now()->subDays(3)->toDateString(),
+        ]);
+
+        $this->apiGet('/v2/gamification/profile')
+            ->assertStatus(200)
+            ->assertJsonPath('data.current_streak', 0);
+    }
+
+    /**
+     * `user_streaks` is not written by anything that runs (StreakService's
+     * recorder is never called), so an old row there must not be shown as
+     * the member's streak. Audit of warmth phase 5, 12 Nov 2026.
+     */
+    public function test_a_stale_row_in_the_unused_streak_table_is_not_shown(): void
+    {
+        $user = $this->authenticatedUser();
+        \App\Models\UserStreak::query()->create([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $user->id,
+            'streak_type' => 'login',
+            'current_streak' => 12,
+            'longest_streak' => 12,
+            'last_activity_date' => now()->subMonths(2)->toDateString(),
+        ]);
+
+        $this->apiGet('/v2/gamification/profile')
+            ->assertStatus(200)
+            ->assertJsonPath('data.current_streak', 0);
+    }
+
     public function test_another_members_profile_does_not_carry_their_streak(): void
     {
         $this->authenticatedUser();
         $other = \App\Models\User::factory()->forTenant($this->testTenantId)->create();
-        \App\Models\UserStreak::query()->create([
-            'tenant_id' => $this->testTenantId,
-            'user_id' => $other->id,
-            'streak_type' => 'login',
-            'current_streak' => 12,
-            'longest_streak' => 12,
-            'last_activity_date' => now()->toDateString(),
+        \Illuminate\Support\Facades\DB::table('users')->where('id', $other->id)->update([
+            'login_streak' => 12,
+            'last_daily_reward' => now()->toDateString(),
         ]);
 
         $response = $this->apiGet('/v2/gamification/profile?user_id=' . $other->id);

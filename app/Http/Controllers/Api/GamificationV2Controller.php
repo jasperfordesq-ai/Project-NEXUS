@@ -118,13 +118,15 @@ class GamificationV2Controller extends BaseApiController
             $profile['level_thresholds'] = GamificationService::LEVEL_THRESHOLDS;
             // The member's own sign-in streak, for the dashboard's "Your
             // progress" card (warmth phase 5). Own profile only: another
-            // member's streak is not published here. UserStreak is
-            // tenant-scoped (HasTenantScope); the tenant is named as well.
-            $profile['current_streak'] = (int) (\App\Models\UserStreak::query()
-                ->where('tenant_id', $tenantId)
-                ->where('user_id', $targetUserId)
-                ->where('streak_type', 'login')
-                ->value('current_streak') ?? 0);
+            // member's streak is not published here.
+            //
+            // 🔴 The streak members build is the daily sign-in reward's
+            // (`users.login_streak`, kept by DailyRewardService), and
+            // getStreak() answers 0 once a day has been missed. It is NOT
+            // `user_streaks`: nothing that runs writes that table
+            // (StreakService::recordLogin() is never called), so reading it
+            // showed 0 to everyone, or an old figure for ever (audit, 12 Nov).
+            $profile['current_streak'] = \App\Services\DailyRewardService::getStreak((int) $tenantId, $targetUserId);
         }
 
         return $this->respondWithData($profile);
