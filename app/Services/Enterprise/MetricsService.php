@@ -68,7 +68,7 @@ class MetricsService
         }
 
         $envVersion = getenv('APP_VERSION');
-        return is_string($envVersion) && $envVersion !== '' ? $envVersion : '3.1.0';
+        return is_string($envVersion) && $envVersion !== '' ? $envVersion : '3.2.0';
     }
 
     /**

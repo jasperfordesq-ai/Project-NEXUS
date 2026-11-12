@@ -9,7 +9,7 @@
     "meta_title": "Features",
     "meta_description": "Every module in Project NEXUS, the software behind {{name}}, with honest maturity labels for timebanking, marketplace, community care and safety.",
     "heading": "What Project NEXUS does",
-    "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v3.1.0 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
+    "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v3.2.0 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
     "maturity_key_title": "How we label maturity",
     "maturity_ga": "Generally Available - stable, supported, used in production across pilot tenants.",
     "maturity_beta": "Working in production today, but the public surface or wire protocol is still being hardened.",
@@ -1130,7 +1130,7 @@
     "trademarks": "Apple, the Apple logo, iPhone and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc. Google Play and the Google Play logo are trademarks of Google LLC."
   },
   "unknown_error": "Unknown error",
-  "release_stage": "Generally Available (v3.1.0)",
+  "release_stage": "Generally Available (v3.2.0)",
   "community_chooser": {
     "title": "Choose your community",
     "subtitle": "You've reached the main Project NEXUS page. Choose your community below to continue.",

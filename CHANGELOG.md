@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-11-12
+
 ### Added
 - **Dashboard: hours shared month by month, a community milestone, a photo prompt and endorser faces (warmth plan N2, N6, N8, P10, 10 Nov 2026)**: the dashboard now shows a small bar chart of the hours the whole community has shared in each of the last six months (`GET /v2/community/this-month` gains `monthly_hours`, community totals only, counted exactly like the existing "hours shared" figure so the last bar equals it; the chart is loaded on demand and has a text list for screen readers). When the community's total hours pass a round number (100, 250, 500, 1,000 …) each member sees a small celebration once, using the community total the public front page already shows. A member with no profile photo gets a friendly prompt to add one, which they can put away for 30 days. The endorsements card shows up to three faces of the people who endorsed each skill — people the member's own endorsements already name. New wording is in all eleven languages (`dashboard.json`: `milestone.*`, `photo_prompt.*`); the non-English text is machine-written and has not been checked by a speaker. Tests: `CommunityThisMonthTest.php`, `CommunityHoursChart.test.tsx`, `CommunityMilestone.test.tsx`, `PhotoPrompt.test.tsx`, `DashboardPage.test.tsx`.
 - **Events calendar coloured by category, and the organiser on event cards (warmth plan N9 + P10, 10 Nov 2026)**: the month and agenda views showed every event alike. `GET /v2/events/calendar` now sends each event's `category_id` (only when it names a category of the same community; the calendar feed file is unchanged), and each event row carries a dot in its category's colour — the same colour the list view gives it. Event cards now show the organiser's face and name, exactly the details the event's own page already shows the same viewer (the list already carried them; no new data is sent). Note for deploys: the calendar's response check is strict, so a browser still running the previous build shows the calendar's "could not load" message until it picks up the new one. Tests: `EventCalendarIntegrationTest.php`, `EventListOrganiserMatchesDetailTest.php`, `EventCalendarViews.test.tsx`, `EventsPage.test.tsx`, `events-api.test.ts`.
@@ -11076,7 +11078,8 @@ For the people behind the project, see [CONTRIBUTORS.md](CONTRIBUTORS.md) — th
 
 ---
 
-[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v2.0.0...v2.1.0

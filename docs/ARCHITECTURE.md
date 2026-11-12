@@ -13,7 +13,7 @@ The owner authorized a code-led ASP.NET/Laravel comparison against both unchange
 Current readiness: [code-led contract audit](../aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
 
 Last reviewed: 2026-08-15
-Platform version: 3.1.0
+Platform version: 3.2.0
 
 This document is the maintained architecture map for Project NEXUS. It is intentionally compact: use it to understand the runtime boundaries, primary code paths, and documents to read next.
 
