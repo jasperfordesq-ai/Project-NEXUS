@@ -40,6 +40,7 @@ class TenantBootstrapController extends BaseApiController
         private readonly TenantFeatureConfig $tenantFeatureConfig,
         private readonly BrokerControlConfigService $brokerControlConfigService,
         private readonly AuthenticationConfigurationService $authenticationConfigurationService,
+        private readonly \App\Services\SiteAnnouncementService $siteAnnouncementService,
     ) {}
 
     /** Cache TTL for tenant bootstrap data (10 minutes) */
@@ -436,6 +437,18 @@ class TenantBootstrapController extends BaseApiController
 
         $data['default_layout'] = $tenant['default_layout'] ?? 'modern';
         $data['branding'] = $this->buildBrandingData($tenant, $config);
+        // Community announcement banner: the one notice to show across the top
+        // of the member website right now, or null. Admin → Announcements
+        // (SiteAnnouncementAdminController); every create/update/delete there
+        // clears this cached payload.
+        //
+        // 🔴 This payload is cached (Redis for CACHE_TTL, plus the public HTTP
+        // cache on the response), so a copy can outlive the announcement's
+        // `ends_at`. Clients MUST check `starts_at` / `ends_at` against the
+        // clock themselves before showing it. The same lag works the other way:
+        // an announcement scheduled for later only appears once a payload built
+        // after its `starts_at` is served.
+        $data['announcement'] = $this->siteAnnouncementService->currentForTenant((int) $tenant['id']);
         // Admin → Translation settings: whether translation is on, the
         // auto-translate default for new conversations, and the provider.
         $data['translation'] = \App\Services\TranslationConfigurationService::publicSettingsForTenant((int) $tenant['id']);

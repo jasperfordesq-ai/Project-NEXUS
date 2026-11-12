@@ -2929,6 +2929,11 @@ Route::delete('/v2/admin/goals/{id}', [\App\Http\Controllers\Api\AdminGoalsContr
 Route::get('/v2/admin/resources', [\App\Http\Controllers\Api\AdminResourcesController::class, 'index'])->middleware('feature:resources');
 Route::get('/v2/admin/resources/{id}', [\App\Http\Controllers\Api\AdminResourcesController::class, 'show'])->middleware('feature:resources');
 Route::delete('/v2/admin/resources/{id}', [\App\Http\Controllers\Api\AdminResourcesController::class, 'destroy'])->middleware('feature:resources');
+// Community announcement banner — one-line notices shown across the top of the member website.
+Route::get('/v2/admin/announcements', [\App\Http\Controllers\Api\Admin\SiteAnnouncementAdminController::class, 'index']);
+Route::post('/v2/admin/announcements', [\App\Http\Controllers\Api\Admin\SiteAnnouncementAdminController::class, 'store']);
+Route::put('/v2/admin/announcements/{id}', [\App\Http\Controllers\Api\Admin\SiteAnnouncementAdminController::class, 'update'])->whereNumber('id');
+Route::delete('/v2/admin/announcements/{id}', [\App\Http\Controllers\Api\Admin\SiteAnnouncementAdminController::class, 'destroy'])->whereNumber('id');
 Route::get('/v2/admin/jobs', [\App\Http\Controllers\Api\AdminJobsController::class, 'index']);
 // Static literal admin job routes BEFORE {id} wildcard (Agent B + D)
 Route::get('/v2/admin/jobs/moderation-queue', [\App\Http\Controllers\Api\AdminJobsController::class, 'moderationQueue']);

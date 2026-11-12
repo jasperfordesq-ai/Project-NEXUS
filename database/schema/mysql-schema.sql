@@ -18248,6 +18248,31 @@ CREATE TABLE `sessions` (
   KEY `idx_user_tenant` (`user_id`,`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User sessions for tracking active users and session management';
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `site_announcements`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `site_announcements` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `message` varchar(280) NOT NULL,
+  `style` varchar(20) NOT NULL DEFAULT 'info',
+  `link_url` varchar(500) DEFAULT NULL,
+  `link_label` varchar(60) DEFAULT NULL,
+  `starts_at` datetime DEFAULT NULL,
+  `ends_at` datetime DEFAULT NULL,
+  `is_dismissible` tinyint(1) NOT NULL DEFAULT 1,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_site_announcements_tenant` (`tenant_id`),
+  KEY `idx_site_announcements_current` (`tenant_id`,`is_active`,`starts_at`,`ends_at`),
+  KEY `fk_site_announcements_created_by` (`created_by`),
+  CONSTRAINT `fk_site_announcements_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_site_announcements_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `skill_categories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
