@@ -67,6 +67,15 @@ describe('JobPreviewCard — how the vacancy will look, as it is typed', () => {
     expect(screen.getByTestId('job-preview-remote')).toHaveTextContent('Remote');
   });
 
+  // The real card shows "Remote" OR the place, never both. Switching Remote
+  // on disables the place box but keeps its text, so the preview showed
+  // "Riverside · Remote" (audit of warmth phase 5, 12 Nov 2026).
+  it('shows "Remote" instead of the place when the job can be done from home, as the real card does', () => {
+    render(<JobPreviewCard {...base} location="Riverside" isRemote />);
+    expect(screen.getByTestId('job-preview-remote')).toHaveTextContent('Remote');
+    expect(screen.getByTestId('job-preview')).not.toHaveTextContent('Riverside');
+  });
+
   it('is a picture of a card, not a card: nothing in it can be clicked', () => {
     render(<JobPreviewCard {...base} title="Community gardener" />);
     const preview = screen.getByTestId('job-preview');

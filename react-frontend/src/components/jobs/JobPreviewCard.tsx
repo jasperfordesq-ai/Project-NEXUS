@@ -19,8 +19,8 @@
 import { useTranslation } from 'react-i18next';
 import Briefcase from 'lucide-react/icons/briefcase';
 import Eye from 'lucide-react/icons/eye';
-import Globe from 'lucide-react/icons/globe';
 import MapPin from 'lucide-react/icons/map-pin';
+import Wifi from 'lucide-react/icons/wifi';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { MemberPlainText, memberPlainText } from '@/components/ui/MemberPlainText';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
@@ -92,18 +92,19 @@ export function JobPreviewCard({ title, description, type, commitment, location,
                 {t('form.preview_description_placeholder')}
               </p>
             )}
+            {/* As the real card: "Remote" OR the place, never both. The place
+                box keeps its text when Remote is switched on. */}
             {(location.trim() !== '' || isRemote) && (
               <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-theme-subtle">
-                {location.trim() !== '' && (
+                {isRemote ? (
+                  <span data-testid="job-preview-remote" className="flex items-center gap-1">
+                    <Wifi className="h-3 w-3 shrink-0" aria-hidden="true" />
+                    {t('remote')}
+                  </span>
+                ) : (
                   <span className="flex min-w-0 items-center gap-1">
                     <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
                     <span className="truncate">{location}</span>
-                  </span>
-                )}
-                {isRemote && (
-                  <span data-testid="job-preview-remote" className="flex items-center gap-1">
-                    <Globe className="h-3 w-3 shrink-0" aria-hidden="true" />
-                    {t('remote')}
                   </span>
                 )}
               </div>
