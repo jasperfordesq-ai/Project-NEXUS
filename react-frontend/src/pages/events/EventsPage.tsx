@@ -989,7 +989,7 @@ function formatEventDistance(distanceKm: number): string {
   }).format(distanceKm);
 }
 
-const EventCard = memo(function EventCard({ event }: EventCardProps) {
+export const EventCard = memo(function EventCard({ event }: EventCardProps) {
   const { t } = useTranslation('events');
   const { tenantPath } = useTenant();
   const palette = useSitePalette();

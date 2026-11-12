@@ -962,7 +962,7 @@ interface JobCardProps {
   vacancy: JobVacancy;
 }
 
-const JobCard = memo(function JobCard({ vacancy }: JobCardProps) {
+export const JobCard = memo(function JobCard({ vacancy }: JobCardProps) {
   const { t } = useTranslation('jobs');
   const palette = useSitePalette();
   // The kind of work in its own colour — the same as the vacancy page's cover.

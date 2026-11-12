@@ -692,7 +692,7 @@ interface GroupCardProps {
   featured?: boolean;
 }
 
-const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
+export const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
   const { t } = useTranslation('groups');
   const { tenantPath } = useTenant();
   const palette = useSitePalette();

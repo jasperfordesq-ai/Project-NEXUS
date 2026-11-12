@@ -898,7 +898,7 @@ interface OpportunityCardProps {
   onApply?: () => void;
 }
 
-function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) {
+export function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) {
   const { t } = useTranslation('volunteering');
   const palette = useSitePalette();
   const { tenantPath, hasFeature } = useTenant();
