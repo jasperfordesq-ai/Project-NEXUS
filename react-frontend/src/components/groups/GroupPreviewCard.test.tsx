@@ -94,6 +94,9 @@ describe('FormWithPreview — a form with its live picture beside it', () => {
     expect(layout.className).toContain('lg:grid-cols-[minmax(0,1fr)_20rem]');
     const aside = screen.getByTestId('the-preview').closest('aside');
     expect(aside?.className).toContain('lg:sticky');
+    // On a phone the single column must be able to shrink: a grid item without
+    // min-width 0 grew to its content and cut the form off at 375px (audit, 12 Nov).
+    expect(aside?.className).toContain('min-w-0');
     // On a phone the picture follows the form: form first in the document.
     expect(layout.firstElementChild).toContainElement(screen.getByTestId('the-form'));
   });

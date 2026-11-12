@@ -17,7 +17,7 @@ export function FormWithPreview({ children, preview }: { children: ReactNode; pr
   return (
     <div data-testid="form-with-preview" className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="min-w-0">{children}</div>
-      <aside className="lg:sticky lg:top-24 lg:self-start">{preview}</aside>
+      <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">{preview}</aside>
     </div>
   );
 }
