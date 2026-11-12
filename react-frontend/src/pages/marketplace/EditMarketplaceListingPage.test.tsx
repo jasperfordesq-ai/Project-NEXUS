@@ -258,6 +258,37 @@ describe('EditMarketplaceListingPage', () => {
     });
   });
 
+  // The preview's placeholder used a fixed seed, so an item with no photo
+  // showed a different colour from its card (audit, 12 Nov 2026).
+  it('colours the preview placeholder by the item being edited, as its card on the marketplace page', async () => {
+    const { colourForSeed, paletteFor } = await import('@/lib/categoryColours');
+    const palette = paletteFor(null);
+    expect(colourForSeed(77, palette)).not.toBe(colourForSeed('marketplace-preview', palette));
+    setupMocks({ images: [] });
+    const { EditMarketplaceListingPage } = await import('./EditMarketplaceListingPage');
+    render(<EditMarketplaceListingPage />);
+
+    const preview = await screen.findByTestId('marketplace-preview');
+    expect(preview.querySelector('[data-colour]')).toHaveAttribute('data-colour', colourForSeed(77, palette));
+  });
+
+  // The offer, group and event forms head each section with a coloured icon
+  // tile (FormSectionHeading, warmth plan B6); the marketplace form had plain
+  // grey headings (approved Phase 5 plan, 12 Nov 2026).
+  it('heads each section with a coloured icon tile, keeping the section titles', async () => {
+    const { EditMarketplaceListingPage } = await import('./EditMarketplaceListingPage');
+    render(<EditMarketplaceListingPage />);
+    await screen.findByTestId('marketplace-preview');
+
+    const icons = screen.getAllByTestId('form-section-icon');
+    const titles = icons.map((icon) => icon.nextElementSibling?.querySelector('h2')?.textContent);
+    expect(titles).toEqual(['create.photos', 'create.details', 'create.pricing', 'create.location_delivery']);
+    for (const icon of icons) {
+      // A kind's colour, not the grey fallback for an unknown kind.
+      expect(icon.className).not.toContain('surface-elevated');
+    }
+  });
+
   it('renders the Save Changes button', async () => {
     const { EditMarketplaceListingPage } = await import('./EditMarketplaceListingPage');
     render(<EditMarketplaceListingPage />);

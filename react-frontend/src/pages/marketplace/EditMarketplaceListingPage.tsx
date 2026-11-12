@@ -49,6 +49,7 @@ import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { FormWithPreview } from '@/components/ui/FormWithPreview';
+import { FormSectionHeading } from '@/components/ui/FormSectionHeading';
 import { MarketplacePreviewCard } from '@/components/marketplace/MarketplacePreviewCard';
 import { aiDescriptionAvailable } from '@/lib/aiDescriptions';
 import { api } from '@/lib/api';
@@ -617,6 +618,7 @@ export function EditMarketplaceListingPage() {
       <FormWithPreview
         preview={
           <MarketplacePreviewCard
+            id={id ?? null}
             title={title}
             price={price}
             currency={currency}
@@ -647,15 +649,15 @@ export function EditMarketplaceListingPage() {
           </div>
         </div>
 
-        {/* Section 1: Photos */}
+        {/* Section 1: Photos. Each section's heading in a kind's colour, as on
+            the offer, group and event forms (warmth plan B6). */}
         <GlassCard className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Camera className="w-5 h-5 text-accent" />
-            {t('create.photos')}
-            <span className="text-sm font-normal text-muted">
-              {t('create.photos_count', { current: images.length, max: MAX_IMAGES })}
-            </span>
-          </h2>
+          <FormSectionHeading
+            icon={Camera}
+            kind="goal"
+            title={t('create.photos')}
+            hint={t('create.photos_count', { current: images.length, max: MAX_IMAGES })}
+          />
 
           {/* Drop zone */}
           <div
@@ -733,10 +735,7 @@ export function EditMarketplaceListingPage() {
 
         {/* Section 2: Details */}
         <GlassCard className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-foreground flex flex-wrap items-center gap-2">
-            <FileText className="w-5 h-5 text-accent" />
-            {t('create.details')}
-          </h2>
+          <FormSectionHeading icon={FileText} kind="blog" title={t('create.details')} />
 
           <Input
             label={t('create.title_label')}
@@ -926,10 +925,7 @@ export function EditMarketplaceListingPage() {
 
         {/* Section 3: Pricing */}
         <GlassCard className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Tag className="w-5 h-5 text-accent" />
-            {t('create.pricing')}
-          </h2>
+          <FormSectionHeading icon={Tag} kind="resource" title={t('create.pricing')} />
 
           <RadioGroup
             label={t('create.price_type_label')}
@@ -1000,10 +996,7 @@ export function EditMarketplaceListingPage() {
 
         {/* Section 4: Delivery */}
         <GlassCard className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Truck className="w-5 h-5 text-accent" />
-            {t('create.location_delivery')}
-          </h2>
+          <FormSectionHeading icon={Truck} kind="hours" title={t('create.location_delivery')} />
 
           <PlaceAutocompleteInput
             label={t('create.location_label')}

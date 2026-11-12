@@ -135,6 +135,23 @@ describe('CreateMarketplaceListingPage', () => {
     });
   });
 
+  // The offer, group and event forms head each section with a coloured icon
+  // tile (FormSectionHeading, warmth plan B6); the marketplace form had plain
+  // grey headings (approved Phase 5 plan, 12 Nov 2026).
+  it('heads each section with a coloured icon tile, keeping the section titles', async () => {
+    const { CreateMarketplaceListingPage } = await import('./CreateMarketplaceListingPage');
+    render(<CreateMarketplaceListingPage />);
+    await screen.findByTestId('marketplace-preview');
+
+    const icons = screen.getAllByTestId('form-section-icon');
+    const titles = icons.map((icon) => icon.nextElementSibling?.querySelector('h2')?.textContent);
+    expect(titles).toEqual(['Photos', 'Video', 'Details', 'Offer & price', 'Location & Delivery']);
+    for (const icon of icons) {
+      // A kind's colour, not the grey fallback for an unknown kind.
+      expect(icon.className).not.toContain('surface-elevated');
+    }
+  });
+
   it('shows error toast when title is missing on submit', async () => {
     const { CreateMarketplaceListingPage } = await import('./CreateMarketplaceListingPage');
     render(<CreateMarketplaceListingPage />);

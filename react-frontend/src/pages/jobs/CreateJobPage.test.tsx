@@ -210,6 +210,19 @@ describe('CreateJobPage', () => {
       expect(screen.getByText(/form\.salary_max_label/)).toBeInTheDocument();
     });
 
+    // The offer, group and event forms head each section with a coloured
+    // icon tile (FormSectionHeading, warmth plan B6). The job form's one
+    // titled section, Compensation, had a plain heading (approved Phase 5
+    // plan, 12 Nov 2026).
+    it('heads the compensation section with a coloured icon tile, keeping its title', () => {
+      render(<CreateJobPage />);
+      const icons = screen.getAllByTestId('form-section-icon');
+      const titles = icons.map((icon) => icon.nextElementSibling?.querySelector('h2')?.textContent);
+      expect(titles).toEqual(['form.salary_section']);
+      // A kind's colour, not the grey fallback for an unknown kind.
+      expect(icons[0]?.className).not.toContain('surface-elevated');
+    });
+
     it('submit button calls POST /v2/jobs for create mode', async () => {
       vi.mocked(api.post).mockResolvedValue({ success: true, data: { id: 7 } });
       render(<CreateJobPage />);

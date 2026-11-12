@@ -1,6 +1,7 @@
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
+import { FormSectionHeading } from '@/components/ui/FormSectionHeading';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { ProfilePreviewCard } from '@/components/settings/ProfilePreviewCard';
 import { Input } from '@/components/ui/Input';
@@ -22,6 +23,7 @@ import Camera from 'lucide-react/icons/camera';
 import Phone from 'lucide-react/icons/phone';
 import Building2 from 'lucide-react/icons/building-2';
 import Monitor from 'lucide-react/icons/monitor';
+import UserRound from 'lucide-react/icons/user-round';
 import Lock from 'lucide-react/icons/lock';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
@@ -112,7 +114,11 @@ export function ProfileTab({
   return (
     <div className="space-y-6">
       <GlassCard className="p-6">
-        <h2 className="text-lg font-semibold text-theme-primary mb-6">{t('profile.section_title')}</h2>
+        {/* Each section's heading in a kind's colour, as on the offer, group
+            and event forms (warmth plan B6): a member's own colour here. */}
+        <div className="mb-6">
+          <FormSectionHeading icon={UserRound} kind="member" title={t('profile.section_title')} />
+        </div>
 
         {/* How other members see you, as you edit (warmth phase 5). Above the
             form: the settings page is already a narrower, tabbed layout. */}
@@ -400,10 +406,9 @@ export function ProfileTab({
 
       {/* Language & Appearance */}
       <GlassCard className="p-6">
-        <h2 className="text-lg font-semibold text-theme-primary mb-6 flex items-center gap-2">
-          <Monitor className="w-5 h-5 text-accent" aria-hidden="true" />
-          {t('language_appearance')}
-        </h2>
+        <div className="mb-6">
+          <FormSectionHeading icon={Monitor} kind="blog" title={t('language_appearance')} />
+        </div>
 
         <div className="space-y-6">
           {/* Language preference */}

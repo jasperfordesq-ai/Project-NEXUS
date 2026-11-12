@@ -10,6 +10,7 @@ import { Chip } from '@/components/ui/Chip';
 import { CloseButton } from '@/components/ui/CloseButton';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
+import { FormSectionHeading } from '@/components/ui/FormSectionHeading';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { FormWithPreview } from '@/components/ui/FormWithPreview';
 import { JobPreviewCard } from '@/components/jobs/JobPreviewCard';
@@ -1098,7 +1099,9 @@ export function CreateJobPage() {
           {/* J9: Salary/Compensation + EU Pay Transparency */}
           {form.type === 'paid' && (
             <div className="space-y-4 pt-2">
-              <h3 className="text-sm font-semibold text-theme-primary">{t('form.salary_section')}</h3>
+              {/* In the job kind's colour, as the offer, group and event
+                  forms head their sections (warmth plan B6). */}
+              <FormSectionHeading icon={DollarSign} kind="job" title={t('form.salary_section')} />
 
               {/* Negotiable toggle first so it gates the required fields */}
               <Switch

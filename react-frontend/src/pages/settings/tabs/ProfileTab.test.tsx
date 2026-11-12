@@ -132,6 +132,20 @@ describe('ProfileTab', () => {
     expect(screen.getByText('profile.section_title')).toBeDefined();
   });
 
+  // The offer, group and event forms head each section with a coloured icon
+  // tile (FormSectionHeading, warmth plan B6); the profile form had plain
+  // headings (approved Phase 5 plan, 12 Nov 2026).
+  it('heads each section with a coloured icon tile, keeping the section titles', () => {
+    render(<ProfileTab {...defaultProps} />);
+    const icons = screen.getAllByTestId('form-section-icon');
+    const titles = icons.map((icon) => icon.nextElementSibling?.querySelector('h2')?.textContent);
+    expect(titles).toEqual(['profile.section_title', 'language_appearance']);
+    for (const icon of icons) {
+      // A kind's colour, not the grey fallback for an unknown kind.
+      expect(icon.className).not.toContain('surface-elevated');
+    }
+  });
+
   it('renders first name and last name fields', () => {
     render(<ProfileTab {...defaultProps} />);
     expect(screen.getByDisplayValue('Alice')).toBeDefined();
