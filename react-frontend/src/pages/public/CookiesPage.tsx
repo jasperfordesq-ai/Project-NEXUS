@@ -186,8 +186,8 @@ export function CookiesPage() {
       <PageMeta title={t('cookies.page_title')} description={t('cookies.meta_description', { name: branding.name })} />
       {/* Hero Header */}
       <motion.div variants={itemVariants} className="text-center">
-        <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 mb-4">
-          <Cookie className="w-10 h-10 text-amber-500" aria-hidden="true" />
+        <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 mb-4">
+          <Cookie className="w-10 h-10 text-accent" aria-hidden="true" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-theme-primary mb-3">
           {t('cookies.heading')}
@@ -209,9 +209,9 @@ export function CookiesPage() {
               key={item.id}
               variant="tertiary"
               onPress={() => scrollToSection(item.id)}
-              className="inline-flex min-h-10 min-w-0 items-center gap-2 rounded-xl bg-theme-elevated px-4 py-2 text-sm font-medium text-theme-primary transition-colors hover:bg-amber-500/10"
+              className="inline-flex min-h-10 min-w-0 items-center gap-2 rounded-xl bg-theme-elevated px-4 py-2 text-sm font-medium text-theme-primary transition-colors hover:bg-accent/10"
             >
-              <item.icon className="w-4 h-4 text-amber-500" aria-hidden="true" />
+              <item.icon className="w-4 h-4 text-accent" aria-hidden="true" />
               {t(item.key)}
             </Button>
           ))}
@@ -221,9 +221,9 @@ export function CookiesPage() {
       {/* What Are Cookies */}
       <motion.div variants={itemVariants} id="what-are-cookies">
         <GlassCard className="p-6 sm:p-8">
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <div className="p-4 rounded-xl bg-accent-soft border border-accent/20">
             <h2 className="text-xl font-semibold text-theme-primary mb-3 flex items-center gap-2">
-              <Cookie className="w-5 h-5 text-amber-500" aria-hidden="true" />
+              <Cookie className="w-5 h-5 text-accent-soft-foreground" aria-hidden="true" />
               {t('cookies.what_are_title')}
             </h2>
             <div className="space-y-3 text-theme-muted">
@@ -242,7 +242,7 @@ export function CookiesPage() {
       <motion.div variants={itemVariants} id="cookie-categories">
         <GlassCard className="p-6 sm:p-8">
           <h2 className="text-xl font-semibold text-theme-primary mb-6 flex items-center gap-2">
-            <Settings className="w-5 h-5 text-amber-500" aria-hidden="true" />
+            <Settings className="w-5 h-5 text-accent" aria-hidden="true" />
             {t('cookies.categories_title')}
           </h2>
 
@@ -295,7 +295,7 @@ export function CookiesPage() {
       <motion.div variants={itemVariants} id="cookie-list">
         <GlassCard className="p-6 sm:p-8">
           <h2 className="text-xl font-semibold text-theme-primary mb-6 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-amber-500" aria-hidden="true" />
+            <BarChart3 className="w-5 h-5 text-accent" aria-hidden="true" />
             {t('cookies.list_title')}
           </h2>
 
@@ -333,7 +333,7 @@ export function CookiesPage() {
       <motion.div variants={itemVariants}>
         <GlassCard className="p-6 sm:p-8">
           <h2 className="text-xl font-semibold text-theme-primary mb-4 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-amber-500" aria-hidden="true" />
+            <Globe className="w-5 h-5 text-accent" aria-hidden="true" />
             {t('cookies.third_party_title')}
           </h2>
           <div className="space-y-3 text-theme-muted">
@@ -346,7 +346,7 @@ export function CookiesPage() {
                 { labelKey: 'cookies.third_party_pusher_label', descKey: 'cookies.third_party_pusher_desc' },
               ] as const).map((item) => (
                 <li key={item.labelKey} className="flex items-start gap-3">
-                  <div className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+                  <div className="mt-1 w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" />
                   <span>
                     <strong className="text-theme-primary">{t(item.labelKey)}:</strong> {t(item.descKey)}
                   </span>
@@ -364,7 +364,7 @@ export function CookiesPage() {
       <motion.div variants={itemVariants} id="manage-cookies">
         <GlassCard className="p-6 sm:p-8">
           <h2 className="text-xl font-semibold text-theme-primary mb-4 flex items-center gap-2">
-            <Monitor className="w-5 h-5 text-amber-500" aria-hidden="true" />
+            <Monitor className="w-5 h-5 text-accent" aria-hidden="true" />
             {t('cookies.manage_title')}
           </h2>
           <div className="space-y-4 text-theme-muted">
@@ -390,7 +390,7 @@ export function CookiesPage() {
                   key={browser.nameKey}
                   className="flex items-start gap-3 p-3 rounded-xl bg-theme-elevated"
                 >
-                  <Monitor className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                  <Monitor className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <div>
                     <p className="font-medium text-theme-primary text-sm">{t(browser.nameKey)}</p>
                     <p className="text-xs text-theme-subtle mt-0.5">{t(browser.pathKey)}</p>
@@ -406,8 +406,8 @@ export function CookiesPage() {
       <motion.div variants={itemVariants}>
         <GlassCard className="p-6 sm:p-8">
           <div className="text-center">
-            <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 mb-4">
-              <MessageSquare className="w-8 h-8 text-amber-500" aria-hidden="true" />
+            <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 mb-4">
+              <MessageSquare className="w-8 h-8 text-accent" aria-hidden="true" />
             </div>
             <h2 className="text-xl font-semibold text-theme-primary mb-2">
               {t('cookies.cta_title')}
@@ -418,7 +418,7 @@ export function CookiesPage() {
             <Separator className="my-4" />
             <div className="flex flex-wrap justify-center gap-3 mt-4">
               <Button as={Link} to={tenantPath('/contact')}
-                className="bg-gradient-to-r from-amber-700 to-orange-700 text-white"
+                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 startContent={<Send className="w-4 h-4" aria-hidden="true" />}
               >
                 {t('cookies.contact_us')}

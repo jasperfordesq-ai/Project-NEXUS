@@ -1485,7 +1485,7 @@ export function OpportunityDetailPage() {
                             {offered && (
                               <Button
                                 size="sm"
-                                className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white"
+                                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                                 isLoading={activeShiftAction === 'claim'}
                                 isDisabled={!!shiftAction}
                                 onPress={() => handleShiftAction(shift.id, 'claim')}

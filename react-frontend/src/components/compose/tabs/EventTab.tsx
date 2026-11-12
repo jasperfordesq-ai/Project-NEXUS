@@ -294,7 +294,7 @@ export function EventTab({ onSuccess, onClose, groupId, templateData }: TabSubmi
             </Button>
             <Button
               size="sm"
-              className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white shadow-lg shadow-emerald-500/20"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white shadow-lg shadow-accent/20"
               onPress={handleSubmit}
               isLoading={isSubmitting}
               isDisabled={!canSubmit}

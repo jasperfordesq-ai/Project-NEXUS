@@ -340,7 +340,7 @@ export function WaitlistTab() {
                     {entry.status === 'notified' && (
                       <Button
                         size="sm"
-                        className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white"
+                        className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                         startContent={!claimingId ? <Check className="w-4 h-4" aria-hidden="true" /> : undefined}
                         onPress={() => handleClaimSpot(entry)}
                         isLoading={claimingId === entry.id}

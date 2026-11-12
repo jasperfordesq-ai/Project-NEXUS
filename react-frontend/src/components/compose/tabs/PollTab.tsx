@@ -264,7 +264,7 @@ export function PollTab({ onSuccess, onClose, groupId, templateData }: TabSubmit
             </Button>
             <Button
               size="sm"
-              className="bg-gradient-to-r from-amber-700 to-orange-700 text-white shadow-lg shadow-amber-500/20"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white shadow-lg shadow-accent/20"
               onPress={handleSubmit}
               isLoading={isSubmitting}
               isDisabled={!canSubmit}

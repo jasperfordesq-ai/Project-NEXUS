@@ -329,7 +329,7 @@ function DailyRewardWidget() {
             {!status.claimed_today ? (
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
-                  className="bg-gradient-to-r from-amber-700 to-orange-700 text-white font-semibold shadow-lg"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold shadow-lg"
                   startContent={
                     isClaiming ? (
                       <div role="status" aria-busy="true" aria-label={t('common:loading')} className="flex justify-center py-4"><Spinner size="sm" color="white" /></div>

@@ -363,7 +363,7 @@ export function RequestExchangePage() {
             </Button>
             <Button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-emerald-700 to-teal-700 text-white"
+              className="flex-1 bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<Send className="w-4 h-4" aria-hidden="true" />}
               isLoading={isSubmitting}
               isDisabled={isSubmitting}

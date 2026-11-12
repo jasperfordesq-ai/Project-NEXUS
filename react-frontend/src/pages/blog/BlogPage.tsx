@@ -346,7 +346,7 @@ export function BlogPage() {
           >
             <ToggleButton
               id="all"
-              className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-blue-600 data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
+              className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent-strong data-[selected=true]:to-accent-strong-end data-[selected=true]:text-white!"
             >
               {t('filter_all')}
             </ToggleButton>
@@ -354,7 +354,7 @@ export function BlogPage() {
               <ToggleButton
                 key={cat.id}
                 id={String(cat.id)}
-                className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-blue-600 data-[selected=true]:to-accent-gradient-end data-[selected=true]:text-white!"
+                className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-accent-strong data-[selected=true]:to-accent-strong-end data-[selected=true]:text-white!"
               >
                 {cat.name}
                 {cat.post_count > 0 && (
@@ -374,7 +374,7 @@ export function BlogPage() {
           <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load')}</h2>
           <p className="text-theme-muted mb-4">{error}</p>
           <Button
-            className="bg-gradient-to-r from-blue-600 to-accent-gradient-end text-white"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
             startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
             onPress={() => loadPosts()}
           >

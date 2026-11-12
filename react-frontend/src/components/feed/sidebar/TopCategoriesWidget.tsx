@@ -12,6 +12,8 @@ import Flame from 'lucide-react/icons/flame';
 import { useTranslation } from 'react-i18next';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useTenant } from '@/contexts';
+import { useSitePalette } from '@/contexts/SiteAccentContext';
+import { categoryColour } from '@/lib/categoryColours';
 
 export interface Category {
   id: number;
@@ -25,22 +27,19 @@ interface TopCategoriesWidgetProps {
   categories: Category[];
 }
 
-// A pale tint with the colour's deep shade (-800 on -100, 6:1 or better);
-// the -600 text on a -500/10 tint measured 3.3–4.5:1 (axe, 9 Nov 2026).
-const COLOR_CLASSES = [
-  'bg-accent-soft text-accent-soft-foreground hover:brightness-95',
-  'bg-pink-100 text-pink-800 hover:bg-pink-200 dark:bg-pink-500/15 dark:text-pink-300 dark:hover:bg-pink-500/25',
-  'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25',
-  'bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:hover:bg-amber-500/25',
-  'bg-violet-100 text-violet-800 hover:bg-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:hover:bg-violet-500/25',
-  'bg-cyan-100 text-cyan-800 hover:bg-cyan-200 dark:bg-cyan-500/15 dark:text-cyan-300 dark:hover:bg-cyan-500/25',
-  'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-500/15 dark:text-red-300 dark:hover:bg-red-500/25',
-  'bg-lime-100 text-lime-800 hover:bg-lime-200 dark:bg-lime-500/15 dark:text-lime-300 dark:hover:bg-lime-500/25',
-];
+// The first chip is the community colour itself; the rest take the colours
+// that go with it (`paletteFor`: its own family and the opposite side of the
+// wheel), as soft bands — the -800 shade on -100, 6:1 or better; the -600 text
+// on a -500/10 tint measured 3.3–4.5:1 (axe, 9 Nov 2026). Until 12 Nov 2026
+// the rest was one fixed list (pink, green, amber…) whatever the community chose.
+const ACCENT_CHIP = 'bg-accent-soft text-accent-soft-foreground';
 
 export function TopCategoriesWidget({ categories }: TopCategoriesWidgetProps) {
   const { tenantPath } = useTenant();
   const { t } = useTranslation('feed');
+  const palette = useSitePalette();
+  const chipClasses = (idx: number) =>
+    idx === 0 ? ACCENT_CHIP : categoryColour(palette[(idx - 1) % palette.length]).band;
 
   if (categories.length === 0) return null;
 
@@ -66,9 +65,7 @@ export function TopCategoriesWidget({ categories }: TopCategoriesWidgetProps) {
           <Link
             key={category.id}
             to={tenantPath(`/listings?category=${encodeURIComponent(category.slug)}`)}
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors duration-200 ${
-              COLOR_CLASSES[idx % COLOR_CLASSES.length]
-            }`}
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition duration-200 hover:brightness-95 ${chipClasses(idx)}`}
           >
             {category.name}
             <span className="opacity-70">({category.count})</span>

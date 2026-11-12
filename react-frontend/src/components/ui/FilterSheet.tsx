@@ -29,7 +29,8 @@ import { useTranslation } from 'react-i18next';
 
 import { BottomSheet, type BottomSheetProps } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
-import { filterAccentClasses, type FilterAccent } from '@/components/ui/filterAccent';
+import type { FilterAccent } from '@/components/ui/filterAccent';
+import { useFilterAccentClasses } from '@/components/ui/useFilterAccentClasses';
 
 export interface FilterSheetLabels {
   /** Footer's left action in the main view. Default `common:filter_bar.clear_all`. */
@@ -100,7 +101,7 @@ export function FilterSheet({
   className,
 }: FilterSheetProps) {
   const { t } = useTranslation('common');
-  const tone = filterAccentClasses(accent);
+  const tone = useFilterAccentClasses(accent);
   // `subView={cond && <View/>}` is the idiomatic React spelling, so a falsy
   // non-element node (`false` / `''`) must NOT count as an open sub-view —
   // otherwise the body renders nothing and the footer silently swaps

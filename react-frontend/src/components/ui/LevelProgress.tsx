@@ -51,7 +51,7 @@ export function LevelProgress({ currentXP, requiredXP, level, levelName, compact
         aria-label={t('level_progress_aria', { level, percentage })}
       >
         <div
-          className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent via-accent-gradient-end to-pink-500 rounded-full transition-all duration-500"
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent via-accent-gradient-end to-companion rounded-full transition-all duration-500"
           style={{ width: `${percentage}%` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent dark:from-white/20 dark:to-transparent rounded-full" />

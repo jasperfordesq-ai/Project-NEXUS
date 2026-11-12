@@ -57,7 +57,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { CommunityWelcome } from '@/components/auth/CommunityWelcome';
 import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
 import { useSiteAccent } from '@/contexts/SiteAccentContext';
-import { mixHex } from '@/lib/colorContrast';
+import { confettiColoursFor } from '@/lib/confettiColours';
 import { Spinner } from '@/components/ui/Spinner';
 import { Textarea } from '@/components/ui/Textarea';
 import { usePageTitle } from '@/hooks';
@@ -525,7 +525,7 @@ export function OnboardingPage() {
   // The community's own colour, a lighter shade of it, and warm companions.
   const siteAccent = useSiteAccent() ?? '#5b5ede';
   const welcomeConfetti = useMemo(
-    () => [siteAccent, mixHex(siteAccent, '#ffffff', 0.45), '#f59e0b', '#22c55e', '#ec4899'],
+    () => confettiColoursFor(siteAccent),
     [siteAccent],
   );
 
@@ -737,7 +737,7 @@ export function OnboardingPage() {
               <div className="flex justify-center pt-2">
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white px-10 font-semibold shadow-lg shadow-emerald-500/20"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white px-10 font-semibold shadow-lg shadow-accent/20"
                   endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
                   onPress={goNextAnimated}
                 >
@@ -932,7 +932,7 @@ export function OnboardingPage() {
                   {t('back')}
                 </Button>
                 <Button
-                  className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-medium"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-medium"
                   endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
                   onPress={handleSaveProfileAndProceed}
                   isLoading={isSavingProfile}
@@ -994,7 +994,7 @@ export function OnboardingPage() {
                     {t('skip')}
                   </Button>
                   <Button
-                    className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-medium"
+                    className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-medium"
                     endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
                     onPress={goNextAnimated}
                   >
@@ -1117,7 +1117,7 @@ export function OnboardingPage() {
                   </Button>
                   <Button
                     size="lg"
-                    className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-semibold shadow-lg shadow-emerald-500/20"
+                    className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold shadow-lg shadow-accent/20"
                     onPress={handleComplete}
                     isLoading={isSubmitting}
                     isDisabled={isSubmitting}

@@ -21,12 +21,14 @@ import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Flag from 'lucide-react/icons/flag';
+import Newspaper from 'lucide-react/icons/newspaper';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Textarea } from '@/components/ui/Textarea';
 import { useDisclosure } from '@/components/ui/useDisclosure';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { FeedCard } from '@/components/feed/FeedCard';
 import { FeedSkeleton } from '@/components/feed/FeedSkeleton';
 import type { FeedItem, PollData } from '@/components/feed/types';
@@ -264,8 +266,6 @@ export function PostDetailPage() {
         description={item?.content?.substring(0, 160)}
         noIndex
       />
-      {/* Visually-hidden h1 for WCAG 2.4.6 — screen readers need a page heading */}
-      <h1 className="sr-only">{t('post_detail.title')}</h1>
       <div className="space-y-4 max-w-2xl mx-auto">
         <div>
           <Button as={Link} to={tenantPath('/feed')}
@@ -276,6 +276,14 @@ export function PostDetailPage() {
             {t('post_detail.back')}
           </Button>
         </div>
+
+        {/* The page's heading (WCAG 2.4.6), in the same soft panel in the
+            community colour that opens the feed's other pages. */}
+        <PublicPageHero
+          size="compact"
+          title={t('post_detail.title')}
+          icon={<Newspaper className="h-6 w-6" aria-hidden="true" />}
+        />
 
         {isLoading ? (
           <FeedSkeleton />

@@ -139,46 +139,48 @@ function scrollToSection(id: string) {
 // Accent colour palettes — static classes so Tailwind won't purge them
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Every document type follows the community colour. The keys are kept so the
+// pages that pass `accentColor` need no change.
 const ACCENT_STYLES = {
   blue: {
-    gradientFrom: 'from-blue-500/20',
-    gradientTo: 'to-cyan-500/20',
-    icon: 'text-[var(--color-info)]',
-    tocHover: 'hover:bg-blue-500/10',
-    chipBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-    btnGradient: 'bg-gradient-to-r from-blue-600 to-cyan-700 text-white',
+    gradientFrom: 'from-accent/20',
+    gradientTo: 'to-companion/20',
+    icon: 'text-accent',
+    tocHover: 'hover:bg-accent/10',
+    chipBg: 'bg-accent-soft text-accent-soft-foreground',
+    btnGradient: 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white',
   },
   indigo: {
     gradientFrom: 'from-accent/20',
-    gradientTo: 'to-accent-gradient-end/20',
-    icon: 'text-accent dark:text-accent',
+    gradientTo: 'to-companion/20',
+    icon: 'text-accent',
     tocHover: 'hover:bg-accent/10',
-    chipBg: 'bg-accent/10 text-accent-soft-foreground',
+    chipBg: 'bg-accent-soft text-accent-soft-foreground',
     btnGradient: 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white',
   },
   purple: {
     gradientFrom: 'from-accent/20',
-    gradientTo: 'to-pink-500/20',
-    icon: 'text-accent dark:text-accent',
+    gradientTo: 'to-companion/20',
+    icon: 'text-accent',
     tocHover: 'hover:bg-accent/10',
-    chipBg: 'bg-accent/10 text-accent-soft-foreground',
-    btnGradient: 'bg-gradient-to-r from-accent-strong to-pink-600 text-white',
+    chipBg: 'bg-accent-soft text-accent-soft-foreground',
+    btnGradient: 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white',
   },
   emerald: {
-    gradientFrom: 'from-emerald-500/20',
-    gradientTo: 'to-teal-500/20',
-    icon: 'text-emerald-500 dark:text-emerald-400',
-    tocHover: 'hover:bg-emerald-500/10',
-    chipBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-    btnGradient: 'bg-gradient-to-r from-emerald-700 to-teal-700 text-white',
+    gradientFrom: 'from-accent/20',
+    gradientTo: 'to-companion/20',
+    icon: 'text-accent',
+    tocHover: 'hover:bg-accent/10',
+    chipBg: 'bg-accent-soft text-accent-soft-foreground',
+    btnGradient: 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white',
   },
   amber: {
-    gradientFrom: 'from-amber-500/20',
-    gradientTo: 'to-orange-500/20',
-    icon: 'text-[var(--color-warning)]',
-    tocHover: 'hover:bg-amber-500/10',
-    chipBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-    btnGradient: 'bg-gradient-to-r from-amber-700 to-orange-700 text-white',
+    gradientFrom: 'from-accent/20',
+    gradientTo: 'to-companion/20',
+    icon: 'text-accent',
+    tocHover: 'hover:bg-accent/10',
+    chipBg: 'bg-accent-soft text-accent-soft-foreground',
+    btnGradient: 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white',
   },
 };
 

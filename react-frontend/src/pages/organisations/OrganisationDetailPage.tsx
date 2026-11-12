@@ -714,7 +714,7 @@ export function OrganisationDetailPage() {
           <ModalFooter>
             <Button variant="tertiary" onPress={reviewModal.onClose} className="text-theme-muted">{t('organisation_detail.cancel')}</Button>
             <Button
-              className="bg-gradient-to-r from-amber-700 to-orange-700 text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               isLoading={isSubmittingReview}
               onPress={handleSubmitReview}
             >

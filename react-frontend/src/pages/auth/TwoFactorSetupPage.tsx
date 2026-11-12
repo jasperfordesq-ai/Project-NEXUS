@@ -9,6 +9,7 @@ import { Button } from '@heroui/react/button';
 import { Input } from '@heroui/react/input';
 import { Label } from '@heroui/react/label';
 import { TextField } from '@heroui/react/textfield';
+import ShieldCheck from 'lucide-react/icons/shield-check';
 import { useTranslation } from 'react-i18next';
 // Auth startup surface: direct context modules, never the @/contexts barrel (bundle budget).
 import { useAuth } from '@/contexts/AuthContext';
@@ -181,6 +182,10 @@ export default function TwoFactorSetupPage() {
   return (
     <section className="mx-auto max-w-lg space-y-5 px-6 py-20">
       <PageMeta title={t('mandatory_setup.title')} noIndex />
+      {/* A picture on a tile in the community colour, as on the sign-in page. */}
+      <div className="inline-flex rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 p-3">
+        <ShieldCheck className="h-8 w-8 text-accent" aria-hidden="true" />
+      </div>
       <h1 className="text-2xl font-semibold">{t('mandatory_setup.title')}</h1>
       <p>{t('mandatory_setup.reason')}</p>
       {error && <p role="alert" className="text-danger">{error}</p>}

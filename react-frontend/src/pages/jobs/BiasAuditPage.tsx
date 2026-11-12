@@ -53,6 +53,7 @@ import { useAuth, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
+import { useChartColors } from '@/hooks/useChartColors';
 import { PageMeta } from '@/components/seo';
 
 interface FunnelStage {
@@ -94,10 +95,8 @@ interface JobOption {
   title: string;
 }
 
-const FUNNEL_COLORS = [
-  '#6366f1', // indigo - applied
-  '#8b5cf6', // violet - screening
-  '#a855f7', // purple - interview
+/** Offer and accepted keep their green: it means a good outcome. */
+const FUNNEL_OUTCOME_COLORS = [
   '#22c55e', // green - offer
   '#10b981', // emerald - accepted
 ];
@@ -107,6 +106,9 @@ export function BiasAuditPage() {
   const { tenantPath } = useTenant();
   const { user } = useAuth();
   usePageTitle(t('bias_audit.title'));
+  // Applied, screening and interview follow the community's chart colours.
+  const chartColors = useChartColors();
+  const funnelColors = [chartColors.primary, chartColors.secondary, chartColors.primaryLight, ...FUNNEL_OUTCOME_COLORS];
 
   const isAdmin = user?.is_admin === true || user?.role === 'admin' || user?.role === 'tenant_admin' || user?.role === 'super_admin' || user?.is_super_admin === true;
 
@@ -373,7 +375,7 @@ export function BiasAuditPage() {
                   />
                   <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                     {report.funnel.map((entry, index) => (
-                      <Cell key={entry.stage} fill={FUNNEL_COLORS[index % FUNNEL_COLORS.length]} />
+                      <Cell key={entry.stage} fill={funnelColors[index % funnelColors.length]} />
                     ))}
                   </Bar>
                 </BarChart>

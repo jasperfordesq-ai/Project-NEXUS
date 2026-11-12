@@ -23,6 +23,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Spinner } from '@/components/ui/Spinner';
 import { Breadcrumbs } from '@/components/navigation';
 import { PageMeta, PrerenderStatusCode } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { isNotFoundResponse } from '@/lib/not-found';
@@ -172,14 +173,16 @@ export function CustomPage() {
               )}
             </>
           ) : (
+            <div className="space-y-6">
+            {/* The page's title, in the same soft panel in the community
+                colour that opens the other pages. */}
+            <PublicPageHero
+              size="compact"
+              title={page.title}
+              icon={<FileText className="h-6 w-6" aria-hidden="true" />}
+            />
+            {page.content && (
             <GlassCard className="p-6 sm:p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <FileText className="w-6 h-6 text-accent" />
-                <h1 className="text-2xl sm:text-3xl font-bold text-theme-primary">
-                  {page.title}
-                </h1>
-              </div>
-
               {page.content_format === 'plaintext' && page.content && (
                 <div className="whitespace-pre-wrap text-theme-primary">
                   {page.content}
@@ -204,6 +207,8 @@ export function CustomPage() {
                 />
               )}
             </GlassCard>
+            )}
+            </div>
           )}
         </motion.div>
       </div>

@@ -144,8 +144,8 @@ export function CommunityGuidelinesPage() {
         className="max-w-4xl mx-auto space-y-6"
       >
         <motion.div variants={itemVariants} className="text-center">
-          <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-blue-500/20 to-accent-gradient-end/20 mb-4">
-            <Users className="w-10 h-10 text-[var(--color-info)]" aria-hidden="true" />
+          <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 mb-4">
+            <Users className="w-10 h-10 text-accent" aria-hidden="true" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-theme-primary mb-3">
             {t('community_guidelines.heading')}
@@ -196,7 +196,7 @@ function Section({ title, icon, children }: SectionProps) {
   return (
     <section className="space-y-2">
       <h2 className="text-xl sm:text-2xl font-semibold text-theme-primary flex items-center gap-2">
-        {icon ? <span className="text-[var(--color-info)]">{icon}</span> : null}
+        {icon ? <span className="text-accent">{icon}</span> : null}
         {title}
       </h2>
       <div className="text-theme-muted text-sm sm:text-base leading-relaxed space-y-2 [&_ul]:list-disc [&_ul]:ms-6 [&_ul]:space-y-1 [&_strong]:text-theme-primary">

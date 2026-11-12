@@ -1868,7 +1868,7 @@ export function EventDetailPage() {
                   href={safeHref(event.online_access.video_url)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-gradient-to-r from-blue-600 to-cyan-700 text-white"
+                  className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                   startContent={<Video className="w-4 h-4" aria-hidden="true" />}
                   aria-label={t('detail.join_meeting_aria', { title: event.title })}
                 >

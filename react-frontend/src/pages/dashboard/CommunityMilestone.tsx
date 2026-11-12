@@ -24,7 +24,7 @@ import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
 import { useAuth, useTenant } from '@/contexts';
 import { useSiteAccent } from '@/contexts/SiteAccentContext';
 import { api } from '@/lib/api';
-import { mixHex } from '@/lib/colorContrast';
+import { confettiColoursFor } from '@/lib/confettiColours';
 import { getFormattingLocale } from '@/lib/helpers';
 
 /** The round numbers worth stopping for, smallest first. */
@@ -79,7 +79,7 @@ export function CommunityMilestone({ className = '' }: { className?: string }) {
   }, []);
 
   const confetti = useMemo(
-    () => [accent, mixHex(accent, '#ffffff', 0.45), '#f59e0b', '#22c55e', '#ec4899'],
+    () => confettiColoursFor(accent),
     [accent],
   );
 

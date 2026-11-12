@@ -71,7 +71,10 @@ export default function NewsletterUnsubscribePage() {
       <Card className="w-full max-w-md">
       <Card.Content className="p-8 text-center">
         <div className="mb-6">
-          <Mail className="mx-auto text-muted" size={40} aria-hidden="true" />
+          {/* The picture sits on a tile in the community colour. */}
+          <div className="mx-auto inline-flex rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 p-4">
+            <Mail className="text-accent" size={40} aria-hidden="true" />
+          </div>
         </div>
 
         {state === 'loading' && (

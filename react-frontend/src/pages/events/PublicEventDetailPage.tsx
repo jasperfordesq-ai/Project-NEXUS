@@ -21,6 +21,7 @@ import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
+import { DetailCover } from '@/components/ui/DetailCover';
 import { Spinner } from '@/components/ui/Spinner';
 import Calendar from 'lucide-react/icons/calendar';
 import MapPin from 'lucide-react/icons/map-pin';
@@ -33,6 +34,7 @@ import { useAuth, useTenant } from '@/contexts';
 import { publicEventsApi, type PublicEventDetail } from '@/lib/public-events-api';
 import { getFormattingLocale, resolveThumbnailUrl } from '@/lib/helpers';
 import { toJsonLd } from '@/lib/json-ld';
+import { coverSeed } from '@/lib/coverSeeds';
 import { isNotFoundResponse } from '@/lib/not-found';
 import { buildEventStructuredData } from '@/lib/event-structured-data';
 import { useLoginRedirect } from '@/hooks/useLoginRedirect';
@@ -168,6 +170,15 @@ export default function PublicEventDetailPage() {
             {toJsonLd(jsonLd)}
           </script>
         </Helmet>
+      )}
+
+      {/* No picture: a cover in the event's own colour from the community palette. */}
+      {!event.image_url && (
+        <DetailCover
+          data-testid="public-event-cover"
+          seed={coverSeed.event(event.id, event.category?.id)}
+          icon={Calendar}
+        />
       )}
 
       {event.image_url && (

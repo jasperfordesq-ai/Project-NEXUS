@@ -30,7 +30,8 @@ import { Button } from '@/components/ui/Button';
 import { FilterChipGroup } from '@/components/ui/FilterChipGroup';
 import { FilterSheet } from '@/components/ui/FilterSheet';
 import { SearchField } from '@/components/ui/SearchField';
-import { filterAccentClasses } from '@/components/ui/filterAccent';
+import { useFilterAccentClasses } from '@/components/ui/useFilterAccentClasses';
+import { useCommunityAccent } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import type { ProximityFilterParams } from '@/components/proximity/ProximityFilter';
@@ -64,7 +65,6 @@ const DEFAULT_RADIUS = 25;
 const QUICK_CATEGORY_LIMIT = 5;
 
 const ACCENT = 'emerald';
-const accentTone = filterAccentClasses(ACCENT);
 
 export function ListingFilterSheet({
   isOpen,
@@ -79,6 +79,10 @@ export function ListingFilterSheet({
   const { t } = useTranslation(['listings', 'common']);
   const { user } = useAuth();
   const toast = useToast();
+  // Offers are green until the community chooses a colour; then the filters
+  // follow it, like the page header.
+  const accentTone = useFilterAccentClasses(ACCENT);
+  const usesCommunityColour = useCommunityAccent() !== null;
 
   // 'filters' is the main sheet; 'category' is the searchable full list.
   const [view, setView] = useState<'filters' | 'category'>('filters');
@@ -166,11 +170,18 @@ export function ListingFilterSheet({
                 setView('filters');
               }}
               className={`flex min-h-12 w-full items-center justify-between gap-2 rounded-xl px-3 text-left text-sm transition-colors hover:bg-theme-hover ${
-                isSelected ? 'font-semibold text-emerald-600 dark:text-emerald-400' : 'text-theme-primary'
+                isSelected
+                  ? `font-semibold ${usesCommunityColour ? 'text-accent' : 'text-emerald-600 dark:text-emerald-400'}`
+                  : 'text-theme-primary'
               }`}
             >
               <span className="truncate">{cat.name}</span>
-              {isSelected && <Check className="h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" />}
+              {isSelected && (
+                <Check
+                  className={`h-4 w-4 shrink-0 ${usesCommunityColour ? 'text-accent' : 'text-emerald-500'}`}
+                  aria-hidden="true"
+                />
+              )}
             </button>
           );
         })}

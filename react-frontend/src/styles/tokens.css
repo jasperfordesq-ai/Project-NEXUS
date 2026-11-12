@@ -106,7 +106,7 @@
   /* BRAND COLORS (runtime accent-derived) */
   --color-primary: color-mix(in oklch, var(--accent-color) 78%, white);
   --color-secondary: var(--accent-gradient-end);
-  --color-accent: #06b6d4;        /* Cyan */
+  --color-accent: var(--companion); /* the colour that goes with the community's (was a fixed cyan) */
 
   /* GLOW COLORS (for box-shadow effects) */
   --glow-primary: color-mix(in srgb, var(--accent-color) 50%, transparent);
@@ -117,9 +117,9 @@
   --glow-secondary-subtle: color-mix(in srgb, var(--accent-gradient-end) 25%, transparent);
   --glow-secondary-intense: color-mix(in srgb, var(--accent-gradient-end) 70%, transparent);
 
-  --glow-accent: rgba(6, 182, 212, 0.5);
-  --glow-accent-subtle: rgba(6, 182, 212, 0.25);
-  --glow-accent-intense: rgba(6, 182, 212, 0.7);
+  --glow-accent: color-mix(in srgb, var(--companion) 50%, transparent);
+  --glow-accent-subtle: color-mix(in srgb, var(--companion) 25%, transparent);
+  --glow-accent-intense: color-mix(in srgb, var(--companion) 70%, transparent);
 
   /* SHADOWS */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -257,7 +257,7 @@
   /* BRAND COLORS — runtime accent-derived and darkened for light surfaces */
   --color-primary: color-mix(in oklch, var(--accent-color) 78%, black);
   --color-secondary: var(--accent-gradient-end);
-  --color-accent: #0891b2;        /* Cyan-600 */
+  --color-accent: var(--companion); /* the colour that goes with the community's (was a fixed cyan) */
   --companion-text: color-mix(in oklab, var(--companion) 62%, black);
 
   /* GLOW COLORS (subtler for light mode) */
@@ -269,9 +269,9 @@
   --glow-secondary-subtle: color-mix(in srgb, var(--accent-gradient-end) 15%, transparent);
   --glow-secondary-intense: color-mix(in srgb, var(--accent-gradient-end) 50%, transparent);
 
-  --glow-accent: rgba(8, 145, 178, 0.3);
-  --glow-accent-subtle: rgba(8, 145, 178, 0.15);
-  --glow-accent-intense: rgba(8, 145, 178, 0.5);
+  --glow-accent: color-mix(in srgb, var(--companion) 30%, transparent);
+  --glow-accent-subtle: color-mix(in srgb, var(--companion) 15%, transparent);
+  --glow-accent-intense: color-mix(in srgb, var(--companion) 50%, transparent);
 
   /* SHADOWS (softer for light mode) */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);

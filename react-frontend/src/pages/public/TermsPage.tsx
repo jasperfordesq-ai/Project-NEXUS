@@ -130,8 +130,8 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
     >
       {/* Hero Header */}
       <motion.div variants={itemVariants} className="text-center">
-        <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 mb-4">
-          <FileText className="w-10 h-10 text-[var(--color-info)]" aria-hidden="true" />
+        <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 mb-4">
+          <FileText className="w-10 h-10 text-accent" aria-hidden="true" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-theme-primary mb-3">
           {t('terms.heading')}
@@ -153,9 +153,9 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
               key={item.id}
               variant="tertiary"
               onPress={() => scrollToSection(item.id)}
-              className="inline-flex min-h-10 min-w-0 items-center gap-2 rounded-xl bg-theme-elevated px-4 py-2 text-sm font-medium text-theme-primary transition-colors hover:bg-blue-500/10"
+              className="inline-flex min-h-10 min-w-0 items-center gap-2 rounded-xl bg-theme-elevated px-4 py-2 text-sm font-medium text-theme-primary transition-colors hover:bg-accent/10"
             >
-              <item.icon className="w-4 h-4 text-[var(--color-info)]" aria-hidden="true" />
+              <item.icon className="w-4 h-4 text-accent" aria-hidden="true" />
               {t(item.key)}
             </Button>
           ))}
@@ -165,9 +165,9 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
       {/* Introduction */}
       <motion.div variants={itemVariants}>
         <GlassCard className="p-6 sm:p-8">
-          <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+          <div className="p-4 rounded-xl bg-accent-soft border border-accent/20">
             <h2 className="text-xl font-semibold text-theme-primary mb-3 flex items-center gap-2">
-              <Handshake className="w-5 h-5 text-[var(--color-info)]" aria-hidden="true" />
+              <Handshake className="w-5 h-5 text-accent-soft-foreground" aria-hidden="true" />
               {t('terms.welcome_title', { name: branding.name })}
             </h2>
             <div className="space-y-3 text-theme-muted">
@@ -189,7 +189,7 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
         <GlassCard className="p-6 sm:p-8">
           <h2 className="text-xl font-semibold text-theme-primary mb-4 flex items-center gap-2">
             <Chip size="sm" variant="tertiary" color="accent" className="text-xs font-bold">1</Chip>
-            <Clock className="w-5 h-5 text-[var(--color-info)]" aria-hidden="true" />
+            <Clock className="w-5 h-5 text-accent" aria-hidden="true" />
             {t('terms.section1_title')}
           </h2>
           <p className="text-theme-muted mb-4">
@@ -200,15 +200,15 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
           {/* Visual equality display */}
           <div className="flex flex-wrap items-center justify-center gap-4 my-6">
             <div className="flex items-center gap-3 p-4 rounded-xl bg-theme-elevated">
-              <div className="p-2 rounded-lg bg-blue-500/20">
-                <Clock className="w-6 h-6 text-[var(--color-info)]" aria-hidden="true" />
+              <div className="p-2 rounded-lg bg-accent-soft">
+                <Clock className="w-6 h-6 text-accent-soft-foreground" aria-hidden="true" />
               </div>
               <span className="font-medium text-theme-primary">{t('terms.one_hour_service')}</span>
             </div>
-            <span className="text-2xl font-bold text-[var(--color-info)]">=</span>
+            <span className="text-2xl font-bold text-accent">=</span>
             <div className="flex items-center gap-3 p-4 rounded-xl bg-theme-elevated">
-              <div className="p-2 rounded-lg bg-blue-500/20">
-                <Gem className="w-6 h-6 text-[var(--color-info)]" aria-hidden="true" />
+              <div className="p-2 rounded-lg bg-accent-soft">
+                <Gem className="w-6 h-6 text-accent-soft-foreground" aria-hidden="true" />
               </div>
               <span className="font-medium text-theme-primary">{t('terms.one_time_credit')}</span>
             </div>
@@ -233,7 +233,7 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
               'terms.credit_rule_4',
             ] as const).map((key) => (
               <li key={key} className="flex items-start gap-3">
-                <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" />
                 <span>{t(key)}</span>
               </li>
             ))}
@@ -246,7 +246,7 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
         <GlassCard className="p-6 sm:p-8">
           <h2 className="text-xl font-semibold text-theme-primary mb-4 flex items-center gap-2">
             <Chip size="sm" variant="tertiary" color="accent" className="text-xs font-bold">2</Chip>
-            <UserCog className="w-5 h-5 text-[var(--color-info)]" aria-hidden="true" />
+            <UserCog className="w-5 h-5 text-accent" aria-hidden="true" />
             {t('terms.section2_title')}
           </h2>
           <p className="text-theme-muted mb-4">
@@ -261,7 +261,7 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
               { labelKey: 'terms.account_reachable_label', descKey: 'terms.account_reachable_desc' },
             ] as const).map((item) => (
               <li key={item.labelKey} className="flex items-start gap-3">
-                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" />
                 <span>
                   <strong className="text-theme-primary">{t(item.labelKey)}:</strong> {t(item.descKey)}
                 </span>
@@ -274,10 +274,10 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
       {/* 3. Community Guidelines */}
       <motion.div variants={itemVariants} id="community">
         <GlassCard className="p-6 sm:p-8">
-          <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 mb-4">
+          <div className="p-4 rounded-xl bg-accent-soft border border-accent/20 mb-4">
             <h2 className="text-xl font-semibold text-theme-primary mb-2 flex items-center gap-2">
               <Chip size="sm" variant="tertiary" color="accent" className="text-xs font-bold">3</Chip>
-              <Users className="w-5 h-5 text-[var(--color-info)]" aria-hidden="true" />
+              <Users className="w-5 h-5 text-accent-soft-foreground" aria-hidden="true" />
               {t('terms.section3_title')}
             </h2>
             <p className="text-theme-muted text-sm">
@@ -296,8 +296,8 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
               { labelKey: 'terms.guideline_feedback_label', descKey: 'terms.guideline_feedback_desc' },
             ] as const).map((item, index) => (
               <li key={item.labelKey} className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center">
-                  <span className="text-xs font-bold text-[var(--color-info)]">{index + 1}</span>
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent-soft flex items-center justify-center">
+                  <span className="text-xs font-bold text-accent-soft-foreground">{index + 1}</span>
                 </div>
                 <span>
                   <strong className="text-theme-primary">{t(item.labelKey)}</strong> — {t(item.descKey)}
@@ -339,7 +339,7 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
         <GlassCard className="p-6 sm:p-8">
           <h2 className="text-xl font-semibold text-theme-primary mb-4 flex items-center gap-2">
             <Chip size="sm" variant="tertiary" color="accent" className="text-xs font-bold">5</Chip>
-            <MapPin className="w-5 h-5 text-[var(--color-info)]" aria-hidden="true" />
+            <MapPin className="w-5 h-5 text-accent" aria-hidden="true" />
             {t('terms.section5_title')}
           </h2>
           <p className="text-theme-muted mb-4">
@@ -354,7 +354,7 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
               { labelKey: 'terms.safety_records_label', descKey: 'terms.safety_records_desc' },
             ] as const).map((item) => (
               <li key={item.labelKey} className="flex items-start gap-3">
-                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" />
                 <span>
                   <strong className="text-theme-primary">{t(item.labelKey)}:</strong> {t(item.descKey)}
                 </span>
@@ -369,7 +369,7 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
         <GlassCard className="p-6 sm:p-8">
           <h2 className="text-xl font-semibold text-theme-primary mb-4 flex items-center gap-2">
             <Chip size="sm" variant="tertiary" color="accent" className="text-xs font-bold">6</Chip>
-            <Scale className="w-5 h-5 text-[var(--color-info)]" aria-hidden="true" />
+            <Scale className="w-5 h-5 text-accent" aria-hidden="true" />
             {t('terms.section6_title')}
           </h2>
           <p className="text-theme-muted mb-4">
@@ -383,13 +383,13 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
               'terms.liability_insurance',
             ] as const).map((key) => (
               <li key={key} className="flex items-start gap-3">
-                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" />
                 <span>{t(key)}</span>
               </li>
             ))}
           </ul>
 
-          <div className="mt-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+          <div className="mt-4 p-4 rounded-xl bg-accent-soft border border-accent/20">
             <p className="text-sm text-theme-muted">
               {t('terms.liability_hold_harmless', { name: branding.name })}
             </p>
@@ -433,7 +433,7 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
         <GlassCard className="p-6 sm:p-8">
           <h2 className="text-xl font-semibold text-theme-primary mb-4 flex items-center gap-2">
             <Chip size="sm" variant="tertiary" color="accent" className="text-xs font-bold">8</Chip>
-            <RefreshCw className="w-5 h-5 text-[var(--color-info)]" aria-hidden="true" />
+            <RefreshCw className="w-5 h-5 text-accent" aria-hidden="true" />
             {t('terms.section8_title')}
           </h2>
           <p className="text-theme-muted mb-4">
@@ -446,7 +446,7 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
               'terms.changes_continued_use',
             ] as const).map((key) => (
               <li key={key} className="flex items-start gap-3">
-                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" />
                 <span>{t(key)}</span>
               </li>
             ))}
@@ -458,8 +458,8 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
       <motion.div variants={itemVariants}>
         <GlassCard className="p-6 sm:p-8">
           <div className="text-center">
-            <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 mb-4">
-              <MessageSquare className="w-8 h-8 text-[var(--color-info)]" aria-hidden="true" />
+            <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 mb-4">
+              <MessageSquare className="w-8 h-8 text-accent" aria-hidden="true" />
             </div>
             <h2 className="text-xl font-semibold text-theme-primary mb-2">
               {t('terms.cta_title')}
@@ -470,7 +470,7 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
             <Separator className="my-4" />
             <div className="flex flex-wrap justify-center gap-3 mt-4">
               <Button as={Link} to={tenantPath('/contact')}
-                className="bg-gradient-to-r from-blue-600 to-cyan-700 text-white"
+                className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
                 startContent={<Send className="w-4 h-4" aria-hidden="true" />}
               >
                 {t('terms.contact_us')}

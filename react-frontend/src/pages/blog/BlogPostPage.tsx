@@ -20,11 +20,13 @@ import Clock from 'lucide-react/icons/clock';
 import Eye from 'lucide-react/icons/eye';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import MessageCircle from 'lucide-react/icons/message-circle';
+import BookOpen from 'lucide-react/icons/book-open';
 import { htmlToPlainText, sanitizeRichText } from '@/lib/sanitize';
 import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
+import { DetailCover } from '@/components/ui/DetailCover';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Breadcrumbs } from '@/components/navigation';
@@ -34,12 +36,14 @@ import { SocialInteractionPanel } from '@/components/social/SocialInteractionPan
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { usePrerenderReady } from '@/hooks/usePrerenderReady';
+import { useCategoryListColours } from '@/hooks/useCategoryListColours';
 import { api } from '@/lib/api';
 import { isNotFoundResponse } from '@/lib/not-found';
 import { toIsoDateTime } from '@/lib/serverTime';
 import { logError } from '@/lib/logger';
 import { resolveAssetUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
 import { toJsonLd } from '@/lib/json-ld';
+import { coverSeed } from '@/lib/coverSeeds';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -156,6 +160,8 @@ export function BlogPostPage() {
   const onTranslatedText = useCallback((text: string, isTranslated: boolean) => setTranslatedContent(isTranslated ? text : null), []);
   const onTranslatedFields = useCallback((fields: Record<string, string> | null) => setTranslatedTitle(fields?.title ?? null), []);
   usePrerenderReady(!isLoading && error === null && post !== null);
+  // The colour of the post's category, as on the blog page's cards.
+  const blogCategoryColour = useCategoryListColours('/v2/blog/categories');
 
   // AbortController refs to cancel stale requests
   const abortPostRef = useRef<AbortController | null>(null);
@@ -247,7 +253,7 @@ export function BlogPostPage() {
               {t('post.back_to_blog')}
             </Button>
             <Button
-              className="bg-gradient-to-r from-blue-600 to-accent-gradient-end text-white"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
               startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
               onPress={loadPost}
             >
@@ -320,6 +326,16 @@ export function BlogPostPage() {
               fetchPriority="high"
             />
           </div>
+        )}
+
+        {/* No picture: a cover in the post's own colour, the same as its card on the blog page. */}
+        {!imageProps && (
+          <DetailCover
+            data-testid="blog-post-cover"
+            seed={coverSeed.blogPost(post.id, post.category?.id)}
+            colour={blogCategoryColour(post.category?.id)}
+            icon={BookOpen}
+          />
         )}
 
         {/* Post Header */}

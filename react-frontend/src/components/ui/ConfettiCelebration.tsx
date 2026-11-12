@@ -12,13 +12,18 @@
 
 import { motion, AnimatePresence } from '@/lib/motion';
 import PartyPopper from 'lucide-react/icons/party-popper';
+import { useConfettiColours } from '@/lib/confettiColours';
 
-const COLORS = ['#6366f1', '#a855f7', '#22c55e', '#f59e0b', '#ec4899'];
-
-export function ConfettiCelebration({ show, colors = COLORS }: { show: boolean; colors?: readonly string[] }) {
+/**
+ * `colors` is optional: without it the burst is in the colours of the site as
+ * the member sees it (the community's colour, a lighter shade and three warm
+ * companions), so every celebration matches the community by default.
+ */
+export function ConfettiCelebration({ show, colors }: { show: boolean; colors?: readonly string[] }) {
+  const siteColours = useConfettiColours();
   if (!show) return null;
 
-  const palette = colors.length > 0 ? colors : COLORS;
+  const palette = colors && colors.length > 0 ? colors : siteColours;
   const particles = Array.from({ length: 20 }, (_, i) => ({
     id: i,
     x: Math.random() * 200 - 100,

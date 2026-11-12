@@ -24,6 +24,7 @@ import Video from 'lucide-react/icons/video';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
+import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth, useTenant } from '@/contexts';
 import { publicEventsApi, type PublicEvent } from '@/lib/public-events-api';
 import { getFormattingLocale } from '@/lib/helpers';
@@ -87,10 +88,14 @@ export default function PublicEventsListPage() {
         description={t('public.meta_description', { community: tenant?.name ?? '' })}
       />
 
-      <header className="space-y-2">
-        <h1 className="text-3xl font-semibold">{t('public.title')}</h1>
-        <p className="text-theme-muted">{t('public.intro')}</p>
-      </header>
+      {/* The same soft panel in the community colour that opens the member events page. */}
+      <PublicPageHero
+        size="compact"
+        title={t('public.title')}
+        description={t('public.intro')}
+        icon={<Calendar className="h-6 w-6" aria-hidden="true" />}
+        accent="amber"
+      />
 
       {loading ? (
         <div className="py-20 text-center">

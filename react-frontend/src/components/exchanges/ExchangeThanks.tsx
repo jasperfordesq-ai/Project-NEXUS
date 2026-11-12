@@ -23,7 +23,7 @@ import { Link } from 'react-router-dom';
 import { Button, Card, CardBody } from '@/components/ui';
 import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
 import { useSiteAccent } from '@/contexts/SiteAccentContext';
-import { mixHex } from '@/lib/colorContrast';
+import { confettiColoursFor } from '@/lib/confettiColours';
 import { getFormattingLocale, resolveAvatarUrl } from '@/lib/helpers';
 import { Avatar } from '@/components/ui/Avatar';
 
@@ -48,7 +48,7 @@ export function ExchangeThanks({ neighbours, hours, onClose, partnerName, messag
 
   // The community's own colour, a lighter shade of it, and warm companions.
   const confettiColours = useMemo(
-    () => [accent, mixHex(accent, '#ffffff', 0.45), '#f59e0b', '#22c55e', '#ec4899'],
+    () => confettiColoursFor(accent),
     [accent],
   );
 

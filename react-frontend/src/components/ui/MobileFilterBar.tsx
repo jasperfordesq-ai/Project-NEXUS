@@ -31,7 +31,8 @@ import X from 'lucide-react/icons/x';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button';
-import { filterAccentClasses, type FilterAccent } from '@/components/ui/filterAccent';
+import type { FilterAccent } from '@/components/ui/filterAccent';
+import { useFilterAccentClasses } from '@/components/ui/useFilterAccentClasses';
 
 /** One removable chip in the applied-filter row. */
 export interface MobileFilterBarChip {
@@ -127,7 +128,7 @@ export function MobileFilterBar({
   testId,
 }: MobileFilterBarProps) {
   const { t } = useTranslation('common');
-  const tone = filterAccentClasses(accent);
+  const tone = useFilterAccentClasses(accent);
   const appliedChips = chips ?? [];
   // One source of truth: an unspecified count is the number of applied chips, so
   // passing `chips` alone can never render the chip row while the Filters button

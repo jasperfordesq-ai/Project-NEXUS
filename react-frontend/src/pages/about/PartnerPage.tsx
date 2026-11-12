@@ -504,7 +504,7 @@ export function PartnerPage() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button as={Link} to={tenantPath('/contact')}
                     size="lg"
-                    className="w-full sm:w-auto bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-semibold px-8"
+                    className="w-full sm:w-auto bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold px-8"
                     endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
                   >
                     {t('partner.cta_contact')}

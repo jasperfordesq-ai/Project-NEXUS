@@ -20,7 +20,8 @@ import type { ReactNode } from 'react';
 import type { Key } from '@heroui/react/rac';
 
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
-import { filterAccentClasses, type FilterAccent } from '@/components/ui/filterAccent';
+import type { FilterAccent } from '@/components/ui/filterAccent';
+import { useFilterAccentClasses } from '@/components/ui/useFilterAccentClasses';
 
 export interface FilterChipOption {
   /** Value handed back to `onChange`. */
@@ -78,7 +79,7 @@ export function FilterChipGroup({
   isDisabled,
   className,
 }: FilterChipGroupProps) {
-  const tone = filterAccentClasses(accent);
+  const tone = useFilterAccentClasses(accent);
   const groupLabel = ariaLabel ?? label;
 
   return (

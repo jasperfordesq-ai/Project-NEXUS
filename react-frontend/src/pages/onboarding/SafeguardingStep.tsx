@@ -274,7 +274,7 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
             {t('back')}
           </Button>
           <Button
-            className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-semibold"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold"
             onPress={onNext}
             endContent={<ArrowRight className="w-4 h-4" />}
           >
@@ -412,7 +412,7 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
 
         <div className="flex items-center justify-end">
           <Button
-            className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-semibold shadow-lg shadow-emerald-500/20"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold shadow-lg shadow-accent/20"
             onPress={onNext}
             endContent={<ArrowRight className="w-4 h-4" />}
           >
@@ -623,7 +623,7 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
             </Button>
           )}
           <Button
-            className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-semibold shadow-lg shadow-emerald-500/20"
+            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-semibold shadow-lg shadow-accent/20"
             onPress={handleSaveAndProceed}
             isLoading={saving}
             endContent={!saving ? <ArrowRight className="w-4 h-4" /> : undefined}

@@ -630,7 +630,7 @@ export function MembersPage() {
                 isIconOnly
                 variant="ghost"
                 aria-label={t('aria.grid_view')}
-                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-blue-500/15 data-[selected=true]:text-blue-700! dark:data-[selected=true]:text-blue-300!"
+                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-accent/15 data-[selected=true]:text-accent-soft-foreground!"
               >
                 <Grid className="h-4 w-4" aria-hidden="true" />
               </ToggleButton>
@@ -639,7 +639,7 @@ export function MembersPage() {
                 isIconOnly
                 variant="ghost"
                 aria-label={t('aria.list_view')}
-                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-blue-500/15 data-[selected=true]:text-blue-700! dark:data-[selected=true]:text-blue-300!"
+                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-accent/15 data-[selected=true]:text-accent-soft-foreground!"
               >
                 <List className="h-4 w-4" aria-hidden="true" />
               </ToggleButton>
@@ -649,7 +649,7 @@ export function MembersPage() {
                   isIconOnly
                   variant="ghost"
                   aria-label={t('aria.map_view')}
-                  className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-blue-500/15 data-[selected=true]:text-blue-700! dark:data-[selected=true]:text-blue-300!"
+                  className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-accent/15 data-[selected=true]:text-accent-soft-foreground!"
                 >
                   <MapIcon className="h-4 w-4" aria-hidden="true" />
                 </ToggleButton>

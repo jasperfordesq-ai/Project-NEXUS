@@ -150,13 +150,13 @@ export function MasterTenantChooser() {
                 className="group flex h-full flex-col rounded-xl border border-theme-default bg-theme-card p-5 shadow-sm transition hover:border-theme-hover hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
               >
                 <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-theme-hover">
-                  <Building2 className="h-5 w-5 text-[var(--color-accent)]" aria-hidden="true" />
+                  <Building2 className="h-5 w-5 text-accent" aria-hidden="true" />
                 </div>
                 <h2 className="text-lg font-semibold text-theme-primary">{community.name}</h2>
                 {community.tagline ? (
                   <p className="mt-1 line-clamp-2 text-sm text-theme-muted">{community.tagline}</p>
                 ) : null}
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[var(--color-accent)]">
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent">
                   {t('community_chooser.go_to', { name: community.name })}
                   <ArrowRight
                     className="h-4 w-4 transition-transform group-hover:translate-x-0.5"

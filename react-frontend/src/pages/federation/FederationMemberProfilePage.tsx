@@ -291,7 +291,7 @@ export function FederationMemberProfilePage() {
           ]}
         />
         <GlassCard className="p-8 text-center">
-          <Globe className="w-12 h-12 text-[var(--color-accent)] mx-auto mb-4" aria-hidden="true" />
+          <Globe className="w-12 h-12 text-accent mx-auto mb-4" aria-hidden="true" />
           <h2 className="text-lg font-semibold text-theme-primary mb-2">
             {t('member_profile.external_member_title')}
           </h2>
@@ -655,7 +655,7 @@ export function FederationMemberProfilePage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <GlassCard className="p-6">
             <h2 className="text-lg font-semibold text-theme-primary mb-3 flex items-center gap-2">
-              <User className="w-5 h-5 text-[var(--color-accent)]" aria-hidden="true" />
+              <User className="w-5 h-5 text-accent" aria-hidden="true" />
               {t('member_profile.about')}
             </h2>
             <p className="text-theme-muted whitespace-pre-line">{member.bio}</p>

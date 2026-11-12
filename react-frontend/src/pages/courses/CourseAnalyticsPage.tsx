@@ -17,6 +17,7 @@ import { Card, CardBody, Spinner, Button } from '@/components/ui';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import { Link } from 'react-router-dom';
 import { usePageTitle } from '@/hooks';
+import { useChartColors } from '@/hooks/useChartColors';
 import { useTenant } from '@/contexts';
 import { coursesApi, type CourseAnalytics } from '@/lib/api/courses';
 
@@ -30,6 +31,8 @@ export default function CourseAnalyticsPage() {
   const [loading, setLoading] = useState(true);
 
   usePageTitle(t('analytics.title'));
+  // The bars follow the community's chart colours.
+  const chartColors = useChartColors();
 
   useEffect(() => {
     if (!courseId) return;
@@ -87,7 +90,7 @@ export default function CourseAnalyticsPage() {
                   <XAxis dataKey="title" tick={{ fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={60} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Bar dataKey="completed" fill="var(--color-accent, #6366f1)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="completed" fill={chartColors.primary} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

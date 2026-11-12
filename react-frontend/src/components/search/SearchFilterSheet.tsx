@@ -33,13 +33,12 @@ import { Button } from '@/components/ui/Button';
 import { FilterChipGroup } from '@/components/ui/FilterChipGroup';
 import { FilterSheet } from '@/components/ui/FilterSheet';
 import { Input } from '@/components/ui/Input';
-import { filterAccentClasses } from '@/components/ui/filterAccent';
+import { useFilterAccentClasses } from '@/components/ui/useFilterAccentClasses';
 import type { SearchFilters } from '@/components/search/AdvancedSearchFilters';
 import type { Category } from '@/types/api';
 
 /** Matches `PublicPageHero accent="emerald"` on SearchPage. */
 const ACCENT = 'emerald' as const;
-const accentTone = filterAccentClasses(ACCENT);
 
 const POPULAR_TAG_LIMIT = 8;
 
@@ -89,6 +88,8 @@ export function SearchFilterSheet({
 }: SearchFilterSheetProps) {
   const { t } = useTranslation(['search_page', 'common']);
   const [tagInput, setTagInput] = useState('');
+  // Emerald until the community chooses a colour; then it follows the header.
+  const accentTone = useFilterAccentClasses(ACCENT);
 
   const skillsList = draft.skills ? draft.skills.split(',').filter(Boolean) : [];
   const suggestedTags = popularTags
