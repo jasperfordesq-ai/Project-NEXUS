@@ -266,6 +266,26 @@ describe('CreateGroupPage', () => {
     expect(screen.queryByText('Raw upload copy')).not.toBeInTheDocument();
   });
 
+  // The live preview said "1 member" for every group, so editing a group of
+  // 40 showed 1 (audit of warmth phase 5, 12 Nov 2026). A new group is just
+  // its creator; an existing one shows its real count.
+  it('shows the group\'s real member count in the preview when editing', async () => {
+    routeId = '7';
+    api.get.mockResolvedValue({
+      success: true,
+      data: { id: 7, name: 'Existing Group', description: 'An existing description that is long enough.', visibility: 'public', location: '', member_count: 40 },
+    });
+    render(<CreateGroupPage />);
+
+    await screen.findByDisplayValue('Existing Group');
+    expect(screen.getByTestId('group-preview-members')).toHaveTextContent('40');
+  });
+
+  it('counts the creator as the one member of a new group in the preview', () => {
+    render(<CreateGroupPage />);
+    expect(screen.getByTestId('group-preview-members')).toHaveTextContent('1');
+  });
+
   it('loads and updates an existing group through the edit contracts', async () => {
     routeId = '7';
     api.get.mockResolvedValue({

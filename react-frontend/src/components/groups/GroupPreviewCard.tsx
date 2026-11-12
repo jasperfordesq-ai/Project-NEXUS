@@ -31,9 +31,11 @@ export interface GroupPreviewCardProps {
   visibility: string;
   /** The cover picture chosen in the form (or the saved one), if any. */
   coverSrc: string | null;
+  /** The real count when editing; a new group has its creator, 1. */
+  memberCount?: number;
 }
 
-export function GroupPreviewCard({ name, description, visibility, coverSrc }: GroupPreviewCardProps) {
+export function GroupPreviewCard({ name, description, visibility, coverSrc, memberCount = 1 }: GroupPreviewCardProps) {
   const { t } = useTranslation('groups');
   const palette = useSitePalette();
   const isPrivate = visibility === 'private' || visibility === 'secret';
@@ -84,9 +86,11 @@ export function GroupPreviewCard({ name, description, visibility, coverSrc }: Gr
             {hasDescription ? description : t('form.preview_description_placeholder')}
           </p>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-theme-default pt-3 text-xs text-theme-subtle">
-            <span className="flex items-center gap-1">
+            {/* As the real card: the number beside the people icon. */}
+            <span data-testid="group-preview-members" className="flex items-center gap-1">
               <Users className="h-3 w-3" aria-hidden="true" />
-              {t('members', { count: 1 })}
+              <span aria-hidden="true">{memberCount}</span>
+              <span className="sr-only">{t('members_count_label', { count: memberCount })}</span>
             </span>
             <span data-testid="group-preview-visibility" className="flex items-center gap-1">
               <VisibilityIcon className="h-3 w-3" aria-hidden="true" />

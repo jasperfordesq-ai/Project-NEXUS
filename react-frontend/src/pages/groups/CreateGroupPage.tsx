@@ -102,6 +102,9 @@ export function CreateGroupPage() {
     });
   }, []);
 
+  // Not part of the form: only the live preview shows it.
+  const [memberCount, setMemberCount] = useState<number | null>(null);
+
   const loadGroup = useCallback(async () => {
     if (!id) return;
 
@@ -142,6 +145,7 @@ export function CreateGroupPage() {
           group.cover_image_alt,
         ),
       };
+      setMemberCount(group.member_count ?? null);
       initialFingerprintRef.current = groupFormFingerprint(nextDraft);
       formDirtyRef.current = false;
       setFormData(nextDraft);
@@ -499,6 +503,7 @@ export function CreateGroupPage() {
             name={formData.name}
             description={formData.description}
             visibility={formData.visibility}
+            memberCount={isEditing ? (memberCount ?? 1) : 1}
             coverSrc={formData.cover.action === 'remove' ? null : (formData.cover.previewUrl ?? formData.cover.existingUrl)}
           />
         }

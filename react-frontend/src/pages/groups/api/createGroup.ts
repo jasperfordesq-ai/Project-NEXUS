@@ -38,6 +38,8 @@ export interface EditableGroup {
   template_id?: number | null;
   primary_color?: string | null;
   accent_color?: string | null;
+  /** How many members the group has (the live preview shows it). */
+  member_count?: number | null;
 }
 
 export interface SaveGroupPayload {
@@ -147,6 +149,7 @@ function normalizeEditableGroup(value: unknown): EditableGroup {
     template_id: readOptionalNumber(value.template_id) ?? null,
     primary_color: readOptionalString(value.primary_color) ?? null,
     accent_color: readOptionalString(value.accent_color) ?? null,
+    member_count: readOptionalNumber(value.member_count ?? value.members_count) ?? null,
   };
 }
 
