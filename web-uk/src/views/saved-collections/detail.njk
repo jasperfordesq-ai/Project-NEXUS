@@ -34,7 +34,7 @@
   {% if status == "item-removed" or status == "collection-updated" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="saved-detail-status-title">
       <div class="govuk-notification-banner__header">
-        <h2 class="govuk-notification-banner__title" id="saved-detail-status-title">{{ t("govuk_alpha_saved.errors.summary_title") }}</h2>
+        <h2 class="govuk-notification-banner__title" id="saved-detail-status-title">{{ t("states.success_title") }}</h2>
       </div>
       <div class="govuk-notification-banner__content">
         <p class="govuk-notification-banner__heading">{% if status == "item-removed" %}{{ t("govuk_alpha_saved.status.item_removed") }}{% else %}{{ t("govuk_alpha_saved.status.collection_updated") }}{% endif %}</p>
