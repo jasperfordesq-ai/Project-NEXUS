@@ -49,6 +49,7 @@ import { aiDescriptionAvailable } from '@/lib/aiDescriptions';
 import { api, type ApiErrorDetail } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { celebrateFromMeta } from '@/lib/celebrate';
+import { FormWithPreview } from '@/components/ui/FormWithPreview';
 import { resolveThumbnailUrl } from '@/lib/helpers';
 import { safeImageSource } from '@/lib/safeImageSource';
 import { themeColourNames } from '@/lib/categoryColours';
@@ -1206,11 +1207,8 @@ export function ListingForm({
 
       {/* Form, with a live picture of the finished card beside it (warmth
           plan B6). On a phone the picture follows the form. */}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <GlassCard className="p-5 sm:p-8">
-          {formBody}
-        </GlassCard>
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+      <FormWithPreview
+        preview={
           <ListingPreviewCard
             title={formData.title}
             description={formData.description}
@@ -1226,8 +1224,12 @@ export function ListingForm({
             authorName={previewAuthorName}
             authorAvatar={!isEditingOthersListing && user?.avatar ? resolveThumbnailUrl(user.avatar, { width: 96, height: 96 }) : null}
           />
-        </aside>
-      </div>
+        }
+      >
+        <GlassCard className="p-5 sm:p-8">
+          {formBody}
+        </GlassCard>
+      </FormWithPreview>
     </>
   );
 }

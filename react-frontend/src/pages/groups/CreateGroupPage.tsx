@@ -7,6 +7,8 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { FormSectionHeading } from '@/components/ui/FormSectionHeading';
+import { FormWithPreview } from '@/components/ui/FormWithPreview';
+import { GroupPreviewCard } from '@/components/groups/GroupPreviewCard';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectItem } from '@/components/ui/Select';
@@ -489,7 +491,18 @@ export function CreateGroupPage() {
         </div>
       </header>
 
-      {/* Form */}
+      {/* Form, with a live picture of the finished card beside it (as the
+          offer form has); on a phone the picture follows the form. */}
+      <FormWithPreview
+        preview={
+          <GroupPreviewCard
+            name={formData.name}
+            description={formData.description}
+            visibility={formData.visibility}
+            coverSrc={formData.cover.action === 'remove' ? null : (formData.cover.previewUrl ?? formData.cover.existingUrl)}
+          />
+        }
+      >
       <GlassCard className="p-5 sm:p-8">
         {/* The kind's own colour, as on the feed and in search (warmth plan B6). */}
         <div className="mb-6">
@@ -773,6 +786,7 @@ export function CreateGroupPage() {
           </div>
         </form>
       </GlassCard>
+      </FormWithPreview>
     </motion.div>
   );
 }

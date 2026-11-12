@@ -144,6 +144,26 @@ describe('CreateGroupPage', () => {
     expect(screen.getByPlaceholderText('e.g., Gardening Enthusiasts, Tech Help...')).toBeInTheDocument();
   });
 
+  // Warmth phase 5: the form shows how the group will look, as it is typed.
+  it('shows a live picture of the group card beside the form, updated as the member types', () => {
+    render(<CreateGroupPage />);
+    const preview = screen.getByTestId('group-preview');
+    expect(preview).not.toHaveTextContent('Riverside walkers');
+
+    fireEvent.change(screen.getByPlaceholderText('e.g., Gardening Enthusiasts, Tech Help...'), {
+      target: { value: 'Riverside walkers' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Describe what your group is about...'), {
+      target: { value: 'A gentle walk every Sunday morning.' },
+    });
+
+    expect(preview).toHaveTextContent('Riverside walkers');
+    expect(preview).toHaveTextContent('A gentle walk every Sunday morning.');
+    // No cover picture yet: the coloured cover and the nudge to add one.
+    expect(screen.getByTestId('group-preview-cover')).toBeInTheDocument();
+    expect(screen.getByTestId('group-preview-cover-nudge')).toBeInTheDocument();
+  });
+
   it('renders group description textarea', () => {
     render(<CreateGroupPage />);
     expect(screen.getByPlaceholderText('Describe what your group is about...')).toBeInTheDocument();
