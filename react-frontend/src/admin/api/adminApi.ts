@@ -783,6 +783,40 @@ export const adminCategories = {
 // Attributes
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** A community notice as the admin endpoints return it (SiteAnnouncementService::adminShape). */
+export interface AdminAnnouncement {
+  id: number;
+  message: string;
+  style: string;
+  link_url: string | null;
+  link_label: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  is_dismissible: boolean;
+  is_active: boolean;
+  created_by: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export type AdminAnnouncementInput = Partial<Pick<AdminAnnouncement,
+  'message' | 'style' | 'link_url' | 'link_label' | 'starts_at' | 'ends_at' | 'is_dismissible' | 'is_active'>>;
+
+/** Community announcement banner (warmth phase 5): notices across the top of the member website. */
+export const adminAnnouncements = {
+  list: () =>
+    api.get<{ items: AdminAnnouncement[] }>('/v2/admin/announcements'),
+
+  create: (data: AdminAnnouncementInput) =>
+    api.post<{ announcement: AdminAnnouncement }>('/v2/admin/announcements', data),
+
+  update: (id: number, data: AdminAnnouncementInput) =>
+    api.put<{ announcement: AdminAnnouncement }>(`/v2/admin/announcements/${id}`, data),
+
+  delete: (id: number) =>
+    api.delete<{ ok: boolean }>(`/v2/admin/announcements/${id}`),
+};
+
 export const adminAttributes = {
   list: () =>
     api.get<AdminAttribute[]>('/v2/admin/attributes'),

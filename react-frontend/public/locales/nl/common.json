@@ -2750,6 +2750,8 @@
   "celebration_first_event_text": "Bedankt dat je mensen samenbrengt.",
   "celebration_first_group_title": "Je eerste groep is aangemaakt!",
   "celebration_first_group_text": "Bedankt dat je iets start. Nodig een paar buren uit om mee te doen.",
+  "announcement_region_label": "Mededeling van de gemeenschap",
+  "announcement_dismiss": "Deze mededeling sluiten",
   "volunteering": {
     "time_just_now": "Zojuist",
     "time_minutes_ago_one": "{{count}}minuut geleden",

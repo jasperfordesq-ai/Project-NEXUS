@@ -2807,6 +2807,8 @@
   "celebration_first_event_text": "Go raibh maith agat as daoine a thabhairt le chéile.",
   "celebration_first_group_title": "Tá do chéad ghrúpa curtha ar bun!",
   "celebration_first_group_text": "Go raibh maith agat as rud éigin a thosú. Tabhair cuireadh do roinnt comharsan páirt a ghlacadh.",
+  "announcement_region_label": "Fógra pobail",
+  "announcement_dismiss": "Dún an fógra seo",
   "volunteering": {
     "time_just_now": "Anois díreach",
     "time_minutes_ago_one": "{{count}} nóiméad ó shin",

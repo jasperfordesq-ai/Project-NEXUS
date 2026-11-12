@@ -2750,6 +2750,8 @@
   "celebration_first_event_text": "Thank you for bringing people together.",
   "celebration_first_group_title": "Your first group is set up!",
   "celebration_first_group_text": "Thank you for starting something. Invite a few neighbours to join.",
+  "announcement_region_label": "Community announcement",
+  "announcement_dismiss": "Close this announcement",
   "volunteering": {
     "time_just_now": "Just now",
     "time_minutes_ago_one": "{{count}} minute ago",

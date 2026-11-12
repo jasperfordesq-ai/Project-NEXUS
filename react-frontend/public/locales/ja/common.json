@@ -2750,6 +2750,8 @@
   "celebration_first_event_text": "みんなが集まる場をつくってくださり、ありがとうございます。",
   "celebration_first_group_title": "はじめてのグループができました！",
   "celebration_first_group_text": "新しい集まりを始めてくださり、ありがとうございます。ご近所の方を誘ってみましょう。",
+  "announcement_region_label": "コミュニティからのお知らせ",
+  "announcement_dismiss": "このお知らせを閉じる",
   "volunteering": {
     "time_just_now": "たった今",
     "time_minutes_ago_one": "{{count}} 分前",

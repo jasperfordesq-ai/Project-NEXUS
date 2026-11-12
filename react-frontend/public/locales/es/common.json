@@ -2769,6 +2769,8 @@
   "celebration_first_event_text": "Gracias por reunir a la gente.",
   "celebration_first_group_title": "¡Tu primer grupo ya está creado!",
   "celebration_first_group_text": "Gracias por poner algo en marcha. Invita a algunos vecinos a unirse.",
+  "announcement_region_label": "Aviso de la comunidad",
+  "announcement_dismiss": "Cerrar este aviso",
   "volunteering": {
     "time_just_now": "Justo ahora",
     "time_minutes_ago_one": "{{count}}hace un minuto",

@@ -2826,6 +2826,8 @@
   "celebration_first_event_text": "شكرًا لأنك تجمع الناس معًا.",
   "celebration_first_group_title": "أول مجموعة لك أصبحت جاهزة!",
   "celebration_first_group_text": "شكرًا لأنك بدأت شيئًا جديدًا. ادعُ بعض الجيران للانضمام.",
+  "announcement_region_label": "إعلان المجتمع",
+  "announcement_dismiss": "إغلاق هذا الإعلان",
   "volunteering": {
     "time_just_now": "الآن",
     "time_minutes_ago_one": "{{count}}منذ دقيقة",

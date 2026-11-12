@@ -2750,6 +2750,8 @@
   "celebration_first_event_text": "Danke, dass Sie Menschen zusammenbringen.",
   "celebration_first_group_title": "Ihre erste Gruppe ist eingerichtet!",
   "celebration_first_group_text": "Danke, dass Sie etwas Neues anstoßen. Laden Sie ein paar Nachbarn ein.",
+  "announcement_region_label": "Mitteilung der Gemeinschaft",
+  "announcement_dismiss": "Diese Mitteilung schließen",
   "volunteering": {
     "time_just_now": "Gerade eben",
     "time_minutes_ago_one": "{{count}}vor einer Minute",

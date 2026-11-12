@@ -1403,6 +1403,12 @@ export interface TenantConfig {
   modules?: Partial<TenantModules>;
   branding?: Partial<TenantBranding>;
   /**
+   * The community's current one-line notice, or null (warmth phase 5). Raw
+   * from the bootstrap; `currentAnnouncement()` in lib/siteAnnouncement
+   * checks its dates, style and link before anything is shown.
+   */
+  announcement?: unknown;
+  /**
    * Admin → Translation settings, from the tenant bootstrap: whether
    * translation is on, whether new conversations auto-translate, and the
    * provider (only OpenAI exists).

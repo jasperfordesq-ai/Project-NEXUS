@@ -19,6 +19,7 @@ import { SourceRepositoryLink } from './SourceRepositoryLink';
 import { BackToTop } from '@/components/ui/BackToTop';
 import { OfflineIndicator } from '@/components/feedback/OfflineIndicator';
 import { CelebrationHost } from '@/components/feedback/CelebrationHost';
+import { SiteAnnouncementBanner } from '@/components/layout/SiteAnnouncementBanner';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { InstallModalHost } from '@/components/pwa/InstallModalHost';
 import { SessionExpiredModal } from '@/components/feedback/SessionExpiredModal';
@@ -156,6 +157,10 @@ export function Layout({
             : ''
         }`}
       >
+        {/* The community's own one-line notice, when its admins have posted
+            one (warmth phase 5). In the page's flow, under the fixed header. */}
+        <SiteAnnouncementBanner />
+
         {/* AG70 — Emergency/safety alert banner (caring community tenants only) */}
         {hasFeature('caring_community') && (
           <Suspense fallback={null}>

@@ -350,6 +350,7 @@ const PageBuilder = lazy(() => import('./modules/content/PageBuilder'));
 const MenusAdmin = lazy(() => import('./modules/content/MenusAdmin'));
 const MenuBuilder = lazy(() => import('./modules/content/MenuBuilder'));
 const AttributesAdmin = lazy(() => import('./modules/content/AttributesAdmin'));
+const AnnouncementsAdmin = lazy(() => import('./modules/content/AnnouncementsAdmin'));
 const PlansAdmin = lazy(() => import('./modules/content/PlansAdmin'));
 const PlanForm = lazy(() => import('./modules/content/PlanForm'));
 const SubscriptionsAdmin = lazy(() => import('./modules/content/Subscriptions'));
@@ -401,6 +402,7 @@ export function AdminRoutes() {
       <Route path="categories/create" element={<Lazy><CategoriesAdmin /></Lazy>} />
       <Route path="categories/edit/:id" element={<Lazy><CategoriesAdmin /></Lazy>} />
       <Route path="attributes" element={<Lazy><AttributesAdmin /></Lazy>} />
+      <Route path="announcements" element={<Lazy><AnnouncementsAdmin /></Lazy>} />
       <Route path="landing-page" element={<Lazy><LandingPageBuilder /></Lazy>} />
 
       {/* ─── ENGAGEMENT ─── */}

@@ -462,6 +462,7 @@ function useAdminNav(): NavSection[] {
           ...(hasFeature('resources') ? [{ label: t('resources'), href: '/admin/resources', icon: BookOpen }] : []),
           { label: t('pages'), href: '/admin/pages', icon: FileText },
           { label: t('landing_page'), href: '/admin/landing-page', icon: Palette },
+          { label: t('announcements'), href: '/admin/announcements', icon: Megaphone },
           ...(isGod ? [{ label: t('menus'), href: '/admin/menus', icon: Menu }] : []),
           // Categories normally live under Listings now (see categoriesItem).
           // They stay here only when the listings module is off, so a community

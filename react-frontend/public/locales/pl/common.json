@@ -2788,6 +2788,8 @@
   "celebration_first_event_text": "Dziękujemy, że łączysz ludzi.",
   "celebration_first_group_title": "Twoja pierwsza grupa jest gotowa!",
   "celebration_first_group_text": "Dziękujemy, że coś zaczynasz. Zaproś kilku sąsiadów.",
+  "announcement_region_label": "Ogłoszenie społeczności",
+  "announcement_dismiss": "Zamknij to ogłoszenie",
   "volunteering": {
     "time_just_now": "Właśnie teraz",
     "time_minutes_ago_one": "{{count}}minutę temu",
