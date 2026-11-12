@@ -207,6 +207,23 @@ describe('ListingsPage', () => {
     expect(screen.getByRole('link', { name: 'Ask for help' })).toHaveAttribute('href', '/test/listings/create?type=request');
   });
 
+  // On a phone the two buttons share a two-column row. Grid columns could not
+  // shrink below the words, so inside Vivid's padded tray "Ask for help"
+  // stuck out by about 10px at 375px, and a longer translation would in Soft
+  // too (audit of warmth phase 5, 12 Nov 2026).
+  it('lets the two welcome buttons shrink and wrap on a narrow phone', () => {
+    render(<ListingsPage />);
+    const offer = screen.getByRole('link', { name: 'Offer help' });
+    const ask = screen.getByRole('link', { name: 'Ask for help' });
+    const row = offer.parentElement as HTMLElement;
+    expect(row).toBe(ask.parentElement);
+    expect(row.className).toContain('grid-cols-[minmax(0,1fr)_minmax(0,1fr)]');
+    for (const button of [offer, ask]) {
+      expect(button.className).toContain('min-w-0');
+      expect(button.className).toContain('whitespace-normal');
+    }
+  });
+
   it('keeps the search box free of a second heading and a second count', async () => {
     render(<ListingsPage />);
 

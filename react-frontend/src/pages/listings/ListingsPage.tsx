@@ -681,11 +681,11 @@ export function ListingsPage() {
                 </div>
               )}
             </div>
-            <div className={`grid grid-cols-2 gap-3 sm:flex sm:shrink-0 ${vivid.tray}`}>
+            <div className={`grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 sm:flex sm:shrink-0 ${vivid.tray}`}>
               <Button as={Link} to={tenantPath('/listings/create?type=offer')}
                 variant="primary"
                 size="lg"
-                className="font-semibold"
+                className="h-auto min-h-12 min-w-0 whitespace-normal text-center font-semibold"
                 startContent={<Gift className="h-5 w-5" aria-hidden="true" />}
               >
                 {t('offer_help')}
@@ -693,7 +693,7 @@ export function ListingsPage() {
               <Button as={Link} to={tenantPath('/listings/create?type=request')}
                 variant="secondary"
                 size="lg"
-                className="font-semibold"
+                className="h-auto min-h-12 min-w-0 whitespace-normal text-center font-semibold"
                 startContent={<HandHelping className="h-5 w-5" aria-hidden="true" />}
               >
                 {t('ask_for_help')}
