@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { render, screen, fireEvent } from '@/test/test-utils';
+import { render, screen, fireEvent, within } from '@/test/test-utils';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ProfileTab } from './ProfileTab';
 import type { ProfileFormData } from './ProfileTab';
@@ -90,6 +90,18 @@ describe('ProfileTab', () => {
   // Adults-only decision 2026-09-25: the picker cannot offer a date of birth
   // that would make the member under 18, and a refusal from the server is shown
   // against the field itself.
+  // The chosen theme was white on --color-primary, a light indigo in dark
+  // mode (2.7:1; axe, audit of warmth phase 5, 12 Nov 2026). White words go
+  // on the button shade, held at 4.5:1 in both themes.
+  it('marks the chosen theme in a colour white words can be read on', () => {
+    render(<ProfileTab {...defaultProps} />);
+    const group = screen.getByRole('radiogroup', { name: /theme/i });
+    for (const option of within(group).getAllByRole('radio')) {
+      expect(option.className).toContain('data-[selected=true]:bg-accent-strong');
+      expect(option.className).not.toContain('--color-primary');
+    }
+  });
+
   it('limits the date of birth to adults', () => {
     render(<ProfileTab {...defaultProps} />);
     const dob = screen.getByLabelText('profile.date_of_birth') as HTMLInputElement;

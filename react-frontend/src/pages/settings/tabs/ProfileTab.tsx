@@ -436,7 +436,7 @@ export function ProfileTab({
                   key={mode}
                   id={mode}
                   variant="ghost"
-                  className="data-[selected=true]:bg-[var(--color-primary)] data-[selected=true]:text-white"
+                  className="data-[selected=true]:bg-accent-strong data-[selected=true]:text-white"
                 >
                   {t(`theme.${mode}`)}
                 </ToggleButton>
