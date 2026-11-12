@@ -419,7 +419,9 @@ export default function CreateOpportunityPage() {
             location={formData.location}
             isRemote={formData.is_remote}
             organisationId={formData.organization_id ? Number(formData.organization_id) : null}
-            organisationName={approvedOrgs.find((org) => String(org.id) === String(formData.organization_id))?.name ?? null}
+            organisationName={isEdit
+              ? (editOrgName || null)
+              : approvedOrgs.find((org) => String(org.id) === String(formData.organization_id))?.name ?? null}
           />
         }
       >

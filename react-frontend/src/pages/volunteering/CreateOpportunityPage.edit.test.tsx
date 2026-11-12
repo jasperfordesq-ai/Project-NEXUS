@@ -109,6 +109,17 @@ describe('CreateOpportunityPage — edit mode', () => {
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/test/volunteering/opportunities/42'));
   });
 
+  // Editing does not load "my organisations" (the organisation is fixed), so
+  // the live preview named the placeholder "Your organisation" instead of the
+  // opportunity's own (audit of warmth phase 5, 12 Nov 2026).
+  it('names the opportunity\'s own organisation in the live preview', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: editable });
+    render(<CreateOpportunityPage />);
+
+    await screen.findByDisplayValue('Park Cleanup Drive');
+    expect(screen.getByTestId('opportunity-preview-organisation')).toHaveTextContent('Green Dublin');
+  });
+
   it('refuses someone who may not manage the opportunity', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...editable, can_manage: false, is_owner: false } });
     render(<CreateOpportunityPage />);
