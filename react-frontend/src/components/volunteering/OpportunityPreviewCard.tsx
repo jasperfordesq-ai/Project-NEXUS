@@ -9,10 +9,10 @@
  * and event forms).
  *
  * It follows the look of the real card (OpportunityCard in
- * pages/volunteering/VolunteeringPage): the organisation's tile in its own
- * colour, the title, the organisation's name, two lines of description and
- * the place. It is a picture of a card, not a card: nothing in it is a link
- * or a button.
+ * pages/volunteering/VolunteeringPage): the organisation's logo (or a tile in
+ * its own colour), the title, the organisation's name, two lines of
+ * description, the place and the soft "Remote" chip. It is a picture of a
+ * card, not a card: nothing in it is a link or a button.
  */
 
 import { useTranslation } from 'react-i18next';
@@ -20,6 +20,7 @@ import Building2 from 'lucide-react/icons/building-2';
 import Eye from 'lucide-react/icons/eye';
 import Globe from 'lucide-react/icons/globe';
 import MapPin from 'lucide-react/icons/map-pin';
+import { Chip } from '@/components/ui/Chip';
 import { CoverTile } from '@/components/ui/CoverTile';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { coverSeed } from '@/lib/coverSeeds';
@@ -32,10 +33,12 @@ export interface OpportunityPreviewCardProps {
   /** The organisation chosen in the form, if any. */
   organisationId?: number | null;
   organisationName?: string | null;
+  /** The organisation's logo, if it has one: the real card shows it in the tile. */
+  organisationLogoUrl?: string | null;
 }
 
 export function OpportunityPreviewCard({
-  title, description, location, isRemote, organisationId, organisationName,
+  title, description, location, isRemote, organisationId, organisationName, organisationLogoUrl = null,
 }: OpportunityPreviewCardProps) {
   const { t } = useTranslation('volunteering');
   const hasTitle = title.trim() !== '';
@@ -51,12 +54,14 @@ export function OpportunityPreviewCard({
       </h2>
       <GlassCard className="p-5">
         <div className="mb-2 flex items-center gap-3">
-          {/* The organisation's own colour, as on its page and on the real card. */}
+          {/* The organisation's logo, or a tile in its own colour, as on its
+              page and on the real card. */}
           <span aria-hidden="true">
             <CoverTile
               data-testid="opportunity-preview-organisation-tile"
               seed={coverSeed.organisation(organisationId ?? 0)}
               icon={Building2}
+              imageUrl={organisationLogoUrl}
               name={shownOrganisation}
               className="h-9 w-9 rounded-xl"
             />
@@ -91,10 +96,16 @@ export function OpportunityPreviewCard({
               </span>
             )}
             {isRemote && (
-              <span data-testid="opportunity-preview-remote" className="flex items-center gap-1">
-                <Globe className="h-3 w-3 shrink-0" aria-hidden="true" />
+              // The real card's own marker: a soft accent chip.
+              <Chip
+                data-testid="opportunity-preview-remote"
+                size="sm"
+                variant="soft"
+                color="accent"
+                startContent={<Globe className="h-3 w-3" aria-hidden="true" />}
+              >
                 {t('remote')}
-              </span>
+              </Chip>
             )}
           </div>
         )}

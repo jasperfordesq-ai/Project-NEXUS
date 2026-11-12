@@ -52,6 +52,8 @@ interface MyOrganisation {
   name: string;
   status: string;
   member_role: string;
+  /** The organisation's logo, if any (the opportunity card shows it). */
+  logo_url?: string | null;
   /** The viewer owns or administers it (as opposed to an admin seeing every organisation). */
   is_own?: boolean;
 }
@@ -82,7 +84,7 @@ interface EditableOpportunity {
   start_date: string | null;
   end_date: string | null;
   federated_visibility?: 'none' | 'listed';
-  organization: { id: number; name: string };
+  organization: { id: number; name: string; logo_url?: string | null };
   is_owner?: boolean;
   can_manage?: boolean;
 }
@@ -118,9 +120,9 @@ async function loadCommunityOrganisations(): Promise<MyOrganisation[]> {
   for (let page = 0; page < 10; page += 1) {
     const query = new URLSearchParams({ per_page: '50' });
     if (cursor) query.set('cursor', cursor);
-    const response = await api.get<Array<{ id: number; name: string }>>(`/v2/volunteering/organisations?${query.toString()}`);
+    const response = await api.get<Array<{ id: number; name: string; logo_url?: string | null }>>(`/v2/volunteering/organisations?${query.toString()}`);
     if (!response.success || !Array.isArray(response.data)) break;
-    found.push(...response.data.map((org) => ({ id: org.id, name: org.name, status: 'approved', member_role: 'admin' })));
+    found.push(...response.data.map((org) => ({ id: org.id, name: org.name, status: 'approved', member_role: 'admin', logo_url: org.logo_url ?? null })));
     cursor = response.meta?.cursor ?? null;
     if (!response.meta?.has_more || !cursor) break;
   }
@@ -153,6 +155,8 @@ export default function CreateOpportunityPage() {
   const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
   /** Edit mode: the organisation's name (fixed), and whether the viewer may edit at all. */
   const [editOrgName, setEditOrgName] = useState('');
+  /** Edit mode: the organisation's logo, for the live preview (as on the real card). */
+  const [editOrgLogoUrl, setEditOrgLogoUrl] = useState<string | null>(null);
   const [editAllowed, setEditAllowed] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
@@ -184,6 +188,7 @@ export default function CreateOpportunityPage() {
         return;
       }
       setEditOrgName(opp.organization?.name ?? '');
+      setEditOrgLogoUrl(opp.organization?.logo_url ?? null);
       setShareFederated(opp.federated_visibility === 'listed');
       setFormData({
         organization_id: String(opp.organization?.id ?? ''),
@@ -422,6 +427,9 @@ export default function CreateOpportunityPage() {
             organisationName={isEdit
               ? (editOrgName || null)
               : approvedOrgs.find((org) => String(org.id) === String(formData.organization_id))?.name ?? null}
+            organisationLogoUrl={isEdit
+              ? editOrgLogoUrl
+              : approvedOrgs.find((org) => String(org.id) === String(formData.organization_id))?.logo_url ?? null}
           />
         }
       >

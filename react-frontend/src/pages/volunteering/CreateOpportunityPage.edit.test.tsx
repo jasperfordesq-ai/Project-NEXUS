@@ -120,6 +120,20 @@ describe('CreateOpportunityPage — edit mode', () => {
     expect(screen.getByTestId('opportunity-preview-organisation')).toHaveTextContent('Green Dublin');
   });
 
+  // The real card shows the organisation's logo; the preview never did
+  // (audit of the live previews, 12 Nov 2026).
+  it("shows the opportunity's own organisation logo in the preview tile, as the real card does", async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { ...editable, organization: { id: 7, name: 'Green Dublin', logo_url: '/uploads/green-dublin.png' } },
+    });
+    render(<CreateOpportunityPage />);
+
+    await screen.findByDisplayValue('Park Cleanup Drive');
+    expect(screen.queryByTestId('opportunity-preview-organisation-tile')).toBeNull();
+    expect(screen.getByTestId('opportunity-preview').querySelector('.avatar')).not.toBeNull();
+  });
+
   it('refuses someone who may not manage the opportunity', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...editable, can_manage: false, is_owner: false } });
     render(<CreateOpportunityPage />);

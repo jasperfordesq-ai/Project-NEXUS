@@ -222,6 +222,16 @@ describe("CreateOpportunityPage", () => {
   // 42rem (max-w-2xl) page the form column was about 330px wide on a
   // desktop, narrower than on a phone. The other forms with a preview use
   // max-w-5xl (audit of warmth phase 5, 12 Nov 2026).
+  // The real card shows the organisation's logo; the preview never did,
+  // although "my organisations" sends it (audit, 12 Nov 2026).
+  it("shows the chosen organisation's logo in the preview tile, as the real card does", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [{ ...mockApprovedOrg, logo_url: "/uploads/helping-hands.png" }] });
+    render(<CreateOpportunityPage />);
+    const preview = await screen.findByTestId("opportunity-preview");
+    expect(screen.queryByTestId("opportunity-preview-organisation-tile")).toBeNull();
+    expect(preview.querySelector(".avatar")).not.toBeNull();
+  });
+
   it("gives the form and its preview a page wide enough for both", async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [mockApprovedOrg] });
     render(<CreateOpportunityPage />);

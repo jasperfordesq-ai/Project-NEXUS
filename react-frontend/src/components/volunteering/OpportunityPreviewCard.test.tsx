@@ -5,6 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@/test/test-utils';
+import { Chip } from '@/components/ui/Chip';
 import { OpportunityPreviewCard, type OpportunityPreviewCardProps } from './OpportunityPreviewCard';
 
 const base: OpportunityPreviewCardProps = {
@@ -49,6 +50,28 @@ describe('OpportunityPreviewCard — how the opportunity will look, as it is typ
   it('shows the organisation tile, as the real card does', () => {
     render(<OpportunityPreviewCard {...base} organisationId={12} organisationName="Riverside Growers" />);
     expect(screen.getByTestId('opportunity-preview-organisation-tile')).toBeInTheDocument();
+  });
+
+  // The real card shows the organisation's logo in its tile; the preview
+  // always showed the coloured tile (audit of the live previews, 12 Nov 2026).
+  it("shows the organisation's logo in the tile when it has one, as the real card does", () => {
+    render(<OpportunityPreviewCard {...base} organisationId={12} organisationName="Riverside Growers" organisationLogoUrl="/uploads/riverside.png" />);
+    // CoverTile swaps its coloured tile for the logo (an avatar, which shows
+    // the picture once it has loaded) only when it is given a logo.
+    expect(screen.queryByTestId('opportunity-preview-organisation-tile')).toBeNull();
+    expect(screen.getByTestId('opportunity-preview').querySelector('.avatar')).not.toBeNull();
+  });
+
+  // The real card marks "Remote" with a soft accent chip; the preview used
+  // plain grey text (audit, 12 Nov 2026).
+  it('marks a remote opportunity with the same soft accent chip as the real card', () => {
+    render(
+      <>
+        <OpportunityPreviewCard {...base} isRemote />
+        <Chip data-testid="real-remote" size="sm" variant="soft" color="accent">Remote</Chip>
+      </>,
+    );
+    expect(screen.getByTestId('opportunity-preview-remote').className).toBe(screen.getByTestId('real-remote').className);
   });
 
   it('is a picture of a card, not a card: nothing in it can be clicked', () => {
