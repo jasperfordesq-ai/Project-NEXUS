@@ -67,6 +67,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useCommunityAccent } from '@/contexts/ThemeContext';
+import { vivid } from '@/lib/vivid';
 import { useSiteAccent, useSitePalette } from '@/contexts/SiteAccentContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useGreeting } from '@/hooks/useGreeting';
@@ -642,42 +643,45 @@ export function ListingsPage() {
           it is the page's header, so it holds the page's only <h1>; on a phone
           the title is in the app bar and the greeting is the heading. */}
       {isAuthenticated && (
-        <Card data-testid="listings-welcome" className="relative overflow-hidden border-0 bg-accent-soft shadow-none">
+        <Card data-testid="listings-welcome" className={`relative overflow-hidden border-0 bg-accent-soft shadow-none ${vivid.panel}`}>
           {/* The same soft glow of the companion colour as every other page opening. */}
-          <div aria-hidden="true" data-hero-glow="true" className="hero-glow pointer-events-none absolute -right-16 -top-24 size-48 rounded-full blur-3xl sm:size-72" />
+          <div aria-hidden="true" data-hero-glow="true" className={`hero-glow pointer-events-none absolute -right-16 -top-24 size-48 rounded-full blur-3xl sm:size-72 ${vivid.glow}`} />
           <CardBody className="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 lg:p-8">
             <div className="min-w-0">
               {isPhone ? (
-                <h2 className="text-xl font-bold tracking-tight text-theme-primary">{greeting}</h2>
+                <h2 className={`text-xl font-bold tracking-tight text-theme-primary ${vivid.text}`}>{greeting}</h2>
               ) : (
                 <>
-                  <p className="text-sm font-semibold text-theme-secondary">{greeting}</p>
-                  <h1 className="mt-1 text-3xl font-bold tracking-tight text-theme-primary sm:text-4xl">
+                  <p className={`text-sm font-semibold text-theme-secondary ${vivid.text}`}>{greeting}</p>
+                  <h1 className={`mt-1 text-3xl font-bold tracking-tight text-theme-primary sm:text-4xl ${vivid.text}`}>
                     {t('title')}
                   </h1>
                 </>
               )}
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-theme-secondary sm:text-base">
+              <p className={`mt-2 max-w-2xl text-sm leading-6 text-theme-secondary sm:text-base ${vivid.text}`}>
                 {t('welcome_intro')}
               </p>
               {!isPhone && (
                 <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
-                  <span className="text-sm font-medium text-theme-secondary">
+                  <span className={`text-sm font-medium text-theme-secondary ${vivid.text}`}>
                     {totalItems != null ? t('results_count', { count: totalItems }) : t('results_loading')}
                   </span>
                   <Button as={Link} to={tenantPath('/listings/mine')}
                     variant="tertiary"
                     size="sm"
-                    className="shrink-0"
+                    className={`shrink-0 ${vivid.control}`}
                     startContent={<ClipboardList className="w-4 h-4" aria-hidden="true" />}
                   >
                     {t('mine.title')}
                   </Button>
-                  <AlgorithmLabel area="listings" />
+                  {/* On a vivid fill the label keeps its own colours on its own surface. */}
+                  <span className={`inline-flex rounded-full ${vivid.control}`}>
+                    <AlgorithmLabel area="listings" />
+                  </span>
                 </div>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:shrink-0">
+            <div className={`grid grid-cols-2 gap-3 sm:flex sm:shrink-0 ${vivid.tray}`}>
               <Button as={Link} to={tenantPath('/listings/create?type=offer')}
                 variant="primary"
                 size="lg"
@@ -1450,7 +1454,7 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
               <div className="mt-2 flex items-center gap-2 text-xs text-theme-subtle">
                 <span className="truncate">{authorName}</span>
                 {listing.author_rating != null && listing.author_rating > 0 && (
-                  <span className="flex items-center gap-0.5 text-[11px] text-[var(--color-warning)] shrink-0">
+                  <span className="flex items-center gap-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-300 shrink-0">
                     <Star className="w-3 h-3 fill-amber-500" aria-hidden="true" />
                     {listing.author_rating.toFixed(1)}
                   </span>
@@ -1619,7 +1623,7 @@ const ListingCard = memo(function ListingCard({ listing, themeColour, viewMode, 
             />
             <span className="truncate text-sm font-medium text-theme-secondary">{authorName}</span>
             {listing.author_rating != null && listing.author_rating > 0 && (
-              <span className="flex items-center gap-0.5 text-[11px] text-[var(--color-warning)] shrink-0">
+              <span className="flex items-center gap-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-300 shrink-0">
                 <Star className="w-3 h-3 fill-amber-500" aria-hidden="true" />
                 {listing.author_rating.toFixed(1)}
               </span>

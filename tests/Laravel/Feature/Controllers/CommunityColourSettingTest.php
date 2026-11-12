@@ -204,4 +204,67 @@ class CommunityColourSettingTest extends TestCase
         $this->storeConfig(array_merge($this->storedConfig(), ['community_look' => '<script>']));
         $this->assertArrayNotHasKey('community_look', $this->bootstrapBranding());
     }
+
+    // ── Colour strength: soft or vivid (warmth phase 5) ──────────────────
+
+    public function test_every_community_is_soft_until_an_admin_chooses_vivid(): void
+    {
+        $this->actAsAdmin();
+
+        // Nothing stored: the bootstrap says nothing, so no existing community
+        // changes its look when this setting is deployed.
+        $this->assertArrayNotHasKey('colour_strength', $this->bootstrapBranding());
+        $this->apiGet('/v2/admin/settings')->assertOk()->assertJsonPath('data.settings.colour_strength', 'soft');
+    }
+
+    public function test_an_admin_chooses_vivid_and_the_member_site_receives_it(): void
+    {
+        $this->actAsAdmin();
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['colour_strength' => 'Vivid'])
+            ->assertOk()
+            ->assertJsonPath('data.colour_strength', 'vivid');
+
+        $this->assertSame('vivid', $this->storedConfig()['colour_strength'] ?? null);
+        $this->apiGet('/v2/admin/settings')->assertOk()->assertJsonPath('data.settings.colour_strength', 'vivid');
+        $this->assertSame('vivid', $this->bootstrapBranding()['colour_strength'] ?? null);
+    }
+
+    public function test_going_back_to_soft_stores_nothing_and_leaving_it_out_keeps_it(): void
+    {
+        $this->storeConfig(array_merge($this->storedConfig(), ['colour_strength' => 'vivid']));
+        $this->actAsAdmin();
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['bg_color' => '#5b2a86'])->assertOk();
+        $this->assertSame('vivid', $this->storedConfig()['colour_strength'] ?? null);
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['colour_strength' => 'soft'])
+            ->assertOk()
+            ->assertJsonPath('data.colour_strength', 'soft');
+        $this->assertArrayNotHasKey('colour_strength', $this->storedConfig());
+        $this->assertArrayNotHasKey('colour_strength', $this->bootstrapBranding());
+    }
+
+    public function test_a_strength_that_is_not_one_of_ours_is_refused_and_never_published(): void
+    {
+        $this->actAsAdmin();
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['colour_strength' => 'neon'])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.field', 'colour_strength');
+        $this->assertArrayNotHasKey('colour_strength', $this->storedConfig());
+
+        $this->storeConfig(array_merge($this->storedConfig(), ['colour_strength' => '"><script>']));
+        $this->assertArrayNotHasKey('colour_strength', $this->bootstrapBranding());
+    }
+
+    public function test_a_member_cannot_change_the_colour_strength(): void
+    {
+        Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->create());
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['colour_strength' => 'vivid'])
+            ->assertStatus(403);
+
+        $this->assertArrayNotHasKey('colour_strength', $this->storedConfig());
+    }
 }

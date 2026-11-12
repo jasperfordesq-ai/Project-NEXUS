@@ -85,5 +85,43 @@ describe('CommunityColourSection', () => {
       expect(getContrastRatio(look.colour, '#ffffff')).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_CONTRAST);
     }
   });
+
+  // Warmth phase 5: how strongly the colour is worn.
+  it('offers soft and vivid, with soft chosen until the admin picks vivid', () => {
+    render(<CommunityColourSection state={stateWith({})} />);
+    expect(screen.getByTestId('colour-strength-soft')).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByTestId('colour-strength-vivid')).toHaveAttribute('aria-checked', 'false');
+  });
+
+  it('saves vivid when the admin picks it, and soft when they go back', () => {
+    const setField = vi.fn();
+    const { rerender } = render(<CommunityColourSection state={stateWith({}, setField)} />);
+    fireEvent.click(screen.getByTestId('colour-strength-vivid'));
+    expect(setField).toHaveBeenCalledWith('colour_strength', 'vivid');
+
+    rerender(<CommunityColourSection state={stateWith({ colour_strength: 'vivid' }, setField)} />);
+    expect(screen.getByTestId('colour-strength-vivid')).toHaveAttribute('aria-checked', 'true');
+    fireEvent.click(screen.getByTestId('colour-strength-soft'));
+    expect(setField).toHaveBeenCalledWith('colour_strength', 'soft');
+  });
+
+  it('shows a page opening in the chosen strength: tinted for soft, filled with white text for vivid', () => {
+    const { rerender } = render(<CommunityColourSection state={stateWith({ community_color: '#a3195b' })} />);
+    const opening = () => screen.getByTestId('community-colour-preview-opening');
+    expect(opening().className).toContain('bg-accent-soft');
+    expect(opening().className).not.toContain('from-accent-strong');
+
+    rerender(<CommunityColourSection state={stateWith({ community_color: '#a3195b', colour_strength: 'vivid' })} />);
+    expect(opening().className).toContain('from-accent-strong');
+    expect(opening().className).toContain('text-white');
+  });
+
+  it('previews the button shade of the colour being edited, readable under white text', () => {
+    render(<CommunityColourSection state={stateWith({ community_color: '#a3195b', colour_strength: 'vivid' })} />);
+    const box = screen.getByTestId('community-colour-preview');
+    const strong = box.style.getPropertyValue('--accent-strong');
+    expect(strong).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(getContrastRatio(strong, '#ffffff')).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_CONTRAST);
+  });
 });
 

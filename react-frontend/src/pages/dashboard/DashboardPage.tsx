@@ -60,6 +60,7 @@ import { useAuth, useTenant, useFeature, useModule, useNotifications } from '@/c
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { CommunityPhoto } from '@/components/branding/CommunityPhoto';
+import { vivid } from '@/lib/vivid';
 import { logError } from '@/lib/logger';
 import { formatDayOfMonth, formatMonthShort, formatRelativeTime, resolveAvatarUrl } from '@/lib/helpers';
 import type { WalletBalance, Listing, Event, Group } from '@/types/api';
@@ -444,9 +445,9 @@ export function DashboardPage() {
         {/* Welcome Header — a soft panel in the community colour with a
             greeting for the time of day, like the offers page (AWID: warmth). */}
         <motion.div variants={itemVariants}>
-          <Card data-testid="dashboard-welcome" className="relative overflow-hidden border-0 bg-accent-soft shadow-none">
+          <Card data-testid="dashboard-welcome" className={`relative overflow-hidden border-0 bg-accent-soft shadow-none ${vivid.panel}`}>
             {/* The same soft glow of the companion colour as every other page opening. */}
-            <div aria-hidden="true" data-hero-glow="true" className="hero-glow pointer-events-none absolute -right-16 -top-24 size-48 rounded-full blur-3xl sm:size-72" />
+            <div aria-hidden="true" data-hero-glow="true" className={`hero-glow pointer-events-none absolute -right-16 -top-24 size-48 rounded-full blur-3xl sm:size-72 ${vivid.glow}`} />
             <CardBody className="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 lg:p-8">
               {/* The community's own photo, when it has one: above the greeting
                   on a phone, at the far end of the panel on wider screens. */}
@@ -455,10 +456,10 @@ export function DashboardPage() {
                 className="h-32 w-full rounded-2xl shadow-sm ring-1 ring-black/5 sm:order-last sm:h-28 sm:w-48 lg:w-64 dark:ring-white/10"
               />
               <div className="min-w-0 sm:flex-1">
-                <h1 className="text-2xl font-bold leading-tight tracking-tight text-theme-primary sm:text-3xl">{greeting}</h1>
-                <p className="mt-1 max-w-2xl text-sm leading-6 text-theme-secondary sm:text-base">{t('community_activity', { community: branding.name })}</p>
+                <h1 className={`text-2xl font-bold leading-tight tracking-tight text-theme-primary sm:text-3xl ${vivid.text}`}>{greeting}</h1>
+                <p className={`mt-1 max-w-2xl text-sm leading-6 text-theme-secondary sm:text-base ${vivid.text}`}>{t('community_activity', { community: branding.name })}</p>
               </div>
-              <div className="flex shrink-0 gap-3">
+              <div className={`flex shrink-0 gap-3 ${vivid.tray}`}>
                 {hasListingsModule && <Button as={Link} to={tenantPath('/listings/create')} variant="primary" size="lg" className="w-full font-semibold sm:w-auto" startContent={<Plus className="w-4 h-4" aria-hidden="true" />}>{t('new_listing')}</Button>}
               </div>
             </CardBody>

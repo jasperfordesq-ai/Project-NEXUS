@@ -30,7 +30,14 @@ import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageSetJSON } fro
 import { AA_NORMAL_TEXT_CONTRAST, ensureContrast, getAccessibleForegroundColor } from '@/lib/colorContrast';
 import { SiteAccentContext } from '@/contexts/SiteAccentContext';
 import { companionPaint } from '@/lib/categoryColours';
-import { CORNER_TOKENS, CORNER_TOKEN_NAMES, findCommunityLook, type CommunityLook } from '@/lib/communityLooks';
+import {
+  CORNER_TOKENS,
+  CORNER_TOKEN_NAMES,
+  findCommunityLook,
+  normaliseColourStrength,
+  type ColourStrength,
+  type CommunityLook,
+} from '@/lib/communityLooks';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -70,6 +77,15 @@ interface ThemeContextValue extends ThemeState, ThemePreferences {
    */
   communityLook: CommunityLook | null;
   setCommunityLook: (id: string | null) => void;
+  /**
+   * How strongly the community wears its colour (warmth phase 5): 'soft' (the
+   * default: tints) or 'vivid' (page openings and picture tiles filled with
+   * the colour). Set by TenantProvider from the bootstrap. Shown on the page
+   * as `data-colour-strength="vivid"` on <html>, which the Tailwind `vivid:`
+   * variant reads — so components need no hook to follow it.
+   */
+  communityColourStrength: ColourStrength;
+  setCommunityColourStrength: (value: string | null) => void;
   setTheme: (theme: ThemeMode) => Promise<void>;
   toggleTheme: () => Promise<void>;
   setAccentColor: (color: string) => void;
@@ -336,6 +352,7 @@ export function ThemeProvider({
   const [isInitialized, setIsInitialized] = useState(false);
   const [communityAccent, setCommunityAccentState] = useState<string | null>(null);
   const [communityLook, setCommunityLookState] = useState<CommunityLook | null>(null);
+  const [communityColourStrength, setCommunityColourStrengthState] = useState<ColourStrength>('soft');
 
   // Debounce timer for backend sync
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -402,6 +419,17 @@ export function ThemeProvider({
     }
   }, [communityLook]);
 
+  // Vivid is marked on <html> for the Tailwind `vivid:` variant (index.css).
+  // A member's high-contrast setting wins: that mode is plain surfaces with
+  // no decorative fills (glass.css and background.css switch theirs off too).
+  const showVivid = communityColourStrength === 'vivid' && !preferences.highContrast;
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const html = document.documentElement;
+    if (showVivid) html.setAttribute('data-colour-strength', 'vivid');
+    else html.removeAttribute('data-colour-strength');
+  }, [showVivid]);
+
   // Apply preferences to DOM when they change
   useEffect(() => {
     applyPreferencesToDOM(preferences, effectiveAccent, accentStrong, resolvedTheme, companion);
@@ -413,6 +441,10 @@ export function ThemeProvider({
 
   const setCommunityLook = useCallback((id: string | null) => {
     setCommunityLookState(findCommunityLook(id));
+  }, []);
+
+  const setCommunityColourStrength = useCallback((value: string | null) => {
+    setCommunityColourStrengthState(normaliseColourStrength(value));
   }, []);
 
   // Load preferences from backend on mount (if authenticated)
@@ -612,6 +644,8 @@ export function ThemeProvider({
       setCommunityAccent,
       communityLook,
       setCommunityLook,
+      communityColourStrength,
+      setCommunityColourStrength,
       accentColor: preferences.accentColor,
       fontSize: preferences.fontSize,
       density: preferences.density,
@@ -629,6 +663,7 @@ export function ThemeProvider({
     }),
     [theme, resolvedTheme, isInitialized, setTheme, toggleTheme, isLoading,
      communityAccent, setCommunityAccent, communityLook, setCommunityLook,
+     communityColourStrength, setCommunityColourStrength,
      preferences, setAccentColor, setFontSize, setDensity, setLargeText,
      setHighContrast, setReducedMotion, setSimplifiedLayout]
   );

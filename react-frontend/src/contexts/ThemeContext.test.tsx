@@ -556,4 +556,63 @@ describe('ThemeContext', () => {
       expect(radius()).toBe('');
     });
   });
+  describe('colour strength: soft or vivid (warmth phase 5)', () => {
+    function StrengthProbe({ strength, highContrast = false }: { strength: string | null; highContrast?: boolean }) {
+      const { setCommunityColourStrength, setHighContrast } = useTheme();
+      useEffect(() => {
+        setCommunityColourStrength(strength);
+        setHighContrast(highContrast);
+      }, [strength, highContrast, setCommunityColourStrength, setHighContrast]);
+      return null;
+    }
+    const strength = () => document.documentElement.getAttribute('data-colour-strength');
+
+    it('is soft unless the community chose vivid, and is taken away again', async () => {
+      const { rerender } = render(
+        <ThemeProvider>
+          <StrengthProbe strength={null} />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(strength()).toBeNull();
+
+      rerender(
+        <ThemeProvider>
+          <StrengthProbe strength="vivid" />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(strength()).toBe('vivid');
+
+      rerender(
+        <ThemeProvider>
+          <StrengthProbe strength="soft" />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(strength()).toBeNull();
+    });
+
+    it('accepts only our own two names', async () => {
+      render(
+        <ThemeProvider>
+          <StrengthProbe strength="neon" />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(strength()).toBeNull();
+    });
+
+    // High contrast is a member's own accessibility choice: plain surfaces,
+    // no decorative fills. It wins over the community's vivid look.
+    it("is switched off by the member's high-contrast setting", async () => {
+      render(
+        <ThemeProvider>
+          <StrengthProbe strength="vivid" highContrast />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(strength()).toBeNull();
+    });
+  });
 });

@@ -183,7 +183,15 @@
     "community_look_slate": "Ardoise",
     "community_look_corners_soft": "Coins doux",
     "community_look_corners_round": "Coins arrondis",
-    "community_look_corners_square": "Coins carrés"
+    "community_look_corners_square": "Coins carrés",
+    "colour_strength_title": "Quelle intensité pour la couleur ?",
+    "colour_strength_hint": "« Doux » utilise des teintes légères de votre couleur. « Vif » en remplit les en-têtes de page et les vignettes, avec un texte blanc. Les deux restent faciles à lire.",
+    "colour_strength_soft": "Doux",
+    "colour_strength_soft_hint": "Des teintes légères de votre couleur. C’est l’aspect actuel du site.",
+    "colour_strength_vivid": "Vif",
+    "colour_strength_vivid_hint": "En-têtes de page et vignettes remplis de votre couleur, avec un texte blanc.",
+    "colour_strength_preview_title": "Offres et demandes",
+    "colour_strength_preview_text": "Voici à quoi ressemblera le haut d’une page."
   },
   "operations": {
     "description": "Statistiques de cache et contrôles des tâches en arrière-plan.",

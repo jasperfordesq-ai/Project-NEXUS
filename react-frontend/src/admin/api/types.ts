@@ -2222,6 +2222,8 @@ export interface AdminSettingsResponse {
     header_accent_color?: string | null;
     /** The community colour (member website accent) — #rrggbb or null for the standard colour. */
     community_color?: string | null;
+    /** How strongly the colour is worn (warmth phase 5): 'soft' (default) or 'vivid'. */
+    colour_strength?: string | null;
   };
 }
 

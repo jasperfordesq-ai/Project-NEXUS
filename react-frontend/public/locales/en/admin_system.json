@@ -183,7 +183,15 @@
     "community_look_slate": "Slate",
     "community_look_corners_soft": "Soft corners",
     "community_look_corners_round": "Round corners",
-    "community_look_corners_square": "Square corners"
+    "community_look_corners_square": "Square corners",
+    "colour_strength_title": "How bold should the colour be?",
+    "colour_strength_hint": "Soft uses gentle tints of your colour. Vivid fills page headers and picture tiles with it, with white writing. Both stay easy to read.",
+    "colour_strength_soft": "Soft",
+    "colour_strength_soft_hint": "Gentle tints of your colour. This is how the site looks now.",
+    "colour_strength_vivid": "Vivid",
+    "colour_strength_vivid_hint": "Page headers and picture tiles filled with your colour, with white writing.",
+    "colour_strength_preview_title": "Offers and requests",
+    "colour_strength_preview_text": "This is how the top of a page will look."
   },
   "operations": {
     "title": "Operations",

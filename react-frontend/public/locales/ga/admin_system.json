@@ -183,7 +183,15 @@
     "community_look_slate": "Slinn",
     "community_look_corners_soft": "Coirnéil bhoga",
     "community_look_corners_round": "Coirnéil chruinne",
-    "community_look_corners_square": "Coirnéil chearnacha"
+    "community_look_corners_square": "Coirnéil chearnacha",
+    "colour_strength_title": "Cé chomh láidir is ceart an dath a bheith?",
+    "colour_strength_hint": "Úsáideann «Bog» imireacha éadroma de do dhath. Líonann «Beoga» ceanntásca leathanach agus tíleanna pictiúr leis, le scríbhinn bhán. Tá an dá cheann éasca le léamh.",
+    "colour_strength_soft": "Bog",
+    "colour_strength_soft_hint": "Imireacha éadroma de do dhath. Seo mar a bhreathnaíonn an suíomh anois.",
+    "colour_strength_vivid": "Beoga",
+    "colour_strength_vivid_hint": "Ceanntásca leathanach agus tíleanna pictiúr líonta le do dhath, le scríbhinn bhán.",
+    "colour_strength_preview_title": "Tairiscintí agus iarratais",
+    "colour_strength_preview_text": "Seo mar a bhreathnóidh barr leathanaigh."
   },
   "operations": {
     "description": "Staitisticí taisce agus rialuithe poist chúlra.",

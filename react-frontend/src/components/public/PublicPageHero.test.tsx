@@ -320,3 +320,55 @@ describe('PublicPageHeroStrip — the phone-sized opening', () => {
     expect(screen.queryByRole('heading')).toBeNull();
   });
 });
+
+// Warmth phase 5. A community that chose "vivid" gets its openings FILLED
+// with its colour. The classes are Tailwind `vivid:` variants, switched on by
+// <html data-colour-strength="vivid">, so soft communities are untouched.
+// Readability is by construction: white text only ever sits on the button
+// shade (accent-strong), and anything a page passes in sits on its own tray.
+describe('PublicPageHero — the vivid colour strength', () => {
+  const section = () => document.querySelector('[data-public-page-hero="true"]') as HTMLElement;
+
+  it('fills the panel with the button shade and turns the title and text white', () => {
+    render(<PublicPageHero {...defaultProps} accent="amber" />);
+    const panel = section().className;
+    expect(panel).toContain('vivid:from-accent-strong');
+    expect(panel).toContain('vivid:to-accent-strong-end');
+    expect(screen.getByRole('heading', { level: 1 }).className).toContain('vivid:text-white!');
+    expect(screen.getByText('Discover how timebanking works.').className).toContain('vivid:text-white!');
+    // Soft stays exactly as it was.
+    expect(panel).toContain('bg-amber-500/10');
+    expect(screen.getByRole('heading', { level: 1 }).className).toContain('text-theme-primary');
+  });
+
+  it('hides the pale glow, which would lighten the fill under white text', () => {
+    render(<PublicPageHero {...defaultProps} />);
+    expect(document.querySelector('[data-hero-glow="true"]')?.className).toContain('vivid:hidden');
+  });
+
+  it('puts the small label on a white pill with the button shade as its text', () => {
+    render(<PublicPageHero {...defaultProps} />);
+    const chip = screen.getByText('Featured Section').closest('[data-slot="chip"]');
+    expect(chip?.className).toContain('vivid:bg-white');
+    expect(chip?.className).toContain('vivid:text-accent-strong!');
+  });
+
+  it("sits whatever the page passes in (buttons, links) on a tray of the page's own surface", () => {
+    render(<PublicPageHero {...defaultProps} action={<button type="button">Create</button>} />);
+    const tray = screen.getByRole('button', { name: 'Create' }).closest('[data-hero-action="true"]');
+    expect(tray).not.toBeNull();
+    expect(tray?.className).toContain('vivid:bg-surface');
+  });
+
+  it('adds no tray when the page passes nothing in', () => {
+    render(<PublicPageHero {...defaultProps} />);
+    expect(document.querySelector('[data-hero-action="true"]')).toBeNull();
+  });
+
+  it('gives the phone-sized strip the same fill and white text', () => {
+    render(<PublicPageHeroStrip text="Connect with members" icon={<span />} />);
+    const strip = document.querySelector('[data-public-page-hero-strip="true"]') as HTMLElement;
+    expect(strip.className).toContain('vivid:from-accent-strong');
+    expect(screen.getByText('Connect with members').className).toContain('vivid:text-white!');
+  });
+});

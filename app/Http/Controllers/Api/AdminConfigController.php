@@ -988,6 +988,8 @@ class AdminConfigController extends BaseApiController
         $generalSettings['community_color'] = $this->normalizeHexColor($config['primary_color'] ?? null);
         // The ready-made look chosen with it (warmth plan D1), or null.
         $generalSettings['community_look'] = \App\Support\CommunityLook::normalize($config['community_look'] ?? null);
+        // How strongly the colour is worn (warmth phase 5): soft unless vivid was chosen.
+        $generalSettings['colour_strength'] = \App\Support\ColourStrength::fromStored($config['colour_strength'] ?? null);
 
         return $this->respondWithData([
             'tenant_id' => $tenantId,
@@ -1204,7 +1206,12 @@ class AdminConfigController extends BaseApiController
      * Also saves the ready-made look (`community_look`, warmth plan D1): one of
      * App\Support\CommunityLook::ALLOWED, stored as configuration.community_look.
      *
-     * Each of the four keys is optional: a key that is not sent keeps its
+     * Also saves how strongly the colour is worn (`colour_strength`, warmth
+     * phase 5): "soft" or "vivid" (App\Support\ColourStrength). Only "vivid" is
+     * stored, as configuration.colour_strength; "soft" removes the key, so a
+     * community that never chose is soft.
+     *
+     * Each of the five keys is optional: a key that is not sent keeps its
      * stored value; a key sent empty clears it.
      */
     public function saveHeaderColors(): JsonResponse
@@ -1239,6 +1246,25 @@ class AdminConfigController extends BaseApiController
                 'community_look',
                 422,
             );
+        }
+
+        // Soft or vivid. Empty means soft; anything else that is not one of
+        // ours is refused, because the name reaches the page's theme.
+        $sentStrength = array_key_exists('colour_strength', $input);
+        $rawStrength = $input['colour_strength'] ?? null;
+        $strength = \App\Support\ColourStrength::fromStored($config['colour_strength'] ?? null);
+        if ($sentStrength) {
+            $isEmpty = $rawStrength === null || (is_string($rawStrength) && trim($rawStrength) === '');
+            $normalised = \App\Support\ColourStrength::normalize($rawStrength);
+            if (!$isEmpty && $normalised === null) {
+                return $this->respondWithError(
+                    'VALIDATION_ERROR',
+                    __('api.invalid_colour_strength'),
+                    'colour_strength',
+                    422,
+                );
+            }
+            $strength = $normalised ?? \App\Support\ColourStrength::SOFT;
         }
 
         if ($sentCommunity && is_string($rawCommunity) && trim($rawCommunity) !== '') {
@@ -1281,7 +1307,7 @@ class AdminConfigController extends BaseApiController
         }
 
         try {
-            DB::transaction(function () use ($tenantId, $bg, $accent, $community, $look, $sentBg, $sentAccent, $sentCommunity, $sentLook): void {
+            DB::transaction(function () use ($tenantId, $bg, $accent, $community, $look, $strength, $sentBg, $sentAccent, $sentCommunity, $sentLook, $sentStrength): void {
                 if ($sentBg) {
                     $this->setTenantConfigValue($tenantId, 'header_bg_color', $bg);
                 }
@@ -1293,6 +1319,14 @@ class AdminConfigController extends BaseApiController
                 }
                 if ($sentLook) {
                     $this->setTenantConfigValue($tenantId, 'community_look', $look);
+                }
+                if ($sentStrength) {
+                    // Only "vivid" is stored; soft is the absence of a value.
+                    $this->setTenantConfigValue(
+                        $tenantId,
+                        'colour_strength',
+                        $strength === \App\Support\ColourStrength::VIVID ? $strength : null,
+                    );
                 }
                 app(PrerenderContentInvalidator::class)->refreshTenantOrFail($tenantId, true);
             });
@@ -1306,6 +1340,7 @@ class AdminConfigController extends BaseApiController
             'header_accent_color' => $accent,
             'community_color' => $community,
             'community_look' => $look,
+            'colour_strength' => $strength,
         ]);
     }
 

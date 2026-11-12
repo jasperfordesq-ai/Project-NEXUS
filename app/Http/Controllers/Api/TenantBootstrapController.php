@@ -907,6 +907,13 @@ class TenantBootstrapController extends BaseApiController
             $branding['community_look'] = $communityLook;
         }
 
+        // How strongly the colour is worn (warmth phase 5). Published only when
+        // an admin chose "vivid": soft is the default and sends nothing, so a
+        // community that never chose looks exactly as it did.
+        if (\App\Support\ColourStrength::fromStored($config['colour_strength'] ?? null) === \App\Support\ColourStrength::VIVID) {
+            $branding['colour_strength'] = \App\Support\ColourStrength::VIVID;
+        }
+
         // Accessible (web-uk) header colours, set on Admin → Settings → "Accessible
         // header colour" (AdminConfigController::saveHeaderColors). Published only
         // as strict #rrggbb so a frontend can put them straight into CSS. Until

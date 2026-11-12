@@ -71,3 +71,24 @@ export function findCommunityLook(id: unknown): CommunityLook | null {
   const key = id.trim().toLowerCase();
   return COMMUNITY_LOOKS.find((look) => look.id === key) ?? null;
 }
+
+/**
+ * How strongly a community wears its colour (warmth phase 5).
+ *
+ * - `soft`: the colour as tints — soft page openings, pale picture tiles.
+ *   The default, and what every community had before this setting existed.
+ * - `vivid`: page openings, picture tiles and selected items FILLED with the
+ *   colour, with white text on them. Every vivid fill is the button shade
+ *   (`accent-strong`), which carries white text at 4.5:1 for any colour.
+ *
+ * The server stores the name (configuration.colour_strength) and checks it
+ * against the same two names (app/Support/ColourStrength.php) — keep in step.
+ */
+export type ColourStrength = 'soft' | 'vivid';
+
+export const COLOUR_STRENGTHS: readonly ColourStrength[] = ['soft', 'vivid'];
+
+/** One of our two names; anything else (missing, unknown) is soft. */
+export function normaliseColourStrength(value: unknown): ColourStrength {
+  return value === 'vivid' ? 'vivid' : 'soft';
+}

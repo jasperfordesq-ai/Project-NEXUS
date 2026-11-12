@@ -11,6 +11,7 @@
  */
 
 import type { AdminSettingsResponse } from '../../../api/types';
+import { normaliseColourStrength } from '@/lib/communityLooks';
 
 export type RegistrationMode = 'open' | 'invite_only' | 'closed';
 
@@ -69,6 +70,7 @@ export interface SettingsForm {
   header_accent_color: string;    // tenants.configuration.header_accent_color ('' = match background)
   community_color: string;        // tenants.configuration.primary_color ('' = the standard colour)
   community_look: string;         // tenants.configuration.community_look ('' = no ready-made look)
+  colour_strength: string;        // tenants.configuration.colour_strength ('soft' = default, or 'vivid')
 }
 
 export type SettingsFormKey = keyof SettingsForm;
@@ -137,6 +139,7 @@ export const DEFAULT_SETTINGS: SettingsForm = {
   header_accent_color: '',
   community_color: '',
   community_look: '',
+  colour_strength: 'soft',
 };
 
 /**
@@ -204,6 +207,7 @@ export function settingsFromResponse(data: AdminSettingsResponse): SettingsForm 
     header_accent_color: str(settings.header_accent_color),
     community_color: str(settings.community_color),
     community_look: str(settings.community_look),
+    colour_strength: normaliseColourStrength(settings.colour_strength),
   };
 }
 
@@ -251,9 +255,10 @@ export const PAYLOAD_RULES: Partial<Record<SettingsFormKey, PayloadRule>> = {
   header_accent_color: { endpoint: 'colors' },
   community_color: { endpoint: 'colors' },
   community_look: { endpoint: 'colors' },
+  colour_strength: { endpoint: 'colors' },
 };
 
-export const COLOR_KEYS: SettingsFormKey[] = ['header_bg_color', 'header_accent_color', 'community_color', 'community_look'];
+export const COLOR_KEYS: SettingsFormKey[] = ['header_bg_color', 'header_accent_color', 'community_color', 'community_look', 'colour_strength'];
 
 export function changedKeys(form: SettingsForm, original: SettingsForm): SettingsFormKey[] {
   return (Object.keys(form) as SettingsFormKey[]).filter((k) => form[k] !== original[k]);

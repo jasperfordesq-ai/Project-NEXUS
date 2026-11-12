@@ -183,7 +183,15 @@
     "community_look_slate": "Łupek",
     "community_look_corners_soft": "Łagodne rogi",
     "community_look_corners_round": "Zaokrąglone rogi",
-    "community_look_corners_square": "Kwadratowe rogi"
+    "community_look_corners_square": "Kwadratowe rogi",
+    "colour_strength_title": "Jak mocny ma być kolor?",
+    "colour_strength_hint": "„Łagodne” używa delikatnych odcieni Twojego koloru. „Wyraziste” wypełnia nim nagłówki stron i kafelki z obrazkami, z białym tekstem. Oba są łatwe do czytania.",
+    "colour_strength_soft": "Łagodne",
+    "colour_strength_soft_hint": "Delikatne odcienie Twojego koloru. Tak strona wygląda teraz.",
+    "colour_strength_vivid": "Wyraziste",
+    "colour_strength_vivid_hint": "Nagłówki stron i kafelki z obrazkami wypełnione Twoim kolorem, z białym tekstem.",
+    "colour_strength_preview_title": "Oferty i prośby",
+    "colour_strength_preview_text": "Tak będzie wyglądać góra strony."
   },
   "operations": {
     "description": "Statystyki pamięci podręcznej i kontrola zadań w tle.",

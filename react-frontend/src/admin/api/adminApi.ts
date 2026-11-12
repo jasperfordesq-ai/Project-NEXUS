@@ -2401,8 +2401,9 @@ export const adminSettings = {
     accentColor: string | null,
     communityColor: string | null,
     communityLook?: string | null,
+    colourStrength?: 'soft' | 'vivid',
   ) =>
-    api.put<{ header_bg_color: string | null; header_accent_color: string | null; community_color: string | null; community_look?: string | null }>(
+    api.put<{ header_bg_color: string | null; header_accent_color: string | null; community_color: string | null; community_look?: string | null; colour_strength?: 'soft' | 'vivid' }>(
       '/v2/admin/settings/header-colors',
       {
         bg_color: bgColor ?? '',
@@ -2411,6 +2412,8 @@ export const adminSettings = {
         // Sent only when the form knows it (warmth plan D1); left out, the
         // stored look is kept.
         ...(communityLook === undefined ? {} : { community_look: communityLook ?? '' }),
+        // Soft or vivid (warmth phase 5); left out, the stored choice is kept.
+        ...(colourStrength === undefined ? {} : { colour_strength: colourStrength }),
       },
     ),
 

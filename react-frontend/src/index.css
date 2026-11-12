@@ -28,6 +28,14 @@
 /* HeroUI dark mode variant */
 @custom-variant dark (&:is(.dark *));
 
+/* A community that chose the VIVID colour strength (warmth phase 5):
+   ThemeContext marks <html data-colour-strength="vivid">, and `vivid:` classes
+   fill a surface with the community colour instead of tinting it. Every vivid
+   fill is the button shade (accent-strong), which carries white text at 4.5:1
+   for any colour — see src/test/vivid-fill.contract.test.ts. Soft is the
+   default and has no marker, so a page without the attribute is unchanged. */
+@custom-variant vivid (&:is([data-colour-strength="vivid"] *));
+
 /* ─────────────────────────────────────────────
    DESIGN SYSTEM IMPORTS
    ───────────────────────────────────────────── */

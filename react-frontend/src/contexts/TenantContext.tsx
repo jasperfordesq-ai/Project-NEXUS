@@ -18,7 +18,7 @@
  * @see docs/TRS-001-TENANT-RESOLUTION-SPEC.md
  */
 
-import { findCommunityLook } from '@/lib/communityLooks';
+import { findCommunityLook, normaliseColourStrength } from '@/lib/communityLooks';
 import {
   createContext,
   use,
@@ -606,6 +606,8 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
       communityColor,
       // Only one of our own look names (warmth plan D1), else null.
       communityLook: findCommunityLook(raw.community_look)?.id ?? null,
+      // 'vivid' only when the server says so (warmth phase 5); else soft.
+      colourStrength: normaliseColourStrength(raw.colour_strength),
       communityPhoto,
     };
   }, [state.tenant]);
@@ -622,6 +624,10 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
   useEffect(() => {
     setCommunityLook?.(branding.communityLook ?? null);
   }, [branding.communityLook, setCommunityLook]);
+  const setCommunityColourStrength = theme?.setCommunityColourStrength;
+  useEffect(() => {
+    setCommunityColourStrength?.(branding.colourStrength ?? null);
+  }, [branding.colourStrength, setCommunityColourStrength]);
 
   /**
    * Get listing config with fallback to defaults

@@ -183,7 +183,15 @@
     "community_look_slate": "Pizarra",
     "community_look_corners_soft": "Esquinas suaves",
     "community_look_corners_round": "Esquinas redondeadas",
-    "community_look_corners_square": "Esquinas rectas"
+    "community_look_corners_square": "Esquinas rectas",
+    "colour_strength_title": "¿Qué intensidad debe tener el color?",
+    "colour_strength_hint": "«Suave» usa tonos delicados de tu color. «Intenso» rellena con él las cabeceras de página y las fichas de imagen, con letras blancas. Ambos se leen con facilidad.",
+    "colour_strength_soft": "Suave",
+    "colour_strength_soft_hint": "Tonos delicados de tu color. Así se ve el sitio ahora.",
+    "colour_strength_vivid": "Intenso",
+    "colour_strength_vivid_hint": "Cabeceras de página y fichas de imagen rellenas con tu color, con letras blancas.",
+    "colour_strength_preview_title": "Ofertas y solicitudes",
+    "colour_strength_preview_text": "Así se verá la parte superior de una página."
   },
   "operations": {
     "description": "Estadísticas de caché y controles de trabajos en segundo plano.",

@@ -67,7 +67,7 @@ import { RegistrationSection, REGISTRATION_SECTION_ID } from './sections/Registr
 const SECTION_FIELDS: Record<string, SettingsFormKey[]> = {
   [GENERAL_SECTION_ID]: ['name', 'description', 'contact_email', 'contact_phone', 'default_currency', 'region'],
   [BRANDING_SECTION_ID]: ['footer_text', 'partner_logo_url', 'partner_logo_label', 'partner_logo_link_url'],
-  [COMMUNITY_COLOUR_SECTION_ID]: ['community_color', 'community_look'],
+  [COMMUNITY_COLOUR_SECTION_ID]: ['community_color', 'community_look', 'colour_strength'],
   [COMMUNITY_PHOTO_SECTION_ID]: [],
   [HEADER_LOGO_SECTION_ID]: [],
   [HEADER_COLORS_SECTION_ID]: ['header_bg_color', 'header_accent_color'],

@@ -183,7 +183,15 @@
     "community_look_slate": "Schiefer",
     "community_look_corners_soft": "Weiche Ecken",
     "community_look_corners_round": "Runde Ecken",
-    "community_look_corners_square": "Eckige Ecken"
+    "community_look_corners_square": "Eckige Ecken",
+    "colour_strength_title": "Wie kräftig soll die Farbe sein?",
+    "colour_strength_hint": "„Dezent“ verwendet zarte Töne Ihrer Farbe. „Kräftig“ füllt Seitenköpfe und Bildkacheln damit, mit weißer Schrift. Beides bleibt gut lesbar.",
+    "colour_strength_soft": "Dezent",
+    "colour_strength_soft_hint": "Zarte Töne Ihrer Farbe. So sieht die Website jetzt aus.",
+    "colour_strength_vivid": "Kräftig",
+    "colour_strength_vivid_hint": "Seitenköpfe und Bildkacheln in Ihrer Farbe, mit weißer Schrift.",
+    "colour_strength_preview_title": "Angebote und Gesuche",
+    "colour_strength_preview_text": "So sieht der obere Teil einer Seite aus."
   },
   "operations": {
     "description": "Cache-Statistiken und Hintergrundjobkontrollen.",

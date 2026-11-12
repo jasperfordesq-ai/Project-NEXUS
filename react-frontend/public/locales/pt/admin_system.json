@@ -183,7 +183,15 @@
     "community_look_slate": "Ardósia",
     "community_look_corners_soft": "Cantos suaves",
     "community_look_corners_round": "Cantos arredondados",
-    "community_look_corners_square": "Cantos retos"
+    "community_look_corners_square": "Cantos retos",
+    "colour_strength_title": "Que intensidade deve ter a cor?",
+    "colour_strength_hint": "«Suave» usa tons leves da sua cor. «Vivo» preenche com ela os cabeçalhos das páginas e os mosaicos de imagem, com letras brancas. Ambos continuam fáceis de ler.",
+    "colour_strength_soft": "Suave",
+    "colour_strength_soft_hint": "Tons leves da sua cor. É o aspeto atual do site.",
+    "colour_strength_vivid": "Vivo",
+    "colour_strength_vivid_hint": "Cabeçalhos das páginas e mosaicos de imagem preenchidos com a sua cor, com letras brancas.",
+    "colour_strength_preview_title": "Ofertas e pedidos",
+    "colour_strength_preview_text": "É assim que ficará o topo de uma página."
   },
   "operations": {
     "description": "Estatísticas de cache e controles de trabalho em segundo plano.",

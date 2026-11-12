@@ -1350,6 +1350,12 @@ export interface TenantBranding {
   communityLook?: string | null;
   community_look?: string; // raw backend field
   /**
+   * How strongly the community wears its colour (warmth phase 5): 'soft'
+   * (default) or 'vivid'. The server sends `colour_strength` only when vivid.
+   */
+  colourStrength?: 'soft' | 'vivid';
+  colour_strength?: string; // raw backend field
+  /**
    * The community's own photo (Admin → Settings → "Community photo"), an
    * uploads path, or null. Normalised from community_photo_url.
    */

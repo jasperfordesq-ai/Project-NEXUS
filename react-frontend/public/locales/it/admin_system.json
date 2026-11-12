@@ -183,7 +183,15 @@
     "community_look_slate": "Ardesia",
     "community_look_corners_soft": "Angoli morbidi",
     "community_look_corners_round": "Angoli arrotondati",
-    "community_look_corners_square": "Angoli squadrati"
+    "community_look_corners_square": "Angoli squadrati",
+    "colour_strength_title": "Quanto deve essere intenso il colore?",
+    "colour_strength_hint": "«Tenue» usa tinte delicate del tuo colore. «Vivace» riempie con il colore le intestazioni di pagina e i riquadri delle immagini, con scritte bianche. Entrambi restano facili da leggere.",
+    "colour_strength_soft": "Tenue",
+    "colour_strength_soft_hint": "Tinte delicate del tuo colore. È l’aspetto attuale del sito.",
+    "colour_strength_vivid": "Vivace",
+    "colour_strength_vivid_hint": "Intestazioni di pagina e riquadri delle immagini riempiti con il tuo colore, con scritte bianche.",
+    "colour_strength_preview_title": "Offerte e richieste",
+    "colour_strength_preview_text": "Ecco come apparirà la parte alta di una pagina."
   },
   "operations": {
     "description": "Statistiche della cache e controlli del lavoro in background.",

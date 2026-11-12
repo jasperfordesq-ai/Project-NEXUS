@@ -8,6 +8,7 @@ import Sparkles from 'lucide-react/icons/sparkles';
 import { Chip } from '@/components/ui';
 import { useCommunityAccent } from '@/contexts/ThemeContext';
 import { FaceStack, type FaceStackPerson } from '@/components/ui/FaceStack';
+import { vivid } from '@/lib/vivid';
 
 interface PublicPageHeroStat {
   label: string;
@@ -51,8 +52,8 @@ const sizeClasses = {
     section: 'px-5 py-6 sm:px-8 sm:py-8',
     layout: 'flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between',
     tile: 'hidden rounded-2xl bg-gradient-to-br p-3 shadow-sm sm:inline-flex',
-    title: 'text-3xl font-bold tracking-tight text-theme-primary sm:text-4xl',
-    description: 'mt-3 max-w-2xl text-base leading-7 text-theme-secondary',
+    title: 'text-3xl font-bold tracking-tight text-theme-primary vivid:text-white! sm:text-4xl',
+    description: 'mt-3 max-w-2xl text-base leading-7 text-theme-secondary vivid:text-white!',
   },
   // Slimmer on phones (warmth plan W7): an everyday page's opening took up to a
   // third of a phone screen. The small label above the title is left out there
@@ -61,8 +62,8 @@ const sizeClasses = {
     section: 'px-4 py-4 sm:px-6 sm:py-5',
     layout: 'flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between',
     tile: 'inline-flex shrink-0 rounded-2xl bg-gradient-to-br p-2.5 shadow-sm',
-    title: 'text-2xl font-bold tracking-tight text-theme-primary sm:text-3xl',
-    description: 'mt-1 max-w-2xl text-sm leading-6 text-theme-secondary sm:text-base',
+    title: 'text-2xl font-bold tracking-tight text-theme-primary vivid:text-white! sm:text-3xl',
+    description: 'mt-1 max-w-2xl text-sm leading-6 text-theme-secondary vivid:text-white! sm:text-base',
   },
 } as const;
 
@@ -158,12 +159,12 @@ export function PublicPageHero({
     <section
       data-public-page-hero="true"
       data-size={size}
-      className={`relative overflow-hidden rounded-3xl ${sized.section} ${classes.panel}`}
+      className={`relative overflow-hidden rounded-3xl ${sized.section} ${classes.panel} ${vivid.panel}`}
     >
       <div
         aria-hidden="true"
         data-hero-glow="true"
-        className={`hero-glow pointer-events-none absolute -right-16 -top-24 size-48 rounded-full blur-3xl sm:size-72 ${classes.glow}`}
+        className={`hero-glow pointer-events-none absolute -right-16 -top-24 size-48 rounded-full blur-3xl sm:size-72 ${classes.glow} ${vivid.glow}`}
       />
       <div className={`relative ${sized.layout}`}>
         <div className="min-w-0 max-w-3xl">
@@ -176,14 +177,14 @@ export function PublicPageHero({
               color={classes.chipColor}
               size="sm"
               variant="soft"
-              className={`${size === 'compact' ? 'mb-3 max-sm:hidden' : 'mb-4'} py-1 font-medium ${classes.chipText}`}
+              className={`${size === 'compact' ? 'mb-3 max-sm:hidden' : 'mb-4'} py-1 font-medium ${classes.chipText} ${vivid.chip}`}
               startContent={<Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
             >
               {eyebrow}
             </Chip>
           )}
           <div className={`flex gap-4 ${size === 'compact' ? 'items-center' : 'items-start'}`}>
-            <div className={`${sized.tile} ${classes.icon}`}>
+            <div className={`${sized.tile} ${classes.icon} ${vivid.tile}`}>
               {icon}
             </div>
             <div className="min-w-0">
@@ -191,7 +192,7 @@ export function PublicPageHero({
                 id={headingId}
                 tabIndex={headingFocusable ? -1 : undefined}
                 className={headingFocusable
-                  ? `${sized.title} scroll-mt-24 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4`
+                  ? `${sized.title} scroll-mt-24 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 vivid:outline-white`
                   : sized.title}
               >
                 {title}
@@ -228,7 +229,11 @@ export function PublicPageHero({
                 ))}
               </div>
             ) : null}
-            {action}
+            {action ? (
+              <div data-hero-action="true" className={`flex flex-col gap-3 sm:flex-row sm:items-center ${vivid.tray}`}>
+                {action}
+              </div>
+            ) : null}
           </div>
         )}
       </div>
@@ -259,16 +264,16 @@ export function PublicPageHeroStrip({ text, icon, accent = 'indigo', people }: P
   return (
     <div
       data-public-page-hero-strip="true"
-      className={`relative flex items-center gap-3 overflow-hidden rounded-2xl px-3 py-2.5 ${classes.panel}`}
+      className={`relative flex items-center gap-3 overflow-hidden rounded-2xl px-3 py-2.5 ${classes.panel} ${vivid.panel}`}
     >
       <div
         aria-hidden="true"
-        className={`hero-glow pointer-events-none absolute -right-10 -top-16 size-32 rounded-full blur-2xl ${classes.glow}`}
+        className={`hero-glow pointer-events-none absolute -right-10 -top-16 size-32 rounded-full blur-2xl ${classes.glow} ${vivid.glow}`}
       />
-      <div className={`relative inline-flex shrink-0 rounded-xl bg-gradient-to-br p-2 [&_svg]:size-5 ${classes.icon}`}>
+      <div className={`relative inline-flex shrink-0 rounded-xl bg-gradient-to-br p-2 [&_svg]:size-5 ${classes.icon} ${vivid.tile}`}>
         {icon}
       </div>
-      <p className="relative min-w-0 flex-1 text-sm leading-5 text-theme-secondary line-clamp-2">{text}</p>
+      <p className={`relative min-w-0 flex-1 text-sm leading-5 text-theme-secondary line-clamp-2 ${vivid.text}`}>{text}</p>
       {people && people.length > 0 && (
         <FaceStack people={people} max={3} size="sm" data-testid="hero-strip-face" className="relative" />
       )}

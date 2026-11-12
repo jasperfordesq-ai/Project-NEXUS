@@ -140,7 +140,7 @@ export function EmptyState({
           <span className="absolute -right-7 bottom-2 size-4 rounded-full ring-2 ring-accent/25" />
           <div
             data-testid="empty-state-icon"
-            className="relative inline-flex size-20 items-center justify-center rounded-full bg-accent-soft text-accent-soft-foreground ring-8 ring-accent/5 [&_svg]:size-9 [&_svg]:text-accent-soft-foreground!"
+            className="relative inline-flex size-20 items-center justify-center rounded-full bg-accent-soft text-accent-soft-foreground ring-8 ring-accent/5 [&_svg]:size-9 [&_svg]:text-accent-soft-foreground! vivid:bg-accent-strong vivid:text-white! vivid:[&_svg]:text-white!"
           >
             {icon || <Inbox />}
           </div>

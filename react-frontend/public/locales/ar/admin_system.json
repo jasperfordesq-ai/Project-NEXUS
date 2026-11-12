@@ -183,7 +183,15 @@
     "community_look_slate": "الأردواز",
     "community_look_corners_soft": "زوايا ناعمة",
     "community_look_corners_round": "زوايا مستديرة",
-    "community_look_corners_square": "زوايا مربعة"
+    "community_look_corners_square": "زوايا مربعة",
+    "colour_strength_title": "ما مدى قوة اللون؟",
+    "colour_strength_hint": "«هادئ» يستخدم درجات خفيفة من لونكم. «زاهٍ» يملأ رؤوس الصفحات ومربعات الصور باللون مع كتابة بيضاء. كلاهما يبقى سهل القراءة.",
+    "colour_strength_soft": "هادئ",
+    "colour_strength_soft_hint": "درجات خفيفة من لونكم. هكذا يبدو الموقع الآن.",
+    "colour_strength_vivid": "زاهٍ",
+    "colour_strength_vivid_hint": "رؤوس الصفحات ومربعات الصور مملوءة بلونكم مع كتابة بيضاء.",
+    "colour_strength_preview_title": "العروض والطلبات",
+    "colour_strength_preview_text": "هكذا سيبدو أعلى الصفحة."
   },
   "operations": {
     "description": "إحصائيات ذاكرة التخزين المؤقت وضوابط العمل في الخلفية.",

@@ -183,7 +183,15 @@
     "community_look_slate": "Leisteen",
     "community_look_corners_soft": "Zachte hoeken",
     "community_look_corners_round": "Ronde hoeken",
-    "community_look_corners_square": "Vierkante hoeken"
+    "community_look_corners_square": "Vierkante hoeken",
+    "colour_strength_title": "Hoe krachtig moet de kleur zijn?",
+    "colour_strength_hint": "Zacht gebruikt lichte tinten van je kleur. Levendig vult paginakoppen en afbeeldingstegels ermee, met witte letters. Beide blijven goed leesbaar.",
+    "colour_strength_soft": "Zacht",
+    "colour_strength_soft_hint": "Lichte tinten van je kleur. Zo ziet de site er nu uit.",
+    "colour_strength_vivid": "Levendig",
+    "colour_strength_vivid_hint": "Paginakoppen en afbeeldingstegels gevuld met je kleur, met witte letters.",
+    "colour_strength_preview_title": "Aanbod en verzoeken",
+    "colour_strength_preview_text": "Zo ziet de bovenkant van een pagina eruit."
   },
   "operations": {
     "description": "Cachestatistieken en taakcontroles op de achtergrond.",

@@ -183,7 +183,15 @@
     "community_look_slate": "スレート",
     "community_look_corners_soft": "やわらかい角",
     "community_look_corners_round": "丸い角",
-    "community_look_corners_square": "四角い角"
+    "community_look_corners_square": "四角い角",
+    "colour_strength_title": "色の強さを選んでください",
+    "colour_strength_hint": "「やわらか」はコミュニティの色を淡く使います。「あざやか」はページの見出し部分や画像タイルをその色で塗り、文字を白にします。どちらも読みやすさは保たれます。",
+    "colour_strength_soft": "やわらか",
+    "colour_strength_soft_hint": "コミュニティの色を淡く使います。現在のサイトの見た目です。",
+    "colour_strength_vivid": "あざやか",
+    "colour_strength_vivid_hint": "ページの見出し部分や画像タイルをコミュニティの色で塗り、文字を白にします。",
+    "colour_strength_preview_title": "提供とリクエスト",
+    "colour_strength_preview_text": "ページの上部はこのように表示されます。"
   },
   "operations": {
     "description": "キャッシュ統計とバックグラウンド ジョブ制御。",

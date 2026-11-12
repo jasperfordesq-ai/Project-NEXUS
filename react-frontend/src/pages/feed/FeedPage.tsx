@@ -75,6 +75,7 @@ import { MobileFAB } from '@/components/feed/MobileFAB';
 import type { AdItem } from '@/components/feed/FeedAdCard';
 import { FeedEmptyIllustration } from '@/components/illustrations';
 import { CommunityPhoto } from '@/components/branding/CommunityPhoto';
+import { vivid } from '@/lib/vivid';
 import type { FeedItem, FeedFilter, PollData } from '@/components/feed/types';
 import { getAuthor, excludeGamificationMilestones } from '@/components/feed/types';
 import type { ReactionType } from '@/components/social';
@@ -996,22 +997,22 @@ export function FeedPage() {
           A soft panel in the community colour with a greeting for the time of
           day, like the offers page and the dashboard (AWID: warmth). Text on
           the tint uses the darker secondary token so it stays readable. */}
-      <section data-testid="feed-header" className="relative hidden overflow-hidden rounded-3xl bg-accent-soft sm:block">
+      <section data-testid="feed-header" className={`relative hidden overflow-hidden rounded-3xl bg-accent-soft sm:block ${vivid.panel}`}>
         {/* The same soft glow of the companion colour as every other page
             opening; in the bottom corner here, clear of the photo band. */}
-        <div aria-hidden="true" data-hero-glow="true" className="hero-glow pointer-events-none absolute -bottom-24 -right-16 size-72 rounded-full blur-3xl" />
+        <div aria-hidden="true" data-hero-glow="true" className={`hero-glow pointer-events-none absolute -bottom-24 -right-16 size-72 rounded-full blur-3xl ${vivid.glow}`} />
         {/* The community's own photo, when it has one, as a band across the top. */}
         <CommunityPhoto data-testid="feed-header-photo" className="relative block h-28 w-full lg:h-36" />
         <div className="relative flex items-center gap-4 px-5 py-5 sm:px-6">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-accent shadow-sm ring-1 ring-accent/15 dark:bg-white/10">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-accent shadow-sm ring-1 ring-accent/15 dark:bg-white/10 vivid:bg-white vivid:text-accent-strong">
             <Newspaper className="w-6 h-6" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
-            {isAuthenticated && <p className="text-sm font-semibold text-theme-secondary">{greeting}</p>}
-            <h1 className="text-balance text-3xl font-bold leading-tight tracking-tight text-theme-primary">{t('title')}</h1>
-            <p className="mt-1 max-w-xl text-sm leading-6 text-theme-secondary">{t('subtitle')}</p>
+            {isAuthenticated && <p className={`text-sm font-semibold text-theme-secondary ${vivid.text}`}>{greeting}</p>}
+            <h1 className={`text-balance text-3xl font-bold leading-tight tracking-tight text-theme-primary ${vivid.text}`}>{t('title')}</h1>
+            <p className={`mt-1 max-w-xl text-sm leading-6 text-theme-secondary ${vivid.text}`}>{t('subtitle')}</p>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className={`flex shrink-0 items-center gap-2 ${vivid.tray}`}>
             {!isLoading && items.length > 0 && (
               <Chip size="sm" variant="flat" className="bg-white/70 text-accent-soft-foreground dark:bg-white/10">
                 {t('items_loaded', { count: items.length })}
@@ -1029,8 +1030,8 @@ export function FeedPage() {
             )}
           </div>
         </div>
-        <div className="border-t border-accent/15 bg-white/40 px-5 py-2.5 sm:px-6 dark:bg-white/5">
-          <p className="text-xs font-medium uppercase tracking-wide text-theme-secondary">
+        <div className="border-t border-accent/15 bg-white/40 px-5 py-2.5 sm:px-6 dark:bg-white/5 vivid:border-transparent vivid:bg-transparent">
+          <p className={`text-xs font-medium uppercase tracking-wide text-theme-secondary ${vivid.text}`}>
             {t('feed.current_view', { filter: activeFilterLabel })}
           </p>
         </div>

@@ -16,13 +16,13 @@ import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import Paintbrush from 'lucide-react/icons/paintbrush';
 import { Alert, Button, Chip, ColorSwatchPicker, Label, Link } from '@/components/ui';
-import { AA_NORMAL_TEXT_CONTRAST, getAccessibleForegroundColor, getContrastRatio } from '@/lib/colorContrast';
+import { AA_NORMAL_TEXT_CONTRAST, ensureContrast, getAccessibleForegroundColor, getContrastRatio } from '@/lib/colorContrast';
 import { SettingsSection, settingsSectionAnchor } from '../SettingsSection';
 import { ColorSettingField } from '../ColorSettingField';
 import { isHexColor } from '../headerPreview';
 import type { AdminSettingsFormState } from '../useAdminSettingsForm';
 import Check from 'lucide-react/icons/check';
-import { COMMUNITY_LOOKS, type CornerStyle } from '@/lib/communityLooks';
+import { COLOUR_STRENGTHS, COMMUNITY_LOOKS, normaliseColourStrength, type CornerStyle } from '@/lib/communityLooks';
 
 export const COMMUNITY_COLOUR_SECTION_ID = 'community-colour';
 
@@ -94,6 +94,10 @@ export function CommunityColourSection({ state }: { state: AdminSettingsFormStat
   const preview = chosen || STANDARD_ACCENT;
   const matchesSuggestion = (COMMUNITY_COLOUR_PRESETS as readonly string[]).includes(chosen);
   const chosenLook = form.community_look || '';
+  const chosenStrength = normaliseColourStrength(form.colour_strength);
+  // The shade that carries white text: the colour itself when white reads on
+  // it at 4.5:1, else deepened towards black until it does (as ThemeContext).
+  const previewStrong = ensureContrast(preview, '#ffffff', AA_NORMAL_TEXT_CONTRAST, '#000000');
 
   return (
     <SettingsSection
@@ -195,32 +199,97 @@ export function CommunityColourSection({ state }: { state: AdminSettingsFormStat
         <Alert color="warning" title={t('admin_settings.community_colour_too_light')} />
       )}
 
+      {/* How strongly the colour is worn (warmth phase 5). Soft is how every
+          community looked before this choice existed; vivid fills page
+          openings and picture tiles with the colour. The preview below shows
+          a page opening in the strength chosen here. */}
+      <div className="space-y-2">
+        <Label id="colour-strength-label" className="text-sm font-medium text-foreground">
+          {t('admin_settings.colour_strength_title')}
+        </Label>
+        <p className="text-xs leading-5 text-muted">{t('admin_settings.colour_strength_hint')}</p>
+        <div role="radiogroup" aria-labelledby="colour-strength-label" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {COLOUR_STRENGTHS.map((strength) => {
+            const isSelected = chosenStrength === strength;
+            return (
+              <button
+                key={strength}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                data-testid={`colour-strength-${strength}`}
+                onClick={() => setField('colour_strength', strength)}
+                className={`rounded-xl border-2 bg-surface p-3 text-start transition-colors outline-solid outline-transparent focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 ${
+                  isSelected ? 'border-accent' : 'border-divider hover:border-accent/50'
+                }`}
+              >
+                <span className="flex items-center gap-1 text-sm font-medium text-foreground">
+                  {t(`admin_settings.colour_strength_${strength}`)}
+                  {isSelected && <Check className="ms-auto h-4 w-4 text-accent" aria-hidden="true" />}
+                </span>
+                <span className="mt-1 block text-xs text-muted">{t(`admin_settings.colour_strength_${strength}_hint`)}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="space-y-2">
         <p className="text-sm font-medium text-foreground">{t('admin_settings.community_colour_preview')}</p>
         {/* HeroUI controls read the theme's --accent variables, so scoping
             them to this box previews the colour on the real components. The
             values are the colour being edited, not styling. The two "soft"
             values repeat HeroUI's own light-theme formula: it derives them
-            once at :root, so a box-level --accent alone would not reach them. */}
+            once at :root, so a box-level --accent alone would not reach them.
+            `--accent-strong` is the button shade of the colour being edited
+            (ThemeContext's own rule: deepened until white text reads on it). */}
         <div
           data-testid="community-colour-preview"
-          className="flex flex-wrap items-center gap-4 rounded-xl border border-divider bg-surface p-4"
+          className="space-y-4 rounded-xl border border-divider bg-surface p-4"
           style={{
             '--accent': preview,
             '--accent-foreground': getAccessibleForegroundColor(preview),
             '--accent-soft': `color-mix(in oklab, ${preview} 15%, transparent)`,
             '--accent-soft-foreground': `color-mix(in oklab, ${preview} 70%, var(--foreground) 30%)`,
+            '--accent-strong': previewStrong,
+            '--accent-strong-end': `color-mix(in srgb, ${previewStrong}, #000 22%)`,
             '--focus': preview,
             '--link': preview,
           } as CSSProperties}
         >
-          <Button variant="primary">{t('admin_settings.community_colour_preview_button')}</Button>
-          <Chip color="accent" variant="soft">{t('admin_settings.community_colour_preview_chip')}</Chip>
-          {/* Points back at this section: a preview link must not navigate away
-              from a form with unsaved changes. */}
-          <Link href={`#${settingsSectionAnchor(COMMUNITY_COLOUR_SECTION_ID)}`}>
-            {t('admin_settings.community_colour_preview_link')}
-          </Link>
+          {/* A page opening as members will see it: tinted when soft, filled
+              with white text when vivid. Decorative sample; the words are the
+              community's own name. */}
+          <div
+            data-testid="community-colour-preview-opening"
+            className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${
+              chosenStrength === 'vivid'
+                ? 'bg-linear-to-br from-accent-strong to-accent-strong-end text-white'
+                : 'bg-accent-soft text-foreground'
+            }`}
+          >
+            <span
+              aria-hidden="true"
+              className={`inline-flex shrink-0 rounded-xl p-2 ${
+                chosenStrength === 'vivid' ? 'bg-white text-accent-strong' : 'bg-accent/20 text-accent-soft-foreground'
+              }`}
+            >
+              <Paintbrush size={18} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-base font-bold leading-tight">{t('admin_settings.colour_strength_preview_title')}</span>
+              <span className="block text-xs">{t('admin_settings.colour_strength_preview_text')}</span>
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <Button variant="primary">{t('admin_settings.community_colour_preview_button')}</Button>
+            <Chip color="accent" variant="soft">{t('admin_settings.community_colour_preview_chip')}</Chip>
+            {/* Points back at this section: a preview link must not navigate away
+                from a form with unsaved changes. */}
+            <Link href={`#${settingsSectionAnchor(COMMUNITY_COLOUR_SECTION_ID)}`}>
+              {t('admin_settings.community_colour_preview_link')}
+            </Link>
+          </div>
         </div>
       </div>
     </SettingsSection>
