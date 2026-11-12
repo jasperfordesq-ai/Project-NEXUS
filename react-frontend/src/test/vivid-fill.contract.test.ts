@@ -55,6 +55,16 @@ export function vividFaults(line: string): string[] {
       if (!allowed.includes(colour)) faults.push(`vivid:${utility}`);
     }
   }
+
+  // White text may share a class list only with the button-shade fill: a
+  // white, surface or see-through fill in the same list puts it on a pale
+  // background. (Text on a fill set by a parent element cannot be checked
+  // line by line; the `vivid` helpers keep that pairing.)
+  const utilities = [...line.matchAll(VIVID_CLASS)].map((m) => (m[2] ?? '').replace(/^!|!$/g, ''));
+  if (utilities.some((u) => /^text-white(?:\/\d+)?$/.test(u))) {
+    const paleFill = utilities.find((u) => /^(?:bg|from)-(?:white|surface|transparent)(?:\/\d+)?$/.test(u));
+    if (paleFill) faults.push(`vivid:text-white on vivid:${paleFill}`);
+  }
   return faults;
 }
 
@@ -106,5 +116,16 @@ describe('the vivid colour strength', () => {
     expect(vividFaults("'vivid:text-accent'")).toEqual(['vivid:text-accent']);
     expect(vividFaults("'vivid:bg-emerald-600 vivid:text-white'")).toEqual(['vivid:bg-emerald-600']);
     expect(vividFaults("'vivid:bg-white/20'")).toEqual(['vivid:bg-white/20']);
+  });
+
+  // Each class was checked on its own, so white text on a white or surface
+  // fill passed (audit of warmth phase 5, 12 Nov 2026). White text may share a
+  // class list only with the button-shade fill.
+  it('refuses white text on a white or surface fill in the same class list', () => {
+    expect(vividFaults("'vivid:bg-white vivid:text-white'")).toEqual(['vivid:text-white on vivid:bg-white']);
+    expect(vividFaults("'vivid:bg-surface vivid:text-white!'")).toEqual(['vivid:text-white on vivid:bg-surface']);
+    expect(vividFaults("'vivid:from-white vivid:to-white vivid:text-white'")).toEqual(['vivid:text-white on vivid:from-white']);
+    expect(vividFaults("'vivid:bg-accent-strong vivid:text-white'")).toEqual([]);
+    expect(vividFaults("'vivid:from-accent-strong vivid:to-accent-strong-end vivid:text-white!'")).toEqual([]);
   });
 });
