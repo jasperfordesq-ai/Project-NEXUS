@@ -8,22 +8,31 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
+import { SiteAccentContext } from '@/contexts/SiteAccentContext';
+import { chartColorsFor } from '@/lib/chartColors';
 
 // ─── UI / heavy deps ──────────────────────────────────────────────────────────
 vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
 
-// Recharts renders nothing useful in jsdom — stub entirely
+// Recharts renders nothing useful in jsdom — stub entirely. The series stubs
+// write their colour onto a span so the colour tests below can read it.
+type SeriesProps = { dataKey?: string; fill?: string; stroke?: string; children?: React.ReactNode };
+const { series } = vi.hoisted(() => ({
+  series: (kind: string) => ({ dataKey, fill, stroke, children }: SeriesProps) => (
+    <span data-testid={`chart-${kind}`} data-key={dataKey} data-fill={fill} data-stroke={stroke}>{children}</span>
+  ),
+}));
 vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   AreaChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   BarChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   LineChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   PieChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Area: () => null,
-  Bar: () => null,
-  Line: () => null,
-  Pie: () => null,
-  Cell: () => null,
+  Area: series('area'),
+  Bar: series('bar'),
+  Line: series('line'),
+  Pie: series('pie'),
+  Cell: series('cell'),
   CartesianGrid: () => null,
   XAxis: () => null,
   YAxis: () => null,
@@ -205,6 +214,43 @@ describe('PartnerDashboardPage', () => {
         expect.stringContaining('token=test-token-123'),
       );
     });
+  });
+
+  // Warmth phase 5: the charts were a fixed blue, violet and cyan whatever the
+  // community's colour. They follow its chart colours now; offers and requests
+  // keep the green and amber they have everywhere on the site.
+  it("draws the charts in the community's colours, keeping offers green and requests amber", async () => {
+    mockFetchSuccess(makeDashboardPayload({
+      demand_supply: { cells: [{ category_id: 1, postcode_3: 'D01', offers_bucket: '<50', requests_bucket: '<50', match_rate_bucket: 40 }] },
+    }));
+    const community = '#0d9488';
+    const palette = chartColorsFor(community);
+    const { default: PartnerDashboardPage } = await import('./PartnerDashboardPage');
+    render(
+      <SiteAccentContext.Provider value={community}>
+        <PartnerDashboardPage />
+      </SiteAccentContext.Provider>,
+    );
+
+    const line = await screen.findByTestId('chart-line');
+    expect(line).toHaveAttribute('data-stroke', palette.primary);
+
+    const bars = screen.getAllByTestId('chart-bar');
+    expect(bars.find((b) => b.getAttribute('data-key') === 'offers')).toHaveAttribute('data-fill', '#10b981');
+    expect(bars.find((b) => b.getAttribute('data-key') === 'requests')).toHaveAttribute('data-fill', '#f59e0b');
+    expect(bars.find((b) => b.getAttribute('data-key') === 'value')).toHaveAttribute('data-fill', palette.primary);
+
+    expect(screen.getAllByTestId('chart-cell')[0]).toHaveAttribute('data-fill', palette.categorical[0]);
+
+    const areas = screen.getAllByTestId('chart-area');
+    expect(areas.find((a) => a.getAttribute('data-key') === 'page_views')).toHaveAttribute('data-fill', palette.primary);
+    expect(areas.find((a) => a.getAttribute('data-key') === 'visitors')).toHaveAttribute('data-fill', palette.secondary);
+
+    const fixed = ['#3b82f6', '#8b5cf6', '#06b6d4'];
+    for (const el of [line, ...bars, ...areas]) {
+      expect(fixed).not.toContain(el.getAttribute('data-fill'));
+      expect(fixed).not.toContain(el.getAttribute('data-stroke'));
+    }
   });
 
   it('re-fetches when retry button is clicked', async () => {

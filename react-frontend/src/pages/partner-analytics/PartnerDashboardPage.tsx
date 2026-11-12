@@ -27,6 +27,7 @@ import TrendingUp from 'lucide-react/icons/trending-up';
 import Users from 'lucide-react/icons/users';
 import { PageMeta } from '@/components/seo';
 import { usePageTitle } from '@/hooks';
+import { useChartColors } from '@/hooks/useChartColors';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -89,7 +90,13 @@ interface ReportRow {
   file_url: string | null;
 }
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+/**
+ * Offers and requests keep the colours they have everywhere on the site
+ * (offers green, requests amber). Every other series follows the community's
+ * chart colours (`useChartColors`).
+ */
+const OFFERS_COLOR = '#10b981';
+const REQUESTS_COLOR = '#f59e0b';
 
 // Map a bucket label to a numeric mid-point so we can plot it.
 function bucketToNumber(b: string | null): number {
@@ -355,6 +362,7 @@ function StatCard({
 }
 
 function TrendsTab({ data, t }: { data: DashboardPayload; t: T }) {
+  const chartColors = useChartColors();
   const e = data.engagement;
   // Synthesize a single-point trend from the bucketed values for visualization.
   const series = e
@@ -399,7 +407,7 @@ function TrendsTab({ data, t }: { data: DashboardPayload; t: T }) {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} />
+                <Line type="monotone" dataKey="value" stroke={chartColors.primary} strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -439,8 +447,8 @@ function DemandSupplyTab({ data, t }: { data: DashboardPayload; t: T }) {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="offers" fill="#10b981" name={t('partner_analytics.offers')} />
-                  <Bar dataKey="requests" fill="#f59e0b" name={t('partner_analytics.requests')} />
+                  <Bar dataKey="offers" fill={OFFERS_COLOR} name={t('partner_analytics.offers')} />
+                  <Bar dataKey="requests" fill={REQUESTS_COLOR} name={t('partner_analytics.requests')} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -479,6 +487,7 @@ function DemandSupplyTab({ data, t }: { data: DashboardPayload; t: T }) {
 }
 
 function DemographicsTab({ data, t }: { data: DashboardPayload; t: T }) {
+  const chartColors = useChartColors();
   const ageData = Object.entries(data.demographics?.age_buckets ?? {}).map(([k, v]) => ({
     name: k,
     value: bucketToNumber(v),
@@ -498,7 +507,7 @@ function DemographicsTab({ data, t }: { data: DashboardPayload; t: T }) {
               <PieChart>
                 <Pie data={ageData} dataKey="value" nameKey="name" outerRadius={90} label>
                   {ageData.map((entry, i) => (
-                    <Cell key={entry.name} fill={COLORS[i % COLORS.length]} />
+                    <Cell key={entry.name} fill={chartColors.categorical[i % chartColors.categorical.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -518,7 +527,7 @@ function DemographicsTab({ data, t }: { data: DashboardPayload; t: T }) {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="value" fill="#8b5cf6" />
+                <Bar dataKey="value" fill={chartColors.primary} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -529,6 +538,7 @@ function DemographicsTab({ data, t }: { data: DashboardPayload; t: T }) {
 }
 
 function FootfallTab({ data, t }: { data: DashboardPayload; t: T }) {
+  const chartColors = useChartColors();
   const rows = Object.entries(data.footfall?.areas ?? {}).map(([area, v]) => ({
     area,
     page_views: bucketToNumber(v.page_views_bucket),
@@ -547,8 +557,8 @@ function FootfallTab({ data, t }: { data: DashboardPayload; t: T }) {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Area type="monotone" dataKey="page_views" stroke="#06b6d4" fill="#06b6d4" name={t('partner_analytics.page_views')} />
-                <Area type="monotone" dataKey="visitors" stroke="#10b981" fill="#10b981" name={t('partner_analytics.distinct_visitors')} />
+                <Area type="monotone" dataKey="page_views" stroke={chartColors.primary} fill={chartColors.primary} name={t('partner_analytics.page_views')} />
+                <Area type="monotone" dataKey="visitors" stroke={chartColors.secondary} fill={chartColors.secondary} name={t('partner_analytics.distinct_visitors')} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
