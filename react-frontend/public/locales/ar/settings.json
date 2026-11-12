@@ -231,6 +231,11 @@
   "biometric_remove_all": "إزالة كافة مفاتيح المرور",
   "profile": {
     "section_title": "معلومات الملف الشخصي",
+    "preview_heading": "كيف يراك الأعضاء الآخرون",
+    "preview_name_placeholder": "سيظهر اسمك الأول هنا",
+    "preview_bio_placeholder": "ستظهر هنا بضعة أسطر ودّية عنك.",
+    "preview_first_name_note": "يرى الأعضاء الآخرون اسمك الأول فقط، وليس اسم العائلة أبدًا.",
+    "preview_photo_nudge": "صورة ودّية تساعد الجيران على التعرّف عليك والوثوق بك.",
     "photo_label": "صورة الملف الشخصي",
     "photo_hint": "JPG، PNG أو GIF. الحد الأقصى 5MB.",
     "photo_alt_label": "صف هذه الصورة (اختياري)",

@@ -231,6 +231,11 @@
   "biometric_remove_all": "Alle Passkeys entfernen",
   "profile": {
     "section_title": "Profilinformationen",
+    "preview_heading": "So sehen andere Mitglieder Sie",
+    "preview_name_placeholder": "Ihr Vorname erscheint hier",
+    "preview_bio_placeholder": "Hier erscheinen ein paar freundliche Zeilen über Sie.",
+    "preview_first_name_note": "Andere Mitglieder sehen nur Ihren Vornamen, nie Ihren Nachnamen.",
+    "preview_photo_nudge": "Ein freundliches Foto hilft Nachbarn, Sie zu erkennen und Ihnen zu vertrauen.",
     "photo_label": "Profilbild",
     "photo_hint": "JPG, PNG oder GIF. Max. 5 MB.",
     "photo_alt_label": "Dieses Foto beschreiben (optional)",

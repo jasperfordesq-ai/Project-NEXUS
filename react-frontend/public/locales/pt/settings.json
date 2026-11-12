@@ -231,6 +231,11 @@
   "biometric_remove_all": "Remover todas as chaves de acesso",
   "profile": {
     "section_title": "Informação do Perfil",
+    "preview_heading": "Como os outros membros o veem",
+    "preview_name_placeholder": "O seu primeiro nome aparece aqui",
+    "preview_bio_placeholder": "Aqui aparecem algumas linhas simpáticas sobre si.",
+    "preview_first_name_note": "Os outros membros veem apenas o seu primeiro nome, nunca o apelido.",
+    "preview_photo_nudge": "Uma fotografia simpática ajuda os vizinhos a reconhecê-lo e a confiar em si.",
     "photo_label": "Foto de Perfil",
     "photo_hint": "JPG, PNG ou GIF. Máximo 5MB.",
     "photo_alt_label": "Descreva esta foto (opcional)",

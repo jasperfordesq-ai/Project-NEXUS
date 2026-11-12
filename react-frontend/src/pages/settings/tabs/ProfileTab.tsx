@@ -2,6 +2,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { ProfilePreviewCard } from '@/components/settings/ProfilePreviewCard';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
@@ -112,6 +113,20 @@ export function ProfileTab({
     <div className="space-y-6">
       <GlassCard className="p-6">
         <h2 className="text-lg font-semibold text-theme-primary mb-6">{t('profile.section_title')}</h2>
+
+        {/* How other members see you, as you edit (warmth phase 5). Above the
+            form: the settings page is already a narrower, tabbed layout. */}
+        <div className="mb-6">
+          <ProfilePreviewCard
+            firstName={profileData.first_name}
+            organisationName={profileData.organization_name}
+            profileType={profileData.profile_type}
+            tagline={profileData.tagline}
+            bio={profileData.bio}
+            location={profileData.location}
+            avatar={profileData.avatar}
+          />
+        </div>
 
         {/* Avatar */}
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-8">
