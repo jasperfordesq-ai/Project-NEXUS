@@ -21,11 +21,13 @@ import Briefcase from 'lucide-react/icons/briefcase';
 import Eye from 'lucide-react/icons/eye';
 import MapPin from 'lucide-react/icons/map-pin';
 import Wifi from 'lucide-react/icons/wifi';
+import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { MemberPlainText, memberPlainText } from '@/components/ui/MemberPlainText';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import { coverSeed } from '@/lib/coverSeeds';
+import { JOB_TYPE_CHIP_COLOURS } from './jobTypeLook';
 
 const TYPES = ['paid', 'volunteer', 'timebank'] as const;
 const COMMITMENTS = ['full_time', 'part_time', 'flexible', 'one_off'] as const;
@@ -74,9 +76,10 @@ export function JobPreviewCard({ title, description, type, commitment, location,
             {(knownType || knownCommitment) && (
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
                 {knownType && (
-                  <span data-testid="job-preview-type" className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryColour(typeColour).band}`}>
+                  // The list's own label: fixed meaning colours (jobTypeLook).
+                  <Chip data-testid="job-preview-type" size="sm" variant="tertiary" color={JOB_TYPE_CHIP_COLOURS[type] ?? 'default'} className="text-xs">
                     {t(`type.${type}`)}
-                  </span>
+                  </Chip>
                 )}
                 {knownCommitment && (
                   <span data-testid="job-preview-commitment" className="rounded-full bg-theme-elevated px-2.5 py-0.5 text-xs font-medium text-theme-secondary">

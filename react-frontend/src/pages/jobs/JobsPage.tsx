@@ -53,8 +53,8 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import ChevronRight from 'lucide-react/icons/chevron-right';
 import Wifi from 'lucide-react/icons/wifi';
 import DollarSign from 'lucide-react/icons/dollar-sign';
-import Heart from 'lucide-react/icons/heart';
 import Timer from 'lucide-react/icons/timer';
+import { JOB_TYPE_CHIP_COLOURS, JOB_TYPE_ICONS, jobTypeIcon } from '@/components/jobs/jobTypeLook';
 import Bookmark from 'lucide-react/icons/bookmark';
 import BookmarkCheck from 'lucide-react/icons/bookmark-check';
 import Bell from 'lucide-react/icons/bell';
@@ -124,9 +124,9 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 const TYPE_FILTERS = [
   { id: 'all', icon: Briefcase, color: 'default' as const },
-  { id: 'paid', icon: DollarSign, color: 'success' as const },
-  { id: 'volunteer', icon: Heart, color: 'secondary' as const },
-  { id: 'timebank', icon: Timer, color: 'primary' as const },
+  { id: 'paid', icon: JOB_TYPE_ICONS.paid, color: 'success' as const },
+  { id: 'volunteer', icon: JOB_TYPE_ICONS.volunteer, color: 'secondary' as const },
+  { id: 'timebank', icon: JOB_TYPE_ICONS.timebank, color: 'primary' as const },
 ] as const;
 
 const COMMITMENT_FILTERS = [
@@ -962,18 +962,13 @@ interface JobCardProps {
   vacancy: JobVacancy;
 }
 
-const TYPE_CHIP_COLORS: Record<string, 'success' | 'default' | 'accent'> = {
-  paid: 'success',
-  volunteer: 'default',
-  timebank: 'accent',
-};
-
 const JobCard = memo(function JobCard({ vacancy }: JobCardProps) {
   const { t } = useTranslation('jobs');
   const palette = useSitePalette();
   // The kind of work in its own colour — the same as the vacancy page's cover.
   const typeColour = colourForSeed(coverSeed.jobType(vacancy.type), palette);
-  const TypeIcon = TYPE_FILTERS.find((filter) => filter.id === vacancy.type)?.icon ?? Briefcase;
+  // The same type picture and label colour as the job form's live preview.
+  const TypeIcon = jobTypeIcon(vacancy.type);
   const { tenantPath } = useTenant();
 
   const deadlineDate = vacancy.deadline ? new Date(vacancy.deadline) : null;
@@ -1060,7 +1055,7 @@ const JobCard = memo(function JobCard({ vacancy }: JobCardProps) {
                     {t('featured')}
                   </HeroChip>
                 )}
-                <HeroChip size="sm" variant="tertiary" color={TYPE_CHIP_COLORS[vacancy.type] ?? 'default'} className="text-xs">
+                <HeroChip size="sm" variant="tertiary" color={JOB_TYPE_CHIP_COLOURS[vacancy.type] ?? 'default'} className="text-xs">
                   {t(`type.${vacancy.type}`)}
                 </HeroChip>
                 <HeroChip size="sm" variant="tertiary" color="default" className="text-xs">
@@ -1201,7 +1196,7 @@ const MyPostingCard = memo(function MyPostingCard({ vacancy }: MyPostingCardProp
             >
               {t(`status.${vacancy.status}`, vacancy.status)}
             </HeroChip>
-            <HeroChip size="sm" variant="tertiary" color={TYPE_CHIP_COLORS[vacancy.type] ?? 'default'} className="text-xs">
+            <HeroChip size="sm" variant="tertiary" color={JOB_TYPE_CHIP_COLOURS[vacancy.type] ?? 'default'} className="text-xs">
               {t(`type.${vacancy.type}`)}
             </HeroChip>
             <HeroChip size="sm" variant="tertiary" color="default" className="text-xs">
