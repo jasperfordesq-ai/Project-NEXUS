@@ -452,6 +452,22 @@ describe('AdminHeader', () => {
     }
   });
 
+  it('renders a settings button that opens the admin Settings page', async () => {
+    const user = userEvent.setup();
+    const { AdminHeader } = await import('./AdminHeader');
+    render(<AdminHeader sidebarCollapsed={false} />);
+
+    const settingsBtn = screen.getAllByRole('button').find(
+      (btn) => btn.getAttribute('aria-label')?.toLowerCase() === 'settings'
+    );
+    expect(settingsBtn).toBeDefined();
+    // A visible word label, not just the gear icon.
+    expect(settingsBtn).toHaveTextContent('Settings');
+
+    await user.click(settingsBtn!);
+    expect(mockNavigate).toHaveBeenCalledWith('/hour-timebank/admin/settings');
+  });
+
   it('shows the open support-request count as a red indicator', async () => {
     mockApi.get.mockResolvedValue({ success: true, data: { open: 3 } });
     const { AdminHeader } = await import('./AdminHeader');

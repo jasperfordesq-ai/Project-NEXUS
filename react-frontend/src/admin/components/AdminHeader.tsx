@@ -18,6 +18,7 @@ import Bell from 'lucide-react/icons/bell';
 import LifeBuoy from 'lucide-react/icons/life-buoy';
 import LogOut from 'lucide-react/icons/log-out';
 import Menu from 'lucide-react/icons/menu';
+import Settings from 'lucide-react/icons/settings';
 import User from 'lucide-react/icons/user';
 import { resolveAvatarUrl } from '@/lib/helpers';
 import { adminSupportReports } from '@/admin/api/adminApi';
@@ -146,6 +147,20 @@ export function AdminHeader({ sidebarCollapsed, onSidebarToggle }: AdminHeaderPr
 
       {/* Right: User menu */}
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        {/* Shortcut to the main Settings page — the same page as the sidebar's
+            Platform operations → Settings entry, open to every admin. */}
+        <Button
+          variant="tertiary"
+          size="sm"
+          onPress={() => navigate(tenantPath('/admin/settings'))}
+          startContent={<Settings size={18} aria-hidden="true" />}
+          aria-label={t('settings')}
+          className="min-w-0 bg-surface-secondary/70 px-2 text-muted hover:bg-surface-tertiary/70 sm:px-3"
+        >
+          {/* Word shown from small screens up; on a phone the icon alone keeps the header on one line. */}
+          <span className="hidden sm:inline" aria-hidden="true">{t('settings')}</span>
+        </Button>
+
         <Button
           isIconOnly
           variant="tertiary"
