@@ -63,7 +63,6 @@ import { FeaturedBadge } from '@/components/listings/FeaturedBadge';
 import { ListingFilterSheet, type ListingFilterDraft } from '@/components/listings/ListingFilterSheet';
 import { PageMeta } from '@/components/seo';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
-import { Doodle } from '@/components/illustrations/Doodle';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -1130,7 +1129,6 @@ export function ListingsPage() {
         (
             <PublicEmptyState
               icon={<Search className="w-12 h-12" />}
-              illustration={<Doodle name="unboxing" className="w-48 max-w-full h-auto sm:w-56" />}
               title={t('empty')}
               description={hasActiveFilters ? t('empty_subtitle') : t('empty_no_listings')}
               accent="emerald"

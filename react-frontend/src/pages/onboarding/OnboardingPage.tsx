@@ -28,7 +28,6 @@
  * Route: /onboarding
  */
 
-import { Doodle } from '@/components/illustrations/Doodle';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from '@/lib/motion';
@@ -751,7 +750,6 @@ export function OnboardingPage() {
           {/* ─── Step 2: Your Profile (MANDATORY — photo + bio) ─── */}
           {currentStepSlug === 'profile' && (
             <div className="space-y-6">
-              <Doodle name="selfie" className="mx-auto w-40 max-w-full h-auto sm:w-48" />
               <GlassCard className="p-6">
                 <h2 className="text-lg font-semibold text-theme-primary mb-1 flex items-center gap-2">
                   <UserCircle
@@ -949,7 +947,6 @@ export function OnboardingPage() {
           {/* ─── Skills (OPTIONAL) — saved into the member's skills ─── */}
           {currentStepSlug === 'skills' && (
             <div className="space-y-6">
-              <Doodle name="unboxing" className="mx-auto w-40 max-w-full h-auto sm:w-48" />
               <OnboardingSkillsPicker
                 title={t('skills_offer_title')}
                 description={t('skills_offer_description')}
@@ -1034,7 +1031,6 @@ export function OnboardingPage() {
           {/* ─── Confirm + Complete ─── */}
           {currentStepSlug === 'confirm' && (
             <div className="space-y-6">
-              <Doodle name="jumping" className="mx-auto w-40 max-w-full h-auto sm:w-48" />
               {/* Profile preview card */}
               <GlassCard className="p-6">
                 <h2 className="text-lg font-semibold text-theme-primary mb-4 flex items-center gap-2">

@@ -32,7 +32,6 @@ import Star from 'lucide-react/icons/star';
 import { useTranslation } from 'react-i18next';
 import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
-import { Doodle } from '@/components/illustrations/Doodle';
 import { PublicPageHero, PublicPageHeroStrip } from '@/components/public/PublicPageHero';
 import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
 import { useAuth } from '@/contexts/AuthContext';
@@ -583,7 +582,6 @@ export function GroupsPage() {
           ) : groups.length === 0 ? (
             <PublicEmptyState
               icon={<Users className="w-12 h-12" aria-hidden="true" />}
-              illustration={<Doodle name="loving" className="w-48 max-w-full h-auto sm:w-56" />}
               title={t('no_groups')}
               description={t('no_groups_desc')}
               tips={[t('empty_tip_interests'), t('empty_tip_location'), t('empty_tip_create')]}

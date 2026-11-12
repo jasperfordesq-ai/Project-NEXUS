@@ -13,8 +13,6 @@ interface PublicEmptyStateProps {
   action?: ReactNode;
   tips?: string[];
   accent?: 'emerald' | 'indigo' | 'amber' | 'blue' | 'rose';
-  /** A drawing (components/illustrations/Doodle) shown in place of the icon scene. Decoration. */
-  illustration?: ReactNode;
 }
 
 const accentClasses = {
@@ -32,30 +30,21 @@ export function PublicEmptyState({
   action,
   tips,
   accent = 'indigo',
-  illustration,
 }: PublicEmptyStateProps) {
   return (
     <Card className="rounded-lg border border-theme-default bg-theme-surface/80 shadow-sm">
       <Card.Content className="items-center px-5 py-10 text-center sm:px-8">
-        {illustration ? (
-          <div data-testid="public-empty-illustration" className="mb-6" aria-hidden="true">
-            {illustration}
+        {/* The same small scene as the site's other empty pages (EmptyState):
+            a soft shape in the companion colour behind the icon and a few dots
+            beside it. Decoration only. */}
+        <div data-testid="public-empty-scene" className="relative mb-7 mt-2" aria-hidden="true">
+          <span className="absolute -inset-4 rotate-6 rounded-[42%_58%_55%_45%/48%_42%_58%_52%] bg-companion-soft" />
+          <span className="absolute -right-5 -top-1 size-3 rounded-full bg-companion/60" />
+          <span className="absolute -left-6 bottom-1 size-2 rounded-full bg-accent/40" />
+          <div className={`relative rounded-2xl bg-gradient-to-br p-4 ${accentClasses[accent]}`}>
+            {icon}
           </div>
-        ) : (
-          <>
-          {/* The same small scene as the site's other empty pages (EmptyState):
-              a soft shape in the companion colour behind the icon and a few dots
-              beside it. Decoration only. */}
-          <div data-testid="public-empty-scene" className="relative mb-7 mt-2" aria-hidden="true">
-            <span className="absolute -inset-4 rotate-6 rounded-[42%_58%_55%_45%/48%_42%_58%_52%] bg-companion-soft" />
-            <span className="absolute -right-5 -top-1 size-3 rounded-full bg-companion/60" />
-            <span className="absolute -left-6 bottom-1 size-2 rounded-full bg-accent/40" />
-            <div className={`relative rounded-2xl bg-gradient-to-br p-4 ${accentClasses[accent]}`}>
-              {icon}
-            </div>
-          </div>
-          </>
-        )}
+        </div>
         <h2 className="text-xl font-semibold text-theme-primary">{title}</h2>
         <p className="mt-2 max-w-xl text-sm leading-6 text-theme-muted">{description}</p>
         {tips?.length ? (

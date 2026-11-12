@@ -56,7 +56,6 @@ import { canCreateEvents } from '@/lib/access';
 import { useToast } from '@/contexts/ToastContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
-import { Doodle } from '@/components/illustrations/Doodle';
 import { PublicPageHero, PublicPageHeroStrip } from '@/components/public/PublicPageHero';
 import { eventsApi, type Event, type EventCategory } from '@/lib/events-api';
 import { logError } from '@/lib/logger';
@@ -878,7 +877,6 @@ export function EventsPage() {
           ) : events.length === 0 ? (
             <PublicEmptyState
               icon={<Calendar className="w-12 h-12" aria-hidden="true" />}
-              illustration={<Doodle name="dancing" className="w-48 max-w-full h-auto sm:w-56" />}
               title={t('no_events')}
               description={
                 myEventsOnly

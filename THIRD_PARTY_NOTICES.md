@@ -75,16 +75,6 @@ pure-PHP fallback, so removing it is behaviour-preserving. The audit gate
 (`scripts/check-licenses.mjs`, `KNOWN_EXCEPTIONS = {}`) now fails on any *new*
 strong-copyleft dependency.
 
-## Open Doodles (member website drawings)
-
-Eleven drawings by **Pablo Stanley**, from https://www.opendoodles.com/, released under the
-**CC0 1.0 Universal** public domain dedication ("Free for commercial and personal use. No need
-to credit"). Credited here anyway. Downloaded on 12 November 2026 with the owner's approval
-and converted to path data in
-`react-frontend/src/components/illustrations/doodles/` (precision reduced; the accent and ink
-split so each takes a site colour). Drawings used: chilling, coffee, dancing, float, jumping,
-loving, reading, selfie, sitting-reading, strolling, unboxing.
-
 ## React Native Zoom Toolkit (mobile image viewer)
 
 Version 5.1.1, https://github.com/Glazzes/react-native-zoom-toolkit.
