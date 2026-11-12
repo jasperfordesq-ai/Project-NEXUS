@@ -26,12 +26,21 @@ export interface CommunityLook {
   corners: CornerStyle;
 }
 
+/**
+ * One look for each suggested colour, in the suggested colours' own order
+ * (COMMUNITY_COLOUR_PRESETS in CommunityColourSection.tsx; the section's test
+ * compares the two), so the row of looks and the row of colours line up.
+ */
 export const COMMUNITY_LOOKS: readonly CommunityLook[] = [
-  { id: 'harbour', colour: '#1d4ed8', companion: 'teal', corners: 'soft' },
-  { id: 'meadow', colour: '#15803d', companion: 'amber', corners: 'round' },
-  { id: 'hearth', colour: '#b3441e', companion: 'amber', corners: 'round' },
-  { id: 'heather', colour: '#6d28d9', companion: 'pink', corners: 'soft' },
   { id: 'berry', colour: '#a3195b', companion: 'orange', corners: 'round' },
+  { id: 'poppy', colour: '#be123c', companion: 'fuchsia', corners: 'soft' },
+  { id: 'hearth', colour: '#b3441e', companion: 'amber', corners: 'round' },
+  { id: 'honey', colour: '#a16207', companion: 'yellow', corners: 'soft' },
+  { id: 'meadow', colour: '#15803d', companion: 'amber', corners: 'round' },
+  { id: 'lagoon', colour: '#0f766e', companion: 'cyan', corners: 'round' },
+  { id: 'harbour', colour: '#1d4ed8', companion: 'teal', corners: 'soft' },
+  { id: 'dusk', colour: '#4f46e5', companion: 'amber', corners: 'square' },
+  { id: 'heather', colour: '#6d28d9', companion: 'pink', corners: 'soft' },
   { id: 'slate', colour: '#334155', companion: 'sky', corners: 'square' },
 ];
 

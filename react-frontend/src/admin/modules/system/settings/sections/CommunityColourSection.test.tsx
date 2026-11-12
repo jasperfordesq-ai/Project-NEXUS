@@ -86,6 +86,28 @@ describe('CommunityColourSection', () => {
     }
   });
 
+  // 12 Nov 2026: there were ten suggested colours and six looks, so four
+  // colours (rose, amber, teal, indigo) had no look to go with them.
+  it('offers a look for every suggested colour, in the same order as the colours', () => {
+    expect(COMMUNITY_LOOKS.map((look) => look.colour)).toEqual([...COMMUNITY_COLOUR_PRESETS]);
+    expect(new Set(COMMUNITY_LOOKS.map((look) => look.id)).size).toBe(COMMUNITY_LOOKS.length);
+  });
+
+  it('draws every look with its own band, button and name', () => {
+    render(<CommunityColourSection state={stateWith({})} />);
+    for (const look of COMMUNITY_LOOKS) {
+      const card = screen.getByTestId(`community-look-${look.id}`);
+      // The band and the sample button are written-out classes per look; a
+      // look added to the list without them would draw as a blank card.
+      const band = card.querySelector('.bg-linear-to-r');
+      expect(band?.className).toContain(`from-[${look.colour}]`);
+      expect(band?.className).toContain(`to-${look.companion}-500`);
+      expect(card.querySelector(`.bg-\\[${look.colour.replace('#', '\\#')}\\]`)).not.toBeNull();
+      // A name from the translations, not the raw key.
+      expect(card.textContent).not.toContain('community_look_');
+    }
+  });
+
   // Warmth phase 5: how strongly the colour is worn.
   it('offers soft and vivid, with soft chosen until the admin picks vivid', () => {
     render(<CommunityColourSection state={stateWith({})} />);

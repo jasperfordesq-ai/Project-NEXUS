@@ -205,6 +205,36 @@ class CommunityColourSettingTest extends TestCase
         $this->assertArrayNotHasKey('community_look', $this->bootstrapBranding());
     }
 
+    /**
+     * The member website holds each look's details and the server holds only
+     * the names it will accept. A look added on one side and not the other
+     * either cannot be saved (422) or is dropped on the way to the page, so
+     * the two lists are compared directly.
+     */
+    public function test_the_server_accepts_exactly_the_looks_the_member_website_offers(): void
+    {
+        $source = file_get_contents(base_path('react-frontend/src/lib/communityLooks.ts'));
+        $this->assertIsString($source);
+        preg_match('/COMMUNITY_LOOKS[^=]*=\s*\[(.*?)\];/s', $source, $list);
+        preg_match_all("/\\bid:\\s*'([a-z]+)'/", $list[1] ?? '', $ids);
+
+        $this->assertNotEmpty($ids[1], 'No looks found in communityLooks.ts');
+        $this->assertSame($ids[1], \App\Support\CommunityLook::ALLOWED);
+    }
+
+    public function test_every_look_can_be_saved(): void
+    {
+        $this->actAsAdmin();
+
+        foreach (\App\Support\CommunityLook::ALLOWED as $look) {
+            $this->apiPut('/v2/admin/settings/header-colors', ['community_look' => $look])
+                ->assertOk()
+                ->assertJsonPath('data.community_look', $look);
+            $this->assertSame($look, $this->bootstrapBranding()['community_look'] ?? null);
+        }
+        $this->assertCount(10, \App\Support\CommunityLook::ALLOWED);
+    }
+
     // ── Colour strength: soft or vivid (warmth phase 5) ──────────────────
 
     public function test_every_community_is_soft_until_an_admin_chooses_vivid(): void

@@ -89,7 +89,12 @@ export function ColorSettingField({ id, label, hint, value, fallback, onChange }
           placeholder={fallback}
           value={draft}
           onValueChange={commitDraft}
-          isInvalid={draft.trim() !== '' && !isHexColor(draft)}
+          // `aria-invalid`, not `isInvalid`: the shared Input renders a bare
+          // input until it is invalid and a wrapped field after, so switching
+          // `isInvalid` on mid-word replaced the input and dropped the cursor
+          // after the first character. The bare input marks itself invalid
+          // (same red outline) from `aria-invalid` without being replaced.
+          aria-invalid={(draft.trim() !== '' && !isHexColor(draft)) || undefined}
         />
         {value && (
           <Button variant="tertiary" size="sm" onPress={() => onChange('')}>

@@ -22,7 +22,7 @@ namespace App\Support;
 final class CommunityLook
 {
     /** @var list<string> */
-    public const ALLOWED = ['harbour', 'meadow', 'hearth', 'heather', 'berry', 'slate'];
+    public const ALLOWED = ['berry', 'poppy', 'hearth', 'honey', 'meadow', 'lagoon', 'harbour', 'dusk', 'heather', 'slate'];
 
     /** The look's name when it is one of ours, else null (no look). */
     public static function normalize(mixed $value): ?string

@@ -51,19 +51,27 @@ export const COMMUNITY_COLOUR_PRESETS = [
  * so Tailwind generates the classes (warmth plan D1).
  */
 const LOOK_BAND: Record<string, string> = {
-  harbour: 'from-[#1d4ed8] to-teal-500',
-  meadow: 'from-[#15803d] to-amber-500',
-  hearth: 'from-[#b3441e] to-amber-500',
-  heather: 'from-[#6d28d9] to-pink-500',
   berry: 'from-[#a3195b] to-orange-500',
+  poppy: 'from-[#be123c] to-fuchsia-500',
+  hearth: 'from-[#b3441e] to-amber-500',
+  honey: 'from-[#a16207] to-yellow-500',
+  meadow: 'from-[#15803d] to-amber-500',
+  lagoon: 'from-[#0f766e] to-cyan-500',
+  harbour: 'from-[#1d4ed8] to-teal-500',
+  dusk: 'from-[#4f46e5] to-amber-500',
+  heather: 'from-[#6d28d9] to-pink-500',
   slate: 'from-[#334155] to-sky-500',
 };
 const LOOK_BUTTON: Record<string, string> = {
-  harbour: 'bg-[#1d4ed8]',
-  meadow: 'bg-[#15803d]',
-  hearth: 'bg-[#b3441e]',
-  heather: 'bg-[#6d28d9]',
   berry: 'bg-[#a3195b]',
+  poppy: 'bg-[#be123c]',
+  hearth: 'bg-[#b3441e]',
+  honey: 'bg-[#a16207]',
+  meadow: 'bg-[#15803d]',
+  lagoon: 'bg-[#0f766e]',
+  harbour: 'bg-[#1d4ed8]',
+  dusk: 'bg-[#4f46e5]',
+  heather: 'bg-[#6d28d9]',
   slate: 'bg-[#334155]',
 };
 const CORNER_CLASS: Record<CornerStyle, string> = {
