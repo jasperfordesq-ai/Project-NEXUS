@@ -50,6 +50,27 @@ describe('dynamic import chunk recovery', () => {
     expect(reload).toHaveBeenCalledTimes(1);
   });
 
+  it('never reloads or wipes the offline copy while the device is offline', () => {
+    // REGRESSION (2026-11-12, CI E2E "clean installation restarts the public
+    // shell"): offline, a toast asked for a part of the app that had not been
+    // saved yet. The failed load was taken for a deploy, the saved offline pages
+    // were wiped and the page reloaded, and the member was left with a blank
+    // screen. Nothing changed on the server, so a reload can only lose the page.
+    const onLine = vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false);
+    try {
+      const { reload, purge, schedule } = makeHarness();
+      const error = new Error('Failed to fetch dynamically imported module');
+      for (let attempt = 1; attempt <= MAX_RECOVERY_ATTEMPTS; attempt += 1) {
+        expect(requestStaleChunkRecovery(error, { reload, purge, schedule, now: () => attempt * 1_000 })).toBe(false);
+      }
+      expect(reload).not.toHaveBeenCalled();
+      expect(purge).not.toHaveBeenCalled();
+      expect(sessionStorage.length).toBe(0);
+    } finally {
+      onLine.mockRestore();
+    }
+  });
+
   it('returns a successfully imported module unchanged', async () => {
     const module = { value: 'loaded' };
     await expect(importWithChunkRecovery(async () => module)).resolves.toBe(module);

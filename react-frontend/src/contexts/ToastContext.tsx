@@ -13,6 +13,7 @@ import {
   Suspense,
   use,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -48,10 +49,31 @@ const ToastContext = createContext<ToastContextType | null>(null);
 // deploy, and its hashed chunk may have been re-hashed and 404. lazyWithRetry
 // triggers the one-time reload-to-fresh-index recovery instead of crashing the
 // subtree to the root error boundary. See routes/lazyWithRetry.ts.
-const ToastViewport = lazyWithRetry(() => import('@/components/feedback/ToastViewport'));
+const loadToastViewport = () => import('@/components/feedback/ToastViewport');
+// Offline, an unsaved chunk must not take the page down with it: the message is
+// skipped instead (2026-11-12). Online failures still go through the recovery.
+const ToastViewport = lazyWithRetry(() => loadToastViewport().catch((error: unknown) => {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return { default: () => null };
+  }
+  throw error;
+}));
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+
+  // Fetch the toast chunk once the page is idle, so the service worker has it
+  // before the member might go offline (where a toast is likely: "you're offline").
+  useEffect(() => {
+    if (typeof window === 'undefined' || navigator.onLine === false) return undefined;
+    const preload = () => { void loadToastViewport().catch(() => undefined); };
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(preload, { timeout: 5_000 });
+      return () => window.cancelIdleCallback?.(id);
+    }
+    const timer = window.setTimeout(preload, 2_000);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **The website no longer goes blank when started offline (12 Nov 2026)**: offline, a message (toast) asked for a part of the site that had not been saved for offline use yet. The failed load was taken for a new release, so the saved offline pages were wiped and the page reloaded, which left a blank screen. Stale-chunk recovery (`routes/lazyWithRetry.ts`) now never reloads or wipes the saved pages while the device is offline; the toast viewer is fetched in the background once the page is idle, so it is saved before the member goes offline, and offline it is skipped rather than taking the page down (`ToastContext.tsx`). Found by the CI PWA gate on the 3.2.0 commit; the gate passes again locally against a production build (12 of 12). Also: the offer form's live preview card names its hours with the offer page's own wording (`detail_hours`), which the translation drift gate could not match before. Tests: `lazyWithRetry.test.ts` (+1).
+
+
 ## [3.2.0] - 2026-11-12
 
 ### Added

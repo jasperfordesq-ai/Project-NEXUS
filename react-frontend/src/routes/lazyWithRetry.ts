@@ -137,6 +137,11 @@ export function requestStaleChunkRecovery(
 ): boolean {
   if (!isChunkLoadError(error)) return false;
 
+  // Offline, a missing chunk is simply not saved yet — not a deploy. Reloading
+  // (and above all purging the cached HTML shells) can only lose the page the
+  // member is looking at (2026-11-12, blank screen in the PWA offline gate).
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return false;
+
   const active = document.activeElement;
   const isUserTyping = active instanceof HTMLInputElement ||
     active instanceof HTMLTextAreaElement ||

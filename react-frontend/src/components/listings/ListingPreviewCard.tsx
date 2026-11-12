@@ -18,7 +18,6 @@ import { ThemedCover } from '@/components/ui/ThemedCover';
 import { colourForSeed } from '@/lib/categoryColours';
 import { themeIconFor } from '@/lib/themeIcons';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
-import { getFormattingLocale } from '@/lib/helpers';
 
 export interface ListingPreviewCardProps {
   title: string;
@@ -73,7 +72,7 @@ export function ListingPreviewCard({
   const palette = useSitePalette();
   const hoursNumber = Number(hours);
   const hoursLabel = Number.isFinite(hoursNumber) && hoursNumber > 0
-    ? t('hours_short', { hours: hoursNumber.toLocaleString(getFormattingLocale(), { maximumFractionDigits: 2 }) })
+    ? t('detail_hours', { count: hoursNumber })
     : null;
   const serviceMode = serviceType === 'remote_only'
     ? { Icon: Monitor, label: t('service_type_remote') }
