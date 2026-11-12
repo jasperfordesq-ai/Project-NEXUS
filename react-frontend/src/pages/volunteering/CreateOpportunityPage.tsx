@@ -399,7 +399,7 @@ export default function CreateOpportunityPage() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-2xl mx-auto space-y-6"
+      className="max-w-5xl mx-auto space-y-6"
     >
       <PageMeta title={isEdit ? pageTitle : t('page_meta.create_opportunity.title')} noIndex />
       {/* Breadcrumbs */}

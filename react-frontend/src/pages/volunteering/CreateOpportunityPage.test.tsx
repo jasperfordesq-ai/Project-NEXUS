@@ -218,6 +218,19 @@ describe("CreateOpportunityPage", () => {
     expect(screen.getByDisplayValue("Helping Hands")).toBeInTheDocument();
   });
 
+  // The form and its live preview sit side by side from 1024px. In a
+  // 42rem (max-w-2xl) page the form column was about 330px wide on a
+  // desktop, narrower than on a phone. The other forms with a preview use
+  // max-w-5xl (audit of warmth phase 5, 12 Nov 2026).
+  it("gives the form and its preview a page wide enough for both", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [mockApprovedOrg] });
+    render(<CreateOpportunityPage />);
+    const layout = await screen.findByTestId("form-with-preview");
+    const page = layout.parentElement as HTMLElement;
+    expect(page.className).toContain("max-w-5xl");
+    expect(page.className).not.toContain("max-w-2xl");
+  });
+
   it("does not call POST when form is submitted with no title", async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [mockApprovedOrg] });
     render(<CreateOpportunityPage />);
