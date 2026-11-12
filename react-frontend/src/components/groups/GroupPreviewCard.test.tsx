@@ -35,6 +35,21 @@ describe('GroupPreviewCard — how the group will look, as it is typed', () => {
     expect(screen.getByTestId('group-preview').querySelector('img')).toHaveAttribute('alt', '');
   });
 
+  // The groups list uses the group's picture as its cover when it has no
+  // cover. The preview ignored the picture and asked for a cover instead
+  // (audit of warmth phase 5, 12 Nov 2026).
+  it('uses the group picture as the cover when there is no cover, as the list does', () => {
+    render(<GroupPreviewCard name="Walkers" description="x" visibility="public" coverSrc={null} pictureSrc="blob:picture" />);
+    expect(screen.queryByTestId('group-preview-cover')).toBeNull();
+    expect(screen.queryByTestId('group-preview-cover-nudge')).toBeNull();
+    expect(screen.getByTestId('group-preview').querySelector('img')).toHaveAttribute('src', 'blob:picture');
+  });
+
+  it('prefers the cover to the picture, as the list does', () => {
+    render(<GroupPreviewCard name="Walkers" description="x" visibility="public" coverSrc="blob:cover" pictureSrc="blob:picture" />);
+    expect(screen.getByTestId('group-preview').querySelector('img')).toHaveAttribute('src', 'blob:cover');
+  });
+
   it('says whether the group is public or private, in words as well as a picture', () => {
     const { rerender } = render(<GroupPreviewCard name="Walkers" description="x" visibility="public" coverSrc={null} />);
     expect(screen.getByTestId('group-preview-visibility')).toHaveTextContent('Public group');

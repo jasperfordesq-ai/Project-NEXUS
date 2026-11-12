@@ -504,6 +504,7 @@ export function CreateGroupPage() {
             description={formData.description}
             visibility={formData.visibility}
             memberCount={isEditing ? (memberCount ?? 1) : 1}
+            pictureSrc={displayAvatar}
             coverSrc={formData.cover.action === 'remove' ? null : (formData.cover.previewUrl ?? formData.cover.existingUrl)}
           />
         }

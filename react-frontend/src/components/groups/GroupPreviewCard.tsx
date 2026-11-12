@@ -31,18 +31,24 @@ export interface GroupPreviewCardProps {
   visibility: string;
   /** The cover picture chosen in the form (or the saved one), if any. */
   coverSrc: string | null;
+  /**
+   * The group's own picture. With no cover, the groups list shows it as the
+   * cover, so the preview does too.
+   */
+  pictureSrc?: string | null;
   /** The real count when editing; a new group has its creator, 1. */
   memberCount?: number;
 }
 
-export function GroupPreviewCard({ name, description, visibility, coverSrc, memberCount = 1 }: GroupPreviewCardProps) {
+export function GroupPreviewCard({ name, description, visibility, coverSrc, pictureSrc = null, memberCount = 1 }: GroupPreviewCardProps) {
+  const shownSrc = coverSrc || pictureSrc || null;
   const { t } = useTranslation('groups');
   const palette = useSitePalette();
   const isPrivate = visibility === 'private' || visibility === 'secret';
   const VisibilityIcon = isPrivate ? Lock : Globe;
   const hasName = name.trim() !== '';
   const hasDescription = description.trim() !== '';
-  const badgeClass = coverSrc
+  const badgeClass = shownSrc
     ? 'bg-black/45 text-white'
     : 'bg-white/85 text-stone-700 shadow-sm ring-1 ring-black/5 dark:bg-black/40 dark:text-white dark:ring-white/10';
 
@@ -54,10 +60,10 @@ export function GroupPreviewCard({ name, description, visibility, coverSrc, memb
       </h2>
       <GlassCard className="flex flex-col overflow-hidden">
         <div className="relative h-24 bg-theme-elevated">
-          {coverSrc ? (
+          {shownSrc ? (
             // Decorative here: the same picture, with the member's own
             // description, is already in the form beside it.
-            <img src={coverSrc} alt="" className="h-full w-full object-cover" />
+            <img src={shownSrc} alt="" className="h-full w-full object-cover" />
           ) : (
             <ThemedCover
               data-testid="group-preview-cover"
@@ -67,7 +73,7 @@ export function GroupPreviewCard({ name, description, visibility, coverSrc, memb
               seed="group-preview"
             />
           )}
-          {coverSrc && <div className="absolute inset-0 bg-linear-to-t from-black/35 to-transparent" aria-hidden="true" />}
+          {shownSrc && <div className="absolute inset-0 bg-linear-to-t from-black/35 to-transparent" aria-hidden="true" />}
           <span aria-hidden="true" className={`absolute end-3 top-3 shrink-0 rounded-full p-1.5 backdrop-blur-sm ${badgeClass}`}>
             <VisibilityIcon className="h-4 w-4" />
           </span>
@@ -99,7 +105,7 @@ export function GroupPreviewCard({ name, description, visibility, coverSrc, memb
           </div>
         </div>
       </GlassCard>
-      {!coverSrc && (
+      {!shownSrc && (
         <p data-testid="group-preview-cover-nudge" className="mt-3 flex items-start gap-2 text-xs leading-5 text-theme-muted">
           <ImagePlus className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
           {t('form.preview_cover_nudge')}
