@@ -409,7 +409,13 @@ class SiteAnnouncementService
         }
 
         $text = preg_replace('#<(script|style)\b[^>]*>.*?</\1\s*>#is', ' ', $value) ?? $value;
-        $text = strip_tags($text);
+        // Only what is really markup goes: comments, and tags that start with
+        // a letter (or "/" and a letter). Not strip_tags(): it takes any "<"
+        // followed by a non-space as a tag and drops the rest of the message,
+        // so "We <3 our volunteers" was saved as "We". The banner is shown as
+        // plain text, never as HTML, so a stray "<" is harmless.
+        $text = preg_replace('/<!--.*?(?:-->|$)/s', ' ', $text) ?? $text;
+        $text = preg_replace('#</?[a-z][^<>]*>#i', ' ', $text) ?? $text;
         // \p{Cc} only: the wider \p{C} would also remove the joiners that emoji
         // and Arabic script rely on.
         $text = preg_replace('/[\p{Cc}\s]+/u', ' ', $text) ?? '';

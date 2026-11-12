@@ -181,6 +181,31 @@ class SiteAnnouncementServiceTest extends TestCase
         $this->assertCount(1, $this->service->listForTenant(self::OTHER_TENANT_ID));
     }
 
+    /**
+     * A "<" that does not open a tag is ordinary text. PHP's strip_tags()
+     * treats "<3" or "<12" as the start of a tag and cuts everything after
+     * it, so "We <3 our volunteers" was saved as "We" while the admin's
+     * preview showed the whole message (audit of warmth phase 5, 12 Nov).
+     */
+    public function test_a_less_than_sign_that_is_not_a_tag_is_kept(): void
+    {
+        $author = User::factory()->forTenant($this->testTenantId)->admin()->create();
+
+        foreach ([
+            'We <3 our volunteers' => 'We <3 our volunteers',
+            'Children <12 go free, see you Friday' => 'Children <12 go free, see you Friday',
+            'Bring a dish < 5 euro > nothing' => 'Bring a dish < 5 euro > nothing',
+            'Fair <b>today</b> at <a href="/events">noon</a>' => 'Fair today at noon',
+            'Hi <!-- note --> there' => 'Hi there',
+            'Open <img src=x onerror=alert(1)>now' => 'Open now',
+        ] as $typed => $saved) {
+            $result = $this->service->create($this->testTenantId, (int) $author->id, ['message' => $typed]);
+
+            $this->assertArrayHasKey('announcement', $result, $typed);
+            $this->assertSame($saved, $result['announcement']['message'], $typed);
+        }
+    }
+
     public function test_create_saves_against_the_given_community_and_author(): void
     {
         $author = User::factory()->forTenant($this->testTenantId)->admin()->create();
