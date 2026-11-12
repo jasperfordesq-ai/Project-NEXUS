@@ -15,7 +15,7 @@
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import Paintbrush from 'lucide-react/icons/paintbrush';
-import { Alert, Button, Chip, ColorSwatchPicker, Label, Link } from '@/components/ui';
+import { Alert, Button, Chip, ColorSwatchPicker, Label, Link, Radio, RadioGroup } from '@/components/ui';
 import { AA_NORMAL_TEXT_CONTRAST, ensureContrast, getAccessibleForegroundColor, getContrastRatio } from '@/lib/colorContrast';
 import { SettingsSection, settingsSectionAnchor } from '../SettingsSection';
 import { ColorSettingField } from '../ColorSettingField';
@@ -216,30 +216,34 @@ export function CommunityColourSection({ state }: { state: AdminSettingsFormStat
           {t('admin_settings.colour_strength_title')}
         </Label>
         <p className="text-xs leading-5 text-muted">{t('admin_settings.colour_strength_hint')}</p>
-        <div role="radiogroup" aria-labelledby="colour-strength-label" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {COLOUR_STRENGTHS.map((strength) => {
-            const isSelected = chosenStrength === strength;
-            return (
-              <button
-                key={strength}
-                type="button"
-                role="radio"
-                aria-checked={isSelected}
-                data-testid={`colour-strength-${strength}`}
-                onClick={() => setField('colour_strength', strength)}
-                className={`rounded-xl border-2 bg-surface p-3 text-start transition-colors outline-solid outline-transparent focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 ${
-                  isSelected ? 'border-accent' : 'border-divider hover:border-accent/50'
-                }`}
-              >
-                <span className="flex items-center gap-1 text-sm font-medium text-foreground">
-                  {t(`admin_settings.colour_strength_${strength}`)}
-                  {isSelected && <Check className="ms-auto h-4 w-4 text-accent" aria-hidden="true" />}
+        {/* HeroUI's radio group: one tab stop, the arrow keys move the choice
+            (the hand-made buttons were two tab stops with no arrow keys). */}
+        <RadioGroup
+          aria-labelledby="colour-strength-label"
+          value={chosenStrength}
+          onChange={(value) => setField('colour_strength', value === 'vivid' ? 'vivid' : 'soft')}
+          orientation="horizontal"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+        >
+          {COLOUR_STRENGTHS.map((strength) => (
+            <Radio
+              key={strength}
+              value={strength}
+              data-testid={`colour-strength-${strength}`}
+              className="cursor-pointer rounded-xl border-2 border-divider bg-surface p-3 text-start transition-colors outline-solid outline-transparent hover:border-accent/50 data-[selected=true]:border-accent data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2"
+            >
+              {({ isSelected }) => (
+                <span className="block">
+                  <span className="flex items-center gap-1 text-sm font-medium text-foreground">
+                    {t(`admin_settings.colour_strength_${strength}`)}
+                    {isSelected && <Check className="ms-auto h-4 w-4 text-accent" aria-hidden="true" />}
+                  </span>
+                  <span className="mt-1 block text-xs text-muted">{t(`admin_settings.colour_strength_${strength}_hint`)}</span>
                 </span>
-                <span className="mt-1 block text-xs text-muted">{t(`admin_settings.colour_strength_${strength}_hint`)}</span>
-              </button>
-            );
-          })}
-        </div>
+              )}
+            </Radio>
+          ))}
+        </RadioGroup>
       </div>
 
       <div className="space-y-2">

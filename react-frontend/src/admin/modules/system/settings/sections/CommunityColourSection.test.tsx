@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@/test/test-utils';
+import { render, screen, fireEvent, within } from '@/test/test-utils';
 import { getContrastRatio, AA_NORMAL_TEXT_CONTRAST } from '@/lib/colorContrast';
 import { DEFAULT_SETTINGS, type SettingsForm } from '../settingsForm';
 import { COMMUNITY_LOOKS } from '@/lib/communityLooks';
@@ -111,19 +111,35 @@ describe('CommunityColourSection', () => {
   // Warmth phase 5: how strongly the colour is worn.
   it('offers soft and vivid, with soft chosen until the admin picks vivid', () => {
     render(<CommunityColourSection state={stateWith({})} />);
-    expect(screen.getByTestId('colour-strength-soft')).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByTestId('colour-strength-vivid')).toHaveAttribute('aria-checked', 'false');
+    expect(within(screen.getByTestId('colour-strength-soft')).getByRole('radio')).toBeChecked();
+    expect(within(screen.getByTestId('colour-strength-vivid')).getByRole('radio')).not.toBeChecked();
+  });
+
+  // A radio group is one stop on the Tab key and moves with the arrow keys.
+  // The hand-made buttons were two tab stops with no arrow keys (audit of
+  // warmth phase 5, 12 Nov 2026); HeroUI's RadioGroup does it properly.
+  it('works like any choice list from the keyboard: one tab stop, arrows move', () => {
+    const setField = vi.fn();
+    render(<CommunityColourSection state={stateWith({}, setField)} />);
+    const group = screen.getByRole('radiogroup', { name: 'How bold should the colour be?' });
+    const radios = within(group).getAllByRole('radio');
+    expect(radios).toHaveLength(2);
+    expect(radios.filter((radio) => radio.tabIndex === 0)).toHaveLength(1);
+
+    radios[0]!.focus();
+    fireEvent.keyDown(radios[0]!, { key: 'ArrowRight' });
+    expect(setField).toHaveBeenCalledWith('colour_strength', 'vivid');
   });
 
   it('saves vivid when the admin picks it, and soft when they go back', () => {
     const setField = vi.fn();
     const { rerender } = render(<CommunityColourSection state={stateWith({}, setField)} />);
-    fireEvent.click(screen.getByTestId('colour-strength-vivid'));
+    fireEvent.click(within(screen.getByTestId('colour-strength-vivid')).getByRole('radio'));
     expect(setField).toHaveBeenCalledWith('colour_strength', 'vivid');
 
     rerender(<CommunityColourSection state={stateWith({ colour_strength: 'vivid' }, setField)} />);
-    expect(screen.getByTestId('colour-strength-vivid')).toHaveAttribute('aria-checked', 'true');
-    fireEvent.click(screen.getByTestId('colour-strength-soft'));
+    expect(within(screen.getByTestId('colour-strength-vivid')).getByRole('radio')).toBeChecked();
+    fireEvent.click(within(screen.getByTestId('colour-strength-soft')).getByRole('radio'));
     expect(setField).toHaveBeenCalledWith('colour_strength', 'soft');
   });
 
