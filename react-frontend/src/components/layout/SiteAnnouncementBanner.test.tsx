@@ -21,6 +21,32 @@ vi.mock('@/contexts/TenantContext', () => ({
   }),
 }));
 
+// The real button needs auth, preferences and the API; its own tests cover
+// when it shows. Here it stands in and "translates" on a press.
+vi.mock('@/components/i18n/TranslateButton', () => ({
+  TranslateButton: ({ contentType, contentId, sourceText, onTextChange, onFieldsChange }: {
+    contentType: string;
+    contentId: number;
+    sourceText: string;
+    onTextChange?: (text: string, translated: boolean) => void;
+    onFieldsChange?: (fields: Record<string, string> | null) => void;
+  }) => (
+    <button
+      type="button"
+      data-testid="translate-stub"
+      data-content-type={contentType}
+      data-content-id={String(contentId)}
+      data-source={sourceText}
+      onClick={() => {
+        onTextChange?.('Café de réparation ce samedi', true);
+        onFieldsChange?.({ link_label: 'Voir les événements' });
+      }}
+    >
+      translate
+    </button>
+  ),
+}));
+
 const NOW = Date.parse('2026-11-12T10:00:00Z');
 const base = {
   id: 7,
@@ -111,6 +137,23 @@ describe('SiteAnnouncementBanner', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  // The plan's Translate button (warmth phase 5): the shared button decides
+  // for itself whether to show (signed in, text not in the reader's
+  // language, translation on); the banner hands it the words and shows the
+  // translation it gives back.
+  it('offers the shared Translate button and shows the translation it returns', () => {
+    show({ ...base, link_url: '/events', link_label: 'See the events' });
+    const button = screen.getByTestId('translate-stub');
+    expect(button).toHaveAttribute('data-content-type', 'site_announcement');
+    expect(button).toHaveAttribute('data-content-id', '7');
+    expect(button).toHaveAttribute('data-source', base.message);
+
+    fireEvent.click(button);
+    expect(screen.getByRole('region')).toHaveTextContent('Café de réparation ce samedi');
+    expect(screen.getByRole('link')).toHaveTextContent('Voir les événements');
+    expect(screen.getByRole('region')).not.toHaveTextContent(base.message);
   });
 
   it('renders nothing when the community has no notice', () => {

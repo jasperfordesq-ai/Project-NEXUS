@@ -21,7 +21,7 @@
  *    moment; a snapshot is kept for days).
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Megaphone from 'lucide-react/icons/megaphone';
@@ -38,21 +38,25 @@ import {
   type SiteAnnouncement,
 } from '@/lib/siteAnnouncement';
 import { safeLocalStorageGet, safeLocalStorageSet } from '@/lib/safeStorage';
+import { TranslateButton } from '@/components/i18n/TranslateButton';
 
-const STYLE: Record<AnnouncementStyle, { band: string; quiet: string; icon: typeof Megaphone }> = {
+const STYLE: Record<AnnouncementStyle, { band: string; quiet: string; words: string; icon: typeof Megaphone }> = {
   info: {
     band: 'bg-accent-strong text-white',
     quiet: 'hover:bg-white/15 focus-visible:outline-white',
+    words: 'text-white!',
     icon: Megaphone,
   },
   celebration: {
     band: 'bg-linear-to-r from-accent-strong to-accent-strong-end text-white',
     quiet: 'hover:bg-white/15 focus-visible:outline-white',
+    words: 'text-white!',
     icon: PartyPopper,
   },
   important: {
     band: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100',
     quiet: 'hover:bg-amber-900/10 focus-visible:outline-amber-900 dark:hover:bg-amber-100/10 dark:focus-visible:outline-amber-100',
+    words: 'text-amber-900! dark:text-amber-100!',
     icon: TriangleAlert,
   },
 };
@@ -70,9 +74,12 @@ export function SiteAnnouncementView({
   announcement,
   onDismiss,
   linkPath,
+  translation,
 }: {
   announcement: SiteAnnouncement;
   onDismiss?: () => void;
+  /** The live banner's Translate button and what it is showing; never on the admin preview. */
+  translation?: { button: ReactNode; message: string | null; linkLabel: string | null };
   /** Turns a path inside the site into the community's address. */
   linkPath: (path: string) => string;
 }) {
@@ -90,23 +97,24 @@ export function SiteAnnouncementView({
     >
       <Icon className="size-4 shrink-0" aria-hidden="true" />
       <p className="min-w-0 flex-1 leading-6">
-        <span>{announcement.message}</span>
+        <span>{translation?.message ?? announcement.message}</span>
         {announcement.linkUrl && announcement.linkLabel && (
           <>
             {' '}
             {announcement.linkIsInternal ? (
               <Link to={linkPath(announcement.linkUrl)} className={linkClass}>
-                {announcement.linkLabel}
+                {translation?.linkLabel ?? announcement.linkLabel}
               </Link>
             ) : (
               <a href={announcement.linkUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>
-                {announcement.linkLabel}
+                {translation?.linkLabel ?? announcement.linkLabel}
                 <ExternalLink className="size-3.5" aria-hidden="true" />
               </a>
             )}
           </>
         )}
       </p>
+      {translation?.button}
       {announcement.isDismissible && onDismiss && (
         <button
           type="button"
@@ -140,6 +148,8 @@ export function SiteAnnouncementBanner() {
   }, [endsAt, now]);
   const dismissKey = announcement ? announcementDismissKey(announcement) : null;
   const [closedKey, setClosedKey] = useState<string | null>(null);
+  // What the Translate button is showing, for this version of the notice only.
+  const [translated, setTranslated] = useState<{ key: string; message: string | null; linkLabel: string | null } | null>(null);
 
   if (!announcement || !dismissKey || isSearchEngineSnapshot()) return null;
   if (closedKey === dismissKey || safeLocalStorageGet(dismissKey) !== null) return null;
@@ -148,6 +158,31 @@ export function SiteAnnouncementBanner() {
     <SiteAnnouncementView
       announcement={announcement}
       linkPath={tenantPath}
+      translation={{
+        // The shared button decides whether to show (signed in, translation
+        // on, words not already in the reader's language).
+        button: (
+          <TranslateButton
+            contentType="site_announcement"
+            contentId={announcement.id}
+            sourceText={announcement.message}
+            extraFields={{ link_label: announcement.linkLabel }}
+            onTextChange={(text, isTranslated) => setTranslated((prev) => ({
+              key: dismissKey,
+              message: isTranslated ? text : null,
+              linkLabel: prev?.key === dismissKey ? prev.linkLabel : null,
+            }))}
+            onFieldsChange={(fields) => setTranslated((prev) => ({
+              key: dismissKey,
+              message: prev?.key === dismissKey ? prev.message : null,
+              linkLabel: fields?.link_label ?? null,
+            }))}
+            className={`shrink-0 ${STYLE[announcement.style].words} ${STYLE[announcement.style].quiet}`}
+          />
+        ),
+        message: translated?.key === dismissKey ? translated.message : null,
+        linkLabel: translated?.key === dismissKey ? translated.linkLabel : null,
+      }}
       onDismiss={() => {
         safeLocalStorageSet(dismissKey, new Date().toISOString());
         setClosedKey(dismissKey);
