@@ -405,10 +405,14 @@ class ListingsController extends BaseApiController
         }
 
         // The member's very first offer or request here: say so in `meta`, so
-        // the website can celebrate it. Never on the idempotent replay above.
+        // the website can celebrate it. Never on the idempotent replay above,
+        // and not while it is held for review (the same test as the feed's).
+        $shownToOthers = ($listing->status ?? 'active') === 'active'
+            && (($listing->moderation_status ?? 'approved') === 'approved');
+
         return $this->respondWithData(
             $result,
-            \App\Support\FirstTimeCelebration::metaFor('listing', (int) \App\Core\TenantContext::getId(), $userId),
+            \App\Support\FirstTimeCelebration::metaFor('listing', (int) \App\Core\TenantContext::getId(), $userId, $shownToOthers),
             201,
         );
     }

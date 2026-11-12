@@ -22,10 +22,14 @@ use Illuminate\Support\Facades\DB;
  * clients validate strictly — is unchanged, and a client that does not know
  * the key ignores it.
  *
- * "First" means the only row of that kind this member has ever made in this
- * community, removed ones included, so deleting and re-creating is not a
- * first again. Call it AFTER the row is written, and only for a genuine
- * create (never an idempotent replay).
+ * "First" means the only row of that kind this member has in this community.
+ * A soft-deleted offer still counts, but a group is deleted for good (and an
+ * admin can delete an offer for good), so deleting that one and making
+ * another can celebrate again; the website also remembers, per member and
+ * device, that it has celebrated. Call it AFTER the row is written, and only
+ * for a genuine create (never an idempotent replay). An event is celebrated
+ * when it is first published ({@see metaForPublishedEvent()}), because a new
+ * event is a draft that nobody else can see.
  *
  * This is decoration: a caller should treat a failure here as "nothing to
  * celebrate", but the queries are ordinary tenant-scoped counts and throw
@@ -47,10 +51,38 @@ final class FirstTimeCelebration
     /**
      * @return array{celebrate: string}|null  meta to merge into the create response, or null
      */
-    public static function metaFor(string $kind, int $tenantId, int $userId): ?array
+    /**
+     * An event is created as a draft and only reaches other members when its
+     * organiser publishes it, so a first event is celebrated at that moment:
+     * when the member's own event has just gone from unpublished to published
+     * and it is the only published event they have in this community.
+     *
+     * @return array{celebrate: string}|null
+     */
+    public static function metaForPublishedEvent(int $tenantId, int $userId, ?int $ownerId, ?string $publicationBefore): ?array
+    {
+        $published = \App\Enums\EventPublicationState::Published->value;
+        if ($tenantId <= 0 || $userId <= 0 || $ownerId !== $userId || $publicationBefore === $published) {
+            return null;
+        }
+
+        $count = DB::table('events')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->where('publication_status', $published)
+            ->count();
+
+        return $count === 1 ? ['celebrate' => self::KINDS['event'][2]] : null;
+    }
+
+    public static function metaFor(string $kind, int $tenantId, int $userId, bool $shownToOthers = true): ?array
     {
         $definition = self::KINDS[$kind] ?? null;
-        if ($definition === null || $tenantId <= 0 || $userId <= 0) {
+        // `$shownToOthers` is the caller's answer to "can other members see
+        // it yet?". The words say "it's up" / "your neighbours can now find
+        // it", which is untrue for an offer or group held for review or an
+        // event left as a draft (audit of warmth phase 5, 12 Nov 2026).
+        if ($definition === null || ! $shownToOthers || $tenantId <= 0 || $userId <= 0) {
             return null;
         }
         [$table, $ownerColumn, $name] = $definition;

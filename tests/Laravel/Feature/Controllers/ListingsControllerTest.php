@@ -538,6 +538,37 @@ class ListingsControllerTest extends TestCase
         $this->assertArrayNotHasKey('celebrate', (array) $second->json('meta'));
     }
 
+    /**
+     * A first offer held for review is not "up": the celebration says
+     * "Your neighbours can now find it", which is untrue until a coordinator
+     * approves it (audit of warmth phase 5, 12 Nov 2026).
+     */
+    public function test_store_does_not_celebrate_a_first_listing_held_for_review(): void
+    {
+        Event::fake([ListingCreated::class]);
+        $this->authenticatedUser(['email' => '']);
+        $this->ensureListingCategory();
+        ListingConfigurationService::set(ListingConfigurationService::CONFIG_MODERATION_ENABLED, true);
+
+        try {
+            $response = $this->apiPost('/v2/listings', [
+                'title' => 'Help in the garden',
+                'description' => 'An hour of weeding and planting in your garden.',
+                'type' => 'offer',
+                'category_id' => 1,
+                'location' => 'Dublin',
+                'price' => 1.0,
+                'service_type' => 'physical_only',
+            ]);
+        } finally {
+            ListingConfigurationService::set(ListingConfigurationService::CONFIG_MODERATION_ENABLED, false);
+        }
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('listings', ['id' => $response->json('data.id'), 'moderation_status' => 'pending_review']);
+        $this->assertArrayNotHasKey('celebrate', (array) $response->json('meta'));
+    }
+
     public function test_store_replays_the_original_listing_after_an_accepted_response_is_lost(): void
     {
         Event::fake([ListingCreated::class]);

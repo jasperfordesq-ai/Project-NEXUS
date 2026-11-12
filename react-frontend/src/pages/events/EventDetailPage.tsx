@@ -83,6 +83,7 @@ import {
   type EventCalendarActions,
 } from '@/lib/events-api';
 import { logError } from '@/lib/logger';
+import { celebrateFromMeta } from '@/lib/celebrate';
 import { explainedApiError } from '@/lib/explained-api-error';
 import { EventReminderPanel } from './EventReminderPanel';
 import { formatDateTime, formatDateValue, getFormattingLocale, resolveAvatarUrl, resolveThumbnailUrl, responsiveThumbnailProps } from '@/lib/helpers';
@@ -648,6 +649,9 @@ export function EventDetailPage() {
       toast.success(action === 'submit_for_review'
         ? t('detail.submitted_for_review')
         : t('detail.published_successfully'));
+      // A new event is a draft until now: publishing the member's first one
+      // is the moment to celebrate it (the server says so in `meta`).
+      if (action === 'publish') celebrateFromMeta(response.meta);
     } catch (publicationError) {
       logError('Failed to transition Event publication', publicationError);
       toast.error(t('detail.publication_failed'));

@@ -104,6 +104,44 @@ class FirstTimeCelebrationTest extends TestCase
         $this->assertNull(FirstTimeCelebration::metaFor('', $this->testTenantId, $member->id));
     }
 
+    /** Held for review, or a draft: "it's up" would be untrue (audit, 12 Nov 2026). */
+    public function test_nothing_is_celebrated_while_other_members_cannot_see_it(): void
+    {
+        $member = $this->member();
+        $this->listing($this->testTenantId, $member->id, ['status' => 'pending']);
+
+        $this->assertNull(FirstTimeCelebration::metaFor('listing', $this->testTenantId, $member->id, false));
+        $this->assertSame(
+            ['celebrate' => 'first_listing'],
+            FirstTimeCelebration::metaFor('listing', $this->testTenantId, $member->id, true),
+        );
+    }
+
+    public function test_a_first_event_is_celebrated_only_for_its_own_organiser_going_from_unpublished_to_published(): void
+    {
+        $member = $this->member();
+        $coordinator = $this->member();
+        DB::table('events')->insert([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $member->id,
+            'title' => 'Repair café',
+            'description' => 'Bring something broken.',
+            'start_time' => now()->addWeek(),
+            'publication_status' => 'published',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->assertSame(
+            ['celebrate' => 'first_event'],
+            FirstTimeCelebration::metaForPublishedEvent($this->testTenantId, $member->id, $member->id, 'draft'),
+        );
+        // Someone else published it: it is not their first event.
+        $this->assertNull(FirstTimeCelebration::metaForPublishedEvent($this->testTenantId, $coordinator->id, $member->id, 'draft'));
+        // It was already published: nothing new happened.
+        $this->assertNull(FirstTimeCelebration::metaForPublishedEvent($this->testTenantId, $member->id, $member->id, 'published'));
+    }
+
     public function test_events_and_groups_use_their_own_owner_columns(): void
     {
         $member = $this->member();

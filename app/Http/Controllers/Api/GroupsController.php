@@ -208,10 +208,16 @@ class GroupsController extends BaseApiController
         }
 
         // The member's very first group here: said in `meta`, so the website
-        // can celebrate it. Not on an idempotent replay.
+        // can celebrate it. Not on an idempotent replay, and not while the
+        // group is held for approval.
         $celebration = (bool) $createdGroup->getAttribute('_idempotent_replay')
             ? null
-            : \App\Support\FirstTimeCelebration::metaFor('group', (int) \App\Core\TenantContext::getId(), $userId);
+            : \App\Support\FirstTimeCelebration::metaFor(
+                'group',
+                (int) \App\Core\TenantContext::getId(),
+                $userId,
+                $createdGroup->status === \App\Enums\GroupStatus::Active,
+            );
 
         return $this->respondWithData($group, $celebration, 201);
     }

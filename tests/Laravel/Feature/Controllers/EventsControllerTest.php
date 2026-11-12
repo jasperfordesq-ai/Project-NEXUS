@@ -383,6 +383,38 @@ class EventsControllerTest extends TestCase
         $this->assertContains($response->getStatusCode(), [200, 201]);
     }
 
+    /**
+     * A new event is a DRAFT: nobody else can see it until its organiser
+     * presses Publish. "Your first event is up!" belongs to that moment, not
+     * to saving the draft (audit of warmth phase 5, 12 Nov 2026).
+     */
+    public function test_a_first_event_is_celebrated_when_it_is_published_not_when_the_draft_is_saved(): void
+    {
+        $this->authenticatedUser();
+        $categoryId = $this->seedCategory();
+        $payload = [
+            'title' => 'Community Gathering',
+            'description' => 'A fun community gathering for all members.',
+            'location' => 'Community Hall, Dublin',
+            'start_time' => now()->addDays(14)->format('Y-m-d H:i:s'),
+            'end_time' => now()->addDays(14)->addHours(3)->format('Y-m-d H:i:s'),
+            'category_id' => $categoryId,
+        ];
+
+        $created = $this->apiPost('/v2/events', $payload)->assertCreated();
+        $this->assertArrayNotHasKey('celebrate', (array) $created->json('meta'));
+        $firstId = (int) $created->json('data.id');
+
+        $published = $this->apiPost("/v2/events/{$firstId}/publish", [])->assertOk();
+        $published->assertJsonPath('meta.celebrate', 'first_event');
+
+        // The second one published is not a first.
+        $secondId = (int) $this->apiPost('/v2/events', array_merge($payload, ['title' => 'Second Gathering']))
+            ->assertCreated()->json('data.id');
+        $second = $this->apiPost("/v2/events/{$secondId}/publish", [])->assertOk();
+        $this->assertArrayNotHasKey('celebrate', (array) $second->json('meta'));
+    }
+
     public function test_store_enforces_creation_role_and_applies_tenant_default_capacity(): void
     {
         $categoryId = $this->seedCategory();

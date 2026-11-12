@@ -936,6 +936,15 @@ class EventsController extends BaseApiController
 
         $event = $this->eventService->getById($eventId, $userId);
 
+        // Celebrated only once other members can see it: not a draft, not
+        // waiting for review. A row from before publication states existed
+        // (null) counts as shown.
+        $publication = \Illuminate\Support\Facades\DB::table('events')
+            ->where('id', $eventId)
+            ->where('tenant_id', $tenantId)
+            ->value('publication_status');
+        $eventShown = $publication === null || $publication === \App\Enums\EventPublicationState::Published->value;
+
         $facts = $this->usesCanonicalEventContract() && $event !== null
             ? $this->contractFacts([$event], $userId)
             : [];
@@ -946,7 +955,7 @@ class EventsController extends BaseApiController
                 : null,
             // The member's very first event here: said in `meta`, so the
             // website can celebrate it; the event's own shape is unchanged.
-            \App\Support\FirstTimeCelebration::metaFor('event', $tenantId, $userId),
+            \App\Support\FirstTimeCelebration::metaFor('event', $tenantId, $userId, $eventShown),
             201
         );
     }
@@ -1065,6 +1074,14 @@ class EventsController extends BaseApiController
             return $this->respondWithError('FORBIDDEN', __('api.event_edit_forbidden'), null, 403);
         }
 
+        // Read before the change: a first event is celebrated when its own
+        // organiser takes it from unpublished to published (warmth phase 5).
+        $tenantId = (int) TenantContext::getId();
+        $before = \Illuminate\Support\Facades\DB::table('events')
+            ->where('id', $id)
+            ->where('tenant_id', $tenantId)
+            ->first(['user_id', 'publication_status']);
+
         try {
             if ($action === 'submit_for_review') {
                 $this->eventPublicationWorkflow->submit($id, $actor);
@@ -1115,7 +1132,16 @@ class EventsController extends BaseApiController
             ? $this->contractFacts([$event], $userId)
             : [];
 
-        return $this->respondWithData($this->serializeDetailEvent($event, $facts[$id] ?? []));
+        $celebration = $action === 'publish' && $before !== null
+            ? \App\Support\FirstTimeCelebration::metaForPublishedEvent(
+                $tenantId,
+                $userId,
+                (int) $before->user_id,
+                $before->publication_status !== null ? (string) $before->publication_status : null,
+            )
+            : null;
+
+        return $this->respondWithData($this->serializeDetailEvent($event, $facts[$id] ?? []), $celebration);
     }
 
     /**

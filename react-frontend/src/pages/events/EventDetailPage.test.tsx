@@ -624,6 +624,39 @@ describe('EventDetailPage', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Event postponed');
   });
 
+  // A new event is a draft until its organiser publishes it, so "Your first
+  // event is up!" belongs to Publish, not to saving the draft (audit of
+  // warmth phase 5, 12 Nov 2026).
+  it('celebrates the member\'s first event when they publish it', async () => {
+    const draft = createCanonicalEventFixture({
+      permissions: { ...mockEvent.permissions, publish: true },
+    });
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/attendees') || url.startsWith('/v2/polls?')) {
+        return Promise.resolve({ success: true, data: [] });
+      }
+      return Promise.resolve({ success: true, data: draft });
+    });
+    mockApi.post.mockImplementation((url: string) => (url === '/v2/events/1/publish'
+      ? Promise.resolve({ success: true, data: draft, meta: { celebrate: 'first_event' } })
+      : Promise.resolve({ success: true, data: {} })));
+    mockConfirm.mockResolvedValueOnce(true);
+    const celebrated: string[] = [];
+    const listener = (e: Event) => celebrated.push(String((e as CustomEvent).detail));
+    window.addEventListener('nexus:celebrate', listener);
+
+    try {
+      const user = userEvent.setup();
+      await renderLoadedEvent(true);
+      await user.click(screen.getByRole('button', { name: 'Publish Community Garden Day' }));
+
+      await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Event published successfully.'));
+      expect(celebrated).toEqual(['first_event']);
+    } finally {
+      window.removeEventListener('nexus:celebrate', listener);
+    }
+  });
+
   it('archives instead of claiming to delete event history', async () => {
     const ownerEvent = createCanonicalEventFixture({
       permissions: {
