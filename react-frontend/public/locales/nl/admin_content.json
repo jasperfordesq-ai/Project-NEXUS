@@ -1051,7 +1051,7 @@
     "announcements_load_failed": "De mededelingen konden niet worden geladen.",
     "announcements_delete_title": "Deze mededeling verwijderen?",
     "announcements_delete_confirm": "Ze wordt niet meer getoond. Dit kan niet ongedaan worden gemaakt.",
-    "announcements_delay_note": "Het kan tot tien minuten duren voordat een nieuwe of gewijzigde mededeling bij leden verschijnt. De toegankelijke site en de app tonen nog geen mededelingen.",
+    "announcements_delay_note": "Het kan tot ongeveer 15 minuten duren voordat een nieuwe of gewijzigde mededeling bij leden verschijnt, en bij een geplande mededeling tot ongeveer 25 minuten na de begintijd. Wie de site al open heeft, ziet een wijziging zodra die de site opnieuw opent of herlaadt. De toegankelijke site en de app tonen nog geen mededelingen.",
     "desc_create_custom_attributes_to_add_extra_fi": "Maak aangepaste kenmerken om extra velden aan uw inhoud toe te voegen",
     "desc_create_custom_navigation_menus_for_your_": "Maak aangepaste navigatiemenu's om de standaardplatformnavigatie te vervangen of uit te breiden",
     "desc_create_subscription_plans_to_offer_diffe": "Creëer abonnementen om verschillende lidmaatschapsniveaus aan te bieden",

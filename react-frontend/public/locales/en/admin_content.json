@@ -1051,7 +1051,7 @@
     "announcements_load_failed": "The notices could not be loaded.",
     "announcements_delete_title": "Delete this notice?",
     "announcements_delete_confirm": "It will stop showing. This cannot be undone.",
-    "announcements_delay_note": "A new or changed notice can take up to ten minutes to reach members. The accessible site and the phone app do not show notices yet.",
+    "announcements_delay_note": "A new or changed notice can take up to about 15 minutes to reach members, and a scheduled one up to about 25 minutes after its start time. Someone who already has the site open sees a change when they next open or reload it. The accessible site and the phone app do not show notices yet.",
     "desc_create_custom_attributes_to_add_extra_fi": "Create custom attributes to add extra fields to your content",
     "desc_create_custom_navigation_menus_for_your_": "Create custom navigation menus to replace or extend the default platform navigation",
     "desc_create_subscription_plans_to_offer_diffe": "Create subscription plans to offer different membership tiers",

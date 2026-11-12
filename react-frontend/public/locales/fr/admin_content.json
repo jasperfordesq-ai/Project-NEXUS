@@ -1051,7 +1051,7 @@
     "announcements_load_failed": "Impossible de charger les messages.",
     "announcements_delete_title": "Supprimer ce message ?",
     "announcements_delete_confirm": "Il ne sera plus affiché. Cette action est définitive.",
-    "announcements_delay_note": "Un message nouveau ou modifié peut mettre jusqu’à dix minutes à parvenir aux membres. Le site accessible et l’application mobile n’affichent pas encore les messages.",
+    "announcements_delay_note": "Un message nouveau ou modifié peut mettre jusqu’à 15 minutes environ à parvenir aux membres, et un message programmé jusqu’à 25 minutes environ après son heure de début. Une personne qui a déjà le site ouvert voit le changement la prochaine fois qu’elle l’ouvre ou le recharge. Le site accessible et l’application mobile n’affichent pas encore les messages.",
     "desc_create_custom_attributes_to_add_extra_fi": "Créez des attributs personnalisés pour ajouter des champs supplémentaires à votre contenu",
     "desc_create_custom_navigation_menus_for_your_": "Créez des menus de navigation personnalisés pour remplacer ou étendre la navigation par défaut de la plateforme",
     "desc_create_subscription_plans_to_offer_diffe": "Créez des plans d'abonnement pour proposer différents niveaux d'adhésion",

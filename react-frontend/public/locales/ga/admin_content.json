@@ -1051,7 +1051,7 @@
     "announcements_load_failed": "Níorbh fhéidir na fógraí a lódáil.",
     "announcements_delete_title": "An bhfuil fonn ort an fógra seo a scriosadh?",
     "announcements_delete_confirm": "Ní thaispeánfar a thuilleadh é. Ní féidir é seo a chealú.",
-    "announcements_delay_note": "D’fhéadfadh sé suas le deich nóiméad a thógáil ar fhógra nua nó athraithe na baill a shroicheadh. Ní thaispeánann an suíomh inrochtana ná an aip fóin fógraí fós.",
+    "announcements_delay_note": "D’fhéadfadh sé suas le timpeall 15 nóiméad a thógáil ar fhógra nua nó athraithe na baill a shroicheadh, agus suas le timpeall 25 nóiméad tar éis a am tosaithe ar fhógra sceidealaithe. An té a bhfuil an suíomh oscailte aige cheana, feicfidh sé an t-athrú an chéad uair eile a osclóidh nó a athlódálfaidh sé é. Ní thaispeánann an suíomh inrochtana ná an aip fóin fógraí fós.",
     "desc_create_custom_attributes_to_add_extra_fi": "Cruthaigh tréithe saincheaptha chun réimsí breise a chur le d'inneachar",
     "desc_create_custom_navigation_menus_for_your_": "Cruthaigh roghchláir loingseoireachta saincheaptha chun nascleanúint réamhshocraithe an ardáin a athsholáthar nó a leathnú",
     "desc_create_subscription_plans_to_offer_diffe": "Cruthaigh pleananna síntiúis chun sraitheanna ballraíochta éagsúla a thairiscint",

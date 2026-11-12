@@ -1051,7 +1051,7 @@
     "announcements_load_failed": "Nie udało się wczytać ogłoszeń.",
     "announcements_delete_title": "Usunąć to ogłoszenie?",
     "announcements_delete_confirm": "Przestanie się wyświetlać. Tej operacji nie można cofnąć.",
-    "announcements_delay_note": "Nowe lub zmienione ogłoszenie może dotrzeć do członków nawet po dziesięciu minutach. Strona dostępna i aplikacja na telefon nie pokazują jeszcze ogłoszeń.",
+    "announcements_delay_note": "Nowe lub zmienione ogłoszenie może dotrzeć do członków nawet po około 15 minutach, a zaplanowane – nawet około 25 minut po godzinie rozpoczęcia. Osoba, która ma już otwartą stronę, zobaczy zmianę, gdy następnym razem ją otworzy lub odświeży. Strona dostępna i aplikacja na telefon nie pokazują jeszcze ogłoszeń.",
     "desc_create_custom_attributes_to_add_extra_fi": "Utwórz niestandardowe atrybuty, aby dodać dodatkowe pola do swojej treści",
     "desc_create_custom_navigation_menus_for_your_": "Twórz niestandardowe menu nawigacyjne, aby zastąpić lub rozszerzyć domyślną nawigację na platformie",
     "desc_create_subscription_plans_to_offer_diffe": "Twórz plany subskrypcji, aby oferować różne poziomy członkostwa",

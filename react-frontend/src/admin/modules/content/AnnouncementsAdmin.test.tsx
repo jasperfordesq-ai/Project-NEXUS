@@ -75,6 +75,18 @@ describe('AnnouncementsAdmin', () => {
     api.delete.mockResolvedValue({ success: true, data: { ok: true } });
   });
 
+  // The community's settings are kept by the server for 10 minutes and by
+  // browsers for up to 15 more, and the server's copy is not refreshed when a
+  // scheduled notice starts. "Up to ten minutes" promised too much (audit of
+  // warmth phase 5, 12 Nov 2026).
+  it('tells the admin honestly how long a notice can take to appear', async () => {
+    render(<AnnouncementsAdmin />);
+    await screen.findByTestId('announcement-row-7');
+    const note = screen.getByText(/can take up to about 15 minutes/);
+    expect(note.textContent).toContain('up to about 25 minutes after its start time');
+    expect(note.textContent).not.toContain('ten minutes');
+  });
+
   it('lists the community notices with where each one stands', async () => {
     render(<AnnouncementsAdmin />);
     const row = await screen.findByTestId('announcement-row-7');

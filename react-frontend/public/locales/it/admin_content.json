@@ -1051,7 +1051,7 @@
     "announcements_load_failed": "Non è stato possibile caricare gli avvisi.",
     "announcements_delete_title": "Eliminare questo avviso?",
     "announcements_delete_confirm": "Non verrà più mostrato. L’operazione non può essere annullata.",
-    "announcements_delay_note": "Un avviso nuovo o modificato può impiegare fino a dieci minuti per arrivare ai membri. Il sito accessibile e l’app non mostrano ancora gli avvisi.",
+    "announcements_delay_note": "Un avviso nuovo o modificato può impiegare fino a circa 15 minuti per arrivare ai membri, e uno programmato fino a circa 25 minuti dopo l’orario di inizio. Chi ha già il sito aperto vede la modifica la prossima volta che lo apre o lo ricarica. Il sito accessibile e l’app non mostrano ancora gli avvisi.",
     "desc_create_custom_attributes_to_add_extra_fi": "Crea attributi personalizzati per aggiungere campi extra al tuo contenuto",
     "desc_create_custom_navigation_menus_for_your_": "Crea menu di navigazione personalizzati per sostituire o estendere la navigazione della piattaforma predefinita",
     "desc_create_subscription_plans_to_offer_diffe": "Crea piani di abbonamento per offrire diversi livelli di abbonamento",

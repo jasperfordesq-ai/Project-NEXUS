@@ -1051,7 +1051,7 @@
     "announcements_load_failed": "No se pudieron cargar los avisos.",
     "announcements_delete_title": "¿Eliminar este aviso?",
     "announcements_delete_confirm": "Dejará de mostrarse. Esto no se puede deshacer.",
-    "announcements_delay_note": "Un aviso nuevo o modificado puede tardar hasta diez minutos en llegar a los miembros. El sitio accesible y la aplicación móvil aún no muestran avisos.",
+    "announcements_delay_note": "Un aviso nuevo o modificado puede tardar hasta unos 15 minutos en llegar a los miembros, y uno programado hasta unos 25 minutos después de su hora de inicio. Quien ya tenga el sitio abierto verá el cambio la próxima vez que lo abra o lo recargue. El sitio accesible y la aplicación móvil aún no muestran avisos.",
     "desc_create_custom_attributes_to_add_extra_fi": "Cree atributos personalizados para agregar campos adicionales a su contenido",
     "desc_create_custom_navigation_menus_for_your_": "Cree menús de navegación personalizados para reemplazar o ampliar la navegación predeterminada de la plataforma.",
     "desc_create_subscription_plans_to_offer_diffe": "Cree planes de suscripción para ofrecer diferentes niveles de membresía",

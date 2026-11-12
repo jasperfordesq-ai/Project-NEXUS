@@ -1051,7 +1051,7 @@
     "announcements_load_failed": "お知らせを読み込めませんでした。",
     "announcements_delete_title": "このお知らせを削除しますか？",
     "announcements_delete_confirm": "表示されなくなります。この操作は元に戻せません。",
-    "announcements_delay_note": "新しいお知らせや変更は、メンバーに届くまで最大10分かかることがあります。アクセシブル版サイトとスマホアプリでは、まだお知らせは表示されません。",
+    "announcements_delay_note": "新しいお知らせや変更は、メンバーに届くまで最大で約15分、予約したお知らせは開始時刻から最大で約25分かかることがあります。すでにサイトを開いている人には、次に開くか再読み込みしたときに反映されます。アクセシブル版サイトとスマホアプリでは、まだお知らせは表示されません。",
     "desc_create_custom_attributes_to_add_extra_fi": "カスタム属性を作成してコンテンツにフィールドを追加します",
     "desc_create_custom_navigation_menus_for_your_": "カスタム ナビゲーション メニューを作成して、デフォルトのプラットフォーム ナビゲーションを置き換えたり拡張したりできます。",
     "desc_create_subscription_plans_to_offer_diffe": "さまざまなメンバーシップ層を提供するサブスクリプション プランを作成する",

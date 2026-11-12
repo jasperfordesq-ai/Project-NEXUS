@@ -1051,7 +1051,7 @@
     "announcements_load_failed": "Die Hinweise konnten nicht geladen werden.",
     "announcements_delete_title": "Diesen Hinweis löschen?",
     "announcements_delete_confirm": "Er wird nicht mehr angezeigt. Das lässt sich nicht rückgängig machen.",
-    "announcements_delay_note": "Ein neuer oder geänderter Hinweis erreicht die Mitglieder nach bis zu zehn Minuten. Die barrierefreie Website und die App zeigen Hinweise noch nicht an.",
+    "announcements_delay_note": "Ein neuer oder geänderter Hinweis erreicht die Mitglieder nach bis zu etwa 15 Minuten, ein geplanter bis zu etwa 25 Minuten nach seiner Startzeit. Wer die Website bereits geöffnet hat, sieht eine Änderung, sobald er sie das nächste Mal öffnet oder neu lädt. Die barrierefreie Website und die App zeigen Hinweise noch nicht an.",
     "desc_create_custom_attributes_to_add_extra_fi": "Erstellen Sie benutzerdefinierte Attribute, um Ihrem Inhalt zusätzliche Felder hinzuzufügen",
     "desc_create_custom_navigation_menus_for_your_": "Erstellen Sie benutzerdefinierte Navigationsmenüs, um die Standardplattformnavigation zu ersetzen oder zu erweitern",
     "desc_create_subscription_plans_to_offer_diffe": "Erstellen Sie Abonnementpläne, um verschiedene Mitgliedschaftsstufen anzubieten",
