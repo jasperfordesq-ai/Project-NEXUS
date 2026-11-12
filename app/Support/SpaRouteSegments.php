@@ -24,7 +24,7 @@ final class SpaRouteSegments
     public const KNOWN = [
         '404-errors', 'about', 'acceptable-use', 'accessibility', 'account-deletion', 'achievements',
         'activity', 'activity-log', 'admin', 'advertise', 'advertising', 'agents', 'ai', 'ai-settings',
-        'algorithm-settings', 'analytics', 'archives', 'attributes', 'auth', 'billing', 'blog',
+        'algorithm-settings', 'analytics', 'announcements', 'archives', 'attributes', 'auth', 'billing', 'blog',
         'blog-restore', 'broker', 'campaigns', 'caring', 'caring-community', 'categories', 'certificates',
         'changelog', 'chat', 'child-safety', 'clubs', 'community-analytics', 'community-guidelines',
         'configuration', 'connections', 'contact', 'cookies', 'coupons', 'courses', 'crm', 'cron-jobs',
