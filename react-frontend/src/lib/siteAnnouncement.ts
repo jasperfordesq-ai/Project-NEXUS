@@ -68,6 +68,16 @@ function time(value: unknown): number | null {
   return Number.isNaN(ms) ? null : ms;
 }
 
+/**
+ * When a notice stops being shown, as a time in milliseconds, or null when it
+ * has no end. The banner sets a timer for it: the website stays open, so a
+ * notice must go at its end time without waiting for a reload.
+ */
+export function announcementEndsAt(raw: unknown): number | null {
+  if (raw === null || typeof raw !== 'object') return null;
+  return time((raw as Record<string, unknown>).ends_at);
+}
+
 /** The notice to show at `now`, or null: wrong shape, not started, ended. */
 export function currentAnnouncement(raw: unknown, now: number = Date.now()): SiteAnnouncement | null {
   if (raw === null || typeof raw !== 'object') return null;

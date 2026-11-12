@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { currentAnnouncement, safeAnnouncementLink } from '@/lib/siteAnnouncement';
 import { SiteAnnouncementBanner } from './SiteAnnouncementBanner';
@@ -87,6 +87,30 @@ describe('SiteAnnouncementBanner', () => {
   beforeEach(() => {
     localStorage.clear();
     window.history.replaceState({}, '', '/riverside/dashboard');
+  });
+
+  // The website is one page that stays open: a member who opened it before a
+  // notice's end time must not keep seeing the notice after it, until they
+  // happen to reload (audit of warmth phase 5, 12 Nov 2026).
+  it('goes away at its end time while the page stays open', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(NOW);
+      show({ ...base, ends_at: '2026-11-12T10:05:00Z' });
+      expect(screen.getByTestId('site-announcement')).toBeInTheDocument();
+
+      act(() => {
+        vi.advanceTimersByTime(4 * 60 * 1000);
+      });
+      expect(screen.getByTestId('site-announcement')).toBeInTheDocument();
+
+      act(() => {
+        vi.advanceTimersByTime(61 * 1000);
+      });
+      expect(screen.queryByTestId('site-announcement')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('renders nothing when the community has no notice', () => {

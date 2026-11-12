@@ -21,7 +21,7 @@
  *    moment; a snapshot is kept for days).
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Megaphone from 'lucide-react/icons/megaphone';
@@ -32,6 +32,7 @@ import X from 'lucide-react/icons/x';
 import { useTenant } from '@/contexts/TenantContext';
 import {
   announcementDismissKey,
+  announcementEndsAt,
   currentAnnouncement,
   type AnnouncementStyle,
   type SiteAnnouncement,
@@ -123,7 +124,20 @@ export function SiteAnnouncementView({
 export function SiteAnnouncementBanner() {
   const { tenant, tenantPath } = useTenant();
   const raw = tenant?.announcement;
-  const announcement = useMemo(() => currentAnnouncement(raw), [raw]);
+  // The page stays open for hours, so "now" has to move: without this the
+  // notice was checked once and stayed up past its end time until a reload.
+  const [now, setNow] = useState(() => Date.now());
+  const announcement = useMemo(() => currentAnnouncement(raw, now), [raw, now]);
+  const endsAt = announcement ? announcementEndsAt(raw) : null;
+
+  useEffect(() => {
+    if (endsAt === null) return undefined;
+    // setTimeout cannot wait longer than about 24.8 days; a longer wait just
+    // checks again then.
+    const wait = Math.min(Math.max(endsAt - Date.now(), 0) + 50, 2_000_000_000);
+    const timer = window.setTimeout(() => setNow(Date.now()), wait);
+    return () => window.clearTimeout(timer);
+  }, [endsAt, now]);
   const dismissKey = announcement ? announcementDismissKey(announcement) : null;
   const [closedKey, setClosedKey] = useState<string | null>(null);
 
