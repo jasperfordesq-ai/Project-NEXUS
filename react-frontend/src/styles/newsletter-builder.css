@@ -192,8 +192,9 @@
   color: var(--color-muted, #6b7280);
 }
 .nb-root .gjs-radio-item input:checked + .gjs-radio-item-label {
-  color: var(--color-accent-foreground, #ffffff);
-  background: var(--color-accent);
+  /* White words need the button shade (held at 4.5:1), not the companion. */
+  color: #ffffff;
+  background: var(--accent-strong);
 }
 
 /* Colour swatch + composite (margin/padding 4-up). */

@@ -147,7 +147,7 @@ export function MasterTenantChooser() {
               <a
                 href={communityHref(community)}
                 aria-label={t('community_chooser.go_to', { name: community.name })}
-                className="group flex h-full flex-col rounded-xl border border-theme-default bg-theme-card p-5 shadow-sm transition hover:border-theme-hover hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+                className="group flex h-full flex-col rounded-xl border border-theme-default bg-theme-card p-5 shadow-sm transition hover:border-theme-hover hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-strong)]"
               >
                 <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-theme-hover">
                   <Building2 className="h-5 w-5 text-accent" aria-hidden="true" />
