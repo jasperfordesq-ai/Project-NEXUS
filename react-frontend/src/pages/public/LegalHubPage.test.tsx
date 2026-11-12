@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@/test/test-utils';
+import { render, screen } from '@/test/test-utils';
 import React from 'react';
 
 vi.mock('@/contexts', () => ({
@@ -56,5 +56,30 @@ describe('LegalHubPage', () => {
   it('renders without crashing', () => {
     const { container } = render(<LegalHubPage />);
     expect(container.querySelector('div')).toBeTruthy();
+  });
+
+  // Warmth phase 5: the terms and cookies cards were a fixed blue and amber
+  // although both pages open in the community colour.
+  it("gives the community's own documents the community colour", () => {
+    render(<LegalHubPage />);
+    const tile = (path: string) =>
+      screen.getAllByTestId('legal-doc-icon').find((el) => el.getAttribute('data-doc-path') === path)!;
+
+    for (const path of ['/privacy', '/terms', '/cookies', '/accessibility', '/community-guidelines', '/acceptable-use']) {
+      expect(tile(path).className, path).toContain('from-accent/20');
+      expect(tile(path).className, path).toContain('to-companion/20');
+      expect(tile(path).querySelector('svg')?.getAttribute('class'), path).toContain('text-accent');
+    }
+    expect(tile('/terms').className).not.toMatch(/blue-|cyan-/);
+    expect(tile('/cookies').className).not.toMatch(/amber-|orange-/);
+  });
+
+  it('keeps the colours that carry a meaning', () => {
+    render(<LegalHubPage />);
+    const tile = (path: string) =>
+      screen.getAllByTestId('legal-doc-icon').find((el) => el.getAttribute('data-doc-path') === path)!;
+
+    expect(tile('/account-deletion').className).toContain('from-red-500/20');
+    expect(tile('/child-safety').className).toContain('from-rose-500/20');
   });
 });

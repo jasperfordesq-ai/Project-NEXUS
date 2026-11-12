@@ -99,20 +99,22 @@ const dataCollectionKeys = [
   },
 ];
 
+// The rights follow the community colour, except erasure (danger red) and
+// restriction (warning amber), whose colours carry a meaning.
 const gdprRightKeys = [
   {
     icon: Eye,
     titleKey: 'privacy.right_access_title',
     descKey: 'privacy.right_access_desc',
-    color: 'text-[var(--color-info)]',
-    bg: 'bg-blue-500/20',
+    color: 'text-accent-soft-foreground',
+    bg: 'bg-accent-soft',
   },
   {
     icon: Pencil,
     titleKey: 'privacy.right_rectification_title',
     descKey: 'privacy.right_rectification_desc',
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-500/20',
+    color: 'text-accent-soft-foreground',
+    bg: 'bg-accent-soft',
   },
   {
     icon: Trash2,
@@ -125,8 +127,8 @@ const gdprRightKeys = [
     icon: Download,
     titleKey: 'privacy.right_portability_title',
     descKey: 'privacy.right_portability_desc',
-    color: 'text-accent',
-    bg: 'bg-accent/20',
+    color: 'text-accent-soft-foreground',
+    bg: 'bg-accent-soft',
   },
   {
     icon: Ban,
@@ -139,8 +141,8 @@ const gdprRightKeys = [
     icon: UserCheck,
     titleKey: 'privacy.right_withdraw_title',
     descKey: 'privacy.right_withdraw_desc',
-    color: 'text-accent',
-    bg: 'bg-accent/20',
+    color: 'text-accent-soft-foreground',
+    bg: 'bg-accent-soft',
   },
 ];
 
@@ -205,8 +207,8 @@ export function PrivacyPage() {
       <PageMeta title={t('privacy.page_title')} description={t('privacy.meta_description', { name: branding.name })} />
       {/* Hero Header */}
       <motion.div variants={itemVariants} className="text-center">
-        <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 mb-4">
-          <Shield className="w-10 h-10 text-accent dark:text-accent" aria-hidden="true" />
+        <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 mb-4">
+          <Shield className="w-10 h-10 text-accent" aria-hidden="true" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-theme-primary mb-3">
           {t('privacy.heading')}
@@ -240,9 +242,9 @@ export function PrivacyPage() {
       {/* Our Commitment */}
       <motion.div variants={itemVariants}>
         <GlassCard className="p-6 sm:p-8">
-          <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
+          <div className="p-4 rounded-xl bg-accent-soft border border-accent/20">
             <h2 className="text-xl font-semibold text-theme-primary mb-3 flex items-center gap-2">
-              <Handshake className="w-5 h-5 text-accent" aria-hidden="true" />
+              <Handshake className="w-5 h-5 text-accent-soft-foreground" aria-hidden="true" />
               {t('privacy.commitment_title')}
             </h2>
             <div className="space-y-3 text-theme-muted">
@@ -398,9 +400,9 @@ export function PrivacyPage() {
       {/* Your Rights (GDPR) */}
       <motion.div variants={itemVariants} id="your-rights">
         <GlassCard className="p-6 sm:p-8">
-          <div className="p-4 rounded-xl bg-accent/10 border border-accent/20 mb-6">
+          <div className="p-4 rounded-xl bg-accent-soft border border-accent/20 mb-6">
             <h2 className="text-xl font-semibold text-theme-primary mb-2 flex items-center gap-2">
-              <UserCheck className="w-5 h-5 text-accent" aria-hidden="true" />
+              <UserCheck className="w-5 h-5 text-accent-soft-foreground" aria-hidden="true" />
               {t('privacy.rights_title')}
             </h2>
             <p className="text-theme-muted text-sm">
@@ -414,7 +416,7 @@ export function PrivacyPage() {
                 key={right.titleKey}
                 className="flex items-start gap-3 p-4 rounded-xl bg-theme-elevated"
               >
-                <div className={`p-2 rounded-lg ${right.bg} flex-shrink-0`}>
+                <div data-testid="privacy-right-icon" className={`p-2 rounded-lg ${right.bg} flex-shrink-0`}>
                   <right.icon className={`w-4 h-4 ${right.color}`} aria-hidden="true" />
                 </div>
                 <div>
@@ -506,8 +508,8 @@ export function PrivacyPage() {
       <motion.div variants={itemVariants}>
         <GlassCard className="p-6 sm:p-8">
           <div className="text-center">
-            <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 mb-4">
-              <MessageSquare className="w-8 h-8 text-accent dark:text-accent" aria-hidden="true" />
+            <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 mb-4">
+              <MessageSquare className="w-8 h-8 text-accent" aria-hidden="true" />
             </div>
             <h2 className="text-xl font-semibold text-theme-primary mb-2">
               {t('privacy.cta_title')}

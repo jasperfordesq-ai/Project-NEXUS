@@ -265,8 +265,9 @@ export function LegalVersionHistoryPage() {
 
       {/* Hero Header */}
       <motion.div variants={itemVariants} className="text-center">
-        <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-slate-500/20 to-blue-500/20 mb-4">
-          <History className="w-10 h-10 text-slate-500 dark:text-slate-400" aria-hidden="true" />
+        {/* The opening tile follows the community colour, as on the document pages. */}
+        <div data-testid="version-history-hero-tile" className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 mb-4">
+          <History className="w-10 h-10 text-accent" aria-hidden="true" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-theme-primary mb-3">
           {t('version_history.heading')}

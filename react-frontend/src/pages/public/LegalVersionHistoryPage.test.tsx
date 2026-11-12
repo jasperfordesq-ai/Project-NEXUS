@@ -151,6 +151,16 @@ describe('LegalVersionHistoryPage', () => {
     expect(container.querySelector('div')).toBeTruthy();
   });
 
+  // Warmth phase 5: the opening tile was a fixed slate and blue.
+  it('opens in the community colour', async () => {
+    mockApiGet.mockResolvedValue({ success: true, data: { title: 'Terms', type: 'terms', versions: [] } });
+    render(<LegalVersionHistoryPage />);
+    const tile = await screen.findByTestId('version-history-hero-tile');
+    expect(tile.className).toContain('from-accent/20');
+    expect(tile.className).toContain('to-companion/20');
+    expect(tile.className).not.toMatch(/slate-|blue-/);
+  });
+
   // 2026-10-23 SEO audit: every document's history page had the same title.
   it("titles the page after the document whose history it shows", async () => {
     mockApiGet.mockResolvedValue({ success: true, data: { title: 'Terms of Service', type: 'terms', versions: [] } });

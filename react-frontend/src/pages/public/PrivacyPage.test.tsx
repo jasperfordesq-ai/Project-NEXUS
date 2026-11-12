@@ -104,4 +104,18 @@ describe('PrivacyPage', () => {
     render(<PrivacyPage />);
     expect(screen.getByText(/Privacy Policy/i)).toBeInTheDocument();
   });
+
+  // Warmth phase 5: the rights grid used a fixed blue and green for access and
+  // correction. They follow the community colour now; erasure stays danger red
+  // and restriction warning amber.
+  it('shows the rights in the community colour, keeping danger and warning', () => {
+    render(<PrivacyPage />);
+    const tiles = screen.getAllByTestId('privacy-right-icon').map((el) => el.className);
+
+    expect(tiles).toHaveLength(6);
+    expect(tiles.filter((c) => c.includes('bg-accent-soft'))).toHaveLength(4);
+    expect(tiles.some((c) => c.includes('bg-red-500/20'))).toBe(true);
+    expect(tiles.some((c) => c.includes('bg-amber-500/20'))).toBe(true);
+    expect(tiles.join(' ')).not.toMatch(/blue-|emerald-/);
+  });
 });

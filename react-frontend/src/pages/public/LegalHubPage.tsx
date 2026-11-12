@@ -49,6 +49,11 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+// Each card takes the colour its page opens in. The community's own documents
+// (privacy, terms, cookies, accessibility, guidelines, acceptable use) follow the
+// community colour, as those pages do. Trust and safety keeps the green its page
+// opens in; account deletion keeps danger red and child safety its rose, because
+// those colours carry a meaning.
 const legalDocumentDefs = [
   {
     titleKey: 'hub.doc_privacy_title',
@@ -57,7 +62,7 @@ const legalDocumentDefs = [
     path: '/privacy',
     color: 'text-accent',
     bg: 'bg-accent/20',
-    gradient: 'from-accent/20 to-accent-gradient-end/20',
+    gradient: 'from-accent/20 to-companion/20',
     updatedKey: 'hub.doc_updated_feb_2026',
   },
   {
@@ -65,9 +70,9 @@ const legalDocumentDefs = [
     descKey: 'hub.doc_terms_desc',
     icon: FileText,
     path: '/terms',
-    color: 'text-[var(--color-info)]',
-    bg: 'bg-blue-500/20',
-    gradient: 'from-blue-500/20 to-cyan-500/20',
+    color: 'text-accent',
+    bg: 'bg-accent/20',
+    gradient: 'from-accent/20 to-companion/20',
     updatedKey: 'hub.doc_updated_feb_2026',
   },
   {
@@ -75,9 +80,9 @@ const legalDocumentDefs = [
     descKey: 'hub.doc_cookies_desc',
     icon: Cookie,
     path: '/cookies',
-    color: 'text-[var(--color-warning)]',
-    bg: 'bg-amber-500/20',
-    gradient: 'from-amber-500/20 to-orange-500/20',
+    color: 'text-accent',
+    bg: 'bg-accent/20',
+    gradient: 'from-accent/20 to-companion/20',
     updatedKey: 'hub.doc_updated_feb_2026',
   },
   {
@@ -85,9 +90,9 @@ const legalDocumentDefs = [
     descKey: 'hub.doc_accessibility_desc',
     icon: Accessibility,
     path: '/accessibility',
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-500/20',
-    gradient: 'from-emerald-500/20 to-green-500/20',
+    color: 'text-accent',
+    bg: 'bg-accent/20',
+    gradient: 'from-accent/20 to-companion/20',
     updatedKey: 'hub.doc_updated_feb_2026',
   },
   {
@@ -95,9 +100,9 @@ const legalDocumentDefs = [
     descKey: 'hub.doc_community_guidelines_desc',
     icon: Users,
     path: '/community-guidelines',
-    color: 'text-violet-500',
-    bg: 'bg-violet-500/20',
-    gradient: 'from-violet-500/20 to-fuchsia-500/20',
+    color: 'text-accent',
+    bg: 'bg-accent/20',
+    gradient: 'from-accent/20 to-companion/20',
     updatedKey: 'hub.doc_updated_feb_2026',
   },
   {
@@ -105,9 +110,9 @@ const legalDocumentDefs = [
     descKey: 'hub.doc_acceptable_use_desc',
     icon: ShieldCheck,
     path: '/acceptable-use',
-    color: 'text-teal-500',
-    bg: 'bg-teal-500/20',
-    gradient: 'from-teal-500/20 to-cyan-500/20',
+    color: 'text-accent',
+    bg: 'bg-accent/20',
+    gradient: 'from-accent/20 to-companion/20',
     updatedKey: 'hub.doc_updated_feb_2026',
   },
   {
@@ -157,8 +162,8 @@ export function LegalHubPage() {
       <PageMeta title={t('page_meta.legal_hub.title')} description={t('page_meta.legal_hub.description', { name: branding.name })} />
       {/* Hero Header */}
       <motion.div variants={itemVariants} className="text-center">
-        <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 mb-4">
-          <Scale className="w-10 h-10 text-accent dark:text-accent" aria-hidden="true" />
+        <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 mb-4">
+          <Scale className="w-10 h-10 text-accent" aria-hidden="true" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-theme-primary mb-3">
           {t('hub.heading')}
@@ -173,8 +178,8 @@ export function LegalHubPage() {
         <motion.div variants={itemVariants}>
           <GlassCard className="p-5 sm:p-6">
             <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 shrink-0">
-                <Building className="w-5 h-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+              <div className="p-2.5 rounded-xl bg-accent-soft shrink-0">
+                <Building className="w-5 h-5 text-accent-soft-foreground" aria-hidden="true" />
               </div>
               <div>
                 <h2 className="text-base font-semibold text-theme-primary mb-1">
@@ -192,9 +197,9 @@ export function LegalHubPage() {
       {/* GDPR Commitment Banner */}
       <motion.div variants={itemVariants}>
         <GlassCard className="p-6 sm:p-8">
-          <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
+          <div className="p-4 rounded-xl bg-accent-soft border border-accent/20">
             <h2 className="text-xl font-semibold text-theme-primary mb-3 flex items-center gap-2">
-              <Handshake className="w-5 h-5 text-accent" aria-hidden="true" />
+              <Handshake className="w-5 h-5 text-accent-soft-foreground" aria-hidden="true" />
               {t('hub.commitment_title')}
             </h2>
             <div className="space-y-3 text-theme-muted">
@@ -217,7 +222,7 @@ export function LegalHubPage() {
           {legalDocumentDefs.map((doc) => (
             <GlassCard key={doc.titleKey} hoverable className="p-6 flex flex-col">
               <div className="flex items-start gap-4 mb-4">
-                <div className={`p-3 rounded-xl bg-gradient-to-br ${doc.gradient} flex-shrink-0`}>
+                <div data-testid="legal-doc-icon" data-doc-path={doc.path} className={`p-3 rounded-xl bg-gradient-to-br ${doc.gradient} flex-shrink-0`}>
                   <doc.icon className={`w-6 h-6 ${doc.color}`} aria-hidden="true" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -292,8 +297,8 @@ export function LegalHubPage() {
       <motion.div variants={itemVariants}>
         <GlassCard className="p-6 sm:p-8">
           <div className="text-center">
-            <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 mb-4">
-              <Scale className="w-8 h-8 text-accent dark:text-accent" aria-hidden="true" />
+            <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 mb-4">
+              <Scale className="w-8 h-8 text-accent" aria-hidden="true" />
             </div>
             <h2 className="text-xl font-semibold text-theme-primary mb-2">
               {t('hub.cta_title')}
