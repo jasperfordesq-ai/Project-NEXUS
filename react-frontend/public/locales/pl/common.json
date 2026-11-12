@@ -2430,8 +2430,6 @@
     "load_error_title": "Nie udało się wczytać podziękowań",
     "load_error_desc": "Coś poszło nie tak podczas wczytywania podziękowań. Spróbuj ponownie.",
     "retry": "Spróbuj ponownie",
-    "most_title": "Najbardziej docenieni",
-    "most_empty": "Brak podziękowań",
     "react_heart": "Serce",
     "react_clap": "Brawa",
     "react_star": "Gwiazda",

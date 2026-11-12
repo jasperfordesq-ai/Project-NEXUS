@@ -2416,8 +2416,6 @@
     "load_error_title": "Impossibile caricare gli apprezzamenti",
     "load_error_desc": "Si è verificato un errore durante il caricamento degli apprezzamenti. Riprova.",
     "retry": "Riprova",
-    "most_title": "Più apprezzati",
-    "most_empty": "Ancora nessun apprezzamento",
     "react_heart": "Cuore",
     "react_clap": "Applauso",
     "react_star": "Stella",

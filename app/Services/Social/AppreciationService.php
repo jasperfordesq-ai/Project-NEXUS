@@ -30,7 +30,9 @@ use Illuminate\Support\Facades\Log;
  *  - only the RECEIVER can show a note on their profile, hide it again or
  *    remove it. The sender can delete a note they sent;
  *  - the people on a note are named as the person looking may see them:
- *    first names for members, full names for staff of the community (E-122).
+ *    first names for members, full names for staff of the community (E-122);
+ *  - there is no ranking of members by how many notes they received. A
+ *    "most appreciated" list existed and was removed for that reason.
  */
 class AppreciationService
 {
@@ -407,44 +409,6 @@ class AppreciationService
                 'total' => $paginator->total(),
             ],
         ];
-    }
-
-    /**
-     * @return array<int,array{user_id:int,name:string|null,avatar_url:string|null,count:int}>
-     */
-    public function getMostAppreciatedMembers(?int $tenantId = null, string $period = 'last_30d', int $limit = 10): array
-    {
-        $tenantId = $tenantId ?? TenantContext::getId();
-        $since = match ($period) {
-            'last_7d' => now()->subDays(7),
-            'last_30d' => now()->subDays(30),
-            'last_90d' => now()->subDays(90),
-            'all_time' => null,
-            default => now()->subDays(30),
-        };
-
-        $q = DB::table('appreciations as a')
-            ->join('users as u', 'u.id', '=', 'a.receiver_id')
-            ->where('a.tenant_id', $tenantId)
-            ->where('a.is_public', true)
-            ->select(
-                'a.receiver_id as user_id',
-                DB::raw(\App\Support\UserDisplayName::sql('u', 'name')),
-                'u.avatar_url as avatar_url',
-                DB::raw('COUNT(a.id) as count')
-            )
-            ->groupBy('a.receiver_id', 'u.name', 'u.avatar_url')
-            ->orderByDesc('count')
-            ->limit($limit);
-        if ($since) {
-            $q->where('a.created_at', '>=', $since);
-        }
-        return $q->get()->map(fn ($r) => [
-            'user_id' => (int) $r->user_id,
-            'name' => $r->name,
-            'avatar_url' => $r->avatar_url,
-            'count' => (int) $r->count,
-        ])->all();
     }
 
     public function getAppreciationsForContext(string $contextType, int $contextId): array

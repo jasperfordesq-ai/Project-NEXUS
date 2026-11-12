@@ -2416,8 +2416,6 @@
     "load_error_title": "No se pudieron cargar los agradecimientos",
     "load_error_desc": "Algo salió mal al cargar los agradecimientos. Por favor, inténtalo de nuevo.",
     "retry": "Intentar de nuevo",
-    "most_title": "Más apreciados",
-    "most_empty": "Aún no hay agradecimientos",
     "react_heart": "Corazón",
     "react_clap": "Aplauso",
     "react_star": "Estrella",

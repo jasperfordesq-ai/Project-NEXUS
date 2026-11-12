@@ -64,7 +64,6 @@ class ThankYouNoteRulesTest extends TestCase
     {
         return [
             'send' => ['POST', '/v2/appreciations'],
-            'most appreciated' => ['GET', '/v2/appreciations/most-appreciated'],
             'my notes' => ['GET', '/v2/me/appreciations'],
             'a profile wall' => ['GET', '/v2/users/{receiver}/appreciations'],
             'show or hide' => ['PUT', '/v2/appreciations/{note}/visibility'],
@@ -485,6 +484,31 @@ class ThankYouNoteRulesTest extends TestCase
 
         $all = $this->apiGet('/v2/me/appreciations?tab=all')->assertOk()->assertJsonCount(2, 'data');
         $this->assertEqualsCanonicalizing([$received->id, $sent->id], array_column($all->json('data'), 'id'));
+    }
+
+    // ------------------------------------------------------------------
+    // No ranking (owner, 12 Nov 2026: no "most thanked" list)
+    // ------------------------------------------------------------------
+
+    /**
+     * The server used to answer GET /v2/appreciations/most-appreciated with
+     * the community's members ranked by how many thank-you notes they had.
+     * No client showed it, but with the switch on by default any signed-in
+     * member could read it. There is no such list, for anyone.
+     */
+    public function test_there_is_no_most_thanked_ranking(): void
+    {
+        [$sender, $receiver] = $this->pair();
+        $this->note($sender, $receiver, true);
+        $this->note($this->person(), $receiver, true);
+
+        foreach ([$this->person(), $this->person(['role' => 'admin'])] as $viewer) {
+            $this->signInAs($viewer);
+            $response = $this->apiGet('/v2/appreciations/most-appreciated?period=all_time&limit=10');
+
+            $response->assertNotFound();
+            $this->assertStringNotContainsString(self::RECEIVER[0], $this->body($response));
+        }
     }
 
     // ------------------------------------------------------------------

@@ -25,7 +25,6 @@ use Tests\Laravel\TestCase;
  *    so mail/push failures don't affect assertions.
  *  - react(): toggle on / toggle off / swap reactions; also tests invalid type.
  *  - getReceivedAppreciations(): confirms tenant scoping and public-only filter.
- *  - getMostAppreciatedMembers(): smoke-check it returns correct ranking data.
  *
  * Skipped: notifyReceiver mail dispatch (MAIL_MAILER=array in CI env; push is
  *   fire-and-forget caught by try/catch; tested in NotificationDispatcherTest).
@@ -488,40 +487,5 @@ class AppreciationServiceTest extends TestCase
         $this->assertNull($other['data'][0]->my_reaction);
         $guest = $this->svc->getReceivedAppreciations($receiver, 1, 20, true);
         $this->assertNull($guest['data'][0]->my_reaction);
-    }
-
-    // ── getMostAppreciatedMembers() ───────────────────────────────────────────
-
-    public function test_getMostAppreciatedMembers_returns_ranked_results(): void
-    {
-        $sender = $this->insertUser('s');
-        $top    = $this->insertUser('top');
-        $low    = $this->insertUser('low');
-
-        // top: 3 appreciations, low: 1
-        for ($i = 0; $i < 3; $i++) {
-            Appreciation::create([
-                'sender_id' => $sender, 'receiver_id' => $top,
-                'tenant_id' => self::TENANT_ID, 'message' => "Great $i",
-                'is_public' => true, 'reactions_count' => 0,
-            ]);
-        }
-        Appreciation::create([
-            'sender_id' => $sender, 'receiver_id' => $low,
-            'tenant_id' => self::TENANT_ID, 'message' => 'Nice',
-            'is_public' => true, 'reactions_count' => 0,
-        ]);
-
-        $result = $this->svc->getMostAppreciatedMembers(self::TENANT_ID, 'all_time', 10);
-
-        $this->assertIsArray($result);
-        $userIds = array_column($result, 'user_id');
-        $this->assertContains($top, $userIds);
-        $this->assertContains($low, $userIds);
-
-        // top should rank before low
-        $topPos = array_search($top, $userIds, true);
-        $lowPos = array_search($low, $userIds, true);
-        $this->assertLessThan($lowPos, $topPos, 'Higher appreciation count should rank first');
     }
 }

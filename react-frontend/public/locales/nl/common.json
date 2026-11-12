@@ -2402,8 +2402,6 @@
     "load_error_title": "Waarderingen konden niet worden geladen",
     "load_error_desc": "Er is iets misgegaan bij het laden van de waarderingen. Probeer het opnieuw.",
     "retry": "Opnieuw proberen",
-    "most_title": "Meest gewaardeerd",
-    "most_empty": "Nog geen waarderingen",
     "react_heart": "Hart",
     "react_clap": "Applaus",
     "react_star": "Ster",

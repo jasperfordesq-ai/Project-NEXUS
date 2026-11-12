@@ -4639,9 +4639,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // SOC14 — appreciations (thank-you notes). One community switch covers
     // every route: `appreciations`, default ON. Off => 403 FEATURE_DISABLED.
+    // There is deliberately no "most appreciated" route: the owner ruled out
+    // any ranking of members by thank-you notes (12 Nov 2026).
     Route::middleware('feature:appreciations')->group(function () {
         Route::post('/v2/appreciations', [\App\Http\Controllers\Api\AppreciationsController::class, 'send']);
-        Route::get('/v2/appreciations/most-appreciated', [\App\Http\Controllers\Api\AppreciationsController::class, 'mostAppreciated']);
         Route::get('/v2/me/appreciations', [\App\Http\Controllers\Api\AppreciationsController::class, 'mine']);
         Route::get('/v2/users/{userId}/appreciations', [\App\Http\Controllers\Api\AppreciationsController::class, 'publicForUser'])->whereNumber('userId');
         // The receiver shows a note on their profile or hides it again.

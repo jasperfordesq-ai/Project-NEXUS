@@ -2402,8 +2402,6 @@
     "load_error_title": "Couldn't load appreciations",
     "load_error_desc": "Something went wrong while loading appreciations. Please try again.",
     "retry": "Try again",
-    "most_title": "Most appreciated",
-    "most_empty": "No appreciations yet",
     "react_heart": "Heart",
     "react_clap": "Clap",
     "react_star": "Star",

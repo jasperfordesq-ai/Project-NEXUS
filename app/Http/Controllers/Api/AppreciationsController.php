@@ -27,7 +27,9 @@ use App\Support\Members\MemberProfileVisibility;
  *   GET    /v2/me/appreciations?tab=received|sent|all
  *   POST   /v2/appreciations/{id}/react
  *   DELETE /v2/appreciations/{id}/react
- *   GET    /v2/appreciations/most-appreciated
+ *
+ * There is no ranking of members by thank-you notes, by owner decision
+ * (12 Nov 2026). A "most appreciated" route existed and was removed.
  */
 class AppreciationsController extends BaseApiController
 {
@@ -153,14 +155,6 @@ class AppreciationsController extends BaseApiController
         $userId = $this->requireAuth();
         $ok = $this->service->removeReaction($id, $userId);
         return $ok ? $this->noContent() : $this->respondNotFound();
-    }
-
-    public function mostAppreciated(): JsonResponse
-    {
-        $this->getOptionalUserId();
-        $period = (string) $this->query('period', 'last_30d');
-        $limit = $this->queryInt('limit', 10, 1, 50) ?? 10;
-        return $this->respondWithData($this->service->getMostAppreciatedMembers(null, $period, $limit));
     }
 
     /**

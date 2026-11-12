@@ -2416,8 +2416,6 @@
     "load_error_title": "Impossible de charger les remerciements",
     "load_error_desc": "Une erreur s'est produite lors du chargement des remerciements. Veuillez réessayer.",
     "retry": "Réessayer",
-    "most_title": "Les plus appréciés",
-    "most_empty": "Aucun remerciement pour l'instant",
     "react_heart": "Cœur",
     "react_clap": "Applaudissement",
     "react_star": "Étoile",

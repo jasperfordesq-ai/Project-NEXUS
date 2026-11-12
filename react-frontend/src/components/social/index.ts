@@ -11,7 +11,6 @@ export { SaveButton } from './SaveButton';
 
 // SOC14 — appreciations
 export { AppreciationModal } from './AppreciationModal';
-export { MostAppreciatedWidget } from './MostAppreciatedWidget';
 
 export { CommentsSection } from './CommentsSection';
 export type { CommentsSectionProps } from './CommentsSection';

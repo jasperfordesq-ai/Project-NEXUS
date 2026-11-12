@@ -2402,8 +2402,6 @@
     "load_error_title": "Wertschätzungen konnten nicht geladen werden",
     "load_error_desc": "Beim Laden der Wertschätzungen ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "retry": "Erneut versuchen",
-    "most_title": "Am meisten geschätzt",
-    "most_empty": "Noch keine Wertschätzungen",
     "react_heart": "Herz",
     "react_clap": "Applaus",
     "react_star": "Stern",
