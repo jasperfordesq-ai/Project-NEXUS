@@ -307,7 +307,7 @@ export function KBArticlePage() {
             </h1>
             <div className="flex items-center gap-3 flex-wrap text-xs text-theme-subtle">
               {article.category_name && (
-                <Chip size="sm" variant="flat" className="bg-blue-500/10 text-blue-700 dark:text-blue-400">
+                <Chip data-testid="kb-article-category" size="sm" variant="flat" className="bg-accent-soft text-accent-soft-foreground">
                   {article.category_name}
                 </Chip>
               )}
@@ -358,7 +358,7 @@ export function KBArticlePage() {
               <Separator className="my-4" />
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-theme-primary flex items-center gap-2">
-                  <File className="w-4 h-4 text-blue-400" aria-hidden="true" />
+                  <File className="w-4 h-4 text-accent" aria-hidden="true" />
                   {t('attachments')}
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -398,7 +398,7 @@ export function KBArticlePage() {
           <GlassCard className="overflow-hidden">
             <div className="px-5 py-3 bg-theme-hover/30 border-b border-theme-default">
               <h2 className="text-sm font-semibold text-theme-primary flex items-center gap-2">
-                <Folder className="w-4 h-4 text-blue-400" aria-hidden="true" />
+                <Folder className="w-4 h-4 text-accent" aria-hidden="true" />
                 {t("related_articles")}
                 <Chip size="sm" variant="flat" className="text-[10px] bg-theme-elevated text-theme-subtle">
                   {article.children.length}
@@ -412,18 +412,18 @@ export function KBArticlePage() {
                   to={tenantPath(`/kb/${child.id}`)}
                   className="flex items-center gap-4 px-5 py-3 hover:bg-theme-hover/30 transition-colors group"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-4 h-4 text-blue-400" aria-hidden="true" />
+                  <div data-testid="kb-related-tile" className="w-8 h-8 rounded-lg bg-accent-soft flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-4 h-4 text-accent-soft-foreground" aria-hidden="true" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-theme-primary group-hover:text-blue-400 transition-colors">
+                    <h3 className="text-sm font-medium text-theme-primary group-hover:text-accent transition-colors">
                       {child.title}
                     </h3>
                     {child.excerpt && (
                       <p className="text-xs text-theme-muted line-clamp-1 mt-0.5">{child.excerpt}</p>
                     )}
                   </div>
-                  <ChevronRight className="w-4 h-4 text-theme-subtle group-hover:text-blue-400 transition-colors flex-shrink-0" aria-hidden="true" />
+                  <ChevronRight className="w-4 h-4 text-theme-subtle group-hover:text-accent transition-colors flex-shrink-0" aria-hidden="true" />
                 </Link>
               ))}
             </div>

@@ -285,6 +285,26 @@ describe('OpportunityDetailPage', () => {
     });
   });
 
+  // Warmth phase 5: the chosen applications filter ended on a fixed violet.
+  it("paints the owner's chosen applications filter in the community button colour", async () => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.includes('/applications')) {
+        return Promise.resolve(mockApplicationsResponse);
+      }
+      return Promise.resolve({ success: true, data: mockOpportunityOwner });
+    });
+    const { container } = render(<OpportunityDetailPage />);
+    await waitFor(() => {
+      expect(screen.getByText('applications.heading')).toBeInTheDocument();
+    });
+    const filters = Array.from(container.querySelectorAll('[class*="data-[selected=true]:from-accent-strong"]'));
+    expect(filters.length).toBeGreaterThan(0);
+    for (const filter of filters) {
+      expect(filter.className).toContain('data-[selected=true]:to-accent-strong-end');
+      expect(filter.className).not.toMatch(/violet-/);
+    }
+  });
+
   it('shows the shift manager instead of the read-only shift list when the server says can_manage', async () => {
     vi.mocked(api.get).mockImplementation((url: string) => {
       if (url.includes('/applications')) return Promise.resolve(mockApplicationsResponse);

@@ -451,7 +451,7 @@ function OrgApplicationsTab({ orgId }: OrgApplicationsTabProps) {
             variant={statusFilter === f.key ? 'primary' : 'tertiary'}
             className={
               statusFilter === f.key
-                ? 'bg-gradient-to-r from-accent-strong to-violet-600 text-white'
+                ? 'bg-gradient-to-r from-accent-strong to-accent-strong-end text-white'
                 : 'bg-theme-elevated text-theme-muted'
             }
             onPress={() => setStatusFilter(f.key)}

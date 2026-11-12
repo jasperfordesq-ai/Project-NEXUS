@@ -201,6 +201,14 @@ describe('JobAnalyticsPage', () => {
     openSpy.mockRestore();
   });
 
+  // Warmth phase 5: the heading's picture was a fixed blue.
+  it('shows the heading picture in the community colour', async () => {
+    render(<JobAnalyticsPage />);
+    const icon = await screen.findByTestId('job-analytics-heading-icon');
+    expect(icon.getAttribute('class')).toContain('text-accent');
+    expect(icon.getAttribute('class')).not.toMatch(/blue-/);
+  });
+
   it('renders total_views value', async () => {
     render(<JobAnalyticsPage />);
     await waitFor(() => {

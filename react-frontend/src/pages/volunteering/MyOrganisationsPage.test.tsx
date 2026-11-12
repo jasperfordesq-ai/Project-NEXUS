@@ -171,6 +171,18 @@ describe('MyOrganisationsPage', () => {
     expect(screen.getByRole('link', { name: /Contact Us/ }).getAttribute('href')).toMatch(/\/contact$/);
   });
 
+  // Warmth phase 5: the empty-state tile was a fixed rose and pink.
+  it('shows the empty-state tile in the community colour', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [], meta: { per_page: 20, cursor: null, has_more: false } });
+
+    render(<MyOrganisationsPage />);
+
+    const tile = await screen.findByTestId('my-organisations-empty-tile');
+    expect(tile.className).toContain('from-accent/20');
+    expect(tile.className).not.toMatch(/rose-|pink-/);
+    expect(tile.querySelector('svg')?.getAttribute('class')).toContain('text-accent');
+  });
+
   it('shows a retryable error instead of the empty state when the fetch fails', async () => {
     vi.mocked(api.get).mockResolvedValue({
       success: false,

@@ -395,7 +395,7 @@ export function VerifyIdentityOptionalPage() {
               <Button
                 onPress={handleSaveDob}
                 isLoading={isSavingDob}
-                className="w-full bg-gradient-to-r from-accent-strong to-emerald-700 text-white font-medium"
+                className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-medium"
                 size="lg"
                 isDisabled={!dob}
               >
@@ -443,7 +443,7 @@ export function VerifyIdentityOptionalPage() {
                 <Button
                   onPress={handleCreatePayment}
                   isLoading={isCreatingPayment}
-                  className="w-full bg-gradient-to-r from-accent-strong to-emerald-700 text-white font-medium"
+                  className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-medium"
                   size="lg"
                   startContent={!isCreatingPayment ? <CreditCard className="w-5 h-5" aria-hidden="true" /> : undefined}
                 >
@@ -516,7 +516,7 @@ export function VerifyIdentityOptionalPage() {
               <Button
                 onPress={handleStartVerification}
                 isLoading={isStarting}
-                className="w-full bg-gradient-to-r from-accent-strong to-emerald-700 text-white font-medium"
+                className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-medium"
                 size="lg"
                 startContent={!isStarting ? <ShieldCheck className="w-5 h-5" aria-hidden="true" /> : undefined}
                 spinner={<Spinner size="sm" />}

@@ -213,6 +213,9 @@ describe('PilotInquiryPage', () => {
         b.textContent?.toLowerCase().includes('send')
       );
       expect(submitBtn).toBeDefined();
+      // Warmth phase 5: the button's blend ended on a fixed green.
+      expect(submitBtn!.className).toContain('to-accent-strong-end');
+      expect(submitBtn!.className).not.toMatch(/emerald-/);
     });
   });
 

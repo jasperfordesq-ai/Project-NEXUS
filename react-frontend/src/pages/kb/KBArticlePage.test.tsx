@@ -184,6 +184,30 @@ describe('KBArticlePage', () => {
     expect(screen.getByText('related_articles')).toBeInTheDocument();
   });
 
+  // Warmth phase 5: the category chip, the related-articles tiles and their
+  // hover colour were a fixed blue.
+  it('shows the category and related articles in the community colour', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: {
+        ...mockArticle,
+        children: [{ id: 101, title: 'Creating Your First Listing', slug: 'first-listing', excerpt: null }],
+      },
+    });
+    render(<KBArticlePage />);
+
+    const chip = await screen.findByTestId('kb-article-category');
+    expect(chip.className).toContain('bg-accent-soft');
+    expect(chip.className).toContain('text-accent-soft-foreground');
+
+    const tile = screen.getByTestId('kb-related-tile');
+    expect(tile.className).toContain('bg-accent-soft');
+    expect(tile.querySelector('svg')?.getAttribute('class')).toContain('text-accent-soft-foreground');
+    expect(screen.getByText('Creating Your First Listing').className).toContain('group-hover:text-accent');
+
+    expect(`${chip.className} ${tile.className}`).not.toMatch(/blue-/);
+  });
+
   it('renders breadcrumb with parent title when parent exists', async () => {
     const articleWithParent = {
       ...mockArticle,

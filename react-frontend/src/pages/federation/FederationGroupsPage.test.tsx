@@ -74,6 +74,7 @@ vi.mock('@/lib/motion', () => {
 
 import { api } from '@/lib/api';
 import { FederationGroupsPage } from './FederationGroupsPage';
+import { kindColour } from '@/components/feed/feedTypeColours';
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 const PARTNERS = [
@@ -138,6 +139,21 @@ describe('FederationGroupsPage', () => {
       expect(screen.getByText('Gardeners Collective')).toBeInTheDocument();
     });
     expect(screen.getByText('Secret Club')).toBeInTheDocument();
+  });
+
+  // Warmth phase 5: the group tile was a fixed violet; a group now has its
+  // own colour everywhere on the site (kindColour).
+  it("draws each group's tile in the colour groups have everywhere", async () => {
+    mockApiGet();
+    render(<FederationGroupsPage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId('federated-group-tile').length).toBeGreaterThan(0);
+    });
+    for (const tile of screen.getAllByTestId('federated-group-tile')) {
+      expect(tile.className).toContain(kindColour('group').label);
+      expect(tile.className).not.toMatch(/violet-/);
+    }
   });
 
   it('shows descriptions when present', async () => {

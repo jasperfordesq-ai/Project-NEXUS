@@ -117,6 +117,22 @@ describe('OrgApplicationsTab — empty state', () => {
   });
 });
 
+describe('OrgApplicationsTab — filter colour', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  // Warmth phase 5: the chosen filter's blend ended on a fixed violet.
+  it('paints the chosen filter in the community button colour', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce(EMPTY_RESPONSE);
+    render(<OrgApplicationsTab orgId={7} />);
+    await waitFor(() => {
+      const chosen = screen.queryAllByRole('button').find((b) => b.className.includes('from-accent-strong'));
+      expect(chosen).toBeDefined();
+      expect(chosen!.className).toContain('to-accent-strong-end');
+      expect(chosen!.className).not.toMatch(/violet-/);
+    });
+  });
+});
+
 describe('OrgApplicationsTab — populated state', () => {
   beforeEach(() => vi.clearAllMocks());
 

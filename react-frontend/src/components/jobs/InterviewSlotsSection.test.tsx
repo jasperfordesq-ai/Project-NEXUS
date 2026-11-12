@@ -50,6 +50,22 @@ describe('InterviewSlotsSection', () => {
     expect(document.getElementById('interview-slots-section')).toBeInTheDocument();
   });
 
+  // Warmth phase 5: the heading tile was a fixed cyan and blue.
+  it('shows the heading tile in the community colour, for owner and candidate', async () => {
+    const { InterviewSlotsSection } = await import('./InterviewSlotsSection');
+    const { unmount } = render(<InterviewSlotsSection isOwner={true} hasApplied={false} />);
+    for (const view of ['owner', 'candidate']) {
+      const tile = screen.getByTestId('interview-slots-tile');
+      expect(tile.className, view).toContain('from-accent/20');
+      expect(tile.className, view).not.toMatch(/cyan-|blue-/);
+      expect(tile.querySelector('svg')?.getAttribute('class'), view).toContain('text-accent');
+      if (view === 'owner') {
+        unmount();
+        render(<InterviewSlotsSection isOwner={false} hasApplied={true} />);
+      }
+    }
+  });
+
   it('shows the "Interview Slots" title in owner view', async () => {
     const { InterviewSlotsSection } = await import('./InterviewSlotsSection');
     render(<InterviewSlotsSection isOwner={true} hasApplied={false} />);

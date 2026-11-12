@@ -102,6 +102,16 @@ describe('SimilarJobs — populated list', () => {
     expect(link).toHaveAttribute('href', '/test/jobs/99');
   });
 
+  // Warmth phase 5: the job tile was a fixed blue; the jobs list's cards use
+  // the community colour.
+  it('draws each job tile in the community colour', () => {
+    render(<SimilarJobs jobs={[makeJob()]} tenantPath={tenantPath} />);
+    const tile = screen.getByTestId('similar-job-tile');
+    expect(tile.className).toContain('from-accent/20');
+    expect(tile.className).not.toMatch(/blue-/);
+    expect(tile.querySelector('svg')?.getAttribute('class')).toContain('text-accent');
+  });
+
   it('shows the organisation name when organization is present', () => {
     const job = makeJob({
       organization: { id: 5, name: 'Green Corp', logo_url: null },

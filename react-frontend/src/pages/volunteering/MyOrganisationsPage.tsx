@@ -149,8 +149,8 @@ export default function MyOrganisationsPage() {
         </GlassCard>
       ) : managedOrgs.length === 0 && pendingOrgs.length === 0 && declinedOrgs.length === 0 ? (
         <GlassCard className="p-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 flex items-center justify-center mx-auto mb-4">
-            <Building2 className="w-8 h-8 text-rose-500" aria-hidden="true" />
+          <div data-testid="my-organisations-empty-tile" className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 flex items-center justify-center mx-auto mb-4">
+            <Building2 className="w-8 h-8 text-accent" aria-hidden="true" />
           </div>
           <h2 className="text-xl font-semibold text-theme-primary mb-2">
             {t('my_organisations_none')}

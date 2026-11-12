@@ -106,6 +106,9 @@ describe('ClubsPage', () => {
     render(<ClubsPage />);
     const link = await screen.findByRole('link', { name: /knit\.example\.com/i });
     expect(link).toHaveAttribute('href', 'https://knit.example.com');
+    // Warmth phase 5: the link was a fixed blue.
+    expect(link.className).toContain('text-accent');
+    expect(link.className).not.toMatch(/blue-/);
   });
 
   it('shows the empty state when no clubs are returned', async () => {

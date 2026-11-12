@@ -281,7 +281,7 @@ function ClubCard({ club }: { club: Club }) {
             href={safeHref(club.website)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"
+            className="flex items-center gap-1 text-accent hover:underline"
           >
             <Globe className="w-3 h-3" aria-hidden="true" />
             {club.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}

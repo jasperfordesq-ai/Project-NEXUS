@@ -129,16 +129,17 @@ const categoryColorMap: Record<string, string> = {
   yellow: 'bg-amber-500/10 text-[var(--color-warning)]',
 };
 
+// Links and quotes in a post follow the community colour, as on custom pages.
 const POST_CONTENT_CLASSES = `typography-prose max-w-none
                 text-theme-primary
                 [&_h2]:text-theme-primary [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4
                 [&_h3]:text-theme-primary [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-3
                 [&_p]:text-theme-muted [&_p]:leading-relaxed [&_p]:mb-4
-                [&_a]:text-[var(--color-info)] [&_a]:hover:text-blue-600
+                [&_a]:text-accent [&_a]:underline
                 [&_ul]:text-theme-muted [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4
                 [&_ol]:text-theme-muted [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4
                 [&_li]:mb-1
-                [&_blockquote]:border-l-4 [&_blockquote]:border-blue-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-theme-subtle
+                [&_blockquote]:border-l-4 [&_blockquote]:border-accent [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-theme-subtle
                 [&_img]:rounded-xl [&_img]:my-6
                 [&_code]:bg-theme-elevated [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm
                 [&_pre]:bg-theme-elevated [&_pre]:p-4 [&_pre]:rounded-xl [&_pre]:overflow-x-auto

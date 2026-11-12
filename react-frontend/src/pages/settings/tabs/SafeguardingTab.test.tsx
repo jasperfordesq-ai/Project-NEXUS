@@ -123,6 +123,16 @@ describe('SafeguardingTab', () => {
     expect(screen.getByText('Not confirmed')).toBeInTheDocument();
   });
 
+  // Warmth phase 5: the opening tile was a fixed blue.
+  it('opens with a tile in the community colour', async () => {
+    render(<SafeguardingTab />);
+
+    const tile = await screen.findByTestId('safeguarding-tab-tile');
+    expect(tile.className).toContain('bg-accent-soft');
+    expect(tile.className).not.toMatch(/blue-/);
+    expect(tile.querySelector('svg')?.getAttribute('class')).toContain('text-accent-soft-foreground');
+  });
+
   it('shows a confirmed private community decision', async () => {
     mockLoads({ decision: 'confirmed', confirmed_at: '2026-07-11T10:00:00Z' }, []);
     render(<SafeguardingTab />);

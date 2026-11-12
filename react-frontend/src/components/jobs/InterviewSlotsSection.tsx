@@ -22,8 +22,8 @@ export function InterviewSlotsSection({ isOwner, hasApplied }: InterviewSlotsSec
       <div id="interview-slots-section" className="mt-6">
         <GlassCard className="p-5">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
-              <CalendarClock className="w-5 h-5 text-cyan-400" aria-hidden="true" />
+            <div data-testid="interview-slots-tile" className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/20 to-companion/20 flex items-center justify-center">
+              <CalendarClock className="w-5 h-5 text-accent" aria-hidden="true" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-theme-primary">{t('self_scheduling.title')}</h3>
@@ -42,8 +42,8 @@ export function InterviewSlotsSection({ isOwner, hasApplied }: InterviewSlotsSec
     <div id="interview-slots-candidate-section" className="mt-6">
       <GlassCard className="p-5">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
-            <CalendarClock className="w-5 h-5 text-cyan-400" aria-hidden="true" />
+          <div data-testid="interview-slots-tile" className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/20 to-companion/20 flex items-center justify-center">
+            <CalendarClock className="w-5 h-5 text-accent" aria-hidden="true" />
           </div>
           <h3 className="text-lg font-semibold text-theme-primary">{t('self_scheduling.title')}</h3>
         </div>

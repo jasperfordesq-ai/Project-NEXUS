@@ -40,6 +40,7 @@ import { useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { FederationOptInNotice } from '@/components/federation/FederationOptInNotice';
+import { kindColour } from '@/components/feed/feedTypeColours';
 import { logError } from '@/lib/logger';
 import type { FederatedGroup, FederationPartner } from '@/types/api';
 
@@ -353,9 +354,9 @@ function FederatedGroupCard({ group }: FederatedGroupCardProps) {
     <article>
       <GlassCard className="p-5 hover:scale-[1.01] transition-transform">
         <div className="flex gap-4 items-start">
-          {/* Icon box */}
-          <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-violet-500/20 to-accent-gradient-end/20 flex items-center justify-center">
-            <UsersRound className="w-7 h-7 text-violet-400" aria-hidden="true" />
+          {/* Icon box: a group's own colour, the same everywhere on the site (kindColour). */}
+          <div data-testid="federated-group-tile" className={`flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center ${kindColour('group').label}`}>
+            <UsersRound className="w-7 h-7" aria-hidden="true" />
           </div>
 
           {/* Group Details */}

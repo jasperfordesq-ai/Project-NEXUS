@@ -42,8 +42,9 @@ export function SimilarJobs({ jobs, tenantPath }: SimilarJobsProps) {
             <Link key={sj.id} to={tenantPath(`/jobs/${sj.id}`)}>
               <GlassCard className="p-4 hover:scale-[1.02] transition-transform motion-reduce:transition-none motion-reduce:hover:scale-100 h-full">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-accent-gradient-end/20 flex items-center justify-center flex-shrink-0">
-                    <Briefcase className="w-4 h-4 text-blue-400" aria-hidden="true" />
+                  {/* The same tile as the jobs list's cards, in the community colour. */}
+                  <div data-testid="similar-job-tile" className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent/20 to-companion/20 flex items-center justify-center flex-shrink-0">
+                    <Briefcase className="w-4 h-4 text-accent" aria-hidden="true" />
                   </div>
                   <h3 className="font-medium text-theme-primary text-sm line-clamp-2">{sj.title}</h3>
                 </div>

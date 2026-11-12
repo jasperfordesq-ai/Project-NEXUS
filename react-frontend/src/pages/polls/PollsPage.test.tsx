@@ -201,6 +201,35 @@ describe('PollsPage', () => {
     expect(shown.className).toContain('whitespace-pre-wrap');
   });
 
+  // Warmth phase 5: the category chip was a fixed blue.
+  it("shows a poll's category in the community colour", async () => {
+    const poll = {
+      id: 41,
+      question: 'Garden day?',
+      description: null,
+      category: 'Outdoors',
+      expires_at: null,
+      created_at: '2026-10-03T17:20:04Z',
+      total_votes: 0,
+      status: 'open',
+      has_voted: false,
+      voted_option_id: null,
+      options: [
+        { id: 150, label: 'Yes', vote_count: null, percentage: null },
+        { id: 151, label: 'No', vote_count: null, percentage: null },
+      ],
+      creator: { id: 218, name: 'Poll Author', avatar_url: null },
+    };
+    mockApiGet.mockImplementation((url: string) => Promise.resolve(
+      url.startsWith('/v2/polls?') ? { success: true, data: [poll] } : { success: true, data: [] },
+    ));
+    render(<PollsPage />);
+
+    const chip = await screen.findByTestId('poll-category-chip');
+    expect(chip.className).toContain('bg-accent-soft');
+    expect(chip.className).not.toMatch(/blue-/);
+  });
+
   it("exports the owner's poll results through the authenticated client", async () => {
     const { api } = await import('@/lib/api');
     const poll = {

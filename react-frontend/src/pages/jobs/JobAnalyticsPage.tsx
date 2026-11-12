@@ -279,7 +279,7 @@ export function JobAnalyticsPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
-          <BarChart3 className="w-7 h-7 text-blue-400" aria-hidden="true" />
+          <BarChart3 data-testid="job-analytics-heading-icon" className="w-7 h-7 text-accent" aria-hidden="true" />
           {t('analytics.title')}
         </h1>
         <Button

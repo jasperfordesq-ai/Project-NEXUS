@@ -544,8 +544,9 @@ export function SafeguardingTab() {
     <div className="space-y-6">
       <GlassCard className="p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 rounded-xl bg-blue-500/20">
-            <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+          {/* The opening tile follows the community colour, as the tab's other headings do. */}
+          <div data-testid="safeguarding-tab-tile" className="p-3 rounded-xl bg-accent-soft">
+            <Shield className="w-6 h-6 text-accent-soft-foreground" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-theme-primary">

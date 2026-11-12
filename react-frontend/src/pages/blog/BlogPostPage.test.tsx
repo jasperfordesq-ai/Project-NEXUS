@@ -167,6 +167,25 @@ describe('BlogPostPage', () => {
     });
   });
 
+  // Warmth phase 5: links and quotes in a post were a fixed blue.
+  it('shows links and quotes in the post in the community colour', async () => {
+    mockApiGet.mockImplementation((url: string) => {
+      if (url.includes('/v2/blog/')) {
+        return Promise.resolve({ success: true, data: mockPost });
+      }
+      return Promise.resolve({ success: true, data: null });
+    });
+
+    render(<BlogPostPage />);
+
+    const paragraph = await screen.findByText(/Timebanking is a way of exchanging time/i);
+    const body = paragraph.closest('.typography-prose') as HTMLElement;
+    expect(body).not.toBeNull();
+    expect(body.className).toContain('[&_a]:text-accent');
+    expect(body.className).toContain('[&_blockquote]:border-accent');
+    expect(body.className).not.toMatch(/blue-|color-info/);
+  });
+
   it('does not render account-derived author identity or profile links', async () => {
     mockApiGet.mockImplementation((url: string) => {
       if (url.includes('/v2/blog/')) {

@@ -505,7 +505,7 @@ export function PilotInquiryPage() {
           ) : (
             <Button
               variant="primary"
-              className="bg-gradient-to-r from-accent-strong to-emerald-700 text-white font-medium"
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white font-medium"
               isLoading={submitting}
               isDisabled={!canAdvance() || submitting}
               spinner={<Spinner size="sm" />}

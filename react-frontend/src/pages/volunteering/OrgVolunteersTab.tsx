@@ -174,8 +174,8 @@ export default function OrgVolunteersTab({ orgId }: OrgVolunteersTabProps) {
       <div className="space-y-4">
         {tabs}
         <GlassCard className="p-8 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 flex items-center justify-center mx-auto mb-4">
-            <Users className="w-7 h-7 text-[var(--color-info)]" aria-hidden="true" />
+          <div data-testid="org-volunteers-empty-tile" className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent/20 to-companion/20 flex items-center justify-center mx-auto mb-4">
+            <Users className="w-7 h-7 text-accent" aria-hidden="true" />
           </div>
           <p className="text-theme-muted">{t(view === 'retired' ? 'org_volunteers.none_retired' : 'org_volunteers.none')}</p>
           <p className="text-sm text-theme-subtle mt-1">

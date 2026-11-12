@@ -135,6 +135,17 @@ describe('OrgVolunteersTab', () => {
     expect(screen.queryByText('Alice Brown')).not.toBeInTheDocument();
   });
 
+  // Warmth phase 5: the empty-state tile was a fixed blue and cyan.
+  it('shows the empty-state tile in the community colour', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce(volunteerResponse([]));
+
+    render(<OrgVolunteersTab orgId={7} />);
+
+    const tile = await screen.findByTestId('org-volunteers-empty-tile');
+    expect(tile.className).toContain('from-accent/20');
+    expect(tile.className).not.toMatch(/blue-|cyan-/);
+  });
+
   it('shows an error toast when the API call returns success=false', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({ success: false, data: null });
 

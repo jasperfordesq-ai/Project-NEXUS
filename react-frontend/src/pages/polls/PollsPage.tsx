@@ -223,7 +223,8 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
                   <Chip
                     size="sm"
                     variant="soft"
-                    className="text-[10px] h-5 bg-blue-500/10 text-blue-400"
+                    data-testid="poll-category-chip"
+                    className="text-[10px] h-5 bg-accent-soft text-accent-soft-foreground"
                     startContent={<Tag className="w-3 h-3" aria-hidden="true" />}
                   >
                     {poll.category}

@@ -154,6 +154,27 @@ describe('VerifyIdentityOptionalPage', () => {
     });
   });
 
+  // Warmth phase 5: the main buttons' blend ended on a fixed green.
+  it('paints the main buttons in the community button colour', async () => {
+    const { VerifyIdentityOptionalPage } = await import('./VerifyIdentityOptionalPage');
+    for (const status of [
+      makeStatus({ user_has_dob: true, fee_cents: 0 }),
+      makeStatus({ user_has_dob: true, fee_cents: 500, payment_completed: false }),
+    ]) {
+      mockApi.get.mockResolvedValue(status);
+      const { unmount } = render(<VerifyIdentityOptionalPage />);
+      await waitFor(() => {
+        const main = screen.getAllByRole('button').filter((b) => b.className.includes('from-accent-strong'));
+        expect(main.length).toBeGreaterThan(0);
+        for (const b of main) {
+          expect(b.className).toContain('to-accent-strong-end');
+          expect(b.className).not.toMatch(/emerald-/);
+        }
+      });
+      unmount();
+    }
+  });
+
   it('shows DOB collection step when user has no DOB', async () => {
     mockApi.get.mockResolvedValue(makeStatus({ user_has_dob: false, fee_cents: 0 }));
     const { VerifyIdentityOptionalPage } = await import('./VerifyIdentityOptionalPage');

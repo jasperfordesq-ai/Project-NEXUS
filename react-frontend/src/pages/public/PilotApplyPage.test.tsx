@@ -82,6 +82,15 @@ describe('PilotApplyPage', () => {
     expect(submitBtn).toBeInTheDocument();
   });
 
+  // Warmth phase 5: the button's blend ended on a fixed green.
+  it('paints the submit button in the community button colour', () => {
+    render(<PilotApplyPage />);
+    const submitBtn = screen.getByRole('button', { name: /submit|apply|send|provisioning/i });
+    expect(submitBtn.className).toContain('from-accent-strong');
+    expect(submitBtn.className).toContain('to-accent-strong-end');
+    expect(submitBtn.className).not.toMatch(/emerald-/);
+  });
+
   it('submit button is disabled when required fields are empty', () => {
     render(<PilotApplyPage />);
     const submitBtn = screen.getByRole('button', { name: /submit|apply|send|provisioning/i });
