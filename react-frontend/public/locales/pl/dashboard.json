@@ -104,6 +104,7 @@
     "browse": "Przeglądaj wydarzenia"
   },
   "gamification": {
+    "latest_badge": "Najnowsza odznaka",
     "level": "Poziom {{level}}",
     "badges": "Odznaki",
     "streak": "Seria",

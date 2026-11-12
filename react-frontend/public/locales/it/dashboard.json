@@ -103,6 +103,7 @@
     "browse": "Sfoglia eventi"
   },
   "gamification": {
+    "latest_badge": "Badge più recente",
     "level": "Livello {{level}}",
     "badges": "Badge",
     "streak": "Serie",

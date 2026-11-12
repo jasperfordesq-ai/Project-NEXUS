@@ -102,6 +102,7 @@
     "browse": "イベントをブラウズする"
   },
   "gamification": {
+    "latest_badge": "最新のバッジ",
     "level": "レベル {{level}}",
     "badges": "バッジ",
     "streak": "ストリーク",

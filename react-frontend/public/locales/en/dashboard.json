@@ -102,6 +102,7 @@
     "browse": "Browse events"
   },
   "gamification": {
+    "latest_badge": "Latest badge",
     "level": "Level {{level}}",
     "badges": "Badges",
     "streak": "Streak",

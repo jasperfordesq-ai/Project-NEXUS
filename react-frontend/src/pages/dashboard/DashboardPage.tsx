@@ -20,8 +20,9 @@ import { useGreeting } from '@/hooks/useGreeting';
 import { GuardianConsentPrompt } from '@/components/safeguarding/GuardianConsentPrompt';
 import { SupportActionPrompt } from '@/components/subaccounts/SupportActionPrompt';
 import { LocationMissingPrompt, shouldShowLocationReminder } from '@/components/location/LocationMissingPrompt';
-import { Progress } from '@/components/ui/Progress';
+import { LevelProgress } from '@/components/ui/LevelProgress';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { LatestBadge, type EarnedBadge } from './LatestBadge';
 /**
  * Dashboard Page - Main user dashboard
  * Theme-aware styling for light and dark modes
@@ -74,7 +75,11 @@ interface GamificationProfile {
    * How far through the current level. The server sends an object
    * (GamificationV2Controller::profile); a bare number is still accepted.
    */
-  level_progress?: { progress_percentage?: number } | number | null;
+  level_progress?: {
+    progress_percentage?: number;
+    xp_for_current_level?: number;
+    xp_for_next_level?: number;
+  } | number | null;
   badges_count: number;
   /** The member's own sign-in streak in days (own profile only). */
   current_streak?: number;
@@ -158,6 +163,8 @@ interface DashboardStats {
   recentListings: Listing[];
   activeListingsCount: number;
   gamification: GamificationProfile | null;
+  /** The member's newest earned badge, or null when they have none. */
+  latestBadge: EarnedBadge | null;
   recentActivity: FeedActivityItem[];
   suggestedListings: SuggestionCard[];
   myGroups: Group[];
@@ -174,6 +181,21 @@ function normalizePercent(value: unknown): number {
   const percent = typeof raw === 'number' ? raw : Number(raw);
   if (!Number.isFinite(percent)) return 0;
   return Math.min(Math.max(percent, 0), 100);
+}
+
+/**
+ * XP gained inside the current level, and the XP that level spans, from the
+ * thresholds the server sends beside progress_percentage. Both 0 when they are
+ * missing or the member is at the top level (next threshold = current), so the
+ * level bar then shows only the percentage.
+ */
+function xpWithinLevel(xp: unknown, value: GamificationProfile['level_progress']): { current: number; required: number } {
+  if (value === null || typeof value !== 'object') return { current: 0, required: 0 };
+  const total = Number(xp);
+  const from = Number(value.xp_for_current_level);
+  const to = Number(value.xp_for_next_level);
+  if (![total, from, to].every(Number.isFinite) || to <= from) return { current: 0, required: 0 };
+  return { current: Math.max(0, total - from), required: to - from };
 }
 
 function formatActivityAction(item: FeedActivityItem, t: (key: string) => string): string {
@@ -285,7 +307,7 @@ export function DashboardPage() {
 
   const [stats, setStats] = useState<DashboardStats>({
     walletBalance: null, recentListings: [], activeListingsCount: 0,
-    gamification: null, recentActivity: [], suggestedListings: [], myGroups: [],
+    gamification: null, latestBadge: null, recentActivity: [], suggestedListings: [], myGroups: [],
     upcomingEvents: [], myEndorsements: [],
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -310,7 +332,14 @@ export function DashboardPage() {
       ];
 
       const optionalRequests: Array<{ key: string; promise: Promise<unknown> }> = [];
-      if (hasGamification) optionalRequests.push({ key: 'gamification', promise: api.get<GamificationProfile>('/v2/gamification/profile').catch(() => null) });
+      if (hasGamification) {
+        optionalRequests.push({ key: 'gamification', promise: api.get<GamificationProfile>('/v2/gamification/profile').catch(() => null) });
+        // The profile carries only the badges a member chose to showcase, so the
+        // newest badge comes from their earned list — the same request the
+        // achievements page makes. The server sends it newest first
+        // (UserBadge::getForUser orders by awarded_at, descending).
+        optionalRequests.push({ key: 'badges', promise: api.get<EarnedBadge[]>('/v2/gamification/badges').catch(() => null) });
+      }
       if (hasFeedModule) optionalRequests.push({ key: 'activity', promise: api.get<FeedActivityItem[]>('/v2/feed?per_page=5').catch(() => null) });
       if (hasListingsModule) {
         optionalRequests.push({
@@ -341,6 +370,8 @@ export function DashboardPage() {
 
       let gamificationData: GamificationProfile | null = null;
       if (optionalResults.gamification) { const gRes = optionalResults.gamification as { success?: boolean; data?: GamificationProfile }; if (gRes?.success && gRes.data) gamificationData = gRes.data; }
+      let latestBadgeData: EarnedBadge | null = null;
+      if (optionalResults.badges) { const bRes = optionalResults.badges as { success?: boolean; data?: EarnedBadge[] }; if (bRes?.success && Array.isArray(bRes.data) && bRes.data[0]?.badge_key) latestBadgeData = bRes.data[0]; }
       let activityData: FeedActivityItem[] = [];
       if (optionalResults.activity) { const aRes = optionalResults.activity as { success?: boolean; data?: FeedActivityItem[] }; if (aRes?.success && Array.isArray(aRes.data)) activityData = aRes.data; }
       let suggestedData: SuggestionCard[] = [];
@@ -375,7 +406,7 @@ export function DashboardPage() {
         walletBalance: walletData?.success ? walletData.data ?? null : null,
         recentListings: listingsData?.success ? listingsData.data ?? [] : [],
         activeListingsCount: listingsCount,
-        gamification: gamificationData, recentActivity: activityData, suggestedListings: suggestedData,
+        gamification: gamificationData, latestBadge: latestBadgeData, recentActivity: activityData, suggestedListings: suggestedData,
         myGroups: groupsData, upcomingEvents: eventsData, myEndorsements: endorsementsData,
       });
     } catch (err) {
@@ -390,6 +421,7 @@ export function DashboardPage() {
   useEffect(() => { loadDashboardData(); }, [loadDashboardData]);
 
   const levelProgress = normalizePercent(stats.gamification?.level_progress);
+  const levelXp = xpWithinLevel(stats.gamification?.xp, stats.gamification?.level_progress);
   const currentStreak = Math.max(0, Math.floor(Number(stats.gamification?.current_streak) || 0));
   const walletBalanceValue = stats.walletBalance ? t('stats.hours_value', { value: stats.walletBalance.balance }) : '\u2014';
 
@@ -729,17 +761,22 @@ export function DashboardPage() {
                     </div>
                   ) : stats.gamification ? (
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="text-sm font-medium text-theme-primary flex items-center gap-1.5"><Award className="w-4 h-4 text-[var(--color-warning)]" aria-hidden="true" />{t('gamification.level', { level: stats.gamification.level })}</span>
                         <Chip size="sm" variant="soft" color="warning" className="text-xs">{t('gamification.xp_value', { count: stats.gamification.xp })}</Chip>
                       </div>
-                      <div>
-                        <div className="flex justify-between text-xs sm:text-sm mb-1.5">
-                          <span className="text-theme-muted">{t('gamification.level', { level: stats.gamification.level })}</span>
-                          <span className="text-theme-primary font-medium">{Math.round(levelProgress)}%</span>
-                        </div>
-                        <Progress value={levelProgress} color="warning" size="sm" aria-label={t('gamification.xp_progress')} className="h-2" />
-                      </div>
+                      {/* The shared level bar. Its figure is the server's
+                          progress_percentage; the XP line counts XP gained
+                          inside this level. */}
+                      <LevelProgress
+                        compact
+                        level={stats.gamification.level}
+                        currentXP={levelXp.current}
+                        requiredXP={levelXp.required}
+                        percentage={levelProgress}
+                      />
+                      {/* The newest badge the member earned — only once they have one. */}
+                      {stats.latestBadge && <LatestBadge badge={stats.latestBadge} />}
                       <div className="flex justify-center gap-2 pt-2">
                         <div className="text-center p-2 rounded-lg bg-theme-elevated w-full">
                           <div className="text-lg font-bold text-theme-primary">{stats.gamification.badges_count}</div>

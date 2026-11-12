@@ -106,6 +106,7 @@
     "browse": "تصفح الأحداث"
   },
   "gamification": {
+    "latest_badge": "أحدث شارة",
     "level": "المستوى {{level}}",
     "badges": "الشارات",
     "streak": "سلسلة",

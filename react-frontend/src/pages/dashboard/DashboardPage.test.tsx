@@ -562,12 +562,71 @@ describe('DashboardPage', () => {
     expect(screen.queryByText('NaN%')).not.toBeInTheDocument();
   });
 
+  // Warmth phase 5: the card draws the level with the shared LevelProgress bar.
+  // The bar's figure must still be the server's progress_percentage (the fix
+  // above), and the XP line counts XP gained inside this level, not in total.
+  it('draws the level with the shared level bar: XP gained in this level and the server percentage', async () => {
+    mockApiGet.mockImplementation((endpoint: string) => {
+      if (endpoint === '/v2/gamification/profile') {
+        return Promise.resolve({
+          success: true,
+          data: {
+            level: 3,
+            xp: 372,
+            level_progress: { current_xp: 372, xp_for_current_level: 300, xp_for_next_level: 600, progress_percentage: 24 },
+            badges_count: 3,
+          },
+        });
+      }
+      return Promise.resolve(buildApiResponse(endpoint));
+    });
+
+    render(<DashboardPage />);
+
+    const bar = await screen.findByRole('progressbar', { name: 'Level 3 progress: 24%' });
+    expect(bar).toHaveAttribute('aria-valuenow', '24');
+    expect(screen.getByText('72 / 300 XP')).toBeInTheDocument();
+  });
+
+  // The profile only carries badges a member chose to showcase, so the newest
+  // badge comes from their earned list, which the server sends newest first.
+  it("shows the member's newest badge by name, and nothing at all when they have none", async () => {
+    mockApiGet.mockImplementation((endpoint: string) => {
+      if (endpoint === '/v2/gamification/badges') {
+        return Promise.resolve({
+          success: true,
+          data: [
+            { badge_key: 'helper_10', name: 'Helping Hand', icon: '🤝', type: 'exchange', rarity: 'rare', awarded_at: '2026-11-10 14:22:01' },
+            { badge_key: 'first_listing', name: 'First Listing', icon: '🌱', type: 'listings', rarity: 'common', awarded_at: '2026-10-01 09:00:00' },
+          ],
+        });
+      }
+      return Promise.resolve(buildApiResponse(endpoint));
+    });
+
+    const { unmount } = render(<DashboardPage />);
+    const latest = await screen.findByTestId('dashboard-latest-badge');
+    expect(within(latest).getByText('Latest badge')).toBeInTheDocument();
+    expect(within(latest).getByText('Helping Hand')).toBeInTheDocument();
+    expect(within(latest).getByText(/^Earned /)).toBeInTheDocument();
+    expect(within(latest).queryByText('First Listing')).not.toBeInTheDocument();
+    // Drawn with the shared medallion, which rings a rare badge.
+    expect(latest.querySelector('[data-rarity="rare"]')).not.toBeNull();
+    unmount();
+
+    mockApiGet.mockImplementation((endpoint: string) => Promise.resolve(buildApiResponse(endpoint)));
+    render(<DashboardPage />);
+    await screen.findByText('45%');
+    expect(screen.queryByTestId('dashboard-latest-badge')).not.toBeInTheDocument();
+  });
+
   it('hides disabled modules and does not request their data', async () => {
     Object.assign(featureFlags, { connections: false, events: false, gamification: false, groups: false });
     Object.assign(moduleFlags, { feed: false, listings: false, messages: false, profile: false, wallet: false });
     render(<DashboardPage />);
     await waitFor(() => expect(screen.queryByText('Balance')).not.toBeInTheDocument());
     expect(mockApiGet).not.toHaveBeenCalledWith('/v2/wallet/balance');
+    expect(mockApiGet.mock.calls.some(([url]) => String(url).startsWith('/v2/gamification'))).toBe(false);
     expect(mockApiGet.mock.calls.some(([url]) => String(url).startsWith('/v2/listings'))).toBe(false);
     for (const label of ['Active offers and requests', 'Your listings', 'New offer or request', 'Create an offer or request', 'View Wallet', 'Find Members']) {
       expect(screen.queryByText(label)).not.toBeInTheDocument();

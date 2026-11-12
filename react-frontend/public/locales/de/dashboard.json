@@ -102,6 +102,7 @@
     "browse": "Veranstaltungen suchen"
   },
   "gamification": {
+    "latest_badge": "Neuestes Abzeichen",
     "level": "Stufe {{level}}",
     "badges": "Abzeichen",
     "streak": "Serie",

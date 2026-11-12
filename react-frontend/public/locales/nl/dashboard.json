@@ -102,6 +102,7 @@
     "browse": "Blader door evenementen"
   },
   "gamification": {
+    "latest_badge": "Nieuwste insigne",
     "level": "Niveau {{level}}",
     "badges": "Insignes",
     "streak": "Reeks",

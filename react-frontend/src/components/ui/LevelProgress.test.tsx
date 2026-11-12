@@ -39,4 +39,22 @@ describe('LevelProgress', () => {
     render(<LevelProgress currentXP={0} requiredXP={0} level={1} compact />);
     expect(screen.getByText('0%')).toBeInTheDocument();
   });
+
+  it("uses the caller's percentage when given, for the bar and the figure", () => {
+    render(<LevelProgress currentXP={10} requiredXP={100} level={3} percentage={37} compact />);
+    expect(screen.getByText('37%')).toBeInTheDocument();
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '37');
+  });
+
+  it('leaves out the XP line when there is no XP target (top level)', () => {
+    render(<LevelProgress currentXP={0} requiredXP={0} level={10} percentage={100} compact />);
+    expect(screen.getByText('100%')).toBeInTheDocument();
+    expect(screen.queryByText(/XP$/)).not.toBeInTheDocument();
+  });
+
+  it('does not animate the bar for people who ask for reduced motion', () => {
+    render(<LevelProgress currentXP={50} requiredXP={100} level={2} compact />);
+    const fill = screen.getByRole('progressbar').firstElementChild as HTMLElement;
+    expect(fill.className).toContain('motion-reduce:transition-none');
+  });
 });

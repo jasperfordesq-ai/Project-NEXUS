@@ -105,6 +105,7 @@
     "browse": "Brabhsáil imeachtaí"
   },
   "gamification": {
+    "latest_badge": "An suaitheantas is déanaí",
     "level": "Leibhéal {{level}}",
     "badges": "Suaitheantais",
     "streak": "Sraith laethanta",

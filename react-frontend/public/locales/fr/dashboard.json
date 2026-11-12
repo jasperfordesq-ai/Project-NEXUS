@@ -103,6 +103,7 @@
     "browse": "Parcourir les événements"
   },
   "gamification": {
+    "latest_badge": "Dernier insigne obtenu",
     "level": "Niveau {{level}}",
     "badges": "Insignes",
     "streak": "Série",

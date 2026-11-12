@@ -103,6 +103,7 @@
     "browse": "Explorar eventos"
   },
   "gamification": {
+    "latest_badge": "Insígnia mais recente",
     "level": "Nível {{level}}",
     "badges": "Insígnias",
     "streak": "Sequência",
