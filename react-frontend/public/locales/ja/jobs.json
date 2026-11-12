@@ -640,6 +640,9 @@
   },
   "form": {
     "create_title": "求人を投稿する",
+    "preview_heading": "求人の表示イメージ",
+    "preview_title_placeholder": "ここに職種名が表示されます",
+    "preview_description_placeholder": "ここに仕事内容の短い説明が表示されます。",
     "edit_title": "求人を編集する",
     "title_label": "職種名",
     "title_placeholder": "例：コミュニティガーデンコーディネーター",

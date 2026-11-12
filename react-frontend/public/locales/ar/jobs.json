@@ -708,6 +708,9 @@
   },
   "form": {
     "create_title": "نشر وظيفة شاغرة",
+    "preview_heading": "كيف ستظهر الوظيفة",
+    "preview_title_placeholder": "سيظهر المسمى الوظيفي هنا",
+    "preview_description_placeholder": "سيظهر هنا سطر أو سطران عن الوظيفة.",
     "edit_title": "تعديل الوظيفة الشاغرة",
     "title_label": "عنوان الوظيفة",
     "title_placeholder": "مثال: منسق حديقة المجتمع",

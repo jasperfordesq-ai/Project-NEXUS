@@ -640,6 +640,9 @@
   },
   "form": {
     "create_title": "Stelle ausschreiben",
+    "preview_heading": "So sieht Ihre Stellenanzeige aus",
+    "preview_title_placeholder": "Die Stellenbezeichnung erscheint hier",
+    "preview_description_placeholder": "Hier erscheinen ein, zwei Zeilen zur Aufgabe.",
     "edit_title": "Stelle bearbeiten",
     "title_label": "Stellentitel",
     "title_placeholder": "z.B. Koordinator für Gemeinschaftsgarten",

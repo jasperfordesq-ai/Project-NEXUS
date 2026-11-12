@@ -11,6 +11,8 @@ import { CloseButton } from '@/components/ui/CloseButton';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { FormWithPreview } from '@/components/ui/FormWithPreview';
+import { JobPreviewCard } from '@/components/jobs/JobPreviewCard';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
@@ -739,7 +741,7 @@ export function CreateJobPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto">
       <PageMeta
         title={isEditing ? t('page_meta.edit.title') : t('page_meta.create.title')}
         description={isEditing ? t('page_meta.edit.description') : t('page_meta.create.description')}
@@ -760,7 +762,20 @@ export function CreateJobPage() {
         {isEditing ? t('detail.browse_vacancies') : t('title')}
       </Link>
 
-      {/* Form */}
+      {/* Form, with a live picture of the finished card beside it (as the
+          other create forms have); on a phone the picture follows the form. */}
+      <FormWithPreview
+        preview={
+          <JobPreviewCard
+            title={form.title}
+            description={form.description}
+            type={form.type}
+            commitment={form.commitment}
+            location={form.location}
+            isRemote={form.is_remote}
+          />
+        }
+      >
       <GlassCard className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
@@ -1523,6 +1538,7 @@ export function CreateJobPage() {
           </div>
         </div>
       </GlassCard>
+      </FormWithPreview>
 
       {/* Save as Template Modal */}
       <Modal

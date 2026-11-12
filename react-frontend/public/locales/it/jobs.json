@@ -657,6 +657,9 @@
   },
   "form": {
     "create_title": "Pubblica un'Offerta di Lavoro",
+    "preview_heading": "Come apparirà la tua offerta di lavoro",
+    "preview_title_placeholder": "Il titolo della posizione apparirà qui",
+    "preview_description_placeholder": "Qui appariranno una o due righe sul ruolo.",
     "edit_title": "Modifica Offerta di Lavoro",
     "title_label": "Titolo del Lavoro",
     "title_placeholder": "es. Coordinatore Orto Comunitario",

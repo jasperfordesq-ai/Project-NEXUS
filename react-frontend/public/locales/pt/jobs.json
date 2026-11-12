@@ -657,6 +657,9 @@
   },
   "form": {
     "create_title": "Publicar uma Vaga de Emprego",
+    "preview_heading": "Como vai ficar a sua vaga",
+    "preview_title_placeholder": "O título da vaga aparece aqui",
+    "preview_description_placeholder": "Aqui aparecem uma ou duas linhas sobre a função.",
     "edit_title": "Editar Vaga de Emprego",
     "title_label": "Título do Emprego",
     "title_placeholder": "ex.: Coordenador de Horta Comunitária",

@@ -657,6 +657,9 @@
   },
   "form": {
     "create_title": "Publier une offre d'emploi",
+    "preview_heading": "Aperçu de votre annonce",
+    "preview_title_placeholder": "L’intitulé du poste apparaîtra ici",
+    "preview_description_placeholder": "Une ou deux lignes sur le poste apparaîtront ici.",
     "edit_title": "Modifier l'offre d'emploi",
     "title_label": "Titre du poste",
     "title_placeholder": "ex. Coordinateur de jardin communautaire",

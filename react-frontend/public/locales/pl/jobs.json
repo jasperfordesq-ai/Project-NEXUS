@@ -674,6 +674,9 @@
   },
   "form": {
     "create_title": "Opublikuj ofertę pracy",
+    "preview_heading": "Tak będzie wyglądać Twoje ogłoszenie",
+    "preview_title_placeholder": "Tutaj pojawi się nazwa stanowiska",
+    "preview_description_placeholder": "Tutaj pojawi się zdanie lub dwa o stanowisku.",
     "edit_title": "Edytuj ofertę pracy",
     "title_label": "Tytuł pracy",
     "title_placeholder": "np. Koordynator Ogrodu Społecznego",

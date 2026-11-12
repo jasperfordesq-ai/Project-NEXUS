@@ -640,6 +640,9 @@
   },
   "form": {
     "create_title": "Post a Job Vacancy",
+    "preview_heading": "How your vacancy will look",
+    "preview_title_placeholder": "The job title will appear here",
+    "preview_description_placeholder": "A line or two about the role will appear here.",
     "edit_title": "Edit Job Vacancy",
     "title_label": "Job Title",
     "title_placeholder": "e.g. Community Garden Coordinator",

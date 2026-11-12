@@ -640,6 +640,9 @@
   },
   "form": {
     "create_title": "Plaats een Vacature",
+    "preview_heading": "Zo ziet je vacature eruit",
+    "preview_title_placeholder": "De functietitel verschijnt hier",
+    "preview_description_placeholder": "Hier verschijnen een of twee regels over de functie.",
     "edit_title": "Bewerk Vacature",
     "title_label": "Functietitel",
     "title_placeholder": "bijv. Coördinator Gemeentetuin",

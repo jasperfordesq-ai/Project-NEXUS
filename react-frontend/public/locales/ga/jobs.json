@@ -691,6 +691,9 @@
   },
   "form": {
     "create_title": "Postáil Folúntas Poist",
+    "preview_heading": "Mar a bhreathnóidh d’fholúntas",
+    "preview_title_placeholder": "Taispeánfar teideal an phoist anseo",
+    "preview_description_placeholder": "Taispeánfar líne nó dhó faoin ról anseo.",
     "edit_title": "Cuir Folúntas Poist in Eagar",
     "title_label": "Teideal an Phoist",
     "title_placeholder": "m.sh. Comhordaitheoir Gairdín Pobail",
