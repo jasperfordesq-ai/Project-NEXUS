@@ -373,7 +373,9 @@ function createMotionComponent(tag: string) {
         activeTransition = (resolvedExit?.transition as Transition) ?? transition;
       } else if (whileInView !== undefined) {
         const shown = resolveDefinition(whileInView, variants, effCustom) ?? resolvedAnimate;
-        baseTarget = inView ? shown : resolvedInitial;
+        // Less movement asked for: no waiting to be scrolled to, the section is
+        // simply there (12 Nov 2026 — it otherwise stayed invisible until reached).
+        baseTarget = inView || reduced ? shown : resolvedInitial;
         activeTransition = (shown?.transition as Transition) ?? transition;
       } else {
         const showAnimate = ready || skipInitial || effInitial === false;

@@ -40,6 +40,47 @@ describe('useReducedMotion — the member\'s own setting counts too', () => {
   });
 });
 
+describe('"appear when scrolled to" sections', () => {
+  const RealObserver = globalThis.IntersectionObserver;
+
+  afterEach(() => {
+    document.documentElement.removeAttribute('data-reduced-motion');
+    globalThis.IntersectionObserver = RealObserver;
+  });
+
+  function useSilentObserver() {
+    // An observer that never reports the section as on screen, like a section
+    // far below the fold that has not been scrolled to yet.
+    globalThis.IntersectionObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+      takeRecords() { return []; }
+    } as unknown as typeof IntersectionObserver;
+  }
+
+  function Section() {
+    return (
+      <motion.div data-testid="section" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
+        Trending
+      </motion.div>
+    );
+  }
+
+  it('wait off screen until scrolled to, for most members', () => {
+    useSilentObserver();
+    render(<Section />);
+    expect(screen.getByTestId('section').style.opacity).toBe('0');
+  });
+
+  it('are simply there for anyone who asked for less movement', () => {
+    useSilentObserver();
+    document.documentElement.setAttribute('data-reduced-motion', 'true');
+    render(<Section />);
+    expect(screen.getByTestId('section').style.opacity).toBe('1');
+  });
+});
+
 describe('the hover lift on cards', () => {
   it('is left out for anyone who asked for less movement', async () => {
     const fs = await import('node:fs');
