@@ -9,6 +9,8 @@ import { Chip } from '@/components/ui/Chip';
 import { DatePicker } from '@/components/ui/DatePicker';
 import type { DateInputValue } from '@/components/ui/DatePicker';
 import { FormSectionHeading } from '@/components/ui/FormSectionHeading';
+import { FormWithPreview } from '@/components/ui/FormWithPreview';
+import { EventPreviewCard } from '@/components/events/EventPreviewCard';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
@@ -1134,7 +1136,23 @@ export function CreateEventPage() {
         </div>
       </header>
 
-      {/* Form */}
+      {/* Form, with a live picture of the finished card beside it (as the
+          offer and group forms have); on a phone the picture follows the form. */}
+      <FormWithPreview
+        preview={
+          <EventPreviewCard
+            title={formData.title}
+            description={formData.description}
+            startDate={formData.startDate ? { year: formData.startDate.year, month: formData.startDate.month, day: formData.startDate.day } : null}
+            startTime={formData.startTime ? { hour: formData.startTime.hour, minute: formData.startTime.minute } : null}
+            allDay={formData.allDay}
+            location={formData.location}
+            categoryId={formData.category ? Number(formData.category) : null}
+            categoryName={formData.category ? categories.find((category) => String(category.id) === formData.category)?.name ?? null : null}
+            imageSrc={imagePreview || existingImagePreviewProps?.src || existingImage || null}
+          />
+        }
+      >
       <GlassCard className="p-5 sm:p-8">
         {/* The kind's own colour, as on the feed and in search (warmth plan B6). */}
         <div className="mb-6">
@@ -1819,6 +1837,7 @@ export function CreateEventPage() {
           </div>
         </form>
       </GlassCard>
+      </FormWithPreview>
 
       {/* Recurring-series edit scope */}
       <Modal isOpen={showScopeModal} onClose={() => setShowScopeModal(false)}>
