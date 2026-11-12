@@ -2412,7 +2412,7 @@
     "rate_limited": "Limite quotidienne de remerciements atteinte",
     "wall_title": "Remerciements",
     "empty_title": "Aucun remerciement pour l'instant",
-    "empty_desc": "Les mots de remerciement apparaîtront ici.",
+    "empty_desc": "Les mots de remerciement que ce membre choisit d'afficher apparaîtront ici.",
     "load_error_title": "Impossible de charger les remerciements",
     "load_error_desc": "Une erreur s'est produite lors du chargement des remerciements. Veuillez réessayer.",
     "retry": "Réessayer",

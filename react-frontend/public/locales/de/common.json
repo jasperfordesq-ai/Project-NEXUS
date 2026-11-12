@@ -2398,7 +2398,7 @@
     "rate_limited": "Tägliches Dankeschön-Limit erreicht",
     "wall_title": "Wertschätzungen",
     "empty_title": "Noch keine Wertschätzungen",
-    "empty_desc": "Dankesbotschaften werden hier angezeigt.",
+    "empty_desc": "Hier erscheinen die Dankesnachrichten, die dieses Mitglied zeigen möchte.",
     "load_error_title": "Wertschätzungen konnten nicht geladen werden",
     "load_error_desc": "Beim Laden der Wertschätzungen ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "retry": "Erneut versuchen",

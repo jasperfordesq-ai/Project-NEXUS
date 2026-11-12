@@ -2412,7 +2412,7 @@
     "rate_limited": "Limite giornaliero di ringraziamenti raggiunto",
     "wall_title": "Apprezzamenti",
     "empty_title": "Ancora nessun apprezzamento",
-    "empty_desc": "Le note di ringraziamento appariranno qui.",
+    "empty_desc": "Qui appariranno i messaggi di ringraziamento che questo membro sceglie di mostrare.",
     "load_error_title": "Impossibile caricare gli apprezzamenti",
     "load_error_desc": "Si è verificato un errore durante il caricamento degli apprezzamenti. Riprova.",
     "retry": "Riprova",

@@ -2412,7 +2412,7 @@
     "rate_limited": "Límite diario de agradecimientos alcanzado",
     "wall_title": "Agradecimientos",
     "empty_title": "Aún no hay agradecimientos",
-    "empty_desc": "Las notas de agradecimiento aparecerán aquí.",
+    "empty_desc": "Aquí aparecerán las notas de agradecimiento que este miembro decida mostrar.",
     "load_error_title": "No se pudieron cargar los agradecimientos",
     "load_error_desc": "Algo salió mal al cargar los agradecimientos. Por favor, inténtalo de nuevo.",
     "retry": "Intentar de nuevo",

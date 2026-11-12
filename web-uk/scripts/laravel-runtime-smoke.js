@@ -492,7 +492,7 @@ const DEFAULT_BODY_TEXT_PAGE_PATHS = [
   { path: '/groups/482/discussions/new', text: 'Start a discussion' },
   { path: '/groups/482/invite', text: 'Invite members' },
   { path: '/groups/482/notifications', text: 'Notification preferences' },
-  { path: '/users/14/appreciations', text: 'Public thank-you notes other members have sent to this person.' }
+  { path: '/users/14/appreciations', text: 'Thank-you notes this member has chosen to show on their profile.' }
 ];
 const DEFAULT_SIGNED_MODULE_PAGE_PATHS = [
   '/',

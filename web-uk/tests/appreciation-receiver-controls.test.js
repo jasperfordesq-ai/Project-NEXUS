@@ -295,6 +295,20 @@ describe('a member looking at someone else\'s thank-you notes', () => {
     expect(res.text).toContain('method="post" action="/appreciations/56/react"');
   });
 
+  // The page and its empty state said "public notes" as if the SENDER made a
+  // note public. The receiver decides what shows, so the words say that the
+  // member has chosen to show these (audit of warmth phase 5, 12 Nov 2026).
+  it('is told these are the notes the member has chosen to show, not "public" notes', async () => {
+    const shown = await request(createApp()).get(`/users/${ME}/appreciations`);
+    expect(shown.text).toContain('Thank-you notes this member has chosen to show on their profile.');
+    expect(shown.text).not.toMatch(/public (thank-you )?notes/i);
+
+    api.getUserAppreciations.mockResolvedValueOnce({ data: [], meta: { current_page: 1, last_page: 1 } });
+    const empty = await request(createApp()).get(`/users/${ME}/appreciations`);
+    expect(empty.text).toContain('This member has not shown any thank-you notes yet.');
+    expect(empty.text).not.toMatch(/public (thank-you )?notes/i);
+  });
+
   it('is told the note is private, and is not asked to choose', async () => {
     const res = await request(createApp()).get(`/users/${ME}/appreciations`);
 

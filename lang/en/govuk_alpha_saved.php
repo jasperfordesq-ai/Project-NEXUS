@@ -80,17 +80,17 @@ return [
 
     // ---- Appreciation wall ----
     'wall' => [
-        'title' => 'Appreciation wall',
+        'title' => 'Thank-you notes',
         'caption' => 'Thank-you notes received by :name',
         'heading' => 'Appreciation for :name',
-        'description' => 'Public thank-you notes other members have sent to this person.',
+        'description' => 'Thank-you notes this member has chosen to show on their profile.',
         'back_to_profile' => 'Back to profile',
         'received_on' => ':date',
         'from' => 'From :name',
         'from_someone' => 'A member',
         'reactions_count' => '{0} No reactions|{1} 1 reaction|[2,*] :count reactions',
         'empty_title' => 'No appreciation yet',
-        'empty_body' => 'When members thank this person, the public notes will appear here.',
+        'empty_body' => 'This member has not shown any thank-you notes yet.',
         'own_description' => 'Thank-you notes other members have sent you. Only you can see a note until you choose to show it on your profile.',
         'own_empty_body' => 'When members thank you, their notes will appear here. Only you will see them until you choose to show them on your profile.',
         'visibility_private' => 'Only you can see this',

@@ -2426,7 +2426,7 @@
     "rate_limited": "Osiągnięto dzienny limit podziękowań",
     "wall_title": "Podziękowania",
     "empty_title": "Brak podziękowań",
-    "empty_desc": "Podziękowania pojawią się tutaj.",
+    "empty_desc": "Tutaj pojawią się podziękowania, które ten członek zdecyduje się pokazać.",
     "load_error_title": "Nie udało się wczytać podziękowań",
     "load_error_desc": "Coś poszło nie tak podczas wczytywania podziękowań. Spróbuj ponownie.",
     "retry": "Spróbuj ponownie",

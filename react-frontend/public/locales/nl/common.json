@@ -2398,7 +2398,7 @@
     "rate_limited": "Dagelijkse bedankjeslimiet bereikt",
     "wall_title": "Waarderingen",
     "empty_title": "Nog geen waarderingen",
-    "empty_desc": "Bedankbriefjes verschijnen hier.",
+    "empty_desc": "Hier verschijnen de bedankberichten die dit lid wil laten zien.",
     "load_error_title": "Waarderingen konden niet worden geladen",
     "load_error_desc": "Er is iets misgegaan bij het laden van de waarderingen. Probeer het opnieuw.",
     "retry": "Opnieuw proberen",

@@ -2412,7 +2412,7 @@
     "rate_limited": "Limite diário de agradecimentos atingido",
     "wall_title": "Agradecimentos",
     "empty_title": "Ainda sem agradecimentos",
-    "empty_desc": "As mensagens de agradecimento vão aparecer aqui.",
+    "empty_desc": "Aqui vão aparecer as mensagens de agradecimento que este membro escolher mostrar.",
     "load_error_title": "Não foi possível carregar os agradecimentos",
     "load_error_desc": "Algo deu errado ao carregar os agradecimentos. Tente novamente.",
     "retry": "Tentar novamente",

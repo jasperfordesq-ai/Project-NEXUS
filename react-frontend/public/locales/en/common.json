@@ -2398,7 +2398,7 @@
     "rate_limited": "Daily thank-you limit reached",
     "wall_title": "Appreciations",
     "empty_title": "No appreciations yet",
-    "empty_desc": "Thank-you notes will appear here.",
+    "empty_desc": "Thank-you notes this member chooses to show will appear here.",
     "load_error_title": "Couldn't load appreciations",
     "load_error_desc": "Something went wrong while loading appreciations. Please try again.",
     "retry": "Try again",
