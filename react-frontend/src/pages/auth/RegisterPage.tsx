@@ -1299,7 +1299,9 @@ export function RegisterPage() {
               </motion.div>
 
               <h1 className="text-xl sm:text-2xl font-bold text-theme-primary mb-2">
-                {pendingResult.requiresWaitlist ? t('register.waitlist_title') : t('register.success_title')}
+                {pendingResult.requiresWaitlist
+                  ? t('register.waitlist_title')
+                  : t('register.success_title', { name: firstName.trim() })}
               </h1>
 
               <div className="space-y-3 mt-4 text-left">

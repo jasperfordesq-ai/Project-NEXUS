@@ -182,6 +182,45 @@ describe('VerifyEmailPage', () => {
     });
   });
 
+  // The server's sentence for a dead link is system voice ("Invalid or expired verification
+  // token…"). The page knows from the code what happened, so it says it in its own words.
+  it('explains a dead link in the site voice, not with the server sentence', async () => {
+    vi.mocked(mockApi.post).mockResolvedValueOnce({
+      success: false,
+      code: 'AUTH_TOKEN_INVALID',
+      error: 'Invalid or expired verification token. Please request a new verification email.',
+    });
+
+    const { useSearchParams } = await import('react-router-dom');
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams('token=used-token'),
+      vi.fn(),
+    ] as ReturnType<typeof useSearchParams>);
+
+    render(<VerifyEmailPage />);
+
+    expect(await screen.findByText(/This link isn't working any more/)).toBeInTheDocument();
+    expect(screen.queryByText(/Invalid or expired verification token/)).toBeNull();
+  });
+
+  it('still shows what the server says for any other refusal', async () => {
+    vi.mocked(mockApi.post).mockResolvedValueOnce({
+      success: false,
+      code: 'RATE_LIMIT_EXCEEDED',
+      error: 'Please wait a minute before trying again.',
+    });
+
+    const { useSearchParams } = await import('react-router-dom');
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams('token=some-token'),
+      vi.fn(),
+    ] as ReturnType<typeof useSearchParams>);
+
+    render(<VerifyEmailPage />);
+
+    expect(await screen.findByText('Please wait a minute before trying again.')).toBeInTheDocument();
+  });
+
   it('shows resend option in error state for authenticated users', async () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, user: { id: 1 } });
 

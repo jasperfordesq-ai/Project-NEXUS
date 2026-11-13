@@ -219,9 +219,10 @@ describe('RegisterPage', () => {
 
     render(<RegisterPage />);
 
-    expect(await screen.findByText(/registration is closed/i)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: /registration is closed/i })).toBeInTheDocument();
-    expect(screen.getByText(/not accepting new registrations/i)).toBeInTheDocument();
+    expect(await screen.findByText(/isn't taking new members right now/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /isn't taking new members right now/i })).toBeInTheDocument();
+    // What to do next, and who to ask: one name for the person who approves (a coordinator).
+    expect(screen.getByText(/get in touch with a coordinator for this community/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /create account/i })).not.toBeInTheDocument();
   });
 
@@ -239,8 +240,16 @@ describe('RegisterPage', () => {
 
     render(<RegisterPage />);
 
-    expect(await screen.findByText(/registration status unavailable/i)).toBeInTheDocument();
+    expect(await screen.findByText(/couldn't check whether this community is open to new members/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /create account/i })).not.toBeInTheDocument();
+  });
+
+  it('thanks a new member by first name once they have joined', () => {
+    const title = i18n.t('register.success_title', { ns: 'auth', name: 'Nora' });
+
+    expect(title).toBe("Thank you, Nora — you're nearly there");
+    // The voice guide: no "Registration Successful!" system voice at the moment someone joins.
+    expect(title).not.toMatch(/registration|successful/i);
   });
 
   it('prominently reminds new registrants to check junk or spam for the verification email', () => {
@@ -249,9 +258,9 @@ describe('RegisterPage', () => {
       email: 'sam@example.org',
     });
 
-    expect(message).toContain('<strong>Please check your Junk or spam folder');
-    expect(message).toContain('Please check your Junk or spam folder');
-    expect(message).toContain("if you can't see this email in your inbox");
+    // The reminder stays in bold, and says where to look in plain words.
+    expect(message).toContain("<strong>If you can't see it, have a look in your junk or spam folder.</strong>");
+    expect(message).toContain('<strong>sam@example.org</strong>');
   });
 
   /**

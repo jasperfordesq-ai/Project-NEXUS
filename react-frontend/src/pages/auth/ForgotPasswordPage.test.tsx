@@ -78,9 +78,9 @@ describe('ForgotPasswordPage', () => {
     expect(screen.getByPlaceholderText('you@example.com')).toBeInTheDocument();
   });
 
-  it('shows back to login link', () => {
+  it('shows the link back to sign in', () => {
     render(<ForgotPasswordPage />);
-    expect(screen.getByText(/Back to login/i)).toBeInTheDocument();
+    expect(screen.getByText('Back to sign in')).toBeInTheDocument();
   });
 
   it('fires only ONE reset request when the form is submitted twice in rapid succession', async () => {

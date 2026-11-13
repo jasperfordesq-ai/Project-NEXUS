@@ -93,7 +93,11 @@ export function VerifyEmailPage() {
             setState('success');
           } else {
             setState('error');
-            setErrorMessage(response.error || t('verify_email.expired_error'));
+            // A dead link (used, run out, or mistyped) is the one refusal this page can
+            // explain better than the server's sentence: it also covers "you may already
+            // be verified". Any other refusal keeps the server's own words.
+            const deadLink = response.code === 'AUTH_TOKEN_INVALID';
+            setErrorMessage(deadLink || !response.error ? t('verify_email.expired_error') : response.error);
           }
         }
       } catch {

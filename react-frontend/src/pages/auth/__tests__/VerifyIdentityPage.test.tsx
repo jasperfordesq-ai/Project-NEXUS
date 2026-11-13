@@ -215,7 +215,8 @@ describe('VerifyIdentityPage', () => {
     });
 
     expect(screen.getByText(/identity has been successfully verified/)).toBeTruthy();
-    expect(screen.getByText('Awaiting admin approval')).toBeTruthy();
+    expect(screen.getByText('Waiting for approval')).toBeTruthy();
+    expect(screen.getByText(/A coordinator for this community still needs to approve your account/)).toBeTruthy();
   });
 
   it('shows failed state with retry button', async () => {
@@ -225,10 +226,10 @@ describe('VerifyIdentityPage', () => {
     renderWithProviders(<VerifyIdentityPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Verification unsuccessful')).toBeTruthy();
+      expect(screen.getByText("We couldn't verify your identity")).toBeTruthy();
     });
 
-    expect(screen.getByText(/unable to verify your identity/)).toBeTruthy();
+    expect(screen.getByText(/That check didn't go through/)).toBeTruthy();
     expect(screen.getByText('Document could not be verified')).toBeTruthy();
     expect(screen.getByText('Try again')).toBeTruthy();
   });
@@ -254,10 +255,10 @@ describe('VerifyIdentityPage', () => {
     renderWithProviders(<VerifyIdentityPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Something went wrong')).toBeTruthy();
+      expect(screen.getByText(/That didn't work/)).toBeTruthy();
     });
 
-    expect(screen.getByText(/Unable to check verification status/)).toBeTruthy();
+    expect(screen.getByText(/We couldn't see how your verification is going/)).toBeTruthy();
     expect(screen.getByText('Try again')).toBeTruthy();
   });
 
@@ -284,7 +285,7 @@ describe('VerifyIdentityPage', () => {
     const { default: VerifyIdentityPage } = await import('../VerifyIdentityPage');
     renderWithProviders(<VerifyIdentityPage />);
 
-    expect(screen.getByText('Please log in to verify your identity.')).toBeTruthy();
-    expect(screen.getByText('Go to Login')).toBeTruthy();
+    expect(screen.getByText('Sign in to verify your identity.')).toBeTruthy();
+    expect(screen.getByText('Go to sign in')).toBeTruthy();
   });
 });

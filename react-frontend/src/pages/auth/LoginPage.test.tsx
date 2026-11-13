@@ -520,7 +520,7 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
 
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalledWith(
-        'No passkey found for this account. Log in with your password, then go to Settings to register a passkey.',
+        "We couldn't find a passkey for this account. Sign in with your password, then add a passkey in Settings.",
       );
     });
   });
@@ -692,7 +692,7 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
 // experience. Reported from a live community on 2026-08-12.
 describe('LoginPage — awaiting-approval sign-in outcome', () => {
   /** The generic copy AuthContext puts in `error` for any failed sign-in. */
-  const GENERIC_FAILURE = 'Sign-in failed. Please check your details and try again.';
+  const GENERIC_FAILURE = "We couldn't sign you in. Please check your details and try again.";
   const PENDING_HEADLINE = "You're registered and waiting for approval";
 
   beforeEach(() => {
