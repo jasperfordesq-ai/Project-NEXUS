@@ -192,8 +192,7 @@ class TenantVisibilityService
     public static function getUserList(array $filters = []): array
     {
         try {
-            $query = DB::table('users')
-                ->join('tenants', 'users.tenant_id', '=', 'tenants.id')
+            $query = self::userListQuery($filters)
                 ->select([
                     'users.id', 'users.first_name', 'users.last_name', 'users.profile_type', 'users.organization_name', 'users.email',
                     'users.role', 'users.tenant_id', 'users.is_approved',
@@ -202,39 +201,10 @@ class TenantVisibilityService
                     'users.created_at', 'users.last_login_at',
                     'tenants.name as tenant_name', 'tenants.slug as tenant_slug',
                 ])
-                ->orderBy('users.created_at', 'desc');
-
-            // Scope by access level
-            // 🔴 Fail closed — see SuperPanelAccess::subtreeFilter(). This is the
-            // user list: the largest cross-tenant PII surface in the panel.
-            $filter = SuperPanelAccess::subtreeFilter();
-            if ($filter['deny']) {
-                $query->whereRaw('1 = 0');
-            } elseif ($filter['filter']) {
-                $query->where('tenants.path', 'LIKE', $filter['prefix'] . '%');
-            }
-
-            if (!empty($filters['tenant_id'])) {
-                $query->where('users.tenant_id', (int) $filters['tenant_id']);
-            }
-
-            if (!empty($filters['role'])) {
-                $query->where('users.role', $filters['role']);
-            }
-
-            if (!empty($filters['is_tenant_super_admin'])) {
-                $query->where('users.is_tenant_super_admin', 1);
-            }
-
-            if (!empty($filters['search'])) {
-                $search = '%' . $filters['search'] . '%';
-                $query->where(function ($q) use ($search) {
-                    $q->where('users.first_name', 'LIKE', $search)
-                      ->orWhere('users.last_name', 'LIKE', $search)
-                      ->orWhere('users.email', 'LIKE', $search)
-                      ->orWhere('users.location', 'LIKE', $search);
-                });
-            }
+                // `id` breaks ties, so rows created in the same second keep one
+                // order and a page boundary cannot repeat or skip a person.
+                ->orderBy('users.created_at', 'desc')
+                ->orderBy('users.id', 'desc');
 
             $limit = (int) ($filters['limit'] ?? 50);
             $offset = (int) ($filters['offset'] ?? 0);
@@ -253,6 +223,62 @@ class TenantVisibilityService
             Log::error('TenantVisibilityService::getUserList failed', ['error' => $e->getMessage()]);
             return [];
         }
+    }
+
+    /**
+     * How many users match the same filters as getUserList(), ignoring
+     * limit/offset. The Users page numbers its pages from this.
+     *
+     * Deliberately not wrapped in a catch: a failed count must surface as an
+     * error, not as "0 people", which would look like an empty platform.
+     */
+    public static function countUserList(array $filters = []): int
+    {
+        return self::userListQuery($filters)->count('users.id');
+    }
+
+    /**
+     * The visibility scope and filters shared by getUserList() and
+     * countUserList(), so the list and its total can never disagree.
+     */
+    private static function userListQuery(array $filters): \Illuminate\Database\Query\Builder
+    {
+        $query = DB::table('users')
+            ->join('tenants', 'users.tenant_id', '=', 'tenants.id');
+
+        // Scope by access level
+        // 🔴 Fail closed — see SuperPanelAccess::subtreeFilter(). This is the
+        // user list: the largest cross-tenant PII surface in the panel.
+        $filter = SuperPanelAccess::subtreeFilter();
+        if ($filter['deny']) {
+            $query->whereRaw('1 = 0');
+        } elseif ($filter['filter']) {
+            $query->where('tenants.path', 'LIKE', $filter['prefix'] . '%');
+        }
+
+        if (!empty($filters['tenant_id'])) {
+            $query->where('users.tenant_id', (int) $filters['tenant_id']);
+        }
+
+        if (!empty($filters['role'])) {
+            $query->where('users.role', $filters['role']);
+        }
+
+        if (!empty($filters['is_tenant_super_admin'])) {
+            $query->where('users.is_tenant_super_admin', 1);
+        }
+
+        if (!empty($filters['search'])) {
+            $search = '%' . $filters['search'] . '%';
+            $query->where(function ($q) use ($search) {
+                $q->where('users.first_name', 'LIKE', $search)
+                  ->orWhere('users.last_name', 'LIKE', $search)
+                  ->orWhere('users.email', 'LIKE', $search)
+                  ->orWhere('users.location', 'LIKE', $search);
+            });
+        }
+
+        return $query;
     }
 
     /**

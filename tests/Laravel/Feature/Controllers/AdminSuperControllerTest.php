@@ -395,6 +395,51 @@ class AdminSuperControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * The Users page numbers its pages from `meta.total`. Until 13 Nov 2026 the
+     * endpoint returned no total at all, so the page counted only the rows in
+     * the batch it had, and its page buttons asked for the wrong rows.
+     */
+    public function test_user_list_reports_the_real_total_and_pages_by_the_requested_size(): void
+    {
+        $admin = $this->createSuperAdmin();
+        User::factory()->forTenant($this->testTenantId)->count(4)->create();
+        Sanctum::actingAs($admin);
+
+        $expectedTotal = DB::table('users')->where('tenant_id', $this->testTenantId)->count();
+        $this->assertGreaterThanOrEqual(5, $expectedTotal);
+
+        $response = $this->apiGet('/v2/admin/super/users?tenant_id=' . $this->testTenantId . '&limit=2&page=2');
+
+        $response->assertStatus(200);
+        $this->assertSame($expectedTotal, $response->json('meta.total'));
+        $this->assertSame(2, $response->json('meta.per_page'));
+        $this->assertSame(2, $response->json('meta.current_page'));
+        $this->assertSame((int) ceil($expectedTotal / 2), $response->json('meta.total_pages'));
+        $this->assertCount(2, $response->json('data'));
+
+        // Page 2 must not repeat page 1.
+        $pageOne = $this->apiGet('/v2/admin/super/users?tenant_id=' . $this->testTenantId . '&limit=2&page=1')->json('data');
+        $this->assertSame([], array_intersect(
+            array_column($pageOne, 'id'),
+            array_column($response->json('data'), 'id')
+        ));
+    }
+
+    public function test_user_list_total_follows_the_search_filter(): void
+    {
+        $admin = $this->createSuperAdmin();
+        User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Zqxpagination']);
+        User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Zqxpagination']);
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiGet('/v2/admin/super/users?search=Zqxpagination&limit=1');
+
+        $response->assertStatus(200);
+        $this->assertSame(2, $response->json('meta.total'));
+        $this->assertCount(1, $response->json('data'));
+    }
+
     public function test_user_list_returns_401_for_unauthenticated(): void
     {
         $response = $this->apiGet('/v2/admin/super/users');

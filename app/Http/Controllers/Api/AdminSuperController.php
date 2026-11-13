@@ -1077,8 +1077,11 @@ class AdminSuperController extends BaseApiController
         ], fn($v) => $v !== null);
 
         $users = $this->tenantVisibilityService->getUserList($filters);
+        $total = $this->tenantVisibilityService->countUserList($filters);
 
-        return $this->respondWithData($users);
+        // `data` is unchanged; `meta` now carries the real total so the page
+        // can number its pages (it previously guessed from one batch).
+        return $this->respondWithPaginatedCollection($users, $total, $page, $limit);
     }
 
     /** GET /api/v2/super-admin/users/{id} */

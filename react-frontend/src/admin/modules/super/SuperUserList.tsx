@@ -25,6 +25,9 @@ import { PageHeader } from '../../components/PageHeader';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import type { SuperAdminUser } from '../../api/types';
 
+/** Rows per page. The request and the page buttons must use the same number. */
+const PAGE_SIZE = 20;
+
 export function SuperUserList() {
   const { t } = useTranslation('admin_super');
   usePageTitle(t('super.page_title'));
@@ -40,6 +43,7 @@ export function SuperUserList() {
   const [roleFilter, setRoleFilter] = useState<string | undefined>();
   const [superAdminsOnly, setSuperAdminsOnly] = useState(false);
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
@@ -58,10 +62,14 @@ export function SuperUserList() {
         tenant_id: tenantFilter,
         role: roleFilter,
         super_admins: superAdminsOnly || undefined,
-        limit: 100,
+        limit: PAGE_SIZE,
       });
       if (res.success && res.data) {
-        setUsers(Array.isArray(res.data) ? res.data : []);
+        const rows = Array.isArray(res.data) ? res.data : [];
+        setUsers(rows);
+        // The server's total covers every page; fall back to this batch only
+        // if an older server sends none.
+        setTotal(res.meta?.total ?? (page - 1) * PAGE_SIZE + rows.length);
         setLastRefreshed(new Date());
       } else if (!res.success) {
         toast.error(t('super.users_error_detail', { error: t('super.failed_to_load_user_list') }));
@@ -272,13 +280,6 @@ export function SuperUserList() {
           {t('super.super_admins_only')}
         </Switch>
       </div>
-      {users.length >= 100 && (
-        <div className="mb-4 p-3 bg-warning/10 border border-warning/30 rounded-lg">
-          <p className="text-sm text-warning-soft-foreground">
-            {t('super.showing_first_100')}
-          </p>
-        </div>
-      )}
       <DataTable
         columns={columns}
         data={users}
@@ -286,9 +287,9 @@ export function SuperUserList() {
         searchPlaceholder={t('super.search_users_placeholder')}
         onSearch={(q) => { setSearch(q); setPage(1); }}
         onRefresh={loadUsers}
-        totalItems={users.length}
+        totalItems={total}
         page={page}
-        pageSize={20}
+        pageSize={PAGE_SIZE}
         onPageChange={setPage}
       />
       {confirmAction && (

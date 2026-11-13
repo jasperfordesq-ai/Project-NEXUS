@@ -151,4 +151,27 @@ describe('Admin pagination total extraction', () => {
       expect(screen.getByText(/55 total/)).toBeInTheDocument();
     });
   });
+
+  // Until 13 Nov 2026 the super-admin Users page asked for 100 rows while its
+  // page buttons counted 20, and took its total from the rows it had.
+  it('SuperUserList reads total from meta and requests the page size it shows', async () => {
+    const fakeUsers = [
+      { id: 1, name: 'Alice', email: 'a@test.com', role: 'member', status: 'active', tenant_id: 2, tenant_name: 'Test', is_super_admin: false, is_tenant_super_admin: false, last_login_at: null },
+    ];
+    mockApi.get.mockResolvedValue(paginatedResponse(fakeUsers, 45, 1, 20));
+
+    const { SuperUserList } = await import('../modules/super/SuperUserList');
+    renderInRouter(<SuperUserList />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/45 total/)).toBeInTheDocument();
+    });
+
+    const userCall = mockApi.get.mock.calls
+      .map(([url]) => String(url))
+      .find((url) => url.startsWith('/v2/admin/super/users'));
+    expect(userCall).toBeDefined();
+    expect(userCall).toMatch(/[?&]limit=20(&|$)/);
+    expect(userCall).toMatch(/[?&]page=1(&|$)/);
+  });
 });
