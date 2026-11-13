@@ -679,7 +679,7 @@ test.describe('Events enterprise lifecycle @events @enterprise @journey', () => 
     const withdrawalPromise = page.waitForResponse(
       (response) => isEventResponse(response, 'POST', `/v2/events/${event.id}/rsvp`),
     );
-    await confirmation.getByRole('button', { name: 'Not Going', exact: true }).click();
+    await confirmation.getByRole('button', { name: 'Not going', exact: true }).click();
     const withdrawalResponse = await withdrawalPromise;
     expect(withdrawalResponse.status(), JSON.stringify(await responseBody(withdrawalResponse))).toBe(200);
     expect((await eventRelationship(current.participant, event.id)).registration.state).toBe('cancelled');
