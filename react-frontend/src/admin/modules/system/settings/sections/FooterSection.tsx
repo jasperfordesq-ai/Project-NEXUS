@@ -4,28 +4,29 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useTranslation } from 'react-i18next';
-import Scale from 'lucide-react/icons/scale';
+import PanelBottom from 'lucide-react/icons/panel-bottom';
 import { Input, Textarea } from '@/components/ui';
 import { SettingsSection } from '../SettingsSection';
 import { LogoUploadField } from '../LogoUploadField';
 import type { AdminSettingsFormState } from '../useAdminSettingsForm';
 
-export const BRANDING_SECTION_ID = 'branding';
+export const FOOTER_SECTION_ID = 'footer';
 
-export function BrandingSection({ state }: { state: AdminSettingsFormState }) {
+/** The legal line and the partner logo at the foot of every page. */
+export function FooterSection({ state }: { state: AdminSettingsFormState }) {
   const { t } = useTranslation('admin_system');
   const { form, originalForm, setField, uploading, upload, remove } = state;
 
   return (
     <SettingsSection
-      id={BRANDING_SECTION_ID}
-      icon={<Scale size={20} aria-hidden="true" />}
-      title={t('system.section_branding_legal')}
-      description={t('admin_settings.section_branding_desc')}
+      id={FOOTER_SECTION_ID}
+      icon={<PanelBottom size={20} aria-hidden="true" />}
+      title={t('admin_settings.footer_section')}
+      description={t('admin_settings.footer_section_desc')}
     >
       <Textarea
-        label={t('system.label_footer_legal_text')}
-        description={t('system.desc_displayed_in_the_site_footer_and_legal_h')}
+        label={t('admin_settings.footer_legal_text_label')}
+        description={t('admin_settings.footer_legal_text_help')}
         placeholder={t('system.placeholder_footer_legal_text')}
         variant="secondary"
         minRows={2}
@@ -55,9 +56,9 @@ export function BrandingSection({ state }: { state: AdminSettingsFormState }) {
           onValueChange={(val) => setField('partner_logo_label', val)}
         />
         <Input
-          label={t('system.partner_logo_link_url')}
+          label={t('admin_settings.partner_logo_link_label')}
           placeholder="https://example.com"
-          description={t('system.partner_logo_link_url_description')}
+          description={t('admin_settings.partner_logo_link_help')}
           variant="secondary"
           type="url"
           value={form.partner_logo_link_url}
@@ -68,4 +69,4 @@ export function BrandingSection({ state }: { state: AdminSettingsFormState }) {
   );
 }
 
-export default BrandingSection;
+export default FooterSection;

@@ -6,84 +6,70 @@
 /**
  * Admin Settings — the community's main configuration page.
  *
- * One scrolling page: jump-link pills, a card per section, and a single
- * sticky Save bar that saves BOTH halves — the main form (name, branding,
- * header, registration) through /v2/admin/settings and the additional
- * configuration (wallet, moderation, notifications, limits) through the
- * enterprise config endpoint. The two key sets are disjoint by construction
- * (DUPLICATE_KEYS), so order cannot overwrite anything; a half that fails to
- * save stays dirty so the admin can retry just that part.
+ * One scrolling page: jump-link pills, a card per thing an admin comes here
+ * to do, and a single sticky Save bar. The cards are grouped by task, not by
+ * where a value is stored, so one card may hold fields from both forms: the
+ * main form (name, contact details, joining rules, footer, header colours)
+ * saves through /v2/admin/settings, and three settings (time zone, starting
+ * balance, largest transfer) save through the enterprise config endpoint. The
+ * two key sets are disjoint, so order cannot overwrite anything; a half that
+ * fails to save stays dirty so the admin can retry just that part.
+ *
+ * Only settings that do something, and that no other admin page owns, are
+ * here (owner, 13 Nov 2026) — see systemConfigSchema.ts for what came off.
  *
  * The header logo, the community colour (with the looks and Soft / Vivid) and
  * the community photo are NOT here: since 13 Nov 2026 they live on "Make it
  * yours" only (owner: no duplicates). A notice at the top of this page says
- * where they went. The community colour still travels in this page's form —
+ * where they are. The community colour still travels in this page's form —
  * the colours endpoint takes it together with the accessible header colours —
  * but it is never edited here, so it is sent back exactly as it was loaded.
  */
 
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import Settings from 'lucide-react/icons/settings';
-import Settings2 from 'lucide-react/icons/settings-2';
-import Languages from 'lucide-react/icons/languages';
 import Sparkles from 'lucide-react/icons/sparkles';
-import Wallet from 'lucide-react/icons/wallet';
-import Shield from 'lucide-react/icons/shield';
-import Bell from 'lucide-react/icons/bell';
-import Gauge from 'lucide-react/icons/gauge';
-import MoreHorizontal from 'lucide-react/icons/more-horizontal';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
-import RotateCcw from 'lucide-react/icons/rotate-ccw';
-import {
-  Button,
-  Card,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Skeleton,
-  useConfirm,
-} from '@/components/ui';
+import { Button, Card, Skeleton } from '@/components/ui';
 import { useTenant, useToast } from '@/contexts';
 import { useAdminPageMeta } from '../../../AdminMetaContext';
 import { PageHeader } from '../../../components/PageHeader';
 import { AdminSaveBar } from '../../../components/AdminSaveBar';
 import { useUnsavedChangesGuard } from '../../../components/useUnsavedChangesGuard';
-import { SystemConfig, systemConfigSectionId } from '../../enterprise/SystemConfig';
 import { RelatedAdminPages, RELATED_PAGES_SECTION_ID } from '../../enterprise/RelatedAdminPages';
 import { useSystemConfigForm } from '../../enterprise/useSystemConfigForm';
-import { DUPLICATE_KEYS, type SettingsFormKey } from './settingsForm';
+import type { SettingsFormKey } from './settingsForm';
 import { useAdminSettingsForm } from './useAdminSettingsForm';
 import { SettingsJumpNav, type JumpNavSection } from './SettingsJumpNav';
 import { settingsSectionAnchor } from './SettingsSection';
-import { GeneralSection, GENERAL_SECTION_ID } from './sections/GeneralSection';
-import { BrandingSection, BRANDING_SECTION_ID } from './sections/BrandingSection';
+import { AboutSection, ABOUT_SECTION_ID } from './sections/AboutSection';
+import { JoiningSection, JOINING_SECTION_ID } from './sections/JoiningSection';
+import { TimeCreditsSection, TIME_CREDITS_SECTION_ID, TIME_CREDITS_CONFIG_KEYS } from './sections/TimeCreditsSection';
+import { DatesMoneySection, DATES_MONEY_SECTION_ID, DATES_MONEY_CONFIG_KEYS } from './sections/DatesMoneySection';
+import { FooterSection, FOOTER_SECTION_ID } from './sections/FooterSection';
 import { HeaderColorsSection, HEADER_COLORS_SECTION_ID } from './sections/HeaderColorsSection';
 import { PoweredBySection, POWERED_BY_SECTION_ID } from './sections/PoweredBySection';
-import { RegistrationSection, REGISTRATION_SECTION_ID } from './sections/RegistrationSection';
 
-/** Which form fields belong to which section, for the jump-nav dirty dots. */
+/** Which main-form fields belong to which section, for the jump-nav dirty dots. */
 const SECTION_FIELDS: Record<string, SettingsFormKey[]> = {
-  [GENERAL_SECTION_ID]: ['name', 'description', 'contact_email', 'contact_phone', 'default_currency', 'region'],
-  [BRANDING_SECTION_ID]: ['footer_text', 'partner_logo_url', 'partner_logo_label', 'partner_logo_link_url'],
+  [ABOUT_SECTION_ID]: ['name', 'description', 'contact_email', 'contact_phone'],
+  [JOINING_SECTION_ID]: ['registration_mode', 'email_verification', 'admin_approval', 'approval_email_message', 'inactivity_timeout_minutes'],
+  [DATES_MONEY_SECTION_ID]: ['region', 'default_currency'],
+  [FOOTER_SECTION_ID]: ['footer_text', 'partner_logo_url', 'partner_logo_label', 'partner_logo_link_url'],
   [HEADER_COLORS_SECTION_ID]: ['header_bg_color', 'header_accent_color'],
   [POWERED_BY_SECTION_ID]: [
     'powered_by_wording', 'powered_by_label', 'powered_by_url', 'powered_by_image_light', 'powered_by_image_dark',
     'network_powered_by_wording', 'network_powered_by_label', 'network_powered_by_url', 'network_powered_by_image_light', 'network_powered_by_image_dark',
   ],
-  [REGISTRATION_SECTION_ID]: ['registration_mode', 'email_verification', 'admin_approval', 'approval_email_message', 'inactivity_timeout_minutes'],
 };
 
-const SYSTEM_CONFIG_ICONS: Record<string, ReactNode> = {
-  general: <Languages size={20} aria-hidden="true" />,
-  registration: <Sparkles size={20} aria-hidden="true" />,
-  wallet: <Wallet size={20} aria-hidden="true" />,
-  content: <Shield size={20} aria-hidden="true" />,
-  notifications: <Bell size={20} aria-hidden="true" />,
-  limits: <Gauge size={20} aria-hidden="true" />,
+/** Which enterprise-config keys belong to which section (dirty dots, and where to scroll on a validation error). */
+const SECTION_CONFIG_KEYS: Record<string, readonly string[]> = {
+  [TIME_CREDITS_SECTION_ID]: TIME_CREDITS_CONFIG_KEYS,
+  [DATES_MONEY_SECTION_ID]: DATES_MONEY_CONFIG_KEYS,
 };
 
 type SavePart = 'general' | 'colors' | 'system';
@@ -92,7 +78,7 @@ function SettingsSkeleton() {
   return (
     <div className="space-y-6" role="status" aria-busy="true">
       <div className="flex flex-wrap gap-2">
-        {Array.from({ length: 7 }).map((_, i) => (
+        {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton key={i} className="h-7 w-28 rounded-full" />
         ))}
       </div>
@@ -118,12 +104,11 @@ function SettingsSkeleton() {
 export function AdminSettingsPage() {
   const { t } = useTranslation('admin_system');
   const toast = useToast();
-  const confirm = useConfirm();
   const { tenant, tenantPath, refreshTenant } = useTenant();
   useAdminPageMeta({ title: t('system.admin_settings_title') });
 
   const general = useAdminSettingsForm();
-  const system = useSystemConfigForm({ excludeKeys: DUPLICATE_KEYS, icons: SYSTEM_CONFIG_ICONS });
+  const system = useSystemConfigForm();
   const [busy, setBusy] = useState(false);
 
   const loading = general.loading && system.loading && !general.dirty;
@@ -135,34 +120,34 @@ export function AdminSettingsPage() {
   const sections = useMemo<JumpNavSection[]>(() => {
     const changed = new Set(general.changed);
     const own: JumpNavSection[] = [
-      { id: GENERAL_SECTION_ID, label: t('system.section_general') },
-      { id: BRANDING_SECTION_ID, label: t('system.section_branding_legal') },
+      { id: ABOUT_SECTION_ID, label: t('admin_settings.about_section') },
+      { id: JOINING_SECTION_ID, label: t('admin_settings.joining_section') },
+      { id: TIME_CREDITS_SECTION_ID, label: t('admin_settings.time_credits_section') },
+      { id: DATES_MONEY_SECTION_ID, label: t('admin_settings.dates_money_section') },
+      { id: FOOTER_SECTION_ID, label: t('admin_settings.footer_section') },
       { id: HEADER_COLORS_SECTION_ID, label: t('admin_settings.header_colors_section') },
       ...(general.ctx.isPlatformGod ? [{ id: POWERED_BY_SECTION_ID, label: t('system.powered_by_branding_section') }] : []),
-      { id: REGISTRATION_SECTION_ID, label: t('system.section_registration_access') },
-    ].map((s) => ({ ...s, dirty: (SECTION_FIELDS[s.id] ?? []).some((f) => changed.has(f)) }));
-    const extra: JumpNavSection[] = system.schema.map((group) => ({
-      id: systemConfigSectionId(group.key),
-      label: group.label,
-      dirty: group.settings.some((s) => system.dirtyKeys.has(s.key)),
+    ].map((s) => ({
+      ...s,
+      dirty:
+        (SECTION_FIELDS[s.id] ?? []).some((f) => changed.has(f)) ||
+        (SECTION_CONFIG_KEYS[s.id] ?? []).some((k) => system.dirtyKeys.has(k)),
     }));
-    return [...own, ...extra, { id: RELATED_PAGES_SECTION_ID, label: t('admin_settings.section_related_pill') }];
-  }, [general.changed, general.ctx.isPlatformGod, system.schema, system.dirtyKeys, t]);
+    return [...own, { id: RELATED_PAGES_SECTION_ID, label: t('admin_settings.section_related_pill') }];
+  }, [general.changed, general.ctx.isPlatformGod, system.dirtyKeys, t]);
 
   const partLabel = (part: SavePart) => t(`admin_settings.save_part_${part}`);
 
   const handleSaveAll = useCallback(async () => {
-    // Validate every field in the additional configuration before any
-    // network call, so a half-saved page cannot result from a typo.
+    // Validate the number fields before any network call, so a half-saved
+    // page cannot result from a typo.
     const errors = system.validateAll();
-    if (Object.keys(errors).length > 0) {
+    const firstInvalid = Object.keys(errors)[0];
+    if (firstInvalid !== undefined) {
       toast.error(t('admin_settings.fix_errors_before_saving'));
-      const firstKey = Object.keys(errors)[0];
-      const group = system.schema.find((g) => g.settings.some((s) => s.key === firstKey));
-      if (group) {
-        document
-          .getElementById(settingsSectionAnchor(systemConfigSectionId(group.key)))
-          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const sectionId = Object.keys(SECTION_CONFIG_KEYS).find((id) => SECTION_CONFIG_KEYS[id]?.includes(firstInvalid));
+      if (sectionId) {
+        document.getElementById(settingsSectionAnchor(sectionId))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
       return;
     }
@@ -212,41 +197,6 @@ export function AdminSettingsPage() {
     system.discard();
   }, [general, system]);
 
-  const handleReload = useCallback(async () => {
-    setBusy(true);
-    try {
-      await Promise.all([general.refetch(), system.reload()]);
-      toast.success(t('admin_settings.reload_done'));
-    } finally {
-      setBusy(false);
-    }
-  }, [general, system, toast, t]);
-
-  const handleReset = useCallback(async () => {
-    const ok = await confirm({
-      title: t('admin_settings.reset_additional_config'),
-      body: t('admin_settings.reset_confirm_body'),
-      confirmLabel: t('admin_settings.reset_additional_config'),
-      status: 'danger',
-    });
-    if (!ok) return;
-    setBusy(true);
-    try {
-      const res = await system.reset();
-      if (!res.ok) {
-        toast.error(t('system.save_failed'));
-        return;
-      }
-      // Reset also deletes rows the main form owns (registration mode, footer
-      // text, the gate keys), so both halves reload.
-      await general.refetch();
-      await refreshTenant();
-      toast.success(t('admin_settings.reset_done'));
-    } finally {
-      setBusy(false);
-    }
-  }, [confirm, system, general, refreshTenant, toast, t]);
-
   // The community colour is no longer edited here, so a colour saved before
   // the "readable on white" rule existed must not block saving this page: it
   // is fixed on "Make it yours", where the rule is explained.
@@ -266,8 +216,8 @@ export function AdminSettingsPage() {
         <div className="space-y-6">
           <SettingsJumpNav sections={sections} />
 
-          {/* Where the logo, colour and photo went (owner, 13 Nov 2026: they
-              are on "Make it yours" only, not in two places). */}
+          {/* The logo, colour and photo are on "Make it yours" only (owner,
+              13 Nov 2026: never in two places). This says where they are. */}
           <Card
             data-testid="settings-moved-notice"
             aria-labelledby="settings-moved-notice-title"
@@ -299,34 +249,25 @@ export function AdminSettingsPage() {
             </div>
           </Card>
 
-          <GeneralSection state={general} />
-          <BrandingSection state={general} />
-          <HeaderColorsSection state={general} />
-          {general.ctx.isPlatformGod && <PoweredBySection state={general} />}
-          <RegistrationSection state={general} />
+          <AboutSection state={general} />
+          <JoiningSection state={general} />
 
-          <div className="flex items-center gap-3 pt-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-tertiary text-muted">
-              <Settings2 size={16} aria-hidden="true" />
-            </span>
-            <div>
-              <h2 className="text-base font-semibold tracking-tight text-foreground">{t('system.additional_configuration')}</h2>
-              <p className="text-sm text-muted">{t('system.additional_configuration_desc')}</p>
-            </div>
-          </div>
-
-          {system.loadError ? (
-            <Card className="rounded-2xl border border-danger/30 bg-danger/5 p-6 text-center">
-              <p className="font-medium text-danger">{t('system.failed_to_load_settings')}</p>
+          {system.loadError && (
+            <Card className="rounded-2xl border border-danger/30 bg-danger/5 p-6 text-center" data-testid="settings-config-load-error">
+              <p className="font-medium text-danger">{t('admin_settings.config_load_failed')}</p>
               <div className="mt-3">
                 <Button variant="secondary" size="sm" onPress={() => void system.reload()} startContent={<RefreshCw size={14} aria-hidden="true" />}>
                   {t('common.retry')}
                 </Button>
               </div>
             </Card>
-          ) : (
-            <SystemConfig form={system} />
           )}
+
+          {!system.loadError && <TimeCreditsSection form={system} />}
+          <DatesMoneySection state={general} form={system} />
+          <FooterSection state={general} />
+          <HeaderColorsSection state={general} />
+          {general.ctx.isPlatformGod && <PoweredBySection state={general} />}
 
           <RelatedAdminPages />
 
@@ -336,29 +277,6 @@ export function AdminSettingsPage() {
             blockedReason={blockedReason}
             onSave={() => void handleSaveAll()}
             onDiscard={handleDiscard}
-            secondaryActions={
-              <Dropdown placement="top-end">
-                <DropdownTrigger>
-                  <Button isIconOnly size="sm" variant="tertiary" aria-label={t('admin_settings.more_actions')} isDisabled={saving}>
-                    <MoreHorizontal size={16} aria-hidden="true" />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                  aria-label={t('admin_settings.more_actions')}
-                  onAction={(key) => {
-                    if (key === 'reload') void handleReload();
-                    if (key === 'reset') void handleReset();
-                  }}
-                >
-                  <DropdownItem id="reload" startContent={<RefreshCw size={14} aria-hidden="true" />}>
-                    {t('admin_settings.reload_from_server')}
-                  </DropdownItem>
-                  <DropdownItem id="reset" color="danger" className="text-danger" startContent={<RotateCcw size={14} aria-hidden="true" />}>
-                    {t('admin_settings.reset_additional_config')}
-                  </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-            }
           />
         </div>
       )}

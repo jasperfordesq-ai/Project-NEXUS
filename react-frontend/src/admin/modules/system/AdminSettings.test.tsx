@@ -28,7 +28,6 @@ const { mockAdminSettings, mockAdminEnterprise } = vi.hoisted(() => ({
   mockAdminEnterprise: {
     getConfig: vi.fn(),
     updateConfig: vi.fn(),
-    resetConfig: vi.fn(),
   },
 }));
 
@@ -40,6 +39,7 @@ const mockToast = vi.hoisted(() => ({
 }));
 
 const mockRefreshTenant = vi.hoisted(() => vi.fn());
+// The page asks before leaving with unsaved changes (useUnsavedChangesGuard).
 const mockConfirm = vi.hoisted(() => vi.fn());
 
 const DEFAULT_TEST_USER = { id: 1, name: 'Admin', role: 'god', is_super_admin: true, is_god: false };
@@ -158,18 +158,18 @@ vi.mock('@/components/ui', async (importOriginal) => {
       </button>
     ),
     Tooltip: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-    Dropdown: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-    DropdownTrigger: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-    DropdownMenu: ({ children, onAction }: { children?: React.ReactNode; onAction?: (key: string) => void }) => (
-      <div data-testid="more-menu">
-        {React.Children.map(children, (child) =>
-          React.isValidElement<{ id: string; children: React.ReactNode }>(child) ? (
-            <button type="button" onClick={() => onAction?.(child.props.id)}>{child.props.children}</button>
-          ) : child,
-        )}
-      </div>
+    // The time zone picker, as a plain select the tests can drive.
+    ComboBox: ({ items, children, selectedKey, onSelectionChange, 'aria-label': ariaLabel }: {
+      items?: Array<{ id: string; label: string }>; children: (item: { id: string; label: string }) => React.ReactNode;
+      selectedKey?: string; onSelectionChange?: (key: string) => void; 'aria-label'?: string;
+    }) => (
+      <select aria-label={ariaLabel} value={selectedKey ?? ''} onChange={(e) => onSelectionChange?.(e.target.value)}>
+        {(items ?? []).map((item) => <React.Fragment key={item.id}>{children(item)}</React.Fragment>)}
+      </select>
     ),
-    DropdownItem: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+    ComboBoxItem: ({ children, id }: { children: React.ReactNode; id?: string }) => (
+      <option value={id}>{children}</option>
+    ),
   };
 });
 
@@ -206,6 +206,8 @@ const makeSettingsData = (overrides: Record<string, unknown> = {}) => ({
   },
 });
 
+// What the endpoint really answers: every key it knows, including the ones this
+// page no longer offers.
 const makeEnterpriseConfig = (overrides: Record<string, unknown> = {}) => ({
   success: true,
   data: {
@@ -238,11 +240,13 @@ const getDiscardButton = () => screen.getByRole('button', { name: /^discard$/i }
 const findSwitch = (label: string) =>
   screen.getAllByRole('switch').find((el) => el.getAttribute('aria-label') === label);
 
+const getStartingBalance = () => screen.getByRole('spinbutton', { name: 'Starting balance (hours)' });
+
 async function renderPage() {
   const { AdminSettings } = await import('./AdminSettings');
   render(<AdminSettings />);
-  await waitFor(() => expect(screen.getByText('Admin Settings')).toBeInTheDocument());
-  await waitFor(() => expect(screen.getByRole('heading', { name: 'Registration & Access' })).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Community settings')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Joining and signing in' })).toBeInTheDocument());
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -255,9 +259,7 @@ describe('AdminSettings', () => {
     mockAdminSettings.saveHeaderColors.mockResolvedValue({ success: true });
     mockAdminEnterprise.getConfig.mockResolvedValue(makeEnterpriseConfig());
     mockAdminEnterprise.updateConfig.mockResolvedValue({ success: true });
-    mockAdminEnterprise.resetConfig.mockResolvedValue({ success: true });
     mockRefreshTenant.mockResolvedValue(undefined);
-    mockConfirm.mockResolvedValue(true);
   });
 
   it('shows a busy skeleton while fetching settings', async () => {
@@ -271,7 +273,7 @@ describe('AdminSettings', () => {
   });
 
   // Owner, 13 Nov 2026: what lives on "Make it yours" must not also be here.
-  it('does not repeat the logo, community colour or community photo, and says where they went', async () => {
+  it('does not repeat the logo, community colour or community photo, and says where they are', async () => {
     await renderPage();
 
     for (const name of ['Header Logo', 'Community colour', 'Community photo']) {
@@ -284,21 +286,78 @@ describe('AdminSettings', () => {
     expect(screen.queryByTestId('community-colour-preview')).toBeNull();
 
     const notice = screen.getByTestId('settings-moved-notice');
-    expect(notice).toHaveTextContent('Your logo, colour and community photo have moved');
+    expect(notice).toHaveTextContent('Looking for your logo, colours or community photo?');
     const link = notice.querySelector('a');
     expect(link).toHaveTextContent('Open Make it yours');
     expect(link?.getAttribute('href')).toMatch(/\/admin\/make-it-yours$/);
   });
 
-  it('renders the title, every section and the jump links after load', async () => {
+  it('groups the page by what an admin comes to do, with a jump link for each group', async () => {
+    mockAuthState.user = { id: 5, name: 'Plain Admin', role: 'admin', is_admin: true };
     await renderPage();
-    expect(screen.getByRole('heading', { name: 'Branding & Legal' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Accessible header colour' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Wallet & credits' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Related admin pages' })).toBeInTheDocument();
+
+    const headings = screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent);
+    expect(headings).toEqual([
+      'Looking for your logo, colours or community photo?',
+      'About your community',
+      'Joining and signing in',
+      'Time credits',
+      'Dates, times and money',
+      'Footer',
+      'Accessible header colour',
+      'More settings on other pages',
+    ]);
 
     const nav = screen.getByRole('navigation', { name: 'Jump to section' });
-    expect(nav.querySelectorAll('a[href^="#settings-section-"]').length).toBeGreaterThanOrEqual(10);
+    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.getAttribute('href'))).toEqual([
+      '#settings-section-about',
+      '#settings-section-joining',
+      '#settings-section-time-credits',
+      '#settings-section-dates-money',
+      '#settings-section-footer',
+      '#settings-section-header-colours',
+      '#settings-section-related',
+    ]);
+  });
+
+  // Owner, 13 Nov 2026. Ten of these saved to keys nothing reads, so changing
+  // them did nothing; the last three work but belong to another admin page
+  // (Onboarding settings, Module Configuration).
+  it('does not offer the settings that did nothing or that another page owns', async () => {
+    await renderPage();
+
+    for (const label of [
+      /default locale/i, /currency name/i, /currency symbol/i,
+      /auto-approve listings/i, /auto-approve blog/i,
+      /email notifications enabled/i, /push notifications enabled/i, /digest frequency/i,
+      /max groups per member/i, /max upload size/i,
+      /show onboarding flow/i, /max listings per member/i, /max images per listing/i,
+    ]) {
+      expect(screen.queryByText(label)).toBeNull();
+      expect(screen.queryByLabelText(label)).toBeNull();
+    }
+    expect(screen.queryByRole('heading', { name: 'Additional configuration' })).toBeNull();
+    // Three settings are left on the second endpoint; the money currency and
+    // the date format are the main form's.
+    expect(getStartingBalance()).toHaveValue(0);
+    expect(screen.getByRole('spinbutton', { name: 'Largest single transfer (hours)' })).toHaveValue(0);
+    expect(screen.getByRole('combobox', { name: 'Time zone' })).toHaveValue('UTC');
+  });
+
+  it('says where the settings that live elsewhere are', async () => {
+    await renderPage();
+    const related = document.getElementById('settings-section-related')!;
+    const hrefs = Array.from(related.querySelectorAll('a')).map((a) => a.getAttribute('href'));
+    expect(hrefs).toContain('/test/admin/onboarding-settings');
+    expect(hrefs).toContain('/test/admin/module-configuration');
+    expect(related).toHaveTextContent('including your languages and the limits on offers and requests');
+  });
+
+  it('offers no reset or reload action beside Save', async () => {
+    await renderPage();
+    expect(screen.queryByRole('button', { name: /reset/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /reload/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /more actions/i })).toBeNull();
   });
 
   it('calls both GET APIs on mount and shows an error toast when settings fail', async () => {
@@ -332,7 +391,7 @@ describe('AdminSettings', () => {
     const nav = screen.getByRole('navigation', { name: 'Jump to section' });
     const dirtyPills = nav.querySelectorAll('a[data-dirty="true"]');
     expect(dirtyPills).toHaveLength(1);
-    expect(dirtyPills[0]).toHaveAttribute('href', '#settings-section-branding');
+    expect(dirtyPills[0]).toHaveAttribute('href', '#settings-section-footer');
   });
 
   it('saves only the changed main-form field and refreshes the tenant', async () => {
@@ -361,13 +420,11 @@ describe('AdminSettings', () => {
     await userEvent.clear(labelInput);
     await userEvent.type(labelInput, 'Partner');
 
-    const currencyName = screen.getByRole('textbox', { name: /currency name/i });
-    await userEvent.clear(currencyName);
-    await userEvent.type(currencyName, 'Credits');
+    fireEvent.change(getStartingBalance(), { target: { value: '5' } });
 
     await userEvent.click(getSaveButton());
 
-    await waitFor(() => expect(mockAdminEnterprise.updateConfig).toHaveBeenCalledWith({ currency_name: 'Credits' }));
+    await waitFor(() => expect(mockAdminEnterprise.updateConfig).toHaveBeenCalledWith({ starting_balance: 5 }));
     expect(mockAdminSettings.update).toHaveBeenCalledWith({ partner_logo_label: 'Partner' });
     expect(mockAdminSettings.update.mock.invocationCallOrder[0]).toBeLessThan(
       mockAdminEnterprise.updateConfig.mock.invocationCallOrder[0]!,
@@ -384,15 +441,13 @@ describe('AdminSettings', () => {
     const labelInput = await screen.findByDisplayValue('Sponsor');
     await userEvent.clear(labelInput);
     await userEvent.type(labelInput, 'Partner');
-    const currencyName = screen.getByRole('textbox', { name: /currency name/i });
-    await userEvent.clear(currencyName);
-    await userEvent.type(currencyName, 'Credits');
+    fireEvent.change(getStartingBalance(), { target: { value: '5' } });
 
     await userEvent.click(getSaveButton());
 
     await waitFor(() => expect(mockToast.warning).toHaveBeenCalledTimes(1));
-    expect(String(mockToast.warning.mock.calls[0]?.[0])).toContain('additional configuration');
-    // The additional-configuration half did not reload, so it is still dirty.
+    expect(String(mockToast.warning.mock.calls[0]?.[0])).toContain('time zone and time credits');
+    // That half did not reload, so it is still dirty.
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
   });
 
@@ -403,37 +458,62 @@ describe('AdminSettings', () => {
     const labelInput = await screen.findByDisplayValue('Sponsor');
     await userEvent.clear(labelInput);
     await userEvent.type(labelInput, 'Partner');
-    const currencyName = screen.getByRole('textbox', { name: /currency name/i });
-    await userEvent.clear(currencyName);
-    await userEvent.type(currencyName, 'Credits');
+    fireEvent.change(getStartingBalance(), { target: { value: '5' } });
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
 
     await userEvent.click(getDiscardButton());
 
     expect(screen.getByDisplayValue('Sponsor')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Hours')).toBeInTheDocument();
+    expect(getStartingBalance()).toHaveValue(0);
     expect(screen.getByText('All changes saved')).toBeInTheDocument();
   });
 
-  it('Reset in the more-menu asks first, then resets and reloads both halves', async () => {
+  it('saves the time zone through the second endpoint and marks its own section', async () => {
     await renderPage();
-    const getCalls = mockAdminSettings.get.mock.calls.length;
+    fireEvent.change(screen.getByRole('combobox', { name: 'Time zone' }), { target: { value: 'Europe/London' } });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Reset additional configuration to defaults' }));
+    const nav = screen.getByRole('navigation', { name: 'Jump to section' });
+    const dirtyPills = nav.querySelectorAll('a[data-dirty="true"]');
+    expect(dirtyPills).toHaveLength(1);
+    expect(dirtyPills[0]).toHaveAttribute('href', '#settings-section-dates-money');
 
-    await waitFor(() => expect(mockConfirm).toHaveBeenCalledTimes(1));
-    expect(mockConfirm.mock.calls[0]?.[0]).toMatchObject({ status: 'danger' });
-    await waitFor(() => expect(mockAdminEnterprise.resetConfig).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(mockAdminSettings.get.mock.calls.length).toBeGreaterThan(getCalls));
-    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Additional configuration reset to defaults'));
+    await userEvent.click(getSaveButton());
+    await waitFor(() => expect(mockAdminEnterprise.updateConfig).toHaveBeenCalledWith({ timezone: 'Europe/London' }));
+    expect(mockAdminSettings.update).not.toHaveBeenCalled();
   });
 
-  it('does not reset when the admin cancels the confirmation', async () => {
-    mockConfirm.mockResolvedValue(false);
+  it('still shows a saved time zone this browser does not list', async () => {
+    mockAdminEnterprise.getConfig.mockResolvedValue(makeEnterpriseConfig({ timezone: 'Mars/Olympus_Mons' }));
     await renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Reset additional configuration to defaults' }));
-    await waitFor(() => expect(mockConfirm).toHaveBeenCalledTimes(1));
-    expect(mockAdminEnterprise.resetConfig).not.toHaveBeenCalled();
+    const picker = screen.getByRole('combobox', { name: 'Time zone' });
+    expect(picker).toHaveValue('Mars/Olympus_Mons');
+    expect(picker).toHaveDisplayValue('Mars/Olympus Mons');
+  });
+
+  // WalletService clamps a community's limit to 1,000 hours, so a larger
+  // number would save and then silently not apply.
+  it('refuses a transfer limit above the platform ceiling before anything is sent', async () => {
+    await renderPage();
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Largest single transfer (hours)' }), { target: { value: '5000' } });
+
+    expect(screen.getByText('Fix the highlighted fields before saving')).toBeInTheDocument();
+    expect(isDisabled(getSaveButton())).toBe(true);
+    expect(mockAdminEnterprise.updateConfig).not.toHaveBeenCalled();
+  });
+
+  it('keeps the rest of the page working when the second endpoint cannot be read', async () => {
+    mockAdminEnterprise.getConfig.mockResolvedValue({ success: false, error: 'boom' });
+    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ partner_logo_label: 'Sponsor' }));
+    await renderPage();
+
+    expect(screen.getByTestId('settings-config-load-error')).toHaveTextContent(
+      "We couldn't load the time zone and time credit settings.",
+    );
+    // No default is offered in place of the real value.
+    expect(screen.queryByRole('combobox', { name: 'Time zone' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Time credits' })).toBeNull();
+    expect(screen.getByRole('combobox', { name: 'Date and number format' })).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Sponsor')).toBeInTheDocument();
   });
 
   it('sends the region when it changes', async () => {
@@ -483,7 +563,7 @@ describe('AdminSettings', () => {
       const nav = screen.getByRole('navigation', { name: 'Jump to section' });
       const dirtyPills = nav.querySelectorAll('a[data-dirty="true"]');
       expect(dirtyPills).toHaveLength(1);
-      expect(dirtyPills[0]).toHaveAttribute('href', '#settings-section-registration');
+      expect(dirtyPills[0]).toHaveAttribute('href', '#settings-section-joining');
 
       await userEvent.click(getSaveButton());
       await waitFor(() => {
@@ -501,10 +581,23 @@ describe('AdminSettings', () => {
     });
   });
 
-  it('shows the maintenance mode switch as read only', async () => {
+  // Maintenance mode is switched on the server. Only the platform's own
+  // administrators can act on that, so only they are shown the row.
+  it('shows maintenance mode, read only, to a platform super-admin', async () => {
     await renderPage();
     expect(findSwitch('Maintenance Mode')).toBeDisabled();
     expect(screen.getByText('Maintenance mode (read only)')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['a community admin', { id: 5, name: 'Plain Admin', role: 'admin', is_admin: true }],
+    ['a tenant super-admin', { id: 6, name: 'Tenant Super', role: 'tenant_admin', is_tenant_super_admin: true }],
+  ])('does not show maintenance mode to %s', async (_who, user) => {
+    mockAuthState.user = user;
+    await renderPage();
+    expect(findSwitch('Maintenance Mode')).toBeUndefined();
+    expect(screen.queryByText('Maintenance mode (read only)')).toBeNull();
+    expect(screen.queryByText(/maintenance\.sh/)).toBeNull();
   });
 
   it('does NOT show the god-only Powered-by section for a non-god user', async () => {
@@ -593,16 +686,16 @@ describe('AdminSettings', () => {
     it('locks email verification and admin approval for a plain admin', async () => {
       mockAuthState.user = { id: 5, name: 'Plain Admin', role: 'admin', is_admin: true };
       await renderPage();
-      expect(findSwitch('Email Verification')).toBeDisabled();
-      expect(findSwitch('Admin Approval')).toBeDisabled();
-      expect(screen.getAllByText('Super admin only').length).toBeGreaterThanOrEqual(2);
+      expect(findSwitch('New members confirm their email address')).toBeDisabled();
+      expect(findSwitch('New members wait for approval')).toBeDisabled();
+      expect(screen.getAllByText('Set by the platform team')).toHaveLength(2);
     });
 
     it('locks them for a tenant super-admin too (platform tier only)', async () => {
       mockAuthState.user = { id: 6, name: 'Tenant Super', role: 'tenant_admin', is_tenant_super_admin: true };
       await renderPage();
-      expect(findSwitch('Email Verification')).toBeDisabled();
-      expect(findSwitch('Admin Approval')).toBeDisabled();
+      expect(findSwitch('New members confirm their email address')).toBeDisabled();
+      expect(findSwitch('New members wait for approval')).toBeDisabled();
     });
 
     it('omits the reserved keys when a plain admin saves other fields', async () => {
@@ -626,9 +719,9 @@ describe('AdminSettings', () => {
     it('lets a platform super-admin change email verification', async () => {
       mockAuthState.user = { id: 1, name: 'Platform', role: 'admin', is_god: true };
       await renderPage();
-      const emailSwitch = findSwitch('Email Verification')!;
+      const emailSwitch = findSwitch('New members confirm their email address')!;
       expect(emailSwitch).not.toBeDisabled();
-      expect(findSwitch('Admin Approval')).not.toBeDisabled();
+      expect(findSwitch('New members wait for approval')).not.toBeDisabled();
       await userEvent.click(emailSwitch);
       await userEvent.click(getSaveButton());
 

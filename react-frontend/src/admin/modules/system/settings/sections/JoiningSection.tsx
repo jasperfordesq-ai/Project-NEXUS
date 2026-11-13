@@ -5,8 +5,8 @@
 
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import UserCheck from 'lucide-react/icons/user-check';
-import ShieldCheck from 'lucide-react/icons/shield-check';
+import ArrowRight from 'lucide-react/icons/arrow-right';
+import UserPlus from 'lucide-react/icons/user-plus';
 import Lock from 'lucide-react/icons/lock';
 import { Button, Chip, Input, Switch, Textarea, Tooltip } from '@/components/ui';
 import { useTenant } from '@/contexts';
@@ -15,28 +15,31 @@ import { RegistrationModeField } from '../RegistrationModeField';
 import { APPROVAL_EMAIL_MESSAGE_MAX_CHARS } from '../settingsForm';
 import type { AdminSettingsFormState } from '../useAdminSettingsForm';
 
-export const REGISTRATION_SECTION_ID = 'registration';
+export const JOINING_SECTION_ID = 'joining';
 
-export function RegistrationSection({ state }: { state: AdminSettingsFormState }) {
+/** Who can join, what a new member does first, and when people are signed out. */
+export function JoiningSection({ state }: { state: AdminSettingsFormState }) {
   const { t } = useTranslation('admin_system');
   const { tenantPath } = useTenant();
   const { form, setField, ctx } = state;
-  const isGod = ctx.isGod;
+  // Email verification and member approval are platform-super-admin-only on
+  // the server (F-054). Everyone else sees what is in force, but cannot change it.
+  const canChangeGates = ctx.isGod;
 
-  const superAdminChip = (
-    <Tooltip content={t('system.super_admin_only_tooltip')}>
+  const platformTeamChip = (
+    <Tooltip content={t('admin_settings.platform_team_only_tooltip')}>
       <Chip size="sm" color="warning" variant="soft" startContent={<Lock size={10} aria-hidden="true" />}>
-        {t('system.super_admin_only')}
+        {t('admin_settings.platform_team_only')}
       </Chip>
     </Tooltip>
   );
 
   return (
     <SettingsSection
-      id={REGISTRATION_SECTION_ID}
-      icon={<UserCheck size={20} aria-hidden="true" />}
-      title={t('system.section_registration_access')}
-      description={t('admin_settings.section_registration_desc')}
+      id={JOINING_SECTION_ID}
+      icon={<UserPlus size={20} aria-hidden="true" />}
+      title={t('admin_settings.joining_section')}
+      description={t('admin_settings.joining_section_desc')}
       layout="rows"
       actions={
         <Button
@@ -44,9 +47,9 @@ export function RegistrationSection({ state }: { state: AdminSettingsFormState }
           to={tenantPath('/admin/settings/registration-policy')}
           size="sm"
           variant="secondary"
-          startContent={<ShieldCheck size={14} aria-hidden="true" />}
+          endContent={<ArrowRight size={14} aria-hidden="true" />}
         >
-          {t('system.advanced_policy')}
+          {t('admin_settings.more_joining_rules')}
         </Button>
       }
     >
@@ -55,28 +58,28 @@ export function RegistrationSection({ state }: { state: AdminSettingsFormState }
       </SettingsRow>
 
       <SettingsRow
-        label={t('system.require_email_verification')}
-        help={t('system.desc_email_verification')}
-        badge={!isGod ? superAdminChip : undefined}
+        label={t('admin_settings.email_verification_label')}
+        help={t('admin_settings.email_verification_help')}
+        badge={!canChangeGates ? platformTeamChip : undefined}
       >
         <Switch
           isSelected={form.email_verification}
           onValueChange={(val) => setField('email_verification', val)}
-          isDisabled={!isGod}
-          aria-label={t('system.label_email_verification')}
+          isDisabled={!canChangeGates}
+          aria-label={t('admin_settings.email_verification_label')}
         />
       </SettingsRow>
 
       <SettingsRow
-        label={t('system.admin_approval_required')}
-        help={t('system.admin_approval_required_desc')}
-        badge={!isGod ? superAdminChip : undefined}
+        label={t('admin_settings.admin_approval_label')}
+        help={t('admin_settings.admin_approval_help')}
+        badge={!canChangeGates ? platformTeamChip : undefined}
       >
         <Switch
           isSelected={form.admin_approval}
           onValueChange={(val) => setField('admin_approval', val)}
-          isDisabled={!isGod}
-          aria-label={t('system.label_admin_approval')}
+          isDisabled={!canChangeGates}
+          aria-label={t('admin_settings.admin_approval_label')}
         />
       </SettingsRow>
 
@@ -101,7 +104,7 @@ export function RegistrationSection({ state }: { state: AdminSettingsFormState }
         </p>
       </div>
 
-      <SettingsRow label={t('system.label_inactivity_timeout')} help={t('system.desc_inactivity_timeout')}>
+      <SettingsRow label={t('admin_settings.auto_sign_out_label')} help={t('admin_settings.auto_sign_out_help')}>
         <Input
           type="number"
           min={0}
@@ -112,25 +115,32 @@ export function RegistrationSection({ state }: { state: AdminSettingsFormState }
           className="w-28 tabular-nums"
           value={form.inactivity_timeout_minutes}
           onValueChange={(val) => setField('inactivity_timeout_minutes', val)}
-          aria-label={t('system.label_inactivity_timeout')}
+          aria-label={t('admin_settings.auto_sign_out_aria')}
         />
+        <span className="text-sm text-muted">{t('admin_settings.unit_minutes')}</span>
       </SettingsRow>
 
-      <SettingsRow
-        label={t('system.maintenance_mode_read_only')}
-        muted
-        help={
-          <>
-            {t('system.maintenance_mode_cli_prefix')}{' '}
-            {/* eslint-disable-next-line i18next/no-literal-string -- CLI command must remain verbatim. */}
-            <code className="rounded bg-surface-secondary px-1 text-xs">sudo bash scripts/maintenance.sh on|off</code>
-          </>
-        }
-      >
-        <Switch isSelected={form.maintenance_mode} isDisabled aria-label={t('system.label_maintenance_mode')} />
-      </SettingsRow>
+      {/* Maintenance mode is switched from the server, never from here. Only
+          the platform's own administrators can act on that, so the row is
+          shown to them alone: to a community admin it was a dead switch and a
+          shell command. */}
+      {ctx.isGod && (
+        <SettingsRow
+          label={t('system.maintenance_mode_read_only')}
+          muted
+          help={
+            <>
+              {t('system.maintenance_mode_cli_prefix')}{' '}
+              {/* eslint-disable-next-line i18next/no-literal-string -- CLI command must remain verbatim. */}
+              <code className="rounded bg-surface-secondary px-1 text-xs">sudo bash scripts/maintenance.sh on|off</code>
+            </>
+          }
+        >
+          <Switch isSelected={form.maintenance_mode} isDisabled aria-label={t('system.label_maintenance_mode')} />
+        </SettingsRow>
+      )}
     </SettingsSection>
   );
 }
 
-export default RegistrationSection;
+export default JoiningSection;

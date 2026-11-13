@@ -4,8 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * "Related admin pages" section of the admin Settings page: peer configuration
- * pages that live on their own routes. Always visible.
+ * "More settings on other pages" section of the admin Settings page: settings
+ * that live on their own pages, each said in one line. Always visible.
  */
 
 import { Link } from 'react-router-dom';

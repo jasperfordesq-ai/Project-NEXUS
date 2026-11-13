@@ -142,22 +142,6 @@ export const DEFAULT_SETTINGS: SettingsForm = {
   colour_strength: 'soft',
 };
 
-/**
- * Keys handled by the main form, hidden from the embedded additional
- * configuration so no setting has two controls on the page.
- */
-export const DUPLICATE_KEYS = [
-  'site_name',
-  'site_description',
-  'contact_email',
-  'contact_phone',
-  'footer_text',
-  'registration_enabled',
-  'require_approval',
-  'require_email_verification',
-  'maintenance_mode',
-];
-
 const truthy = (v: unknown) => v === true || v === 'true' || v === '1' || v === 1;
 
 /**
