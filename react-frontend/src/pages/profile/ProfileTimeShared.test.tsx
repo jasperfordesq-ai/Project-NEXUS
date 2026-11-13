@@ -20,9 +20,9 @@ describe('ProfileTimeShared', () => {
     renderInList(6, 2);
     const card = screen.getByTestId('profile-time-shared');
     expect(card).toHaveTextContent('Time shared');
-    expect(screen.getByText('Hours Given').tagName).toBe('DT');
+    expect(screen.getByText("Hours given").tagName).toBe('DT');
     expect(screen.getByText('6').tagName).toBe('DD');
-    expect(screen.getByText('Hours Received').tagName).toBe('DT');
+    expect(screen.getByText("Hours received").tagName).toBe('DT');
     expect(screen.getByText('2').tagName).toBe('DD');
     expect(screen.getByTestId('profile-time-shared-total')).toHaveTextContent('8');
   });

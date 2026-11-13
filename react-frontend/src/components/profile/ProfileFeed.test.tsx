@@ -195,7 +195,7 @@ describe('ProfileFeed', () => {
     // The post is NOT removed on a rejected hide; an error (not success) is shown.
     expect(screen.getByTestId('feed-card-7')).toBeInTheDocument();
     // Name the copy: profile:hide_failed, so a wrong/blank toast key still fails.
-    expect(mockToast.error).toHaveBeenCalledWith('Failed to hide');
+    expect(mockToast.error).toHaveBeenCalledWith("We couldn't hide that. Please try again.");
     expect(mockToast.success).not.toHaveBeenCalled();
   });
 
@@ -257,7 +257,7 @@ describe('ProfileFeed', () => {
 
     // Error renders the real profile:feed_error copy inside a GlassCard, with a retry button.
     await waitFor(() => {
-      expect(screen.getByText('Failed to load activity')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load this member's activity.")).toBeInTheDocument();
     });
     expect(container.querySelector('.glass-card')).not.toBeNull();
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
@@ -272,7 +272,7 @@ describe('ProfileFeed', () => {
     render(<ProfileFeed userId={42} />);
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to load activity')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load this member's activity.")).toBeInTheDocument();
     });
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
@@ -293,7 +293,7 @@ describe('ProfileFeed', () => {
     await waitFor(() => {
       expect(screen.getByTestId('feed-card-1')).toBeInTheDocument();
     });
-    expect(screen.queryByText('Failed to load activity')).not.toBeInTheDocument();
+    expect(screen.queryByText("We couldn't load this member's activity.")).not.toBeInTheDocument();
   });
 
   it('shows load more button when has_more is true', async () => {

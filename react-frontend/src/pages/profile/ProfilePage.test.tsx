@@ -255,7 +255,7 @@ describe('ProfilePage', () => {
     expect(screen.queryByRole('link', { name: /send message/i })).toBeNull();
   });
 
-  it('keeps "Send Message" for a member who is not new, and for one with no join date', async () => {
+  it('keeps "Send message" for a member who is not new, and for one with no join date', async () => {
     const base = mockApiGet.getMockImplementation()!;
     mockApiGet.mockImplementation((url: string) => (url.includes('/v2/users/') && !url.includes('block-status')
       ? base(url).then((res: { data: Record<string, unknown> }) => ({ ...res, data: { ...res.data, created_at: '2024-02-01T10:00:00Z' } }))
@@ -420,14 +420,14 @@ describe('ProfilePage', () => {
     render(<ProfilePage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Back to Explore')).toBeInTheDocument();
+      expect(screen.getByText("Back to explore")).toBeInTheDocument();
     });
 
     // The real `Button as={Link}` renders a router <a>, so the fallback CTA is
     // role="link" (only the dead uiMock stub produced a <button> with an href).
     expect(screen.getByRole('link', { name: /Back to Explore/i })).toHaveAttribute('href', '/test/explore');
     // …and the members fallback is NOT offered, since `connections` is disabled.
-    expect(screen.queryByText('Browse Members')).not.toBeInTheDocument();
+    expect(screen.queryByText("Browse members")).not.toBeInTheDocument();
   });
 
   it('clears the previously-loaded profile when a reload (id change) fails — no stale data', async () => {
@@ -452,7 +452,7 @@ describe('ProfilePage', () => {
     rerender(<ProfilePage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Unable to Load Profile')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load this profile")).toBeInTheDocument();
     });
     // The stale profile-1 name must be gone (pre-fix it remained on screen).
     expect(screen.queryByText('John Doe')).not.toBeInTheDocument();

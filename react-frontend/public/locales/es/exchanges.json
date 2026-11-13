@@ -25,11 +25,11 @@
     "filter_button_aria": "Filtrar por estado de intercambio: {{status}}"
   },
   "error": {
-    "load_failed": "Error al cargar los intercambios. Por favor intenta de nuevo.",
-    "unable_to_load": "No se Pudieron Cargar los Intercambios"
+    "load_failed": "Inténtalo de nuevo en un momento.",
+    "unable_to_load": "No hemos podido cargar tus intercambios"
   },
   "empty": {
-    "title": "No se Encontraron Intercambios",
+    "title": "No hay intercambios que mostrar",
     "active_description": "No tienes intercambios activos. Explora los anuncios para solicitar un servicio.",
     "filter_description": "Ningún intercambio coincide con este filtro."
   },
@@ -48,29 +48,29 @@
     "exchange": "Intercambio"
   },
   "toast": {
-    "load_more_failed": "Error al cargar más intercambios",
+    "load_more_failed": "No hemos podido cargar más intercambios. Inténtalo de nuevo en un momento.",
     "accepted": "¡Intercambio aceptado!",
-    "accept_failed": "Error al aceptar el intercambio",
+    "accept_failed": "No hemos podido aceptar ese intercambio. Vuelve a intentarlo.",
     "declined": "Intercambio rechazado",
-    "decline_failed": "Error al rechazar el intercambio",
+    "decline_failed": "No hemos podido rechazar ese intercambio. Vuelve a intentarlo.",
     "started": "¡Intercambio iniciado!",
-    "start_failed": "Error al iniciar el intercambio",
+    "start_failed": "No hemos podido iniciar ese intercambio. Vuelve a intentarlo.",
     "completed": "Intercambio marcado como completado. Por favor confirma las horas.",
-    "complete_failed": "Error al completar el intercambio",
+    "complete_failed": "No hemos podido marcar ese intercambio como completado. Vuelve a intentarlo.",
     "invalid_hours": "Por favor introduce horas válidas",
     "max_hours": "Máximo {{max}} horas por intercambio",
     "hours_confirmed": "¡Horas confirmadas!",
-    "confirm_failed": "Error al confirmar las horas",
+    "confirm_failed": "No hemos podido confirmar las horas. Vuelve a intentarlo.",
     "cancelled": "Intercambio cancelado",
-    "cancel_failed": "Error al cancelar el intercambio",
+    "cancel_failed": "No hemos podido cancelar ese intercambio. Vuelve a intentarlo.",
     "request_sent": "¡Solicitud de intercambio enviada!",
-    "request_failed": "Error al crear la solicitud de intercambio"
+    "request_failed": "No hemos podido enviar tu solicitud de intercambio. Vuelve a intentarlo."
   },
   "detail": {
     "page_title": "Detalles del Intercambio",
     "loading": "Cargando intercambio...",
-    "not_found": "Intercambio no encontrado",
-    "not_found_title": "Intercambio No Encontrado",
+    "not_found": "Puede que lo hayan retirado o que el enlace no sea correcto.",
+    "not_found_title": "No encontramos ese intercambio",
     "not_found_description": "El intercambio que buscas no existe",
     "view_exchanges": "Ver Mis Intercambios",
     "exchange_details": "Detalles del Intercambio",
@@ -136,10 +136,10 @@
     "title": "Solicitar Intercambio",
     "subtitle": "Envía una solicitud para intercambiar créditos de tiempo por este servicio",
     "loading": "Cargando...",
-    "listing_not_found": "Oferta o solicitud no encontrada",
+    "listing_not_found": "No encontramos esta oferta o solicitud. Puede que la hayan retirado.",
     "workflow_not_enabled": "El flujo de intercambio no está habilitado",
-    "load_failed": "Error al cargar el anuncio",
-    "cannot_request": "No se Puede Solicitar Intercambio",
+    "load_failed": "No hemos podido cargar esa oferta o solicitud. Inténtalo de nuevo en un momento.",
+    "cannot_request": "Todavía no puedes solicitar este intercambio",
     "not_available": "Este anuncio no está disponible para solicitudes de intercambio.",
     "own_listing_title": "Esta es tu propia oferta o solicitud",
     "own_listing_description": "No puedes solicitar un intercambio para tu propio anuncio.",

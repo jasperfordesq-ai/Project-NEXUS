@@ -110,7 +110,8 @@ export function WalletPage() {
     } catch (err) {
       if (controller.signal.aborted) return;
       logError('Failed to load wallet data', err);
-      setError(tRef.current('error.load_wallet'));
+      // Under the "We couldn't load your wallet" heading: reassure, then say what to do.
+      setError(tRef.current('error.load_balance'));
     } finally {
       if (!controller.signal.aborted) {
         setIsLoading(false);

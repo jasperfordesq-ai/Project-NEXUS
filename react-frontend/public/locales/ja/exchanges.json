@@ -25,11 +25,11 @@
     "filter_button_aria": "交換ステータスによるフィルター: {{status}}"
   },
   "error": {
-    "load_failed": "交換の読み込みに失敗しました。もう一度お試しください。",
-    "unable_to_load": "交換を読み込めません"
+    "load_failed": "しばらくしてからもう一度お試しください。",
+    "unable_to_load": "交換を読み込めませんでした"
   },
   "empty": {
-    "title": "交換が見つかりませんでした",
+    "title": "表示できる交換はありません",
     "active_description": "アクティブな交換はありません。サービスをリクエストするためにリストをブラウズしてください。",
     "filter_description": "このフィルターに一致する交換はありません。"
   },
@@ -48,29 +48,29 @@
     "exchange": "交換"
   },
   "toast": {
-    "load_more_failed": "さらに交換を読み込むのに失敗しました",
+    "load_more_failed": "これ以上の交換を読み込めませんでした。しばらくしてからもう一度お試しください。",
     "accepted": "交換が承認されました！",
-    "accept_failed": "交換を受け入れることに失敗しました",
+    "accept_failed": "この交換を承諾できませんでした。もう一度お試しください。",
     "declined": "交換が拒否されました",
-    "decline_failed": "交換を拒否することに失敗しました",
+    "decline_failed": "この交換を辞退できませんでした。もう一度お試しください。",
     "started": "交換が開始されました！",
-    "start_failed": "交換を開始することに失敗しました",
+    "start_failed": "この交換を開始できませんでした。もう一度お試しください。",
     "completed": "交換が完了としてマークされました。時間を確認してください。",
-    "complete_failed": "交換を完了することに失敗しました",
+    "complete_failed": "この交換を完了にできませんでした。もう一度お試しください。",
     "invalid_hours": "有効な時間を入力してください",
     "max_hours": "1回の交換につき最大{{max}}時間",
     "hours_confirmed": "時間が確認されました！",
-    "confirm_failed": "時間の確認に失敗しました",
+    "confirm_failed": "時間を確認できませんでした。もう一度お試しください。",
     "cancelled": "交換がキャンセルされました",
-    "cancel_failed": "交換をキャンセルすることに失敗しました",
+    "cancel_failed": "この交換をキャンセルできませんでした。もう一度お試しください。",
     "request_sent": "交換リクエストが送信されました！",
-    "request_failed": "交換リクエストの作成に失敗しました"
+    "request_failed": "交換リクエストを送信できませんでした。もう一度お試しください。"
   },
   "detail": {
     "page_title": "交換の詳細",
     "loading": "交換を読み込んでいます...",
-    "not_found": "交換が見つかりません",
-    "not_found_title": "交換が見つかりません",
+    "not_found": "削除されたか、リンクが正しくない可能性があります。",
+    "not_found_title": "この交換が見つかりません",
     "not_found_description": "お探しの交換は存在しません",
     "view_exchanges": "私の交換を表示",
     "exchange_details": "交換の詳細",
@@ -135,10 +135,10 @@
     "title": "交換リクエスト",
     "subtitle": "このサービスのために時間クレジットを交換するリクエストを送信します",
     "loading": "読み込み中...",
-    "listing_not_found": "提供・リクエストが見つかりません",
+    "listing_not_found": "この提供・リクエストが見つかりません。取り下げられた可能性があります。",
     "workflow_not_enabled": "交換ワークフローは有効になっていません",
-    "load_failed": "リストの読み込みに失敗しました",
-    "cannot_request": "交換リクエストを送信できません",
+    "load_failed": "この提供・リクエストを読み込めませんでした。しばらくしてからもう一度お試しください。",
+    "cannot_request": "この交換はまだリクエストできません",
     "not_available": "このリストは交換リクエストには利用できません。",
     "own_listing_title": "これはあなた自身の提供・リクエストです",
     "own_listing_description": "自分のリストに対して交換リクエストを送信することはできません。",

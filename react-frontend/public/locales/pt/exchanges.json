@@ -25,11 +25,11 @@
     "filter_button_aria": "Filtrar por status de troca: {{status}}"
   },
   "error": {
-    "load_failed": "Falha ao carregar trocas. Tente novamente.",
-    "unable_to_load": "Não Foi Possível Carregar as Trocas"
+    "load_failed": "Tente novamente daqui a pouco.",
+    "unable_to_load": "Não conseguimos carregar suas trocas"
   },
   "empty": {
-    "title": "Nenhuma Troca Encontrada",
+    "title": "Nenhuma troca para mostrar",
     "active_description": "Não tem trocas ativas. Explore os anúncios para solicitar um serviço.",
     "filter_description": "Nenhuma troca corresponde a este filtro."
   },
@@ -48,29 +48,29 @@
     "exchange": "Troca"
   },
   "toast": {
-    "load_more_failed": "Falha ao carregar mais trocas",
+    "load_more_failed": "Não conseguimos carregar mais trocas. Tente novamente daqui a pouco.",
     "accepted": "Troca aceite!",
-    "accept_failed": "Falha ao aceitar troca",
+    "accept_failed": "Não conseguimos aceitar essa troca. Tente novamente.",
     "declined": "Troca recusada",
-    "decline_failed": "Falha ao recusar troca",
+    "decline_failed": "Não conseguimos recusar essa troca. Tente novamente.",
     "started": "Troca iniciada!",
-    "start_failed": "Falha ao iniciar troca",
+    "start_failed": "Não conseguimos iniciar essa troca. Tente novamente.",
     "completed": "Troca marcada como concluída. Confirme as horas.",
-    "complete_failed": "Falha ao concluir troca",
+    "complete_failed": "Não conseguimos marcar essa troca como concluída. Tente novamente.",
     "invalid_hours": "Introduza horas válidas",
     "max_hours": "Máximo {{max}} horas por troca",
     "hours_confirmed": "Horas confirmadas!",
-    "confirm_failed": "Falha ao confirmar horas",
+    "confirm_failed": "Não conseguimos confirmar as horas. Tente novamente.",
     "cancelled": "Troca cancelada",
-    "cancel_failed": "Falha ao cancelar troca",
+    "cancel_failed": "Não conseguimos cancelar essa troca. Tente novamente.",
     "request_sent": "Pedido de troca enviado!",
-    "request_failed": "Falha ao criar pedido de troca"
+    "request_failed": "Não conseguimos enviar seu pedido de troca. Tente novamente."
   },
   "detail": {
     "page_title": "Detalhes da Troca",
     "loading": "A carregar troca...",
-    "not_found": "Troca não encontrada",
-    "not_found_title": "Troca Não Encontrada",
+    "not_found": "Talvez tenha sido retirada, ou o link pode estar errado.",
+    "not_found_title": "Não encontramos essa troca",
     "not_found_description": "A troca que procura não existe",
     "view_exchanges": "Ver As Minhas Trocas",
     "exchange_details": "Detalhes da Troca",
@@ -136,10 +136,10 @@
     "title": "Solicitar Troca",
     "subtitle": "Envie um pedido para trocar créditos de tempo por este serviço",
     "loading": "A carregar...",
-    "listing_not_found": "Oferta ou pedido não encontrado",
+    "listing_not_found": "Não encontramos esta oferta ou pedido. Talvez tenha sido retirado.",
     "workflow_not_enabled": "O fluxo de trocas não está ativado",
-    "load_failed": "Falha ao carregar anúncio",
-    "cannot_request": "Não É Possível Solicitar Troca",
+    "load_failed": "Não conseguimos carregar essa oferta ou pedido. Tente novamente daqui a pouco.",
+    "cannot_request": "Você ainda não pode pedir esta troca",
     "not_available": "Este anúncio não está disponível para pedidos de troca.",
     "own_listing_title": "Esta é a sua própria oferta ou pedido",
     "own_listing_description": "Não pode solicitar uma troca para o seu próprio anúncio.",

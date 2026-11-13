@@ -25,11 +25,11 @@
     "filter_button_aria": "Filtra per stato della piattaforma: {{status}}"
   },
   "error": {
-    "load_failed": "Impossibile caricare gli scambi. Riprova.",
-    "unable_to_load": "Impossibile caricare gli scambi"
+    "load_failed": "Riprova tra un momento.",
+    "unable_to_load": "Non siamo riusciti a caricare i tuoi scambi"
   },
   "empty": {
-    "title": "Nessuno scambio trovato",
+    "title": "Nessuno scambio da mostrare",
     "active_description": "Non ha scambi attivi. Sfoglia gli annunci per richiedere un servizio.",
     "filter_description": "Nessuno scambio corrisponde a questo filtro."
   },
@@ -48,29 +48,29 @@
     "exchange": "Scambio"
   },
   "toast": {
-    "load_more_failed": "Impossibile caricare altri scambi",
+    "load_more_failed": "Non siamo riusciti a caricare altri scambi. Riprova tra un momento.",
     "accepted": "Scambio accettato!",
-    "accept_failed": "Impossibile accettare lo scambio",
+    "accept_failed": "Non siamo riusciti ad accettare quello scambio. Riprova.",
     "declined": "Scambio rifiutato",
-    "decline_failed": "Impossibile rifiutare lo scambio",
+    "decline_failed": "Non siamo riusciti a rifiutare quello scambio. Riprova.",
     "started": "Scambio avviato!",
-    "start_failed": "Impossibile avviare lo scambio",
+    "start_failed": "Non siamo riusciti ad avviare quello scambio. Riprova.",
     "completed": "Scambio contrassegnato come completato. La preghiamo di confermare le ore.",
-    "complete_failed": "Impossibile completare lo scambio",
+    "complete_failed": "Non siamo riusciti a segnare quello scambio come completato. Riprova.",
     "invalid_hours": "Inserisci ore valide",
     "max_hours": "Massimo {{max}} ore per scambio",
     "hours_confirmed": "Ore confermate!",
-    "confirm_failed": "Impossibile confermare le ore",
+    "confirm_failed": "Non siamo riusciti a confermare le ore. Riprova.",
     "cancelled": "Scambio annullato",
-    "cancel_failed": "Impossibile annullare lo scambio",
+    "cancel_failed": "Non siamo riusciti ad annullare quello scambio. Riprova.",
     "request_sent": "Richiesta di scambio inviata!",
-    "request_failed": "Impossibile creare la richiesta di scambio"
+    "request_failed": "Non siamo riusciti a inviare la tua richiesta di scambio. Riprova."
   },
   "detail": {
     "page_title": "Dettagli dello scambio",
     "loading": "Caricamento dello scambio…",
-    "not_found": "Scambio non trovato",
-    "not_found_title": "Scambio non trovato",
+    "not_found": "Forse è stato rimosso, oppure il link non è corretto.",
+    "not_found_title": "Non troviamo quello scambio",
     "not_found_description": "Lo scambio che sta cercando non esiste",
     "view_exchanges": "Vedi i miei scambi",
     "exchange_details": "Dettagli dello scambio",
@@ -136,10 +136,10 @@
     "title": "Richiedi scambio",
     "subtitle": "Invii una richiesta per scambiare crediti-tempo per questo servizio",
     "loading": "Caricamento…",
-    "listing_not_found": "Offerta o richiesta non trovata",
+    "listing_not_found": "Non troviamo questa offerta o richiesta. Forse è stata rimossa.",
     "workflow_not_enabled": "Il flusso di scambio non è attivato",
-    "load_failed": "Impossibile caricare l'annuncio",
-    "cannot_request": "Impossibile richiedere uno scambio",
+    "load_failed": "Non siamo riusciti a caricare quell’offerta o richiesta. Riprova tra un momento.",
+    "cannot_request": "Non puoi ancora richiedere questo scambio",
     "not_available": "Questo annuncio non è disponibile per le richieste di scambio.",
     "own_listing_title": "Questa è la tua offerta o richiesta",
     "own_listing_description": "Non è possibile richiedere uno scambio per il proprio annuncio.",

@@ -137,7 +137,7 @@ describe('RequestExchangePage', () => {
   it('renders exchange request form heading', async () => {
     render(<RequestExchangePage />);
     await waitFor(() => {
-      expect(screen.getAllByText('Request Exchange').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Request exchange").length).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -155,7 +155,7 @@ describe('RequestExchangePage', () => {
   it('renders send request button', async () => {
     render(<RequestExchangePage />);
     await waitFor(() => {
-      expect(screen.getByText('Send Request')).toBeInTheDocument();
+      expect(screen.getByText("Send request")).toBeInTheDocument();
     });
   });
 

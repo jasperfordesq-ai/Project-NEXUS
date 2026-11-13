@@ -160,7 +160,7 @@ describe('ExchangesPage', () => {
 
   it('renders page title and description', () => {
     render(<ExchangesPage />);
-    expect(screen.getAllByText('My Exchanges').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("My exchanges").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Track your service exchange requests and confirmations')).toBeInTheDocument();
   });
 
@@ -174,7 +174,7 @@ describe('ExchangesPage', () => {
     // Counterpart to the phone-layout assertion that this strip is gone.
     expect(screen.getByLabelText('Exchange status filter')).toBeInTheDocument();
     expect(screen.getAllByText('Active').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Needs Confirmation')).toBeInTheDocument();
+    expect(screen.getByText("Needs confirmation")).toBeInTheDocument();
     expect(screen.getAllByText('Completed').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('All').length).toBeGreaterThanOrEqual(1);
   });
@@ -198,7 +198,7 @@ describe('ExchangesPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('empty-state')).toBeInTheDocument();
     });
-    expect(screen.getByText('No Exchanges Found')).toBeInTheDocument();
+    expect(screen.getByText("No exchanges to show")).toBeInTheDocument();
   });
 
   it('displays exchanges when loaded', async () => {
@@ -334,14 +334,14 @@ describe('ExchangesPage', () => {
       // screen-reader-only: on phones the title moves into the app bar as plain
       // text, which is not a heading, so without this a phone user has nothing
       // to orient by. Asserted as sr-only rather than absent.
-      expect(screen.getByRole('heading', { level: 1, name: 'My Exchanges' })).toHaveClass('sr-only');
+      expect(screen.getByRole('heading', { level: 1, name: "My exchanges" })).toHaveClass('sr-only');
       expect(
         screen.queryByText('Track your service exchange requests and confirmations'),
       ).not.toBeInTheDocument();
       // The GlassCard tab strip owns this aria-label; with the sheet closed
       // nothing else in the tree carries it.
       expect(screen.queryByLabelText('Exchange status filter')).not.toBeInTheDocument();
-      expect(screen.queryByText('Needs Confirmation')).not.toBeInTheDocument();
+      expect(screen.queryByText("Needs confirmation")).not.toBeInTheDocument();
     });
 
     it('opens the filter sheet with every status chip and no draft footer', async () => {
@@ -354,7 +354,7 @@ describe('ExchangesPage', () => {
         ).toBeInTheDocument();
       });
       expect(screen.getByRole('radio', { name: 'Active' })).toHaveAttribute('aria-checked', 'true');
-      expect(screen.getByRole('radio', { name: 'Needs Confirmation' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: "Needs confirmation" })).toBeInTheDocument();
       expect(screen.getByRole('radio', { name: 'Completed' })).toBeInTheDocument();
       expect(screen.getByRole('radio', { name: 'All' })).toBeInTheDocument();
       // Simple archetype: immediate-apply, so there is no footer at all — and no

@@ -61,7 +61,7 @@ describe('CommunityFundCard — loading state', () => {
     vi.mocked(api.get).mockReturnValue(new Promise(() => {}));
     render(<CommunityFundCard />);
     // Community Fund heading must NOT appear during loading
-    expect(screen.queryByText('Community Fund')).not.toBeInTheDocument();
+    expect(screen.queryByText("Community fund")).not.toBeInTheDocument();
   });
 });
 
@@ -74,7 +74,7 @@ describe('CommunityFundCard — error state', () => {
     vi.mocked(api.get).mockResolvedValueOnce({ success: false, error: 'Server error' });
     render(<CommunityFundCard />);
     await waitFor(() => {
-      expect(screen.getByText('Could not load community fund')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load the community fund.")).toBeInTheDocument();
     });
     expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
   });
@@ -83,7 +83,7 @@ describe('CommunityFundCard — error state', () => {
     vi.mocked(api.get).mockRejectedValueOnce(new Error('Network failure'));
     render(<CommunityFundCard />);
     await waitFor(() => {
-      expect(screen.getByText('Could not load community fund')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load the community fund.")).toBeInTheDocument();
     });
   });
 
@@ -120,10 +120,10 @@ describe('CommunityFundCard — populated (full view)', () => {
     });
   });
 
-  it('renders the heading "Community Fund"', async () => {
+  it('renders the heading "Community fund"', async () => {
     render(<CommunityFundCard />);
     await waitFor(() => {
-      expect(screen.getByText('Community Fund')).toBeInTheDocument();
+      expect(screen.getByText("Community fund")).toBeInTheDocument();
     });
   });
 
@@ -154,15 +154,15 @@ describe('CommunityFundCard — populated (full view)', () => {
   it('does not render the donate button when onDonateClick is not provided', async () => {
     render(<CommunityFundCard />);
     await waitFor(() => {
-      expect(screen.queryByText('Donate to Community Fund')).not.toBeInTheDocument();
+      expect(screen.queryByText("Donate to community fund")).not.toBeInTheDocument();
     });
   });
 
-  it('renders the "Donate to Community Fund" button when onDonateClick is provided', async () => {
+  it('renders the "Donate to community fund" button when onDonateClick is provided', async () => {
     const onDonate = vi.fn();
     render(<CommunityFundCard onDonateClick={onDonate} />);
     await waitFor(() => {
-      expect(screen.getByText('Donate to Community Fund')).toBeInTheDocument();
+      expect(screen.getByText("Donate to community fund")).toBeInTheDocument();
     });
   });
 
@@ -170,9 +170,9 @@ describe('CommunityFundCard — populated (full view)', () => {
     const onDonate = vi.fn();
     render(<CommunityFundCard onDonateClick={onDonate} />);
     await waitFor(() => {
-      expect(screen.getByText('Donate to Community Fund')).toBeInTheDocument();
+      expect(screen.getByText("Donate to community fund")).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByText('Donate to Community Fund'));
+    fireEvent.click(screen.getByText("Donate to community fund"));
     expect(onDonate).toHaveBeenCalledTimes(1);
   });
 });
@@ -197,7 +197,7 @@ describe('CommunityFundCard — compact view', () => {
     // compact + no handler → no donate button
     await waitFor(() => {
       // In compact mode the community fund label is visible
-      expect(screen.getByText('Community Fund')).toBeInTheDocument();
+      expect(screen.getByText("Community fund")).toBeInTheDocument();
     });
     expect(screen.queryByRole('button', { name: /donate/i })).not.toBeInTheDocument();
   });

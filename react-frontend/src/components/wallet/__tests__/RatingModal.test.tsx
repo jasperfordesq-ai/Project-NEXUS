@@ -70,9 +70,9 @@ describe('RatingModal', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('renders "Rate Your Exchange" heading', () => {
+  it('renders "Rate your exchange" heading', () => {
     render(<RatingModal {...defaultProps} />);
-    expect(screen.getByText('Rate Your Exchange')).toBeInTheDocument();
+    expect(screen.getByText("Rate your exchange")).toBeInTheDocument();
   });
 
   it('includes other party name in description when provided', () => {
@@ -153,7 +153,7 @@ describe('RatingModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('radio', { name: 'Very Good' }));
+    fireEvent.click(screen.getByRole('radio', { name: "Very good" }));
     fireEvent.click(screen.getByRole('button', { name: /submit rating/i }));
 
     await waitFor(() => {

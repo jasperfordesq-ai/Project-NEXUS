@@ -25,11 +25,11 @@
     "filter_button_aria": "Scag de réir stádas malartaithe: {{status}}"
   },
   "error": {
-    "load_failed": "Theip ar lódáil na malartuithe. Bain triail eile as.",
-    "unable_to_load": "Níorbh fhéidir na malartuithe a lódáil"
+    "load_failed": "Bain triail eile as i gceann nóiméid.",
+    "unable_to_load": "Níor éirigh linn do mhalartuithe a lódáil"
   },
   "empty": {
-    "title": "Níor aimsíodh aon mhalartú",
+    "title": "Níl aon mhalartú le taispeáint",
     "active_description": "Níl aon mhalartuithe gníomhacha agat. Brabhsáil liostuithe chun seirbhís a iarraidh.",
     "filter_description": "Ní mheaitseálann aon mhalartuithe leis an scagaire seo."
   },
@@ -48,29 +48,29 @@
     "exchange": "Malartú"
   },
   "toast": {
-    "load_more_failed": "Theip ar lódáil tuilleadh malartuithe",
+    "load_more_failed": "Níor éirigh linn tuilleadh malartuithe a lódáil. Bain triail eile as i gceann nóiméid.",
     "accepted": "Malartú glactha!",
-    "accept_failed": "Theip ar ghlacadh leis an malartú",
+    "accept_failed": "Níor éirigh linn glacadh leis an malartú sin. Bain triail eile as.",
     "declined": "Malartú diúltaithe",
-    "decline_failed": "Theip ar dhiúltú don mhalartú",
+    "decline_failed": "Níor éirigh linn diúltú don mhalartú sin. Bain triail eile as.",
     "started": "Malartú tosaithe!",
-    "start_failed": "Theip ar thosú an mhalartaithe",
+    "start_failed": "Níor éirigh linn an malartú sin a thosú. Bain triail eile as.",
     "completed": "Marcáladh an malartú mar chríochnaithe. Deimhnigh na huaireanta.",
-    "complete_failed": "Theip ar chríochnú an mhalartaithe",
+    "complete_failed": "Níor éirigh linn an malartú sin a mharcáil mar chríochnaithe. Bain triail eile as.",
     "invalid_hours": "Cuir uaireanta bailí isteach le do thoil",
     "max_hours": "Uasmhéid {{max}} uair in aghaidh an mhalartaithe",
     "hours_confirmed": "Deimhníodh na huaireanta!",
-    "confirm_failed": "Níorbh fhéidir na huaireanta a dheimhniú",
+    "confirm_failed": "Níor éirigh linn na huaireanta a dheimhniú. Bain triail eile as.",
     "cancelled": "Malartú cealaithe",
-    "cancel_failed": "Theip ar chealú an mhalartaithe",
+    "cancel_failed": "Níor éirigh linn an malartú sin a chur ar ceal. Bain triail eile as.",
     "request_sent": "Iarratas malartaithe seolta!",
-    "request_failed": "Theip ar chruthú an iarratais mhalartaithe"
+    "request_failed": "Níor éirigh linn d’iarratas malartaithe a sheoladh. Bain triail eile as."
   },
   "detail": {
     "page_title": "Sonraí Malartaithe",
     "loading": "Malartú á lódáil...",
-    "not_found": "Níor aimsíodh an malartú",
-    "not_found_title": "Níor aimsíodh an malartú",
+    "not_found": "Seans gur baineadh anuas é, nó go bhfuil an nasc mícheart.",
+    "not_found_title": "Ní féidir linn an malartú sin a aimsiú",
     "not_found_description": "Níl an malartú atá á lorg agat ann",
     "view_exchanges": "Féach ar Mo Mhalartuithe",
     "exchange_details": "Sonraí Malartaithe",
@@ -138,10 +138,10 @@
     "title": "Iarr Malartú",
     "subtitle": "Seol iarratas chun creidmheasanna ama a mhalartú don tseirbhís seo",
     "loading": "Ag lódáil...",
-    "listing_not_found": "Níor aimsíodh an tairiscint nó an t-iarratas",
+    "listing_not_found": "Ní féidir linn an tairiscint nó an t-iarratas seo a aimsiú. Seans gur baineadh anuas é.",
     "workflow_not_enabled": "Níl sreabhadh oibre malartaithe cumasaithe",
-    "load_failed": "Theip ar lódáil an liostaithe",
-    "cannot_request": "Ní féidir malartú a iarraidh",
+    "load_failed": "Níor éirigh linn an tairiscint nó an t-iarratas sin a lódáil. Bain triail eile as i gceann nóiméid.",
+    "cannot_request": "Ní féidir leat an malartú seo a iarraidh go fóill",
     "not_available": "Níl an liostú seo ar fáil d'iarratais mhalartaithe.",
     "own_listing_title": "Is leatsa an tairiscint nó an t-iarratas seo",
     "own_listing_description": "Ní féidir leat malartú a iarraidh ar do liostú féin.",

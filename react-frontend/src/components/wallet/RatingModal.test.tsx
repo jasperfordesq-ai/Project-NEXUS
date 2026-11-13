@@ -51,25 +51,25 @@ import { RatingModal } from './RatingModal';
 
 // Actual translated strings from public/locales/en/wallet.json
 const T = {
-  title: 'Rate Your Exchange',
+  title: "Rate your exchange",
   prompt: 'How was your exchange?',
   commentLabel: 'Comment (optional)',
   commentPlaceholder: 'Share your experience...',
   skip: 'Skip',
-  submit: 'Submit Rating',
+  submit: "Submit rating",
   poor: 'Poor',
   fair: 'Fair',
   good: 'Good',
-  very_good: 'Very Good',
+  very_good: "Very good",
   excellent: 'Excellent',
   toast: {
     rating_required: 'Rating required',
     rating_required_desc: 'Please select a star rating',
     rating_submitted: 'Rating submitted',
     rating_submitted_desc: 'Thank you for your feedback!',
-    submit_failed: 'Failed to submit',
+    submit_failed: "We couldn't send your rating",
     try_again: 'Please try again',
-    submit_error_desc: 'An error occurred. Please try again.',
+    submit_error_desc: "That didn't work. Please try again.",
   },
 };
 
@@ -197,7 +197,7 @@ describe('RatingModal — star selection and rating labels', () => {
     await waitFor(() => expect(screen.getByText(T.good)).toBeInTheDocument());
   });
 
-  it('shows "Very Good" after selecting 4 stars', async () => {
+  it('shows "Very good" after selecting 4 stars', async () => {
     render(<RatingModal {...defaultProps} />);
     fireEvent.click(screen.getByRole('radio', { name: T.very_good }));
     await waitFor(() => expect(screen.getByText(T.very_good)).toBeInTheDocument());

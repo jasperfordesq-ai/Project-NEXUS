@@ -83,11 +83,11 @@ describe('TransferModal', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('renders "Send Credits" heading', () => {
+  it('renders "Send credits" heading', () => {
     render(<TransferModal {...defaultProps} />);
-    // "Send Credits" appears in both the header and the submit button,
+    // "Send credits" appears in both the header and the submit button,
     // so use getAllByText to avoid the multiple-elements error
-    const elements = screen.getAllByText('Send Credits');
+    const elements = screen.getAllByText("Send credits");
     expect(elements.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -121,8 +121,8 @@ describe('TransferModal', () => {
     // aria-modal/labelledby/describedby wiring HeroUI adds at runtime. Assert the
     // dialog's labelling header and its body content render instead, which is
     // what those ARIA references point at (header = label, body = description).
-    expect(screen.getAllByText('Send Credits').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Available Balance')).toBeInTheDocument();
+    expect(screen.getAllByText("Send credits").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Available balance")).toBeInTheDocument();
   });
 
   it('renders the Send Credits submit button', () => {

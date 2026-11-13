@@ -177,13 +177,13 @@ describe('DonateModal — rendering', () => {
 
   it('renders the modal dialog when isOpen=true', () => {
     renderOpen({});
-    // Modal header contains "Donate Credits" (t('donate_credits'))
+    // Modal header contains "Donate credits" (t('donate_credits'))
     expect(screen.getByText(/donate credits/i)).toBeInTheDocument();
   });
 
   it('renders recipient-type radio group with two options', () => {
     renderOpen({});
-    // Use getAllByText because "Community Fund" and "Another Member" each appear
+    // Use getAllByText because "Community fund" and "Another member" each appear
     // in both the radio label AND the description text beneath it.
     expect(screen.getAllByText(/community fund/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText(/another member/i).length).toBeGreaterThanOrEqual(1);
@@ -235,7 +235,7 @@ describe('DonateModal — amount validation', () => {
     clickDonate();
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalledWith(
-        expect.stringMatching(/invalid amount/i),
+        expect.stringMatching(/amount won't work/i),
         expect.anything()
       );
     });
@@ -248,7 +248,7 @@ describe('DonateModal — amount validation', () => {
     clickDonate();
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalledWith(
-        expect.stringMatching(/invalid amount/i),
+        expect.stringMatching(/amount won't work/i),
         expect.anything()
       );
     });
@@ -261,7 +261,7 @@ describe('DonateModal — amount validation', () => {
     clickDonate();
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalledWith(
-        expect.stringMatching(/invalid amount/i),
+        expect.stringMatching(/amount won't work/i),
         expect.anything()
       );
     });
@@ -274,7 +274,7 @@ describe('DonateModal — amount validation', () => {
     clickDonate();
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalledWith(
-        expect.stringMatching(/invalid amount/i),
+        expect.stringMatching(/amount won't work/i),
         expect.anything()
       );
     });
@@ -322,7 +322,7 @@ describe('DonateModal — member recipient validation', () => {
   it('shows recipient-required error when member mode is selected but no recipient chosen', async () => {
     renderOpen({});
 
-    // Switch to "Another Member" radio
+    // Switch to "Another member" radio
     const memberRadio = screen.getByRole('radio', { name: /another member/i });
     fireEvent.click(memberRadio);
 
@@ -338,7 +338,7 @@ describe('DonateModal — member recipient validation', () => {
     expect(api.post).not.toHaveBeenCalled();
   });
 
-  it('shows member search input when "Another Member" radio is selected', () => {
+  it('shows member search input when "Another member" radio is selected', () => {
     renderOpen({});
     const memberRadio = screen.getByRole('radio', { name: /another member/i });
     fireEvent.click(memberRadio);

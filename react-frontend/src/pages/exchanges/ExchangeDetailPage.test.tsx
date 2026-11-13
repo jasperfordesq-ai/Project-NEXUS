@@ -63,7 +63,7 @@ vi.mock('@/lib/exchange-status', () => ({
   EXCHANGE_STATUS_CONFIG: {
     pending_provider: { label: 'Pending Provider', color: 'warning', description: 'Awaiting provider response' },
     accepted: { label: 'Accepted', color: 'success', description: 'Exchange accepted' },
-    in_progress: { label: 'In Progress', color: 'primary', description: 'Exchange in progress' },
+    in_progress: { label: "In progress", color: 'primary', description: 'Exchange in progress' },
     completed: { label: 'Completed', color: 'success', description: 'Exchange completed' },
     cancelled: { label: 'Cancelled', color: 'danger', description: 'Exchange cancelled' },
     pending_confirmation: { label: 'Pending Confirmation', color: 'warning', description: 'Awaiting confirmation' },
@@ -206,7 +206,7 @@ describe('ExchangeDetailPage', () => {
   it('shows accept and decline buttons when user is provider with pending status', async () => {
     render(<ExchangeDetailPage />);
     await waitFor(() => {
-      expect(screen.getByText('Accept Request')).toBeInTheDocument();
+      expect(screen.getByText("Accept request")).toBeInTheDocument();
       expect(screen.getByText('Decline')).toBeInTheDocument();
     });
   });
@@ -222,7 +222,7 @@ describe('ExchangeDetailPage', () => {
   it('renders timeline section', async () => {
     render(<ExchangeDetailPage />);
     await waitFor(() => {
-      expect(screen.getByText('Exchange Timeline')).toBeInTheDocument();
+      expect(screen.getByText("Exchange timeline")).toBeInTheDocument();
     });
   });
 });
@@ -238,9 +238,9 @@ describe('ExchangeDetailPage — thank-you on completion', () => {
 
   async function confirmHours() {
     render(<ExchangeDetailPage />);
-    await userEvent.click(await screen.findByRole('button', { name: 'Confirm Hours' }));
+    await userEvent.click(await screen.findByRole('button', { name: "Confirm hours" }));
     const dialog = await screen.findByRole('dialog');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Confirm Hours' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: "Confirm hours" }));
   }
 
   it('says thank you, with the year so far, when confirming completes the exchange', async () => {

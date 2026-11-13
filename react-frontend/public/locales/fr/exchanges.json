@@ -25,11 +25,11 @@
     "filter_button_aria": "Filtrer par statut d'échange : {{status}}"
   },
   "error": {
-    "load_failed": "Impossible de charger les échanges. Veuillez réessayer.",
-    "unable_to_load": "Impossible de charger les échanges"
+    "load_failed": "Réessayez dans un instant.",
+    "unable_to_load": "Nous n’avons pas pu charger vos échanges"
   },
   "empty": {
-    "title": "Aucun échange trouvé",
+    "title": "Aucun échange à afficher",
     "active_description": "Vous n'avez aucun échange actif. Parcourez les annonces pour demander un service.",
     "filter_description": "Aucun échange ne correspond à ce filtre."
   },
@@ -48,29 +48,29 @@
     "exchange": "Échange"
   },
   "toast": {
-    "load_more_failed": "Impossible de charger plus d'échanges",
+    "load_more_failed": "Nous n’avons pas pu charger plus d’échanges. Réessayez dans un instant.",
     "accepted": "Échange accepté !",
-    "accept_failed": "Impossible d'accepter l'échange",
+    "accept_failed": "Nous n’avons pas pu accepter cet échange. Veuillez réessayer.",
     "declined": "Échange refusé",
-    "decline_failed": "Impossible de refuser l'échange",
+    "decline_failed": "Nous n’avons pas pu refuser cet échange. Veuillez réessayer.",
     "started": "Échange démarré !",
-    "start_failed": "Impossible de démarrer l'échange",
+    "start_failed": "Nous n’avons pas pu démarrer cet échange. Veuillez réessayer.",
     "completed": "Échange marqué comme terminé. Veuillez confirmer les heures.",
-    "complete_failed": "Impossible de terminer l'échange",
+    "complete_failed": "Nous n’avons pas pu marquer cet échange comme terminé. Veuillez réessayer.",
     "invalid_hours": "Veuillez entrer des heures valides",
     "max_hours": "Maximum {{max}} heures par échange",
     "hours_confirmed": "Heures confirmées !",
-    "confirm_failed": "Impossible de confirmer les heures",
+    "confirm_failed": "Nous n’avons pas pu confirmer les heures. Veuillez réessayer.",
     "cancelled": "Échange annulé",
-    "cancel_failed": "Impossible d'annuler l'échange",
+    "cancel_failed": "Nous n’avons pas pu annuler cet échange. Veuillez réessayer.",
     "request_sent": "Demande d'échange envoyée !",
-    "request_failed": "Impossible de créer la demande d'échange"
+    "request_failed": "Nous n’avons pas pu envoyer votre demande d’échange. Veuillez réessayer."
   },
   "detail": {
     "page_title": "Détails de l'échange",
     "loading": "Chargement de l'échange…",
-    "not_found": "Échange non trouvé",
-    "not_found_title": "Échange non trouvé",
+    "not_found": "Il a peut-être été retiré, ou le lien est peut-être incorrect.",
+    "not_found_title": "Nous ne trouvons pas cet échange",
     "not_found_description": "L'échange que vous recherchez n'existe pas",
     "view_exchanges": "Voir mes échanges",
     "exchange_details": "Détails de l'échange",
@@ -136,10 +136,10 @@
     "title": "Demander un échange",
     "subtitle": "Envoyez une demande pour échanger des crédits-temps pour ce service",
     "loading": "Chargement…",
-    "listing_not_found": "Offre ou demande introuvable",
+    "listing_not_found": "Nous ne trouvons pas cette offre ou demande. Elle a peut-être été retirée.",
     "workflow_not_enabled": "Le flux d'échange n'est pas activé",
-    "load_failed": "Impossible de charger l'annonce",
-    "cannot_request": "Impossible de demander un échange",
+    "load_failed": "Nous n’avons pas pu charger cette offre ou demande. Réessayez dans un instant.",
+    "cannot_request": "Vous ne pouvez pas encore demander cet échange",
     "not_available": "Cette annonce n'est pas disponible pour les demandes d'échange.",
     "own_listing_title": "Il s'agit de votre propre offre ou demande",
     "own_listing_description": "Vous ne pouvez pas demander un échange pour votre propre annonce.",

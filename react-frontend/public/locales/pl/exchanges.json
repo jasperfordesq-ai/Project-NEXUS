@@ -25,11 +25,11 @@
     "filter_button_aria": "Filtruj według statusu wymiany: {{status}}"
   },
   "error": {
-    "load_failed": "Nie udało się załadować wymian. Proszę spróbować ponownie.",
-    "unable_to_load": "Nie można załadować wymian"
+    "load_failed": "Spróbuj ponownie za chwilę.",
+    "unable_to_load": "Nie udało się nam wczytać Twoich wymian"
   },
   "empty": {
-    "title": "Nie znaleziono wymian",
+    "title": "Brak wymian do wyświetlenia",
     "active_description": "Nie masz żadnych aktywnych wymian. Przeglądaj oferty, aby poprosić o usługę.",
     "filter_description": "Żadne wymiany nie pasują do tego filtra."
   },
@@ -48,29 +48,29 @@
     "exchange": "Wymiana"
   },
   "toast": {
-    "load_more_failed": "Nie udało się załadować więcej wymian",
+    "load_more_failed": "Nie udało się nam wczytać kolejnych wymian. Spróbuj ponownie za chwilę.",
     "accepted": "Wymiana zaakceptowana!",
-    "accept_failed": "Nie udało się zaakceptować wymiany",
+    "accept_failed": "Nie udało się nam zaakceptować tej wymiany. Spróbuj ponownie.",
     "declined": "Wymiana odrzucona",
-    "decline_failed": "Nie udało się odrzucić wymiany",
+    "decline_failed": "Nie udało się nam odrzucić tej wymiany. Spróbuj ponownie.",
     "started": "Wymiana rozpoczęta!",
-    "start_failed": "Nie udało się rozpocząć wymiany",
+    "start_failed": "Nie udało się nam rozpocząć tej wymiany. Spróbuj ponownie.",
     "completed": "Wymiana oznaczona jako zakończona. Proszę potwierdzić godziny.",
-    "complete_failed": "Nie udało się zakończyć wymiany",
+    "complete_failed": "Nie udało się nam oznaczyć tej wymiany jako zakończonej. Spróbuj ponownie.",
     "invalid_hours": "Proszę wprowadzić prawidłowe godziny",
     "max_hours": "Maksymalnie {{max}} godzin na wymianę",
     "hours_confirmed": "Godziny potwierdzone!",
-    "confirm_failed": "Nie udało się potwierdzić godzin",
+    "confirm_failed": "Nie udało się nam potwierdzić godzin. Spróbuj ponownie.",
     "cancelled": "Wymiana anulowana",
-    "cancel_failed": "Nie udało się anulować wymiany",
+    "cancel_failed": "Nie udało się nam anulować tej wymiany. Spróbuj ponownie.",
     "request_sent": "Prośba o wymianę wysłana!",
-    "request_failed": "Nie udało się utworzyć prośby o wymianę"
+    "request_failed": "Nie udało się nam wysłać Twojej prośby o wymianę. Spróbuj ponownie."
   },
   "detail": {
     "page_title": "Szczegóły wymiany",
     "loading": "Ładowanie wymiany...",
-    "not_found": "Wymiana nie znaleziona",
-    "not_found_title": "Wymiana nie znaleziona",
+    "not_found": "Być może została usunięta albo link jest błędny.",
+    "not_found_title": "Nie możemy znaleźć tej wymiany",
     "not_found_description": "Wymiana, której szukasz, nie istnieje",
     "view_exchanges": "Zobacz moje wymiany",
     "exchange_details": "Szczegóły wymiany",
@@ -137,10 +137,10 @@
     "title": "Złóż prośbę o wymianę",
     "subtitle": "Wyślij prośbę o wymianę kredytów czasowych na tę usługę",
     "loading": "Ładowanie...",
-    "listing_not_found": "Nie znaleziono oferty lub prośby",
+    "listing_not_found": "Nie możemy znaleźć tej oferty lub prośby. Być może została usunięta.",
     "workflow_not_enabled": "Workflow wymiany nie jest włączony",
-    "load_failed": "Nie udało się załadować oferty",
-    "cannot_request": "Nie można złożyć prośby o wymianę",
+    "load_failed": "Nie udało się nam wczytać tej oferty lub prośby. Spróbuj ponownie za chwilę.",
+    "cannot_request": "Nie możesz jeszcze poprosić o tę wymianę",
     "not_available": "Ta oferta nie jest dostępna do składania próśb o wymianę.",
     "own_listing_title": "To jest Twoja własna oferta lub prośba",
     "own_listing_description": "Nie możesz złożyć prośby o wymianę dla własnej oferty.",

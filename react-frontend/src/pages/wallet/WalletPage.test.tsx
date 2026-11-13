@@ -89,12 +89,12 @@ describe('WalletPage', () => {
 
   it('shows Send Credits button', () => {
     render(<WalletPage />);
-    expect(screen.getByText('Send Credits')).toBeInTheDocument();
+    expect(screen.getByText("Send credits")).toBeInTheDocument();
   });
 
   it('shows Transaction History section', () => {
     render(<WalletPage />);
-    expect(screen.getByText('Transaction History')).toBeInTheDocument();
+    expect(screen.getByText("Transaction history")).toBeInTheDocument();
   });
 
   it('shows filter tabs', () => {
@@ -262,5 +262,41 @@ describe('WalletPage', () => {
 
     expect(await screen.findByText('The end date must be on or after the start date.')).toBeInTheDocument();
     expect(api.download).not.toHaveBeenCalled();
+  });
+
+  it('says once that the wallet could not be loaded, and reassures about the balance', async () => {
+    vi.mocked(api.get).mockRejectedValue(new Error('Network error'));
+
+    render(<WalletPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent("We couldn't load your wallet");
+    expect(alert).toHaveTextContent('Your balance is safe. Try again in a moment.');
+    expect(alert).not.toHaveTextContent("We couldn't load your balance");
+  });
+
+  it('gives the same reassurance when only the balance request is refused', async () => {
+    vi.mocked(api.get).mockImplementation(((url: string) => Promise.resolve(
+      url.includes('/wallet/balance')
+        ? { success: false, error: 'nope' }
+        : { success: true, data: [], meta: { has_more: false } },
+    )) as never);
+
+    render(<WalletPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Your balance is safe. Try again in a moment.');
+  });
+
+  it('names the transactions when only they could not be loaded', async () => {
+    vi.mocked(api.get).mockImplementation(((url: string) => Promise.resolve(
+      url.includes('/wallet/transactions')
+        ? { success: false }
+        : { success: true, data: { balance: 10, pending_in: 0, total_spent: 5, total_earned: 15 } },
+    )) as never);
+
+    render(<WalletPage />);
+
+    expect(await screen.findByText("We couldn't load your transactions. Try again in a moment.")).toBeInTheDocument();
   });
 });

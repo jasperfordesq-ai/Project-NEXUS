@@ -25,11 +25,11 @@
     "filter_button_aria": "Filter op uitwisselingsstatus: {{status}}"
   },
   "error": {
-    "load_failed": "Kon uitwisselingen niet laden. Probeer het opnieuw.",
-    "unable_to_load": "Kon Uitwisselingen Niet Laden"
+    "load_failed": "Probeer het zo nog eens.",
+    "unable_to_load": "We konden je ruilen niet laden"
   },
   "empty": {
-    "title": "Geen Uitwisselingen Gevonden",
+    "title": "Geen ruilen om te tonen",
     "active_description": "Je hebt geen actieve uitwisselingen. Blader door de lijsten om een service aan te vragen.",
     "filter_description": "Geen uitwisselingen passen bij deze filter."
   },
@@ -48,29 +48,29 @@
     "exchange": "Uitwisseling"
   },
   "toast": {
-    "load_more_failed": "Kon meer uitwisselingen niet laden",
+    "load_more_failed": "We konden niet meer ruilen laden. Probeer het zo nog eens.",
     "accepted": "Uitwisseling geaccepteerd!",
-    "accept_failed": "Mislukt om ruil te accepteren",
+    "accept_failed": "We konden die ruil niet accepteren. Probeer het opnieuw.",
     "declined": "Ruil afgewezen",
-    "decline_failed": "Mislukt om ruil af te wijzen",
+    "decline_failed": "We konden die ruil niet afwijzen. Probeer het opnieuw.",
     "started": "Ruil gestart!",
-    "start_failed": "Mislukt om ruil te starten",
+    "start_failed": "We konden die ruil niet starten. Probeer het opnieuw.",
     "completed": "Ruil gemarkeerd als voltooid. Bevestig alstublieft de uren.",
-    "complete_failed": "Mislukt om ruil te voltooien",
+    "complete_failed": "We konden die ruil niet als voltooid markeren. Probeer het opnieuw.",
     "invalid_hours": "Voer geldige uren in",
     "max_hours": "Maximaal {{max}} uren per ruil",
     "hours_confirmed": "Uren bevestigd!",
-    "confirm_failed": "Mislukt om uren te bevestigen",
+    "confirm_failed": "We konden de uren niet bevestigen. Probeer het opnieuw.",
     "cancelled": "Ruil geannuleerd",
-    "cancel_failed": "Mislukt om ruil te annuleren",
+    "cancel_failed": "We konden die ruil niet annuleren. Probeer het opnieuw.",
     "request_sent": "Ruilverzoek verzonden!",
-    "request_failed": "Mislukt om ruilverzoek te creëren"
+    "request_failed": "We konden je ruilverzoek niet versturen. Probeer het opnieuw."
   },
   "detail": {
     "page_title": "Ruildetails",
     "loading": "Ruil aan het laden...",
-    "not_found": "Ruil niet gevonden",
-    "not_found_title": "Ruil Niet Gevonden",
+    "not_found": "Misschien is hij weggehaald, of klopt de link niet.",
+    "not_found_title": "We kunnen die ruil niet vinden",
     "not_found_description": "De ruil waar je naar op zoek bent bestaat niet",
     "view_exchanges": "Bekijk Mijn Ruilen",
     "exchange_details": "Ruildetails",
@@ -135,10 +135,10 @@
     "title": "Vraag Uitwisseling Aan",
     "subtitle": "Stuur een verzoek om tijdcredits voor deze dienst uit te wisselen",
     "loading": "Laden...",
-    "listing_not_found": "Aanbod of verzoek niet gevonden",
+    "listing_not_found": "We kunnen dit aanbod of verzoek niet vinden. Misschien is het weggehaald.",
     "workflow_not_enabled": "Uitwisselingsworkflow is niet ingeschakeld",
-    "load_failed": "Laden van lijst mislukt",
-    "cannot_request": "Kan Geen Uitwisseling Aanvragen",
+    "load_failed": "We konden dat aanbod of verzoek niet laden. Probeer het zo nog eens.",
+    "cannot_request": "Je kunt deze ruil nog niet aanvragen",
     "not_available": "Deze lijst is niet beschikbaar voor uitwisselingsverzoeken.",
     "own_listing_title": "Dit is je eigen aanbod of verzoek",
     "own_listing_description": "Je kunt geen uitwisseling aanvragen voor je eigen lijst.",

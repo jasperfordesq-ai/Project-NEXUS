@@ -25,11 +25,11 @@
     "filter_button_aria": "Nach Austauschstatus filtern: {{status}}"
   },
   "error": {
-    "load_failed": "Tauschgeschäfte konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
-    "unable_to_load": "Tauschgeschäfte können nicht geladen werden"
+    "load_failed": "Versuchen Sie es gleich noch einmal.",
+    "unable_to_load": "Wir konnten Ihre Tauschgeschäfte nicht laden"
   },
   "empty": {
-    "title": "Keine Tauschgeschäfte gefunden",
+    "title": "Keine Tauschgeschäfte zum Anzeigen",
     "active_description": "Sie haben keine aktiven Tauschgeschäfte. Durchsuchen Sie Angebote, um eine Dienstleistung anzufragen.",
     "filter_description": "Keine Tauschgeschäfte entsprechen diesem Filter."
   },
@@ -48,29 +48,29 @@
     "exchange": "Tauschgeschäft"
   },
   "toast": {
-    "load_more_failed": "Weitere Tauschgeschäfte konnten nicht geladen werden",
+    "load_more_failed": "Wir konnten keine weiteren Tauschgeschäfte laden. Versuchen Sie es gleich noch einmal.",
     "accepted": "Tauschgeschäft angenommen!",
-    "accept_failed": "Tauschgeschäft konnte nicht angenommen werden",
+    "accept_failed": "Wir konnten dieses Tauschgeschäft nicht annehmen. Bitte versuchen Sie es noch einmal.",
     "declined": "Tauschgeschäft abgelehnt",
-    "decline_failed": "Tauschgeschäft konnte nicht abgelehnt werden",
+    "decline_failed": "Wir konnten dieses Tauschgeschäft nicht ablehnen. Bitte versuchen Sie es noch einmal.",
     "started": "Tauschgeschäft gestartet!",
-    "start_failed": "Tauschgeschäft konnte nicht gestartet werden",
+    "start_failed": "Wir konnten dieses Tauschgeschäft nicht starten. Bitte versuchen Sie es noch einmal.",
     "completed": "Tauschgeschäft als abgeschlossen markiert. Bitte bestätigen Sie die Stunden.",
-    "complete_failed": "Tauschgeschäft konnte nicht abgeschlossen werden",
+    "complete_failed": "Wir konnten dieses Tauschgeschäft nicht als abgeschlossen markieren. Bitte versuchen Sie es noch einmal.",
     "invalid_hours": "Bitte geben Sie gültige Stunden ein",
     "max_hours": "Maximal {{max}} Stunden pro Tauschgeschäft",
     "hours_confirmed": "Stunden bestätigt!",
-    "confirm_failed": "Stunden konnten nicht bestätigt werden",
+    "confirm_failed": "Wir konnten die Stunden nicht bestätigen. Bitte versuchen Sie es noch einmal.",
     "cancelled": "Tauschgeschäft storniert",
-    "cancel_failed": "Tauschgeschäft konnte nicht storniert werden",
+    "cancel_failed": "Wir konnten dieses Tauschgeschäft nicht stornieren. Bitte versuchen Sie es noch einmal.",
     "request_sent": "Tauschanfrage gesendet!",
-    "request_failed": "Tauschanfrage konnte nicht erstellt werden"
+    "request_failed": "Wir konnten Ihre Tauschanfrage nicht senden. Bitte versuchen Sie es noch einmal."
   },
   "detail": {
     "page_title": "Tauschdetails",
     "loading": "Tauschgeschäft wird geladen...",
-    "not_found": "Tauschgeschäft nicht gefunden",
-    "not_found_title": "Tauschgeschäft nicht gefunden",
+    "not_found": "Vielleicht wurde es entfernt, oder der Link stimmt nicht.",
+    "not_found_title": "Wir finden dieses Tauschgeschäft nicht",
     "not_found_description": "Das gesuchte Tauschgeschäft existiert nicht",
     "view_exchanges": "Meine Tauschgeschäfte anzeigen",
     "exchange_details": "Tauschdetails",
@@ -135,10 +135,10 @@
     "title": "Tausch anfragen",
     "subtitle": "Senden Sie eine Anfrage zum Tausch von Zeitguthaben für diese Dienstleistung",
     "loading": "Wird geladen...",
-    "listing_not_found": "Angebot oder Gesuch nicht gefunden",
+    "listing_not_found": "Wir finden dieses Angebot oder Gesuch nicht. Vielleicht wurde es entfernt.",
     "workflow_not_enabled": "Tausch-Workflow ist nicht aktiviert",
-    "load_failed": "Angebot konnte nicht geladen werden",
-    "cannot_request": "Tausch kann nicht angefragt werden",
+    "load_failed": "Wir konnten dieses Angebot oder Gesuch nicht laden. Versuchen Sie es gleich noch einmal.",
+    "cannot_request": "Sie können dieses Tauschgeschäft noch nicht anfragen",
     "not_available": "Dieses Angebot ist nicht für Tauschanfragen verfügbar.",
     "own_listing_title": "Dies ist Ihr eigenes Angebot oder Gesuch",
     "own_listing_description": "Sie können keinen Tausch für Ihr eigenes Angebot anfragen.",

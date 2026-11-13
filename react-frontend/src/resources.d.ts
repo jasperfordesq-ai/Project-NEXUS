@@ -46597,7 +46597,7 @@ export default interface Resources {
     "browse_listings": "Browse offers and requests",
     "card": {
       "aria_label": "Exchange: {{title}} - {{status}}",
-      "confirm_hours": "Confirm Hours",
+      "confirm_hours": "Confirm hours",
       "from_party": "From {{name}}",
       "respond": "Respond",
       "waiting_for_other": "Waiting for other",
@@ -46606,109 +46606,109 @@ export default interface Resources {
       "you_requested": "You requested"
     },
     "detail": {
-      "accept_request": "Accept Request",
-      "broker_notes": "Broker Notes",
-      "cancel_exchange": "Cancel Exchange",
-      "confirm_hours": "Confirm Hours",
+      "accept_request": "Accept request",
+      "broker_notes": "Broker notes",
+      "cancel_exchange": "Cancel exchange",
+      "confirm_hours": "Confirm hours",
       "confirmed_hours": "Confirmed {{hours}}h",
       "created": "Created",
       "decline": "Decline",
-      "exchange_details": "Exchange Details",
-      "final_hours": "Final Hours",
+      "exchange_details": "Exchange details",
+      "final_hours": "Final hours",
       "loading": "Loading exchange...",
-      "mark_complete": "Mark Complete",
+      "mark_complete": "Mark complete",
       "message_from_requester": "Message from requester",
       "message_party": "Message {{name}}",
-      "not_found": "Exchange not found",
+      "not_found": "It may have been removed, or the link may be wrong.",
       "not_found_description": "The exchange you are looking for does not exist",
-      "not_found_title": "Exchange Not Found",
-      "other_party": "Other Party",
-      "page_title": "Exchange Details",
-      "prep_time": "Preparation Time",
+      "not_found_title": "We can't find that exchange",
+      "other_party": "Other party",
+      "page_title": "Exchange details",
+      "prep_time": "Preparation time",
       "prep_time_value": "{{count}}h",
       "prep_time_value_one": "{{count}}h",
       "prep_time_value_other": "{{count}}h",
-      "proposed_hours": "Proposed Hours",
+      "proposed_hours": "Proposed hours",
       "provider": "Provider",
-      "rate_exchange": "Rate This Exchange",
+      "rate_exchange": "Rate this exchange",
       "rating_value": "Rating: {{rating}} out of 5",
       "ratings": "Ratings",
       "requester": "Requester",
       "service": "Service",
-      "start_exchange": "Start Exchange",
+      "start_exchange": "Start exchange",
       "timeline": {
-        "accepted": "Exchange Accepted",
-        "awaiting_confirmation": "Awaiting Confirmation",
-        "cancelled": "Exchange Cancelled",
-        "completed": "Exchange Completed",
-        "confirmed": "Hours Confirmed",
-        "created": "Exchange Created",
-        "declined": "Exchange Declined",
-        "disputed": "Exchange Disputed",
-        "fallback": "Status Updated",
-        "sent_to_broker": "Sent to Broker",
-        "started": "Exchange Started"
+        "accepted": "Exchange accepted",
+        "awaiting_confirmation": "Awaiting confirmation",
+        "cancelled": "Exchange cancelled",
+        "completed": "Exchange completed",
+        "confirmed": "Hours confirmed",
+        "created": "Exchange created",
+        "declined": "Exchange declined",
+        "disputed": "Exchange disputed",
+        "fallback": "Status updated",
+        "sent_to_broker": "Sent to broker",
+        "started": "Exchange started"
       },
-      "timeline_title": "Exchange Timeline",
-      "view_exchanges": "View My Exchanges",
+      "timeline_title": "Exchange timeline",
+      "view_exchanges": "View my exchanges",
       "you": "You"
     },
     "empty": {
       "active_description": "You don't have any active exchanges. Browse listings to request a service.",
       "filter_description": "No exchanges match this filter.",
-      "title": "No Exchanges Found"
+      "title": "No exchanges to show"
     },
     "error": {
-      "load_failed": "Failed to load exchanges. Please try again.",
-      "unable_to_load": "Unable to Load Exchanges"
+      "load_failed": "Try again in a moment.",
+      "unable_to_load": "We couldn't load your exchanges"
     },
     "hours_count": "{{count}} hour",
     "hours_count_one": "{{count}} hour",
     "hours_count_other": "{{count}} hours",
-    "load_more": "Load More",
+    "load_more": "Load more",
     "loading": "Loading exchanges...",
     "modal": {
       "cancel": "Cancel",
       "cancel_description": "Are you sure you want to cancel this exchange? This action cannot be undone.",
-      "cancel_title": "Cancel Exchange?",
+      "cancel_title": "Cancel exchange?",
       "confirm_description": "How many hours were actually worked for this exchange?",
-      "confirm_title": "Confirm Hours Worked",
-      "decline_confirm": "Decline Request",
+      "confirm_title": "Confirm hours worked",
+      "decline_confirm": "Decline request",
       "decline_reason_label": "Reason (optional)",
       "decline_reason_placeholder": "Let them know why you're declining...",
-      "decline_title": "Decline Exchange Request",
+      "decline_title": "Decline exchange request",
       "hours_label": "Hours",
       "hours_placeholder": "Enter hours",
       "hours_unit": "hours",
-      "keep_exchange": "Keep Exchange",
+      "keep_exchange": "Keep exchange",
       "originally_proposed": "Originally proposed: {{hours}} hours (max: {{max}})"
     },
     "page_meta": {
       "detail": {
-        "title": "Exchange Details"
+        "title": "Exchange details"
       },
       "list": {
         "title": "Exchanges"
       },
       "request": {
-        "title": "Request Exchange"
+        "title": "Request exchange"
       }
     },
     "page_title": "Exchanges",
     "request": {
       "breadcrumb_listing": "Offer or request",
       "breadcrumb_listings": "Offers and requests",
-      "breadcrumb_request": "Request Exchange",
+      "breadcrumb_request": "Request exchange",
       "broker_approval_description": "This exchange will need to be approved by a community coordinator before it can proceed.",
-      "broker_approval_title": "Broker Approval Required",
+      "broker_approval_title": "Broker approval required",
       "cancel": "Cancel",
-      "cannot_request": "Cannot Request Exchange",
+      "cannot_request": "You can't request this exchange yet",
       "estimated_hours": "~{{hours}} hours",
       "form_description": "Confirm the proposed hours and add context so the other member can respond confidently.",
       "form_heading": "Request details",
       "hours_unit": "hours",
-      "listing_not_found": "Offer or request not found",
-      "load_failed": "Failed to load listing",
+      "listing_not_found": "We can't find this offer or request. It may have been taken down.",
+      "load_failed": "We couldn't load that offer or request. Try again in a moment.",
       "loading": "Loading...",
       "message_description": "Explain your needs or ask any questions",
       "message_label": "Message (optional)",
@@ -46716,23 +46716,23 @@ export default interface Resources {
       "not_available": "This listing is not available for exchange requests.",
       "own_listing_description": "You cannot request an exchange for your own listing.",
       "own_listing_title": "This is your own offer or request",
-      "page_title": "Request Exchange",
+      "page_title": "Request exchange",
       "prep_time_description": "Additional time needed for preparation (optional)",
-      "prep_time_label": "Preparation Time",
+      "prep_time_label": "Preparation time",
       "prep_time_placeholder": "0",
       "proposed_hours_description": "The estimated time for this service (max: {{max}})",
-      "proposed_hours_label": "Proposed Hours",
+      "proposed_hours_label": "Proposed hours",
       "proposed_hours_placeholder": "How many hours do you need?",
-      "send_request": "Send Request",
-      "service_offer": "Service Offer",
-      "service_request": "Service Request",
+      "send_request": "Send request",
+      "service_offer": "Service offer",
+      "service_request": "Service request",
       "subtitle": "Send a request to exchange time credits for this service",
       "summary_estimate": "Estimated time",
-      "title": "Request Exchange",
+      "title": "Request exchange",
       "view_listing": "View offer or request",
       "workflow_not_enabled": "Exchange workflow is not enabled"
     },
-    "service_exchange": "Service Exchange",
+    "service_exchange": "Service exchange",
     "status_config": {
       "accepted": {
         "description": "The exchange has been accepted. The provider can start when ready.",
@@ -46752,19 +46752,19 @@ export default interface Resources {
       },
       "in_progress": {
         "description": "The service is currently being provided.",
-        "label": "In Progress"
+        "label": "In progress"
       },
       "pending_broker": {
         "description": "This exchange requires broker approval before it can proceed.",
-        "label": "Awaiting Broker"
+        "label": "Awaiting broker"
       },
       "pending_confirmation": {
         "description": "Both parties need to confirm the hours worked to complete the exchange.",
-        "label": "Confirm Hours"
+        "label": "Confirm hours"
       },
       "pending_provider": {
         "description": "Waiting for the service provider to accept or decline this request.",
-        "label": "Awaiting Provider"
+        "label": "Awaiting provider"
       }
     },
     "subtitle": "Track your service exchange requests and confirmations",
@@ -46777,7 +46777,7 @@ export default interface Resources {
       "completed": "Completed",
       "completed_aria": "Show completed exchanges",
       "filter_button_aria": "Filter by exchange status: {{status}}",
-      "needs_confirmation": "Needs Confirmation",
+      "needs_confirmation": "Needs confirmation",
       "needs_confirmation_aria": "Show exchanges needing confirmation"
     },
     "thanks": {
@@ -46789,30 +46789,30 @@ export default interface Resources {
       "title": "Thank you!",
       "write_note": "Write {{name}} a thank-you note"
     },
-    "title": "My Exchanges",
+    "title": "My exchanges",
     "toast": {
-      "accept_failed": "Failed to accept exchange",
+      "accept_failed": "We couldn't accept that exchange. Please try again.",
       "accepted": "Exchange accepted!",
-      "cancel_failed": "Failed to cancel exchange",
+      "cancel_failed": "We couldn't cancel that exchange. Please try again.",
       "cancelled": "Exchange cancelled",
-      "complete_failed": "Failed to complete exchange",
+      "complete_failed": "We couldn't mark that exchange as complete. Please try again.",
       "completed": "Exchange marked as complete. Please confirm hours.",
-      "confirm_failed": "Failed to confirm hours",
-      "decline_failed": "Failed to decline exchange",
+      "confirm_failed": "We couldn't confirm the hours. Please try again.",
+      "decline_failed": "We couldn't decline that exchange. Please try again.",
       "declined": "Exchange declined",
       "hours_confirmed": "Hours confirmed!",
       "invalid_hours": "Please enter valid hours",
-      "load_more_failed": "Failed to load more exchanges",
+      "load_more_failed": "We couldn't load more exchanges. Try again in a moment.",
       "max_hours": "Maximum {{max}} hours per exchange",
-      "request_failed": "Failed to create exchange request",
+      "request_failed": "We couldn't send your exchange request. Please try again.",
       "request_sent": "Exchange request sent!",
-      "start_failed": "Failed to start exchange",
+      "start_failed": "We couldn't start that exchange. Please try again.",
       "started": "Exchange started!"
     },
-    "try_again": "Try Again",
+    "try_again": "Try again",
     "unknown": "Unknown",
     "workflow_not_enabled_description": "The exchange workflow system is not enabled for this community. Contact your coordinator for more information.",
-    "workflow_not_enabled_title": "Exchange Workflow Not Enabled"
+    "workflow_not_enabled_title": "Exchange workflow not enabled"
   },
   "explore": {
     "active_groups": {
@@ -51095,17 +51095,17 @@ export default interface Resources {
       "exchanges": {
         "articles": {
           "broker_approval": {
-            "body": "A broker is a community coordinator who helps arrange exchanges safely. Some communities ask a broker to approve exchanges before they go ahead.\n\nYou may see **Broker Approval Required** when you send a request. After the other member accepts, the status shows **Awaiting Broker**, and the timeline shows **Sent to Broker**.\n\nThe broker then either:\n\n- approves the exchange, and the status becomes **Accepted**; or\n- rejects it, and the exchange is cancelled.\n\nBoth of you are told either way. The broker may leave a note, shown under **Broker Notes** on the exchange page.\n\nAn exchange may need approval because of your community's settings, the number of hours, the kind of listing, or a member's safeguarding preferences. You do not need to do anything while you wait.",
+            "body": "A broker is a community coordinator who helps arrange exchanges safely. Some communities ask a broker to approve exchanges before they go ahead.\n\nYou may see **Broker approval required** when you send a request. After the other member accepts, the status shows **Awaiting broker**, and the timeline shows **Sent to broker**.\n\nThe broker then either:\n\n- approves the exchange, and the status becomes **Accepted**; or\n- rejects it, and the exchange is cancelled.\n\nBoth of you are told either way. The broker may leave a note, shown under **Broker notes** on the exchange page.\n\nAn exchange may need approval because of your community's settings, the number of hours, the kind of listing, or a member's safeguarding preferences. You do not need to do anything while you wait.",
             "summary": "Why some exchanges wait for a coordinator, and what happens next.",
             "title": "What does broker approval mean?"
           },
           "cancel_exchange": {
-            "body": "The member who sent the request can cancel an exchange before the work starts.\n\n1. Open the exchange.\n2. Press **Cancel Exchange**.\n3. Press **Cancel Exchange** again to confirm, or **Keep Exchange** to go back.\n\nYou can cancel while the status is **Awaiting Provider**, **Awaiting Broker** or **Accepted**. The other member is told. No hours move.\n\n> Cancelling cannot be undone. If you change your mind, send a new request.\n\nIf you posted the listing, you can **Decline** a request instead of accepting it.\n\nOnce the work has started, the cancel button is no longer shown. If plans change after that, talk to the other member or your coordinator.",
+            "body": "The member who sent the request can cancel an exchange before the work starts.\n\n1. Open the exchange.\n2. Press **Cancel exchange**.\n3. Press **Cancel exchange** again to confirm, or **Keep exchange** to go back.\n\nYou can cancel while the status is **Awaiting provider**, **Awaiting broker** or **Accepted**. The other member is told. No hours move.\n\n> Cancelling cannot be undone. If you change your mind, send a new request.\n\nIf you posted the listing, you can **Decline** a request instead of accepting it.\n\nOnce the work has started, the cancel button is no longer shown. If plans change after that, talk to the other member or your coordinator.",
             "summary": "Withdraw a request before the work starts.",
             "title": "Cancelling an exchange"
           },
           "confirm_hours": {
-            "body": "Once the work is marked complete, both of you confirm how long it took. Hours only move when both of you have confirmed.\n\n1. Open the exchange. You can find it in the **Needs Confirmation** tab of [My Exchanges](/exchanges).\n2. Press **Confirm Hours**.\n3. Check the number in **Hours**. It starts at the proposed hours. Change it if the work took more or less time.\n4. Press **Confirm Hours** in the box.\n\nWhen you have both confirmed:\n\n- If the two numbers match, or are within a quarter of an hour, the exchange completes. Close numbers are averaged.\n- If they are further apart, the exchange is marked **Disputed** and a broker reviews it.\n\nYour community may limit how far the confirmed hours can differ from the proposed hours. If you enter a number outside that range, the nearest allowed number is used.\n\nWhen the exchange completes, the hours move from the person who received help to the person who gave it.\n\n> If the person paying does not have enough hours, the exchange cannot complete. You will see a message, and no hours move.",
+            "body": "Once the work is marked complete, both of you confirm how long it took. Hours only move when both of you have confirmed.\n\n1. Open the exchange. You can find it in the **Needs confirmation** tab of [My Exchanges](/exchanges).\n2. Press **Confirm hours**.\n3. Check the number in **Hours**. It starts at the proposed hours. Change it if the work took more or less time.\n4. Press **Confirm hours** in the box.\n\nWhen you have both confirmed:\n\n- If the two numbers match, or are within a quarter of an hour, the exchange completes. Close numbers are averaged.\n- If they are further apart, the exchange is marked **Disputed** and a broker reviews it.\n\nYour community may limit how far the confirmed hours can differ from the proposed hours. If you enter a number outside that range, the nearest allowed number is used.\n\nWhen the exchange completes, the hours move from the person who received help to the person who gave it.\n\n> If the person paying does not have enough hours, the exchange cannot complete. You will see a message, and no hours move.",
             "summary": "Both members confirm the time taken, then the hours move.",
             "title": "Confirming the hours"
           },
@@ -51115,27 +51115,27 @@ export default interface Resources {
             "title": "What happens if we disagree about the hours?"
           },
           "how_exchanges_work": {
-            "body": "An exchange is how two members agree on help and record the hours. Everything is kept in one place, from the request to the final hours.\n\n1. **Request**: you open a listing, press **Request Exchange** and propose the hours.\n2. **Answer**: the member who posted the listing accepts or declines.\n3. **Approval**: if your community requires it, a broker checks the exchange. A broker is a community coordinator who helps arrange exchanges.\n4. **Start**: the member who posted the listing presses **Start Exchange** when the work begins.\n5. **Finish**: they press **Mark Complete** when it is done.\n6. **Confirm**: both of you confirm the hours worked.\n7. **Payment**: when the confirmations agree, the hours move from the person who received help to the person who gave it.\n\nYou can follow all your exchanges on [My Exchanges](/exchanges). Each exchange page has an **Exchange Timeline** showing every step.\n\n> The member who posted the listing always does the accept, start and mark complete steps, even when their listing is a request for help. On the exchange page they are shown as the **Provider**, and the person who sent the request as the **Requester**.",
+            "body": "An exchange is how two members agree on help and record the hours. Everything is kept in one place, from the request to the final hours.\n\n1. **Request**: you open a listing, press **Request exchange** and propose the hours.\n2. **Answer**: the member who posted the listing accepts or declines.\n3. **Approval**: if your community requires it, a broker checks the exchange. A broker is a community coordinator who helps arrange exchanges.\n4. **Start**: the member who posted the listing presses **Start exchange** when the work begins.\n5. **Finish**: they press **Mark complete** when it is done.\n6. **Confirm**: both of you confirm the hours worked.\n7. **Payment**: when the confirmations agree, the hours move from the person who received help to the person who gave it.\n\nYou can follow all your exchanges on [My Exchanges](/exchanges). Each exchange page has an **Exchange timeline** showing every step.\n\n> The member who posted the listing always does the accept, start and mark complete steps, even when their listing is a request for help. On the exchange page they are shown as the **Provider**, and the person who sent the request as the **Requester**.",
             "summary": "The steps from a first request to the hours moving between wallets.",
             "title": "How does an exchange work?"
           },
           "rate_exchange": {
-            "body": "After an exchange is completed, you can rate how it went.\n\n1. Open the completed exchange.\n2. Press **Rate This Exchange**.\n3. Choose one to five stars, from **Poor** to **Excellent**.\n4. Add a **Comment (optional)**.\n5. Press **Submit Rating**, or **Skip** to close without rating.\n\nYou can rate each exchange once. Ratings from both members appear under **Ratings** on the exchange page.\n\nIf your community uses reviews, you can also write a review that appears on the member's profile. See the Reviews section of this guide.",
+            "body": "After an exchange is completed, you can rate how it went.\n\n1. Open the completed exchange.\n2. Press **Rate this exchange**.\n3. Choose one to five stars, from **Poor** to **Excellent**.\n4. Add a **Comment (optional)**.\n5. Press **Submit Rating**, or **Skip** to close without rating.\n\nYou can rate each exchange once. Ratings from both members appear under **Ratings** on the exchange page.\n\nIf your community uses reviews, you can also write a review that appears on the member's profile. See the Reviews section of this guide.",
             "summary": "Give a star rating and comment after an exchange is completed.",
             "title": "Rating an exchange"
           },
           "request_exchange": {
-            "body": "1. Open the listing you are interested in.\n2. Press **Request Exchange**.\n3. Check **Proposed Hours**. It starts at the listing's estimate. Change it if you have agreed something different.\n4. Add a **Message (optional)** to explain what you need or ask a question.\n5. Press **Send Request**.\n\nThe exchange page opens. Its status shows **Awaiting Provider** until the other member answers. They get a notification about your request.\n\nIf you see **Broker Approval Required**, a coordinator must also approve the exchange before it can go ahead.\n\nAfter sending, check the hours shown on the exchange page. If they are not what you expected, cancel and send a new request.\n\nYou cannot request an exchange on your own listing. If you already have an open exchange for a listing, the listing shows **Exchange** with its status instead of **Request Exchange**.\n\n> A request can be refused because of your community's safety rules or the other member's settings. If your request fails and you are not sure why, contact your coordinator.",
+            "body": "1. Open the listing you are interested in.\n2. Press **Request exchange**.\n3. Check **Proposed hours**. It starts at the listing's estimate. Change it if you have agreed something different.\n4. Add a **Message (optional)** to explain what you need or ask a question.\n5. Press **Send request**.\n\nThe exchange page opens. Its status shows **Awaiting provider** until the other member answers. They get a notification about your request.\n\nIf you see **Broker approval required**, a coordinator must also approve the exchange before it can go ahead.\n\nAfter sending, check the hours shown on the exchange page. If they are not what you expected, cancel and send a new request.\n\nYou cannot request an exchange on your own listing. If you already have an open exchange for a listing, the listing shows **Exchange** with its status instead of **Request exchange**.\n\n> A request can be refused because of your community's safety rules or the other member's settings. If your request fails and you are not sure why, contact your coordinator.",
             "summary": "Send a request with your proposed hours and a message.",
             "title": "Requesting an exchange from a listing"
           },
           "respond_to_request": {
-            "body": "When someone requests an exchange on your listing, you get a notification. The request appears on [My Exchanges](/exchanges) with the label **Respond**.\n\n1. Open the exchange.\n2. Read the **Proposed Hours** and any **Message from requester**.\n3. Press **Accept Request** to agree, or **Decline** to say no.\n\nIf you decline, you can add a **Reason (optional)**. Then press **Decline Request**. The other member is told.\n\nAfter you accept, the status becomes **Accepted**. If your community needs broker approval, it shows **Awaiting Broker** first.\n\nTo talk about the details before you decide, press **Message** followed by the member's name, if your community has private messages.\n\n> Only accept work you are able and willing to do. It is fine to decline.",
+            "body": "When someone requests an exchange on your listing, you get a notification. The request appears on [My Exchanges](/exchanges) with the label **Respond**.\n\n1. Open the exchange.\n2. Read the **Proposed hours** and any **Message from requester**.\n3. Press **Accept request** to agree, or **Decline** to say no.\n\nIf you decline, you can add a **Reason (optional)**. Then press **Decline request**. The other member is told.\n\nAfter you accept, the status becomes **Accepted**. If your community needs broker approval, it shows **Awaiting broker** first.\n\nTo talk about the details before you decide, press **Message** followed by the member's name, if your community has private messages.\n\n> Only accept work you are able and willing to do. It is fine to decline.",
             "summary": "What to do when someone asks for an exchange on your listing.",
             "title": "Accepting or declining a request"
           },
           "start_and_complete": {
-            "body": "The member who posted the listing moves the exchange along.\n\n1. When the work begins, open the exchange and press **Start Exchange**. The status becomes **In Progress**.\n2. When the work is done, press **Mark Complete**. The status becomes **Confirm Hours**.\n\nThe other member gets a notification at each step.\n\nNext, both of you confirm how many hours the work took. No hours move until you both confirm. See \"Confirming the hours\".\n\nWhile the exchange is under way, you can keep in touch with the **Message** button on the exchange page.\n\nOnce the work has started, the exchange can no longer be cancelled from the exchange page. If plans change, talk to the other member or your coordinator.",
+            "body": "The member who posted the listing moves the exchange along.\n\n1. When the work begins, open the exchange and press **Start exchange**. The status becomes **In progress**.\n2. When the work is done, press **Mark complete**. The status becomes **Confirm hours**.\n\nThe other member gets a notification at each step.\n\nNext, both of you confirm how many hours the work took. No hours move until you both confirm. See \"Confirming the hours\".\n\nWhile the exchange is under way, you can keep in touch with the **Message** button on the exchange page.\n\nOnce the work has started, the exchange can no longer be cancelled from the exchange page. If plans change, talk to the other member or your coordinator.",
             "summary": "Tell the other member when the work begins and when it is done.",
             "title": "Starting and finishing the work"
           }
@@ -51503,7 +51503,7 @@ export default interface Resources {
             "title": "Reporting a listing"
           },
           "respond_to_listing": {
-            "body": "Open a listing to see the full details and who posted it. In the coloured panel under the description you will find these buttons:\n\n- **Request Exchange**: if your community uses exchange requests, this sends a request with the hours you propose. See the Exchanges section of this guide.\n- **Send Message**: if your community does not use exchange requests, this opens a private conversation with the member instead.\n- **Like** and **Comments**: show appreciation, or ask a question that everyone can see.\n- **Save**: keeps the listing in your [Saved](/saved) items so you can find it again.\n- **Share**: lets you share the listing or copy a link to it.\n- **Report this**: tells the community team about a problem.\n\nIf you already have an exchange for this listing, the first button shows **Exchange** and its current status instead.\n\nPress the member's name to see their profile. It shows their reviews and other listings, under **More from** followed by their name.",
+            "body": "Open a listing to see the full details and who posted it. In the coloured panel under the description you will find these buttons:\n\n- **Request exchange**: if your community uses exchange requests, this sends a request with the hours you propose. See the Exchanges section of this guide.\n- **Send message**: if your community does not use exchange requests, this opens a private conversation with the member instead.\n- **Like** and **Comments**: show appreciation, or ask a question that everyone can see.\n- **Save**: keeps the listing in your [Saved](/saved) items so you can find it again.\n- **Share**: lets you share the listing or copy a link to it.\n- **Report this**: tells the community team about a problem.\n\nIf you already have an exchange for this listing, the first button shows **Exchange** and its current status instead.\n\nPress the member's name to see their profile. It shows their reviews and other listings, under **More from** followed by their name.",
             "summary": "Ask for help, send a message, save, share or comment on a listing.",
             "title": "Responding to a listing"
           }
@@ -51570,7 +51570,7 @@ export default interface Resources {
             "title": "Removing or restoring a conversation"
           },
           "blocking_members": {
-            "body": "Blocking stops a member from contacting you.\n\n## Block someone\n\n1. Open their profile.\n2. Press the **More options** button (three dots).\n3. Choose **Block User**.\n4. Press **Block User** again to confirm.\n\nA blocked member cannot see your profile, message you or interact with your content. Their profile then shows \"You have blocked this user\".\n\n## Unblock someone\n\n1. Open [Blocked Users](/settings/blocked). You can also reach it from the **Privacy** tab in your settings.\n2. Press **Unblock** next to their name and confirm.\n\nYou can also press **Unblock User** on their profile.\n\nAfter you unblock someone, they can see your profile and message you again. You are not reconnected automatically.\n\n> If someone makes you feel unsafe, tell your coordinator as well as blocking them.",
+            "body": "Blocking stops a member from contacting you.\n\n## Block someone\n\n1. Open their profile.\n2. Press the **More options** button (three dots).\n3. Choose **Block user**.\n4. Press **Block user** again to confirm.\n\nA blocked member cannot see your profile, message you or interact with your content. Their profile then shows \"You have blocked this user\".\n\n## Unblock someone\n\n1. Open [Blocked Users](/settings/blocked). You can also reach it from the **Privacy** tab in your settings.\n2. Press **Unblock** next to their name and confirm.\n\nYou can also press **Unblock user** on their profile.\n\nAfter you unblock someone, they can see your profile and message you again. You are not reconnected automatically.\n\n> If someone makes you feel unsafe, tell your coordinator as well as blocking them.",
             "summary": "Stop a member from contacting you, and unblock them later if you wish.",
             "title": "Blocking a member"
           },
@@ -51595,7 +51595,7 @@ export default interface Resources {
             "title": "Translating messages"
           },
           "start_conversation": {
-            "body": "Messages are private conversations between you and one other member.\n\n## Start a conversation\n\n- From a profile: press **Send Message**.\n- From the Messages page: open [Messages](/messages), press **New message**, search for the member and choose them.\n- From a listing: press **Send Message**, if your community shows it. The conversation then shows which offer or request it is about.\n\n## Write and send\n\nType in **Type a message...** and press Enter, or press the send button. To start a new line, hold Shift and press Enter. A message can be up to 10,000 characters.\n\nYour conversations are listed in the **Inbox** tab. Use **Search conversations...** to find one. Inside a conversation, the magnifier button searches its messages.\n\n> If you see **Direct messaging is switched off**, your community has turned off private messages. Use exchange requests instead. If you see **Messaging restricted**, a community administrator has limited your messaging. Contact your coordinator if you think this is a mistake.",
+            "body": "Messages are private conversations between you and one other member.\n\n## Start a conversation\n\n- From a profile: press **Send message**.\n- From the Messages page: open [Messages](/messages), press **New message**, search for the member and choose them.\n- From a listing: press **Send message**, if your community shows it. The conversation then shows which offer or request it is about.\n\n## Write and send\n\nType in **Type a message...** and press Enter, or press the send button. To start a new line, hold Shift and press Enter. A message can be up to 10,000 characters.\n\nYour conversations are listed in the **Inbox** tab. Use **Search conversations...** to find one. Inside a conversation, the magnifier button searches its messages.\n\n> If you see **Direct messaging is switched off**, your community has turned off private messages. Use exchange requests instead. If you see **Messaging restricted**, a community administrator has limited your messaging. Contact your coordinator if you think this is a mistake.",
             "summary": "Start a one-to-one conversation with another member.",
             "title": "Sending a private message"
           },
@@ -51864,12 +51864,12 @@ export default interface Resources {
       "reviews": {
         "articles": {
           "leave_review": {
-            "body": "A review is a star rating, with an optional comment, that appears on a member's profile.\n\n## After an exchange\n\n1. Open [Reviews](/reviews).\n2. Choose the **Pending Reviews** tab. It lists people you have exchanged hours with and not yet reviewed.\n3. Press **Write Review**.\n4. Choose a **Rating** from one to five stars.\n5. Add a **Comment (Optional)**, up to 2,000 characters.\n6. Press **Submit Review**.\n\n## From a profile\n\n1. Open the member's profile.\n2. Press **More options** (three dots) and choose **Write Review**.\n3. Choose a rating, add a comment if you like, and press **Submit Review**.\n\nA review linked to an exchange is marked **Transaction Review**. A review written from a profile is a **General Review**.\n\nYou can review each exchange once. You can write a general review of the same member once a day.\n\n> Be fair and specific. Reviews help other members decide who to work with.",
+            "body": "A review is a star rating, with an optional comment, that appears on a member's profile.\n\n## After an exchange\n\n1. Open [Reviews](/reviews).\n2. Choose the **Pending reviews** tab. It lists people you have exchanged hours with and not yet reviewed.\n3. Press **Write review**.\n4. Choose a **Rating** from one to five stars.\n5. Add a **Comment (Optional)**, up to 2,000 characters.\n6. Press **Submit review**.\n\n## From a profile\n\n1. Open the member's profile.\n2. Press **More options** (three dots) and choose **Write review**.\n3. Choose a rating, add a comment if you like, and press **Submit review**.\n\nA review linked to an exchange is marked **Transaction review**. A review written from a profile is a **General review**.\n\nYou can review each exchange once. You can write a general review of the same member once a day.\n\n> Be fair and specific. Reviews help other members decide who to work with.",
             "summary": "Rate a member after you have exchanged hours, or write a review from their profile.",
             "title": "How do I leave a review?"
           },
           "manage_reviews": {
-            "body": "Open [Reviews](/reviews) to see three tabs:\n\n- **Reviews Received**: what other members have said about you, with your **Average Rating** and **Total Reviews**.\n- **Reviews Given**: the reviews you have written.\n- **Pending Reviews**: exchanges you can still review.\n\n## Deleting a review you wrote\n\n1. Open the **Reviews Given** tab.\n2. Press the delete button on the review.\n3. Confirm.\n\nYou cannot delete reviews that other members wrote about you. If a review about you seems unfair or unsafe, contact your coordinator.\n\n## Other members' reviews\n\nA member's reviews appear on their profile, in the **Reviews** tab. Their listings also show their rating and how many reviews they have.",
+            "body": "Open [Reviews](/reviews) to see three tabs:\n\n- **Reviews Received**: what other members have said about you, with your **Average Rating** and **Total Reviews**.\n- **Reviews Given**: the reviews you have written.\n- **Pending reviews**: exchanges you can still review.\n\n## Deleting a review you wrote\n\n1. Open the **Reviews Given** tab.\n2. Press the delete button on the review.\n3. Confirm.\n\nYou cannot delete reviews that other members wrote about you. If a review about you seems unfair or unsafe, contact your coordinator.\n\n## Other members' reviews\n\nA member's reviews appear on their profile, in the **Reviews** tab. Their listings also show their rating and how many reviews they have.",
             "summary": "See reviews you have received and written, and delete one you wrote.",
             "title": "Reading and managing your reviews"
           }
@@ -52003,22 +52003,22 @@ export default interface Resources {
       "wallet": {
         "articles": {
           "donate_hours": {
-            "body": "You can give hours away without an exchange.\n\n1. Open [your wallet](/wallet) and press **Donate**.\n2. Under **Donate to**, choose **Community Fund** or **Another Member**.\n3. If you chose **Another Member**, search for them under **Search by member** and choose them.\n4. Enter the **Amount (hours)**. Your balance is shown under the box.\n5. Add a **Message (optional)** if you like.\n6. Press **Donate**.\n\nYou will see **Donation sent!**. Donations cannot be taken back.\n\n## About the Community Fund\n\nThe **Community Fund** is a shared pool of hours for your community. The fund card on your wallet shows how many hours it holds. You can also press **Donate** on that card.\n\nYour community's administrators decide how the fund is used. They can give hours from it to members.",
+            "body": "You can give hours away without an exchange.\n\n1. Open [your wallet](/wallet) and press **Donate**.\n2. Under **Donate to**, choose **Community fund** or **Another member**.\n3. If you chose **Another member**, search for them under **Search by member** and choose them.\n4. Enter the **Amount (hours)**. Your balance is shown under the box.\n5. Add a **Message (optional)** if you like.\n6. Press **Donate**.\n\nYou will see **Donation sent!**. Donations cannot be taken back.\n\n## About the Community Fund\n\nThe **Community fund** is a shared pool of hours for your community. The fund card on your wallet shows how many hours it holds. You can also press **Donate** on that card.\n\nYour community's administrators decide how the fund is used. They can give hours from it to members.",
             "summary": "Give hours to your community fund or to another member.",
             "title": "Donating or gifting hours"
           },
           "hours_without_exchange_requests": {
-            "body": "Some communities do not use exchange requests. In that case, listings show **Send Message** instead of **Request Exchange**.\n\nHere is how to record an exchange then:\n\n1. Find a listing and press **Send Message** to agree the details, including the number of hours.\n2. Do the exchange.\n3. The person who received the help pays. They open [their wallet](/wallet), press **Send Credits**, choose the member, enter the hours and add a short description.\n\nYou can also send hours from the member's profile, with **Send Credits**.\n\n> Only send hours for time that has been given. If something went wrong, talk to the other member or your coordinator before paying.",
+            "body": "Some communities do not use exchange requests. In that case, listings show **Send Message** instead of **Request exchange**.\n\nHere is how to record an exchange then:\n\n1. Find a listing and press **Send Message** to agree the details, including the number of hours.\n2. Do the exchange.\n3. The person who received the help pays. They open [their wallet](/wallet), press **Send credits**, choose the member, enter the hours and add a short description.\n\nYou can also send hours from the member's profile, with **Send credits**.\n\n> Only send hours for time that has been given. If something went wrong, talk to the other member or your coordinator before paying.",
             "summary": "If your community does not use exchange requests, pay for help from your wallet.",
             "title": "Recording hours when there are no exchange requests"
           },
           "insufficient_balance": {
-            "body": "\"Insufficient balance\" means you do not have enough hours for what you are trying to do.\n\nYou may see it when you:\n\n- send hours with **Send Credits** (the form shows **Exceeds available balance**);\n- donate hours;\n- confirm hours at the end of an exchange where you are the one paying;\n- are a receiver in a group exchange when it is completed.\n\nNothing is taken from your wallet when this happens.\n\n## What you can do\n\n- Check **Your Balance** in [your wallet](/wallet).\n- Send or agree a smaller number of hours.\n- Earn hours by helping someone, for example by posting an offer.\n- Ask your coordinator if you think your balance is wrong.",
+            "body": "\"Insufficient balance\" means you do not have enough hours for what you are trying to do.\n\nYou may see it when you:\n\n- send hours with **Send credits** (the form shows **Exceeds available balance**);\n- donate hours;\n- confirm hours at the end of an exchange where you are the one paying;\n- are a receiver in a group exchange when it is completed.\n\nNothing is taken from your wallet when this happens.\n\n## What you can do\n\n- Check **Your balance** in [your wallet](/wallet).\n- Send or agree a smaller number of hours.\n- Earn hours by helping someone, for example by posting an offer.\n- Ask your coordinator if you think your balance is wrong.",
             "summary": "You do not have enough hours for what you are trying to do. Nothing has been taken.",
             "title": "What does \"insufficient balance\" mean?"
           },
           "send_hours": {
-            "body": "You send hours to pay a member for time they gave you.\n\n1. Open [your wallet](/wallet).\n2. Press **Send Credits**.\n3. In **Search by name or username...**, type the member's name and choose them from the list.\n4. Enter the **Amount (hours)**. You can use part-hours, such as 1.5.\n5. If you like, choose a **Category** and add a **Description**, such as what the help was.\n6. Check the summary. It shows who you are paying and your new balance.\n7. Press **Send Credits**.\n\nYou will see **Transfer successful**. The hours appear in both wallets.\n\nYou can also press **Send Credits** on a member's profile. The form opens with that member already chosen.\n\nYou cannot send more hours than you have. Your community may also set a limit for a single transfer.\n\n> Check the name and amount carefully before you send. You cannot cancel a transfer yourself. If you make a mistake, contact your coordinator.",
+            "body": "You send hours to pay a member for time they gave you.\n\n1. Open [your wallet](/wallet).\n2. Press **Send credits**.\n3. In **Search by name or username...**, type the member's name and choose them from the list.\n4. Enter the **Amount (hours)**. You can use part-hours, such as 1.5.\n5. If you like, choose a **Category** and add a **Description**, such as what the help was.\n6. Check the summary. It shows who you are paying and your new balance.\n7. Press **Send credits**.\n\nYou will see **Transfer successful**. The hours appear in both wallets.\n\nYou can also press **Send credits** on a member's profile. The form opens with that member already chosen.\n\nYou cannot send more hours than you have. Your community may also set a limit for a single transfer.\n\n> Check the name and amount carefully before you send. You cannot cancel a transfer yourself. If you make a mistake, contact your coordinator.",
             "summary": "Pay a member for time they gave you, straight from your wallet.",
             "title": "How do I send hours to someone?"
           },
@@ -52028,12 +52028,12 @@ export default interface Resources {
             "title": "Do new members get a starting balance?"
           },
           "transaction_history": {
-            "body": "**Transaction History** on [your wallet](/wallet) lists the hours that have come in and gone out.\n\nEach entry shows a description, the other member and the amount. Hours you received show with a plus sign. Hours you sent show with a minus sign.\n\nUse the tabs to filter the list: **All**, **Earned**, **Spent** or **Pending**.\n\nPress **Load More** to see older entries.\n\nPress **Export** to download your history as a spreadsheet file (CSV). It includes the date, type, amount, description, other member and status. Only the entries loaded on screen, in the tab you have chosen, are included. For your full history, choose **All**, press **Load More** until no older entries appear, then press **Export**.\n\n## Group exchanges\n\nWhen a group exchange is completed, each payment appears as its own entry, starting \"Group exchange:\" followed by the exchange title. You can see exactly who paid whom.",
+            "body": "**Transaction history** on [your wallet](/wallet) lists the hours that have come in and gone out.\n\nEach entry shows a description, the other member and the amount. Hours you received show with a plus sign. Hours you sent show with a minus sign.\n\nUse the tabs to filter the list: **All**, **Earned**, **Spent** or **Pending**.\n\nPress **Load more** to see older entries.\n\nPress **Export** to download your history as a spreadsheet file (CSV). It includes the date, type, amount, description, other member and status. Only the entries loaded on screen, in the tab you have chosen, are included. For your full history, choose **All**, press **Load more** until no older entries appear, then press **Export**.\n\n## Group exchanges\n\nWhen a group exchange is completed, each payment appears as its own entry, starting \"Group exchange:\" followed by the exchange title. You can see exactly who paid whom.",
             "summary": "See every payment in and out of your wallet, filter it and download it.",
             "title": "Your transaction history"
           },
           "wallet_overview": {
-            "body": "Your wallet holds your time credits. One time credit is one hour.\n\nOpen [Wallet](/wallet) to see:\n\n- **Your Balance**, in hours.\n- Totals for **Earned**, **Spent** and **Pending**.\n- The **Send Credits** and **Donate** buttons.\n- The **Community Fund**, a shared pool of hours for your community.\n- Your **Transaction History**.\n\nYou earn hours when you help someone and they pay you, through an exchange or a transfer. You spend hours when someone helps you.\n\nPress **Refresh** to load the latest figures.\n\nIf you manage an organisation in your community, its hours are kept separately, in the organisation's own wallet on its dashboard.",
+            "body": "Your wallet holds your time credits. One time credit is one hour.\n\nOpen [Wallet](/wallet) to see:\n\n- **Your balance**, in hours.\n- Totals for **Earned**, **Spent** and **Pending**.\n- The **Send credits** and **Donate** buttons.\n- The **Community fund**, a shared pool of hours for your community.\n- Your **Transaction history**.\n\nYou earn hours when you help someone and they pay you, through an exchange or a transfer. You spend hours when someone helps you.\n\nPress **Refresh** to load the latest figures.\n\nIf you manage an organisation in your community, its hours are kept separately, in the organisation's own wallet on its dashboard.",
             "summary": "Where to see your balance, send hours and find your history.",
             "title": "Your wallet at a glance"
           }
@@ -54669,13 +54669,13 @@ export default interface Resources {
     "detail_renewed_count_plural": "Renewed {{count}} times",
     "detail_report": "Report this",
     "detail_reported": "Reported",
-    "detail_request_exchange": "Request Exchange",
+    "detail_request_exchange": "Request exchange",
     "detail_request_eyebrow": "Community request",
     "detail_requested_by": "Requested by",
     "detail_save": "Save",
     "detail_save_aria": "Save {{title}}",
     "detail_saved": "Saved",
-    "detail_send_message": "Send Message",
+    "detail_send_message": "Send message",
     "detail_service_location": "Service location",
     "detail_share": "Share",
     "detail_skills": "Skills",
@@ -57646,8 +57646,8 @@ export default interface Resources {
       "no_achievements": "No achievements yet",
       "no_achievements_other": "This user hasn't earned any achievements yet",
       "no_achievements_own": "Start participating to earn badges and achievements!",
-      "view_all": "View All",
-      "view_badges": "View Available Badges"
+      "view_all": "View all",
+      "view_badges": "View available badges"
     },
     "anonymous": "Anonymous",
     "aria": {
@@ -57664,41 +57664,41 @@ export default interface Resources {
       "user_listings": "User listings",
       "user_reviews": "User reviews"
     },
-    "back_to_explore": "Back to Explore",
+    "back_to_explore": "Back to explore",
     "badges": "Badges",
     "bio": "About",
     "block_cancel": "Cancel",
-    "block_confirm": "Block User",
-    "block_failed": "Failed to block user",
+    "block_confirm": "Block user",
+    "block_failed": "We couldn't block that member. Please try again.",
     "block_modal_description": "They won't be able to see your profile, message you, or interact with your content.",
     "block_modal_title": "Block {{name}}?",
-    "block_user": "Block User",
+    "block_user": "Block user",
     "blocked_by_you": "You have blocked this user",
     "blocked_success": "User blocked",
-    "browse_members": "Browse Members",
-    "cancel_request": "Cancel Request",
+    "browse_members": "Browse members",
+    "cancel_request": "Cancel request",
     "connect": "Connect",
     "connected": "Connected",
     "create_listing": "Create an offer or request",
-    "credits": "Time Credits",
+    "credits": "Time credits",
     "credits_sent_success": "Credits sent to {{name}}",
     "delete_failed": "Delete failed",
     "disconnect_cancel": "Cancel",
-    "disconnect_confirm": "Remove Connection",
+    "disconnect_confirm": "Remove connection",
     "disconnect_confirm_description": "This will remove {{name}} from your connections. You'll need to send a new request to reconnect.",
     "disconnect_confirm_title": "Remove connection?",
-    "edit_profile": "Edit Profile",
-    "feed_error": "Failed to load activity",
+    "edit_profile": "Edit profile",
+    "feed_error": "We couldn't load this member's activity.",
     "for_listing": "For: {{title}}",
     "form": {
-      "bio": "About Me",
-      "first_name": "First Name",
-      "last_name": "Last Name",
+      "bio": "About me",
+      "first_name": "First name",
+      "last_name": "Last name",
       "location": "Location",
       "phone": "Phone",
-      "save": "Save Changes"
+      "save": "Save changes"
     },
-    "hide_failed": "Failed to hide",
+    "hide_failed": "We couldn't hide that. Please try again.",
     "hours_abbrev": "{{hours}}h",
     "identity_verified_lock": "Your name is locked because your identity has been verified.",
     "impact": {
@@ -57707,14 +57707,14 @@ export default interface Resources {
     "interests": "Interests",
     "joined": "Joined {{date}}",
     "level": "Lvl {{level}}",
-    "like_failed": "Failed to update like",
+    "like_failed": "We couldn't save your reaction. Please try again.",
     "listing_image_alt": "Photo for this offer or request",
     "listing_type": {
       "offer": "Offering",
       "request": "Requesting"
     },
     "listings": "Offers and requests",
-    "load_error": "Failed to load profile. Please try again.",
+    "load_error": "Try again in a moment.",
     "load_more": "Load more",
     "loading": "Loading profile...",
     "location_title": "Location",
@@ -57735,7 +57735,7 @@ export default interface Resources {
     "no_reviews_other": "This member has not received any reviews yet",
     "no_reviews_own": "Complete exchanges to receive reviews from other members",
     "not_available_abbrev": "n/a",
-    "not_found": "Profile not found",
+    "not_found": "We can't find that profile",
     "not_found_desc": "This user profile does not exist or has been removed",
     "page_meta": {
       "description": "{{name}}'s member profile",
@@ -57759,7 +57759,7 @@ export default interface Resources {
       "characters_count_other": "{{count}}/{{max}} characters",
       "comment_label": "Comment (Optional)",
       "comment_placeholder": "Share details about your experience...",
-      "general_review": "General Review",
+      "general_review": "General review",
       "rate_star": "Rate {{star}} out of 5 stars",
       "rating_excellent": "Excellent",
       "rating_fair": "Fair",
@@ -57767,19 +57767,19 @@ export default interface Resources {
       "rating_label": "Rating",
       "rating_poor": "Poor",
       "rating_required": "*",
-      "rating_very_good": "Very Good",
-      "submit": "Submit Review",
-      "submit_failed_fallback": "Failed to submit review",
+      "rating_very_good": "Very good",
+      "submit": "Submit review",
+      "submit_failed_fallback": "We couldn't send your review. Please try again.",
       "subtitle": "Share your experience with {{name}}",
-      "title": "Write a Review",
-      "transaction_review": "Transaction Review"
+      "title": "Write a review",
+      "transaction_review": "Transaction review"
     },
     "reviews": "Reviews",
     "reviews_count_one": "{{count}} review",
     "reviews_count_other": "{{count}} reviews",
     "say_hello": "Say hello",
-    "send_credits": "Send Credits",
-    "send_message": "Send Message",
+    "send_credits": "Send credits",
+    "send_message": "Send message",
     "settings": "Settings",
     "show_less": "Show less",
     "show_more_skills": "Show {{count}} more",
@@ -57790,8 +57790,8 @@ export default interface Resources {
       "active_listings": "Active offers and requests",
       "events": "Events",
       "groups": "Groups",
-      "hours_given": "Hours Given",
-      "hours_received": "Hours Received"
+      "hours_given": "Hours given",
+      "hours_received": "Hours received"
     },
     "tabs": {
       "about": "About",
@@ -57805,25 +57805,25 @@ export default interface Resources {
     "toast": {
       "connected": "You are now connected",
       "connected_title": "Connected",
-      "error": "Something went wrong",
+      "error": "That didn't work. Please try again.",
       "failed": "Failed",
       "removed": "Connection removed",
       "removed_title": "Removed",
       "request_sent": "Connection request sent successfully",
       "request_sent_title": "Request sent",
-      "review_submit_failed": "Failed to submit review. Please try again.",
+      "review_submit_failed": "We couldn't send your review. Please try again.",
       "review_submitted": "Review submitted successfully!",
       "select_rating": "Please select a rating"
     },
-    "try_again": "Try Again",
-    "unable_to_load": "Unable to Load Profile",
-    "unblock_failed": "Failed to unblock user",
+    "try_again": "Try again",
+    "unable_to_load": "We couldn't load this profile",
+    "unblock_failed": "We couldn't unblock that member. Please try again.",
     "unblock_to_interact": "Unblock them to send messages or reviews.",
-    "unblock_user": "Unblock User",
+    "unblock_user": "Unblock user",
     "unblocked_success": "User unblocked",
     "view_all_listings": "View all listings",
     "vote_failed": "Vote failed",
-    "write_review": "Write Review"
+    "write_review": "Write review"
   },
   "project_announcements": {
     "back_to_projects": "Back to projects",
@@ -63769,14 +63769,14 @@ export default interface Resources {
       "transaction_detail": "{{direction}} {{amount}} hours {{name}}",
       "transaction_filters": "Transaction filters"
     },
-    "available_balance": "Available Balance",
+    "available_balance": "Available balance",
     "balance": "Balance",
     "cancel": "Cancel",
     "category_select": {
       "label": "Category",
       "placeholder": "Select a category"
     },
-    "community_fund": "Community Fund",
+    "community_fund": "Community fund",
     "community_fund_deposited": "Deposited",
     "community_fund_desc": "Shared time credit pool",
     "community_fund_hours": "hours available",
@@ -63786,7 +63786,7 @@ export default interface Resources {
       "amount": "Amount",
       "date": "Date",
       "description": "Description",
-      "other_party": "Other Party",
+      "other_party": "Other party",
       "received": "Received",
       "sent": "Sent",
       "status": "Status",
@@ -63798,16 +63798,16 @@ export default interface Resources {
     "donate_amount_placeholder": "1",
     "donate_balance_info": "Your balance: {{balance}} hours",
     "donate_community_desc": "Support your community's time credit pool",
-    "donate_community_fund": "Community Fund",
+    "donate_community_fund": "Community fund",
     "donate_confirm": "Donate",
-    "donate_credits": "Donate Credits",
-    "donate_error": "An error occurred. Please try again.",
+    "donate_credits": "Donate credits",
+    "donate_error": "That didn't work. Please try again.",
     "donate_failed": "Donation failed",
     "donate_insufficient": "Insufficient balance",
     "donate_insufficient_desc": "You do not have enough credits",
-    "donate_invalid_amount": "Invalid amount",
+    "donate_invalid_amount": "That amount won't work",
     "donate_invalid_amount_desc": "Please enter an amount greater than 0",
-    "donate_member": "Another Member",
+    "donate_member": "Another member",
     "donate_member_desc": "Gift credits directly to another member",
     "donate_message": "Message (optional)",
     "donate_message_placeholder": "Add a note with your donation...",
@@ -63819,16 +63819,16 @@ export default interface Resources {
     "donate_success": "Donation sent!",
     "donate_success_desc": "Thank you for your generosity.",
     "donate_to": "Donate to",
-    "donate_to_community": "Donate to Community Fund",
+    "donate_to_community": "Donate to community fund",
     "donated": "Donated",
     "empty": "No transactions yet",
     "error": {
-      "load_balance": "Failed to load wallet balance",
-      "load_community_fund": "Could not load community fund",
-      "load_wallet": "Failed to load wallet data. Please try again.",
+      "load_balance": "Your balance is safe. Try again in a moment.",
+      "load_community_fund": "We couldn't load the community fund.",
+      "load_wallet": "We couldn't load your transactions. Try again in a moment.",
       "session_expired": "Your session has expired. Please log in again.",
       "transfer_failed": "Transfer failed. Please try again.",
-      "unexpected": "An unexpected error occurred. Please try again."
+      "unexpected": "That didn't finish. Check your balance before you try again."
     },
     "exceeds_balance": "Exceeds available balance",
     "export": "Export",
@@ -63838,16 +63838,16 @@ export default interface Resources {
       "pending": "Pending",
       "spent": "Spent"
     },
-    "history": "Transaction History",
+    "history": "Transaction history",
     "hours": "Hours",
     "hours_value": "{{count}}h",
     "hours_value_one": "{{count}}h",
     "hours_value_other": "{{count}}h",
-    "load_more": "Load More",
+    "load_more": "Load more",
     "new_balance_after": "Your new balance will be {{balance}} hours",
     "no_filtered_transactions": "No matching transactions",
     "no_filtered_transactions_desc": "Try a different filter to see more wallet activity.",
-    "no_members_found": "No members found",
+    "no_members_found": "Nobody matches that name. Check the spelling and try again.",
     "no_pending": "No pending transactions",
     "no_transactions": "No transactions",
     "no_transactions_desc": "Your transaction history will appear here",
@@ -63856,7 +63856,7 @@ export default interface Resources {
     "pending_in": "+{{count}}h pending",
     "pending_in_one": "+{{count}}h pending",
     "pending_in_other": "+{{count}}h pending",
-    "pending_reviews": "Pending Reviews",
+    "pending_reviews": "Pending reviews",
     "rating": {
       "comment_label": "Comment (optional)",
       "comment_placeholder": "Share your experience...",
@@ -63867,19 +63867,19 @@ export default interface Resources {
       "prompt": "How was your exchange?",
       "prompt_with_name": "How was your exchange with {{name}}?",
       "skip": "Skip",
-      "submit": "Submit Rating",
-      "title": "Rate Your Exchange",
-      "very_good": "Very Good"
+      "submit": "Submit rating",
+      "title": "Rate your exchange",
+      "very_good": "Very good"
     },
     "received": "Received",
     "recipient": "Recipient",
     "refresh": "Refresh",
     "remove_recipient": "Remove recipient",
-    "review": "Leave Review",
+    "review": "Leave review",
     "search_placeholder": "Search by name or username...",
     "search_recipient": "Search recipient",
     "search_results": "Search results",
-    "send_credits": "Send Credits",
+    "send_credits": "Send credits",
     "sent": "Sent",
     "signed_hours_value": "{{sign}}{{count}}h",
     "signed_hours_value_one": "{{sign}}{{count}}h",
@@ -63901,13 +63901,12 @@ export default interface Resources {
       "spent": "Spent"
     },
     "subtitle": "Track your time credits and transactions",
-    "time_credits": "Time Credits",
+    "time_credits": "Time credits",
     "title": "Wallet",
     "toast": {
       "exported": "Exported",
       "exported_desc": "Transactions exported to CSV",
-      "load_error": "Error",
-      "load_more_error": "Failed to load more transactions",
+      "load_error": "We couldn't load more transactions. Try again in a moment.",
       "no_data": "No data",
       "no_export": "No transactions to export",
       "rating_required": "Rating required",
@@ -63915,18 +63914,18 @@ export default interface Resources {
       "rating_submitted": "Rating submitted",
       "rating_submitted_desc": "Thank you for your feedback!",
       "recipient_load_failed": "Could not load recipient. Please search manually.",
-      "submit_error_desc": "An error occurred. Please try again.",
-      "submit_failed": "Failed to submit",
+      "submit_error_desc": "That didn't work. Please try again.",
+      "submit_failed": "We couldn't send your rating",
       "transfer_desc": "Sent {{amount}} hours to {{recipient}}",
       "transfer_success": "Transfer successful",
       "try_again": "Please try again"
     },
     "transaction_fallback": "Wallet transaction",
     "transactions": "Transactions",
-    "transfer": "Transfer Credits",
+    "transfer": "Transfer credits",
     "transfer_summary": "You are about to send {{amount}} {{unit}} to {{name}}",
-    "try_again": "Try Again",
-    "unable_to_load": "Unable to Load Wallet",
+    "try_again": "Try again",
+    "unable_to_load": "We couldn't load your wallet",
     "validation": {
       "insufficient_balance": "Insufficient balance",
       "max_transfer": "Maximum transfer is {{max}} hours",
@@ -63934,6 +63933,6 @@ export default interface Resources {
       "valid_amount": "Please enter a valid amount"
     },
     "venue_pass": "My venue pass",
-    "your_balance": "Your Balance"
+    "your_balance": "Your balance"
   }
 }
