@@ -88,6 +88,7 @@ nav:
       - Who the platform is for: PRODUCT-AUDIENCE.md
       - Safeguarding & consent: SAFEGUARDING-AND-CONSENT.md
       - Versioning policy: VERSIONING.md
+      - Voice and tone: VOICE-AND-TONE.md
       - CI & quality gates: CI.md
       - Testing: TESTING.md
       - Safari & macOS testing: REAL-SAFARI-TESTING.md

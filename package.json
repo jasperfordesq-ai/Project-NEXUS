@@ -5,6 +5,7 @@
     "check:a11y:gates": "node scripts/check-accessibility-readiness-gates.mjs",
     "check:age-declaration": "node scripts/check-age-declaration.mjs",
     "check:i18n:baseline": "node scripts/check-i18n-gap-regression.mjs",
+    "check:cold-wording": "node scripts/check-cold-wording.mjs",
     "check:i18n:json-integrity": "node scripts/check-i18n-json-integrity.mjs",
     "check:i18n:question-marks": "node scripts/check-i18n-question-mark-damage.mjs",
     "check:i18n:drift": "node scripts/check-i18n-drift.mjs",

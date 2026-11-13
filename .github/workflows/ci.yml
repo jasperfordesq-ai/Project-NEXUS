@@ -1330,6 +1330,14 @@ jobs:
         run: npm run check:i18n:baseline
         continue-on-error: true
 
+      # Shrink-only ceiling on member-facing English messages that read cold
+      # ("Failed to…", "Invalid…", bare "…is required"). docs/VOICE-AND-TONE.md
+      # is the standard; .github/cold-wording-baseline.json holds the ceiling.
+      # BLOCKING: a new cold message fails here. Reads locale JSON only — no
+      # install, no database.
+      - name: "BLOCKING: No new cold member-facing wording"
+        run: npm run check:cold-wording
+
       - name: "BLOCKING: Prevent stub placeholder translation values"
         run: node scripts/check-i18n-stubs.mjs
 
