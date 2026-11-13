@@ -86,7 +86,7 @@ describe('MessagesPage — group chats', () => {
   it('opens a newly created group in the group chat route, never the one-to-one route', async () => {
     render(<MessagesPage />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'New Group' }));
+    fireEvent.click(screen.getByRole('button', { name: "New group" }));
     fireEvent.click(await screen.findByRole('button', { name: 'stub-create-group' }));
 
     expect(mockNavigate).toHaveBeenCalledWith('/test/messages/group/77');
@@ -126,6 +126,6 @@ describe('MessagesPage — group chats', () => {
     render(<MessagesPage />);
     fireEvent.click(screen.getByRole('tab', { name: /Groups/ }));
 
-    await waitFor(() => expect(screen.getByText('Could not load your group chats.')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("We couldn't load your group chats.")).toBeInTheDocument());
   });
 });

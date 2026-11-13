@@ -125,7 +125,7 @@ describe('GroupMembersModal', () => {
     expect(within(dialog).queryByRole('textbox', { name: 'Search for a member...' })).not.toBeInTheDocument();
     expect(within(dialog).queryByRole('button', { name: /Remove .* from the group/ })).not.toBeInTheDocument();
     expect(within(dialog).getByText('Only group admins can add or remove members.')).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Leave Group' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: "Leave group" })).toBeInTheDocument();
   });
 
   it('lets a member leave after confirming', async () => {
@@ -136,7 +136,7 @@ describe('GroupMembersModal', () => {
     const dialog = await screen.findByRole('dialog');
     await within(dialog).findByText('Cara Member');
 
-    await user.click(within(dialog).getByRole('button', { name: 'Leave Group' }));
+    await user.click(within(dialog).getByRole('button', { name: "Leave group" }));
     expect(within(dialog).getByText("Are you sure you want to leave this group? You won't receive new messages.")).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Yes, leave' }));
 
@@ -161,6 +161,6 @@ describe('GroupMembersModal', () => {
     renderModal();
     const dialog = await screen.findByRole('dialog');
 
-    expect(await within(dialog).findByText('Could not load the group members. Please try again.')).toBeInTheDocument();
+    expect(await within(dialog).findByText("We couldn't load the group's members. Please try again.")).toBeInTheDocument();
   });
 });

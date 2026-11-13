@@ -184,7 +184,7 @@ describe('GroupConversationPage', () => {
     fireEvent.change(box, { target: { value: 'Hello' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
 
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to send message. Please try again.'));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("We couldn't send your message. Please try again."));
     expect(box).toHaveValue('Hello');
   });
 

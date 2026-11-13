@@ -106,7 +106,7 @@ describe('MessagesPage', () => {
 
   it('shows New Message button', () => {
     render(<MessagesPage />);
-    expect(screen.getByText('New Message')).toBeInTheDocument();
+    expect(screen.getByText("New message")).toBeInTheDocument();
   });
 
   it('shows search input', () => {
