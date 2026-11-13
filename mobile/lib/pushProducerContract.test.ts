@@ -18,7 +18,6 @@ type StaticRouteExpectation = { notification_link: string; native_href: string }
  */
 const STATIC_ROUTE_EXPECTATIONS: Record<string, StaticRouteExpectation> = {
   '/achievements': { notification_link: '/achievements', native_href: '/(modals)/achievements' },
-  '/admin/federation': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
   '/admin/identity-verifications': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
   '/admin/jobs/moderation': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
   '/admin/marketplace/cases': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
@@ -46,6 +45,7 @@ const STATIC_ROUTE_EXPECTATIONS: Record<string, StaticRouteExpectation> = {
   '/matches?highlight=listing-1': { notification_link: '/matches?highlight=listing-1', native_href: '/(modals)/matches?highlight=listing-1' },
   '/messages': { notification_link: '/messages', native_href: '/(tabs)/messages' },
   '/notifications': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
+  '/partner-timebanks/credit-agreements': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
   '/polls/1': { notification_link: '/polls/1', native_href: '/(modals)/feed-item-detail?type=poll&id=1' },
   '/premium/manage': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
   '/reviews': { notification_link: '/reviews', native_href: '/(modals)/reviews' },

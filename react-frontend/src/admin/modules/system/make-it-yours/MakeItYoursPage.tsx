@@ -145,6 +145,8 @@ export function MakeItYoursPage() {
     try {
       const res = await general.saveHeaderColors();
       if (!res.ok) {
+        // admin-i18n-ignore: already translated — useAdminSettingsForm returns the
+        // AdminConfigController __() refusal or its own t() fallback.
         toast.error(res.error ?? t('system.save_failed'));
         return;
       }

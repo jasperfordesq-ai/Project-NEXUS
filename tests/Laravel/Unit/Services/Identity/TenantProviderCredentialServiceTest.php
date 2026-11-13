@@ -75,10 +75,24 @@ class TenantProviderCredentialServiceTest extends TestCase
 
     public function test_delete_returns_false_when_nothing_deleted(): void
     {
-        $stmt = \Mockery::mock();
-        $stmt->shouldReceive('rowCount')->andReturn(0);
-        DB::shouldReceive('statement')->andReturn($stmt);
+        // delete() uses DB::delete(), which returns the affected-row count.
+        // (It used DB::statement()->rowCount() until 13 Nov 2026; statement()
+        // returns a bool, so that call failed on every real request.)
+        DB::shouldReceive('delete')
+            ->once()
+            ->with(\Mockery::type('string'), [2, 'stripe_identity'])
+            ->andReturn(0);
 
         $this->assertFalse(TenantProviderCredentialService::delete(2, 'stripe_identity'));
+    }
+
+    public function test_delete_returns_true_when_a_row_is_deleted(): void
+    {
+        DB::shouldReceive('delete')
+            ->once()
+            ->with(\Mockery::type('string'), [2, 'stripe_identity'])
+            ->andReturn(1);
+
+        $this->assertTrue(TenantProviderCredentialService::delete(2, 'stripe_identity'));
     }
 }

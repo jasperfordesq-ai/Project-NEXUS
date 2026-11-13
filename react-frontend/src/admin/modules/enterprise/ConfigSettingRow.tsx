@@ -32,6 +32,7 @@ function timeZoneNames(current: string): string[] {
 }
 
 /** "America/New_York" reads better as "America/New York"; the saved value keeps the underscore. */
+// admin-i18n-ignore: IANA time-zone identifier, invariant technical text (no translation exists)
 const zoneLabel = (zone: string) => zone.replace(/_/g, ' ');
 
 export function ConfigSettingRow({ form, settingKey }: { form: SystemConfigFormState; settingKey: string }) {

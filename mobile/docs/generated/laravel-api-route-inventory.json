@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2839,
-  "api_route_rows": 2804,
-  "distinct_api_paths": 2338,
+  "total_registered_routes": 2841,
+  "api_route_rows": 2806,
+  "distinct_api_paths": 2340,
   "route_source_fingerprint": {
-    "digest": "6164b353192cca253f6c7c81aaee103a7eb411ce443cb8f3cf9c34fe9d885712",
+    "digest": "95ee4f0c69916c4016dac900f7e9542bca6ad9c7687958f73bde2f3daf0fdd01",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "4acf1c1564a15a640db8617b1056e2ed53293cffc78ca95c84fefb54d6e4423d"
+        "sha256": "a6f87f080b4bd8878f3c580a12a673cf877128a77c16e3ee22aca2ad056f9f73"
       },
       {
         "file": "routes/channels.php",
@@ -1781,6 +1781,9 @@
     "/api/v2/admin/federation/partnerships/{id}": [
       "GET"
     ],
+    "/api/v2/admin/federation/partnerships/{id}/accept-counter": [
+      "POST"
+    ],
     "/api/v2/admin/federation/partnerships/{id}/approve": [
       "POST"
     ],
@@ -1801,6 +1804,9 @@
     ],
     "/api/v2/admin/federation/partnerships/{id}/stats": [
       "GET"
+    ],
+    "/api/v2/admin/federation/partnerships/{id}/suspend": [
+      "POST"
     ],
     "/api/v2/admin/federation/partnerships/{id}/terminate": [
       "POST"

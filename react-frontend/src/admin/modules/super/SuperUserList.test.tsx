@@ -49,6 +49,7 @@ const USERS = [
     is_super_admin: false,
     is_tenant_super_admin: true,
     last_login_at: '2026-01-01T10:00:00Z',
+    created_at: '2025-06-01T09:00:00Z',
   },
   {
     id: 2,
@@ -61,6 +62,7 @@ const USERS = [
     is_super_admin: false,
     is_tenant_super_admin: false,
     last_login_at: null,
+    created_at: '2025-07-15T09:00:00Z',
   },
 ];
 
