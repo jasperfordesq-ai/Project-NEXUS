@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile API Consumer Ledger
 
-Last reviewed: 2026-10-21
+Last reviewed: 2026-11-13
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run api:ledger` from `mobile/`.
@@ -14,17 +14,17 @@ Every Laravel endpoint the Expo client calls, and whether the API still exposes 
 The Jest suite mocks the HTTP client, so it cannot detect a renamed or deleted route.
 This ledger is the compensating control.
 
-Verified against: `docs/generated/laravel-api-route-inventory.json (2307 distinct API paths)`
+Verified against: `docs/generated/laravel-api-route-inventory.json (2340 distinct API paths)`
 
 > Not verified against `openapi.json`. That file documents only a subset of the
 > application routes and has produced false drift findings for working endpoints.
 
 | Measure | Count |
 | --- | --- |
-| API modules read | 67 |
-| Call sites | 771 |
-| Distinct method + endpoint pairs | 616 |
-| Verified against openapi.json | 616 |
+| API modules read | 71 |
+| Call sites | 784 |
+| Distinct method + endpoint pairs | 627 |
+| Verified against openapi.json | 627 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 103 |
@@ -99,47 +99,47 @@ and the places a contract test earns the most.
 | eventTickets.ts:138 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTickets.ts:149 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTickets.ts:161 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:954 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1130 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1148 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1160 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1172 | DELETE | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1186 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1208 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1231 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1242 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1256 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1269 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1292 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1298 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1314 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1330 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1341 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1347 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1353 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1359 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1371 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1381 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1396 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1413 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1419 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1428 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1437 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1448 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1459 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1465 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1516 | POST | endpoint literal nests a template inside an interpolation and could not be resolved statically |
-| feed.ts:288 | GET | variable "path" is not a literal endpoint in this module |
+| events.ts:964 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1140 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1158 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1170 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1182 | DELETE | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1196 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1218 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1241 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1252 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1266 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1279 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1302 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1308 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1324 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1340 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1351 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1357 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1363 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1369 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1381 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1391 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1406 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1423 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1429 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1438 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1447 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1458 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1469 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1475 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1526 | POST | endpoint literal nests a template inside an interpolation and could not be resolved statically |
+| feed.ts:298 | GET | variable "path" is not a literal endpoint in this module |
 | ideation.ts:211 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | ideation.ts:212 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | ideation.ts:229 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | ideation.ts:230 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | ideation.ts:255 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | ideation.ts:256 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| marketplace.ts:614 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| marketplace.ts:615 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| marketplace.ts:888 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| marketplace.ts:889 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| marketplace.ts:619 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| marketplace.ts:620 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| marketplace.ts:905 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| marketplace.ts:906 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 
 ## Verified endpoints
 
@@ -149,30 +149,33 @@ and the places a contract test earns the most.
 | POST | `/api/ai/chat/feedback` | chat.ts:131 |
 | GET | `/api/ai/chat/starters` | chat.ts:121 |
 | GET | `/api/ai/conversations/{param}` | chat.ts:117 |
-| POST | `/api/auth/forgot-password` | auth.ts:240 |
-| POST | `/api/auth/login` | auth.ts:217 |
-| POST | `/api/auth/logout` | auth.ts:316 |
-| POST | `/api/auth/refresh-token` | auth.ts:330 |
-| POST | `/api/auth/resend-verification-by-email` | auth.ts:268 |
-| POST | `/api/auth/reset-password` | auth.ts:245 |
-| POST | `/api/auth/verify-email` | auth.ts:250 |
-| POST | `/api/totp/verify` | auth.ts:138 |
+| POST | `/api/auth/forgot-password` | auth.ts:275 |
+| POST | `/api/auth/login` | auth.ts:249 |
+| POST | `/api/auth/logout` | auth.ts:382 |
+| POST | `/api/auth/refresh-token` | auth.ts:396 |
+| POST | `/api/auth/resend-verification-by-email` | auth.ts:334 |
+| POST | `/api/auth/reset-password` | auth.ts:280 |
+| POST | `/api/auth/verify-email` | auth.ts:306 |
+| POST | `/api/totp/verify` | auth.ts:154 |
 | POST | `/api/v2/appreciations` | appreciations.ts:70 |
 | POST | `/api/v2/appreciations/{param}/react` | appreciations.ts:80 |
-| POST | `/api/v2/auth/2fa/setup` | auth.ts:128 |
-| POST | `/api/v2/auth/2fa/verify` | auth.ts:133 |
-| POST | `/api/v2/auth/register` | auth.ts:229 |
-| GET | `/api/v2/auth/registration-info` | auth.ts:292 |
+| POST | `/api/v2/auth/2fa/setup` | auth.ts:141, twoFactor.ts:77 |
+| GET | `/api/v2/auth/2fa/status` | twoFactor.ts:60 |
+| POST | `/api/v2/auth/2fa/verify` | auth.ts:148, twoFactor.ts:87 |
+| POST | `/api/v2/auth/register` | auth.ts:264 |
+| GET | `/api/v2/auth/registration-info` | auth.ts:358 |
 | GET | `/api/v2/blog` | blog.ts:43 |
 | GET | `/api/v2/blog/{param}` | blog.ts:54 |
-| POST | `/api/v2/bookmarks` | feed.ts:399 |
-| GET | `/api/v2/categories` | exchanges.ts:188 |
+| GET | `/api/v2/blog/categories` | blog.ts:63 |
+| POST | `/api/v2/bookmarks` | feed.ts:409 |
+| GET | `/api/v2/categories` | exchanges.ts:233 |
 | GET | `/api/v2/clubs` | clubs.ts:31 |
-| GET | `/api/v2/comments` | comments.ts:75, exchanges.ts:240 |
-| POST | `/api/v2/comments` | comments.ts:87, exchanges.ts:247 |
+| GET | `/api/v2/comments` | comments.ts:75, exchanges.ts:285 |
+| POST | `/api/v2/comments` | comments.ts:87, exchanges.ts:292 |
 | DELETE | `/api/v2/comments/{param}` | comments.ts:107 |
 | PUT | `/api/v2/comments/{param}` | comments.ts:99 |
 | POST | `/api/v2/comments/{param}/reactions` | comments.ts:114 |
+| GET | `/api/v2/community/this-month` | community.ts:26 |
 | GET | `/api/v2/connections` | connections.ts:54 |
 | DELETE | `/api/v2/connections/{param}` | connections.ts:79 |
 | POST | `/api/v2/connections/{param}/accept` | connections.ts:69 |
@@ -180,11 +183,11 @@ and the places a contract test earns the most.
 | POST | `/api/v2/connections/request` | connections.ts:64 |
 | GET | `/api/v2/connections/status/{param}` | connections.ts:59 |
 | POST | `/api/v2/contact` | staticPages.ts:134 |
-| GET | `/api/v2/coupons` | marketplace.ts:1217 |
-| GET | `/api/v2/coupons/{param}` | marketplace.ts:1221 |
-| POST | `/api/v2/coupons/{param}/qr` | marketplace.ts:1225 |
-| POST | `/api/v2/coupons/redeem-qr` | marketplace.ts:1229 |
-| POST | `/api/v2/coupons/validate` | marketplace.ts:908 |
+| GET | `/api/v2/coupons` | marketplace.ts:1234 |
+| GET | `/api/v2/coupons/{param}` | marketplace.ts:1238 |
+| POST | `/api/v2/coupons/{param}/qr` | marketplace.ts:1242 |
+| POST | `/api/v2/coupons/redeem-qr` | marketplace.ts:1246 |
+| POST | `/api/v2/coupons/validate` | marketplace.ts:925 |
 | GET | `/api/v2/courses` | courses.ts:247 |
 | POST | `/api/v2/courses` | courses.ts:349, courses.ts:350 |
 | GET | `/api/v2/courses/{param}` | courses.ts:259 |
@@ -225,27 +228,27 @@ and the places a contract test earns the most.
 | GET | `/api/v2/events/{param}/people` | eventPeople.ts:116 |
 | GET | `/api/v2/events/{param}/people/{param}/history` | eventPeople.ts:66 |
 | POST | `/api/v2/events/{param}/people/bulk` | eventPeople.ts:173 |
-| DELETE | `/api/v2/events/{param}/rsvp` | events.ts:1140 |
+| DELETE | `/api/v2/events/{param}/rsvp` | events.ts:1150 |
 | GET | `/api/v2/events/{param}/safety/reviews` | eventSafetyManagement.ts:84 |
 | POST | `/api/v2/events/{param}/safety/reviews` | eventSafetyManagement.ts:90 |
 | DELETE | `/api/v2/events/{param}/safety/reviews/{param}` | eventSafetyManagement.ts:95 |
 | GET | `/api/v2/events/{param}/staff` | eventStaff.ts:57 |
 | POST | `/api/v2/events/{param}/staff` | eventStaff.ts:85 |
 | DELETE | `/api/v2/events/{param}/staff/{param}` | eventStaff.ts:92 |
-| DELETE | `/api/v2/events/{param}/waitlist` | events.ts:1261 |
-| GET | `/api/v2/events/{param}/waitlist` | events.ts:1247 |
+| DELETE | `/api/v2/events/{param}/waitlist` | events.ts:1271 |
+| GET | `/api/v2/events/{param}/waitlist` | events.ts:1257 |
 | GET | `/api/v2/exchanges` | exchangeRequests.ts:114 |
-| POST | `/api/v2/exchanges` | client.ts:805, exchanges.ts:217 |
-| DELETE | `/api/v2/exchanges/{param}` | exchangeRequests.ts:199 |
+| POST | `/api/v2/exchanges` | client.ts:809, exchanges.ts:262 |
+| DELETE | `/api/v2/exchanges/{param}` | exchangeRequests.ts:209 |
 | GET | `/api/v2/exchanges/{param}` | exchangeRequests.ts:122 |
 | POST | `/api/v2/exchanges/{param}/accept` | exchangeRequests.ts:141 |
 | POST | `/api/v2/exchanges/{param}/complete` | exchangeRequests.ts:161 |
 | POST | `/api/v2/exchanges/{param}/confirm` | exchangeRequests.ts:177 |
 | POST | `/api/v2/exchanges/{param}/decline` | exchangeRequests.ts:149 |
-| POST | `/api/v2/exchanges/{param}/dispute` | exchangeRequests.ts:229 |
+| POST | `/api/v2/exchanges/{param}/dispute` | exchangeRequests.ts:239 |
 | POST | `/api/v2/exchanges/{param}/start` | exchangeRequests.ts:156 |
-| GET | `/api/v2/exchanges/check` | exchanges.ts:212 |
-| GET | `/api/v2/exchanges/config` | exchanges.ts:207 |
+| GET | `/api/v2/exchanges/check` | exchanges.ts:257 |
+| GET | `/api/v2/exchanges/config` | exchanges.ts:252 |
 | GET | `/api/v2/exchanges/needs-attention-count` | exchangeRequests.ts:134 |
 | GET | `/api/v2/explore` | explore.ts:184 |
 | GET | `/api/v2/federation/activity` | federation.ts:277 |
@@ -275,14 +278,14 @@ and the places a contract test earns the most.
 | POST | `/api/v2/federation/setup` | federation.ts:372 |
 | GET | `/api/v2/federation/status` | federation.ts:258, federation.ts:273 |
 | POST | `/api/v2/federation/transactions` | federation.ts:338 |
-| GET | `/api/v2/feed` | feed.ts:279 |
-| GET | `/api/v2/feed/hashtags/{param}` | feed.ts:310 |
-| GET | `/api/v2/feed/hashtags/search` | feed.ts:298 |
-| GET | `/api/v2/feed/hashtags/trending` | feed.ts:292 |
-| POST | `/api/v2/feed/like` | exchanges.ts:233, feed.ts:385 |
-| GET | `/api/v2/feed/polls/{param}` | feed.ts:409 |
-| POST | `/api/v2/feed/polls/{param}/vote` | feed.ts:416 |
-| POST | `/api/v2/feed/posts` | feed.ts:478, feed.ts:479 |
+| GET | `/api/v2/feed` | feed.ts:289 |
+| GET | `/api/v2/feed/hashtags/{param}` | feed.ts:320 |
+| GET | `/api/v2/feed/hashtags/search` | feed.ts:308 |
+| GET | `/api/v2/feed/hashtags/trending` | feed.ts:302 |
+| POST | `/api/v2/feed/like` | exchanges.ts:278, feed.ts:395 |
+| GET | `/api/v2/feed/polls/{param}` | feed.ts:419 |
+| POST | `/api/v2/feed/polls/{param}/vote` | feed.ts:426 |
+| POST | `/api/v2/feed/posts` | feed.ts:488, feed.ts:489 |
 | POST | `/api/v2/feed/posts/{param}/hide` | feedModeration.ts:42 |
 | POST | `/api/v2/feed/posts/{param}/not-interested` | feedModeration.ts:53 |
 | POST | `/api/v2/feed/posts/{param}/report` | feedModeration.ts:69 |
@@ -313,10 +316,10 @@ and the places a contract test earns the most.
 | POST | `/api/v2/goals/from-template/{param}` | goals.ts:167, goals.ts:168 |
 | GET | `/api/v2/goals/templates` | goals.ts:159 |
 | GET | `/api/v2/goals/templates/categories` | goals.ts:163 |
-| DELETE | `/api/v2/group-chatroom-messages/{param}` | groups.ts:812 |
-| DELETE | `/api/v2/group-chatrooms/{param}` | groups.ts:787 |
-| GET | `/api/v2/group-chatrooms/{param}/messages` | groups.ts:796 |
-| POST | `/api/v2/group-chatrooms/{param}/messages` | groups.ts:804 |
+| DELETE | `/api/v2/group-chatroom-messages/{param}` | groups.ts:828 |
+| DELETE | `/api/v2/group-chatrooms/{param}` | groups.ts:803 |
+| GET | `/api/v2/group-chatrooms/{param}/messages` | groups.ts:812 |
+| POST | `/api/v2/group-chatrooms/{param}/messages` | groups.ts:820 |
 | GET | `/api/v2/group-exchanges` | groupExchanges.ts:151 |
 | POST | `/api/v2/group-exchanges` | groupExchanges.ts:160, groupExchanges.ts:165 |
 | DELETE | `/api/v2/group-exchanges/{param}` | groupExchanges.ts:177 |
@@ -324,73 +327,73 @@ and the places a contract test earns the most.
 | POST | `/api/v2/group-exchanges/{param}/complete` | groupExchanges.ts:173 |
 | POST | `/api/v2/group-exchanges/{param}/confirm` | groupExchanges.ts:169 |
 | POST | `/api/v2/group-exchanges/preview` | groupExchanges.ts:182 |
-| GET | `/api/v2/group-templates` | groups.ts:635 |
-| GET | `/api/v2/groups` | groups.ts:530, volunteeringVolunteer.ts:539 |
-| POST | `/api/v2/groups` | groups.ts:622, groups.ts:627 |
-| GET | `/api/v2/groups/{param}` | groups.ts:537 |
-| PUT | `/api/v2/groups/{param}` | groups.ts:631 |
-| GET | `/api/v2/groups/{param}/analytics` | groups.ts:1087 |
-| GET | `/api/v2/groups/{param}/analytics/comparative` | groups.ts:1099 |
-| GET | `/api/v2/groups/{param}/analytics/retention` | groups.ts:1093 |
-| GET | `/api/v2/groups/{param}/announcements` | groups.ts:1013 |
-| POST | `/api/v2/groups/{param}/announcements` | groups.ts:1305, groups.ts:1310 |
-| DELETE | `/api/v2/groups/{param}/announcements/{param}` | groups.ts:1328 |
-| PUT | `/api/v2/groups/{param}/announcements/{param}` | groups.ts:1321 |
-| POST | `/api/v2/groups/{param}/answers/{param}/accept` | groups.ts:1157 |
-| GET | `/api/v2/groups/{param}/challenges` | groups.ts:831 |
-| POST | `/api/v2/groups/{param}/challenges` | groups.ts:846 |
-| DELETE | `/api/v2/groups/{param}/challenges/{param}` | groups.ts:857 |
-| GET | `/api/v2/groups/{param}/chatrooms` | groups.ts:771 |
-| POST | `/api/v2/groups/{param}/chatrooms` | groups.ts:779 |
-| DELETE | `/api/v2/groups/{param}/chatrooms/{param}/pin/{param}` | groups.ts:827 |
-| POST | `/api/v2/groups/{param}/chatrooms/{param}/pin/{param}` | groups.ts:823 |
-| GET | `/api/v2/groups/{param}/chatrooms/{param}/pinned` | groups.ts:819 |
-| GET | `/api/v2/groups/{param}/discussions` | groups.ts:981 |
-| POST | `/api/v2/groups/{param}/discussions` | groups.ts:1263, groups.ts:1268 |
-| GET | `/api/v2/groups/{param}/discussions/{param}` | groups.ts:998 |
-| POST | `/api/v2/groups/{param}/discussions/{param}/messages` | groups.ts:1285, groups.ts:1290 |
-| GET | `/api/v2/groups/{param}/files` | groups.ts:1025 |
-| POST | `/api/v2/groups/{param}/files` | groups.ts:1040 |
-| DELETE | `/api/v2/groups/{param}/files/{param}` | groups.ts:1029 |
-| POST | `/api/v2/groups/{param}/image` | groups.ts:747 |
-| GET | `/api/v2/groups/{param}/invites` | groups.ts:1431 |
-| DELETE | `/api/v2/groups/{param}/invites/{param}` | groups.ts:1462 |
-| POST | `/api/v2/groups/{param}/invites/email` | groups.ts:1452 |
-| POST | `/api/v2/groups/{param}/invites/link` | groups.ts:1439 |
-| POST | `/api/v2/groups/{param}/join` | groups.ts:1351 |
-| GET | `/api/v2/groups/{param}/media` | groups.ts:1061 |
-| POST | `/api/v2/groups/{param}/media` | groups.ts:1072 |
-| DELETE | `/api/v2/groups/{param}/media/{param}` | groups.ts:1065 |
-| GET | `/api/v2/groups/{param}/members` | groups.ts:767 |
-| DELETE | `/api/v2/groups/{param}/members/{param}` | groups.ts:969 |
-| PUT | `/api/v2/groups/{param}/members/{param}` | groups.ts:964 |
-| DELETE | `/api/v2/groups/{param}/membership` | groups.ts:1358 |
-| GET | `/api/v2/groups/{param}/notification-prefs` | groups.ts:595 |
-| PUT | `/api/v2/groups/{param}/notification-prefs` | groups.ts:607 |
-| POST | `/api/v2/groups/{param}/qa/vote` | groups.ts:1153 |
-| GET | `/api/v2/groups/{param}/questions` | groups.ts:1112 |
-| POST | `/api/v2/groups/{param}/questions` | groups.ts:1125, groups.ts:1130 |
-| GET | `/api/v2/groups/{param}/questions/{param}` | groups.ts:1116 |
-| POST | `/api/v2/groups/{param}/questions/{param}/answers` | groups.ts:1141, groups.ts:1146 |
-| GET | `/api/v2/groups/{param}/requests` | groups.ts:926 |
-| POST | `/api/v2/groups/{param}/requests/{param}` | groups.ts:944, groups.ts:946 |
-| GET | `/api/v2/groups/{param}/scheduled-posts` | groups.ts:863 |
-| POST | `/api/v2/groups/{param}/scheduled-posts` | groups.ts:878 |
-| DELETE | `/api/v2/groups/{param}/scheduled-posts/{param}` | groups.ts:886 |
-| GET | `/api/v2/groups/{param}/task-stats` | groups.ts:1215 |
-| GET | `/api/v2/groups/{param}/tasks` | groups.ts:1211 |
-| POST | `/api/v2/groups/{param}/tasks` | groups.ts:1235, groups.ts:1240 |
-| GET | `/api/v2/groups/{param}/welcome` | groups.ts:890 |
-| PUT | `/api/v2/groups/{param}/welcome` | groups.ts:894 |
-| GET | `/api/v2/groups/{param}/wiki` | groups.ts:1164 |
-| POST | `/api/v2/groups/{param}/wiki` | groups.ts:1177, groups.ts:1182 |
-| DELETE | `/api/v2/groups/{param}/wiki/{param}` | groups.ts:1194 |
-| GET | `/api/v2/groups/{param}/wiki/{param}` | groups.ts:1168 |
-| PUT | `/api/v2/groups/{param}/wiki/{param}` | groups.ts:1190 |
-| GET | `/api/v2/groups/{param}/wiki/{param}/revisions` | groups.ts:1198 |
-| GET | `/api/v2/groups/form-capabilities` | groups.ts:577 |
-| GET | `/api/v2/groups/invite/{param}` | groups.ts:1466 |
-| POST | `/api/v2/groups/invite/{param}/accept` | groups.ts:1471 |
+| GET | `/api/v2/group-templates` | groups.ts:646 |
+| GET | `/api/v2/groups` | groups.ts:541, volunteeringVolunteer.ts:539 |
+| POST | `/api/v2/groups` | groups.ts:633, groups.ts:638 |
+| GET | `/api/v2/groups/{param}` | groups.ts:548 |
+| PUT | `/api/v2/groups/{param}` | groups.ts:642 |
+| GET | `/api/v2/groups/{param}/analytics` | groups.ts:1106 |
+| GET | `/api/v2/groups/{param}/analytics/comparative` | groups.ts:1118 |
+| GET | `/api/v2/groups/{param}/analytics/retention` | groups.ts:1112 |
+| GET | `/api/v2/groups/{param}/announcements` | groups.ts:1029 |
+| POST | `/api/v2/groups/{param}/announcements` | groups.ts:1324, groups.ts:1329 |
+| DELETE | `/api/v2/groups/{param}/announcements/{param}` | groups.ts:1347 |
+| PUT | `/api/v2/groups/{param}/announcements/{param}` | groups.ts:1340 |
+| POST | `/api/v2/groups/{param}/answers/{param}/accept` | groups.ts:1176 |
+| GET | `/api/v2/groups/{param}/challenges` | groups.ts:847 |
+| POST | `/api/v2/groups/{param}/challenges` | groups.ts:862 |
+| DELETE | `/api/v2/groups/{param}/challenges/{param}` | groups.ts:873 |
+| GET | `/api/v2/groups/{param}/chatrooms` | groups.ts:787 |
+| POST | `/api/v2/groups/{param}/chatrooms` | groups.ts:795 |
+| DELETE | `/api/v2/groups/{param}/chatrooms/{param}/pin/{param}` | groups.ts:843 |
+| POST | `/api/v2/groups/{param}/chatrooms/{param}/pin/{param}` | groups.ts:839 |
+| GET | `/api/v2/groups/{param}/chatrooms/{param}/pinned` | groups.ts:835 |
+| GET | `/api/v2/groups/{param}/discussions` | groups.ts:997 |
+| POST | `/api/v2/groups/{param}/discussions` | groups.ts:1282, groups.ts:1287 |
+| GET | `/api/v2/groups/{param}/discussions/{param}` | groups.ts:1014 |
+| POST | `/api/v2/groups/{param}/discussions/{param}/messages` | groups.ts:1304, groups.ts:1309 |
+| GET | `/api/v2/groups/{param}/files` | groups.ts:1041 |
+| POST | `/api/v2/groups/{param}/files` | groups.ts:1056 |
+| DELETE | `/api/v2/groups/{param}/files/{param}` | groups.ts:1045 |
+| POST | `/api/v2/groups/{param}/image` | groups.ts:763 |
+| GET | `/api/v2/groups/{param}/invites` | groups.ts:1450 |
+| DELETE | `/api/v2/groups/{param}/invites/{param}` | groups.ts:1481 |
+| POST | `/api/v2/groups/{param}/invites/email` | groups.ts:1471 |
+| POST | `/api/v2/groups/{param}/invites/link` | groups.ts:1458 |
+| POST | `/api/v2/groups/{param}/join` | groups.ts:1370 |
+| GET | `/api/v2/groups/{param}/media` | groups.ts:1077 |
+| POST | `/api/v2/groups/{param}/media` | groups.ts:1091 |
+| DELETE | `/api/v2/groups/{param}/media/{param}` | groups.ts:1081 |
+| GET | `/api/v2/groups/{param}/members` | groups.ts:783 |
+| DELETE | `/api/v2/groups/{param}/members/{param}` | groups.ts:985 |
+| PUT | `/api/v2/groups/{param}/members/{param}` | groups.ts:980 |
+| DELETE | `/api/v2/groups/{param}/membership` | groups.ts:1377 |
+| GET | `/api/v2/groups/{param}/notification-prefs` | groups.ts:606 |
+| PUT | `/api/v2/groups/{param}/notification-prefs` | groups.ts:618 |
+| POST | `/api/v2/groups/{param}/qa/vote` | groups.ts:1172 |
+| GET | `/api/v2/groups/{param}/questions` | groups.ts:1131 |
+| POST | `/api/v2/groups/{param}/questions` | groups.ts:1144, groups.ts:1149 |
+| GET | `/api/v2/groups/{param}/questions/{param}` | groups.ts:1135 |
+| POST | `/api/v2/groups/{param}/questions/{param}/answers` | groups.ts:1160, groups.ts:1165 |
+| GET | `/api/v2/groups/{param}/requests` | groups.ts:942 |
+| POST | `/api/v2/groups/{param}/requests/{param}` | groups.ts:960, groups.ts:962 |
+| GET | `/api/v2/groups/{param}/scheduled-posts` | groups.ts:879 |
+| POST | `/api/v2/groups/{param}/scheduled-posts` | groups.ts:894 |
+| DELETE | `/api/v2/groups/{param}/scheduled-posts/{param}` | groups.ts:902 |
+| GET | `/api/v2/groups/{param}/task-stats` | groups.ts:1234 |
+| GET | `/api/v2/groups/{param}/tasks` | groups.ts:1230 |
+| POST | `/api/v2/groups/{param}/tasks` | groups.ts:1254, groups.ts:1259 |
+| GET | `/api/v2/groups/{param}/welcome` | groups.ts:906 |
+| PUT | `/api/v2/groups/{param}/welcome` | groups.ts:910 |
+| GET | `/api/v2/groups/{param}/wiki` | groups.ts:1183 |
+| POST | `/api/v2/groups/{param}/wiki` | groups.ts:1196, groups.ts:1201 |
+| DELETE | `/api/v2/groups/{param}/wiki/{param}` | groups.ts:1213 |
+| GET | `/api/v2/groups/{param}/wiki/{param}` | groups.ts:1187 |
+| PUT | `/api/v2/groups/{param}/wiki/{param}` | groups.ts:1209 |
+| GET | `/api/v2/groups/{param}/wiki/{param}/revisions` | groups.ts:1217 |
+| GET | `/api/v2/groups/form-capabilities` | groups.ts:588 |
+| GET | `/api/v2/groups/invite/{param}` | groups.ts:1485 |
+| POST | `/api/v2/groups/invite/{param}/accept` | groups.ts:1490 |
 | GET | `/api/v2/help/faqs` | help.ts:49 |
 | GET | `/api/v2/ideation-campaigns` | ideation.ts:283 |
 | GET | `/api/v2/ideation-campaigns/{param}` | ideation.ts:287 |
@@ -450,139 +453,141 @@ and the places a contract test earns the most.
 | GET | `/api/v2/legal/{param}` | legal.ts:104 |
 | POST | `/api/v2/legal/acceptance/accept-all` | legal.ts:94 |
 | GET | `/api/v2/legal/acceptance/status` | legal.ts:82 |
-| GET | `/api/v2/listings` | exchanges.ts:176 |
-| POST | `/api/v2/listings` | exchanges.ts:193, exchanges.ts:194 |
-| DELETE | `/api/v2/listings/{param}` | exchanges.ts:333 |
-| GET | `/api/v2/listings/{param}` | exchanges.ts:184 |
-| PUT | `/api/v2/listings/{param}` | exchanges.ts:267 |
-| DELETE | `/api/v2/listings/{param}/image` | exchanges.ts:328 |
-| POST | `/api/v2/listings/{param}/image` | exchanges.ts:317 |
-| POST | `/api/v2/listings/{param}/renew` | exchanges.ts:229 |
-| POST | `/api/v2/listings/{param}/report` | exchanges.ts:255 |
-| DELETE | `/api/v2/listings/{param}/save` | exchanges.ts:225 |
-| POST | `/api/v2/listings/{param}/save` | exchanges.ts:221 |
-| PUT | `/api/v2/listings/{param}/tags` | exchanges.ts:202 |
-| POST | `/api/v2/listings/generate-description` | exchanges.ts:259 |
-| GET | `/api/v2/marketplace/categories` | marketplace.ts:601 |
-| GET | `/api/v2/marketplace/categories/{param}/template` | marketplace.ts:605 |
-| GET | `/api/v2/marketplace/collections` | marketplace.ts:1033 |
-| POST | `/api/v2/marketplace/collections` | marketplace.ts:1041 |
-| DELETE | `/api/v2/marketplace/collections/{param}` | marketplace.ts:1045 |
-| GET | `/api/v2/marketplace/collections/{param}/items` | marketplace.ts:1056 |
-| POST | `/api/v2/marketplace/collections/{param}/items` | marketplace.ts:1060 |
-| DELETE | `/api/v2/marketplace/collections/{param}/items/{param}` | marketplace.ts:1067 |
-| GET | `/api/v2/marketplace/groups/{param}/listings` | marketplace.ts:1007 |
-| GET | `/api/v2/marketplace/groups/{param}/stats` | marketplace.ts:1011 |
-| GET | `/api/v2/marketplace/listings` | marketplace.ts:571 |
-| POST | `/api/v2/marketplace/listings` | marketplace.ts:623, marketplace.ts:625 |
-| DELETE | `/api/v2/marketplace/listings/{param}` | marketplace.ts:662 |
-| PUT | `/api/v2/marketplace/listings/{param}` | marketplace.ts:650 |
-| POST | `/api/v2/marketplace/listings/{param}/images` | marketplace.ts:688 |
-| DELETE | `/api/v2/marketplace/listings/{param}/images/{param}` | marketplace.ts:692 |
-| POST | `/api/v2/marketplace/listings/{param}/offers` | marketplace.ts:717 |
-| POST | `/api/v2/marketplace/listings/{param}/promote` | marketplace.ts:1079 |
-| POST | `/api/v2/marketplace/listings/{param}/renew` | marketplace.ts:681 |
-| POST | `/api/v2/marketplace/listings/{param}/report` | marketplace.ts:673 |
-| DELETE | `/api/v2/marketplace/listings/{param}/save` | marketplace.ts:677 |
-| POST | `/api/v2/marketplace/listings/{param}/save` | marketplace.ts:666 |
-| DELETE | `/api/v2/marketplace/listings/{param}/video` | marketplace.ts:702 |
-| POST | `/api/v2/marketplace/listings/{param}/video` | marketplace.ts:698 |
-| GET | `/api/v2/marketplace/listings/featured` | marketplace.ts:589 |
-| GET | `/api/v2/marketplace/listings/free` | marketplace.ts:597 |
-| POST | `/api/v2/marketplace/listings/generate-description` | marketplace.ts:658 |
-| GET | `/api/v2/marketplace/listings/nearby` | marketplace.ts:585 |
-| GET | `/api/v2/marketplace/me/pickups` | marketplace.ts:1160 |
-| GET | `/api/v2/marketplace/my-offers/{param}` | marketplace.ts:727 |
-| DELETE | `/api/v2/marketplace/offers/{param}` | marketplace.ts:750 |
-| PUT | `/api/v2/marketplace/offers/{param}/accept` | marketplace.ts:731 |
-| PUT | `/api/v2/marketplace/offers/{param}/accept-counter` | marketplace.ts:742 |
-| PUT | `/api/v2/marketplace/offers/{param}/counter` | marketplace.ts:738 |
-| PUT | `/api/v2/marketplace/offers/{param}/decline` | marketplace.ts:746 |
-| POST | `/api/v2/marketplace/orders` | marketplace.ts:848 |
-| GET | `/api/v2/marketplace/orders/{param}` | marketplace.ts:762, marketplace.ts:767 |
-| PUT | `/api/v2/marketplace/orders/{param}/cancel` | marketplace.ts:782 |
-| PUT | `/api/v2/marketplace/orders/{param}/confirm-delivery` | marketplace.ts:778 |
-| GET | `/api/v2/marketplace/orders/{param}/delivery-offers` | marketplace.ts:804 |
-| POST | `/api/v2/marketplace/orders/{param}/delivery-offers` | marketplace.ts:820 |
-| PUT | `/api/v2/marketplace/orders/{param}/delivery-offers/{param}/accept` | marketplace.ts:827 |
-| PUT | `/api/v2/marketplace/orders/{param}/delivery-offers/{param}/confirm` | marketplace.ts:834 |
-| POST | `/api/v2/marketplace/orders/{param}/dispute` | marketplace.ts:796 |
-| POST | `/api/v2/marketplace/orders/{param}/pickup-reservation` | marketplace.ts:893 |
-| POST | `/api/v2/marketplace/orders/{param}/rate` | marketplace.ts:789 |
-| GET | `/api/v2/marketplace/orders/{param}/ratings` | marketplace.ts:800 |
-| PUT | `/api/v2/marketplace/orders/{param}/ship` | marketplace.ts:774 |
-| POST | `/api/v2/marketplace/orders/checkout-outcome` | marketplace.ts:861 |
-| GET | `/api/v2/marketplace/orders/deliveries` | marketplace.ts:813 |
-| POST | `/api/v2/marketplace/payments/confirm` | marketplace.ts:871 |
-| POST | `/api/v2/marketplace/payments/create-intent` | marketplace.ts:852 |
-| GET | `/api/v2/marketplace/promotions/mine` | marketplace.ts:1075 |
-| GET | `/api/v2/marketplace/promotions/products` | marketplace.ts:1071 |
-| GET | `/api/v2/marketplace/saved-searches` | marketplace.ts:1015 |
-| POST | `/api/v2/marketplace/saved-searches` | marketplace.ts:1025 |
-| DELETE | `/api/v2/marketplace/saved-searches/{param}` | marketplace.ts:1029 |
-| GET | `/api/v2/marketplace/seller/balance` | marketplace.ts:952 |
-| GET | `/api/v2/marketplace/seller/coupons` | marketplace.ts:1168 |
-| POST | `/api/v2/marketplace/seller/coupons` | marketplace.ts:1185 |
-| DELETE | `/api/v2/marketplace/seller/coupons/{param}` | marketplace.ts:1209 |
-| PUT | `/api/v2/marketplace/seller/coupons/{param}` | marketplace.ts:1205 |
-| GET | `/api/v2/marketplace/seller/coupons/{param}/redemptions` | marketplace.ts:1213 |
-| GET | `/api/v2/marketplace/seller/dashboard` | marketplace.ts:982 |
-| POST | `/api/v2/marketplace/seller/onboard` | marketplace.ts:963 |
-| GET | `/api/v2/marketplace/seller/onboard/status` | marketplace.ts:948 |
-| GET | `/api/v2/marketplace/seller/payouts` | marketplace.ts:959 |
-| POST | `/api/v2/marketplace/seller/pickup-scan` | marketplace.ts:1164 |
-| GET | `/api/v2/marketplace/seller/pickup-slots` | marketplace.ts:1085 |
-| POST | `/api/v2/marketplace/seller/pickup-slots` | marketplace.ts:1138 |
-| DELETE | `/api/v2/marketplace/seller/pickup-slots/{param}` | marketplace.ts:1156 |
-| PUT | `/api/v2/marketplace/seller/pickup-slots/{param}` | marketplace.ts:1152 |
-| GET | `/api/v2/marketplace/seller/shipping-options` | marketplace.ts:1089 |
-| POST | `/api/v2/marketplace/seller/shipping-options` | marketplace.ts:1108 |
-| DELETE | `/api/v2/marketplace/seller/shipping-options/{param}` | marketplace.ts:1127 |
-| PUT | `/api/v2/marketplace/seller/shipping-options/{param}` | marketplace.ts:1123 |
-| GET | `/api/v2/marketplace/sellers/{param}` | marketplace.ts:967 |
-| GET | `/api/v2/marketplace/sellers/{param}/listings` | marketplace.ts:978 |
-| GET | `/api/v2/marketplace/sellers/{param}/shipping-options` | marketplace.ts:1095 |
+| GET | `/api/v2/listings` | exchanges.ts:180 |
+| POST | `/api/v2/listings` | exchanges.ts:238, exchanges.ts:239 |
+| DELETE | `/api/v2/listings/{param}` | exchanges.ts:379 |
+| GET | `/api/v2/listings/{param}` | exchanges.ts:229 |
+| PUT | `/api/v2/listings/{param}` | exchanges.ts:312 |
+| DELETE | `/api/v2/listings/{param}/image` | exchanges.ts:374 |
+| POST | `/api/v2/listings/{param}/image` | exchanges.ts:363 |
+| POST | `/api/v2/listings/{param}/renew` | exchanges.ts:274 |
+| POST | `/api/v2/listings/{param}/report` | exchanges.ts:300 |
+| DELETE | `/api/v2/listings/{param}/save` | exchanges.ts:270 |
+| POST | `/api/v2/listings/{param}/save` | exchanges.ts:266 |
+| PUT | `/api/v2/listings/{param}/tags` | exchanges.ts:247 |
+| POST | `/api/v2/listings/generate-description` | exchanges.ts:304 |
+| GET | `/api/v2/listings/mine` | exchanges.ts:220 |
+| GET | `/api/v2/marketplace/categories` | marketplace.ts:606 |
+| GET | `/api/v2/marketplace/categories/{param}/template` | marketplace.ts:610 |
+| GET | `/api/v2/marketplace/collections` | marketplace.ts:1050 |
+| POST | `/api/v2/marketplace/collections` | marketplace.ts:1058 |
+| DELETE | `/api/v2/marketplace/collections/{param}` | marketplace.ts:1062 |
+| GET | `/api/v2/marketplace/collections/{param}/items` | marketplace.ts:1073 |
+| POST | `/api/v2/marketplace/collections/{param}/items` | marketplace.ts:1077 |
+| DELETE | `/api/v2/marketplace/collections/{param}/items/{param}` | marketplace.ts:1084 |
+| GET | `/api/v2/marketplace/groups/{param}/listings` | marketplace.ts:1024 |
+| GET | `/api/v2/marketplace/groups/{param}/stats` | marketplace.ts:1028 |
+| GET | `/api/v2/marketplace/listings` | marketplace.ts:576 |
+| POST | `/api/v2/marketplace/listings` | marketplace.ts:628, marketplace.ts:630 |
+| DELETE | `/api/v2/marketplace/listings/{param}` | marketplace.ts:667 |
+| PUT | `/api/v2/marketplace/listings/{param}` | marketplace.ts:655 |
+| POST | `/api/v2/marketplace/listings/{param}/images` | marketplace.ts:705 |
+| DELETE | `/api/v2/marketplace/listings/{param}/images/{param}` | marketplace.ts:709 |
+| POST | `/api/v2/marketplace/listings/{param}/offers` | marketplace.ts:734 |
+| POST | `/api/v2/marketplace/listings/{param}/promote` | marketplace.ts:1096 |
+| POST | `/api/v2/marketplace/listings/{param}/renew` | marketplace.ts:686 |
+| POST | `/api/v2/marketplace/listings/{param}/report` | marketplace.ts:678 |
+| DELETE | `/api/v2/marketplace/listings/{param}/save` | marketplace.ts:682 |
+| POST | `/api/v2/marketplace/listings/{param}/save` | marketplace.ts:671 |
+| DELETE | `/api/v2/marketplace/listings/{param}/video` | marketplace.ts:719 |
+| POST | `/api/v2/marketplace/listings/{param}/video` | marketplace.ts:715 |
+| GET | `/api/v2/marketplace/listings/featured` | marketplace.ts:594 |
+| GET | `/api/v2/marketplace/listings/free` | marketplace.ts:602 |
+| POST | `/api/v2/marketplace/listings/generate-description` | marketplace.ts:663 |
+| GET | `/api/v2/marketplace/listings/nearby` | marketplace.ts:590 |
+| GET | `/api/v2/marketplace/me/pickups` | marketplace.ts:1177 |
+| GET | `/api/v2/marketplace/my-offers/{param}` | marketplace.ts:744 |
+| DELETE | `/api/v2/marketplace/offers/{param}` | marketplace.ts:767 |
+| PUT | `/api/v2/marketplace/offers/{param}/accept` | marketplace.ts:748 |
+| PUT | `/api/v2/marketplace/offers/{param}/accept-counter` | marketplace.ts:759 |
+| PUT | `/api/v2/marketplace/offers/{param}/counter` | marketplace.ts:755 |
+| PUT | `/api/v2/marketplace/offers/{param}/decline` | marketplace.ts:763 |
+| POST | `/api/v2/marketplace/orders` | marketplace.ts:865 |
+| GET | `/api/v2/marketplace/orders/{param}` | marketplace.ts:779, marketplace.ts:784 |
+| PUT | `/api/v2/marketplace/orders/{param}/cancel` | marketplace.ts:799 |
+| PUT | `/api/v2/marketplace/orders/{param}/confirm-delivery` | marketplace.ts:795 |
+| GET | `/api/v2/marketplace/orders/{param}/delivery-offers` | marketplace.ts:821 |
+| POST | `/api/v2/marketplace/orders/{param}/delivery-offers` | marketplace.ts:837 |
+| PUT | `/api/v2/marketplace/orders/{param}/delivery-offers/{param}/accept` | marketplace.ts:844 |
+| PUT | `/api/v2/marketplace/orders/{param}/delivery-offers/{param}/confirm` | marketplace.ts:851 |
+| POST | `/api/v2/marketplace/orders/{param}/dispute` | marketplace.ts:813 |
+| POST | `/api/v2/marketplace/orders/{param}/pickup-reservation` | marketplace.ts:910 |
+| POST | `/api/v2/marketplace/orders/{param}/rate` | marketplace.ts:806 |
+| GET | `/api/v2/marketplace/orders/{param}/ratings` | marketplace.ts:817 |
+| PUT | `/api/v2/marketplace/orders/{param}/ship` | marketplace.ts:791 |
+| POST | `/api/v2/marketplace/orders/checkout-outcome` | marketplace.ts:878 |
+| GET | `/api/v2/marketplace/orders/deliveries` | marketplace.ts:830 |
+| POST | `/api/v2/marketplace/payments/confirm` | marketplace.ts:888 |
+| POST | `/api/v2/marketplace/payments/create-intent` | marketplace.ts:869 |
+| GET | `/api/v2/marketplace/promotions/mine` | marketplace.ts:1092 |
+| GET | `/api/v2/marketplace/promotions/products` | marketplace.ts:1088 |
+| GET | `/api/v2/marketplace/saved-searches` | marketplace.ts:1032 |
+| POST | `/api/v2/marketplace/saved-searches` | marketplace.ts:1042 |
+| DELETE | `/api/v2/marketplace/saved-searches/{param}` | marketplace.ts:1046 |
+| GET | `/api/v2/marketplace/seller/balance` | marketplace.ts:969 |
+| GET | `/api/v2/marketplace/seller/coupons` | marketplace.ts:1185 |
+| POST | `/api/v2/marketplace/seller/coupons` | marketplace.ts:1202 |
+| DELETE | `/api/v2/marketplace/seller/coupons/{param}` | marketplace.ts:1226 |
+| PUT | `/api/v2/marketplace/seller/coupons/{param}` | marketplace.ts:1222 |
+| GET | `/api/v2/marketplace/seller/coupons/{param}/redemptions` | marketplace.ts:1230 |
+| GET | `/api/v2/marketplace/seller/dashboard` | marketplace.ts:999 |
+| POST | `/api/v2/marketplace/seller/onboard` | marketplace.ts:980 |
+| GET | `/api/v2/marketplace/seller/onboard/status` | marketplace.ts:965 |
+| GET | `/api/v2/marketplace/seller/payouts` | marketplace.ts:976 |
+| POST | `/api/v2/marketplace/seller/pickup-scan` | marketplace.ts:1181 |
+| GET | `/api/v2/marketplace/seller/pickup-slots` | marketplace.ts:1102 |
+| POST | `/api/v2/marketplace/seller/pickup-slots` | marketplace.ts:1155 |
+| DELETE | `/api/v2/marketplace/seller/pickup-slots/{param}` | marketplace.ts:1173 |
+| PUT | `/api/v2/marketplace/seller/pickup-slots/{param}` | marketplace.ts:1169 |
+| GET | `/api/v2/marketplace/seller/shipping-options` | marketplace.ts:1106 |
+| POST | `/api/v2/marketplace/seller/shipping-options` | marketplace.ts:1125 |
+| DELETE | `/api/v2/marketplace/seller/shipping-options/{param}` | marketplace.ts:1144 |
+| PUT | `/api/v2/marketplace/seller/shipping-options/{param}` | marketplace.ts:1140 |
+| GET | `/api/v2/marketplace/sellers/{param}` | marketplace.ts:984 |
+| GET | `/api/v2/marketplace/sellers/{param}/listings` | marketplace.ts:995 |
+| GET | `/api/v2/marketplace/sellers/{param}/shipping-options` | marketplace.ts:1112 |
 | POST | `/api/v2/matches/{param}/dismiss` | matches.ts:240 |
 | GET | `/api/v2/matches/all` | matches.ts:222 |
 | GET | `/api/v2/me/collections` | savedCollections.ts:55 |
 | POST | `/api/v2/me/collections` | savedCollections.ts:63 |
 | GET | `/api/v2/me/collections/{param}/items` | savedCollections.ts:67 |
 | GET | `/api/v2/me/courses` | courses.ts:263 |
-| GET | `/api/v2/me/data-export/history` | settings.ts:87 |
+| GET | `/api/v2/me/data-export/history` | settings.ts:88 |
 | DELETE | `/api/v2/me/saved-items/{param}` | savedCollections.ts:74 |
 | DELETE | `/api/v2/members/{param}/endorse` | endorsements.ts:232 |
 | POST | `/api/v2/members/{param}/endorse` | endorsements.ts:214 |
 | GET | `/api/v2/members/{param}/endorsements` | endorsements.ts:169 |
-| POST | `/api/v2/merchant-onboarding/complete` | marketplace.ts:944 |
-| GET | `/api/v2/merchant-onboarding/status` | marketplace.ts:916 |
-| POST | `/api/v2/merchant-onboarding/step-1` | marketplace.ts:926 |
-| POST | `/api/v2/merchant-onboarding/step-2` | marketplace.ts:933 |
-| POST | `/api/v2/merchant-onboarding/step-3` | marketplace.ts:940 |
-| GET | `/api/v2/messages` | messages.ts:154 |
-| POST | `/api/v2/messages` | messages.ts:242, messages.ts:243 |
-| DELETE | `/api/v2/messages/{param}` | messages.ts:231 |
-| GET | `/api/v2/messages/{param}` | messages.ts:161 |
-| PUT | `/api/v2/messages/{param}` | messages.ts:227 |
-| POST | `/api/v2/messages/{param}/reactions` | messages.ts:223 |
-| PUT | `/api/v2/messages/{param}/read` | messages.ts:207 |
-| DELETE | `/api/v2/messages/conversations/{param}` | messages.ts:187 |
-| POST | `/api/v2/messages/conversations/{param}/restore` | messages.ts:191 |
-| GET | `/api/v2/messages/restriction-status` | messages.ts:219 |
-| POST | `/api/v2/messages/typing` | messages.ts:215 |
-| GET | `/api/v2/messages/unread-count` | messages.ts:203 |
-| POST | `/api/v2/messages/voice` | messages.ts:328, messages.ts:329 |
+| POST | `/api/v2/merchant-onboarding/complete` | marketplace.ts:961 |
+| GET | `/api/v2/merchant-onboarding/status` | marketplace.ts:933 |
+| POST | `/api/v2/merchant-onboarding/step-1` | marketplace.ts:943 |
+| POST | `/api/v2/merchant-onboarding/step-2` | marketplace.ts:950 |
+| POST | `/api/v2/merchant-onboarding/step-3` | marketplace.ts:957 |
+| GET | `/api/v2/messages` | messages.ts:162 |
+| POST | `/api/v2/messages` | messages.ts:253, messages.ts:254 |
+| DELETE | `/api/v2/messages/{param}` | messages.ts:242 |
+| GET | `/api/v2/messages/{param}` | messages.ts:169 |
+| PUT | `/api/v2/messages/{param}` | messages.ts:238 |
+| POST | `/api/v2/messages/{param}/reactions` | messages.ts:234 |
+| PUT | `/api/v2/messages/{param}/read` | messages.ts:215 |
+| POST | `/api/v2/messages/{param}/report` | memberReports.ts:70 |
+| DELETE | `/api/v2/messages/conversations/{param}` | messages.ts:195 |
+| POST | `/api/v2/messages/conversations/{param}/restore` | messages.ts:199 |
+| GET | `/api/v2/messages/restriction-status` | messages.ts:230 |
+| POST | `/api/v2/messages/typing` | messages.ts:223 |
+| GET | `/api/v2/messages/unread-count` | messages.ts:211 |
+| POST | `/api/v2/messages/voice` | messages.ts:342, messages.ts:343 |
 | DELETE | `/api/v2/notifications/{param}` | notifications.ts:119 |
 | POST | `/api/v2/notifications/{param}/read` | notifications.ts:105 |
 | GET | `/api/v2/notifications/counts` | notifications.ts:100 |
 | POST | `/api/v2/notifications/group/read` | notifications.ts:114 |
 | GET | `/api/v2/notifications/grouped` | notifications.ts:95 |
 | POST | `/api/v2/notifications/read-all` | notifications.ts:110 |
-| GET | `/api/v2/onboarding/categories` | onboarding.ts:101 |
-| POST | `/api/v2/onboarding/complete` | onboarding.ts:116 |
-| GET | `/api/v2/onboarding/config` | onboarding.ts:97 |
-| POST | `/api/v2/onboarding/safeguarding` | onboarding.ts:109 |
-| GET | `/api/v2/onboarding/safeguarding-options` | onboarding.ts:105 |
-| GET | `/api/v2/onboarding/status` | onboarding.ts:93 |
+| GET | `/api/v2/onboarding/categories` | onboarding.ts:106 |
+| POST | `/api/v2/onboarding/complete` | onboarding.ts:121 |
+| GET | `/api/v2/onboarding/config` | onboarding.ts:102 |
+| POST | `/api/v2/onboarding/safeguarding` | onboarding.ts:114 |
+| GET | `/api/v2/onboarding/safeguarding-options` | onboarding.ts:110 |
+| GET | `/api/v2/onboarding/status` | onboarding.ts:98 |
 | GET | `/api/v2/partner-venues` | venues.ts:55 |
 | GET | `/api/v2/partner-venues/my-visits` | venues.ts:68 |
 | GET | `/api/v2/partner-venues/pass` | venues.ts:60 |
@@ -610,21 +615,25 @@ and the places a contract test earns the most.
 | POST | `/api/v2/podcasts/episodes/{param}/reaction` | podcasts.ts:222 |
 | POST | `/api/v2/podcasts/episodes/{param}/report` | podcasts.ts:229 |
 | GET | `/api/v2/podcasts/mine` | podcasts.ts:246 |
-| GET | `/api/v2/polls` | events.ts:1279 |
+| GET | `/api/v2/polls` | events.ts:1289 |
 | POST | `/api/v2/polls` | polls.ts:51, polls.ts:52 |
 | POST | `/api/v2/polls/{param}/rank` | polls.ts:56 |
 | GET | `/api/v2/polls/{param}/ranked-results` | polls.ts:62 |
-| POST | `/api/v2/polls/{param}/vote` | events.ts:1287 |
+| POST | `/api/v2/polls/{param}/vote` | events.ts:1297 |
 | GET | `/api/v2/public-page-content/{param}` | staticPages.ts:77 |
-| POST | `/api/v2/reactions` | feed.ts:340 |
-| GET | `/api/v2/reactions/{param}/{param}/users/{param}` | feed.ts:365 |
+| POST | `/api/v2/reactions` | feed.ts:350 |
+| GET | `/api/v2/reactions/{param}/{param}/users/{param}` | feed.ts:375 |
 | GET | `/api/v2/resources` | resources.ts:96 |
 | GET | `/api/v2/resources/categories` | resources.ts:101 |
 | POST | `/api/v2/reviews` | reviews.ts:127 |
 | DELETE | `/api/v2/reviews/{param}` | reviews.ts:131 |
 | GET | `/api/v2/reviews/given` | reviews.ts:103 |
 | GET | `/api/v2/reviews/pending` | reviews.ts:116 |
-| GET | `/api/v2/reviews/user/{param}` | members.ts:91, reviews.ts:74 |
+| GET | `/api/v2/reviews/user/{param}` | members.ts:92, reviews.ts:74 |
+| POST | `/api/v2/safeguarding/add-choice` | safeguarding.ts:95 |
+| GET | `/api/v2/safeguarding/available-options` | safeguarding.ts:77 |
+| GET | `/api/v2/safeguarding/my-preferences` | safeguarding.ts:57 |
+| POST | `/api/v2/safeguarding/revoke` | safeguarding.ts:99 |
 | GET | `/api/v2/search` | search.ts:50 |
 | GET | `/api/v2/search/saved` | search.ts:63 |
 | POST | `/api/v2/search/saved` | search.ts:71 |
@@ -635,40 +644,41 @@ and the places a contract test earns the most.
 | GET | `/api/v2/skills/members` | endorsements.ts:280 |
 | GET | `/api/v2/skills/search` | endorsements.ts:267 |
 | POST | `/api/v2/support/reports` | support.ts:188, support.ts:189 |
-| DELETE | `/api/v2/team-tasks/{param}` | groups.ts:1251 |
-| GET | `/api/v2/team-tasks/{param}` | groups.ts:1219 |
-| PUT | `/api/v2/team-tasks/{param}` | groups.ts:1247 |
-| GET | `/api/v2/tenant/bootstrap` | tenant.ts:104, tenant.ts:124 |
-| GET | `/api/v2/tenants` | tenant.ts:139 |
-| GET | `/api/v2/users` | client.ts:804, eventPeople.ts:92, members.ts:76 |
-| GET | `/api/v2/users/{param}` | members.ts:81 |
+| DELETE | `/api/v2/team-tasks/{param}` | groups.ts:1270 |
+| GET | `/api/v2/team-tasks/{param}` | groups.ts:1238 |
+| PUT | `/api/v2/team-tasks/{param}` | groups.ts:1266 |
+| GET | `/api/v2/tenant/bootstrap` | tenant.ts:122, tenant.ts:142 |
+| GET | `/api/v2/tenants` | tenant.ts:157 |
+| GET | `/api/v2/users` | client.ts:808, eventPeople.ts:92, members.ts:77 |
+| GET | `/api/v2/users/{param}` | members.ts:82 |
 | GET | `/api/v2/users/{param}/appreciations` | appreciations.ts:46 |
-| DELETE | `/api/v2/users/{param}/block` | settings.ts:148 |
-| POST | `/api/v2/users/{param}/block` | settings.ts:144 |
-| GET | `/api/v2/users/{param}/listings` | members.ts:86 |
+| DELETE | `/api/v2/users/{param}/block` | settings.ts:149 |
+| POST | `/api/v2/users/{param}/block` | settings.ts:145 |
+| GET | `/api/v2/users/{param}/listings` | members.ts:87 |
 | GET | `/api/v2/users/{param}/public-collections` | savedCollections.ts:59 |
-| GET | `/api/v2/users/blocked` | settings.ts:132 |
-| DELETE | `/api/v2/users/me` | settings.ts:128 |
-| GET | `/api/v2/users/me` | auth.ts:325 |
-| PUT | `/api/v2/users/me` | profile.ts:25 |
+| POST | `/api/v2/users/{param}/report` | memberReports.ts:66 |
+| GET | `/api/v2/users/blocked` | settings.ts:133 |
+| DELETE | `/api/v2/users/me` | settings.ts:129 |
+| GET | `/api/v2/users/me` | auth.ts:391 |
+| PUT | `/api/v2/users/me` | profile.ts:26 |
 | GET | `/api/v2/users/me/activity/dashboard` | activity.ts:72 |
-| POST | `/api/v2/users/me/avatar` | profile.ts:95 |
+| POST | `/api/v2/users/me/avatar` | profile.ts:96 |
 | GET | `/api/v2/users/me/match-preferences` | matches.ts:244 |
 | PUT | `/api/v2/users/me/match-preferences` | matches.ts:251 |
-| GET | `/api/v2/users/me/parent-accounts` | settings.ts:166 |
-| PUT | `/api/v2/users/me/parent-accounts/{param}/permissions` | settings.ts:207 |
-| POST | `/api/v2/users/me/password` | profile.ts:38 |
-| GET | `/api/v2/users/me/preferences` | settings.ts:152 |
-| PUT | `/api/v2/users/me/preferences` | settings.ts:157 |
+| GET | `/api/v2/users/me/parent-accounts` | settings.ts:167 |
+| PUT | `/api/v2/users/me/parent-accounts/{param}/permissions` | settings.ts:208 |
+| POST | `/api/v2/users/me/password` | profile.ts:39 |
+| GET | `/api/v2/users/me/preferences` | settings.ts:153 |
+| PUT | `/api/v2/users/me/preferences` | settings.ts:158 |
 | GET | `/api/v2/users/me/skills` | endorsements.ts:188 |
 | POST | `/api/v2/users/me/skills` | endorsements.ts:242 |
 | DELETE | `/api/v2/users/me/skills/{param}` | endorsements.ts:255 |
-| GET | `/api/v2/users/me/sub-accounts` | settings.ts:161 |
-| POST | `/api/v2/users/me/sub-accounts` | settings.ts:171 |
-| DELETE | `/api/v2/users/me/sub-accounts/{param}` | settings.ts:238 |
-| GET | `/api/v2/users/me/sub-accounts/{param}/activity` | settings.ts:279 |
-| PUT | `/api/v2/users/me/sub-accounts/{param}/approve` | settings.ts:175 |
-| PUT | `/api/v2/users/me/sub-accounts/{param}/permissions` | settings.ts:182, settings.ts:198 |
+| GET | `/api/v2/users/me/sub-accounts` | settings.ts:162 |
+| POST | `/api/v2/users/me/sub-accounts` | settings.ts:172 |
+| DELETE | `/api/v2/users/me/sub-accounts/{param}` | settings.ts:239 |
+| GET | `/api/v2/users/me/sub-accounts/{param}/activity` | settings.ts:280 |
+| PUT | `/api/v2/users/me/sub-accounts/{param}/approve` | settings.ts:176 |
+| PUT | `/api/v2/users/me/sub-accounts/{param}/permissions` | settings.ts:183, settings.ts:199 |
 | GET | `/api/v2/volunteering/accessibility-needs` | volunteeringVolunteer.ts:448 |
 | PUT | `/api/v2/volunteering/accessibility-needs` | volunteeringVolunteer.ts:456 |
 | GET | `/api/v2/volunteering/applications` | volunteering.ts:476 |
@@ -761,3 +771,4 @@ and the places a contract test earns the most.
 | GET | `/api/v2/wallet/transactions/{param}` | wallet.ts:197 |
 | POST | `/api/v2/wallet/transfer` | wallet.ts:244 |
 | GET | `/api/v2/wallet/user-search` | wallet.ts:228 |
+| POST | `/api/webauthn/security-confirm` | twoFactor.ts:65 |

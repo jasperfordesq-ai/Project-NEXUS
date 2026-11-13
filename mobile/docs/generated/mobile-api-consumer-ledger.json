@@ -1,13 +1,13 @@
 {
   "generated_by": "mobile/scripts/generate-api-consumer-ledger.mjs",
-  "verified_against": "docs/generated/laravel-api-route-inventory.json (2307 distinct API paths)",
+  "verified_against": "docs/generated/laravel-api-route-inventory.json (2340 distinct API paths)",
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
-    "api_modules": 67,
-    "call_sites": 771,
-    "distinct_endpoints": 616,
-    "verified": 616,
+    "api_modules": 71,
+    "call_sites": 784,
+    "distinct_endpoints": 627,
+    "verified": 627,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -328,157 +328,157 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:954",
+      "at": "events.ts:964",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1130",
+      "at": "events.ts:1140",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1148",
+      "at": "events.ts:1158",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1160",
+      "at": "events.ts:1170",
       "http": "PUT",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1172",
+      "at": "events.ts:1182",
       "http": "DELETE",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1186",
+      "at": "events.ts:1196",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1208",
+      "at": "events.ts:1218",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1231",
+      "at": "events.ts:1241",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1242",
+      "at": "events.ts:1252",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1256",
+      "at": "events.ts:1266",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1269",
+      "at": "events.ts:1279",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1292",
+      "at": "events.ts:1302",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1298",
+      "at": "events.ts:1308",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1314",
+      "at": "events.ts:1324",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1330",
+      "at": "events.ts:1340",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1341",
+      "at": "events.ts:1351",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1347",
+      "at": "events.ts:1357",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1353",
+      "at": "events.ts:1363",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1359",
-      "http": "GET",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1371",
+      "at": "events.ts:1369",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
       "at": "events.ts:1381",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1391",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1396",
+      "at": "events.ts:1406",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1413",
+      "at": "events.ts:1423",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1419",
+      "at": "events.ts:1429",
       "http": "PUT",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1428",
+      "at": "events.ts:1438",
       "http": "PUT",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1437",
+      "at": "events.ts:1447",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1448",
+      "at": "events.ts:1458",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1459",
+      "at": "events.ts:1469",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1465",
+      "at": "events.ts:1475",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1516",
+      "at": "events.ts:1526",
       "http": "POST",
       "reason": "endpoint literal nests a template inside an interpolation and could not be resolved statically"
     },
     {
-      "at": "feed.ts:288",
+      "at": "feed.ts:298",
       "http": "GET",
       "reason": "variable \"path\" is not a literal endpoint in this module"
     },
@@ -513,22 +513,22 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "marketplace.ts:614",
+      "at": "marketplace.ts:619",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "marketplace.ts:615",
+      "at": "marketplace.ts:620",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "marketplace.ts:888",
+      "at": "marketplace.ts:905",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "marketplace.ts:889",
+      "at": "marketplace.ts:906",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     }
@@ -577,7 +577,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:240"
+        "auth.ts:275"
       ]
     },
     {
@@ -586,7 +586,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:217"
+        "auth.ts:249"
       ]
     },
     {
@@ -595,7 +595,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:316"
+        "auth.ts:382"
       ]
     },
     {
@@ -604,7 +604,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:330"
+        "auth.ts:396"
       ]
     },
     {
@@ -613,7 +613,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:268"
+        "auth.ts:334"
       ]
     },
     {
@@ -622,7 +622,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:245"
+        "auth.ts:280"
       ]
     },
     {
@@ -631,7 +631,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:250"
+        "auth.ts:306"
       ]
     },
     {
@@ -640,7 +640,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:138"
+        "auth.ts:154"
       ]
     },
     {
@@ -667,7 +667,17 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:128"
+        "auth.ts:141",
+        "twoFactor.ts:77"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/auth/2fa/status",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "twoFactor.ts:60"
       ]
     },
     {
@@ -676,7 +686,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:133"
+        "auth.ts:148",
+        "twoFactor.ts:87"
       ]
     },
     {
@@ -685,7 +696,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:229"
+        "auth.ts:264"
       ]
     },
     {
@@ -694,7 +705,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:292"
+        "auth.ts:358"
       ]
     },
     {
@@ -716,12 +727,21 @@
       ]
     },
     {
+      "http": "GET",
+      "endpoint": "/api/v2/blog/categories",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "blog.ts:63"
+      ]
+    },
+    {
       "http": "POST",
       "endpoint": "/api/v2/bookmarks",
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:399"
+        "feed.ts:409"
       ]
     },
     {
@@ -730,7 +750,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:188"
+        "exchanges.ts:233"
       ]
     },
     {
@@ -749,7 +769,7 @@
       "matched_via": "exact",
       "sites": [
         "comments.ts:75",
-        "exchanges.ts:240"
+        "exchanges.ts:285"
       ]
     },
     {
@@ -759,7 +779,7 @@
       "matched_via": "exact",
       "sites": [
         "comments.ts:87",
-        "exchanges.ts:247"
+        "exchanges.ts:292"
       ]
     },
     {
@@ -787,6 +807,15 @@
       "matched_via": "exact",
       "sites": [
         "comments.ts:114"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/community/this-month",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "community.ts:26"
       ]
     },
     {
@@ -858,7 +887,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1217"
+        "marketplace.ts:1234"
       ]
     },
     {
@@ -867,7 +896,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1221"
+        "marketplace.ts:1238"
       ]
     },
     {
@@ -876,7 +905,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1225"
+        "marketplace.ts:1242"
       ]
     },
     {
@@ -885,7 +914,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1229"
+        "marketplace.ts:1246"
       ]
     },
     {
@@ -894,7 +923,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:908"
+        "marketplace.ts:925"
       ]
     },
     {
@@ -1269,7 +1298,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1140"
+        "events.ts:1150"
       ]
     },
     {
@@ -1332,7 +1361,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1261"
+        "events.ts:1271"
       ]
     },
     {
@@ -1341,7 +1370,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1247"
+        "events.ts:1257"
       ]
     },
     {
@@ -1359,8 +1388,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "client.ts:805",
-        "exchanges.ts:217"
+        "client.ts:809",
+        "exchanges.ts:262"
       ]
     },
     {
@@ -1369,7 +1398,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchangeRequests.ts:199"
+        "exchangeRequests.ts:209"
       ]
     },
     {
@@ -1423,7 +1452,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchangeRequests.ts:229"
+        "exchangeRequests.ts:239"
       ]
     },
     {
@@ -1441,7 +1470,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:212"
+        "exchanges.ts:257"
       ]
     },
     {
@@ -1450,7 +1479,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:207"
+        "exchanges.ts:252"
       ]
     },
     {
@@ -1721,7 +1750,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:279"
+        "feed.ts:289"
       ]
     },
     {
@@ -1730,7 +1759,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:310"
+        "feed.ts:320"
       ]
     },
     {
@@ -1739,7 +1768,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:298"
+        "feed.ts:308"
       ]
     },
     {
@@ -1748,7 +1777,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:292"
+        "feed.ts:302"
       ]
     },
     {
@@ -1757,8 +1786,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:233",
-        "feed.ts:385"
+        "exchanges.ts:278",
+        "feed.ts:395"
       ]
     },
     {
@@ -1767,7 +1796,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:409"
+        "feed.ts:419"
       ]
     },
     {
@@ -1776,7 +1805,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:416"
+        "feed.ts:426"
       ]
     },
     {
@@ -1785,8 +1814,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:478",
-        "feed.ts:479"
+        "feed.ts:488",
+        "feed.ts:489"
       ]
     },
     {
@@ -2070,7 +2099,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:812"
+        "groups.ts:828"
       ]
     },
     {
@@ -2079,7 +2108,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:787"
+        "groups.ts:803"
       ]
     },
     {
@@ -2088,7 +2117,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:796"
+        "groups.ts:812"
       ]
     },
     {
@@ -2097,7 +2126,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:804"
+        "groups.ts:820"
       ]
     },
     {
@@ -2170,7 +2199,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:635"
+        "groups.ts:646"
       ]
     },
     {
@@ -2179,7 +2208,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:530",
+        "groups.ts:541",
         "volunteeringVolunteer.ts:539"
       ]
     },
@@ -2189,8 +2218,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:622",
-        "groups.ts:627"
+        "groups.ts:633",
+        "groups.ts:638"
       ]
     },
     {
@@ -2199,7 +2228,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:537"
+        "groups.ts:548"
       ]
     },
     {
@@ -2208,7 +2237,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:631"
+        "groups.ts:642"
       ]
     },
     {
@@ -2217,7 +2246,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1087"
+        "groups.ts:1106"
       ]
     },
     {
@@ -2226,7 +2255,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1099"
+        "groups.ts:1118"
       ]
     },
     {
@@ -2235,186 +2264,12 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1093"
+        "groups.ts:1112"
       ]
     },
     {
       "http": "GET",
       "endpoint": "/api/v2/groups/{param}/announcements",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:1013"
-      ]
-    },
-    {
-      "http": "POST",
-      "endpoint": "/api/v2/groups/{param}/announcements",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:1305",
-        "groups.ts:1310"
-      ]
-    },
-    {
-      "http": "DELETE",
-      "endpoint": "/api/v2/groups/{param}/announcements/{param}",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:1328"
-      ]
-    },
-    {
-      "http": "PUT",
-      "endpoint": "/api/v2/groups/{param}/announcements/{param}",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:1321"
-      ]
-    },
-    {
-      "http": "POST",
-      "endpoint": "/api/v2/groups/{param}/answers/{param}/accept",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:1157"
-      ]
-    },
-    {
-      "http": "GET",
-      "endpoint": "/api/v2/groups/{param}/challenges",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:831"
-      ]
-    },
-    {
-      "http": "POST",
-      "endpoint": "/api/v2/groups/{param}/challenges",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:846"
-      ]
-    },
-    {
-      "http": "DELETE",
-      "endpoint": "/api/v2/groups/{param}/challenges/{param}",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:857"
-      ]
-    },
-    {
-      "http": "GET",
-      "endpoint": "/api/v2/groups/{param}/chatrooms",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:771"
-      ]
-    },
-    {
-      "http": "POST",
-      "endpoint": "/api/v2/groups/{param}/chatrooms",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:779"
-      ]
-    },
-    {
-      "http": "DELETE",
-      "endpoint": "/api/v2/groups/{param}/chatrooms/{param}/pin/{param}",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:827"
-      ]
-    },
-    {
-      "http": "POST",
-      "endpoint": "/api/v2/groups/{param}/chatrooms/{param}/pin/{param}",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:823"
-      ]
-    },
-    {
-      "http": "GET",
-      "endpoint": "/api/v2/groups/{param}/chatrooms/{param}/pinned",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:819"
-      ]
-    },
-    {
-      "http": "GET",
-      "endpoint": "/api/v2/groups/{param}/discussions",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:981"
-      ]
-    },
-    {
-      "http": "POST",
-      "endpoint": "/api/v2/groups/{param}/discussions",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:1263",
-        "groups.ts:1268"
-      ]
-    },
-    {
-      "http": "GET",
-      "endpoint": "/api/v2/groups/{param}/discussions/{param}",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:998"
-      ]
-    },
-    {
-      "http": "POST",
-      "endpoint": "/api/v2/groups/{param}/discussions/{param}/messages",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:1285",
-        "groups.ts:1290"
-      ]
-    },
-    {
-      "http": "GET",
-      "endpoint": "/api/v2/groups/{param}/files",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:1025"
-      ]
-    },
-    {
-      "http": "POST",
-      "endpoint": "/api/v2/groups/{param}/files",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:1040"
-      ]
-    },
-    {
-      "http": "DELETE",
-      "endpoint": "/api/v2/groups/{param}/files/{param}",
       "status": "verified",
       "matched_via": "exact",
       "sites": [
@@ -2423,11 +2278,185 @@
     },
     {
       "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/announcements",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:1324",
+        "groups.ts:1329"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/groups/{param}/announcements/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:1347"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/groups/{param}/announcements/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:1340"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/answers/{param}/accept",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:1176"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/challenges",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:847"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/challenges",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:862"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/groups/{param}/challenges/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:873"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/chatrooms",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:787"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/chatrooms",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:795"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/groups/{param}/chatrooms/{param}/pin/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:843"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/chatrooms/{param}/pin/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:839"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/chatrooms/{param}/pinned",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:835"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/discussions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:997"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/discussions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:1282",
+        "groups.ts:1287"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/discussions/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:1014"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/discussions/{param}/messages",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:1304",
+        "groups.ts:1309"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/files",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:1041"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/files",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:1056"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/groups/{param}/files/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:1045"
+      ]
+    },
+    {
+      "http": "POST",
       "endpoint": "/api/v2/groups/{param}/image",
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:747"
+        "groups.ts:763"
       ]
     },
     {
@@ -2436,7 +2465,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1431"
+        "groups.ts:1450"
       ]
     },
     {
@@ -2445,7 +2474,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1462"
+        "groups.ts:1481"
       ]
     },
     {
@@ -2454,7 +2483,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1452"
+        "groups.ts:1471"
       ]
     },
     {
@@ -2463,7 +2492,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1439"
+        "groups.ts:1458"
       ]
     },
     {
@@ -2472,7 +2501,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1351"
+        "groups.ts:1370"
       ]
     },
     {
@@ -2481,7 +2510,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1061"
+        "groups.ts:1077"
       ]
     },
     {
@@ -2490,7 +2519,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1072"
+        "groups.ts:1091"
       ]
     },
     {
@@ -2499,7 +2528,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1065"
+        "groups.ts:1081"
       ]
     },
     {
@@ -2508,7 +2537,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:767"
+        "groups.ts:783"
       ]
     },
     {
@@ -2517,7 +2546,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:969"
+        "groups.ts:985"
       ]
     },
     {
@@ -2526,7 +2555,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:964"
+        "groups.ts:980"
       ]
     },
     {
@@ -2535,7 +2564,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1358"
+        "groups.ts:1377"
       ]
     },
     {
@@ -2544,7 +2573,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:595"
+        "groups.ts:606"
       ]
     },
     {
@@ -2553,7 +2582,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:607"
+        "groups.ts:618"
       ]
     },
     {
@@ -2562,7 +2591,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1153"
+        "groups.ts:1172"
       ]
     },
     {
@@ -2571,7 +2600,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1112"
+        "groups.ts:1131"
       ]
     },
     {
@@ -2580,8 +2609,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1125",
-        "groups.ts:1130"
+        "groups.ts:1144",
+        "groups.ts:1149"
       ]
     },
     {
@@ -2590,7 +2619,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1116"
+        "groups.ts:1135"
       ]
     },
     {
@@ -2599,8 +2628,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1141",
-        "groups.ts:1146"
+        "groups.ts:1160",
+        "groups.ts:1165"
       ]
     },
     {
@@ -2609,7 +2638,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:926"
+        "groups.ts:942"
       ]
     },
     {
@@ -2618,8 +2647,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:944",
-        "groups.ts:946"
+        "groups.ts:960",
+        "groups.ts:962"
       ]
     },
     {
@@ -2628,7 +2657,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:863"
+        "groups.ts:879"
       ]
     },
     {
@@ -2637,7 +2666,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:878"
+        "groups.ts:894"
       ]
     },
     {
@@ -2646,7 +2675,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:886"
+        "groups.ts:902"
       ]
     },
     {
@@ -2655,7 +2684,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1215"
+        "groups.ts:1234"
       ]
     },
     {
@@ -2664,7 +2693,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1211"
+        "groups.ts:1230"
       ]
     },
     {
@@ -2673,8 +2702,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1235",
-        "groups.ts:1240"
+        "groups.ts:1254",
+        "groups.ts:1259"
       ]
     },
     {
@@ -2683,7 +2712,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:890"
+        "groups.ts:906"
       ]
     },
     {
@@ -2692,7 +2721,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:894"
+        "groups.ts:910"
       ]
     },
     {
@@ -2701,7 +2730,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1164"
+        "groups.ts:1183"
       ]
     },
     {
@@ -2710,8 +2739,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1177",
-        "groups.ts:1182"
+        "groups.ts:1196",
+        "groups.ts:1201"
       ]
     },
     {
@@ -2720,7 +2749,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1194"
+        "groups.ts:1213"
       ]
     },
     {
@@ -2729,7 +2758,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1168"
+        "groups.ts:1187"
       ]
     },
     {
@@ -2738,7 +2767,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1190"
+        "groups.ts:1209"
       ]
     },
     {
@@ -2747,7 +2776,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1198"
+        "groups.ts:1217"
       ]
     },
     {
@@ -2756,7 +2785,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:577"
+        "groups.ts:588"
       ]
     },
     {
@@ -2765,7 +2794,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1466"
+        "groups.ts:1485"
       ]
     },
     {
@@ -2774,7 +2803,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1471"
+        "groups.ts:1490"
       ]
     },
     {
@@ -3320,7 +3349,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:176"
+        "exchanges.ts:180"
       ]
     },
     {
@@ -3329,8 +3358,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:193",
-        "exchanges.ts:194"
+        "exchanges.ts:238",
+        "exchanges.ts:239"
       ]
     },
     {
@@ -3339,7 +3368,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:333"
+        "exchanges.ts:379"
       ]
     },
     {
@@ -3348,7 +3377,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:184"
+        "exchanges.ts:229"
       ]
     },
     {
@@ -3357,7 +3386,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:267"
+        "exchanges.ts:312"
       ]
     },
     {
@@ -3366,7 +3395,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:328"
+        "exchanges.ts:374"
       ]
     },
     {
@@ -3375,7 +3404,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:317"
+        "exchanges.ts:363"
       ]
     },
     {
@@ -3384,7 +3413,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:229"
+        "exchanges.ts:274"
       ]
     },
     {
@@ -3393,7 +3422,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:255"
+        "exchanges.ts:300"
       ]
     },
     {
@@ -3402,7 +3431,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:225"
+        "exchanges.ts:270"
       ]
     },
     {
@@ -3411,7 +3440,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:221"
+        "exchanges.ts:266"
       ]
     },
     {
@@ -3420,7 +3449,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:202"
+        "exchanges.ts:247"
       ]
     },
     {
@@ -3429,7 +3458,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchanges.ts:259"
+        "exchanges.ts:304"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/listings/mine",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:220"
       ]
     },
     {
@@ -3438,7 +3476,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:601"
+        "marketplace.ts:606"
       ]
     },
     {
@@ -3447,7 +3485,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:605"
+        "marketplace.ts:610"
       ]
     },
     {
@@ -3456,7 +3494,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1033"
+        "marketplace.ts:1050"
       ]
     },
     {
@@ -3465,7 +3503,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1041"
+        "marketplace.ts:1058"
       ]
     },
     {
@@ -3474,7 +3512,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1045"
+        "marketplace.ts:1062"
       ]
     },
     {
@@ -3483,7 +3521,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1056"
+        "marketplace.ts:1073"
       ]
     },
     {
@@ -3492,7 +3530,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1060"
+        "marketplace.ts:1077"
       ]
     },
     {
@@ -3501,7 +3539,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1067"
+        "marketplace.ts:1084"
       ]
     },
     {
@@ -3510,7 +3548,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1007"
+        "marketplace.ts:1024"
       ]
     },
     {
@@ -3519,7 +3557,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1011"
+        "marketplace.ts:1028"
       ]
     },
     {
@@ -3528,7 +3566,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:571"
+        "marketplace.ts:576"
       ]
     },
     {
@@ -3537,8 +3575,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:623",
-        "marketplace.ts:625"
+        "marketplace.ts:628",
+        "marketplace.ts:630"
       ]
     },
     {
@@ -3547,7 +3585,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:662"
+        "marketplace.ts:667"
       ]
     },
     {
@@ -3556,7 +3594,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:650"
+        "marketplace.ts:655"
       ]
     },
     {
@@ -3565,7 +3603,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:688"
+        "marketplace.ts:705"
       ]
     },
     {
@@ -3574,7 +3612,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:692"
+        "marketplace.ts:709"
       ]
     },
     {
@@ -3583,7 +3621,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:717"
+        "marketplace.ts:734"
       ]
     },
     {
@@ -3592,7 +3630,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1079"
+        "marketplace.ts:1096"
       ]
     },
     {
@@ -3601,7 +3639,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:681"
+        "marketplace.ts:686"
       ]
     },
     {
@@ -3610,7 +3648,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:673"
+        "marketplace.ts:678"
       ]
     },
     {
@@ -3619,7 +3657,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:677"
+        "marketplace.ts:682"
       ]
     },
     {
@@ -3628,7 +3666,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:666"
+        "marketplace.ts:671"
       ]
     },
     {
@@ -3637,7 +3675,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:702"
+        "marketplace.ts:719"
       ]
     },
     {
@@ -3646,7 +3684,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:698"
+        "marketplace.ts:715"
       ]
     },
     {
@@ -3655,7 +3693,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:589"
+        "marketplace.ts:594"
       ]
     },
     {
@@ -3664,7 +3702,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:597"
+        "marketplace.ts:602"
       ]
     },
     {
@@ -3673,7 +3711,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:658"
+        "marketplace.ts:663"
       ]
     },
     {
@@ -3682,7 +3720,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:585"
+        "marketplace.ts:590"
       ]
     },
     {
@@ -3691,7 +3729,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1160"
+        "marketplace.ts:1177"
       ]
     },
     {
@@ -3700,7 +3738,7 @@
       "status": "verified",
       "matched_via": "parameter-matches-literal-segment",
       "sites": [
-        "marketplace.ts:727"
+        "marketplace.ts:744"
       ]
     },
     {
@@ -3709,7 +3747,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:750"
+        "marketplace.ts:767"
       ]
     },
     {
@@ -3718,7 +3756,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:731"
+        "marketplace.ts:748"
       ]
     },
     {
@@ -3727,7 +3765,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:742"
+        "marketplace.ts:759"
       ]
     },
     {
@@ -3736,7 +3774,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:738"
+        "marketplace.ts:755"
       ]
     },
     {
@@ -3745,7 +3783,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:746"
+        "marketplace.ts:763"
       ]
     },
     {
@@ -3754,7 +3792,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:848"
+        "marketplace.ts:865"
       ]
     },
     {
@@ -3763,8 +3801,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:762",
-        "marketplace.ts:767"
+        "marketplace.ts:779",
+        "marketplace.ts:784"
       ]
     },
     {
@@ -3773,7 +3811,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:782"
+        "marketplace.ts:799"
       ]
     },
     {
@@ -3782,7 +3820,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:778"
+        "marketplace.ts:795"
       ]
     },
     {
@@ -3791,7 +3829,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:804"
+        "marketplace.ts:821"
       ]
     },
     {
@@ -3800,7 +3838,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:820"
+        "marketplace.ts:837"
       ]
     },
     {
@@ -3809,7 +3847,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:827"
+        "marketplace.ts:844"
       ]
     },
     {
@@ -3818,7 +3856,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:834"
+        "marketplace.ts:851"
       ]
     },
     {
@@ -3827,7 +3865,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:796"
+        "marketplace.ts:813"
       ]
     },
     {
@@ -3836,7 +3874,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:893"
+        "marketplace.ts:910"
       ]
     },
     {
@@ -3845,7 +3883,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:789"
+        "marketplace.ts:806"
       ]
     },
     {
@@ -3854,7 +3892,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:800"
+        "marketplace.ts:817"
       ]
     },
     {
@@ -3863,7 +3901,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:774"
+        "marketplace.ts:791"
       ]
     },
     {
@@ -3872,7 +3910,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:861"
+        "marketplace.ts:878"
       ]
     },
     {
@@ -3881,7 +3919,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:813"
+        "marketplace.ts:830"
       ]
     },
     {
@@ -3890,7 +3928,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:871"
+        "marketplace.ts:888"
       ]
     },
     {
@@ -3899,7 +3937,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:852"
+        "marketplace.ts:869"
       ]
     },
     {
@@ -3908,7 +3946,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1075"
+        "marketplace.ts:1092"
       ]
     },
     {
@@ -3917,7 +3955,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1071"
+        "marketplace.ts:1088"
       ]
     },
     {
@@ -3926,7 +3964,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1015"
+        "marketplace.ts:1032"
       ]
     },
     {
@@ -3935,7 +3973,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1025"
+        "marketplace.ts:1042"
       ]
     },
     {
@@ -3944,7 +3982,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1029"
+        "marketplace.ts:1046"
       ]
     },
     {
@@ -3953,20 +3991,11 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:952"
+        "marketplace.ts:969"
       ]
     },
     {
       "http": "GET",
-      "endpoint": "/api/v2/marketplace/seller/coupons",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "marketplace.ts:1168"
-      ]
-    },
-    {
-      "http": "POST",
       "endpoint": "/api/v2/marketplace/seller/coupons",
       "status": "verified",
       "matched_via": "exact",
@@ -3975,12 +4004,21 @@
       ]
     },
     {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/seller/coupons",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1202"
+      ]
+    },
+    {
       "http": "DELETE",
       "endpoint": "/api/v2/marketplace/seller/coupons/{param}",
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1209"
+        "marketplace.ts:1226"
       ]
     },
     {
@@ -3989,7 +4027,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1205"
+        "marketplace.ts:1222"
       ]
     },
     {
@@ -3998,7 +4036,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1213"
+        "marketplace.ts:1230"
       ]
     },
     {
@@ -4007,7 +4045,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:982"
+        "marketplace.ts:999"
       ]
     },
     {
@@ -4016,7 +4054,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:963"
+        "marketplace.ts:980"
       ]
     },
     {
@@ -4025,7 +4063,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:948"
+        "marketplace.ts:965"
       ]
     },
     {
@@ -4034,7 +4072,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:959"
+        "marketplace.ts:976"
       ]
     },
     {
@@ -4043,7 +4081,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1164"
+        "marketplace.ts:1181"
       ]
     },
     {
@@ -4052,7 +4090,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1085"
+        "marketplace.ts:1102"
       ]
     },
     {
@@ -4061,7 +4099,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1138"
+        "marketplace.ts:1155"
       ]
     },
     {
@@ -4070,7 +4108,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1156"
+        "marketplace.ts:1173"
       ]
     },
     {
@@ -4079,7 +4117,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1152"
+        "marketplace.ts:1169"
       ]
     },
     {
@@ -4088,7 +4126,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1089"
+        "marketplace.ts:1106"
       ]
     },
     {
@@ -4097,7 +4135,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1108"
+        "marketplace.ts:1125"
       ]
     },
     {
@@ -4106,7 +4144,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1127"
+        "marketplace.ts:1144"
       ]
     },
     {
@@ -4115,7 +4153,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1123"
+        "marketplace.ts:1140"
       ]
     },
     {
@@ -4124,7 +4162,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:967"
+        "marketplace.ts:984"
       ]
     },
     {
@@ -4133,7 +4171,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:978"
+        "marketplace.ts:995"
       ]
     },
     {
@@ -4142,7 +4180,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1095"
+        "marketplace.ts:1112"
       ]
     },
     {
@@ -4205,7 +4243,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:87"
+        "settings.ts:88"
       ]
     },
     {
@@ -4250,7 +4288,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:944"
+        "marketplace.ts:961"
       ]
     },
     {
@@ -4259,7 +4297,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:916"
+        "marketplace.ts:933"
       ]
     },
     {
@@ -4268,7 +4306,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:926"
+        "marketplace.ts:943"
       ]
     },
     {
@@ -4277,7 +4315,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:933"
+        "marketplace.ts:950"
       ]
     },
     {
@@ -4286,7 +4324,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:940"
+        "marketplace.ts:957"
       ]
     },
     {
@@ -4295,7 +4333,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:154"
+        "messages.ts:162"
       ]
     },
     {
@@ -4304,8 +4342,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:242",
-        "messages.ts:243"
+        "messages.ts:253",
+        "messages.ts:254"
       ]
     },
     {
@@ -4314,7 +4352,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:231"
+        "messages.ts:242"
       ]
     },
     {
@@ -4323,7 +4361,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:161"
+        "messages.ts:169"
       ]
     },
     {
@@ -4332,7 +4370,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:227"
+        "messages.ts:238"
       ]
     },
     {
@@ -4341,7 +4379,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:223"
+        "messages.ts:234"
       ]
     },
     {
@@ -4350,7 +4388,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:207"
+        "messages.ts:215"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/messages/{param}/report",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "memberReports.ts:70"
       ]
     },
     {
@@ -4359,7 +4406,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:187"
+        "messages.ts:195"
       ]
     },
     {
@@ -4368,7 +4415,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:191"
+        "messages.ts:199"
       ]
     },
     {
@@ -4377,7 +4424,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:219"
+        "messages.ts:230"
       ]
     },
     {
@@ -4386,7 +4433,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:215"
+        "messages.ts:223"
       ]
     },
     {
@@ -4395,7 +4442,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:203"
+        "messages.ts:211"
       ]
     },
     {
@@ -4404,8 +4451,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:328",
-        "messages.ts:329"
+        "messages.ts:342",
+        "messages.ts:343"
       ]
     },
     {
@@ -4468,7 +4515,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "onboarding.ts:101"
+        "onboarding.ts:106"
       ]
     },
     {
@@ -4477,7 +4524,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "onboarding.ts:116"
+        "onboarding.ts:121"
       ]
     },
     {
@@ -4486,7 +4533,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "onboarding.ts:97"
+        "onboarding.ts:102"
       ]
     },
     {
@@ -4495,7 +4542,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "onboarding.ts:109"
+        "onboarding.ts:114"
       ]
     },
     {
@@ -4504,7 +4551,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "onboarding.ts:105"
+        "onboarding.ts:110"
       ]
     },
     {
@@ -4513,7 +4560,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "onboarding.ts:93"
+        "onboarding.ts:98"
       ]
     },
     {
@@ -4767,7 +4814,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1279"
+        "events.ts:1289"
       ]
     },
     {
@@ -4804,7 +4851,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1287"
+        "events.ts:1297"
       ]
     },
     {
@@ -4822,7 +4869,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:340"
+        "feed.ts:350"
       ]
     },
     {
@@ -4831,7 +4878,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:365"
+        "feed.ts:375"
       ]
     },
     {
@@ -4894,8 +4941,44 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "members.ts:91",
+        "members.ts:92",
         "reviews.ts:74"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/safeguarding/add-choice",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "safeguarding.ts:95"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/safeguarding/available-options",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "safeguarding.ts:77"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/safeguarding/my-preferences",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "safeguarding.ts:57"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/safeguarding/revoke",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "safeguarding.ts:99"
       ]
     },
     {
@@ -4995,7 +5078,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1251"
+        "groups.ts:1270"
       ]
     },
     {
@@ -5004,7 +5087,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1219"
+        "groups.ts:1238"
       ]
     },
     {
@@ -5013,7 +5096,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:1247"
+        "groups.ts:1266"
       ]
     },
     {
@@ -5022,8 +5105,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "tenant.ts:104",
-        "tenant.ts:124"
+        "tenant.ts:122",
+        "tenant.ts:142"
       ]
     },
     {
@@ -5032,7 +5115,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "tenant.ts:139"
+        "tenant.ts:157"
       ]
     },
     {
@@ -5041,9 +5124,9 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "client.ts:804",
+        "client.ts:808",
         "eventPeople.ts:92",
-        "members.ts:76"
+        "members.ts:77"
       ]
     },
     {
@@ -5052,7 +5135,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "members.ts:81"
+        "members.ts:82"
       ]
     },
     {
@@ -5070,7 +5153,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:148"
+        "settings.ts:149"
       ]
     },
     {
@@ -5079,7 +5162,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:144"
+        "settings.ts:145"
       ]
     },
     {
@@ -5088,7 +5171,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "members.ts:86"
+        "members.ts:87"
       ]
     },
     {
@@ -5101,12 +5184,21 @@
       ]
     },
     {
+      "http": "POST",
+      "endpoint": "/api/v2/users/{param}/report",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "memberReports.ts:66"
+      ]
+    },
+    {
       "http": "GET",
       "endpoint": "/api/v2/users/blocked",
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:132"
+        "settings.ts:133"
       ]
     },
     {
@@ -5115,7 +5207,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:128"
+        "settings.ts:129"
       ]
     },
     {
@@ -5124,7 +5216,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:325"
+        "auth.ts:391"
       ]
     },
     {
@@ -5133,7 +5225,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "profile.ts:25"
+        "profile.ts:26"
       ]
     },
     {
@@ -5151,7 +5243,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "profile.ts:95"
+        "profile.ts:96"
       ]
     },
     {
@@ -5178,7 +5270,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:166"
+        "settings.ts:167"
       ]
     },
     {
@@ -5187,7 +5279,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:207"
+        "settings.ts:208"
       ]
     },
     {
@@ -5196,7 +5288,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "profile.ts:38"
+        "profile.ts:39"
       ]
     },
     {
@@ -5205,7 +5297,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:152"
+        "settings.ts:153"
       ]
     },
     {
@@ -5214,7 +5306,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:157"
+        "settings.ts:158"
       ]
     },
     {
@@ -5250,7 +5342,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:161"
+        "settings.ts:162"
       ]
     },
     {
@@ -5259,7 +5351,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:171"
+        "settings.ts:172"
       ]
     },
     {
@@ -5268,7 +5360,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:238"
+        "settings.ts:239"
       ]
     },
     {
@@ -5277,7 +5369,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:279"
+        "settings.ts:280"
       ]
     },
     {
@@ -5286,7 +5378,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:175"
+        "settings.ts:176"
       ]
     },
     {
@@ -5295,8 +5387,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:182",
-        "settings.ts:198"
+        "settings.ts:183",
+        "settings.ts:199"
       ]
     },
     {
@@ -6129,6 +6221,15 @@
       "matched_via": "exact",
       "sites": [
         "wallet.ts:228"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/webauthn/security-confirm",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "twoFactor.ts:65"
       ]
     }
   ]
