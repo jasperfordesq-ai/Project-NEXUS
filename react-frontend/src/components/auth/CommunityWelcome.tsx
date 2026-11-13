@@ -11,8 +11,8 @@
  *
  * 🔴 It never shows the community's photo. It did, as the cover behind the
  * logo, until the owner took it off the sign-in form and then the join page
- * and the welcome step (13 Nov 2026). The photo belongs to the home page and
- * the dashboard — see `CommunityPhoto`.
+ * and the welcome step (13 Nov 2026). The photo belongs to the home page
+ * only — see `CommunityPhoto`.
  *
  * It sits flush with the card's edges: pass the negative margins that undo the
  * card's padding (e.g. `-mx-5 -mt-5 sm:-mx-8 sm:-mt-8`), and give the card

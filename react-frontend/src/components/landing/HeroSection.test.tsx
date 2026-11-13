@@ -237,7 +237,7 @@ describe('HeroSection — authenticated user', () => {
       try {
         render(<HeroSection />);
         const photo = screen.getByTestId('landing-hero-photo');
-        // Decorative, like the same photo on the dashboard: an empty alt.
+        // Decorative, beside the community's name in text: an empty alt.
         expect(photo).toHaveAttribute('alt', '');
         expect(photo.getAttribute('src')).toContain('community.jpg');
         // A framed picture, two wide to one tall at any width (13 Nov 2026).

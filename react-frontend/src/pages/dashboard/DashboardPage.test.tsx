@@ -203,7 +203,9 @@ describe('DashboardPage', () => {
     }
   });
 
-  it("shows the community's own photo in the welcome panel when it has one", () => {
+  // Owner, 13 Nov 2026: the photo was "too small" in the welcome panel and
+  // "doesn't look right". It is on the home page only.
+  it("does not show the community's photo, even when the community has one", () => {
     const original = vi.mocked(useTenant).getMockImplementation()!;
     vi.mocked(useTenant).mockImplementation(() => ({
       ...original(),
@@ -211,9 +213,9 @@ describe('DashboardPage', () => {
     }));
     try {
       render(<DashboardPage />);
-      const photo = within(screen.getByTestId('dashboard-welcome')).getByTestId('dashboard-welcome-photo');
-      expect(photo.getAttribute('src')).toContain('community-photos/us.webp');
-      expect(photo).toHaveAttribute('alt', '');
+      const panel = screen.getByTestId('dashboard-welcome');
+      expect(panel.querySelector('img')).toBeNull();
+      expect(document.querySelector('img[src*="community-photos"]')).toBeNull();
     } finally {
       vi.mocked(useTenant).mockImplementation(original);
     }

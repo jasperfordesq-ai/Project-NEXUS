@@ -46,7 +46,9 @@ describe('CommunityPhotoSection', () => {
   it('offers an upload, and says where the photo will appear', () => {
     render(<CommunityPhotoSection state={stateWith()} />);
     expect(screen.getByRole('heading', { name: 'Community photo' })).toBeInTheDocument();
-    expect(screen.getByText(/it appears on your home page and on the dashboard\./i)).toBeInTheDocument();
+    expect(screen.getByText(/it appears on your home page\./i)).toBeInTheDocument();
+    // It came off the dashboard on 13 Nov 2026; the admin must not be told otherwise.
+    expect(screen.queryByText(/dashboard/i)).toBeNull();
     expect(screen.getByRole('button', { name: /upload image/i })).toBeInTheDocument();
   });
 
@@ -135,7 +137,7 @@ describe('CommunityPhotoSection', () => {
 
       const preview = screen.getByTestId('community-photo-home-preview');
       expect(within(preview).getByText(/welcome banner on your home page is switched off/i)).toBeInTheDocument();
-      expect(within(preview).getByText(/it still appears on the dashboard/i)).toBeInTheDocument();
+      expect(within(preview).getByText(/does not appear anywhere on your site/i)).toBeInTheDocument();
       expect(within(preview).getByRole('link', { name: /home page editor/i })).toHaveAttribute('href', '/test/admin/landing-page');
       expect(within(preview).queryByTestId('landing-hero-photo')).toBeNull();
 

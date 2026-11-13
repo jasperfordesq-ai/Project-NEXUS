@@ -5,12 +5,13 @@
 
 /**
  * The community's own photo (Admin → "Make it yours" → "Community photo";
- * AWID feedback, Nov 2026: "warmth, and community"). Shown in two places
- * only: the home page, under the welcome banner's words and buttons, and the
- * dashboard welcome. The owner took it off the sign-in form, the join page,
- * the new member's welcome step, the feed and Explore on 13 Nov 2026 ("in
- * too many places... very repetitive"). Do not add it to another page
- * without being asked.
+ * AWID feedback, Nov 2026: "warmth, and community"). Shown in ONE place
+ * only: the home page, under the welcome banner's words and buttons. The
+ * owner took it off the sign-in form, the join page, the new member's
+ * welcome step, the feed and Explore on 13 Nov 2026 ("in too many places...
+ * very repetitive"), and off the dashboard welcome panel the same day ("too
+ * small, and it doesn't look right"). Do not add it to another page without
+ * being asked.
  *
  * It is decoration beside the community's name and tagline, which are text,
  * so it carries no alt text. When the community has no photo — or the photo
@@ -21,8 +22,7 @@
  * band across the full width of the header, which on a laptop is a box eight
  * times wider than it is tall: about a fifth of the photo showed, and it read
  * as a stretched strip (owner, 13 Nov 2026: "the dimensions are all out of
- * proportion"). A ratio cannot do that at any width. The dashboard panel,
- * where the box is never wide, still sizes it itself.
+ * proportion"). A ratio cannot do that at any width.
  */
 
 import { useState, type ReactNode } from 'react';

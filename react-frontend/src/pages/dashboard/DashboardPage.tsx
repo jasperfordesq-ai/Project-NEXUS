@@ -61,7 +61,6 @@ import { PageMeta } from '@/components/seo';
 import { useAuth, useTenant, useFeature, useModule, useNotifications } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
-import { CommunityPhoto } from '@/components/branding/CommunityPhoto';
 import { vivid } from '@/lib/vivid';
 import { useSiteVivid } from '@/contexts/SiteAccentContext';
 import { logError } from '@/lib/logger';
@@ -509,12 +508,6 @@ export function DashboardPage() {
             {/* The same soft glow of the companion colour as every other page opening. */}
             <div aria-hidden="true" data-hero-glow="true" className={`hero-glow pointer-events-none absolute -right-16 -top-24 size-48 rounded-full blur-3xl sm:size-72 ${vivid.glow}`} />
             <CardBody className="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 lg:p-8">
-              {/* The community's own photo, when it has one: above the greeting
-                  on a phone, at the far end of the panel on wider screens. */}
-              <CommunityPhoto
-                data-testid="dashboard-welcome-photo"
-                className="h-32 w-full rounded-2xl shadow-sm ring-1 ring-black/5 sm:order-last sm:h-28 sm:w-48 lg:w-64 dark:ring-white/10"
-              />
               <div className="min-w-0 sm:flex-1">
                 <h1 className={`text-2xl font-bold leading-tight tracking-tight text-theme-primary sm:text-3xl ${vivid.text}`}>{greeting}</h1>
                 <p className={`mt-1 max-w-2xl text-sm leading-6 text-theme-secondary sm:text-base ${vivid.text}`}>{t('community_activity', { community: branding.name })}</p>

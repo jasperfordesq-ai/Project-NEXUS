@@ -6,8 +6,8 @@
 /**
  * Admin → "Make it yours" → "Community photo" (AWID feedback, Nov 2026:
  * "warmth, and community"). One photo of the community, shown by the member
- * website on the home page and the dashboard only (owner, 13 Nov 2026: "in
- * too many places"). Like the header logos it lives in tenants.configuration,
+ * website on the home page only (owner, 13 Nov 2026: "in too many places";
+ * it came off the dashboard the same day). Like the header logos it lives in tenants.configuration,
  * so an upload or removal persists at once and reaches the website through
  * the tenant bootstrap (branding.communityPhoto).
  *
