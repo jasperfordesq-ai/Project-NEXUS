@@ -12,10 +12,13 @@
  * none had a photo — the settings existed but sat in seven different menus.
  *
  * Nothing new is stored here. Logo, colour, look, Soft / Vivid and photo are
- * the very same sections the Settings page shows, driven by the same form
- * hook, so the two pages cannot drift; the tagline saves through the SEO
- * endpoint that already owned it; themes and notices link to their screens.
- * Nothing changes for a community until its admin chooses it.
+ * sections built for the Settings page and driven by the same form hook; since
+ * 13 Nov 2026 they live here only (owner: one admin place per setting). The
+ * accessible site's header colour followed on the same day: it sits under the
+ * community colour in step 2, because both are saved by one call and an admin
+ * choosing a colour should see where else it shows. The tagline saves through
+ * the SEO endpoint that already owned it; themes and notices link to their
+ * screens. Nothing changes for a community until its admin chooses it.
  */
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
@@ -39,6 +42,7 @@ import { useUnsavedChangesGuard } from '../../../components/useUnsavedChangesGua
 import { SettingsSection } from '../settings/SettingsSection';
 import { CommunityColourSection, communityColourTooLight } from '../settings/sections/CommunityColourSection';
 import { CommunityPhotoSection } from '../settings/sections/CommunityPhotoSection';
+import { HeaderColorsSection } from '../settings/sections/HeaderColorsSection';
 import { HeaderLogoSection } from '../settings/sections/HeaderLogoSection';
 import { useAdminSettingsForm } from '../settings/useAdminSettingsForm';
 import { SetupProgress, setupStepAnchor } from './SetupProgress';
@@ -230,6 +234,12 @@ export function MakeItYoursPage() {
 
           <SetupStep stepKey="colour" number={2} total={total} done={done('colour')}>
             <CommunityColourSection state={general} logoColours={status.suggested_colours} />
+            {/* Not a step of its own: the step is done when the community
+                colour is chosen. It is here because the accessible site's
+                header takes its line from that colour unless one is set. */}
+            <div className="pt-4">
+              <HeaderColorsSection state={general} />
+            </div>
           </SetupStep>
 
           <SetupStep stepKey="photo" number={3} total={total} done={done('photo')}>
@@ -316,12 +326,13 @@ export function MakeItYoursPage() {
             </SettingsSection>
           </SetupStep>
 
-          {/* Colour, look and Soft / Vivid are the only choices here that wait
-              for Save: logo and photo save as they upload, the tagline has its
-              own button. So the bar is here only while one of those three has
+          {/* The colour choices (community colour, look, Soft / Vivid and the
+              accessible site's header colours) are the only ones here that
+              wait for Save: logo and photo save as they upload, the tagline
+              has its own button. So the bar is here only while one of them has
               changed — a permanent "All changes saved" bar across a guided
               page, covering the bottom of a phone screen, says nothing useful.
-              Discard puts the three colour choices back. */}
+              Discard puts the colour choices back. */}
           {(general.dirty || savingColour) && (
             <AdminSaveBar
               dirty={general.dirty}

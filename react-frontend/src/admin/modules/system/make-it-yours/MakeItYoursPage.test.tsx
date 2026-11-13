@@ -155,6 +155,32 @@ describe('MakeItYoursPage', () => {
     expect(screen.queryByRole('status', { busy: true })).toBeNull();
   });
 
+  // Moved here from the Settings page on 13 Nov 2026 (owner: one admin place
+  // per setting). It is part of the colour step, not a seventh step.
+  it("keeps the accessible site's header colour with the community colour, and saves both in one go", async () => {
+    api.getSettings.mockResolvedValue({
+      success: true,
+      data: { tenant: { name: 'Riverside Timebank' }, settings: { community_color: '#0f766e' } },
+    });
+    await renderPage();
+
+    expect(screen.getAllByTestId(/^setup-step-/)).toHaveLength(6);
+    const step = screen.getByTestId('setup-step-colour');
+    expect(within(step).getByRole('heading', { name: 'Accessible header colour' })).toBeInTheDocument();
+    // With no header colour chosen, the preview's line is the community colour.
+    const bar = within(step).getByTestId('header-colour-preview').firstElementChild as HTMLElement;
+    expect(bar.style.borderBottom).toBe('8px solid rgb(15, 118, 110)');
+
+    expect(screen.queryByRole('button', { name: 'Save colour' })).toBeNull();
+    const hex = within(document.getElementById('settings-section-header-colours')!).getAllByRole('textbox')[0]!;
+    fireEvent.change(hex, { target: { value: '#1d3557' } });
+    fireEvent.click(await screen.findByRole('button', { name: 'Save colour' }));
+
+    await waitFor(() => expect(api.saveHeaderColors).toHaveBeenCalledTimes(1));
+    // (accessible header bg, accessible header accent, community colour, look, strength)
+    expect(api.saveHeaderColors).toHaveBeenCalledWith('#1d3557', null, '#0f766e', null, 'soft');
+  });
+
   it('shows no "From your logo" row when the logo gave no colours', async () => {
     api.setup.mockResolvedValue({ success: true, data: status({ suggested_colours: [] }) });
     await renderPage();

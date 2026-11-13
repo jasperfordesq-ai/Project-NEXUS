@@ -13,7 +13,10 @@ import type { AdminSettingsFormState } from '../useAdminSettingsForm';
 
 export const HEADER_COLORS_SECTION_ID = 'header-colours';
 
-/** Themes the accessible (GOV.UK-style) header bar; stored in tenants.configuration. */
+/**
+ * Themes the accessible (GOV.UK-style) header bar; stored in tenants.configuration.
+ * Shown on "Make it yours" only, under the community colour (13 Nov 2026).
+ */
 export function HeaderColorsSection({ state }: { state: AdminSettingsFormState }) {
   const { t } = useTranslation('admin_system');
   const { tenant } = useTenant();

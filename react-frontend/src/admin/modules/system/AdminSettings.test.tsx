@@ -273,17 +273,19 @@ describe('AdminSettings', () => {
   });
 
   // Owner, 13 Nov 2026: what lives on "Make it yours" must not also be here.
-  it('does not repeat the logo, community colour or community photo, and says where they are', async () => {
+  it('does not repeat the logo, the colours or the community photo, and says where they are', async () => {
     await renderPage();
 
-    for (const name of ['Header Logo', 'Community colour', 'Community photo']) {
+    for (const name of ['Header Logo', 'Community colour', 'Community photo', 'Accessible header colour']) {
       expect(screen.queryByRole('heading', { name })).toBeNull();
     }
     const nav = screen.getByRole('navigation', { name: 'Jump to section' });
-    for (const anchor of ['header-logo', 'community-colour', 'community-photo']) {
+    for (const anchor of ['header-logo', 'community-colour', 'community-photo', 'header-colours']) {
       expect(nav.querySelector(`a[href="#settings-section-${anchor}"]`)).toBeNull();
     }
     expect(screen.queryByTestId('community-colour-preview')).toBeNull();
+    expect(screen.queryByTestId('header-colour-preview')).toBeNull();
+    expect(screen.getByTestId('settings-moved-notice')).toHaveTextContent("your accessible site's header colour");
 
     const notice = screen.getByTestId('settings-moved-notice');
     expect(notice).toHaveTextContent('Looking for your logo, colours or community photo?');
@@ -304,7 +306,6 @@ describe('AdminSettings', () => {
       'Time credits',
       'Dates, times and money',
       'Footer',
-      'Accessible header colour',
       'More settings on other pages',
     ]);
 
@@ -315,7 +316,6 @@ describe('AdminSettings', () => {
       '#settings-section-time-credits',
       '#settings-section-dates-money',
       '#settings-section-footer',
-      '#settings-section-header-colours',
       '#settings-section-related',
     ]);
   });
@@ -351,6 +351,23 @@ describe('AdminSettings', () => {
     expect(hrefs).toContain('/test/admin/onboarding-settings');
     expect(hrefs).toContain('/test/admin/module-configuration');
     expect(related).toHaveTextContent('including your languages and the limits on offers and requests');
+  });
+
+  // No colour is edited on this page any more, so no save from it may touch
+  // the colours endpoint (which writes the community colour as well).
+  it('never calls the colours endpoint, whatever is saved', async () => {
+    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ footer_text: 'Old', header_bg_color: '#424285' }));
+    await renderPage();
+
+    const footer = await screen.findByDisplayValue('Old');
+    await userEvent.clear(footer);
+    await userEvent.type(footer, 'New');
+    fireEvent.change(getStartingBalance(), { target: { value: '2' } });
+    await userEvent.click(getSaveButton());
+
+    await waitFor(() => expect(mockAdminEnterprise.updateConfig).toHaveBeenCalledWith({ starting_balance: 2 }));
+    expect(mockAdminSettings.update).toHaveBeenCalledWith({ footer_text: 'New' });
+    expect(mockAdminSettings.saveHeaderColors).not.toHaveBeenCalled();
   });
 
   it('offers no reset or reload action beside Save', async () => {

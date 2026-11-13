@@ -9,8 +9,8 @@
  * One scrolling page: jump-link pills, a card per thing an admin comes here
  * to do, and a single sticky Save bar. The cards are grouped by task, not by
  * where a value is stored, so one card may hold fields from both forms: the
- * main form (name, contact details, joining rules, footer, header colours)
- * saves through /v2/admin/settings, and three settings (time zone, starting
+ * main form (name, contact details, joining rules, footer) saves through
+ * /v2/admin/settings, and three settings (time zone, starting
  * balance, largest transfer) save through the enterprise config endpoint. The
  * two key sets are disjoint, so order cannot overwrite anything; a half that
  * fails to save stays dirty so the admin can retry just that part.
@@ -18,12 +18,11 @@
  * Only settings that do something, and that no other admin page owns, are
  * here (owner, 13 Nov 2026) — see systemConfigSchema.ts for what came off.
  *
- * The header logo, the community colour (with the looks and Soft / Vivid) and
- * the community photo are NOT here: since 13 Nov 2026 they live on "Make it
- * yours" only (owner: no duplicates). A notice at the top of this page says
- * where they are. The community colour still travels in this page's form —
- * the colours endpoint takes it together with the accessible header colours —
- * but it is never edited here, so it is sent back exactly as it was loaded.
+ * The header logo, the community colour (with the looks and Soft / Vivid), the
+ * accessible site's header colours and the community photo are NOT here: since
+ * 13 Nov 2026 they live on "Make it yours" only (owner: no duplicates). A
+ * notice at the top of this page says where they are. No colour is edited
+ * here, so this page never calls the colours endpoint.
  */
 
 import { useCallback, useMemo, useState } from 'react';
@@ -50,7 +49,6 @@ import { JoiningSection, JOINING_SECTION_ID } from './sections/JoiningSection';
 import { TimeCreditsSection, TIME_CREDITS_SECTION_ID, TIME_CREDITS_CONFIG_KEYS } from './sections/TimeCreditsSection';
 import { DatesMoneySection, DATES_MONEY_SECTION_ID, DATES_MONEY_CONFIG_KEYS } from './sections/DatesMoneySection';
 import { FooterSection, FOOTER_SECTION_ID } from './sections/FooterSection';
-import { HeaderColorsSection, HEADER_COLORS_SECTION_ID } from './sections/HeaderColorsSection';
 import { PoweredBySection, POWERED_BY_SECTION_ID } from './sections/PoweredBySection';
 
 /** Which main-form fields belong to which section, for the jump-nav dirty dots. */
@@ -59,7 +57,6 @@ const SECTION_FIELDS: Record<string, SettingsFormKey[]> = {
   [JOINING_SECTION_ID]: ['registration_mode', 'email_verification', 'admin_approval', 'approval_email_message', 'inactivity_timeout_minutes'],
   [DATES_MONEY_SECTION_ID]: ['region', 'default_currency'],
   [FOOTER_SECTION_ID]: ['footer_text', 'partner_logo_url', 'partner_logo_label', 'partner_logo_link_url'],
-  [HEADER_COLORS_SECTION_ID]: ['header_bg_color', 'header_accent_color'],
   [POWERED_BY_SECTION_ID]: [
     'powered_by_wording', 'powered_by_label', 'powered_by_url', 'powered_by_image_light', 'powered_by_image_dark',
     'network_powered_by_wording', 'network_powered_by_label', 'network_powered_by_url', 'network_powered_by_image_light', 'network_powered_by_image_dark',
@@ -72,13 +69,13 @@ const SECTION_CONFIG_KEYS: Record<string, readonly string[]> = {
   [DATES_MONEY_SECTION_ID]: DATES_MONEY_CONFIG_KEYS,
 };
 
-type SavePart = 'general' | 'colors' | 'system';
+type SavePart = 'general' | 'system';
 
 function SettingsSkeleton() {
   return (
     <div className="space-y-6" role="status" aria-busy="true">
       <div className="flex flex-wrap gap-2">
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} className="h-7 w-28 rounded-full" />
         ))}
       </div>
@@ -125,7 +122,6 @@ export function AdminSettingsPage() {
       { id: TIME_CREDITS_SECTION_ID, label: t('admin_settings.time_credits_section') },
       { id: DATES_MONEY_SECTION_ID, label: t('admin_settings.dates_money_section') },
       { id: FOOTER_SECTION_ID, label: t('admin_settings.footer_section') },
-      { id: HEADER_COLORS_SECTION_ID, label: t('admin_settings.header_colors_section') },
       ...(general.ctx.isPlatformGod ? [{ id: POWERED_BY_SECTION_ID, label: t('system.powered_by_branding_section') }] : []),
     ].map((s) => ({
       ...s,
@@ -161,11 +157,6 @@ export function AdminSettingsPage() {
       const r1 = await general.save();
       results.push({ part: 'general', ...(r1.ok ? { ok: true, changed: r1.changed } : { ok: false, changed: true, error: r1.error }) });
 
-      if (r1.ok) {
-        const r2 = await general.saveHeaderColors();
-        results.push({ part: 'colors', ...(r2.ok ? { ok: true, changed: r2.changed } : { ok: false, changed: true, error: r2.error }) });
-      }
-
       // Independent endpoint with disjoint keys — still attempted after a
       // general failure so the admin's other edits are not held hostage.
       const r3 = await system.save();
@@ -197,9 +188,9 @@ export function AdminSettingsPage() {
     system.discard();
   }, [general, system]);
 
-  // The community colour is no longer edited here, so a colour saved before
-  // the "readable on white" rule existed must not block saving this page: it
-  // is fixed on "Make it yours", where the rule is explained.
+  // No colour is edited here, so a community colour saved before the
+  // "readable on white" rule existed does not block saving this page: it is
+  // fixed on "Make it yours", where the rule is explained.
   const blockedReason = hasErrors ? t('admin_settings.fix_errors_before_saving') : null;
 
   return (
@@ -216,8 +207,9 @@ export function AdminSettingsPage() {
         <div className="space-y-6">
           <SettingsJumpNav sections={sections} />
 
-          {/* The logo, colour and photo are on "Make it yours" only (owner,
-              13 Nov 2026: never in two places). This says where they are. */}
+          {/* The logo, the colours (the accessible site's header included)
+              and the photo are on "Make it yours" only (owner, 13 Nov 2026:
+              never in two places). This says where they are. */}
           <Card
             data-testid="settings-moved-notice"
             aria-labelledby="settings-moved-notice-title"
@@ -266,7 +258,6 @@ export function AdminSettingsPage() {
           {!system.loadError && <TimeCreditsSection form={system} />}
           <DatesMoneySection state={general} form={system} />
           <FooterSection state={general} />
-          <HeaderColorsSection state={general} />
           {general.ctx.isPlatformGod && <PoweredBySection state={general} />}
 
           <RelatedAdminPages />
