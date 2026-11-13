@@ -834,6 +834,7 @@
     "accent_color": "Kolor akcentu",
     "accent_color_desc": "Wybierz kolor akcentu używany w całym interfejsie",
     "select_color": "Wybierz {{color}} jako kolor akcentu",
+    "select_community_color": "Użyj koloru swojej społeczności",
     "font_size": "Rozmiar czcionki",
     "font_size_desc": "Dostosuj podstawowy rozmiar tekstu w całym interfejsie",
     "font_small": "S",

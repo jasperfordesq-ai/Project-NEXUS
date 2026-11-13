@@ -834,6 +834,7 @@
     "accent_color": "Accent Color",
     "accent_color_desc": "Choose the accent color used throughout the interface",
     "select_color": "Select {{color}} as accent color",
+    "select_community_color": "Use your community's color",
     "font_size": "Font Size",
     "font_size_desc": "Adjust the base text size across the interface",
     "font_small": "S",

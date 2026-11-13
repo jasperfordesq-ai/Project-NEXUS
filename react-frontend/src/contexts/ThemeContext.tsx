@@ -36,6 +36,7 @@ import {
 } from '@/lib/colorContrast';
 import { SiteAccentContext, SiteDarkContext, SiteVividContext } from '@/contexts/SiteAccentContext';
 import { companionPaint } from '@/lib/categoryColours';
+import { STANDARD_ACCENT_HEX } from '@/lib/accentPresets';
 import {
   CORNER_TOKENS,
   CORNER_TOKEN_NAMES,
@@ -117,7 +118,7 @@ const THEME_PREFS_STORAGE_KEY = 'nexus_theme_preferences';
 const DEFAULT_THEME: ThemeMode = 'light';
 
 const DEFAULT_PREFERENCES: ThemePreferences = {
-  accentColor: '#6366f1',
+  accentColor: STANDARD_ACCENT_HEX,
   fontSize: 'medium',
   density: 'comfortable',
   largeText: false,

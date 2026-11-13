@@ -21,7 +21,7 @@ import Check from 'lucide-react/icons/check';
 import { useTheme } from '@/contexts';
 import { useTranslation } from 'react-i18next';
 import type { FontSize, Density, ThemeMode } from '@/contexts/ThemeContext';
-import { ACCENT_PRESETS } from '@/lib/accentPresets';
+import { ACCENT_PRESETS, swatchFor } from '@/lib/accentPresets';
 import Sun from 'lucide-react/icons/sun';
 import Moon from 'lucide-react/icons/moon';
 import Monitor from 'lucide-react/icons/monitor';
@@ -38,6 +38,7 @@ export function AppearanceSettings() {
     theme,
     setTheme,
     accentColor,
+    communityAccent,
     fontSize,
     density,
     largeText,
@@ -104,17 +105,23 @@ export function AppearanceSettings() {
         <div className="flex flex-wrap gap-2">
           {ACCENT_PRESETS.map((color) => {
             const isSelected = accentColor === color.hex;
+            // The first swatch wears the community's colour where there is one
+            // (a runtime colour, so it is painted by style, not a class).
+            const { colour, followsCommunity } = swatchFor(color, communityAccent);
             return (
               <Button
                 key={color.name}
                 isIconOnly
                 size="sm"
-                aria-label={t('appearance_prefs.select_color', { color: color.name })}
+                aria-label={followsCommunity
+                  ? t('appearance_prefs.select_community_color')
+                  : t('appearance_prefs.select_color', { color: color.name })}
                 className={[
                   'w-9 h-9 min-w-0 rounded-full border-2 border-transparent transition-transform',
-                  color.swatchClass,
+                  followsCommunity ? 'ring-[var(--accent-color)]' : color.swatchClass,
                   isSelected ? 'scale-110 ring-2 ring-offset-2 ring-offset-[var(--background)]' : 'scale-100',
                 ].join(' ')}
+                style={followsCommunity ? { backgroundColor: colour } : undefined}
                 onPress={() => setAccentColor(color.hex)}
               >
                 {isSelected && (

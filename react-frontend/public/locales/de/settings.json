@@ -834,6 +834,7 @@
     "accent_color": "Akzentfarbe",
     "accent_color_desc": "Wählen Sie die Akzentfarbe, die in der gesamten Oberfläche verwendet wird",
     "select_color": "{{color}} als Akzentfarbe auswählen",
+    "select_community_color": "Farbe Ihrer Community verwenden",
     "font_size": "Schriftgrösse",
     "font_size_desc": "Passen Sie die Basis-Textgrösse der Oberfläche an",
     "font_small": "K",

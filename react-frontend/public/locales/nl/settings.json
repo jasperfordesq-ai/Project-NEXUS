@@ -834,6 +834,7 @@
     "accent_color": "Accentkleur",
     "accent_color_desc": "Kies de accentkleur die door de interface wordt gebruikt",
     "select_color": "Selecteer {{color}} als accentkleur",
+    "select_community_color": "De kleur van je community gebruiken",
     "font_size": "Lettergrootte",
     "font_size_desc": "Pas de basis tekstgrootte aan in de interface",
     "font_small": "S",

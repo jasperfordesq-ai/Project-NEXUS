@@ -26,7 +26,7 @@ import Sun from 'lucide-react/icons/sun';
 import Moon from 'lucide-react/icons/moon';
 import Monitor from 'lucide-react/icons/monitor';
 import Check from 'lucide-react/icons/check';
-import { ACCENT_PRESETS } from '@/lib/accentPresets';
+import { ACCENT_PRESETS, swatchFor } from '@/lib/accentPresets';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Presets
@@ -65,6 +65,7 @@ export function ThemePicker({
     resolvedTheme,
     setTheme,
     accentColor,
+    communityAccent,
     setAccentColor,
     density,
     setDensity,
@@ -150,16 +151,18 @@ export function ThemePicker({
             <div className="grid grid-cols-5 gap-2">
               {ACCENT_PRESETS.map((color) => {
                 const isSelected = accentColor.toLowerCase() === color.hex.toLowerCase();
+                // The first swatch wears the community's colour where there is one.
+                const { colour, followsCommunity } = swatchFor(color, communityAccent);
                 return (
                   <button
                     key={color.name}
                     type="button"
-                    aria-label={t('settings:appearance_prefs.select_color', {
-                      color: color.name,
-                    })}
+                    aria-label={followsCommunity
+                      ? t('settings:appearance_prefs.select_community_color')
+                      : t('settings:appearance_prefs.select_color', { color: color.name })}
                     aria-pressed={isSelected}
                     onClick={() => setAccentColor(color.hex)}
-                    style={{ backgroundColor: color.hex }}
+                    style={{ backgroundColor: colour }}
                     className={`
                       w-9 h-9 rounded-full flex items-center justify-center
                       transition-transform outline-solid outline-transparent

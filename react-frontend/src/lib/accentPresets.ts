@@ -16,8 +16,33 @@ export interface AccentPreset {
   swatchClass: string;
 }
 
+/**
+ * The stored accent that means "the member has not picked a colour of their
+ * own" — the first preset. ThemeContext recognises it (`baseAccent`) and shows
+ * the community's colour instead, when the community has one.
+ */
+export const STANDARD_ACCENT_HEX = '#6366f1';
+
+/**
+ * How a swatch is painted. Every preset shows its own colour, except the first
+ * in a community that has its own colour: picking that one hands the site back
+ * to the community's colour, so it is painted in that colour and
+ * `followsCommunity` is true (label it as the community's colour, not "indigo").
+ * Without this the picker ticked an indigo swatch on a site that was plainly
+ * the community's pink.
+ */
+export function swatchFor(
+  preset: AccentPreset,
+  communityAccent: string | null | undefined,
+): { colour: string; followsCommunity: boolean } {
+  if (communityAccent && preset.hex === STANDARD_ACCENT_HEX) {
+    return { colour: communityAccent, followsCommunity: true };
+  }
+  return { colour: preset.hex, followsCommunity: false };
+}
+
 export const ACCENT_PRESETS: readonly AccentPreset[] = [
-  { name: 'indigo', hex: '#6366f1', swatchClass: 'bg-[#6366f1] ring-[#6366f1]' },
+  { name: 'indigo', hex: STANDARD_ACCENT_HEX, swatchClass: 'bg-[#6366f1] ring-[#6366f1]' },
   { name: 'purple', hex: '#a855f7', swatchClass: 'bg-[#a855f7] ring-[#a855f7]' },
   { name: 'blue', hex: '#3b82f6', swatchClass: 'bg-[#3b82f6] ring-[#3b82f6]' },
   { name: 'teal', hex: '#14b8a6', swatchClass: 'bg-[#14b8a6] ring-[#14b8a6]' },

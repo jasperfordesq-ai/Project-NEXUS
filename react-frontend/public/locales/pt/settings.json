@@ -834,6 +834,7 @@
     "accent_color": "Cor de destaque",
     "accent_color_desc": "Escolha a cor de destaque utilizada em toda a interface",
     "select_color": "Selecionar {{color}} como cor de destaque",
+    "select_community_color": "Usar a cor da sua comunidade",
     "font_size": "Tamanho da fonte",
     "font_size_desc": "Ajuste o tamanho base do texto na interface",
     "font_small": "P",

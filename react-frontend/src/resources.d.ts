@@ -59379,6 +59379,7 @@ export default interface Resources {
       "reduced_motion": "Reduced Motion",
       "reduced_motion_desc": "Reduce animation and scrolling effects throughout the interface",
       "select_color": "Select {{color}} as accent color",
+      "select_community_color": "Use your community's color",
       "simplified_layout": "Simplified Layout",
       "simplified_layout_desc": "Reduce blur, shadows, and decorative depth while keeping the same navigation",
       "title": "Appearance Preferences"

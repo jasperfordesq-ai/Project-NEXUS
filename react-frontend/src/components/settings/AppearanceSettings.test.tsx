@@ -15,6 +15,8 @@ const mockSetLargeText = vi.fn();
 const mockSetHighContrast = vi.fn();
 const mockSetReducedMotion = vi.fn();
 const mockSetSimplifiedLayout = vi.fn();
+// The community's own colour (null = the standard colour); set per test.
+const mockCommunity = vi.hoisted(() => ({ accent: null as string | null }));
 
 vi.mock('@/contexts', () =>
   createMockContexts({
@@ -25,6 +27,7 @@ vi.mock('@/contexts', () =>
       setTheme: vi.fn(),
       // ThemePreferences
       accentColor: '#6366f1',
+      communityAccent: mockCommunity.accent,
       fontSize: 'medium' as const,
       density: 'comfortable' as const,
       largeText: false,
@@ -50,9 +53,23 @@ import { AppearanceSettings } from './AppearanceSettings';
 describe('AppearanceSettings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCommunity.accent = null;
   });
 
   // ── Accent color ──────────────────────────────────────────────────────────
+
+  // The first swatch stands for "no colour of my own", which in a community
+  // with its own colour shows that colour — so it must be painted in it.
+  it('paints the first swatch in the community colour until the member picks their own', () => {
+    mockCommunity.accent = '#e6155f';
+    render(<AppearanceSettings />);
+    const swatch = screen.getByRole('button', { name: "Use your community's color" });
+    expect(swatch).toHaveStyle({ backgroundColor: '#e6155f' });
+    expect(swatch.querySelector('svg')).not.toBeNull();
+    expect(screen.queryByRole('button', { name: /indigo/i })).toBeNull();
+    fireEvent.click(swatch);
+    expect(mockSetAccentColor).toHaveBeenCalledWith('#6366f1');
+  });
 
   it('renders accent color swatch buttons', () => {
     render(<AppearanceSettings />);

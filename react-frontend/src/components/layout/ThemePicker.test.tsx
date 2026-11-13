@@ -30,6 +30,7 @@ const mockThemeValue = {
   toggleTheme: vi.fn(() => Promise.resolve()),
   setTheme: setThemeSpy,
   accentColor: '#6366f1',
+  communityAccent: null as string | null,
   setAccentColor: setAccentColorSpy,
   density: 'comfortable' as const,
   setDensity: setDensitySpy,
@@ -61,6 +62,8 @@ vi.mock('@/contexts/ThemeContext', async (importOriginal) => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockThemeValue.accentColor = '#6366f1';
+  mockThemeValue.communityAccent = null;
 });
 
 // ─── Trigger ─────────────────────────────────────────────────────────────────
@@ -121,6 +124,27 @@ describe('ThemePicker — popover content', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Select purple as accent color' }));
     expect(setAccentColorSpy).toHaveBeenCalledTimes(1);
     expect(setAccentColorSpy).toHaveBeenCalledWith('#a855f7');
+  });
+
+  // The first swatch stands for "no colour of my own". In a community with its
+  // own colour that shows the community's colour, so the swatch must be painted
+  // in it — it used to stay indigo, ticked, on a site that was plainly pink.
+  it('paints the first swatch in the community colour, ticked, until the member picks their own', async () => {
+    mockThemeValue.communityAccent = '#e6155f';
+    await openPicker();
+    const swatch = screen.getByRole('button', { name: "Use your community's color" });
+    expect(swatch).toHaveAttribute('aria-pressed', 'true');
+    expect(swatch).toHaveStyle({ backgroundColor: '#e6155f' });
+    expect(screen.queryByRole('button', { name: 'Select indigo as accent color' })).toBeNull();
+    fireEvent.click(swatch);
+    expect(setAccentColorSpy).toHaveBeenCalledWith('#6366f1');
+  });
+
+  it('keeps the first swatch indigo in a community with no colour of its own', async () => {
+    await openPicker();
+    const swatch = screen.getByRole('button', { name: 'Select indigo as accent color' });
+    expect(swatch).toHaveAttribute('aria-pressed', 'true');
+    expect(swatch).toHaveStyle({ backgroundColor: '#6366f1' });
   });
 
   it('calls setDensity when a density button is pressed', async () => {

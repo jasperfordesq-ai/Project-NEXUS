@@ -834,6 +834,7 @@
     "accent_color": "Couleur d'accentuation",
     "accent_color_desc": "Choisissez la couleur d'accentuation utilisée dans toute l'interface",
     "select_color": "Sélectionner {{color}} comme couleur d'accentuation",
+    "select_community_color": "Utiliser la couleur de votre communauté",
     "font_size": "Taille de police",
     "font_size_desc": "Ajustez la taille du texte de base dans l'interface",
     "font_small": "P",

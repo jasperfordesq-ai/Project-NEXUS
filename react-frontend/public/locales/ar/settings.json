@@ -834,6 +834,7 @@
     "accent_color": "لون التمييز",
     "accent_color_desc": "اختر لون التمييز المستخدم في جميع أنحاء الواجهة",
     "select_color": "اختر {{color}} كلون تمييز",
+    "select_community_color": "استخدم لون مجتمعك",
     "font_size": "حجم الخط",
     "font_size_desc": "قم بضبط حجم النص الأساسي عبر الواجهة",
     "font_small": "S",

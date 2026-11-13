@@ -834,6 +834,7 @@
     "accent_color": "アクセントカラー",
     "accent_color_desc": "インターフェース全体で使用されるアクセントカラーを選択します",
     "select_color": "{{color}}をアクセントカラーとして選択",
+    "select_community_color": "コミュニティのカラーを使用",
     "font_size": "フォントサイズ",
     "font_size_desc": "インターフェース全体の基本テキストサイズを調整します",
     "font_small": "S",
