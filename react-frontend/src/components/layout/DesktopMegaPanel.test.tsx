@@ -487,4 +487,40 @@ describe('DesktopMegaPanel', () => {
       expect(document.querySelector('[aria-live="polite"]')!.textContent).toBe('');
     });
   });
+
+  describe('sign-in padlock', () => {
+    const lockedGroups: MegaPanelGroup[] = [{
+      key: 'community',
+      title: 'Community',
+      tone: 'tools',
+      items: [
+        { label: 'Members', desc: 'Find people', href: '/members', icon: StubIcon, locked: true },
+        { label: "What's on", desc: 'Public events', href: '/whats-on', icon: StubIcon },
+      ],
+    }];
+
+    it('shows a padlock on a locked item and not on an open one', () => {
+      renderPanel({ groups: lockedGroups });
+      const members = screen.getByText('Members').closest('button')!;
+      const whatsOn = screen.getByText("What's on").closest('button')!;
+      expect(members.querySelector('[data-sign-in-lock]')).not.toBeNull();
+      expect(whatsOn.querySelector('[data-sign-in-lock]')).toBeNull();
+    });
+
+    it('says why in words for a screen reader, as part of the item name', () => {
+      renderPanel({ groups: lockedGroups });
+      expect(screen.getByRole('button', { name: /Members.*nav\.sign_in_to_open/ })).toBeInTheDocument();
+    });
+
+    it('keeps the padlock on the label line, so a row grows no taller', () => {
+      renderPanel({ groups: lockedGroups });
+      const lock = screen.getByText('Members').closest('button')!.querySelector('[data-sign-in-lock]')!;
+      expect(lock.parentElement).toBe(screen.getByText('Members').parentElement);
+    });
+
+    it('shows no padlock anywhere when nothing is locked', () => {
+      renderPanel();
+      expect(document.querySelector('[data-sign-in-lock]')).toBeNull();
+    });
+  });
 });

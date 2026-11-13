@@ -37,6 +37,12 @@ vi.mock('@/contexts/TenantContext', () => ({
   useFeature: (...args: unknown[]) => mockUseFeature(...args),
 }));
 
+// Mutable so the padlock tests can sign a member in.
+const authState = vi.hoisted(() => ({ isAuthenticated: false, isLoading: false }));
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({ user: null, isAuthenticated: authState.isAuthenticated, isLoading: authState.isLoading, status: 'idle', error: null }),
+}));
+
 vi.mock('@/contexts/ThemeContext', () => ({
   useTheme: () => ({ resolvedTheme: mockTheme.resolvedTheme, toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
 }));
@@ -494,5 +500,52 @@ describe('FooterLink', () => {
     const link = screen.getByText('Test Link');
     expect(link).toBeInTheDocument();
     expect(link.closest('a')).toHaveAttribute('href', '/test-link');
+  });
+
+  it('shows a padlock only when told the page is locked', () => {
+    render(<><FooterLink href="/a" locked>Locked page</FooterLink><FooterLink href="/b">Open page</FooterLink></>);
+    expect(screen.getByText('Locked page').closest('a')!.querySelector('[data-sign-in-lock]')).not.toBeNull();
+    expect(screen.getByText('Open page').closest('a')!.querySelector('[data-sign-in-lock]')).toBeNull();
+  });
+});
+
+describe('Footer sign-in padlock', () => {
+  const lockOf = (label: string) =>
+    screen.getByText(label).closest('a')!.querySelector('[data-sign-in-lock]');
+  const allLinksOn = { connectionsEnabled: true, eventsEnabled: true, blogEnabled: true };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    authState.isAuthenticated = false;
+    authState.isLoading = false;
+    setupDefaultMocks(allLinksOn);
+  });
+
+  it('marks the footer links a visitor must sign in to open', () => {
+    render(<Footer />);
+    expect(lockOf('Members')).not.toBeNull();
+    expect(lockOf('Events')).not.toBeNull();
+  });
+
+  it('leaves the open footer links unmarked', () => {
+    render(<Footer />);
+    expect(lockOf('Blog')).toBeNull();
+    expect(lockOf('Help Center')).toBeNull();
+    expect(lockOf('Terms of Service')).toBeNull();
+  });
+
+  it('reads through the community prefix', () => {
+    setupDefaultMocks({ ...allLinksOn, tenant: { tenantPath: (p: string) => `/test-tenant${p}` } });
+    render(<Footer />);
+    expect(lockOf('Members')).not.toBeNull();
+    expect(lockOf('Blog')).toBeNull();
+    expect(lockOf('Help Center')).toBeNull();
+  });
+
+  it('shows no padlock to a signed-in member', () => {
+    authState.isAuthenticated = true;
+    render(<Footer />);
+    expect(screen.getByText('Members')).toBeInTheDocument();
+    expect(document.querySelector('[data-sign-in-lock]')).toBeNull();
   });
 });

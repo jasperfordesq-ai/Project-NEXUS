@@ -18,6 +18,8 @@ import { DynamicIcon } from '@/components/ui/DynamicIcon';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { isNavigationPathEnabled } from './navigationRegistry';
+import { SignInLock } from './SignInLock';
+import { showsSignInLock } from './signInRequired';
 import type { ApiMenu, ApiMenuItem } from '@/types/menu';
 import { openSafeUrl, safeHref } from '@/lib/safeHref';
 
@@ -89,7 +91,9 @@ interface DesktopMenuItemsProps {
 export function DesktopMenuItems({ menus }: DesktopMenuItemsProps) {
   const { tenantPath, hasFeature, hasModule } = useTenant();
   const pathEnabled = (url: string) => isNavigationPathEnabled(url, { hasFeature, hasModule }, tenantPath('/'));
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
+  // A community builds these menus itself, so a link may point at any page.
+  const isLocked = (href: string) => showsSignInLock(href, { isAuthenticated, isLoading: isAuthLoading }, tenantPath('/'));
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation('common');
@@ -158,6 +162,7 @@ export function DesktopMenuItems({ menus }: DesktopMenuItemsProps) {
                     <DropdownItem
                       key={childHref} id={childHref}
                       startContent={<DynamicIcon name={child.icon} className="w-4 h-4" />}
+                      endContent={child.type !== 'external' && isLocked(childHref) ? <SignInLock className="ms-auto" /> : undefined}
                       className={location.pathname.startsWith(childHref) ? 'bg-theme-active' : ''}
                     >
                       {child.label}
@@ -203,6 +208,7 @@ export function DesktopMenuItems({ menus }: DesktopMenuItemsProps) {
           >
             <DynamicIcon name={item.icon} className="w-4 h-4" />
             <span>{item.label}</span>
+            {isLocked(href) ? <SignInLock /> : null}
           </NavLink>
         );
       })}
@@ -226,7 +232,8 @@ interface MobileMenuItemsProps {
 export function MobileMenuItems({ menus }: MobileMenuItemsProps) {
   const { tenantPath, hasFeature, hasModule } = useTenant();
   const pathEnabled = (url: string) => isNavigationPathEnabled(url, { hasFeature, hasModule }, tenantPath('/'));
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
+  const isLocked = (href: string) => showsSignInLock(href, { isAuthenticated, isLoading: isAuthLoading }, tenantPath('/'));
 
   const allItems = menus.flatMap((menu) => menu.items ?? []);
 
@@ -291,6 +298,7 @@ export function MobileMenuItems({ menus }: MobileMenuItemsProps) {
       >
         <DynamicIcon name={item.icon} className="w-5 h-5 shrink-0" />
         <span className="min-w-0 truncate">{item.label}</span>
+        {isLocked(href) ? <SignInLock className="ms-auto" /> : null}
       </NavLink>
     );
   };

@@ -6,6 +6,7 @@
 import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCookieConsent } from '@/contexts/CookieConsentContext';
 import { useFeature, useTenant } from '@/contexts/TenantContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -21,6 +22,8 @@ import { resolveBrandingImageUrl } from '@/lib/helpers';
 import { safeHref } from '@/lib/safeHref';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { accentLineClasses } from '@/lib/categoryColours';
+import { SignInLock } from '@/components/navigation/SignInLock';
+import { showsSignInLock } from '@/components/navigation/signInRequired';
 
 
 /**
@@ -51,6 +54,17 @@ export function Footer({ children, copyright }: FooterProps) {
   const footerLineClasses = accentLineClasses(useSitePalette());
   const { tenant, branding, tenantPath, hasModule } = useTenant();
   const { resolvedTheme } = useTheme();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  // Every footer link to a page of this site goes through here, so one that
+  // a signed-out visitor cannot open yet always carries the padlock.
+  const siteLink = (path: string, label: ReactNode) => (
+    <FooterLink
+      href={tenantPath(path)}
+      locked={showsSignInLock(path, { isAuthenticated, isLoading: isAuthLoading })}
+    >
+      {label}
+    </FooterLink>
+  );
   const hasConnections = useFeature('connections');
   const hasEvents = useFeature('events');
   const hasBlog = useFeature('blog');
@@ -203,10 +217,10 @@ export function Footer({ children, copyright }: FooterProps) {
               <nav aria-label={t('footer.platform')}>
                 <h3 className="text-sm font-semibold text-theme-primary mb-3">{t('footer.platform')}</h3>
                 <ul className="space-y-2">
-                  {hasModule('listings') && <li><FooterLink href={tenantPath('/listings')}>{t('nav.listings')}</FooterLink></li>}
-                  {hasConnections && <li><FooterLink href={tenantPath('/members')}>{t('nav.members')}</FooterLink></li>}
-                  {hasEvents && <li><FooterLink href={tenantPath('/events')}>{t('nav.events')}</FooterLink></li>}
-                  {hasBlog && <li><FooterLink href={tenantPath('/blog')}>{t('nav.blog')}</FooterLink></li>}
+                  {hasModule('listings') && <li>{siteLink('/listings', t('nav.listings'))}</li>}
+                  {hasConnections && <li>{siteLink('/members', t('nav.members'))}</li>}
+                  {hasEvents && <li>{siteLink('/events', t('nav.events'))}</li>}
+                  {hasBlog && <li>{siteLink('/blog', t('nav.blog'))}</li>}
                 </ul>
               </nav>
 
@@ -214,11 +228,11 @@ export function Footer({ children, copyright }: FooterProps) {
               <nav aria-label={t('footer.support')}>
                 <h3 className="text-sm font-semibold text-theme-primary mb-3">{t('footer.support')}</h3>
                 <ul className="space-y-2">
-                  <li><FooterLink href={tenantPath('/help')}>{t('footer.help_center')}</FooterLink></li>
-                  {hasResources && <li><FooterLink href={tenantPath('/kb')}>{t('nav.knowledge_base')}</FooterLink></li>}
-                  <li><FooterLink href={tenantPath('/trust-and-safety')}>{t('footer.trust_safety')}</FooterLink></li>
-                  <li><FooterLink href={tenantPath('/contact')}>{t('footer.contact_us')}</FooterLink></li>
-                  <li><FooterLink href={tenantPath('/about')}>{t('footer.about')}</FooterLink></li>
+                  <li>{siteLink('/help', t('footer.help_center'))}</li>
+                  {hasResources && <li>{siteLink('/kb', t('nav.knowledge_base'))}</li>}
+                  <li>{siteLink('/trust-and-safety', t('footer.trust_safety'))}</li>
+                  <li>{siteLink('/contact', t('footer.contact_us'))}</li>
+                  <li>{siteLink('/about', t('footer.about'))}</li>
                   {/*
                     "Report a problem" intentionally removed from the footer: it is desktop-only
                     here, and the floating reporter (bottom-right, logged-in users only) already
@@ -231,15 +245,15 @@ export function Footer({ children, copyright }: FooterProps) {
               <nav aria-label={t('footer.legal')}>
                 <h3 className="text-sm font-semibold text-theme-primary mb-3">{t('footer.legal')}</h3>
                 <ul className="space-y-2">
-                  <li><FooterLink href={tenantPath('/legal')}>{t('legal.legal_hub')}</FooterLink></li>
-                  <li><FooterLink href={tenantPath('/terms')}>{t('legal.terms_of_service')}</FooterLink></li>
-                  <li><FooterLink href={tenantPath('/privacy')}>{t('legal.privacy_policy')}</FooterLink></li>
-                  <li><FooterLink href={tenantPath('/account-deletion')}>{t('legal.account_deletion')}</FooterLink></li>
-                  <li><FooterLink href={tenantPath('/child-safety')}>{t('legal.child_safety')}</FooterLink></li>
-                  <li><FooterLink href={tenantPath('/community-guidelines')}>{t('legal.type_community_guidelines')}</FooterLink></li>
-                  <li><FooterLink href={tenantPath('/acceptable-use')}>{t('legal.type_acceptable_use')}</FooterLink></li>
-                  <li><FooterLink href={tenantPath('/cookies')}>{t('legal.cookie_policy')}</FooterLink></li>
-                  <li><FooterLink href={tenantPath('/accessibility')}>{t('legal.accessibility')}</FooterLink></li>
+                  <li>{siteLink('/legal', t('legal.legal_hub'))}</li>
+                  <li>{siteLink('/terms', t('legal.terms_of_service'))}</li>
+                  <li>{siteLink('/privacy', t('legal.privacy_policy'))}</li>
+                  <li>{siteLink('/account-deletion', t('legal.account_deletion'))}</li>
+                  <li>{siteLink('/child-safety', t('legal.child_safety'))}</li>
+                  <li>{siteLink('/community-guidelines', t('legal.type_community_guidelines'))}</li>
+                  <li>{siteLink('/acceptable-use', t('legal.type_acceptable_use'))}</li>
+                  <li>{siteLink('/cookies', t('legal.cookie_policy'))}</li>
+                  <li>{siteLink('/accessibility', t('legal.accessibility'))}</li>
                 </ul>
               </nav>
             </div>
@@ -367,15 +381,18 @@ export function Footer({ children, copyright }: FooterProps) {
 export interface FooterLinkProps {
   href: string;
   children: ReactNode;
+  /** The person looking must sign in to open this page — shows the padlock. */
+  locked?: boolean;
 }
 
-export function FooterLink({ href, children }: FooterLinkProps) {
+export function FooterLink({ href, children, locked = false }: FooterLinkProps) {
   return (
     <Link
       to={href}
-      className="text-sm text-theme-muted hover:text-theme-primary transition-colors"
+      className="inline-flex items-center gap-1.5 text-sm text-theme-muted hover:text-theme-primary transition-colors"
     >
       {children}
+      {locked ? <SignInLock /> : null}
     </Link>
   );
 }

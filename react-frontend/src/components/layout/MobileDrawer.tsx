@@ -49,6 +49,8 @@ import {
   type MobileNavigationSection,
   type NavigationItemPolicy,
 } from '@/components/navigation/navigationRegistry';
+import { SignInLock } from '@/components/navigation/SignInLock';
+import { showsSignInLock } from '@/components/navigation/signInRequired';
 
 import { Accordion, AccordionItem } from '@/components/ui/Accordion';
 import { Avatar } from '@/components/ui/Avatar';
@@ -119,7 +121,7 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { t } = useTranslation('common');
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: isAuthLoading, logout } = useAuth();
   const { tenant, hasFeature, hasModule, tenantPath } = useTenant();
   const { unreadCount, counts } = useNotificationsOptional();
   const { resetConsent } = useCookieConsent();
@@ -228,6 +230,9 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
       >
         <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
         <span className="min-w-0 truncate">{item.label}</span>
+        {showsSignInLock(item.href, { isAuthenticated, isLoading: isAuthLoading }) ? (
+          <SignInLock className="ms-auto" />
+        ) : null}
       </Button>
     );
   };

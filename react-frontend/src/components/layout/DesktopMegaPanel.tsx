@@ -45,6 +45,7 @@ import ChevronDown from 'lucide-react/icons/chevron-down';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ScrollShadow } from '@/components/ui/ScrollShadow';
+import { SignInLock } from '@/components/navigation/SignInLock';
 import {
   layoutMegaPanel,
   MEGA_PANEL_MIN_COLUMN_PX,
@@ -59,6 +60,8 @@ export interface MegaPanelItem {
   desc?: string;
   href: string;
   icon: LucideIcon;
+  /** The person looking must sign in to open this page — shows the padlock. */
+  locked?: boolean;
 }
 
 export interface MegaPanelGroup {
@@ -306,7 +309,12 @@ export function DesktopMegaPanel({
           <Icon className="w-4 h-4" aria-hidden="true" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block whitespace-nowrap text-sm font-semibold leading-tight">{item.label}</span>
+          {/* The padlock shares the label's line and sits at the column's
+              edge, so a locked row is no taller and the padlocks line up. */}
+          <span className="flex items-center gap-2">
+            <span className="whitespace-nowrap text-sm font-semibold leading-tight">{item.label}</span>
+            {item.locked ? <SignInLock className="ms-auto" /> : null}
+          </span>
           {item.desc ? (
             <span className="mt-0.5 w-0 min-w-full whitespace-normal line-clamp-2 text-xs leading-snug text-theme-subtle">
               {item.desc}

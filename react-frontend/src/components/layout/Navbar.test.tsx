@@ -1514,4 +1514,64 @@ describe('Navbar', () => {
       expect(accessibleLink().getAttribute('href')).toBe('https://accessible.project-nexus.ie/hour-timebank/accessible');
     });
   });
+
+  describe('Sign-in padlock (owner, 13 Nov 2026)', () => {
+    const everythingOn = { hasFeature: vi.fn(() => true), hasModule: vi.fn(() => true) };
+    const member = { user: { id: 1, first_name: 'A', last_name: 'B', email: 'a@b.com', role: 'member' }, isAuthenticated: true };
+
+    it('marks every Timebanking link for a signed-out visitor: all of them need a sign-in', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({ tenant: everythingOn });
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'Timebanking' }));
+      const items = await screen.findAllByRole('menuitem');
+      expect(items.length).toBeGreaterThan(0);
+      for (const item of items) {
+        expect(item.querySelector('[data-sign-in-lock]'), item.textContent ?? '').not.toBeNull();
+      }
+    });
+
+    it('marks the locked Community links and leaves the open ones alone', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({ tenant: everythingOn });
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'Community' }));
+      const panel = screen.getByRole('navigation', { name: 'Community navigation' });
+      const lockOf = (href: string) => {
+        const row = Array.from(panel.querySelectorAll<HTMLElement>('button[data-mega-item]'))
+          .find(button => button.textContent?.includes(href));
+        expect(row, href).toBeDefined();
+        return row!.querySelector('[data-sign-in-lock]');
+      };
+      // The i18n stub returns the key for labels it does not know, so rows are
+      // found by a word in their label key or label.
+      expect(lockOf('Members')).not.toBeNull();
+      expect(lockOf('Groups')).not.toBeNull();
+      expect(lockOf('whats_on')).toBeNull();
+    });
+
+    it('leaves the About links in More unmarked', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({ tenant: everythingOn });
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'More' }));
+      const panel = screen.getByRole('navigation', { name: 'More navigation' });
+      const about = panel.querySelector('[data-mega-group="about"]')!;
+      const engage = panel.querySelector('[data-mega-group="engage"]')!;
+      expect(about.querySelectorAll('button[data-mega-item]').length).toBeGreaterThan(0);
+      expect(about.querySelector('[data-sign-in-lock]')).toBeNull();
+      expect(engage.querySelectorAll('[data-sign-in-lock]').length)
+        .toBe(engage.querySelectorAll('button[data-mega-item]').length);
+    });
+
+    it('shows a signed-in member no padlock in any menu', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({ auth: member, tenant: everythingOn });
+      render(<Navbar />);
+      for (const name of ['Timebanking', 'Community', 'More']) {
+        await user.click(screen.getByRole('button', { name }));
+        expect(document.querySelector('[data-sign-in-lock]'), name).toBeNull();
+      }
+    });
+  });
 });

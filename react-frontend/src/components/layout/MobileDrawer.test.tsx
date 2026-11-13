@@ -827,4 +827,55 @@ describe('MobileDrawer', () => {
       expect(headers.length).toBeGreaterThan(0);
     });
   });
+
+  describe('Sign-in padlock', () => {
+    const everythingOn = {
+      hasFeature: vi.fn(() => true),
+      hasModule: vi.fn(() => true),
+    };
+    const lockOf = (label: string) =>
+      screen.getByText(label).closest('button')!.querySelector('[data-sign-in-lock]');
+
+    it('marks the pages a visitor must sign in to open', () => {
+      setupDefaultMocks({ tenant: everythingOn });
+      render(<MobileDrawer {...defaultProps} />);
+      expandSection(/^timebanking$/i);
+      expandSection(/^community$/i);
+      expect(lockOf('Listings')).not.toBeNull();
+      expect(lockOf('Members')).not.toBeNull();
+      expect(lockOf('Groups')).not.toBeNull();
+    });
+
+    it('leaves the pages a visitor can open unmarked', () => {
+      setupDefaultMocks({ tenant: everythingOn });
+      render(<MobileDrawer {...defaultProps} />);
+      expandSection(/^about$/i);
+      expect(lockOf('Home')).toBeNull();
+      expect(lockOf('FAQ')).toBeNull();
+      expect(lockOf('Blog')).toBeNull();
+    });
+
+    it('shows no padlock to a signed-in member', () => {
+      setupDefaultMocks({
+        auth: { user: { id: 1, first_name: 'A', last_name: 'B', email: 'a@b.com' }, isAuthenticated: true },
+        tenant: everythingOn,
+      });
+      render(<MobileDrawer {...defaultProps} />);
+      expandSection(/^timebanking$/i);
+      expandSection(/^community$/i);
+      // Each appears twice for a member: once in its own section and once
+      // under Partner Communities.
+      expect(screen.getAllByText('Listings').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Groups').length).toBeGreaterThan(0);
+      expect(document.querySelector('[data-sign-in-lock]')).toBeNull();
+    });
+
+    it('shows no padlock while the sign-in check is still running', () => {
+      setupDefaultMocks({ auth: { isLoading: true }, tenant: everythingOn });
+      render(<MobileDrawer {...defaultProps} />);
+      expandSection(/^timebanking$/i);
+      expect(screen.getByText('Listings')).toBeInTheDocument();
+      expect(document.querySelector('[data-sign-in-lock]')).toBeNull();
+    });
+  });
 });

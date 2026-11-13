@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, userEvent } from '@/test/test-utils';
 import type { ApiMenu, ApiMenuItem } from '@/types/menu';
 
@@ -255,5 +255,51 @@ describe('MobileMenuItems', () => {
     render(<MobileMenuItems menus={[makeMenu(items)]} />);
     const link = screen.getByRole('link', { name: /External Mobile/i });
     expect(link).toHaveAttribute('href', 'https://example.com');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+describe('sign-in padlock on a community-built menu', () => {
+  const items = () => [
+    makeItem({ id: 1, label: 'People', url: '/members' }),
+    makeItem({ id: 2, label: 'Our story', url: '/about' }),
+    makeItem({ id: 3, label: 'Partner site', url: 'https://example.com/members', type: 'external' }),
+  ];
+  const lockOf = (label: string) =>
+    screen.getByText(label).closest('a')!.querySelector('[data-sign-in-lock]');
+
+  beforeEach(() => {
+    authState.user = null;
+    authState.isAuthenticated = false;
+  });
+
+  afterEach(() => {
+    authState.user = { id: 1, name: 'Tester', role: 'user' };
+    authState.isAuthenticated = true;
+  });
+
+  it('marks a locked page in the desktop menu, and only that one', async () => {
+    const { DesktopMenuItems } = await import('./MenuNavItems');
+    render(<DesktopMenuItems menus={[makeMenu(items())]} />);
+    expect(lockOf('People')).not.toBeNull();
+    expect(lockOf('Our story')).toBeNull();
+    expect(lockOf('Partner site')).toBeNull();
+  });
+
+  it('marks a locked page in the phone menu, and only that one', async () => {
+    const { MobileMenuItems } = await import('./MenuNavItems');
+    render(<MobileMenuItems menus={[makeMenu(items())]} />);
+    expect(lockOf('People')).not.toBeNull();
+    expect(lockOf('Our story')).toBeNull();
+    expect(lockOf('Partner site')).toBeNull();
+  });
+
+  it('shows no padlock to a signed-in member', async () => {
+    authState.user = { id: 1, name: 'Tester', role: 'user' };
+    authState.isAuthenticated = true;
+    const { DesktopMenuItems, MobileMenuItems } = await import('./MenuNavItems');
+    render(<><DesktopMenuItems menus={[makeMenu(items())]} /><MobileMenuItems menus={[makeMenu(items())]} /></>);
+    expect(screen.getAllByText('People')).toHaveLength(2);
+    expect(document.querySelector('[data-sign-in-lock]')).toBeNull();
   });
 });

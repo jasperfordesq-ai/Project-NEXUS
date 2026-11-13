@@ -39994,6 +39994,7 @@ export default interface Resources {
       "premium": "Donate",
       "resources": "Resources",
       "saved": "Saved",
+      "sign_in_to_open": "Sign in to open",
       "skills": "Skills",
       "social_prescribing": "Social Prescribing",
       "strategic_plan": "Strategic Plan",

@@ -67,6 +67,8 @@ import {
   type DesktopNavigationSection,
   type NavigationItemPolicy,
 } from '@/components/navigation/navigationRegistry';
+import { SignInLock } from '@/components/navigation/SignInLock';
+import { showsSignInLock } from '@/components/navigation/signInRequired';
 import type { MenuPage, TenantFeatures } from '@/types/api';
 
 import { Avatar } from '@/components/ui/Avatar';
@@ -146,7 +148,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { t, i18n } = useTranslation(['common', 'broker']);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: isAuthLoading, logout } = useAuth();
   const { tenant, hasFeature, hasModule, tenantPath } = useTenant();
   const { counts } = useNotificationsOptional();
   const { resolvedTheme, toggleTheme } = useTheme();
@@ -312,6 +314,8 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
     desc: string;
     path: string;
     href: string;
+    /** A signed-out visitor is shown this link but must sign in to open it. */
+    locked: boolean;
   };
   const resolveDesktopSection = useCallback((section: DesktopNavigationSection): ResolvedDesktopNavigationItem[] => (
     getNavigationItems('desktop', section, {
@@ -325,8 +329,9 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
       desc: item.descriptionKey ? t(item.descriptionKey) : '',
       path: item.href,
       href: tenantPath(item.href),
+      locked: showsSignInLock(item.href, { isAuthenticated, isLoading: isAuthLoading }),
     }))
-  ), [hasFeature, hasModule, isAuthenticated, t, tenant?.slug, tenantPath]);
+  ), [hasFeature, hasModule, isAuthenticated, isAuthLoading, t, tenant?.slug, tenantPath]);
 
   // Timebanking dropdown — replaces top-level Listings link
   const timebankingItems = useMemo(
@@ -761,11 +766,14 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                           pathname.startsWith(item.href) ? 'bg-theme-active' : ''
                         }`}
                       >
-                        <span className="flex items-start gap-3">
+                        {/* flex-1 on the row and its text column: the padlock sits
+                            at the menu's edge, lined up from row to row. */}
+                        <span className="flex flex-1 items-start gap-3">
                           <item.icon className="mt-0.5 h-4 w-4 shrink-0 text-theme-muted" aria-hidden="true" />
-                          <span className="flex min-w-0 flex-col gap-0.5">
-                            <span className="text-sm font-semibold leading-tight text-theme-primary">
+                          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                            <span className="flex items-center gap-2 text-sm font-semibold leading-tight text-theme-primary">
                               {item.label}
+                              {item.locked ? <SignInLock className="ms-auto" /> : null}
                             </span>
                             <span className="text-xs leading-snug text-theme-subtle">
                               {item.desc}
