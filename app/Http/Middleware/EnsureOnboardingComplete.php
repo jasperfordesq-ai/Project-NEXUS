@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Behavior:
  *  - Unauthenticated → 401 (matches the rest of the auth-required middleware family)
- *  - Onboarding not mandatory for this tenant → pass through
+ *  - Onboarding switched off, or not mandatory, for this tenant → pass through
  *  - User has onboarding_completed = true → pass through
  *  - Admins/super-admins → pass through (so they can manage incomplete users)
  *  - Otherwise → 403 with code ONBOARDING_REQUIRED so the frontend can redirect
@@ -55,10 +55,10 @@ class EnsureOnboardingComplete
             return $next($request);
         }
 
-        // Honor the tenant config — if onboarding is not mandatory, allow through
+        // Honor the tenant config — if the welcome steps are switched off, or
+        // are not mandatory, allow through
         try {
-            $config = OnboardingConfigService::getConfig(TenantContext::getId());
-            if (empty($config['mandatory'])) {
+            if (!OnboardingConfigService::isMandatory(TenantContext::getId())) {
                 return $next($request);
             }
         } catch (\Throwable $e) {

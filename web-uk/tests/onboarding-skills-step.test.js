@@ -117,7 +117,7 @@ describe('the interests step is retired', () => {
 
   it('goes from the profile step straight to skills', async () => {
     api.updateProfile.mockResolvedValue({ data: {} });
-    const response = await request(buildApp()).post('/onboarding/profile').type('form').send({ bio: 'About me' });
+    const response = await request(buildApp()).post('/onboarding/profile').type('form').send({ bio: 'A little about me' });
     expect(response.headers.location).toBe('/onboarding/skills');
   });
 });

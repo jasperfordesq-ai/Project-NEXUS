@@ -227,7 +227,7 @@
   "federation_external_partners": "外部パートナー",
   "federation_neighborhoods": "近所",
   "federation_webhooks": "Webhook",
-  "onboarding_settings": "オンボーディング設定",
+  "onboarding_settings": "ようこそステップ",
   "safeguarding_options": "保護オプション",
   "sections": {
     "content": "コンテンツ",
@@ -406,7 +406,7 @@
     "neighborhoods": "近所",
     "nexus_score": "ネクサススコア",
     "notes": "注意事項",
-    "onboarding_settings": "オンボーディング設定",
+    "onboarding_settings": "ようこそステップ",
     "organizations": "組織",
     "performance": "パフォーマンス",
     "pipeline": "パイプライン",

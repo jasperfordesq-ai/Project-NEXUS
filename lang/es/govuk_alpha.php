@@ -3782,6 +3782,7 @@ return [
         ],
         'states' => [
             'bio-too-short' => 'Por favor, añade una breve biografía antes de continuar.',
+            'bio-min-length' => 'Escribe al menos :min caracteres sobre ti antes de continuar.',
             'avatar-required' => 'Por favor, añade una foto de perfil antes de continuar.',
             'avatar-saved' => 'Tu foto ha sido subida.',
             'avatar-failed' => 'No hemos podido subir esa foto. Por favor, inténtalo de nuevo.',

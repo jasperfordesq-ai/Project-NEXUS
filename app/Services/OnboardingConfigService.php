@@ -28,21 +28,28 @@ class OnboardingConfigService
      *     interested in?" step; nothing on the platform read its answers.
      *   onboarding.listing_creation_mode / listing_max_auto — turning the
      *     skills step's answers into listings. Off in every community.
+     *
+     * Retired 2026-11-13, with any stored rows now ignored:
+     *   onboarding.step_profile_required / step_skills_required — no client
+     *     and no server check ever read them. Whether the profile step can be
+     *     skipped is now worked out from avatar_required / bio_required; the
+     *     skills step never demands an answer.
+     *   onboarding.step_confirm_enabled — the last step holds the only
+     *     "Finish" button, so switching it off left members unable to finish.
+     *     It is always shown.
+     *   onboarding.help_text — shown by no client.
      */
     private const DEFAULTS = [
         'onboarding.enabled' => '1',
         'onboarding.mandatory' => '1',
         'onboarding.step_welcome_enabled' => '1',
         'onboarding.step_profile_enabled' => '1',
-        'onboarding.step_profile_required' => '1',
         'onboarding.step_skills_enabled' => '1',
-        'onboarding.step_skills_required' => '0',
         'onboarding.step_safeguarding_enabled' => '1',
         'onboarding.step_safeguarding_required' => '0',
         // "Protect your account": an optional offer to turn on two-factor,
         // shown only to a member who could complete it (6 Nov 2026).
         'onboarding.step_security_enabled' => '1',
-        'onboarding.step_confirm_enabled' => '1',
         'onboarding.avatar_required' => '1',
         'onboarding.bio_required' => '1',
         'onboarding.bio_min_length' => '10',
@@ -50,7 +57,6 @@ class OnboardingConfigService
         'onboarding.require_avatar_for_visibility' => '0',
         'onboarding.require_bio_for_visibility' => '0',
         'onboarding.welcome_text' => '',
-        'onboarding.help_text' => '',
         'onboarding.safeguarding_intro_text' => '',
         'onboarding.country_preset' => 'custom',
     ];
@@ -183,29 +189,98 @@ class OnboardingConfigService
                 continue;
             }
 
-            if (!empty($config[$enabledKey])) {
-                $steps[] = [
-                    'slug' => $slug,
-                    'label_code' => $slug,
-                    'required' => !empty($config[$requiredKey] ?? false),
-                ];
+            // The last step is always there: it holds the only "Finish"
+            // button, so a community that switched it off left its members
+            // with no way to finish.
+            if ($slug === 'confirm') {
+                $steps[] = ['slug' => $slug, 'label_code' => $slug, 'required' => true];
+                continue;
             }
+
+            if (empty($config[$enabledKey])) {
+                continue;
+            }
+
+            $steps[] = [
+                'slug' => $slug,
+                'label_code' => $slug,
+                'required' => match ($slug) {
+                    // Cannot be skipped while it asks for something compulsory.
+                    'profile' => $config['avatar_required'] || $config['bio_required'],
+                    'safeguarding' => !empty($config[$requiredKey] ?? false),
+                    default => false,
+                },
+            ];
         }
 
         return $steps;
     }
 
     /**
-     * Check if a specific step is required by config.
+     * Whether members must finish the welcome steps before they can take part.
+     *
+     * "Must finish" only means anything while the steps are switched on. The
+     * two are stored separately, and a community could be left with the steps
+     * off and "must finish" still on: its new members were never shown the
+     * steps and were then refused when they tried to send a message, post an
+     * offer or send credits (found 13 Nov 2026).
      */
-    public static function isStepRequired(?int $tenantId, string $stepSlug): bool
+    public static function isMandatory(?int $tenantId = null): bool
     {
         $config = self::getConfig($tenantId);
-        $meta = self::STEPS[$stepSlug] ?? null;
-        if (!$meta) {
-            return false;
+
+        return $config['enabled'] && $config['mandatory'];
+    }
+
+    /**
+     * What the profile step demands before a member may finish.
+     *
+     * Nothing, while that step is switched off: a requirement no step asks
+     * for is one no member can meet.
+     *
+     * @return array{photo: bool, bio: bool, bio_min_length: int}
+     */
+    public static function profileRequirements(?int $tenantId = null): array
+    {
+        $config = self::getConfig($tenantId);
+        $asked = (bool) $config['step_profile_enabled'];
+
+        return [
+            'photo' => $asked && $config['avatar_required'],
+            'bio' => $asked && $config['bio_required'],
+            'bio_min_length' => max(1, (int) $config['bio_min_length']),
+        ];
+    }
+
+    /**
+     * Which profile requirements a member has not met yet.
+     *
+     * @return list<string> 'avatar_required' and/or 'bio_required'
+     */
+    public static function unmetProfileRequirements(?int $tenantId, ?string $avatarUrl, ?string $bio): array
+    {
+        $needs = self::profileRequirements($tenantId);
+        $unmet = [];
+
+        if ($needs['photo'] && trim((string) $avatarUrl) === '') {
+            $unmet[] = 'avatar_required';
         }
-        return !empty($config[$meta['key'] . '_required'] ?? false);
+
+        if ($needs['bio'] && mb_strlen(trim((string) $bio)) < $needs['bio_min_length']) {
+            $unmet[] = 'bio_required';
+        }
+
+        return $unmet;
+    }
+
+    /**
+     * Whether members who have not finished the welcome steps are hidden from
+     * other members. Never while the steps are switched off: nobody can finish
+     * steps they are never shown, so every new member would be hidden for good.
+     */
+    private static function hidesUnfinishedMembers(array $config): bool
+    {
+        return $config['require_completion_for_visibility'] && $config['enabled'];
     }
 
     /**
@@ -214,21 +289,12 @@ class OnboardingConfigService
      */
     public static function validateCompletion(?int $tenantId, int $userId): array
     {
-        $config = self::getConfig($tenantId);
         $user = User::find($userId);
         if (!$user) {
             return ['user_not_found'];
         }
 
-        $unmet = [];
-
-        if ($config['avatar_required'] && empty($user->avatar_url)) {
-            $unmet[] = 'avatar_required';
-        }
-
-        if ($config['bio_required'] && (empty(trim($user->bio ?? '')) || mb_strlen(trim($user->bio ?? '')) < $config['bio_min_length'])) {
-            $unmet[] = 'bio_required';
-        }
+        $unmet = self::unmetProfileRequirements($tenantId, $user->avatar_url, $user->bio);
 
         array_push($unmet, ...self::unmetSafeguardingRequirements($tenantId ?? (int) TenantContext::getId(), $userId));
 
@@ -307,7 +373,7 @@ class OnboardingConfigService
             return false;
         }
 
-        if ($config['require_completion_for_visibility'] && !$user->onboarding_completed) {
+        if (self::hidesUnfinishedMembers($config) && !$user->onboarding_completed) {
             return false;
         }
 
@@ -336,7 +402,7 @@ class OnboardingConfigService
     {
         $config = self::getConfig($tenantId);
 
-        if ($config['require_completion_for_visibility']) {
+        if (self::hidesUnfinishedMembers($config)) {
             $query->where('onboarding_completed', true);
         }
 
@@ -366,7 +432,7 @@ class OnboardingConfigService
         $config = self::getConfig($tenantId);
         $conditions = [];
 
-        if ($config['require_completion_for_visibility']) {
+        if (self::hidesUnfinishedMembers($config)) {
             $conditions[] = "{$alias}.onboarding_completed = 1";
         }
 
@@ -389,11 +455,10 @@ class OnboardingConfigService
         // Boolean settings
         $booleans = [
             'enabled', 'mandatory',
-            'step_welcome_enabled', 'step_profile_enabled', 'step_profile_required',
-            'step_skills_enabled', 'step_skills_required',
+            'step_welcome_enabled', 'step_profile_enabled',
+            'step_skills_enabled',
             'step_safeguarding_enabled', 'step_safeguarding_required',
             'step_security_enabled',
-            'step_confirm_enabled',
             'avatar_required', 'bio_required',
             'require_completion_for_visibility', 'require_avatar_for_visibility', 'require_bio_for_visibility',
         ];
@@ -409,7 +474,7 @@ class OnboardingConfigService
         }
 
         // String settings (trim empty to null for optional text)
-        $optionalText = ['welcome_text', 'help_text', 'safeguarding_intro_text'];
+        $optionalText = ['welcome_text', 'safeguarding_intro_text'];
         if (in_array($key, $optionalText, true)) {
             $trimmed = trim($raw);
             return $trimmed !== '' ? $trimmed : null;

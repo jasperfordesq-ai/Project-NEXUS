@@ -258,7 +258,7 @@
   "federation_external_partners": "External Protocol Partners",
   "federation_neighborhoods": "Neighborhoods",
   "federation_webhooks": "Event Webhooks",
-  "onboarding_settings": "Onboarding Settings",
+  "onboarding_settings": "Welcome steps",
   "safeguarding_options": "Safeguarding Options",
   "sections": {
     "content": "Content",
@@ -441,7 +441,7 @@
     "neighborhoods": "Neighbourhoods",
     "nexus_score": "Nexus Score",
     "notes": "Notes",
-    "onboarding_settings": "Onboarding Settings",
+    "onboarding_settings": "Welcome steps",
     "organizations": "Organisations",
     "performance": "Performance",
     "pipeline": "Pipeline",

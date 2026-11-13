@@ -130,4 +130,40 @@ class AdminOnboardingConfigControllerTest extends TestCase
             'jurisdiction' => 'england_wales',
         ]);
     }
+
+    /**
+     * Four settings were on the admin page and either read by nothing or able
+     * to strand new members (13 Nov 2026). They are retired: an older page
+     * that still sends them changes nothing.
+     */
+    public function test_update_ignores_the_retired_settings(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPut('/v2/admin/config/onboarding', [
+            'step_profile_required' => true,
+            'step_skills_required' => true,
+            'step_confirm_enabled' => false,
+            'help_text' => 'Never shown anywhere',
+            'welcome_text' => 'Hello and welcome',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertSame(['welcome_text'], $response->json('data.updated_keys'));
+
+        $config = $this->apiGet('/v2/admin/config/onboarding')->json('data.config');
+        $this->assertSame('Hello and welcome', $config['welcome_text']);
+        $this->assertArrayNotHasKey('help_text', $config);
+        $this->assertArrayNotHasKey('step_confirm_enabled', $config);
+    }
+
+    public function test_update_refuses_a_minimum_length_of_nothing(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $this->apiPut('/v2/admin/config/onboarding', ['bio_min_length' => 0])->assertStatus(422);
+        $this->apiPut('/v2/admin/config/onboarding', ['bio_min_length' => 1])->assertStatus(200);
+    }
 }

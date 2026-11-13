@@ -4817,6 +4817,7 @@
                 },
                 "states": {
                     "bio-too-short": "Por favor, adicione uma breve descrição antes de continuar.",
+                    "bio-min-length": "Escreva pelo menos :min caracteres sobre você antes de continuar.",
                     "avatar-required": "Por favor, adicione uma fotografia de perfil antes de continuar.",
                     "avatar-saved": "A sua fotografia foi carregada.",
                     "avatar-failed": "Não foi possível carregar essa fotografia. Por favor, tente novamente.",

@@ -4817,6 +4817,7 @@
                 },
                 "states": {
                     "bio-too-short": "Veuillez ajouter une courte biographie avant de continuer.",
+                    "bio-min-length": "Veuillez écrire au moins :min caractères à votre sujet avant de continuer.",
                     "avatar-required": "Veuillez ajouter une photo de profil avant de continuer.",
                     "avatar-saved": "Votre photo a été téléversée.",
                     "avatar-failed": "Nous n'avons pas pu téléverser cette photo. Veuillez réessayer.",

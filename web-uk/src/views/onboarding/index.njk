@@ -45,7 +45,9 @@
 
       {% if step == "welcome" %}
         <h1 class="govuk-heading-xl">{{ t("onboarding.welcome.title") }}</h1>
-        <p class="govuk-body-l">{{ t("onboarding.welcome.body") }}</p>
+        {# The community's own welcome when its admin wrote one (Admin → Welcome
+           steps), ours otherwise. nl2br escapes first, then keeps line breaks. #}
+        <p class="govuk-body-l">{{ (config.welcome_text | nl2br | safe) if config.welcome_text else t("onboarding.welcome.body") }}</p>
         <ul class="govuk-list govuk-list--bullet">
           <li>{{ t("onboarding.welcome.benefit_earn") }}</li>
           <li>{{ t("onboarding.welcome.benefit_community") }}</li>
@@ -153,7 +155,10 @@
       {% elif step == "safeguarding" %}
         {% set noneOption = null %}
         <h1 class="govuk-heading-xl">{{ t("govuk_alpha.onboarding.safeguarding.title") }}</h1>
-        <p class="govuk-body">{{ t("onboarding.safeguarding.intro") }}</p>
+        {# The community's own introduction when its admin wrote one. Written as
+           one expression, not an if/else block: a test renders this branch on
+           its own by cutting the template at the next block-level else. #}
+        <p class="govuk-body">{{ (config.safeguarding_intro_text | nl2br | safe) if config.safeguarding_intro_text else t("onboarding.safeguarding.intro") }}</p>
         <div class="govuk-inset-text">{{ t("onboarding.safeguarding.gdpr_notice") }}</div>
 
         <form method="post" action="{{ urlFor('/onboarding/safeguarding') }}" novalidate>

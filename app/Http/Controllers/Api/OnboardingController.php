@@ -114,8 +114,17 @@ class OnboardingController extends BaseApiController
                 ]);
             }
 
-            // Verify profile photo and bio are present
-            if (empty($user->avatar_url)) {
+            // The photo and the few words about the member are demanded only
+            // where the community asks for them (its "Welcome steps" settings),
+            // and the bio must reach the community's own minimum length. Until
+            // 13 Nov 2026 both were demanded whatever the community had chosen.
+            $tenantId = (int) TenantContext::getId();
+            $unmetProfile = OnboardingConfigService::unmetProfileRequirements(
+                $tenantId,
+                $user->avatar_url,
+                $user->bio,
+            );
+            if (in_array('avatar_required', $unmetProfile, true)) {
                 DB::rollback();
                 return $this->respondWithError(
                     'VALIDATION_REQUIRED_FIELD',
@@ -124,7 +133,7 @@ class OnboardingController extends BaseApiController
                     422
                 );
             }
-            if (empty(trim($user->bio ?? ''))) {
+            if (in_array('bio_required', $unmetProfile, true)) {
                 DB::rollback();
                 return $this->respondWithError(
                     'VALIDATION_REQUIRED_FIELD',
@@ -139,7 +148,6 @@ class OnboardingController extends BaseApiController
             // made the step required, or marked an option required, the member
             // must have answered before finishing. Checked here as well as at
             // save, so a client that skips the save cannot finish (26 Oct 2026).
-            $tenantId = (int) TenantContext::getId();
             if (OnboardingConfigService::unmetSafeguardingRequirements($tenantId, $userId) !== []) {
                 DB::rollback();
                 return $this->respondWithError(

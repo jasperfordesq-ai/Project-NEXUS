@@ -227,7 +227,7 @@
   "federation_external_partners": "Externe partners",
   "federation_neighborhoods": "Buurten",
   "federation_webhooks": "Webhaken",
-  "onboarding_settings": "Onboarding-instellingen",
+  "onboarding_settings": "Welkomststappen",
   "safeguarding_options": "Beschermingsopties",
   "sections": {
     "content": "Inhoud",
@@ -405,7 +405,7 @@
     "neighborhoods": "Buurten",
     "nexus_score": "Nexus-score",
     "notes": "Opmerkingen",
-    "onboarding_settings": "Onboarding-instellingen",
+    "onboarding_settings": "Welkomststappen",
     "organizations": "Organisaties",
     "performance": "Prestaties",
     "pipeline": "Pijpleiding",

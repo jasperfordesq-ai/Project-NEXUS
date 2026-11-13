@@ -243,4 +243,35 @@ class EnsureOnboardingCompleteTest extends TestCase
         // Non-mandatory → should pass through
         $this->assertEquals(200, $response->getStatusCode());
     }
+
+    /**
+     * Welcome steps switched OFF, with "must finish" left on from before. The
+     * admin page greyed that switch out but kept its value, so new members were
+     * never shown the steps and were still refused here (found 13 Nov 2026).
+     */
+    public function test_a_community_with_the_welcome_steps_switched_off_never_blocks_a_member(): void
+    {
+        DB::table('tenant_settings')
+            ->updateOrInsert(
+                ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.enabled'],
+                ['setting_value' => '0', 'updated_at' => now()]
+            );
+
+        $user = User::factory()->create([
+            'tenant_id'            => $this->testTenantId,
+            'onboarding_completed' => false,
+            'is_admin'             => false,
+            'role'                 => 'member',
+        ]);
+
+        \App\Services\OnboardingConfigService::clearConfigCache($this->testTenantId);
+        TenantContext::setById($this->testTenantId);
+
+        $request = Request::create('/v2/messages', 'POST');
+        $request->setUserResolver(fn () => $user);
+
+        $response = $this->middleware->handle($request, $this->makeNext());
+
+        $this->assertEquals(200, $response->getStatusCode());
+    }
 }

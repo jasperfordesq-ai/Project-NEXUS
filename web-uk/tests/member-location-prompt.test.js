@@ -147,6 +147,10 @@ describe('onboarding: profile step asks where the member is based', () => {
       data: { steps: [{ slug: 'welcome' }, { slug: 'profile' }, { slug: 'confirm' }] }
     });
     api.updateProfile.mockResolvedValue({ data: {} });
+    // A member who already has a photo: the profile step also asks for one
+    // where the community wants it (onboarding-community-settings.test.js),
+    // and these tests are about the location question alone.
+    api.getProfile.mockResolvedValue({ data: { bio: 'Hello there', avatar_url: '/a.png' } });
   });
 
   it('shows a plain text "Where are you based?" field when location_missing is true', async () => {

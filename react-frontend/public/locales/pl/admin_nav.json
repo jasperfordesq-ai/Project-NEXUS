@@ -227,7 +227,7 @@
   "federation_external_partners": "Partnerzy zewnętrzni",
   "federation_neighborhoods": "Okolice",
   "federation_webhooks": "Haki internetowe",
-  "onboarding_settings": "Ustawienia wprowadzenia",
+  "onboarding_settings": "Kroki powitalne",
   "safeguarding_options": "Opcje zabezpieczające",
   "sections": {
     "content": "Treść",
@@ -406,7 +406,7 @@
     "neighborhoods": "Okolice",
     "nexus_score": "Wynik Nexusa",
     "notes": "Notatki",
-    "onboarding_settings": "Ustawienia wprowadzenia",
+    "onboarding_settings": "Kroki powitalne",
     "organizations": "Organizacje",
     "performance": "Wydajność",
     "pipeline": "Rurociąg",

@@ -227,7 +227,7 @@
   "federation_external_partners": "Parceiros Externos",
   "federation_neighborhoods": "Bairros",
   "federation_webhooks": "Webhooks",
-  "onboarding_settings": "Configurações de integração",
+  "onboarding_settings": "Etapas de boas-vindas",
   "safeguarding_options": "Opções de salvaguarda",
   "sections": {
     "content": "Contente",
@@ -406,7 +406,7 @@
     "neighborhoods": "Bairros",
     "nexus_score": "Pontuação do Nexus",
     "notes": "Notas",
-    "onboarding_settings": "Configurações de integração",
+    "onboarding_settings": "Etapas de boas-vindas",
     "organizations": "Organizações",
     "performance": "Desempenho",
     "pipeline": "Gasoduto",

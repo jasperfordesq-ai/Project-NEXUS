@@ -240,4 +240,45 @@ class OnboardingConfigServiceTest extends TestCase
         TenantContext::setById($this->testTenantId);
         $this->assertTrue(OnboardingConfigService::isProfileVisible($this->testTenantId, $user->id));
     }
+
+    /**
+     * "Hide members who have not finished" with the welcome steps switched off
+     * would hide every new member for good: nobody can finish steps they are
+     * never shown.
+     */
+    public function test_unfinished_members_are_not_hidden_while_the_welcome_steps_are_switched_off(): void
+    {
+        foreach (['require_completion_for_visibility' => '1', 'enabled' => '0'] as $key => $value) {
+            DB::table('tenant_settings')->updateOrInsert(
+                ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.' . $key],
+                ['setting_value' => $value, 'setting_type' => 'boolean']
+            );
+        }
+        OnboardingConfigService::clearConfigCache($this->testTenantId);
+
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'onboarding_completed' => false,
+        ]);
+        TenantContext::setById($this->testTenantId);
+
+        $this->assertTrue(OnboardingConfigService::isProfileVisible($this->testTenantId, $user->id));
+        $this->assertSame([], OnboardingConfigService::getVisibilitySqlConditions($this->testTenantId));
+    }
+
+    public function test_isMandatory_needs_the_welcome_steps_switched_on(): void
+    {
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.mandatory'],
+            ['setting_value' => '1', 'setting_type' => 'boolean']
+        );
+        OnboardingConfigService::clearConfigCache($this->testTenantId);
+        $this->assertTrue(OnboardingConfigService::isMandatory($this->testTenantId));
+
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.enabled'],
+            ['setting_value' => '0', 'setting_type' => 'boolean']
+        );
+        OnboardingConfigService::clearConfigCache($this->testTenantId);
+        $this->assertFalse(OnboardingConfigService::isMandatory($this->testTenantId));
+    }
 }

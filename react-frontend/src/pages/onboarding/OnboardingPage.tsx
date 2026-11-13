@@ -66,6 +66,7 @@ import { useOnboardingConfig } from '@/hooks/useOnboardingConfig';
 import { useToast, useTenant, useAuth } from '@/contexts';
 import { api } from '@/lib/api';
 import { explicitAuthReturn } from '@/lib/auth-return';
+import { welcomeStepsSwitchedOn } from '@/lib/welcomeSteps';
 import { AVATAR_UPLOAD_ACCEPT, isAvatarFileTooLarge, isSupportedAvatarFile } from '@/lib/avatarUpload';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl } from '@/lib/helpers';
@@ -123,7 +124,7 @@ export function OnboardingPage() {
 
   // Derive dynamic constants from config (fall back to safe defaults)
   const TOTAL_STEPS = configSteps.length || 5;
-  const MIN_BIO_LENGTH = onboardingConfig.bio_min_length || 10;
+  const MIN_BIO_LENGTH = Math.max(1, onboardingConfig.bio_min_length || 10);
   const STEP_LABEL_KEYS = configSteps.map(s => `step_${s.slug}`);
 
   const tenantName = tenant?.branding?.name || tenant?.name || 'our community';
@@ -226,12 +227,16 @@ export function OnboardingPage() {
   // Skip redirect when isComplete is true so the celebration animation plays
   // fully before the setTimeout navigates to dashboard.
 
+  // A community that has switched the welcome steps off (Admin → Welcome
+  // steps) shows them to nobody: an old link or a bookmark goes straight on.
+  const stepsSwitchedOff = !welcomeStepsSwitchedOn(tenant?.settings as Record<string, unknown> | undefined);
+
   useEffect(() => {
     if (isComplete) return; // Let celebration animation play out
-    if (user?.onboarding_completed === true) {
+    if (user?.onboarding_completed === true || stepsSwitchedOff) {
       navigate(afterOnboarding, { replace: true });
     }
-  }, [user?.onboarding_completed, navigate, afterOnboarding, isComplete]);
+  }, [user?.onboarding_completed, navigate, afterOnboarding, isComplete, stepsSwitchedOff]);
 
   // ── Pre-populate all wizard fields from existing user data (one-shot on mount) ──
   // Loads the member's existing skills (/v2/users/me/skills) into the skills step,
@@ -274,6 +279,13 @@ export function OnboardingPage() {
   // skip ahead past the profile step so they don't re-do it
   const profileStepIdx = stepSlugToIndex.get('profile') ?? 2;
   const nextAfterProfile = profileStepIdx + 1;
+
+  // What the profile step asks for is the community's choice (Admin → Welcome
+  // steps). A community that leaves the step out asks for neither, and the
+  // server agrees: it only demands what a step asked for.
+  const hasProfileStep = stepSlugToIndex.has('profile');
+  const photoRequired = hasProfileStep && onboardingConfig.avatar_required !== false;
+  const bioRequired = hasProfileStep && onboardingConfig.bio_required !== false;
 
   const initialSkipDone = useRef(false);
   useEffect(() => {
@@ -403,11 +415,11 @@ export function OnboardingPage() {
   // ── Save bio + proceed handler (Step 2) ──────────────────────────────────
 
   const handleSaveProfileAndProceed = useCallback(async () => {
-    if (!user?.avatar_url) {
+    if (photoRequired && !user?.avatar_url) {
       toast.error(t('toast_photo_required'), t('toast_photo_required_desc'));
       return;
     }
-    if (bio.trim().length < MIN_BIO_LENGTH) {
+    if (bioRequired && bio.trim().length < MIN_BIO_LENGTH) {
       toast.error(t('toast_bio_required'), t('toast_bio_required_desc', { min: MIN_BIO_LENGTH }));
       return;
     }
@@ -447,7 +459,7 @@ export function OnboardingPage() {
     } finally {
       setIsSavingProfile(false);
     }
-  }, [bio, locationValue, needsLocation, user?.avatar_url, toast, refreshUser, goNextAnimated, t, MIN_BIO_LENGTH]);
+  }, [bio, locationValue, needsLocation, user?.avatar_url, toast, refreshUser, goNextAnimated, t, MIN_BIO_LENGTH, photoRequired, bioRequired]);
 
   // ── Skill suggestions (the community's listing categories) ──────────────
 
@@ -553,7 +565,9 @@ export function OnboardingPage() {
   const hasBio = bio.trim().length >= MIN_BIO_LENGTH;
   // A member the server reports as having no location must give one before moving on.
   const hasLocation = !needsLocation || hasLocationText(locationValue);
-  const profileStepComplete = hasAvatar && hasBio && hasLocation;
+  const profileStepComplete = !hasProfileStep
+    || ((!photoRequired || hasAvatar) && (!bioRequired || hasBio) && hasLocation);
+  const profileAsksForSomething = photoRequired || bioRequired || needsLocation;
 
   // ── Completion celebration overlay (checked BEFORE redirect guard so the
   //    celebration screen actually renders — refreshUser() sets
@@ -714,8 +728,11 @@ export function OnboardingPage() {
                     ? t('welcome_title_named', { name: tenantName, firstName: user.first_name.trim() })
                     : t('welcome_title', { name: tenantName })}
                 </h2>
-                <p className="text-theme-muted max-w-md mx-auto">
-                  {t('welcome_description')}
+                {/* The community's own welcome when its admin wrote one
+                    (Admin → Welcome steps), ours otherwise. Their line breaks
+                    are kept. */}
+                <p className="text-theme-muted max-w-md mx-auto whitespace-pre-line">
+                  {onboardingConfig.welcome_text?.trim() || t('welcome_description')}
                 </p>
               </GlassCard>
 
@@ -888,7 +905,7 @@ export function OnboardingPage() {
                     maxRows={6}
                     maxLength={5000}
                     description={
-                      bio.trim().length < MIN_BIO_LENGTH
+                      bioRequired && bio.trim().length < MIN_BIO_LENGTH
                         ? t('bio_min_chars', { min: MIN_BIO_LENGTH, current: bio.trim().length })
                         : t('bio_char_count', { count: bio.trim().length })
                     }
@@ -910,19 +927,25 @@ export function OnboardingPage() {
                   />
                 )}
 
-                {/* Validation checklist */}
-                <div className="mt-4 p-3 rounded-lg bg-theme-elevated">
-                  <p className="text-xs font-medium text-theme-muted mb-2">
-                    {t('required_to_continue')}
-                  </p>
-                  <div className="flex flex-col gap-1.5">
-                    <ValidationItem checked={hasAvatar} label={t('validation_photo')} />
-                    <ValidationItem checked={hasBio} label={t('validation_bio', { min: MIN_BIO_LENGTH })} />
-                    {needsLocation && (
-                      <ValidationItem checked={hasLocation} label={t('validation_location')} />
-                    )}
+                {/* Validation checklist — only what this community asks for */}
+                {profileAsksForSomething && (
+                  <div className="mt-4 p-3 rounded-lg bg-theme-elevated">
+                    <p className="text-xs font-medium text-theme-muted mb-2">
+                      {t('required_to_continue')}
+                    </p>
+                    <div className="flex flex-col gap-1.5">
+                      {photoRequired && (
+                        <ValidationItem checked={hasAvatar} label={t('validation_photo')} />
+                      )}
+                      {bioRequired && (
+                        <ValidationItem checked={hasBio} label={t('validation_bio', { min: MIN_BIO_LENGTH })} />
+                      )}
+                      {needsLocation && (
+                        <ValidationItem checked={hasLocation} label={t('validation_location')} />
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </GlassCard>
 
               {/* Navigation */}
@@ -1061,14 +1084,16 @@ export function OnboardingPage() {
                     <p className="text-sm text-theme-muted line-clamp-2 mt-0.5">
                       {bio || user?.bio || t('no_bio_yet')}
                     </p>
-                    <Button
-                      variant="tertiary"
-                      size="sm"
-                      onPress={() => goToStep(profileStepIdx)}
-                      className="mt-1 min-h-6 min-w-0 p-0 text-xs text-emerald-600 hover:underline dark:text-emerald-400"
-                    >
-                      {t('edit_profile')}
-                    </Button>
+                    {hasProfileStep && (
+                      <Button
+                        variant="tertiary"
+                        size="sm"
+                        onPress={() => goToStep(profileStepIdx)}
+                        className="mt-1 min-h-6 min-w-0 p-0 text-xs text-emerald-600 hover:underline dark:text-emerald-400"
+                      >
+                        {t('edit_profile')}
+                      </Button>
+                    )}
                   </div>
                 </div>
 

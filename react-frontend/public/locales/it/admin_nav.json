@@ -227,7 +227,7 @@
   "federation_external_partners": "Partner esterni",
   "federation_neighborhoods": "Quartieri",
   "federation_webhooks": "Webhook",
-  "onboarding_settings": "Impostazioni di onboarding",
+  "onboarding_settings": "Passaggi di benvenuto",
   "safeguarding_options": "Opzioni di salvaguardia",
   "sections": {
     "content": "Contenuto",
@@ -406,7 +406,7 @@
     "neighborhoods": "Quartieri",
     "nexus_score": "Punteggio Nexus",
     "notes": "Note",
-    "onboarding_settings": "Impostazioni di onboarding",
+    "onboarding_settings": "Passaggi di benvenuto",
     "organizations": "Organizzazioni",
     "performance": "Prestazioni",
     "pipeline": "Conduttura",

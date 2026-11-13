@@ -94,6 +94,9 @@ describe('moving to the next step', () => {
     api.getOnboardingStatus.mockResolvedValue({ data: { onboarding_completed: false } });
     api.getOnboardingConfig.mockResolvedValue(config(['welcome', 'profile', 'skills', 'confirm']));
     api.updateProfile.mockResolvedValue({ data: {} });
+    // A member who already has a photo: the profile step asks for one where the
+    // community wants it (onboarding-community-settings.test.js).
+    api.getProfile.mockResolvedValue({ data: { id: 7, bio: 'About me here', avatar_url: '/a.png' } });
   });
 
   it('goes from Skills to Confirm when the community has no Safeguarding step', async () => {

@@ -3784,6 +3784,7 @@ return [
         ],
         'states' => [
             'bio-too-short' => 'Cuir beathaisnéis ghearr leis le do thoil roimh leanúint ar aghaidh.',
+            'bio-min-length' => 'Scríobh :min carachtar ar a laghad fút féin sula leanann tú ar aghaidh.',
             'avatar-required' => 'Cuir grianghraf próifíle leis le do thoil roimh leanúint ar aghaidh.',
             'avatar-saved' => 'Uaslódáladh do ghrianghraf.',
             'avatar-failed' => 'Níorbh fhéidir linn an grianghraf sin a uaslódáil. Bain triail eile as le do thoil.',

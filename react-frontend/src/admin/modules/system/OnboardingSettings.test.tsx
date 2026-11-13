@@ -58,14 +58,13 @@ vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // The component renders the real HeroUI Switch, which places its label text as
 // a SIBLING of the checkbox input (not inside a wrapping <label>). The test
-// locates the toggle via getByText('Onboarding Enabled').closest('label')
+// locates a toggle via getByText('<its label>').closest('label')
 //   .querySelector('input[type="checkbox"]'), which needs the label and the
 // checkbox to share a <label> ancestor. Override ONLY Switch with a faithful
 // stub that renders <label>{children}<input/></label> and forwards
 // onValueChange(checked); everything else (Modal, useDisclosure, Button, Input,
 // …) delegates to the REAL @/components/ui so the preset-modal tests, which
 // depend on the real useDisclosure + Modal open/close behaviour, keep working.
-//   <Switch isSelected={config.enabled} onValueChange={(v) => updateConfig('enabled', v)}>…</Switch>
 vi.mock('@/components/ui', async () => {
   const React = await import('react');
   const actual = await vi.importActual<Record<string, unknown>>('@/components/ui');
@@ -130,13 +129,10 @@ const MOCK_CONFIG = {
   mandatory: false,
   step_welcome_enabled: true,
   step_profile_enabled: true,
-  step_profile_required: true,
   step_skills_enabled: true,
-  step_skills_required: false,
   step_safeguarding_enabled: true,
   step_safeguarding_required: false,
   step_security_enabled: true,
-  step_confirm_enabled: true,
   avatar_required: true,
   bio_required: true,
   bio_min_length: 20,
@@ -144,7 +140,6 @@ const MOCK_CONFIG = {
   require_avatar_for_visibility: false,
   require_bio_for_visibility: false,
   welcome_text: null,
-  help_text: null,
   safeguarding_intro_text: null,
   country_preset: 'ireland',
 };
@@ -174,244 +169,299 @@ const MOCK_SAFEGUARDING_OPTIONS = [
   },
 ];
 
+function loadWith(config: Record<string, unknown>, options: unknown[] = MOCK_SAFEGUARDING_OPTIONS) {
+  mockGet.mockResolvedValue({
+    success: true,
+    data: { config: { ...MOCK_CONFIG, ...config }, safeguarding_options: options },
+  });
+}
+
+/** The switch named `text` (its words sit beside it; the switch carries them as its name). */
+function switchLabelled(text: string | RegExp): HTMLInputElement {
+  return screen.getByRole('checkbox', { name: text }) as HTMLInputElement;
+}
+
+/** The "Shown" switch of one step row. */
+function stepSwitch(step: string): HTMLInputElement | null {
+  return document.querySelector(`[data-step="${step}"] > div:first-child input[type="checkbox"]`);
+}
+
+async function save() {
+  const { userEvent } = await import('@/test/test-utils');
+  const user = userEvent.setup();
+  await user.click(screen.getByText('Save changes'));
+  await waitFor(() => expect(mockPut).toHaveBeenCalled());
+  return mockPut.mock.calls[0]?.[1] as Record<string, unknown>;
+}
+
+async function renderLoaded() {
+  render(<OnboardingSettings />);
+  await screen.findByText('Who goes through the welcome steps');
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe('OnboardingSettings', () => {
+describe('OnboardingSettings (Admin → Welcome steps)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGet.mockResolvedValue({
-      success: true,
-      data: { config: MOCK_CONFIG, safeguarding_options: MOCK_SAFEGUARDING_OPTIONS },
-    });
+    loadWith({});
     mockPut.mockResolvedValue({ success: true, data: {} });
-    mockPost.mockResolvedValue({ success: true, data: { options_created: ['opt_1'] } });
+    mockPost.mockResolvedValue({ success: true, data: { options_created: ['opt_1'], jurisdiction_warning: null } });
   });
 
-  // ── 1. Loading state ────────────────────────────────────────────────────
-
   it('renders loading state initially', () => {
-    // Never-resolving promise keeps component in loading state
     mockGet.mockReturnValue(new Promise(() => {}));
     render(<OnboardingSettings />);
 
-    // The component renders a Spinner while loading. The mocked Spinner exposes
-    // role="status"; the real one uses role="progressbar" or the spinner class.
     const spinner = document.querySelector('[role="status"]') ||
                     document.querySelector('[role="progressbar"]') ||
                     document.querySelector('.animate-spinner-ease-spin');
     expect(spinner).toBeTruthy();
-
-    // Settings content should NOT be visible yet
-    expect(screen.queryByText('Module Control')).toBeNull();
+    expect(screen.queryByText('Who goes through the welcome steps')).toBeNull();
   });
 
-  // ── 2. Renders settings after config loads ──────────────────────────────
+  it('names the page and its five sections in plain words', async () => {
+    await renderLoaded();
 
-  it('renders settings after config loads', async () => {
-    render(<OnboardingSettings />);
+    expect(screen.getByRole('heading', { name: 'Welcome steps' })).toBeInTheDocument();
+    expect(screen.getByText('The steps')).toBeInTheDocument();
+    expect(screen.getByText('Who other members can see')).toBeInTheDocument();
+    expect(screen.getByText('Safeguarding questions')).toBeInTheDocument();
+    expect(screen.getByText('Your own welcome')).toBeInTheDocument();
+    expect(mockGet).toHaveBeenCalledWith('/v2/admin/config/onboarding');
 
-    await waitFor(() => {
-      expect(screen.getByText('Module Control')).toBeInTheDocument();
+    // The machine-made labels, and the ones that described the wrong thing.
+    for (const gone of ['System', 'Module Control', 'Step Configuration', 'Visibility Gating', 'Legal Notice', 'Step Welcome']) {
+      expect(screen.queryByText(gone)).not.toBeInTheDocument();
+    }
+    // No raw wording key anywhere on the page.
+    expect(screen.queryByText(/system\.onboarding\./)).not.toBeInTheDocument();
+  });
+
+  it('no longer shows the controls that did nothing', async () => {
+    await renderLoaded();
+
+    expect(screen.queryByText(/Help Text/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('Required')).not.toBeInTheDocument();
+    // One switch per step that can be left out; the last step has none.
+    for (const step of ['welcome', 'profile', 'skills', 'safeguarding', 'security']) {
+      expect(stepSwitch(step)).toBeTruthy();
+    }
+    expect(stepSwitch('confirm')).toBeNull();
+    expect(screen.getByText('Always shown')).toBeInTheDocument();
+  });
+
+  // ── One choice instead of two switches ──────────────────────────────────
+
+  describe('who goes through the welcome steps', () => {
+    it.each([
+      [{ enabled: true, mandatory: true }, 'Every new member'],
+      [{ enabled: true, mandatory: false }, 'Anyone who wants to'],
+      [{ enabled: false, mandatory: false }, 'Nobody – switched off'],
+      // Stored by the old page: "off" with "must finish" left on. It is off.
+      [{ enabled: false, mandatory: true }, 'Nobody – switched off'],
+    ])('reads %j as "%s"', async (stored, label) => {
+      loadWith(stored);
+      await renderLoaded();
+
+      expect(screen.getByRole('radio', { name: new RegExp(label) })).toBeChecked();
     });
 
-    // Verify all section headings are present
-    expect(screen.getByText('Step Configuration')).toBeInTheDocument();
-    expect(screen.getByText('Profile Requirements')).toBeInTheDocument();
-    // The retired auto-listing section must not come back.
-    expect(screen.queryByText('Listing Creation')).not.toBeInTheDocument();
-    expect(screen.getByText('Visibility Gating')).toBeInTheDocument();
-    expect(screen.getByText('Safeguarding Config')).toBeInTheDocument();
-    expect(screen.getByText('Custom Text')).toBeInTheDocument();
+    it('saves "switched off" with "must finish" off too, so no member is ever locked out', async () => {
+      loadWith({ enabled: true, mandatory: true });
+      await renderLoaded();
 
-    // Verify page header
-    expect(screen.getByText('System')).toBeInTheDocument();
-    expect(screen.getByText(/Configure the onboarding flow for new members/)).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('radio', { name: /Nobody – switched off/ }));
+      const sent = await save();
 
-    // Verify safeguarding options are displayed
+      expect(sent).toMatchObject({ enabled: false, mandatory: false });
+    });
+
+    it('saves "every new member" as on and compulsory', async () => {
+      await renderLoaded();
+
+      fireEvent.click(screen.getByRole('radio', { name: /Every new member/ }));
+      const sent = await save();
+
+      expect(sent).toMatchObject({ enabled: true, mandatory: true });
+    });
+
+    it('says plainly that the phone app does not follow this choice', async () => {
+      await renderLoaded();
+
+      expect(screen.getByText(/The phone app always takes new members through the welcome steps/)).toBeInTheDocument();
+    });
+  });
+
+  // ── The steps ───────────────────────────────────────────────────────────
+
+  it('saves a step switched off', async () => {
+    await renderLoaded();
+
+    const security = stepSwitch('security')!;
+    expect(security.checked).toBe(true);
+    expect(security).toHaveAccessibleName('Show the Protect your account step');
+    fireEvent.click(security);
+    const sent = await save();
+
+    expect(sent).toMatchObject({ step_security_enabled: false });
+    // The settings retired on 13 Nov 2026 are never sent.
+    for (const retired of ['step_profile_required', 'step_skills_required', 'step_confirm_enabled', 'help_text']) {
+      expect(sent).not.toHaveProperty(retired);
+    }
+  });
+
+  it('keeps what the profile step asks for inside that step, and hides it when the step is off', async () => {
+    await renderLoaded();
+
+    expect(screen.getByText('Members must add a profile photo')).toBeInTheDocument();
+    expect(screen.getByText('Members must write a few words about themselves')).toBeInTheDocument();
+
+    fireEvent.click(stepSwitch('profile')!);
+
+    expect(screen.queryByText('Members must add a profile photo')).not.toBeInTheDocument();
+    expect(screen.queryByText('Members must write a few words about themselves')).not.toBeInTheDocument();
+  });
+
+  it('saves the photo and bio requirements', async () => {
+    await renderLoaded();
+
+    fireEvent.click(switchLabelled('Members must add a profile photo'));
+    const sent = await save();
+
+    expect(sent).toMatchObject({ avatar_required: false, bio_required: true });
+  });
+
+  it('saves the shortest "About you" allowed, and never less than one character', async () => {
+    await renderLoaded();
+
+    const input = screen.getByLabelText(/Shortest "About you" allowed/) as HTMLInputElement;
+    expect(input.value).toBe('20');
+    fireEvent.change(input, { target: { value: '0' } });
+    const sent = await save();
+
+    expect(sent).toMatchObject({ bio_min_length: 1 });
+  });
+
+  it('only asks for a minimum length while a bio is required', async () => {
+    await renderLoaded();
+
+    fireEvent.click(switchLabelled('Members must write a few words about themselves'));
+
+    expect(screen.queryByLabelText(/Shortest "About you" allowed/)).not.toBeInTheDocument();
+  });
+
+  it('warns that the safeguarding step is shown to nobody while no question is switched on', async () => {
+    loadWith({}, []);
+    await renderLoaded();
+
+    expect(screen.getByText('No questions are switched on yet, so this step is not shown to anyone.')).toBeInTheDocument();
+  });
+
+  // ── Who other members can see ───────────────────────────────────────────
+
+  it('describes hiding members as hiding members', async () => {
+    await renderLoaded();
+
+    expect(screen.getByText('Hide members who have no profile photo')).toBeInTheDocument();
+    expect(screen.getByText(/other members cannot open their profile/)).toBeInTheDocument();
+    fireEvent.click(switchLabelled('Hide members who have not finished the welcome steps'));
+    const sent = await save();
+
+    expect(sent).toMatchObject({ require_completion_for_visibility: true });
+  });
+
+  it('will not hide unfinished members while the welcome steps are switched off', async () => {
+    loadWith({ enabled: false, require_completion_for_visibility: true });
+    await renderLoaded();
+
+    const hide = switchLabelled('Hide members who have not finished the welcome steps');
+    expect(hide).toBeDisabled();
+    expect(hide.checked).toBe(false);
+    expect(screen.getByText(/Not used while the welcome steps are switched off/)).toBeInTheDocument();
+  });
+
+  // ── A country's standard questions ──────────────────────────────────────
+
+  it('lists the questions that are switched on', async () => {
+    await renderLoaded();
+
     expect(screen.getByText('I consider myself a vulnerable adult')).toBeInTheDocument();
     expect(screen.getByText('I prefer vetted members')).toBeInTheDocument();
-
-    // Verify save button
-    expect(screen.getByText('Save Settings')).toBeInTheDocument();
-
-    // Verify the API was called
-    expect(mockGet).toHaveBeenCalledWith('/v2/admin/config/onboarding');
-  });
-
-  // ── 3. Toggle onboarding enabled switch ─────────────────────────────────
-
-  it('renders country preset labels from translations', async () => {
-    render(<OnboardingSettings />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Safeguarding Config')).toBeInTheDocument();
-    });
-
     expect(screen.getAllByText('Ireland').length).toBeGreaterThan(0);
-    expect(screen.queryByText(/system\.onboarding\.preset_/)).not.toBeInTheDocument();
   });
 
-  it('toggles onboarding enabled switch', async () => {
-    render(<OnboardingSettings />);
+  it('says exactly what setting up a country will change before doing it', async () => {
+    await renderLoaded();
 
-    await waitFor(() => {
-      expect(screen.getByText('Module Control')).toBeInTheDocument();
-    });
+    fireEvent.click(screen.getByRole('button', { name: 'Set up these questions' }));
 
-    const enabledSwitch = screen.getByText('Onboarding Enabled')
-      .closest('label')
-      ?.querySelector('input[type="checkbox"]') as HTMLInputElement;
-    expect(enabledSwitch).toBeTruthy();
-
-    // The config starts with enabled: true
-    expect(enabledSwitch.checked).toBe(true);
-
-    // Toggle off
-    fireEvent.click(enabledSwitch);
-
-    // Now click Save to trigger the API call
-    const { userEvent } = await import('@/test/test-utils');
-    const user = userEvent.setup();
-    await user.click(screen.getByText('Save Settings'));
-
-    await waitFor(() => {
-      expect(mockPut).toHaveBeenCalledWith(
-        '/v2/admin/config/onboarding',
-        expect.objectContaining({ enabled: false }),
-      );
-    });
-  });
-
-  // "Protect your account" (optional two-step sign-in offer) has an on/off
-  // switch only: the step is always optional for members, so no "Required".
-  it('saves the "Protect your account" step switch as step_security_enabled', async () => {
-    render(<OnboardingSettings />);
-
-    const label = await screen.findByText('Protect your account (two-factor offer)');
-    expect(screen.getByText(/Always optional for members, and only shown to members who can set it up/)).toBeInTheDocument();
-    const row = label.closest('.justify-between') as HTMLElement;
-    expect(row).toBeTruthy();
-    const switches = row.querySelectorAll('input[type="checkbox"]');
-    expect(switches).toHaveLength(1);
-    const securitySwitch = switches[0] as HTMLInputElement;
-    expect(securitySwitch.checked).toBe(true);
-
-    fireEvent.click(securitySwitch);
-
-    const { userEvent } = await import('@/test/test-utils');
-    const user = userEvent.setup();
-    await user.click(screen.getByText('Save Settings'));
-
-    await waitFor(() => {
-      expect(mockPut).toHaveBeenCalledWith(
-        '/v2/admin/config/onboarding',
-        expect.objectContaining({ step_security_enabled: false }),
-      );
-    });
-    const sent = mockPut.mock.calls[0]?.[1] as Record<string, unknown>;
-    expect(sent).not.toHaveProperty('step_security_required');
-  });
-
-  // ── 4. Save bio min length setting ──────────────────────────────────────
-
-  it('saves bio min length setting', async () => {
-    render(<OnboardingSettings />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Profile Requirements')).toBeInTheDocument();
-    });
-
-    // Find the bio min length input by its label
-    const bioInput = screen.getByLabelText(/Min Bio Length/i) as HTMLInputElement;
-    expect(bioInput).toBeTruthy();
-    expect(bioInput.value).toBe('20');
-
-    // Clear and type a new value
-    fireEvent.change(bioInput, { target: { value: '50' } });
-
-    // Click Save
-    const { userEvent } = await import('@/test/test-utils');
-    const user = userEvent.setup();
-    await user.click(screen.getByText('Save Settings'));
-
-    await waitFor(() => {
-      expect(mockPut).toHaveBeenCalledWith(
-        '/v2/admin/config/onboarding',
-        expect.objectContaining({ bio_min_length: 50 }),
-      );
-    });
-  });
-
-  // ── 5. Shows preset confirmation modal ──────────────────────────────────
-
-  it('shows preset confirmation modal', async () => {
-    render(<OnboardingSettings />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Safeguarding Config')).toBeInTheDocument();
-    });
-
-    // The country_preset is 'ireland' (not 'custom'), so "Apply Preset" should be enabled.
-    // There is only one "Apply Preset" button visible initially (in the safeguarding card).
-    const applyButton = screen.getByRole('button', { name: /Apply Preset/i });
-    expect(applyButton).not.toBeDisabled();
-
-    // Click "Apply Preset" to open the modal — use fireEvent for HeroUI onPress compatibility
-    fireEvent.click(applyButton);
-
-    // Modal should appear with confirmation text
-    await waitFor(() => {
-      expect(screen.getByText('Apply Country Preset')).toBeInTheDocument();
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText(/Applying a preset will overwrite your current registration policy settings/)).toBeInTheDocument();
-    });
-
-    // Cancel button should be visible inside the modal
+    await screen.findByText('Set up the standard questions for Ireland?');
+    expect(screen.getByText(/any you switched off are switched on again/)).toBeInTheDocument();
+    expect(screen.getByText(/answers to them are withdrawn/)).toBeInTheDocument();
+    expect(screen.getByText('Questions you wrote yourself are not changed.')).toBeInTheDocument();
     expect(screen.getByText('Cancel')).toBeInTheDocument();
+    expect(mockPost).not.toHaveBeenCalled();
   });
 
-  // ── 6. Applies preset on confirm ────────────────────────────────────────
+  it('sets up the country on confirm and reloads', async () => {
+    await renderLoaded();
 
-  it('applies preset on confirm', async () => {
-    render(<OnboardingSettings />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Safeguarding Config')).toBeInTheDocument();
-    });
-
-    // Open the preset modal
-    fireEvent.click(screen.getByRole('button', { name: /Apply Preset/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Set up these questions' }));
+    await screen.findByText('Set up the standard questions for Ireland?');
+    const buttons = screen.getAllByRole('button', { name: 'Set up these questions' });
+    fireEvent.click(buttons[buttons.length - 1]!);
 
     await waitFor(() => {
-      expect(screen.getByText('Apply Country Preset')).toBeInTheDocument();
+      expect(mockPost).toHaveBeenCalledWith('/v2/admin/config/onboarding/apply-preset', { preset: 'ireland' });
     });
-
-    // The modal footer has two buttons: Cancel and Apply Preset.
-    // We need the Apply Preset button inside the modal (not the one in the card).
-    const modalButtons = screen.getAllByRole('button', { name: /Apply Preset/i });
-    // The last one is the confirm button in the modal footer
-    const confirmButton = modalButtons[modalButtons.length - 1];
-    fireEvent.click(confirmButton);
-
-    // Verify api.post was called with the apply-preset endpoint
-    await waitFor(() => {
-      expect(mockPost).toHaveBeenCalledWith(
-        '/v2/admin/config/onboarding/apply-preset',
-        { preset: 'ireland' },
-      );
-    });
-
-    // After success, a toast should be shown and config should be refetched
     await waitFor(() => {
       expect(stableToastValue.success).toHaveBeenCalledWith(
-        'Preset Applied',
-        'Preset applied and options created',
+        'Questions set up',
+        'The standard questions for Ireland are in place.',
       );
     });
-
-    // Config should be refetched (second call to mockGet)
+    expect(stableToastValue.warning).not.toHaveBeenCalled();
     expect(mockGet).toHaveBeenCalledTimes(2);
+  });
+
+  // The server keeps a safeguarding country that was already chosen and says
+  // so. Until 13 Nov 2026 the page threw that warning away.
+  it('shows the warning from the server when the safeguarding country is a different one', async () => {
+    mockPost.mockResolvedValue({
+      success: true,
+      data: { options_created: [], jurisdiction_warning: 'Your safeguarding country is still England and Wales.' },
+    });
+    await renderLoaded();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Set up these questions' }));
+    await screen.findByText('Set up the standard questions for Ireland?');
+    const buttons = screen.getAllByRole('button', { name: 'Set up these questions' });
+    fireEvent.click(buttons[buttons.length - 1]!);
+
+    await waitFor(() => {
+      expect(stableToastValue.warning).toHaveBeenCalledWith(
+        'Check your safeguarding country',
+        'Your safeguarding country is still England and Wales.',
+      );
+    });
+  });
+
+  // ── The community's own words ───────────────────────────────────────────
+
+  it('saves the welcome message and the safeguarding introduction', async () => {
+    await renderLoaded();
+
+    fireEvent.change(screen.getByLabelText('Welcome message'), { target: { value: 'We meet on Thursdays.' } });
+    fireEvent.change(screen.getByLabelText('Your own introduction to the safeguarding step'), {
+      target: { value: 'Our safeguarding lead is Maeve.' },
+    });
+    const sent = await save();
+
+    expect(sent).toMatchObject({
+      welcome_text: 'We meet on Thursdays.',
+      safeguarding_intro_text: 'Our safeguarding lead is Maeve.',
+    });
+    expect(stableToastValue.success).toHaveBeenCalledWith('Saved', 'New members will see your changes from now on.');
   });
 });

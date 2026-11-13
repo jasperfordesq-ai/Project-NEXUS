@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/Button';
 import { useLegalGate } from '@/hooks/useLegalGate';
 import { isVisitingManager } from '@/lib/access';
 import { buildReturnTarget } from '@/lib/auth-return';
+import { welcomeStepsMustBeFinished } from '@/lib/welcomeSteps';
 
 const LegalAcceptanceGate = lazy(() =>
   import('@/components/legal/LegalAcceptanceGate').then((module) => ({ default: module.LegalAcceptanceGate }))
@@ -182,10 +183,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   //    without onboarding. onboarding_completed is the authoritative flag (the
   //    backend requires avatar + bio before it sets it).
   const onboardingSettings = tenant?.settings as Record<string, unknown> | undefined;
-  const onboardingEnabled = onboardingSettings?.onboarding_enabled !== false;
-  const onboardingMandatory = onboardingSettings?.onboarding_mandatory !== false;
   const isGodOrSuperAdmin = user?.is_god || user?.is_super_admin;
-  const needsOnboarding = user && !user.onboarding_completed && onboardingEnabled && onboardingMandatory && !isGodOrSuperAdmin;
+  const needsOnboarding = user && !user.onboarding_completed && welcomeStepsMustBeFinished(onboardingSettings) && !isGodOrSuperAdmin;
   if (needsOnboarding && lastSegment !== 'onboarding') {
     // Onboarding first, then on to the page the member asked for (an emailed
     // link, say) rather than the dashboard.

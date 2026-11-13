@@ -3782,6 +3782,7 @@ return [
         ],
         'states' => [
             'bio-too-short' => 'Voeg een korte biografie toe voordat u verdergaat.',
+            'bio-min-length' => 'Schrijf minimaal :min tekens over uzelf voordat u verdergaat.',
             'avatar-required' => 'Voeg een profielfoto toe voordat u verdergaat.',
             'avatar-saved' => 'Uw foto is geüpload.',
             'avatar-failed' => 'Die foto kon niet worden geüpload. Probeer het opnieuw.',

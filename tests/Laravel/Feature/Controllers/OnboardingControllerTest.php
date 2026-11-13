@@ -547,6 +547,123 @@ class OnboardingControllerTest extends TestCase
         return $user;
     }
 
+    // ------------------------------------------------------------------
+    //  The community's own settings decide what "finished" needs (13 Nov 2026).
+    //  Until then the photo and bio were demanded whatever the admin chose, so
+    //  two switches on the admin page did nothing and two combinations left
+    //  new members unable to finish.
+    // ------------------------------------------------------------------
+
+    private function onboardingSetting(string $key, string $value): void
+    {
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.' . $key],
+            ['setting_value' => $value],
+        );
+        \App\Services\OnboardingConfigService::clearConfigCache($this->testTenantId);
+    }
+
+    private function unfinishedMember(?string $avatarUrl, ?string $bio): User
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'avatar_url' => $avatarUrl,
+            'bio' => $bio,
+            'onboarding_completed' => false,
+        ]);
+        Sanctum::actingAs($user, ['*']);
+
+        return $user;
+    }
+
+    public function test_complete_does_not_demand_a_photo_when_the_community_switched_that_off(): void
+    {
+        $this->onboardingSetting('avatar_required', '0');
+        $user = $this->unfinishedMember(null, 'A valid bio that is long enough.');
+
+        $this->apiPost('/v2/onboarding/complete', [])->assertStatus(200);
+
+        $this->assertTrue((bool) $user->fresh()->onboarding_completed);
+    }
+
+    public function test_complete_does_not_demand_a_bio_when_the_community_switched_that_off(): void
+    {
+        $this->onboardingSetting('bio_required', '0');
+        $user = $this->unfinishedMember('https://example.com/photo.jpg', '');
+
+        $this->apiPost('/v2/onboarding/complete', [])->assertStatus(200);
+
+        $this->assertTrue((bool) $user->fresh()->onboarding_completed);
+    }
+
+    public function test_complete_refuses_a_bio_shorter_than_the_community_minimum(): void
+    {
+        $this->onboardingSetting('bio_min_length', '40');
+        $user = $this->unfinishedMember('https://example.com/photo.jpg', 'Too short.');
+
+        $response = $this->apiPost('/v2/onboarding/complete', []);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('errors.0.field', 'bio');
+        $this->assertFalse((bool) $user->fresh()->onboarding_completed);
+    }
+
+    public function test_complete_asks_for_no_photo_or_bio_when_the_profile_step_is_switched_off(): void
+    {
+        // Nothing in the welcome steps asks for them, so nothing may demand them.
+        $this->onboardingSetting('step_profile_enabled', '0');
+        $user = $this->unfinishedMember(null, null);
+
+        $this->apiPost('/v2/onboarding/complete', [])->assertStatus(200);
+
+        $this->assertTrue((bool) $user->fresh()->onboarding_completed);
+    }
+
+    public function test_config_always_offers_the_last_step_even_if_a_stored_setting_switched_it_off(): void
+    {
+        // The last step holds the only "Finish" button. A community that had
+        // switched it off left members with no way to finish.
+        $this->onboardingSetting('step_confirm_enabled', '0');
+        $this->unfinishedMember(null, null);
+
+        $response = $this->apiGet('/v2/onboarding/config');
+
+        $response->assertStatus(200);
+        $this->assertContains('confirm', array_column($response->json('data.steps'), 'slug'));
+        $this->assertArrayNotHasKey('step_confirm_enabled', $response->json('data.config'));
+    }
+
+    public function test_config_marks_the_profile_step_required_only_while_something_in_it_is(): void
+    {
+        $this->unfinishedMember(null, null);
+        $profile = fn (): array => collect($this->apiGet('/v2/onboarding/config')->json('data.steps'))
+            ->firstWhere('slug', 'profile');
+
+        $this->assertTrue($profile()['required']);
+
+        $this->onboardingSetting('avatar_required', '0');
+        $this->onboardingSetting('bio_required', '0');
+        $this->assertFalse($profile()['required']);
+    }
+
+    public function test_config_no_longer_carries_the_settings_nothing_read(): void
+    {
+        $this->onboardingSetting('step_profile_required', '1');
+        $this->onboardingSetting('step_skills_required', '1');
+        $this->onboardingSetting('help_text', 'Never shown anywhere');
+        $this->unfinishedMember(null, null);
+
+        $response = $this->apiGet('/v2/onboarding/config');
+
+        $config = $response->json('data.config');
+        $this->assertArrayNotHasKey('step_profile_required', $config);
+        $this->assertArrayNotHasKey('step_skills_required', $config);
+        $this->assertArrayNotHasKey('help_text', $config);
+        $skills = collect($response->json('data.steps'))->firstWhere('slug', 'skills');
+        $this->assertFalse($skills['required']);
+    }
+
     private function requireSafeguardingStep(): void
     {
         DB::table('tenant_settings')->updateOrInsert(

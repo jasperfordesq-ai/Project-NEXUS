@@ -21,6 +21,7 @@ const {
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestProfile } = require('../lib/request-profile');
+const { welcomeStepsSwitchedOn } = require('../lib/welcome-steps');
 const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 
 const router = express.Router();
@@ -162,9 +163,11 @@ function normalizeSafeguardingOption(option) {
  * messages on the very first thing they do here. Follows the same shape as
  * statusBanner() in blog-posts.js and federation.js.
  */
-function statusBanner(status, t) {
+function statusBanner(status, t, params = {}) {
   const banners = {
     'bio-too-short': { type: 'error', anchor: 'bio' },
+    // The community set a minimum length for "About you" (Admin → Welcome steps).
+    'bio-min-length': { type: 'error', anchor: 'bio' },
     'location-required': { type: 'error', anchor: 'location' },
     'location-invalid': { type: 'error', anchor: 'location' },
     'avatar-required': { type: 'error', anchor: 'avatar' },
@@ -181,8 +184,32 @@ function statusBanner(status, t) {
   const statusKey = String(status || '').trim();
   const banner = banners[statusKey];
   return banner
-    ? { ...banner, message: t(`govuk_alpha.onboarding.states.${statusKey}`) }
+    ? { ...banner, message: t(`govuk_alpha.onboarding.states.${statusKey}`, params) }
     : null;
+}
+
+// What the profile step must have before the member moves on. It is the
+// community's choice (Admin → Welcome steps): a photo, a few words of at least
+// a minimum length, both or neither. The API makes the same check at "Finish";
+// asking here tells the member on the step where they can put it right.
+function profileNeeds(config) {
+  const item = asObject(config);
+  const minimum = Number.parseInt(item.bio_min_length, 10);
+  return {
+    photo: item.avatar_required !== false,
+    bio: item.bio_required !== false,
+    bioMinLength: Number.isFinite(minimum) && minimum > 0 ? minimum : 10
+  };
+}
+
+// When the config cannot be read, do not block here: the API decides at "Finish".
+async function communityProfileNeeds(token) {
+  try {
+    return profileNeeds(asObject(dataFrom(await getOnboardingConfig(token))).config);
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return { photo: false, bio: false, bioMinLength: 1 };
+  }
 }
 
 // Skill NAMES, as the member's skills are now stored (user_skills, which
@@ -392,9 +419,16 @@ function completeFailureRedirect(error) {
   return '/onboarding/confirm?status=complete-failed';
 }
 
+// A community that has switched the welcome steps off shows them to nobody:
+// an old link or a bookmark goes straight to the dashboard.
+function stepsSwitchedOff(req) {
+  return !welcomeStepsSwitchedOn(req.accessibleRouting && req.accessibleRouting.tenant);
+}
+
 router.get('/', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, '/login?status=auth-required');
+  if (stepsSwitchedOff(req)) return redirectTo(res, '/dashboard');
 
   let status;
   let configData;
@@ -414,6 +448,7 @@ router.get('/', asyncRoute(async (req, res) => {
 router.get('/:step([a-z]+)', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, '/login?status=auth-required');
+  if (stepsSwitchedOff(req)) return redirectTo(res, '/dashboard');
 
   const step = String(req.params.step || '');
   let status;
@@ -465,7 +500,9 @@ router.get('/:step([a-z]+)', asyncRoute(async (req, res) => {
     }
 
     const stepIndex = slugs.indexOf(step);
-    let banner = statusBanner(req.query && req.query.status, res.locals.t);
+    let banner = statusBanner(req.query && req.query.status, res.locals.t, {
+      min: profileNeeds(configData.config).bioMinLength
+    });
     if (banner && banner.field === 'safeguarding') {
       // GOV.UK: the summary links to the first answer in the group, and the
       // "nothing chosen" message names the community's own "none apply" answer.
@@ -576,10 +613,31 @@ router.post('/:step([a-z]+)', asyncRoute(async (req, res) => {
       return redirectTo(res, '/onboarding/profile?status=complete-failed');
     }
 
-    // The bio above is saved first so a member who forgot the town does not lose
-    // what they typed.
+    // The bio above is saved first so a member who forgot the town, or has more
+    // to write, does not lose what they typed.
+    const needs = await communityProfileNeeds(req.token);
+    if (needs.bio && !bio) {
+      return redirectTo(res, '/onboarding/profile?status=bio-too-short');
+    }
+    if (needs.bio && Array.from(bio).length < needs.bioMinLength) {
+      return redirectTo(res, '/onboarding/profile?status=bio-min-length');
+    }
+
     if (locationAsked && !location) {
       return redirectTo(res, '/onboarding/profile?status=location-required');
+    }
+
+    if (needs.photo) {
+      let hasPhoto = true;
+      try {
+        const profile = asObject(dataFrom(await getRequestProfile(req, req.token)));
+        hasPhoto = Boolean(profile.avatar_url || profile.avatarUrl);
+      } catch (error) {
+        if (isAuthError(error)) throw error;
+      }
+      if (!hasPhoto) {
+        return redirectTo(res, '/onboarding/profile?status=avatar-required');
+      }
     }
   }
 

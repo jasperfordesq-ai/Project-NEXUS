@@ -3782,6 +3782,7 @@ return [
         ],
         'states' => [
             'bio-too-short' => 'Przed kontynuowaniem dodaj krótki opis.',
+            'bio-min-length' => 'Przed kontynuowaniem napisz o sobie co najmniej :min znaków.',
             'avatar-required' => 'Przed kontynuowaniem dodaj zdjęcie profilowe.',
             'avatar-saved' => 'Twoje zdjęcie zostało przesłane.',
             'avatar-failed' => 'Nie udało się przesłać zdjęcia. Spróbuj ponownie.',

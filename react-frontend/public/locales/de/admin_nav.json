@@ -227,7 +227,7 @@
   "federation_external_partners": "Externe Partner",
   "federation_neighborhoods": "Nachbarschaften",
   "federation_webhooks": "Webhooks",
-  "onboarding_settings": "Onboarding-Einstellungen",
+  "onboarding_settings": "Willkommensschritte",
   "safeguarding_options": "Schutzoptionen",
   "sections": {
     "content": "Inhalt",
@@ -403,7 +403,7 @@
     "neighborhoods": "Nachbarschaften",
     "nexus_score": "Nexus-Score",
     "notes": "Notizen",
-    "onboarding_settings": "Onboarding-Einstellungen",
+    "onboarding_settings": "Willkommensschritte",
     "organizations": "Organisationen",
     "performance": "Leistung",
     "polls": "Umfragen",

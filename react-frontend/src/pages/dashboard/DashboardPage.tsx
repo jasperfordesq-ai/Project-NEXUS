@@ -64,6 +64,7 @@ import { api } from '@/lib/api';
 import { vivid } from '@/lib/vivid';
 import { useSiteVivid } from '@/contexts/SiteAccentContext';
 import { logError } from '@/lib/logger';
+import { welcomeStepsSwitchedOn } from '@/lib/welcomeSteps';
 import { formatDayOfMonth, formatMonthShort, formatRelativeTime, resolveAvatarUrl } from '@/lib/helpers';
 import type { WalletBalance, Listing, Event, Group } from '@/types/api';
 import { CARING_COMMUNITY_ROUTE } from '@/pages/caring-community/config';
@@ -302,7 +303,7 @@ export function DashboardPage() {
   const { t } = useTranslation('dashboard');
   usePageTitle(t('meta.title'));
   const { user } = useAuth();
-  const { branding, tenantPath } = useTenant();
+  const { branding, tenantPath, tenant } = useTenant();
   const greeting = useGreeting(user?.first_name || user?.name?.split(' ')[0]);
   const { counts: notificationCounts } = useNotifications();
   const hasGamification = useFeature('gamification');
@@ -474,7 +475,10 @@ export function DashboardPage() {
         </motion.div>
 
         {/* Onboarding Banner */}
-        {user && user.onboarding_completed === false && (
+        {/* Not while the community has the welcome steps switched off
+            (Admin → Welcome steps): "off" means nobody is invited to them. */}
+        {user && user.onboarding_completed === false
+          && welcomeStepsSwitchedOn(tenant?.settings as Record<string, unknown> | undefined) && (
           <motion.div variants={itemVariants}>
             <GlassCard className="border-l-4 border-l-accent p-4 sm:p-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

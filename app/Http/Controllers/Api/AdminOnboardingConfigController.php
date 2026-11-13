@@ -31,18 +31,19 @@ class AdminOnboardingConfigController extends BaseApiController
      *
      * step_interests_* and listing_creation_mode / listing_max_auto were
      * retired on 2026-10-02 (see OnboardingConfigService) and are now
-     * ignored like any other unknown key.
+     * ignored like any other unknown key. So are step_profile_required,
+     * step_skills_required, step_confirm_enabled and help_text, retired on
+     * 2026-11-13.
      */
     private const ALLOWED_KEYS = [
         'enabled', 'mandatory',
-        'step_welcome_enabled', 'step_profile_enabled', 'step_profile_required',
-        'step_skills_enabled', 'step_skills_required',
+        'step_welcome_enabled', 'step_profile_enabled',
+        'step_skills_enabled',
         'step_safeguarding_enabled', 'step_safeguarding_required',
         'step_security_enabled',
-        'step_confirm_enabled',
         'avatar_required', 'bio_required', 'bio_min_length',
         'require_completion_for_visibility', 'require_avatar_for_visibility', 'require_bio_for_visibility',
-        'welcome_text', 'help_text', 'safeguarding_intro_text',
+        'welcome_text', 'safeguarding_intro_text',
         'country_preset',
     ];
 
@@ -51,11 +52,10 @@ class AdminOnboardingConfigController extends BaseApiController
      */
     private const BOOLEAN_KEYS = [
         'enabled', 'mandatory',
-        'step_welcome_enabled', 'step_profile_enabled', 'step_profile_required',
-        'step_skills_enabled', 'step_skills_required',
+        'step_welcome_enabled', 'step_profile_enabled',
+        'step_skills_enabled',
         'step_safeguarding_enabled', 'step_safeguarding_required',
         'step_security_enabled',
-        'step_confirm_enabled',
         'avatar_required', 'bio_required',
         'require_completion_for_visibility', 'require_avatar_for_visibility', 'require_bio_for_visibility',
     ];
@@ -99,8 +99,8 @@ class AdminOnboardingConfigController extends BaseApiController
             // Validate bio_min_length
             if ($key === 'bio_min_length') {
                 $value = (int) $value;
-                if ($value < 0 || $value > 500) {
-                    $errors[] = 'bio_min_length must be between 0 and 500';
+                if ($value < 1 || $value > 500) {
+                    $errors[] = 'bio_min_length must be between 1 and 500';
                     continue;
                 }
             }
@@ -122,7 +122,7 @@ class AdminOnboardingConfigController extends BaseApiController
             } elseif ($key === 'bio_min_length') {
                 $value = (string) (int) $value;
                 $type = 'integer';
-            } elseif (in_array($key, ['welcome_text', 'help_text', 'safeguarding_intro_text'], true)) {
+            } elseif (in_array($key, ['welcome_text', 'safeguarding_intro_text'], true)) {
                 $value = strip_tags(trim((string) $value));
             } else {
                 $value = (string) $value;

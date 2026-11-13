@@ -227,7 +227,7 @@
   "federation_external_partners": "Comhpháirtithe Seachtracha",
   "federation_neighborhoods": "Comharsanachtaí",
   "federation_webhooks": "Crúcaí gréasáin",
-  "onboarding_settings": "Socruithe bordála",
+  "onboarding_settings": "Céimeanna fáilte",
   "safeguarding_options": "Roghanna Coimirce",
   "sections": {
     "content": "Ábhar",
@@ -403,7 +403,7 @@
     "neighborhoods": "Comharsanachtaí",
     "nexus_score": "Scór Nexus",
     "notes": "Nótaí",
-    "onboarding_settings": "Socruithe bordála",
+    "onboarding_settings": "Céimeanna fáilte",
     "organizations": "Eagraíochtaí",
     "performance": "Feidhmíocht",
     "pipeline": "Píblíne",

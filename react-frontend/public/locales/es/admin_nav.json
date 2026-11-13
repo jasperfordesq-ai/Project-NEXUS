@@ -227,7 +227,7 @@
   "federation_external_partners": "Socios externos",
   "federation_neighborhoods": "Barrios",
   "federation_webhooks": "Ganchos web",
-  "onboarding_settings": "Configuración de incorporación",
+  "onboarding_settings": "Pasos de bienvenida",
   "safeguarding_options": "Opciones de protección",
   "sections": {
     "content": "Contenido",
@@ -405,7 +405,7 @@
     "neighborhoods": "Barrios",
     "nexus_score": "Puntuación Nexus",
     "notes": "Notas",
-    "onboarding_settings": "Configuración de incorporación",
+    "onboarding_settings": "Pasos de bienvenida",
     "organizations": "Organizaciones",
     "performance": "Rendimiento",
     "pipeline": "Tubería",

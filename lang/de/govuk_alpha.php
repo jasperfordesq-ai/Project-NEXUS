@@ -3782,6 +3782,7 @@ return [
         ],
         'states' => [
             'bio-too-short' => 'Bitte fügen Sie vor dem Fortfahren eine kurze Beschreibung hinzu.',
+            'bio-min-length' => 'Bitte schreiben Sie mindestens :min Zeichen über sich, bevor Sie fortfahren.',
             'avatar-required' => 'Bitte fügen Sie vor dem Fortfahren ein Profilfoto hinzu.',
             'avatar-saved' => 'Ihr Foto wurde hochgeladen.',
             'avatar-failed' => 'Dieses Foto konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.',

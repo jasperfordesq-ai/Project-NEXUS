@@ -544,8 +544,7 @@
       "TS2345": 1
     },
     "src/admin/modules/system/OnboardingSettings.test.tsx": {
-      "TS2322": 1,
-      "TS2345": 1
+      "TS2322": 1
     },
     "src/admin/modules/system/RegistrationPolicySettings.test.tsx": {
       "TS2322": 1
@@ -1867,6 +1866,6 @@
   },
   "totals": {
     "fileCount": 551,
-    "errorCount": 1667
+    "errorCount": 1666
   }
 }

@@ -31,6 +31,7 @@ const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 const { getRequestProfile } = require('../lib/request-profile');
 const { communityMonthHighlight } = require('../lib/community-month');
+const { welcomeStepsSwitchedOn } = require('../lib/welcome-steps');
 
 const router = express.Router();
 
@@ -539,7 +540,9 @@ router.get('/', asyncRoute(async (req, res) => {
     profileStats: profileStats(safeProfile),
     balance,
     balanceLabel: t('dashboard.hours_value', { value: formatOneDecimal(balance) }),
-    onboardingCompleted: onboardingCompleted(onboardingData),
+    // Drives the "finish setting up" banner only. A community that has the
+    // welcome steps switched off invites nobody to them.
+    onboardingCompleted: onboardingCompleted(onboardingData) || !welcomeStepsSwitchedOn(tenant),
     showLocationReminder: safeProfile.location_missing === true,
     locationNotice: locationNotice(req.query.status, t),
     exchangeAttention: normalizeExchangeAttention(exchangeAttentionData, tc),

@@ -6,9 +6,10 @@
 /**
  * Hook to fetch the tenant's onboarding configuration.
  *
- * Returns the full config (step toggles, profile requirements, listing mode,
- * safeguarding settings) and the ordered list of active steps. Used by
- * OnboardingPage to render a dynamic wizard based on admin settings.
+ * Returns the config (step switches, profile requirements, the community's
+ * own welcome message and safeguarding introduction) and the ordered list of
+ * active steps. Used by OnboardingPage to render the welcome steps the
+ * community's admin chose on Admin → Welcome steps.
  *
  * Falls back to safe defaults that match the pre-module hardcoded behavior,
  * so tenants with no configuration still get a working wizard.
@@ -28,9 +29,7 @@ export interface OnboardingConfig {
   mandatory: boolean;
   step_welcome_enabled: boolean;
   step_profile_enabled: boolean;
-  step_profile_required: boolean;
   step_skills_enabled: boolean;
-  step_skills_required: boolean;
   step_safeguarding_enabled: boolean;
   step_safeguarding_required: boolean;
   /**
@@ -39,15 +38,16 @@ export interface OnboardingConfig {
    * There is no `_required` counterpart: the step is always optional.
    */
   step_security_enabled: boolean;
-  step_confirm_enabled: boolean;
+  /** The profile step asks for a photo before the member can carry on. */
   avatar_required: boolean;
+  /** The profile step asks for a few words, at least `bio_min_length` long. */
   bio_required: boolean;
   bio_min_length: number;
   require_completion_for_visibility: boolean;
   require_avatar_for_visibility: boolean;
   require_bio_for_visibility: boolean;
+  /** The community's own welcome, shown on the first step in place of ours. */
   welcome_text: string | null;
-  help_text: string | null;
   safeguarding_intro_text: string | null;
   country_preset: string;
 }
@@ -58,13 +58,10 @@ const DEFAULT_CONFIG: OnboardingConfig = {
   mandatory: true,
   step_welcome_enabled: true,
   step_profile_enabled: true,
-  step_profile_required: true,
   step_skills_enabled: true,
-  step_skills_required: false,
   step_safeguarding_enabled: true,
   step_safeguarding_required: false,
   step_security_enabled: true,
-  step_confirm_enabled: true,
   avatar_required: true,
   bio_required: true,
   bio_min_length: 10,
@@ -72,7 +69,6 @@ const DEFAULT_CONFIG: OnboardingConfig = {
   require_avatar_for_visibility: false,
   require_bio_for_visibility: false,
   welcome_text: null,
-  help_text: null,
   safeguarding_intro_text: null,
   country_preset: 'custom',
 };

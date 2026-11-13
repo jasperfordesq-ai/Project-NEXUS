@@ -6471,6 +6471,10 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
     const csrfMatch = first.text.match(/name="_csrf" value="([^"]+)"/);
 
+    // A member who already has a photo: the profile step asks for one where the
+    // community wants it (onboarding-community-settings.test.js).
+    api.getProfile.mockResolvedValue({ data: { id: 7, avatar_url: '/a.png' } });
+
     const response = await agent
       .post('/onboarding/profile')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)

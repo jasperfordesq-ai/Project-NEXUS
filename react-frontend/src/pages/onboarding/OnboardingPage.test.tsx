@@ -77,12 +77,9 @@ vi.mock('@/hooks/useOnboardingConfig', () => ({
       mandatory: true,
       step_welcome_enabled: true,
       step_profile_enabled: true,
-      step_profile_required: true,
       step_skills_enabled: true,
-      step_skills_required: false,
       step_safeguarding_enabled: false,
       step_safeguarding_required: false,
-      step_confirm_enabled: true,
       avatar_required: true,
       bio_required: true,
       bio_min_length: 10,
@@ -90,7 +87,6 @@ vi.mock('@/hooks/useOnboardingConfig', () => ({
       require_avatar_for_visibility: false,
       require_bio_for_visibility: false,
       welcome_text: null,
-      help_text: null,
       safeguarding_intro_text: null,
       country_preset: 'custom',
     },
@@ -363,6 +359,30 @@ describe('OnboardingPage', () => {
     }
   });
 
+  // "Switched off" on Admin → Welcome steps means nobody is shown them: an old
+  // link or a bookmark goes straight on (13 Nov 2026).
+  it('sends a member straight on when the community has switched the welcome steps off', async () => {
+    const { useTenant } = await import('@/contexts');
+    vi.mocked(useTenant).mockImplementation(() => ({
+      ...stableTenantValue,
+      tenant: { ...stableTenantValue.tenant, settings: { onboarding_enabled: false } },
+    }) as unknown as ReturnType<typeof useTenant>);
+    window.history.pushState({}, '', '/test/onboarding');
+    try {
+      render(
+        <Routes>
+          <Route path="/test/onboarding" element={<OnboardingPage />} />
+          <Route path="*" element={<p>Somewhere else</p>} />
+        </Routes>,
+      );
+      await screen.findByText('Somewhere else');
+      expect(window.location.pathname).toBe('/test/dashboard');
+    } finally {
+      vi.mocked(useTenant).mockImplementation(() => stableTenantValue as unknown as ReturnType<typeof useTenant>);
+      window.history.pushState({}, '', '/');
+    }
+  });
+
   it('shows Back button on step 2', async () => {
     const { userEvent } = await import('@/test/test-utils');
     const user = userEvent.setup();
@@ -618,6 +638,64 @@ describe('OnboardingPage', () => {
     // Clicking a disabled button should NOT advance to step 3
     // (HeroUI Button with isDisabled prevents onPress from firing)
     expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
+  });
+
+  // ── The community's own choices (Admin → Welcome steps) ──────────────────
+  // Until 13 Nov 2026 this page demanded a photo and a bio whatever the
+  // community's admin had chosen, and never showed the admin's own welcome.
+
+  async function withCommunityConfig(config: Record<string, unknown>, run: () => Promise<void>) {
+    const { useOnboardingConfig } = await import('@/hooks/useOnboardingConfig');
+    const base = vi.mocked(useOnboardingConfig).getMockImplementation()!();
+    vi.mocked(useOnboardingConfig).mockImplementation(() => ({
+      ...base,
+      config: { ...base.config, ...config },
+    }));
+    try {
+      await run();
+    } finally {
+      vi.mocked(useOnboardingConfig).mockImplementation(() => base);
+    }
+  }
+
+  async function openProfileStep() {
+    const { userEvent } = await import('@/test/test-utils');
+    const user = userEvent.setup();
+    render(<OnboardingPage />);
+    await user.click(screen.getByText("Let's get started"));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
+    });
+  }
+
+  it("shows the community's own welcome message when its admin wrote one", async () => {
+    await withCommunityConfig({ welcome_text: 'We meet every Thursday at the hall.' }, async () => {
+      render(<OnboardingPage />);
+      expect(screen.getByText('We meet every Thursday at the hall.')).toBeInTheDocument();
+      expect(screen.queryByText(/Let's set up your profile/)).not.toBeInTheDocument();
+    });
+  });
+
+  it('lets a member carry on with no photo and no bio when the community asks for neither', async () => {
+    await withCommunityConfig({ avatar_required: false, bio_required: false }, async () => {
+      await openProfileStep();
+
+      expect(screen.getByText('Next').closest('button')).not.toBeDisabled();
+      expect(screen.queryByText('Before you carry on:')).not.toBeInTheDocument();
+      expect(screen.queryByText('Profile photo')).not.toBeInTheDocument();
+    });
+  });
+
+  it('asks only for what the community asks for', async () => {
+    await withCommunityConfig({ avatar_required: false, bio_required: true }, async () => {
+      await openProfileStep();
+
+      // The photo is no longer on the list; the few words still are.
+      expect(screen.getByText('Before you carry on:')).toBeInTheDocument();
+      expect(screen.queryByText('Profile photo')).not.toBeInTheDocument();
+      expect(screen.getByText(/A few words about you/)).toBeInTheDocument();
+      expect(screen.getByText('Next').closest('button')).toBeDisabled();
+    });
   });
 
   // ── Skills step ─────────────────────────────────────────────────────────

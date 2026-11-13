@@ -3849,6 +3849,7 @@ return [
         ],
         'states' => [
             'bio-too-short' => 'Please add a short bio before continuing.',
+            'bio-min-length' => 'Write at least :min characters about yourself before continuing.',
             'avatar-required' => 'Please add a profile photo before continuing.',
             'avatar-saved' => 'Your photo has been uploaded.',
             'avatar-failed' => 'We could not upload that photo. Please try again.',
