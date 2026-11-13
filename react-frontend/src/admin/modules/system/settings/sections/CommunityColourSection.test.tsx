@@ -5,7 +5,8 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@/test/test-utils';
-import { getContrastRatio, AA_NORMAL_TEXT_CONTRAST } from '@/lib/colorContrast';
+import { getContrastRatio, AA_NORMAL_TEXT_CONTRAST, DARK_READING_SURFACE } from '@/lib/colorContrast';
+import { SiteDarkContext } from '@/contexts/SiteAccentContext';
 import { DEFAULT_SETTINGS, type SettingsForm } from '../settingsForm';
 import { COMMUNITY_LOOKS } from '@/lib/communityLooks';
 import type { AdminSettingsFormState } from '../useAdminSettingsForm';
@@ -47,6 +48,38 @@ describe('CommunityColourSection', () => {
     expect(setField).toHaveBeenCalledWith('community_color', COMMUNITY_COLOUR_PRESETS[0]);
   });
 
+  // Colours from the community's own logo ("Make it yours", warmth phase 6)
+  it('shows no "From your logo" row unless the page passes colours from the logo', () => {
+    render(<CommunityColourSection state={stateWith({})} />);
+    expect(screen.queryByTestId('community-colour-from-logo')).toBeNull();
+  });
+
+  it('offers the colours from the logo above the general suggestions, and uses the one picked', () => {
+    const setField = vi.fn();
+    render(<CommunityColourSection state={stateWith({}, setField)} logoColours={['#0f766e', '#a3195b']} />);
+
+    const fromLogo = screen.getByTestId('community-colour-from-logo');
+    expect(within(fromLogo).getByText('From your logo')).toBeInTheDocument();
+    // Above the general list, because it is the one that is theirs.
+    expect(
+      fromLogo.compareDocumentPosition(screen.getByText('Suggested colours')) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    const swatches = within(fromLogo).getAllByRole('option');
+    expect(swatches).toHaveLength(2);
+    fireEvent.click(swatches[1]!);
+    expect(setField).toHaveBeenCalledWith('community_color', '#a3195b');
+    // A logo colour is offered, never applied: nothing is set until it is picked.
+    expect(setField).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks a logo colour as chosen when it is the community colour', () => {
+    render(<CommunityColourSection state={stateWith({ community_color: '#0f766e' })} logoColours={['#0f766e', '#a3195b']} />);
+    const swatches = within(screen.getByTestId('community-colour-from-logo')).getAllByRole('option');
+    expect(swatches[0]).toHaveAttribute('aria-selected', 'true');
+    expect(swatches[1]).toHaveAttribute('aria-selected', 'false');
+  });
+
   it('warns about a colour too light to read, and says nothing about a good one', () => {
     const { rerender } = render(<CommunityColourSection state={stateWith({ community_color: '#facc15' })} />);
     expect(screen.getByText(/too light to read on a white page/i)).toBeInTheDocument();
@@ -60,6 +93,31 @@ describe('CommunityColourSection', () => {
     const preview = screen.getByTestId('community-colour-preview');
     expect(preview.style.getPropertyValue('--accent')).toBe('#a3195b');
     expect(screen.getByRole('button', { name: 'Offer help' })).toBeInTheDocument();
+  });
+
+  // In dark mode the live site lightens a colour until it reads on a dark
+  // card. Shown raw, this amber's sample link was 4.06:1 there (axe, 13 Nov 2026).
+  it('previews words and links in the shade the dark theme will really use', () => {
+    render(
+      <SiteDarkContext.Provider value={true}>
+        <CommunityColourSection state={stateWith({ community_color: '#a46a07' })} />
+      </SiteDarkContext.Provider>,
+    );
+    const preview = screen.getByTestId('community-colour-preview');
+    for (const token of ['--link', '--accent', '--focus']) {
+      const shade = preview.style.getPropertyValue(token);
+      expect(shade).not.toBe('#a46a07');
+      expect(getContrastRatio(shade, DARK_READING_SURFACE)).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_CONTRAST);
+    }
+    // The button keeps the shade white words read on, in both themes.
+    expect(
+      getContrastRatio(preview.style.getPropertyValue('--accent-strong'), '#ffffff'),
+    ).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_CONTRAST);
+  });
+
+  it('previews the colour exactly as typed in light mode, so a too-pale colour looks too pale', () => {
+    render(<CommunityColourSection state={stateWith({ community_color: '#facc15' })} />);
+    expect(screen.getByTestId('community-colour-preview').style.getPropertyValue('--link')).toBe('#facc15');
   });
 
   // Ready-made looks (warmth plan D1)

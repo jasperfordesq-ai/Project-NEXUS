@@ -44,6 +44,18 @@ export function useSitePalette(): string[] {
  */
 export const SiteVividContext = createContext<boolean>(false);
 
+/**
+ * Whether the dark theme is showing. False outside a ThemeProvider. Never
+ * throws — for the same reason as the two above: a shared component that
+ * previews a colour must keep working in tests that replace ThemeContext.
+ */
+export const SiteDarkContext = createContext<boolean>(false);
+
+/** True while the dark theme is showing. Never throws. */
+export function useSiteDark(): boolean {
+  return use(SiteDarkContext);
+}
+
 /** True while the community's vivid colour strength is showing. Never throws. */
 export function useSiteVivid(): boolean {
   return use(SiteVividContext);

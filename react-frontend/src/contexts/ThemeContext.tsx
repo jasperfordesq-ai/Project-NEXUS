@@ -27,8 +27,14 @@ import {
 import { api, tokenManager } from '@/lib/api';
 import { logWarn } from '@/lib/logger';
 import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageSetJSON } from '@/lib/safeStorage';
-import { AA_NORMAL_TEXT_CONTRAST, ensureContrast, getAccessibleForegroundColor } from '@/lib/colorContrast';
-import { SiteAccentContext, SiteVividContext } from '@/contexts/SiteAccentContext';
+import {
+  AA_NORMAL_TEXT_CONTRAST,
+  DARK_READING_SURFACE,
+  LIGHT_READING_SURFACE,
+  ensureContrast,
+  getAccessibleForegroundColor,
+} from '@/lib/colorContrast';
+import { SiteAccentContext, SiteDarkContext, SiteVividContext } from '@/contexts/SiteAccentContext';
 import { companionPaint } from '@/lib/categoryColours';
 import {
   CORNER_TOKENS,
@@ -131,23 +137,6 @@ const SPACING_MULTIPLIER_MAP: Record<Density, string> = {
   comfortable: '1',
   spacious: '1.25',
 };
-
-/**
- * The lightest dark surface accent-coloured text sits on (a card over the dark
- * page). A community colour is lightened in dark mode until it reads at 4.5:1
- * against this, because a colour chosen to read on white is too dark there.
- */
-const DARK_READING_SURFACE = '#18181b';
-
-/**
- * The darkest light surface accent-coloured text sits on: the warm page
- * (tokens.css --surface-base; cards are white). On the light theme a colour is
- * deepened, towards black, until it reads at 4.5:1 against this (warmth plan
- * W4, 10 Nov 2026). Admin → Settings refuses community colours that fail on
- * white, but colours saved before that rule — and a bright colour a member
- * picks for themselves — reached the page as-is: a pale yellow read at 1.5:1.
- */
-const LIGHT_READING_SURFACE = '#fafaf9';
 
 /**
  * How the standard colour (DEFAULT_PREFERENCES.accentColor, #6366f1) is
@@ -675,7 +664,11 @@ export function ThemeProvider({
       <SiteAccentContext.Provider value={effectiveAccent}>
         {/* Vivid as a value, for the few components whose vivid fill is a
             palette colour the `vivid:` variant may not paint (covers, kind tiles). */}
-        <SiteVividContext.Provider value={showVivid}>{children}</SiteVividContext.Provider>
+        <SiteVividContext.Provider value={showVivid}>
+          {/* Dark or light as a value, for a preview that must paint a colour
+              the way this theme will (the admin colour preview). */}
+          <SiteDarkContext.Provider value={resolvedTheme === 'dark'}>{children}</SiteDarkContext.Provider>
+        </SiteVividContext.Provider>
       </SiteAccentContext.Provider>
     </ThemeContext.Provider>
   );

@@ -115,6 +115,7 @@
   "categories": "Categorias",
   "attributes": "Atributos",
   "announcements": "Avisos",
+  "make_it_yours": "Torne-o seu",
   "gamification_hub": "Centro de Gamificação",
   "campaigns": "Campanhas",
   "challenges": "Desafios",
@@ -284,6 +285,7 @@
   "donation_refunds": "Reembolsos de doações",
   "sso_providers": "Login Único",
   "breadcrumbs": {
+    "make_it_yours_page": "Torne-o seu",
     "activity_log": "Registro de atividades",
     "admin": "Administrador",
     "alerts": "Alertas",
@@ -748,6 +750,7 @@
   "checking_permissions": "Verificando permissões",
   "search_keywords": {
     "groups": "clubes|círculos|comunidades",
+    "make_it_yours_search": "aspeto|cor|logo|marca|aparência|foto|slogan|configuração",
     "podcasts": "áudio|shows|episódios",
     "all_users": "membros|contas",
     "pending_approvals": "aprovação|aguardando",

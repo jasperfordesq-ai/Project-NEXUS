@@ -802,6 +802,29 @@ export interface AdminAnnouncement {
 export type AdminAnnouncementInput = Partial<Pick<AdminAnnouncement,
   'message' | 'style' | 'link_url' | 'link_label' | 'starts_at' | 'ends_at' | 'is_dismissible' | 'is_active'>>;
 
+/** The six things that dress a community's site, in the order "Make it yours" walks through them. */
+export type CommunitySetupStepKey = 'logo' | 'colour' | 'photo' | 'tagline' | 'themes' | 'notice';
+
+export interface CommunitySetupStatus {
+  steps: Array<{ key: CommunitySetupStepKey; done: boolean }>;
+  done: number;
+  total: number;
+  colour: string | null;
+  look: string | null;
+  colour_strength: 'soft' | 'vivid';
+  tagline: string;
+  themes: { total: number; with_picture: number };
+  /** Colours taken from the community's logo, each already readable on white. */
+  suggested_colours: string[];
+}
+
+/** "Make it yours" (warmth phase 6): how far a community has got in dressing its own site. Read-only. */
+export const adminCommunitySetup = {
+  /** `withSuggestions: false` skips reading the logo file (the dashboard card shows no colours). */
+  get: (withSuggestions = true) =>
+    api.get<CommunitySetupStatus>(`/v2/admin/community-setup${withSuggestions ? '' : '?suggestions=0'}`),
+};
+
 /** Community announcement banner (warmth phase 5): notices across the top of the member website. */
 export const adminAnnouncements = {
   list: () =>

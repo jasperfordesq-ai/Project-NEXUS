@@ -115,6 +115,7 @@
   "categories": "Categorie",
   "attributes": "Attributi",
   "announcements": "Avvisi",
+  "make_it_yours": "Rendilo tuo",
   "gamification_hub": "Hub di gamificazione",
   "campaigns": "Campagne",
   "challenges": "Sfide",
@@ -284,6 +285,7 @@
   "donation_refunds": "Rimborsi donazioni",
   "sso_providers": "Accesso unico",
   "breadcrumbs": {
+    "make_it_yours_page": "Rendilo tuo",
     "activity_log": "Registro delle attività",
     "admin": "Ammin",
     "alerts": "Avvisi",
@@ -748,6 +750,7 @@
   "checking_permissions": "Controllo dei permessi",
   "search_keywords": {
     "groups": "club|cerchie|comunità",
+    "make_it_yours_search": "aspetto|colore|logo|marchio|foto|slogan|configurazione",
     "podcasts": "audio|programmi|episodi",
     "all_users": "membri|account",
     "pending_approvals": "approvazione|in attesa",

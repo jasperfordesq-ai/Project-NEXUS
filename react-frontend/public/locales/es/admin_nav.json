@@ -115,6 +115,7 @@
   "categories": "Categorías",
   "attributes": "Atributos",
   "announcements": "Avisos",
+  "make_it_yours": "Hazlo tuyo",
   "gamification_hub": "Centro de gamificación",
   "campaigns": "Campañas",
   "challenges": "Desafíos",
@@ -284,6 +285,7 @@
   "donation_refunds": "Reembolsos de donaciones",
   "sso_providers": "Inicio de sesión único",
   "breadcrumbs": {
+    "make_it_yours_page": "Hazlo tuyo",
     "activity_log": "Registro de actividad",
     "admin": "administrador",
     "alerts": "Alertas",
@@ -748,6 +750,7 @@
   "checking_permissions": "Comprobando permisos",
   "search_keywords": {
     "groups": "clubes|círculos|comunidades",
+    "make_it_yours_search": "aspecto|color|logo|marca|apariencia|foto|eslogan|configuración",
     "podcasts": "audio|programas|episodios",
     "all_users": "miembros|cuentas",
     "pending_approvals": "aprobación|esperando",

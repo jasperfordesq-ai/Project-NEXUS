@@ -115,6 +115,7 @@
   "categories": "Kategorien",
   "attributes": "Attribute",
   "announcements": "Mitteilungen",
+  "make_it_yours": "Ihr eigener Auftritt",
   "gamification_hub": "Gamification-Hub",
   "campaigns": "Kampagnen",
   "challenges": "Herausforderungen",
@@ -284,6 +285,7 @@
   "donation_refunds": "Spenden-Rückerstattungen",
   "sso_providers": "Single Sign-On",
   "breadcrumbs": {
+    "make_it_yours_page": "Ihr eigener Auftritt",
     "activity_log": "Aktivitätsprotokoll",
     "admin": "Admin",
     "alerts": "Warnungen",
@@ -744,6 +746,7 @@
   "checking_permissions": "Berechtigungen werden geprüft",
   "search_keywords": {
     "groups": "Clubs|Kreise|Gemeinschaften",
+    "make_it_yours_search": "aussehen|farbe|logo|branding|erscheinungsbild|foto|slogan|einrichtung",
     "podcasts": "Audio|Sendungen|Episoden",
     "all_users": "Mitglieder|Konten",
     "pending_approvals": "Genehmigung|wartend",

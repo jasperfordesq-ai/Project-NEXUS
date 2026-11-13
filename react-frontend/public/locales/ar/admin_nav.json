@@ -115,6 +115,7 @@
   "categories": "فئات",
   "attributes": "صفات",
   "announcements": "الإعلانات",
+  "make_it_yours": "اجعله على طابعك",
   "gamification_hub": "مركز اللعب",
   "campaigns": "الحملات",
   "challenges": "التحديات",
@@ -284,6 +285,7 @@
   "donation_refunds": "استرداد التبرعات",
   "sso_providers": "تسجيل الدخول الموحد",
   "breadcrumbs": {
+    "make_it_yours_page": "اجعله على طابعك",
     "activity_log": "سجل النشاط",
     "admin": "مسؤل",
     "alerts": "التنبيهات",
@@ -760,6 +762,7 @@
   "checking_permissions": "جارٍ التحقق من الأذونات",
   "search_keywords": {
     "groups": "نوادي|دوائر|مجتمعات",
+    "make_it_yours_search": "مظهر|لون|شعار|هوية|صورة|عبارة تعريفية|إعداد",
     "podcasts": "الصوت|العروض|الحلقات",
     "all_users": "الأعضاء|الحسابات",
     "pending_approvals": "الموافقة|انتظار",

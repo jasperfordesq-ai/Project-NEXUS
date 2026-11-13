@@ -6,6 +6,23 @@
 const BLACK = '#000000';
 const WHITE = '#ffffff';
 
+/**
+ * The lightest dark surface accent-coloured text sits on (a card over the dark
+ * page). A community colour is lightened in dark mode until it reads at 4.5:1
+ * against this, because a colour chosen to read on white is too dark there.
+ */
+export const DARK_READING_SURFACE = '#18181b';
+
+/**
+ * The darkest light surface accent-coloured text sits on: the warm page
+ * (tokens.css --surface-base; cards are white). On the light theme a colour is
+ * deepened, towards black, until it reads at 4.5:1 against this (warmth plan
+ * W4, 10 Nov 2026). Admin → Settings refuses community colours that fail on
+ * white, but colours saved before that rule — and a bright colour a member
+ * picks for themselves — reached the page as-is: a pale yellow read at 1.5:1.
+ */
+export const LIGHT_READING_SURFACE = '#fafaf9';
+
 function hexToRelativeLuminance(color: string): number | null {
   const normalized = color.trim().replace(/^#/, '');
   const hex = normalized.length === 3

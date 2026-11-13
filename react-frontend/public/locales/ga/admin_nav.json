@@ -115,6 +115,7 @@
   "categories": "Catagóirí",
   "attributes": "Tréithe",
   "announcements": "Fógraí",
+  "make_it_yours": "Cuir do chló féin air",
   "gamification_hub": "Mol Gamification",
   "campaigns": "Feachtais",
   "challenges": "Dúshláin",
@@ -284,6 +285,7 @@
   "donation_refunds": "Aisíocaíochtaí Síntiús",
   "sso_providers": "Aon-Síniú Amháin",
   "breadcrumbs": {
+    "make_it_yours_page": "Cuir do chló féin air",
     "activity_log": "Loga Gníomhaíochta",
     "admin": "Riarachán",
     "alerts": "Foláirimh",
@@ -756,6 +758,7 @@
   "checking_permissions": "Ag seiceáil ceadanna",
   "search_keywords": {
     "groups": "clubanna|ciorcail|pobail",
+    "make_it_yours_search": "cuma|dath|lógó|brandáil|grianghraf|mana|socrú",
     "podcasts": "aidiodh|seónna|eipeasóidí",
     "all_users": "baill|cuntais",
     "pending_approvals": "aontaíodh|ag fanacht",

@@ -115,6 +115,7 @@
   "categories": "カテゴリー",
   "attributes": "属性",
   "announcements": "お知らせ",
+  "make_it_yours": "あなたらしいサイトに",
   "gamification_hub": "ゲーミフィケーション ハブ",
   "campaigns": "キャンペーン",
   "challenges": "チャレンジ",
@@ -284,6 +285,7 @@
   "donation_refunds": "寄付の返金",
   "sso_providers": "シングルサインオン",
   "breadcrumbs": {
+    "make_it_yours_page": "あなたらしいサイトに",
     "activity_log": "アクティビティログ",
     "admin": "管理者",
     "alerts": "アラート",
@@ -744,6 +746,7 @@
   "support_requests_count_one": "{{count}} オープンサポートリクエスト",
   "search_keywords": {
     "groups": "クラブ|サークル|コミュニティ",
+    "make_it_yours_search": "見た目|色|ロゴ|ブランド|写真|キャッチフレーズ|設定",
     "podcasts": "オーディオ|番組|エピソード",
     "all_users": "メンバー|アカウント",
     "pending_approvals": "承認|待機中",

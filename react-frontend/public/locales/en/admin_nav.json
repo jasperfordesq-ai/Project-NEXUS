@@ -4,6 +4,7 @@
   "checking_permissions": "Checking permissions",
   "search_keywords": {
     "groups": "clubs|circles|communities",
+    "make_it_yours_search": "look|colour|color|logo|branding|appearance|photo|tagline|set-up|setup",
     "podcasts": "audio|shows|episodes",
     "all_users": "members|accounts",
     "pending_approvals": "approval|waiting",
@@ -145,6 +146,7 @@
   "categories": "Categories",
   "attributes": "Attributes",
   "announcements": "Announcements",
+  "make_it_yours": "Make it yours",
   "gamification_hub": "Gamification Hub",
   "campaigns": "Campaigns",
   "challenges": "Challenges",
@@ -314,6 +316,7 @@
   "donation_refunds": "Donation Refunds",
   "sso_providers": "Single Sign-On",
   "breadcrumbs": {
+    "make_it_yours_page": "Make it yours",
     "community_fund": "Community Fund",
     "activity_log": "Activity Log",
     "admin": "Admin",

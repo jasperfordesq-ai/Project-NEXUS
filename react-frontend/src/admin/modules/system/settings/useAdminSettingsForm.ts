@@ -70,10 +70,25 @@ export interface AdminSettingsFormState {
   remove: (slot: UploadSlot) => Promise<void>;
 }
 
-export function useAdminSettingsForm(): AdminSettingsFormState {
+export interface AdminSettingsFormOptions {
+  /**
+   * After an upload or a removal, refresh the community's settings without
+   * the full-screen "loading community" state. That state remounts the page,
+   * which on a long guided page ("Make it yours") loses the admin's place.
+   * The Settings page keeps the default.
+   */
+  quietRefresh?: boolean;
+}
+
+export function useAdminSettingsForm(options: AdminSettingsFormOptions = {}): AdminSettingsFormState {
   const { t } = useTranslation('admin_system');
   const toast = useToast();
-  const { refreshTenant } = useTenant();
+  const { refreshTenant: refreshTenantNow } = useTenant();
+  const quietRefresh = options.quietRefresh === true;
+  const refreshTenant = useCallback(
+    () => (quietRefresh ? refreshTenantNow({ silent: true }) : refreshTenantNow()),
+    [quietRefresh, refreshTenantNow],
+  );
   const { user } = useAuth();
   const userRecord = user as Record<string, unknown> | null;
   // Email verification and member approval are platform-super-admin-only on the

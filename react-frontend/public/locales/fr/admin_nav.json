@@ -115,6 +115,7 @@
   "categories": "Catégories",
   "attributes": "Attributs",
   "announcements": "Annonces",
+  "make_it_yours": "Un site à votre image",
   "gamification_hub": "Centre de gamification",
   "campaigns": "Campagnes",
   "challenges": "Défis",
@@ -284,6 +285,7 @@
   "donation_refunds": "Remboursements de dons",
   "sso_providers": "Authentification unique",
   "breadcrumbs": {
+    "make_it_yours_page": "Un site à votre image",
     "activity_log": "Journal d'activité",
     "admin": "Administrateur",
     "alerts": "Alertes",
@@ -748,6 +750,7 @@
   "checking_permissions": "Vérification des autorisations",
   "search_keywords": {
     "groups": "clubs|cercles|communautés",
+    "make_it_yours_search": "apparence|couleur|logo|identité|image|photo|slogan|configuration",
     "podcasts": "audio|émissions|épisodes",
     "all_users": "membres|comptes",
     "pending_approvals": "approbation|en attente",

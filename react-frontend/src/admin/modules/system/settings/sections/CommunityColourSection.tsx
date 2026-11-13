@@ -16,7 +16,14 @@ import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import Paintbrush from 'lucide-react/icons/paintbrush';
 import { Alert, Button, Chip, ColorSwatchPicker, Label, Link, Radio, RadioGroup } from '@/components/ui';
-import { AA_NORMAL_TEXT_CONTRAST, ensureContrast, getAccessibleForegroundColor, getContrastRatio } from '@/lib/colorContrast';
+import {
+  AA_NORMAL_TEXT_CONTRAST,
+  DARK_READING_SURFACE,
+  ensureContrast,
+  getAccessibleForegroundColor,
+  getContrastRatio,
+} from '@/lib/colorContrast';
+import { useSiteDark } from '@/contexts/SiteAccentContext';
 import { SettingsSection, settingsSectionAnchor } from '../SettingsSection';
 import { ColorSettingField } from '../ColorSettingField';
 import { isHexColor } from '../headerPreview';
@@ -93,7 +100,18 @@ export function communityColourTooLight(hex: string): boolean {
   return ratio !== null && ratio < AA_NORMAL_TEXT_CONTRAST;
 }
 
-export function CommunityColourSection({ state }: { state: AdminSettingsFormState }) {
+export interface CommunityColourSectionProps {
+  state: AdminSettingsFormState;
+  /**
+   * Colours the server took from the community's own logo ("Make it yours",
+   * warmth phase 6). Each is already deepened to read on white, so any of
+   * them can be saved. Offered above the general suggestions; none is applied
+   * unless the admin picks it.
+   */
+  logoColours?: readonly string[];
+}
+
+export function CommunityColourSection({ state, logoColours = [] }: CommunityColourSectionProps) {
   const { t } = useTranslation('admin_system');
   const { form, setField } = state;
 
@@ -106,6 +124,13 @@ export function CommunityColourSection({ state }: { state: AdminSettingsFormStat
   // The shade that carries white text: the colour itself when white reads on
   // it at 4.5:1, else deepened towards black until it does (as ThemeContext).
   const previewStrong = ensureContrast(preview, '#ffffff', AA_NORMAL_TEXT_CONTRAST, '#000000');
+  // The shade that IS text — links, the chip, the focus ring. In dark mode the
+  // site lightens the colour until it reads on a dark card (ThemeContext's
+  // own rule), so the preview does too: shown raw, an amber's sample link sat
+  // at 4.06:1 on the dark card (axe, 13 Nov 2026). In light mode it stays the
+  // colour as typed, so an admin still sees a too-pale colour as too pale.
+  const dark = useSiteDark();
+  const previewText = dark ? ensureContrast(preview, DARK_READING_SURFACE) : preview;
 
   return (
     <SettingsSection
@@ -173,6 +198,28 @@ export function CommunityColourSection({ state }: { state: AdminSettingsFormStat
           </button>
         </div>
       </div>
+
+      {logoColours.length > 0 && (
+        <div className="space-y-2" data-testid="community-colour-from-logo">
+          <Label id="community-colour-logo-label" className="text-sm font-medium text-foreground">
+            {t('admin_settings.miy_logo_colours_title')}
+          </Label>
+          <p className="text-xs leading-5 text-muted">{t('admin_settings.miy_logo_colours_hint')}</p>
+          <ColorSwatchPicker
+            aria-labelledby="community-colour-logo-label"
+            size="lg"
+            value={logoColours.includes(chosen) ? chosen : NO_SUGGESTION_SELECTED}
+            onChange={(color) => setField('community_color', color.toString('hex').toLowerCase())}
+          >
+            {logoColours.map((colour) => (
+              <ColorSwatchPicker.Item key={colour} color={colour}>
+                <ColorSwatchPicker.Swatch />
+                <ColorSwatchPicker.Indicator />
+              </ColorSwatchPicker.Item>
+            ))}
+          </ColorSwatchPicker>
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label id="community-colour-suggestions-label" className="text-sm font-medium text-foreground">
@@ -259,14 +306,14 @@ export function CommunityColourSection({ state }: { state: AdminSettingsFormStat
           data-testid="community-colour-preview"
           className="space-y-4 rounded-xl border border-divider bg-surface p-4"
           style={{
-            '--accent': preview,
-            '--accent-foreground': getAccessibleForegroundColor(preview),
-            '--accent-soft': `color-mix(in oklab, ${preview} 15%, transparent)`,
-            '--accent-soft-foreground': `color-mix(in oklab, ${preview} 70%, var(--foreground) 30%)`,
+            '--accent': previewText,
+            '--accent-foreground': getAccessibleForegroundColor(previewText),
+            '--accent-soft': `color-mix(in oklab, ${previewText} 15%, transparent)`,
+            '--accent-soft-foreground': `color-mix(in oklab, ${previewText} 70%, var(--foreground) 30%)`,
             '--accent-strong': previewStrong,
             '--accent-strong-end': `color-mix(in srgb, ${previewStrong}, #000 22%)`,
-            '--focus': preview,
-            '--link': preview,
+            '--focus': previewText,
+            '--link': previewText,
           } as CSSProperties}
         >
           {/* A page opening as members will see it: tinted when soft, filled

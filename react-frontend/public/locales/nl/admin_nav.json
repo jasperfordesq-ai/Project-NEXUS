@@ -115,6 +115,7 @@
   "categories": "Categorieën",
   "attributes": "Kenmerken",
   "announcements": "Mededelingen",
+  "make_it_yours": "Maak het eigen",
   "gamification_hub": "Gamificatie-hub",
   "campaigns": "Campagnes",
   "challenges": "Uitdagingen",
@@ -284,6 +285,7 @@
   "donation_refunds": "Donatieterugbetalingen",
   "sso_providers": "Single Sign-On",
   "breadcrumbs": {
+    "make_it_yours_page": "Maak het eigen",
     "activity_log": "Activiteitenlogboek",
     "admin": "Beheerder",
     "alerts": "Waarschuwingen",
@@ -744,6 +746,7 @@
   "checking_permissions": "Bezig met het controleren van machtigingen",
   "search_keywords": {
     "groups": "clubs|kringen|gemeenschappen",
+    "make_it_yours_search": "uiterlijk|kleur|logo|huisstijl|foto|slogan|instellen",
     "podcasts": "audio|shows|afleveringen",
     "all_users": "leden|accounts",
     "pending_approvals": "goedkeuring|wachten",

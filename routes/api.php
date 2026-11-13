@@ -2929,6 +2929,8 @@ Route::delete('/v2/admin/goals/{id}', [\App\Http\Controllers\Api\AdminGoalsContr
 Route::get('/v2/admin/resources', [\App\Http\Controllers\Api\AdminResourcesController::class, 'index'])->middleware('feature:resources');
 Route::get('/v2/admin/resources/{id}', [\App\Http\Controllers\Api\AdminResourcesController::class, 'show'])->middleware('feature:resources');
 Route::delete('/v2/admin/resources/{id}', [\App\Http\Controllers\Api\AdminResourcesController::class, 'destroy'])->middleware('feature:resources');
+// "Make it yours" — which of the things that dress a community's site are in place (read-only).
+Route::get('/v2/admin/community-setup', [\App\Http\Controllers\Api\Admin\CommunitySetupController::class, 'show']);
 // Community announcement banner — one-line notices shown across the top of the member website.
 Route::get('/v2/admin/announcements', [\App\Http\Controllers\Api\Admin\SiteAnnouncementAdminController::class, 'index']);
 Route::post('/v2/admin/announcements', [\App\Http\Controllers\Api\Admin\SiteAnnouncementAdminController::class, 'store']);

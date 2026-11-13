@@ -272,6 +272,8 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   'consent-types': 'breadcrumbs.consent_types',
   'feed-algorithm': 'breadcrumbs.feed_algorithm',
   'landing-page': 'breadcrumbs.landing_page',
+  // "Make it yours": the guided set-up of a community's own look (warmth phase 6).
+  'make-it-yours': 'breadcrumbs.make_it_yours_page',
   requirements: 'breadcrumbs.requirements',
   tenant: 'breadcrumbs.tenant',
   webhooks: 'breadcrumbs.webhooks',

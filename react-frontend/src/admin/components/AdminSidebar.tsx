@@ -26,6 +26,7 @@ import ListChecks from 'lucide-react/icons/list-checks';
 import Newspaper from 'lucide-react/icons/newspaper';
 import Trophy from 'lucide-react/icons/trophy';
 import Megaphone from 'lucide-react/icons/megaphone';
+import Sparkles from 'lucide-react/icons/sparkles';
 import Coins from 'lucide-react/icons/coins';
 import Building2 from 'lucide-react/icons/building-2';
 import Smartphone from 'lucide-react/icons/smartphone';
@@ -676,6 +677,9 @@ function useAdminNav(): NavSection[] {
         icon: Settings,
         zone: 'platform',
         items: [
+          // The guided walk through logo, colour, photo, tagline, theme pictures and a
+          // first notice. Listed first: it is where a new community's admin should start.
+          { label: t('make_it_yours'), href: '/admin/make-it-yours', icon: Sparkles, keywords: keyword(t('search_keywords.make_it_yours_search')) },
           { label: t('settings'), href: '/admin/settings', icon: Settings },
           // Who may join, and whether identity is checked — reachable before
           // only through links inside the Settings page.

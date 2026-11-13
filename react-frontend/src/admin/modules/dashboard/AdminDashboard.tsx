@@ -51,6 +51,7 @@ import type { AdminDashboardStats, ActivityLogEntry, MonthlyTrend } from '../../
 import { AttentionStrip } from './AttentionStrip';
 import { ExchangeTrendChart } from './ExchangeTrendChart';
 import { RecentActivityFeed } from './RecentActivityFeed';
+import { MakeItYoursCard } from '../system/make-it-yours/MakeItYoursCard';
 
 const TREND_MONTHS = 12;
 
@@ -173,6 +174,11 @@ export function AdminDashboard() {
           </div>
         }
       />
+
+      {/* "Make it yours": shown only while the community's own look has
+          something left to do, and until this admin hides it. Renders nothing
+          while loading or on a failed read. */}
+      <MakeItYoursCard />
 
       {showSafeguardingBanner && (
         <Card

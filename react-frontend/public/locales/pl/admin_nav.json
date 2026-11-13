@@ -115,6 +115,7 @@
   "categories": "Kategorie",
   "attributes": "Atrybuty",
   "announcements": "Ogłoszenia",
+  "make_it_yours": "Nadaj własny charakter",
   "gamification_hub": "Centrum grywalizacji",
   "campaigns": "Kampanie",
   "challenges": "Wyzwania",
@@ -284,6 +285,7 @@
   "donation_refunds": "Zwroty darowizn",
   "sso_providers": "Logowanie jednokrotne",
   "breadcrumbs": {
+    "make_it_yours_page": "Nadaj własny charakter",
     "activity_log": "Dziennik aktywności",
     "admin": "Administrator",
     "alerts": "Alerty",
@@ -752,6 +754,7 @@
   "checking_permissions": "Sprawdzanie uprawnień",
   "search_keywords": {
     "groups": "kluby|kręgi|społeczności",
+    "make_it_yours_search": "wygląd|kolor|logo|marka|zdjęcie|hasło|konfiguracja",
     "podcasts": "audio|programy|odcinki",
     "all_users": "członkowie|konta",
     "pending_approvals": "zatwierdzenie|oczekiwanie",
