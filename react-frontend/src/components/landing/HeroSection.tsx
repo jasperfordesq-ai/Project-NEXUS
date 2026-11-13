@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Link } from 'react-router-dom';
 import { motion } from '@/lib/motion';import ArrowRight from 'lucide-react/icons/arrow-right';
@@ -37,13 +38,19 @@ const staggerContainer = {
 
 interface HeroSectionProps {
   content?: HeroContent;
+  /**
+   * Shown in the photo's place when the community has no photo yet. Only the
+   * admin's picture of the home page passes one, to mark where an uploaded
+   * photo will go. The real home page never does.
+   */
+  photoPlaceholder?: ReactNode;
 }
 
 const scrollToSection = () => {
   document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
 };
 
-export function HeroSection({ content }: HeroSectionProps) {
+export function HeroSection({ content, photoPlaceholder }: HeroSectionProps) {
   const { t } = useTranslation('public');
   const { branding, tenantPath, hasModule } = useTenant();
   const { isAuthenticated } = useAuth();
@@ -155,11 +162,16 @@ export function HeroSection({ content }: HeroSectionProps) {
               P11): the front page was text and buttons only, with nothing of
               the place or its people. It sits under the words and the
               buttons — above the headline it "looked very odd" (owner,
-              13 Nov 2026). Decorative (empty alt), like the same photo on the
-              dashboard. */}
-          {hasCommunityPhoto && (
+              13 Nov 2026). Decorative (empty alt): the community's name beside
+              it is text. With no photo, the admin's picture of this banner
+              marks the same spot with a placeholder. */}
+          {(hasCommunityPhoto || photoPlaceholder) && (
             <motion.div variants={fadeInUp} className="mt-12 flex justify-center">
-              <CommunityPhoto framed data-testid="landing-hero-photo" className="w-full max-w-md" />
+              {hasCommunityPhoto ? (
+                <CommunityPhoto framed data-testid="landing-hero-photo" className="w-full max-w-md" />
+              ) : (
+                photoPlaceholder
+              )}
             </motion.div>
           )}
         </motion.div>

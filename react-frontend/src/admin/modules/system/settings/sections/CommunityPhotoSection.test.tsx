@@ -46,7 +46,10 @@ describe('CommunityPhotoSection', () => {
   it('offers an upload, and says where the photo will appear', () => {
     render(<CommunityPhotoSection state={stateWith()} />);
     expect(screen.getByRole('heading', { name: 'Community photo' })).toBeInTheDocument();
-    expect(screen.getByText(/it appears on your home page\./i)).toBeInTheDocument();
+    // Not just "your home page": which part of it, and under what.
+    expect(
+      screen.getByText(/it appears in one place: the welcome banner at the top of your home page, under the headline and the buttons\./i),
+    ).toBeInTheDocument();
     // It came off the dashboard on 13 Nov 2026; the admin must not be told otherwise.
     expect(screen.queryByText(/dashboard/i)).toBeNull();
     expect(screen.getByRole('button', { name: /upload image/i })).toBeInTheDocument();
@@ -91,9 +94,38 @@ describe('CommunityPhotoSection', () => {
   // Owner, 13 Nov 2026: "it should have a preview so people can see what's
   // going to appear on the home page."
   describe('the home page preview', () => {
-    it('is not there until the community has a photo', () => {
+    // Owner, 13 Nov 2026: "we need better instructions… to say where the
+    // community photo will go on the landing page."
+    it('marks where the photo will go, before the community has one', () => {
       render(<CommunityPhotoSection state={stateWith()} />);
-      expect(screen.queryByTestId('community-photo-home-preview')).toBeNull();
+
+      const preview = screen.getByTestId('community-photo-home-preview');
+      expect(within(preview).getByText('Where it will go on your home page')).toBeInTheDocument();
+      expect(within(preview).queryByText('How it looks on your home page')).toBeNull();
+
+      // The real banner, with a marked box in the photo's place and shape.
+      expect(within(preview).getByText('Build Community')).toBeInTheDocument();
+      const box = within(preview).getByTestId('community-photo-placeholder');
+      expect(box).toHaveTextContent('Your photo will go here');
+      expect(box.className).toContain('aspect-[2/1]');
+      expect(box.className).toContain('max-w-md');
+      expect(box.closest('[inert]')).not.toBeNull();
+      expect(within(preview).queryByTestId('landing-hero-photo')).toBeNull();
+
+      // In words too: the picture is not read out by a screen reader.
+      expect(
+        within(preview).getByText(/the dashed box shows where your photo will go: under the headline and the buttons\. visitors never see the box\./i),
+      ).toBeInTheDocument();
+    });
+
+    it('says a photo would not be shown, before an upload, when the welcome banner is switched off', () => {
+      landing.config = { sections: [{ id: 'hero', type: 'hero', enabled: false, order: 0 }] };
+      render(<CommunityPhotoSection state={stateWith()} />);
+
+      const preview = screen.getByTestId('community-photo-home-preview');
+      expect(within(preview).getByText(/welcome banner on your home page is switched off/i)).toBeInTheDocument();
+      expect(within(preview).getByRole('link', { name: /home page editor/i })).toHaveAttribute('href', '/test/admin/landing-page');
+      expect(within(preview).queryByTestId('community-photo-placeholder')).toBeNull();
     });
 
     it('shows the real top of the home page, with the photo in the shape visitors see', () => {
@@ -108,6 +140,9 @@ describe('CommunityPhotoSection', () => {
       expect(photo.getAttribute('src')).toContain('community-photos/us.webp');
       expect(photo.className).toContain('aspect-[2/1]');
       expect(within(preview).getByText('Build Community')).toBeInTheDocument();
+      // The photo is there, so nothing marks its place.
+      expect(within(preview).queryByTestId('community-photo-placeholder')).toBeNull();
+      expect(within(preview).getByText(/the photo sits under the headline and the buttons/i)).toBeInTheDocument();
 
       // A picture of the page: nothing in it can be clicked or tabbed to.
       expect(photo.closest('[inert]')).not.toBeNull();

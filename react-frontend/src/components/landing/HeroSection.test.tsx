@@ -224,6 +224,37 @@ describe('HeroSection — authenticated user', () => {
       expect(screen.queryByTestId('landing-hero-photo')).toBeNull();
     });
 
+    // The admin's picture of this banner ("Make it yours") marks the photo's
+    // place before there is a photo. The home page itself never passes one.
+    it("puts a placeholder in the photo's place, under the words and buttons, when it is given one and there is no photo", async () => {
+      // Every module on, so the banner has its button to be measured against.
+      await signInWith();
+      render(<HeroSection photoPlaceholder={<div data-testid="marker">Your photo will go here</div>} />);
+      const marker = screen.getByTestId('marker');
+      const follows = (el: Element) =>
+        Boolean(el.compareDocumentPosition(marker) & Node.DOCUMENT_POSITION_FOLLOWING);
+      expect(follows(screen.getByRole('heading', { level: 1 }))).toBe(true);
+      for (const call of screen.getAllByRole('link')) expect(follows(call)).toBe(true);
+      expect(screen.queryByTestId('landing-hero-photo')).toBeNull();
+    });
+
+    it('shows the photo, not the placeholder, once the community has one', async () => {
+      const contexts = await import('@/contexts');
+      const useTenant = vi.mocked(contexts.useTenant);
+      const original = useTenant.getMockImplementation()!;
+      useTenant.mockImplementation(() => ({
+        ...original(),
+        branding: { name: 'Test Community', logo_url: null, communityPhoto: '/uploads/tenants/2/community.jpg' },
+      }) as unknown as ReturnType<typeof contexts.useTenant>);
+      try {
+        render(<HeroSection photoPlaceholder={<div data-testid="marker">Your photo will go here</div>} />);
+        expect(screen.getByTestId('landing-hero-photo')).toBeInTheDocument();
+        expect(screen.queryByTestId('marker')).toBeNull();
+      } finally {
+        useTenant.mockImplementation(original);
+      }
+    });
+
     it('is shown under the headline, introduction and buttons when the community has uploaded one', async () => {
       // Every module on, so the banner has its button to be measured against.
       await signInWith();

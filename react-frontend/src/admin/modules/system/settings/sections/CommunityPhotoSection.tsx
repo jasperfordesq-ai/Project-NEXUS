@@ -11,9 +11,10 @@
  * so an upload or removal persists at once and reaches the website through
  * the tenant bootstrap (branding.communityPhoto).
  *
- * Once there is a photo, the section shows the top of the community's real
- * home page with the photo in it (owner, 13 Nov 2026), so the admin sees how
- * it is trimmed before any visitor does.
+ * The section shows the top of the community's real home page (owner,
+ * 13 Nov 2026). Before an upload a dashed box marks where the photo will go;
+ * afterwards the photo is in it, so the admin sees how it is trimmed before
+ * any visitor does.
  */
 
 import { useTranslation } from 'react-i18next';
@@ -60,7 +61,9 @@ export function CommunityPhotoSection({ state }: { state: AdminSettingsFormState
         onUpload={(file) => upload('community_photo', file)}
         onRemove={() => remove('community_photo')}
       />
-      {photo && <HomePagePhotoPreview banner={banner} />}
+      {/* Always there: before an upload it marks where the photo will go. */}
+      <HomePagePhotoPreview banner={banner} hasPhoto={photo !== null} />
+
     </SettingsSection>
   );
 }
