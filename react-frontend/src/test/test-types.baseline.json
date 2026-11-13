@@ -1007,10 +1007,6 @@
     "src/components/navigation/__tests__/MenuNavItems.test.tsx": {
       "TS2322": 12
     },
-    "src/components/navigation/navigationRegistry.test.ts": {
-      "TS7006": 1,
-      "TS7053": 1
-    },
     "src/components/profile/__tests__/ProfileFeed.test.tsx": {
       "TS2741": 6,
       "TS2769": 1
@@ -1870,7 +1866,7 @@
     }
   },
   "totals": {
-    "fileCount": 552,
-    "errorCount": 1669
+    "fileCount": 551,
+    "errorCount": 1667
   }
 }

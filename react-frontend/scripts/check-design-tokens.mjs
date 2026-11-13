@@ -61,6 +61,7 @@ const inlineStyleExceptionGroups = [
       'src/admin/modules/system/settings/sections/HeaderColorsSection.tsx': 1,
       'src/components/branding/TenantLogo.tsx': 1,
       'src/components/layout/ThemePicker.tsx': 1,
+      'src/components/settings/AppearanceSettings.tsx': 1,
       'src/components/social/SaveButton.tsx': 1,
       'src/components/ui/ConfettiCelebration.tsx': 1,
       'src/components/wallet/CategorySelect.tsx': 1,

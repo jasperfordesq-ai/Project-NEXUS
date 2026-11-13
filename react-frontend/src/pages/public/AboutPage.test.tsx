@@ -75,7 +75,7 @@ describe('AboutPage', () => {
     const sourceLinks = Array.from(container.querySelectorAll('a[href*="github.com"]'));
 
     expect(sourceLinks).toHaveLength(1);
-    expect(sourceLinks[0].getAttribute('href')).toBe(PROJECT_NEXUS_REPO_URL);
+    expect(sourceLinks[0]?.getAttribute('href')).toBe(PROJECT_NEXUS_REPO_URL);
     expect(container.querySelector('a[href*="api.project-nexus.net"]')).toBeNull();
   });
 });

@@ -48,6 +48,12 @@ const allEnabledContext = (overrides: Partial<NavigationGateContext> = {}): Navi
   ...overrides,
 });
 
+/**
+ * A destination's placements, read by surface. The registry types them per
+ * destination, which TypeScript cannot index with 'desktop' | 'mobile'.
+ */
+type SurfacePlacements = Partial<Record<'desktop' | 'mobile', ReadonlyArray<{ section: string; before?: string }>>>;
+
 describe('custom and discovery destination switches', () => {
   it.each([
     ['/listings/create', 'listings', 'module'], ['/matches/preferences', 'listings', 'module'],
@@ -95,7 +101,8 @@ describe('navigationRegistry', () => {
 
     for (const destination of NAVIGATION_DESTINATIONS) {
       for (const surface of ['desktop', 'mobile'] as const) {
-        const sections = (destination.placements[surface] ?? []).map(placement => placement.section);
+        const placements: SurfacePlacements = destination.placements;
+        const sections = (placements[surface] ?? []).map(placement => placement.section);
         expect(new Set(sections).size, `${destination.id} is duplicated in ${surface}/${sections.join(',')}`).toBe(sections.length);
       }
     }
@@ -270,7 +277,8 @@ describe('navigationRegistry', () => {
     const order = getNavigationItems('desktop', 'timebanking', allEnabledContext({
       hasModule: module => module !== 'wallet',
     })).map(item => item.id);
-    expect(order.at(-1)).toBe('dashboard');
+    // Not Array.prototype.at(): the test type-check targets a library version without it.
+    expect(order[order.length - 1]).toBe('dashboard');
     expect(order).not.toContain('wallet');
   });
 
@@ -282,11 +290,11 @@ describe('navigationRegistry', () => {
   it('only positions a link above a destination that exists in the same section', () => {
     for (const destination of NAVIGATION_DESTINATIONS) {
       for (const surface of ['desktop', 'mobile'] as const) {
-        const placements = (destination.placements[surface] ?? []) as ReadonlyArray<{ section: string; before?: string }>;
+        const placements = (destination.placements as SurfacePlacements)[surface] ?? [];
         for (const placement of placements) {
           if (!placement.before) continue;
           const target = NAVIGATION_DESTINATIONS.find(candidate => candidate.id === placement.before);
-          const targetSections = ((target?.placements[surface] ?? []) as ReadonlyArray<{ section: string }>)
+          const targetSections = ((target?.placements as SurfacePlacements | undefined)?.[surface] ?? [])
             .map(p => p.section);
           expect(targetSections, `${destination.id} is placed before ${placement.before} on ${surface}`)
             .toContain(placement.section);
