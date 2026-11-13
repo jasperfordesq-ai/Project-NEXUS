@@ -55,6 +55,7 @@ import TrendingUp from 'lucide-react/icons/trending-up';
 import BadgeCheck from 'lucide-react/icons/badge-check';
 import UserCircle from 'lucide-react/icons/circle-user';
 import { useTranslation } from 'react-i18next';
+import { isNewMember } from '@/lib/newMember';
 import { useBadgeCopy } from '@/hooks/useBadgeCopy';
 import { PresenceIndicator } from '@/components/social/PresenceIndicator';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
@@ -1129,17 +1130,7 @@ interface MemberCardProps {
   sortBy?: SortOption;
 }
 
-const NEW_MEMBER_DAYS = 30;
 
-/** True when a member joined in the last 30 days. */
-export function isNewMember(createdAt: string | null | undefined, now: number = Date.now()): boolean {
-  if (!createdAt) return false;
-  // The directory sends "YYYY-MM-DD HH:MM:SS"; older Safari cannot parse the space.
-  const joined = new Date(createdAt.includes('T') ? createdAt : createdAt.replace(' ', 'T')).getTime();
-  if (Number.isNaN(joined)) return false;
-  const age = now - joined;
-  return age >= 0 && age < NEW_MEMBER_DAYS * 86_400_000;
-}
 
 /** "New here": a small HeroUI Chip, readable on a cover and on a card in both themes. */
 function NewHereChip({ label, className = '' }: { label: string; className?: string }) {
@@ -1385,4 +1376,5 @@ const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: Member
   );
 });
 
+export { isNewMember };
 export default MembersPage;

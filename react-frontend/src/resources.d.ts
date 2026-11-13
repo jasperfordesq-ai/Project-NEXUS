@@ -57856,6 +57856,7 @@ export default interface Resources {
     "reviews": "Reviews",
     "reviews_count_one": "{{count}} review",
     "reviews_count_other": "{{count}} reviews",
+    "say_hello": "Say hello",
     "send_credits": "Send Credits",
     "send_message": "Send Message",
     "settings": "Settings",

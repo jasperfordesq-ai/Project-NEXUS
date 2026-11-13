@@ -8,6 +8,7 @@ import { ThemedCover } from '@/components/ui/ThemedCover';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 import { colourForSeed } from '@/lib/categoryColours';
 import { Button } from '@/components/ui/Button';
+import { isNewMember } from '@/lib/newMember';
 import { Chip } from '@/components/ui/Chip';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { ProfileTimeShared } from './ProfileTimeShared';
@@ -848,8 +849,12 @@ export function ProfilePage() {
                         color="primary"
                         startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}
                         className="w-full sm:w-auto"
+                        data-new-member={isNewMember(profile.created_at) ? 'true' : undefined}
                       >
-                        {t('send_message')}
+                        {/* Someone who joined in the last 30 days: the same button, but
+                            it invites a hello, as the dashboard's new-members strip does
+                            (warmth phase 6, D2). Same page, same rules on who may message. */}
+                        {isNewMember(profile.created_at) ? t('say_hello') : t('send_message')}
                       </Button>
                     )}
                     {hasMessages && !isAuthenticated && (

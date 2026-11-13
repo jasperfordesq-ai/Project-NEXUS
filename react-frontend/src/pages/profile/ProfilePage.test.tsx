@@ -240,6 +240,50 @@ describe('ProfilePage', () => {
     expect(screen.queryByRole('link', { name: /send message/i })).not.toBeInTheDocument();
   });
 
+  // "Say hello" (warmth phase 6, D2): someone who joined in the last 30 days.
+  it('invites a hello on the profile of a member who joined recently, with the same message link', async () => {
+    const base = mockApiGet.getMockImplementation()!;
+    const joined = new Date(Date.now() - 3 * 86_400_000).toISOString();
+    mockApiGet.mockImplementation((url: string) => (url.includes('/v2/users/') && !url.includes('block-status')
+      ? base(url).then((res: { data: Record<string, unknown> }) => ({ ...res, data: { ...res.data, created_at: joined } }))
+      : base(url)));
+    render(<ProfilePage />);
+    await screen.findByText('Test bio');
+
+    const hello = screen.getByRole('link', { name: /say hello/i });
+    expect(hello.getAttribute('href')).toMatch(/\/messages\/new\/42$/);
+    expect(screen.queryByRole('link', { name: /send message/i })).toBeNull();
+  });
+
+  it('keeps "Send Message" for a member who is not new, and for one with no join date', async () => {
+    const base = mockApiGet.getMockImplementation()!;
+    mockApiGet.mockImplementation((url: string) => (url.includes('/v2/users/') && !url.includes('block-status')
+      ? base(url).then((res: { data: Record<string, unknown> }) => ({ ...res, data: { ...res.data, created_at: '2024-02-01T10:00:00Z' } }))
+      : base(url)));
+    const { unmount } = render(<ProfilePage />);
+    await screen.findByText('Test bio');
+    expect(screen.getByRole('link', { name: /send message/i })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /say hello/i })).toBeNull();
+    unmount();
+
+    mockApiGet.mockImplementation(base);
+    render(<ProfilePage />);
+    await screen.findByText('Test bio');
+    expect(screen.getByRole('link', { name: /send message/i })).toBeInTheDocument();
+  });
+
+  it('offers no hello when direct messaging is off, however new the member is', async () => {
+    mockUseFeature.mockImplementation((feature: string) => feature !== 'direct_messaging');
+    const base = mockApiGet.getMockImplementation()!;
+    const joined = new Date(Date.now() - 86_400_000).toISOString();
+    mockApiGet.mockImplementation((url: string) => (url.includes('/v2/users/') && !url.includes('block-status')
+      ? base(url).then((res: { data: Record<string, unknown> }) => ({ ...res, data: { ...res.data, created_at: joined } }))
+      : base(url)));
+    render(<ProfilePage />);
+    await screen.findByText('Test bio');
+    expect(screen.queryByRole('link', { name: /say hello/i })).toBeNull();
+  });
+
   // Thank-you notes (warmth phase 5): a button on someone else's profile, a
   // link to your own notes on yours, and neither when the community has
   // switched thank-you notes off.
