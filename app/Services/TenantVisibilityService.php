@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\SuperPanelAccess;
+use App\Support\Members\PendingApproval;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
@@ -182,29 +183,72 @@ class TenantVisibilityService
         }
     }
 
+    /** An erased account: GdprService and the soft purge both stamp these. */
+    private const ERASED_SQL = '(users.deleted_at IS NOT NULL OR users.anonymized_at IS NOT NULL)';
+
+    /**
+     * The views (tabs) of the super-admin Users page. Same rules as the
+     * community Users page (AdminUsersController::index) so the two agree:
+     * deleted accounts appear under "deleted" and nowhere else, and "all"
+     * means everyone who has not been deleted.
+     */
+    public const USER_VIEWS = ['active', 'pending', 'suspended', 'banned', 'deleted', 'all'];
+
+    /**
+     * Sortable columns, by the key the page sends. Only these fixed SQL
+     * expressions ever reach ORDER BY; no request value does.
+     */
+    private const USER_SORTS = [
+        'name' => "COALESCE(NULLIF(users.organization_name, ''), CONCAT(COALESCE(users.first_name, ''), ' ', COALESCE(users.last_name, '')))",
+        'tenant' => 'tenants.name',
+        'role' => 'users.role',
+        'status' => 'users.status',
+        'super_admin' => '(users.is_super_admin * 2 + users.is_tenant_super_admin)',
+        'last_login_at' => 'users.last_login_at',
+        'created_at' => 'users.created_at',
+    ];
+
+    /** The condition a view adds beyond the deleted/not-deleted split. */
+    private static function userViewSql(string $view): ?string
+    {
+        return match ($view) {
+            'active' => "users.is_approved = 1 AND (users.status IS NULL OR users.status = 'active')",
+            'pending' => PendingApproval::sql('users'),
+            'suspended' => "users.status = 'suspended'",
+            'banned' => "users.status = 'banned'",
+            default => null,
+        };
+    }
+
     /**
      * Get a filtered list of users across visible tenants.
      *
-     * Supported filters: search, tenant_id, role, is_tenant_super_admin, limit, offset.
+     * Supported filters: view (see USER_VIEWS; default 'all'), search,
+     * tenant_id, role, super_admins, sort (see USER_SORTS), order, limit, offset.
      *
      * @return array<int, array>
      */
     public static function getUserList(array $filters = []): array
     {
         try {
+            $sort = self::USER_SORTS[$filters['sort'] ?? ''] ?? self::USER_SORTS['created_at'];
+            $order = strtolower((string) ($filters['order'] ?? 'desc')) === 'asc' ? 'asc' : 'desc';
+
             $query = self::userListQuery($filters)
                 ->select([
                     'users.id', 'users.first_name', 'users.last_name', 'users.profile_type', 'users.organization_name', 'users.email',
-                    'users.role', 'users.tenant_id', 'users.is_approved',
+                    'users.role', 'users.tenant_id', 'users.is_approved', 'users.status',
                     'users.is_super_admin', 'users.is_tenant_super_admin',
                     'users.location', 'users.phone',
                     'users.created_at', 'users.last_login_at',
+                    'users.deleted_at', 'users.anonymized_at',
                     'tenants.name as tenant_name', 'tenants.slug as tenant_slug',
                 ])
-                // `id` breaks ties, so rows created in the same second keep one
+                // $sort and $order come only from the fixed lists above.
+                ->orderByRaw("{$sort} {$order}")
+                // `id` breaks ties, so rows with the same sort value keep one
                 // order and a page boundary cannot repeat or skip a person.
-                ->orderBy('users.created_at', 'desc')
-                ->orderBy('users.id', 'desc');
+                ->orderBy('users.id', $order);
 
             $limit = (int) ($filters['limit'] ?? 50);
             $offset = (int) ($filters['offset'] ?? 0);
@@ -214,15 +258,36 @@ class TenantVisibilityService
             return $users->map(function ($user) {
                 $row = (array) $user;
                 $row['name'] = UserDisplayName::resolve($row);
+                $row['status'] = self::displayStatus($row);
                 $row['is_approved'] = (bool) $row['is_approved'];
                 $row['is_super_admin'] = (bool) $row['is_super_admin'];
                 $row['is_tenant_super_admin'] = (bool) $row['is_tenant_super_admin'];
+                unset($row['anonymized_at']);
                 return $row;
             })->all();
         } catch (\Throwable $e) {
             Log::error('TenantVisibilityService::getUserList failed', ['error' => $e->getMessage()]);
             return [];
         }
+    }
+
+    /**
+     * The status the page shows, by the community Users page's rules. Until
+     * 13 Nov 2026 the list sent no status at all, so the column was blank.
+     */
+    private static function displayStatus(array $row): string
+    {
+        if (($row['deleted_at'] ?? null) !== null || ($row['anonymized_at'] ?? null) !== null) {
+            return 'deleted';
+        }
+        $status = is_string($row['status'] ?? null) ? $row['status'] : '';
+        if (in_array($status, ['banned', 'suspended', 'inactive', 'rejected'], true)) {
+            return $status;
+        }
+        if ($status === 'pending' || empty($row['is_approved'])) {
+            return 'pending';
+        }
+        return 'active';
     }
 
     /**
@@ -238,10 +303,41 @@ class TenantVisibilityService
     }
 
     /**
-     * The visibility scope and filters shared by getUserList() and
-     * countUserList(), so the list and its total can never disagree.
+     * How many users each view holds under the other filters (search,
+     * community, role, super admins), for the numbers on the page's tabs.
+     * One query; not wrapped in a catch, for the same reason as countUserList().
+     *
+     * @return array<string, int> keyed by USER_VIEWS
      */
-    private static function userListQuery(array $filters): \Illuminate\Database\Query\Builder
+    public static function countUserListByView(array $filters = []): array
+    {
+        $notErased = 'NOT ' . self::ERASED_SQL;
+        $parts = [];
+        foreach (self::USER_VIEWS as $view) {
+            $condition = match ($view) {
+                'deleted' => self::ERASED_SQL,
+                'all' => $notErased,
+                default => $notErased . ' AND ' . self::userViewSql($view),
+            };
+            // Every fragment is a fixed string above; no request value reaches it.
+            $parts[] = "COALESCE(SUM(CASE WHEN {$condition} THEN 1 ELSE 0 END), 0) AS `{$view}`";
+        }
+
+        $row = (array) self::userListQuery($filters, false)->selectRaw(implode(', ', $parts))->first();
+
+        $counts = [];
+        foreach (self::USER_VIEWS as $view) {
+            $counts[$view] = (int) ($row[$view] ?? 0);
+        }
+        return $counts;
+    }
+
+    /**
+     * The visibility scope and filters shared by getUserList(), countUserList()
+     * and countUserListByView(), so the list, its total and the tab numbers
+     * can never disagree.
+     */
+    private static function userListQuery(array $filters, bool $applyView = true): \Illuminate\Database\Query\Builder
     {
         $query = DB::table('users')
             ->join('tenants', 'users.tenant_id', '=', 'tenants.id');
@@ -256,6 +352,23 @@ class TenantVisibilityService
             $query->where('tenants.path', 'LIKE', $filter['prefix'] . '%');
         }
 
+        // A manager's delegate (ManagerDelegate) is a recorded identity, not a
+        // member: never listed, as on the community Users page.
+        $query->where(function ($q) {
+            $q->whereNull('users.status')->orWhere('users.status', '<>', 'delegate');
+        });
+
+        if ($applyView) {
+            // No view named = everyone not deleted. The page asks for 'active'.
+            $view = in_array($filters['view'] ?? null, self::USER_VIEWS, true) ? $filters['view'] : 'all';
+            // Deleted accounts are listed under their own view and nowhere else.
+            $query->whereRaw($view === 'deleted' ? self::ERASED_SQL : 'NOT ' . self::ERASED_SQL);
+            $viewSql = self::userViewSql($view);
+            if ($viewSql !== null) {
+                $query->whereRaw($viewSql);
+            }
+        }
+
         if (!empty($filters['tenant_id'])) {
             $query->where('users.tenant_id', (int) $filters['tenant_id']);
         }
@@ -264,17 +377,27 @@ class TenantVisibilityService
             $query->where('users.role', $filters['role']);
         }
 
-        if (!empty($filters['is_tenant_super_admin'])) {
-            $query->where('users.is_tenant_super_admin', 1);
+        // "Super admins only" matched only tenant super admins until
+        // 13 Nov 2026, so a global super admin without that flag was missing.
+        if (!empty($filters['super_admins'])) {
+            $query->where(function ($q) {
+                $q->where('users.is_super_admin', 1)->orWhere('users.is_tenant_super_admin', 1);
+            });
         }
 
         if (!empty($filters['search'])) {
-            $search = '%' . $filters['search'] . '%';
-            $query->where(function ($q) use ($search) {
-                $q->where('users.first_name', 'LIKE', $search)
-                  ->orWhere('users.last_name', 'LIKE', $search)
-                  ->orWhere('users.email', 'LIKE', $search)
-                  ->orWhere('users.location', 'LIKE', $search);
+            $term = trim((string) $filters['search']);
+            $like = '%' . addcslashes($term, '%_\\') . '%';
+            $query->where(function ($q) use ($like, $term) {
+                $q->where('users.first_name', 'LIKE', $like)
+                  ->orWhere('users.last_name', 'LIKE', $like)
+                  ->orWhereRaw("CONCAT(COALESCE(users.first_name, ''), ' ', COALESCE(users.last_name, '')) LIKE ?", [$like])
+                  ->orWhere('users.organization_name', 'LIKE', $like)
+                  ->orWhere('users.email', 'LIKE', $like)
+                  ->orWhere('users.location', 'LIKE', $like);
+                if (ctype_digit($term)) {
+                    $q->orWhere('users.id', (int) $term);
+                }
             });
         }
 

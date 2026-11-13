@@ -1835,6 +1835,9 @@ export interface CreateSuperUserPayload {
   is_tenant_super_admin?: boolean;
 }
 
+/** A tab of the super-admin Users page. Deleted accounts appear only under 'deleted'. */
+export type SuperUserView = 'active' | 'pending' | 'suspended' | 'banned' | 'deleted' | 'all';
+
 export interface SuperUserListParams {
   page?: number;
   limit?: number;
@@ -1842,6 +1845,10 @@ export interface SuperUserListParams {
   tenant_id?: number;
   role?: string;
   super_admins?: boolean;
+  /** Omitted = everyone not deleted. The page sends 'active' by default. */
+  view?: SuperUserView;
+  sort?: string;
+  order?: 'asc' | 'desc';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

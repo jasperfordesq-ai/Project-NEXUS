@@ -1068,20 +1068,30 @@ class AdminSuperController extends BaseApiController
         $limit = $this->queryInt('limit', 50, 1, 200);
 
         $filters = array_filter([
+            'view' => $this->query('view'),
             'search' => $this->query('search'),
             'tenant_id' => $this->query('tenant_id') !== null ? (int) $this->query('tenant_id') : null,
             'role' => $this->query('role'),
-            'is_tenant_super_admin' => $this->query('super_admins') !== null ? 1 : null,
+            'super_admins' => $this->query('super_admins') !== null ? 1 : null,
+            'sort' => $this->query('sort'),
+            'order' => $this->query('order'),
             'limit' => $limit,
             'offset' => ($page - 1) * $limit,
-        ], fn($v) => $v !== null);
+        ], fn($v) => $v !== null && $v !== '');
 
         $users = $this->tenantVisibilityService->getUserList($filters);
         $total = $this->tenantVisibilityService->countUserList($filters);
+        $counts = $this->tenantVisibilityService->countUserListByView($filters);
 
-        // `data` is unchanged; `meta` now carries the real total so the page
-        // can number its pages (it previously guessed from one batch).
-        return $this->respondWithPaginatedCollection($users, $total, $page, $limit);
+        // `meta.total` numbers the pages; `meta.counts` labels the view tabs.
+        return $this->respondWithData($users, [
+            'current_page' => $page,
+            'per_page' => $limit,
+            'total' => $total,
+            'total_pages' => $total > 0 ? (int) ceil($total / $limit) : 0,
+            'has_more' => $page * $limit < $total,
+            'counts' => $counts,
+        ]);
     }
 
     /** GET /api/v2/super-admin/users/{id} */

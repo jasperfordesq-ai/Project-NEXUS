@@ -158,7 +158,11 @@ describe('Admin pagination total extraction', () => {
     const fakeUsers = [
       { id: 1, name: 'Alice', email: 'a@test.com', role: 'member', status: 'active', tenant_id: 2, tenant_name: 'Test', is_super_admin: false, is_tenant_super_admin: false, last_login_at: null },
     ];
-    mockApi.get.mockResolvedValue(paginatedResponse(fakeUsers, 45, 1, 20));
+    const response = paginatedResponse(fakeUsers, 45, 1, 20);
+    mockApi.get.mockResolvedValue({
+      ...response,
+      meta: { ...response.meta, counts: { active: 45, pending: 7, suspended: 0, banned: 0, deleted: 812, all: 52 } },
+    });
 
     const { SuperUserList } = await import('../modules/super/SuperUserList');
     renderInRouter(<SuperUserList />);
@@ -173,5 +177,10 @@ describe('Admin pagination total extraction', () => {
     expect(userCall).toBeDefined();
     expect(userCall).toMatch(/[?&]limit=20(&|$)/);
     expect(userCall).toMatch(/[?&]page=1(&|$)/);
+    // Owner, 13 Nov 2026: the page opens on active people, never on the
+    // thousands of deleted accounts, which have their own tab.
+    expect(userCall).toMatch(/[?&]view=active(&|$)/);
+    expect(screen.getByText('812')).toBeInTheDocument();
+    expect(screen.getByText('super.users_view_deleted')).toBeInTheDocument();
   });
 });

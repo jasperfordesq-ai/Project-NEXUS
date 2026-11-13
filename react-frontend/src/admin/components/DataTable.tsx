@@ -317,7 +317,7 @@ export function DataTable<T extends Record<string, any>>({
     if (!onPageChange || totalPages <= 1) return null;
     return (
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-2 py-2">
-        <span className="text-sm text-muted">
+        <span className="whitespace-nowrap text-sm text-muted">
           {totalItems ? t('shared.total_count', { count: totalItems }) : ''}
         </span>
         <Pagination

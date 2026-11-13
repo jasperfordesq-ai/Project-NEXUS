@@ -440,6 +440,77 @@ class AdminSuperControllerTest extends TestCase
         $this->assertCount(1, $response->json('data'));
     }
 
+    /**
+     * Owner, 13 Nov 2026: thousands of deleted accounts must not be the first
+     * thing the page shows. They are listed only under the "deleted" view.
+     */
+    public function test_user_list_keeps_deleted_accounts_in_their_own_view_with_counts(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $active = User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Zqxviews', 'is_approved' => 1, 'status' => 'active']);
+        $pending = User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Zqxviews', 'is_approved' => 0, 'status' => 'pending']);
+        $suspended = User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Zqxviews', 'is_approved' => 1, 'status' => 'suspended']);
+        $erased = User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Zqxviews', 'is_approved' => 1, 'status' => 'inactive']);
+        DB::table('users')->where('id', $erased->id)->update(['deleted_at' => now(), 'anonymized_at' => now()]);
+        // The soft purge stamps deleted_at but leaves the status 'active'.
+        $purged = User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Zqxviews', 'is_approved' => 1, 'status' => 'active']);
+        DB::table('users')->where('id', $purged->id)->update(['deleted_at' => now()]);
+        Sanctum::actingAs($admin);
+
+        $ids = fn (string $view) => array_column(
+            $this->apiGet('/v2/admin/super/users?search=Zqxviews&view=' . $view)->assertStatus(200)->json('data'),
+            'id'
+        );
+
+        $this->assertSame([$active->id], $ids('active'));
+        $this->assertSame([$pending->id], $ids('pending'));
+        $this->assertSame([$suspended->id], $ids('suspended'));
+        $this->assertEqualsCanonicalizing([$erased->id, $purged->id], $ids('deleted'));
+        $this->assertEqualsCanonicalizing([$active->id, $pending->id, $suspended->id], $ids('all'));
+
+        $response = $this->apiGet('/v2/admin/super/users?search=Zqxviews&view=active');
+        $this->assertSame(
+            ['active' => 1, 'pending' => 1, 'suspended' => 1, 'banned' => 0, 'deleted' => 2, 'all' => 3],
+            $response->json('meta.counts')
+        );
+        $this->assertSame('active', $response->json('data.0.status'));
+        $this->assertSame('deleted', $this->apiGet('/v2/admin/super/users?search=Zqxviews&view=deleted')->json('data.0.status'));
+    }
+
+    public function test_user_list_sorts_on_the_server_and_ignores_unknown_sort_keys(): void
+    {
+        $admin = $this->createSuperAdmin();
+        User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Zqxsort Bravo', 'last_name' => 'X']);
+        User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Zqxsort Alpha', 'last_name' => 'X']);
+        User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Zqxsort Charlie', 'last_name' => 'X']);
+        Sanctum::actingAs($admin);
+
+        $names = fn (string $qs) => array_column(
+            $this->apiGet('/v2/admin/super/users?view=all&search=Zqxsort&' . $qs)->assertStatus(200)->json('data'),
+            'first_name'
+        );
+
+        $this->assertSame(['Zqxsort Alpha', 'Zqxsort Bravo', 'Zqxsort Charlie'], $names('sort=name&order=asc'));
+        $this->assertSame(['Zqxsort Charlie', 'Zqxsort Bravo', 'Zqxsort Alpha'], $names('sort=name&order=desc'));
+        // A sort key outside the fixed list falls back to newest first, never into SQL.
+        $this->assertCount(3, $names('sort=' . urlencode('id; DROP TABLE users') . '&order=asc'));
+    }
+
+    public function test_user_list_super_admins_filter_includes_global_super_admins(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $global = User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Zqxglobal']);
+        DB::table('users')->where('id', $global->id)->update(['is_super_admin' => 1, 'is_tenant_super_admin' => 0]);
+        Sanctum::actingAs($admin);
+
+        $ids = array_column(
+            $this->apiGet('/v2/admin/super/users?view=all&super_admins=1&search=Zqxglobal')->assertStatus(200)->json('data'),
+            'id'
+        );
+
+        $this->assertSame([$global->id], $ids);
+    }
+
     public function test_user_list_returns_401_for_unauthenticated(): void
     {
         $response = $this->apiGet('/v2/admin/super/users');
