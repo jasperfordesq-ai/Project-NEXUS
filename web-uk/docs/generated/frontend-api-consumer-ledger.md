@@ -5,9 +5,9 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-11-12T18:02:08.531Z
-- Laravel commit SHA: `d5909cd9addaf5da30b722d65fcd199b103809c6`
-- Web UK repository commit SHA: `d5909cd9addaf5da30b722d65fcd199b103809c6`
+- Generated: 2026-11-13T09:39:24.553Z
+- Laravel commit SHA: `1c2a419228c7a34c11a8d37cf22c1d90e82ec523`
+- Web UK repository commit SHA: `1c2a419228c7a34c11a8d37cf22c1d90e82ec523`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -23,9 +23,9 @@ This is static evidence: an OpenAPI match or test reference does not prove runti
 - Unique helpers without direct API-helper assertions: 1
 - State-changing rows without direct API-helper assertions: 1
 - Unique OpenAPI-omitted helpers without direct API-client assertions: 1
-- API source SHA-256: `248c96a9b2b5433d32d002b533f79fe957d19c00d0a6e655b5ff89c4220835dc`
+- API source SHA-256: `4fecd575f320092538bcc25e1861d335c00f4375970849702e68eedf3e08a33b`
 - Laravel OpenAPI SHA-256: `556df20ac037142d51985d9fd9c35aba64e5e13af7f41e9da1634ac813be52f9`
-- Laravel API routes SHA-256: `7b62d9fe113afb58c0e928667458cf36e32f3f3a289af0931a296a6cc5d67b0d`
+- Laravel API routes SHA-256: `755543bf26ee0f1a3b7f75aa605bb5c619f45f5606a454629d339818fc48a253`
 
 The JSON companion contains the full request/response, status/error, redirect, side-effect, cleanup, Laravel implementation, consumer, and test fields.
 
@@ -35,7 +35,7 @@ Rows below have test references but no test that directly names and exercises th
 
 | Method | Path | Helper | Source | Side effects |
 |---|---|---|---|---|
-| DELETE | `/api/ai/conversations/{param}` | `deleteAiConversation` | `src/lib/api.js:2637` | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work |
+| DELETE | `/api/ai/conversations/{param}` | `deleteAiConversation` | `src/lib/api.js:2638` | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work |
 
 ## Complete consumer inventory
 
