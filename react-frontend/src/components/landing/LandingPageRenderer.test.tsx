@@ -303,4 +303,39 @@ describe('LandingPageRenderer — fault tolerance for custom landing pages', () 
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
     spy.mockRestore();
   });
+
+  describe('sign-in padlock on the "Explore this community" cards (owner, 13 Nov 2026)', () => {
+    const cards = () => {
+      mockUseTenant.mockReturnValue({ ...BASE_TENANT, landingPageConfig: { sections: [] } });
+      render(<LandingPageRenderer />);
+      const lockOf = (href: string) => {
+        const card = screen.getByRole('navigation').querySelector(`a[href="${href}"]`);
+        expect(card, href).not.toBeNull();
+        return card!.querySelector('[data-sign-in-lock]');
+      };
+      return { lockOf };
+    };
+
+    it('marks the cards a visitor must sign in to open, and leaves Blog alone', () => {
+      const { lockOf } = cards();
+      expect(lockOf('/test/listings')).not.toBeNull();
+      expect(lockOf('/test/events')).not.toBeNull();
+      expect(lockOf('/test/groups')).not.toBeNull();
+      expect(lockOf('/test/blog')).toBeNull();
+    });
+
+    it('keeps the padlock on the card title line', () => {
+      const { lockOf } = cards();
+      const lock = lockOf('/test/listings')!;
+      expect(lock.parentElement?.firstElementChild?.textContent).toBeTruthy();
+      expect(lock.parentElement?.parentElement?.tagName).toBe('A');
+    });
+
+    it('shows a signed-in member no padlock', () => {
+      mockUseAuth.mockReturnValue({ user: null, isAuthenticated: true, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'authenticated', error: null });
+      const { lockOf } = cards();
+      expect(lockOf('/test/listings')).toBeNull();
+      expect(lockOf('/test/events')).toBeNull();
+    });
+  });
 });

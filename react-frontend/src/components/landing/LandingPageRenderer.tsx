@@ -19,8 +19,10 @@ import { useMemo } from 'react';
 import { MotionConfig } from '@/lib/motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTenant } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
 import { FeatureErrorBoundary } from '@/components/feedback/FeatureErrorBoundary';
+import { SignInLock } from '@/components/navigation/SignInLock';
+import { showsSignInLock } from '@/components/navigation/signInRequired';
 import { DEFAULT_LANDING_PAGE_CONFIG } from '@/types';
 import type {
   LandingSection,
@@ -70,6 +72,11 @@ function RenderSection({ section }: { section: LandingSection }) {
 function PublicDiscoveryLinks() {
   const { t } = useTranslation('common');
   const { hasFeature, hasModule, tenantPath } = useTenant();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  // Most of these cards lead to member pages; a signed-out visitor sees the
+  // same padlock the menus show (owner, 13 Nov 2026).
+  const isLocked = (href: string) =>
+    showsSignInLock(href, { isAuthenticated, isLoading: isAuthLoading }, tenantPath('/'));
 
   const links = [
     hasModule('listings') ? {
@@ -112,7 +119,10 @@ function PublicDiscoveryLinks() {
                 to={link.href}
                 className="block rounded-lg border border-theme-default bg-theme-elevated px-4 py-3 transition-colors hover:border-theme-accent hover:bg-theme-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-background)]"
               >
-                <span className="block text-sm font-semibold text-theme-primary">{link.label}</span>
+                <span className="flex items-center gap-2 text-sm font-semibold text-theme-primary">
+                  <span>{link.label}</span>
+                  {isLocked(link.href) ? <SignInLock className="ms-auto" /> : null}
+                </span>
                 <span className="mt-1 block text-xs text-theme-muted">{link.description}</span>
               </Link>
             </li>
