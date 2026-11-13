@@ -18,7 +18,6 @@ import {
 const DESKTOP_SECTIONS: readonly DesktopNavigationSection[] = [
   'primary',
   'timebanking',
-  'community-main',
   'community-local',
   'community-explore',
   'engage',
@@ -259,6 +258,40 @@ describe('navigationRegistry', () => {
         expect(ordinaryIds.has(id), `${id} hidden on ${surface} for other tenants`).toBe(false);
         expect(hourTimebankIds.has(id), `${id} shown on ${surface} for hour-timebank`).toBe(true);
       });
+    }
+  });
+
+  it('puts Dashboard at the bottom of the desktop Timebanking menu, directly above Wallet', () => {
+    const order = getNavigationItems('desktop', 'timebanking', allEnabledContext()).map(item => item.id);
+    expect(order).toEqual(['listings', 'my-listings', 'exchanges', 'group-exchanges', 'dashboard', 'wallet']);
+  });
+
+  it('keeps Dashboard last in the Timebanking menu when Wallet is switched off', () => {
+    const order = getNavigationItems('desktop', 'timebanking', allEnabledContext({
+      hasModule: module => module !== 'wallet',
+    })).map(item => item.id);
+    expect(order.at(-1)).toBe('dashboard');
+    expect(order).not.toContain('wallet');
+  });
+
+  it('leaves Dashboard where it was in the mobile Main section', () => {
+    const order = getNavigationItems('mobile', 'main', allEnabledContext()).map(item => item.id);
+    expect(order).toEqual(['home', 'feed', 'dashboard', 'explore', 'messages', 'saved', 'activity']);
+  });
+
+  it('only positions a link above a destination that exists in the same section', () => {
+    for (const destination of NAVIGATION_DESTINATIONS) {
+      for (const surface of ['desktop', 'mobile'] as const) {
+        const placements = (destination.placements[surface] ?? []) as ReadonlyArray<{ section: string; before?: string }>;
+        for (const placement of placements) {
+          if (!placement.before) continue;
+          const target = NAVIGATION_DESTINATIONS.find(candidate => candidate.id === placement.before);
+          const targetSections = ((target?.placements[surface] ?? []) as ReadonlyArray<{ section: string }>)
+            .map(p => p.section);
+          expect(targetSections, `${destination.id} is placed before ${placement.before} on ${surface}`)
+            .toContain(placement.section);
+        }
+      }
     }
   });
 

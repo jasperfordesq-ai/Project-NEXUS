@@ -132,7 +132,6 @@ type NavigationDescriptionKey = 'nav_desc.timebanking_listings' | `nav_desc.${Ex
 export type DesktopNavigationSection =
   | 'primary'
   | 'timebanking'
-  | 'community-main'
   | 'community-local'
   | 'community-explore'
   | 'engage'
@@ -162,6 +161,13 @@ interface NavigationPlacement<Section extends string> {
   section: Section;
   /** Allows a shorter or context-specific translated label without duplicating route policy. */
   labelKey?: NavigationLabelKey;
+  /**
+   * Show this link directly above another destination (by id) in the same
+   * section, or at the end of the section when that destination is hidden.
+   * Lets one destination sit at a different position on each surface without
+   * moving it in the list below, whose order every other section relies on.
+   */
+  before?: string;
 }
 
 interface NavigationDestinationDefinition {
@@ -202,7 +208,14 @@ const both = <
 export const NAVIGATION_DESTINATIONS = [
   { id: 'home', href: '/', labelKey: 'nav.home', icon: Home, placements: { mobile: [{ section: 'main' }] } },
   { id: 'feed', href: '/feed', labelKey: 'nav.feed', descriptionKey: 'nav_desc.feed', icon: Newspaper, auth: 'authenticated', module: 'feed', placements: both('primary', 'main') },
-  { id: 'dashboard', href: '/dashboard', labelKey: 'nav.dashboard', descriptionKey: 'nav_desc.dashboard', icon: LayoutDashboard, auth: 'authenticated', module: 'dashboard', placements: both('community-main', 'main') },
+  // Desktop: in the Timebanking menu, just above Wallet (owner, 13 Nov 2026 —
+  // it was the only link in the Community menu's "Main" column, now gone).
+  // Mobile: unchanged, third in the drawer's Main section.
+  {
+    id: 'dashboard', href: '/dashboard', labelKey: 'nav.dashboard', descriptionKey: 'nav_desc.dashboard', icon: LayoutDashboard,
+    auth: 'authenticated', module: 'dashboard',
+    placements: { desktop: [{ section: 'timebanking', before: 'wallet' }], mobile: [{ section: 'main' }] },
+  },
   // /explore sits inside ProtectedRoute (member identity-bearing discovery), so visitors are not offered it.
   { id: 'explore', href: '/explore', labelKey: 'nav.explore', descriptionKey: 'nav_desc.explore', icon: Compass, auth: 'authenticated', feature: 'explore', placements: both('primary', 'main') },
   { id: 'messages', href: '/messages', labelKey: 'nav.messages', descriptionKey: 'nav_desc.messages', icon: MessageSquare, auth: 'authenticated', module: 'messages', placements: both('primary', 'main') },
@@ -393,6 +406,7 @@ export function getNavigationItems(
   context: NavigationGateContext,
 ): NavigationItemPolicy[] {
   const items: NavigationItemPolicy[] = [];
+  const repositioned: Array<{ item: NavigationItemPolicy; before: string }> = [];
 
   for (const destination of NAVIGATION_DESTINATIONS) {
     if (!isDestinationVisible(destination, context)) continue;
@@ -404,7 +418,7 @@ export function getNavigationItems(
     const placements = placementsBySurface[surface] ?? [];
     for (const placement of placements) {
       if (placement.section !== section) continue;
-      items.push({
+      const item: NavigationItemPolicy = {
         id: destination.id,
         href: destination.href,
         labelKey: 'labelKey' in placement && placement.labelKey
@@ -416,8 +430,15 @@ export function getNavigationItems(
         feature: 'feature' in destination ? destination.feature : undefined,
         features: 'features' in destination ? destination.features : undefined,
         module: 'module' in destination ? destination.module : undefined,
-      });
+      };
+      if (placement.before) repositioned.push({ item, before: placement.before });
+      else items.push(item);
     }
+  }
+
+  for (const { item, before } of repositioned) {
+    const index = items.findIndex(existing => existing.id === before);
+    items.splice(index === -1 ? items.length : index, 0, item);
   }
 
   return items;

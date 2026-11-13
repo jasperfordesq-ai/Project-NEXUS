@@ -334,10 +334,6 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
     [resolveDesktopSection],
   );
 
-  const communityMainItems = useMemo(
-    () => resolveDesktopSection('community-main'),
-    [resolveDesktopSection],
-  );
   const communityLocalItems = useMemo(
     () => resolveDesktopSection('community-local'),
     [resolveDesktopSection],
@@ -347,13 +343,14 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
     [resolveDesktopSection],
   );
   const communityGroups = useMemo<MegaPanelGroup[]>(() => {
+    // Dashboard, the only link the old "Main" column held, now lives in the
+    // Timebanking menu (owner, 13 Nov 2026).
     const groups: MegaPanelGroup[] = [
-      { key: 'main', title: t('sections.main'), tone: 'main', items: communityMainItems },
       { key: 'community', title: t('sections.community'), tone: 'tools', items: communityLocalItems },
       { key: 'explore', title: t('sections.explore'), tone: 'explore', items: communityExploreItems },
     ];
     return groups.filter(group => group.items.length > 0);
-  }, [communityExploreItems, communityLocalItems, communityMainItems, t]);
+  }, [communityExploreItems, communityLocalItems, t]);
 
   // ─── Collapsed primary nav items → overflow into the More panel ──────────
   const primaryNavigationItems = useMemo(

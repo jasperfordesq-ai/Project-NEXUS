@@ -125,6 +125,7 @@ const i18nMap: Record<string, string> = {
   'nav.feed': 'Feed',
   'nav.listings': 'Listings',
   'nav.timebanking': 'Timebanking',
+  'nav.wallet': 'Wallet',
   'nav.messages': 'Messages',
   'nav.community': 'Community',
   'nav.caring_community': 'Caring Community',
@@ -758,19 +759,25 @@ describe('Navbar', () => {
       expect(screen.queryByRole('link', { name: 'Open WCAG 2.2 AA accessible version in a new tab' })).not.toBeInTheDocument();
     });
 
-    it('renders Dashboard link when module is enabled', async () => {
+    it('renders Dashboard in the Timebanking menu, directly above Wallet', async () => {
       const user = userEvent.setup();
       setupDefaultMocks({
         auth: { user: { id: 1, first_name: 'A', last_name: 'B', email: 'a@b.com', role: 'member' }, isAuthenticated: true },
         tenant: {
-          hasModule: vi.fn((mod: string) => ['dashboard', 'feed', 'listings', 'messages'].includes(mod)),
+          hasModule: vi.fn((mod: string) => ['dashboard', 'feed', 'listings', 'messages', 'wallet'].includes(mod)),
         },
       });
       render(<Navbar />);
-      // Dashboard sits at the top of the Community dropdown (closed by default).
-      // Open the Community trigger, then verify the Dashboard item appears.
-      await user.click(screen.getByRole('button', { name: /community/i }));
-      expect(screen.getByText('Dashboard')).toBeInTheDocument();
+      // Owner, 13 Nov 2026: Dashboard moved out of the Community menu into the
+      // Timebanking menu, at the bottom just above Wallet.
+      await user.click(screen.getByRole('button', { name: 'Timebanking' }));
+      const labels = (await screen.findAllByRole('menuitem')).map(item => item.textContent ?? '');
+      const dashboardIndex = labels.findIndex(label => label.startsWith('Dashboard'));
+      const walletIndex = labels.findIndex(label => label.startsWith('Wallet'));
+
+      expect(dashboardIndex).toBeGreaterThanOrEqual(0);
+      expect(walletIndex).toBe(labels.length - 1);
+      expect(dashboardIndex).toBe(walletIndex - 1);
     });
 
     it('renders Feed link when module is enabled', () => {
@@ -855,7 +862,9 @@ describe('Navbar', () => {
 
       const panel = screen.getByRole('navigation', { name: 'Community navigation' });
       expect(panel.closest('[data-mega-panel]')).not.toBeNull();
-      expect(screen.getByText('Main')).toBeInTheDocument();
+      // Dashboard and its "Main" column left this menu (owner, 13 Nov 2026).
+      expect(within(panel).queryByText('Main')).not.toBeInTheDocument();
+      expect(within(panel).queryByText('Dashboard')).not.toBeInTheDocument();
       expect(screen.getAllByText('Community').length).toBeGreaterThanOrEqual(2);
       expect(screen.getByText('Explore')).toBeInTheDocument();
 
@@ -963,7 +972,7 @@ describe('Navbar', () => {
       expect(panelText.indexOf('Podcasts')).toBeLessThan(panelText.indexOf('Premium'));
     });
 
-    it('renders the Community menu as open columns with Main, Community and Explore headings', async () => {
+    it('renders the Community menu as open columns with Community and Explore headings', async () => {
       const user = userEvent.setup();
       setupDefaultMocks({
         auth: { user: { id: 1, first_name: 'A', last_name: 'B', email: 'a@b.com', role: 'member' }, isAuthenticated: true },
@@ -979,7 +988,7 @@ describe('Navbar', () => {
       const panel = screen.getByRole('navigation', { name: 'Community navigation' });
       expect(panel.querySelectorAll('button[aria-expanded]')).toHaveLength(0);
       const headings = Array.from(panel.querySelectorAll('[data-mega-group] > p')).map(p => p.textContent);
-      expect(headings).toEqual(['Main', 'Community', 'Explore']);
+      expect(headings).toEqual(['Community', 'Explore']);
       expect(within(panel).getByRole('button', { name: /^Members\b/ })).toBeVisible();
       expect(within(panel).getByRole('button', { name: /^Marketplace\b/ })).toBeVisible();
     });
