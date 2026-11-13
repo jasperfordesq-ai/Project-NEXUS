@@ -708,7 +708,11 @@ export function OnboardingPage() {
                 <CommunityWelcome className="-mx-5 -mt-5 sm:-mx-8 sm:-mt-8" />
 
                 <h2 className="text-xl font-bold text-theme-primary mb-2">
-                  {t('welcome_title', { name: tenantName })}
+                  {/* Welcome the person, not only the community (first name only: members
+                      never see a surname, and nobody is greeted by their own). */}
+                  {user?.first_name?.trim()
+                    ? t('welcome_title_named', { name: tenantName, firstName: user.first_name.trim() })
+                    : t('welcome_title', { name: tenantName })}
                 </h2>
                 <p className="text-theme-muted max-w-md mx-auto">
                   {t('welcome_description')}

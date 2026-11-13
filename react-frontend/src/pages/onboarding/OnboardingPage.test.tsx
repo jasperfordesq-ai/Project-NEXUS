@@ -96,7 +96,7 @@ vi.mock('@/hooks/useOnboardingConfig', () => ({
     },
     steps: [
       { slug: 'welcome', label: 'Welcome', required: false },
-      { slug: 'profile', label: 'Your Profile', required: true },
+      { slug: 'profile', label: 'Your profile', required: true },
       { slug: 'skills', label: 'Skills', required: false },
       { slug: 'confirm', label: 'Confirm', required: true },
     ],
@@ -263,14 +263,28 @@ describe('OnboardingPage', () => {
 
   it('renders the page title and description', () => {
     render(<OnboardingPage />);
-    expect(screen.getByText('Get Started')).toBeInTheDocument();
+    expect(screen.getByText('Get started')).toBeInTheDocument();
     expect(screen.getByText('Set up your profile in a few easy steps')).toBeInTheDocument();
   });
 
   it('shows step 1 welcome content initially', () => {
     render(<OnboardingPage />);
-    expect(screen.getByText(/Welcome to Test Community!/)).toBeInTheDocument();
-    expect(screen.getByText("Let's Get Started")).toBeInTheDocument();
+    expect(screen.getByText('Welcome to Test Community, Test!')).toBeInTheDocument();
+    expect(screen.getByText("Let's get started")).toBeInTheDocument();
+  });
+
+  it('welcomes a member with no first name on file to the community alone', async () => {
+    const { useAuth } = await import('@/contexts');
+    vi.mocked(useAuth).mockReturnValue({
+      ...stableAuthValue,
+      user: { id: 1, first_name: '  ', name: 'Test User', onboarding_completed: false },
+    } as unknown as ReturnType<typeof useAuth>);
+
+    render(<OnboardingPage />);
+
+    expect(screen.getByText('Welcome to Test Community!')).toBeInTheDocument();
+    // Never the full name: `name` holds first name AND surname.
+    expect(screen.queryByText(/Test User/)).toBeNull();
   });
 
   it("opens the welcome step with the community's own cover and logo, like its sign-in page", () => {
@@ -282,9 +296,9 @@ describe('OnboardingPage', () => {
 
   it('shows benefit cards on step 1', () => {
     render(<OnboardingPage />);
-    expect(screen.getByText('Earn Time Credits')).toBeInTheDocument();
-    expect(screen.getByText('Share Your Skills')).toBeInTheDocument();
-    expect(screen.getByText('Build Community')).toBeInTheDocument();
+    expect(screen.getByText('Earn time credits')).toBeInTheDocument();
+    expect(screen.getByText('Share your skills')).toBeInTheDocument();
+    expect(screen.getByText('Build community')).toBeInTheDocument();
   });
 
   it('shows step progress indicator', () => {
@@ -300,14 +314,14 @@ describe('OnboardingPage', () => {
 
     render(<OnboardingPage />);
 
-    const startButton = screen.getByText("Let's Get Started");
+    const startButton = screen.getByText("Let's get started");
     await user.click(startButton);
 
     await waitFor(() => {
       // Step 2 is "Your Profile" — verify via aria-label on the step indicator
       expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
     });
-    expect(screen.getByText('Your Profile')).toBeInTheDocument();
+    expect(screen.getByText('Your profile')).toBeInTheDocument();
   });
 
   it('renders nothing when onboarding is already completed', async () => {
@@ -356,7 +370,7 @@ describe('OnboardingPage', () => {
     render(<OnboardingPage />);
 
     // Navigate step 1 -> 2
-    await user.click(screen.getByText("Let's Get Started"));
+    await user.click(screen.getByText("Let's get started"));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
     });
@@ -372,7 +386,7 @@ describe('OnboardingPage', () => {
     render(<OnboardingPage />);
 
     // Navigate step 1 -> 2 (Profile)
-    await user.click(screen.getByText("Let's Get Started"));
+    await user.click(screen.getByText("Let's get started"));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
     });
@@ -384,7 +398,7 @@ describe('OnboardingPage', () => {
     // Since our mock user has no avatar, profile isn't complete. But we can
     // test the interests description by checking the translation key directly.
     // Instead, let's just verify the step 2 content renders correctly.
-    expect(screen.getByText('Your Profile')).toBeInTheDocument();
+    expect(screen.getByText('Your profile')).toBeInTheDocument();
     expect(screen.getByText(/Add a photo and tell the community about yourself/)).toBeInTheDocument();
   });
 
@@ -397,7 +411,7 @@ describe('OnboardingPage', () => {
     render(<OnboardingPage />);
 
     // Navigate step 1 -> 2 (Profile)
-    await user.click(screen.getByText("Let's Get Started"));
+    await user.click(screen.getByText("Let's get started"));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
     });
@@ -425,7 +439,7 @@ describe('OnboardingPage', () => {
     render(<OnboardingPage />);
 
     // Navigate step 1 -> 2 (Profile)
-    await user.click(screen.getByText("Let's Get Started"));
+    await user.click(screen.getByText("Let's get started"));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
     });
@@ -454,7 +468,7 @@ describe('OnboardingPage', () => {
 
     render(<OnboardingPage />);
 
-    await user.click(screen.getByText("Let's Get Started"));
+    await user.click(screen.getByText("Let's get started"));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
     });
@@ -489,7 +503,7 @@ describe('OnboardingPage', () => {
     render(<OnboardingPage />);
 
     // Navigate step 1 -> 2 (Profile)
-    await user.click(screen.getByText("Let's Get Started"));
+    await user.click(screen.getByText("Let's get started"));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
     });
@@ -523,7 +537,7 @@ describe('OnboardingPage', () => {
       </StrictMode>
     );
 
-    await user.click(screen.getByText("Let's Get Started"));
+    await user.click(screen.getByText("Let's get started"));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
     });
@@ -590,7 +604,7 @@ describe('OnboardingPage', () => {
     render(<OnboardingPage />);
 
     // Navigate step 1 -> 2 (Profile)
-    await user.click(screen.getByText("Let's Get Started"));
+    await user.click(screen.getByText("Let's get started"));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
     });
@@ -859,7 +873,7 @@ describe('OnboardingPage', () => {
         const { userEvent } = await import('@/test/test-utils');
         const user = userEvent.setup();
         render(<OnboardingPage />);
-        await user.click(screen.getByText("Let's Get Started"));
+        await user.click(screen.getByText("Let's get started"));
 
         expect(await screen.findByText('Protect your account')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Step 2: Security \(current\)/ })).toBeInTheDocument();
@@ -881,7 +895,7 @@ describe('OnboardingPage', () => {
         const { userEvent } = await import('@/test/test-utils');
         const user = userEvent.setup();
         render(<OnboardingPage />);
-        await user.click(screen.getByText("Let's Get Started"));
+        await user.click(screen.getByText("Let's get started"));
 
         expect(await screen.findByText('Two-factor authentication is on')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Step 2: Security \(current\)/ })).toBeInTheDocument();
@@ -901,7 +915,7 @@ describe('OnboardingPage', () => {
         const { userEvent } = await import('@/test/test-utils');
         const user = userEvent.setup();
         render(<OnboardingPage />);
-        await user.click(screen.getByText("Let's Get Started"));
+        await user.click(screen.getByText("Let's get started"));
 
         await waitFor(() => {
           expect(screen.getByRole('button', { name: /Step 3: Confirm \(current\)/ })).toBeInTheDocument();
@@ -942,7 +956,7 @@ describe('OnboardingPage — member with no location', () => {
     const { userEvent } = await import('@/test/test-utils');
     const user = userEvent.setup();
     render(<OnboardingPage />);
-    await user.click(screen.getByText("Let's Get Started"));
+    await user.click(screen.getByText("Let's get started"));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
     });
@@ -1064,7 +1078,7 @@ describe('OnboardingPage — member with no location', () => {
     // Photo + bio would normally send the member straight to step 3.
     expect(screen.getByRole('button', { name: /Step 1: Welcome \(current\)/ })).toBeInTheDocument();
     const { userEvent } = await import('@/test/test-utils');
-    await userEvent.setup().click(screen.getByText("Let's Get Started"));
+    await userEvent.setup().click(screen.getByText("Let's get started"));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
     });
@@ -1095,7 +1109,7 @@ describe('OnboardingPage — member with no location', () => {
 
     await waitFor(() => expect(stableToastValue.error).toHaveBeenCalled());
     const [title, message] = stableToastValue.error.mock.calls[0]!;
-    expect(title).toBe('Save failed');
+    expect(title).toBe("We couldn't save that");
     expect(message).toBe('We could not save that place. Please check it and try again.');
     // Still on the profile step.
     expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
