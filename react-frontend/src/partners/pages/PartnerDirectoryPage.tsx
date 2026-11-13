@@ -43,8 +43,8 @@ export default function PartnerDirectoryPage() {
   return (
     <PartnersPageShell
       actions={actionsSlot}
-      title={t('pages.directory.title')}
-      description={t('pages.directory.description')}
+      title={tab === 'profile' ? t('pages.directory_profile.title') : t('pages.directory.title')}
+      description={tab === 'profile' ? t('pages.directory_profile.description') : t('pages.directory.description')}
       icon={BookUser}
       color="accent"
       toolbar={

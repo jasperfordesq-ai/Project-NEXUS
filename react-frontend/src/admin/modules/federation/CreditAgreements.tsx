@@ -122,11 +122,6 @@ function formatCredits(value: number | null | undefined): string {
   return typeof value === 'number' ? String(value) : '—';
 }
 
-function getPartnerSlug(agreement: CreditAgreement): string {
-  if (agreement.partner_tenant?.slug) return agreement.partner_tenant.slug;
-  return agreement.to_tenant_slug || agreement.from_tenant_slug || '';
-}
-
 function getMonthlyLimit(agreement: CreditAgreement): number | null {
   return agreement.monthly_limit ?? agreement.max_monthly_credits ?? null;
 }
@@ -455,7 +450,6 @@ export function CreditAgreements() {
                     <TableCell>
                       <div>
                         <p className="font-medium text-sm">{getPartnerName(agreement, t('federation.unknown_partner'))}</p>
-                        <p className="text-xs text-muted">{getPartnerSlug(agreement)}</p>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -660,7 +654,6 @@ export function CreditAgreements() {
                 <Input
                   type="number"
                   label={t('federation.label_exchange_rate')}
-                  description={t('federation.exchange_rate_description')}
                   value={exchangeRate}
                   onChange={(e) => setExchangeRate(e.target.value)}
                   startContent={<ArrowRightLeft size={14} />}
@@ -702,7 +695,7 @@ export function CreditAgreements() {
               <ModalHeader className="flex items-center gap-2">
                 <Handshake size={20} />
                 {selectedAgreement
-                  ? t('federation.agreement_with')
+                  ? t('federation.agreement_with', { name: getPartnerName(selectedAgreement, t('federation.unknown_partner')) })
                   : t('federation.agreement_detail')
                 }
               </ModalHeader>

@@ -106,13 +106,25 @@ describe('MyProfile (Federation)', () => {
     });
   });
 
-  it('renders read-only slug field', async () => {
+  it('does not show the read-only "slug" field — an internal name an admin could not use or change', async () => {
     const { MyProfile } = await import('./MyProfile');
     render(<MyProfile />);
 
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('hour-timebank')).toBeInTheDocument();
-    });
+    await waitFor(() => expect(screen.getByDisplayValue('hOUR Timebank')).toBeInTheDocument());
+    expect(screen.queryByDisplayValue('hour-timebank')).not.toBeInTheDocument();
+    expect(screen.queryByText(/slug/i)).not.toBeInTheDocument();
+  });
+
+  it('labels a topic group with a plain word, not "Category Care"', async () => {
+    mockAdminFederation.getTopics.mockResolvedValue(
+      successResponse([makeTopic({ id: 10, name: 'Befriending', category: 'care' })])
+    );
+    const { MyProfile } = await import('./MyProfile');
+    render(<MyProfile />);
+
+    await waitFor(() => screen.getByText('Befriending'));
+    expect(screen.getByRole('heading', { name: 'Care' })).toBeInTheDocument();
+    expect(screen.queryByText(/Category Care/)).not.toBeInTheDocument();
   });
 
   it('renders contact email and website fields', async () => {
@@ -227,7 +239,7 @@ describe('MyProfile (Federation)', () => {
 
   it('calls updateMyTopics when Save Topics is clicked after selecting a topic', async () => {
     mockAdminFederation.getTopics.mockResolvedValue(
-      successResponse([makeTopic({ id: 10, name: 'Care', category: 'care' })])
+      successResponse([makeTopic({ id: 10, name: 'Befriending', category: 'care' })])
     );
     mockAdminFederation.getMyTopics.mockResolvedValue(successResponse([]));
     mockAdminFederation.updateMyTopics.mockResolvedValue({ success: true });
@@ -235,10 +247,11 @@ describe('MyProfile (Federation)', () => {
     const { MyProfile } = await import('./MyProfile');
     render(<MyProfile />);
 
-    await waitFor(() => screen.getByText('Care'));
+    await waitFor(() => screen.getByText('Befriending'));
 
-    // Click the Care chip to select it
-    const careChip = screen.getByText('Care');
+    // Click the topic chip to select it (the group heading is now the plain
+    // word "Care", so the topic needs a name of its own).
+    const careChip = screen.getByText('Befriending');
     fireEvent.click(careChip);
 
     // Save Topics button

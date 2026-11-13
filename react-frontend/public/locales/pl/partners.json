@@ -26,12 +26,14 @@
     "section_caring": "Troskliwa społeczność",
     "section_access": "Dostęp i bezpieczeństwo",
     "section_data": "Aktywność i dane",
-    "section_settings": "Ustawienia"
+    "section_settings": "Ustawienia",
+    "section_technical": "Konfiguracja techniczna"
   },
   "nav": {
     "overview": "Przegląd",
     "partnerships": "Partnerstwa",
     "directory": "Katalog partnerów",
+    "our_listing": "Nasze zestawienie",
     "neighborhoods": "Dzielnice",
     "credit_agreements": "Umowy kredytowe",
     "external_partners": "Platformy zewnętrzne",
@@ -196,14 +198,14 @@
     },
     "settings": {
       "title": "Ustawienia sieciowe",
-      "description": "Główne przełączniki partnerstwa — włącz je lub wyłącz i wybierz, co Twoja społeczność udostępnia partnerom."
+      "description": "Zdecyduj, czy ta społeczność może współpracować z innymi bankami czasu, kto może wysyłać Ci prośby o partnerstwo i ilu partnerów możesz mieć."
     }
   },
   "external_federation": {
-    "banner_title": "Federacja partnerów zewnętrznych jest wyłączona",
+    "banner_title": "Połączenia z innymi platformami są wyłączone",
     "banner_title_lockdown": "Awaryjna blokada Federacji jest aktywna",
-    "banner_body": "Żądania z innych instalacji są odrzucane za pomocą protokołu HTTP 503 i nic na tych stronach nie jest wysyłane do partnerów zewnętrznych. Poniższą konfigurację można nadal przeglądać i edytować — po prostu nie zacznie obowiązywać, dopóki federacja zewnętrzna nie zostanie ponownie włączona.",
-    "banner_internal_unaffected": "Federacja między społecznościami w tej instalacji pozostaje nienaruszona i nadal działa normalnie.",
+    "banner_body": "Nic z tej strony nie jest wysyłane do banków czasu spoza tej platformy ani od nich przyjmowane. Nadal możesz tu przeglądać i zmieniać konfigurację; zacznie działać po ponownym włączeniu połączeń.",
+    "banner_internal_unaffected": "Nie dotyczy to partnerstw z innymi społecznościami na tej platformie.",
     "banner_manage_link": "Zarządzaj federacją zewnętrzną",
     "sidebar_disabled_chip": "Wyłączony"
   }

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen } from '@/test/test-utils';
+import { render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
 
@@ -108,17 +108,14 @@ describe('PartnerTimebankGuidance', () => {
     expect(section).toHaveAttribute('aria-label');
   });
 
-  it('renders the Partner Timebank Area chip', async () => {
+  it('is ONE row — the old badge and the always-open sections are gone', async () => {
+    // Until November 2026 this was a card with a title, summary, badge and two
+    // sections open by default, above the content of every partner page.
     const { PartnerTimebankGuidance } = await import('./PartnerTimebankGuidance');
     render(<PartnerTimebankGuidance page="settings" />);
-    expect(screen.getByTestId('chip')).toBeInTheDocument();
-  });
-
-  it('renders three accordion panels (fit, steps, related)', async () => {
-    const { PartnerTimebankGuidance } = await import('./PartnerTimebankGuidance');
-    render(<PartnerTimebankGuidance page="settings" />);
-    const items = screen.getAllByTestId('accordion-item');
-    expect(items).toHaveLength(3);
+    expect(screen.getAllByTestId('accordion-item')).toHaveLength(1);
+    expect(screen.queryByTestId('chip')).not.toBeInTheDocument();
+    expect(screen.queryByText('Partner timebank admin')).not.toBeInTheDocument();
   });
 
   it('renders ordered steps list inside steps panel', async () => {
@@ -212,9 +209,9 @@ describe('PartnerTimebankGuidance', () => {
     expect(screen.getByText('Use this guide to explain the protocol stack')).toBeInTheDocument();
     expect(screen.getByText('Where this page fits')).toBeInTheDocument();
     expect(screen.getByText('Recommended order')).toBeInTheDocument();
-    expect(screen.getByText('Partner timebank admin')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Related pages' }));
+    expect(screen.getByText('Related pages')).toBeInTheDocument();
+    // The one row is the only disclosure; its label is the trigger.
+    expect(screen.getByRole('button', { name: 'Where this page fits' })).toBeInTheDocument();
 
     // Related links point into the Partner Timebanks panel (2026-07-02) —
     // the old /admin/federation/* routes were retired without redirects.

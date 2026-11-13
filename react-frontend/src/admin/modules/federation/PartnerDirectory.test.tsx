@@ -172,7 +172,7 @@ describe('PartnerDirectory', () => {
     await waitFor(() => {
       // Use exact match to avoid matching "Hide Partnered" filter button
       const btn = screen.queryAllByRole('button').find(
-        b => b.textContent === 'Request Partnership',
+        b => b.textContent === 'Request partnership',
       );
       expect(btn).toBeDefined();
     });
@@ -194,7 +194,7 @@ describe('PartnerDirectory', () => {
     // Click the "Request Partnership" button specifically (not "Hide Partnered" which also
     // contains 'partner' in its text and would appear first in the DOM)
     const exactRequestBtn = screen.queryAllByRole('button').find(
-      b => b.textContent === 'Request Partnership',
+      b => b.textContent === 'Request partnership',
     );
     expect(exactRequestBtn).toBeDefined();
     fireEvent.click(exactRequestBtn!);
@@ -218,7 +218,7 @@ describe('PartnerDirectory', () => {
     await waitFor(() => screen.getByText('Dublin Timebank'), { timeout: 2000 });
 
     const exactRequestBtn = screen.queryAllByRole('button').find(
-      b => b.textContent === 'Request Partnership',
+      b => b.textContent === 'Request partnership',
     );
     expect(exactRequestBtn).toBeDefined();
     fireEvent.click(exactRequestBtn!);
@@ -254,7 +254,7 @@ describe('PartnerDirectory', () => {
     render(<PartnerDirectory />);
 
     await waitFor(() => screen.getByText('Dublin Timebank'), { timeout: 2000 });
-    fireEvent.click(screen.queryAllByRole('button').find(b => b.textContent === 'Request Partnership')!);
+    fireEvent.click(screen.queryAllByRole('button').find(b => b.textContent === 'Request partnership')!);
 
     const levelSelect = await screen.findByLabelText('Partnership level');
     // All four levels are on offer, lowest first.
@@ -278,7 +278,7 @@ describe('PartnerDirectory', () => {
     await waitFor(() => screen.getByText('Dublin Timebank'), { timeout: 2000 });
 
     const exactRequestBtn = screen.queryAllByRole('button').find(
-      b => b.textContent === 'Request Partnership',
+      b => b.textContent === 'Request partnership',
     );
     expect(exactRequestBtn).toBeDefined();
     fireEvent.click(exactRequestBtn!);
@@ -311,7 +311,7 @@ describe('PartnerDirectory', () => {
 
     await waitFor(() => screen.getByText('Dublin Timebank'), { timeout: 2000 });
     const requestButton = screen.queryAllByRole('button').find(
-      (button) => button.textContent === 'Request Partnership',
+      (button) => button.textContent === 'Request partnership',
     );
     expect(requestButton).toBeDefined();
     fireEvent.click(requestButton!);

@@ -6,17 +6,28 @@
 /**
  * Partner Timebanks Sidebar Navigation
  *
- * Plain-English, task-oriented sections for a non-technical super admin:
- * who we partner with (network), systems outside the NEXUS network
- * (external connections), the module-gated Caring Community protocols,
- * the technical access surfaces (keys/webhooks), and monitoring/data.
+ * Ordered by what a non-technical admin does, most often first:
+ *   Overview → Partner network (who we partner with, how we appear, credit
+ *   agreements) → Activity → Settings → Technical setup.
  *
- * Sections are feature-gated to mirror the route gates in routes.tsx:
- * federation-backed sections hide without the `federation` feature, the
- * Inbound API partners item needs `partner_api`, and the whole Caring
- * Community section disappears when the `caring_community` module is off.
+ * "Technical setup" gathers everything that needs a developer or the other
+ * side's technical contact (other platforms' protocols, API keys, webhooks,
+ * the developer guide, signed statistics, export/import). It is one group,
+ * closed until opened, so the everyday items are not buried under nine
+ * specialist ones. It opens by itself when the current page is inside it.
+ *
+ * Until November 2026 those nine items sat in three always-open sections
+ * between the partner network and the activity pages, "Network settings" —
+ * step one of setting up — was the very last link, and "Our listing" had no
+ * link at all (it is a tab of the directory page).
+ *
+ * Visibility mirrors the route gates in routes.tsx: federation-backed items
+ * need the `federation` feature, Inbound API partners needs `partner_api`,
+ * Partner cooperatives needs the `caring_community` module, and everything
+ * in Settings and Technical setup is super-admin-only.
  */
 
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -26,6 +37,9 @@ import Globe from 'lucide-react/icons/globe';
 import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
 import Handshake from 'lucide-react/icons/handshake';
 import BookUser from 'lucide-react/icons/book-user';
+import ChevronDown from 'lucide-react/icons/chevron-down';
+import IdCard from 'lucide-react/icons/id-card';
+import Wrench from 'lucide-react/icons/wrench';
 import MapPin from 'lucide-react/icons/map-pin';
 import Scale from 'lucide-react/icons/scale';
 import Network from 'lucide-react/icons/network';
@@ -43,6 +57,7 @@ import PanelLeftClose from 'lucide-react/icons/panel-left-close';
 import PanelLeft from 'lucide-react/icons/panel-left';
 import { Button, Tooltip } from '@/components/ui';
 import { useExternalFederationStatus } from './useExternalFederationStatus';
+import { isOnPanelPath } from './panelPath';
 
 interface PartnersSidebarProps {
   collapsed: boolean;
@@ -54,19 +69,26 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   path: string;
+  /**
+   * Query the link carries, for pages that are a tab of another page
+   * ("Our listing" is the directory page's ?tab=profile).
+   */
+  query?: Record<string, string>;
+  /**
+   * The page carries traffic to/from OTHER installations, so it is inert
+   * while external partner federation is switched off. The link stays
+   * reachable — an operator still needs it to inspect and reconfigure — but
+   * it is marked so the state is visible without opening the page.
+   */
+  externalGated?: boolean;
 }
 
 interface NavSection {
   key: string;
   title: string;
   items: NavItem[];
-  /**
-   * Section carries traffic to/from OTHER installations, so it is inert while
-   * the external partner federation kill switch is off. The links stay
-   * reachable — an operator still needs them to inspect and reconfigure — but
-   * the heading is marked so the state is visible without opening a page.
-   */
-  externalGated?: boolean;
+  /** Closed until opened (or until the current page is inside it). */
+  collapsible?: boolean;
 }
 
 export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
@@ -100,73 +122,17 @@ export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
             items: [
               { key: 'partnerships', label: t('nav.partnerships'), icon: Handshake, path: '/partner-timebanks/partnerships' },
               { key: 'directory', label: t('nav.directory'), icon: BookUser, path: '/partner-timebanks/directory' },
+              { key: 'our-listing', label: t('nav.our_listing'), icon: IdCard, path: '/partner-timebanks/directory', query: { tab: 'profile' } },
               { key: 'neighborhoods', label: t('nav.neighborhoods'), icon: MapPin, path: '/partner-timebanks/neighborhoods' },
               { key: 'credit-agreements', label: t('nav.credit_agreements'), icon: Scale, path: '/partner-timebanks/credit-agreements' },
             ],
           },
-        ] as NavSection[])
-      : []),
-    ...((showFederation && isSuper) || showInboundApi
-      ? ([
-          {
-            key: 'external',
-            title: t('sidebar.section_external'),
-            externalGated: true,
-            items: [
-              ...(showFederation && isSuper
-                ? ([
-                    { key: 'external-partners', label: t('nav.external_partners'), icon: Globe, path: '/partner-timebanks/external-partners' },
-                    { key: 'credit-commons', label: t('nav.credit_commons'), icon: Landmark, path: '/partner-timebanks/credit-commons' },
-                  ] as NavItem[])
-                : []),
-              ...(showInboundApi
-                ? ([{ key: 'inbound-api', label: t('nav.inbound_api'), icon: Network, path: '/partner-timebanks/inbound-api' }] as NavItem[])
-                : []),
-            ],
-          },
-        ] as NavSection[])
-      : []),
-    ...(showCaring
-      ? ([
-          {
-            key: 'caring',
-            title: t('sidebar.section_caring'),
-            items: [
-              { key: 'caring-peers', label: t('nav.caring_peers'), icon: HeartHandshake, path: '/partner-timebanks/caring/peers' },
-            ],
-          },
-        ] as NavSection[])
-      : []),
-    ...(showFederation && isSuper
-      ? ([
-          {
-            key: 'access',
-            title: t('sidebar.section_access'),
-            // Inbound partner credentials and outbound webhooks — both inert
-            // while the external kill switch is off.
-            externalGated: true,
-            items: [
-              { key: 'api-keys', label: t('nav.api_keys'), icon: KeyRound, path: '/partner-timebanks/api-keys' },
-              { key: 'webhooks', label: t('nav.webhooks'), icon: Webhook, path: '/partner-timebanks/webhooks' },
-              { key: 'api-docs', label: t('nav.api_docs'), icon: BookOpen, path: '/partner-timebanks/api-docs' },
-            ],
-          },
-        ] as NavSection[])
-      : []),
-    ...(showFederation
-      ? ([
           {
             key: 'data',
             title: t('sidebar.section_data'),
             items: [
               { key: 'activity', label: t('nav.activity'), icon: Activity, path: '/partner-timebanks/activity' },
               { key: 'analytics', label: t('nav.analytics'), icon: BarChart3, path: '/partner-timebanks/analytics' },
-              ...(isSuper
-                ? ([
-                    { key: 'aggregates', label: t('nav.aggregates'), icon: ShieldCheck, path: '/partner-timebanks/aggregates' },
-                    { key: 'data', label: t('nav.data'), icon: Database, path: '/partner-timebanks/data' },
-                  ] as NavItem[])
-                : []),
             ],
           },
         ] as NavSection[])
@@ -182,28 +148,78 @@ export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
           },
         ] as NavSection[])
       : []),
+    ...((showFederation && isSuper) || showInboundApi || showCaring
+      ? ([
+          {
+            key: 'technical',
+            title: t('sidebar.section_technical'),
+            collapsible: true,
+            items: [
+              ...(showFederation && isSuper
+                ? ([
+                    { key: 'external-partners', label: t('nav.external_partners'), icon: Globe, path: '/partner-timebanks/external-partners', externalGated: true },
+                    { key: 'credit-commons', label: t('nav.credit_commons'), icon: Landmark, path: '/partner-timebanks/credit-commons', externalGated: true },
+                  ] as NavItem[])
+                : []),
+              ...(showInboundApi
+                ? ([{ key: 'inbound-api', label: t('nav.inbound_api'), icon: Network, path: '/partner-timebanks/inbound-api', externalGated: true }] as NavItem[])
+                : []),
+              ...(showCaring
+                ? ([{ key: 'caring-peers', label: t('nav.caring_peers'), icon: HeartHandshake, path: '/partner-timebanks/caring/peers' }] as NavItem[])
+                : []),
+              ...(showFederation && isSuper
+                ? ([
+                    { key: 'api-keys', label: t('nav.api_keys'), icon: KeyRound, path: '/partner-timebanks/api-keys', externalGated: true },
+                    { key: 'webhooks', label: t('nav.webhooks'), icon: Webhook, path: '/partner-timebanks/webhooks', externalGated: true },
+                    { key: 'api-docs', label: t('nav.api_docs'), icon: BookOpen, path: '/partner-timebanks/api-docs', externalGated: true },
+                    { key: 'aggregates', label: t('nav.aggregates'), icon: ShieldCheck, path: '/partner-timebanks/aggregates' },
+                    { key: 'data', label: t('nav.data'), icon: Database, path: '/partner-timebanks/data' },
+                  ] as NavItem[])
+                : []),
+            ],
+          },
+        ] as NavSection[])
+      : []),
   ];
 
-  const isActive = (path: string) => {
-    const current = location.pathname;
-    if (path === '/partner-timebanks') {
-      return current === tenantPath('/partner-timebanks') || current === tenantPath('/partner-timebanks/');
+  const currentTab = new URLSearchParams(location.search).get('tab');
+
+  const isActive = (item: NavItem) => {
+    // The panel's home page matches exactly; every other page also matches
+    // its own sub-pages. See isOnPanelPath for why both the slug and the
+    // slug-less form of the address are accepted.
+    if (item.path === '/partner-timebanks') {
+      return isOnPanelPath(location.pathname, item.path, tenantPath, { exact: true });
     }
-    // Exact match or a `/`-delimited descendant only — a bare prefix match
-    // would light "/partner-timebanks/api-keys" for ".../api-keys/create"
-    // siblings whose path is a string prefix of another.
-    const target = tenantPath(path);
-    return current === target || current.startsWith(target + '/');
+    if (!isOnPanelPath(location.pathname, item.path, tenantPath)) return false;
+    // Two links share the directory page and differ only by tab.
+    if (item.query?.tab) return currentTab === item.query.tab;
+    if (item.path === '/partner-timebanks/directory') return currentTab !== 'profile';
+    return true;
   };
 
+  const hrefFor = (item: NavItem) => {
+    const base = tenantPath(item.path);
+    return item.query ? `${base}?${new URLSearchParams(item.query).toString()}` : base;
+  };
+
+  // The technical group is closed until the admin opens it — or lands on a
+  // page inside it, in which case hiding the current page's own link would
+  // be disorienting. An explicit choice wins over the automatic one.
+  const [technicalChoice, setTechnicalChoice] = useState<boolean | null>(null);
+  const technicalSection = sections.find((section) => section.collapsible);
+  const insideTechnical = technicalSection?.items.some(isActive) ?? false;
+  const technicalOpen = technicalChoice ?? insideTechnical;
+
   const renderItem = (item: NavItem) => {
-    const active = isActive(item.path);
+    const active = isActive(item);
     const Icon = item.icon;
+    const off = item.externalGated && externalFederationOff;
 
     const link = (
       <li key={item.key}>
         <Link
-          to={tenantPath(item.path)}
+          to={hrefFor(item)}
           aria-current={active ? 'page' : undefined}
           className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors motion-reduce:transition-none ${
             active
@@ -223,6 +239,11 @@ export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
             className={`shrink-0 transition-transform group-hover:scale-105 motion-reduce:transition-none ${active ? 'text-accent' : 'text-muted group-hover:text-foreground'}`}
           />
           {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+          {!collapsed && off && (
+            <span className="shrink-0 rounded bg-surface-secondary px-1.5 py-0.5 text-[10px] font-semibold text-muted">
+              {t('external_federation.sidebar_disabled_chip')}
+            </span>
+          )}
         </Link>
       </li>
     );
@@ -233,6 +254,65 @@ export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
       </Tooltip>
     ) : (
       link
+    );
+  };
+
+  const renderSection = (section: NavSection, idx: number) => {
+    if (section.collapsible) {
+      const listId = `partners-nav-${section.key}`;
+      const toggle = (
+        <button
+          type="button"
+          aria-expanded={technicalOpen}
+          aria-controls={listId}
+          aria-label={collapsed ? section.title : undefined}
+          onClick={() => setTechnicalChoice(!technicalOpen)}
+          className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted transition-colors hover:bg-surface-secondary hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent motion-reduce:transition-none ${
+            collapsed ? 'justify-center px-2' : ''
+          }`}
+        >
+          {collapsed ? (
+            <Wrench size={18} aria-hidden="true" />
+          ) : (
+            <>
+              <span className="flex-1 text-left">{section.title}</span>
+              <ChevronDown
+                size={16}
+                aria-hidden="true"
+                className={`shrink-0 transition-transform motion-reduce:transition-none ${technicalOpen ? 'rotate-180' : ''}`}
+              />
+            </>
+          )}
+        </button>
+      );
+
+      return (
+        <div key={section.key} className="mt-4 border-t border-divider pt-3">
+          {collapsed ? (
+            <Tooltip content={section.title} placement="right">
+              {toggle}
+            </Tooltip>
+          ) : (
+            toggle
+          )}
+          <ul id={listId} hidden={!technicalOpen} className={`flex-col gap-1 pt-1 ${technicalOpen ? 'flex' : ''}`}>
+            {section.items.map(renderItem)}
+          </ul>
+        </div>
+      );
+    }
+
+    return (
+      <div key={section.key} className={idx > 0 ? 'mt-4' : ''}>
+        {!collapsed && section.key !== 'overview' && (
+          <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-muted">
+            {section.title}
+          </p>
+        )}
+        <ul className="flex flex-col gap-1">
+          {section.items.map(renderItem)}
+        </ul>
+      </div>
     );
   };
 
@@ -268,23 +348,7 @@ export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
 
       {/* Navigation */}
       <nav aria-label={t('sidebar.nav_label')} className="flex-1 overflow-y-auto px-2 py-3">
-        {sections.map((section, idx) => (
-          <div key={section.key} className={idx > 0 ? 'mt-4' : ''}>
-            {!collapsed && section.key !== 'overview' && (
-              <p className="flex items-center gap-2 px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-muted">
-                <span>{section.title}</span>
-                {section.externalGated && externalFederationOff && (
-                  <span className="rounded bg-danger/10 px-1.5 py-0.5 text-[10px] font-semibold normal-case text-danger">
-                    {t('external_federation.sidebar_disabled_chip')}
-                  </span>
-                )}
-              </p>
-            )}
-            <ul className="flex flex-col gap-1">
-              {section.items.map(renderItem)}
-            </ul>
-          </div>
-        ))}
+        {sections.map(renderSection)}
       </nav>
 
       {/* Footer — back to the full admin panel (all panel users are super admins) */}

@@ -26,12 +26,14 @@
     "section_caring": "Comunidad solidaria",
     "section_access": "Acceso y seguridad",
     "section_data": "Actividad y datos",
-    "section_settings": "Configuración"
+    "section_settings": "Configuración",
+    "section_technical": "Configuración técnica"
   },
   "nav": {
     "overview": "Vista general",
     "partnerships": "Alianzas",
     "directory": "Directorio de socios",
+    "our_listing": "Nuestro listado",
     "neighborhoods": "Barrios",
     "credit_agreements": "Contratos de crédito",
     "external_partners": "Plataformas externas",
@@ -194,14 +196,14 @@
     },
     "settings": {
       "title": "Configuración de red",
-      "description": "El interruptor principal para asociarse: actívelo o desactívelo y elija lo que su comunidad comparte con los socios."
+      "description": "Decida si esta comunidad puede asociarse con otros bancos de tiempo, quién puede enviarle solicitudes de asociación y cuántos socios puede tener."
     }
   },
   "external_federation": {
-    "banner_title": "La federación de socios externos está desactivada",
+    "banner_title": "Las conexiones con otras plataformas están desactivadas",
     "banner_title_lockdown": "El bloqueo de emergencia de la Federación está activo",
-    "banner_body": "Las solicitudes de otras instalaciones se rechazan con HTTP 503 y no se envía nada de estas páginas a socios externos. La configuración siguiente aún se puede ver y editar; simplemente no tendrá efecto hasta que se vuelva a activar la federación externa.",
-    "banner_internal_unaffected": "La federación entre comunidades dentro de esta instalación no se ve afectada y continúa funcionando con normalidad.",
+    "banner_body": "Nada de esta página se envía a bancos de tiempo fuera de esta plataforma ni se acepta de ellos. Puede seguir viendo y cambiando la configuración aquí; se aplicará cuando las conexiones vuelvan a activarse.",
+    "banner_internal_unaffected": "Las asociaciones con otras comunidades de esta plataforma no se ven afectadas.",
     "banner_manage_link": "Administrar federación externa",
     "sidebar_disabled_chip": "Apagado"
   }

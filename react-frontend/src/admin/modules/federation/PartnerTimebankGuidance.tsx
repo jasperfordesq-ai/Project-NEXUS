@@ -5,12 +5,9 @@
 
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import BookOpen from 'lucide-react/icons/book-open';
 import CircleHelp from 'lucide-react/icons/circle-help';
-import ListChecks from 'lucide-react/icons/list-checks';
-import Route from 'lucide-react/icons/route';
 
-import { Accordion, AccordionItem, Chip } from '@/components/ui';
+import { Accordion, AccordionItem } from '@/components/ui';
 import { useTenant } from '@/contexts';
 
 export type PartnerTimebankGuidePage =
@@ -103,12 +100,22 @@ const RELATED_LINKS: Record<PartnerTimebankGuidePage, RelatedLink[]> = {
 };
 
 const guidanceAccordionItemClasses = {
-  base: 'rounded-lg border border-divider bg-surface-secondary/50',
+  base: 'rounded-lg border border-divider bg-surface',
   trigger: 'px-3 py-2',
-  title: 'text-sm font-semibold',
+  title: 'text-sm font-medium text-muted',
   content: 'px-3 pb-3 pt-0 text-sm leading-6 text-muted',
 };
 
+/**
+ * "Where this page fits" — background for the admin who wants it.
+ *
+ * One row, CLOSED until opened. Until November 2026 this was a card with a
+ * title, a summary, a badge and two sections open by default; it sat above
+ * the content of every partner page and, on a phone, pushed the actual list
+ * about four screens down. The page header already says what the page is
+ * for, so the title, summary and badge are gone and everything else moved
+ * inside the one closed row. Nothing was removed from what it says.
+ */
 export function PartnerTimebankGuidance({ page }: { page: PartnerTimebankGuidePage }) {
   const { t } = useTranslation('admin_federation');
   const { tenantPath } = useTenant();
@@ -116,48 +123,23 @@ export function PartnerTimebankGuidance({ page }: { page: PartnerTimebankGuidePa
   const related = RELATED_LINKS[page];
 
   return (
-    <section
-      aria-label={t(`${prefix}.title`)}
-      className="rounded-lg border border-divider bg-surface px-4 py-3 shadow-sm shadow-black/[0.02]"
-    >
-      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <CircleHelp aria-hidden="true" size={16} className="text-accent" />
-            {t(`${prefix}.title`)}
-          </p>
-          <p className="mt-1 max-w-4xl text-sm leading-6 text-muted">{t(`${prefix}.summary`)}</p>
-        </div>
-        <Chip size="sm" variant="soft" color="primary" className="w-fit shrink-0">
-          {t('federation_admin_guidance.shared.partner_timebank_area')}
-        </Chip>
-      </div>
-
-      <Accordion
-        selectionMode="multiple"
-        defaultExpandedKeys={['fit', 'steps']}
-        variant="splitted"
-        className="space-y-2"
-      >
+    <section aria-label={t('federation_admin_guidance.shared.fit_title')}>
+      <Accordion selectionMode="multiple" defaultExpandedKeys={[]} variant="splitted">
         <AccordionItem
           key="fit"
           id="fit"
           classNames={guidanceAccordionItemClasses}
-          startContent={<Route aria-hidden="true" size={16} className="text-accent" />}
+          startContent={<CircleHelp aria-hidden="true" size={16} className="text-muted" />}
           title={t('federation_admin_guidance.shared.fit_title')}
         >
-          <p>{t('federation_admin_guidance.shared.fit_intro')}</p>
+          <p className="font-medium text-foreground">{t(`${prefix}.title`)}</p>
+          <p className="mt-1">{t(`${prefix}.summary`)}</p>
+          <p className="mt-2">{t('federation_admin_guidance.shared.fit_intro')}</p>
           <p className="mt-2">{t(`${prefix}.fit`)}</p>
           <p className="mt-2 font-medium text-foreground">{t(`${prefix}.avoid`)}</p>
-        </AccordionItem>
-        <AccordionItem
-          key="steps"
-          id="steps"
-          classNames={guidanceAccordionItemClasses}
-          startContent={<ListChecks aria-hidden="true" size={16} className="text-accent" />}
-          title={t('federation_admin_guidance.shared.steps_title')}
-        >
-          <ol className="list-decimal space-y-2 pl-5">
+
+          <p className="mt-4 font-medium text-foreground">{t('federation_admin_guidance.shared.steps_title')}</p>
+          <ol className="mt-1 list-decimal space-y-2 pl-5">
             <li>
               <span className="font-medium text-foreground">{t(`${prefix}.step_1_title`)}</span>
               <span className="block">{t(`${prefix}.step_1_body`)}</span>
@@ -171,15 +153,9 @@ export function PartnerTimebankGuidance({ page }: { page: PartnerTimebankGuidePa
               <span className="block">{t(`${prefix}.step_3_body`)}</span>
             </li>
           </ol>
-        </AccordionItem>
-        <AccordionItem
-          key="related"
-          id="related"
-          classNames={guidanceAccordionItemClasses}
-          startContent={<BookOpen aria-hidden="true" size={16} className="text-accent" />}
-          title={t('federation_admin_guidance.shared.related_title')}
-        >
-          <div className="flex flex-wrap gap-2">
+
+          <p className="mt-4 font-medium text-foreground">{t('federation_admin_guidance.shared.related_title')}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
             {related.map((link) => (
               <RouterLink
                 key={link.href}

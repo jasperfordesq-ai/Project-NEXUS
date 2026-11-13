@@ -405,7 +405,6 @@ export function PartnerDirectory() {
                       <h3 className="text-base font-semibold text-foreground truncate pr-16">
                         {community.name}
                       </h3>
-                      <p className="text-xs text-muted">/{community.slug}</p>
                     </div>
                   </div>
 

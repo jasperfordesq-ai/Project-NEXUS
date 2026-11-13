@@ -304,7 +304,7 @@ export function MyProfile() {
       <div className="space-y-6">
         {/* Profile Details Card */}
         <Card >
-          <CardHeader className="flex items-center justify-between">
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
             <h3 className="text-lg font-semibold">{t('federation.community_profile')}</h3>
             <Button
               startContent={<Save size={16} />}
@@ -323,13 +323,6 @@ export function MyProfile() {
               onValueChange={(val) => { setName(val); markDirty(); }}
               variant="secondary"
               description={t('federation.desc_the_public_name_of_your_community_in_the')}
-            />
-            <Input
-              label={t('federation.slug')}
-              value={profile.slug}
-              isReadOnly
-              variant="secondary"
-              description={t('federation.slug_desc')}
             />
             <Input
               label={t('federation.contact_email')}
@@ -362,8 +355,8 @@ export function MyProfile() {
 
         {/* Topic / Interest Tags Card */}
         <Card >
-          <CardHeader className="flex items-center justify-between">
-            <div>
+          <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Tag size={18} />
                 {t('federation.topic_tags_title')}
@@ -423,10 +416,6 @@ export function MyProfile() {
                             className="cursor-pointer select-none"
                             startContent={isPrimary ? <Star size={12} className="fill-current" /> : undefined}
                             onClick={() => toggleTopic(topic.id)}
-                            onContextMenu={(e) => {
-                              e.preventDefault();
-                              if (isSelected) togglePrimary(topic.id);
-                            }}
                           >
                             {topic.name}
                             {topic.tenant_count ? (
@@ -463,7 +452,7 @@ export function MyProfile() {
                                   isIconOnly
                                   variant="tertiary"
                                   size="sm"
-                                  className="flex items-center min-w-0 w-auto min-h-10 p-0"
+                                  className="flex h-6 w-6 min-h-0 min-w-0 items-center justify-center rounded-full bg-transparent p-0 text-current"
                                   onPress={() => togglePrimary(topic.id)}
                                   aria-label={isPrimary ? t('federation.remove_primary') : t('federation.set_as_primary')}
                                 >

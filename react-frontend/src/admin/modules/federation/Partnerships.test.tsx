@@ -402,7 +402,7 @@ describe('Partnerships', () => {
         fireEvent.click(screen.getByText('confirm-modal-action'));
         await waitFor(() => {
           // "Partnership Approved" is English for federation.partnership_approved
-          expect(mockToast.success).toHaveBeenCalledWith('Partnership Approved');
+          expect(mockToast.success).toHaveBeenCalledWith('Partnership approved');
         });
       }
     } else {
@@ -482,7 +482,7 @@ describe('Partnerships', () => {
 
     await waitFor(() => screen.getByText('Hilltop'));
     expect(buttonTexts()).toEqual(expect.arrayContaining(['Approve', 'Reject', 'Suggest different terms']));
-    expect(screen.getByText('Incoming Request')).toBeInTheDocument();
+    expect(screen.getByText('Incoming request')).toBeInTheDocument();
   });
 
   it('offers no Approve or Reject on a request we SENT, and labels it as outgoing', async () => {
@@ -499,7 +499,7 @@ describe('Partnerships', () => {
     expect(texts).not.toContain('Reject');
     expect(texts).not.toContain('Suggest different terms');
     expect(texts).not.toContain('Accept their terms');
-    expect(screen.getByText('Outgoing Request')).toBeInTheDocument();
+    expect(screen.getByText('Outgoing request')).toBeInTheDocument();
   });
 
   it('lets us accept the terms the other community sent back', async () => {

@@ -26,12 +26,14 @@
     "section_caring": "Comunidade atenciosa",
     "section_access": "Acesso e segurança",
     "section_data": "Atividade e dados",
-    "section_settings": "Configurações"
+    "section_settings": "Configurações",
+    "section_technical": "Configuração técnica"
   },
   "nav": {
     "overview": "Visão geral",
     "partnerships": "Parcerias",
     "directory": "Diretório de parceiros",
+    "our_listing": "Nossa listagem",
     "neighborhoods": "Bairros",
     "credit_agreements": "Contratos de crédito",
     "external_partners": "Plataformas externas",
@@ -194,14 +196,14 @@
     },
     "settings": {
       "title": "Configurações de rede",
-      "description": "Os interruptores principais para parceria — ative-os ou desative-os e escolha o que sua comunidade compartilha com os parceiros."
+      "description": "Decida se esta comunidade pode fazer parceria com outros bancos de tempo, quem pode enviar solicitações de parceria e quantos parceiros você pode ter."
     }
   },
   "external_federation": {
-    "banner_title": "A federação de parceiros externos está desativada",
+    "banner_title": "As conexões com outras plataformas estão desativadas",
     "banner_title_lockdown": "O bloqueio de emergência da Federação está ativo",
-    "banner_body": "Solicitações de outras instalações estão sendo recusadas com HTTP 503 e nada nessas páginas está sendo enviado a parceiros externos. A configuração abaixo ainda pode ser visualizada e editada — ela simplesmente não terá efeito até que a federação externa seja reativada.",
-    "banner_internal_unaffected": "A federação entre as comunidades dentro desta instalação não é afetada e continua funcionando normalmente.",
+    "banner_body": "Nada desta página é enviado a bancos de tempo fora desta plataforma nem aceito deles. Você ainda pode ver e alterar a configuração aqui; ela passa a valer quando as conexões forem reativadas.",
+    "banner_internal_unaffected": "As parcerias com outras comunidades desta plataforma não são afetadas.",
     "banner_manage_link": "Gerenciar federação externa",
     "sidebar_disabled_chip": "Desligado"
   }

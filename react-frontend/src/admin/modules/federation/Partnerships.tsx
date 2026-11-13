@@ -506,7 +506,6 @@ export function Partnerships() {
   // ─── Columns ───
   const columns: Column<Partnership>[] = [
     { key: 'partner_name', label: t('federation.label_partner_community'), sortable: true },
-    { key: 'partner_slug', label: t('federation.label_slug') },
     {
       key: 'federation_level', label: t('federation.col_level'),
       render: (item) => (
@@ -895,7 +894,7 @@ export function Partnerships() {
               <ModalHeader className="flex items-center gap-2">
                 <Handshake size={20} />
                 {detailPartnership
-                  ? t('federation.partnership_with')
+                  ? t('federation.partnership_with', { name: detailPartnership.resolved_partner_name || detailPartnership.partner_name })
                   : t('federation.partnership_detail')
                 }
               </ModalHeader>

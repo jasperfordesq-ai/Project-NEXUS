@@ -26,12 +26,14 @@
     "section_caring": "Communauté bienveillante",
     "section_access": "Accès et sécurité",
     "section_data": "Activité et données",
-    "section_settings": "Paramètres"
+    "section_settings": "Paramètres",
+    "section_technical": "Configuration technique"
   },
   "nav": {
     "overview": "Vue d’ensemble",
     "partnerships": "Partenariats",
     "directory": "Annuaire des partenaires",
+    "our_listing": "Notre annonce",
     "neighborhoods": "Quartiers",
     "credit_agreements": "Contrats de crédit",
     "external_partners": "Plateformes externes",
@@ -194,14 +196,14 @@
     },
     "settings": {
       "title": "Paramètres réseau",
-      "description": "Le commutateur principal pour le partenariat : activez-le ou désactivez-le et choisissez ce que votre communauté partage avec ses partenaires."
+      "description": "Décidez si cette communauté peut s'associer à d'autres banques de temps, qui peut vous envoyer des demandes de partenariat et combien de partenaires vous pouvez avoir."
     }
   },
   "external_federation": {
-    "banner_title": "La fédération partenaire externe est désactivée",
+    "banner_title": "Les liaisons avec d'autres plateformes sont désactivées",
     "banner_title_lockdown": "Le confinement d'urgence de la Fédération est actif",
-    "banner_body": "Les requêtes provenant d'autres installations sont refusées avec HTTP 503, et rien sur ces pages n'est envoyé à des partenaires externes. La configuration ci-dessous peut toujours être consultée et modifiée : elle ne prendra tout simplement effet que lorsque la fédération externe sera réactivée.",
-    "banner_internal_unaffected": "La fédération entre les communautés au sein de cette installation n'est pas affectée et continue de fonctionner normalement.",
+    "banner_body": "Rien sur cette page n'est envoyé aux banques de temps extérieures à cette plateforme, ni accepté de leur part. Vous pouvez toujours consulter et modifier la configuration ici ; elle prendra effet lorsque les liaisons seront réactivées.",
+    "banner_internal_unaffected": "Les partenariats avec d'autres communautés de cette plateforme ne sont pas concernés.",
     "banner_manage_link": "Gérer la fédération externe",
     "sidebar_disabled_chip": "Désactivé"
   }

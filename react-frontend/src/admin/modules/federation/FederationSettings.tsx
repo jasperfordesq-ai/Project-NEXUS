@@ -10,7 +10,6 @@ import { Separator } from '@/components/ui';
 import Network from 'lucide-react/icons/network';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Save from 'lucide-react/icons/save';
-import KeyRound from 'lucide-react/icons/key-round';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
@@ -186,29 +185,8 @@ export function FederationSettings() {
       <div className="space-y-4">
         <PartnerTimebankGuidance page="settings" />
 
-        {/* Platform-level JWT auth is configured in Super Admin → Federation
-            Controls. Tenant admins see this pointer so they know where to
-            look (and can ask the platform operator) when a partner using
-            JWT-based auth has trouble. */}
-        <Card  className="border border-border">
-          <CardBody className="flex flex-row items-start gap-3 text-sm">
-            <KeyRound aria-hidden="true" size={18} className="text-muted mt-0.5 shrink-0" />
-            <div>
-              <p className="font-medium">{t('jwt_federation_auth_platform_title')}</p>
-              <p className="text-muted mt-1">
-                {t('jwt_federation_auth_platform_intro')}{' '}
-                <strong>{t('external_partners')}</strong>{' '}
-                {t('jwt_federation_auth_platform_middle')}{' '}
-                <code className="text-xs bg-surface-secondary px-1 rounded">FEDERATION_JWT_SECRET</code>{' '}
-                {t('jwt_federation_auth_platform_suffix')}{' '}
-                <strong>{t('label_super_admin')} / {t('federation_controls')}</strong>.
-              </p>
-            </div>
-          </CardBody>
-        </Card>
-
         <Card >
-          <CardHeader className="flex items-center justify-between">
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
             <h3 className="text-lg font-semibold">{t('federation_status')}</h3>
             <BrokerStatusChip status={data.federation_enabled ? 'active' : 'inactive'} />
           </CardHeader>

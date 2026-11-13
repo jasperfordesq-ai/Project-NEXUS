@@ -26,12 +26,14 @@
     "section_caring": "Comunità premurosa",
     "section_access": "Accesso e sicurezza",
     "section_data": "Attività e dati",
-    "section_settings": "Impostazioni"
+    "section_settings": "Impostazioni",
+    "section_technical": "Configurazione tecnica"
   },
   "nav": {
     "overview": "Panoramica",
     "partnerships": "Partnership",
     "directory": "Elenco dei partner",
+    "our_listing": "Il nostro elenco",
     "neighborhoods": "Quartieri",
     "credit_agreements": "Contratti di credito",
     "external_partners": "Piattaforme esterne",
@@ -194,14 +196,14 @@
     },
     "settings": {
       "title": "Impostazioni di rete",
-      "description": "Il master passa alla partnership: attivalo o disattivalo e scegli ciò che la tua community condivide con i partner."
+      "description": "Decidi se questa comunità può collaborare con altre banche del tempo, chi può inviarti richieste di partnership e quanti partner puoi avere."
     }
   },
   "external_federation": {
-    "banner_title": "La federazione dei partner esterni è disattivata",
+    "banner_title": "I collegamenti con altre piattaforme sono disattivati",
     "banner_title_lockdown": "È attivo il lockdown d’emergenza della Federazione",
-    "banner_body": "Le richieste provenienti da altre installazioni vengono rifiutate con HTTP 503 e nulla su queste pagine viene inviato a partner esterni. La configurazione seguente può ancora essere visualizzata e modificata: semplicemente non avrà effetto finché non verrà riattivata la federazione esterna.",
-    "banner_internal_unaffected": "La federazione tra le comunità all'interno di questa installazione non viene influenzata e continua a funzionare normalmente.",
+    "banner_body": "Nulla di questa pagina viene inviato alle banche del tempo esterne a questa piattaforma, né accettato da esse. Puoi comunque vedere e modificare la configurazione qui; avrà effetto quando i collegamenti saranno riattivati.",
+    "banner_internal_unaffected": "Le partnership con altre comunità di questa piattaforma non sono interessate.",
     "banner_manage_link": "Gestire la federazione esterna",
     "sidebar_disabled_chip": "Spento"
   }

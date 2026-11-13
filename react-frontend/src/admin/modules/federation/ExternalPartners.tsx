@@ -34,6 +34,7 @@ import { BrokerEmptyState } from '@/broker/components';
 
 import { useTranslation } from 'react-i18next';
 import { PartnerTimebankGuidance } from './PartnerTimebankGuidance';
+import { JwtAuthNote } from './JwtAuthNote';
 import { SecretInput } from '../../components/SecretInput';
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -414,6 +415,8 @@ export function ExternalPartners() {
       />
 
       <PartnerTimebankGuidance page="externalPartners" />
+
+      <JwtAuthNote />
 
       {/* Partners table */}
       <Table aria-label={t('federation.external_partners_title')} removeWrapper>

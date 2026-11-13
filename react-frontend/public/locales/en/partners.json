@@ -26,12 +26,14 @@
     "section_caring": "Caring Community",
     "section_access": "Access & security",
     "section_data": "Activity & data",
-    "section_settings": "Settings"
+    "section_settings": "Settings",
+    "section_technical": "Technical setup"
   },
   "nav": {
     "overview": "Overview",
     "partnerships": "Partnerships",
     "directory": "Partner directory",
+    "our_listing": "Our listing",
     "neighborhoods": "Neighbourhoods",
     "credit_agreements": "Credit agreements",
     "external_partners": "External platforms",
@@ -192,14 +194,14 @@
     },
     "settings": {
       "title": "Network settings",
-      "description": "The master switches for partnering — turn it on or off, and choose what your community shares with partners."
+      "description": "Decide whether this community can partner with other timebanks, who can send you partnership requests, and how many partners you can have."
     }
   },
   "external_federation": {
-    "banner_title": "External partner federation is switched off",
+    "banner_title": "Links to other platforms are switched off",
     "banner_title_lockdown": "Federation emergency lockdown is active",
-    "banner_body": "Requests from other installations are being refused with HTTP 503, and nothing on these pages is being sent to external partners. Configuration below can still be viewed and edited — it simply will not take effect until external federation is switched back on.",
-    "banner_internal_unaffected": "Federation between communities inside this installation is unaffected and continues to work normally.",
+    "banner_body": "Nothing on this page is being sent to, or accepted from, timebanks outside this platform. You can still view and change the setup here; it takes effect when the links are switched back on.",
+    "banner_internal_unaffected": "Partnerships with other communities on this platform are not affected.",
     "banner_manage_link": "Manage external federation",
     "sidebar_disabled_chip": "Off"
   }

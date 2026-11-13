@@ -26,12 +26,14 @@
     "section_caring": "思いやりのあるコミュニティ",
     "section_access": "アクセスとセキュリティ",
     "section_data": "アクティビティとデータ",
-    "section_settings": "設定"
+    "section_settings": "設定",
+    "section_technical": "技術的な設定"
   },
   "nav": {
     "overview": "概要",
     "partnerships": "提携関係",
     "directory": "パートナーディレクトリ",
+    "our_listing": "私たちのリスト",
     "neighborhoods": "地域",
     "credit_agreements": "クレジット契約",
     "external_partners": "外部プラットフォーム",
@@ -192,14 +194,14 @@
     },
     "settings": {
       "title": "ネットワーク設定",
-      "description": "パートナーシップのマスター スイッチ - オンまたはオフにして、コミュニティがパートナーと共有するものを選択します。"
+      "description": "このコミュニティが他のタイムバンクと提携できるかどうか、誰が提携リクエストを送信できるか、およびパートナーの数を決定します。"
     }
   },
   "external_federation": {
-    "banner_title": "外部パートナーフェデレーションがオフになっています",
+    "banner_title": "他のプラットフォームとの連携はオフになっています",
     "banner_title_lockdown": "フェデレーション緊急ロックダウンが発動中",
-    "banner_body": "他のインストールからのリクエストは HTTP 503 で拒否され、これらのページ上の内容は外部パートナーに送信されません。以下の構成は引き続き表示および編集できます。外部フェデレーションが再びオンになるまでは有効になりません。",
-    "banner_internal_unaffected": "このインストール内のコミュニティ間のフェデレーションは影響を受けず、引き続き正常に機能します。",
+    "banner_body": "このページの内容は、このプラットフォーム外のタイムバンクには送信されず、外部からも受け付けられません。設定の確認と変更は引き続き可能で、連携が再びオンになると有効になります。",
+    "banner_internal_unaffected": "このプラットフォーム上の他のコミュニティとのパートナーシップには影響しません。",
     "banner_manage_link": "外部フェデレーションを管理する",
     "sidebar_disabled_chip": "オフ"
   }
