@@ -756,15 +756,15 @@ test.describe('Events enterprise lifecycle @events @enterprise @journey', () => 
     await page.getByRole('button', { name: `Cancel ${event.title}`, exact: true }).click();
 
     const dialog = page.getByRole('dialog');
-    await expect(dialog.getByRole('heading', { name: 'Cancel Event', exact: true })).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: 'Cancel event', exact: true })).toBeVisible();
     await dialog.getByRole('textbox', { name: 'Reason for cancellation' }).fill(CANCELLATION_REASON);
     const cancelPromise = page.waitForResponse(
       (response) => isEventResponse(response, 'POST', `/v2/events/${event.id}/cancel`),
     );
-    await dialog.getByRole('button', { name: 'Cancel Event', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Cancel event', exact: true }).click();
     const cancelResponse = await cancelPromise;
     expect(cancelResponse.status(), JSON.stringify(await responseBody(cancelResponse))).toBe(200);
-    await expect(page.getByText('Event Cancelled', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Event cancelled', { exact: true }).first()).toBeVisible();
     await expect(page.getByText(`Reason: ${CANCELLATION_REASON}`, { exact: true })).toBeVisible();
 
     processAuthoritativeEventOutbox();
