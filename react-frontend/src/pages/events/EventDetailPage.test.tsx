@@ -205,7 +205,7 @@ describe('EventDetailPage', () => {
     });
 
     expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');
-    expect(screen.queryByText('Event Not Found')).not.toBeInTheDocument();
+    expect(screen.queryByText("We can't find that event")).not.toBeInTheDocument();
 
     await act(async () => {
       resolveSecond({ success: true, data: replacementEvent });
@@ -254,7 +254,7 @@ describe('EventDetailPage', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Community Garden Day' }))
       .toBeInTheDocument();
-    expect(screen.queryByText('Event Not Found')).not.toBeInTheDocument();
+    expect(screen.queryByText("We can't find that event")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('tab', { name: /Attendees/ }));
     expect(screen.getByRole('status')).toHaveTextContent('Loading event people');
@@ -695,7 +695,7 @@ describe('EventDetailPage', () => {
     await user.click(screen.getByRole('button', { name: 'Archive Community Garden Day' }));
 
     expect(screen.getByRole('dialog')).toHaveTextContent('preserving its history');
-    await user.click(screen.getByRole('button', { name: 'Archive Event' }));
+    await user.click(screen.getByRole('button', { name: "Archive event" }));
 
     await waitFor(() => expect(mockApi.delete).toHaveBeenCalledWith(
       '/v2/events/1',
@@ -723,7 +723,7 @@ describe('EventDetailPage', () => {
     await renderLoadedEvent();
     await user.click(screen.getByRole('button', { name: 'Cancel Community Garden Day' }));
 
-    expect(screen.getByRole('button', { name: 'Cancel Event' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: "Cancel event" })).toBeDisabled();
     expect(screen.getByRole('textbox', { name: /Reason for cancellation/i })).toBeRequired();
   });
 
@@ -769,7 +769,10 @@ describe('EventDetailPage', () => {
       path: '/:tenantSlug/events/:id',
     });
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Unable to Load Event');
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load this event");
+    // The heading names what failed; the line under it says what to do, not the same words again.
+    expect(screen.getAllByText("We couldn't load this event")).toHaveLength(1);
+    expect(screen.getByRole('alert')).toHaveTextContent('Please try again in a moment');
   });
 
   it('shows the not-found description when the event API returns a genuine 404', async () => {
@@ -784,7 +787,7 @@ describe('EventDetailPage', () => {
     });
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'The event you are looking for does not exist',
+      "It may have been cancelled or removed, or the link may be wrong.",
     );
   });
 
@@ -824,7 +827,7 @@ describe('EventDetailPage', () => {
     expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({
       title: 'Give up your place?',
       body: expect.stringContaining('your place is released'),
-      confirmLabel: 'Not Going',
+      confirmLabel: "Not going",
       status: 'warning',
     }));
     expect(mockApi.post).not.toHaveBeenCalledWith(
@@ -859,7 +862,7 @@ describe('EventDetailPage', () => {
     ));
     expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({
       title: 'Change your response?',
-      confirmLabel: 'Not Going',
+      confirmLabel: "Not going",
       status: 'warning',
     }));
   });
@@ -959,7 +962,7 @@ describe('EventDetailPage', () => {
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(
       'The deadline for cancelling has passed. Contact the organiser.',
     ));
-    expect(mockToast.error).not.toHaveBeenCalledWith('Failed to update RSVP');
+    expect(mockToast.error).not.toHaveBeenCalledWith("We couldn't save your RSVP. Please try again.");
   });
 
   it('shows the server\'s reason when removing an RSVP is refused, and the generic text otherwise', async () => {
@@ -996,7 +999,7 @@ describe('EventDetailPage', () => {
 
     // A refusal without an explained reason keeps the local, generic text.
     await user.click(interested);
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to cancel RSVP'));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("We couldn't remove your RSVP. Please try again."));
   });
 
   it('confirms before leaving the waitlist and does not mutate when dismissed', async () => {
@@ -1027,7 +1030,7 @@ describe('EventDetailPage', () => {
     await user.click(screen.getByRole('button', { name: 'Leave the waitlist for this event' }));
 
     expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'Leave Waitlist',
+      title: "Leave waitlist",
       body: 'Are you sure you want to leave this waitlist? You will lose your position.',
       status: 'warning',
     }));
@@ -1114,7 +1117,7 @@ describe('EventDetailPage', () => {
 
     await user.click(screen.getByRole('tab', { name: /Attendees/ }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Unable to load event people');
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load the people for this event");
     expect(screen.queryByText('No attendees yet')).not.toBeInTheDocument();
   });
 
@@ -1315,7 +1318,7 @@ describe('EventDetailPage', () => {
       "Couldn't refresh this event. What you see may be out of date.",
     ));
     expect(screen.getByRole('heading', { level: 1, name: 'Community Garden Day' })).toBeInTheDocument();
-    expect(screen.queryByText('Unable to Load Event')).not.toBeInTheDocument();
+    expect(screen.queryByText("We couldn't load this event")).not.toBeInTheDocument();
   });
 
   it('clears a loaded event after navigation to an event that fails to load', async () => {
@@ -1331,7 +1334,7 @@ describe('EventDetailPage', () => {
     });
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'The event you are looking for does not exist',
+      "It may have been cancelled or removed, or the link may be wrong.",
     );
     expect(screen.queryByText('Community Garden Day')).not.toBeInTheDocument();
   });

@@ -286,7 +286,7 @@ describe('EventManagePage', () => {
     renderManagePage('/test/events/1/manage/team');
 
     expect(await screen.findByRole('tab', { name: 'Future setup' })).toBeInTheDocument();
-    expect(await screen.findByRole('alert')).toHaveTextContent('Unable to load the event team');
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load the event team");
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     await waitFor(() => expect(staffLoads).toBe(2));
     expect(screen.getByRole('tab', { name: 'Future setup' })).toBeInTheDocument();
@@ -344,7 +344,7 @@ describe('EventManagePage', () => {
       expect(await screen.findByRole('heading', { level: 1, name: 'Community Garden Day' })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'Overview' })).toBeInTheDocument();
       expect(screen.queryByRole('tab', { name: 'Future setup' })).not.toBeInTheDocument();
-      expect(screen.queryByText('Unable to load event management')).not.toBeInTheDocument();
+      expect(screen.queryByText("We couldn't load the tools for managing this event")).not.toBeInTheDocument();
     },
   );
 
@@ -913,7 +913,7 @@ describe('EventManagePage', () => {
     mockApi.get.mockResolvedValue({ success: false });
     renderManagePage();
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Unable to load event management');
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load the tools for managing this event");
     await waitFor(() => expect(screen.getByRole('button', { name: 'Try again' })).toBeEnabled());
   });
 });

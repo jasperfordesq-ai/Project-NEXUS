@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { getFormattingLocale } from '@/lib/helpers';
 import { colourForSeed, paletteFor } from '@/lib/categoryColours';
 import { coverSeed } from '@/lib/coverSeeds';
@@ -89,7 +89,7 @@ async function renderLoadedEventsPage() {
       expect.objectContaining({ headers: expect.any(Headers), signal: expect.any(AbortSignal) }),
     );
   });
-  await screen.findByRole('heading', { name: 'No events found' });
+  await screen.findByRole('heading', { name: "No events to show" });
 }
 
 describe('EventsPage', () => {
@@ -107,6 +107,20 @@ describe('EventsPage', () => {
     await renderLoadedEventsPage();
 
     expect(screen.getByRole('heading', { level: 1, name: 'Events' })).toBeInTheDocument();
+  });
+
+  it('says once that events could not be loaded, and what to do next', async () => {
+    mockApi.get.mockRejectedValue(new Error('Network error'));
+    renderEventRoute(<EventsPage />);
+
+    const alert = await screen.findByTestId('load-error');
+    // The heading names what failed; the line under it must not repeat it.
+    expect(screen.getAllByText("We couldn't load events")).toHaveLength(1);
+    expect(alert).toHaveTextContent('Please try again in a moment');
+
+    mockApi.get.mockResolvedValue({ success: true, data: [], meta: { has_more: false, total_items: 0 } });
+    fireEvent.click(within(alert).getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByRole('heading', { name: 'No events to show' })).toBeInTheDocument();
   });
 
   it('shows the page description', async () => {
@@ -139,7 +153,7 @@ describe('EventsPage', () => {
   it('shows tenant-aware Create Event links for authenticated users', async () => {
     await renderLoadedEventsPage();
 
-    const createLinks = screen.getAllByRole('link', { name: 'Create Event' });
+    const createLinks = screen.getAllByRole('link', { name: "Create event" });
     expect(createLinks.length).toBeGreaterThan(0);
     expect(createLinks[0]).toHaveAttribute('href', '/test/events/create');
   });
@@ -416,9 +430,9 @@ describe('EventsPage', () => {
 
       renderEventRoute(<EventsPage />);
       await screen.findByRole('heading', { name: 'Community Garden Day' });
-      expect(screen.queryByRole('heading', { name: 'No events found' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: "No events to show" })).not.toBeInTheDocument();
 
-      const createLinks = screen.getAllByRole('link', { name: 'Create Event' });
+      const createLinks = screen.getAllByRole('link', { name: "Create event" });
       expect(createLinks).toHaveLength(1);
       expect(createLinks[0]).toHaveAttribute('href', '/test/events/create');
     });

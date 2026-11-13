@@ -322,7 +322,8 @@ export function EventDetailPage() {
       // shows the error screen instead of the previously-loaded event.
       loadedEventIdRef.current = null;
       setEvent(null);
-      setError(tRef.current('detail.unable_to_load'));
+      // The heading already says "We couldn't load this event": this line says what to do next.
+      setError(tRef.current('common:couldnt_load_text'));
     } finally {
       if (isCurrentRequest()) {
         abortRef.current = null;

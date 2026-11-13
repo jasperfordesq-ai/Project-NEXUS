@@ -27,12 +27,12 @@ describe('EventReminderSettings', () => {
 
   it('renders the reminder settings heading', () => {
     render(<EventReminderSettings />);
-    expect(screen.getByText('Event Reminders')).toBeInTheDocument();
+    expect(screen.getByText("Event reminders")).toBeInTheDocument();
   });
 
   it('renders the coming soon badge', () => {
     render(<EventReminderSettings />);
-    expect(screen.getByText('Coming Soon')).toBeInTheDocument();
+    expect(screen.getByText("Coming soon")).toBeInTheDocument();
   });
 
   it('renders description about individual event reminders', () => {

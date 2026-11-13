@@ -179,7 +179,7 @@ async function renderCreateEventPage() {
     path: '/:tenantSlug/events/create',
   });
 
-  await screen.findByRole('heading', { level: 1, name: 'Create New Event' });
+  await screen.findByRole('heading', { level: 1, name: "Create new event" });
   await waitFor(() => {
     expect(mockApi.get).toHaveBeenCalledWith('/v2/polls?status=all&limit=100');
   });
@@ -317,7 +317,7 @@ describe('CreateEventPage', () => {
 
     const { today, getLocalTimeZone } = await import('@internationalized/date');
     const now = today(getLocalTimeZone());
-    const start = screen.getByRole('textbox', { name: 'Start Date' });
+    const start = screen.getByRole('textbox', { name: "Start date" });
     expect(start).toHaveAttribute('data-min', now.toString());
     expect(start).toHaveAttribute('data-max', now.add({ years: 5 }).toString());
   });
@@ -325,7 +325,7 @@ describe('CreateEventPage', () => {
   it('does not refuse the existing past start date when editing a past Event', async () => {
     const past = createCanonicalEventFixture({
       id: 5,
-      title: 'Past Event',
+      title: "Past event",
       schedule: {
         ...createCanonicalEventFixture().schedule,
         start_at: '2020-03-04T10:00:00Z',
@@ -341,20 +341,20 @@ describe('CreateEventPage', () => {
 
     await renderEventRoute(<CreateEventPage />, { route: '/test/events/edit/5', path: '/test/events/edit/:id' });
 
-    expect(await screen.findByDisplayValue('Past Event')).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Start Date' })).toHaveAttribute('data-min', '2020-03-04');
+    expect(await screen.findByDisplayValue("Past event")).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: "Start date" })).toHaveAttribute('data-min', '2020-03-04');
   });
 
   it('renders the create-event heading', async () => {
     await renderCreateEventPage();
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Create New Event' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: "Create new event" })).toBeInTheDocument();
   });
 
   it('renders an accessible title input', async () => {
     await renderCreateEventPage();
 
-    expect(screen.getByRole('textbox', { name: 'Event Title' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: "Event title" })).toBeInTheDocument();
   });
 
   it('renders a tenant-aware Cancel link', async () => {
@@ -372,7 +372,7 @@ describe('CreateEventPage', () => {
   it('renders an accessible start-date control', async () => {
     await renderCreateEventPage();
 
-    expect(screen.getByRole('textbox', { name: 'Start Date' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: "Start date" })).toBeInTheDocument();
   });
 
   it('exposes the canonical timezone and all-day schedule controls', async () => {
@@ -383,12 +383,12 @@ describe('CreateEventPage', () => {
     );
     const allDay = screen.getByRole('switch', { name: 'All-day event' });
     expect(allDay).not.toBeChecked();
-    expect(screen.getByRole('textbox', { name: 'Start Time' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: "Start time" })).toBeInTheDocument();
 
     fireEvent.click(allDay);
 
     expect(allDay).toBeChecked();
-    expect(screen.queryByRole('textbox', { name: 'Start Time' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: "Start time" })).not.toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Final event day' })).toBeInTheDocument();
   });
 
@@ -401,15 +401,15 @@ describe('CreateEventPage', () => {
   it('shows concrete validation errors and blocks the mutation for an empty form', async () => {
     await renderCreateEventPage();
 
-    const titleInput = screen.getByRole('textbox', { name: 'Event Title' });
+    const titleInput = screen.getByRole('textbox', { name: "Event title" });
     const form = titleInput.closest('form');
     expect(form).not.toBeNull();
     fireEvent.submit(form!);
 
-    expect(await screen.findByText('Title is required')).toBeInTheDocument();
-    expect(screen.getByText('Description is required')).toBeInTheDocument();
-    expect(screen.getByText('Start date is required')).toBeInTheDocument();
-    expect(screen.getByText('Start time is required')).toBeInTheDocument();
+    expect(await screen.findByText("Give your event a title")).toBeInTheDocument();
+    expect(screen.getByText("Tell people what the event is about")).toBeInTheDocument();
+    expect(screen.getByText("Choose a start date")).toBeInTheDocument();
+    expect(screen.getByText("Choose a start time")).toBeInTheDocument();
     expect(mockToast.error).toHaveBeenCalledWith(
       'Please fix the highlighted fields before saving',
     );
@@ -424,10 +424,10 @@ describe('CreateEventPage', () => {
     });
     await renderCreateEventPage();
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Event Title' }), { target: { value: 'Yearly community assembly' } });
+    fireEvent.change(screen.getByRole('textbox', { name: "Event title" }), { target: { value: 'Yearly community assembly' } });
     fireEvent.change(screen.getByRole('textbox', { name: 'Description' }), { target: { value: 'A detailed annual gathering for the whole community.' } });
-    fireEvent.change(screen.getByRole('textbox', { name: 'Start Date' }), { target: { value: '2099-05-01' } });
-    fireEvent.change(screen.getByRole('textbox', { name: 'Start Time' }), { target: { value: '10:00' } });
+    fireEvent.change(screen.getByRole('textbox', { name: "Start date" }), { target: { value: '2099-05-01' } });
+    fireEvent.change(screen.getByRole('textbox', { name: "Start time" }), { target: { value: '10:00' } });
     fireEvent.click(screen.getByRole('switch', { name: 'Toggle recurring event' }));
     await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith(
       '/v2/events/recurrence-capabilities',
@@ -437,7 +437,7 @@ describe('CreateEventPage', () => {
     await screen.findByRole('option', { name: 'Never (rolling schedule)' });
     fireEvent.change(screen.getByRole('combobox', { name: 'Recurrence frequency' }), { target: { value: 'yearly' } });
     fireEvent.change(screen.getByRole('combobox', { name: 'How the series ends' }), { target: { value: 'never' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Create Event' }));
+    fireEvent.click(screen.getByRole('button', { name: "Create event" }));
 
     await waitFor(() => expect(mockApi.post).toHaveBeenCalledWith(
       '/v2/events/recurring',
@@ -536,11 +536,11 @@ describe('CreateEventPage', () => {
   describe('public listing choice', () => {
     async function fillAndSubmitSingleEvent() {
       mockApi.post.mockResolvedValue({ success: true, data: { id: 77 } });
-      fireEvent.change(screen.getByRole('textbox', { name: 'Event Title' }), { target: { value: 'Seed swap' } });
+      fireEvent.change(screen.getByRole('textbox', { name: "Event title" }), { target: { value: 'Seed swap' } });
       fireEvent.change(screen.getByRole('textbox', { name: 'Description' }), { target: { value: 'Bring seeds, take seeds.' } });
-      fireEvent.change(screen.getByRole('textbox', { name: 'Start Date' }), { target: { value: '2099-05-01' } });
-      fireEvent.change(screen.getByRole('textbox', { name: 'Start Time' }), { target: { value: '10:00' } });
-      fireEvent.click(screen.getByRole('button', { name: 'Create Event' }));
+      fireEvent.change(screen.getByRole('textbox', { name: "Start date" }), { target: { value: '2099-05-01' } });
+      fireEvent.change(screen.getByRole('textbox', { name: "Start time" }), { target: { value: '10:00' } });
+      fireEvent.click(screen.getByRole('button', { name: "Create event" }));
       await waitFor(() => expect(mockApi.post).toHaveBeenCalledWith('/v2/events', expect.any(Object), expect.any(Object)));
       return mockApi.post.mock.calls.find(([path]) => path === '/v2/events')?.[1] as Record<string, unknown>;
     }

@@ -38,8 +38,6 @@ import Plus from 'lucide-react/icons/plus';
 import Filter from 'lucide-react/icons/filter';
 import CalendarDays from 'lucide-react/icons/calendar-days';
 import ChevronRight from 'lucide-react/icons/chevron-right';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Tag from 'lucide-react/icons/tag';
 import Ban from 'lucide-react/icons/ban';
 import PencilLine from 'lucide-react/icons/pencil-line';
@@ -56,6 +54,7 @@ import { canCreateEvents } from '@/lib/access';
 import { useToast } from '@/contexts/ToastContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
+import { LoadError } from '@/components/feedback/LoadError';
 import { PublicPageHero, PublicPageHeroStrip } from '@/components/public/PublicPageHero';
 import { eventsApi, type Event, type EventCategory } from '@/lib/events-api';
 import { logError } from '@/lib/logger';
@@ -842,18 +841,7 @@ export function EventsPage() {
 
       {/* Error State */}
       {activeView === 'list' && error && !isLoading && (
-        <GlassCard role="alert" className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load')}</h2>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            color="primary"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => loadEvents()}
-          >
-            {t('try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('unable_to_load')} onRetry={() => loadEvents()} />
       )}
 
       {/* Events List / Map */}
