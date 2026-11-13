@@ -273,7 +273,7 @@ describe('DashboardPage', () => {
 
   it("puts each shortcut's icon on the colour of the kind of thing it leads to", async () => {
     render(<DashboardPage />);
-    await screen.findByText('Quick Actions');
+    await screen.findByText('Quick actions');
     const tiles = screen.getAllByTestId('quick-action-tile');
     expect(tiles.length).toBeGreaterThanOrEqual(2);
     // Each tile wears a kind colour's readable label classes, not plain accent text.
@@ -292,13 +292,13 @@ describe('DashboardPage', () => {
         <DashboardPage />
       </SiteVividContext.Provider>,
     );
-    await screen.findByText('Quick Actions');
+    await screen.findByText('Quick actions');
     const tiles = screen.getAllByTestId('quick-action-tile');
     for (const tile of tiles) {
       expect(tile.className).toMatch(/(^|\s)bg-(accent-strong|[a-z]+-[67]00)(\s|$)/);
       expect(tile.className).toMatch(/(^|\s)text-white(\s|$)/);
     }
-    const heading = screen.getByRole('heading', { name: 'Quick Actions' });
+    const heading = screen.getByRole('heading', { name: 'Quick actions' });
     const sectionTile = heading.querySelector('div');
     expect(sectionTile?.className).toContain('bg-emerald-700');
     expect(sectionTile?.className).toContain('[&>svg]:text-white!');
@@ -306,10 +306,10 @@ describe('DashboardPage', () => {
 
   it('renders Quick Actions section', () => {
     render(<DashboardPage />);
-    expect(screen.getByText('Quick Actions')).toBeInTheDocument();
+    expect(screen.getByText('Quick actions')).toBeInTheDocument();
     expect(screen.getByText('Create an offer or request')).toBeInTheDocument();
-    expect(screen.getByText('View Wallet')).toBeInTheDocument();
-    expect(screen.getByText('Find Members')).toBeInTheDocument();
+    expect(screen.getByText('View wallet')).toBeInTheDocument();
+    expect(screen.getByText('Find members')).toBeInTheDocument();
   });
 
   it('says hello to new members, from the member directory', async () => {
@@ -340,7 +340,7 @@ describe('DashboardPage', () => {
   it("renders the member's own listings section, linking to My listings", async () => {
     render(<DashboardPage />);
     expect(screen.getByText('Your offers and requests')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'View all your listings' })).toHaveAttribute('href', '/test/listings/mine');
+    expect(screen.getByRole('link', { name: 'View all your offers and requests' })).toHaveAttribute('href', '/test/listings/mine');
   });
 
   it('Active Listings card shows the live count and opens My listings, not the community listings page', async () => {
@@ -363,7 +363,7 @@ describe('DashboardPage', () => {
     } as ReturnType<typeof useAuth>);
 
     render(<DashboardPage />);
-    expect(screen.getByText('Complete your profile setup')).toBeInTheDocument();
+    expect(screen.getByText('Finish setting up your profile')).toBeInTheDocument();
   });
 
   describe('location reminder', () => {
@@ -410,7 +410,7 @@ describe('DashboardPage', () => {
 
       render(<DashboardPage />);
 
-      expect(screen.getByText('Complete your profile setup')).toBeInTheDocument();
+      expect(screen.getByText('Finish setting up your profile')).toBeInTheDocument();
       expect(screen.getByText('Tell us where you are based')).toBeInTheDocument();
     });
 
@@ -419,7 +419,7 @@ describe('DashboardPage', () => {
 
       render(<DashboardPage />);
 
-      expect(screen.getByText('Complete your profile setup')).toBeInTheDocument();
+      expect(screen.getByText('Finish setting up your profile')).toBeInTheDocument();
       expect(screen.queryByText('Tell us where you are based')).not.toBeInTheDocument();
     });
 
@@ -437,7 +437,7 @@ describe('DashboardPage', () => {
 
     render(<DashboardPage />);
 
-    expect(screen.queryByText('Find Members')).not.toBeInTheDocument();
+    expect(screen.queryByText('Find members')).not.toBeInTheDocument();
     expect(screen.getByText('Create an offer or request')).toBeInTheDocument();
   });
 
@@ -651,7 +651,7 @@ describe('DashboardPage', () => {
     expect(mockApiGet).not.toHaveBeenCalledWith('/v2/wallet/balance');
     expect(mockApiGet.mock.calls.some(([url]) => String(url).startsWith('/v2/gamification'))).toBe(false);
     expect(mockApiGet.mock.calls.some(([url]) => String(url).startsWith('/v2/listings'))).toBe(false);
-    for (const label of ['Active offers and requests', 'Your listings', 'New offer or request', 'Create an offer or request', 'View Wallet', 'Find Members']) {
+    for (const label of ['Active offers and requests', 'Your listings', 'New offer or request', 'Create an offer or request', 'View wallet', 'Find members']) {
       expect(screen.queryByText(label)).not.toBeInTheDocument();
     }
   });

@@ -214,7 +214,7 @@ describe('LocationMissingPrompt', () => {
 
     await waitFor(() => expect(toast.error).toHaveBeenCalled());
     expect(toast.error).toHaveBeenCalledWith(
-      'Location not saved',
+      "We couldn't save your location",
       'We could not save that place. Please check it and try again.',
     );
     // Still showing, so the member can correct it.
@@ -250,7 +250,7 @@ describe('LocationMissingPrompt', () => {
 
     await waitFor(() => expect(toast.error).toHaveBeenCalled());
     expect(toast.error).toHaveBeenCalledWith(
-      'Location not saved',
+      "We couldn't save your location",
       'We could not save your location. Please try again.',
     );
   });

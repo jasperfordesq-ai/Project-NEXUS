@@ -176,6 +176,13 @@ describe('formatRelativeTime', () => {
     const date = new Date('2026-01-21T12:00:00Z').toISOString();
     expect(formatRelativeTime(date)).toBe('2 wk ago');
   });
+
+  // In a sentence ("Joined last week") the abbreviations read like a machine.
+  it('spells the unit out in full when asked, for use inside a sentence', () => {
+    expect(formatRelativeTime(new Date('2026-01-28T12:00:00Z').toISOString(), 'long')).toBe('last week');
+    expect(formatRelativeTime(new Date('2026-01-21T12:00:00Z').toISOString(), 'long')).toBe('2 weeks ago');
+    expect(formatRelativeTime(new Date('2026-02-04T06:00:00Z').toISOString(), 'long')).toBe('6 hours ago');
+  });
 });
 
 describe('formatDate', () => {

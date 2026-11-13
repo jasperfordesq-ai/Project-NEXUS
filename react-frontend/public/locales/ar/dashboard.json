@@ -1,19 +1,19 @@
 {
   "meta": {
     "title": "لوحة التحكم",
-    "description": "لوحة التحكم الشخصية الخاصة بك. عرض رصيدك، القوائم، والنشاط."
+    "description": "رصيدك، وعروضك وطلباتك، وما يجري في مجتمعك."
   },
   "fallback_name": "مرحباً",
   "welcome_back": "مرحبًا بعودتك، {{name}}!",
   "community_activity": "إليك ما يحدث في {{community}}",
-  "unable_to_load": "غير قادر على تحميل لوحة التحكم",
+  "unable_to_load": "تعذّر علينا تحميل لوحة التحكم الخاصة بك",
   "try_again": "حاول مرة أخرى",
   "common": {
     "loading": "جارٍ التحميل"
   },
   "onboarding": {
     "banner_title": "أكمل إعداد ملفك الشخصي",
-    "banner_subtitle": "أخبرنا عن اهتماماتك ومهاراتك للحصول على تطابقات مخصصة",
+    "banner_subtitle": "أخبرنا بما تحبه وما تجيده، وسنقترح عليك أشخاصًا وعروضًا تناسبك.",
     "get_started": "ابدأ الآن"
   },
   "new_listing": "عرض أو طلب جديد",
@@ -65,13 +65,13 @@
     "requesting": "يطلب",
     "offer": "عرض",
     "request": "طلب",
-    "user_fallback": "المستخدم",
+    "user_fallback": "عضو",
     "empty": "لا توجد عروض أو طلبات حديثة",
     "empty_description": "أنشئ طلبًا أو عرضًا لبدء التطابق مع أشخاص بالقرب منك.",
     "create_first": "أنشئ أول عرض أو طلب لك"
   },
   "activity": {
-    "action_listing": "شارك قائمة",
+    "action_listing": "شارك عرضًا أو طلبًا",
     "action_event": "نشر عن حدث",
     "action_poll": "أنشأ استطلاعًا",
     "action_goal": "حدد هدفًا جديدًا",
@@ -82,7 +82,7 @@
   },
   "suggestions": {
     "empty": "لا توجد اقتراحات بعد",
-    "empty_description": "تتحسن المطابقة كلما تمت إضافة المزيد من الإعلانات وتفاصيل الملف الشخصي.",
+    "empty_description": "تتحسن الاقتراحات كلما أُضيف مزيد من العروض والطلبات وتفاصيل الملفات الشخصية.",
     "see_all_matches": "شاهد جميع المطابقات",
     "score_chip": "{{score}}%",
     "distance_chip": "{{value}} km"
@@ -123,7 +123,7 @@
     "xp_value_zero": "{{count}} XP"
   },
   "aria": {
-    "loading_listings": "جارٍ تحميل القوائم",
+    "loading_listings": "جارٍ تحميل العروض والطلبات",
     "loading_activity": "جارٍ تحميل النشاط",
     "loading_events": "جارٍ تحميل الأحداث",
     "loading_groups": "جارٍ تحميل المجموعات",
@@ -131,17 +131,17 @@
     "loading_suggestions": "جارٍ تحميل الاقتراحات",
     "loading_endorsements": "جارٍ تحميل التوصيات",
     "loading_pending_reviews": "جارٍ تحميل المراجعات المعلقة",
-    "view_all_listings": "عرض جميع الإعلانات",
+    "view_all_listings": "عرض جميع العروض والطلبات",
     "view_all_activity": "عرض جميع الأنشطة الأخيرة",
     "view_all_events": "عرض جميع الفعاليات",
     "view_all_groups": "عرض جميع المجموعات",
     "view_achievements": "عرض الإنجازات",
-    "browse_all_listings": "تصفح جميع الإعلانات",
+    "browse_all_listings": "تصفح جميع العروض والطلبات",
     "view_all_endorsements": "عرض جميع التزكيات",
     "view_pending_reviews": "عرض جميع التقييمات المعلقة",
     "loading_exchanges_attention": "جارٍ تحميل التبادلات التي تتطلب الانتباه",
     "view_exchanges_attention": "عرض جميع التبادلات",
-    "view_my_listings": "عرض كل إعلاناتك"
+    "view_my_listings": "عرض جميع عروضك وطلباتك"
   },
   "reviews": {
     "sent": "أرسل {{amount}} ساعة",
@@ -180,12 +180,12 @@
   "comments_count_zero": "{{count}} تعليق",
   "location_prompt": {
     "title": "أخبرنا أين تقيم",
-    "subtitle": "أضف مدينتك أو بلدتك لتجد الأشخاص والإعلانات القريبة منك.",
+    "subtitle": "أضف مدينتك أو بلدتك لتجد الأشخاص والعروض والطلبات القريبة منك.",
     "label": "أين تقيم؟",
     "placeholder": "مدينتك أو بلدتك",
     "save": "حفظ",
     "saved": "تم حفظ الموقع",
-    "not_saved": "لم يتم حفظ الموقع",
+    "not_saved": "تعذّر علينا حفظ موقعك",
     "error_location": "تعذّر حفظ هذا المكان. يرجى التحقق منه والمحاولة مرة أخرى.",
     "error_coordinates": "تعذّر استخدام موقع الخريطة لهذا المكان. يرجى اختياره من القائمة مرة أخرى، أو اكتب اسم بلدتك فقط.",
     "error_generic": "تعذّر حفظ موقعك. يرجى المحاولة مرة أخرى."

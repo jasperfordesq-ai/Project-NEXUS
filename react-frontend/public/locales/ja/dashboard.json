@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "ダッシュボード",
-    "description": "あなたの個人ダッシュボード。残高、リスト、アクティビティを表示します。"
+    "description": "残高、あなたの提供とリクエスト、コミュニティの最新の動きを確認できます。"
   },
   "fallback_name": "こんにちは",
   "welcome_back": "おかえりなさい、{{name}}！",
@@ -12,8 +12,8 @@
     "loading": "読み込み中"
   },
   "onboarding": {
-    "banner_title": "プロフィール設定を完了してください",
-    "banner_subtitle": "あなたの興味やスキルについて教えて、パーソナライズされたマッチを得ましょう",
+    "banner_title": "プロフィールの設定を仕上げましょう",
+    "banner_subtitle": "好きなことやできることを教えていただくと、合いそうな人や提供をご案内します。",
     "get_started": "始める"
   },
   "new_listing": "新しい提供・リクエスト",
@@ -65,13 +65,13 @@
     "requesting": "リクエスト中",
     "offer": "提供",
     "request": "リクエスト",
-    "user_fallback": "ユーザー",
+    "user_fallback": "メンバー",
     "empty": "最近の提供・リクエストはありません",
     "empty_description": "リクエストまたはオファーを作成して、近くの人とのマッチングを始めましょう。",
     "create_first": "最初の提供・リクエストを作成しましょう"
   },
   "activity": {
-    "action_listing": "リストを共有しました",
+    "action_listing": "提供またはリクエストを共有しました",
     "action_event": "イベントについて投稿しました",
     "action_poll": "投票を作成しました",
     "action_goal": "新しい目標を設定しました",
@@ -82,7 +82,7 @@
   },
   "suggestions": {
     "empty": "まだ提案はありません",
-    "empty_description": "リスティングやプロフィールの詳細が増えるほど、マッチングの精度が向上します。",
+    "empty_description": "提供やリクエスト、プロフィールの情報が増えるほど、おすすめの精度が上がります。",
     "see_all_matches": "すべての試合を見る",
     "score_chip": "{{score}}%",
     "distance_chip": "{{value}} km"
@@ -115,7 +115,7 @@
     "xp_value_one": "{{count}} XP"
   },
   "aria": {
-    "loading_listings": "リストを読み込み中",
+    "loading_listings": "提供とリクエストを読み込み中",
     "loading_activity": "活動を読み込み中",
     "loading_events": "イベントを読み込み中",
     "loading_groups": "グループを読み込み中",
@@ -123,17 +123,17 @@
     "loading_suggestions": "提案を読み込み中",
     "loading_endorsements": "推薦を読み込み中",
     "loading_pending_reviews": "保留中のレビューを読み込み中",
-    "view_all_listings": "すべてのリスティングを表示",
+    "view_all_listings": "すべての提供とリクエストを表示",
     "view_all_activity": "最近のアクティビティをすべて表示",
     "view_all_events": "すべてのイベントを表示",
     "view_all_groups": "すべてのグループを表示",
     "view_achievements": "達成項目を表示",
-    "browse_all_listings": "すべてのリスティングを閲覧",
+    "browse_all_listings": "すべての提供とリクエストを閲覧",
     "view_all_endorsements": "すべての推薦を表示",
     "view_pending_reviews": "保留中のレビューをすべて表示",
     "loading_exchanges_attention": "対応が必要な交換を読み込み中",
     "view_exchanges_attention": "すべての交換を表示",
-    "view_my_listings": "自分のリスティングをすべて見る"
+    "view_my_listings": "自分の提供とリクエストをすべて表示"
   },
   "reviews": {
     "sent": "{{amount}}hを送信しました",
@@ -164,12 +164,12 @@
   "comments_count_one": "{{count}} コメントする",
   "location_prompt": {
     "title": "お住まいの場所を教えてください",
-    "subtitle": "お住まいの市区町村を追加すると、近くの人や投稿を見つけられます。",
+    "subtitle": "お住まいの市区町村を追加すると、近くの人や提供・リクエストを見つけられます。",
     "label": "どちらにお住まいですか？",
     "placeholder": "お住まいの市区町村",
     "save": "保存",
     "saved": "場所を保存しました",
-    "not_saved": "場所は保存されていません",
+    "not_saved": "場所を保存できませんでした",
     "error_location": "その場所を保存できませんでした。内容を確認して、もう一度お試しください。",
     "error_coordinates": "その場所の地図上の位置を使用できませんでした。リストからもう一度選ぶか、市区町村名だけを入力してください。",
     "error_generic": "場所を保存できませんでした。もう一度お試しください。"

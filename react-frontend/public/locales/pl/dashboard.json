@@ -1,19 +1,19 @@
 {
   "meta": {
     "title": "Panel",
-    "description": "Twój osobisty pulpit nawigacyjny. Zobacz swoje saldo, oferty i aktywność."
+    "description": "Twoje saldo, Twoje oferty i prośby oraz to, co dzieje się w Twojej społeczności."
   },
   "fallback_name": "tam",
   "welcome_back": "Witaj ponownie, {{name}}!",
   "community_activity": "Oto, co się dzieje w {{community}}",
-  "unable_to_load": "Nie można załadować pulpitu nawigacyjnego",
+  "unable_to_load": "Nie udało się nam wczytać Twojego pulpitu",
   "try_again": "Spróbuj ponownie",
   "common": {
     "loading": "Ładowanie"
   },
   "onboarding": {
-    "banner_title": "Uzupełnij konfigurację swojego profilu",
-    "banner_subtitle": "Powiedz nam o swoich zainteresowaniach i umiejętnościach, aby uzyskać spersonalizowane dopasowania",
+    "banner_title": "Dokończ konfigurację swojego profilu",
+    "banner_subtitle": "Powiedz nam, co lubisz i co potrafisz, a podpowiemy Ci pasujące osoby i oferty.",
     "get_started": "Zacznij"
   },
   "new_listing": "Nowa oferta lub prośba",
@@ -65,13 +65,13 @@
     "requesting": "Wnioskowanie",
     "offer": "Oferta",
     "request": "Prośba",
-    "user_fallback": "Użytkownik",
+    "user_fallback": "Członek",
     "empty": "Brak niedawnych ofert i próśb",
     "empty_description": "Utwórz prośbę lub ofertę, aby zacząć dopasowywać się do osób w pobliżu.",
     "create_first": "Utwórz swoją pierwszą ofertę lub prośbę"
   },
   "activity": {
-    "action_listing": "podzielił się ofertą",
+    "action_listing": "udostępnia ofertę lub prośbę",
     "action_event": "opublikował o wydarzeniu",
     "action_poll": "utworzył ankietę",
     "action_goal": "ustawił nowy cel",
@@ -82,7 +82,7 @@
   },
   "suggestions": {
     "empty": "Brak sugestii na razie",
-    "empty_description": "Dopasowania poprawiają się w miarę dodawania kolejnych ogłoszeń i szczegółów profilu.",
+    "empty_description": "Podpowiedzi są coraz lepsze, gdy przybywa ofert, próśb i szczegółów w profilach.",
     "see_all_matches": "Zobacz wszystkie mecze",
     "score_chip": "{{score}}%",
     "distance_chip": "{{value}} km"
@@ -119,7 +119,7 @@
     "xp_value_other": "{{count}} PD"
   },
   "aria": {
-    "loading_listings": "Ładowanie ofert",
+    "loading_listings": "Ładowanie ofert i próśb",
     "loading_activity": "Ładowanie aktywności",
     "loading_events": "Ładowanie wydarzeń",
     "loading_groups": "Ładowanie grup",
@@ -127,17 +127,17 @@
     "loading_suggestions": "Ładowanie sugestii",
     "loading_endorsements": "Ładowanie rekomendacji",
     "loading_pending_reviews": "Ładowanie oczekujących recenzji",
-    "view_all_listings": "Zobacz wszystkie ogłoszenia",
+    "view_all_listings": "Zobacz wszystkie oferty i prośby",
     "view_all_activity": "Zobacz całą ostatnią aktywność",
     "view_all_events": "Zobacz wszystkie wydarzenia",
     "view_all_groups": "Zobacz wszystkie grupy",
     "view_achievements": "Zobacz osiągnięcia",
-    "browse_all_listings": "Przeglądaj wszystkie ogłoszenia",
+    "browse_all_listings": "Przeglądaj wszystkie oferty i prośby",
     "view_all_endorsements": "Zobacz wszystkie rekomendacje",
     "view_pending_reviews": "Zobacz wszystkie oczekujące recenzje",
     "loading_exchanges_attention": "Ładowanie wymian wymagających uwagi",
     "view_exchanges_attention": "Zobacz wszystkie wymiany",
-    "view_my_listings": "Zobacz wszystkie swoje ogłoszenia"
+    "view_my_listings": "Zobacz wszystkie swoje oferty i prośby"
   },
   "reviews": {
     "sent": "Wysłano {{amount}}h",
@@ -172,12 +172,12 @@
   "comments_count_other": "{{count}} komentarze",
   "location_prompt": {
     "title": "Powiedz nam, gdzie mieszkasz",
-    "subtitle": "Dodaj swoją miejscowość, aby znajdować osoby i ogłoszenia w pobliżu.",
+    "subtitle": "Dodaj swoją miejscowość, aby znajdować osoby, oferty i prośby w pobliżu.",
     "label": "Gdzie mieszkasz?",
     "placeholder": "Twoja miejscowość",
     "save": "Zapisz",
     "saved": "Zapisano lokalizację",
-    "not_saved": "Nie zapisano lokalizacji",
+    "not_saved": "Nie udało się nam zapisać Twojej lokalizacji",
     "error_location": "Nie udało się zapisać tego miejsca. Sprawdź je i spróbuj ponownie.",
     "error_coordinates": "Nie udało się użyć położenia na mapie dla tego miejsca. Wybierz je ponownie z listy lub wpisz samą miejscowość.",
     "error_generic": "Nie udało się zapisać Twojej lokalizacji. Spróbuj ponownie."

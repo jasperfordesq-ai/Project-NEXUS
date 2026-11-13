@@ -1,19 +1,19 @@
 {
   "meta": {
     "title": "Pannello di controllo",
-    "description": "La Sua dashboard personale. Visualizzi il Suo saldo, gli annunci e l'attività."
+    "description": "Il tuo saldo, le tue offerte e richieste e quello che succede nella tua comunità."
   },
   "fallback_name": "là",
   "welcome_back": "Bentornato/a, {{name}}!",
   "community_activity": "Ecco cosa sta accadendo in {{community}}",
-  "unable_to_load": "Impossibile Caricare la Dashboard",
+  "unable_to_load": "Non siamo riusciti a caricare la tua dashboard",
   "try_again": "Riprova",
   "common": {
     "loading": "Caricamento"
   },
   "onboarding": {
-    "banner_title": "Completa la configurazione del tuo profilo",
-    "banner_subtitle": "Ci dica i Suoi interessi e le Sue competenze per ottenere corrispondenze personalizzate",
+    "banner_title": "Finisci di configurare il tuo profilo",
+    "banner_subtitle": "Raccontaci cosa ti piace e cosa sai fare, e ti suggeriremo persone e offerte adatte a te.",
     "get_started": "Inizia"
   },
   "new_listing": "Nuova offerta o richiesta",
@@ -65,13 +65,13 @@
     "requesting": "Richiesta",
     "offer": "Offerta",
     "request": "Richiesta",
-    "user_fallback": "Utente",
+    "user_fallback": "Membro",
     "empty": "Nessuna offerta o richiesta recente",
     "empty_description": "Crea una richiesta o un'offerta per iniziare a trovare corrispondenze con persone vicine.",
     "create_first": "Crea la tua prima offerta o richiesta"
   },
   "activity": {
-    "action_listing": "ha condiviso un annuncio",
+    "action_listing": "ha condiviso un’offerta o una richiesta",
     "action_event": "ha pubblicato un evento",
     "action_poll": "ha creato un sondaggio",
     "action_goal": "ha fissato un nuovo obiettivo",
@@ -82,7 +82,7 @@
   },
   "suggestions": {
     "empty": "Ancora nessun suggerimento",
-    "empty_description": "Le corrispondenze migliorano man mano che vengono aggiunti più annunci e dettagli del profilo.",
+    "empty_description": "I suggerimenti migliorano man mano che si aggiungono offerte, richieste e dettagli del profilo.",
     "see_all_matches": "Vedi tutte le partite",
     "score_chip": "{{score}}%",
     "distance_chip": "{{value}} km"
@@ -117,7 +117,7 @@
     "xp_value_other": "{{count}} XP"
   },
   "aria": {
-    "loading_listings": "Caricamento annunci",
+    "loading_listings": "Caricamento di offerte e richieste",
     "loading_activity": "Caricamento attività",
     "loading_events": "Caricamento eventi",
     "loading_groups": "Caricamento gruppi",
@@ -125,17 +125,17 @@
     "loading_suggestions": "Caricamento suggerimenti",
     "loading_endorsements": "Caricamento raccomandazioni",
     "loading_pending_reviews": "Caricamento recensioni in sospeso",
-    "view_all_listings": "Vedi tutti gli annunci",
+    "view_all_listings": "Vedi tutte le offerte e richieste",
     "view_all_activity": "Vedi tutta l'attività recente",
     "view_all_events": "Vedi tutti gli eventi",
     "view_all_groups": "Vedi tutti i gruppi",
     "view_achievements": "Vedi i traguardi",
-    "browse_all_listings": "Sfoglia tutti gli annunci",
+    "browse_all_listings": "Sfoglia tutte le offerte e richieste",
     "view_all_endorsements": "Vedi tutte le segnalazioni",
     "view_pending_reviews": "Vedi tutte le recensioni in attesa",
     "loading_exchanges_attention": "Caricamento degli scambi che richiedono attenzione",
     "view_exchanges_attention": "Visualizza tutti gli scambi",
-    "view_my_listings": "Vedi tutti i tuoi annunci"
+    "view_my_listings": "Vedi tutte le tue offerte e richieste"
   },
   "reviews": {
     "sent": "Inviato {{amount}}h",
@@ -168,12 +168,12 @@
   "comments_count_other": "{{count}} commenti",
   "location_prompt": {
     "title": "Dicci dove vivi",
-    "subtitle": "Aggiungi la tua città o il tuo paese per trovare persone e annunci vicino a te.",
+    "subtitle": "Aggiungi la tua città o il tuo paese per trovare persone, offerte e richieste vicino a te.",
     "label": "Dove vivi?",
     "placeholder": "La tua città o il tuo paese",
     "save": "Salva",
     "saved": "Posizione salvata",
-    "not_saved": "Posizione non salvata",
+    "not_saved": "Non siamo riusciti a salvare la tua posizione",
     "error_location": "Non siamo riusciti a salvare quel luogo. Controllalo e riprova.",
     "error_coordinates": "Non siamo riusciti a usare la posizione sulla mappa per quel luogo. Sceglilo di nuovo dall'elenco oppure scrivi solo la tua città.",
     "error_generic": "Non siamo riusciti a salvare la tua posizione. Riprova."

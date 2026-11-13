@@ -403,7 +403,11 @@ export function getUserInitials(user: DisplayNameFields): string {
 /**
  * Format a date string to a relative time string
  */
-export function formatRelativeTime(dateString: string | null | undefined): string {
+export function formatRelativeTime(
+  dateString: string | null | undefined,
+  /** 'narrow' ("2 wk ago") suits a tight row; 'long' ("2 weeks ago") reads properly inside a sentence. */
+  style: 'narrow' | 'long' = 'narrow',
+): string {
   const date = toDateValue(dateString);
   if (isNaN(date.getTime())) return '—';
   const now = new Date();
@@ -414,7 +418,7 @@ export function formatRelativeTime(dateString: string | null | undefined): strin
   const diffDays = Math.floor(diffHours / 24);
   const diffWeeks = Math.floor(diffDays / 7);
 
-  const rtf = new Intl.RelativeTimeFormat(getFormattingLocale(), { numeric: 'auto', style: 'narrow' });
+  const rtf = new Intl.RelativeTimeFormat(getFormattingLocale(), { numeric: 'auto', style });
 
   if (diffSecs < 60) return rtf.format(-diffSecs, 'second');
   if (diffMins < 60) return rtf.format(-diffMins, 'minute');

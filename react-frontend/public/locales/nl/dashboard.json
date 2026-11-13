@@ -1,19 +1,19 @@
 {
   "meta": {
     "title": "Dashboard",
-    "description": "Je persoonlijke dashboard. Bekijk je saldo, aanbiedingen en activiteiten."
+    "description": "Je saldo, je aanbod en verzoeken, en wat er speelt in je community."
   },
   "fallback_name": "daar",
   "welcome_back": "Welkom terug, {{name}}!",
   "community_activity": "Dit is wat er gebeurt in {{community}}",
-  "unable_to_load": "Dashboard kan niet worden geladen",
+  "unable_to_load": "We konden je dashboard niet laden",
   "try_again": "Probeer het opnieuw",
   "common": {
     "loading": "Laden"
   },
   "onboarding": {
-    "banner_title": "Voltooi je profielinstellingen",
-    "banner_subtitle": "Vertel ons over je interesses en vaardigheden om gepersonaliseerde matches te krijgen",
+    "banner_title": "Maak je profiel af",
+    "banner_subtitle": "Vertel ons wat je leuk vindt en wat je kunt, dan stellen we mensen en aanbod voor die bij je passen.",
     "get_started": "Aan de slag"
   },
   "new_listing": "Nieuw aanbod of verzoek",
@@ -65,13 +65,13 @@
     "requesting": "Aanvragen",
     "offer": "Aanbod",
     "request": "Aanvraag",
-    "user_fallback": "Gebruiker",
+    "user_fallback": "Lid",
     "empty": "Geen recent aanbod of verzoeken",
     "empty_description": "Maak een verzoek of aanbod om matches te vinden met mensen in de buurt.",
     "create_first": "Maak je eerste aanbod of verzoek"
   },
   "activity": {
-    "action_listing": "deelde een aanbieding",
+    "action_listing": "deelde een aanbod of verzoek",
     "action_event": "geplaatst over een evenement",
     "action_poll": "heeft een poll aangemaakt",
     "action_goal": "heeft een nieuw doel gesteld",
@@ -82,7 +82,7 @@
   },
   "suggestions": {
     "empty": "Nog geen suggesties",
-    "empty_description": "De matching verbetert naarmate er meer advertenties en profielgegevens worden toegevoegd.",
+    "empty_description": "De suggesties worden beter naarmate er meer aanbod, verzoeken en profielgegevens bij komen.",
     "see_all_matches": "Bekijk alle matches",
     "score_chip": "{{score}}%",
     "distance_chip": "{{value}} km"
@@ -115,7 +115,7 @@
     "xp_value_other": "{{count}} XP"
   },
   "aria": {
-    "loading_listings": "Laden van lijsten",
+    "loading_listings": "Aanbod en verzoeken worden geladen",
     "loading_activity": "Laden van activiteit",
     "loading_events": "Laden van evenementen",
     "loading_groups": "Laden van groepen",
@@ -123,17 +123,17 @@
     "loading_suggestions": "Laden van suggesties",
     "loading_endorsements": "Laden van goedkeuringen",
     "loading_pending_reviews": "Laden van uitstaande beoordelingen",
-    "view_all_listings": "Bekijk alle advertenties",
+    "view_all_listings": "Alle aanbod en verzoeken bekijken",
     "view_all_activity": "Bekijk alle recente activiteit",
     "view_all_events": "Bekijk alle evenementen",
     "view_all_groups": "Bekijk alle groepen",
     "view_achievements": "Bekijk prestaties",
-    "browse_all_listings": "Blader door alle advertenties",
+    "browse_all_listings": "Door alle aanbod en verzoeken bladeren",
     "view_all_endorsements": "Bekijk alle aanbevelingen",
     "view_pending_reviews": "Bekijk alle openstaande beoordelingen",
     "loading_exchanges_attention": "Uitwisselingen die aandacht vereisen worden geladen",
     "view_exchanges_attention": "Alle uitwisselingen bekijken",
-    "view_my_listings": "Al je vermeldingen bekijken"
+    "view_my_listings": "Al je aanbod en verzoeken bekijken"
   },
   "reviews": {
     "sent": "Verzonden {{amount}}h",
@@ -164,12 +164,12 @@
   "comments_count_other": "{{count}} opmerkingen",
   "location_prompt": {
     "title": "Laat ons weten waar je woont",
-    "subtitle": "Voeg je woonplaats toe om mensen en advertenties bij jou in de buurt te vinden.",
+    "subtitle": "Voeg je woonplaats toe om mensen, aanbod en verzoeken bij jou in de buurt te vinden.",
     "label": "Waar woon je?",
     "placeholder": "Je woonplaats",
     "save": "Opslaan",
     "saved": "Locatie opgeslagen",
-    "not_saved": "Locatie niet opgeslagen",
+    "not_saved": "We konden je locatie niet opslaan",
     "error_location": "We konden die plaats niet opslaan. Controleer de invoer en probeer het opnieuw.",
     "error_coordinates": "We konden de kaartpositie van die plaats niet gebruiken. Kies de plaats opnieuw uit de lijst of typ alleen je woonplaats.",
     "error_generic": "We konden je locatie niet opslaan. Probeer het opnieuw."

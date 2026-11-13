@@ -41994,7 +41994,7 @@ export default interface Resources {
     "activity": {
       "action_event": "posted about an event",
       "action_goal": "set a new goal",
-      "action_listing": "shared a listing",
+      "action_listing": "shared an offer or request",
       "action_poll": "created a poll",
       "action_post": "shared a post",
       "check_feed": "Check out the feed",
@@ -42007,13 +42007,13 @@ export default interface Resources {
       "title": "Happy anniversary!"
     },
     "aria": {
-      "browse_all_listings": "Browse all listings",
+      "browse_all_listings": "Browse all offers and requests",
       "loading_activity": "Loading activity",
       "loading_endorsements": "Loading endorsements",
       "loading_events": "Loading events",
       "loading_exchanges_attention": "Loading exchanges that need attention",
       "loading_groups": "Loading groups",
-      "loading_listings": "Loading listings",
+      "loading_listings": "Loading offers and requests",
       "loading_pending_reviews": "Loading pending reviews",
       "loading_progress": "Loading progress",
       "loading_suggestions": "Loading suggestions",
@@ -42022,12 +42022,12 @@ export default interface Resources {
       "view_all_endorsements": "View all endorsements",
       "view_all_events": "View all events",
       "view_all_groups": "View all groups",
-      "view_all_listings": "View all listings",
+      "view_all_listings": "View all offers and requests",
       "view_exchanges_attention": "View all exchanges",
-      "view_my_listings": "View all your listings",
+      "view_my_listings": "View all your offers and requests",
       "view_pending_reviews": "View all pending reviews"
     },
-    "browse_all": "Browse All",
+    "browse_all": "Browse all",
     "caring_community": {
       "actions": {
         "log_hours": "Log hours",
@@ -42038,7 +42038,7 @@ export default interface Resources {
       "title": "Caring Community"
     },
     "comments_count": "{{count}} comments",
-    "comments_count_one": "{{count}} comments",
+    "comments_count_one": "{{count}} comment",
     "comments_count_other": "{{count}} comments",
     "common": {
       "loading": "Loading"
@@ -42071,7 +42071,7 @@ export default interface Resources {
       "streak": "Streak",
       "streak_days_one": "{{count}} day",
       "streak_days_other": "{{count}} days",
-      "xp_progress": "XP Progress",
+      "xp_progress": "XP progress",
       "xp_value": "{{count}} XP",
       "xp_value_one": "{{count}} XP",
       "xp_value_other": "{{count}} XP"
@@ -42081,11 +42081,11 @@ export default interface Resources {
       "empty": "You haven't joined any groups yet",
       "empty_description": "Groups help you follow shared interests, projects, and local circles.",
       "members_count": "{{count}} members",
-      "members_count_one": "{{count}} members",
+      "members_count_one": "{{count}} member",
       "members_count_other": "{{count}} members"
     },
     "likes_count": "{{count}} likes",
-    "likes_count_one": "{{count}} likes",
+    "likes_count_one": "{{count}} like",
     "likes_count_other": "{{count}} likes",
     "listings": {
       "create_first": "Create your first offer or request",
@@ -42095,22 +42095,22 @@ export default interface Resources {
       "offering": "Offering",
       "request": "Request",
       "requesting": "Requesting",
-      "user_fallback": "User"
+      "user_fallback": "Member"
     },
     "location_prompt": {
       "error_coordinates": "We could not use the map position for that place. Please pick it from the list again, or type just your town.",
       "error_generic": "We could not save your location. Please try again.",
       "error_location": "We could not save that place. Please check it and try again.",
       "label": "Where are you based?",
-      "not_saved": "Location not saved",
+      "not_saved": "We couldn't save your location",
       "placeholder": "Your town or city",
       "save": "Save",
       "saved": "Location saved",
-      "subtitle": "Add your town or city so you can find people and listings near you.",
+      "subtitle": "Add your town or city so you can find people, offers and requests near you.",
       "title": "Tell us where you are based"
     },
     "meta": {
-      "description": "Your personal dashboard. View your balance, listings, and activity.",
+      "description": "Your balance, your offers and requests, and what's happening in your community.",
       "title": "Dashboard"
     },
     "milestone": {
@@ -42135,9 +42135,9 @@ export default interface Resources {
       "title": "Say hello to new members"
     },
     "onboarding": {
-      "banner_subtitle": "Tell us about your interests and skills to get personalized matches",
-      "banner_title": "Complete your profile setup",
-      "get_started": "Get Started"
+      "banner_subtitle": "Tell us what you enjoy and what you can do, and we'll suggest people and offers that fit.",
+      "banner_title": "Finish setting up your profile",
+      "get_started": "Get started"
     },
     "photo_prompt": {
       "action": "Add a photo",
@@ -42146,13 +42146,13 @@ export default interface Resources {
       "title": "Add a photo of yourself"
     },
     "quick_actions": {
-      "browse_events": "Browse Events",
+      "browse_events": "Browse events",
       "caring_community": "Care Hub",
       "create_listing": "Create an offer or request",
-      "find_members": "Find Members",
+      "find_members": "Find members",
       "messages": "Messages",
       "notifications": "Notifications",
-      "view_wallet": "View Wallet"
+      "view_wallet": "View wallet"
     },
     "reviews": {
       "none_pending": "No pending reviews",
@@ -42161,20 +42161,20 @@ export default interface Resources {
       "received": "Received {{amount}}h",
       "review": "Review",
       "sent": "Sent {{amount}}h",
-      "view_all_pending": "View All Pending"
+      "view_all_pending": "View all pending"
     },
     "sections": {
       "endorsements": "Endorsements",
       "exchanges_attention": "Needs your attention",
-      "my_groups": "My Groups",
+      "my_groups": "My groups",
       "my_listings": "Your offers and requests",
-      "pending_reviews": "Pending Reviews",
-      "quick_actions": "Quick Actions",
-      "recent_activity": "Recent Activity",
+      "pending_reviews": "Pending reviews",
+      "quick_actions": "Quick actions",
+      "recent_activity": "Recent activity",
       "recent_listings": "Recent offers and requests",
-      "suggested_for_you": "Suggested for You",
-      "upcoming_events": "Upcoming Events",
-      "your_progress": "Your Progress"
+      "suggested_for_you": "Suggested for you",
+      "upcoming_events": "Upcoming events",
+      "your_progress": "Your progress"
     },
     "stats": {
       "active_listings": "Active offers and requests",
@@ -42186,16 +42186,16 @@ export default interface Resources {
     "suggestions": {
       "distance_chip": "{{value}} km",
       "empty": "No suggestions yet",
-      "empty_description": "Matching improves as more listings and profile details are added.",
+      "empty_description": "Suggestions get better as more offers, requests and profile details are added.",
       "score_chip": "{{score}}%",
       "see_all_matches": "See all matches"
     },
-    "try_again": "Try Again",
-    "unable_to_load": "Unable to Load Dashboard",
-    "view_achievements": "View Achievements",
+    "try_again": "Try again",
+    "unable_to_load": "We couldn't load your dashboard",
+    "view_achievements": "View achievements",
     "view_all": "View all",
-    "view_all_caps": "View All",
-    "view_all_transactions": "View All Transactions",
+    "view_all_caps": "View all",
+    "view_all_transactions": "View all transactions",
     "welcome_back": "Welcome back, {{name}}!"
   },
   "emails": {

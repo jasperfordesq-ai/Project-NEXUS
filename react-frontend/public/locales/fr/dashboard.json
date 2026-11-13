@@ -1,19 +1,19 @@
 {
   "meta": {
     "title": "Tableau de bord",
-    "description": "Votre tableau de bord personnel. Consultez votre solde, vos annonces et votre activité."
+    "description": "Votre solde, vos offres et demandes, et ce qui se passe dans votre communauté."
   },
   "fallback_name": "là",
   "welcome_back": "Content de vous revoir, {{name}} !",
   "community_activity": "Voici ce qui se passe dans {{community}}",
-  "unable_to_load": "Impossible de charger le tableau de bord",
+  "unable_to_load": "Nous n’avons pas pu charger votre tableau de bord",
   "try_again": "Réessayer",
   "common": {
     "loading": "Chargement"
   },
   "onboarding": {
-    "banner_title": "Complétez la configuration de votre profil",
-    "banner_subtitle": "Parlez-nous de vos intérêts et compétences pour obtenir des correspondances personnalisées",
+    "banner_title": "Terminez la configuration de votre profil",
+    "banner_subtitle": "Dites-nous ce que vous aimez et ce que vous savez faire, et nous vous proposerons des personnes et des offres qui vous correspondent.",
     "get_started": "Commencer"
   },
   "new_listing": "Nouvelle offre ou demande",
@@ -65,13 +65,13 @@
     "requesting": "Demande",
     "offer": "Offre",
     "request": "Demande",
-    "user_fallback": "Utilisateur",
+    "user_fallback": "Membre",
     "empty": "Aucune offre ni demande récente",
     "empty_description": "Créez une demande ou une offre pour commencer à trouver des correspondances avec des personnes près de chez vous.",
     "create_first": "Créez votre première offre ou demande"
   },
   "activity": {
-    "action_listing": "a partagé une annonce",
+    "action_listing": "a partagé une offre ou une demande",
     "action_event": "a publié à propos d'un événement",
     "action_poll": "a créé un sondage",
     "action_goal": "a défini un nouvel objectif",
@@ -82,7 +82,7 @@
   },
   "suggestions": {
     "empty": "Aucune suggestion pour l'instant",
-    "empty_description": "Les correspondances s'améliorent à mesure que davantage d'annonces et de détails de profil sont ajoutés.",
+    "empty_description": "Les suggestions s’améliorent à mesure que des offres, des demandes et des détails de profil sont ajoutés.",
     "see_all_matches": "Voir tous les matchs",
     "score_chip": "{{score}}%",
     "distance_chip": "{{value}} km"
@@ -117,7 +117,7 @@
     "xp_value_other": "{{count}} XP"
   },
   "aria": {
-    "loading_listings": "Chargement des annonces",
+    "loading_listings": "Chargement des offres et demandes",
     "loading_activity": "Chargement de l’activité",
     "loading_events": "Chargement des événements",
     "loading_groups": "Chargement des groupes",
@@ -125,17 +125,17 @@
     "loading_suggestions": "Chargement des suggestions",
     "loading_endorsements": "Chargement des recommandations",
     "loading_pending_reviews": "Chargement des avis en attente",
-    "view_all_listings": "Voir toutes les annonces",
+    "view_all_listings": "Voir toutes les offres et demandes",
     "view_all_activity": "Voir toute l'activité récente",
     "view_all_events": "Voir tous les événements",
     "view_all_groups": "Voir tous les groupes",
     "view_achievements": "Voir les réussites",
-    "browse_all_listings": "Parcourir toutes les annonces",
+    "browse_all_listings": "Parcourir toutes les offres et demandes",
     "view_all_endorsements": "Voir toutes les recommandations",
     "view_pending_reviews": "Voir tous les avis en attente",
     "loading_exchanges_attention": "Chargement des échanges nécessitant votre attention",
     "view_exchanges_attention": "Voir tous les échanges",
-    "view_my_listings": "Voir toutes vos annonces"
+    "view_my_listings": "Voir toutes vos offres et demandes"
   },
   "reviews": {
     "sent": "Envoyé {{amount}}h",
@@ -168,12 +168,12 @@
   "comments_count_other": "{{count}} commentaires",
   "location_prompt": {
     "title": "Dites-nous où vous habitez",
-    "subtitle": "Ajoutez votre ville ou commune pour trouver des personnes et des annonces près de chez vous.",
+    "subtitle": "Ajoutez votre ville ou commune pour trouver des personnes, des offres et des demandes près de chez vous.",
     "label": "Où habitez-vous ?",
     "placeholder": "Votre ville ou commune",
     "save": "Enregistrer",
     "saved": "Lieu enregistré",
-    "not_saved": "Lieu non enregistré",
+    "not_saved": "Nous n’avons pas pu enregistrer votre lieu",
     "error_location": "Nous n'avons pas pu enregistrer ce lieu. Vérifiez-le et réessayez.",
     "error_coordinates": "Nous n'avons pas pu utiliser la position sur la carte pour ce lieu. Choisissez-le à nouveau dans la liste ou saisissez uniquement votre ville.",
     "error_generic": "Nous n'avons pas pu enregistrer votre lieu. Veuillez réessayer."

@@ -124,7 +124,7 @@ export function NewMembersStrip({ className = '' }: { className?: string }) {
                 <span className="max-w-full truncate text-sm font-medium text-theme-primary">{name}</span>
               </Link>
               <span className="text-xs text-theme-subtle">
-                {t('new_members.joined', { when: formatRelativeTime(member.created_at) })}
+                {t('new_members.joined', { when: formatRelativeTime(member.created_at, 'long') })}
               </span>
               {canMessage && (
                 <Link

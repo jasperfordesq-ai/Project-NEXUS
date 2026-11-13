@@ -1,19 +1,19 @@
 {
   "meta": {
     "title": "Dashboard",
-    "description": "Ihr persönliches Dashboard. Zeigen Sie Ihr Guthaben, Inserate und Aktivitäten an."
+    "description": "Ihr Guthaben, Ihre Angebote und Gesuche und was in Ihrer Community los ist."
   },
   "fallback_name": "dort",
   "welcome_back": "Willkommen zurück, {{name}}!",
   "community_activity": "Das passiert gerade in {{community}}",
-  "unable_to_load": "Dashboard konnte nicht geladen werden",
+  "unable_to_load": "Wir konnten Ihr Dashboard nicht laden",
   "try_again": "Erneut versuchen",
   "common": {
     "loading": "Wird geladen"
   },
   "onboarding": {
-    "banner_title": "Vervollständigen Sie Ihre Profileinrichtung",
-    "banner_subtitle": "Teilen Sie uns Ihre Interessen und Fähigkeiten mit, um personalisierte Treffer zu erhalten",
+    "banner_title": "Richten Sie Ihr Profil fertig ein",
+    "banner_subtitle": "Sagen Sie uns, was Ihnen Freude macht und was Sie können – dann schlagen wir Ihnen passende Menschen und Angebote vor.",
     "get_started": "Jetzt starten"
   },
   "new_listing": "Neues Angebot oder Gesuch",
@@ -65,13 +65,13 @@
     "requesting": "Gesuch",
     "offer": "Angebot",
     "request": "Gesuch",
-    "user_fallback": "Benutzer",
+    "user_fallback": "Mitglied",
     "empty": "Keine aktuellen Angebote oder Gesuche",
     "empty_description": "Erstellen Sie ein Gesuch oder Angebot, um Übereinstimmungen mit Menschen in Ihrer Nähe zu finden.",
     "create_first": "Erstellen Sie Ihr erstes Angebot oder Gesuch"
   },
   "activity": {
-    "action_listing": "hat ein Inserat geteilt",
+    "action_listing": "hat ein Angebot oder Gesuch geteilt",
     "action_event": "hat über eine Veranstaltung geschrieben",
     "action_poll": "hat eine Umfrage erstellt",
     "action_goal": "hat ein neues Ziel gesetzt",
@@ -82,7 +82,7 @@
   },
   "suggestions": {
     "empty": "Noch keine Empfehlungen",
-    "empty_description": "Die Übereinstimmung verbessert sich, je mehr Anzeigen und Profildaten hinzugefügt werden.",
+    "empty_description": "Die Vorschläge werden besser, je mehr Angebote, Gesuche und Profilangaben hinzukommen.",
     "see_all_matches": "Alle Spiele anzeigen",
     "score_chip": "{{score}}%",
     "distance_chip": "{{value}} km"
@@ -115,7 +115,7 @@
     "xp_value_other": "{{count}} XP"
   },
   "aria": {
-    "loading_listings": "Inserate werden geladen",
+    "loading_listings": "Angebote und Gesuche werden geladen",
     "loading_activity": "Aktivität wird geladen",
     "loading_events": "Veranstaltungen werden geladen",
     "loading_groups": "Gruppen werden geladen",
@@ -123,17 +123,17 @@
     "loading_suggestions": "Vorschläge werden geladen",
     "loading_endorsements": "Empfehlungen werden geladen",
     "loading_pending_reviews": "Ausstehende Bewertungen werden geladen",
-    "view_all_listings": "Alle Anzeigen anzeigen",
+    "view_all_listings": "Alle Angebote und Gesuche ansehen",
     "view_all_activity": "Alle neuen Aktivitäten anzeigen",
     "view_all_events": "Alle Veranstaltungen anzeigen",
     "view_all_groups": "Alle Gruppen anzeigen",
     "view_achievements": "Erfolge anzeigen",
-    "browse_all_listings": "Alle Anzeigen durchsuchen",
+    "browse_all_listings": "Alle Angebote und Gesuche durchsuchen",
     "view_all_endorsements": "Alle Empfehlungen anzeigen",
     "view_pending_reviews": "Alle ausstehenden Bewertungen anzeigen",
     "loading_exchanges_attention": "Austausche, die Aufmerksamkeit erfordern, werden geladen",
     "view_exchanges_attention": "Alle Austausche ansehen",
-    "view_my_listings": "Alle deine Inserate ansehen"
+    "view_my_listings": "Alle Ihre Angebote und Gesuche ansehen"
   },
   "reviews": {
     "sent": "Gesendet {{amount}}h",
@@ -164,12 +164,12 @@
   "comments_count_other": "{{count}} Kommentare",
   "location_prompt": {
     "title": "Sagen Sie uns, wo Sie ansässig sind",
-    "subtitle": "Geben Sie Ihre Stadt oder Ihren Ort an, damit Sie Menschen und Angebote in Ihrer Nähe finden.",
+    "subtitle": "Geben Sie Ihre Stadt oder Ihren Ort an, damit Sie Menschen, Angebote und Gesuche in Ihrer Nähe finden.",
     "label": "Wo sind Sie ansässig?",
     "placeholder": "Ihre Stadt oder Ihr Ort",
     "save": "Speichern",
     "saved": "Standort gespeichert",
-    "not_saved": "Standort nicht gespeichert",
+    "not_saved": "Wir konnten Ihren Standort nicht speichern",
     "error_location": "Wir konnten diesen Ort nicht speichern. Bitte prüfen Sie die Eingabe und versuchen Sie es erneut.",
     "error_coordinates": "Die Kartenposition für diesen Ort konnte nicht verwendet werden. Bitte wählen Sie ihn erneut aus der Liste aus oder geben Sie nur Ihren Ort ein.",
     "error_generic": "Ihr Standort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."

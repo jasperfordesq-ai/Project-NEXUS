@@ -1,20 +1,20 @@
 {
   "meta": {
     "title": "Dashboard",
-    "description": "Your personal dashboard. View your balance, listings, and activity."
+    "description": "Your balance, your offers and requests, and what's happening in your community."
   },
   "fallback_name": "there",
   "welcome_back": "Welcome back, {{name}}!",
   "community_activity": "Here's what's happening in {{community}}",
-  "unable_to_load": "Unable to Load Dashboard",
-  "try_again": "Try Again",
+  "unable_to_load": "We couldn't load your dashboard",
+  "try_again": "Try again",
   "common": {
     "loading": "Loading"
   },
   "onboarding": {
-    "banner_title": "Complete your profile setup",
-    "banner_subtitle": "Tell us about your interests and skills to get personalized matches",
-    "get_started": "Get Started"
+    "banner_title": "Finish setting up your profile",
+    "banner_subtitle": "Tell us what you enjoy and what you can do, and we'll suggest people and offers that fit.",
+    "get_started": "Get started"
   },
   "new_listing": "New offer or request",
   "caring_community": {
@@ -35,28 +35,28 @@
   },
   "sections": {
     "recent_listings": "Recent offers and requests",
-    "recent_activity": "Recent Activity",
-    "quick_actions": "Quick Actions",
-    "suggested_for_you": "Suggested for You",
-    "my_groups": "My Groups",
-    "upcoming_events": "Upcoming Events",
-    "your_progress": "Your Progress",
-    "pending_reviews": "Pending Reviews",
+    "recent_activity": "Recent activity",
+    "quick_actions": "Quick actions",
+    "suggested_for_you": "Suggested for you",
+    "my_groups": "My groups",
+    "upcoming_events": "Upcoming events",
+    "your_progress": "Your progress",
+    "pending_reviews": "Pending reviews",
     "endorsements": "Endorsements",
     "exchanges_attention": "Needs your attention",
     "my_listings": "Your offers and requests"
   },
   "view_all": "View all",
-  "view_all_caps": "View All",
-  "browse_all": "Browse All",
-  "view_achievements": "View Achievements",
-  "view_all_transactions": "View All Transactions",
+  "view_all_caps": "View all",
+  "browse_all": "Browse all",
+  "view_achievements": "View achievements",
+  "view_all_transactions": "View all transactions",
   "quick_actions": {
     "create_listing": "Create an offer or request",
     "messages": "Messages",
-    "view_wallet": "View Wallet",
-    "find_members": "Find Members",
-    "browse_events": "Browse Events",
+    "view_wallet": "View wallet",
+    "find_members": "Find members",
+    "browse_events": "Browse events",
     "caring_community": "Care Hub",
     "notifications": "Notifications"
   },
@@ -65,13 +65,13 @@
     "requesting": "Requesting",
     "offer": "Offer",
     "request": "Request",
-    "user_fallback": "User",
+    "user_fallback": "Member",
     "empty": "No recent offers or requests",
     "empty_description": "Create a request or offer to start matching with people nearby.",
     "create_first": "Create your first offer or request"
   },
   "activity": {
-    "action_listing": "shared a listing",
+    "action_listing": "shared an offer or request",
     "action_event": "posted about an event",
     "action_poll": "created a poll",
     "action_goal": "set a new goal",
@@ -82,7 +82,7 @@
   },
   "suggestions": {
     "empty": "No suggestions yet",
-    "empty_description": "Matching improves as more listings and profile details are added.",
+    "empty_description": "Suggestions get better as more offers, requests and profile details are added.",
     "see_all_matches": "See all matches",
     "score_chip": "{{score}}%",
     "distance_chip": "{{value}} km"
@@ -92,7 +92,7 @@
     "empty": "You haven't joined any groups yet",
     "empty_description": "Groups help you follow shared interests, projects, and local circles.",
     "discover": "Discover groups",
-    "members_count_one": "{{count}} members",
+    "members_count_one": "{{count}} member",
     "members_count_other": "{{count}} members"
   },
   "events": {
@@ -107,7 +107,7 @@
     "badges": "Badges",
     "streak": "Streak",
     "xp_value": "{{count}} XP",
-    "xp_progress": "XP Progress",
+    "xp_progress": "XP progress",
     "start_earning": "Start earning XP by participating in the community!",
     "streak_days_one": "{{count}} day",
     "streak_days_other": "{{count}} days",
@@ -115,7 +115,7 @@
     "xp_value_other": "{{count}} XP"
   },
   "aria": {
-    "loading_listings": "Loading listings",
+    "loading_listings": "Loading offers and requests",
     "loading_activity": "Loading activity",
     "loading_events": "Loading events",
     "loading_groups": "Loading groups",
@@ -123,17 +123,17 @@
     "loading_suggestions": "Loading suggestions",
     "loading_endorsements": "Loading endorsements",
     "loading_pending_reviews": "Loading pending reviews",
-    "view_all_listings": "View all listings",
+    "view_all_listings": "View all offers and requests",
     "view_all_activity": "View all recent activity",
     "view_all_events": "View all events",
     "view_all_groups": "View all groups",
     "view_achievements": "View achievements",
-    "browse_all_listings": "Browse all listings",
+    "browse_all_listings": "Browse all offers and requests",
     "view_all_endorsements": "View all endorsements",
     "view_pending_reviews": "View all pending reviews",
     "loading_exchanges_attention": "Loading exchanges that need attention",
     "view_exchanges_attention": "View all exchanges",
-    "view_my_listings": "View all your listings"
+    "view_my_listings": "View all your offers and requests"
   },
   "reviews": {
     "sent": "Sent {{amount}}h",
@@ -142,7 +142,7 @@
     "none_pending": "No pending reviews",
     "none_pending_description": "Completed exchanges that need feedback will appear here.",
     "pending_subtitle": "Open this review request",
-    "view_all_pending": "View All Pending"
+    "view_all_pending": "View all pending"
   },
   "likes_count": "{{count}} likes",
   "comments_count": "{{count}} comments",
@@ -158,18 +158,18 @@
     },
     "view_all": "View all exchanges"
   },
-  "likes_count_one": "{{count}} likes",
+  "likes_count_one": "{{count}} like",
   "likes_count_other": "{{count}} likes",
-  "comments_count_one": "{{count}} comments",
+  "comments_count_one": "{{count}} comment",
   "comments_count_other": "{{count}} comments",
   "location_prompt": {
     "title": "Tell us where you are based",
-    "subtitle": "Add your town or city so you can find people and listings near you.",
+    "subtitle": "Add your town or city so you can find people, offers and requests near you.",
     "label": "Where are you based?",
     "placeholder": "Your town or city",
     "save": "Save",
     "saved": "Location saved",
-    "not_saved": "Location not saved",
+    "not_saved": "We couldn't save your location",
     "error_location": "We could not save that place. Please check it and try again.",
     "error_coordinates": "We could not use the map position for that place. Please pick it from the list again, or type just your town.",
     "error_generic": "We could not save your location. Please try again."
