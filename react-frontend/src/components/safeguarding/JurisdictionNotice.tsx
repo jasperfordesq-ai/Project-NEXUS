@@ -21,6 +21,7 @@ import ArrowRight from 'lucide-react/icons/arrow-right';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import { Alert, Button } from '@/components/ui';
 import { useTenant } from '@/contexts';
+import { isOnPanelPath } from '@/lib/panelPath';
 import { JURISDICTION_SETTING_PATH } from '@/broker/components/configuration/configurationSchema';
 
 interface JurisdictionNoticeProps {
@@ -35,7 +36,8 @@ export function JurisdictionNotice({ canSet }: JurisdictionNoticeProps) {
   const { pathname } = useLocation();
   const settingPath = tenantPath(JURISDICTION_SETTING_PATH);
   // The button is noise on the page that holds the setting.
-  const onConfigurationPage = pathname === tenantPath('/broker/configuration');
+  // With or without the community slug in the address — see lib/panelPath.ts.
+  const onConfigurationPage = isOnPanelPath(pathname, '/broker/configuration', tenantPath, { exact: true });
 
   return (
     <Alert

@@ -102,6 +102,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { canAccessSuperPanel, isGodPlatformAdmin, isGodUser, isPlatformSuperAdminUser, isSuperAdminUser } from '@/lib/access';
+import { isOnPanelPath } from '@/lib/panelPath';
 import { useAdminBadgeCounts, badgeForCount } from '@/admin/hooks/useAdminBadgeCounts';
 import type { LucideIcon } from 'lucide-react';
 interface NavItem {
@@ -825,11 +826,11 @@ export function AdminSidebar({ collapsed = false, onToggle = () => undefined }: 
 
     for (const item of allItems) {
       const { path, rawQuery } = getPathAndQuery(item.href);
-      const fullPath = tenantPath(path);
       const isDashboard = path === '/admin';
 
-      if (isDashboard && pathname !== fullPath) continue;
-      if (!isDashboard && !(pathname === fullPath || pathname.startsWith(`${fullPath}/`))) continue;
+      // The dashboard matches exactly; other pages also match their
+      // sub-pages. With or without the community slug — see lib/panelPath.ts.
+      if (!isOnPanelPath(pathname, path, tenantPath, { exact: isDashboard })) continue;
 
       let score = path.length;
       if (rawQuery) {

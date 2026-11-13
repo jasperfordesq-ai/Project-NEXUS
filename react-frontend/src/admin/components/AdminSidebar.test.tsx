@@ -39,6 +39,10 @@ const mockHasModule = vi.fn((_module: string) => true);
 // Swappable per test (e.g. to a god user); reset to a plain admin in beforeEach.
 const ADMIN_USER = { id: 1, name: 'Admin User', role: 'admin' } as User;
 const authState = vi.hoisted(() => ({ user: null as User | null }));
+// The address the sidebar sees. Tests that care which link is current set it;
+// everything else gets the admin dashboard on a slug address.
+const DEFAULT_LOCATION = { pathname: '/test/admin', search: '', hash: '' };
+const locationState = vi.hoisted(() => ({ value: { pathname: '/test/admin', search: '', hash: '' } }));
 
 vi.mock('@/contexts', () =>
   createMockContexts({
@@ -67,7 +71,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
   const orig = await importOriginal<typeof import('react-router-dom')>();
   return {
     ...orig,
-    useLocation: () => ({ pathname: '/test/admin', search: '', hash: '' }),
+    useLocation: () => locationState.value,
     Link: ({ to, children, ...rest }: { to: string; children: React.ReactNode; [key: string]: unknown }) => (
       <a href={to} {...(rest as object)}>{children}</a>
     ),
@@ -90,6 +94,7 @@ describe('AdminSidebar', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     authState.user = { ...ADMIN_USER };
+    locationState.value = { ...DEFAULT_LOCATION };
     mockHasFeature.mockReturnValue(true);
     mockHasModule.mockReturnValue(true);
     // Safeguarding call
@@ -174,6 +179,50 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/test/admin');
     // … while Users is an accordion section, so it is a collapsed trigger button.
     expect(screen.getByRole('button', { name: 'Users' })).toBeInTheDocument();
+  });
+
+  // ─── Which link is the current page ────────────────────────────────────────
+  // On a shared host TenantShell renders the routes with the community slug
+  // stripped, so useLocation() returns /admin/… while tenantPath() still adds
+  // the slug. Until November 2026 the two were compared directly: on a slug
+  // address (localhost, the shared app host) no link was marked as current and
+  // the section holding the current page did not open itself.
+
+  const currentHrefs = () =>
+    Array.from(document.querySelectorAll('a[aria-current="page"]')).map((a) => a.getAttribute('href'));
+  const at = (pathname: string, search = '') => { locationState.value = { pathname, search, hash: '' }; };
+
+  it('marks the dashboard as current, with or without the community slug in the address', async () => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+
+    at('/test/admin');
+    const withSlug = render(<AdminSidebar collapsed={false} />);
+    expect(currentHrefs()).toEqual(['/test/admin']);
+    withSlug.unmount();
+
+    at('/admin');
+    render(<AdminSidebar collapsed={false} />);
+    expect(currentHrefs()).toEqual(['/test/admin']);
+  });
+
+  it('opens the section of the current page and marks its link when the slug has been stripped', async () => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+    at('/admin/users');
+    render(<AdminSidebar collapsed={false} />);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Users' })).toHaveAttribute('aria-expanded', 'true'));
+    expect(screen.getByRole('link', { name: 'All Users' })).toHaveAttribute('aria-current', 'page');
+    // The dashboard is not the current page here.
+    expect(screen.getByRole('link', { name: 'Dashboard' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('does the same on an address that carries the slug', async () => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+    at('/test/admin/users');
+    render(<AdminSidebar collapsed={false} />);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Users' })).toHaveAttribute('aria-expanded', 'true'));
+    expect(screen.getByRole('link', { name: 'All Users' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('renders Users section when not collapsed', async () => {

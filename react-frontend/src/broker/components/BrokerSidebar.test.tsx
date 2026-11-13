@@ -242,6 +242,61 @@ describe('BrokerSidebar — distinct icons', () => {
   });
 });
 
+describe('BrokerSidebar — which link is the current page', () => {
+  // test-utils renders inside a BrowserRouter, so the address bar is the route.
+  const goTo = (path: string) => window.history.replaceState({}, '', path);
+  const currentHrefs = () =>
+    Array.from(document.querySelectorAll('nav a[aria-current="page"]')).map((a) => a.getAttribute('href'));
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('marks the page on an address that carries the community slug', () => {
+    goTo('/test/broker/members');
+    render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
+    expect(currentHrefs()).toEqual(['/test/broker/members']);
+  });
+
+  it('marks the page when the router has stripped the community slug', () => {
+    // On a shared host TenantShell renders the routes with the slug stripped,
+    // so useLocation() returns /broker/… while tenantPath() still adds the
+    // slug. Until November 2026 the two were compared directly and no link was
+    // ever marked on a slug address (localhost, the shared app host).
+    goTo('/broker/members');
+    render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
+    expect(currentHrefs()).toEqual(['/test/broker/members']);
+  });
+
+  it('marks the dashboard only on the dashboard, slug or no slug', () => {
+    goTo('/broker');
+    const first = render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
+    expect(currentHrefs()).toEqual(['/test/broker']);
+    first.unmount();
+
+    goTo('/test/broker/');
+    const second = render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
+    expect(currentHrefs()).toEqual(['/test/broker']);
+    second.unmount();
+
+    goTo('/broker/vetting');
+    render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
+    expect(currentHrefs()).toEqual(['/test/broker/vetting']);
+  });
+
+  it('marks a page for its own sub-pages but not for a sibling with a similar name', () => {
+    goTo('/broker/members/42');
+    const first = render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
+    expect(currentHrefs()).toEqual(['/test/broker/members']);
+    first.unmount();
+
+    // "/broker/safeguarding-options" must not light any "/broker/safeguarding/…" link.
+    goTo('/broker/safeguarding-options');
+    render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
+    expect(currentHrefs()).toEqual(['/test/broker/safeguarding-options']);
+  });
+});
+
 describe('BrokerSidebar — badge capping', () => {
   beforeEach(() => {
     vi.clearAllMocks();

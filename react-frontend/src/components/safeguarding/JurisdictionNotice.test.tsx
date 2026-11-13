@@ -42,6 +42,25 @@ describe('JurisdictionNotice', () => {
     expect(screen.queryByRole('button', { name: /Set the jurisdiction/ })).toBeNull();
   });
 
+  it('also drops the button there when the router has stripped the community slug', () => {
+    // On a shared host the pathname this component sees has no slug while
+    // tenantPath() adds one. Until November 2026 the two were compared
+    // directly, so on a slug address the button stayed on the very page that
+    // holds the setting.
+    window.history.replaceState({}, '', '/broker/configuration');
+    render(<JurisdictionNotice canSet />);
+
+    expect(screen.getByText('Safeguarding jurisdiction not set')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Set the jurisdiction/ })).toBeNull();
+  });
+
+  it('keeps the button on other pages when the router has stripped the community slug', () => {
+    window.history.replaceState({}, '', '/broker/members');
+    render(<JurisdictionNotice canSet />);
+
+    expect(screen.getByRole('button', { name: /Set the jurisdiction/ })).toBeInTheDocument();
+  });
+
   it('tells everyone else to ask an admin, with no button', () => {
     render(<JurisdictionNotice canSet={false} />);
 

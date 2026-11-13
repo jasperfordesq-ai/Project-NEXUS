@@ -9,7 +9,7 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Info from 'lucide-react/icons/info';
 import { useTenant } from '@/contexts';
 import { useExternalFederationStatus } from './useExternalFederationStatus';
-import { isOnPanelPath } from './panelPath';
+import { isOnPanelPath } from '@/lib/panelPath';
 
 /**
  * The pages that carry traffic to or from OTHER installations. Must list the

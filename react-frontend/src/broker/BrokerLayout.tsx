@@ -19,6 +19,7 @@ import { adminBroker, adminInsurance, adminMatching } from '@/admin/api/adminApi
 import { useAuth, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { isAdminTierUser } from '@/lib/access';
+import { isOnPanelPath } from '@/lib/panelPath';
 import type { InsuranceStats, MatchApprovalStats } from '@/admin/api/types';
 import { BrokerSidebar, type BrokerBadgeCounts } from './components/BrokerSidebar';
 import { BrokerHeader } from './components/BrokerHeader';
@@ -89,7 +90,8 @@ export function BrokerLayout() {
   const [jurisdictionConfigured, setJurisdictionConfigured] = useState<boolean | null>(null);
   const { user } = useAuth();
   const { pathname } = useLocation();
-  const onDashboard = pathname === tenantPath('/broker') || pathname === tenantPath('/broker/');
+  // With or without the community slug in the address — see lib/panelPath.ts.
+  const onDashboard = isOnPanelPath(pathname, '/broker', tenantPath, { exact: true });
   const drawerRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
 

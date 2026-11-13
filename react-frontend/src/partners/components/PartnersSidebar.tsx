@@ -57,7 +57,7 @@ import PanelLeftClose from 'lucide-react/icons/panel-left-close';
 import PanelLeft from 'lucide-react/icons/panel-left';
 import { Button, Tooltip } from '@/components/ui';
 import { useExternalFederationStatus } from './useExternalFederationStatus';
-import { isOnPanelPath } from './panelPath';
+import { isOnPanelPath } from '@/lib/panelPath';
 
 interface PartnersSidebarProps {
   collapsed: boolean;

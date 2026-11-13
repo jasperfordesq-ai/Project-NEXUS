@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAuth, useTenant } from '@/contexts';
 import { hasAdminPanelAccess } from '@/lib/access';
+import { isOnPanelPath } from '@/lib/panelPath';
 import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
 import Users from 'lucide-react/icons/users';
 import UserRoundCheck from 'lucide-react/icons/user-round-check';
@@ -199,15 +200,14 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
   ];
 
   const isActive = (path: string) => {
-    const current = location.pathname;
+    // The dashboard matches exactly; every other page also matches its own
+    // sub-pages, on a `/` boundary only (so "/broker/safeguarding" does not
+    // light up for "/broker/safeguarding-options"). isOnPanelPath accepts the
+    // address with or without the community slug — see lib/panelPath.ts.
     if (path === '/broker' || path === `${tenant?.slug ? `/${tenant.slug}` : ''}/broker`) {
-      return current === tenantPath('/broker') || current === tenantPath('/broker/');
+      return isOnPanelPath(location.pathname, '/broker', tenantPath, { exact: true });
     }
-    // Exact match or a `/`-delimited descendant only — a bare prefix match
-    // would light "/broker/safeguarding" for "/broker/safeguarding-options"
-    // (and any other sibling whose path is a string prefix of another).
-    const target = tenantPath(path);
-    return current === target || current.startsWith(target + '/');
+    return isOnPanelPath(location.pathname, path, tenantPath);
   };
 
   const renderItem = (item: NavItem) => {

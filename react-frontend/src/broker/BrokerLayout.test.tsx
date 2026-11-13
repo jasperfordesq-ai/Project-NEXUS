@@ -283,6 +283,25 @@ describe('BrokerLayout', () => {
       expect(screen.queryByText(NOTICE)).toBeNull();
     });
 
+    it('also leaves the dashboard alone when the router has stripped the community slug', async () => {
+      // On a shared host the pathname the layout sees is "/broker" while
+      // tenantPath() returns "/test/broker". Until November 2026 the two were
+      // compared directly, so on every slug address the dashboard showed this
+      // notice AND its own compact card.
+      window.history.replaceState({}, '', '/broker');
+      mockGetDashboard.mockResolvedValue({ success: true, data: { ...BROKER_DASHBOARD, safeguarding_jurisdiction_configured: false } });
+      render(<BrokerLayout />);
+      await waitFor(() => expect(mockGetDashboard).toHaveBeenCalled());
+      expect(screen.queryByText(NOTICE)).toBeNull();
+    });
+
+    it('still shows it on every other page when the router has stripped the community slug', async () => {
+      window.history.replaceState({}, '', '/broker/members');
+      mockGetDashboard.mockResolvedValue({ success: true, data: { ...BROKER_DASHBOARD, safeguarding_jurisdiction_configured: false } });
+      render(<BrokerLayout />);
+      expect(await screen.findByText(NOTICE)).toBeInTheDocument();
+    });
+
     it('shows nothing when the jurisdiction is set', async () => {
       mockGetDashboard.mockResolvedValue({ success: true, data: { ...BROKER_DASHBOARD, safeguarding_jurisdiction_configured: true } });
       render(<BrokerLayout />);

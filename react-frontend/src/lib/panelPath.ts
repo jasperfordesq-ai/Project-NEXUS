@@ -15,9 +15,10 @@
  * "/partner-timebanks/…". On a community's own domain there is no slug at
  * all. `tenantPath()` always re-adds the slug on a shared host.
  *
- * Until November 2026 the sidebar compared `useLocation().pathname` with
- * `tenantPath(path)` only, so on every slug address (localhost and the shared
- * app host) no link was ever marked as the current page.
+ * Until November 2026 the Partner Timebanks, broker and admin sidebars (and
+ * the broker panel's jurisdiction notice) compared `useLocation().pathname`
+ * with `tenantPath(path)` only, so on every slug address (localhost and the
+ * shared app host) no link was ever marked as the current page.
  *
  * A match is the page itself or a `/`-delimited descendant — a bare prefix
  * match would light "/partner-timebanks/api-keys" for a sibling whose path
