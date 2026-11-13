@@ -143,10 +143,10 @@ describe('MyListingsPage', () => {
     serve({ live: [listing({})], expired: [listing({ id: 2, title: 'Gardening', status: 'expired', expires_at: inDays(-3) })] }, { live: 1, expired: 1, rejected: 1 });
     render(<MyListingsPage />);
 
-    expect(await screen.findByText('1 of your listings has expired, so other members cannot see it.')).toBeInTheDocument();
-    expect(screen.getByText('1 of your listings was not approved.')).toBeInTheDocument();
+    expect(await screen.findByText('1 of your offers and requests has expired, so other members cannot see it.')).toBeInTheDocument();
+    expect(screen.getByText('1 of your offers and requests was not approved.')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'See expired listings' }));
+    fireEvent.click(screen.getByRole('button', { name: "See what has expired" }));
 
     expect(await screen.findByRole('link', { name: 'Gardening' })).toBeInTheDocument();
     expect(lastGetUrl().searchParams.get('status')).toBe('expired');
@@ -192,10 +192,10 @@ describe('MyListingsPage', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Delete Dog walking' }));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('Delete this listing?')).toBeInTheDocument();
+    expect(within(dialog).getByText("Delete this offer or request?")).toBeInTheDocument();
     expect(mockApi.delete).not.toHaveBeenCalled();
 
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete listing' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: "Yes, delete it" }));
 
     await waitFor(() => expect(mockApi.delete).toHaveBeenCalledWith('/v2/listings/1'));
     await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Deleted.'));
@@ -215,15 +215,15 @@ describe('MyListingsPage', () => {
     serve({}, {});
     render(<MyListingsPage />);
 
-    expect(await screen.findByText('You have no live listings')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Create a listing' })).toHaveAttribute('href', '/test/listings/create');
+    expect(await screen.findByText("You have no live offers or requests")).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: "Create an offer or request" })).toHaveAttribute('href', '/test/listings/create');
   });
 
   it('says so and offers a retry when the listings cannot be loaded', async () => {
     mockApi.get.mockResolvedValueOnce({ success: false, error: 'boom' });
     render(<MyListingsPage />);
 
-    expect(await screen.findByText('We could not load your listings.')).toBeInTheDocument();
+    expect(await screen.findByText("We couldn't load your offers and requests.")).toBeInTheDocument();
 
     serve({ live: [listing({})] }, { live: 1 });
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
