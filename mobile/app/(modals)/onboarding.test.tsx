@@ -689,6 +689,34 @@ describe("OnboardingScreen and the community's choice about the welcome steps", 
     expect(completeOnboarding).not.toHaveBeenCalled();
   });
 
+  /*
+    Found on the emulator, 13 Nov 2026. The app starts from its saved copy of the community
+    settings and fetches the fresh copy a moment later. A community that had just made the
+    steps optional still had "compulsory" in the saved copy, so the app opened the steps;
+    when the fresh copy arrived the member was left on them with only "Skip for now".
+  */
+  it('goes Home when the fresh community settings say the steps are no longer compulsory', async () => {
+    mockTenant = { name: 'Timebank Global', settings: { onboarding_enabled: true, onboarding_mandatory: true } };
+    const view = render(<OnboardingScreen />);
+    await waitFor(() => expect(view.getByText('Welcome to Timebank Global!')).toBeTruthy());
+    expect(mockReplace).not.toHaveBeenCalled();
+
+    mockTenant = { name: 'Timebank Global', settings: { onboarding_enabled: true, onboarding_mandatory: false } };
+    view.rerender(<OnboardingScreen />);
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/(tabs)/home'));
+  });
+
+  it('stays on optional steps the member opened by choice', async () => {
+    mockTenant = { name: 'Timebank Global', settings: { onboarding_enabled: true, onboarding_mandatory: false } };
+    const view = render(<OnboardingScreen />);
+    await waitFor(() => expect(view.getByText('Welcome to Timebank Global!')).toBeTruthy());
+
+    view.rerender(<OnboardingScreen />);
+
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
   it('has no way out when every new member must finish the steps', async () => {
     mockTenant = { name: 'Timebank Global', settings: { onboarding_enabled: true, onboarding_mandatory: true } };
 

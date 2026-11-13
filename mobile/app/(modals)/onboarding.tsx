@@ -230,6 +230,19 @@ function OnboardingScreenInner() {
     void load();
   }, [leave, load, stepsSwitchedOff]);
 
+  // The app starts from its saved copy of the community settings and fetches the fresh
+  // copy a moment later. If the saved copy said "compulsory" the root navigator opened
+  // this screen; when the fresh copy says the steps are now optional, the member never
+  // chose to be here, so go Home. Only from the first step, so nobody loses answers
+  // (found on the emulator, 13 Nov 2026). Opened by choice under "optional", the setting
+  // never changes from compulsory, so the member stays.
+  const wasCompulsoryRef = useRef(stepsCompulsory);
+  useEffect(() => {
+    const becameOptional = wasCompulsoryRef.current && !stepsCompulsory;
+    wasCompulsoryRef.current = stepsCompulsory;
+    if (becameOptional && stepIndex === 0) leave();
+  }, [leave, stepIndex, stepsCompulsory]);
+
   useEffect(() => {
     if (!currentStep) return;
     AccessibilityInfo.announceForAccessibility(
