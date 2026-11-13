@@ -22,11 +22,14 @@ import { NativeAppInstallStats } from './NativeAppInstallStats';
 
 export function NativeApp() {
   const { t } = useTranslation('admin_system');
-  usePageTitle(t('system.native_app_title'));
+  usePageTitle(t('system.phone_app.title'));
 
   return (
     <div>
-      <PageHeader title={t('system.native_app_title')} />
+      <PageHeader
+        title={t('system.phone_app.title')}
+        description={t('system.phone_app.description')}
+      />
 
       <div className="space-y-4">
         <NativeAppInstallStats />

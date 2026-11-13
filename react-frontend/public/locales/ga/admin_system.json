@@ -589,48 +589,6 @@
     "last_status": "Stádas Deiridh",
     "last_succeeded": "Ar éirigh go deireanach",
     "loading_cron_jobs": "jabanna cron á lódáil...",
-    "native_app_title": "App Dúchais",
-    "native_app": {
-      "installs": {
-        "title": "Suiteálacha aip sa phobal seo",
-        "scope_this_community": "An pobal seo amháin",
-        "not_store_installs": "Is baill iad seo a shuiteáil an aip, a shínigh isteach agus a cheadaigh fógraí — ní hé líon na suiteálacha ó Google Play ná ón App Store atá i gceist. Ní thaispeánfar anseo duine a shuiteálann an aip agus a dhiúltaíonn d’fhógraí. Chun figiúirí suiteála na siopaí a fháil, úsáid Google Play Console.",
-        "phones_registered": "Fóin chláraithe",
-        "platform_split": "{{android}} ar Android · {{ios}} ar iOS",
-        "people_with_app": "Baill a bhfuil an aip acu",
-        "browser_subscriptions": "Fógraí brabhsálaí",
-        "reachable_by_push": "Baill is féidir a shroicheadh le fógra",
-        "reachable_by_push_hint": "Comhairtear uair amháin iad, cibé ar fón, ar bhrabhsálaí, nó ar an dá cheann.",
-        "first_last": "An chéad chlárú {{first}} · an ceann is déanaí {{last}}",
-        "recent_table_label": "Cláruithe aip le déanaí sa phobal seo",
-        "recent_all_table_label": "Cláruithe aip le déanaí i ngach pobal",
-        "by_community_table_label": "Suiteálacha aip de réir pobail",
-        "columns": {
-          "member": "Ball",
-          "platform": "Gléas",
-          "registered": "Cláraithe",
-          "last_seen": "Feicthe go deireanach",
-          "community": "Pobal",
-          "phones": "Fóin",
-          "people": "Baill",
-          "latest_install": "Is déanaí"
-        },
-        "empty": "Níl an aip cláraithe ag aon duine fós.",
-        "never": "Riamh",
-        "unnamed_member": "Ball #{{id}}",
-        "unnamed_community": "Pobal #{{id}}",
-        "load_failed": "Níorbh fhéidir figiúirí suiteála na haipe a luchtú.",
-        "platform_title": "Gach pobal",
-        "god_only": "Mód dia amháin",
-        "platform_description": "Gach pobal ar an ardán, lena n-áirítear cinn nach riarann tú. Le feiceáil ag oibreoirí i mód dia amháin.",
-        "phones_registered_all": "Fóin chláraithe (gach ceann)",
-        "people_with_app_all": "Baill a bhfuil an aip acu (gach ceann)",
-        "communities_with_installs": "Pobail a bhfuil suiteálacha acu",
-        "reachable_by_push_all": "Inrochtana le fógra (gach ceann)",
-        "by_community": "De réir pobail",
-        "recent_all_communities": "Cláruithe le déanaí, gach pobal"
-      }
-    },
     "never": "Riamh",
     "next_run": "An Chéad Rith Eile",
     "no_activity_log_entries": "Níl aon iontrálacha loga gníomhaíochta",
@@ -1532,7 +1490,66 @@
     "region_pt": "An Phortaingéil",
     "region_nl": "An Ísiltír",
     "region_pl": "An Pholainn",
-    "region_us": "Stáit Aontaithe Mheiriceá"
+    "region_us": "Stáit Aontaithe Mheiriceá",
+    "phone_app": {
+      "title": "Aip fóin",
+      "description": "Féach cé na baill den phobal seo atá logáilte isteach san aip fóin.",
+      "summary": {
+        "title": "Sa phobal seo",
+        "members_with_app": "Baill a bhfuil an aip acu",
+        "members_with_app_hint": "Logáilte isteach ar a bhfón.",
+        "notifications_on": "Fógraí curtha ar siúl",
+        "notifications_on_hint": "Faigheann siad foláirimh ar a bhfón.",
+        "phone_types": "Android agus iPhone",
+        "phone_types_value": "{{android}} ar Android · {{ios}} ar iPhone",
+        "phone_types_hint": "Ní bhíonn a fhios againn cén fón atá ag ball go dtí go gcuireann siad fógraí ar siúl.",
+        "newest": "An ball is nuaí ar an aip",
+        "newest_none": "Níl aon duine fós",
+        "not_downloads": "Taispeánann sé seo baill atá logáilte isteach san aip. Ní hé líon na n-íoslódálacha é: is ag Google Play agus an App Store atá na figiúirí sin.",
+        "load_failed": "Níorbh fhéidir linn na figiúirí seo a luchtú. Athnuaigh an leathanach le triail eile a bhaint as."
+      },
+      "members": {
+        "title": "Cé aige a bhfuil an aip",
+        "search_placeholder": "Cuardaigh de réir ainm nó ríomhphoist",
+        "columns": {
+          "member": "Ball",
+          "phone": "Fón",
+          "notifications": "Fógraí",
+          "first_seen": "Feicthe den chéad uair ar an aip",
+          "last_opened": "Oscailte go deireanach"
+        },
+        "phone": {
+          "android": "Android",
+          "ios": "iPhone",
+          "unknown": "Ní fios fós"
+        },
+        "notifications_on": "Ar siúl",
+        "notifications_off": "As",
+        "empty": "Níl aon bhall logáilte isteach san aip fós.",
+        "empty_search": "Níl aon bhall ag teacht le do chuardach.",
+        "load_failed": "Níorbh fhéidir linn an liosta seo a luchtú. Bain triail eile as, le do thoil.",
+        "unnamed_member": "Ball #{{id}}",
+        "no_date": "Níl fós"
+      },
+      "all": {
+        "title": "Gach pobal",
+        "owners_only": "Úinéirí an ardáin amháin",
+        "description": "Gach pobal ar an ardán, lena n-áirítear cinn nach riarann tú. Ní fheiceann ach úinéirí an ardáin é seo.",
+        "members_with_app": "Baill a bhfuil an aip acu, gach pobal",
+        "phones": "Fóin a bhfuil fógraí ar siúl orthu",
+        "communities": "Pobail a úsáideann an aip",
+        "by_community": "De réir pobail",
+        "columns": {
+          "community": "Pobal",
+          "members": "Baill",
+          "phones": "Fóin",
+          "newest": "An ball is nuaí"
+        },
+        "newest_title": "Na baill is nuaí ar an aip",
+        "unnamed_community": "Pobal #{{id}}",
+        "empty": "Níl an aip ag aon duine fós."
+      }
+    }
   },
   "verification": {
     "approve": "Ceadaigh",

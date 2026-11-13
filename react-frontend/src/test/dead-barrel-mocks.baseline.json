@@ -268,11 +268,6 @@
         "StatusBadge"
       ]
     },
-    "src/admin/modules/system/NativeApp.test.tsx": {
-      "@/admin/components": [
-        "PageHeader"
-      ]
-    },
     "src/admin/modules/system/OnboardingSettings.test.tsx": {
       "@/admin/components": [
         "PageHeader"
@@ -533,7 +528,7 @@
     }
   },
   "totals": {
-    "offenderFileCount": 80,
-    "rowCount": 255
+    "offenderFileCount": 79,
+    "rowCount": 254
   }
 }

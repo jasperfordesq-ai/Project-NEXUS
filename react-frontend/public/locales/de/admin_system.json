@@ -587,47 +587,6 @@
     "last_status": "Letzter Status",
     "last_succeeded": "Zuletzt erfolgreich",
     "loading_cron_jobs": "Cron-Jobs werden geladen...",
-    "native_app": {
-      "installs": {
-        "title": "App-Installationen in dieser Gemeinschaft",
-        "scope_this_community": "Nur diese Gemeinschaft",
-        "not_store_installs": "Dies sind Mitglieder, die die App installiert, sich angemeldet und Benachrichtigungen erlaubt haben – keine Installationszahlen von Google Play oder dem App Store. Wer die App installiert und die Benachrichtigungsanfrage ablehnt, erscheint hier nicht. Installationszahlen der Stores finden Sie in der Google Play Console.",
-        "phones_registered": "Registrierte Telefone",
-        "platform_split": "{{android}} unter Android · {{ios}} unter iOS",
-        "people_with_app": "Mitglieder mit der App",
-        "browser_subscriptions": "Browser-Benachrichtigungen",
-        "reachable_by_push": "Per Push erreichbare Mitglieder",
-        "reachable_by_push_hint": "Einmal gezählt, ob per Telefon, Browser oder beidem.",
-        "first_last": "Erste Registrierung {{first}} · letzte {{last}}",
-        "recent_table_label": "Neueste App-Registrierungen in dieser Gemeinschaft",
-        "recent_all_table_label": "Neueste App-Registrierungen in allen Gemeinschaften",
-        "by_community_table_label": "App-Installationen nach Gemeinschaft",
-        "columns": {
-          "member": "Mitglied",
-          "platform": "Gerät",
-          "registered": "Registriert",
-          "last_seen": "Zuletzt gesehen",
-          "community": "Gemeinschaft",
-          "phones": "Telefone",
-          "people": "Mitglieder",
-          "latest_install": "Zuletzt"
-        },
-        "empty": "Noch niemand hat die App registriert.",
-        "never": "Nie",
-        "unnamed_member": "Mitglied #{{id}}",
-        "unnamed_community": "Gemeinschaft #{{id}}",
-        "load_failed": "App-Installationszahlen konnten nicht geladen werden.",
-        "platform_title": "Alle Gemeinschaften",
-        "god_only": "Nur im God-Modus",
-        "platform_description": "Alle Gemeinschaften auf der Plattform, auch solche, die Sie nicht verwalten. Nur für God-Modus-Betreiber sichtbar.",
-        "phones_registered_all": "Registrierte Telefone (alle)",
-        "people_with_app_all": "Mitglieder mit der App (alle)",
-        "communities_with_installs": "Gemeinschaften mit Installationen",
-        "reachable_by_push_all": "Per Push erreichbar (alle)",
-        "by_community": "Nach Gemeinschaft",
-        "recent_all_communities": "Neueste Registrierungen, alle Gemeinschaften"
-      }
-    },
     "never": "Niemals",
     "next_run": "Nächster Lauf",
     "no_activity_log_entries": "Keine Aktivitätsprotokolleinträge",
@@ -1463,7 +1422,6 @@
     "currency_eur": "EUR - Euro",
     "platform_docker": "Docker",
     "platform_linux_vps": "Linux / VPS",
-    "native_app_title": "Native App",
     "job_category_matching": "Abgleich",
     "job_category_master": "Meister",
     "job_category_gamification": "Gamifizierung",
@@ -1481,7 +1439,66 @@
     "region_pt": "Portugal",
     "region_nl": "Niederlande",
     "region_pl": "Polen",
-    "region_us": "Vereinigte Staaten"
+    "region_us": "Vereinigte Staaten",
+    "phone_app": {
+      "title": "Handy-App",
+      "description": "Sehen Sie, welche Mitglieder dieser Gemeinschaft in der Handy-App angemeldet sind.",
+      "summary": {
+        "title": "In dieser Gemeinschaft",
+        "members_with_app": "Mitglieder mit der App",
+        "members_with_app_hint": "Auf ihrem Handy angemeldet.",
+        "notifications_on": "Benachrichtigungen eingeschaltet",
+        "notifications_on_hint": "Sie erhalten Hinweise auf ihrem Handy.",
+        "phone_types": "Android und iPhone",
+        "phone_types_value": "{{android}} auf Android · {{ios}} auf dem iPhone",
+        "phone_types_hint": "Welches Handy ein Mitglied hat, erfahren wir erst, wenn es Benachrichtigungen einschaltet.",
+        "newest": "Neuestes Mitglied in der App",
+        "newest_none": "Noch niemand",
+        "not_downloads": "Hier sehen Sie Mitglieder, die in der App angemeldet sind. Das ist nicht die Zahl der Downloads: Die führen Google Play und der App Store.",
+        "load_failed": "Wir konnten diese Zahlen nicht laden. Bitte laden Sie die Seite neu und versuchen Sie es noch einmal."
+      },
+      "members": {
+        "title": "Wer die App hat",
+        "search_placeholder": "Nach Name oder E-Mail suchen",
+        "columns": {
+          "member": "Mitglied",
+          "phone": "Handy",
+          "notifications": "Benachrichtigungen",
+          "first_seen": "Zuerst in der App gesehen",
+          "last_opened": "Zuletzt geöffnet"
+        },
+        "phone": {
+          "android": "Android",
+          "ios": "iPhone",
+          "unknown": "Noch nicht bekannt"
+        },
+        "notifications_on": "Ein",
+        "notifications_off": "Aus",
+        "empty": "Noch ist kein Mitglied in der App angemeldet.",
+        "empty_search": "Kein Mitglied passt zu Ihrer Suche.",
+        "load_failed": "Wir konnten diese Liste nicht laden. Bitte versuchen Sie es noch einmal.",
+        "unnamed_member": "Mitglied #{{id}}",
+        "no_date": "Noch nicht"
+      },
+      "all": {
+        "title": "Alle Gemeinschaften",
+        "owners_only": "Nur für Plattformbetreiber",
+        "description": "Alle Gemeinschaften auf der Plattform, auch solche, die Sie nicht verwalten. Das sehen nur Plattformbetreiber.",
+        "members_with_app": "Mitglieder mit der App, alle Gemeinschaften",
+        "phones": "Handys mit eingeschalteten Benachrichtigungen",
+        "communities": "Gemeinschaften, die die App nutzen",
+        "by_community": "Nach Gemeinschaft",
+        "columns": {
+          "community": "Gemeinschaft",
+          "members": "Mitglieder",
+          "phones": "Handys",
+          "newest": "Neuestes Mitglied"
+        },
+        "newest_title": "Neueste Mitglieder in der App",
+        "unnamed_community": "Gemeinschaft #{{id}}",
+        "empty": "Noch hat niemand die App."
+      }
+    }
   },
   "verification": {
     "approve": "Genehmigen",

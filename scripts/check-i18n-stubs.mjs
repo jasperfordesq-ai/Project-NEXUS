@@ -94,6 +94,8 @@ const REVIEWED_ADMIN_INVARIANTS = new Map([
   ['admin_resources.json:breadcrumbs.seo', 'SEO'],
   ['admin_resources.json:content.stripe', 'Stripe'],
   ['admin_super.json:pilot_inquiry_admin.values.country_region', '{{country}} · {{region}}'],
+  // Brand name of a phone operating system; the same word in every language.
+  ['admin_system.json:system.phone_app.members.phone.android', 'Android'],
   ['super_admin.json:breadcrumbs.kiss', 'KISS'],
 ]);
 

@@ -1992,6 +1992,7 @@ Route::post('/v2/admin/config/sitemap-clear-cache', [\App\Http\Controllers\Api\A
 Route::get('/v2/admin/config/languages', [\App\Http\Controllers\Api\AdminConfigController::class, 'getLanguageConfig']);
 Route::put('/v2/admin/config/languages', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateLanguageConfig']);
 Route::get('/v2/admin/config/native-app/install-stats', [\App\Http\Controllers\Api\AdminConfigController::class, 'getNativeAppInstallStats']);
+Route::get('/v2/admin/config/native-app/members', [\App\Http\Controllers\Api\AdminConfigController::class, 'getNativeAppMembers']);
 // ── Admin: Landing Page Configuration ──────────────────────────────────────
 Route::get('/v2/admin/config/landing-page', [\App\Http\Controllers\Api\AdminConfigController::class, 'getLandingPageConfig']);
 Route::put('/v2/admin/config/landing-page', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateLandingPageConfig']);

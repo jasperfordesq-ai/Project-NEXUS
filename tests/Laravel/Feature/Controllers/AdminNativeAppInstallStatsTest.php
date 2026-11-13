@@ -15,31 +15,27 @@ use Tests\Laravel\TestCase;
 /**
  * GET /v2/admin/config/native-app/install-stats
  *
- * The endpoint that restores the native-app install numbers the legacy admin
- * panel used to show. Its whole risk surface is the tenant boundary, so that
- * is what these tests are mostly about: a tenant admin must never be able to
- * see another community's members, and only `users.is_god` may unlock the
- * cross-tenant view.
+ * The figures at the top of the admin "Phone app" page. The endpoint's whole
+ * risk surface is the tenant boundary, so that is what these tests are mostly
+ * about: a tenant admin must never be able to see another community's members,
+ * and only `users.is_god` may unlock the cross-tenant view.
+ *
+ * Since 13 Nov 2026 a member "has the app" when they have a registered phone
+ * OR a live sign-in made through the phone app, so members who turned
+ * notifications off are counted too. The list itself is
+ * {@see AdminNativeAppMembersTest}.
  */
 class AdminNativeAppInstallStatsTest extends TestCase
 {
     use DatabaseTransactions;
+    use NativeAppFixtures;
 
     private const ENDPOINT = '/v2/admin/config/native-app/install-stats';
 
-    /** The secondary tenant seeded by TestCase. */
-    private const OTHER_TENANT_ID = 999;
-
-    private function registerDevice(int $userId, int $tenantId, string $platform = 'android'): void
+    protected function setUp(): void
     {
-        DB::table('fcm_device_tokens')->insert([
-            'user_id' => $userId,
-            'tenant_id' => $tenantId,
-            'token' => 'tok-' . $tenantId . '-' . $userId . '-' . uniqid('', true),
-            'platform' => $platform,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        parent::setUp();
+        $this->clearPhoneAppRecords();
     }
 
     private function makeGod(User $user): void
@@ -93,11 +89,36 @@ class AdminNativeAppInstallStatsTest extends TestCase
             ->assertJsonPath('data.scope', 'tenant')
             ->assertJsonPath('data.platform', null)
             ->assertJsonPath('data.tenant.tenant_id', $this->testTenantId)
-            ->assertJsonPath('data.tenant.native_devices', 1)
-            ->assertJsonPath('data.tenant.native_users', 1);
+            ->assertJsonPath('data.tenant.members_with_app', 1)
+            ->assertJsonPath('data.tenant.members_notifications_on', 1)
+            ->assertJsonPath('data.tenant.native_devices', 1);
     }
 
-    public function test_tenant_admin_cannot_see_another_tenants_devices(): void
+    public function test_counts_members_signed_in_on_the_app_with_notifications_off(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $withPhone = User::factory()->forTenant($this->testTenantId)->create();
+        $appOnly = User::factory()->forTenant($this->testTenantId)->create();
+        $signedOut = User::factory()->forTenant($this->testTenantId)->create();
+        $websiteOnly = User::factory()->forTenant($this->testTenantId)->create();
+
+        $this->registerDevice($withPhone->id, $this->testTenantId, 'ios');
+        $this->signIn($withPhone->id, $this->testTenantId);
+        $this->signIn($appOnly->id, $this->testTenantId);
+        $this->signIn($signedOut->id, $this->testTenantId, state: 'revoked');
+        $this->signIn($websiteOnly->id, $this->testTenantId, fromPhoneApp: false);
+        Sanctum::actingAs($admin);
+
+        $this->apiGet(self::ENDPOINT)
+            ->assertOk()
+            ->assertJsonPath('data.tenant.members_with_app', 2)
+            ->assertJsonPath('data.tenant.members_notifications_on', 1)
+            ->assertJsonPath('data.tenant.native_devices', 1)
+            ->assertJsonPath('data.tenant.devices_by_platform.ios', 1)
+            ->assertJsonPath('data.tenant.devices_by_platform.android', 0);
+    }
+
+    public function test_tenant_admin_cannot_see_another_tenants_members(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $ourMember = User::factory()->forTenant($this->testTenantId)->create();
@@ -105,61 +126,38 @@ class AdminNativeAppInstallStatsTest extends TestCase
             'first_name' => 'Ghost',
             'last_name' => 'Ofanothertenant',
         ]);
+        $theirAppOnly = User::factory()->forTenant(self::OTHER_TENANT_ID)->create();
 
         $this->registerDevice($ourMember->id, $this->testTenantId);
         $this->registerDevice($theirMember->id, self::OTHER_TENANT_ID);
         $this->registerDevice($theirMember->id, self::OTHER_TENANT_ID, 'ios');
+        $this->signIn($theirAppOnly->id, self::OTHER_TENANT_ID);
 
         Sanctum::actingAs($admin);
         $response = $this->apiGet(self::ENDPOINT)->assertOk();
 
-        // Three devices exist platform-wide; this admin must see exactly one.
+        // Three phones and three members exist platform-wide; this admin must
+        // see exactly one of each.
         $response->assertJsonPath('data.tenant.native_devices', 1);
-        $response->assertJsonPath('data.tenant.native_users', 1);
+        $response->assertJsonPath('data.tenant.members_with_app', 1);
         $response->assertJsonMissing(['display_name' => 'Ghost Ofanothertenant']);
-
-        $userIds = array_column($response->json('data.tenant.recent_devices'), 'user_id');
-        $this->assertSame([$ourMember->id], $userIds);
     }
 
-    public function test_tenant_admin_recent_list_names_the_member(): void
+    public function test_tenant_block_carries_figures_only_never_a_list_of_members(): void
     {
+        // The list is its own, paged endpoint. Keeping names out of this block
+        // means a caller cannot widen it by accident.
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $member = User::factory()->forTenant($this->testTenantId)->create([
-            'first_name' => 'Aoife',
-            'last_name' => 'Brennan',
-        ]);
-        $this->registerDevice($member->id, $this->testTenantId, 'ios');
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        $this->registerDevice($member->id, $this->testTenantId);
         Sanctum::actingAs($admin);
 
-        $this->apiGet(self::ENDPOINT)
-            ->assertOk()
-            ->assertJsonPath('data.tenant.recent_devices.0.display_name', 'Aoife Brennan')
-            ->assertJsonPath('data.tenant.recent_devices.0.platform', 'ios')
-            ->assertJsonPath('data.tenant.devices_by_platform.ios', 1)
-            ->assertJsonPath('data.tenant.devices_by_platform.android', 0);
-    }
+        $tenant = $this->apiGet(self::ENDPOINT)->assertOk()->json('data.tenant');
 
-    /**
-     * An ORGANISATION account keeps its trading name in `organization_name`
-     * and a CONTACT PERSON in first_name/last_name. Showing the contact person
-     * as the account's identity is the bug this asserts against.
-     */
-    public function test_recent_list_names_an_organisation_by_its_trading_name(): void
-    {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $org = User::factory()->forTenant($this->testTenantId)->create([
-            'profile_type' => 'organisation',
-            'organization_name' => 'Mallow Menshed CLG',
-            'first_name' => 'Declan',
-            'last_name' => 'Contact',
-        ]);
-        $this->registerDevice($org->id, $this->testTenantId, 'android');
-        Sanctum::actingAs($admin);
-
-        $this->apiGet(self::ENDPOINT)
-            ->assertOk()
-            ->assertJsonPath('data.tenant.recent_devices.0.display_name', 'Mallow Menshed CLG');
+        $this->assertSame(
+            ['devices_by_platform', 'last_joined_at', 'members_notifications_on', 'members_with_app', 'native_devices', 'tenant_id'],
+            collect(array_keys($tenant))->sort()->values()->all()
+        );
     }
 
     // ================================================================
@@ -176,23 +174,30 @@ class AdminNativeAppInstallStatsTest extends TestCase
             'first_name' => 'Ghost',
             'last_name' => 'Ofanothertenant',
         ]);
+        $theirAppOnly = User::factory()->forTenant(self::OTHER_TENANT_ID)->create();
         $this->registerDevice($ourMember->id, $this->testTenantId);
         $this->registerDevice($theirMember->id, self::OTHER_TENANT_ID);
+        $this->signIn($theirAppOnly->id, self::OTHER_TENANT_ID);
 
         Sanctum::actingAs($god);
         $response = $this->apiGet(self::ENDPOINT)->assertOk();
 
         $response->assertJsonPath('data.is_god', true);
         $response->assertJsonPath('data.scope', 'platform');
-        $response->assertJsonPath('data.platform.native_devices', 2);
-        $response->assertJsonPath('data.platform.native_users', 2);
+
+        // Other communities may hold rows from elsewhere in the test database,
+        // so these are floors, not exact figures.
+        $this->assertGreaterThanOrEqual(3, $response->json('data.platform.members_with_app'));
+        $this->assertGreaterThanOrEqual(2, $response->json('data.platform.native_devices'));
+        $this->assertGreaterThanOrEqual(2, $response->json('data.platform.tenants_with_app'));
 
         // The god view names members from other communities — that is the point.
-        $names = array_column($response->json('data.platform.recent_devices'), 'display_name');
+        $names = array_column($response->json('data.platform.recent_members'), 'display_name');
         $this->assertContains('Ghost Ofanothertenant', $names);
 
         // Its own tenant block stays scoped even for a god operator.
         $response->assertJsonPath('data.tenant.native_devices', 1);
+        $response->assertJsonPath('data.tenant.members_with_app', 1);
     }
 
     public function test_god_by_tenant_breakdown_lists_each_community(): void
@@ -202,25 +207,28 @@ class AdminNativeAppInstallStatsTest extends TestCase
 
         $ourMember = User::factory()->forTenant($this->testTenantId)->create();
         $theirMember = User::factory()->forTenant(self::OTHER_TENANT_ID)->create();
+        $theirAppOnly = User::factory()->forTenant(self::OTHER_TENANT_ID)->create();
         $this->registerDevice($ourMember->id, $this->testTenantId);
         $this->registerDevice($theirMember->id, self::OTHER_TENANT_ID);
         $this->registerDevice($theirMember->id, self::OTHER_TENANT_ID, 'ios');
+        $this->signIn($theirAppOnly->id, self::OTHER_TENANT_ID);
 
         Sanctum::actingAs($god);
         $byTenant = $this->apiGet(self::ENDPOINT)->assertOk()->json('data.platform.by_tenant');
 
         $rows = collect($byTenant)->keyBy('tenant_id');
         $this->assertSame(2, $rows[self::OTHER_TENANT_ID]['native_devices']);
-        $this->assertSame(1, $rows[self::OTHER_TENANT_ID]['native_users']);
+        $this->assertSame(2, $rows[self::OTHER_TENANT_ID]['members_with_app']);
         $this->assertSame(1, $rows[$this->testTenantId]['native_devices']);
+        $this->assertSame(1, $rows[$this->testTenantId]['members_with_app']);
         $this->assertSame('Other Test Tenant', $rows[self::OTHER_TENANT_ID]['tenant_name']);
     }
 
     public function test_god_cross_tenant_list_omits_member_email(): void
     {
-        // Data minimisation: a platform operator needs to know WHO installed the
-        // app, not to accumulate contact details across communities they do not
-        // administer. Email stays in the own-tenant block only.
+        // Data minimisation: a platform operator needs to know WHO has the app,
+        // not to accumulate contact details across communities they do not
+        // administer. Email stays in the own-community list only.
         $god = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $this->makeGod($god);
 
@@ -228,24 +236,25 @@ class AdminNativeAppInstallStatsTest extends TestCase
         $this->registerDevice($theirMember->id, self::OTHER_TENANT_ID);
 
         Sanctum::actingAs($god);
-        $response = $this->apiGet(self::ENDPOINT)->assertOk();
+        $recent = $this->apiGet(self::ENDPOINT)->assertOk()->json('data.platform.recent_members');
 
-        foreach ($response->json('data.platform.recent_devices') as $row) {
+        $this->assertNotEmpty($recent);
+        foreach ($recent as $row) {
             $this->assertArrayNotHasKey('email', $row);
         }
     }
 
     public function test_tenant_super_admin_alone_does_not_unlock_the_platform_block(): void
     {
-        // is_tenant_super_admin is a network admin confined to its own subtree.
-        // The platform block is not subtree-filtered, so it must stay closed.
-        $networkAdmin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        DB::table('users')->where('id', $networkAdmin->id)->update([
+        // is_tenant_super_admin reaches its own community and those below it.
+        // The platform block is not filtered that way, so it must stay closed.
+        $tenantSuperAdmin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        DB::table('users')->where('id', $tenantSuperAdmin->id)->update([
             'is_tenant_super_admin' => 1,
             'is_super_admin' => 1,
             'is_god' => 0,
         ]);
-        Sanctum::actingAs($networkAdmin);
+        Sanctum::actingAs($tenantSuperAdmin);
 
         $this->apiGet(self::ENDPOINT)
             ->assertOk()
@@ -257,55 +266,30 @@ class AdminNativeAppInstallStatsTest extends TestCase
     // Shape
     // ================================================================
 
-    public function test_reports_zero_rather_than_failing_when_nobody_has_installed(): void
+    public function test_reports_zero_rather_than_failing_when_nobody_has_the_app(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        DB::table('fcm_device_tokens')->where('tenant_id', $this->testTenantId)->delete();
-        DB::table('push_subscriptions')->where('tenant_id', $this->testTenantId)->delete();
         Sanctum::actingAs($admin);
 
         $this->apiGet(self::ENDPOINT)
             ->assertOk()
+            ->assertJsonPath('data.tenant.members_with_app', 0)
+            ->assertJsonPath('data.tenant.members_notifications_on', 0)
             ->assertJsonPath('data.tenant.native_devices', 0)
-            ->assertJsonPath('data.tenant.native_users', 0)
-            ->assertJsonPath('data.tenant.push_enabled_users', 0)
-            ->assertJsonPath('data.tenant.recent_devices', [])
-            ->assertJsonPath('data.tenant.first_registered_at', null);
+            ->assertJsonPath('data.tenant.devices_by_platform.android', 0)
+            ->assertJsonPath('data.tenant.devices_by_platform.ios', 0)
+            ->assertJsonPath('data.tenant.last_joined_at', null);
     }
 
-    public function test_response_carries_the_not_store_installs_disclaimer(): void
+    public function test_response_says_these_are_not_store_install_counts(): void
     {
-        // Pinned so no client can render these counts as Play Store installs.
+        // Pinned so no client can render these figures as Play Store or App
+        // Store downloads.
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         Sanctum::actingAs($admin);
 
         $this->apiGet(self::ENDPOINT)
             ->assertOk()
-            ->assertJsonPath('data.disclaimer_key', 'push_registrations_not_store_installs');
-    }
-
-    public function test_push_enabled_users_counts_a_member_with_both_channels_once(): void
-    {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $member = User::factory()->forTenant($this->testTenantId)->create();
-        DB::table('fcm_device_tokens')->where('tenant_id', $this->testTenantId)->delete();
-        DB::table('push_subscriptions')->where('tenant_id', $this->testTenantId)->delete();
-
-        $this->registerDevice($member->id, $this->testTenantId);
-        DB::table('push_subscriptions')->insert([
-            'user_id' => $member->id,
-            'tenant_id' => $this->testTenantId,
-            'endpoint' => 'https://example.test/push/' . uniqid('', true),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        Sanctum::actingAs($admin);
-
-        $this->apiGet(self::ENDPOINT)
-            ->assertOk()
-            ->assertJsonPath('data.tenant.native_users', 1)
-            ->assertJsonPath('data.tenant.web_users', 1)
-            ->assertJsonPath('data.tenant.push_enabled_users', 1);
+            ->assertJsonPath('data.disclaimer_key', 'app_members_not_store_installs');
     }
 }

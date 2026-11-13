@@ -393,7 +393,7 @@ describe('AdminSidebar', () => {
     expect(screen.queryByRole('link', { name: 'Roles & Permissions' })).not.toBeInTheDocument();
   });
 
-  it('links Native App from Platform Operations', async () => {
+  it('links Phone app from Platform Operations', async () => {
     // Regression: the page existed at /admin/native-app from the legacy-admin
     // retirement onwards but was linked from nowhere, so the only way to reach
     // it was to type the URL. An admin reasonably concluded it did not exist.
@@ -404,7 +404,7 @@ describe('AdminSidebar', () => {
     await userEvent.click(operationsTrigger);
     expect(operationsTrigger).toHaveAttribute('aria-expanded', 'true');
 
-    expect(screen.getByRole('link', { name: 'Native App' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Phone app' })).toHaveAttribute(
       'href',
       '/test/admin/native-app',
     );
@@ -449,7 +449,7 @@ describe('AdminSidebar', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Platform Operations' }));
     // Control: the section really opened.
-    expect(screen.getByRole('link', { name: 'Native App' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Phone app' })).toBeInTheDocument();
     const hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
     expect(hrefs.filter((h) => h?.includes('/admin/cron-jobs'))).toEqual([]);
   });

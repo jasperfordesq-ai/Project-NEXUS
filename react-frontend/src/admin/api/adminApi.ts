@@ -2503,9 +2503,13 @@ export const adminSettings = {
   clearSitemapCache: () => api.post<{ cleared: number }>('/v2/admin/config/sitemap-clear-cache'),
   getSeoVerificationDns: () => api.get<{ applicable: boolean; google_found: boolean; google_found_on: string | null }>('/v2/admin/config/seo-verification-dns'),
 
-  // Push-registration counts, NOT app-store installs. The cross-tenant
-  // `platform` block is null unless the caller is a god-mode operator.
+  // The admin "Phone app" page. Members signed in on the app, NOT app-store
+  // downloads. The cross-community `platform` block is null unless the caller
+  // is a god-mode operator.
   getNativeAppInstallStats: () => api.get<Record<string, unknown>>('/v2/admin/config/native-app/install-stats'),
+  // One page of this community's members who have the app; `meta.total` counts them all.
+  getNativeAppMembers: (params: { q?: string; page?: number; per_page?: number } = {}) =>
+    api.get<Record<string, unknown>[]>(`/v2/admin/config/native-app/members${buildQuery(params)}`),
 
   getEmailConfig: () => api.get<Record<string, unknown>>('/v2/admin/email/config'),
   updateEmailConfig: (data: Record<string, unknown>) => api.put<{ success: boolean }>('/v2/admin/email/config', data),

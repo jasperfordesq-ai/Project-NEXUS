@@ -41,6 +41,13 @@ describe('NativeApp page', () => {
     mockAdminSettings.getNativeAppMembers.mockResolvedValue({ success: true, data: [], meta: { total: 0 } });
   });
 
+  it('is called "Phone app" and says what it is for', async () => {
+    render(<NativeApp />);
+
+    expect(await screen.findByRole('heading', { name: 'Phone app' })).toBeInTheDocument();
+    expect(screen.getByText('See which members of this community are signed in on the phone app.')).toBeInTheDocument();
+  });
+
   it('asks the server who has the app', async () => {
     render(<NativeApp />);
 

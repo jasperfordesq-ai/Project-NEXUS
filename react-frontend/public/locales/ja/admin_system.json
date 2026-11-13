@@ -588,48 +588,6 @@
     "last_status": "最終ステータス",
     "last_succeeded": "最後に成功しました",
     "loading_cron_jobs": "cron ジョブをロードしています...",
-    "native_app_title": "ネイティブアプリ",
-    "native_app": {
-      "installs": {
-        "title": "このコミュニティのアプリインストール状況",
-        "scope_this_community": "このコミュニティのみ",
-        "not_store_installs": "これはアプリをインストールし、サインインし、通知を許可したメンバーの数です。Google Play や App Store のインストール数ではありません。アプリをインストールしても通知を拒否した人はここには表示されません。ストアのインストール数は Google Play Console で確認してください。",
-        "phones_registered": "登録済みの端末",
-        "platform_split": "Android {{android}} 台 · iOS {{ios}} 台",
-        "people_with_app": "アプリを利用中のメンバー",
-        "browser_subscriptions": "ブラウザ通知",
-        "reachable_by_push": "プッシュ通知が届くメンバー",
-        "reachable_by_push_hint": "端末・ブラウザの両方に登録があっても 1 人として数えます。",
-        "first_last": "最初の登録 {{first}} · 最新 {{last}}",
-        "recent_table_label": "このコミュニティでの最近のアプリ登録",
-        "recent_all_table_label": "全コミュニティでの最近のアプリ登録",
-        "by_community_table_label": "コミュニティ別のアプリインストール数",
-        "columns": {
-          "member": "メンバー",
-          "platform": "端末",
-          "registered": "登録日",
-          "last_seen": "最終利用",
-          "community": "コミュニティ",
-          "phones": "端末数",
-          "people": "メンバー数",
-          "latest_install": "最新"
-        },
-        "empty": "まだ誰もアプリを登録していません。",
-        "never": "なし",
-        "unnamed_member": "メンバー #{{id}}",
-        "unnamed_community": "コミュニティ #{{id}}",
-        "load_failed": "アプリのインストール数を読み込めませんでした。",
-        "platform_title": "すべてのコミュニティ",
-        "god_only": "ゴッドモード限定",
-        "platform_description": "管理していないものも含め、プラットフォーム上のすべてのコミュニティです。ゴッドモードの運用者のみ閲覧できます。",
-        "phones_registered_all": "登録済みの端末（全体）",
-        "people_with_app_all": "アプリを利用中のメンバー（全体）",
-        "communities_with_installs": "インストールのあるコミュニティ",
-        "reachable_by_push_all": "プッシュ通知が届く人（全体）",
-        "by_community": "コミュニティ別",
-        "recent_all_communities": "最近の登録（全コミュニティ）"
-      }
-    },
     "never": "決してしない",
     "next_run": "次の実行",
     "no_activity_log_entries": "アクティビティログエントリがありません",
@@ -1481,7 +1439,66 @@
     "region_pt": "ポルトガル",
     "region_nl": "オランダ",
     "region_pl": "ポーランド",
-    "region_us": "アメリカ合衆国"
+    "region_us": "アメリカ合衆国",
+    "phone_app": {
+      "title": "スマホアプリ",
+      "description": "このコミュニティのどのメンバーがスマホアプリにログインしているかを確認できます。",
+      "summary": {
+        "title": "このコミュニティ",
+        "members_with_app": "アプリを利用中のメンバー",
+        "members_with_app_hint": "スマホでログイン中です。",
+        "notifications_on": "通知をオンにしているメンバー",
+        "notifications_on_hint": "スマホにお知らせが届きます。",
+        "phone_types": "AndroidとiPhone",
+        "phone_types_value": "Android {{android}}台 · iPhone {{ios}}台",
+        "phone_types_hint": "機種は、メンバーが通知をオンにしたときに初めてわかります。",
+        "newest": "いちばん新しくアプリを使い始めたメンバー",
+        "newest_none": "まだいません",
+        "not_downloads": "ここに表示されるのは、アプリにログインしているメンバーです。ダウンロード数ではありません。ダウンロード数はGoogle PlayとApp Storeで確認できます。",
+        "load_failed": "数字を読み込めませんでした。ページを更新して、もう一度お試しください。"
+      },
+      "members": {
+        "title": "アプリを使っているメンバー",
+        "search_placeholder": "名前またはメールアドレスで検索",
+        "columns": {
+          "member": "メンバー",
+          "phone": "機種",
+          "notifications": "通知",
+          "first_seen": "アプリで初めて確認した日",
+          "last_opened": "最後に開いた日"
+        },
+        "phone": {
+          "android": "Android",
+          "ios": "iPhone",
+          "unknown": "まだわかりません"
+        },
+        "notifications_on": "オン",
+        "notifications_off": "オフ",
+        "empty": "アプリにログインしているメンバーはまだいません。",
+        "empty_search": "検索に一致するメンバーはいません。",
+        "load_failed": "一覧を読み込めませんでした。もう一度お試しください。",
+        "unnamed_member": "メンバー #{{id}}",
+        "no_date": "まだ"
+      },
+      "all": {
+        "title": "すべてのコミュニティ",
+        "owners_only": "プラットフォーム運営者のみ",
+        "description": "管理していないものも含め、プラットフォーム上のすべてのコミュニティです。プラットフォーム運営者だけに表示されます。",
+        "members_with_app": "アプリを利用中のメンバー(全コミュニティ)",
+        "phones": "通知をオンにしているスマホ",
+        "communities": "アプリを使っているコミュニティ",
+        "by_community": "コミュニティ別",
+        "columns": {
+          "community": "コミュニティ",
+          "members": "メンバー",
+          "phones": "スマホ",
+          "newest": "いちばん新しいメンバー"
+        },
+        "newest_title": "新しくアプリを使い始めたメンバー",
+        "unnamed_community": "コミュニティ #{{id}}",
+        "empty": "アプリを使っている人はまだいません。"
+      }
+    }
   },
   "verification": {
     "approve": "承認する",

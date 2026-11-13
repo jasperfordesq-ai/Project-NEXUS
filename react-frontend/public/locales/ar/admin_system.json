@@ -593,48 +593,6 @@
     "last_status": "الحالة الأخيرة",
     "last_succeeded": "آخر ما نجح",
     "loading_cron_jobs": "جارٍ تحميل وظائف كرون...",
-    "native_app_title": "التطبيق الأصلي",
-    "native_app": {
-      "installs": {
-        "title": "عمليات تثبيت التطبيق في هذا المجتمع",
-        "scope_this_community": "هذا المجتمع فقط",
-        "not_store_installs": "هؤلاء أعضاء ثبّتوا التطبيق وسجّلوا الدخول وسمحوا بالإشعارات — وليست أعداد التثبيت من Google Play أو App Store. من يثبّت التطبيق ويرفض الإشعارات لن يظهر هنا. للحصول على أعداد التثبيت من المتاجر، استخدم Google Play Console.",
-        "phones_registered": "الهواتف المسجَّلة",
-        "platform_split": "{{android}} على Android · {{ios}} على iOS",
-        "people_with_app": "الأعضاء الذين لديهم التطبيق",
-        "browser_subscriptions": "إشعارات المتصفح",
-        "reachable_by_push": "أعضاء يمكن الوصول إليهم بالإشعارات",
-        "reachable_by_push_hint": "يُحتسب العضو مرة واحدة، سواء عبر الهاتف أو المتصفح أو كليهما.",
-        "first_last": "أول تسجيل {{first}} · الأحدث {{last}}",
-        "recent_table_label": "أحدث تسجيلات التطبيق في هذا المجتمع",
-        "recent_all_table_label": "أحدث تسجيلات التطبيق في جميع المجتمعات",
-        "by_community_table_label": "عمليات تثبيت التطبيق حسب المجتمع",
-        "columns": {
-          "member": "العضو",
-          "platform": "الجهاز",
-          "registered": "تاريخ التسجيل",
-          "last_seen": "آخر ظهور",
-          "community": "المجتمع",
-          "phones": "الهواتف",
-          "people": "الأعضاء",
-          "latest_install": "الأحدث"
-        },
-        "empty": "لم يسجّل أحد التطبيق بعد.",
-        "never": "أبدًا",
-        "unnamed_member": "العضو رقم {{id}}",
-        "unnamed_community": "المجتمع رقم {{id}}",
-        "load_failed": "تعذّر تحميل أعداد تثبيت التطبيق.",
-        "platform_title": "جميع المجتمعات",
-        "god_only": "وضع God فقط",
-        "platform_description": "جميع المجتمعات على المنصّة، بما فيها التي لا تديرها. مرئي لمشغّلي وضع God فقط.",
-        "phones_registered_all": "الهواتف المسجَّلة (الكل)",
-        "people_with_app_all": "الأعضاء الذين لديهم التطبيق (الكل)",
-        "communities_with_installs": "المجتمعات التي بها عمليات تثبيت",
-        "reachable_by_push_all": "يمكن الوصول إليهم بالإشعارات (الكل)",
-        "by_community": "حسب المجتمع",
-        "recent_all_communities": "أحدث التسجيلات، جميع المجتمعات"
-      }
-    },
     "never": "أبداً",
     "next_run": "التشغيل التالي",
     "no_activity_log_entries": "لا توجد إدخالات سجل النشاط",
@@ -1549,7 +1507,66 @@
     "region_pt": "البرتغال",
     "region_nl": "هولندا",
     "region_pl": "بولندا",
-    "region_us": "الولايات المتحدة"
+    "region_us": "الولايات المتحدة",
+    "phone_app": {
+      "title": "تطبيق الهاتف",
+      "description": "اطّلع على أعضاء هذا المجتمع الذين سجّلوا الدخول في تطبيق الهاتف.",
+      "summary": {
+        "title": "في هذا المجتمع",
+        "members_with_app": "الأعضاء الذين لديهم التطبيق",
+        "members_with_app_hint": "مسجّلون الدخول على هواتفهم.",
+        "notifications_on": "الإشعارات مفعّلة",
+        "notifications_on_hint": "تصلهم التنبيهات على هواتفهم.",
+        "phone_types": "Android و iPhone",
+        "phone_types_value": "{{android}} على Android · {{ios}} على iPhone",
+        "phone_types_hint": "لا نعرف نوع هاتف العضو إلا بعد أن يفعّل الإشعارات.",
+        "newest": "أحدث عضو في التطبيق",
+        "newest_none": "لا أحد حتى الآن",
+        "not_downloads": "يعرض هذا الأعضاء الذين سجّلوا الدخول في التطبيق. وهو ليس عدد مرات التنزيل: تلك الأرقام لدى Google Play و App Store.",
+        "load_failed": "لم نتمكّن من تحميل هذه الأرقام. حدّث الصفحة للمحاولة مرة أخرى."
+      },
+      "members": {
+        "title": "من لديه التطبيق",
+        "search_placeholder": "ابحث بالاسم أو البريد الإلكتروني",
+        "columns": {
+          "member": "العضو",
+          "phone": "الهاتف",
+          "notifications": "الإشعارات",
+          "first_seen": "أول ظهور في التطبيق",
+          "last_opened": "آخر فتح"
+        },
+        "phone": {
+          "android": "Android",
+          "ios": "iPhone",
+          "unknown": "غير معروف بعد"
+        },
+        "notifications_on": "مفعّلة",
+        "notifications_off": "متوقفة",
+        "empty": "لم يسجّل أي عضو الدخول في التطبيق بعد.",
+        "empty_search": "لا يوجد عضو يطابق بحثك.",
+        "load_failed": "لم نتمكّن من تحميل هذه القائمة. حاول مرة أخرى.",
+        "unnamed_member": "العضو رقم {{id}}",
+        "no_date": "ليس بعد"
+      },
+      "all": {
+        "title": "جميع المجتمعات",
+        "owners_only": "لمالكي المنصّة فقط",
+        "description": "جميع المجتمعات على المنصّة، بما فيها التي لا تديرها. لا يراها إلا مالكو المنصّة.",
+        "members_with_app": "الأعضاء الذين لديهم التطبيق، جميع المجتمعات",
+        "phones": "الهواتف المفعّلة فيها الإشعارات",
+        "communities": "المجتمعات التي تستخدم التطبيق",
+        "by_community": "حسب المجتمع",
+        "columns": {
+          "community": "المجتمع",
+          "members": "الأعضاء",
+          "phones": "الهواتف",
+          "newest": "أحدث عضو"
+        },
+        "newest_title": "أحدث الأعضاء في التطبيق",
+        "unnamed_community": "المجتمع رقم {{id}}",
+        "empty": "لا أحد لديه التطبيق بعد."
+      }
+    }
   },
   "verification": {
     "approve": "اعتماد",

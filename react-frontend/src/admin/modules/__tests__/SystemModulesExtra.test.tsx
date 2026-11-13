@@ -113,6 +113,7 @@ vi.mock('../../api/adminApi', () => ({
     get: vi.fn().mockResolvedValue({ success: true, data: {} }),
     update: vi.fn().mockResolvedValue({ success: true }),
     getNativeAppInstallStats: vi.fn().mockResolvedValue({ success: true, data: null }),
+    getNativeAppMembers: vi.fn().mockResolvedValue({ success: true, data: [], meta: { total: 0 } }),
   },
   adminTools: {
     getBlogBackups: vi.fn().mockResolvedValue({ success: true, data: [] }),

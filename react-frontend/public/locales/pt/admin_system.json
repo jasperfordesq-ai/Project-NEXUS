@@ -589,48 +589,6 @@
     "last_status": "Último status",
     "last_succeeded": "Último sucesso",
     "loading_cron_jobs": "Carregando tarefas cron...",
-    "native_app_title": "Aplicativo nativo",
-    "native_app": {
-      "installs": {
-        "title": "Instalações da aplicação nesta comunidade",
-        "scope_this_community": "Apenas esta comunidade",
-        "not_store_installs": "Estes são membros que instalaram a aplicação, iniciaram sessão e permitiram notificações — não são contagens de instalações do Google Play ou da App Store. Quem instala a aplicação e recusa as notificações não aparece aqui. Para números de instalação das lojas, use a Google Play Console.",
-        "phones_registered": "Telemóveis registrados",
-        "platform_split": "{{android}} em Android · {{ios}} em iOS",
-        "people_with_app": "Membros com a aplicação",
-        "browser_subscriptions": "Notificações do navegador",
-        "reachable_by_push": "Membros contactáveis por notificação",
-        "reachable_by_push_hint": "Contados uma só vez, seja por telemóvel, navegador ou ambos.",
-        "first_last": "Primeiro registro {{first}} · mais recente {{last}}",
-        "recent_table_label": "Registros recentes da aplicação nesta comunidade",
-        "recent_all_table_label": "Registros recentes da aplicação em todas as comunidades",
-        "by_community_table_label": "Instalações da aplicação por comunidade",
-        "columns": {
-          "member": "Membro",
-          "platform": "Dispositivo",
-          "registered": "Registrado",
-          "last_seen": "Visto pela última vez",
-          "community": "Comunidade",
-          "phones": "Telemóveis",
-          "people": "Membros",
-          "latest_install": "Mais recente"
-        },
-        "empty": "Ainda ninguém registrou a aplicação.",
-        "never": "Nunca",
-        "unnamed_member": "Membro n.º {{id}}",
-        "unnamed_community": "Comunidade n.º {{id}}",
-        "load_failed": "Não foi possível carregar os números de instalação da aplicação.",
-        "platform_title": "Todas as comunidades",
-        "god_only": "Apenas modo god",
-        "platform_description": "Todas as comunidades da plataforma, incluindo as que não administra. Visível apenas para operadores em modo god.",
-        "phones_registered_all": "Telemóveis registrados (todas)",
-        "people_with_app_all": "Membros com a aplicação (todas)",
-        "communities_with_installs": "Comunidades com instalações",
-        "reachable_by_push_all": "Contactáveis por notificação (todas)",
-        "by_community": "Por comunidade",
-        "recent_all_communities": "Registros recentes, todas as comunidades"
-      }
-    },
     "never": "Nunca",
     "next_run": "Próxima execução",
     "no_activity_log_entries": "Nenhuma entrada de registro de atividades",
@@ -1498,7 +1456,66 @@
     "region_pt": "Portugal",
     "region_nl": "Países Baixos",
     "region_pl": "Polónia",
-    "region_us": "Estados Unidos"
+    "region_us": "Estados Unidos",
+    "phone_app": {
+      "title": "Aplicativo de celular",
+      "description": "Veja quais membros desta comunidade estão conectados no aplicativo de celular.",
+      "summary": {
+        "title": "Nesta comunidade",
+        "members_with_app": "Membros com o aplicativo",
+        "members_with_app_hint": "Conectados no celular.",
+        "notifications_on": "Notificações ativadas",
+        "notifications_on_hint": "Eles recebem avisos no celular.",
+        "phone_types": "Android e iPhone",
+        "phone_types_value": "{{android}} no Android · {{ios}} no iPhone",
+        "phone_types_hint": "Só sabemos qual celular um membro tem quando ele ativa as notificações.",
+        "newest": "Membro mais recente no aplicativo",
+        "newest_none": "Ninguém ainda",
+        "not_downloads": "Aqui aparecem os membros que estão conectados no aplicativo. Não é o número de downloads: esse dado fica com o Google Play e a App Store.",
+        "load_failed": "Não conseguimos carregar estes números. Atualize a página para tentar de novo."
+      },
+      "members": {
+        "title": "Quem tem o aplicativo",
+        "search_placeholder": "Buscar por nome ou e-mail",
+        "columns": {
+          "member": "Membro",
+          "phone": "Celular",
+          "notifications": "Notificações",
+          "first_seen": "Visto pela primeira vez no aplicativo",
+          "last_opened": "Aberto pela última vez"
+        },
+        "phone": {
+          "android": "Android",
+          "ios": "iPhone",
+          "unknown": "Ainda não sabemos"
+        },
+        "notifications_on": "Ativadas",
+        "notifications_off": "Desativadas",
+        "empty": "Nenhum membro está conectado no aplicativo ainda.",
+        "empty_search": "Nenhum membro corresponde à sua busca.",
+        "load_failed": "Não conseguimos carregar esta lista. Tente de novo.",
+        "unnamed_member": "Membro n.º {{id}}",
+        "no_date": "Ainda não"
+      },
+      "all": {
+        "title": "Todas as comunidades",
+        "owners_only": "Somente responsáveis pela plataforma",
+        "description": "Todas as comunidades da plataforma, incluindo as que você não administra. Somente os responsáveis pela plataforma veem isto.",
+        "members_with_app": "Membros com o aplicativo, todas as comunidades",
+        "phones": "Celulares com notificações ativadas",
+        "communities": "Comunidades que usam o aplicativo",
+        "by_community": "Por comunidade",
+        "columns": {
+          "community": "Comunidade",
+          "members": "Membros",
+          "phones": "Celulares",
+          "newest": "Membro mais recente"
+        },
+        "newest_title": "Membros mais recentes no aplicativo",
+        "unnamed_community": "Comunidade n.º {{id}}",
+        "empty": "Ninguém tem o aplicativo ainda."
+      }
+    }
   },
   "verification": {
     "approve": "Aprovar",

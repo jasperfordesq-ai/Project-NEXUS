@@ -600,48 +600,6 @@
     "last_status": "Last Status",
     "last_succeeded": "Last Succeeded",
     "loading_cron_jobs": "Loading cron jobs...",
-    "native_app_title": "Native App",
-    "native_app": {
-      "installs": {
-        "title": "App installs in this community",
-        "scope_this_community": "This community only",
-        "not_store_installs": "These are members who installed the app, signed in and allowed notifications — not Google Play or App Store install counts. Someone who installs the app and declines the notification prompt will not appear here. For store install figures, use Google Play Console.",
-        "phones_registered": "Phones registered",
-        "platform_split": "{{android}} on Android · {{ios}} on iOS",
-        "people_with_app": "Members with the app",
-        "browser_subscriptions": "Browser notifications",
-        "reachable_by_push": "Members reachable by push",
-        "reachable_by_push_hint": "Counted once, whether by phone, browser, or both.",
-        "first_last": "First registration {{first}} · most recent {{last}}",
-        "recent_table_label": "Recent app registrations in this community",
-        "recent_all_table_label": "Recent app registrations across all communities",
-        "by_community_table_label": "App installs broken down by community",
-        "columns": {
-          "member": "Member",
-          "platform": "Device",
-          "registered": "Registered",
-          "last_seen": "Last seen",
-          "community": "Community",
-          "phones": "Phones",
-          "people": "Members",
-          "latest_install": "Most recent"
-        },
-        "empty": "Nobody has registered the app yet.",
-        "never": "Never",
-        "unnamed_member": "Member #{{id}}",
-        "unnamed_community": "Community #{{id}}",
-        "load_failed": "Could not load app install figures.",
-        "platform_title": "All communities",
-        "god_only": "God mode only",
-        "platform_description": "Every community on the platform, including ones you do not administer. Visible to god-mode operators only.",
-        "phones_registered_all": "Phones registered (all)",
-        "people_with_app_all": "Members with the app (all)",
-        "communities_with_installs": "Communities with installs",
-        "reachable_by_push_all": "Reachable by push (all)",
-        "by_community": "By community",
-        "recent_all_communities": "Recent registrations, all communities"
-      }
-    },
     "never": "Never",
     "next_run": "Next Run",
     "no_activity_log_entries": "No activity log entries",
@@ -1481,7 +1439,66 @@
     "region_pt": "Portugal",
     "region_nl": "Netherlands",
     "region_pl": "Poland",
-    "region_us": "United States"
+    "region_us": "United States",
+    "phone_app": {
+      "title": "Phone app",
+      "description": "See which members of this community are signed in on the phone app.",
+      "summary": {
+        "title": "In this community",
+        "members_with_app": "Members with the app",
+        "members_with_app_hint": "Signed in on their phone.",
+        "notifications_on": "Notifications turned on",
+        "notifications_on_hint": "They get alerts on their phone.",
+        "phone_types": "Android and iPhone",
+        "phone_types_value": "{{android}} on Android · {{ios}} on iPhone",
+        "phone_types_hint": "We only learn which phone a member has once they turn notifications on.",
+        "newest": "Newest member on the app",
+        "newest_none": "Nobody yet",
+        "not_downloads": "This shows members who are signed in on the app. It is not the number of downloads: Google Play and the App Store keep those.",
+        "load_failed": "We couldn't load these figures. Please refresh the page to try again."
+      },
+      "members": {
+        "title": "Who has the app",
+        "search_placeholder": "Search by name or email",
+        "columns": {
+          "member": "Member",
+          "phone": "Phone",
+          "notifications": "Notifications",
+          "first_seen": "First seen on the app",
+          "last_opened": "Last opened"
+        },
+        "phone": {
+          "android": "Android",
+          "ios": "iPhone",
+          "unknown": "Not known yet"
+        },
+        "notifications_on": "On",
+        "notifications_off": "Off",
+        "empty": "No members are signed in on the app yet.",
+        "empty_search": "No members match your search.",
+        "load_failed": "We couldn't load this list. Please try again.",
+        "unnamed_member": "Member #{{id}}",
+        "no_date": "Not yet"
+      },
+      "all": {
+        "title": "All communities",
+        "owners_only": "Platform owners only",
+        "description": "Every community on the platform, including ones you do not manage. Only platform owners see this.",
+        "members_with_app": "Members with the app, all communities",
+        "phones": "Phones with notifications on",
+        "communities": "Communities using the app",
+        "by_community": "By community",
+        "columns": {
+          "community": "Community",
+          "members": "Members",
+          "phones": "Phones",
+          "newest": "Newest member"
+        },
+        "newest_title": "Newest members on the app",
+        "unnamed_community": "Community #{{id}}",
+        "empty": "Nobody has the app yet."
+      }
+    }
   },
   "verification": {
     "approve": "Approve",

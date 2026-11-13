@@ -592,48 +592,6 @@
     "last_status": "Dernier statut",
     "last_succeeded": "Dernier succès",
     "loading_cron_jobs": "Chargement des tâches cron...",
-    "native_app_title": "Application native",
-    "native_app": {
-      "installs": {
-        "title": "Installations de l'application dans cette communauté",
-        "scope_this_community": "Cette communauté uniquement",
-        "not_store_installs": "Il s'agit des membres qui ont installé l'application, se sont connectés et ont autorisé les notifications — et non du nombre d'installations Google Play ou App Store. Une personne qui installe l'application et refuse les notifications n'apparaîtra pas ici. Pour les chiffres d'installation des stores, utilisez la Google Play Console.",
-        "phones_registered": "Téléphones enregistrés",
-        "platform_split": "{{android}} sur Android · {{ios}} sur iOS",
-        "people_with_app": "Membres avec l'application",
-        "browser_subscriptions": "Notifications du navigateur",
-        "reachable_by_push": "Membres joignables par notification",
-        "reachable_by_push_hint": "Comptés une seule fois, que ce soit par téléphone, navigateur ou les deux.",
-        "first_last": "Première inscription {{first}} · la plus récente {{last}}",
-        "recent_table_label": "Inscriptions récentes à l'application dans cette communauté",
-        "recent_all_table_label": "Inscriptions récentes à l'application dans toutes les communautés",
-        "by_community_table_label": "Installations de l'application par communauté",
-        "columns": {
-          "member": "Membre",
-          "platform": "Appareil",
-          "registered": "Inscrit",
-          "last_seen": "Vu pour la dernière fois",
-          "community": "Communauté",
-          "phones": "Téléphones",
-          "people": "Membres",
-          "latest_install": "Plus récent"
-        },
-        "empty": "Personne n'a encore enregistré l'application.",
-        "never": "Jamais",
-        "unnamed_member": "Membre n° {{id}}",
-        "unnamed_community": "Communauté n° {{id}}",
-        "load_failed": "Impossible de charger les chiffres d'installation de l'application.",
-        "platform_title": "Toutes les communautés",
-        "god_only": "Mode god uniquement",
-        "platform_description": "Toutes les communautés de la plateforme, y compris celles que vous n'administrez pas. Visible uniquement par les opérateurs en mode god.",
-        "phones_registered_all": "Téléphones enregistrés (toutes)",
-        "people_with_app_all": "Membres avec l'application (toutes)",
-        "communities_with_installs": "Communautés avec installations",
-        "reachable_by_push_all": "Joignables par notification (toutes)",
-        "by_community": "Par communauté",
-        "recent_all_communities": "Inscriptions récentes, toutes les communautés"
-      }
-    },
     "never": "Jamais",
     "next_run": "Prochaine exécution",
     "no_activity_log_entries": "Aucune entrée du journal d'activité",
@@ -1498,7 +1456,66 @@
     "region_pt": "Portugal",
     "region_nl": "Pays-Bas",
     "region_pl": "Pologne",
-    "region_us": "États-Unis"
+    "region_us": "États-Unis",
+    "phone_app": {
+      "title": "Application mobile",
+      "description": "Voyez quels membres de cette communauté sont connectés à l'application mobile.",
+      "summary": {
+        "title": "Dans cette communauté",
+        "members_with_app": "Membres avec l'application",
+        "members_with_app_hint": "Connectés sur leur téléphone.",
+        "notifications_on": "Notifications activées",
+        "notifications_on_hint": "Ils reçoivent des alertes sur leur téléphone.",
+        "phone_types": "Android et iPhone",
+        "phone_types_value": "{{android}} sur Android · {{ios}} sur iPhone",
+        "phone_types_hint": "Nous ne savons quel téléphone a un membre qu'une fois ses notifications activées.",
+        "newest": "Dernier membre arrivé sur l'application",
+        "newest_none": "Personne pour l'instant",
+        "not_downloads": "Ceci montre les membres connectés à l'application. Ce n'est pas le nombre de téléchargements : Google Play et l'App Store conservent ces chiffres.",
+        "load_failed": "Nous n'avons pas pu charger ces chiffres. Actualisez la page pour réessayer."
+      },
+      "members": {
+        "title": "Qui a l'application",
+        "search_placeholder": "Rechercher par nom ou e-mail",
+        "columns": {
+          "member": "Membre",
+          "phone": "Téléphone",
+          "notifications": "Notifications",
+          "first_seen": "Vu pour la première fois sur l'application",
+          "last_opened": "Dernière ouverture"
+        },
+        "phone": {
+          "android": "Android",
+          "ios": "iPhone",
+          "unknown": "Pas encore connu"
+        },
+        "notifications_on": "Activées",
+        "notifications_off": "Désactivées",
+        "empty": "Aucun membre n'est encore connecté à l'application.",
+        "empty_search": "Aucun membre ne correspond à votre recherche.",
+        "load_failed": "Nous n'avons pas pu charger cette liste. Veuillez réessayer.",
+        "unnamed_member": "Membre n° {{id}}",
+        "no_date": "Pas encore"
+      },
+      "all": {
+        "title": "Toutes les communautés",
+        "owners_only": "Réservé aux responsables de la plateforme",
+        "description": "Toutes les communautés de la plateforme, y compris celles que vous n'administrez pas. Seuls les responsables de la plateforme voient ceci.",
+        "members_with_app": "Membres avec l'application, toutes communautés",
+        "phones": "Téléphones avec notifications activées",
+        "communities": "Communautés qui utilisent l'application",
+        "by_community": "Par communauté",
+        "columns": {
+          "community": "Communauté",
+          "members": "Membres",
+          "phones": "Téléphones",
+          "newest": "Dernier membre arrivé"
+        },
+        "newest_title": "Derniers membres arrivés sur l'application",
+        "unnamed_community": "Communauté n° {{id}}",
+        "empty": "Personne n'a encore l'application."
+      }
+    }
   },
   "verification": {
     "approve": "Approuver",

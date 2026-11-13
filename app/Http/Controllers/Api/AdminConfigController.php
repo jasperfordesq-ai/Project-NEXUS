@@ -2346,7 +2346,11 @@ class AdminConfigController extends BaseApiController
     /**
      * GET /api/v2/admin/config/native-app/install-stats
      *
-     * Who has the native mobile app installed and registered for push.
+     * The figures at the top of the admin "Phone app" page: how many members
+     * have the app, how many allowed notifications, and the Android / iPhone
+     * split. A member has the app when they have a registered phone or a live
+     * sign-in made through the phone app — see NativeAppInstallStatsService.
+     * The members themselves are served by getNativeAppMembers().
      *
      * Two tiers, and the difference is the whole point of this endpoint:
      *
@@ -2362,9 +2366,9 @@ class AdminConfigController extends BaseApiController
      * another; keep the god check as the single gate and do not move any
      * cross-tenant field into the tenant block.
      *
-     * 🔴 The numbers are push registrations, NOT app-store installs. The
+     * 🔴 These are members signed in on the app, NOT app-store downloads. The
      * response says so in `disclaimer_key` so no client can present them as
-     * install counts by accident.
+     * store install counts by accident.
      */
     public function getNativeAppInstallStats(): JsonResponse
     {
@@ -2378,10 +2382,41 @@ class AdminConfigController extends BaseApiController
             'tenant_id' => $tenantId,
             'is_god' => $isGod,
             'scope' => $isGod ? 'platform' : 'tenant',
-            'disclaimer_key' => 'push_registrations_not_store_installs',
+            'disclaimer_key' => 'app_members_not_store_installs',
             'tenant' => $stats->tenantStats($tenantId),
             'platform' => $isGod ? $stats->platformStats() : null,
         ]);
+    }
+
+    /**
+     * GET /api/v2/admin/config/native-app/members?q=&page=&per_page=
+     *
+     * Every member of THIS community who has the phone app, one row each, most
+     * recently active first. Search matches name, username or email.
+     *
+     * Own community only, for every caller including a god-mode operator: the
+     * cross-community view is the `platform` block of install-stats and
+     * carries no email addresses.
+     */
+    public function getNativeAppMembers(): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+
+        $page = $this->queryInt('page', 1, 1) ?? 1;
+        $perPage = $this->queryInt(
+            'per_page',
+            NativeAppInstallStatsService::RECENT_LIMIT,
+            1,
+            NativeAppInstallStatsService::MAX_PER_PAGE
+        ) ?? NativeAppInstallStatsService::RECENT_LIMIT;
+
+        $search = $this->query('q', '');
+        $search = is_string($search) ? mb_substr(trim($search), 0, 100) : '';
+
+        $result = (new NativeAppInstallStatsService())->tenantMembers($tenantId, $search, $page, $perPage);
+
+        return $this->respondWithPaginatedCollection($result['items'], $result['total'], $page, $perPage);
     }
 
     // =========================================================================
