@@ -132,8 +132,8 @@ describe('CreateListingPage', () => {
   it('renders offer and request radio options', async () => {
     render(<CreateListingPage />);
     await waitFor(() => {
-      expect(screen.getAllByText('Offer Help').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('Request Help').length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Offer help").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Ask for help").length).toBeGreaterThan(0);
     });
   });
 
@@ -305,7 +305,7 @@ describe('CreateListingPage', () => {
         }));
       });
       await waitFor(() => {
-        expect(errorToast).toHaveBeenCalledWith('Failed to save listing', 'Listing limit reached');
+        expect(errorToast).toHaveBeenCalledWith("We couldn't save your offer or request", 'Listing limit reached');
       });
       expect(successToast).not.toHaveBeenCalled();
       expect(mockNavigate).not.toHaveBeenCalled();
@@ -341,7 +341,7 @@ describe('CreateListingPage', () => {
       expect(screen.getByText('Estimated hours must be greater than zero.')).toBeInTheDocument();
 
       // The generic subtitle is suppressed once we have something specific to say.
-      expect(errorToast).toHaveBeenCalledWith('Failed to save listing', undefined);
+      expect(errorToast).toHaveBeenCalledWith("We couldn't save your offer or request", undefined);
       expect(successToast).not.toHaveBeenCalled();
       expect(mockNavigate).not.toHaveBeenCalled();
     });
@@ -357,7 +357,7 @@ describe('CreateListingPage', () => {
       fillAndSubmitCreateForm(container);
 
       await waitFor(() => {
-        expect(errorToast).toHaveBeenCalledWith('Failed to save listing', 'Something global went wrong.');
+        expect(errorToast).toHaveBeenCalledWith("We couldn't save your offer or request", 'Something global went wrong.');
       });
       expect(mockNavigate).not.toHaveBeenCalled();
     });
@@ -371,7 +371,7 @@ describe('CreateListingPage', () => {
 
       await waitFor(() => {
         expect(errorToast).toHaveBeenCalledWith(
-          'Failed to save listing',
+          "We couldn't save your offer or request",
           'Please check your information and try again.',
         );
       });
@@ -429,7 +429,7 @@ describe('CreateListingPage', () => {
           }));
         });
         await waitFor(() => {
-          expect(errorToast).toHaveBeenCalledWith('Failed to save listing', 'You cannot edit this listing');
+          expect(errorToast).toHaveBeenCalledWith("We couldn't save your offer or request", 'You cannot edit this listing');
         });
         expect(successToast).not.toHaveBeenCalled();
         expect(mockNavigate).not.toHaveBeenCalled();

@@ -98,7 +98,7 @@ describe('ListingAnalyticsPanel', () => {
   it('displays analytics title after loading', async () => {
     render(<W><ListingAnalyticsPanel listingId={1} /></W>);
     await waitFor(() => {
-      expect(screen.getByText('Listing Analytics')).toBeInTheDocument();
+      expect(screen.getByText("How it's doing")).toBeInTheDocument();
     });
   });
 
@@ -106,7 +106,7 @@ describe('ListingAnalyticsPanel', () => {
     render(<W><ListingAnalyticsPanel listingId={1} /></W>);
     await waitFor(() => {
       expect(screen.getByText('150')).toBeInTheDocument();
-      expect(screen.getByText('Total Views')).toBeInTheDocument();
+      expect(screen.getByText("Total views")).toBeInTheDocument();
     });
   });
 
@@ -130,7 +130,7 @@ describe('ListingAnalyticsPanel', () => {
     render(<W><ListingAnalyticsPanel listingId={1} /></W>);
     await waitFor(() => {
       expect(screen.getByText('+15%')).toBeInTheDocument();
-      expect(screen.getByText('7-Day Trend')).toBeInTheDocument();
+      expect(screen.getByText("7-day trend")).toBeInTheDocument();
     });
   });
 

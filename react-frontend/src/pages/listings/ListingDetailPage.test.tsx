@@ -380,16 +380,16 @@ describe('ListingDetailPage', () => {
     api.post.mockResolvedValue({ success: false, error: 'Could not save listing' });
 
     render(<ListingDetailPage />);
-    const saveButton = await screen.findByRole('button', { name: /save listing/i });
+    const saveButton = await screen.findByRole('button', { name: /^save /i });
 
     fireEvent.click(saveButton);
 
     await waitFor(() => {
-      expect(errorToast).toHaveBeenCalledWith('Failed to update saved listing', 'Could not save listing');
+      expect(errorToast).toHaveBeenCalledWith("We couldn't update your saved list", 'Could not save listing');
     });
     // No false success toast, and the optimistic toggle is rolled back (still "Save").
     expect(successToast).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: /save listing/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^save /i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /remove saved/i })).not.toBeInTheDocument();
   });
 
@@ -486,7 +486,7 @@ describe('ListingDetailPage', () => {
       render(<ListingDetailPage />);
       const deleteButton = await screen.findByRole('button', { name: 'Delete' });
       fireEvent.click(deleteButton);
-      return await screen.findByRole('button', { name: 'Delete listing' });
+      return await screen.findByRole('button', { name: "Yes, delete it" });
     }
 
     it('shows the delete error toast and does NOT navigate when the delete fails', async () => {
@@ -499,7 +499,7 @@ describe('ListingDetailPage', () => {
         expect(api.delete).toHaveBeenCalledWith('/v2/listings/1');
       });
       await waitFor(() => {
-        expect(errorToast).toHaveBeenCalledWith('Failed to delete', 'You do not have permission to delete this listing');
+        expect(errorToast).toHaveBeenCalledWith("We couldn't delete that", 'You do not have permission to delete this listing');
       });
       expect(successToast).not.toHaveBeenCalled();
       expect(mockNavigate).not.toHaveBeenCalled();
@@ -512,7 +512,7 @@ describe('ListingDetailPage', () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(errorToast).toHaveBeenCalledWith('Failed to delete', 'Please try again later');
+        expect(errorToast).toHaveBeenCalledWith("We couldn't delete that", 'Please try again later');
       });
       expect(mockNavigate).not.toHaveBeenCalled();
     });
@@ -541,7 +541,7 @@ describe('ListingDetailPage', () => {
         expect(api.post).toHaveBeenCalledWith('/v2/listings/1/renew', {});
       });
       await waitFor(() => {
-        expect(errorToast).toHaveBeenCalledWith('Failed to renew listing', 'Renewal limit reached');
+        expect(errorToast).toHaveBeenCalledWith("We couldn't renew that", 'Renewal limit reached');
       });
       expect(successToast).not.toHaveBeenCalled();
     });
@@ -554,7 +554,7 @@ describe('ListingDetailPage', () => {
       fireEvent.click(renewButton);
 
       await waitFor(() => {
-        expect(errorToast).toHaveBeenCalledWith('Failed to renew listing', 'Please try again later');
+        expect(errorToast).toHaveBeenCalledWith("We couldn't renew that", 'Please try again later');
       });
       expect(successToast).not.toHaveBeenCalled();
     });

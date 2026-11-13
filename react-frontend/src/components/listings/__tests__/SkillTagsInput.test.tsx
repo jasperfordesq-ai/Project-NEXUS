@@ -73,9 +73,9 @@ describe('SkillTagsInput', () => {
     expect(container).toBeTruthy();
   });
 
-  it('displays "Skill Tags" label', () => {
+  it('displays "Skill tags" label', () => {
     render(<W><SkillTagsInput tags={[]} onChange={vi.fn()} /></W>);
-    expect(screen.getByText(/Skill Tags/)).toBeInTheDocument();
+    expect(screen.getByText(/Skill tags/)).toBeInTheDocument();
   });
 
   it('shows tag count indicator', () => {
