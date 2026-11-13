@@ -270,10 +270,29 @@ describe('AdminSettings', () => {
     expect(statusEls.find((el) => el.getAttribute('aria-busy') === 'true')).toBeDefined();
   });
 
+  // Owner, 13 Nov 2026: what lives on "Make it yours" must not also be here.
+  it('does not repeat the logo, community colour or community photo, and says where they went', async () => {
+    await renderPage();
+
+    for (const name of ['Header Logo', 'Community colour', 'Community photo']) {
+      expect(screen.queryByRole('heading', { name })).toBeNull();
+    }
+    const nav = screen.getByRole('navigation', { name: 'Jump to section' });
+    for (const anchor of ['header-logo', 'community-colour', 'community-photo']) {
+      expect(nav.querySelector(`a[href="#settings-section-${anchor}"]`)).toBeNull();
+    }
+    expect(screen.queryByTestId('community-colour-preview')).toBeNull();
+
+    const notice = screen.getByTestId('settings-moved-notice');
+    expect(notice).toHaveTextContent('Your logo, colour and community photo have moved');
+    const link = notice.querySelector('a');
+    expect(link).toHaveTextContent('Open Make it yours');
+    expect(link?.getAttribute('href')).toMatch(/\/admin\/make-it-yours$/);
+  });
+
   it('renders the title, every section and the jump links after load', async () => {
     await renderPage();
     expect(screen.getByRole('heading', { name: 'Branding & Legal' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Header Logo' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Accessible header colour' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Wallet & credits' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Related admin pages' })).toBeInTheDocument();

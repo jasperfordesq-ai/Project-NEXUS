@@ -13,10 +13,19 @@
  * enterprise config endpoint. The two key sets are disjoint by construction
  * (DUPLICATE_KEYS), so order cannot overwrite anything; a half that fails to
  * save stays dirty so the admin can retry just that part.
+ *
+ * The header logo, the community colour (with the looks and Soft / Vivid) and
+ * the community photo are NOT here: since 13 Nov 2026 they live on "Make it
+ * yours" only (owner: no duplicates). A notice at the top of this page says
+ * where they went. The community colour still travels in this page's form —
+ * the colours endpoint takes it together with the accessible header colours —
+ * but it is never edited here, so it is sent back exactly as it was loaded.
  */
 
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import ArrowRight from 'lucide-react/icons/arrow-right';
 import Settings from 'lucide-react/icons/settings';
 import Settings2 from 'lucide-react/icons/settings-2';
 import Languages from 'lucide-react/icons/languages';
@@ -52,14 +61,7 @@ import { SettingsJumpNav, type JumpNavSection } from './SettingsJumpNav';
 import { settingsSectionAnchor } from './SettingsSection';
 import { GeneralSection, GENERAL_SECTION_ID } from './sections/GeneralSection';
 import { BrandingSection, BRANDING_SECTION_ID } from './sections/BrandingSection';
-import { HeaderLogoSection, HEADER_LOGO_SECTION_ID } from './sections/HeaderLogoSection';
 import { HeaderColorsSection, HEADER_COLORS_SECTION_ID } from './sections/HeaderColorsSection';
-import {
-  CommunityColourSection,
-  COMMUNITY_COLOUR_SECTION_ID,
-  communityColourTooLight,
-} from './sections/CommunityColourSection';
-import { CommunityPhotoSection, COMMUNITY_PHOTO_SECTION_ID } from './sections/CommunityPhotoSection';
 import { PoweredBySection, POWERED_BY_SECTION_ID } from './sections/PoweredBySection';
 import { RegistrationSection, REGISTRATION_SECTION_ID } from './sections/RegistrationSection';
 
@@ -67,9 +69,6 @@ import { RegistrationSection, REGISTRATION_SECTION_ID } from './sections/Registr
 const SECTION_FIELDS: Record<string, SettingsFormKey[]> = {
   [GENERAL_SECTION_ID]: ['name', 'description', 'contact_email', 'contact_phone', 'default_currency', 'region'],
   [BRANDING_SECTION_ID]: ['footer_text', 'partner_logo_url', 'partner_logo_label', 'partner_logo_link_url'],
-  [COMMUNITY_COLOUR_SECTION_ID]: ['community_color', 'community_look', 'colour_strength'],
-  [COMMUNITY_PHOTO_SECTION_ID]: [],
-  [HEADER_LOGO_SECTION_ID]: [],
   [HEADER_COLORS_SECTION_ID]: ['header_bg_color', 'header_accent_color'],
   [POWERED_BY_SECTION_ID]: [
     'powered_by_wording', 'powered_by_label', 'powered_by_url', 'powered_by_image_light', 'powered_by_image_dark',
@@ -120,7 +119,7 @@ export function AdminSettingsPage() {
   const { t } = useTranslation('admin_system');
   const toast = useToast();
   const confirm = useConfirm();
-  const { tenant, refreshTenant } = useTenant();
+  const { tenant, tenantPath, refreshTenant } = useTenant();
   useAdminPageMeta({ title: t('system.admin_settings_title') });
 
   const general = useAdminSettingsForm();
@@ -138,9 +137,6 @@ export function AdminSettingsPage() {
     const own: JumpNavSection[] = [
       { id: GENERAL_SECTION_ID, label: t('system.section_general') },
       { id: BRANDING_SECTION_ID, label: t('system.section_branding_legal') },
-      { id: COMMUNITY_COLOUR_SECTION_ID, label: t('admin_settings.community_colour_section') },
-      { id: COMMUNITY_PHOTO_SECTION_ID, label: t('admin_settings.community_photo_section') },
-      { id: HEADER_LOGO_SECTION_ID, label: t('admin_settings.header_logo_section') },
       { id: HEADER_COLORS_SECTION_ID, label: t('admin_settings.header_colors_section') },
       ...(general.ctx.isPlatformGod ? [{ id: POWERED_BY_SECTION_ID, label: t('system.powered_by_branding_section') }] : []),
       { id: REGISTRATION_SECTION_ID, label: t('system.section_registration_access') },
@@ -251,13 +247,10 @@ export function AdminSettingsPage() {
     }
   }, [confirm, system, general, refreshTenant, toast, t]);
 
-  // The server refuses a community colour that cannot be read on white, so a
-  // Save would fail anyway; say why here instead.
-  const blockedReason = hasErrors
-    ? t('admin_settings.fix_errors_before_saving')
-    : communityColourTooLight(general.form.community_color)
-      ? t('admin_settings.community_colour_too_light')
-      : null;
+  // The community colour is no longer edited here, so a colour saved before
+  // the "readable on white" rule existed must not block saving this page: it
+  // is fixed on "Make it yours", where the rule is explained.
+  const blockedReason = hasErrors ? t('admin_settings.fix_errors_before_saving') : null;
 
   return (
     <div className="pb-24">
@@ -273,11 +266,41 @@ export function AdminSettingsPage() {
         <div className="space-y-6">
           <SettingsJumpNav sections={sections} />
 
+          {/* Where the logo, colour and photo went (owner, 13 Nov 2026: they
+              are on "Make it yours" only, not in two places). */}
+          <Card
+            data-testid="settings-moved-notice"
+            aria-labelledby="settings-moved-notice-title"
+            className="rounded-2xl border border-accent/30 bg-accent-soft p-4 shadow-sm shadow-black/[0.03] sm:p-5"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <span
+                aria-hidden="true"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface text-accent-soft-foreground"
+              >
+                <Sparkles size={20} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 id="settings-moved-notice-title" className="text-base font-semibold tracking-tight text-foreground">
+                  {t('admin_settings.miy_moved_title')}
+                </h2>
+                <p className="mt-0.5 text-sm leading-5 text-foreground">{t('admin_settings.miy_moved_text')}</p>
+              </div>
+              <Button
+                as={Link}
+                to={tenantPath('/admin/make-it-yours')}
+                size="sm"
+                variant="primary"
+                className="shrink-0 self-start sm:self-center"
+                endContent={<ArrowRight size={14} aria-hidden="true" />}
+              >
+                {t('admin_settings.miy_moved_open')}
+              </Button>
+            </div>
+          </Card>
+
           <GeneralSection state={general} />
           <BrandingSection state={general} />
-          <CommunityColourSection state={general} />
-          <CommunityPhotoSection state={general} />
-          <HeaderLogoSection state={general} />
           <HeaderColorsSection state={general} />
           {general.ctx.isPlatformGod && <PoweredBySection state={general} />}
           <RegistrationSection state={general} />

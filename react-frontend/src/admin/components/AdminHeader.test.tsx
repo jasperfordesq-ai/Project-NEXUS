@@ -452,6 +452,23 @@ describe('AdminHeader', () => {
     }
   });
 
+  // Owner, 13 Nov 2026: a header link to "Make it yours", with an icon and a label.
+  it('renders a "Make it yours" button with a picture and words that opens that page', async () => {
+    const user = userEvent.setup();
+    const { AdminHeader } = await import('./AdminHeader');
+    render(<AdminHeader sidebarCollapsed={false} />);
+
+    const button = screen.getAllByRole('button').find(
+      (btn) => btn.getAttribute('aria-label') === 'Make it yours'
+    )!;
+    expect(button).toBeDefined();
+    expect(button).toHaveTextContent('Make it yours');
+    expect(button.querySelector('svg')).not.toBeNull();
+
+    await user.click(button);
+    expect(mockNavigate).toHaveBeenCalledWith('/hour-timebank/admin/make-it-yours');
+  });
+
   it('renders a settings button that opens the admin Settings page', async () => {
     const user = userEvent.setup();
     const { AdminHeader } = await import('./AdminHeader');

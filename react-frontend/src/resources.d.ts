@@ -22491,6 +22491,7 @@ export default interface Resources {
       "login": "Login",
       "logs": "Logs",
       "loyalty": "Loyalty Programme",
+      "make_it_yours_page": "Make it yours",
       "map": "Map",
       "marketplace": "Marketplace",
       "match_approvals": "Match Approvals",
@@ -29935,6 +29936,9 @@ export default interface Resources {
       "miy_load_failed": "We couldn't load your set-up steps. Please reload the page.",
       "miy_logo_colours_hint": "Colours taken from the logo you uploaded, deepened where needed so that words in them can be read. Pick one to use it.",
       "miy_logo_colours_title": "From your logo",
+      "miy_moved_open": "Open Make it yours",
+      "miy_moved_text": "They are now on the Make it yours page, together with your tagline, theme pictures and notices, so everything that makes the site look like your community is in one place.",
+      "miy_moved_title": "Your logo, colour and community photo have moved",
       "miy_notice_desc": "A one-line notice across the top of the site: a welcome, an event, a thank-you. Members see it the next time they visit.",
       "miy_notice_open": "Write a notice",
       "miy_notice_title": "A first notice",
@@ -50511,7 +50515,7 @@ export default interface Resources {
             "title": "Updating a legal document"
           },
           "admin_logo_branding": {
-            "body": "You add your logo on the **Admin Settings** page. Open **Platform Operations** in the admin menu and press **Settings**.\n\n## Header logo\n\nThis logo appears at the top of every page instead of your community's initials.\n\n1. Find the **Header Logo** card.\n2. Under **Header logo (light mode)**, press **Upload image** and choose your file.\n3. If you have a version for dark backgrounds, upload it under **Header logo (dark mode)**. This is optional.\n\nYour logo is saved as soon as it uploads. You see **Header logo updated**. To remove it, press the small cross next to the picture.\n\n> Use a PNG file with a transparent background. It looks right on both light and dark backgrounds. Files can be up to 2 MB.\n\n## Partner logo\n\nThe **Partner Logo** appears in the footer. Use it for a funder or partner organisation.\n\n1. Press **Upload image** under **Partner Logo**.\n2. Fill in **Partner logo label** and **Partner Logo Link URL** if you want them.\n3. Press **Save settings**.\n\nThe picture saves when it uploads. The label and link only save when you press **Save settings**.\n\n## Accessible header colour\n\nThe **Accessible header colour** card sets the header colour of your community's accessible website. Choose a **Header background colour** and an **Accent line colour**, then press **Save settings**. Use a strong, dark colour so the white text stays easy to read.",
+            "body": "Your header logo is on the **Make it yours** page. Your partner logo and the accessible header colour are on the **Admin Settings** page. Both are under **Platform Operations** in the admin menu.\n\n## Header logo\n\nThis logo appears at the top of every page instead of your community's initials.\n\n1. Open **Make it yours** and find the **Header Logo** card.\n2. Under **Header logo (light mode)**, press **Upload image** and choose your file.\n3. If you have a version for dark backgrounds, upload it under **Header logo (dark mode)**. This is optional.\n\nYour logo is saved as soon as it uploads. You see **Header logo updated**. To remove it, press the small cross next to the picture.\n\n> Use a PNG file with a transparent background. It looks right on both light and dark backgrounds. Files can be up to 2 MB.\n\n## Partner logo\n\nThe **Partner Logo** appears in the footer. Use it for a funder or partner organisation.\n\n1. Press **Upload image** under **Partner Logo**.\n2. Fill in **Partner logo label** and **Partner Logo Link URL** if you want them.\n3. Press **Save settings**.\n\nThe picture saves when it uploads. The label and link only save when you press **Save settings**.\n\n## Accessible header colour\n\nThe **Accessible header colour** card sets the header colour of your community's accessible website. Choose a **Header background colour** and an **Accent line colour**, then press **Save settings**. Use a strong, dark colour so the white text stays easy to read.",
             "summary": "Upload a header logo for light and dark mode, and a partner logo for the footer.",
             "title": "Adding your logo"
           },
