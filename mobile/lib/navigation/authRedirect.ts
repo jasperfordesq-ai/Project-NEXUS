@@ -66,6 +66,13 @@ export interface AuthRedirectInput {
   isAuthenticated: boolean;
   /** Explicitly false only for an authenticated adult member who still owes onboarding. */
   onboardingCompleted?: boolean | null;
+  /**
+   * False only when the member's community has made the welcome steps optional or
+   * switched them off (Admin → Welcome steps; see lib/tenancy/welcomeSteps.ts). Absent
+   * means compulsory: how the app behaved before the community had a choice, and the
+   * safe reading while its settings are still loading.
+   */
+  welcomeStepsCompulsory?: boolean;
   /** False only when this installation has never chosen a community. */
   hasSelectedTenant: boolean;
   pathname: string;
@@ -115,6 +122,7 @@ export function decideAuthRedirect(input: AuthRedirectInput): AuthRedirect {
     isLoading,
     isAuthenticated,
     onboardingCompleted,
+    welcomeStepsCompulsory = true,
     hasSelectedTenant,
     pathname,
     pendingDeepLink,
@@ -130,7 +138,12 @@ export function decideAuthRedirect(input: AuthRedirectInput): AuthRedirect {
     // deep-link around this gate creates the exact partial-profile state the server
     // refuses on member actions. Only an explicit `false` gates: older cached user
     // objects without this field remain usable until the background /users/me refresh.
-    if (onboardingCompleted === false) {
+    //
+    // And only where the community requires the steps. Where it has made them optional
+    // or switched them off, the server refuses nothing (`EnsureOnboardingComplete`), so
+    // an unfinished member is treated like any other from here on. Until 13 Nov 2026
+    // this sent every unfinished member to the steps whatever their community chose.
+    if (onboardingCompleted === false && welcomeStepsCompulsory) {
       if (matchesPath(pathname, '/onboarding')) {
         return { action: 'none', reason: 'member is completing onboarding' };
       }

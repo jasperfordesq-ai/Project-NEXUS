@@ -365,3 +365,52 @@ describe('after a navigation has already been issued from the current pathname',
     })).toEqual({ action: 'replace', href: '/(auth)/login' });
   });
 });
+
+/*
+  The community chooses, on Admin → Welcome steps, who goes through them: every new
+  member, anyone who wants to, or nobody. Until 13 Nov 2026 this app sent every member who
+  had not finished to the steps whatever the community had chosen.
+*/
+describe("the community's choice about the welcome steps", () => {
+  const unfinished = {
+    isLoading: false,
+    isAuthenticated: true,
+    onboardingCompleted: false,
+    hasSelectedTenant: true,
+    pendingDeepLink: null,
+  };
+
+  it('sends an unfinished member to the steps when every new member must do them', () => {
+    expect(decideAuthRedirect({ ...unfinished, welcomeStepsCompulsory: true, pathname: '/home' }))
+      .toEqual({ action: 'replace', href: '/(modals)/onboarding' });
+  });
+
+  it('still does when the app was not told (older server, or the settings have not loaded)', () => {
+    expect(decideAuthRedirect({ ...unfinished, pathname: '/home' }))
+      .toEqual({ action: 'replace', href: '/(modals)/onboarding' });
+  });
+
+  it('leaves an unfinished member where they are when the steps are optional or switched off', () => {
+    expect(decideAuthRedirect({ ...unfinished, welcomeStepsCompulsory: false, pathname: '/home' }))
+      .toEqual({ action: 'none', reason: 'signed in on a real route — preserve it' });
+  });
+
+  it('takes them Home from the start screen, like any other member', () => {
+    expect(decideAuthRedirect({ ...unfinished, welcomeStepsCompulsory: false, pathname: '/' }))
+      .toEqual({ action: 'replace', href: '/(tabs)/home' });
+  });
+
+  it('follows their deep link instead of holding it back behind steps nobody requires', () => {
+    expect(decideAuthRedirect({
+      ...unfinished,
+      welcomeStepsCompulsory: false,
+      pathname: '/',
+      pendingDeepLink: '/messages/7',
+    })).toEqual({ action: 'deep-link', url: '/messages/7' });
+  });
+
+  it('lets them stay on the steps when they opened them by choice', () => {
+    expect(decideAuthRedirect({ ...unfinished, welcomeStepsCompulsory: false, pathname: '/onboarding' }))
+      .toEqual({ action: 'none', reason: 'signed in on a real route — preserve it' });
+  });
+});

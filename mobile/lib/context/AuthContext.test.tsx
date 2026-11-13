@@ -483,6 +483,50 @@ describe('AuthContext', () => {
     user: { ...mockUser, ...user },
   });
 
+  /*
+    Where a member lands after signing in follows the community's choice on Admin → Welcome
+    steps. Until 13 Nov 2026 anyone who had not finished the steps was sent to them even
+    where the community had made them optional or switched them off.
+  */
+  describe('where a member who has not finished the welcome steps lands after signing in', () => {
+    async function signInUnfinished(settings?: Record<string, unknown>) {
+      mockTenantContext = { ...showingCommunity(HUB), tenant: { id: HUB.id, slug: HUB.slug, settings } };
+      mockStorageGet.mockResolvedValue(null);
+      mockApiLogin.mockResolvedValue({
+        access_token: 'new-token',
+        refresh_token: 'ref-token',
+        user: { ...mockUser, tenant_id: HUB.id, onboarding_completed: false },
+      });
+      const { result } = renderHook(() => useAuthContext(), { wrapper });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      await act(async () => {
+        await result.current.login({ email: 'jane@example.com', password: 'secret' });
+      });
+    }
+
+    it('the steps, when every new member must do them', async () => {
+      await signInUnfinished({ onboarding_enabled: true, onboarding_mandatory: true });
+      expect(router.replace).toHaveBeenCalledWith('/(modals)/onboarding');
+    });
+
+    it('the steps, when the app has not been told otherwise', async () => {
+      await signInUnfinished(undefined);
+      expect(router.replace).toHaveBeenCalledWith('/(modals)/onboarding');
+    });
+
+    it('Home, when the steps are optional', async () => {
+      await signInUnfinished({ onboarding_enabled: true, onboarding_mandatory: false });
+      expect(router.replace).toHaveBeenCalledWith('/(tabs)/home');
+      expect(router.replace).not.toHaveBeenCalledWith('/(modals)/onboarding');
+    });
+
+    it('Home, when the steps are switched off', async () => {
+      await signInUnfinished({ onboarding_enabled: false, onboarding_mandatory: true });
+      expect(router.replace).toHaveBeenCalledWith('/(tabs)/home');
+      expect(router.replace).not.toHaveBeenCalledWith('/(modals)/onboarding');
+    });
+  });
+
   it('moves the app to the community the session was issued for', async () => {
     mockStorageGet.mockResolvedValue(null);
     mockApiLogin.mockResolvedValue(signInAs({ tenant_id: SUB.id }));

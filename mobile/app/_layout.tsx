@@ -27,6 +27,7 @@ import { validateEnv } from '@/lib/env';
 import { initHaptics } from '@/lib/haptics';
 import { AuthProvider, useAuthContext } from '@/lib/context/AuthContext';
 import { TenantProvider, useTenantContext } from '@/lib/context/TenantContext';
+import { welcomeStepsMustBeFinished } from '@/lib/tenancy/welcomeSteps';
 import { RealtimeProvider } from '@/lib/context/RealtimeContext';
 import BiometricLockGate from '@/components/BiometricLockGate';
 import OfflineBanner from '@/components/OfflineBanner';
@@ -359,6 +360,7 @@ function RootNavigator() {
   ]);
   const { isLoading, isAuthenticated, user } = useAuthContext();
   const {
+    tenant,
     isLoading: isTenantLoading,
     hasSelectedTenant,
   } = useTenantContext();
@@ -492,6 +494,8 @@ function RootNavigator() {
     isLoading: isLoading || isTenantLoading,
     isAuthenticated,
     onboardingCompleted: user?.onboarding_completed,
+    // The community decides whether the welcome steps are compulsory, optional or off.
+    welcomeStepsCompulsory: welcomeStepsMustBeFinished(tenant?.settings),
     hasSelectedTenant,
     pathname,
     pendingDeepLink,

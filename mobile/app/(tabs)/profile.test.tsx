@@ -182,6 +182,9 @@ jest.mock('@/lib/hooks/useAuth', () => ({
   useAuth: (...args: unknown[]) => mockUseAuth(...args),
 }));
 
+// The community on screen. `settings` carries its Admin → Welcome steps choice.
+let mockTenant: { settings?: Record<string, unknown> } | null = null;
+
 const defaultAuthState = {
   isLoading: false,
   user: {
@@ -199,6 +202,7 @@ const defaultAuthState = {
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#006FEE',
   useTenant: () => ({
+    tenant: mockTenant,
     hasFeature: (feature: string) => mockHasFeature(feature),
     hasModule: (module: string) => mockHasModule(module),
   }),
@@ -267,6 +271,44 @@ describe('MoreScreen (More tab)', () => {
     mockUseAuth.mockReturnValue(defaultAuthState);
     mockHasFeature.mockReturnValue(true);
     mockHasModule.mockReturnValue(true);
+    mockTenant = null;
+  });
+
+  /*
+    Where a community has made the welcome steps optional the app no longer sends an
+    unfinished member to them, so this card is how they get back to them (13 Nov 2026).
+  */
+  describe('the "Profile — To finish" card', () => {
+    const unfinished = { ...defaultAuthState, user: { ...defaultAuthState.user, onboarding_completed: false } };
+
+    it('opens the welcome steps for a member who has not finished them', () => {
+      mockUseAuth.mockReturnValue(unfinished);
+      mockTenant = { settings: { onboarding_enabled: true, onboarding_mandatory: false } };
+
+      const { getByTestId } = render(<MoreScreen />);
+      fireEvent.press(getByTestId('profile-finish-welcome-steps'));
+
+      expect(router.push).toHaveBeenCalledWith('/(modals)/onboarding');
+    });
+
+    it('is not a button while the community has the steps switched off', () => {
+      mockUseAuth.mockReturnValue(unfinished);
+      mockTenant = { settings: { onboarding_enabled: false } };
+
+      const { queryByTestId, getByText } = render(<MoreScreen />);
+
+      expect(queryByTestId('profile-finish-welcome-steps')).toBeNull();
+      expect(getByText('To finish')).toBeTruthy();
+    });
+
+    it('is not a button for a member who has finished', () => {
+      mockUseAuth.mockReturnValue({ ...defaultAuthState, user: { ...defaultAuthState.user, onboarding_completed: true } });
+
+      const { queryByTestId, getByText } = render(<MoreScreen />);
+
+      expect(queryByTestId('profile-finish-welcome-steps')).toBeNull();
+      expect(getByText('Complete')).toBeTruthy();
+    });
   });
 
   it('renders the user display name and email', () => {

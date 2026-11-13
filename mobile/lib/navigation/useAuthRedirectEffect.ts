@@ -45,6 +45,7 @@ export function useAuthRedirectEffect(input: AuthRedirectEffectInput): void {
     isLoading,
     isAuthenticated,
     onboardingCompleted,
+    welcomeStepsCompulsory,
     hasSelectedTenant,
     pathname,
     pendingDeepLink,
@@ -71,6 +72,7 @@ export function useAuthRedirectEffect(input: AuthRedirectEffectInput): void {
       isLoading,
       isAuthenticated,
       onboardingCompleted,
+      welcomeStepsCompulsory,
       hasSelectedTenant,
       pathname,
       pendingDeepLink,
@@ -118,5 +120,5 @@ export function useAuthRedirectEffect(input: AuthRedirectEffectInput): void {
       navigationIssuedForPathnameRef.current = pathname;
       replace(decision.href);
     }
-  }, [isLoading, isAuthenticated, onboardingCompleted, hasSelectedTenant, pathname, pendingDeepLink]);
+  }, [isLoading, isAuthenticated, onboardingCompleted, welcomeStepsCompulsory, hasSelectedTenant, pathname, pendingDeepLink]);
 }

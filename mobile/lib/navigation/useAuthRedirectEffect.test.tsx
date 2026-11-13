@@ -167,3 +167,28 @@ describe('useAuthRedirectEffect push trail', () => {
     expect(pushLanding.current).toBeNull();
   });
 });
+
+describe("useAuthRedirectEffect and the community's choice about the welcome steps", () => {
+  it('does not send an unfinished member to steps the community does not require', () => {
+    const h = harness({
+      isLoading: false,
+      isAuthenticated: true,
+      onboardingCompleted: false,
+      welcomeStepsCompulsory: false,
+      pathname: '/home',
+    });
+    expect(h.replace).not.toHaveBeenCalled();
+  });
+
+  it('sends them there as soon as the community settings say the steps are compulsory', () => {
+    const h = harness({
+      isLoading: false,
+      isAuthenticated: true,
+      onboardingCompleted: false,
+      welcomeStepsCompulsory: false,
+      pathname: '/home',
+    });
+    h.next({ welcomeStepsCompulsory: true });
+    expect(h.replace).toHaveBeenCalledWith('/(modals)/onboarding');
+  });
+});

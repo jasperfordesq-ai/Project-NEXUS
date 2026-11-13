@@ -33,6 +33,7 @@ import { listTenants } from '@/lib/api/tenant';
 import { useOptionalTenantContext } from '@/lib/context/TenantContext';
 import { communityRepairStore } from '@/lib/tenancy/communityRepairStore';
 import { adoptSignInTenant, classifyCrossCommunityAdmin } from '@/lib/tenancy/signInTenant';
+import { routeAfterSignIn } from '@/lib/tenancy/welcomeSteps';
 import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
 import { purgeAllMobileOfflineCheckinData } from '@/lib/eventOfflineCheckinStore';
 import { purgeSessionFileCaches } from '@/lib/sessionFileCache';
@@ -219,6 +220,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const currentTenantId = tenantContext?.tenant?.id ?? null;
   const currentSlug = tenantContext?.tenantSlug ?? '';
   const switchCommunity = tenantContext?.setTenantSlug;
+  // Read at the moment of navigating, after any community switch, not when the callback
+  // was created.
+  const communitySettingsRef = useRef<Record<string, unknown> | null | undefined>(undefined);
+  communitySettingsRef.current = tenantContext?.tenant?.settings;
 
   /**
    * Put the app in the community this session was actually issued for.
@@ -310,9 +315,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         changed underneath it, so without this the app would be correct and still look
         broken.
       */
-      router.replace((user as LoginUser).onboarding_completed === false
-        ? '/(modals)/onboarding'
-        : '/(tabs)/home');
+      router.replace(routeAfterSignIn((user as LoginUser).onboarding_completed, communitySettingsRef.current));
     })();
   }, [adoptSignInCommunity, tenantContext, token, user]);
 
@@ -473,9 +476,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await adoptSignInCommunity(response.user, isCurrent);
     if (!isCurrent()) return;
 
-    router.replace(response.user.onboarding_completed === false
-      ? '/(modals)/onboarding'
-      : '/(tabs)/home');
+    // The welcome steps only where this community requires them (Admin → Welcome steps).
+    // If the settings on hand are out of date the app still ends up in the right place:
+    // the root navigator sends an unfinished member to compulsory steps, and the steps
+    // screen sends anyone on from steps that are switched off.
+    router.replace(routeAfterSignIn(response.user.onboarding_completed, communitySettingsRef.current));
 
     // Register device for push notifications (non-blocking, best-effort)
     registerPushBestEffort();

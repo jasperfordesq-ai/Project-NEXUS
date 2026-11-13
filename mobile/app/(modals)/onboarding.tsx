@@ -55,6 +55,7 @@ import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 import TwoFactorEnrolment, { type TwoFactorEnrolmentStage } from '@/components/security/TwoFactorEnrolment';
 import { getTwoFactorStatus } from '@/lib/api/twoFactor';
+import { welcomeStepsMustBeFinished, welcomeStepsSwitchedOn } from '@/lib/tenancy/welcomeSteps';
 
 const DEFAULT_STEPS: OnboardingStep[] = [
   { slug: 'welcome', label_code: 'welcome', required: false },
@@ -148,6 +149,13 @@ function OnboardingScreenInner() {
   const minBioLength = Number(configuration?.config.bio_min_length ?? 10);
   const tenantName = tenant?.name ?? t('community_fallback');
 
+  // The community's choice on Admin → Welcome steps. Switched off: this screen shows
+  // nothing and sends the member on. Optional: the member may leave at any point.
+  // Compulsory (and whenever the app has not been told): no way out, as before.
+  const stepsSwitchedOff = !welcomeStepsSwitchedOn(tenant?.settings);
+  const stepsCompulsory = welcomeStepsMustBeFinished(tenant?.settings);
+  const leave = useCallback(() => { router.replace('/(tabs)/home'); }, []);
+
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
@@ -214,7 +222,13 @@ function OnboardingScreenInner() {
     }
   }, [refreshUser]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    if (stepsSwitchedOff) {
+      leave();
+      return;
+    }
+    void load();
+  }, [leave, load, stepsSwitchedOff]);
 
   useEffect(() => {
     if (!currentStep) return;
@@ -233,7 +247,10 @@ function OnboardingScreenInner() {
 
   // Android's Back button. Left alone it closed the wizard, and the app then reopened it
   // from the start (emulator walk, 7 November 2026). Now it leaves the two-factor set-up
-  // if that is open, otherwise steps back; on the first step it stays put.
+  // if that is open, otherwise steps back; on the first step it stays put — unless the
+  // community has made the steps optional, when Back on the first step leaves them.
+  const stepIndexRef = useRef(0);
+  useEffect(() => { stepIndexRef.current = stepIndex; }, [stepIndex]);
   const securityEnrollingRef = useRef(false);
   useEffect(() => { securityEnrollingRef.current = securityEnrolling; }, [securityEnrolling]);
   // Which stage the two-factor set-up is on. On 'codes' two-factor is already on and the
@@ -246,11 +263,15 @@ function OnboardingScreenInner() {
         if (securityStageRef.current !== 'codes') setSecurityEnrolling(false);
         return true;
       }
+      if (stepIndexRef.current === 0 && !stepsCompulsory) {
+        leave();
+        return true;
+      }
       goBack();
       return true;
     });
     return () => subscription.remove();
-  }, [busy, goBack]);
+  }, [busy, goBack, leave, stepsCompulsory]);
 
   // When the two-factor code box gets focus the keyboard opens over the Verify button
   // below it (emulator, 7 Nov 2026). Once the keyboard is up and the view has shrunk,
@@ -436,6 +457,7 @@ function OnboardingScreenInner() {
     }
   }, [interests, needs, offers, refreshUser, showToast, steps, t]);
 
+  if (stepsSwitchedOff) return null;
   if (loading) return <LoadingSpinner fullScreen />;
   if (loadError) {
     return (
@@ -474,6 +496,13 @@ function OnboardingScreenInner() {
           <View accessibilityRole="progressbar" accessibilityValue={{ min: 1, max: steps.length, now: stepIndex + 1 }} className="h-2 overflow-hidden rounded-full bg-default-100">
             <View className="h-full rounded-full" style={{ backgroundColor: primary, width: `${((stepIndex + 1) / steps.length) * 100}%` }} />
           </View>
+          {/* Only where the community has made the steps optional. Nothing is recorded:
+              the member can come back to them from the Profile tab. */}
+          {!stepsCompulsory ? (
+            <Button testID="onboarding-skip-for-now" variant="ghost" size="sm" onPress={leave} disabled={busy}>
+              {t('skip_for_now')}
+            </Button>
+          ) : null}
         </View>
 
         {currentStep.slug === 'welcome' ? (

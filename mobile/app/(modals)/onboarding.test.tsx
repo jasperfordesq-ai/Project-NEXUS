@@ -8,6 +8,8 @@ import { BackHandler } from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockReplace = jest.fn();
+// The community on screen. `settings` carries its Admin → Welcome steps choice.
+let mockTenant: { name: string; settings?: Record<string, unknown> } = { name: 'Timebank Global' };
 const mockRefreshUser = jest.fn();
 const mockToast = jest.fn();
 let mockUser: Record<string, unknown> = {
@@ -38,7 +40,7 @@ jest.mock('@/lib/hooks/useAuth', () => ({
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#006FEE',
-  useTenant: () => ({ tenant: { name: 'Timebank Global' } }),
+  useTenant: () => ({ tenant: mockTenant }),
 }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({ bg: '#fff', surface: '#fff', text: '#111', textSecondary: '#555', textMuted: '#777', border: '#ddd' }),
@@ -99,6 +101,7 @@ import {
 describe('OnboardingScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockTenant = { name: 'Timebank Global' };
     mockUser = {
       id: 7,
       first_name: 'Alex',
@@ -639,5 +642,81 @@ describe('OnboardingScreen', () => {
       expect(view.getByTestId('onboarding-security-setup')).toBeTruthy();
       expect(view.getByText('security_not_now')).toBeTruthy();
     });
+  });
+});
+
+/*
+  The community chooses who goes through the welcome steps (Admin → Welcome steps). The
+  choice reaches the app in the community settings. Until 13 Nov 2026 this screen behaved
+  as if every community had made them compulsory.
+*/
+describe("OnboardingScreen and the community's choice about the welcome steps", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUser = { id: 7, first_name: 'Alex', last_name: 'Member', avatar_url: null, bio: null, onboarding_completed: false };
+    jest.mocked(getMe).mockResolvedValue({ data: mockUser as never });
+    jest.mocked(getOnboardingStatus).mockResolvedValue({ onboarding_completed: false, has_avatar: false, has_bio: false, interests: [] });
+    jest.mocked(getOnboardingConfig).mockResolvedValue({
+      config: { bio_min_length: 10 },
+      steps: [
+        { slug: 'welcome', label_code: 'welcome', required: false },
+        { slug: 'confirm', label_code: 'confirm', required: false },
+      ],
+    });
+    jest.mocked(getOnboardingCategories).mockResolvedValue([]);
+    jest.mocked(getSafeguardingOptions).mockResolvedValue([]);
+  });
+
+  it('shows nothing and goes Home when the community has switched the steps off', async () => {
+    mockTenant = { name: 'Timebank Global', settings: { onboarding_enabled: false } };
+
+    const view = render(<OnboardingScreen />);
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/(tabs)/home'));
+    expect(getOnboardingConfig).not.toHaveBeenCalled();
+    expect(view.queryByText('Welcome to Timebank Global!')).toBeNull();
+  });
+
+  it('offers "Skip for now" when the steps are optional, and it leaves', async () => {
+    mockTenant = { name: 'Timebank Global', settings: { onboarding_enabled: true, onboarding_mandatory: false } };
+
+    const view = render(<OnboardingScreen />);
+    await waitFor(() => expect(view.getByText('Welcome to Timebank Global!')).toBeTruthy());
+
+    fireEvent.press(view.getByTestId('onboarding-skip-for-now'));
+
+    expect(mockReplace).toHaveBeenCalledWith('/(tabs)/home');
+    expect(completeOnboarding).not.toHaveBeenCalled();
+  });
+
+  it('has no way out when every new member must finish the steps', async () => {
+    mockTenant = { name: 'Timebank Global', settings: { onboarding_enabled: true, onboarding_mandatory: true } };
+
+    const view = render(<OnboardingScreen />);
+    await waitFor(() => expect(view.getByText('Welcome to Timebank Global!')).toBeTruthy());
+
+    expect(view.queryByTestId('onboarding-skip-for-now')).toBeNull();
+  });
+
+  it("lets Android's Back button leave optional steps from the first one", async () => {
+    mockTenant = { name: 'Timebank Global', settings: { onboarding_enabled: true, onboarding_mandatory: false } };
+    type BackPress = () => boolean | null | undefined;
+    const handlers: BackPress[] = [];
+    const spy = jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_event, handler) => {
+      handlers.push(handler);
+      return { remove: () => { const at = handlers.indexOf(handler); if (at >= 0) handlers.splice(at, 1); } };
+    });
+    try {
+      const view = render(<OnboardingScreen />);
+      await waitFor(() => expect(view.getByText('Welcome to Timebank Global!')).toBeTruthy());
+
+      let handled: boolean | null | undefined = false;
+      act(() => { handled = handlers[handlers.length - 1]?.(); });
+
+      expect(handled).toBe(true);
+      expect(mockReplace).toHaveBeenCalledWith('/(tabs)/home');
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

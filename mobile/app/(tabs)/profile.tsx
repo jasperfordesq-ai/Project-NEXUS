@@ -26,6 +26,7 @@ import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 import { formatDecimal } from '@/lib/utils/decimal';
+import { welcomeStepsSwitchedOn } from '@/lib/tenancy/welcomeSteps';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface MenuItem {
@@ -96,7 +97,11 @@ const ACCOUNT: MenuItem[] = [
 export default function MoreScreen() {
   const { t } = useTranslation(['profile', 'common', 'auth', 'courses', 'podcasts', 'clubs', 'venues']);
   const { user, displayName, logout, isLoading } = useAuth();
-  const { hasFeature, hasModule } = useTenant();
+  const { hasFeature, hasModule, tenant } = useTenant();
+  // A member who has not finished the welcome steps can open them from here. Where the
+  // community has made them optional this is the way back to them; where it has switched
+  // them off there is nothing to open.
+  const canFinishWelcomeSteps = user?.onboarding_completed === false && welcomeStepsSwitchedOn(tenant?.settings);
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { confirm, confirmDialog } = useConfirm();
@@ -229,6 +234,8 @@ export default function MoreScreen() {
             value={user?.onboarding_completed === false ? t('quickStats.profileIncomplete') : t('quickStats.profileComplete')}
             tone={user?.onboarding_completed === false ? '#f59e0b' : '#22c55e'}
             theme={theme}
+            testID={canFinishWelcomeSteps ? 'profile-finish-welcome-steps' : undefined}
+            onPress={canFinishWelcomeSteps ? () => navigate('/(modals)/onboarding') : undefined}
           />
           <MetricCard icon="apps-outline" label={t('quickStats.network')} value={visibleDiscover.length.toString()} tone="#0ea5e9" theme={theme} />
         </View>
@@ -255,8 +262,17 @@ export default function MoreScreen() {
   );
 }
 
-function MetricCard({ icon, label, value, tone, theme }: { icon: IoniconName; label: string; value: string; tone: string; theme: Theme }) {
-  return (
+function MetricCard({ icon, label, value, tone, theme, onPress, testID }: {
+  icon: IoniconName;
+  label: string;
+  value: string;
+  tone: string;
+  theme: Theme;
+  /** When given, the whole card is a button, announced as "label: value". */
+  onPress?: () => void;
+  testID?: string;
+}) {
+  const card = (
     <HeroCard className="flex-1 rounded-panel p-0">
       <HeroCard.Body className="items-center gap-1 px-2 py-3">
         <View className="size-9 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(tone, 0.14) }}>
@@ -266,6 +282,20 @@ function MetricCard({ icon, label, value, tone, theme }: { icon: IoniconName; la
         <Text className="text-center text-[11px] leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>{label}</Text>
       </HeroCard.Body>
     </HeroCard>
+  );
+  if (!onPress) return card;
+
+  return (
+    <NativePressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${value}`}
+      onPress={onPress}
+      className="flex-1"
+      feedback="highlight"
+    >
+      {card}
+    </NativePressable>
   );
 }
 
