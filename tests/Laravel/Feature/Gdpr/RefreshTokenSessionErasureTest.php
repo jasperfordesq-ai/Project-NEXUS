@@ -89,4 +89,73 @@ class RefreshTokenSessionErasureTest extends TestCase
             TenantContext::reset();
         }
     }
+
+    /**
+     * F-622 (E-127, 13 Nov 2026). `refresh_session_activity` — one row per
+     * sign-in: when it was made, when it was last used, and whether it came
+     * from the phone app — was added on 30 Oct 2026 (E-119) and never named in
+     * the erasure routine. Erasure keeps the account row in anonymised form, so
+     * the table's ON DELETE CASCADE never fired and the erased member's sign-in
+     * history stayed behind after their sessions were deleted.
+     */
+    public function test_erasure_deletes_only_the_users_tenant_bound_sign_in_activity(): void
+    {
+        $tenantId = $this->testTenantId;
+        $otherTenantId = (int) DB::table('tenants')
+            ->where('id', '!=', $tenantId)
+            ->orderBy('id')
+            ->value('id');
+        $this->assertGreaterThan(0, $otherTenantId, 'A second tenant is needed to prove the delete stays in one community.');
+
+        TenantContext::setById($tenantId);
+        $erasedUser = User::factory()->forTenant($tenantId)->create();
+        $otherMember = User::factory()->forTenant($tenantId)->create();
+        $otherTenantUser = User::factory()->forTenant($otherTenantId)->create();
+        TenantContext::setById($tenantId);
+
+        $now = now();
+        $activity = static fn (int $tenant, int $user, string $label, bool $phoneApp): array => [
+            'family_hash' => hash('sha256', $label . '-' . $user),
+            'tenant_id' => $tenant,
+            'user_id' => $user,
+            'last_activity_at' => $now,
+            'from_phone_app' => $phoneApp,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
+        DB::table('refresh_session_activity')->insert([
+            $activity($tenantId, $erasedUser->id, 'erased-phone', true),
+            $activity($tenantId, $erasedUser->id, 'erased-web', false),
+            $activity($tenantId, $otherMember->id, 'same-community', true),
+            $activity($otherTenantId, $otherTenantUser->id, 'other-community', true),
+        ]);
+
+        try {
+            $service = new class($tenantId) extends GdprService {
+                public function generateDataExport(int $userId, int $requestId = null): string
+                {
+                    return '';
+                }
+            };
+            $service->executeAccountDeletion($erasedUser->id);
+
+            $this->assertDatabaseMissing('refresh_session_activity', [
+                'tenant_id' => $tenantId,
+                'user_id' => $erasedUser->id,
+            ]);
+            $this->assertDatabaseHas('refresh_session_activity', [
+                'tenant_id' => $tenantId,
+                'user_id' => $otherMember->id,
+            ]);
+            $this->assertDatabaseHas('refresh_session_activity', [
+                'tenant_id' => $otherTenantId,
+                'user_id' => $otherTenantUser->id,
+            ]);
+        } finally {
+            foreach (glob(storage_path("exports/nexus_data_export_{$erasedUser->id}_*.zip")) ?: [] as $export) {
+                @unlink($export);
+            }
+            TenantContext::reset();
+        }
+    }
 }

@@ -1547,6 +1547,25 @@ class GdprService
                 ]);
             }
 
+            // 3c (continued). Delete the sign-in activity kept beside those
+            // sessions: one row per sign-in with when it was made, when it was
+            // last used and whether it came from the phone app (E-119). The
+            // table cascades from `users`, but erasure keeps that row in
+            // anonymised form, so nothing removed these until F-622 (13 Nov
+            // 2026). Same rule as the sessions: gone, and never across tenants.
+            try {
+                $this->query(
+                    "DELETE FROM refresh_session_activity WHERE user_id = ? AND tenant_id = ?",
+                    [$userId, $this->tenantId]
+                );
+            } catch (\Throwable $e) {
+                $criticalErasureFailed = true;
+                $this->logger->error('GDPR CRITICAL erasure step failed (sign-in activity)', [
+                    'user_id' => $userId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             // 3d. Delete cookie consent records
             try {
                 $this->query(
