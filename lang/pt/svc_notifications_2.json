@@ -49,6 +49,8 @@
   "federation.notify_partnership_approved": "{{tenant_name}} aprovou o seu pedido de parceria federada.",
   "federation.notify_partnership_rejected": "{{tenant_name}} recusou o pedido de parceria federada.",
   "federation.notify_partnership_terminated": "{{tenant_name}} terminou a parceria federada.",
+  "federation.notify_partnership_counter_proposed": "{{tenant_name}} sugeriu termos diferentes para o seu pedido de parceria.",
+  "federation.notify_partnership_suspended": "{{tenant_name}} pausou a parceria com a sua comunidade.",
   "team_task.title_required": "O título é obrigatório",
   "team_task.invalid_status": "Estado inválido",
   "team_task.invalid_priority": "Prioridade inválida",

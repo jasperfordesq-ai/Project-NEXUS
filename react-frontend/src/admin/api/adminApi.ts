@@ -2159,6 +2159,10 @@ export const adminFederation = {
   reactivatePartnership: (id: number) =>
     api.post<{ success: boolean }>(`/v2/admin/federation/partnerships/${id}/reactivate`, {}),
 
+  /** Pause an active partnership without ending it; only the side that paused can resume. */
+  suspendPartnership: (id: number) =>
+    api.post<{ message: string }>(`/v2/admin/federation/partnerships/${id}/suspend`, {}),
+
   getDirectory: (params?: { search?: string; region?: string; category?: string; topic?: string; exclude_partnered?: boolean }) =>
     api.get<Array<{ id: number; name: string; slug: string; domain: string; description?: string; region?: string }>>(`/v2/admin/federation/directory${buildQuery(params || {})}`),
 

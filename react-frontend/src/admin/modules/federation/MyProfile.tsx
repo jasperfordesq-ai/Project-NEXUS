@@ -232,6 +232,20 @@ export function MyProfile() {
   }, [selectedTopicIds, primaryTopicIds, t, toast]);
 
 
+  // One Save for the whole listing. It saves whichever of the two parts
+  // (details, topics) has changed. Until November 2026 each card had its own
+  // Save button, and saving one left the other's changes unsaved.
+  const handleSaveAll = useCallback(async () => {
+    if (dirty) await handleSaveProfile();
+    if (topicsDirty) await handleSaveTopics();
+  }, [dirty, topicsDirty, handleSaveProfile, handleSaveTopics]);
+
+  // What the listing will show: main topics first, as the directory does.
+  const previewTopics = allTopics
+    .filter((topic) => selectedTopicIds.has(topic.id))
+    .sort((a, b) => Number(primaryTopicIds.has(b.id)) - Number(primaryTopicIds.has(a.id)))
+    .slice(0, 5);
+
   // Group all topics by category
   const topicsByCategory = allTopics.reduce<Record<string, FedTopic[]>>((acc, topic) => {
     const cat = topic.category || 'other';
@@ -304,17 +318,8 @@ export function MyProfile() {
       <div className="space-y-6">
         {/* Profile Details Card */}
         <Card >
-          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
+          <CardHeader>
             <h3 className="text-lg font-semibold">{t('federation.community_profile')}</h3>
-            <Button
-              startContent={<Save size={16} />}
-              onPress={handleSaveProfile}
-              isLoading={saving}
-              isDisabled={!dirty}
-              size="sm"
-            >
-              {t('federation.save_changes')}
-            </Button>
           </CardHeader>
           <CardBody className="gap-4">
             <Input
@@ -365,15 +370,6 @@ export function MyProfile() {
                 {t('federation.topic_tags_desc')}
               </p>
             </div>
-            <Button
-              startContent={<Save size={16} />}
-              onPress={handleSaveTopics}
-              isLoading={topicsSaving}
-              isDisabled={!topicsDirty}
-              size="sm"
-            >
-              {t('federation.save_topics')}
-            </Button>
           </CardHeader>
           <CardBody className="gap-5">
             {topicsLoading ? (
@@ -472,6 +468,54 @@ export function MyProfile() {
             )}
           </CardBody>
         </Card>
+
+        {/* How the listing looks to another timebank browsing the directory.
+            It follows the form as you type, before anything is saved. */}
+        <Card>
+          <CardHeader>
+            <h3 className="text-lg font-semibold">{t('federation.listing_preview_title')}</h3>
+          </CardHeader>
+          <CardBody>
+            <div data-testid="listing-preview" className="max-w-md rounded-2xl border border-divider bg-surface p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-accent/10">
+                  <Building size={20} className="text-accent" aria-hidden="true" />
+                </div>
+                <p className="min-w-0 flex-1 truncate text-base font-semibold text-foreground">{name.trim() || profile.name}</p>
+              </div>
+              <p className="mt-3 text-sm text-muted">
+                {description.trim() || t('federation.listing_preview_empty_description')}
+              </p>
+              {previewTopics.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {previewTopics.map((topic) => (
+                    <Chip
+                      key={topic.id}
+                      size="sm"
+                      variant="soft"
+                      color={primaryTopicIds.has(topic.id) ? 'warning' : 'default'}
+                      startContent={<Tag size={10} />}
+                    >
+                      {topic.name}
+                    </Chip>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardBody>
+        </Card>
+
+        <div className="sticky bottom-3 z-10 flex flex-wrap items-center justify-end gap-3 rounded-2xl border border-divider bg-surface/95 p-3 shadow-sm backdrop-blur">
+          {(dirty || topicsDirty) && <span className="text-xs text-warning">{t('federation.unsaved_changes')}</span>}
+          <Button
+            startContent={<Save size={16} />}
+            onPress={handleSaveAll}
+            isLoading={saving || topicsSaving}
+            isDisabled={!dirty && !topicsDirty}
+          >
+            {t('federation.save_changes')}
+          </Button>
+        </div>
       </div>
     </div>
   );

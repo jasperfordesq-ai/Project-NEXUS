@@ -3007,6 +3007,7 @@ Route::post('/v2/admin/federation/partnerships/{id}/approve', [\App\Http\Control
 Route::post('/v2/admin/federation/partnerships/{id}/reject', [\App\Http\Controllers\Api\AdminFederationController::class, 'rejectPartnership']);
 Route::post('/v2/admin/federation/partnerships/{id}/terminate', [\App\Http\Controllers\Api\AdminFederationController::class, 'terminatePartnership']);
 Route::post('/v2/admin/federation/partnerships/{id}/reactivate', [\App\Http\Controllers\Api\AdminFederationController::class, 'reactivatePartnership']);
+Route::post('/v2/admin/federation/partnerships/{id}/suspend', [\App\Http\Controllers\Api\AdminFederationController::class, 'suspendPartnership']);
 Route::post('/v2/admin/federation/partnerships/request', [\App\Http\Controllers\Api\AdminFederationController::class, 'requestPartnership']);
 Route::get('/v2/admin/federation/partnerships/{id}', [\App\Http\Controllers\Api\AdminFederationController::class, 'partnershipDetail']);
 Route::post('/v2/admin/federation/partnerships/{id}/counter-propose', [\App\Http\Controllers\Api\AdminFederationController::class, 'counterProposePartnership']);

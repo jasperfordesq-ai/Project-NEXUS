@@ -49,6 +49,8 @@
   "federation.notify_partnership_approved": "{{tenant_name}} heeft uw verzoek om een gefedereerd partnerschap goedgekeurd.",
   "federation.notify_partnership_rejected": "{{tenant_name}} heeft het verzoek om een gefedereerd partnerschap afgewezen.",
   "federation.notify_partnership_terminated": "{{tenant_name}} heeft het gefedereerde partnerschap beëindigd.",
+  "federation.notify_partnership_counter_proposed": "{{tenant_name}} heeft andere voorwaarden voorgesteld voor uw partnerschapsverzoek.",
+  "federation.notify_partnership_suspended": "{{tenant_name}} heeft het partnerschap met uw community gepauzeerd.",
   "team_task.title_required": "Titel is verplicht",
   "team_task.invalid_status": "Ongeldige status",
   "team_task.invalid_priority": "Ongeldige prioriteit",

@@ -60,7 +60,8 @@ interface CreditAgreement {
   to_tenant_id?: number;
   to_tenant_name?: string;
   to_tenant_slug?: string;
-  exchange_rate: number;
+  /** Always 1 — kept by the server for old rows; no longer shown or asked for. */
+  exchange_rate?: number;
   monthly_limit?: number;
   max_monthly_credits?: number | null;
   /** null = the server could not work the figure out (never shown as 0). */
@@ -144,7 +145,6 @@ export function CreditAgreements() {
 
   // Create form
   const [selectedPartner, setSelectedPartner] = useState('');
-  const [exchangeRate, setExchangeRate] = useState('1.0');
   const [monthlyLimit, setMonthlyLimit] = useState('100');
   const [creating, setCreating] = useState(false);
 
@@ -247,12 +247,7 @@ export function CreditAgreements() {
   // â”€â”€â”€ Create agreement â”€â”€â”€
   const handleCreate = useCallback(async () => {
     if (!selectedPartner) return;
-    const rate = parseFloat(exchangeRate);
     const limit = parseInt(monthlyLimit);
-    if (!rate || rate <= 0) {
-      toast.error(t('federation.exchange_rate_must_be_positive'));
-      return;
-    }
     if (!limit || limit <= 0) {
       toast.error(t('federation.monthly_limit_must_be_positive'));
       return;
@@ -261,13 +256,11 @@ export function CreditAgreements() {
     try {
       const res = await api.post('/v2/admin/federation/credit-agreements', {
         partner_tenant_id: parseInt(selectedPartner),
-        exchange_rate: rate,
         monthly_limit: limit,
       });
       if (res.success) {
         toast.success(t('federation.credit_agreement_created'));
         setSelectedPartner('');
-        setExchangeRate('1.0');
         setMonthlyLimit('100');
         createModal.onClose();
         loadData();
@@ -281,7 +274,7 @@ export function CreditAgreements() {
       toast.error(t('federation.failed_to_create_agreement'));
     }
     setCreating(false);
-  }, [selectedPartner, exchangeRate, monthlyLimit, toast, createModal, loadData, t]);
+  }, [selectedPartner, monthlyLimit, toast, createModal, loadData, t]);
 
 
   // â”€â”€â”€ Status change â”€â”€â”€
@@ -422,7 +415,6 @@ export function CreditAgreements() {
             <Table aria-label={t('federation.credit_agreements_title')} removeWrapper>
               <TableHeader>
                 <TableColumn>{t('federation.label_partner')}</TableColumn>
-                <TableColumn>{t('federation.label_exchange_rate')}</TableColumn>
                 <TableColumn>{t('federation.label_monthly_limit')}</TableColumn>
                 <TableColumn>{t('federation.col_balance')}</TableColumn>
                 <TableColumn>{t('federation.col_sent_received')}</TableColumn>
@@ -451,9 +443,6 @@ export function CreditAgreements() {
                       <div>
                         <p className="font-medium text-sm">{getPartnerName(agreement, t('federation.unknown_partner'))}</p>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm font-mono">{agreement.exchange_rate}:1</span>
                     </TableCell>
                     <TableCell>
                       <span className="text-sm">
@@ -653,16 +642,6 @@ export function CreditAgreements() {
 
                 <Input
                   type="number"
-                  label={t('federation.label_exchange_rate')}
-                  value={exchangeRate}
-                  onChange={(e) => setExchangeRate(e.target.value)}
-                  startContent={<ArrowRightLeft size={14} />}
-                  step="0.1"
-                  min="0.1"
-                />
-
-                <Input
-                  type="number"
                   label={t('federation.label_monthly_limit')}
                   description={t('federation.desc_maximum_credits_that_can_be_exchanged_pe')}
                   value={monthlyLimit}
@@ -716,10 +695,6 @@ export function CreditAgreements() {
                           <div>
                             <p className="text-muted">{t('federation.label_status')}</p>
                             <BrokerStatusChip status={selectedAgreement.status} />
-                          </div>
-                          <div>
-                            <p className="text-muted">{t('federation.label_exchange_rate')}</p>
-                            <p className="font-mono">{selectedAgreement.exchange_rate}:1</p>
                           </div>
                           <div>
                             <p className="text-muted">{t('federation.label_monthly_limit')}</p>

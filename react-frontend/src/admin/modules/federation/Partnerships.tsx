@@ -22,6 +22,7 @@ import Eye from 'lucide-react/icons/eye';
 import Handshake from 'lucide-react/icons/handshake';
 import Inbox from 'lucide-react/icons/inbox';
 import Mail from 'lucide-react/icons/mail';
+import Pause from 'lucide-react/icons/pause';
 import MessageSquare from 'lucide-react/icons/message-square';
 import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
@@ -155,6 +156,7 @@ export function Partnerships() {
   const [approveTarget, setApproveTarget] = useState<Partnership | null>(null);
   const [rejectTarget, setRejectTarget] = useState<Partnership | null>(null);
   const [reactivateTarget, setReactivateTarget] = useState<Partnership | null>(null);
+  const [suspendTarget, setSuspendTarget] = useState<Partnership | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('all');
 
@@ -318,6 +320,29 @@ export function Partnerships() {
       }
     } catch {
       toast.error(t('federation.failed_to_terminate_partnership'));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Pause: stops members of the two timebanks seeing or contacting each
+  // other, without ending the partnership. Only the side that paused can
+  // resume it.
+  const handleSuspend = async () => {
+    if (!suspendTarget) return;
+    setActionLoading(true);
+    try {
+      const res = await adminFederation.suspendPartnership(suspendTarget.id);
+      if (res.success) {
+        toast.success(t('federation.partnership_paused'));
+        setSuspendTarget(null);
+        loadData();
+      } else {
+        // admin-i18n-ignore: localized server message — see confirmApprove.
+        toast.error(res.error || t('federation.failed_to_pause_partnership'));
+      }
+    } catch {
+      toast.error(t('federation.failed_to_pause_partnership'));
     } finally {
       setActionLoading(false);
     }
@@ -562,6 +587,7 @@ export function Partnerships() {
                 else if (key === 'terminate') setTerminateTarget(item);
                 else if (key === 'counter') openCounterProposal(item);
                 else if (key === 'reactivate') setReactivateTarget(item);
+                else if (key === 'suspend') setSuspendTarget(item);
               }}
               items={[
                 // A request we RECEIVED: approve, reject, or send back different terms.
@@ -572,7 +598,7 @@ export function Partnerships() {
                 ...(item.status === 'pending' && item.is_initiator === true && item.has_counter_proposal
                   ? [{ key: 'accept_counter' }]
                   : []),
-                ...(item.status === 'active' ? [{ key: 'terminate' }] : []),
+                ...(item.status === 'active' ? [{ key: 'suspend' }, { key: 'terminate' }] : []),
                 ...(item.status === 'suspended' ? [{ key: 'reactivate' }] : []),
               ]}
             >
@@ -595,6 +621,11 @@ export function Partnerships() {
                 if (action.key === 'counter') return (
                   <DropdownItem key="counter" id="counter" startContent={<MessageSquare size={14} />} className="text-warning">
                     {t('federation.counter_propose')}
+                  </DropdownItem>
+                );
+                if (action.key === 'suspend') return (
+                  <DropdownItem key="suspend" id="suspend" startContent={<Pause size={14} />} className="text-warning">
+                    {t('federation.pause_partnership')}
                   </DropdownItem>
                 );
                 if (action.key === 'terminate') return (
@@ -788,6 +819,20 @@ export function Partnerships() {
           message={t('federation.terminate_partnership_confirm')}
           confirmLabel={t('federation.terminate')}
           confirmColor="danger"
+          isLoading={actionLoading}
+        />
+      )}
+
+      {/* Pause confirmation */}
+      {suspendTarget && (
+        <ConfirmModal
+          isOpen={!!suspendTarget}
+          onClose={() => setSuspendTarget(null)}
+          onConfirm={handleSuspend}
+          title={t('federation.pause_partnership')}
+          message={t('federation.pause_partnership_confirm')}
+          confirmLabel={t('federation.pause_partnership')}
+          confirmColor="warning"
           isLoading={actionLoading}
         />
       )}

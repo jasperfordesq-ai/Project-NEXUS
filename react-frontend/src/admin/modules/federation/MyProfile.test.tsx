@@ -254,14 +254,77 @@ describe('MyProfile (Federation)', () => {
     const careChip = screen.getByText('Befriending');
     fireEvent.click(careChip);
 
-    // Save Topics button
-    const saveTopicsBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('topic')
-    );
-    if (saveTopicsBtn) fireEvent.click(saveTopicsBtn);
+    // The page's one Save button saves the topics.
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
 
     await waitFor(() => {
-      expect(mockAdminFederation.updateMyTopics).toHaveBeenCalled();
+      expect(mockAdminFederation.updateMyTopics).toHaveBeenCalledWith([10], []);
     });
+    // Only the part that changed is saved.
+    expect(mockAdminFederation.updateProfile).not.toHaveBeenCalled();
+  });
+
+  it('has ONE Save button, which saves the details and the topics together', async () => {
+    // Until November 2026 each card had its own Save; saving one left the
+    // other's changes unsaved with nothing to say so.
+    mockAdminFederation.getTopics.mockResolvedValue(
+      successResponse([makeTopic({ id: 10, name: 'Befriending', category: 'care' })])
+    );
+    mockAdminFederation.getMyTopics.mockResolvedValue(successResponse([]));
+    mockAdminFederation.updateProfile.mockResolvedValue({ success: true });
+    mockAdminFederation.updateMyTopics.mockResolvedValue({ success: true });
+
+    const { MyProfile } = await import('./MyProfile');
+    render(<MyProfile />);
+    await waitFor(() => screen.getByText('Befriending'));
+
+    const saveButtons = () => screen.getAllByRole('button').filter((b) => /save/i.test(b.textContent ?? ''));
+    expect(saveButtons()).toHaveLength(1);
+    expect(saveButtons()[0]).toBeDisabled();
+
+    fireEvent.change(screen.getByDisplayValue('hOUR Timebank'), { target: { value: 'hOUR Timebank CLG' } });
+    fireEvent.click(screen.getByText('Befriending'));
+    expect(screen.getByText('You have unsaved changes')).toBeInTheDocument();
+
+    fireEvent.click(saveButtons()[0]!);
+
+    await waitFor(() => {
+      expect(mockAdminFederation.updateProfile).toHaveBeenCalledTimes(1);
+      expect(mockAdminFederation.updateMyTopics).toHaveBeenCalledWith([10], []);
+    });
+  });
+
+  it('previews the listing as other timebanks will see it, following the form as you type', async () => {
+    mockAdminFederation.getTopics.mockResolvedValue(
+      successResponse([makeTopic({ id: 10, name: 'Befriending', category: 'care' })])
+    );
+    mockAdminFederation.getMyTopics.mockResolvedValue(successResponse([]));
+
+    const { MyProfile } = await import('./MyProfile');
+    render(<MyProfile />);
+    await waitFor(() => screen.getByText('Befriending'));
+
+    const preview = screen.getByTestId('listing-preview');
+    expect(screen.getByRole('heading', { name: 'How other timebanks see you' })).toBeInTheDocument();
+    expect(preview).toHaveTextContent('hOUR Timebank');
+
+    fireEvent.change(screen.getByDisplayValue('hOUR Timebank'), { target: { value: 'Riverbank Exchange' } });
+    expect(preview).toHaveTextContent('Riverbank Exchange');
+
+    // A chosen topic appears in the preview before anything is saved.
+    expect(preview).not.toHaveTextContent('Befriending');
+    fireEvent.click(screen.getByText('Befriending'));
+    expect(preview).toHaveTextContent('Befriending');
+  });
+
+  it('the preview asks for a description when there is none', async () => {
+    mockAdminFederation.getProfile.mockResolvedValue(
+      successResponse({ id: 2, name: 'hOUR Timebank', slug: 'hour-timebank', status: 'active', federation_profile: { description: '', contact_email: '', website: '', categories: [] } })
+    );
+    const { MyProfile } = await import('./MyProfile');
+    render(<MyProfile />);
+
+    const preview = await screen.findByTestId('listing-preview');
+    expect(preview).toHaveTextContent('Add a description so other timebanks know what your community does.');
   });
 });

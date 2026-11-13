@@ -206,7 +206,7 @@ describe('PartnerTimebankGuidance', () => {
     const { PartnerTimebankGuidance } = await import('./PartnerTimebankGuidance');
     render(<PartnerTimebankGuidance page="apiDocs" />);
 
-    expect(screen.getByText('Use this guide to explain the protocol stack')).toBeInTheDocument();
+    expect(screen.getByText('A reference for developers')).toBeInTheDocument();
     expect(screen.getByText('Where this page fits')).toBeInTheDocument();
     expect(screen.getByText('Recommended order')).toBeInTheDocument();
     expect(screen.getByText('Related pages')).toBeInTheDocument();
@@ -215,11 +215,11 @@ describe('PartnerTimebankGuidance', () => {
 
     // Related links point into the Partner Timebanks panel (2026-07-02) —
     // the old /admin/federation/* routes were retired without redirects.
-    expect(screen.getByRole('link', { name: 'External Protocol Partners' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'External platforms' })).toHaveAttribute(
       'href',
       '/test/partner-timebanks/external-partners',
     );
-    expect(screen.getByRole('link', { name: 'Inbound API Partners' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Inbound API partners' })).toHaveAttribute(
       'href',
       '/test/partner-timebanks/inbound-api',
     );

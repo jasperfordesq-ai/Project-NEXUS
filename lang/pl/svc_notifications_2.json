@@ -49,6 +49,8 @@
   "federation.notify_partnership_approved": "{{tenant_name}} zatwierdził(a) Twój wniosek o partnerstwo federacyjne.",
   "federation.notify_partnership_rejected": "{{tenant_name}} odrzucił(a) wniosek o partnerstwo federacyjne.",
   "federation.notify_partnership_terminated": "{{tenant_name}} zakończył(a) partnerstwo federacyjne.",
+  "federation.notify_partnership_counter_proposed": "{{tenant_name}} zaproponował inne warunki dla Twojej prośby o partnerstwo.",
+  "federation.notify_partnership_suspended": "{{tenant_name}} wstrzymał partnerstwo z Twoją społecznością.",
   "team_task.title_required": "Tytuł jest wymagany",
   "team_task.invalid_status": "Nieprawidłowy stan",
   "team_task.invalid_priority": "Nieprawidłowy priorytet",

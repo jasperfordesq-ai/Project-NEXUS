@@ -61,8 +61,8 @@ describe('CreateApiKey — form view', () => {
   // ── Initial render ────────────────────────────────────────────────────────
   it('renders the key name label', () => {
     render(<CreateApiKey />);
-    // real en translation: "Key Name"
-    expect(screen.getByText('Key Name')).toBeInTheDocument();
+    // real en translation: "Key name"
+    expect(screen.getByText('Key name')).toBeInTheDocument();
   });
 
   it('renders scope checkboxes', () => {
@@ -73,7 +73,7 @@ describe('CreateApiKey — form view', () => {
   it('renders the Create Key button disabled when name is empty', () => {
     render(<CreateApiKey />);
 
-    // real en translation: "Create Key"
+    // real en translation: "Create key"
     const createBtn = screen.getByRole('button', { name: /^create key$/i });
     expect(
       createBtn.getAttribute('data-disabled') === 'true' ||
@@ -127,7 +127,7 @@ describe('CreateApiKey — form view', () => {
     });
     render(<CreateApiKey />);
 
-    // real en label: "Key Name"
+    // real en label: "Key name"
     const nameInput = screen.getByRole('textbox', { name: /^key name$/i });
     await userEvent.type(nameInput, 'My Partner Key');
 
@@ -137,8 +137,8 @@ describe('CreateApiKey — form view', () => {
     await waitFor(() => {
       expect(screen.getByText('nexus_test_secret_key_abc123')).toBeInTheDocument();
     });
-    // real en: "Your New API Key"
-    expect(screen.getByText('Your New API Key')).toBeInTheDocument();
+    // real en: "Your new API key"
+    expect(screen.getByText('Your new API key')).toBeInTheDocument();
   });
 
   it('calls adminFederation.createApiKey with correct name payload', async () => {
@@ -236,7 +236,7 @@ describe('CreateApiKey — success view', () => {
   it('shows Copy Key and Done buttons in success view', async () => {
     await renderWithCreatedKey();
 
-    // real en translations: "Copy Key", "Done"
+    // real en translations: "Copy key", "Done"
     expect(screen.getByRole('button', { name: /copy key/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^done$/i })).toBeInTheDocument();
   });

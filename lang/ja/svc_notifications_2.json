@@ -49,6 +49,8 @@
   "federation.notify_partnership_approved": "{{tenant_name}}がフェデレーションパートナーシップ申請を承認しました。",
   "federation.notify_partnership_rejected": "{{tenant_name}}がフェデレーションパートナーシップ申請を却下しました。",
   "federation.notify_partnership_terminated": "{{tenant_name}}がフェデレーションパートナーシップを終了しました。",
+  "federation.notify_partnership_counter_proposed": "{{tenant_name}} がパートナーシップ申請に対して別の条件を提案しました。",
+  "federation.notify_partnership_suspended": "{{tenant_name}} があなたのコミュニティとのパートナーシップを一時停止しました。",
   "team_task.title_required": "タイトルは必須です",
   "team_task.invalid_status": "状態が正しくありません",
   "team_task.invalid_priority": "優先度が正しくありません",

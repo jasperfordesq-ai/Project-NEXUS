@@ -21,6 +21,7 @@ const { mockAdminFederation } = vi.hoisted(() => ({
     getPartnershipStats: vi.fn(),
     counterProposePartnership: vi.fn(),
     acceptCounterProposal: vi.fn(),
+    suspendPartnership: vi.fn(),
     updatePartnershipPermissions: vi.fn(),
   },
 }));
@@ -542,6 +543,35 @@ describe('Partnerships', () => {
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalledWith('Your community has reached its partnership limit of 3.');
     });
+  });
+
+  it('lets a community pause an active partnership, after confirming', async () => {
+    // "Reactivate" was offered for a paused partnership, but nothing in this
+    // panel could pause one — only the platform owner's panel could.
+    mockAdminFederation.suspendPartnership.mockResolvedValue({ success: true });
+    const { Partnerships } = await import('./Partnerships');
+    render(<Partnerships />);
+
+    await waitFor(() => screen.getByText('Community Alpha'));
+    fireEvent.click(screen.getByRole('button', { name: 'Pause partnership' }));
+    // Nothing happens until the admin confirms.
+    expect(mockAdminFederation.suspendPartnership).not.toHaveBeenCalled();
+    fireEvent.click(await screen.findByText('confirm-modal-action'));
+
+    await waitFor(() => expect(mockAdminFederation.suspendPartnership).toHaveBeenCalledWith(1));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Partnership paused'));
+  });
+
+  it('offers Pause only on an active partnership', async () => {
+    mockAdminFederation.getPartnerships.mockResolvedValue({
+      success: true,
+      data: [{ ...makePartnership({ id: 21, status: 'pending', partner_name: 'Hilltop' }), is_initiator: false }],
+    });
+    const { Partnerships } = await import('./Partnerships');
+    render(<Partnerships />);
+
+    await waitFor(() => screen.getByText('Hilltop'));
+    expect(screen.queryByRole('button', { name: 'Pause partnership' })).not.toBeInTheDocument();
   });
 
   it('says the list could not be loaded instead of claiming there are no partnerships', async () => {

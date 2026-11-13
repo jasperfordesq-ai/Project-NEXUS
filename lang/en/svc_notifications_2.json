@@ -53,6 +53,8 @@
   "federation.notify_partnership_approved": "{{tenant_name}} has approved your federation partnership request.",
   "federation.notify_partnership_rejected": "{{tenant_name}} has rejected the federation partnership request.",
   "federation.notify_partnership_terminated": "{{tenant_name}} has terminated the federation partnership.",
+  "federation.notify_partnership_counter_proposed": "{{tenant_name}} has suggested different terms for your partnership request.",
+  "federation.notify_partnership_suspended": "{{tenant_name}} has paused its partnership with your community.",
   "team_task.title_required": "Title is required",
   "team_task.invalid_status": "Invalid status",
   "team_task.invalid_priority": "Invalid priority",

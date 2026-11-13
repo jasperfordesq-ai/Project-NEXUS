@@ -160,16 +160,16 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminFederationCreditAgreementsController.php:272:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminFederationCreditAgreementsController.php:273:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminFederationCreditAgreementsController.php",
-            "line": 272,
+            "line": 273,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $admin->id",
             "title_expression": null,
             "body_expression": "$message",
             "type_expression": "'federation_credit_agreement_' . $action",
-            "link_expression": "/admin/federation",
+            "link_expression": "/partner-timebanks/credit-agreements",
             "data_expression": null
         },
         {

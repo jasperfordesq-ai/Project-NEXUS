@@ -49,6 +49,8 @@
   "federation.notify_partnership_approved": "وافق {{tenant_name}} على طلب الشراكة الاتحادية الخاص بك.",
   "federation.notify_partnership_rejected": "رفض {{tenant_name}} طلب الشراكة الاتحادية.",
   "federation.notify_partnership_terminated": "أنهى {{tenant_name}} الشراكة الاتحادية.",
+  "federation.notify_partnership_counter_proposed": "اقترح {{tenant_name}} شروطًا مختلفة لطلب الشراكة الخاص بك.",
+  "federation.notify_partnership_suspended": "أوقف {{tenant_name}} شراكته مع مجتمعك مؤقتًا.",
   "team_task.title_required": "العنوان مطلوب",
   "team_task.invalid_status": "حالة غير صالحة",
   "team_task.invalid_priority": "أولوية غير صالحة",

@@ -49,6 +49,8 @@
   "federation.notify_partnership_approved": "D’fhaomh {{tenant_name}} d’iarratas ar chomhpháirtíocht chónaidhme.",
   "federation.notify_partnership_rejected": "Dhiúltaigh {{tenant_name}} don iarratas ar chomhpháirtíocht chónaidhme.",
   "federation.notify_partnership_terminated": "D’fhoirceann {{tenant_name}} an chomhpháirtíocht chónaidhme.",
+  "federation.notify_partnership_counter_proposed": "Tá téarmaí difriúla molta ag {{tenant_name}} do d'iarratas comhpháirtíochta.",
+  "federation.notify_partnership_suspended": "Chuir {{tenant_name}} a chomhpháirtíocht le do phobal ar sos.",
   "team_task.title_required": "Tá teideal riachtanach",
   "team_task.invalid_status": "Stádas neamhbhailí",
   "team_task.invalid_priority": "Tosaíocht neamhbhailí",

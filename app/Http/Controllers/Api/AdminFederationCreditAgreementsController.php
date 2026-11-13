@@ -58,7 +58,11 @@ class AdminFederationCreditAgreementsController extends BaseApiController
         $input = $this->getAllInput();
 
         $partnerTenantId = (int) ($input['partner_tenant_id'] ?? 0);
-        $exchangeRate = (float) ($input['exchange_rate'] ?? 0);
+        // Always 1:1. The table has an exchange_rate column and the page used
+        // to ask for one, but nothing has ever applied it to a transfer between
+        // communities — an hour given is an hour received. A posted value is
+        // ignored rather than stored as a promise the platform does not keep.
+        $exchangeRate = 1.0;
         $monthlyLimit = (float) ($input['monthly_limit'] ?? 0);
 
         if ($partnerTenantId <= 0) {
@@ -66,9 +70,6 @@ class AdminFederationCreditAgreementsController extends BaseApiController
         }
         if ($partnerTenantId === $tenantId) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.cannot_agree_with_self'), 'partner_tenant_id');
-        }
-        if ($exchangeRate <= 0) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.exchange_rate_gt_zero'), 'exchange_rate');
         }
         if ($monthlyLimit <= 0) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.monthly_limit_gt_zero'), 'monthly_limit');
@@ -264,12 +265,12 @@ class AdminFederationCreditAgreementsController extends BaseApiController
                         Notification::createNotification(
                             (int) $admin->id,
                             $message,
-                            '/admin/federation',
+                            '/partner-timebanks/credit-agreements',
                             'federation_credit_agreement_' . $action,
                             true,
                             $partnerTenantId
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $admin->id, 'federation_credit_agreement_' . $action, $message, '/admin/federation');
+                        \App\Services\NotificationDispatcher::fanOutPush((int) $admin->id, 'federation_credit_agreement_' . $action, $message, '/partner-timebanks/credit-agreements');
                     });
                 }
             } catch (\Exception $e) {

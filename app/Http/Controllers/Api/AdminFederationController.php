@@ -68,7 +68,7 @@ class AdminFederationController extends BaseApiController
      *
      * Uses explicit tenantId parameter on createNotification() for cross-tenant writes.
      */
-    private function notifyPartnerAdmins(int $partnerTenantId, string $messageKey, array $messageParams = [], string $type = 'federation', ?string $link = '/admin/federation'): void
+    private function notifyPartnerAdmins(int $partnerTenantId, string $messageKey, array $messageParams = [], string $type = 'federation', ?string $link = '/partner-timebanks/partnerships'): void
     {
         try {
             // F-490: admin authority is the four boolean flags as well as the
@@ -502,7 +502,7 @@ class AdminFederationController extends BaseApiController
                 $this->notifyPartnerAdmins(
                     $otherTenantId,
                     'svc_notifications_2.federation.notify_partnership_reactivated',
-                    ['tenant_name' => $tenantName],
+                    ['tenant_name' => $tenantName, 'partner' => $tenantName],
                     'federation_partnership_reactivated'
                 );
             }
@@ -577,6 +577,56 @@ class AdminFederationController extends BaseApiController
         }
     }
 
+    /**
+     * POST /api/v2/admin/federation/partnerships/{id}/suspend
+     *
+     * Pause an active partnership without ending it. Either community may
+     * pause; only the one that paused may resume (reactivatePartnership()).
+     * The service has had this since the partnership feature shipped, but the
+     * only route to it was the platform owner's panel — a community could be
+     * offered "Reactivate" for a state it had no way to create.
+     */
+    public function suspendPartnership($id): JsonResponse
+    {
+        $adminId = $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+        $id = (int) $id;
+        $input = $this->getAllInput();
+        $reason = isset($input['reason']) ? substr(trim((string) $input['reason']), 0, 1000) : null;
+
+        if (!$id || !$this->tableExists('federation_partnerships')) {
+            return $this->respondWithError('NOT_FOUND', __('api.partnership_not_found'), null, 404);
+        }
+
+        try {
+            // Scoped lookup: a partnership the caller is not party to is "not found".
+            $partnership = FederationPartnershipService::getPartnershipById($id, $tenantId);
+            if (!$partnership) {
+                return $this->respondWithError('NOT_FOUND', __('api.partnership_not_found'), null, 404);
+            }
+
+            $result = FederationPartnershipService::suspendPartnership($id, $adminId, $reason);
+            if (!$result['success']) {
+                return $this->respondWithError('SUSPEND_FAILED', $result['error'], null, 409);
+            }
+
+            $otherTenantId = ((int) $partnership['tenant_id'] === $tenantId)
+                ? (int) $partnership['partner_tenant_id']
+                : (int) $partnership['tenant_id'];
+            $this->notifyPartnerAdmins(
+                $otherTenantId,
+                'svc_notifications_2.federation.notify_partnership_suspended',
+                ['tenant_name' => $this->getTenantName($tenantId)],
+                'federation_partnership_suspended'
+            );
+
+            return $this->respondWithData(['message' => $result['message'] ?? '']);
+        } catch (\Exception $e) {
+            Log::error('[Federation] suspendPartnership failed', ['partnership_id' => $id, 'error' => $e->getMessage()]);
+            return $this->respondWithError('UPDATE_FAILED', __('api.update_failed', ['resource' => 'partnership']), null, 500);
+        }
+    }
+
     /** POST /api/v2/admin/federation/partnerships/{id}/counter-propose */
     public function counterProposePartnership($id): JsonResponse
     {
@@ -604,6 +654,18 @@ class AdminFederationController extends BaseApiController
         try {
             $result = FederationPartnershipService::counterPropose($id, $adminId, $level, $permissions, $message);
             if ($result['success']) {
+                // Until November 2026 nobody was told: the community that had
+                // asked only found the new terms if it opened the Partnerships
+                // page. The requester is the row's tenant_id.
+                $partnership = FederationPartnershipService::getPartnershipById($id, TenantContext::getId());
+                if ($partnership) {
+                    $this->notifyPartnerAdmins(
+                        (int) $partnership['tenant_id'],
+                        'svc_notifications_2.federation.notify_partnership_counter_proposed',
+                        ['tenant_name' => $this->getTenantName(TenantContext::getId())],
+                        'federation_partnership_counter_proposed'
+                    );
+                }
                 return $this->respondWithData($result);
             }
             return $this->respondWithError('COUNTER_PROPOSE_FAILED', $result['error'] ?? __('api_controllers_1.admin_federation.counter_propose_failed'));

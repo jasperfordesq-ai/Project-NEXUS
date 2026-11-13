@@ -177,16 +177,24 @@ describe('CreditAgreements', () => {
     });
   });
 
-  it('shows exchange rate in mono format', async () => {
+  it('does not show or ask for an exchange rate — nothing ever applied one', async () => {
+    // The page offered an exchange rate that no transfer between communities
+    // has ever used. Agreements are 1:1; the column, the detail row and the
+    // input are gone, and a stored value on an old row is not displayed.
     mockApi.get
       .mockResolvedValueOnce({ success: true, data: [makeAgreement({ exchange_rate: 1.5 })] })
-      .mockResolvedValue(emptySuccess);
+      .mockResolvedValue(partnersSuccess);
     const { CreditAgreements } = await import('./CreditAgreements');
     render(<CreditAgreements />);
 
-    await waitFor(() => {
-      expect(screen.getByText('1.5:1')).toBeInTheDocument();
-    });
+    await waitFor(() => screen.getByText('Cork Timebank'));
+    expect(screen.queryByText('1.5:1')).not.toBeInTheDocument();
+    expect(screen.queryByText(/exchange rate/i)).not.toBeInTheDocument();
+
+    const newBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('new agreement'));
+    fireEvent.click(newBtn!);
+    await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeTruthy());
+    expect(screen.queryByLabelText(/exchange rate/i)).not.toBeInTheDocument();
   });
 
   it('shows approve button for pending agreements', async () => {

@@ -379,4 +379,111 @@ class PartnershipPreferencesAndCounterOfferTest extends TestCase
         $this->assertFalse($rows[$received]['is_initiator']);
         $this->assertFalse($rows[$received]['has_counter_proposal']);
     }
+
+    // ── 4. Pausing, and telling the other community (November 2026, second pass) ──
+    //
+    // "Reactivate" was offered on the Partnerships page, but only the platform
+    // owner's panel could pause, so a community could not create the state it
+    // was being offered a way out of. And nobody was told when different terms
+    // came back, or (correctly) when anything else happened: every partnership
+    // notification linked to /admin/federation, a page retired in July 2026.
+
+    private function seedAdminOf(int $tenantId): User
+    {
+        return User::factory()->forTenant($tenantId)->admin()->create();
+    }
+
+    private function notificationsFor(int $userId): \Illuminate\Support\Collection
+    {
+        return DB::table('notifications')->where('user_id', $userId)->get();
+    }
+
+    public function test_a_community_can_pause_an_active_partnership(): void
+    {
+        Sanctum::actingAs($this->seedAdminOf($this->testTenantId));
+        $partner = $this->seedTenant('Paused Partner');
+        $partnerAdmin = $this->seedAdminOf($partner);
+        $id = $this->seedPartnership($partner, $this->testTenantId, 'active');
+
+        $this->apiPost("/v2/admin/federation/partnerships/{$id}/suspend")->assertStatus(200);
+
+        $row = DB::table('federation_partnerships')->where('id', $id)->first();
+        $this->assertSame('suspended', $row->status);
+        $this->assertSame($this->testTenantId, (int) $row->suspended_by_tenant_id, 'records who paused, so only they can resume');
+
+        // The other community is told, and the notification opens a page that exists.
+        $notes = $this->notificationsFor($partnerAdmin->id);
+        $this->assertCount(1, $notes);
+        $this->assertSame('/partner-timebanks/partnerships', $notes[0]->link);
+        $this->assertStringNotContainsString('{{', $notes[0]->message);
+    }
+
+    public function test_the_community_that_paused_can_resume_and_the_message_names_it(): void
+    {
+        Sanctum::actingAs($this->seedAdminOf($this->testTenantId));
+        $partner = $this->seedTenant('Resumed Partner');
+        $partnerAdmin = $this->seedAdminOf($partner);
+        $id = $this->seedPartnership($this->testTenantId, $partner, 'active');
+
+        $this->apiPost("/v2/admin/federation/partnerships/{$id}/suspend")->assertStatus(200);
+        $this->apiPost("/v2/admin/federation/partnerships/{$id}/reactivate")->assertStatus(200);
+
+        $this->assertSame('active', DB::table('federation_partnerships')->where('id', $id)->value('status'));
+        // The reactivated message used a {{partner}} placeholder nothing filled.
+        foreach ($this->notificationsFor($partnerAdmin->id) as $note) {
+            $this->assertStringNotContainsString('{{', $note->message);
+            $this->assertSame('/partner-timebanks/partnerships', $note->link);
+        }
+    }
+
+    public function test_only_an_active_partnership_can_be_paused(): void
+    {
+        Sanctum::actingAs($this->seedAdminOf($this->testTenantId));
+        $id = $this->seedPartnership($this->seedTenant(), $this->testTenantId, 'pending');
+
+        $this->apiPost("/v2/admin/federation/partnerships/{$id}/suspend")->assertStatus(409);
+
+        $this->assertSame('pending', DB::table('federation_partnerships')->where('id', $id)->value('status'));
+    }
+
+    public function test_pausing_another_pair_of_communities_partnership_is_not_found(): void
+    {
+        Sanctum::actingAs($this->seedAdminOf($this->testTenantId));
+        $id = $this->seedPartnership($this->seedTenant('Stranger C'), $this->seedTenant('Stranger D'), 'active');
+
+        $this->apiPost("/v2/admin/federation/partnerships/{$id}/suspend")->assertStatus(404);
+
+        $this->assertSame('active', DB::table('federation_partnerships')->where('id', $id)->value('status'));
+    }
+
+    public function test_pausing_is_admin_only(): void
+    {
+        $id = $this->seedPartnership($this->seedTenant(), $this->testTenantId, 'active');
+
+        Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->create());
+        $this->apiPost("/v2/admin/federation/partnerships/{$id}/suspend")->assertStatus(403);
+
+        $this->assertSame('active', DB::table('federation_partnerships')->where('id', $id)->value('status'));
+    }
+
+    public function test_the_community_that_asked_is_told_when_different_terms_come_back(): void
+    {
+        $this->openPlatformDoors();
+        Sanctum::actingAs($this->seedAdminOf($this->testTenantId));
+        $requester = $this->seedTenant('Asking Community');
+        $requesterAdmin = $this->seedAdminOf($requester);
+        $id = $this->seedPartnership($requester, $this->testTenantId, 'pending');
+
+        $this->apiPost("/v2/admin/federation/partnerships/{$id}/counter-propose", [
+            'level' => 2,
+            'permissions' => ['profiles' => true, 'messaging' => true],
+            'message' => 'Could we start smaller?',
+        ])->assertStatus(200);
+
+        $notes = $this->notificationsFor($requesterAdmin->id);
+        $this->assertCount(1, $notes, 'until November 2026 nobody was told');
+        $this->assertSame('/partner-timebanks/partnerships', $notes[0]->link);
+        $this->assertStringNotContainsString('{{', $notes[0]->message);
+        $this->assertSame('federation_partnership_counter_proposed', $notes[0]->type);
+    }
 }

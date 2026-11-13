@@ -472,4 +472,46 @@ class AdminFederationCreditAgreementsControllerTest extends TestCase
         $this->assertSame('pending', $row->status);
         $this->assertEqualsWithDelta(80.0, (float) $row->max_monthly_credits, 0.001);
     }
+
+    public function test_store_ignores_a_posted_exchange_rate_and_needs_none(): void
+    {
+        // The page asked for an exchange rate that nothing has ever applied to
+        // a transfer. Agreements are 1:1; a posted value is not stored.
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $first = $this->seedPartnerTenant();
+        $second = $this->seedPartnerTenant();
+
+        $this->apiPost('/v2/admin/federation/credit-agreements', [
+            'partner_tenant_id' => $first,
+            'exchange_rate' => 2.5,
+            'monthly_limit' => 40,
+        ])->assertStatus(201);
+        $this->apiPost('/v2/admin/federation/credit-agreements', [
+            'partner_tenant_id' => $second,
+            'monthly_limit' => 40,
+        ])->assertStatus(201);
+
+        foreach ([$first, $second] as $partner) {
+            $rate = DB::table('federation_credit_agreements')
+                ->where('from_tenant_id', $this->testTenantId)->where('to_tenant_id', $partner)->value('exchange_rate');
+            $this->assertEqualsWithDelta(1.0, (float) $rate, 0.0001);
+        }
+    }
+
+    public function test_agreement_notifications_open_a_page_that_exists(): void
+    {
+        // They linked to /admin/federation, retired in July 2026 with no redirect.
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $partnerTenantId = $this->seedPartnerTenant();
+        $partnerAdmin = User::factory()->forTenant($partnerTenantId)->admin()->create();
+        $id = $this->seedAgreement($partnerTenantId, 'active', 1, 2);
+
+        $this->apiPost("/v2/admin/federation/credit-agreements/{$id}/suspend")->assertStatus(200);
+
+        $note = DB::table('notifications')->where('user_id', $partnerAdmin->id)->first();
+        $this->assertNotNull($note);
+        $this->assertSame('/partner-timebanks/credit-agreements', $note->link);
+    }
 }
