@@ -2017,7 +2017,14 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('<dt>Active listings</dt>');
     expect(api.getPlatformStats).toHaveBeenCalledWith({});
     expect(response.text).toContain('Powered by Project NEXUS');
-    expect(response.text).toContain('Laravel Edition source code');
+    // The open-source credit linked two repositories until 2026-11-13. The
+    // second (the former ASP.NET repository) is no longer public, so only the
+    // one platform repository may be offered.
+    expect(response.text).toContain('Project NEXUS source code on GitHub');
+    expect(response.text).not.toContain('Laravel Edition source code');
+    expect(response.text).not.toContain('.NET Edition source code');
+    expect(response.text).not.toContain('github.com/jasperfordesq-ai/api.project-nexus.net');
+    expect(response.text).toContain('href="https://github.com/jasperfordesq-ai/Project-NEXUS"');
     expect(response.text).toContain('href="/register"');
     expect(response.text).toContain('href="/contact"');
     expect(response.text).not.toContain('A timebanking platform for community exchange.');

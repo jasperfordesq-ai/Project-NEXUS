@@ -47,6 +47,7 @@ import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import contributors from '@/data/contributors.json';
+import { PROJECT_NEXUS_REPO_URL } from '@/config/externalLinks';
 
 /* ─────────────── Types ─────────────── */
 
@@ -432,26 +433,15 @@ export function AboutPage() {
                   <p className="text-sm text-theme-muted mb-3">
                     {t('about.credits.license_text')}
                   </p>
-                  <div className="flex flex-col gap-2">
-                    <a
-                      href="https://github.com/jasperfordesq-ai/Project-NEXUS"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-medium text-accent dark:text-accent hover:text-accent dark:hover:text-accent transition-colors"
-                    >
-                      <BookOpen className="w-4 h-4" aria-hidden="true" />
-                      {t('about.credits.v1_source')}
-                    </a>
-                    <a
-                      href="https://github.com/jasperfordesq-ai/api.project-nexus.net"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-medium text-accent dark:text-accent hover:text-accent dark:hover:text-accent transition-colors"
-                    >
-                      <BookOpen className="w-4 h-4" aria-hidden="true" />
-                      {t('about.credits.v2_source')}
-                    </a>
-                  </div>
+                  <a
+                    href={PROJECT_NEXUS_REPO_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-accent dark:text-accent hover:text-accent dark:hover:text-accent transition-colors"
+                  >
+                    <BookOpen className="w-4 h-4" aria-hidden="true" />
+                    {t('about.credits.source_code')}
+                  </a>
                 </GlassCard>
               </motion.div>
             </div>

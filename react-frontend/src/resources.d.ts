@@ -58033,10 +58033,9 @@ export default interface Resources {
         "open_source": "Open Source",
         "research_description": "Informed by a social impact study commissioned by the {{name}}.",
         "research_heading": "Research Foundation",
+        "source_code": "Project NEXUS source code on GitHub",
         "subtitle": "Open-source community platform created by Jasper Ford. Licensed under AGPL v3.",
-        "title": "Powered by Project NEXUS",
-        "v1_source": "Laravel Edition Source Code (PHP + React)",
-        "v2_source": ".NET Edition Source Code (ASP.NET Core)"
+        "title": "Powered by Project NEXUS"
       },
       "cta": {
         "contact_us": "Contact Us",

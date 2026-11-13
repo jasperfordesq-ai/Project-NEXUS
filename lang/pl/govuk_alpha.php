@@ -4553,8 +4553,7 @@ return [
             'acknowledgements' => 'Podziękowania',
             'open_source' => 'Otwarte źródło',
             'license_text' => 'Licencjonowany na podstawie GNU Affero General Public License v3 (AGPL-3.0).',
-            'v1_source' => 'Kod źródłowy Laravel Edition (PHP + React)',
-            'v2_source' => 'Kod źródłowy .NET Edition (ASP.NET Core)',
+            'source_code' => 'Kod źródłowy Project NEXUS na GitHubie',
         ],
         'cta' => [
             'title' => 'Chcesz się zaangażować%',

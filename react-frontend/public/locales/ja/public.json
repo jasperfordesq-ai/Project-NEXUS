@@ -764,8 +764,7 @@
       "acknowledgements": "謝辞",
       "open_source": "オープンソース",
       "license_text": "GNU Affero General Public License v3 (AGPL-3.0)の下でライセンスされています。",
-      "v1_source": "Laravel Edition ソースコード (PHP + React)",
-      "v2_source": ".NET Edition ソースコード (ASP.NET Core)"
+      "source_code": "GitHub 上の Project NEXUS ソースコード"
     },
     "cta": {
       "title": "参加する準備はできましたか？",

@@ -764,8 +764,7 @@
       "acknowledgements": "Acknowledgements",
       "open_source": "Open Source",
       "license_text": "Licensed under the GNU Affero General Public License v3 (AGPL-3.0).",
-      "v1_source": "Laravel Edition Source Code (PHP + React)",
-      "v2_source": ".NET Edition Source Code (ASP.NET Core)"
+      "source_code": "Project NEXUS source code on GitHub"
     },
     "cta": {
       "title": "Ready to Get Involved?",

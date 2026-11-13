@@ -4555,8 +4555,7 @@ return [
             'acknowledgements' => 'Buíochas',
             'open_source' => 'Foinse oscailte',
             'license_text' => 'Ceadúnaithe faoin GNU Affero General Public License v3 (AGPL-3.0).',
-            'v1_source' => 'Cód foinse Laravel Edition (PHP + React)',
-            'v2_source' => 'Cód foinse .NET Edition (ASP.NET Core)',
+            'source_code' => 'Cód foinse Project NEXUS ar GitHub',
         ],
         'cta' => [
             'title' => 'Réidh le bheith páirteach?',

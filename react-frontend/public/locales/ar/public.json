@@ -764,8 +764,7 @@
       "acknowledgements": "شكر وتقدير",
       "open_source": "مفتوح المصدر",
       "license_text": "مرخص بموجب رخصة جنو العامة التشاركية v3 (AGPL-3.0).",
-      "v1_source": "شفرة المصدر Laravel Edition (PHP + React)",
-      "v2_source": "شفرة المصدر .NET Edition (ASP.NET Core)"
+      "source_code": "الشفرة المصدرية لـ Project NEXUS على GitHub"
     },
     "cta": {
       "title": "هل أنت مستعد للمشاركة؟",

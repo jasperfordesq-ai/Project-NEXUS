@@ -764,8 +764,7 @@
       "acknowledgements": "Buíochas",
       "open_source": "Foinse Oscailte",
       "license_text": "Ceadúnaithe faoin gCeadúnas Poiblí Ginearálta Affero GNU v3 (AGPL-3.0).",
-      "v1_source": "Cód Foinse Laravel Edition (PHP + React)",
-      "v2_source": "Cód Foinse .NET Edition (ASP.NET Core)"
+      "source_code": "Cód foinse Project NEXUS ar GitHub"
     },
     "cta": {
       "title": "Réidh le Bheith Páirteach?",

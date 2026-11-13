@@ -57,6 +57,7 @@ vi.mock('@/lib/motion', () => {
 });
 
 import { AboutPage } from './AboutPage';
+import { PROJECT_NEXUS_REPO_URL } from '@/config/externalLinks';
 
 describe('AboutPage', () => {
   beforeEach(() => { vi.clearAllMocks(); });
@@ -64,5 +65,17 @@ describe('AboutPage', () => {
   it('renders without crashing', () => {
     const { container } = render(<AboutPage />);
     expect(container.querySelector('div')).toBeTruthy();
+  });
+
+  // The Open Source card linked to two repositories until 2026-11-13. The
+  // second (the former ASP.NET repository) is no longer public, so only the
+  // one platform repository may be offered.
+  it('links the Open Source card to the single public repository only', () => {
+    const { container } = render(<AboutPage />);
+    const sourceLinks = Array.from(container.querySelectorAll('a[href*="github.com"]'));
+
+    expect(sourceLinks).toHaveLength(1);
+    expect(sourceLinks[0].getAttribute('href')).toBe(PROJECT_NEXUS_REPO_URL);
+    expect(container.querySelector('a[href*="api.project-nexus.net"]')).toBeNull();
   });
 });
