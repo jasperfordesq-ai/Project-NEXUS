@@ -2143,8 +2143,9 @@ async function getUserAppreciations(token, userId, params = {}) {
 }
 
 // The signed-in member's own thank-you notes, INCLUDING the ones only they can
-// see. GET /users/{id}/appreciations returns only the notes the receiver has
-// chosen to show, so a member's own page has to read this one instead.
+// see, with the Received / Sent split. (GET /users/{id}/appreciations is the
+// profile list: shown notes for everyone else; since 13 Nov 2026 it also gives
+// the receiver their own private ones, for the phone app, but has no Sent tab.)
 async function getMyAppreciations(token, params = {}) {
   const query = new URLSearchParams();
   query.set('tab', params.tab === 'sent' ? 'sent' : 'received');

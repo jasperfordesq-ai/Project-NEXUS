@@ -23,7 +23,7 @@ use App\Support\Members\MemberProfileVisibility;
  *   POST   /v2/appreciations
  *   PUT    /v2/appreciations/{id}/visibility   (the receiver only)
  *   DELETE /v2/appreciations/{id}              (the receiver or the sender)
- *   GET    /v2/users/{userId}/appreciations
+ *   GET    /v2/users/{userId}/appreciations    (shown notes; the receiver also gets their private ones)
  *   GET    /v2/me/appreciations?tab=received|sent|all
  *   POST   /v2/appreciations/{id}/react
  *   DELETE /v2/appreciations/{id}/react
@@ -105,6 +105,17 @@ class AppreciationsController extends BaseApiController
         return $this->service->delete($id, $userId) ? $this->noContent() : $this->respondNotFound();
     }
 
+    /**
+     * The notes on a member's profile: the ones that member chose to show.
+     *
+     * One exception — the member themself. The phone app (every build up to
+     * 1.13.0) reads this one list for a member's notes whoever's profile it
+     * is, so a list of shown notes only meant a member who was thanked found
+     * nothing in the app. A private note is for its receiver, so the receiver
+     * gets their own here too; each note carries `is_public`, which says
+     * whether anyone else can see it. Nobody else ever gets a private note
+     * from this route — not the sender, not staff.
+     */
     public function publicForUser(int $userId): JsonResponse
     {
         if ($refusal = $this->refuseIfProfileHidden($userId)) {
@@ -113,7 +124,8 @@ class AppreciationsController extends BaseApiController
         $viewerId = $this->getOptionalUserId();
         $page = $this->queryInt('page', 1, 1) ?? 1;
         $perPage = $this->queryInt('per_page', 20, 1, 100) ?? 20;
-        $result = $this->service->getReceivedAppreciations($userId, $page, $perPage, true, $viewerId);
+        $shownOnly = $viewerId === null || $viewerId !== $userId;
+        $result = $this->service->getReceivedAppreciations($userId, $page, $perPage, $shownOnly, $viewerId);
         return $this->respondWithData($result['data'], $result['meta']);
     }
 
