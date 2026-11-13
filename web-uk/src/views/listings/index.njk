@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
@@ -22,6 +23,26 @@
         </div>
       {% endif %}
 
+      {# A visitor cannot read listings (the API refuses them), so say so plainly
+         and stop: no search form and no results that could only ever be empty.
+         Same banner as the Feed page. "Important", not "There is a problem":
+         needing to sign in is a rule, not a fault (13 Nov 2026). Placed before
+         the heading, where GOV.UK puts a notification banner. #}
+      {% if requiresAuth %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="listings-auth-required-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="listings-auth-required-title">{{ t("states.important") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t("states.auth_required") }}</p>
+            <div class="govuk-button-group">
+              {{ govukButton({ text: t("nav.login"), href: urlFor('/login') }) }}
+              {{ govukButton({ text: t("nav.register"), href: urlFor('/register'), classes: "govuk-button--secondary" }) }}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
       <span class="govuk-caption-xl">{{ t("listings.caption", { community: tenant.name or tenant.slug or tenantSlug }) }}</span>
       <h1 class="govuk-heading-xl">{{ t("listings.title") }}</h1>
       <p class="govuk-body-l">{{ t("listings.description") }}</p>
@@ -31,10 +52,9 @@
           <a class="govuk-button" href="{{ urlFor('/listings/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("listings.create.title") }}</a>
           <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/listings/mine') }}" role="button" draggable="false" data-module="govuk-button">{{ t("own_records.my_listings") }}</a>
         </div>
-      {% else %}
-        <div class="govuk-inset-text"><p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/login?status=auth-required') }}">{{ t("listings.create.auth_link") }}</a></p></div>
       {% endif %}
 
+      {% if not requiresAuth %}
       <form method="get" action="{{ urlFor('/listings') }}" class="govuk-!-margin-bottom-7">
         <fieldset class="govuk-fieldset" aria-describedby="listings-filter-hint">
           <legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h2 class="govuk-fieldset__heading">{{ t("listings.filters_title") }}</h2></legend>
@@ -98,6 +118,7 @@
           {% endfor %}
         </div>
         {% if nextHref %}{{ govukPagination({ next: { text: t("actions.load_more"), labelText: t("listings.more_results_label"), href: urlFor(nextHref) }, landmarkLabel: t("listings.pagination_label"), classes: "govuk-pagination--block govuk-!-margin-top-6" }) }}{% endif %}
+      {% endif %}
       {% endif %}
     </div>
   </div>

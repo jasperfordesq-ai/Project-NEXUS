@@ -2,6 +2,7 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
+{% from "partials/sign-in-lock.njk" import signInLock %}
 {#
   Custom Project NEXUS footer using GOV.UK typography and spacing only.
   No crown, no GOV.UK logotype, and no official government identity claim.
@@ -46,7 +47,7 @@
             <ul class="govuk-footer__list">
               {% for link in column.links %}
                 <li class="govuk-footer__list-item">
-                  <a class="govuk-footer__link" href="{{ link.href }}">{{ link.label }}</a>
+                  <a class="govuk-footer__link" href="{{ link.href }}">{{ link.label }}{% if link.locked %}{{ signInLock(t("home.module_signin_hint")) }}{% endif %}</a>
                 </li>
               {% endfor %}
             </ul>

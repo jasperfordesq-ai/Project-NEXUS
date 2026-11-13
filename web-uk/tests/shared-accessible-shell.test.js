@@ -29842,18 +29842,37 @@ describe('shared accessible frontend shell', () => {
     expect(filtered.text).toContain('href="/listings">Clear filters</a>');
   });
 
-  it('renders the Blade guest creation handoff and guarded listing-load failure', async () => {
+  // This was one test, "renders the Blade guest creation handoff and guarded
+  // listing-load failure", which signed nobody in and expected BOTH the visitor
+  // link "sign in to create a listing" and the load-failure summary. That pairing
+  // was the fault: a visitor is always refused the list (auth:sanctum), so every
+  // visitor saw the failure (13 Nov 2026, seen live). The two cases are now apart.
+  it('asks a visitor to sign in on the listings page, without an error or a search form', async () => {
     const api = require('../src/lib/api');
-    api.getListings.mockRejectedValueOnce(new api.ApiError('Unavailable', 503, {}));
-    api.getListingCategories.mockResolvedValueOnce({ data: [] });
+    api.getListings.mockClear();
 
     const response = await request(app).get('/listings');
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain('href="/login?status=auth-required"');
-    expect(response.text).toContain('Sign in to create a listing');
+    expect(response.text).toContain('Sign in to use this page.');
+    expect(response.text).toContain('id="listings-auth-required-title"');
+    expect(response.text).not.toContain('Listings could not be loaded. Try again.');
+    expect(response.text).not.toContain('class="nexus-alpha-card-list"');
+    expect(response.text).not.toContain('name="q"');
+    expect(api.getListings).not.toHaveBeenCalled();
+  });
+
+  it('still tells a signed-in member when the listings genuinely fail to load', async () => {
+    const api = require('../src/lib/api');
+    api.getListings.mockRejectedValueOnce(new api.ApiError('Unavailable', 503, {}));
+    api.getListingCategories.mockResolvedValueOnce({ data: [] });
+
+    const response = await request(app).get('/listings').set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
     expect(response.text).toContain('class="govuk-error-summary"');
     expect(response.text).toContain('Listings could not be loaded. Try again.');
+    expect(response.text).not.toContain('id="listings-auth-required-title"');
     expect(response.text).not.toContain('class="nexus-alpha-card-list"');
   });
 

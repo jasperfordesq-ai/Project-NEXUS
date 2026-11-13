@@ -196,6 +196,24 @@
   text-align: center;
 }
 
+// The padlock beside a link a signed-out visitor is shown but must sign in to
+// use (partials/sign-in-lock.njk). Sized from the link's own text so it stays
+// in proportion in the header menu and the footer, and drawn in the link's own
+// colour so hover, focus and visited need no rule here. It is inline text
+// furniture: it adds no height to the line and never wraps away from its label.
+.nexus-alpha-lock {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-inline-start: 0.3em;
+  vertical-align: -0.05em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 @include govuk-media-query($until: tablet) {
   .nexus-alpha-header__container {
     align-items: flex-start;

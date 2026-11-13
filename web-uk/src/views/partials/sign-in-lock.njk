@@ -1,0 +1,28 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  The small padlock beside a link a signed-out visitor is shown but cannot use
+  yet (owner, 13 Nov 2026). Which links carry it is decided in
+  lib/accessible-shell.js (`signInRequired` -> `locked`); this is only the mark.
+
+  Call it INSIDE the link, straight after the label with NO space between:
+    <a href="…">{{ label }}{{ signInLock(t("home.module_signin_hint")) }}</a>
+  A space there is underlined along with the link text and leaves a stray
+  line under the gap. The gap comes from the stylesheet, and the pause a
+  screen reader needs comes from the space inside the hidden words.
+
+  - The picture is decoration (aria-hidden); the words carry the meaning, so
+    the link's name reads "Members Sign in to use this." to a screen reader.
+    The wording is the home page's existing hint, already in eleven languages.
+  - Drawn with currentColor, so it follows the link's own colour through hover,
+    focus and visited, and needs no contrast rule of its own.
+  - width/height are set on the element as well as in CSS, so it stays small if
+    the stylesheet fails to load.
+  - A plain padlock outline: no crown, no GOV.UK identity (brand:check).
+#}
+{% macro signInLock(words) -%}
+<svg class="nexus-alpha-lock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="govuk-visually-hidden"> {{ words }}</span>
+{%- endmacro %}

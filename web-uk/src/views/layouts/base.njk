@@ -12,6 +12,7 @@
 
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 {% from "govuk/macros/attributes.njk" import govukAttributes %}
+{% from "partials/sign-in-lock.njk" import signInLock %}
 
 {% set themeColor = themeColor | default("#1d70b8", true) %}
 
@@ -242,7 +243,9 @@
                         <strong class="govuk-service-navigation__active-fallback">{{ item.label }}</strong>
                       {% else %}
                         {{ item.label }}
-                      {% endif %}
+                      {%- endif -%}
+                      {# A visitor is shown this link but must sign in to use it. #}
+                      {%- if item.locked %}{{ signInLock(t("home.module_signin_hint") if t else "Sign in to use this.") }}{% endif %}
                     </a>
                   </li>
                 {% endfor %}

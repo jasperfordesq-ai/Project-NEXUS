@@ -1037,16 +1037,24 @@ describe('Protected Routes', () => {
       expect(response.headers.location).toBe('/login?status=auth-required');
     });
 
-    it('GET /listings should remain public like Laravel Blade', async () => {
+    // Until 13 Nov 2026 this was "should remain public like Laravel Blade" and
+    // expected a browsable page with a "sign in to create a listing" link. The
+    // page was never browsable by a visitor: the API refuses them the list, and
+    // on the live site they were shown "Listings could not be loaded. Try again."
+    // The address still answers (it is linked from the menu and from outside);
+    // it now asks for a sign-in, and does not ask the server for the list.
+    it('GET /listings answers a visitor with a sign-in request, not a list or an error', async () => {
       const api = require('../src/lib/api');
-      api.getListings.mockResolvedValueOnce({ data: [], meta: {} });
-      api.getListingCategories.mockResolvedValueOnce({ data: [] });
+      api.getListings.mockClear();
 
       const response = await request(app).get('/listings');
 
       expect(response.status).toBe(200);
       expect(response.text).toContain('<h1 class="govuk-heading-xl">Listings</h1>');
-      expect(response.text).toContain('href="/login?status=auth-required"');
+      expect(response.text).toContain('Sign in to use this page.');
+      expect(response.text).toContain('href="/login"');
+      expect(response.text).not.toContain('Listings could not be loaded');
+      expect(api.getListings).not.toHaveBeenCalled();
     });
 
     it('GET /wallet should redirect to login', async () => {

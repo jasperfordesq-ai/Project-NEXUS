@@ -83,18 +83,24 @@ const localeOptions = [
 // enforces those, and a test asserts the disclosure stays absent so it cannot
 // creep back in as an unexplained string.
 
+// 🔴 `signInRequired` marks a link a signed-out visitor IS shown but cannot
+// use: the page redirects to sign-in, or (Feed, Listings) asks for one. It
+// becomes `locked` for a visitor and the templates draw a padlock beside it
+// (owner, 13 Nov 2026). It is not `authenticatedOnly`, which removes the link
+// from a visitor's menu altogether. Keep it true to what the route does —
+// tests/sign-in-padlock.test.js pins the list.
 const navItems = [
   { key: 'home', label: 'Home', href: '/', anonymousOnly: true },
   { key: 'dashboard', label: 'Dashboard', href: '/dashboard', authenticatedOnly: true, moduleKey: 'dashboard' },
-  { key: 'feed', label: 'Feed', href: '/feed', moduleKey: 'feed' },
-  { key: 'listings', label: 'Listings', href: '/listings', moduleKey: 'listings' },
-  { key: 'members', label: 'Members', href: '/members', featureKey: 'connections' },
-  { key: 'events', label: 'Events', href: '/events', featureKey: 'events' },
+  { key: 'feed', label: 'Feed', href: '/feed', signInRequired: true, moduleKey: 'feed' },
+  { key: 'listings', label: 'Listings', href: '/listings', signInRequired: true, moduleKey: 'listings' },
+  { key: 'members', label: 'Members', href: '/members', signInRequired: true, featureKey: 'connections' },
+  { key: 'events', label: 'Events', href: '/events', signInRequired: true, featureKey: 'events' },
   // Anonymous visitors get the public What's On listing INSTEAD of the member
   // events page (buildNavItems drops 'events' when this is present), matching
   // AlphaController::alphaNavItems. Needs BOTH features, like the page itself.
   { key: 'whats_on', label: "What's on", href: '/whats-on', anonymousOnly: true, featureKeys: ['events', 'public_events'] },
-  { key: 'volunteering', label: 'Volunteering', href: '/volunteering', featureKey: 'volunteering' },
+  { key: 'volunteering', label: 'Volunteering', href: '/volunteering', signInRequired: true, featureKey: 'volunteering' },
   // Members only — an anonymous visitor has no pass to show. Matches
   // AlphaController::alphaNavItems, which requires a signed-in user here.
   { key: 'venues', label: 'Partner venues', href: '/venues', authenticatedOnly: true, featureKey: 'partner_venues' },
@@ -112,10 +118,10 @@ const footerColumns = [
     key: 'platform',
     heading: 'Platform',
     links: [
-      { key: 'listings', label: 'Listings', href: '/listings', moduleKey: 'listings' },
-      { key: 'members', label: 'Members', href: '/members', featureKey: 'connections' },
-      { key: 'events', label: 'Events', href: '/events', featureKey: 'events' },
-      { key: 'volunteering', label: 'Volunteering', href: '/volunteering', featureKey: 'volunteering' },
+      { key: 'listings', label: 'Listings', href: '/listings', signInRequired: true, moduleKey: 'listings' },
+      { key: 'members', label: 'Members', href: '/members', signInRequired: true, featureKey: 'connections' },
+      { key: 'events', label: 'Events', href: '/events', signInRequired: true, featureKey: 'events' },
+      { key: 'volunteering', label: 'Volunteering', href: '/volunteering', signInRequired: true, featureKey: 'volunteering' },
       { key: 'blog', label: 'Blog', href: '/blog', featureKey: 'blog' }
     ]
   },
@@ -124,7 +130,7 @@ const footerColumns = [
     heading: 'Support',
     links: [
       { key: 'help', label: 'Help centre', href: '/help' },
-      { key: 'kb', label: 'Knowledge base', href: '/kb' },
+      { key: 'kb', label: 'Knowledge base', href: '/kb', signInRequired: true },
       { key: 'trust_safety', label: 'Trust and safety', href: '/trust-and-safety' },
       { key: 'contact', label: 'Contact', href: '/contact' },
       { key: 'about', label: 'About', href: '/about' }
@@ -424,22 +430,30 @@ function buildNavItems({ isAuthenticated = false, tenant = {} } = {}) {
   // What's On does NOT also get the member Events link, which would send them
   // to a sign-in redirect. Blade unsets 'events'; do the same rather than
   // showing both.
-  if (visible.some((item) => item.key === 'whats_on')) {
-    return visible.filter((item) => item.key !== 'events');
-  }
+  const offered = visible.some((item) => item.key === 'whats_on')
+    ? visible.filter((item) => item.key !== 'events')
+    : visible;
 
-  return visible;
+  return offered.map((item) => withLock(item, isAuthenticated));
 }
 
-function buildFooterColumns({ tenant = {} } = {}) {
+// The padlock flag the templates read. Only ever true for a visitor.
+function withLock(item, isAuthenticated) {
+  return { ...item, locked: Boolean(item.signInRequired) && !isAuthenticated };
+}
+
+// `isAuthenticated` defaults to false on purpose: a caller that does not say
+// who is looking gets the visitor's view. A padlock too many is a nuisance; a
+// missing one is the fault this exists to fix.
+function buildFooterColumns({ tenant = {}, isAuthenticated = false } = {}) {
   return footerColumns
-    .map((column) => {
-      if (column.key !== 'platform') return column;
-      return {
-        ...column,
-        links: column.links.filter((link) => itemEnabledForTenant(link, tenant))
-      };
-    })
+    .map((column) => ({
+      ...column,
+      links: (column.key === 'platform'
+        ? column.links.filter((link) => itemEnabledForTenant(link, tenant))
+        : column.links
+      ).map((link) => withLock(link, isAuthenticated))
+    }))
     .filter((column) => column.key !== 'platform' || column.links.length > 0);
 }
 
@@ -957,13 +971,13 @@ function buildShellLocals(req, isAuthenticated) {
     // tenant-free and keeps its position at the same place in the footer.
     alphaFooterColumns: tenantSlug ? prefixFooterColumns(
       withCommunityPageColumns(
-        localizeFooterColumns(buildFooterColumns({ tenant: routedTenant }), t),
+        localizeFooterColumns(buildFooterColumns({ tenant: routedTenant, isAuthenticated }), t),
         routedTenant,
         t
       ),
       routePrefix
     ) : localizeFooterColumns(
-      buildFooterColumns({ tenant: routedTenant }).filter((column) => column.key === 'support'),
+      buildFooterColumns({ tenant: routedTenant, isAuthenticated }).filter((column) => column.key === 'support'),
       t
     ),
     alphaExploreLinks: prefixNavItems(buildExploreLinks({ tenant: routedTenant, t }), routePrefix),

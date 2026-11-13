@@ -1364,6 +1364,33 @@ router.get('/:id(\\d+)/report', asyncRoute(async (req, res) => {
 // List all listings with search/filter/pagination
 router.get('/', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
+
+  // 🔴 A signed-out visitor cannot read listings: GET /v2/listings sits inside
+  // Laravel's auth:sanctum group and answers them 401. Until 13 Nov 2026 this
+  // route asked anyway, the refusal was caught as a load failure, and the visitor
+  // was told "There is a problem. Listings could not be loaded. Try again." —
+  // an error for what is a rule, and advice that could never work (seen on the
+  // live site). Ask for a sign-in instead, and do not offer a search that
+  // cannot return anything. Nothing is fetched: there is nothing a visitor may
+  // be shown.
+  if (!token) {
+    return res.render('listings/index', {
+      title: res.locals.t('govuk_alpha.listings.title'),
+      listings: [],
+      categories: [],
+      pagination: { hasMore: false, cursor: '', total: 0 },
+      nextHref: null,
+      filters: { search: '', type: '', categoryId: null, hours: 'any', service: 'any', posted: 'any', sort: 'newest', near: 'any', nearNoLocation: false },
+      hasFilters: false,
+      currentUser: {},
+      isAuthenticated: false,
+      requiresAuth: true,
+      loadError: false,
+      status: trimmed(req.query.status),
+      csrfToken: req.csrfToken ? req.csrfToken() : ''
+    });
+  }
+
   const search = trimmed(req.query.q || req.query.search);
   const type = ['offer', 'request'].includes(String(req.query.type || '')) ? String(req.query.type) : '';
   const categoryId = positiveInteger(req.query.category_id);
@@ -1472,6 +1499,7 @@ router.get('/', asyncRoute(async (req, res) => {
     hasFilters: Boolean(search || type || categoryId || hours !== 'any' || service !== 'any' || posted !== 'any'),
     currentUser,
     isAuthenticated: Boolean(token),
+    requiresAuth: false,
     loadError: listingResult.error,
     status: trimmed(req.query.status),
     csrfToken: req.csrfToken ? req.csrfToken() : ''

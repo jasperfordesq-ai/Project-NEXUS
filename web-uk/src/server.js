@@ -140,6 +140,7 @@ const { generalLimiter, authLimiter, walletLimiter, formLimiter } = require('./l
 const { applyTrustedProxies } = require('./lib/trusted-proxies');
 const { handleApiError } = require('./lib/routeHelpers');
 const { buildShellLocals, resolveBackendMediaUrl } = require('./lib/accessible-shell');
+const { buildHomeModules, featureEnabled } = require('./lib/home-modules');
 const { NOINDEX } = require('./lib/seo-meta');
 const { landingHomeContent } = require('./lib/landing-content');
 const { robotsRoute, sitemapRoute } = require('./lib/accessible-sitemap');
@@ -191,19 +192,6 @@ const LEGACY_ALPHA_COOKIE_NAME = 'nexus_alpha_cookie_consent';
 const ALPHA_COOKIE_MAX_AGE = 180 * 24 * 60 * 60 * 1000;
 assertProductionConfig(process.env);
 const sessionStore = createSessionStore({ nodeEnv: NODE_ENV });
-
-const HOME_MODULES = [
-  { key: 'dashboard', titleKey: 'dashboard.title', descriptionKey: 'dashboard.description', href: '/dashboard', authRequired: true },
-  { key: 'feed', titleKey: 'feed.title', descriptionKey: 'feed.description', href: '/feed', moduleKey: 'feed', defaultEnabled: true },
-  { key: 'listings', titleKey: 'listings.title', descriptionKey: 'listings.description', href: '/listings', moduleKey: 'listings', defaultEnabled: false },
-  { key: 'members', titleKey: 'members.title', descriptionKey: 'members.description', href: '/members', featureKey: 'connections' },
-  { key: 'events', titleKey: 'events.title', descriptionKey: 'events.description', href: '/events', featureKey: 'events' },
-  { key: 'volunteering', titleKey: 'volunteering.title', descriptionKey: 'volunteering.description', href: '/volunteering', featureKey: 'volunteering' },
-  { key: 'messages', titleKey: 'messages.title', descriptionKey: 'messages.description', href: '/messages', authRequired: true, featureKey: 'direct_messaging' },
-  { key: 'exchanges', titleKey: 'exchanges.title', descriptionKey: 'exchanges.description', href: '/exchanges', authRequired: true, moduleKey: 'listings', featureKey: 'exchange_workflow', defaultEnabled: false },
-  { key: 'wallet', titleKey: 'wallet.title', descriptionKey: 'wallet.description', href: '/wallet', authRequired: true, moduleKey: 'wallet' },
-  { key: 'profile', titleKey: 'nav.profile', descriptionKey: 'profile_settings.description', href: '/profile', authRequired: true }
-];
 
 if (!COOKIE_SECRET) {
   console.error('COOKIE_SECRET environment variable is required');
@@ -901,39 +889,6 @@ function normalizeNetworkCommunities(tenant, req) {
       href: networkCommunityHref(item, req)
     }))
     .filter((item) => item.name && item.href);
-}
-
-function featureEnabled(tenant, key, fallback = true) {
-  const features = tenant.features && typeof tenant.features === 'object' ? tenant.features : {};
-  const modules = tenant.modules && typeof tenant.modules === 'object' ? tenant.modules : {};
-  if (Object.prototype.hasOwnProperty.call(features, key)) return Boolean(features[key]);
-  if (Object.prototype.hasOwnProperty.call(modules, key)) return Boolean(modules[key]);
-  return fallback;
-}
-
-function buildHomeModules(tenant, isAuthenticated, t) {
-  return HOME_MODULES.map((module) => {
-    const fallback = module.defaultEnabled !== undefined ? module.defaultEnabled : true;
-    const moduleEnabled = module.moduleKey
-      ? featureEnabled(tenant, module.moduleKey, fallback)
-      : true;
-    const featureOn = module.featureKey
-      ? featureEnabled(tenant, module.featureKey, fallback)
-      : true;
-    const tenantEnabled = moduleEnabled && featureOn;
-    const needsSignIn = tenantEnabled && module.authRequired && !isAuthenticated;
-    const available = tenantEnabled && (!module.authRequired || isAuthenticated);
-
-    return {
-      ...module,
-      title: t(module.titleKey),
-      description: t(module.descriptionKey),
-      href: needsSignIn ? '/login?status=auth-required' : module.href,
-      available,
-      needsSignIn,
-      linked: available || needsSignIn
-    };
-  });
 }
 
 function platformStatsOptionsForRequest(req, tenant) {

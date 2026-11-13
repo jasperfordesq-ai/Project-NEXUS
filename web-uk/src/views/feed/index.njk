@@ -29,7 +29,8 @@
       {% if requiresAuth %}
         <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="feed-auth-required-title">
           <div class="govuk-notification-banner__header">
-            <h2 class="govuk-notification-banner__title" id="feed-auth-required-title">{{ t("states.error_title") }}</h2>
+            {# "Important", not "There is a problem": needing to sign in is a rule, not a fault (13 Nov 2026). #}
+            <h2 class="govuk-notification-banner__title" id="feed-auth-required-title">{{ t("states.important") }}</h2>
           </div>
           <div class="govuk-notification-banner__content">
             <p class="govuk-notification-banner__heading">{{ t("states.auth_required") }}</p>
