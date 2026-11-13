@@ -183,7 +183,7 @@ describe('GroupQATab', () => {
     const { GroupQATab } = await import('./GroupQATab');
     render(<GroupQATab groupId={10} isAdmin={false} />);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load question');
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load that question.");
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByText('How does timebanking work?')).toBeInTheDocument();
@@ -217,14 +217,14 @@ describe('GroupQATab', () => {
     render(<GroupQATab groupId={10} isAdmin={false} />);
 
     await screen.findByText('How does timebanking work?');
-    fireEvent.click(screen.getByRole('button', { name: 'Load More' }));
+    fireEvent.click(screen.getByRole('button', { name: "Load more" }));
     await waitFor(() => expect(mockListQuestions).toHaveBeenLastCalledWith(
       10,
       expect.objectContaining({ cursor: 'next', sort: 'newest' }),
     ));
     expect(await screen.findByText('Second question')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Most Voted' }));
+    fireEvent.click(screen.getByRole('tab', { name: "Most voted" }));
     await waitFor(() => expect(mockListQuestions).toHaveBeenLastCalledWith(
       10,
       expect.objectContaining({ sort: 'most_voted' }),
@@ -247,10 +247,10 @@ describe('GroupQATab', () => {
       <GroupQATab groupId={10} isAdmin={false} isMember={false} />,
     );
     await screen.findByTestId('empty-state');
-    expect(screen.queryByRole('button', { name: 'Ask Question' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: "Ask question" })).not.toBeInTheDocument();
 
     rerender(<GroupQATab groupId={10} isAdmin={false} isMember={true} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Ask Question' }));
+    fireEvent.click(screen.getByRole('button', { name: "Ask question" }));
     let dialog = await waitFor(() => {
       const element = document.querySelector('[role="dialog"]');
       expect(element).toBeTruthy();
@@ -261,7 +261,7 @@ describe('GroupQATab', () => {
     )!);
     await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeNull());
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ask Question' }));
+    fireEvent.click(screen.getByRole('button', { name: "Ask question" }));
     dialog = await waitFor(() => {
       const element = document.querySelector('[role="dialog"]');
       expect(element).toBeTruthy();
@@ -274,7 +274,7 @@ describe('GroupQATab', () => {
       target: { value: 'My question body detail' },
     });
     fireEvent.click(Array.from(dialog.querySelectorAll('button')).find(
-      (button) => button.textContent === 'Post Question',
+      (button) => button.textContent === "Post question",
     )!);
 
     await waitFor(() => expect(mockAskQuestion).toHaveBeenCalledWith(10, {
@@ -294,7 +294,7 @@ describe('GroupQATab', () => {
     render(<GroupQATab groupId={10} isAdmin={false} isMember={true} />);
     await screen.findByTestId('empty-state');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ask Question' }));
+    fireEvent.click(screen.getByRole('button', { name: "Ask question" }));
     const dialog = await waitFor(() => {
       const element = document.querySelector('[role="dialog"]');
       expect(element).toBeTruthy();
@@ -307,10 +307,10 @@ describe('GroupQATab', () => {
       target: { value: 'Details' },
     });
     fireEvent.click(Array.from(dialog.querySelectorAll('button')).find(
-      (button) => button.textContent === 'Post Question',
+      (button) => button.textContent === "Post question",
     )!);
 
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to post question'));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("We couldn't post your question. Please try again."));
     expect(mockToast.success).not.toHaveBeenCalled();
     expect(document.querySelector('[role="dialog"]')).toBeInTheDocument();
   });
@@ -327,7 +327,7 @@ describe('GroupQATab', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'Your answer' }), {
       target: { value: 'A new answer' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Post Answer' }));
+    fireEvent.click(screen.getByRole('button', { name: "Post answer" }));
 
     await waitFor(() => expect(mockPostAnswer).toHaveBeenCalledWith(10, 1, {
       body: 'A new answer',
@@ -349,7 +349,7 @@ describe('GroupQATab', () => {
     fireEvent.click(await screen.findByRole('button', {
       name: 'Toggle question: How does timebanking work?',
     }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load question');
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load that question.");
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByText('Great question! It works like this...')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', {
@@ -392,7 +392,7 @@ describe('GroupQATab', () => {
 
     await screen.findByText('How does timebanking work?');
     fireEvent.click(screen.getByRole('button', { name: 'Upvote' }));
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to vote'));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("We couldn't count your vote. Please try again."));
     expect(screen.getByRole('img', { name: '3 votes' })).toBeInTheDocument();
   });
 
@@ -409,7 +409,7 @@ describe('GroupQATab', () => {
     fireEvent.click(accept);
 
     await waitFor(() => expect(mockAcceptAnswer).toHaveBeenCalledWith(10, 101));
-    expect(await screen.findByText('Accepted Answer')).toBeInTheDocument();
+    expect(await screen.findByText("Accepted answer")).toBeInTheDocument();
     expect(mockToast.success).toHaveBeenCalledWith('Answer accepted');
   });
 
@@ -428,8 +428,8 @@ describe('GroupQATab', () => {
     }));
     fireEvent.click(await screen.findByRole('button', { name: 'Accept this answer' }));
 
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to accept answer'));
-    expect(screen.queryByText('Accepted Answer')).not.toBeInTheDocument();
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("We couldn't mark that answer as accepted. Please try again."));
+    expect(screen.queryByText("Accepted answer")).not.toBeInTheDocument();
     expect(mockToast.success).not.toHaveBeenCalled();
   });
 

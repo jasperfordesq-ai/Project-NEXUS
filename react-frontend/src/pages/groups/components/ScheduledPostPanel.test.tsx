@@ -57,8 +57,8 @@ const POSTS = [
 import { ScheduledPostPanel } from './ScheduledPostPanel';
 
 // Actual translated strings from public/locales/en/groups.json
-const TITLE_TEXT = 'Scheduled Posts';     // t('scheduled.title')
-const ADD_TEXT = 'Schedule Post';          // t('scheduled.add')
+const TITLE_TEXT = "Scheduled posts";     // t('scheduled.title')
+const ADD_TEXT = "Schedule post";          // t('scheduled.add')
 const EMPTY_TEXT = 'No scheduled posts';  // t('scheduled.empty')
 const CANCEL_LABEL = 'Cancel scheduled post'; // t('scheduled.cancel_label')
 const CREATE_BTN = 'Schedule';             // t('scheduled.create_btn')

@@ -241,11 +241,11 @@ describe('GroupAnnouncementsTab', () => {
     const { GroupAnnouncementsTab } = await import('./GroupAnnouncementsTab');
     render(<GroupAnnouncementsTab groupId={3} isAdmin={true} />);
 
-    await userEvent.click((await screen.findAllByRole('button', { name: 'New Announcement' }))[0]);
+    await userEvent.click((await screen.findAllByRole('button', { name: "New announcement" }))[0]);
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
     await userEvent.type(screen.getByRole('textbox', { name: 'Title' }), 'Schedule update');
     await userEvent.type(screen.getByRole('textbox', { name: 'Content' }), 'The meeting starts at seven.');
-    await userEvent.click(screen.getByRole('button', { name: 'Post Announcement' }));
+    await userEvent.click(screen.getByRole('button', { name: "Post announcement" }));
 
     await waitFor(() => {
       expect(mockCreateAnnouncement).toHaveBeenCalledWith(3, {
@@ -261,7 +261,7 @@ describe('GroupAnnouncementsTab', () => {
     const { GroupAnnouncementsTab } = await import('./GroupAnnouncementsTab');
     render(<GroupAnnouncementsTab groupId={3} isAdmin={true} />);
 
-    await userEvent.click((await screen.findAllByRole('button', { name: 'New Announcement' }))[0]);
+    await userEvent.click((await screen.findAllByRole('button', { name: "New announcement" }))[0]);
     const pin = screen.getByRole('button', { name: 'Pin this announcement' });
     expect(pin).toHaveAttribute('aria-pressed', 'false');
 
@@ -393,6 +393,6 @@ describe('GroupAnnouncementsTab', () => {
     const { GroupAnnouncementsTab } = await import('./GroupAnnouncementsTab');
     render(<GroupAnnouncementsTab groupId={3} isAdmin={false} />);
 
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to load announcements'));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("We couldn't load the announcements."));
   });
 });

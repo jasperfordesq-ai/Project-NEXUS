@@ -80,10 +80,10 @@ describe('GroupInviteAcceptPage', () => {
     render(<GroupInviteAcceptPage />);
 
     expect(await screen.findByRole('heading', { name: 'Garden Crew' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Accept Invitation' }));
+    await userEvent.click(screen.getByRole('button', { name: "Accept invitation" }));
 
     expect(mocks.accept).toHaveBeenCalledWith('a'.repeat(40));
-    expect(await screen.findByRole('heading', { name: 'Invitation Accepted' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: "Invitation accepted" })).toBeInTheDocument();
   });
 
   it('reads out the description written for the group picture', async () => {
@@ -112,7 +112,7 @@ describe('GroupInviteAcceptPage', () => {
     });
     render(<GroupInviteAcceptPage />);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Go to Group' }));
+    await userEvent.click(await screen.findByRole('button', { name: "Go to group" }));
     expect(mocks.accept).not.toHaveBeenCalled();
     expect(mocks.navigate).toHaveBeenCalledWith('/test/groups/8');
   });
@@ -121,7 +121,7 @@ describe('GroupInviteAcceptPage', () => {
     mocks.token = 'not-a-token';
     render(<GroupInviteAcceptPage />);
 
-    expect(await screen.findByText('This invitation link is invalid or no longer available.')).toBeInTheDocument();
+    expect(await screen.findByText("This invitation link doesn't work, or it is no longer available.")).toBeInTheDocument();
     expect(mocks.preview).not.toHaveBeenCalled();
   });
 });

@@ -140,7 +140,7 @@ describe('GroupEventsTab', () => {
     const { GroupEventsTab } = await import('./GroupEventsTab');
     render(<GroupEventsTab {...defaultProps} events={[]} isMember={true} />);
 
-    expect(screen.getAllByRole('link', { name: 'Create Event' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: "Create event" }).length).toBeGreaterThan(0);
   });
 
   it('does NOT show "create event" button for non-members', async () => {

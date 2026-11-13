@@ -168,9 +168,9 @@ describe('GroupTabContent', () => {
       />,
     );
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Failed to load feed');
+    expect(screen.getByRole('alert')).toHaveTextContent("We couldn't reach the feed just now. Try again in a moment.");
     expect(screen.queryByTestId('feed-tab')).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Try Again' }));
+    await userEvent.click(screen.getByRole('button', { name: "Try again" }));
     expect(retry).toHaveBeenCalledOnce();
   });
 

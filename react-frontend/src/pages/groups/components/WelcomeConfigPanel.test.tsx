@@ -45,7 +45,7 @@ describe('WelcomeConfigPanel — access control', () => {
     // The Toast provider always injects a role="status" node so don't assert on that.
     // Instead assert no panel-specific content is shown.
     await waitFor(() => {}, { timeout: 200 });
-    expect(screen.queryByText('Welcome Message')).not.toBeInTheDocument();
+    expect(screen.queryByText("Welcome message")).not.toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(screen.queryByRole('switch')).not.toBeInTheDocument();
     expect(api.get).not.toHaveBeenCalled();
@@ -55,7 +55,7 @@ describe('WelcomeConfigPanel — access control', () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: DEFAULT_CONFIG });
     render(<WelcomeConfigPanel groupId={1} isAdmin={true} />);
     // Eventually loads and shows the panel title
-    await waitFor(() => expect(screen.getByText('Welcome Message')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Welcome message")).toBeInTheDocument());
   });
 });
 
@@ -217,7 +217,7 @@ describe('WelcomeConfigPanel — graceful degradation', () => {
     render(<WelcomeConfigPanel groupId={1} isAdmin={true} />);
     // Falls through to the panel with defaults
     await waitFor(() => {
-      expect(screen.getByText('Welcome Message')).toBeInTheDocument();
+      expect(screen.getByText("Welcome message")).toBeInTheDocument();
     });
     // Textarea starts empty and disabled (enabled defaults to false)
     expect(screen.getByRole('textbox')).toBeDisabled();
@@ -231,7 +231,7 @@ describe('WelcomeConfigPanel — graceful degradation', () => {
     });
     render(<WelcomeConfigPanel groupId={1} isAdmin={true} />);
 
-    await waitFor(() => expect(screen.getByText('Welcome Message')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Welcome message")).toBeInTheDocument());
     expect(screen.getByRole('textbox')).toBeDisabled();
     expect(screen.getByRole('textbox')).toHaveValue('');
     expect(screen.queryByText('Raw server copy')).not.toBeInTheDocument();

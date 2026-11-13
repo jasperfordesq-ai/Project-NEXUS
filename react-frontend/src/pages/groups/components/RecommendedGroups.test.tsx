@@ -158,7 +158,7 @@ describe('RecommendedGroups', () => {
     mockApiGet.mockResolvedValue({
       success: true,
       data: {
-        matches: [{ module: 'group', group_id: 2, title: 'Private Group', match_score: 76 }],
+        matches: [{ module: 'group', group_id: 2, title: "Private group", match_score: 76 }],
       },
     });
     mockApiPost.mockResolvedValue({

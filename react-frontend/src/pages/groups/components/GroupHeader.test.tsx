@@ -404,7 +404,7 @@ describe('GroupHeader', () => {
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.queryByText('No pending requests')).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Try Again' }));
+    await userEvent.click(screen.getByRole('button', { name: "Try again" }));
     expect(onLoadJoinRequests).toHaveBeenCalledOnce();
   });
 

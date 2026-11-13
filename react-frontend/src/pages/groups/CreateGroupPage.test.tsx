@@ -137,7 +137,7 @@ describe('CreateGroupPage', () => {
 
   it('renders create group form heading', () => {
     render(<CreateGroupPage />);
-    expect(screen.getByText('Create New Group')).toBeInTheDocument();
+    expect(screen.getByText("Create new group")).toBeInTheDocument();
   });
 
   it('renders group name input', () => {
@@ -172,13 +172,13 @@ describe('CreateGroupPage', () => {
 
   it('renders private group toggle switch', () => {
     render(<CreateGroupPage />);
-    // The switch displays "Public Group" by default (is_private starts false)
-    expect(screen.getAllByText('Public Group').length).toBeGreaterThan(0);
+    // The switch displays "Public group" by default (is_private starts false)
+    expect(screen.getAllByText("Public group").length).toBeGreaterThan(0);
   });
 
   it('renders submit button', () => {
     render(<CreateGroupPage />);
-    expect(screen.getByText('Create Group')).toBeInTheDocument();
+    expect(screen.getByText("Create group")).toBeInTheDocument();
   });
 
   it('renders cancel/back button', () => {
@@ -191,11 +191,11 @@ describe('CreateGroupPage', () => {
   it('shows validation error for empty name on submit', async () => {
     render(<CreateGroupPage />);
 
-    const submitButton = screen.getByText('Create Group');
+    const submitButton = screen.getByText("Create group");
     fireEvent.submit(submitButton.closest('form') as HTMLFormElement);
 
     await waitFor(() => {
-      expect(screen.getByText('Group name is required')).toBeInTheDocument();
+      expect(screen.getByText("Give your group a name")).toBeInTheDocument();
     });
   });
 

@@ -1321,7 +1321,7 @@ function GroupDetailView({ groupId }: GroupDetailViewProps) {
       }
     } catch (err) {
       logError(`Failed to ${action} join request`, err);
-      toastRef.current.error(tRef.current('toast.request_failed', { action }));
+      toastRef.current.error(tRef.current('toast.request_failed'));
     } finally {
       setProcessingRequest(null);
     }

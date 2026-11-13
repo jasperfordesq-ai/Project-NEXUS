@@ -196,9 +196,9 @@ describe('GroupFilesTab', () => {
     const { GroupFilesTab } = await import('./GroupFilesTab');
     render(<GroupFilesTab groupId={10} isAdmin={false} />);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load files');
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load the files.");
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Try Again' }));
+    await userEvent.click(screen.getByRole('button', { name: "Try again" }));
     expect(await screen.findByText('recovered.pdf')).toBeInTheDocument();
   });
 
@@ -214,8 +214,8 @@ describe('GroupFilesTab', () => {
     const { GroupFilesTab } = await import('./GroupFilesTab');
     render(<GroupFilesTab groupId={10} isAdmin={false} />);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load files');
-    await userEvent.click(screen.getByRole('button', { name: 'Try Again' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load the files.");
+    await userEvent.click(screen.getByRole('button', { name: "Try again" }));
     expect(await screen.findByText('Recovered (1)')).toBeInTheDocument();
   });
 
@@ -266,7 +266,7 @@ describe('GroupFilesTab', () => {
   it('shows upload button for members', async () => {
     const { GroupFilesTab } = await import('./GroupFilesTab');
     render(<GroupFilesTab groupId={10} isAdmin={false} isMember={true} />);
-    const button = await screen.findByRole('button', { name: 'Upload File' });
+    const button = await screen.findByRole('button', { name: "Upload file" });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const inputClick = vi.spyOn(input, 'click');
     await userEvent.click(button);
@@ -312,7 +312,7 @@ describe('GroupFilesTab', () => {
   it.each([
     ['PDF_ACTIVE_CONTENT', 'This PDF contains scripts or other interactive content, so it can’t be uploaded. Print or export it to a new PDF and try again.'],
     ['PDF_NOT_INSPECTABLE', 'This PDF couldn’t be checked for safety (it may be password-protected or damaged), so it can’t be uploaded. Save an unprotected copy as a new PDF and try again.'],
-    ['INVALID_TYPE', 'Failed to upload file'],
+    ['INVALID_TYPE', "We couldn't upload that file. Please try again."],
   ])('explains a refused upload (%s) instead of a generic failure', async (code, expectedMessage) => {
     mockApi.upload.mockResolvedValue({ success: false, error: 'refused', code });
     const { GroupFilesTab } = await import('./GroupFilesTab');
@@ -498,7 +498,7 @@ describe('GroupFilesTab', () => {
     });
     const { GroupFilesTab } = await import('./GroupFilesTab');
     render(<GroupFilesTab groupId={10} isAdmin={false} />);
-    const loadMore = await screen.findByRole('button', { name: 'Load More' });
+    const loadMore = await screen.findByRole('button', { name: "Load more" });
     await userEvent.click(loadMore);
     await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith(
       expect.stringContaining('cursor=abc'),
@@ -515,7 +515,7 @@ describe('GroupFilesTab', () => {
     });
     const { GroupFilesTab } = await import('./GroupFilesTab');
     render(<GroupFilesTab groupId={10} isAdmin={false} />);
-    expect(await screen.findByText('All Files')).toBeInTheDocument();
+    expect(await screen.findByText("All files")).toBeInTheDocument();
     await userEvent.click(screen.getByText('Documents (3)'));
     await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith(
       expect.stringContaining('folder=Documents'),
@@ -523,7 +523,7 @@ describe('GroupFilesTab', () => {
     ));
 
     const callsBeforeAll = mockApi.get.mock.calls.length;
-    await userEvent.click(screen.getByText('All Files'));
+    await userEvent.click(screen.getByText("All files"));
     await waitFor(() => expect(mockApi.get.mock.calls.length).toBeGreaterThan(callsBeforeAll));
     const latestFileCall = [...mockApi.get.mock.calls]
       .reverse()

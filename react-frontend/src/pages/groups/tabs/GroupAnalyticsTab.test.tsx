@@ -249,7 +249,7 @@ describe('GroupAnalyticsTab', () => {
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();
     });
-    expect(screen.getByRole('alert')).toHaveTextContent('Failed to load analytics');
+    expect(screen.getByRole('alert')).toHaveTextContent("We couldn't load the group's figures.");
 
     mockGetDashboard.mockResolvedValueOnce(successResponse(makeFullDashboard()));
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
@@ -296,7 +296,7 @@ describe('GroupAnalyticsTab', () => {
     await screen.findByText('45');
 
     fireEvent.click(screen.getByRole('button', { name: 'Export members CSV' }));
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to download file'));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("We couldn't download that file. Please try again."));
     expect(openSpy).not.toHaveBeenCalled();
     openSpy.mockRestore();
   });
@@ -350,6 +350,6 @@ describe('GroupAnalyticsTab', () => {
     const { GroupAnalyticsTab } = await import('./GroupAnalyticsTab');
     render(<GroupAnalyticsTab groupId={1} isAdmin={true} />);
 
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to load analytics'));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("We couldn't load the group's figures."));
   });
 });

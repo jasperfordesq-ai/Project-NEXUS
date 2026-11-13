@@ -58,7 +58,7 @@ vi.mock('@/admin/components/RichTextEditor', () => ({
 vi.mock('@/contexts', () => createMockContexts());
 vi.mock('./GroupBrandingPicker', () => ({
   GroupBrandingPicker: ({ onChange }: { onChange: (primary: string | null, accent: string | null) => void }) => (
-    <button type="button" onClick={() => onChange('#123456', '#ABCDEF')}>Group Branding</button>
+    <button type="button" onClick={() => onChange('#123456', '#ABCDEF')}>Group branding</button>
   ),
 }));
 
@@ -333,7 +333,7 @@ describe('GroupModals', () => {
         />,
       );
 
-      await userEvent.click(screen.getByRole('button', { name: 'Group Branding' }));
+      await userEvent.click(screen.getByRole('button', { name: "Group branding" }));
       const updater = onDraftChange.mock.calls[0]?.[0] as (draft: typeof defaultProps.draft) => typeof defaultProps.draft;
       expect(updater(defaultProps.draft)).toEqual(expect.objectContaining({
         primaryColor: '#123456',
@@ -426,7 +426,7 @@ describe('GroupModals', () => {
       const { GroupDeleteModal } = await import('./GroupModals');
       render(<GroupDeleteModal {...defaultProps} onConfirm={onConfirm} />);
 
-      const deleteBtn = await screen.findByRole('button', { name: 'Delete Group' });
+      const deleteBtn = await screen.findByRole('button', { name: "Delete group" });
       const confirmation = screen.getByRole('textbox', { name: 'Group name' });
 
       expect(deleteBtn).toBeDisabled();
@@ -508,7 +508,7 @@ describe('GroupModals', () => {
 
       await waitFor(() => {
         // Find the primary send button by its class or by looking for a button
-        // that contains "send" (not "generate") — "Send Invitations" vs "Generate Invite Link"
+        // that contains "send" (not "generate") — "Send invitations" vs "Generate invite link"
         const allBtns = screen.getAllByRole('button');
         const sendBtn = allBtns.find((b) => {
           const text = b.textContent?.toLowerCase() ?? '';

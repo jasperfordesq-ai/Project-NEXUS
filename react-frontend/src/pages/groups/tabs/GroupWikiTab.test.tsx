@@ -162,7 +162,7 @@ describe('GroupWikiTab', () => {
     const { GroupWikiTab } = await import('./GroupWikiTab');
     render(<GroupWikiTab groupId={5} isAdmin={false} isMember={true} />);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load wiki pages');
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load the wiki pages.");
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByRole('button', { name: /Getting Started/ })).toBeInTheDocument();
@@ -183,10 +183,10 @@ describe('GroupWikiTab', () => {
     expect(childPageButton).toHaveClass('text-start');
     expect(childPageButton).toHaveStyle({ paddingInlineStart: '28px' });
     expect(screen.getByText('Draft')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'New Page' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: "New page" })).toBeInTheDocument();
 
     rerender(<GroupWikiTab groupId={5} isAdmin={false} isMember={false} />);
-    expect(screen.queryByRole('button', { name: 'New Page' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: "New page" })).not.toBeInTheDocument();
   });
 
   it('navigates parent pages through the breadcrumb control', async () => {
@@ -241,14 +241,14 @@ describe('GroupWikiTab', () => {
     render(<GroupWikiTab groupId={5} isAdmin={false} isMember={true} />);
     await screen.findByRole('button', { name: 'Getting Started' });
 
-    fireEvent.click(screen.getByRole('button', { name: 'New Page' }));
+    fireEvent.click(screen.getByRole('button', { name: "New page" }));
     let dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 
-    fireEvent.click(screen.getByRole('button', { name: 'New Page' }));
+    fireEvent.click(screen.getByRole('button', { name: "New page" }));
     dialog = await screen.findByRole('dialog');
-    fireEvent.change(within(dialog).getByRole('textbox', { name: 'Page Title' }), {
+    fireEvent.change(within(dialog).getByRole('textbox', { name: "Page title" }), {
       target: { value: 'Child Page' },
     });
     fireEvent.change(within(dialog).getByRole('combobox', { name: 'Parent Page (optional)' }), {
@@ -257,7 +257,7 @@ describe('GroupWikiTab', () => {
     fireEvent.change(within(dialog).getByRole('textbox', { name: 'Content' }), {
       target: { value: 'Child content' },
     });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Create Page' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: "Create page" }));
 
     await waitFor(() => expect(mockCreatePage).toHaveBeenCalledWith(5, {
       title: 'Child Page',
@@ -282,16 +282,16 @@ describe('GroupWikiTab', () => {
     render(<GroupWikiTab groupId={5} isAdmin={false} isMember={true} />);
     await screen.findByTestId('empty-state');
 
-    fireEvent.click(screen.getByRole('button', { name: 'New Page' }));
-    fireEvent.change(await screen.findByRole('textbox', { name: 'Page Title' }), {
+    fireEvent.click(screen.getByRole('button', { name: "New page" }));
+    fireEvent.change(await screen.findByRole('textbox', { name: "Page title" }), {
       target: { value: 'Page' },
     });
     fireEvent.change(screen.getByRole('textbox', { name: 'Content' }), {
       target: { value: 'Content' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Create Page' }));
+    fireEvent.click(screen.getByRole('button', { name: "Create page" }));
 
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to create page'));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("We couldn't create the page. Please try again."));
     expect(mockToast.success).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
@@ -344,7 +344,7 @@ describe('GroupWikiTab', () => {
     render(<GroupWikiTab groupId={5} isAdmin={false} isMember={true} />);
 
     fireEvent.click(await screen.findByRole('button', { name: 'Getting Started' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load page');
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load that page.");
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     await screen.findByText('This is the page content.');
 
@@ -352,15 +352,15 @@ describe('GroupWikiTab', () => {
     expect(historyButton).toHaveAttribute('aria-expanded', 'false');
     expect(historyButton).toHaveAttribute('aria-controls', 'wiki-revisions-1');
     fireEvent.click(historyButton);
-    expect(screen.getByRole('region', { name: 'Revision History' })).toBeInTheDocument();
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load revision history');
+    expect(screen.getByRole('region', { name: "Revision history" })).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load the page's history.");
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByText('Initial version')).toBeInTheDocument();
     expect(screen.getByText('Initial version').closest('li')?.querySelector('time')).toHaveAttribute(
       'dateTime',
       makeRevision().created_at,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Close History' }));
+    fireEvent.click(screen.getByRole('button', { name: "Close history" }));
     expect(screen.queryByText('Initial version')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'View revision history' })).toHaveAttribute('aria-expanded', 'false');
   });
@@ -400,7 +400,7 @@ describe('GroupWikiTab', () => {
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
 
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to delete page'));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("We couldn't delete the page. Please try again."));
     expect(mockToast.success).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });

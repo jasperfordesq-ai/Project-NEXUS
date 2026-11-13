@@ -62,7 +62,7 @@ vi.mock('@/components/ui/SafeHtml', () => ({
 // block used to carry were dead and the real HeroUI Modal has always been what rendered — which is
 // what the create-flow tests below depend on. The real Modal marks the page behind it aria-hidden,
 // so getByRole finds only the submit button inside the dialog; an inline stub leaves the trigger
-// visible too and the "Create Challenge" queries become ambiguous. The real components work in
+// visible too and the "Create challenge" queries become ambiguous. The real components work in
 // jsdom here, so the dead overrides were removed rather than activated.
 vi.mock('@/components/ui', async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
@@ -250,7 +250,7 @@ describe('GroupChallengesTab', () => {
     render(<GroupChallengesTab {...defaultProps} isAdmin={true} />);
     await waitFor(() => {
       const buttons = screen.getAllByRole('button');
-      // t('challenges.create') translates to "Create Challenge"
+      // t('challenges.create') translates to "Create challenge"
       const createBtn = buttons.find(b =>
         b.textContent?.toLowerCase().includes('create challenge') ||
         b.textContent?.includes('challenges.create')
@@ -312,7 +312,7 @@ describe('GroupChallengesTab', () => {
     const dialog = await screen.findByRole('alertdialog');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel challenge' }));
 
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to cancel challenge'));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("We couldn't cancel that challenge. Please try again."));
     expect(screen.getByText('Post 10 times')).toBeInTheDocument();
     expect(screen.getByRole('alertdialog')).toBeInTheDocument();
   });
@@ -423,10 +423,10 @@ describe('GroupChallengesTab', () => {
     const { GroupChallengesTab } = await import('./GroupChallengesTab');
     render(<GroupChallengesTab {...defaultProps} />);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load challenges');
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load the challenges.");
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Try Again' }));
+    await userEvent.click(screen.getByRole('button', { name: "Try again" }));
     expect(await screen.findByText('Recovered challenge')).toBeInTheDocument();
   });
 
@@ -462,7 +462,7 @@ describe('GroupChallengesTab', () => {
     mockApi.get.mockResolvedValue(makeSuccessResponse({ challenges: [makeChallenge({ title: 'Object shape' })] }));
     const { GroupChallengesTab } = await import('./GroupChallengesTab');
     render(<GroupChallengesTab {...defaultProps} />);
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load challenges');
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load the challenges.");
     expect(screen.queryByText('Object shape')).not.toBeInTheDocument();
   });
 });
@@ -484,16 +484,16 @@ describe('GroupChallengesTab — create flow', () => {
     const { GroupChallengesTab } = await import('./GroupChallengesTab');
     render(<GroupChallengesTab groupId={5} isAdmin={true} />);
 
-    await userEvent.click((await screen.findAllByRole('button', { name: 'Create Challenge' }))[0]);
+    await userEvent.click((await screen.findAllByRole('button', { name: "Create challenge" }))[0]);
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
     expect(screen.queryByRole('spinbutton', { name: 'Reward XP' })).not.toBeInTheDocument();
 
     await userEvent.type(screen.getByRole('textbox', { name: 'Title' }), 'New Challenge');
     await userEvent.type(screen.getByRole('textbox', { name: 'Description' }), 'Do something great');
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Target Value' }), { target: { value: '10' } });
+    fireEvent.change(screen.getByRole('spinbutton', { name: "Target value" }), { target: { value: '10' } });
     fireEvent.change(document.querySelector('input[type="date"]') as HTMLInputElement, { target: { value: '2099-12-31' } });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Create Challenge' }));
+    await userEvent.click(screen.getByRole('button', { name: "Create challenge" }));
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith('/v2/groups/5/challenges', expect.objectContaining({
         title: 'New Challenge',
@@ -510,7 +510,7 @@ describe('GroupChallengesTab — create flow', () => {
     const { GroupChallengesTab } = await import('./GroupChallengesTab');
     render(<GroupChallengesTab groupId={5} isAdmin={true} />);
 
-    await userEvent.click((await screen.findAllByRole('button', { name: 'Create Challenge' }))[0]);
+    await userEvent.click((await screen.findAllByRole('button', { name: "Create challenge" }))[0]);
 
     const metricTrigger = screen.getByRole('button', { name: /Metric/i });
     await userEvent.click(metricTrigger);
@@ -533,8 +533,8 @@ describe('GroupChallengesTab — create flow', () => {
     const { GroupChallengesTab } = await import('./GroupChallengesTab');
     render(<GroupChallengesTab groupId={5} isAdmin={true} />);
 
-    await userEvent.click((await screen.findAllByRole('button', { name: 'Create Challenge' }))[0]);
-    const createButtons = await screen.findAllByRole('button', { name: 'Create Challenge' });
+    await userEvent.click((await screen.findAllByRole('button', { name: "Create challenge" }))[0]);
+    const createButtons = await screen.findAllByRole('button', { name: "Create challenge" });
     await userEvent.click(createButtons[createButtons.length - 1]);
 
     expect((await screen.findAllByText('Required')).length).toBeGreaterThanOrEqual(3);
@@ -548,13 +548,13 @@ describe('GroupChallengesTab — create flow', () => {
     const { GroupChallengesTab } = await import('./GroupChallengesTab');
     render(<GroupChallengesTab groupId={5} isAdmin={true} />);
 
-    await userEvent.click((await screen.findAllByRole('button', { name: 'Create Challenge' }))[0]);
+    await userEvent.click((await screen.findAllByRole('button', { name: "Create challenge" }))[0]);
     await userEvent.type(screen.getByRole('textbox', { name: 'Title' }), 'New Challenge');
     await userEvent.type(screen.getByRole('textbox', { name: 'Description' }), 'Do something great');
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Target Value' }), { target: { value: '10' } });
+    fireEvent.change(screen.getByRole('spinbutton', { name: "Target value" }), { target: { value: '10' } });
     fireEvent.change(document.querySelector('input[type="date"]') as HTMLInputElement, { target: { value: '2099-12-31' } });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Create Challenge' }));
+    await userEvent.click(screen.getByRole('button', { name: "Create challenge" }));
     await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
     expect(mockToast.success).not.toHaveBeenCalled();
   });
@@ -564,7 +564,7 @@ describe('GroupChallengesTab — create flow', () => {
     const { GroupChallengesTab } = await import('./GroupChallengesTab');
     render(<GroupChallengesTab groupId={5} isAdmin={true} />);
 
-    await userEvent.click((await screen.findAllByRole('button', { name: 'Create Challenge' }))[0]);
+    await userEvent.click((await screen.findAllByRole('button', { name: "Create challenge" }))[0]);
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 

@@ -266,7 +266,7 @@ describe('GroupDetailPage', () => {
     mockGroupApi.getGroupDetail.mockRejectedValue(new Error('Not found'));
     render(<GroupDetailPage />);
     await waitFor(() => {
-      expect(screen.getByText('Unable to Load Group')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load this group")).toBeInTheDocument();
     });
   });
 

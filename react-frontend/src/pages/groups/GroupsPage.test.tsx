@@ -136,7 +136,7 @@ describe('GroupsPage', () => {
 
   it('shows Create Group button for authenticated users', () => {
     render(<GroupsPage />);
-    expect(screen.getByText('Create Group')).toBeInTheDocument();
+    expect(screen.getByText("Create group")).toBeInTheDocument();
   });
 
   it('shows search input', () => {
@@ -207,7 +207,7 @@ describe('GroupsPage', () => {
     const user = userEvent.setup();
     render(<GroupsPage />);
 
-    const links = await screen.findAllByRole('link', { name: 'Create Group' });
+    const links = await screen.findAllByRole('link', { name: "Create group" });
     await user.click(links.at(-1)!);
 
     await waitFor(() => expect(window.location.pathname).toBe('/test/groups/create'));
@@ -217,7 +217,7 @@ describe('GroupsPage', () => {
     const user = userEvent.setup();
     render(<GroupsPage />);
 
-    const links = await screen.findAllByRole('link', { name: 'Create Group' });
+    const links = await screen.findAllByRole('link', { name: "Create group" });
     const emptyStateLink = links.at(-1)!;
     emptyStateLink.focus();
     await user.keyboard('{Enter}');
@@ -265,9 +265,9 @@ describe('GroupsPage', () => {
 
     render(<GroupsPage />);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Unable to Load Groups');
-    expect(screen.getByText('Failed to load groups. Please try again.')).toBeInTheDocument();
-    expect(screen.queryByText('No groups found')).not.toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't load groups");
+    expect(screen.getByText("Try again in a moment.")).toBeInTheDocument();
+    expect(screen.queryByText("No groups to show")).not.toBeInTheDocument();
     expect(screen.queryByText('Raw server copy must not be rendered')).not.toBeInTheDocument();
   });
 
@@ -589,7 +589,7 @@ describe('GroupsPage', () => {
       render(<GroupsPage />);
 
       const bar = screen.getByTestId('groups-filter-bar');
-      const create = within(bar).getByRole('link', { name: 'Create Group' });
+      const create = within(bar).getByRole('link', { name: "Create group" });
       expect(create).toHaveAttribute('href', '/test/groups/create');
     });
 
@@ -602,8 +602,8 @@ describe('GroupsPage', () => {
       await waitFor(() => {
         expect(screen.getByRole('radiogroup', { name: 'Group filters' })).toBeInTheDocument();
       });
-      expect(screen.getByRole('radio', { name: 'All Groups' })).toHaveAttribute('aria-checked', 'true');
-      expect(screen.getByRole('radio', { name: 'My Groups' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: "All groups" })).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('radio', { name: "My groups" })).toBeInTheDocument();
       expect(screen.getByRole('radio', { name: 'Public' })).toBeInTheDocument();
       expect(screen.getByRole('radio', { name: 'Private' })).toBeInTheDocument();
       // Simple archetype: no draft, therefore no apply footer.

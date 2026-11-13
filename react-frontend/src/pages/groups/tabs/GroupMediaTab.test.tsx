@@ -410,7 +410,7 @@ describe('GroupMediaTab', () => {
     const { GroupMediaTab } = await import('./GroupMediaTab');
     render(<GroupMediaTab groupId={42} isAdmin={true} />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Load More' }));
+    fireEvent.click(await screen.findByRole('button', { name: "Load more" }));
     await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith(
       expect.stringContaining('cursor=abc'),
       { signal: expect.any(AbortSignal) },
@@ -447,7 +447,7 @@ describe('GroupMediaTab', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong');
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
+    fireEvent.click(screen.getByRole('button', { name: "Try again" }));
     expect(await screen.findByAltText('Recovered photo')).toBeInTheDocument();
   });
 
