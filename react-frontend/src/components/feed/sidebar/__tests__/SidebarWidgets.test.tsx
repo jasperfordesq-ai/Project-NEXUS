@@ -91,7 +91,7 @@ describe('CommunityPulseWidget', () => {
 
   it('renders the Community Pulse heading', () => {
     render(<CommunityPulseWidget stats={{ members: 120, listings: 45, events: 8, groups: 12 }} />);
-    expect(screen.getByText('Community Pulse')).toBeInTheDocument();
+    expect(screen.getByText("Community pulse")).toBeInTheDocument();
   });
 
   it('displays all four stat counts', () => {
@@ -135,12 +135,12 @@ describe('UpcomingEventsWidget', () => {
 
   it('renders nothing when events array is empty', () => {
     render(<UpcomingEventsWidget events={[]} />);
-    expect(screen.queryByText('Upcoming Events')).not.toBeInTheDocument();
+    expect(screen.queryByText("Upcoming events")).not.toBeInTheDocument();
   });
 
   it('renders the Upcoming Events heading when events exist', () => {
     render(<UpcomingEventsWidget events={sampleEvents} />);
-    expect(screen.getByText('Upcoming Events')).toBeInTheDocument();
+    expect(screen.getByText("Upcoming events")).toBeInTheDocument();
   });
 
   it('renders event titles', () => {
@@ -157,7 +157,7 @@ describe('UpcomingEventsWidget', () => {
 
   it('renders See All link pointing to /events', () => {
     render(<UpcomingEventsWidget events={sampleEvents} />);
-    const seeAll = screen.getByText('See All');
+    const seeAll = screen.getByText("See all");
     expect(seeAll.closest('a')).toHaveAttribute('href', '/test/events');
   });
 
@@ -186,12 +186,12 @@ describe('SuggestedListingsWidget', () => {
 
   it('renders nothing when listings array is empty', () => {
     render(<SuggestedListingsWidget listings={[]} />);
-    expect(screen.queryByText('Suggested For You')).not.toBeInTheDocument();
+    expect(screen.queryByText("Suggested for you")).not.toBeInTheDocument();
   });
 
   it('renders the Suggested For You heading when listings exist', () => {
     render(<SuggestedListingsWidget listings={sampleListings} />);
-    expect(screen.getByText('Suggested For You')).toBeInTheDocument();
+    expect(screen.getByText("Suggested for you")).toBeInTheDocument();
   });
 
   it('displays listing titles and owner names', () => {
@@ -216,7 +216,7 @@ describe('SuggestedListingsWidget', () => {
 
   it('renders See All link pointing to /listings', () => {
     render(<SuggestedListingsWidget listings={sampleListings} />);
-    const seeAll = screen.getByText('See All');
+    const seeAll = screen.getByText("See all");
     expect(seeAll.closest('a')).toHaveAttribute('href', '/test/listings');
   });
 });
@@ -291,12 +291,12 @@ describe('PopularGroupsWidget', () => {
 
   it('renders nothing when groups array is empty', () => {
     render(<PopularGroupsWidget groups={[]} />);
-    expect(screen.queryByText('Popular Groups')).not.toBeInTheDocument();
+    expect(screen.queryByText("Popular groups")).not.toBeInTheDocument();
   });
 
   it('renders the Popular Groups heading when groups exist', () => {
     render(<PopularGroupsWidget groups={sampleGroups} />);
-    expect(screen.getByText('Popular Groups')).toBeInTheDocument();
+    expect(screen.getByText("Popular groups")).toBeInTheDocument();
   });
 
   it('displays group names', () => {
@@ -359,9 +359,9 @@ describe('QuickActionsWidget', () => {
 
   it('renders secondary action links for enabled features', () => {
     render(<QuickActionsWidget />);
-    expect(screen.getByText('Host Event')).toBeInTheDocument();
-    expect(screen.getByText('Create Poll')).toBeInTheDocument();
-    expect(screen.getByText('Set Goal')).toBeInTheDocument();
+    expect(screen.getByText("Host an event")).toBeInTheDocument();
+    expect(screen.getByText("Create a poll")).toBeInTheDocument();
+    expect(screen.getByText("Set a goal")).toBeInTheDocument();
     expect(screen.getByText('Groups')).toBeInTheDocument();
   });
 
@@ -375,7 +375,7 @@ describe('QuickActionsWidget', () => {
     } as ReturnType<typeof useTenant>);
 
     render(<QuickActionsWidget />);
-    expect(screen.queryByText('Host Event')).not.toBeInTheDocument();
+    expect(screen.queryByText("Host an event")).not.toBeInTheDocument();
   });
 });
 
@@ -395,12 +395,12 @@ describe('PeopleYouMayKnowWidget', () => {
 
   it('renders nothing when members array is empty', () => {
     render(<PeopleYouMayKnowWidget members={[]} />);
-    expect(screen.queryByText('People You May Know')).not.toBeInTheDocument();
+    expect(screen.queryByText("People you may know")).not.toBeInTheDocument();
   });
 
   it('renders People You May Know heading when members exist', () => {
     render(<PeopleYouMayKnowWidget members={sampleMembers} />);
-    expect(screen.getByText('People You May Know')).toBeInTheDocument();
+    expect(screen.getByText("People you may know")).toBeInTheDocument();
   });
 
   it('displays member names', () => {
@@ -427,7 +427,7 @@ describe('PeopleYouMayKnowWidget', () => {
 
   it('See All link points to /members', () => {
     render(<PeopleYouMayKnowWidget members={sampleMembers} />);
-    const seeAll = screen.getByText('See All');
+    const seeAll = screen.getByText("See all");
     expect(seeAll.closest('a')).toHaveAttribute('href', '/test/members');
   });
 });
@@ -449,12 +449,12 @@ describe('TopCategoriesWidget', () => {
 
   it('renders nothing when categories array is empty', () => {
     render(<TopCategoriesWidget categories={[]} />);
-    expect(screen.queryByText('Top Categories')).not.toBeInTheDocument();
+    expect(screen.queryByText("Top categories")).not.toBeInTheDocument();
   });
 
   it('renders the Top Categories heading when categories exist', () => {
     render(<TopCategoriesWidget categories={sampleCategories} />);
-    expect(screen.getByText('Top Categories')).toBeInTheDocument();
+    expect(screen.getByText("Top categories")).toBeInTheDocument();
   });
 
   it('displays all category names and counts', () => {

@@ -54,12 +54,12 @@ describe('LocationRadiusFilter', () => {
   it('shows "Global" text when isNearby is false', () => {
     render(<LocationRadiusFilter {...defaultProps} isNearby={false} />);
     expect(screen.getByText('Global')).toBeInTheDocument();
-    expect(screen.queryByText('Near Me')).not.toBeInTheDocument();
+    expect(screen.queryByText("Near me")).not.toBeInTheDocument();
   });
 
-  it('shows "Near Me" text when isNearby is true', () => {
+  it('shows "Near me" text when isNearby is true', () => {
     render(<LocationRadiusFilter {...defaultProps} isNearby={true} />);
-    expect(screen.getByText('Near Me')).toBeInTheDocument();
+    expect(screen.getByText("Near me")).toBeInTheDocument();
     expect(screen.queryByText('Global')).not.toBeInTheDocument();
   });
 
@@ -106,6 +106,6 @@ describe('LocationRadiusFilter', () => {
 
   it('has correct aria-label on the button when nearby', () => {
     render(<LocationRadiusFilter {...defaultProps} isNearby={true} />);
-    expect(screen.getByLabelText('Near Me')).toBeInTheDocument();
+    expect(screen.getByLabelText("Near me")).toBeInTheDocument();
   });
 });

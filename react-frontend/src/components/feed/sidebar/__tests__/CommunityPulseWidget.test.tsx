@@ -79,7 +79,7 @@ describe('CommunityPulseWidget', () => {
 
   it('renders the Community Pulse heading', () => {
     render(<CommunityPulseWidget stats={defaultStats} />);
-    expect(screen.getByText('Community Pulse')).toBeInTheDocument();
+    expect(screen.getByText("Community pulse")).toBeInTheDocument();
   });
 
   it('displays all four stat counts', () => {

@@ -112,8 +112,8 @@ describe('ShareViaDMModal', () => {
 
   it('renders the modal header title', () => {
     render(<ShareViaDMModal {...DEFAULT_PROPS} />);
-    // feed.share.dm_title = "Send via Message"
-    expect(screen.getByText('Send via Message')).toBeInTheDocument();
+    // feed.share.dm_title = "Send in a message"
+    expect(screen.getByText("Send in a message")).toBeInTheDocument();
   });
 
   it('shows the hint text when query is shorter than 2 chars (initial state)', () => {
@@ -181,8 +181,8 @@ describe('ShareViaDMModal', () => {
     render(<ShareViaDMModal {...DEFAULT_PROPS} />);
     await act(async () => { await typeAndDebounce('zz'); });
 
-    // feed.share.dm_no_results = "No members found"
-    expect(screen.getByText('No members found')).toBeInTheDocument();
+    // feed.share.dm_no_results = "Nobody matches that name. Check the spelling and try again."
+    expect(screen.getByText("Nobody matches that name. Check the spelling and try again.")).toBeInTheDocument();
   });
 
   it('handles wrapped API response { data: [...] }', async () => {

@@ -116,7 +116,7 @@ describe('FeedPage', () => {
 
   it('renders without crashing', () => {
     render(<FeedPage />);
-    expect(screen.getByText('Community Feed')).toBeInTheDocument();
+    expect(screen.getByText("Community feed")).toBeInTheDocument();
   });
 
   it('greets the member in a soft panel in the community colour (AWID: warmth)', () => {
@@ -127,7 +127,7 @@ describe('FeedPage', () => {
       const header = screen.getByTestId('feed-header');
       expect(header.className).toContain('bg-accent-soft');
       expect(within(header).getByText('Good evening, Test')).toBeInTheDocument();
-      expect(within(header).getByRole('heading', { level: 1, name: 'Community Feed' })).toBeInTheDocument();
+      expect(within(header).getByRole('heading', { level: 1, name: "Community feed" })).toBeInTheDocument();
     } finally {
       vi.useRealTimers();
     }
@@ -147,7 +147,7 @@ describe('FeedPage', () => {
       const header = screen.getByTestId('feed-header');
       expect(within(header).queryByTestId('feed-header-photo')).toBeNull();
       expect(header.querySelector('img[src*="community-photos"]')).toBeNull();
-      expect(within(header).getByRole('heading', { level: 1, name: 'Community Feed' })).toBeInTheDocument();
+      expect(within(header).getByRole('heading', { level: 1, name: "Community feed" })).toBeInTheDocument();
     } finally {
       vi.mocked(useTenant).mockImplementation(original);
     }
@@ -287,7 +287,7 @@ describe('FeedPage', () => {
     });
     render(<FeedPage />);
     await waitFor(() => {
-      expect(screen.getByText('Load More')).toBeInTheDocument();
+      expect(screen.getByText("Load more")).toBeInTheDocument();
     });
   });
 
@@ -295,9 +295,9 @@ describe('FeedPage', () => {
     mockGet.mockRejectedValue(new Error('Network error'));
     render(<FeedPage />);
     await waitFor(() => {
-      expect(screen.getByText('Unable to Load Feed')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load the feed")).toBeInTheDocument();
     });
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
+    expect(screen.getAllByText("Try again").length).toBeGreaterThan(0);
   });
 
   it('calls API with filter type when a filter is selected', async () => {

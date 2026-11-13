@@ -154,7 +154,7 @@ describe('PostDetailPage', () => {
     render(<PostDetailPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Item not found')).toBeInTheDocument();
+      expect(screen.getByText("We can't find that post. It may have been taken down.")).toBeInTheDocument();
     });
 
     const backLinks = screen.getAllByRole('link', { name: /back to feed/i });

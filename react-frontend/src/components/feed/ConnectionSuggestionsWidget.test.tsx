@@ -107,7 +107,7 @@ describe('ConnectionSuggestionsWidget — sidebar layout', () => {
 
     // Component returns null immediately; no widget heading rendered
     await waitFor(() => {
-      expect(screen.queryByText('People You May Know')).not.toBeInTheDocument();
+      expect(screen.queryByText("People you may know")).not.toBeInTheDocument();
     });
   });
 
@@ -121,7 +121,7 @@ describe('ConnectionSuggestionsWidget — sidebar layout', () => {
 
     // After loading finishes with empty suggestions the widget disappears
     await waitFor(() => {
-      expect(screen.queryByText('People You May Know')).not.toBeInTheDocument();
+      expect(screen.queryByText("People you may know")).not.toBeInTheDocument();
     });
   });
 
@@ -446,7 +446,7 @@ describe('ConnectionSuggestionsWidget — inline layout', () => {
 
     // Component returns null immediately; no widget heading rendered
     await waitFor(() => {
-      expect(screen.queryByText('People You May Know')).not.toBeInTheDocument();
+      expect(screen.queryByText("People you may know")).not.toBeInTheDocument();
     });
   });
 

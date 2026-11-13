@@ -77,12 +77,12 @@ describe('TopCategoriesWidget', () => {
 
   it('renders nothing when categories array is empty', () => {
     render(<TopCategoriesWidget categories={[]} />);
-    expect(screen.queryByText('Top Categories')).not.toBeInTheDocument();
+    expect(screen.queryByText("Top categories")).not.toBeInTheDocument();
   });
 
   it('renders the Top Categories heading when categories exist', () => {
     render(<TopCategoriesWidget categories={sampleCategories} />);
-    expect(screen.getByText('Top Categories')).toBeInTheDocument();
+    expect(screen.getByText("Top categories")).toBeInTheDocument();
   });
 
   it('displays all category names', () => {
@@ -123,7 +123,7 @@ describe('TopCategoriesWidget', () => {
 
   it('handles a single category', () => {
     render(<TopCategoriesWidget categories={[{ id: 99, name: 'Cooking', slug: 'cooking', count: 5 }]} />);
-    expect(screen.getByText('Top Categories')).toBeInTheDocument();
+    expect(screen.getByText("Top categories")).toBeInTheDocument();
     expect(screen.getByText(/Cooking/)).toBeInTheDocument();
     expect(screen.getByText(/\(5\)/)).toBeInTheDocument();
   });

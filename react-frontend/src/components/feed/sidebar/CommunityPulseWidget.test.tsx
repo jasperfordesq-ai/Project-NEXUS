@@ -62,7 +62,7 @@ describe('CommunityPulseWidget', () => {
   it('renders the Community Pulse heading', async () => {
     const { CommunityPulseWidget } = await import('./CommunityPulseWidget');
     render(<CommunityPulseWidget stats={makeStats()} />);
-    expect(screen.getByText('Community Pulse')).toBeInTheDocument();
+    expect(screen.getByText("Community pulse")).toBeInTheDocument();
   });
 
   it('renders all four stat labels', async () => {
@@ -152,7 +152,7 @@ describe('CommunityPulseWidget', () => {
     expect(card).not.toBeNull();
     expect(card).toHaveClass('glass-card', 'p-4');
     // Heading and all four stat tiles are nested INSIDE the card, not siblings of it.
-    expect(card).toContainElement(screen.getByText('Community Pulse'));
+    expect(card).toContainElement(screen.getByText("Community pulse"));
     screen.getAllByRole('link').forEach((link) => expect(card).toContainElement(link));
   });
 });

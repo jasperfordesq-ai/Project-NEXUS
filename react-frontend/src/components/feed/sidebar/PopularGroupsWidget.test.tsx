@@ -66,17 +66,17 @@ describe('PopularGroupsWidget', () => {
     const { container } = render(<PopularGroupsWidget groups={[]} />);
     expect(container.querySelector(CARD)).toBeNull();
     // …and none of the copy it would otherwise render.
-    expect(screen.queryByText('Popular Groups')).toBeNull();
+    expect(screen.queryByText("Popular groups")).toBeNull();
     expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
 
   it('renders the widget heading when groups are provided', async () => {
     const { PopularGroupsWidget } = await import('./PopularGroupsWidget');
     render(<PopularGroupsWidget groups={[makeGroup()]} />);
-    expect(screen.getByText('Popular Groups')).toBeInTheDocument();
+    expect(screen.getByText("Popular groups")).toBeInTheDocument();
   });
 
-  it('renders a "See All" link pointing to the tenant groups path', async () => {
+  it('renders a "See all" link pointing to the tenant groups path', async () => {
     const { PopularGroupsWidget } = await import('./PopularGroupsWidget');
     render(<PopularGroupsWidget groups={[makeGroup()]} />);
     const link = screen.getByRole('link', { name: /see all/i });
@@ -93,7 +93,7 @@ describe('PopularGroupsWidget', () => {
   it('renders the member count', async () => {
     const { PopularGroupsWidget } = await import('./PopularGroupsWidget');
     render(<PopularGroupsWidget groups={[makeGroup({ member_count: 128 })]} />);
-    // Translation: "{{count}} members" → "128 members"
+    // Translation: "{{count}} member" → "128 members"
     expect(screen.getByText(/128/)).toBeInTheDocument();
   });
 
@@ -137,7 +137,7 @@ describe('PopularGroupsWidget', () => {
     expect(card).not.toBeNull();
     expect(card).toHaveClass('glass-card', 'p-4');
     // Heading and group row are nested INSIDE the card, not siblings of it.
-    expect(card).toContainElement(screen.getByText('Popular Groups'));
+    expect(card).toContainElement(screen.getByText("Popular groups"));
     expect(card).toContainElement(screen.getByText('Gardening Club'));
   });
 
@@ -155,7 +155,7 @@ describe('PopularGroupsWidget', () => {
     expect(screen.getByText(/55/)).toBeInTheDocument();
   });
 
-  it('does not render the "See All" link when groups is empty', async () => {
+  it('does not render the "See all" link when groups is empty', async () => {
     const { PopularGroupsWidget } = await import('./PopularGroupsWidget');
     const { container } = render(<PopularGroupsWidget groups={[]} />);
     // Nothing rendered at all, so the absence below is not vacuous.

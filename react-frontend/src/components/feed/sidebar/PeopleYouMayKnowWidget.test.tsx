@@ -84,20 +84,20 @@ describe('PeopleYouMayKnowWidget', () => {
     const { container } = render(<PeopleYouMayKnowWidget members={[]} />);
     // The component returns null — no GlassCard is mounted
     expect(container.querySelector(CARD)).toBeNull();
-    expect(screen.queryByText('People You May Know')).not.toBeInTheDocument();
+    expect(screen.queryByText("People you may know")).not.toBeInTheDocument();
     expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
 
   it('renders the widget heading when members are provided', async () => {
     const { PeopleYouMayKnowWidget } = await import('./PeopleYouMayKnowWidget');
     render(<PeopleYouMayKnowWidget members={[makeMember()]} />);
-    expect(screen.getByText('People You May Know')).toBeInTheDocument();
+    expect(screen.getByText("People you may know")).toBeInTheDocument();
   });
 
-  it('renders a "See All" link pointing to the members page', async () => {
+  it('renders a "See all" link pointing to the members page', async () => {
     const { PeopleYouMayKnowWidget } = await import('./PeopleYouMayKnowWidget');
     render(<PeopleYouMayKnowWidget members={[makeMember()]} />);
-    const seeAll = screen.getByText('See All');
+    const seeAll = screen.getByText("See all");
     expect(seeAll.closest('a')).toHaveAttribute('href', '/test/members');
   });
 
@@ -133,7 +133,7 @@ describe('PeopleYouMayKnowWidget', () => {
   it('does not show a location paragraph when location is absent', async () => {
     const { PeopleYouMayKnowWidget } = await import('./PeopleYouMayKnowWidget');
     render(<PeopleYouMayKnowWidget members={[makeMember({ location: undefined })]} />);
-    // Only the "People You May Know" heading + "See All" + "View" text — no location text
+    // Only the "People you may know" heading + "See all" + "View" text — no location text
     expect(screen.queryByText('Dublin')).not.toBeInTheDocument();
   });
 
@@ -183,7 +183,7 @@ describe('PeopleYouMayKnowWidget', () => {
     expect(card).not.toBeNull();
     expect(card).toHaveClass('glass-card', 'p-4');
     // Heading and member row are nested INSIDE the card, not siblings of it.
-    expect(card).toContainElement(screen.getByText('People You May Know'));
+    expect(card).toContainElement(screen.getByText("People you may know"));
     expect(card).toContainElement(screen.getByText('Bob Builder'));
   });
 });

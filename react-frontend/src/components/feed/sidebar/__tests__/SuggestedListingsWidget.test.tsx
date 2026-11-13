@@ -76,12 +76,12 @@ describe('SuggestedListingsWidget', () => {
 
   it('renders nothing when listings array is empty', () => {
     render(<SuggestedListingsWidget listings={[]} />);
-    expect(screen.queryByText('Suggested For You')).not.toBeInTheDocument();
+    expect(screen.queryByText("Suggested for you")).not.toBeInTheDocument();
   });
 
   it('renders the Suggested For You heading when listings exist', () => {
     render(<SuggestedListingsWidget listings={sampleListings} />);
-    expect(screen.getByText('Suggested For You')).toBeInTheDocument();
+    expect(screen.getByText("Suggested for you")).toBeInTheDocument();
   });
 
   it('displays listing titles', () => {
@@ -113,7 +113,7 @@ describe('SuggestedListingsWidget', () => {
 
   it('renders See All link pointing to /listings', () => {
     render(<SuggestedListingsWidget listings={sampleListings} />);
-    const seeAll = screen.getByText('See All');
+    const seeAll = screen.getByText("See all");
     expect(seeAll.closest('a')).toHaveAttribute('href', '/test/listings');
   });
 
@@ -124,7 +124,7 @@ describe('SuggestedListingsWidget', () => {
       { id: 3, title: 'C', type: 'offer', owner_name: 'Z' },
     ];
     render(<SuggestedListingsWidget listings={threeListings} />);
-    // 3 listing links + 1 "See All" link = 4 total
+    // 3 listing links + 1 "See all" link = 4 total
     const links = screen.getAllByRole('link');
     expect(links.length).toBe(4);
   });

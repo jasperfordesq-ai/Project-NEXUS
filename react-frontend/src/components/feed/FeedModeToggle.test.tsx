@@ -42,7 +42,7 @@ describe('FeedModeToggle', () => {
 
   it('renders without crashing', () => {
     render(<FeedModeToggle mode="ranking" onModeChange={mockOnModeChange} />);
-    expect(screen.getByText('For You')).toBeInTheDocument();
+    expect(screen.getByText("For you")).toBeInTheDocument();
     expect(screen.getByText('Recent')).toBeInTheDocument();
   });
 
@@ -61,7 +61,7 @@ describe('FeedModeToggle', () => {
   it('has "ranking" tab selected when mode is ranking', () => {
     render(<FeedModeToggle mode="ranking" onModeChange={mockOnModeChange} />);
     const tabs = screen.getAllByRole('radio');
-    const rankingTab = tabs.find(tab => tab.textContent?.includes('For You'));
+    const rankingTab = tabs.find(tab => tab.textContent?.includes("For you"));
     expect(rankingTab).toHaveAttribute('aria-checked', 'true');
   });
 

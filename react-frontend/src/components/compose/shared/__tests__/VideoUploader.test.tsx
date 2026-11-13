@@ -107,7 +107,7 @@ describe('VideoUploader', () => {
     fireEvent.change(input, { target: { files: [textFile] } });
 
     // Error should be displayed
-    expect(screen.getByText(/invalid video format/i)).toBeInTheDocument();
+    expect(screen.getByText(/can't use that kind of video/i)).toBeInTheDocument();
   });
 
   it('shows error for oversized video file', () => {

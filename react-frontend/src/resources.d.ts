@@ -47625,12 +47625,12 @@ export default interface Resources {
     "analytics": {
       "comments": "Comments",
       "likes": "Likes",
-      "load_failed": "Failed to load analytics.",
+      "load_failed": "We couldn't load the figures for this post. Try again in a moment.",
       "loading": "Loading analytics...",
       "reach": "Reach",
-      "reactions_breakdown": "Reactions Breakdown",
+      "reactions_breakdown": "Reactions breakdown",
       "shares": "Shares",
-      "title": "Post Analytics",
+      "title": "Post analytics",
       "views": "Views"
     },
     "aria": {
@@ -47638,7 +47638,7 @@ export default interface Resources {
     },
     "author_unknown": "Unknown",
     "card": {
-      "admin_delete": "Delete (Admin)",
+      "admin_delete": "Delete (admin)",
       "all": "All",
       "and": "and",
       "badge_earned_message": "{{name}} earned the \"{{badge}}\" badge!",
@@ -47648,38 +47648,37 @@ export default interface Resources {
         "closes_on": "Closes {{date}}",
         "closing_soon": "Closing soon",
         "ideas_count": "{{count}} ideas",
-        "ideas_count_one": "{{count}} ideas",
+        "ideas_count_one": "{{count}} idea",
         "ideas_count_other": "{{count}} ideas"
       },
       "comment": "comment",
       "comment_action": "Comment",
       "comments": "comments",
-      "comments_load_failed": "Failed to load comments.",
       "delete": "Delete",
       "delete_comment_body": "Are you sure you want to delete this comment? This cannot be undone.",
       "delete_comment_confirm": "Delete this comment?",
       "delete_comment_title": "Delete Comment",
-      "delete_post": "Delete Post",
-      "detail_blog": "Read Article",
-      "detail_challenge": "View Challenge",
+      "delete_post": "Delete post",
+      "detail_blog": "Read article",
+      "detail_challenge": "View challenge",
       "detail_course": "View course",
-      "detail_event": "View Event",
-      "detail_goals": "View Goals",
-      "detail_job": "View Job",
+      "detail_event": "View event",
+      "detail_goals": "View goals",
+      "detail_job": "View job",
       "detail_listing": "View offer or request",
       "detail_podcast_episode": "Listen to episode",
       "detail_podcast_show": "View podcast show",
-      "detail_profile": "View Profile",
-      "detail_volunteer": "View Opportunity",
+      "detail_profile": "View profile",
+      "detail_volunteer": "View opportunity",
       "edit": "Edit",
-      "edit_post": "Edit Post",
+      "edit_post": "Edit post",
       "edited": "edited",
       "event": {
         "starts_in_hours": "Starts in {{hours}}h",
         "starts_in_minutes": "Starts in {{minutes}}m"
       },
       "hide": "Hide",
-      "hide_post": "Hide Post",
+      "hide_post": "Hide post",
       "image_alt": "{{type}} image by {{name}}",
       "job": {
         "commitment_contract": "Contract",
@@ -47687,14 +47686,14 @@ export default interface Resources {
         "commitment_full_time": "Full-time",
         "commitment_part_time": "Part-time",
         "type_paid": "Paid",
-        "type_timebank": "Time Credits",
+        "type_timebank": "Time credits",
         "type_volunteer": "Volunteer"
       },
       "level_up_message": "{{name}} reached Level {{level}}!",
       "like": "like",
       "like_action": "Like",
       "likes": "likes",
-      "load_more": "Load More",
+      "load_more": "Load more",
       "milestone": {
         "badge_unlocked": "Badge unlocked",
         "level_reached": "Level reached"
@@ -47715,7 +47714,7 @@ export default interface Resources {
       "read_more_about": "Read more about {{title}}",
       "replies": "replies",
       "reply": "reply",
-      "report_post": "Report Post",
+      "report_post": "Report post",
       "review": {
         "rating_aria": "{{rating}} out of 5 stars"
       },
@@ -47724,7 +47723,6 @@ export default interface Resources {
       "scheduled": "Scheduled",
       "send_comment": "Send comment",
       "share_action": "Share",
-      "share_failed": "Failed to share",
       "shared_success": "Post shared to your feed",
       "type_badge_earned": "Badge Earned",
       "type_blog": "Blog",
@@ -47747,12 +47745,12 @@ export default interface Resources {
       "type_volunteer": "Volunteer",
       "type_volunteer_hours": "Volunteer hours",
       "unlike": "Unlike",
-      "view_analytics": "View Analytics",
+      "view_analytics": "View analytics",
       "view_comments": "View comments",
       "view_reactions_aria": "View reactions: {{summary}}",
       "volunteer": {
         "credits_offered": "{{count}} time credits",
-        "credits_offered_one": "{{count}} time credits",
+        "credits_offered_one": "{{count}} time credit",
         "credits_offered_other": "{{count}} time credits"
       },
       "volunteer_hours_title": "Volunteered {{hours}} hours",
@@ -47765,7 +47763,7 @@ export default interface Resources {
       "go_to_image": "Go to image {{number}}",
       "image_of": "Image {{current}} of {{total}}",
       "more_images": "{{count}} more images",
-      "more_images_one": "{{count}} more images",
+      "more_images_one": "{{count}} more image",
       "more_images_other": "{{count}} more images",
       "next": "Next image",
       "previous": "Previous image",
@@ -47775,8 +47773,8 @@ export default interface Resources {
       "view_video": "View video {{current}} of {{total}}"
     },
     "compose": {
-      "add_option": "Add Option",
-      "ai_button": "AI Assist",
+      "add_option": "Add option",
+      "ai_button": "AI assist",
       "ai_error": "AI generation failed — please write manually",
       "ai_failed": "AI could not generate a description",
       "ai_generated": "AI description generated!",
@@ -47799,10 +47797,10 @@ export default interface Resources {
       "compose_post": "Compose post",
       "content_required": "Post content cannot be empty.",
       "content_too_long": "Post is too long (max {{max}} characters).",
-      "create_event": "Create Event",
-      "create_goal": "Create Goal",
+      "create_event": "Create event",
+      "create_goal": "Create goal",
       "create_listing": "Post offer or request",
-      "create_poll": "Create Poll",
+      "create_poll": "Create poll",
       "create_post": "Create post",
       "create_title": "Create {{type}}",
       "deadline_label": "Deadline (optional)",
@@ -47818,32 +47816,32 @@ export default interface Resources {
       "emoji_smileys": "Smileys",
       "emoji_symbols": "Symbols",
       "emoji_travel": "Travel",
-      "end_date_label": "End Date",
-      "end_time_label": "End Time",
+      "end_date_label": "End date",
+      "end_time_label": "End time",
       "estimated_hours_label": "Estimated Hours",
       "event_created": "Event created!",
       "event_date_required": "Please select a start date.",
       "event_desc_placeholder": "Describe your event...",
-      "event_failed": "Failed to create event.",
-      "event_title_label": "Event Title",
+      "event_failed": "We couldn't create your event. Please try again.",
+      "event_title_label": "Event title",
       "event_title_placeholder": "Name your event...",
       "event_title_required": "Please enter an event title.",
       "file_size_mb": "{{name}} ({{size}}MB)",
       "goal_created": "Goal created!",
       "goal_desc_placeholder": "Describe your goal...",
-      "goal_failed": "Failed to create goal.",
-      "goal_title_label": "Goal Title",
+      "goal_failed": "We couldn't create your goal. Please try again.",
+      "goal_title_label": "Goal title",
       "goal_title_placeholder": "e.g., Give 10 hours this month",
       "group_label": "Post to",
       "group_members": "{{count}} members",
-      "group_members_one": "{{count}} members",
+      "group_members_one": "{{count}} member",
       "group_members_other": "{{count}} members",
-      "group_placeholder": "Public Feed",
+      "group_placeholder": "Public feed",
       "group_search": "Search groups",
-      "groups_load_error": "Failed to load groups.",
+      "groups_load_error": "We couldn't load your groups. Try again in a moment.",
       "groups_loading": "Loading groups...",
-      "image_add": "Add Image",
-      "image_change": "Change Image",
+      "image_add": "Add image",
+      "image_change": "Change image",
       "image_compressing": "Compressing...",
       "image_preview_alt": "Upload preview",
       "image_remove_aria": "Remove image",
@@ -47859,7 +47857,6 @@ export default interface Resources {
       "link_preview_remove": "Remove preview",
       "listing_created": "Offer or request posted!",
       "listing_desc_placeholder": "Describe your listing...",
-      "listing_failed": "Failed to create listing.",
       "listing_looking_for": "Looking For",
       "listing_offering": "Offering",
       "listing_preview_alt": "Preview of your offer or request",
@@ -47869,22 +47866,22 @@ export default interface Resources {
       "location_from_profile": "From your profile — update in Settings",
       "location_label": "Location",
       "location_placeholder": "Search for a location...",
-      "make_public": "Make Public",
+      "make_public": "Make public",
       "make_public_desc": "Others can see and support your goal",
-      "media_compression_failed": "{{count}} image(s) failed to process",
-      "media_compression_failed_one": "{{count}} image(s) failed to process",
-      "media_compression_failed_other": "{{count}} image(s) failed to process",
+      "media_compression_failed": "We couldn't get {{count}} pictures ready",
+      "media_compression_failed_one": "We couldn't get {{count}} picture ready",
+      "media_compression_failed_other": "We couldn't get {{count}} pictures ready",
       "media_drag_drop": "Click or drag photos here",
       "media_formats": "JPEG, PNG, GIF, WebP up to 10MB each",
-      "media_rejected": "{{count}} file(s) skipped (wrong type or too large)",
-      "media_rejected_one": "{{count}} file(s) skipped (wrong type or too large)",
-      "media_rejected_other": "{{count}} file(s) skipped (wrong type or too large)",
-      "media_upload_error": "Failed to process images",
+      "media_rejected": "{{count}} files were skipped (wrong kind or too big)",
+      "media_rejected_one": "{{count}} file was skipped (wrong kind or too big)",
+      "media_rejected_other": "{{count}} files were skipped (wrong kind or too big)",
+      "media_upload_error": "We couldn't get those pictures ready. Please try again.",
       "numbered_list": "Numbered list",
       "placeholder_hours": "1",
       "poll_created": "Poll created!",
-      "poll_end_date": "End Date (optional)",
-      "poll_failed": "Failed to create poll.",
+      "poll_end_date": "End date (optional)",
+      "poll_failed": "We couldn't create your poll. Please try again.",
       "poll_min_options": "Add at least 2 options.",
       "poll_no_deadline": "No deadline",
       "poll_option_placeholder": "Option {{number}}",
@@ -47892,7 +47889,7 @@ export default interface Resources {
       "poll_question_required": "Please enter a poll question.",
       "post_button": "Post",
       "post_created": "Post created!",
-      "post_failed": "Failed to create post.",
+      "post_failed": "We couldn't publish your post. Please try again.",
       "post_scheduled": "Post scheduled!",
       "remove_link": "Remove link",
       "rich_text_placeholder": "Write something...",
@@ -47905,14 +47902,14 @@ export default interface Resources {
       "schedule_set": "Scheduled for {{date}}",
       "schedule_time_label": "Time",
       "selected_gif_alt": "Selected GIF",
-      "start_date_label": "Start Date",
-      "start_time_label": "Start Time",
+      "start_date_label": "Start date",
+      "start_time_label": "Start time",
       "tab_event": "Event",
       "tab_goal": "Goal",
       "tab_listing": "Offer or request",
       "tab_poll": "Poll",
       "tab_post": "Post",
-      "target_value_label": "Target Value",
+      "target_value_label": "Target value",
       "target_value_placeholder": "e.g., 10",
       "template_button": "Template",
       "template_event_gathering": "Community gathering",
@@ -47951,7 +47948,7 @@ export default interface Resources {
       "underline": "Underline",
       "upload_preview_alt": "Upload preview {{number}}",
       "video": "Video",
-      "video_invalid_type": "Invalid video format. Use MP4, WebM, OGG, or MOV.",
+      "video_invalid_type": "We can't use that kind of video. Try an MP4, WebM, OGG or MOV file.",
       "video_remove": "Remove video",
       "video_too_large": "Video must be under {{size}}MB.",
       "voice_start": "Start voice input",
@@ -47968,13 +47965,12 @@ export default interface Resources {
     "empty_filtered": "Nothing matches this view right now. Try a different filter.",
     "empty_filtered_with_filter": "There are no {{filter}} updates right now. Try all posts or start a new conversation.",
     "empty_title": "No posts yet",
-    "error_hint": "Your filters and draft composer are still here. Refresh the feed when your connection is ready.",
-    "error_load": "Failed to load feed.",
-    "error_load_retry": "Failed to load feed. Please try again.",
+    "error_hint": "Your filters and anything you were writing are still here.",
+    "error_load": "We couldn't reach the feed just now. Try again in a moment.",
+    "error_load_retry": "We couldn't reach the feed just now. Try again in a moment.",
     "fab": {
       "create": "Create post"
     },
-    "failed_to_load_analytics": "Failed to load analytics",
     "feed": {
       "current_view": "Showing {{filter}}",
       "end_of_feed": "You're all caught up!",
@@ -48002,35 +47998,35 @@ export default interface Resources {
     },
     "hashtag": {
       "back_to_feed": "Back to feed",
-      "load_failed": "Failed to load posts for this hashtag.",
-      "load_more": "Load More",
-      "no_posts": "No posts found",
+      "load_failed": "Try again in a moment.",
+      "load_more": "Load more",
+      "no_posts": "Nothing here yet",
       "no_posts_desc": "No posts have been tagged with #{{tag}} yet.",
       "page_description": "Posts tagged with #{{tag}}",
       "post_count": "{{count}} posts",
-      "post_count_one": "{{count}} posts",
+      "post_count_one": "{{count}} post",
       "post_count_other": "{{count}} posts",
       "title": "Hashtag",
-      "try_again": "Try Again",
-      "unable_to_load": "Unable to Load Posts"
+      "try_again": "Try again",
+      "unable_to_load": "We couldn't load these posts"
     },
     "hashtags": {
       "back_to_feed": "Back to feed",
-      "load_failed": "Failed to load hashtags.",
-      "no_hashtags": "No hashtags found",
+      "load_failed": "Try again in a moment.",
+      "no_hashtags": "No hashtags to show",
       "no_match": "No hashtags matching \"{{query}}\"",
       "no_trending": "No trending hashtags in your community yet.",
       "post_count": "{{count}} posts",
-      "post_count_one": "{{count}} posts",
+      "post_count_one": "{{count}} post",
       "post_count_other": "{{count}} posts",
       "search_placeholder": "Search hashtags...",
       "subtitle": "Discover what your community is talking about",
-      "title": "Trending Hashtags",
-      "try_again": "Try Again",
-      "unable_to_load": "Unable to Load Hashtags"
+      "title": "Trending hashtags",
+      "try_again": "Try again",
+      "unable_to_load": "We couldn't load the hashtags"
     },
     "items_loaded": "{{count}} posts",
-    "items_loaded_one": "{{count}} posts",
+    "items_loaded_one": "{{count}} post",
     "items_loaded_other": "{{count}} posts",
     "lightbox": {
       "aria_label": "Image viewer",
@@ -48038,18 +48034,18 @@ export default interface Resources {
       "counter": "{{current}} of {{total}}",
       "download": "Download image"
     },
-    "load_more": "Load More",
+    "load_more": "Load more",
     "loading_label": "Loading community updates...",
     "location": {
       "add_location": "Add location in profile",
       "global": "Global",
       "km": "km",
-      "nearby": "Near Me",
+      "nearby": "Near me",
       "radius": "{{km}} km"
     },
     "meta_description": "A private community feed for updates, listings, events, polls, goals, and conversations.",
     "mode": {
-      "for_you": "For You",
+      "for_you": "For you",
       "label": "Feed mode",
       "recent": "Recent"
     },
@@ -48066,7 +48062,7 @@ export default interface Resources {
       "expired": "This poll has ended.",
       "expiry_past": "Poll expiry date must be in the future.",
       "live": "Live",
-      "load_failed": "Failed to load poll data.",
+      "load_failed": "We couldn't load this poll.",
       "min_options_hint": "At least 2 options are required.",
       "results_hidden_until_close": "Results revealed when poll closes",
       "view_full": "View full poll",
@@ -48074,9 +48070,9 @@ export default interface Resources {
       "your_vote": "Your vote"
     },
     "post_detail": {
-      "back": "Back to Feed",
-      "load_failed": "Failed to load item",
-      "not_found": "Item not found",
+      "back": "Back to feed",
+      "load_failed": "We couldn't load that post. Try again in a moment.",
+      "not_found": "We can't find that post. It may have been taken down.",
       "title": "Post"
     },
     "quoted_post_image": "Quoted post image",
@@ -48089,7 +48085,7 @@ export default interface Resources {
       "love": "Love",
       "react_to_post": "React to this post",
       "sad": "Sad",
-      "time_credit": "Time Credit",
+      "time_credit": "Time credit",
       "wow": "Wow"
     },
     "realtime": {
@@ -48101,8 +48097,8 @@ export default interface Resources {
       "description": "Please describe why you are reporting this post. Our moderators will review your report.",
       "reason_label": "Reason",
       "reason_placeholder": "Describe the issue...",
-      "submit": "Submit Report",
-      "title": "Report Post"
+      "submit": "Submit report",
+      "title": "Report post"
     },
     "session_expired": "Your session has expired. Please log in again.",
     "share": {
@@ -48110,37 +48106,37 @@ export default interface Resources {
       "button_label_count": "Share ({{count}})",
       "button_label_count_one": "Share ({{count}})",
       "button_label_count_other": "Share ({{count}})",
-      "cannot_share_own_post": "You cannot share your own post",
-      "copy_failed": "Failed to copy link",
-      "copy_link": "Copy Link",
+      "cannot_share_own_post": "You can't share your own post",
+      "copy_failed": "We couldn't copy the link. Please try again.",
+      "copy_link": "Copy link",
       "default_title": "Post",
       "dm_done": "Done",
-      "dm_failed": "Failed to send message",
+      "dm_failed": "We couldn't send your message. Please try again.",
       "dm_hint": "Type at least 2 characters to search",
-      "dm_no_results": "No members found",
+      "dm_no_results": "Nobody matches that name. Check the spelling and try again.",
       "dm_search_placeholder": "Search for a member...",
       "dm_send": "Send",
       "dm_sent": "Post shared with {{name}}",
       "dm_sent_label": "Sent",
-      "dm_title": "Send via Message",
+      "dm_title": "Send in a message",
       "email": "Email",
       "external": "Share...",
-      "external_title": "Share Post",
+      "external_title": "Share post",
       "link_copied": "Link copied to clipboard",
       "menu_label": "Share options",
-      "quote": "Quote Post",
+      "quote": "Quote post",
       "quote_content_required": "Please add your commentary",
       "quote_desc": "Repost with your commentary",
-      "quote_failed": "Failed to create quote post",
+      "quote_failed": "We couldn't post your quote. Please try again.",
       "quote_placeholder": "Add your thoughts...",
       "quote_posted": "Quote post created",
       "quote_submit": "Post",
-      "quote_title": "Quote Post",
+      "quote_title": "Quote post",
       "repost": "Repost",
       "repost_desc": "Share to your feed",
-      "repost_remove": "Remove Repost",
+      "repost_remove": "Remove repost",
       "repost_remove_desc": "Remove repost from your feed",
-      "send_dm": "Send via Message",
+      "send_dm": "Send in a message",
       "share_via": "Share via {{platform}}",
       "shared_by": "<0>{{name}}</0> shared this",
       "shared_by_text": "shared this",
@@ -48151,38 +48147,38 @@ export default interface Resources {
       "actions": {
         "create_listing": "Create an offer or request",
         "create_listing_desc": "Share your skills with the community",
-        "create_poll": "Create Poll",
+        "create_poll": "Create a poll",
         "groups": "Groups",
-        "host_event": "Host Event",
-        "set_goal": "Set Goal",
+        "host_event": "Host an event",
+        "set_goal": "Set a goal",
         "title": "Quick Actions"
       },
       "by_owner": "by {{name}}",
       "categories": {
         "all_listings": "All offers and requests",
-        "title": "Top Categories"
+        "title": "Top categories"
       },
       "events": {
-        "see_all": "See All",
-        "title": "Upcoming Events"
+        "see_all": "See all",
+        "title": "Upcoming events"
       },
       "friends": {
         "active_today": "Active today",
         "online": "Online now",
-        "see_all": "See All",
+        "see_all": "See all",
         "title": "Friends"
       },
       "groups": {
         "members": "{{count}} members",
-        "members_one": "{{count}} members",
+        "members_one": "{{count}} member",
         "members_other": "{{count}} members",
-        "see_all": "See All",
-        "title": "Popular Groups"
+        "see_all": "See all",
+        "title": "Popular groups"
       },
       "offer": "Offer",
       "people": {
-        "see_all": "See All",
-        "title": "People You May Know",
+        "see_all": "See all",
+        "title": "People you may know",
         "view": "View"
       },
       "profile": {
@@ -48197,25 +48193,25 @@ export default interface Resources {
         "groups": "Groups",
         "listings": "Offers and requests",
         "members": "Members",
-        "title": "Community Pulse"
+        "title": "Community pulse"
       },
       "suggested": {
         "by": "by {{name}}",
         "offer": "Offer",
         "request": "Request",
-        "see_all": "See All",
-        "title": "Suggested For You"
+        "see_all": "See all",
+        "title": "Suggested for you"
       }
     },
     "stories": {
-      "add": "Add Story",
+      "add": "Add story",
       "create_your_story": "Create your story",
-      "load_failed": "Couldn't load stories",
-      "retry": "Retry",
+      "load_failed": "We couldn't load stories",
+      "retry": "Try again",
       "scroll_left": "Scroll stories left",
       "scroll_right": "Scroll stories right",
       "view_story_from": "View story from {{name}}",
-      "your_story": "Your Story"
+      "your_story": "Your story"
     },
     "subfilter": {
       "all": "All",
@@ -48225,36 +48221,36 @@ export default interface Resources {
     "subtitle": "See what's happening in your community",
     "suggestions": {
       "connect": "Connect",
-      "connect_failed": "Failed to send request",
+      "connect_failed": "We couldn't send your request. Please try again.",
       "connect_sent": "Connection request sent!",
       "dismiss": "Dismiss",
-      "load_failed": "Failed to load suggestions",
+      "load_failed": "We couldn't load suggestions for you",
       "mutual": "{{count}} mutual connections",
-      "mutual_one": "{{count}} mutual connections",
+      "mutual_one": "{{count}} mutual connection",
       "mutual_other": "{{count}} mutual connections",
       "pending": "Pending",
-      "see_all": "See All",
-      "title": "People You May Know"
+      "see_all": "See all",
+      "title": "People you may know"
     },
-    "title": "Community Feed",
+    "title": "Community feed",
     "toast": {
-      "delete_failed": "Failed to delete post",
+      "delete_failed": "We couldn't delete that post. Please try again.",
       "deleted": "Post deleted",
-      "hide_failed": "Failed to hide post",
-      "like_failed": "Failed to update like",
-      "mute_failed": "Failed to mute user",
+      "hide_failed": "We couldn't hide that post. Please try again.",
+      "like_failed": "We couldn't save your reaction. Please try again.",
+      "mute_failed": "We couldn't mute that member. Please try again.",
       "not_interested": "We'll show you less like this",
       "post_hidden": "Post hidden",
       "post_shared": "Post shared to your feed",
       "post_updated": "Post updated",
       "provide_reason": "Please provide a reason",
-      "report_failed": "Failed to report post",
+      "report_failed": "We couldn't send your report. Please try again.",
       "reported": "Post reported. Thank you for helping keep our community safe.",
-      "share_failed": "Failed to share post",
+      "share_failed": "We couldn't share that post. Please try again.",
       "share_removed": "Share removed",
-      "update_failed": "Failed to update post",
-      "user_muted": "User muted",
-      "vote_failed": "Failed to submit vote"
+      "update_failed": "We couldn't save your changes. Please try again.",
+      "user_muted": "Member muted",
+      "vote_failed": "We couldn't count your vote. Please try again."
     },
     "trending": {
       "post_count_one": "{{count}} post",
@@ -48266,12 +48262,11 @@ export default interface Resources {
       "title": "Trending",
       "view_all": "View all hashtags"
     },
-    "try_again": "Try Again",
-    "unable_to_load": "Unable to Load Feed",
+    "try_again": "Try again",
+    "unable_to_load": "We couldn't load the feed",
     "video": {
       "aria_label": "Video",
       "default_title": "Video",
-      "invalid_type": "Invalid video format. Supported: MP4, WebM, MOV",
       "mute": "Mute",
       "pause": "Pause",
       "play": "Play",
@@ -51158,17 +51153,17 @@ export default interface Resources {
       "feed": {
         "articles": {
           "feed_edit_schedule": {
-            "body": "You can change or remove your own posts at any time, and you can set a post to appear later.\n\n## Edit or delete a post\n\n1. Find your post on the [feed](/feed).\n2. Press the three-dot menu at the top right of the post.\n3. Choose **Edit Post**, change the text, and press the button to save it. You can change the words but not the photos.\n4. Or choose **Delete Post**, then press **Delete** to confirm. This cannot be undone.\n\nAn edited post shows the word **edited** next to the time.\n\n## Schedule a post for later\n\n1. Write your post as usual.\n2. Press **Schedule post** under the text.\n3. Choose a **Date** and **Time**.\n4. Press **Set schedule**.\n5. Press **Schedule** to save it.\n\nThe post shows **Scheduled for** and the time you chose. It appears on the feed at that time. To go back to posting straight away, press **Clear schedule** before you save.",
+            "body": "You can change or remove your own posts at any time, and you can set a post to appear later.\n\n## Edit or delete a post\n\n1. Find your post on the [feed](/feed).\n2. Press the three-dot menu at the top right of the post.\n3. Choose **Edit post**, change the text, and press the button to save it. You can change the words but not the photos.\n4. Or choose **Delete post**, then press **Delete** to confirm. This cannot be undone.\n\nAn edited post shows the word **edited** next to the time.\n\n## Schedule a post for later\n\n1. Write your post as usual.\n2. Press **Schedule post** under the text.\n3. Choose a **Date** and **Time**.\n4. Press **Set schedule**.\n5. Press **Schedule** to save it.\n\nThe post shows **Scheduled for** and the time you chose. It appears on the feed at that time. To go back to posting straight away, press **Clear schedule** before you save.",
             "summary": "Change or remove a post you wrote, or choose a time for it to appear.",
             "title": "Editing, deleting or scheduling a post"
           },
           "feed_filters": {
-            "body": "You can change the order of the feed and show only the kinds of post you want.\n\n## For You or Recent\n\nAt the top of the [feed](/feed), choose:\n\n- **For You**, which puts the posts most likely to interest you first\n- **Recent**, which shows the newest posts first\n\nOn a **For You** post, press **Why am I seeing this?** to see the reason it was picked.\n\n## Filters\n\nUse the filter buttons to show one kind of item, such as **Posts**, **Events** or **Polls**. **Following** shows posts from your connections. **Saved** shows posts you have saved. Press **All** to see everything again.\n\nWhich filters you see depends on the sections your community uses.\n\n## New posts\n\nWhen new posts arrive while you are reading, a bar appears at the top, such as **1 new post — Tap to see**. Press it to load them.",
+            "body": "You can change the order of the feed and show only the kinds of post you want.\n\n## For You or Recent\n\nAt the top of the [feed](/feed), choose:\n\n- **For you**, which puts the posts most likely to interest you first\n- **Recent**, which shows the newest posts first\n\nOn a **For you** post, press **Why am I seeing this?** to see the reason it was picked.\n\n## Filters\n\nUse the filter buttons to show one kind of item, such as **Posts**, **Events** or **Polls**. **Following** shows posts from your connections. **Saved** shows posts you have saved. Press **All** to see everything again.\n\nWhich filters you see depends on the sections your community uses.\n\n## New posts\n\nWhen new posts arrive while you are reading, a bar appears at the top, such as **1 new post — Tap to see**. Press it to load them.",
             "summary": "Switch between For You and Recent, and show only the kinds of post you want.",
             "title": "Choosing what you see on the feed"
           },
           "feed_hide_mute_report": {
-            "body": "Every post has a three-dot menu with options for posts you do not want to see.\n\n1. Press the three-dot menu at the top right of the post.\n2. Choose one of these:\n\n- **Hide Post** removes that post from your feed.\n- **Not interested** hides it and shows you fewer posts like it.\n- **Mute** followed by the person's name stops their posts appearing in your feed. They are not told.\n- **Report Post** sends the post to your community's moderators.\n\n> At the moment you cannot undo hiding or muting from your account, so use them with care.\n\n## Reporting a post\n\n1. Choose **Report Post**.\n2. In **Reason**, describe what is wrong.\n3. Press **Submit Report**.\n\nYour community's moderators then review the report.\n\nIf someone is in danger, contact your local emergency services first.",
+            "body": "Every post has a three-dot menu with options for posts you do not want to see.\n\n1. Press the three-dot menu at the top right of the post.\n2. Choose one of these:\n\n- **Hide post** removes that post from your feed.\n- **Not interested** hides it and shows you fewer posts like it.\n- **Mute** followed by the person's name stops their posts appearing in your feed. They are not told.\n- **Report post** sends the post to your community's moderators.\n\n> At the moment you cannot undo hiding or muting from your account, so use them with care.\n\n## Reporting a post\n\n1. Choose **Report post**.\n2. In **Reason**, describe what is wrong.\n3. Press **Submit report**.\n\nYour community's moderators then review the report.\n\nIf someone is in danger, contact your local emergency services first.",
             "summary": "Remove posts you do not want to see, stop seeing one person, or tell the moderators about a problem.",
             "title": "Hiding, muting or reporting a post"
           },
@@ -51178,12 +51173,12 @@ export default interface Resources {
             "title": "Adding photos and links to a post"
           },
           "feed_post_update": {
-            "body": "You post updates from the [community feed](/feed).\n\n1. Open the [feed](/feed).\n2. Press the box that says **What's on your mind?**. A window opens.\n3. If the window shows a different form, such as **Offer or request**, press the **Post** tab at the top.\n4. Write your message. You can use up to 5,000 characters. The buttons above the text let you add bold, italics, lists and links.\n5. Use the buttons under the text to add an emoji or a GIF. Some browsers also let you speak your post with voice input.\n6. If your community uses groups, you see **Post to**. Leave **Public Feed** to share with the whole community, or choose one of your groups.\n7. Press **Post**.\n\nA quicker way to reach the **Post** form is the **+** button at the top of the page. Choose **New Post**.\n\n## Other things you can create here\n\nThe same window has tabs along the top. Depending on what your community uses, you may see **Offer or request**, **Event**, **Goal** and **Poll** as well as **Post**. Each tab opens a short form for that kind of item.\n\n> If you close the window part-way through, your browser keeps a draft on this device. It comes back the next time you open the post box.\n\n## Who sees your post\n\nA post to the **Public Feed** is seen by members of your community. A post to a group appears inside that group, for its members.\n\nIf you type @ followed by someone's username, they are told you mentioned them.",
+            "body": "You post updates from the [community feed](/feed).\n\n1. Open the [feed](/feed).\n2. Press the box that says **What's on your mind?**. A window opens.\n3. If the window shows a different form, such as **Offer or request**, press the **Post** tab at the top.\n4. Write your message. You can use up to 5,000 characters. The buttons above the text let you add bold, italics, lists and links.\n5. Use the buttons under the text to add an emoji or a GIF. Some browsers also let you speak your post with voice input.\n6. If your community uses groups, you see **Post to**. Leave **Public feed** to share with the whole community, or choose one of your groups.\n7. Press **Post**.\n\nA quicker way to reach the **Post** form is the **+** button at the top of the page. Choose **New Post**.\n\n## Other things you can create here\n\nThe same window has tabs along the top. Depending on what your community uses, you may see **Offer or request**, **Event**, **Goal** and **Poll** as well as **Post**. Each tab opens a short form for that kind of item.\n\n> If you close the window part-way through, your browser keeps a draft on this device. It comes back the next time you open the post box.\n\n## Who sees your post\n\nA post to the **Public feed** is seen by members of your community. A post to a group appears inside that group, for its members.\n\nIf you type @ followed by someone's username, they are told you mentioned them.",
             "summary": "Write a post for your community feed or for one of your groups.",
             "title": "How do I post an update?"
           },
           "feed_reactions_comments": {
-            "body": "You can react to a post with a quick feeling, or write a comment.\n\n## Reactions\n\nPress **Like** under a post. To choose a different reaction, hold your mouse over **Like**, or press and hold it on a phone. You can choose:\n\n- **Like**\n- **Love**\n- **Laugh**\n- **Wow**\n- **Sad**\n- **Celebrate**\n- **Clap**\n- **Time Credit**\n\nPress your reaction again to remove it. To see who reacted, press the reaction count.\n\n> The **Time Credit** reaction is a way of saying thank you. It does not send any hours.\n\n## Comments\n\n1. Press **Comment** under the post.\n2. Type in the box that says **Write a comment...**.\n3. To mention someone, type @ and start typing their name, then choose them from the list.\n4. Press the send button.\n\nUnder each comment you can press **Reply** to answer it, or **React** to add a reaction.\n\n## Change or remove your comment\n\nUnder your own comment, press **Edit** to change it, or **Delete** to remove it. Deleting a comment cannot be undone.",
+            "body": "You can react to a post with a quick feeling, or write a comment.\n\n## Reactions\n\nPress **Like** under a post. To choose a different reaction, hold your mouse over **Like**, or press and hold it on a phone. You can choose:\n\n- **Like**\n- **Love**\n- **Laugh**\n- **Wow**\n- **Sad**\n- **Celebrate**\n- **Clap**\n- **Time credit**\n\nPress your reaction again to remove it. To see who reacted, press the reaction count.\n\n> The **Time credit** reaction is a way of saying thank you. It does not send any hours.\n\n## Comments\n\n1. Press **Comment** under the post.\n2. Type in the box that says **Write a comment...**.\n3. To mention someone, type @ and start typing their name, then choose them from the list.\n4. Press the send button.\n\nUnder each comment you can press **Reply** to answer it, or **React** to add a reaction.\n\n## Change or remove your comment\n\nUnder your own comment, press **Edit** to change it, or **Delete** to remove it. Deleting a comment cannot be undone.",
             "summary": "Show you like a post, choose a reaction, and join the conversation in the comments.",
             "title": "Reacting and commenting on posts"
           },
@@ -51193,7 +51188,7 @@ export default interface Resources {
             "title": "Saving posts to read later"
           },
           "feed_sharing": {
-            "body": "Press **Share** under a post to see your sharing options.\n\n- **Repost** shares the post on the feed with your name on it. Press **Remove Repost** to undo it.\n- **Quote Post** reposts it with your own comment on top. Type your thoughts and press **Post**.\n- **Copy Link** copies the address of the post, so you can paste it anywhere.\n- **Share...** opens your device's sharing options. If your device has none, you can choose Email, WhatsApp, X, Facebook or LinkedIn.\n- **Send via Message** sends the post to another member in a private message. Search for their name, then press **Send**.\n\nYou cannot repost your own post.\n\n> A link to a post only works for people who can sign in to your community. Anyone else sees the sign-in page.",
+            "body": "Press **Share** under a post to see your sharing options.\n\n- **Repost** shares the post on the feed with your name on it. Press **Remove repost** to undo it.\n- **Quote post** reposts it with your own comment on top. Type your thoughts and press **Post**.\n- **Copy link** copies the address of the post, so you can paste it anywhere.\n- **Share...** opens your device's sharing options. If your device has none, you can choose Email, WhatsApp, X, Facebook or LinkedIn.\n- **Send in a message** sends the post to another member in a private message. Search for their name, then press **Send**.\n\nYou cannot repost your own post.\n\n> A link to a post only works for people who can sign in to your community. Anyone else sees the sign-in page.",
             "summary": "Repost, quote, copy a link or send a post to another member.",
             "title": "Sharing a post"
           }
@@ -51470,12 +51465,12 @@ export default interface Resources {
       "listings": {
         "articles": {
           "browse_listings": {
-            "body": "Open [Listings](/listings) to see what members offer and need.\n\nType in the search box to look for words in the title, description, location or member's name, then press Enter.\n\nUse the choices next to the search box:\n\n- **Type**: **All Types**, **Offers** or **Requests**.\n- **Sort**: **Recommended** or **Newest first**.\n\nBelow the search box, **Browse by theme** shows each theme as a coloured tile. Press one to see only that theme, or press **All themes** to see everything again.\n\nPress **Filters** for more choices:\n\n- **Duration**: **Quick (under 1h)**, **Short (1-3h)**, **Half day (3-6h)** or **Full day (6h+)**.\n- **Service mode**: **Remote available** or **In-person only**.\n- **Posted date**: **Today**, **This week** or **This month**.\n- **Near me**: shows listings close to the location on your profile. Then choose a distance.\n\nPress **Clear filters** to start again.\n\nYou can switch between grid and list layouts with the buttons at the top of the page.\n\n> **Near me** uses the location on your profile. If you have not set one, you will see a message asking you to add it.",
+            "body": "Open [Listings](/listings) to see what members offer and need.\n\nType in the search box to look for words in the title, description, location or member's name, then press Enter.\n\nUse the choices next to the search box:\n\n- **Type**: **All types**, **Offers** or **Requests**.\n- **Sort**: **Recommended** or **Newest first**.\n\nBelow the search box, **Browse by theme** shows each theme as a coloured tile. Press one to see only that theme, or press **All themes** to see everything again.\n\nPress **Filters** for more choices:\n\n- **Duration**: **Quick (under 1h)**, **Short (1-3h)**, **Half day (3-6h)** or **Full day (6h+)**.\n- **Service mode**: **Remote available** or **In-person only**.\n- **Posted date**: **Today**, **This week** or **This month**.\n- **Near me**: shows listings close to the location on your profile. Then choose a distance.\n\nPress **Clear filters** to start again.\n\nYou can switch between grid and list layouts with the buttons at the top of the page.\n\n> **Near me** uses the location on your profile. If you have not set one, you will see a message asking you to add it.",
             "summary": "Search listings and narrow them down by type, category, time and distance.",
             "title": "Browsing and filtering listings"
           },
           "create_listing": {
-            "body": "You create a listing from the Listings page.\n\n1. Open [Listings](/listings) and press **Create an offer or request**.\n2. Under **Start with intent**, choose **Offer Help** or **Request Help**.\n3. Type a **Title**. Be specific, for example \"Weekly help with food shopping\" rather than one word.\n4. Write a **Description** of what you offer or need.\n5. Choose a **Category**. Add **Skill Tags** if you like.\n6. Under **Service delivery**, choose **In-person only**, **Remote only**, **Remote available** or **Depends on service**.\n7. Enter the **Estimated Hours** one exchange may take.\n8. Add a photo if you like.\n9. Press **Create an offer or request**.\n\nYour new listing then opens so you can check it.\n\nIf a field is missing or too short, a message appears under that field. Fix it and press **Create an offer or request** again.\n\nThe **Location** comes from your profile. To change it, update your location in your profile settings.\n\n> If your community checks new listings first, your listing shows the status **Pending** until a coordinator approves it. Your community may also limit how many listings each member can have.",
+            "body": "You create a listing from the Listings page.\n\n1. Open [Listings](/listings) and press **Create an offer or request**.\n2. Under **Offering or asking?**, choose **Offer help** or **Ask for help**.\n3. Type a **Title**. Be specific, for example \"Weekly help with food shopping\" rather than one word.\n4. Write a **Description** of what you offer or need.\n5. Choose a **Category**. Add **Skill tags** if you like.\n6. Under **Where it can happen**, choose **In-person only**, **Remote only**, **Remote available** or **Depends on service**.\n7. Enter the **Estimated hours** one exchange may take.\n8. Add a photo if you like.\n9. Press **Create an offer or request**.\n\nYour new listing then opens so you can check it.\n\nIf a field is missing or too short, a message appears under that field. Fix it and press **Create an offer or request** again.\n\nThe **Location** comes from your profile. To change it, update your location in your profile settings.\n\n> If your community checks new listings first, your listing shows the status **Pending** until a coordinator approves it. Your community may also limit how many listings each member can have.",
             "summary": "Post an offer or a request in a few steps from the Listings page.",
             "title": "How do I create a listing?"
           },
@@ -51485,22 +51480,22 @@ export default interface Resources {
             "title": "Using the AI writing help on a listing"
           },
           "listing_details": {
-            "body": "Categories and tags help members find your listing. Your community sets the list of categories.\n\n- **Category**: choose the one that fits best. You can type to search the list. Your community may require a category.\n- **Skill Tags**: type a skill and press Enter. You can add up to 10 tags.\n- **Estimated Hours**: how long one exchange may take, between 0.5 and 100 hours.\n- **Hours Available (optional)**: the total hours you are willing to give across all exchanges. Leave it blank for no limit. It cannot be less than the estimated hours.\n\n## Optional service details\n\nOpen **Optional service details** to add:\n\n- **Experience**, for example **Beginner-friendly** or **Professional / certified**.\n- **Equipment**, for example **I'll provide everything needed** or **You'll need to provide your own**.\n- **Accessibility Notes**, up to 200 characters, such as \"step-free access\".\n\nWhen you save, these details are added to the end of your description, so everyone can read them.",
+            "body": "Categories and tags help members find your listing. Your community sets the list of categories.\n\n- **Category**: choose the one that fits best. You can type to search the list. Your community may require a category.\n- **Skill tags**: type a skill and press Enter. You can add up to 10 tags.\n- **Estimated hours**: how long one exchange may take, between 0.5 and 100 hours.\n- **Hours available (optional)**: the total hours you are willing to give across all exchanges. Leave it blank for no limit. It cannot be less than the estimated hours.\n\n## Optional service details\n\nOpen **A few optional details** to add:\n\n- **Experience**, for example **Beginner-friendly** or **Professional / certified**.\n- **Equipment**, for example **I'll provide everything needed** or **You'll need to provide your own**.\n- **Accessibility notes**, up to 200 characters, such as \"step-free access\".\n\nWhen you save, these details are added to the end of your description, so everyone can read them.",
             "summary": "Help the right members find your listing with a category, skill tags and extra details.",
             "title": "Categories, skill tags and optional details"
           },
           "listing_map": {
-            "body": "If your community uses maps, you can see listings as pins on a map.\n\n1. Open [Listings](/listings).\n2. Press the map button next to the grid and list buttons.\n3. Press a pin to see the listing.\n4. Press **View details** to open it.\n\nOnly listings with a location appear on the map. If none have one, you will see **No offers or requests with a place on the map**.\n\nA listing's location comes from the profile of the member who posted it. A listing page may also show a small map under **Service Location**.\n\nYour listings use the location on your profile, so keep it up to date.",
+            "body": "If your community uses maps, you can see listings as pins on a map.\n\n1. Open [Listings](/listings).\n2. Press the map button next to the grid and list buttons.\n3. Press a pin to see the listing.\n4. Press **View details** to open it.\n\nOnly listings with a location appear on the map. If none have one, you will see **No offers or requests with a place on the map**.\n\nA listing's location comes from the profile of the member who posted it. A listing page may also show a small map under **Service location**.\n\nYour listings use the location on your profile, so keep it up to date.",
             "summary": "If your community uses maps, view listings as pins on a map.",
             "title": "Seeing listings on a map"
           },
           "listing_photo": {
-            "body": "A photo can make your listing easier to recognise.\n\n1. In the listing form, find **Add a photo**.\n2. Press **Click to add a photo** and choose a picture from your device.\n3. Check the preview. To remove it, press the cross in the corner of the preview.\n4. Save the listing.\n\nYou can add one photo on this form. It must be a JPG, PNG or WebP file, and smaller than 8MB. If the file is too big, you will see **Image must be under 8MB**.\n\nIf the photo cannot be uploaded, your listing is still saved without it and a message tells you so. Edit the listing to try again.\n\nTo change the photo later, edit the listing, remove the old photo and add a new one.\n\nChoose a picture you are happy for everyone in your community to see.",
+            "body": "A photo can make your listing easier to recognise.\n\n1. In the listing form, find **Add a photo**.\n2. Press **Click to add a photo** and choose a picture from your device.\n3. Check the preview. To remove it, press the cross in the corner of the preview.\n4. Save the listing.\n\nYou can add one photo on this form. It must be a JPG, PNG or WebP file, and smaller than 8MB. If the file is too big, you will see **That photo is too big — choose one under 8 MB**.\n\nIf the photo cannot be uploaded, your listing is still saved without it and a message tells you so. Edit the listing to try again.\n\nTo change the photo later, edit the listing, remove the old photo and add a new one.\n\nChoose a picture you are happy for everyone in your community to see.",
             "summary": "Add one picture to make your listing easier to recognise.",
             "title": "Adding a photo to your listing"
           },
           "manage_listing": {
-            "body": "Your own listings are on your profile, in the **Offers and requests** tab. Open one to manage it.\n\nWhen you view your own listing, these buttons appear near the title:\n\n- **Edit** opens the form. Make your changes and press **Save changes**.\n- **Analytics** shows how many people viewed, contacted or saved the listing.\n- **Renew** appears when a listing has expired. **Extend** appears when a listing has an end date. Both give it more time.\n- **Delete** removes the listing. Press **Delete listing** to confirm.\n\n> Deleting a listing cannot be undone.\n\n## Can I pause a listing?\n\nThere is no pause button. If you need a break, you can delete the listing and create it again later.\n\n## Expiry\n\nYour community may set listings to end after a while. The listing page shows the end date, for example \"Expires\" followed by the date. A listing can only be renewed a limited number of times. If renewing does not work, ask your coordinator.",
+            "body": "Your own listings are on your profile, in the **Offers and requests** tab. Open one to manage it.\n\nWhen you view your own listing, these buttons appear near the title:\n\n- **Edit** opens the form. Make your changes and press **Save changes**.\n- **Analytics** shows how many people viewed, contacted or saved the listing.\n- **Renew** appears when a listing has expired. **Extend** appears when a listing has an end date. Both give it more time.\n- **Delete** removes the listing. Press **Yes, delete it** to confirm.\n\n> Deleting a listing cannot be undone.\n\n## Can I pause a listing?\n\nThere is no pause button. If you need a break, you can delete the listing and create it again later.\n\n## Expiry\n\nYour community may set listings to end after a while. The listing page shows the end date, for example \"Expires\" followed by the date. A listing can only be renewed a limited number of times. If renewing does not work, ask your coordinator.",
             "summary": "Change your listing, give it more time, see how it is doing, or remove it.",
             "title": "Editing, renewing or deleting your listing"
           },
@@ -51510,12 +51505,12 @@ export default interface Resources {
             "title": "What are offers and requests?"
           },
           "report_listing": {
-            "body": "Report a listing if it looks unsafe, misleading or does not belong in your community.\n\n1. Open the listing.\n2. Press **Report listing**.\n3. Choose a reason: **Inappropriate content**, **Safety concern**, **Misleading description**, **Spam or scam**, **Not a timebank service** or **Other**.\n4. Add **Additional details** if you can. This is optional, but it helps.\n5. Press **Submit Report**.\n\nYou will see a thank-you message, and the button changes to **Reported**. You can report each listing only once.\n\nYour community's moderators are told about the report and review it.\n\n> If someone is in immediate danger, contact your local emergency services first.",
+            "body": "Report a listing if it looks unsafe, misleading or does not belong in your community.\n\n1. Open the listing.\n2. Press **Report this**.\n3. Choose a reason: **Inappropriate content**, **Safety concern**, **Misleading description**, **Spam or scam**, **Not a timebank service** or **Other**.\n4. Add **Additional details** if you can. This is optional, but it helps.\n5. Press **Submit report**.\n\nYou will see a thank-you message, and the button changes to **Reported**. You can report each listing only once.\n\nYour community's moderators are told about the report and review it.\n\n> If someone is in immediate danger, contact your local emergency services first.",
             "summary": "Tell your community team about a listing that looks unsafe, misleading or wrong.",
             "title": "Reporting a listing"
           },
           "respond_to_listing": {
-            "body": "Open a listing to see the full details and who posted it. In the coloured panel under the description you will find these buttons:\n\n- **Request Exchange**: if your community uses exchange requests, this sends a request with the hours you propose. See the Exchanges section of this guide.\n- **Send Message**: if your community does not use exchange requests, this opens a private conversation with the member instead.\n- **Like** and **Comments**: show appreciation, or ask a question that everyone can see.\n- **Save**: keeps the listing in your [Saved](/saved) items so you can find it again.\n- **Share**: lets you share the listing or copy a link to it.\n- **Report listing**: tells the community team about a problem.\n\nIf you already have an exchange for this listing, the first button shows **Exchange** and its current status instead.\n\nPress the member's name to see their profile. It shows their reviews and other listings, under **More from** followed by their name.",
+            "body": "Open a listing to see the full details and who posted it. In the coloured panel under the description you will find these buttons:\n\n- **Request Exchange**: if your community uses exchange requests, this sends a request with the hours you propose. See the Exchanges section of this guide.\n- **Send Message**: if your community does not use exchange requests, this opens a private conversation with the member instead.\n- **Like** and **Comments**: show appreciation, or ask a question that everyone can see.\n- **Save**: keeps the listing in your [Saved](/saved) items so you can find it again.\n- **Share**: lets you share the listing or copy a link to it.\n- **Report this**: tells the community team about a problem.\n\nIf you already have an exchange for this listing, the first button shows **Exchange** and its current status instead.\n\nPress the member's name to see their profile. It shows their reviews and other listings, under **More from** followed by their name.",
             "summary": "Ask for help, send a message, save, share or comment on a listing.",
             "title": "Responding to a listing"
           }
@@ -51809,12 +51804,12 @@ export default interface Resources {
             "title": "Can a coordinator read my messages?"
           },
           "muting_members": {
-            "body": "Muting a member stops their posts appearing in your community feed. It is a quiet way to see less of someone. It does not protect you from them.\n\n## How to mute someone\n\n1. Find one of their posts in the [feed](/feed).\n2. Press the three-dot menu at the top right of the post.\n3. Choose **Mute** followed by their name.\n\nYou see **User muted**, and their posts disappear from your feed. If your community uses groups, you can do the same from a post in a group's feed.\n\n## What muting does\n\n- Their posts no longer appear in your feed.\n- Their listings are left out of the suggestions picked for you.\n- They are not told that you muted them.\n\n## What muting does not do\n\n- They can still send you messages.\n- They can still see your profile and your posts.\n- You may still get notifications about things they do, such as commenting on your post.\n- Their listings still appear when you browse or search listings.\n\n> At the moment you cannot undo a mute from your account. Use it with care.\n\n## If you need more than muting\n\nIf you do not want someone to contact you at all, block them instead. Blocking stops them messaging you and seeing your profile. See **How do I block someone?** in this section.\n\nIf someone has behaved badly or made you feel unsafe, tell a coordinator as well.",
+            "body": "Muting a member stops their posts appearing in your community feed. It is a quiet way to see less of someone. It does not protect you from them.\n\n## How to mute someone\n\n1. Find one of their posts in the [feed](/feed).\n2. Press the three-dot menu at the top right of the post.\n3. Choose **Mute** followed by their name.\n\nYou see **Member muted**, and their posts disappear from your feed. If your community uses groups, you can do the same from a post in a group's feed.\n\n## What muting does\n\n- Their posts no longer appear in your feed.\n- Their listings are left out of the suggestions picked for you.\n- They are not told that you muted them.\n\n## What muting does not do\n\n- They can still send you messages.\n- They can still see your profile and your posts.\n- You may still get notifications about things they do, such as commenting on your post.\n- Their listings still appear when you browse or search listings.\n\n> At the moment you cannot undo a mute from your account. Use it with care.\n\n## If you need more than muting\n\nIf you do not want someone to contact you at all, block them instead. Blocking stops them messaging you and seeing your profile. See **How do I block someone?** in this section.\n\nIf someone has behaved badly or made you feel unsafe, tell a coordinator as well.",
             "summary": "Muting hides someone's posts from your feed. It is not the same as blocking and does not stop them contacting you.",
             "title": "Muting a member: what it does and does not do"
           },
           "reporting_content": {
-            "body": "If you see something that breaks the rules, looks like a scam or worries you, report it.\n\n## Report a listing\n\n1. Open the listing.\n2. Press **Report listing**.\n3. Choose a reason, for example **Safety concern** or **Spam or scam**.\n4. If you want to, add more in **Additional details**.\n5. Press **Submit Report**.\n\n## Report a post in the feed\n\n1. Press the three-dot menu on the post.\n2. Press **Report Post**.\n3. Describe the problem in **Reason**.\n4. Press **Submit Report**.\n\nReports go to your community's moderators, who review them.\n\n## Worried about a person?\n\nIf a member's behaviour worries you, or you feel unsafe, [contact your community](/contact) and explain what happened. You can also block the member.\n\n> If anyone is in immediate danger, contact your local emergency services first.",
+            "body": "If you see something that breaks the rules, looks like a scam or worries you, report it.\n\n## Report a listing\n\n1. Open the listing.\n2. Press **Report listing**.\n3. Choose a reason, for example **Safety concern** or **Spam or scam**.\n4. If you want to, add more in **Additional details**.\n5. Press **Submit report**.\n\n## Report a post in the feed\n\n1. Press the three-dot menu on the post.\n2. Press **Report post**.\n3. Describe the problem in **Reason**.\n4. Press **Submit report**.\n\nReports go to your community's moderators, who review them.\n\n## Worried about a person?\n\nIf a member's behaviour worries you, or you feel unsafe, [contact your community](/contact) and explain what happened. You can also block the member.\n\n> If anyone is in immediate danger, contact your local emergency services first.",
             "summary": "Press Report listing on a listing, or Report Post on a feed post. Your community reviews reports.",
             "title": "How do I report a listing or a post?"
           },

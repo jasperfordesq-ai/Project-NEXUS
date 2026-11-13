@@ -70,17 +70,17 @@ describe('SuggestedListingsWidget', () => {
     const { container } = render(<SuggestedListingsWidget listings={[]} />);
     // The widget returns null: no card, and none of the copy it would otherwise render.
     expect(container.querySelector(CARD)).toBeNull();
-    expect(screen.queryByText('Suggested For You')).toBeNull();
+    expect(screen.queryByText("Suggested for you")).toBeNull();
     expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
 
   it('renders the widget heading when listings are provided', async () => {
     const { SuggestedListingsWidget } = await import('./SuggestedListingsWidget');
     render(<SuggestedListingsWidget listings={[makeOffer()]} />);
-    expect(screen.getByText('Suggested For You')).toBeInTheDocument();
+    expect(screen.getByText("Suggested for you")).toBeInTheDocument();
   });
 
-  it('renders a "See All" link pointing to the tenant listings path', async () => {
+  it('renders a "See all" link pointing to the tenant listings path', async () => {
     const { SuggestedListingsWidget } = await import('./SuggestedListingsWidget');
     render(<SuggestedListingsWidget listings={[makeOffer()]} />);
     const link = screen.getByRole('link', { name: /see all/i });
@@ -141,7 +141,7 @@ describe('SuggestedListingsWidget', () => {
     expect(card).not.toBeNull();
     expect(card).toHaveClass('glass-card', 'p-4');
     // The heading and the listing row are nested INSIDE the card, not siblings of it.
-    expect(card).toContainElement(screen.getByText('Suggested For You'));
+    expect(card).toContainElement(screen.getByText("Suggested for you"));
     expect(card).toContainElement(screen.getByText('Guitar Lessons'));
   });
 

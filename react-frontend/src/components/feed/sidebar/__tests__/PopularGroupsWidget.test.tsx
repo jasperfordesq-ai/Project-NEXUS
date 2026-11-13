@@ -83,13 +83,13 @@ describe('PopularGroupsWidget', () => {
 
   it('renders nothing when groups array is empty', () => {
     render(<PopularGroupsWidget groups={[]} />);
-    expect(screen.queryByText('Popular Groups')).not.toBeInTheDocument();
-    expect(screen.queryByText('See All')).not.toBeInTheDocument();
+    expect(screen.queryByText("Popular groups")).not.toBeInTheDocument();
+    expect(screen.queryByText("See all")).not.toBeInTheDocument();
   });
 
   it('renders the Popular Groups heading when groups exist', () => {
     render(<PopularGroupsWidget groups={sampleGroups} />);
-    expect(screen.getByText('Popular Groups')).toBeInTheDocument();
+    expect(screen.getByText("Popular groups")).toBeInTheDocument();
   });
 
   it('displays all group names', () => {
@@ -126,7 +126,7 @@ describe('PopularGroupsWidget', () => {
 
   it('renders See All link pointing to /groups', () => {
     render(<PopularGroupsWidget groups={sampleGroups} />);
-    const seeAll = screen.getByText('See All');
+    const seeAll = screen.getByText("See all");
     expect(seeAll.closest('a')).toHaveAttribute('href', '/test/groups');
   });
 

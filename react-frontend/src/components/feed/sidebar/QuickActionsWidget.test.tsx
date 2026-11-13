@@ -102,7 +102,7 @@ describe('QuickActionsWidget', () => {
   it('renders the Host Event action when events feature is enabled', async () => {
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
     render(<QuickActionsWidget />);
-    expect(screen.getByText('Host Event')).toBeInTheDocument();
+    expect(screen.getByText("Host an event")).toBeInTheDocument();
   });
 
   // axe (9 Nov 2026): the -500 words on -500/10 tints measured 2.2–4.5:1 at
@@ -112,7 +112,7 @@ describe('QuickActionsWidget', () => {
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
     const { kindColour } = await import('@/components/feed/feedTypeColours');
     render(<QuickActionsWidget />);
-    const hostEvent = screen.getByText('Host Event').closest('a')!;
+    const hostEvent = screen.getByText("Host an event").closest('a')!;
     for (const cls of kindColour('event').label.split(' ')) expect(hostEvent.className).toContain(cls);
     const groups = screen.getByText('Groups').closest('a')!;
     for (const cls of kindColour('group').label.split(' ')) expect(groups.className).toContain(cls);
@@ -121,13 +121,13 @@ describe('QuickActionsWidget', () => {
   it('renders the Create Poll action when polls feature is enabled', async () => {
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
     render(<QuickActionsWidget />);
-    expect(screen.getByText('Create Poll')).toBeInTheDocument();
+    expect(screen.getByText("Create a poll")).toBeInTheDocument();
   });
 
   it('renders the Set Goal action when goals feature is enabled', async () => {
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
     render(<QuickActionsWidget />);
-    expect(screen.getByText('Set Goal')).toBeInTheDocument();
+    expect(screen.getByText("Set a goal")).toBeInTheDocument();
   });
 
   it('renders the Groups action when groups feature is enabled', async () => {
@@ -143,9 +143,9 @@ describe('QuickActionsWidget', () => {
     render(<QuickActionsWidget />);
     // Primary CTA always shows; secondary actions should be absent
     expect(screen.getByText('Create an offer or request')).toBeInTheDocument();
-    expect(screen.queryByText('Host Event')).not.toBeInTheDocument();
-    expect(screen.queryByText('Create Poll')).not.toBeInTheDocument();
-    expect(screen.queryByText('Set Goal')).not.toBeInTheDocument();
+    expect(screen.queryByText("Host an event")).not.toBeInTheDocument();
+    expect(screen.queryByText("Create a poll")).not.toBeInTheDocument();
+    expect(screen.queryByText("Set a goal")).not.toBeInTheDocument();
     expect(screen.queryByText('Groups')).not.toBeInTheDocument();
   });
 
@@ -154,7 +154,7 @@ describe('QuickActionsWidget', () => {
     render(<QuickActionsWidget />);
     // secondary actions render as <Link to="..."> from react-router-dom
     // which renders as <a href="..."> in the DOM
-    const hostEventEl = screen.getByText('Host Event');
+    const hostEventEl = screen.getByText("Host an event");
     const link = hostEventEl.closest('a');
     expect(link).not.toBeNull();
     expect(link!.getAttribute('href')).toBe('/test/events/create');
@@ -163,7 +163,7 @@ describe('QuickActionsWidget', () => {
   it('Goals link navigates to /goals', async () => {
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
     render(<QuickActionsWidget />);
-    const goalEl = screen.getByText('Set Goal');
+    const goalEl = screen.getByText("Set a goal");
     const link = goalEl.closest('a');
     expect(link).not.toBeNull();
     expect(link!.getAttribute('href')).toBe('/test/goals');
@@ -186,6 +186,6 @@ describe('QuickActionsWidget', () => {
     expect(card).toHaveClass('glass-card', 'p-4');
     // The primary CTA and the secondary grid are nested INSIDE the card.
     expect(card).toContainElement(screen.getByText('Create an offer or request'));
-    expect(card).toContainElement(screen.getByText('Host Event'));
+    expect(card).toContainElement(screen.getByText("Host an event"));
   });
 });

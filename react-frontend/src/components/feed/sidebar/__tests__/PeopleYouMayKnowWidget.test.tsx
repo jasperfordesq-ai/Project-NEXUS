@@ -82,13 +82,13 @@ describe('PeopleYouMayKnowWidget', () => {
 
   it('renders nothing when members array is empty', () => {
     render(<PeopleYouMayKnowWidget members={[]} />);
-    expect(screen.queryByText('People You May Know')).not.toBeInTheDocument();
-    expect(screen.queryByText('See All')).not.toBeInTheDocument();
+    expect(screen.queryByText("People you may know")).not.toBeInTheDocument();
+    expect(screen.queryByText("See all")).not.toBeInTheDocument();
   });
 
   it('renders People You May Know heading when members exist', () => {
     render(<PeopleYouMayKnowWidget members={sampleMembers} />);
-    expect(screen.getByText('People You May Know')).toBeInTheDocument();
+    expect(screen.getByText("People you may know")).toBeInTheDocument();
   });
 
   it('displays all member names', () => {
@@ -127,7 +127,7 @@ describe('PeopleYouMayKnowWidget', () => {
 
   it('See All link points to /members', () => {
     render(<PeopleYouMayKnowWidget members={sampleMembers} />);
-    const seeAll = screen.getByText('See All');
+    const seeAll = screen.getByText("See all");
     expect(seeAll.closest('a')).toHaveAttribute('href', '/test/members');
   });
 

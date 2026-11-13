@@ -306,7 +306,7 @@ describe('FeedCard', () => {
     render(<FeedCard {...defaultProps} item={item} currentUserId={99} />);
     const [desktopTrigger] = screen.getAllByLabelText('Post options');
     await user.click(desktopTrigger!);
-    expect(await screen.findByText('Report Post')).toBeInTheDocument();
+    expect(await screen.findByText("Report post")).toBeInTheDocument();
   });
 
   it('still offers delete on your own ordinary post', async () => {
@@ -314,7 +314,7 @@ describe('FeedCard', () => {
     render(<FeedCard {...defaultProps} currentUserId={10} />);
     const [desktopTrigger] = screen.getAllByLabelText('Post options');
     await user.click(desktopTrigger!);
-    expect(await screen.findByText('Delete Post')).toBeInTheDocument();
+    expect(await screen.findByText("Delete post")).toBeInTheDocument();
   });
 
   it('renders review with rating stars', () => {

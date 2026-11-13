@@ -7,7 +7,7 @@
  * Tests for StoriesBar component
  *
  * StoriesBar now fetches stories from the API (not from a friends prop).
- * It shows a "Your Story" create button and story circles for other users.
+ * It shows a "Your story" create button and story circles for other users.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -135,7 +135,7 @@ describe('StoriesBar', () => {
     expect(container.querySelector('.overflow-x-auto')).not.toBeInTheDocument();
   });
 
-  it('shows "Your Story" create button when authenticated', async () => {
+  it('shows "Your story" create button when authenticated', async () => {
     mockApiGet.mockResolvedValue({ success: true, data: [] });
     render(<StoriesBar />);
     await waitFor(() => {
@@ -152,11 +152,11 @@ describe('StoriesBar', () => {
     });
   });
 
-  it('renders "Your Story" label text', async () => {
+  it('renders "Your story" label text', async () => {
     mockApiGet.mockResolvedValue({ success: true, data: [] });
     render(<StoriesBar />);
     await waitFor(() => {
-      expect(screen.getByText('Your Story')).toBeInTheDocument();
+      expect(screen.getByText("Your story")).toBeInTheDocument();
     });
   });
 

@@ -85,7 +85,7 @@ vi.mock('@/components/compose/shared/CharacterCount', () => ({
 }));
 
 vi.mock('@/components/compose/shared/AiAssistButton', () => ({
-  AiAssistButton: () => <button type="button">AI Assist</button>,
+  AiAssistButton: () => <button type="button">AI assist</button>,
 }));
 
 vi.mock('@/components/location/PlaceAutocompleteInput', () => ({
@@ -135,7 +135,7 @@ describe('EventTab', () => {
   it('renders an accessible title input', () => {
     renderEventComponent(<EventTab {...defaultProps} />);
 
-    expect(screen.getByRole('textbox', { name: 'Event Title' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: "Event title" })).toBeInTheDocument();
   });
 
   it('does not restore a draft saved by another member or community (F-109)', () => {
@@ -145,7 +145,7 @@ describe('EventTab', () => {
 
     renderEventComponent(<EventTab {...defaultProps} />);
 
-    expect(screen.getByRole('textbox', { name: 'Event Title' })).toHaveValue('');
+    expect(screen.getByRole('textbox', { name: "Event title" })).toHaveValue('');
   });
 
   it("restores this member's own draft in this community (F-109)", () => {
@@ -153,7 +153,7 @@ describe('EventTab', () => {
 
     renderEventComponent(<EventTab {...defaultProps} />);
 
-    expect(screen.getByRole('textbox', { name: 'Event Title' })).toHaveValue('My own draft');
+    expect(screen.getByRole('textbox', { name: "Event title" })).toHaveValue('My own draft');
   });
 
   it('renders an accessible description textarea', () => {
@@ -178,7 +178,7 @@ describe('EventTab', () => {
   it('renders the AI assist action', () => {
     renderEventComponent(<EventTab {...defaultProps} />);
 
-    expect(screen.getByRole('button', { name: 'AI Assist' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: "AI assist" })).toBeInTheDocument();
   });
 
   it('renders an accessible location input', () => {
@@ -206,13 +206,13 @@ describe('EventTab', () => {
   it('disables Create Event until both a title and start date are present', () => {
     renderEventComponent(<EventTab {...defaultProps} />);
 
-    expect(screen.getByRole('button', { name: 'Create Event' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: "Create event" })).toBeDisabled();
   });
 
   it('does not call the create endpoint for an invalid empty draft', () => {
     renderEventComponent(<EventTab {...defaultProps} />);
 
-    expect(screen.getByRole('button', { name: 'Create Event' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: "Create event" })).toBeDisabled();
     expect(mockApi.post).not.toHaveBeenCalled();
   });
 

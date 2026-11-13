@@ -78,10 +78,10 @@ const stableT = (key: string, opts?: Record<string, string>) => {
     'compose.create_title': `Create ${opts?.type ?? ''}`,
     'compose.cancel': 'Cancel',
     'compose.post_button': 'Post',
-    'compose.create_poll': 'Create Poll',
+    'compose.create_poll': 'Create poll',
     'compose.create_listing': 'Create Listing',
-    'compose.create_event': 'Create Event',
-    'compose.create_goal': 'Create Goal',
+    'compose.create_event': "Create event",
+    'compose.create_goal': "Create goal",
     'compose.poll_question_placeholder': 'Ask a question...',
     'whats_on_your_mind': "What's on your mind?",
     'compose.emoji_search': 'Search emoji',
@@ -176,7 +176,7 @@ describe('ComposeHub', () => {
 
   it('opens to specified defaultTab', () => {
     render(<ComposeHub {...defaultProps} defaultTab="goal" />);
-    // "Create Goal" appears in both header and submit button
+    // "Create goal" appears in both header and submit button
     expect(screen.getAllByText(/Create Goal/).length).toBeGreaterThanOrEqual(1);
   });
 
@@ -221,7 +221,7 @@ describe('ComposeHub', () => {
     await user.click(goalTabs[0]);
 
     await waitFor(() => {
-      // "Create Goal" appears in both header and submit button
+      // "Create goal" appears in both header and submit button
       expect(screen.getAllByText(/Create Goal/).length).toBeGreaterThanOrEqual(1);
     });
   });
@@ -234,7 +234,7 @@ describe('ComposeHub', () => {
     await user.click(eventTabs[0]);
 
     await waitFor(() => {
-      // "Create Event" appears in both header and submit button
+      // "Create event" appears in both header and submit button
       expect(screen.getAllByText(/Create Event/).length).toBeGreaterThanOrEqual(1);
     });
   });

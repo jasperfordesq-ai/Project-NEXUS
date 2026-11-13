@@ -79,12 +79,12 @@ describe('UpcomingEventsWidget', () => {
 
   it('renders nothing when events array is empty', () => {
     render(<UpcomingEventsWidget events={[]} />);
-    expect(screen.queryByText('Upcoming Events')).not.toBeInTheDocument();
+    expect(screen.queryByText("Upcoming events")).not.toBeInTheDocument();
   });
 
   it('renders the Upcoming Events heading when events exist', () => {
     render(<UpcomingEventsWidget events={sampleEvents} />);
-    expect(screen.getByText('Upcoming Events')).toBeInTheDocument();
+    expect(screen.getByText("Upcoming events")).toBeInTheDocument();
   });
 
   it('renders event titles', () => {
@@ -116,7 +116,7 @@ describe('UpcomingEventsWidget', () => {
 
   it('renders See All link pointing to /events', () => {
     render(<UpcomingEventsWidget events={sampleEvents} />);
-    const seeAll = screen.getByText('See All');
+    const seeAll = screen.getByText("See all");
     expect(seeAll.closest('a')).toHaveAttribute('href', '/test/events');
   });
 
@@ -139,7 +139,7 @@ describe('UpcomingEventsWidget', () => {
   it('renders correct number of event links plus See All', () => {
     render(<UpcomingEventsWidget events={sampleEvents} />);
     const links = screen.getAllByRole('link');
-    // 2 event links + 1 "See All" link = 3 total
+    // 2 event links + 1 "See all" link = 3 total
     expect(links.length).toBe(3);
   });
 });

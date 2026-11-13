@@ -82,7 +82,7 @@ describe('TopCategoriesWidget', () => {
     const { container } = render(<TopCategoriesWidget categories={[]} />);
     // Component returns null for empty array
     expect(container.querySelector(CARD)).toBeNull();
-    expect(screen.queryByText('Top Categories')).toBeNull();
+    expect(screen.queryByText("Top categories")).toBeNull();
     expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
 
@@ -93,7 +93,7 @@ describe('TopCategoriesWidget', () => {
     expect(card).not.toBeNull();
     expect(card).toHaveClass('glass-card', 'p-4');
     // Heading and every category chip are nested INSIDE the card, not siblings of it.
-    expect(card).toContainElement(screen.getByText('Top Categories'));
+    expect(card).toContainElement(screen.getByText("Top categories"));
     screen.getAllByRole('link').forEach((link) => expect(card).toContainElement(link));
   });
 
@@ -144,7 +144,7 @@ describe('TopCategoriesWidget', () => {
     render(<TopCategoriesWidget categories={makeCategories()} />);
     // i18n key feed:sidebar.categories.title — English value expected
     const heading = screen.getByRole('heading', { level: 3 });
-    expect(heading).toHaveTextContent('Top Categories');
+    expect(heading).toHaveTextContent("Top categories");
   });
 
   it('renders all category links using tenantPath', async () => {

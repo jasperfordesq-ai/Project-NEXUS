@@ -128,7 +128,7 @@ describe('FriendsWidget', () => {
 
   it('renders See All link pointing to /connections', () => {
     render(<FriendsWidget friends={sampleFriends} />);
-    const seeAll = screen.getByText('See All');
+    const seeAll = screen.getByText("See all");
     expect(seeAll.closest('a')).toHaveAttribute('href', '/test/connections');
   });
 

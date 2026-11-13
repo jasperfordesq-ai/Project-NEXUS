@@ -93,7 +93,7 @@ describe('FriendsWidget', () => {
     expect(container.querySelector(CARD)).toContainElement(heading);
   });
 
-  it('renders a "See All" link pointing to the tenant connections path', async () => {
+  it('renders a "See all" link pointing to the tenant connections path', async () => {
     const { FriendsWidget } = await import('./FriendsWidget');
     render(<FriendsWidget friends={[makeFriend()]} />);
     const link = screen.getByRole('link', { name: /see all/i });

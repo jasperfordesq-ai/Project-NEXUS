@@ -98,9 +98,9 @@ describe('QuickActionsWidget', () => {
 
   it('renders secondary action links for enabled features', () => {
     render(<QuickActionsWidget />);
-    expect(screen.getByText('Host Event')).toBeInTheDocument();
-    expect(screen.getByText('Create Poll')).toBeInTheDocument();
-    expect(screen.getByText('Set Goal')).toBeInTheDocument();
+    expect(screen.getByText("Host an event")).toBeInTheDocument();
+    expect(screen.getByText("Create a poll")).toBeInTheDocument();
+    expect(screen.getByText("Set a goal")).toBeInTheDocument();
     expect(screen.getByText('Groups')).toBeInTheDocument();
   });
 
@@ -113,9 +113,9 @@ describe('QuickActionsWidget', () => {
     } as unknown as ReturnType<typeof useTenant>);
 
     render(<QuickActionsWidget />);
-    expect(screen.queryByText('Host Event')).not.toBeInTheDocument();
-    expect(screen.queryByText('Create Poll')).not.toBeInTheDocument();
-    expect(screen.queryByText('Set Goal')).not.toBeInTheDocument();
+    expect(screen.queryByText("Host an event")).not.toBeInTheDocument();
+    expect(screen.queryByText("Create a poll")).not.toBeInTheDocument();
+    expect(screen.queryByText("Set a goal")).not.toBeInTheDocument();
     expect(screen.queryByText('Groups')).not.toBeInTheDocument();
   });
 
@@ -127,9 +127,9 @@ describe('QuickActionsWidget', () => {
     } as unknown as ReturnType<typeof useTenant>);
 
     render(<QuickActionsWidget />);
-    expect(screen.getByText('Host Event')).toBeInTheDocument();
-    expect(screen.queryByText('Create Poll')).not.toBeInTheDocument();
-    expect(screen.queryByText('Set Goal')).not.toBeInTheDocument();
+    expect(screen.getByText("Host an event")).toBeInTheDocument();
+    expect(screen.queryByText("Create a poll")).not.toBeInTheDocument();
+    expect(screen.queryByText("Set a goal")).not.toBeInTheDocument();
     expect(screen.queryByText('Groups')).not.toBeInTheDocument();
   });
 

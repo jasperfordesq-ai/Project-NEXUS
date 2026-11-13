@@ -61,7 +61,7 @@ describe('ExternalShareModal', () => {
 
   it('renders the modal title', () => {
     render(<ExternalShareModal {...DEFAULT_PROPS} />);
-    expect(screen.getByText('Share Post')).toBeInTheDocument();
+    expect(screen.getByText("Share post")).toBeInTheDocument();
   });
 
   it('renders the Copy Link button', () => {
@@ -120,7 +120,7 @@ describe('ExternalShareModal', () => {
     render(<ExternalShareModal {...DEFAULT_PROPS} />);
     fireEvent.click(screen.getByRole('button', { name: /copy link/i }));
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalledWith('Failed to copy link');
+      expect(mockToast.error).toHaveBeenCalledWith("We couldn't copy the link. Please try again.");
     });
   });
 
@@ -212,6 +212,6 @@ describe('ExternalShareModal', () => {
   it('does not render modal content when isOpen=false', () => {
     render(<ExternalShareModal {...DEFAULT_PROPS} isOpen={false} />);
     // The modal title should not be in the document when closed
-    expect(screen.queryByText('Share Post')).not.toBeInTheDocument();
+    expect(screen.queryByText("Share post")).not.toBeInTheDocument();
   });
 });

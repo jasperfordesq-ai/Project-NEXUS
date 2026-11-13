@@ -173,13 +173,13 @@ describe('HashtagsDiscoveryPage', () => {
 
     render(<HashtagsDiscoveryPage />);
 
-    // Wait for the error state to render the "Try Again" button
+    // Wait for the error state to render the "Try again" button
     await waitFor(() => {
-      expect(screen.getByText('Try Again')).toBeInTheDocument();
+      expect(screen.getByText("Try again")).toBeInTheDocument();
     });
 
     // Find the retry button by text and click it (fireEvent.click triggers HeroUI onPress via virtual click)
-    const retryButton = screen.getByText('Try Again').closest('button')!;
+    const retryButton = screen.getByText("Try again").closest('button')!;
     fireEvent.click(retryButton);
 
     await waitFor(() => {
