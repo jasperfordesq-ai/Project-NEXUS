@@ -3567,30 +3567,6 @@
         }
       }
     },
-    "/api/v2/admin/config/native-app": {
-      "get": {
-        "summary": "GET /api/v2/admin/config/native-app",
-        "tags": [
-          "Admin Config"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation"
-          }
-        }
-      },
-      "put": {
-        "summary": "PUT /api/v2/admin/config/native-app",
-        "tags": [
-          "Admin Config"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation"
-          }
-        }
-      }
-    },
     "/api/v2/admin/system/cron-jobs": {
       "get": {
         "summary": "GET /api/v2/admin/system/cron-jobs",

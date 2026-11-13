@@ -1063,114 +1063,40 @@ class AdminConfigControllerTest extends TestCase
     }
 
     // ================================================================
-    // NATIVE APP CONFIG — GET /v2/admin/config/native-app
+    // NATIVE APP CONFIG — removed 13 Nov 2026 (E-127 / F-621)
     // ================================================================
 
-    public function test_get_native_app_config_returns_200_for_admin(): void
+    /**
+     * The settings form on the admin Native App page saved twenty-four keys
+     * that nothing read (two of them push credentials). The form, its
+     * readiness panel and its "build manifest" download were removed, and the
+     * endpoints with them, so nothing can store those values again.
+     */
+    public function test_native_app_settings_endpoints_no_longer_exist(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
             $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
         )]);
 
-        $response = $this->apiGet('/v2/admin/config/native-app');
+        $this->assertContains($this->apiGet('/v2/admin/config/native-app')->getStatusCode(), [404, 405]);
+        $this->assertContains(
+            $this->apiPut('/v2/admin/config/native-app', ['native_app_fcm_server_key' => 'pasted-secret'])->getStatusCode(),
+            [404, 405]
+        );
+        $this->assertContains($this->apiGet('/v2/admin/config/native-app/build-manifest')->getStatusCode(), [404, 405]);
 
-        $response->assertStatus(200);
-        $response->assertJsonStructure(['data']);
-    }
+        $this->assertSame(
+            0,
+            \Illuminate\Support\Facades\DB::table('tenant_settings')
+                ->where('tenant_id', $this->testTenantId)
+                ->where('setting_key', 'native_app_fcm_server_key')
+                ->count(),
+            'A pasted credential must not be stored by an endpoint nothing reads.'
+        );
 
-    public function test_native_app_config_tracks_tenant_branded_store_readiness(): void
-    {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
-            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
-        )]);
-
-        $update = $this->apiPut('/v2/admin/config/native-app', [
-            'native_app_name' => 'KISS Musterstadt',
-            'native_app_short_name' => 'KISS',
-            'native_app_bundle_id' => 'ch.kiss.musterstadt',
-            'native_app_package_name' => 'ch.kiss.musterstadt',
-            'native_app_push_enabled' => true,
-            'native_app_store_mode' => 'tenant_branded',
-            'native_app_build_profile' => 'production',
-            'native_app_ios_app_store_id' => '1234567890',
-            'native_app_android_play_store_id' => 'ch.kiss.musterstadt',
-            'native_app_marketing_url' => 'https://example.test/app',
-            'native_app_privacy_url' => 'https://example.test/privacy',
-            'native_app_support_url' => 'https://example.test/support',
-            'native_app_push_sender_id' => 'kiss-musterstadt',
-            'native_app_tenant_channel_prefix' => 'tenant-2-kiss',
-        ]);
-
-        $update->assertStatus(200);
-        $update->assertJsonPath('data.updated', true);
-
-        $response = $this->apiGet('/v2/admin/config/native-app');
-
-        $response->assertStatus(200);
-        $response->assertJsonPath('data.native_app.native_app_store_mode', 'tenant_branded');
-        $response->assertJsonPath('data.deployment_readiness.has_ios_identity', true);
-        $response->assertJsonPath('data.deployment_readiness.has_android_identity', true);
-        $response->assertJsonPath('data.deployment_readiness.has_store_metadata', true);
-        $response->assertJsonPath('data.deployment_readiness.push_routing_configured', true);
-        $response->assertJsonPath('data.deployment_readiness.tenant_branded_ready', true);
-
-        $manifest = $this->apiGet('/v2/admin/config/native-app/build-manifest');
-
-        $manifest->assertStatus(200);
-        $manifest->assertJsonPath('data.manifest_version', 'native-app-build-manifest-v1');
-        $manifest->assertJsonPath('data.app.name', 'KISS Musterstadt');
-        $manifest->assertJsonPath('data.app.bundle_id', 'ch.kiss.musterstadt');
-        $manifest->assertJsonPath('data.store.mode', 'tenant_branded');
-        $manifest->assertJsonPath('data.push.enabled', true);
-        $manifest->assertJsonPath('data.deployment_readiness.tenant_branded_ready', true);
-    }
-
-    public function test_native_app_tenant_branded_readiness_lists_missing_requirements(): void
-    {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
-            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
-        )]);
-
-        $update = $this->apiPut('/v2/admin/config/native-app', [
-            'native_app_store_mode' => 'tenant_branded',
-            'native_app_name' => 'KISS Musterstadt',
-            'native_app_bundle_id' => '',
-            'native_app_package_name' => '',
-            'native_app_ios_app_store_id' => '',
-            'native_app_android_play_store_id' => '',
-            'native_app_marketing_url' => '',
-            'native_app_privacy_url' => '',
-            'native_app_support_url' => '',
-            'native_app_push_enabled' => false,
-            'native_app_push_sender_id' => '',
-            'native_app_tenant_channel_prefix' => '',
-        ]);
-
-        $update->assertStatus(200);
-
-        $response = $this->apiGet('/v2/admin/config/native-app');
-
-        $response->assertStatus(200);
-        $response->assertJsonPath('data.deployment_readiness.tenant_branded_ready', false);
-        $response->assertJsonPath('data.deployment_readiness.missing_requirements', [
-            'ios_identity',
-            'android_identity',
-            'store_metadata',
-            'push_routing',
-        ]);
-
-        $manifest = $this->apiGet('/v2/admin/config/native-app/build-manifest');
-
-        $manifest->assertStatus(200);
-        $manifest->assertJsonPath('data.deployment_readiness.missing_requirements', [
-            'ios_identity',
-            'android_identity',
-            'store_metadata',
-            'push_routing',
-        ]);
+        // The one part of the page that is real is still served.
+        $this->apiGet('/v2/admin/config/native-app/install-stats')->assertStatus(200);
     }
 
     // ================================================================

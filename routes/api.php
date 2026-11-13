@@ -1991,9 +1991,6 @@ Route::get('/v2/admin/config/seo-verification-dns', [\App\Http\Controllers\Api\A
 Route::post('/v2/admin/config/sitemap-clear-cache', [\App\Http\Controllers\Api\AdminConfigController::class, 'clearSitemapCache']);
 Route::get('/v2/admin/config/languages', [\App\Http\Controllers\Api\AdminConfigController::class, 'getLanguageConfig']);
 Route::put('/v2/admin/config/languages', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateLanguageConfig']);
-Route::get('/v2/admin/config/native-app', [\App\Http\Controllers\Api\AdminConfigController::class, 'getNativeAppConfig']);
-Route::put('/v2/admin/config/native-app', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateNativeAppConfig']);
-Route::get('/v2/admin/config/native-app/build-manifest', [\App\Http\Controllers\Api\AdminConfigController::class, 'getNativeAppBuildManifest']);
 Route::get('/v2/admin/config/native-app/install-stats', [\App\Http\Controllers\Api\AdminConfigController::class, 'getNativeAppInstallStats']);
 // ── Admin: Landing Page Configuration ──────────────────────────────────────
 Route::get('/v2/admin/config/landing-page', [\App\Http\Controllers\Api\AdminConfigController::class, 'getLandingPageConfig']);
