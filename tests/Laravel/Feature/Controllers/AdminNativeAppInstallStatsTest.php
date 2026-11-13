@@ -143,6 +143,19 @@ class AdminNativeAppInstallStatsTest extends TestCase
         $response->assertJsonMissing(['display_name' => 'Ghost Ofanothertenant']);
     }
 
+    public function test_a_phone_recorded_here_for_another_communitys_member_is_not_counted(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $outsider = User::factory()->forTenant(self::OTHER_TENANT_ID)->create();
+        $this->registerDevice($outsider->id, $this->testTenantId);
+        Sanctum::actingAs($admin);
+
+        $this->apiGet(self::ENDPOINT)
+            ->assertOk()
+            ->assertJsonPath('data.tenant.members_with_app', 0)
+            ->assertJsonPath('data.tenant.native_devices', 0);
+    }
+
     public function test_tenant_block_carries_figures_only_never_a_list_of_members(): void
     {
         // The list is its own, paged endpoint. Keeping names out of this block

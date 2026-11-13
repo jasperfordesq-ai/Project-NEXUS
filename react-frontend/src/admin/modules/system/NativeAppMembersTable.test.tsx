@@ -134,6 +134,32 @@ describe('NativeAppMembersTable', () => {
     );
   });
 
+  it('steps back to the last page that still has members, instead of looking empty', async () => {
+    // Admin is on page 2 of 26 members; one signs out; Refresh. The server now
+    // has a single page. Showing "nobody has the app" here would be untrue.
+    const user = userEvent.setup();
+    mockAdminSettings.getNativeAppMembers.mockResolvedValue(page([aoife, conor], 26));
+    render(<NativeAppMembersTable />);
+    await waitFor(() => expect(screen.getByText('Aoife Brennan')).toBeInTheDocument());
+
+    mockAdminSettings.getNativeAppMembers.mockResolvedValue(page([conor], 26));
+    await user.click(screen.getByRole('button', { name: /^(go to page )?2$/i }));
+    await waitFor(() =>
+      expect(mockAdminSettings.getNativeAppMembers).toHaveBeenLastCalledWith({ q: undefined, page: 2, per_page: 25 }),
+    );
+
+    mockAdminSettings.getNativeAppMembers.mockImplementation(({ page: asked }: { page: number }) =>
+      Promise.resolve(asked === 1 ? page([aoife], 25) : page([], 25)),
+    );
+    await user.click(screen.getByRole('button', { name: /refresh/i }));
+
+    await waitFor(() =>
+      expect(mockAdminSettings.getNativeAppMembers).toHaveBeenLastCalledWith({ q: undefined, page: 1, per_page: 25 }),
+    );
+    await waitFor(() => expect(screen.getByText('Aoife Brennan')).toBeInTheDocument());
+    expect(screen.queryByText('No members are signed in on the app yet.')).not.toBeInTheDocument();
+  });
+
   it('says so plainly when nobody has the app yet', async () => {
     mockAdminSettings.getNativeAppMembers.mockResolvedValue(page([]));
     render(<NativeAppMembersTable />);

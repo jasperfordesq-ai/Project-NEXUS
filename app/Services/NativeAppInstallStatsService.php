@@ -260,12 +260,15 @@ class NativeAppInstallStatsService
                 . 'd.created_at AS first_at, d.updated_at AS last_at, 1 AS has_phone, 1 AS live'
             );
 
+        // Live = the member's OWN session: family, member and community must
+        // all match, exactly as TokenService checks before honouring a token.
         $signIns = DB::table('refresh_session_activity as a')
             ->where('a.from_phone_app', 1)
             ->selectRaw(
                 'a.user_id, a.tenant_id, NULL AS platform, a.created_at AS first_at, a.last_activity_at AS last_at, '
                 . '0 AS has_phone, CASE WHEN EXISTS ('
                 . 'SELECT 1 FROM refresh_token_sessions r WHERE r.family_hash = a.family_hash '
+                . 'AND r.user_id = a.user_id AND r.tenant_id = a.tenant_id '
                 . 'AND r.revoked_at IS NULL AND r.family_expires_at > ?'
                 . ') THEN 1 ELSE 0 END AS live',
                 [now()]

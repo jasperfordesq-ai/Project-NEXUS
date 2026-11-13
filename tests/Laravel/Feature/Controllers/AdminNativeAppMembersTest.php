@@ -159,6 +159,60 @@ class AdminNativeAppMembersTest extends TestCase
         $response->assertJsonMissing(['display_name' => 'Ghost Ofanothertenant']);
     }
 
+    public function test_a_phone_recorded_here_for_another_communitys_member_is_not_listed(): void
+    {
+        // The phone table has no foreign key tying its community to the
+        // member's. A row that says "this community" for an account that
+        // belongs to another one must not put that account's name and email in
+        // front of this community's admin: the member has to belong here too.
+        $this->actingAsAdmin();
+        $outsider = $this->member(
+            ['first_name' => 'Ghost', 'last_name' => 'Ofanothertenant', 'email' => 'ghost@example.test'],
+            self::OTHER_TENANT_ID
+        );
+        $this->registerDevice($outsider->id, $this->testTenantId);
+
+        $response = $this->apiGet(self::ENDPOINT)->assertOk();
+
+        $response->assertJsonPath('data', []);
+        $response->assertJsonPath('meta.total', 0);
+        $response->assertJsonMissing(['email' => 'ghost@example.test']);
+    }
+
+    public function test_someone_elses_live_session_does_not_make_a_signed_out_member_look_signed_in(): void
+    {
+        // "Live" must be the member's OWN session, as TokenService checks it
+        // (family, member and community together) — not merely any live session
+        // that happens to carry the same family reference.
+        $this->actingAsAdmin();
+        $signedOut = $this->member();
+        $someoneElse = $this->member();
+        $family = hash('sha256', 'shared-family-' . uniqid('', true));
+
+        \Illuminate\Support\Facades\DB::table('refresh_session_activity')->insert([
+            'family_hash' => $family,
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $signedOut->id,
+            'last_activity_at' => now(),
+            'from_phone_app' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        \Illuminate\Support\Facades\DB::table('refresh_token_sessions')->insert([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $someoneElse->id,
+            'family_hash' => $family,
+            'jti_hash' => hash('sha256', 'jti-' . uniqid('', true)),
+            'issued_at' => now(),
+            'expires_at' => now()->addDays(7),
+            'family_expires_at' => now()->addDays(30),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->assertSame([], $this->listedIds());
+    }
+
     public function test_a_member_with_two_phones_is_one_row_showing_both(): void
     {
         // Review focus 4.

@@ -108,8 +108,19 @@ export function NativeAppMembersTable() {
       const res = await adminSettings.getNativeAppMembers({ q: search || undefined, page, per_page: PAGE_SIZE });
       if (request !== latestRequest.current) return;
       const rows = Array.isArray(res.data) ? (res.data as unknown as NativeAppMember[]) : [];
+      const totalNow = res.meta?.total ?? rows.length;
+
+      // The list can shrink while the admin is on a later page (a member signs
+      // out, then Refresh). An empty page past the end is not "nobody has the
+      // app": step back to the last page that still has members and ask again.
+      const lastPage = Math.max(1, Math.ceil(totalNow / PAGE_SIZE));
+      if (rows.length === 0 && page > lastPage) {
+        setPage(lastPage);
+        return;
+      }
+
       setMembers(rows);
-      setTotal(res.meta?.total ?? rows.length);
+      setTotal(totalNow);
       setFailed(res.success === false);
     } catch {
       if (request !== latestRequest.current) return;
