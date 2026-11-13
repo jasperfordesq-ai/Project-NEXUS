@@ -40120,7 +40120,7 @@ export default interface Resources {
       "social_prescribing": "Health & wellbeing referrals",
       "strategic_plan": "Our strategic direction",
       "timebanking_guide": "How timebanking works",
-      "timebanking_listings": "Offers & requests",
+      "timebanking_listings": "Lend a hand, or ask for one",
       "venues": "Local venues that welcome your member pass",
       "volunteering": "Find opportunities & log your hours",
       "wallet": "Time credit balance & history",
