@@ -6,6 +6,9 @@
   "hours_short": "{{count}} g",
   "not_available": "Niedostępne",
   "error_title": "Coś poszło nie tak",
+  "couldnt_load_title": "Nie udało się nam teraz tego wczytać",
+  "couldnt_load_text": "Spróbuj ponownie za chwilę. Jeśli to się powtarza, sprawdź połączenie z internetem.",
+  "couldnt_load_retry": "Spróbuj ponownie",
   "nav": {
     "dashboard": "Panel",
     "feed": "Aktualności",

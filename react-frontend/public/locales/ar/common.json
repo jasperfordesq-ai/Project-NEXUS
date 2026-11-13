@@ -6,6 +6,9 @@
   "hours_short": "{{count}} س",
   "not_available": "غير متاح",
   "error_title": "حدث خطأ ما",
+  "couldnt_load_title": "تعذّر علينا تحميل هذا الآن",
+  "couldnt_load_text": "يُرجى المحاولة مرة أخرى بعد قليل. إذا تكرّر ذلك، تحقّق من اتصالك بالإنترنت.",
+  "couldnt_load_retry": "حاول مرة أخرى",
   "nav": {
     "dashboard": "لوحة التحكم",
     "feed": "الخلاصة",

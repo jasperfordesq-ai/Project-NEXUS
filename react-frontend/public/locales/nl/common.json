@@ -6,6 +6,9 @@
   "hours_short": "{{count}} u",
   "not_available": "Niet beschikbaar",
   "error_title": "Er is iets misgegaan",
+  "couldnt_load_title": "We konden dit nu even niet laden",
+  "couldnt_load_text": "Probeer het zo nog eens. Blijft het gebeuren, controleer dan de internetverbinding.",
+  "couldnt_load_retry": "Opnieuw proberen",
   "nav": {
     "dashboard": "Dashboard",
     "feed": "Feed",

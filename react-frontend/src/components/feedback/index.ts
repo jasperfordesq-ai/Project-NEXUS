@@ -5,6 +5,7 @@
 
 export { LoadingScreen } from './LoadingScreen';
 export { EmptyState, type EmptyStateActionConfig } from './EmptyState';
+export { LoadError, type LoadErrorProps } from './LoadError';
 export { ErrorBoundary } from './ErrorBoundary';
 export { FeatureErrorBoundary } from './FeatureErrorBoundary';
 export { SessionExpiredModal } from './SessionExpiredModal';

@@ -6,6 +6,9 @@
   "hours_short": "{{count}} h",
   "not_available": "Nicht verfügbar",
   "error_title": "Etwas ist schief gelaufen",
+  "couldnt_load_title": "Das konnten wir gerade nicht laden",
+  "couldnt_load_text": "Bitte versuchen Sie es gleich noch einmal. Wenn es weiter passiert, prüfen Sie Ihre Internetverbindung.",
+  "couldnt_load_retry": "Erneut versuchen",
   "nav": {
     "dashboard": "Dashboard",
     "feed": "Feed",

@@ -6,6 +6,9 @@
   "hours_short": "{{count}}h",
   "not_available": "Not available",
   "error_title": "Something went wrong",
+  "couldnt_load_title": "We couldn't load this just now",
+  "couldnt_load_text": "Please try again in a moment. If it keeps happening, check your internet connection.",
+  "couldnt_load_retry": "Try again",
   "nav": {
     "dashboard": "Dashboard",
     "feed": "Feed",

@@ -38914,6 +38914,9 @@ export default interface Resources {
       "toggle_preferences": "Toggle preference cookies"
     },
     "copy_code": "Copy code",
+    "couldnt_load_retry": "Try again",
+    "couldnt_load_text": "Please try again in a moment. If it keeps happening, check your internet connection.",
+    "couldnt_load_title": "We couldn't load this just now",
     "coupon": {
       "applied": "Coupon applied",
       "apply": "Apply",

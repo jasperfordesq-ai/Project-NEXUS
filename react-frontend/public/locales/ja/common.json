@@ -6,6 +6,9 @@
   "hours_short": "{{count}}時間",
   "not_available": "利用できません",
   "error_title": "何か問題が発生しました",
+  "couldnt_load_title": "ただいま読み込めませんでした",
+  "couldnt_load_text": "しばらくしてからもう一度お試しください。続く場合は、インターネット接続をご確認ください。",
+  "couldnt_load_retry": "もう一度試す",
   "nav": {
     "dashboard": "ダッシュボード",
     "feed": "フィード",

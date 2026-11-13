@@ -6,6 +6,9 @@
   "hours_short": "{{count}}h",
   "not_available": "Non disponibile",
   "error_title": "Qualcosa è andato storto",
+  "couldnt_load_title": "Non siamo riusciti a caricarlo in questo momento",
+  "couldnt_load_text": "Riprova tra un momento. Se continua a succedere, controlla la connessione a internet.",
+  "couldnt_load_retry": "Riprova",
   "nav": {
     "dashboard": "Pannello di controllo",
     "feed": "Feed",

@@ -6,6 +6,9 @@
   "hours_short": "{{count}} u",
   "not_available": "Níl ar fáil",
   "error_title": "Chuaigh rud éigin mícheart",
+  "couldnt_load_title": "Níor éirigh linn é seo a lódáil díreach anois",
+  "couldnt_load_text": "Bain triail eile as i gceann nóiméid. Má leanann sé ar aghaidh, seiceáil do nasc idirlín.",
+  "couldnt_load_retry": "Bain triail eile as",
   "nav": {
     "dashboard": "Painéal",
     "feed": "Fotha",
