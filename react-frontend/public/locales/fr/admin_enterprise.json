@@ -261,8 +261,6 @@
     "related_broker_panel": "Panneau de courtier",
     "related_federation": "Fédération",
     "related_federation_desc": "Partenariats entrants, approbation automatique, catégories partagées et limites de partenariat.",
-    "related_image_settings": "Paramètres des images",
-    "related_image_settings_desc": "Formats, tailles et comportement de conversion WebP par défaut.",
     "related_module_configuration": "Configuration des modules",
     "related_module_configuration_desc": "Activez ou désactivez des fonctionnalités et réglez le fonctionnement de chacune, y compris vos langues et les limites des offres et des demandes.",
     "related_module_configuration_dest": "Configuration des modules",

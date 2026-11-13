@@ -261,8 +261,6 @@
     "related_broker_panel": "Broker-Panel",
     "related_federation": "Föderation",
     "related_federation_desc": "Eingehende Partnerschaften, automatische Genehmigung, gemeinsame Kategorien und Partnerschaftsbeschränkungen.",
-    "related_image_settings": "Bildeinstellungen",
-    "related_image_settings_desc": "Standardformate, -größen und WebP-Konvertierungsverhalten.",
     "related_module_configuration": "Modulkonfiguration",
     "related_module_configuration_desc": "Schalten Sie Funktionen ein oder aus und legen Sie fest, wie jede funktioniert, einschließlich Ihrer Sprachen und der Grenzen für Angebote und Gesuche.",
     "related_module_configuration_dest": "Modulkonfiguration",

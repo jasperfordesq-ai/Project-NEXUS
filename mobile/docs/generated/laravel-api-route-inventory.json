@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2841,
-  "api_route_rows": 2806,
-  "distinct_api_paths": 2339,
+  "total_registered_routes": 2839,
+  "api_route_rows": 2804,
+  "distinct_api_paths": 2338,
   "route_source_fingerprint": {
-    "digest": "a999d3cd6351dd0b9ed7a08e2bdc062cce4af94e967b08db5acf681f696c2131",
+    "digest": "6164b353192cca253f6c7c81aaee103a7eb411ce443cb8f3cf9c34fe9d885712",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "7063e1f42f0de59c19f4f34bb4a6e7c013473282194f71a48e468158077a85a3"
+        "sha256": "4acf1c1564a15a640db8617b1056e2ed53293cffc78ca95c84fefb54d6e4423d"
       },
       {
         "file": "routes/channels.php",
@@ -1240,10 +1240,6 @@
       "GET"
     ],
     "/api/v2/admin/config/identity/bulk": [
-      "PUT"
-    ],
-    "/api/v2/admin/config/images": [
-      "GET",
       "PUT"
     ],
     "/api/v2/admin/config/jobs": [

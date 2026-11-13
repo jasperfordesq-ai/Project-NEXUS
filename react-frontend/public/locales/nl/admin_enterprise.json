@@ -261,8 +261,6 @@
     "related_broker_panel": "Makelaarspaneel",
     "related_federation": "Federatie",
     "related_federation_desc": "Inkomende partnerschappen, automatische goedkeuring, gedeelde categorieën en partnerschapslimieten.",
-    "related_image_settings": "Beeldinstellingen",
-    "related_image_settings_desc": "Standaardformaten, formaten en WebP-conversiegedrag.",
     "related_module_configuration": "Moduleconfiguratie",
     "related_module_configuration_desc": "Zet functies aan of uit en stel in hoe elke functie werkt, inclusief uw talen en de limieten voor aanbod en verzoeken.",
     "related_module_configuration_dest": "Moduleconfiguratie",

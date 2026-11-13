@@ -6,7 +6,7 @@
 /**
  * Batch render tests for System admin modules (extra, separate from SystemModules.test.tsx):
  * - ActivityLog, AdminSettings, BlogRestore, CronJobLogs, CronJobs,
- *   CronJobSettings, CronJobSetup, ImageSettings, NativeApp,
+ *   CronJobSettings, CronJobSetup, NativeApp,
  *   SeedGenerator, TestRunner, WebpConverter
  *
  * Smoke tests only — verify each component renders without crashing.
@@ -112,8 +112,6 @@ vi.mock('../../api/adminApi', () => ({
   adminSettings: {
     get: vi.fn().mockResolvedValue({ success: true, data: {} }),
     update: vi.fn().mockResolvedValue({ success: true }),
-    getImageSettings: vi.fn().mockResolvedValue({ success: true, data: {} }),
-    updateImageSettings: vi.fn().mockResolvedValue({ success: true }),
     getNativeAppSettings: vi.fn().mockResolvedValue({ success: true, data: {} }),
     updateNativeAppSettings: vi.fn().mockResolvedValue({ success: true }),
     getNativeAppInstallStats: vi.fn().mockResolvedValue({ success: true, data: null }),
@@ -229,17 +227,6 @@ import { CronJobSetup } from '../system/CronJobSetup';
 describe('CronJobSetup', () => {
   it('renders without crashing', () => {
     const { container } = render(<W><CronJobSetup /></W>);
-    expect(container.querySelector('div')).toBeTruthy();
-  });
-});
-
-// ─── ImageSettings ──────────────────────────────────────────────────────────
-
-import { ImageSettings } from '../system/ImageSettings';
-
-describe('ImageSettings', () => {
-  it('renders without crashing', () => {
-    const { container } = render(<W><ImageSettings /></W>);
     expect(container.querySelector('div')).toBeTruthy();
   });
 });

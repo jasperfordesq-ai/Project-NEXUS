@@ -170,20 +170,6 @@ class AdminConfigController extends BaseApiController
         'feed_algo_min_score' => '0.01',
     ];
 
-    private const IMAGE_DEFAULTS = [
-        'image_max_size_mb' => '10',
-        'image_max_width' => '2048',
-        'image_max_height' => '2048',
-        'image_auto_webp' => '1',
-        'image_auto_resize' => '1',
-        'image_strip_exif' => '1',
-        'image_webp_quality' => '85',
-        'image_thumbnail_width' => '300',
-        'image_thumbnail_height' => '300',
-        'image_lazy_loading' => '1',
-        'image_serving_enabled' => '1',
-    ];
-
     private const SEO_DEFAULTS = [
         'seo_title_suffix' => '',
         'seo_meta_description' => '',
@@ -2162,83 +2148,6 @@ class AdminConfigController extends BaseApiController
 
         if (empty($updated)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.no_recognized_feed_settings'), null, 422);
-        }
-
-        $this->redisCache->delete('tenant_bootstrap', $tenantId);
-
-        return $this->respondWithData(['updated' => true, 'keys_updated' => $updated]);
-    }
-
-    // =========================================================================
-    // Image Config
-    // =========================================================================
-
-    /** GET /api/v2/admin/config/image */
-    public function getImageConfig(): JsonResponse
-    {
-        $this->requireAdmin();
-        $tenantId = TenantContext::getId();
-
-        $stored = $this->readSettingsByPrefix($tenantId, 'image_');
-
-        $tenantRow = DB::selectOne("SELECT configuration FROM tenants WHERE id = ?", [$tenantId]);
-        $legacyConfig = [];
-        if ($tenantRow && !empty($tenantRow->configuration)) {
-            $config = json_decode($tenantRow->configuration, true) ?: [];
-            $legacyConfig = $config['image_optimization'] ?? [];
-        }
-
-        $imageConfig = [];
-        foreach (self::IMAGE_DEFAULTS as $key => $defaultValue) {
-            $rawValue = $stored[$key] ?? $defaultValue;
-            if (in_array($key, ['image_auto_webp', 'image_auto_resize', 'image_strip_exif', 'image_lazy_loading', 'image_serving_enabled'], true)) {
-                $imageConfig[$key] = (bool) (int) $rawValue;
-            } else {
-                $imageConfig[$key] = (int) $rawValue;
-            }
-        }
-
-        if (!empty($legacyConfig)) {
-            $imageConfig['legacy'] = $legacyConfig;
-        }
-
-        return $this->respondWithData(['tenant_id' => $tenantId, 'images' => $imageConfig]);
-    }
-
-    /** PUT /api/v2/admin/config/image */
-    public function updateImageConfig(): JsonResponse
-    {
-        $adminId = $this->requireAdmin();
-        $tenantId = TenantContext::getId();
-        $input = $this->getAllInput();
-
-        if (empty($input)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.request_body_empty'), null, 422);
-        }
-
-        $this->ensureTenantSettingsTable();
-
-        $updated = [];
-        foreach ($input as $key => $value) {
-            if (!array_key_exists($key, self::IMAGE_DEFAULTS)) continue;
-
-            if ($key === 'image_max_size_mb' && ((int) $value < 1 || (int) $value > 50)) {
-                return $this->respondWithError('VALIDATION_ERROR', __('api.max_file_size_range'), $key, 422);
-            }
-            if ($key === 'image_webp_quality' && ((int) $value < 50 || (int) $value > 100)) {
-                return $this->respondWithError('VALIDATION_ERROR', __('api.webp_quality_range'), $key, 422);
-            }
-            if (in_array($key, ['image_max_width', 'image_max_height', 'image_thumbnail_width', 'image_thumbnail_height'], true) && ((int) $value < 50 || (int) $value > 10000)) {
-                return $this->respondWithError('VALIDATION_ERROR', __('api.dimension_range', ['key' => $key]), $key, 422);
-            }
-
-            $storeValue = is_bool($value) ? ($value ? '1' : '0') : (string) $value;
-            $this->upsertSetting($tenantId, $key, $storeValue, $adminId, is_bool($value) ? 'boolean' : 'integer');
-            $updated[] = $key;
-        }
-
-        if (empty($updated)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.no_recognized_image_settings'), null, 422);
         }
 
         $this->redisCache->delete('tenant_bootstrap', $tenantId);

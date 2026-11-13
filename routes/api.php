@@ -1984,8 +1984,6 @@ Route::put('/v2/admin/config/feed-algorithm', [\App\Http\Controllers\Api\AdminCo
 Route::get('/v2/admin/config/algorithms', [\App\Http\Controllers\Api\AdminConfigController::class, 'getAlgorithmConfig']);
 Route::put('/v2/admin/config/algorithm/{area}', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateAlgorithmConfig']);
 Route::get('/v2/admin/config/algorithm-health', [\App\Http\Controllers\Api\AdminConfigController::class, 'getAlgorithmHealth']);
-Route::get('/v2/admin/config/images', [\App\Http\Controllers\Api\AdminConfigController::class, 'getImageConfig']);
-Route::put('/v2/admin/config/images', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateImageConfig']);
 Route::get('/v2/admin/config/seo', [\App\Http\Controllers\Api\AdminConfigController::class, 'getSeoConfig']);
 Route::put('/v2/admin/config/seo', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateSeoConfig']);
 Route::get('/v2/admin/config/sitemap-stats', [\App\Http\Controllers\Api\AdminConfigController::class, 'getSitemapStats']);

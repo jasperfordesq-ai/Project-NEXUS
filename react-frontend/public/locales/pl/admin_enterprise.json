@@ -261,8 +261,6 @@
     "related_broker_panel": "Panel brokerski",
     "related_federation": "Federacja",
     "related_federation_desc": "Partnerstwa przychodzące, automatyczne zatwierdzanie, współdzielone kategorie i limity partnerstwa.",
-    "related_image_settings": "Ustawienia obrazu",
-    "related_image_settings_desc": "Domyślne formaty, rozmiary i zachowanie konwersji WebP.",
     "related_module_configuration": "Konfiguracja modułu",
     "related_module_configuration_desc": "Włączaj i wyłączaj funkcje oraz ustawiaj, jak działa każda z nich, w tym języki i limity ofert i próśb.",
     "related_module_configuration_dest": "Konfiguracja modułu",

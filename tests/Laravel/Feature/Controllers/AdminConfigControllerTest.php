@@ -1029,23 +1029,6 @@ class AdminConfigControllerTest extends TestCase
     }
 
     // ================================================================
-    // IMAGE CONFIG — GET /v2/admin/config/images
-    // ================================================================
-
-    public function test_get_image_config_returns_200_for_admin(): void
-    {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
-            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
-        )]);
-
-        $response = $this->apiGet('/v2/admin/config/images');
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure(['data']);
-    }
-
-    // ================================================================
     // SEO CONFIG — GET /v2/admin/config/seo
     // ================================================================
 

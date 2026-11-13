@@ -32,7 +32,7 @@ final class SpaRouteSegments
         'email-deliverability', 'email-settings', 'enterprise', 'events', 'exchanges', 'explore', 'faq',
         'features', 'federation', 'feed', 'feed-algorithm', 'gamification', 'geocode-groups', 'goals',
         'group-bookings', 'group-exchanges', 'group-locations', 'group-ranking', 'group-types', 'groups',
-        'help', 'ideation', 'image-settings', 'impact-report', 'impact-summary', 'install-app', 'insurance',
+        'help', 'ideation', 'impact-report', 'impact-summary', 'install-app', 'insurance',
         'integrations', 'jobs', 'join', 'kb', 'landing-page', 'leaderboard', 'legal', 'legal-documents',
         'linked-accounts', 'listings', 'listings-digest', 'login', 'make-it-yours', 'marketplace', 'match-approvals', 'match-debug', 'matches',
         'matching-diagnostic', 'me', 'member-premium', 'members', 'menus', 'messages', 'moderation',

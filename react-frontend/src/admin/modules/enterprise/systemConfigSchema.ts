@@ -162,12 +162,6 @@ export const RELATED_ADMIN_PAGES: RelatedAdminPage[] = [
     destLabelKey: 'enterprise.related_translation_settings',
   },
   {
-    labelKey: 'enterprise.related_image_settings',
-    descriptionKey: 'enterprise.related_image_settings_desc',
-    href: '/admin/image-settings',
-    destLabelKey: 'enterprise.related_image_settings',
-  },
-  {
     labelKey: 'enterprise.related_federation',
     descriptionKey: 'enterprise.related_federation_desc',
     href: '/partner-timebanks',

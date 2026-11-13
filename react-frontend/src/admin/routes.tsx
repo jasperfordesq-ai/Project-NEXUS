@@ -290,7 +290,6 @@ const RegistrationPolicySettings = lazy(() => import('./modules/system/Registrat
 const TestRunner = lazy(() => import('./modules/system/TestRunner'));
 const SeedGenerator = lazy(() => import('./modules/system/SeedGenerator'));
 const WebpConverter = lazy(() => import('./modules/system/WebpConverter'));
-const ImageSettings = lazy(() => import('./modules/system/ImageSettings'));
 const NativeApp = lazy(() => import('./modules/system/NativeApp'));
 const BlogRestore = lazy(() => import('./modules/system/BlogRestore'));
 
@@ -618,7 +617,6 @@ export function AdminRoutes() {
         <Route path="webp-converter" element={<Lazy><WebpConverter /></Lazy>} />
         <Route path="blog-restore" element={<Lazy><BlogRestore /></Lazy>} />
       </Route>
-      <Route path="image-settings" element={<Lazy><ImageSettings /></Lazy>} />
       <Route path="native-app" element={<Lazy><NativeApp /></Lazy>} />
 
       {/* ─── COMMUNITY TOOLS ─── */}

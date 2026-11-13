@@ -261,8 +261,6 @@
     "related_broker_panel": "Broker Panel",
     "related_federation": "Federation",
     "related_federation_desc": "Inbound partnerships, auto-approval, shared categories, and partnership limits.",
-    "related_image_settings": "Image settings",
-    "related_image_settings_desc": "Default formats, sizes, and WebP conversion behaviour.",
     "related_module_configuration": "Module configuration",
     "related_module_configuration_desc": "Switch features on or off and set how each one works, including your languages and the limits on offers and requests.",
     "related_module_configuration_dest": "Module Configuration",

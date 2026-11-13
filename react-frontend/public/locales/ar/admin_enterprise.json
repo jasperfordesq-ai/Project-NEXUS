@@ -261,8 +261,6 @@
     "related_broker_panel": "لوحة الوسيط",
     "related_federation": "الاتحاد",
     "related_federation_desc": "الشراكات الواردة والموافقة التلقائية والفئات المشتركة وحدود الشراكة.",
-    "related_image_settings": "إعدادات الصورة",
-    "related_image_settings_desc": "التنسيقات والأحجام وسلوك تحويل WebP الافتراضي.",
     "related_module_configuration": "تكوين الوحدة النمطية",
     "related_module_configuration_desc": "شغّل الميزات أو أوقفها وحدّد طريقة عمل كل منها، بما في ذلك لغاتك وحدود العروض والطلبات.",
     "related_module_configuration_dest": "تكوين الوحدة",

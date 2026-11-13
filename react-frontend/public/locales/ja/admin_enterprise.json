@@ -261,8 +261,6 @@
     "related_broker_panel": "ブローカーパネル",
     "related_federation": "フェデレーション",
     "related_federation_desc": "インバウンドパートナーシップ、自動承認、共有カテゴリ、パートナーシップ制限。",
-    "related_image_settings": "画像設定",
-    "related_image_settings_desc": "デフォルトの形式、サイズ、WebP 変換動作。",
     "related_module_configuration": "モジュール構成",
     "related_module_configuration_desc": "機能のオン・オフを切り替え、それぞれの動作を設定します。言語や、提供とリクエストの上限もここで決めます。",
     "related_module_configuration_dest": "モジュール構成",

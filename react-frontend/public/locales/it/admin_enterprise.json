@@ -261,8 +261,6 @@
     "related_broker_panel": "Pannello degli intermediari",
     "related_federation": "Federazione",
     "related_federation_desc": "Partnership in entrata, approvazione automatica, categorie condivise e limiti di partnership.",
-    "related_image_settings": "Impostazioni dell'immagine",
-    "related_image_settings_desc": "Formati, dimensioni e comportamento di conversione WebP predefiniti.",
     "related_module_configuration": "Configurazione del modulo",
     "related_module_configuration_desc": "Attiva o disattiva le funzioni e imposta come funziona ciascuna, comprese le tue lingue e i limiti per offerte e richieste.",
     "related_module_configuration_dest": "Configurazione del modulo",

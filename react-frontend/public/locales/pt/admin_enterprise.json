@@ -261,8 +261,6 @@
     "related_broker_panel": "Painel do Corretor",
     "related_federation": "Federação",
     "related_federation_desc": "Parcerias de entrada, aprovação automática, categorias compartilhadas e limites de parceria.",
-    "related_image_settings": "Configurações de imagem",
-    "related_image_settings_desc": "Formatos, tamanhos e comportamento de conversão WebP padrão.",
     "related_module_configuration": "Configuração do módulo",
     "related_module_configuration_desc": "Ative ou desative funcionalidades e defina como cada uma funciona, incluindo os seus idiomas e os limites das ofertas e pedidos.",
     "related_module_configuration_dest": "Configuração do módulo",

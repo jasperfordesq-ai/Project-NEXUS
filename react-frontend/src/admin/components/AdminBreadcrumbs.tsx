@@ -159,7 +159,6 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   tests: 'breadcrumbs.tests',
   'seed-generator': 'breadcrumbs.seed_generator',
   'webp-converter': 'breadcrumbs.webp_converter',
-  'image-settings': 'breadcrumbs.image_settings',
   'native-app': 'breadcrumbs.native_app',
   'blog-restore': 'breadcrumbs.blog_restore',
 

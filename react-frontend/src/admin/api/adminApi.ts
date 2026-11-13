@@ -2484,9 +2484,6 @@ export const adminSettings = {
   updateAlgorithmConfig: (area: string, data: Record<string, unknown>) => api.put<{ success: boolean }>(`/v2/admin/config/algorithm/${area}`, data),
   getAlgorithmHealth: () => api.get<Record<string, unknown>>('/v2/admin/config/algorithm-health'),
 
-  getImageSettings: () => api.get<Record<string, unknown>>('/v2/admin/config/images'),
-  updateImageSettings: (data: Record<string, unknown>) => api.put<{ success: boolean }>('/v2/admin/config/images', data),
-
   getSeoSettings: () => api.get<Record<string, unknown>>('/v2/admin/config/seo'),
   updateSeoSettings: (data: Record<string, unknown>) => api.put<{ success: boolean }>('/v2/admin/config/seo', data),
   getSitemapStats: () => api.get<{ sitemap_url: string; total_urls: number; content_types: Record<string, number> }>('/v2/admin/config/sitemap-stats'),

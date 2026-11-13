@@ -3519,30 +3519,6 @@
         }
       }
     },
-    "/api/v2/admin/config/images": {
-      "get": {
-        "summary": "GET /api/v2/admin/config/images",
-        "tags": [
-          "Admin Config"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation"
-          }
-        }
-      },
-      "put": {
-        "summary": "PUT /api/v2/admin/config/images",
-        "tags": [
-          "Admin Config"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation"
-          }
-        }
-      }
-    },
     "/api/v2/admin/config/seo": {
       "get": {
         "summary": "GET /api/v2/admin/config/seo",
