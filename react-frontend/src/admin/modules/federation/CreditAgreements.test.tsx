@@ -369,6 +369,100 @@ describe('CreditAgreements', () => {
     });
   });
 
+  // ─── Server-shaped rows (regressions, November 2026) ───────────────────────
+  // The fixtures above describe a shape the server did not send. These use the
+  // real one: FederationCreditService::listAgreementsStatic() and
+  // AdminFederationCreditAgreementsController::partners().
+
+  it('names the other community as the partner when THEY proposed the agreement', async () => {
+    mockApi.get
+      .mockResolvedValueOnce({
+        success: true,
+        data: [{
+          id: 32,
+          from_tenant_id: 7, from_tenant_name: 'Hilltop Skills Exchange', from_tenant_slug: 'hilltop',
+          to_tenant_id: 2, to_tenant_name: 'hOUR', to_tenant_slug: 'hour-timebank',
+          partner_tenant: { id: 7, name: 'Hilltop Skills Exchange', slug: 'hilltop' },
+          exchange_rate: 1, max_monthly_credits: 50,
+          credits_sent: 0, credits_received: 0, current_balance: 0,
+          status: 'pending', awaiting: 'you', created_at: '2026-11-09 10:00:00',
+        }],
+      })
+      .mockResolvedValue(emptySuccess);
+    const { CreditAgreements } = await import('./CreditAgreements');
+    render(<CreditAgreements />);
+
+    await waitFor(() => expect(screen.getByText('Hilltop Skills Exchange')).toBeInTheDocument());
+    // Our own community is never listed as its own partner.
+    expect(screen.queryByText('hOUR')).not.toBeInTheDocument();
+  });
+
+  it('does not offer Approve when our side has already approved, and says who it is waiting for', async () => {
+    mockApi.get
+      .mockResolvedValueOnce({ success: true, data: [makeAgreement({ status: 'pending', awaiting: 'partner' })] })
+      .mockResolvedValue(emptySuccess);
+    const { CreditAgreements } = await import('./CreditAgreements');
+    render(<CreditAgreements />);
+
+    await waitFor(() => screen.getByText('Cork Timebank'));
+
+    const approveBtn = screen.queryAllByRole('button').find((b) =>
+      b.getAttribute('aria-label')?.toLowerCase().includes('approv')
+    );
+    expect(approveBtn).toBeUndefined();
+    expect(screen.getByText(/waiting for .*to approve/i)).toBeInTheDocument();
+  });
+
+  it('shows a dash, not a made-up 0, when the server could not work a figure out', async () => {
+    mockApi.get
+      .mockResolvedValueOnce({
+        success: true,
+        data: [makeAgreement({ current_balance: null, credits_sent: null, credits_received: null })],
+      })
+      .mockResolvedValue(emptySuccess);
+    const { CreditAgreements } = await import('./CreditAgreements');
+    render(<CreditAgreements />);
+
+    await waitFor(() => screen.getByText('Cork Timebank'));
+    expect(screen.getByText('— / —')).toBeInTheDocument();
+    expect(screen.queryByText('+0')).not.toBeInTheDocument();
+  });
+
+  it('shows the real sent / received / balance figures', async () => {
+    mockApi.get
+      .mockResolvedValueOnce({
+        success: true,
+        data: [makeAgreement({ current_balance: 2.5, credits_sent: 3, credits_received: 5.5 })],
+      })
+      .mockResolvedValue(emptySuccess);
+    const { CreditAgreements } = await import('./CreditAgreements');
+    render(<CreditAgreements />);
+
+    await waitFor(() => screen.getByText('Cork Timebank'));
+    expect(screen.getByText('3 / 5.5')).toBeInTheDocument();
+    expect(screen.getByText('+2.5')).toBeInTheDocument();
+  });
+
+  it('surfaces the server\'s own reason when creating or changing an agreement is refused', async () => {
+    mockApi.get
+      .mockResolvedValueOnce({ success: true, data: [makeAgreement({ id: 99, status: 'pending', awaiting: 'you' })] })
+      .mockResolvedValue(emptySuccess);
+    mockApi.post.mockResolvedValue({ success: false, error: 'An active partnership with this community is required.' });
+
+    const { CreditAgreements } = await import('./CreditAgreements');
+    render(<CreditAgreements />);
+    await waitFor(() => screen.getByText('Cork Timebank'));
+
+    const approveBtn = screen.getAllByRole('button').find((b) =>
+      b.getAttribute('aria-label')?.toLowerCase().includes('approv')
+    );
+    fireEvent.click(approveBtn!);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('An active partnership with this community is required.');
+    });
+  });
+
   it('shows balance view when balances tab is clicked', async () => {
     mockApi.get.mockResolvedValue(emptySuccess);
     mockAdminFederation.getCreditBalances.mockResolvedValue({

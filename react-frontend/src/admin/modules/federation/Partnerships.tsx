@@ -71,6 +71,10 @@ interface Partnership {
   updated_at?: string;
   requested_at?: string;
   notes?: string;
+  /** True when OUR community sent the request; false when we received it. */
+  is_initiator?: boolean;
+  /** A pending request the other community answered with different terms. */
+  has_counter_proposal?: boolean;
 }
 
 interface PartnershipDetail extends Partnership {
@@ -143,6 +147,10 @@ export function Partnerships() {
 
   const [items, setItems] = useState<Partnership[]>([]);
   const [loading, setLoading] = useState(true);
+  // A failed load is not "no partnerships": it gets its own state so the page
+  // never tells a community with partners that it has none.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [acceptCounterTarget, setAcceptCounterTarget] = useState<Partnership | null>(null);
   const [terminateTarget, setTerminateTarget] = useState<Partnership | null>(null);
   const [approveTarget, setApproveTarget] = useState<Partnership | null>(null);
   const [rejectTarget, setRejectTarget] = useState<Partnership | null>(null);
@@ -196,10 +204,14 @@ export function Partnerships() {
         } else if (payload && typeof payload === 'object' && 'data' in payload) {
           setItems((payload as { data: Partnership[] }).data || []);
         }
+        setLoadFailed(false);
+      } else if (!res.success) {
+        setLoadFailed(true);
       }
     } catch {
       if (!controller.signal.aborted) {
         setItems([]);
+        setLoadFailed(true);
       }
     }
     if (!controller.signal.aborted) {
@@ -213,8 +225,11 @@ export function Partnerships() {
   }, [loadData]);
 
   // ─── Filtered items ───
+  // "Incoming" means requests we RECEIVED and can answer. Requests we sent are
+  // also `pending`, but the answer is the other community's to give — listing
+  // them here offered an Approve button the server then refused.
   const incomingRequests = useMemo(() =>
-    items.filter(p => p.status === 'pending'),
+    items.filter(p => p.status === 'pending' && p.is_initiator !== true),
     [items]
   );
 
@@ -234,13 +249,37 @@ export function Partnerships() {
         toast.success(t('federation.partnership_approved'));
         loadData();
       } else {
-        toast.error(t('federation.failed_to_approve_partnership'));
+        // admin-i18n-ignore: localized server message — FederationPartnershipService
+        // refusals are __() keys, guarded by FederationPartnershipErrorLocalisationTest.
+        toast.error(res.error || t('federation.failed_to_approve_partnership'));
       }
     } catch {
       toast.error(t('federation.failed_to_approve_partnership'));
     } finally {
       setActionLoading(false);
       setApproveTarget(null);
+    }
+  };
+
+  // The other community answered our request with different terms; accepting
+  // them makes the partnership live at the level they proposed.
+  const confirmAcceptCounter = async () => {
+    if (!acceptCounterTarget) return;
+    setActionLoading(true);
+    try {
+      const res = await adminFederation.acceptCounterProposal(acceptCounterTarget.id);
+      if (res.success) {
+        toast.success(t('federation.partnership_approved'));
+        loadData();
+      } else {
+        // admin-i18n-ignore: localized server message — see confirmApprove.
+        toast.error(res.error || t('federation.failed_to_approve_partnership'));
+      }
+    } catch {
+      toast.error(t('federation.failed_to_approve_partnership'));
+    } finally {
+      setActionLoading(false);
+      setAcceptCounterTarget(null);
     }
   };
 
@@ -253,7 +292,8 @@ export function Partnerships() {
         toast.success(t('federation.partnership_rejected'));
         loadData();
       } else {
-        toast.error(t('federation.failed_to_reject_partnership'));
+        // admin-i18n-ignore: localized server message — see confirmApprove.
+        toast.error(res.error || t('federation.failed_to_reject_partnership'));
       }
     } catch {
       toast.error(t('federation.failed_to_reject_partnership'));
@@ -273,7 +313,8 @@ export function Partnerships() {
         setTerminateTarget(null);
         loadData();
       } else {
-        toast.error(t('federation.failed_to_terminate_partnership'));
+        // admin-i18n-ignore: localized server message — see confirmApprove.
+        toast.error(res.error || t('federation.failed_to_terminate_partnership'));
       }
     } catch {
       toast.error(t('federation.failed_to_terminate_partnership'));
@@ -292,7 +333,8 @@ export function Partnerships() {
         setReactivateTarget(null);
         loadData();
       } else {
-        toast.error(t('federation.failed_to_reactivate_partnership'));
+        // admin-i18n-ignore: localized server message — see confirmApprove.
+        toast.error(res.error || t('federation.failed_to_reactivate_partnership'));
       }
     } catch {
       toast.error(t('federation.failed_to_reactivate_partnership'));
@@ -304,7 +346,8 @@ export function Partnerships() {
   // ─── Bulk actions ───
   const selectedPendingItems = useMemo(() => {
     if (selectedKeys.size === 0) return [];
-    return filteredItems.filter(p => selectedKeys.has(String(p.id)) && p.status === 'pending');
+    // Only requests we received can be approved or rejected by us.
+    return filteredItems.filter(p => selectedKeys.has(String(p.id)) && p.status === 'pending' && p.is_initiator !== true);
   }, [selectedKeys, filteredItems]);
 
   const handleBulkApprove = async () => {
@@ -365,7 +408,8 @@ export function Partnerships() {
         counterModal.onClose();
         loadData();
       } else {
-        toast.error(t('federation.failed_to_counter_propose'));
+        // admin-i18n-ignore: localized server message — see confirmApprove.
+        toast.error(res.error || t('federation.failed_to_counter_propose'));
       }
     } catch {
       toast.error(t('federation.failed_to_counter_propose'));
@@ -447,7 +491,10 @@ export function Partnerships() {
         setDetailPartnership(prev => prev ? { ...prev, [`${key}_enabled`]: value ? 1 : 0 } : null);
         toast.success(t('federation.permissions_updated'));
       } else {
-        toast.error(t('federation.failed_to_update_permissions'));
+        // admin-i18n-ignore: localized server message — the usual refusal is
+        // "not available at this partnership level", which the generic
+        // "Failed to update permissions" hid completely.
+        toast.error(res.error || t('federation.failed_to_update_permissions'));
       }
     } catch {
       toast.error(t('federation.failed_to_update_permissions'));
@@ -470,7 +517,21 @@ export function Partnerships() {
     },
     {
       key: 'status', label: t('federation.label_status'),
-      render: (item) => <StatusBadge status={item.status} />,
+      render: (item) => (
+        <div className="flex flex-col items-start gap-1">
+          <StatusBadge status={item.status} />
+          {/* For a pending request, say which way it is going — the answer
+              is ours to give only when we received it. */}
+          {item.status === 'pending' && typeof item.is_initiator === 'boolean' && (
+            <span className="text-xs text-muted">
+              {item.is_initiator ? t('federation.outgoing_request') : t('federation.incoming_request')}
+            </span>
+          )}
+          {item.has_counter_proposal && (
+            <Chip size="sm" variant="soft" color="warning">{t('federation.label_counter_proposal')}</Chip>
+          )}
+        </div>
+      ),
     },
     {
       key: 'created_at', label: t('federation.col_since'), sortable: true,
@@ -497,13 +558,21 @@ export function Partnerships() {
               aria-label={t('federation.label_partnership_actions')}
               onAction={(key) => {
                 if (key === 'approve') setApproveTarget(item);
+                else if (key === 'accept_counter') setAcceptCounterTarget(item);
                 else if (key === 'reject') setRejectTarget(item);
                 else if (key === 'terminate') setTerminateTarget(item);
                 else if (key === 'counter') openCounterProposal(item);
                 else if (key === 'reactivate') setReactivateTarget(item);
               }}
               items={[
-                ...(item.status === 'pending' ? [{ key: 'approve' }, { key: 'reject' }, { key: 'counter' }] : []),
+                // A request we RECEIVED: approve, reject, or send back different terms.
+                ...(item.status === 'pending' && item.is_initiator !== true
+                  ? [{ key: 'approve' }, { key: 'reject' }, { key: 'counter' }]
+                  : []),
+                // A request we SENT that came back with different terms: accept them.
+                ...(item.status === 'pending' && item.is_initiator === true && item.has_counter_proposal
+                  ? [{ key: 'accept_counter' }]
+                  : []),
                 ...(item.status === 'active' ? [{ key: 'terminate' }] : []),
                 ...(item.status === 'suspended' ? [{ key: 'reactivate' }] : []),
               ]}
@@ -512,6 +581,11 @@ export function Partnerships() {
                 if (action.key === 'approve') return (
                   <DropdownItem key="approve" id="approve" startContent={<CheckCircle size={14} />} className="text-success">
                     {t('federation.label_approve')}
+                  </DropdownItem>
+                );
+                if (action.key === 'accept_counter') return (
+                  <DropdownItem key="accept_counter" id="accept_counter" startContent={<CheckCircle size={14} />} className="text-success">
+                    {t('federation.accept_counter_proposal')}
                   </DropdownItem>
                 );
                 if (action.key === 'reject') return (
@@ -543,6 +617,26 @@ export function Partnerships() {
   ];
 
   // ─── Render ───
+  if (!loading && loadFailed && items.length === 0) {
+    return (
+      <div>
+        <PageHeader
+          title={t('federation.partnerships_title')}
+          description={t('federation.partnerships_desc')}
+          actions={<Button variant="tertiary" startContent={<RefreshCw size={16} />} onPress={loadData}>{t('federation.refresh')}</Button>}
+        />
+        <div role="alert">
+          <EmptyState
+            icon={Handshake}
+            title={t('federation.failed_to_load_partnerships')}
+            actionLabel={t('federation.refresh')}
+            onAction={loadData}
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (!loading && items.length === 0) {
     return (
       <div>
@@ -650,6 +744,20 @@ export function Partnerships() {
           onClose={() => setApproveTarget(null)}
           onConfirm={confirmApprove}
           title={t('federation.approve_partnership')}
+          message={t('federation.confirm_approve_partnership')}
+          confirmLabel={t('federation.approve')}
+          confirmColor="warning"
+          isLoading={actionLoading}
+        />
+      )}
+
+      {/* Accept the other community's suggested terms */}
+      {acceptCounterTarget && (
+        <ConfirmModal
+          isOpen={!!acceptCounterTarget}
+          onClose={() => setAcceptCounterTarget(null)}
+          onConfirm={confirmAcceptCounter}
+          title={t('federation.accept_counter_proposal')}
           message={t('federation.confirm_approve_partnership')}
           confirmLabel={t('federation.approve')}
           confirmColor="warning"
@@ -882,6 +990,11 @@ export function Partnerships() {
                           {detailPartnership.counter_proposal_message && (
                             <div className="mt-2">
                               <p className="text-sm text-muted">{t('federation.label_counter_proposal')}</p>
+                              {detailPartnership.counter_proposed_level ? (
+                                <Chip size="sm" variant="soft" color="warning" className="mt-1">
+                                  {t(LEVEL_LABEL_KEYS[detailPartnership.counter_proposed_level] || 'federation.level_discovery')}
+                                </Chip>
+                              ) : null}
                               <p className="text-sm mt-1 rounded-lg bg-warning/10 p-3">{detailPartnership.counter_proposal_message}</p>
                             </div>
                           )}

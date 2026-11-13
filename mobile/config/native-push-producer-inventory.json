@@ -160,9 +160,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminFederationCreditAgreementsController.php:260:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminFederationCreditAgreementsController.php:272:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminFederationCreditAgreementsController.php",
-            "line": 260,
+            "line": 272,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $admin->id",

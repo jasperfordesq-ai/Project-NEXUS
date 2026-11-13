@@ -54,6 +54,23 @@ class FederationPartnershipService
             return ['success' => false, 'error' => __('api.federation.partnership_target_not_accepting')];
         }
 
+        // The two partnership preferences on the Network settings page. They
+        // were saved from 2026-07 but read by nothing until November 2026, so
+        // "Accept partnership requests: off" still let requests through and
+        // the limit limited nothing.
+        $targetPolicy = self::partnershipPolicy($targetTenantId);
+        if (!$targetPolicy['allow_inbound']) {
+            return ['success' => false, 'error' => __('api.federation.partnership_target_not_accepting')];
+        }
+        if ($targetPolicy['max'] !== null && self::countActivePartnerships($targetTenantId) >= $targetPolicy['max']) {
+            return ['success' => false, 'error' => __('api.federation.partnership_target_not_accepting')];
+        }
+        $ownPolicy = self::partnershipPolicy($requestingTenantId);
+        if ($ownPolicy['max'] !== null
+            && (self::countActivePartnerships($requestingTenantId) + self::countOutgoingPending($requestingTenantId)) >= $ownPolicy['max']) {
+            return ['success' => false, 'error' => __('api.federation.partnership_limit_reached', ['limit' => $ownPolicy['max']])];
+        }
+
         // Application-level guard: check canonical_pair to prevent concurrent A→B / B→A duplicates
         // before the DB-level unique index on canonical_pair can fire.
         $guardPair = min($requestingTenantId, $targetTenantId) . '-' . max($requestingTenantId, $targetTenantId);
@@ -165,6 +182,12 @@ class FederationPartnershipService
         $tenantId = TenantContext::getId();
         if ((int) $partnership['partner_tenant_id'] !== $tenantId) {
             return ['success' => false, 'error' => __('api.federation.partnership_only_receiver_can_approve')];
+        }
+
+        // The approver's own partnership limit (Network settings).
+        $policy = self::partnershipPolicy($tenantId);
+        if ($policy['max'] !== null && self::countActivePartnerships($tenantId) >= $policy['max']) {
+            return ['success' => false, 'error' => __('api.federation.partnership_limit_reached', ['limit' => $policy['max']])];
         }
 
         $defaultPermissions = self::getDefaultPermissions($partnership['federation_level']);
@@ -694,6 +717,66 @@ class FederationPartnershipService
             Log::error('FederationPartnershipService::updatePermissions error: ' . $e->getMessage());
             return ['success' => false, 'error' => __('api.federation.partnership_permissions_update_failed')];
         }
+    }
+
+    // =========================================================================
+    // PARTNERSHIP PREFERENCES (tenants.configuration.federation)
+    // =========================================================================
+
+    /**
+     * A community's own partnership preferences, as saved on the Network
+     * settings page.
+     *
+     * - allow_inbound: whether other communities may ask to partner. Defaults
+     *   to true when never saved.
+     * - max: the most partnerships the community wants at once, or null when
+     *   it has never saved one. The settings page DISPLAYS 10 for a community
+     *   that has saved nothing, but an unsaved default is not a decision — it
+     *   is not enforced, so no existing community loses anything by this
+     *   becoming real.
+     *
+     * Deliberately not wrapped in a catch: a failure to read the policy must
+     * refuse the request (the callers' controllers answer with an error), not
+     * quietly behave as though no policy existed.
+     *
+     * @return array{allow_inbound: bool, max: int|null}
+     */
+    public static function partnershipPolicy(int $tenantId): array
+    {
+        $row = DB::selectOne("SELECT configuration FROM tenants WHERE id = ?", [$tenantId]);
+        $config = json_decode((string) ($row->configuration ?? ''), true);
+        $federation = (is_array($config) && is_array($config['federation'] ?? null)) ? $config['federation'] : [];
+
+        $allowInbound = !array_key_exists('allow_inbound_partnerships', $federation)
+            || filter_var($federation['allow_inbound_partnerships'], FILTER_VALIDATE_BOOLEAN);
+
+        $max = null;
+        if (isset($federation['max_partnerships']) && is_numeric($federation['max_partnerships'])
+            && (int) $federation['max_partnerships'] > 0) {
+            $max = (int) $federation['max_partnerships'];
+        }
+
+        return ['allow_inbound' => (bool) $allowInbound, 'max' => $max];
+    }
+
+    /** Live partnerships a community is party to, whichever side started them. */
+    private static function countActivePartnerships(int $tenantId): int
+    {
+        return (int) DB::table('federation_partnerships')
+            ->where('status', 'active')
+            ->where(function ($query) use ($tenantId): void {
+                $query->where('tenant_id', $tenantId)->orWhere('partner_tenant_id', $tenantId);
+            })
+            ->count();
+    }
+
+    /** Requests a community has sent that are still waiting for an answer. */
+    private static function countOutgoingPending(int $tenantId): int
+    {
+        return (int) DB::table('federation_partnerships')
+            ->where('status', 'pending')
+            ->where('tenant_id', $tenantId)
+            ->count();
     }
 
     // =========================================================================

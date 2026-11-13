@@ -20,6 +20,7 @@ const { mockAdminFederation } = vi.hoisted(() => ({
     getPartnershipAuditLog: vi.fn(),
     getPartnershipStats: vi.fn(),
     counterProposePartnership: vi.fn(),
+    acceptCounterProposal: vi.fn(),
     updatePartnershipPermissions: vi.fn(),
   },
 }));
@@ -462,5 +463,94 @@ describe('Partnerships', () => {
       expect(screen.getByText('Alpha Community')).toBeInTheDocument();
       expect(screen.getByText('Beta Network')).toBeInTheDocument();
     });
+  });
+
+  // ─── Which side of a request we are on (regressions, November 2026) ────────
+  // The server marks each row with is_initiator. Before that the page offered
+  // Approve / Reject on requests the community itself had SENT, which the
+  // server refused, and counted them under "Incoming requests".
+
+  const buttonTexts = () => screen.getAllByRole('button').map((b) => b.textContent?.trim());
+
+  it('offers Approve, Reject and different terms on a request we RECEIVED', async () => {
+    mockAdminFederation.getPartnerships.mockResolvedValue({
+      success: true,
+      data: [{ ...makePartnership({ id: 12, tenant_id: 7, partner_tenant_id: 2, status: 'pending', partner_name: 'Hilltop' }), is_initiator: false }],
+    });
+    const { Partnerships } = await import('./Partnerships');
+    render(<Partnerships />);
+
+    await waitFor(() => screen.getByText('Hilltop'));
+    expect(buttonTexts()).toEqual(expect.arrayContaining(['Approve', 'Reject', 'Suggest different terms']));
+    expect(screen.getByText('Incoming Request')).toBeInTheDocument();
+  });
+
+  it('offers no Approve or Reject on a request we SENT, and labels it as outgoing', async () => {
+    mockAdminFederation.getPartnerships.mockResolvedValue({
+      success: true,
+      data: [{ ...makePartnership({ id: 13, tenant_id: 2, partner_tenant_id: 8, status: 'pending', partner_name: 'Harbour' }), is_initiator: true }],
+    });
+    const { Partnerships } = await import('./Partnerships');
+    render(<Partnerships />);
+
+    await waitFor(() => screen.getByText('Harbour'));
+    const texts = buttonTexts();
+    expect(texts).not.toContain('Approve');
+    expect(texts).not.toContain('Reject');
+    expect(texts).not.toContain('Suggest different terms');
+    expect(texts).not.toContain('Accept their terms');
+    expect(screen.getByText('Outgoing Request')).toBeInTheDocument();
+  });
+
+  it('lets us accept the terms the other community sent back', async () => {
+    mockAdminFederation.getPartnerships.mockResolvedValue({
+      success: true,
+      data: [{
+        ...makePartnership({ id: 14, tenant_id: 2, partner_tenant_id: 8, status: 'pending', partner_name: 'Harbour' }),
+        is_initiator: true,
+        has_counter_proposal: true,
+      }],
+    });
+    mockAdminFederation.acceptCounterProposal.mockResolvedValue({ success: true });
+    const { Partnerships } = await import('./Partnerships');
+    render(<Partnerships />);
+
+    await waitFor(() => screen.getByText('Harbour'));
+    fireEvent.click(screen.getByRole('button', { name: 'Accept their terms' }));
+    fireEvent.click(await screen.findByText('confirm-modal-action'));
+
+    await waitFor(() => expect(mockAdminFederation.acceptCounterProposal).toHaveBeenCalledWith(14));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+  });
+
+  it('shows the server\'s own reason when an approval is refused', async () => {
+    mockAdminFederation.getPartnerships.mockResolvedValue({
+      success: true,
+      data: [{ ...makePartnership({ id: 15, tenant_id: 7, partner_tenant_id: 2, status: 'pending', partner_name: 'Hilltop' }), is_initiator: false }],
+    });
+    mockAdminFederation.approvePartnership.mockResolvedValue({
+      success: false,
+      error: 'Your community has reached its partnership limit of 3.',
+    });
+    const { Partnerships } = await import('./Partnerships');
+    render(<Partnerships />);
+
+    await waitFor(() => screen.getByText('Hilltop'));
+    fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
+    fireEvent.click(await screen.findByText('confirm-modal-action'));
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('Your community has reached its partnership limit of 3.');
+    });
+  });
+
+  it('says the list could not be loaded instead of claiming there are no partnerships', async () => {
+    mockAdminFederation.getPartnerships.mockResolvedValue({ success: false, error: 'boom' });
+    const { Partnerships } = await import('./Partnerships');
+    render(<Partnerships />);
+
+    const state = await screen.findByTestId('empty-state');
+    expect(state).toHaveTextContent(/could not be loaded/i);
+    expect(state).not.toHaveTextContent('No partnerships');
   });
 });

@@ -1304,6 +1304,7 @@ return [
     'credit_agreement_update_failed'       => 'Failed to update credit agreement',
     'credit_agreement_invalid_transition' => 'This action is not allowed from the agreement\'s current status.',
     'credit_agreement_partnership_required' => 'An active partnership with this community is required before the agreement can be activated.',
+    'credit_agreement_already_exists' => 'A credit agreement with this community already exists.',
     'transactions_fetch_failed'            => 'Failed to load transactions',
     'external_user_fallback'               => 'External User',
     'external_partner_fallback'            => 'External Partner',
@@ -2292,6 +2293,7 @@ return [
         // untranslated toast for every non-English admin.
         'partnership_target_not_accepting'        => 'That community is not accepting federation requests.',
         'partnership_request_already_exists'      => 'A partnership request already exists between these two communities.',
+        'partnership_limit_reached' => 'Your community has reached its partnership limit (:limit). You can raise it in your partnering settings.',
         'partnership_already_exists'              => 'A partnership already exists.',
         'partnership_request_already_pending'     => 'A partnership request is already pending.',
         'partnership_terminated_cannot_rerequest' => 'Terminated partnerships cannot be requested again.',

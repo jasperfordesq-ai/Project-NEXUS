@@ -99,8 +99,12 @@ export default function PartnersOverviewPage() {
         setSettings(unwrap<FederationSystemControls>(settingsRes.value.data));
       }
       if (profileRes.status === 'fulfilled' && profileRes.value.success && profileRes.value.data) {
-        const profile = unwrap<{ description?: string; is_visible?: boolean }>(profileRes.value.data);
-        setProfilePublished(Boolean(profile?.description) && profile?.is_visible !== false);
+        // The listing's text lives under federation_profile (see
+        // AdminFederationController::profile()). Until November 2026 this read
+        // a top-level `description` the endpoint never sent, so the "publish
+        // your listing" step could never tick however complete the listing was.
+        const profile = unwrap<{ federation_profile?: { description?: string | null } | null }>(profileRes.value.data);
+        setProfilePublished(Boolean(profile?.federation_profile?.description?.trim()));
       }
       setLoading(false);
     })();

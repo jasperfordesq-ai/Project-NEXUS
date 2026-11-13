@@ -3010,6 +3010,7 @@ Route::post('/v2/admin/federation/partnerships/{id}/reactivate', [\App\Http\Cont
 Route::post('/v2/admin/federation/partnerships/request', [\App\Http\Controllers\Api\AdminFederationController::class, 'requestPartnership']);
 Route::get('/v2/admin/federation/partnerships/{id}', [\App\Http\Controllers\Api\AdminFederationController::class, 'partnershipDetail']);
 Route::post('/v2/admin/federation/partnerships/{id}/counter-propose', [\App\Http\Controllers\Api\AdminFederationController::class, 'counterProposePartnership']);
+Route::post('/v2/admin/federation/partnerships/{id}/accept-counter', [\App\Http\Controllers\Api\AdminFederationController::class, 'acceptCounterProposal']);
 Route::put('/v2/admin/federation/partnerships/{id}/permissions', [\App\Http\Controllers\Api\AdminFederationController::class, 'updatePartnershipPermissions']);
 Route::get('/v2/admin/federation/partnerships/{id}/audit-log', [\App\Http\Controllers\Api\AdminFederationController::class, 'partnershipAuditLog']);
 Route::get('/v2/admin/federation/partnerships/{id}/stats', [\App\Http\Controllers\Api\AdminFederationController::class, 'partnershipStats']);

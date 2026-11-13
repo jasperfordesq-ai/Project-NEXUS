@@ -31,7 +31,6 @@ interface FedSettings {
   tenant_id: number;
   settings: {
     allow_inbound_partnerships: boolean;
-    auto_approve_partners: boolean;
     shared_categories: string[];
     max_partnerships: number;
   };
@@ -214,7 +213,7 @@ export function FederationSettings() {
             <BrokerStatusChip status={data.federation_enabled ? 'active' : 'inactive'} />
           </CardHeader>
           <CardBody>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="font-medium">{t('federation_enabled')}</p>
                 <p className="text-sm text-muted">{t('federation_enabled_desc')}</p>
@@ -231,7 +230,7 @@ export function FederationSettings() {
         <Card >
           <CardHeader><h3 className="text-lg font-semibold">{t('partnership_preferences')}</h3></CardHeader>
           <CardBody className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="font-medium">{t('allow_inbound_partnerships')}</p>
                 <p className="text-sm text-muted">{t('allow_inbound_partnerships_desc')}</p>
@@ -242,19 +241,10 @@ export function FederationSettings() {
                 aria-label={t('allow_inbound_partnerships')}
               />
             </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className={(data.settings?.allow_inbound_partnerships ?? true) ? '' : 'opacity-60'}>
-                <p className="font-medium">{t('auto_approve_partners')}</p>
-                <p className="text-sm text-muted">{t('auto_approve_partners_desc')}</p>
-              </div>
-              <Switch
-                isSelected={data.settings?.auto_approve_partners ?? false}
-                onValueChange={(val) => updateField('auto_approve_partners', val)}
-                isDisabled={!(data.settings?.allow_inbound_partnerships ?? true)}
-                aria-label={t('auto_approve_partners')}
-              />
-            </div>
+            {/* "Approve new partners automatically" lived here until November
+                2026. Nothing on the server ever acted on it, and it was retired
+                rather than made real: approving a partnership shares member
+                profiles with another community, which stays a person's call. */}
             <Separator />
             <div className="flex items-center justify-between gap-4">
               <div>

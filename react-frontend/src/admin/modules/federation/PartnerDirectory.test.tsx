@@ -238,8 +238,33 @@ describe('PartnerDirectory', () => {
 
     fireEvent.click(sendBtn!);
 
+    // Left alone, the request asks for the lowest level (1 — see each other).
     await waitFor(() => {
-      expect(mockAdminFederation.requestPartnership).toHaveBeenCalledWith(10, undefined);
+      expect(mockAdminFederation.requestPartnership).toHaveBeenCalledWith(10, undefined, 1);
+    }, { timeout: 2000 });
+  });
+
+  it('sends the partnership level chosen in the request dialog', async () => {
+    // Until November 2026 the dialog had no level choice and the server
+    // hard-coded the lowest one, so no partnership could carry exchanges.
+    mockAdminFederation.getDirectory.mockResolvedValue(makeDirectoryResponse([makeCommunity()]));
+    mockAdminFederation.requestPartnership.mockResolvedValue({ success: true });
+
+    const { PartnerDirectory } = await import('./PartnerDirectory');
+    render(<PartnerDirectory />);
+
+    await waitFor(() => screen.getByText('Dublin Timebank'), { timeout: 2000 });
+    fireEvent.click(screen.queryAllByRole('button').find(b => b.textContent === 'Request Partnership')!);
+
+    const levelSelect = await screen.findByLabelText('Partnership level');
+    // All four levels are on offer, lowest first.
+    expect(Array.from(levelSelect.querySelectorAll('option')).map((o) => o.getAttribute('value'))).toEqual(['1', '2', '3', '4']);
+    fireEvent.change(levelSelect, { target: { value: '3' } });
+
+    fireEvent.click(screen.queryAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('send'))!);
+
+    await waitFor(() => {
+      expect(mockAdminFederation.requestPartnership).toHaveBeenCalledWith(10, undefined, 3);
     }, { timeout: 2000 });
   });
 

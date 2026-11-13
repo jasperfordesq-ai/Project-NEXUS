@@ -55,7 +55,6 @@ const FED_DATA = {
   tenant_id: 2,
   settings: {
     allow_inbound_partnerships: true,
-    auto_approve_partners: false,
     shared_categories: [],
     max_partnerships: 10,
   },
@@ -168,11 +167,10 @@ describe('FederationSettings — dirty state and save', () => {
   it.each([
     ['federation_enabled', 0],
     ['allow_inbound_partnerships', 1],
-    ['auto_approve_partners', 2],
   ] as const)('persists the %s toggle through the settings endpoint', async (field, switchIndex) => {
     mockAdminFederation.updateSettings.mockResolvedValue({ success: true });
     render(<FederationSettings />);
-    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(3));
+    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(2));
 
     await userEvent.click(screen.getAllByRole('switch')[switchIndex]);
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
@@ -190,6 +188,19 @@ describe('FederationSettings — dirty state and save', () => {
     await waitFor(() => {
       expect(mockAdminFederation.updateSettings).toHaveBeenCalledWith(expected);
     });
+  });
+
+  it('offers no "approve automatically" switch — nothing on the server ever acted on it', async () => {
+    // Retired November 2026. Even a stored value from before must not bring it back.
+    mockAdminFederation.getSettings.mockResolvedValue({
+      success: true,
+      data: { ...FED_DATA, settings: { ...FED_DATA.settings, auto_approve_partners: true } },
+    });
+    render(<FederationSettings />);
+    await waitFor(() => expect(screen.getAllByRole('switch')).toHaveLength(2));
+
+    expect(screen.queryByRole('switch', { name: /automatic/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/approve new partners automatically/i)).not.toBeInTheDocument();
   });
 
   it('shows error toast when save fails', async () => {

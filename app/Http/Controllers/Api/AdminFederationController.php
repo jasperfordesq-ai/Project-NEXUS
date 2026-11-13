@@ -218,7 +218,7 @@ class AdminFederationController extends BaseApiController
             'external_federation' => $featureService->externalProtocolStatus(),
             'tenant_features' => $tenantFeatures,
             'tenant_id' => $tenantId,
-            'settings' => ['allow_inbound_partnerships' => true, 'auto_approve_partners' => false, 'shared_categories' => [], 'max_partnerships' => 10],
+            'settings' => ['allow_inbound_partnerships' => true, 'shared_categories' => [], 'max_partnerships' => 10],
         ];
 
         try {
@@ -227,7 +227,16 @@ class AdminFederationController extends BaseApiController
                 $config = json_decode($row->configuration, true);
                 if (isset($config['federation']) && is_array($config['federation'])) {
                     $fc = $config['federation'];
-                    $data['settings'] = array_merge($data['settings'], array_diff_key($fc, ['federation_enabled' => '']));
+                    // auto_approve_partners was offered on the settings page
+                    // from 2026-07 but never acted on by anything; it was
+                    // retired in November 2026 rather than made real, because
+                    // approving a partnership shares member profiles with
+                    // another community and that should stay a person's
+                    // decision. A stored value is ignored and not echoed.
+                    $data['settings'] = array_merge(
+                        $data['settings'],
+                        array_diff_key($fc, ['federation_enabled' => '', 'auto_approve_partners' => ''])
+                    );
                 }
             }
         } catch (\Exception $e) { Log::warning('Stats query failed in ' . __METHOD__, ['error' => $e->getMessage()]); }
@@ -258,11 +267,22 @@ class AdminFederationController extends BaseApiController
             $federationSettings = $config['federation'] ?? [];
             if (isset($input['settings']) && is_array($input['settings'])) {
                 $allowedSettingKeys = [
-                    'allow_inbound_partnerships', 'auto_approve_partners',
+                    'allow_inbound_partnerships',
                     'shared_categories', 'max_partnerships',
                 ];
                 $filtered = array_intersect_key($input['settings'], array_flip($allowedSettingKeys));
+                // Both of these are now enforced by
+                // FederationPartnershipService::partnershipPolicy(), so store
+                // them as the types it reads rather than whatever was posted.
+                if (array_key_exists('allow_inbound_partnerships', $filtered)) {
+                    $filtered['allow_inbound_partnerships'] = filter_var($filtered['allow_inbound_partnerships'], FILTER_VALIDATE_BOOLEAN);
+                }
+                if (array_key_exists('max_partnerships', $filtered)) {
+                    $filtered['max_partnerships'] = max(1, min(100, (int) $filtered['max_partnerships']));
+                }
                 $federationSettings = array_merge($federationSettings, $filtered);
+                // Retired setting (see settings()) — drop any stored copy.
+                unset($federationSettings['auto_approve_partners']);
 
                 foreach ($featureMap as $inputKey => $featureKey) {
                     if (array_key_exists($inputKey, $input['settings'])) {
@@ -313,8 +333,22 @@ class AdminFederationController extends BaseApiController
                  ORDER BY fp.created_at DESC",
                 [$tenantId, $tenantId, $tenantId]
             );
-            return $this->respondWithData(array_map(fn($r) => (array)$r, $items) ?: []);
-        } catch (\Exception $e) { return $this->respondWithData([]); }
+            // is_initiator tells the page which side of a pending request the
+            // caller is on. Without it the page listed requests the community
+            // had SENT under "Incoming requests" and offered Approve on them,
+            // which the service then (correctly) refused.
+            return $this->respondWithData(array_map(function ($r) use ($tenantId) {
+                $row = (array) $r;
+                $row['is_initiator'] = (int) $r->tenant_id === $tenantId;
+                $row['has_counter_proposal'] = $r->status === 'pending' && !empty($r->counter_proposed_at);
+                return $row;
+            }, $items));
+        } catch (\Exception $e) {
+            // A failed query is not "no partnerships" — say so, so the page
+            // can show an error instead of an empty list.
+            Log::error('[Federation] partnerships list failed', ['tenant_id' => $tenantId, 'error' => $e->getMessage()]);
+            return $this->respondWithError('FETCH_FAILED', __('api_controllers_1.admin_federation.partnership_detail_failed'), null, 500);
+        }
     }
 
     public function approvePartnership($id): JsonResponse
@@ -491,8 +525,22 @@ class AdminFederationController extends BaseApiController
         if ($targetTenantId <= 0) { return $this->respondWithError('VALIDATION_ERROR', __('api.target_community_required'), 'target_tenant_id'); }
         if ($targetTenantId === $tenantId) { return $this->respondWithError('VALIDATION_ERROR', __('api.cannot_partner_with_self')); }
 
+        // The level being asked for. Until November 2026 every request was
+        // hard-coded to Discovery (profiles only) and nothing in this panel
+        // could raise it afterwards, so no partnership made here could ever
+        // carry messages or exchanges. Clamped to the platform ceiling exactly
+        // as counterProposePartnership() does.
+        $level = (int) ($input['federation_level'] ?? FederationPartnershipService::LEVEL_DISCOVERY);
+        if ($level < FederationPartnershipService::LEVEL_DISCOVERY || $level > FederationPartnershipService::LEVEL_INTEGRATED) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.level_must_be_1_to_4'), 'federation_level');
+        }
+        $maxLevel = app(FederationFeatureService::class)->getMaxFederationLevel();
+        if ($maxLevel >= 1 && $level > $maxLevel) {
+            $level = $maxLevel;
+        }
+
         try {
-            $result = $this->federationPartnershipService->requestPartnership($tenantId, $targetTenantId, $userId, FederationPartnershipService::LEVEL_DISCOVERY, $notes);
+            $result = $this->federationPartnershipService->requestPartnership($tenantId, $targetTenantId, $userId, $level, $notes);
             if ($result['success']) { return $this->respondWithData($result, null, 201); }
             return $this->respondWithError('REQUEST_FAILED', $result['error'] ?? __('api_controllers_1.admin_federation.partnership_request_failed'));
         } catch (\Exception $e) { return $this->respondWithError('REQUEST_FAILED', __('api_controllers_1.admin_federation.partnership_request_failed')); }
@@ -561,6 +609,52 @@ class AdminFederationController extends BaseApiController
             return $this->respondWithError('COUNTER_PROPOSE_FAILED', $result['error'] ?? __('api_controllers_1.admin_federation.counter_propose_failed'));
         } catch (\Exception $e) {
             return $this->respondWithError('COUNTER_PROPOSE_FAILED', __('api_controllers_1.admin_federation.counter_proposal_send_failed'));
+        }
+    }
+
+    /**
+     * POST /api/v2/admin/federation/partnerships/{id}/accept-counter
+     *
+     * The original requester accepts the terms the other community sent back.
+     * FederationPartnershipService::acceptCounterProposal() has existed since
+     * the counter-proposal feature shipped, but no route reached it — a
+     * counter-proposal could be sent and never accepted.
+     */
+    public function acceptCounterProposal($id): JsonResponse
+    {
+        $adminId = $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+        $id = (int) $id;
+
+        if (!$id || !$this->tableExists('federation_partnerships')) {
+            return $this->respondWithError('NOT_FOUND', __('api.partnership_not_found'), null, 404);
+        }
+
+        try {
+            // Scoped lookup first: a partnership the caller is not party to
+            // is "not found", never "not yours".
+            $partnership = FederationPartnershipService::getPartnershipById($id, $tenantId);
+            if (!$partnership) {
+                return $this->respondWithError('NOT_FOUND', __('api.partnership_not_found'), null, 404);
+            }
+
+            $result = FederationPartnershipService::acceptCounterProposal($id, $adminId);
+            if (!$result['success']) {
+                return $this->respondWithError('ACCEPT_COUNTER_FAILED', $result['error'], null, 409);
+            }
+
+            // Tell the community that proposed the terms.
+            $this->notifyPartnerAdmins(
+                (int) $partnership['partner_tenant_id'],
+                'svc_notifications_2.federation.notify_partnership_approved',
+                ['tenant_name' => $this->getTenantName($tenantId)],
+                'federation_partnership_approved'
+            );
+
+            return $this->respondWithData(['message' => __('api.partnership_approved')]);
+        } catch (\Exception $e) {
+            Log::error('[Federation] acceptCounterProposal failed', ['partnership_id' => $id, 'error' => $e->getMessage()]);
+            return $this->respondWithError('UPDATE_FAILED', __('api.approve_failed', ['resource' => 'partnership']), null, 500);
         }
     }
 

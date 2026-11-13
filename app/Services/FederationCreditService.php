@@ -51,18 +51,64 @@ class FederationCreditService
                 [$tenantId, $tenantId]
             );
 
-            return array_map(function ($row) {
+            return array_map(function ($row) use ($tenantId) {
+                $fromId = (int) $row->from_tenant_id;
+                $toId = (int) $row->to_tenant_id;
+
+                // "The partner" is whichever side is NOT the caller. Until
+                // November 2026 the list carried only from_/to_ names, and the
+                // admin page picked to_tenant_name first — so an agreement
+                // another community proposed showed the caller's OWN name as
+                // the partner.
+                $callerIsFrom = $fromId === $tenantId;
+                $partnerId = $callerIsFrom ? $toId : $fromId;
+                $partnerName = $callerIsFrom ? ($row->to_tenant_name ?? '') : ($row->from_tenant_name ?? '');
+                $partnerSlug = $callerIsFrom ? ($row->to_tenant_slug ?? '') : ($row->from_tenant_slug ?? '');
+
+                // Movement figures the list has always displayed but never
+                // received (they rendered as a constant 0). A ledger failure
+                // must not hide the agreement itself, so the figures degrade to
+                // null — "unknown" — never to a made-up zero.
+                $sent = null;
+                $received = null;
+                try {
+                    $sent = FederationInternalLedgerService::sumCompletedBetweenTenants($tenantId, $partnerId);
+                    $received = FederationInternalLedgerService::sumCompletedBetweenTenants($partnerId, $tenantId);
+                } catch (\Throwable $e) {
+                    Log::error('[FederationCredit] listAgreementsStatic ledger totals failed', [
+                        'agreement_id' => (int) $row->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $sent = null;
+                    $received = null;
+                }
+
+                // Dual consent: a pending agreement activates only when both
+                // sides have approved. Say whose move it is, so the page does
+                // not offer "Approve" to a side that already has.
+                $callerApproved = ($callerIsFrom ? $row->approved_by_from : $row->approved_by_to) !== null;
+                $awaiting = null;
+                if ($row->status === 'pending') {
+                    $awaiting = $callerApproved ? 'partner' : 'you';
+                }
+
                 return [
                     'id' => (int) $row->id,
-                    'from_tenant_id' => (int) $row->from_tenant_id,
+                    'from_tenant_id' => $fromId,
                     'from_tenant_name' => $row->from_tenant_name ?? '',
                     'from_tenant_slug' => $row->from_tenant_slug ?? '',
-                    'to_tenant_id' => (int) $row->to_tenant_id,
+                    'to_tenant_id' => $toId,
                     'to_tenant_name' => $row->to_tenant_name ?? '',
                     'to_tenant_slug' => $row->to_tenant_slug ?? '',
+                    'partner_tenant' => ['id' => $partnerId, 'name' => $partnerName, 'slug' => $partnerSlug],
                     'exchange_rate' => (float) $row->exchange_rate,
                     'max_monthly_credits' => $row->max_monthly_credits !== null ? (float) $row->max_monthly_credits : null,
+                    'credits_sent' => $sent,
+                    'credits_received' => $received,
+                    // Positive = the partner has sent us more than we sent them.
+                    'current_balance' => ($sent !== null && $received !== null) ? $received - $sent : null,
                     'status' => $row->status,
+                    'awaiting' => $awaiting,
                     'approved_by_from' => $row->approved_by_from ? (int) $row->approved_by_from : null,
                     'approved_by_to' => $row->approved_by_to ? (int) $row->approved_by_to : null,
                     'created_at' => $row->created_at,

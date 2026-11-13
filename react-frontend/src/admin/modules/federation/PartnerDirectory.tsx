@@ -102,6 +102,14 @@ const enabledFeatures = (community: Community): string[] => {
   return features;
 };
 
+// The four partnership levels, lowest first (FederationPartnershipService::LEVEL_*).
+const REQUEST_LEVELS = [
+  { value: 1, label: 'federation.level_discovery', description: 'federation.level_desc_discovery' },
+  { value: 2, label: 'federation.level_social', description: 'federation.level_desc_social' },
+  { value: 3, label: 'federation.level_economic', description: 'federation.level_desc_economic' },
+  { value: 4, label: 'federation.level_integrated', description: 'federation.level_desc_integrated' },
+] as const;
+
 export function PartnerDirectory() {
   const { t } = useTranslation('admin_federation');
   usePageTitle(t('federation.page_title'));
@@ -123,6 +131,9 @@ export function PartnerDirectory() {
   // Partnership request modal
   const [requestTarget, setRequestTarget] = useState<Community | null>(null);
   const [requestNotes, setRequestNotes] = useState('');
+  // What the partnership should allow. Every request used to be sent at the
+  // lowest level with no way to ask for more.
+  const [requestLevel, setRequestLevel] = useState('1');
   const [requestLoading, setRequestLoading] = useState(false);
 
   const loadData = useCallback(async (params?: { search?: string; region?: string; category?: string; topic?: string; exclude_partnered?: boolean }) => {
@@ -165,11 +176,12 @@ export function PartnerDirectory() {
     if (!requestTarget) return;
     setRequestLoading(true);
     try {
-      const res = await adminFederation.requestPartnership(requestTarget.id, requestNotes || undefined);
+      const res = await adminFederation.requestPartnership(requestTarget.id, requestNotes || undefined, parseInt(requestLevel, 10) || 1);
       if (res.success) {
         toast.success(t('federation.partnership_request_sent'));
         setRequestTarget(null);
         setRequestNotes('');
+        setRequestLevel('1');
         loadData({ search, region: regionFilter, category: categoryFilter, topic: topicFilter, exclude_partnered: hidePartnered });
       } else {
         // admin-i18n-ignore: localized server message — FederationPartnershipService
@@ -506,7 +518,7 @@ export function PartnerDirectory() {
       )}
 
       {/* Partnership request modal */}
-      <Modal isOpen={!!requestTarget} onClose={() => { setRequestTarget(null); setRequestNotes(''); }}>
+      <Modal isOpen={!!requestTarget} onClose={() => { setRequestTarget(null); setRequestNotes(''); setRequestLevel('1'); }}>
         <ModalContent>
           <ModalHeader className="flex items-center gap-2">
             <Handshake size={20} />
@@ -533,6 +545,24 @@ export function PartnerDirectory() {
                 <p className="text-sm text-muted">
                   {t('federation.partnership_request_description')}
                 </p>
+                <Select
+                  label={t('federation.label_federation_level')}
+                  variant="secondary"
+                  selectedKeys={[requestLevel]}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0];
+                    if (selected) setRequestLevel(String(selected));
+                  }}
+                >
+                  {REQUEST_LEVELS.map((level) => (
+                    <SelectItem key={String(level.value)} id={String(level.value)} textValue={t(level.label)}>
+                      <div>
+                        <p className="font-medium">{t(level.label)}</p>
+                        <p className="text-xs text-muted">{t(level.description)}</p>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </Select>
                 <Textarea
                   label={t('federation.message_optional')}
                   placeholder={t('federation.partnership_message_placeholder')}
@@ -546,7 +576,7 @@ export function PartnerDirectory() {
             )}
           </ModalBody>
           <ModalFooter>
-            <Button variant="tertiary" onPress={() => { setRequestTarget(null); setRequestNotes(''); }}>
+            <Button variant="tertiary" onPress={() => { setRequestTarget(null); setRequestNotes(''); setRequestLevel('1'); }}>
               {t('federation.cancel')}
             </Button>
             <Button

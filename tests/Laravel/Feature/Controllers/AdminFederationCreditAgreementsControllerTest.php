@@ -308,4 +308,168 @@ class AdminFederationCreditAgreementsControllerTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    // ================================================================
+    // RESPONSE SHAPES the admin page reads (regressions, November 2026)
+    //
+    // The page's own tests mocked a shape the server never sent, so three
+    // defects sat behind a green suite: the "New agreement" picker listed
+    // blank names and posted a partnership id as a community id; an agreement
+    // proposed BY the partner showed the caller's own name as the partner;
+    // and the balance / sent / received figures were always 0.
+    // ================================================================
+
+    public function test_partners_identifies_the_partner_community_not_the_partnership_row(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $partnerTenantId = $this->seedPartnerTenant();
+        $this->seedActivePartnership($partnerTenantId);
+        $partnershipId = (int) DB::table('federation_partnerships')
+            ->where('tenant_id', $this->testTenantId)->where('partner_tenant_id', $partnerTenantId)->value('id');
+
+        $response = $this->apiGet('/v2/admin/federation/partners');
+        $response->assertStatus(200);
+
+        $row = collect($response->json('data'))->firstWhere('partnership_id', $partnershipId);
+        $this->assertNotNull($row, 'the seeded partnership must be listed');
+        $this->assertSame($partnerTenantId, $row['id'], '`id` is what the page posts as partner_tenant_id');
+        $this->assertSame('Credit Partner', $row['name'], '`name` is what the picker displays');
+        $this->assertNotSame('', $row['slug']);
+    }
+
+    public function test_partners_resolves_the_partner_when_the_other_side_started_the_partnership(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $partnerTenantId = $this->seedPartnerTenant();
+        $data = [
+            'tenant_id' => $partnerTenantId,
+            'partner_tenant_id' => $this->testTenantId,
+            'status' => 'active',
+            'federation_level' => 3,
+            'requested_at' => now(),
+            'approved_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+        if (DB::getSchemaBuilder()->hasColumn('federation_partnerships', 'canonical_pair')) {
+            $data['canonical_pair'] = min($this->testTenantId, $partnerTenantId) . '-' . max($this->testTenantId, $partnerTenantId);
+        }
+        DB::table('federation_partnerships')->insert($data);
+
+        $response = $this->apiGet('/v2/admin/federation/partners');
+        $response->assertStatus(200);
+
+        $row = collect($response->json('data'))->firstWhere('id', $partnerTenantId);
+        $this->assertNotNull($row, 'the partner community must be listed under its own id');
+        $this->assertSame('Credit Partner', $row['name']);
+    }
+
+    public function test_index_names_the_other_community_as_partner_whichever_side_proposed(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $partnerTenantId = $this->seedPartnerTenant();
+
+        // Proposed BY the partner TO us — the case that used to show our own name.
+        $id = (int) DB::table('federation_credit_agreements')->insertGetId([
+            'from_tenant_id' => $partnerTenantId,
+            'to_tenant_id' => $this->testTenantId,
+            'exchange_rate' => 1.0,
+            'max_monthly_credits' => 50,
+            'status' => 'pending',
+            'approved_by_from' => 1,
+            'approved_by_to' => null,
+            'created_at' => now(),
+        ]);
+
+        $response = $this->apiGet('/v2/admin/federation/credit-agreements');
+        $response->assertStatus(200);
+
+        $row = collect($response->json('data'))->firstWhere('id', $id);
+        $this->assertNotNull($row);
+        $this->assertSame($partnerTenantId, $row['partner_tenant']['id']);
+        $this->assertSame('Credit Partner', $row['partner_tenant']['name']);
+        // The partner has approved, we have not: it is our move.
+        $this->assertSame('you', $row['awaiting']);
+    }
+
+    public function test_index_says_when_a_pending_agreement_is_waiting_on_the_partner(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $partnerTenantId = $this->seedPartnerTenant();
+        $id = $this->seedAgreement($partnerTenantId, 'pending', $admin->id, null);
+
+        $row = collect($this->apiGet('/v2/admin/federation/credit-agreements')->json('data'))->firstWhere('id', $id);
+
+        $this->assertSame('partner', $row['awaiting']);
+    }
+
+    public function test_index_carries_the_real_sent_received_and_balance_figures(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $partnerTenantId = $this->seedPartnerTenant();
+        $id = $this->seedAgreement($partnerTenantId, 'active', 1, 2);
+
+        $tx = fn (int $from, int $to, float $amount, string $status) => DB::table('federation_transactions')->insert([
+            'sender_tenant_id' => $from,
+            'sender_user_id' => $admin->id,
+            'receiver_tenant_id' => $to,
+            'receiver_user_id' => $admin->id,
+            'amount' => $amount,
+            'status' => $status,
+            'created_at' => now(),
+        ]);
+        $tx($this->testTenantId, $partnerTenantId, 3.0, 'completed');   // we sent 3
+        $tx($partnerTenantId, $this->testTenantId, 5.5, 'completed');   // we received 5.5
+        $tx($this->testTenantId, $partnerTenantId, 40.0, 'pending');    // not completed — must not count
+
+        $row = collect($this->apiGet('/v2/admin/federation/credit-agreements')->json('data'))->firstWhere('id', $id);
+
+        $this->assertEqualsWithDelta(3.0, $row['credits_sent'], 0.001);
+        $this->assertEqualsWithDelta(5.5, $row['credits_received'], 0.001);
+        $this->assertEqualsWithDelta(2.5, $row['current_balance'], 0.001);
+        $this->assertNull($row['awaiting'], 'an active agreement is waiting on nobody');
+    }
+
+    public function test_store_refuses_a_second_agreement_instead_of_reporting_success(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $partnerTenantId = $this->seedPartnerTenant();
+        $this->seedAgreement($partnerTenantId, 'active', 1, 2);
+
+        $response = $this->apiPost('/v2/admin/federation/credit-agreements', [
+            'partner_tenant_id' => $partnerTenantId,
+            'exchange_rate' => 1.0,
+            'monthly_limit' => 100,
+        ]);
+
+        $response->assertStatus(409);
+        $this->assertSame(1, DB::table('federation_credit_agreements')
+            ->where('from_tenant_id', $this->testTenantId)->where('to_tenant_id', $partnerTenantId)->count());
+    }
+
+    public function test_store_creates_a_pending_agreement_with_the_named_partner(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $partnerTenantId = $this->seedPartnerTenant();
+
+        $response = $this->apiPost('/v2/admin/federation/credit-agreements', [
+            'partner_tenant_id' => $partnerTenantId,
+            'exchange_rate' => 1.0,
+            'monthly_limit' => 80,
+        ]);
+
+        $response->assertStatus(201);
+        $row = DB::table('federation_credit_agreements')
+            ->where('from_tenant_id', $this->testTenantId)->where('to_tenant_id', $partnerTenantId)->first();
+        $this->assertNotNull($row);
+        $this->assertSame('pending', $row->status);
+        $this->assertEqualsWithDelta(80.0, (float) $row->max_monthly_credits, 0.001);
+    }
 }

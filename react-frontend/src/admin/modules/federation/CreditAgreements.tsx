@@ -63,10 +63,13 @@ interface CreditAgreement {
   exchange_rate: number;
   monthly_limit?: number;
   max_monthly_credits?: number | null;
-  current_balance?: number;
+  /** null = the server could not work the figure out (never shown as 0). */
+  current_balance?: number | null;
   status: 'pending' | 'active' | 'suspended' | 'terminated';
-  credits_sent?: number;
-  credits_received?: number;
+  /** For a pending agreement: whose approval it is still waiting for. */
+  awaiting?: 'you' | 'partner' | null;
+  credits_sent?: number | null;
+  credits_received?: number | null;
   created_at: string;
   updated_at?: string;
   approved_at?: string;
@@ -107,6 +110,16 @@ interface AgreementTransaction {
 function getPartnerName(agreement: CreditAgreement, unknownLabel: string): string {
   if (agreement.partner_tenant?.name) return agreement.partner_tenant.name;
   return agreement.to_tenant_name || agreement.from_tenant_name || unknownLabel;
+}
+
+/** The partner community's id, whichever side of the agreement proposed it. */
+function getPartnerId(agreement: CreditAgreement): number | null {
+  return agreement.partner_tenant?.id ?? null;
+}
+
+/** A credit figure for display; an unknown figure is a dash, never a made-up 0. */
+function formatCredits(value: number | null | undefined): string {
+  return typeof value === 'number' ? String(value) : '—';
 }
 
 function getPartnerSlug(agreement: CreditAgreement): string {
@@ -185,8 +198,20 @@ export function CreditAgreements() {
 
       if (partnersRes.success) {
         const payload = partnersRes.data;
+        const rows = (Array.isArray(payload) ? payload : (payload as { partners?: unknown[] })?.partners ?? []) as Array<
+          Partial<PartnerTenant> & { partner_tenant_id?: number; partner_name?: string; partner_slug?: string }
+        >;
+        // `id` must be the partner COMMUNITY's id — it is posted back as
+        // partner_tenant_id. Rows without a usable id or name are dropped
+        // rather than offered as a blank option.
         setPartners(
-          Array.isArray(payload) ? payload : (payload as { partners?: PartnerTenant[] })?.partners ?? []
+          rows
+            .map((row) => ({
+              id: Number(row.partner_tenant_id ?? row.id),
+              name: String(row.name ?? row.partner_name ?? ''),
+              slug: String(row.slug ?? row.partner_slug ?? ''),
+            }))
+            .filter((row) => Number.isFinite(row.id) && row.id > 0 && row.name !== '')
         );
       }
     } catch (err) {
@@ -252,7 +277,9 @@ export function CreditAgreements() {
         createModal.onClose();
         loadData();
       } else {
-        toast.error(t('federation.failed_to_create_agreement'));
+        // admin-i18n-ignore: localized server message — the controller's
+        // refusals (already exists, validation) are __() keys.
+        toast.error(res.error || t('federation.failed_to_create_agreement'));
       }
     } catch (err) {
       logError('CreditAgreements.create', err);
@@ -270,7 +297,9 @@ export function CreditAgreements() {
         toast.success(t('federation.agreement_action_success'));
         loadData();
       } else {
-        toast.error(t('federation.agreement_action_failed'));
+        // admin-i18n-ignore: localized server message — the controller's
+        // refusals (partnership required, wrong status) are __() keys.
+        toast.error(res.error || t('federation.agreement_action_failed'));
       }
     } catch (err) {
       logError('CreditAgreements.statusChange', err);
@@ -312,6 +341,15 @@ export function CreditAgreements() {
   const pendingCount = agreements.filter((a) => a.status === 'pending').length;
   const totalSent = agreements.reduce((sum, a) => sum + (a.credits_sent || 0), 0);
   const totalReceived = agreements.reduce((sum, a) => sum + (a.credits_received || 0), 0);
+
+  // A transaction came FROM the partner when its sender is the partner
+  // community. Compared by id; the display name is only a fallback for rows
+  // without partner_tenant (two communities can share a name).
+  const partnerIdOfSelected = selectedAgreement ? getPartnerId(selectedAgreement) : null;
+  const isFromPartner = (tx: AgreementTransaction): boolean => {
+    if (partnerIdOfSelected !== null) return tx.sender_tenant_id === partnerIdOfSelected;
+    return !!selectedAgreement && tx.sender_tenant_name === getPartnerName(selectedAgreement, t('federation.unknown_partner'));
+  };
 
   // â”€â”€â”€ Render â”€â”€â”€
   if (loading) {
@@ -432,17 +470,24 @@ export function CreditAgreements() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <span className={`text-sm font-medium ${(agreement.current_balance ?? 0) >= 0 ? 'text-success' : 'text-danger'}`}>
-                        {(agreement.current_balance ?? 0) >= 0 ? '+' : ''}{agreement.current_balance ?? 0}
-                      </span>
+                      {typeof agreement.current_balance === 'number' ? (
+                        <span className={`text-sm font-medium ${agreement.current_balance >= 0 ? 'text-success' : 'text-danger'}`}>
+                          {agreement.current_balance >= 0 ? '+' : ''}{agreement.current_balance}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-muted">—</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <span className="text-sm text-muted">
-                        {agreement.credits_sent ?? 0} / {agreement.credits_received ?? 0}
+                        {formatCredits(agreement.credits_sent)} / {formatCredits(agreement.credits_received)}
                       </span>
                     </TableCell>
                     <TableCell>
                       <BrokerStatusChip status={agreement.status} />
+                      {agreement.status === 'pending' && agreement.awaiting === 'partner' && (
+                        <p className="mt-1 text-xs text-muted">{t('federation.awaiting_partner_approval')}</p>
+                      )}
                     </TableCell>
                     <TableCell>
                       <span className="text-sm text-muted">{formatRelativeTime(agreement.created_at)}</span>
@@ -458,7 +503,7 @@ export function CreditAgreements() {
                         >
                           <Eye size={14} />
                         </Button>
-                        {agreement.status === 'pending' && (
+                        {agreement.status === 'pending' && agreement.awaiting !== 'partner' && (
                           <Button
                             size="sm"
                             variant="tertiary"
@@ -762,14 +807,14 @@ export function CreditAgreements() {
                                     <Chip
                                       size="sm"
                                       variant="soft"
-                                      color={tx.sender_tenant_name === getPartnerName(selectedAgreement, t('federation.unknown_partner')) ? 'success' : 'danger'}
+                                      color={isFromPartner(tx) ? 'success' : 'danger'}
                                       startContent={
-                                        tx.sender_tenant_name === getPartnerName(selectedAgreement, t('federation.unknown_partner'))
+                                        isFromPartner(tx)
                                           ? <ArrowDownRight size={10} />
                                           : <ArrowUpRight size={10} />
                                       }
                                     >
-                                      {tx.sender_tenant_name === getPartnerName(selectedAgreement, t('federation.unknown_partner'))
+                                      {isFromPartner(tx)
                                         ? t('federation.received')
                                         : t('federation.sent')
                                       }

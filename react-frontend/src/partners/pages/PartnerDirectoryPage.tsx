@@ -20,12 +20,15 @@ import PartnerDirectory from '@/admin/modules/federation/PartnerDirectory';
 import MyProfile from '@/admin/modules/federation/MyProfile';
 import { Tabs, Tab } from '@/components/ui';
 import { PartnersPageShell } from '../components';
-import { EMBED_RESTYLE } from '../components/adminEmbed';
+import { AdminEmbed, useAdminEmbedActionsHost } from '@/admin/components/AdminEmbedContext';
 
 type DirectoryTab = 'browse' | 'profile';
 
 export default function PartnerDirectoryPage() {
   const { t } = useTranslation('partners');
+  // The embedded module's own buttons (Refresh, New…) are placed in this
+  // page's header — see AdminEmbedContext.
+  const { actionsHost, actionsSlot } = useAdminEmbedActionsHost();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const tab: DirectoryTab = searchParams.get('tab') === 'profile' ? 'profile' : 'browse';
@@ -39,6 +42,7 @@ export default function PartnerDirectoryPage() {
 
   return (
     <PartnersPageShell
+      actions={actionsSlot}
       title={t('pages.directory.title')}
       description={t('pages.directory.description')}
       icon={BookUser}
@@ -57,13 +61,13 @@ export default function PartnerDirectoryPage() {
       }
     >
       {tab === 'browse' ? (
-        <div className={EMBED_RESTYLE}>
+        <AdminEmbed actionsHost={actionsHost}>
           <PartnerDirectory />
-        </div>
+        </AdminEmbed>
       ) : (
-        <div className={EMBED_RESTYLE}>
+        <AdminEmbed actionsHost={actionsHost}>
           <MyProfile />
-        </div>
+        </AdminEmbed>
       )}
     </PartnersPageShell>
   );

@@ -2162,8 +2162,13 @@ export const adminFederation = {
   getDirectory: (params?: { search?: string; region?: string; category?: string; topic?: string; exclude_partnered?: boolean }) =>
     api.get<Array<{ id: number; name: string; slug: string; domain: string; description?: string; region?: string }>>(`/v2/admin/federation/directory${buildQuery(params || {})}`),
 
-  requestPartnership: (targetTenantId: number, notes?: string) =>
-    api.post<{ success: boolean }>('/v2/admin/federation/partnerships/request', { target_tenant_id: targetTenantId, notes }),
+  /** federationLevel: 1 see each other · 2 + messages/listings/events · 3 + exchanges · 4 + groups. */
+  requestPartnership: (targetTenantId: number, notes?: string, federationLevel?: number) =>
+    api.post<{ success: boolean }>('/v2/admin/federation/partnerships/request', {
+      target_tenant_id: targetTenantId,
+      notes,
+      ...(federationLevel ? { federation_level: federationLevel } : {}),
+    }),
 
   getProfile: () => api.get<{ id: number; name: string; description?: string; region?: string; category?: string; is_visible: boolean }>('/v2/admin/federation/directory/profile'),
 
@@ -2226,6 +2231,10 @@ export const adminFederation = {
 
   counterProposePartnership: (id: number, data: { level: number; permissions: Record<string, boolean>; message?: string }) =>
     api.post<{ success: boolean }>(`/v2/admin/federation/partnerships/${id}/counter-propose`, data),
+
+  /** The original requester accepts the terms the other community sent back. */
+  acceptCounterProposal: (id: number) =>
+    api.post<{ message: string }>(`/v2/admin/federation/partnerships/${id}/accept-counter`, {}),
 
   updatePartnershipPermissions: (id: number, permissions: Record<string, boolean>) =>
     api.put<{ success: boolean }>(`/v2/admin/federation/partnerships/${id}/permissions`, { permissions }),

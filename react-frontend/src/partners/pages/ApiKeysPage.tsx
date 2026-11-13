@@ -20,10 +20,13 @@ import ApiKeys from '@/admin/modules/federation/ApiKeys';
 import CreateApiKey from '@/admin/modules/federation/CreateApiKey';
 import { Modal, ModalContent, ModalHeader, ModalBody } from '@/components/ui';
 import { PartnersPageShell } from '../components';
-import { EMBED_RESTYLE } from '../components/adminEmbed';
+import { AdminEmbed, useAdminEmbedActionsHost } from '@/admin/components/AdminEmbedContext';
 
 export default function ApiKeysPage() {
   const { t } = useTranslation(['partners', 'admin_federation']);
+  // The embedded module's own buttons (Refresh, New…) are placed in this
+  // page's header — see AdminEmbedContext.
+  const { actionsHost, actionsSlot } = useAdminEmbedActionsHost();
   const [createOpen, setCreateOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
 
@@ -34,14 +37,15 @@ export default function ApiKeysPage() {
 
   return (
     <PartnersPageShell
+      actions={actionsSlot}
       title={t('partners:pages.api_keys.title')}
       description={t('partners:pages.api_keys.description')}
       icon={KeyRound}
       color="warning"
     >
-      <div className={EMBED_RESTYLE}>
+      <AdminEmbed actionsHost={actionsHost}>
         <ApiKeys onCreateClick={() => setCreateOpen(true)} refreshToken={refreshToken} />
-      </div>
+      </AdminEmbed>
 
       <Modal isOpen={createOpen} onClose={closeCreate} size="lg">
         <ModalContent>

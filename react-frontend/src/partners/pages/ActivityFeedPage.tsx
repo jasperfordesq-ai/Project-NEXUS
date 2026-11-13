@@ -13,21 +13,25 @@ import { useTranslation } from 'react-i18next';
 import Activity from 'lucide-react/icons/activity';
 import ActivityFeed from '@/admin/modules/federation/ActivityFeed';
 import { PartnersPageShell } from '../components';
-import { EMBED_RESTYLE } from '../components/adminEmbed';
+import { AdminEmbed, useAdminEmbedActionsHost } from '@/admin/components/AdminEmbedContext';
 
 export default function ActivityFeedPage() {
   const { t } = useTranslation('partners');
+  // The embedded module's own buttons (Refresh, New…) are placed in this
+  // page's header — see AdminEmbedContext.
+  const { actionsHost, actionsSlot } = useAdminEmbedActionsHost();
 
   return (
     <PartnersPageShell
+      actions={actionsSlot}
       title={t('pages.activity.title')}
       description={t('pages.activity.description')}
       icon={Activity}
       color="accent"
     >
-      <div className={EMBED_RESTYLE}>
+      <AdminEmbed actionsHost={actionsHost}>
         <ActivityFeed />
-      </div>
+      </AdminEmbed>
     </PartnersPageShell>
   );
 }

@@ -84,6 +84,18 @@ class AdminFederationCreditAgreementsController extends BaseApiController
                     $adminId
                 );
 
+                // The service reports refusals as ['success' => false] rather
+                // than throwing. Until November 2026 that array was passed
+                // straight to respondWithData() with a 201, so the page
+                // announced "agreement created" when none had been.
+                if (!($agreement['success'] ?? false)) {
+                    $existing = (new \App\Services\FederationCreditService())->getAgreement($tenantId, $partnerTenantId);
+                    if ($existing && in_array($existing['status'] ?? '', ['pending', 'active'], true)) {
+                        return $this->respondWithError('ALREADY_EXISTS', __('api.credit_agreement_already_exists'), 'partner_tenant_id', 409);
+                    }
+                    return $this->respondWithError('CREATE_FAILED', __('api.credit_agreement_create_failed'), null, 500);
+                }
+
                 try {
                     FederationAuditService::log(
                         'credit_agreement_created',
@@ -403,7 +415,27 @@ class AdminFederationCreditAgreementsController extends BaseApiController
                 [$tenantId, $tenantId, $tenantId]
             );
 
-            return $this->respondWithData(array_map(fn($r) => (array) $r, $partners));
+            // `id`, `name` and `slug` describe the PARTNER COMMUNITY — that is
+            // what the "New agreement" picker shows and posts back as
+            // partner_tenant_id. Until November 2026 this returned the raw
+            // partnership row, whose `id` is the partnership's own id and
+            // which has no `name` at all: the picker listed blank options and
+            // posted a partnership id as if it were a community id.
+            return $this->respondWithData(array_map(function ($r) use ($tenantId) {
+                $partnerTenantId = ((int) $r->tenant_id === $tenantId) ? (int) $r->partner_tenant_id : (int) $r->tenant_id;
+                return [
+                    'id' => $partnerTenantId,
+                    'name' => (string) ($r->partner_name ?? ''),
+                    'slug' => (string) ($r->partner_slug ?? ''),
+                    'partner_tenant_id' => $partnerTenantId,
+                    'partner_name' => (string) ($r->partner_name ?? ''),
+                    'partner_slug' => (string) ($r->partner_slug ?? ''),
+                    'partnership_id' => (int) $r->id,
+                    'status' => (string) $r->status,
+                    'federation_level' => (int) ($r->federation_level ?? 1),
+                    'transactions_enabled' => (bool) ($r->transactions_enabled ?? false),
+                ];
+            }, $partners));
         } catch (\Exception $e) {
             // Table may not exist yet — return empty array gracefully
             return $this->respondWithData([]);
