@@ -224,7 +224,9 @@ describe('HeroSection — authenticated user', () => {
       expect(screen.queryByTestId('landing-hero-photo')).toBeNull();
     });
 
-    it('is shown above the headline when the community has uploaded one', async () => {
+    it('is shown under the headline, introduction and buttons when the community has uploaded one', async () => {
+      // Every module on, so the banner has its button to be measured against.
+      await signInWith();
       const contexts = await import('@/contexts');
       const useTenant = vi.mocked(contexts.useTenant);
       const original = useTenant.getMockImplementation()!;
@@ -235,9 +237,20 @@ describe('HeroSection — authenticated user', () => {
       try {
         render(<HeroSection />);
         const photo = screen.getByTestId('landing-hero-photo');
-        // Decorative, like the same photo on the sign-in page: an empty alt.
+        // Decorative, like the same photo on the dashboard: an empty alt.
         expect(photo).toHaveAttribute('alt', '');
         expect(photo.getAttribute('src')).toContain('community.jpg');
+        // A framed picture, two wide to one tall at any width (13 Nov 2026).
+        expect(photo.className).toContain('aspect-[2/1]');
+        expect(photo.className).toContain('max-w-md');
+        // Owner, 13 Nov 2026: "it should be underneath the hero text. It looks
+        // very odd where it is." The words and the buttons come first.
+        const follows = (el: Element) =>
+          Boolean(el.compareDocumentPosition(photo) & Node.DOCUMENT_POSITION_FOLLOWING);
+        expect(follows(screen.getByRole('heading', { level: 1 }))).toBe(true);
+        const calls = screen.getAllByRole('link');
+        expect(calls.length).toBeGreaterThan(0);
+        for (const call of calls) expect(follows(call)).toBe(true);
         // Still exactly one level-1 heading.
         expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
       } finally {

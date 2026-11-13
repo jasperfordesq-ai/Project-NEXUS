@@ -83,19 +83,6 @@ export function HeroSection({ content }: HeroSectionProps) {
           animate="animate"
           variants={staggerContainer}
         >
-          {/* The community's own photo, when it has uploaded one (warmth plan
-              P11): the front page was text and buttons only, with nothing of
-              the place or its people. Decorative (empty alt), like the same
-              photo on the sign-in page and the dashboard. */}
-          {hasCommunityPhoto && (
-            <motion.div variants={fadeInUp} className="mb-8 flex justify-center">
-              <CommunityPhoto
-                data-testid="landing-hero-photo"
-                className="h-40 w-full max-w-md rounded-3xl object-cover shadow-[var(--shadow-card)] ring-4 ring-[var(--surface-solid)] sm:h-52"
-              />
-            </motion.div>
-          )}
-
           {/* Badge */}
           <motion.div variants={fadeInUp} className="mb-6">
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card backdrop-blur-lg text-sm text-theme-muted">
@@ -163,6 +150,18 @@ export function HeroSection({ content }: HeroSectionProps) {
               </>
             )}
           </motion.div>
+
+          {/* The community's own photo, when it has uploaded one (warmth plan
+              P11): the front page was text and buttons only, with nothing of
+              the place or its people. It sits under the words and the
+              buttons — above the headline it "looked very odd" (owner,
+              13 Nov 2026). Decorative (empty alt), like the same photo on the
+              dashboard. */}
+          {hasCommunityPhoto && (
+            <motion.div variants={fadeInUp} className="mt-12 flex justify-center">
+              <CommunityPhoto framed data-testid="landing-hero-photo" className="w-full max-w-md" />
+            </motion.div>
+          )}
         </motion.div>
       </div>
 

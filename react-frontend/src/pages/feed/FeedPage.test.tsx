@@ -133,7 +133,7 @@ describe('FeedPage', () => {
     }
   });
 
-  it("shows the community's own photo across the top of the header when it has one", () => {
+  it("does not show the community's photo in the header, even when it has one", () => {
     const original = vi.mocked(useTenant).getMockImplementation()!;
     vi.mocked(useTenant).mockImplementation(() => ({
       ...original(),
@@ -141,9 +141,13 @@ describe('FeedPage', () => {
     }));
     try {
       render(<FeedPage />);
-      const photo = within(screen.getByTestId('feed-header')).getByTestId('feed-header-photo');
-      expect(photo.getAttribute('src')).toContain('community-photos/us.webp');
-      expect(photo).toHaveAttribute('alt', '');
+      // Owner, 13 Nov 2026: "The community photo is in too many places...
+      // Remove it from the feed page and the discover page. It's very
+      // repetitive." It was a band across the top of this header.
+      const header = screen.getByTestId('feed-header');
+      expect(within(header).queryByTestId('feed-header-photo')).toBeNull();
+      expect(header.querySelector('img[src*="community-photos"]')).toBeNull();
+      expect(within(header).getByRole('heading', { level: 1, name: 'Community Feed' })).toBeInTheDocument();
     } finally {
       vi.mocked(useTenant).mockImplementation(original);
     }

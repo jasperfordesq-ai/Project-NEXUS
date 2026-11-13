@@ -74,7 +74,6 @@ import { FeedAdCard } from '@/components/feed/FeedAdCard';
 import { MobileFAB } from '@/components/feed/MobileFAB';
 import type { AdItem } from '@/components/feed/FeedAdCard';
 import { FeedEmptyIllustration } from '@/components/illustrations';
-import { CommunityPhoto } from '@/components/branding/CommunityPhoto';
 import { vivid } from '@/lib/vivid';
 import type { FeedItem, FeedFilter, PollData } from '@/components/feed/types';
 import { getAuthor, excludeGamificationMilestones } from '@/components/feed/types';
@@ -999,10 +998,8 @@ export function FeedPage() {
           the tint uses the darker secondary token so it stays readable. */}
       <section data-testid="feed-header" className={`relative hidden overflow-hidden rounded-3xl bg-accent-soft sm:block ${vivid.panel}`}>
         {/* The same soft glow of the companion colour as every other page
-            opening; in the bottom corner here, clear of the photo band. */}
+            opening; in the bottom corner here. */}
         <div aria-hidden="true" data-hero-glow="true" className={`hero-glow pointer-events-none absolute -bottom-24 -right-16 size-72 rounded-full blur-3xl ${vivid.glow}`} />
-        {/* The community's own photo, when it has one, as a band across the top. */}
-        <CommunityPhoto data-testid="feed-header-photo" className="relative block h-28 w-full lg:h-36" />
         <div className="relative flex items-center gap-4 px-5 py-5 sm:px-6">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-accent shadow-sm ring-1 ring-accent/15 dark:bg-white/10 vivid:bg-white vivid:text-accent-strong">
             <Newspaper className="w-6 h-6" aria-hidden="true" />

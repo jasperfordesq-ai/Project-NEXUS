@@ -17,6 +17,13 @@ const mockIsBiometricAvailable = vi.fn();
 const mockIsConditionalMediationAvailable = vi.fn();
 const mockStartConditionalAuthentication = vi.fn();
 
+// One branding object for both tenant mocks, so a test can give the community a photo.
+const loginBranding = vi.hoisted(() => ({
+  name: 'Test Community',
+  logo_url: null as string | null,
+  communityPhoto: null as string | null,
+}));
+
 vi.mock('@/lib/webauthn', () => ({
   isBiometricAvailable: (...args: unknown[]) => mockIsBiometricAvailable(...args),
   isConditionalMediationAvailable: (...args: unknown[]) => mockIsConditionalMediationAvailable(...args),
@@ -61,7 +68,7 @@ vi.mock('@/contexts', () => ({
   useAuth: () => ({ ...authDefaults, ...authOverrides }),
   useTenant: () => ({
     tenant: tenantContextTenant,
-    branding: { name: 'Test Community', logo_url: null },
+    branding: loginBranding,
     tenantSlug: tenantContextSlug,
     tenantPath: mockTenantPath,
     authenticationConfig: { 'passkeys.conditional_autofill': conditionalAutofillEnabled },
@@ -89,7 +96,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 vi.mock('@/contexts/TenantContext', () => ({
   useTenant: () => ({
     tenant: tenantContextTenant,
-    branding: { name: 'Test Community', logo_url: null },
+    branding: loginBranding,
     tenantSlug: tenantContextSlug,
     tenantPath: mockTenantPath,
     authenticationConfig: { 'passkeys.conditional_autofill': conditionalAutofillEnabled },
@@ -256,6 +263,21 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
   it("opens with the community's welcome: its colour, logo and tagline", async () => {
     render(<LoginPage />);
     expect(await screen.findByTestId('community-welcome')).toBeInTheDocument();
+  });
+
+  // Owner, 13 Nov 2026: "Remove from the login form." The sign-in card opens
+  // with the community's colour and logo; its photo belongs to the pages.
+  it("does not show the community's photo, even when it has one", async () => {
+    loginBranding.communityPhoto = '/uploads/tenants/test/community-photos/us.webp';
+    try {
+      render(<LoginPage />);
+      expect(await screen.findByTestId('community-welcome')).toBeInTheDocument();
+      expect(screen.queryByTestId('community-welcome-photo')).not.toBeInTheDocument();
+      expect(screen.getByTestId('community-welcome-cover')).toBeInTheDocument();
+      expect(screen.getByTestId('community-welcome-logo')).toBeInTheDocument();
+    } finally {
+      loginBranding.communityPhoto = null;
+    }
   });
 
   // ─── 1. Passkey button renders when biometric available + tenant selected ──

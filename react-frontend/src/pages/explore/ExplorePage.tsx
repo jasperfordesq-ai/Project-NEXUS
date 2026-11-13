@@ -55,7 +55,6 @@ import { useTenant, useAuth } from '@/contexts';
 import { canCreateEvents } from '@/lib/access';
 import { resolveAvatarUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
 import apiClient from '@/lib/api';
-import { CommunityPhoto } from '@/components/branding/CommunityPhoto';
 import { ThemedCover } from '@/components/ui/ThemedCover';
 import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import { themeIconFor } from '@/lib/themeIcons';
@@ -620,10 +619,9 @@ export default function ExplorePage() {
       <PageMeta title={t('page_title')} description={t('page_description')} />
 
       {/* ─── Hero Search Bar ──────────────────────────────────────────────── */}
-      {/* A soft panel in the community colour with the community's own photo
-          across the top when it has one, like the feed, dashboard and offers
-          pages (AWID: "warmth, and community"). Text on the tint uses the
-          darker secondary token so it stays readable. */}
+      {/* A soft panel in the community colour, like the feed, dashboard and
+          offers pages (AWID: "warmth, and community"). Text on the tint uses
+          the darker secondary token so it stays readable. */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -631,7 +629,6 @@ export default function ExplorePage() {
         data-testid="explore-hero"
         className="mb-8 overflow-hidden rounded-3xl bg-accent-soft text-center"
       >
-        <CommunityPhoto data-testid="explore-hero-photo" className="block h-28 w-full sm:h-36" />
         <div className="px-4 py-6 sm:px-8 sm:py-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-theme-primary mb-2">
           {t('heading')}

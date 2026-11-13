@@ -29890,10 +29890,14 @@ export default interface Resources {
       "community_look_poppy": "Poppy",
       "community_look_slate": "Slate",
       "community_look_title": "Choose a look",
-      "community_photo_consent": "Only use a photo that everyone in it has agreed to share. Anyone can see the sign-in page, not just members.",
-      "community_photo_desc": "A photo of your community, such as members together at an event. It appears at the top of the sign-in and join pages, on the dashboard and on the feed. Without one, those places use your community colour.",
+      "community_photo_consent": "Only use a photo that everyone in it has agreed to share. Anyone can see your home page, not just members.",
+      "community_photo_desc": "A photo of your community, such as members together at an event. It appears on your home page and on the dashboard. Without one, those pages are shown without a photo.",
       "community_photo_hint": "JPEG, PNG or WebP, up to 8 MB. A wide photo works best. Location details stored in the photo are removed when it uploads.",
       "community_photo_label": "Photo",
+      "community_photo_preview_hero_off": "The welcome banner on your home page is switched off, so the photo does not appear there. It still appears on the dashboard.",
+      "community_photo_preview_hero_off_link": "Open the home page editor",
+      "community_photo_preview_note": "This is the top of your home page as a visitor sees it. The photo is trimmed to a wide shape like this wherever it appears, so check that nothing important is cut off.",
+      "community_photo_preview_title": "How it looks on your home page",
       "community_photo_removed": "Community photo removed",
       "community_photo_section": "Community photo",
       "community_photo_uploaded": "Community photo updated",
@@ -51316,7 +51320,7 @@ export default interface Resources {
             "title": "Confirming your email and waiting for approval"
           },
           "finding_your_way_around": {
-            "body": "The menu only shows the parts of the site your community uses. So what you see may be a little different from what other communities see.\n\n## On a computer\n\nAlong the top of the screen you will usually find:\n\n- **Feed**: news and posts from your community\n- **Explore**: a place to discover what is going on, if your community uses it\n- **Timebanking**: your **Offers and requests**, **Exchanges** and **Wallet**\n- **Messages**: private conversations with other members\n- **Community**: your **Dashboard**, **Members**, **Events**, **Groups** and more\n\nOn the right is the bell for your notifications, and a button with your name or photo. Press it for **My Profile**, **Wallet**, **Settings**, **Get the app** and **Log Out**.\n\n## On a phone\n\nA bar along the bottom of the screen has **Feed**, **Offers**, **Create**, **Messages** and **Menu**. Press **Menu** to see everything else, including **Settings**, **Help Center** and **Log Out**.\n\n## Your dashboard\n\nYour [Dashboard](/dashboard) gives you a summary: your balance, your listings, your messages and anything that needs your attention.\n\n> Looking for something? Press **Search** at the top of the screen, if your community uses it.",
+            "body": "The menu only shows the parts of the site your community uses. So what you see may be a little different from what other communities see.\n\n## On a computer\n\nAlong the top of the screen you will usually find:\n\n- **Feed**: news and posts from your community\n- **Explore**: a place to discover what is going on, if your community uses it\n- **Timebanking**: your **Offers and requests**, **Exchanges**, **Dashboard** and **Wallet**\n- **Messages**: private conversations with other members\n- **Community**: **Members**, **Events**, **Groups** and more\n\nOn the right is the bell for your notifications, and a button with your name or photo. Press it for **My Profile**, **Wallet**, **Settings**, **Get the app** and **Log Out**.\n\n## On a phone\n\nA bar along the bottom of the screen has **Feed**, **Offers**, **Create**, **Messages** and **Menu**. Press **Menu** to see everything else, including **Settings**, **Help Center** and **Log Out**.\n\n## Your dashboard\n\nYour [Dashboard](/dashboard) gives you a summary: your balance, your listings, your messages and anything that needs your attention.\n\n> Looking for something? Press **Search** at the top of the screen, if your community uses it.",
             "summary": "The menu at the top of the screen, or at the bottom on a phone, takes you to every part of your community.",
             "title": "Finding your way around"
           },

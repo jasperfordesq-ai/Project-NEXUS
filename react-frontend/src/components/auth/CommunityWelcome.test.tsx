@@ -42,13 +42,18 @@ describe('CommunityWelcome', () => {
     branding.communityPhoto = null;
   });
 
-  it("opens with the community's own photo when it has one", () => {
+  // Owner, 13 Nov 2026: "Remove from the login form", then the join page and
+  // the welcome step too. This banner is the top of all three, so it never
+  // shows the photo; the photo belongs to the home page and the dashboard.
+  it("never shows the community's photo, even when it has one", () => {
     branding.communityPhoto = '/uploads/tenants/hour/community-photos/us.webp';
-    render(<CommunityWelcome />);
-    expect(screen.getByTestId('community-welcome-photo').getAttribute('src')).toContain('community-photos/us.webp');
-    expect(screen.queryByTestId('community-welcome-cover')).not.toBeInTheDocument();
-    // The logo still sits on top of the photo.
+    const { container } = render(<CommunityWelcome />);
+    expect(screen.queryByTestId('community-welcome-photo')).not.toBeInTheDocument();
+    expect(container.querySelector('img[src*="community-photos"]')).toBeNull();
+    expect(screen.getByTestId('community-welcome-cover')).toBeInTheDocument();
     expect(screen.getByTestId('community-welcome-logo')).toBeInTheDocument();
+    // No taller than a card that never had a photo.
+    expect(screen.getByTestId('community-welcome-cover').parentElement?.className).toContain('h-24');
   });
 
   it("opens with a cover in the community's own colour", () => {

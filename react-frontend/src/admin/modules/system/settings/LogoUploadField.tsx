@@ -17,6 +17,7 @@ import Upload from 'lucide-react/icons/upload';
 import Trash2 from 'lucide-react/icons/trash-2';
 import ImageOff from 'lucide-react/icons/image-off';
 import { Button, Chip } from '@/components/ui';
+import { COMMUNITY_PHOTO_FRAME } from '@/components/branding/CommunityPhoto';
 
 const DEFAULT_ACCEPT = 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml';
 
@@ -32,10 +33,11 @@ export interface LogoUploadFieldProps {
   pendingRemoval?: boolean;
   accept?: string;
   /**
-   * How to preview the image: a logo on a light and a dark surface (default),
-   * or a photo filling a wide cover, the way the website shows it.
+   * How to preview the image: a logo on a light and a dark surface (default);
+   * a photo in the framed two-to-one picture the website shows it in; or
+   * nothing, when the caller shows its own fuller preview.
    */
-  preview?: 'logo' | 'photo';
+  preview?: 'logo' | 'photo' | 'none';
   uploading: boolean;
   onUpload: (file: File) => void | Promise<void>;
   onRemove: () => void | Promise<void>;
@@ -96,7 +98,7 @@ export function LogoUploadField({
           src={value}
           alt={label}
           data-testid={`logo-preview-${id}`}
-          className="h-36 w-full max-w-lg rounded-xl border border-divider object-cover"
+          className={`w-full max-w-sm object-cover ${COMMUNITY_PHOTO_FRAME}`}
         />
       )}
 

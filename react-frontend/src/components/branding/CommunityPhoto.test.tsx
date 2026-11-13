@@ -36,6 +36,19 @@ describe('CommunityPhoto', () => {
     expect(img).toHaveAttribute('alt', '');
   });
 
+  // 13 Nov 2026: on the feed and Explore the photo was a fixed-height strip
+  // across the whole page width — up to eight times wider than tall, so only a
+  // fifth of the picture showed. A framed photo keeps one shape at any width.
+  it('keeps one shape, two wide to one tall, when it is framed as a picture', () => {
+    render(<CommunityPhoto framed data-testid="photo" className="w-full max-w-md" />);
+    const img = screen.getByTestId('photo');
+    expect(img.className).toContain('aspect-[2/1]');
+    expect(img.className).toContain('object-cover');
+    expect(img.className).toContain('max-w-md');
+    // The shape comes from the ratio, never from a fixed height.
+    expect(img.className).not.toMatch(/(^|\s)(sm:|md:|lg:)?h-\d/);
+  });
+
   it('shows the fallback when the community has no photo', () => {
     branding.communityPhoto = null;
     render(<CommunityPhoto data-testid="photo" fallback={<span data-testid="fallback" />} />);

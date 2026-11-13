@@ -5,7 +5,9 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 const disabled = vi.hoisted(() => new Set<string>());
-import { render, screen, waitFor, fireEvent, userEvent } from '@/test/test-utils';
+// The community's own photo, when a test gives it one.
+const tenantBranding = vi.hoisted(() => ({ name: 'Test', communityPhoto: null as string | null }));
+import { render, screen, waitFor, fireEvent, userEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
 
@@ -65,6 +67,7 @@ vi.mock('@/contexts', () =>
     useToast: () => mockToast,
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
+      branding: tenantBranding,
       tenantPath: (p: string) => `/test${p}`,
       hasFeature: vi.fn((key: string) => !disabled.has(key)),
       hasModule: vi.fn((key: string) => !disabled.has(key)),
@@ -536,6 +539,23 @@ describe('ExplorePage — warmth', () => {
     const hero = await screen.findByTestId('explore-hero');
     expect(hero.className).toContain('bg-accent-soft');
     expect(hero.querySelector('h1')).not.toBeNull();
+  });
+
+  // Owner, 13 Nov 2026: "The community photo is in too many places... Remove
+  // it from the feed page and the discover page. It's very repetitive." It
+  // was a band across the top of this panel.
+  it("does not show the community's photo, even when it has one", async () => {
+    tenantBranding.communityPhoto = '/uploads/tenants/test/community-photos/us.webp';
+    try {
+      const { default: ExplorePage } = await import('./ExplorePage');
+      render(<ExplorePage />);
+      const hero = await screen.findByTestId('explore-hero');
+      expect(within(hero).queryByTestId('explore-hero-photo')).toBeNull();
+      expect(hero.querySelector('img[src*="community-photos"]')).toBeNull();
+      expect(hero.querySelector('h1')).not.toBeNull();
+    } finally {
+      tenantBranding.communityPhoto = null;
+    }
   });
 
   it('shows each theme as a coloured link with its picture', async () => {

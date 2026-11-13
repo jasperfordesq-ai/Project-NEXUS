@@ -145,17 +145,24 @@ function usableSections(config: unknown): LandingSection[] {
   );
 }
 
+/**
+ * The blocks the home page shows, in the order it shows them. Exported so the
+ * admin's "how it looks on your home page" preview asks the same question the
+ * page does, rather than keeping a second copy of the answer.
+ */
+export function shownLandingSections(config: unknown): LandingSection[] {
+  return usableSections(config)
+    .filter((s) => s.enabled)
+    .map((s, index) => ({ section: s, order: Number.isFinite(s.order) ? s.order : index }))
+    .sort((a, b) => a.order - b.order)
+    .map(({ section }) => section);
+}
+
 export function LandingPageRenderer() {
   const { landingPageConfig, branding } = useTenant();
   const { t } = useTranslation('public');
 
-  const sortedSections = useMemo(() => {
-    return usableSections(landingPageConfig)
-      .filter((s) => s.enabled)
-      .map((s, index) => ({ section: s, order: Number.isFinite(s.order) ? s.order : index }))
-      .sort((a, b) => a.order - b.order)
-      .map(({ section }) => section);
-  }, [landingPageConfig]);
+  const sortedSections = useMemo(() => shownLandingSections(landingPageConfig), [landingPageConfig]);
 
   const hasHero = sortedSections.some((s) => s.type === 'hero');
 
