@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 
@@ -39,6 +39,16 @@ const mockToast = vi.hoisted(() => ({
 }));
 
 const mockRefreshTenant = vi.hoisted(() => vi.fn());
+
+// The Joining box also shows the sign-up pause panel and, for Invite only, the
+// invite codes; both read /v2/admin/* through the plain API client.
+const mockApi = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), delete: vi.fn() }));
+vi.mock('@/lib/api', () => ({ api: mockApi, default: mockApi }));
+const BREAKER_HEALTHY = { tripped: false, count_in_current_hour: 3, threshold: 20, auto_resume_in_seconds: null };
+const INVITE_CODES = {
+  items: [{ id: 7, code: 'RIVER-123', max_uses: 5, uses_count: 1, note: 'Coffee morning', is_active: 1, expires_at: null, created_at: '2026-11-01', creator_name: 'Sam' }],
+  total: 1,
+};
 // The page asks before leaving with unsaved changes (useUnsavedChangesGuard).
 const mockConfirm = vi.hoisted(() => vi.fn());
 
@@ -260,6 +270,15 @@ describe('AdminSettings', () => {
     mockAdminEnterprise.getConfig.mockResolvedValue(makeEnterpriseConfig());
     mockAdminEnterprise.updateConfig.mockResolvedValue({ success: true });
     mockRefreshTenant.mockResolvedValue(undefined);
+    mockApi.get.mockImplementation((url: string) =>
+      Promise.resolve(
+        url.includes('/registration/breaker')
+          ? { success: true, data: BREAKER_HEALTHY }
+          : url.includes('/invite-codes')
+            ? { success: true, data: INVITE_CODES }
+            : { success: true, data: null },
+      ),
+    );
   });
 
   it('shows a busy skeleton while fetching settings', async () => {
@@ -596,6 +615,70 @@ describe('AdminSettings', () => {
       expect(box).not.toBeDisabled();
       expect(box).toHaveValue('');
     });
+  });
+
+  // Owner report, 13 Nov 2026: these two drew OFF while the platform held every
+  // new member for both. With nothing stored the gates are ON; so is the page.
+  it('shows email confirmation and approval ON when nothing has been saved for them', async () => {
+    const data = makeSettingsData();
+    delete (data.data.settings as Record<string, unknown>).email_verification;
+    delete (data.data.settings as Record<string, unknown>).admin_approval;
+    mockAdminSettings.get.mockResolvedValue(data);
+    await renderPage();
+
+    expect(findSwitch('New members confirm their email address')).toBeChecked();
+    expect(findSwitch('New members wait for approval')).toBeChecked();
+  });
+
+  it('shows a switch OFF only when the server plainly says off', async () => {
+    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ email_verification: 'false', admin_approval: 'false' }));
+    await renderPage();
+
+    expect(findSwitch('New members confirm their email address')).not.toBeChecked();
+    expect(findSwitch('New members wait for approval')).not.toBeChecked();
+  });
+
+  // Registration policy is god-only (owner, 13 Nov 2026); what a community
+  // admin needs from it is in the Joining box instead.
+  describe('joining rules for a community admin who is not god', () => {
+    beforeEach(() => {
+      mockAuthState.user = { id: 5, name: 'Plain Admin', role: 'admin', is_admin: true };
+    });
+
+    it('has no way to the Registration policy page', async () => {
+      await renderPage();
+      expect(screen.queryByRole('link', { name: /more joining rules/i })).toBeNull();
+      const related = document.getElementById('settings-section-related')!;
+      const hrefs = Array.from(related.querySelectorAll('a')).map((a) => a.getAttribute('href'));
+      expect(hrefs).not.toContain('/test/admin/settings/registration-policy');
+      // Control: the list itself is there.
+      expect(hrefs).toContain('/test/admin/module-configuration');
+      expect(screen.getByText(/Invite codes appear just below when you choose Invite only\.$/)).toBeInTheDocument();
+    });
+
+    it('shows the invite codes once Invite only is chosen, and not before', async () => {
+      await renderPage();
+      expect(screen.queryByTestId('invite-codes-panel')).toBeNull();
+
+      fireEvent.click(screen.getByRole('radio', { name: /invite only/i }));
+
+      const panel = await screen.findByTestId('invite-codes-panel');
+      expect(await within(panel).findByText('RIVER-123')).toBeInTheDocument();
+      expect(within(panel).getByRole('button', { name: /generate codes/i })).toBeInTheDocument();
+    });
+
+    it('shows whether sign-ups are open', async () => {
+      await renderPage();
+      const panel = await screen.findByTestId('registration-breaker');
+      expect(panel).toHaveTextContent('Sign-ups open');
+      expect(panel).toHaveTextContent('3 of 20 new accounts this hour');
+    });
+  });
+
+  it('gives a god account the way to the Registration policy page', async () => {
+    mockAuthState.user = { id: 1, name: 'Platform', role: 'admin', is_god: true, is_super_admin: true };
+    await renderPage();
+    expect(screen.getByRole('link', { name: /more joining rules/i })).toHaveAttribute('href', '/test/admin/settings/registration-policy');
   });
 
   // Maintenance mode is switched on the server. Only the platform's own

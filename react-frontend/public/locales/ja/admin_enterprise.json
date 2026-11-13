@@ -272,7 +272,7 @@
     "related_operations": "運営",
     "related_operations_desc": "キャッシュ統計とバックグラウンド ジョブ制御。",
     "related_registration_policy": "登録ポリシー",
-    "related_registration_policy_desc": "詳細なサインアップ ルール、招待コード、許可リストに登録されたドメイン、キャプチャ。",
+    "related_registration_policy_desc": "プラットフォームチーム専用：待機リスト、本人確認、本人確認サービスのキー。",
     "related_safeguarding": "保護",
     "related_safeguarding_options": "保護オプション",
     "related_safeguarding_options_desc": "レポート フロー、エスカレーション パス、および保護ポリシー。",

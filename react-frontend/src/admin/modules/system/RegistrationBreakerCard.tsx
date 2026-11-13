@@ -20,10 +20,12 @@ import { useToast } from '@/contexts';
  *   GET  /api/v2/admin/registration/breaker         — current status
  *   POST /api/v2/admin/registration/resume-signups  — manual clear
  *
- * Rendered as the first card on the Registration Policy Settings page so
- * that during a signup-flood incident, the admin sees the status front-and-
- * centre and can resume signups in one click. Polls every 30s so the
- * "paused" state surfaces without a manual reload.
+ * Rendered inside "Joining and signing in" on the Settings page (`embedded`:
+ * no card of its own, no server variable named) so that during a
+ * signup-flood incident a community admin sees the status and can resume
+ * signups in one click. It lived on the Registration Policy page until that
+ * page became god-only (owner, 13 Nov 2026). Polls every 30s so the "paused"
+ * state surfaces without a manual reload.
  *
  * Additive: never touches existing components. Safe to ship.
  */
@@ -36,7 +38,7 @@ interface BreakerStatus {
   auto_resume_in_seconds: number | null;
 }
 
-export function RegistrationBreakerCard() {
+export function RegistrationBreakerCard({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation('admin_system');
   const toast = useToast();
   const [status, setStatus] = useState<BreakerStatus | null>(null);
@@ -78,6 +80,13 @@ export function RegistrationBreakerCard() {
   }, [t, toast, fetchStatus]);
 
   if (loading) {
+    if (embedded) {
+      return (
+        <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-2">
+          <Spinner size="sm" />
+        </div>
+      );
+    }
     return (
       <Card >
         <CardBody role="status" aria-busy="true" aria-label={t('common.loading')} className="flex items-center justify-center py-6">
@@ -97,9 +106,7 @@ export function RegistrationBreakerCard() {
       ? Math.min(100, Math.round((status.count_in_current_hour / status.threshold) * 100))
       : 0;
 
-  return (
-    <Card  className={tripped ? 'border-2 border-danger' : ''}>
-      <CardHeader className="pb-0">
+  const header = (
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">
             {tripped ? (
@@ -108,7 +115,11 @@ export function RegistrationBreakerCard() {
               <ShieldCheck size={20} className="text-success" />
             )}
             <div>
-              <h3 className="text-lg font-semibold">{t('system.registration_breaker.title')}</h3>
+              {embedded ? (
+                <p className="font-medium text-foreground">{t('system.registration_breaker.title')}</p>
+              ) : (
+                <h3 className="text-lg font-semibold">{t('system.registration_breaker.title')}</h3>
+              )}
               <p className="text-sm text-muted mt-1">
                 {t('system.registration_breaker.description')}
               </p>
@@ -124,9 +135,11 @@ export function RegistrationBreakerCard() {
             <RefreshCw size={16} />
           </Button>
         </div>
-      </CardHeader>
-      <CardBody className="gap-3">
-        <div className="flex items-center gap-3">
+  );
+
+  const body = (
+    <>
+        <div className="flex flex-wrap items-center gap-3">
           <Chip
             color={tripped ? 'danger' : 'success'}
             variant="soft"
@@ -169,14 +182,29 @@ export function RegistrationBreakerCard() {
           </div>
         )}
 
-        {!tripped && (
+        {!tripped && !embedded && (
           <p className="text-xs text-muted">
             {t('system.registration_breaker.threshold_prefix')}{' '}
             <code className="font-mono">REGISTRATION_TENANT_HOURLY_CAP</code>.
             {' '}{t('system.registration_breaker.threshold_suffix')}
           </p>
         )}
-      </CardBody>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div data-testid="registration-breaker" className={`space-y-3 ${tripped ? 'rounded-xl border-2 border-danger p-3' : ''}`}>
+        {header}
+        {body}
+      </div>
+    );
+  }
+
+  return (
+    <Card className={tripped ? 'border-2 border-danger' : ''}>
+      <CardHeader className="pb-0">{header}</CardHeader>
+      <CardBody className="gap-3">{body}</CardBody>
     </Card>
   );
 }

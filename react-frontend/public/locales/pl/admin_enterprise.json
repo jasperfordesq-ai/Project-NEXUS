@@ -272,7 +272,7 @@
     "related_operations": "Operacje",
     "related_operations_desc": "Statystyki pamięci podręcznej i kontrola zadań w tle.",
     "related_registration_policy": "Polityka rejestracyjna",
-    "related_registration_policy_desc": "Szczegółowe zasady rejestracji, kody zaproszeń, domeny na liście dozwolonych i captcha.",
+    "related_registration_policy_desc": "Tylko dla zespołu platformy: listy oczekujących, weryfikacja tożsamości i klucze do usług weryfikacji tożsamości.",
     "related_safeguarding": "Ochrona",
     "related_safeguarding_options": "Opcje zabezpieczające",
     "related_safeguarding_options_desc": "Przepływy raportowania, ścieżki eskalacji i zasady zabezpieczeń.",

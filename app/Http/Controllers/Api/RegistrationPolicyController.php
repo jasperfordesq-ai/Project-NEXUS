@@ -48,10 +48,23 @@ class RegistrationPolicyController extends BaseApiController
         return $this->respondWithData($policy);
     }
 
-    /** PUT /api/v2/admin/config/registration-policy */
+    /**
+     * PUT /api/v2/admin/config/registration-policy
+     *
+     * God accounts only (owner, 13 Nov 2026). The page that calls this is
+     * god-only (GodOnlyRoute); a hidden page is not a locked one, so the
+     * endpoint refuses everyone else too. What a community admin needs from
+     * joining rules stays with them on the Settings page: "Who can join"
+     * (open / invite only / closed, PUT /v2/admin/settings), invite codes and
+     * resuming paused sign-ups, which keep their own admin endpoints.
+     *
+     * The F-153 and email-verification checks below now always pass for the
+     * god caller; they are kept so the rule stays visible if this gate is ever
+     * widened again.
+     */
     public function updatePolicy(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGod();
         $tenantId = $this->getTenantId();
         $input = $this->getAllInput();
 
@@ -225,10 +238,10 @@ class RegistrationPolicyController extends BaseApiController
         return $this->respondWithData($result);
     }
 
-    /** PUT /api/v2/admin/identity/provider-credentials/{slug} */
+    /** PUT /api/v2/admin/identity/provider-credentials/{slug} — god accounts only (13 Nov 2026), like the policy itself. */
     public function saveProviderCredentials($slug): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGod();
         $tenantId = $this->getTenantId();
 
         if (!$slug || !$this->identityProviderRegistry->has($slug)) {
@@ -254,10 +267,10 @@ class RegistrationPolicyController extends BaseApiController
         return $this->respondWithData(['saved' => $saved, 'provider_slug' => $slug]);
     }
 
-    /** DELETE /api/v2/admin/identity/provider-credentials/{slug} */
+    /** DELETE /api/v2/admin/identity/provider-credentials/{slug} — god accounts only (13 Nov 2026), like the policy itself. */
     public function deleteProviderCredentials($slug): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGod();
         $tenantId = $this->getTenantId();
 
         if (!$slug || !$this->identityProviderRegistry->has($slug)) {

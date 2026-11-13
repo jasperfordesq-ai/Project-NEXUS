@@ -120,7 +120,7 @@ describe('RegistrationBreakerCard', () => {
 
     await waitFor(() => {
       // status_active chip (i18n key or real text)
-      const chips = screen.getAllByText(/active|status_active/i);
+      const chips = screen.getAllByText(/sign-ups open/i);
       expect(chips.length).toBeGreaterThan(0);
     });
   });
@@ -136,7 +136,7 @@ describe('RegistrationBreakerCard', () => {
       )).toBeUndefined();
     });
 
-    expect(screen.queryByRole('button', { name: /resume/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /start sign-ups again/i })).not.toBeInTheDocument();
   });
 
   it('shows signups count text with threshold info', async () => {
@@ -165,7 +165,7 @@ describe('RegistrationBreakerCard', () => {
     render(<RegistrationBreakerCard />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /resume/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /start sign-ups again/i })).toBeInTheDocument();
     });
   });
 
@@ -181,10 +181,10 @@ describe('RegistrationBreakerCard', () => {
     render(<RegistrationBreakerCard />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /resume/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /start sign-ups again/i })).toBeInTheDocument();
     });
 
-    const resumeBtn = screen.getByRole('button', { name: /resume/i });
+    const resumeBtn = screen.getByRole('button', { name: /start sign-ups again/i });
     await user.click(resumeBtn);
 
     await waitFor(() => {
@@ -209,10 +209,10 @@ describe('RegistrationBreakerCard', () => {
     render(<RegistrationBreakerCard />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /resume/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /start sign-ups again/i })).toBeInTheDocument();
     });
 
-    const resumeBtn = screen.getByRole('button', { name: /resume/i });
+    const resumeBtn = screen.getByRole('button', { name: /start sign-ups again/i });
     await user.click(resumeBtn);
 
     await waitFor(() => {
@@ -269,6 +269,29 @@ describe('RegistrationBreakerCard', () => {
       // threshold_percent text rendered containing "60%"
       expect(screen.getByText(/60%/)).toBeInTheDocument();
     });
+  });
+
+  // Since 13 Nov 2026 the panel sits inside "Joining and signing in" on the
+  // Settings page, where community admins see it: no card of its own, and no
+  // server setting named at them.
+  it('embedded: renders inside the Settings page without its own card or the server setting', async () => {
+    mockHealthyStatus();
+    render(<RegistrationBreakerCard embedded />);
+
+    const panel = await screen.findByTestId('registration-breaker');
+    expect(panel).toHaveTextContent('New sign-ups');
+    expect(panel).toHaveTextContent('Sign-ups open');
+    expect(panel).toHaveTextContent('12 of 100 new accounts this hour');
+    expect(screen.queryByText(/REGISTRATION_TENANT_HOURLY_CAP/)).toBeNull();
+  });
+
+  it('embedded: a paused community gets the plain explanation and the button to start again', async () => {
+    mockTrippedStatus();
+    render(<RegistrationBreakerCard embedded />);
+
+    expect(await screen.findByRole('button', { name: /start sign-ups again/i })).toBeInTheDocument();
+    expect(screen.getByText("New accounts can't be created right now.")).toBeInTheDocument();
+    expect(screen.queryByText(/sentry/i)).toBeNull();
   });
 
   it('does NOT show threshold percentage warning when below 50%', async () => {

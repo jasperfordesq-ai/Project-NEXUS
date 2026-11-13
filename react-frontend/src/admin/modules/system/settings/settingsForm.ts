@@ -115,7 +115,7 @@ export const DEFAULT_SETTINGS: SettingsForm = {
   contact_phone: '',
   registration_mode: 'open',
   email_verification: true,
-  admin_approval: false,
+  admin_approval: true,
   maintenance_mode: false,
   footer_text: '',
   partner_logo_url: '',
@@ -145,6 +145,14 @@ export const DEFAULT_SETTINGS: SettingsForm = {
 const truthy = (v: unknown) => v === true || v === 'true' || v === '1' || v === 1;
 
 /**
+ * Member approval and email verification are ON unless something plainly says
+ * off — the platform's own rule (TenantSettingsService::gateSettingIsRequired).
+ * The server now reports the enforced value; this keeps an older or partial
+ * answer from drawing the switch OFF while the gate is on.
+ */
+const gateIsOn = (v: unknown) => !(v === false || v === 'false' || v === '0' || v === 0);
+
+/**
  * The backend accepts open | invite_only | closed and the registration policy
  * service treats anything else as "defer to the policy table" (i.e. open).
  * Older rows may hold the legacy alias 'invite'.
@@ -166,8 +174,8 @@ export function settingsFromResponse(data: AdminSettingsResponse): SettingsForm 
     contact_email: str(tenant.contact_email),
     contact_phone: str(tenant.contact_phone),
     registration_mode: normaliseRegistrationMode(settings.registration_mode),
-    email_verification: truthy(settings.email_verification),
-    admin_approval: truthy(settings.admin_approval),
+    email_verification: gateIsOn(settings.email_verification),
+    admin_approval: gateIsOn(settings.admin_approval),
     maintenance_mode: truthy(settings.maintenance_mode),
     footer_text: str(settings.footer_text),
     partner_logo_url: str(settings.partner_logo_url),

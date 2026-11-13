@@ -13,7 +13,8 @@ import { useTranslation } from 'react-i18next';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import Compass from 'lucide-react/icons/compass';
 import { Button } from '@/components/ui';
-import { useTenant } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
+import { isGodUser } from '@/lib/access';
 import { SettingsSection, SettingsRow } from '../system/settings/SettingsSection';
 import { RELATED_ADMIN_PAGES } from './systemConfigSchema';
 
@@ -22,6 +23,8 @@ export const RELATED_PAGES_SECTION_ID = 'related';
 export function RelatedAdminPages() {
   const { t } = useTranslation(['admin_enterprise', 'admin_system']);
   const { tenantPath } = useTenant();
+  const { user } = useAuth();
+  const isGod = isGodUser(user);
 
   return (
     <SettingsSection
@@ -32,7 +35,7 @@ export function RelatedAdminPages() {
       description={t('admin_system:admin_settings.section_related_desc')}
       layout="rows"
     >
-      {RELATED_ADMIN_PAGES.map((entry) => (
+      {RELATED_ADMIN_PAGES.filter((entry) => !entry.godOnly || isGod).map((entry) => (
         <SettingsRow key={entry.href} label={t(entry.labelKey)} help={t(entry.descriptionKey)}>
           <Button
             as={Link}

@@ -15028,7 +15028,7 @@ export default interface Resources {
       "related_operations": "Operations",
       "related_operations_desc": "Cache stats and background job controls.",
       "related_registration_policy": "Registration policy",
-      "related_registration_policy_desc": "Granular sign-up rules, invite codes, allowlisted domains, and captcha.",
+      "related_registration_policy_desc": "Platform team only: waiting lists, identity checks and the keys for identity check services.",
       "related_safeguarding": "Safeguarding",
       "related_safeguarding_options": "Safeguarding options",
       "related_safeguarding_options_desc": "Reporting flows, escalation paths, and safeguarding policies.",
@@ -29943,7 +29943,8 @@ export default interface Resources {
       "preview_light": "On a light background",
       "reg_mode_closed": "Closed",
       "reg_mode_closed_desc": "No new accounts can be created. Existing members can still sign in.",
-      "reg_mode_help": "Applies to new sign-ups straight away. For invitation codes, allowed email addresses and identity checks, press More joining rules.",
+      "reg_mode_help": "Applies to new sign-ups straight away. Invite codes appear just below when you choose Invite only. For waiting lists and identity checks, press More joining rules.",
+      "reg_mode_help_codes": "Applies to new sign-ups straight away. Invite codes appear just below when you choose Invite only.",
       "reg_mode_invite": "Invite only",
       "reg_mode_invite_desc": "Only people with an invitation code or link can create an account.",
       "reg_mode_label": "Who can join",
@@ -31251,22 +31252,22 @@ export default interface Resources {
       "region_sample": "Members will see: {{shortDate}} · {{longDate}} · {{time}}",
       "region_us": "United States",
       "registration_breaker": {
-        "description": "Automatic pause when this community gets an unusual flood of signups in one hour.",
-        "paused_body": "The hourly signup threshold ({{threshold}} new accounts) was exceeded. Registration will auto-resume in about {{minutes}} minutes, or you can resume it now. Check Sentry / logs for the source IPs before clearing if you suspect an attack.",
-        "paused_title": "Account creation is currently paused.",
+        "description": "Sign-ups pause by themselves if an unusual number of new accounts arrive in one hour.",
+        "paused_body": "More than {{threshold}} new accounts arrived in one hour, so sign-ups paused to keep spam out. They start again by themselves in about {{minutes}} minutes, or you can start them now. If you don't recognise the new accounts, ask the platform team first.",
+        "paused_title": "New accounts can't be created right now.",
         "refresh_status": "Refresh status",
-        "resume_failed": "Failed to resume registration.",
-        "resume_now": "Resume signups now",
-        "resume_success": "Registration resumed for this community.",
-        "signups_this_hour": "{{count}} of {{threshold}} signups this hour",
-        "signups_this_hour_one": "{{count}} of {{threshold}} signups this hour",
-        "signups_this_hour_other": "{{count}} of {{threshold}} signups this hour",
-        "status_active": "Signups active",
-        "status_paused": "Signups paused",
-        "threshold_percent": "({{percent}}% of threshold)",
+        "resume_failed": "We couldn't start sign-ups again. Please try again.",
+        "resume_now": "Start sign-ups again",
+        "resume_success": "Sign-ups are open again.",
+        "signups_this_hour": "{{count}} of {{threshold}} new accounts this hour",
+        "signups_this_hour_one": "{{count}} of {{threshold}} new accounts this hour",
+        "signups_this_hour_other": "{{count}} of {{threshold}} new accounts this hour",
+        "status_active": "Sign-ups open",
+        "status_paused": "Sign-ups paused",
+        "threshold_percent": "({{percent}}% of the limit)",
         "threshold_prefix": "Threshold is configured at the platform level via",
         "threshold_suffix": "When tripped, this banner turns red and a one-click resume button appears here.",
-        "title": "Registration Security"
+        "title": "New sign-ups"
       },
       "registration_policy_saved_successfully": "Registration policy saved successfully",
       "registration_policy_settings_title": "Registration & Identity Verification",
@@ -50430,7 +50431,7 @@ export default interface Resources {
             "title": "Changing how a feature works"
           },
           "admin_invite_codes": {
-            "body": "Invite codes let you control exactly who joins. Each code can be used a set number of times.\n\n## Switch on invite-only joining\n\n1. Open **Platform Operations**, then **Settings**, then press **More joining rules**.\n2. Under **Registration Method**, choose **Mode Invite**.\n3. Press **Save Registration Policy**.\n\nAn **Invite Codes** area now appears on the page.\n\n## Create codes\n\n1. In **Invite Codes**, press **Generate Codes**.\n2. Choose the **Number of Codes** you want.\n3. Set **Max Uses per Code**. Leave it blank for no limit.\n4. Choose an **Expiry Date** if you want. Codes stop working at midnight on that date.\n5. Add a **Note (optional)** to remind you who the codes are for.\n6. Press **Generate**.\n\nThe new codes appear on screen. Press **Copy All Codes** to copy them, then send them to the people you are inviting. Press **Done** to close.\n\n## Managing codes\n\nThe list shows each code and its **Status**, such as **Active**, **Expired**, **Exhausted** (used up) or **Deactivated**. To stop a code working, press the deactivate button next to it.\n\n> Share codes privately, for example by email. Anyone who has a working code can join.",
+            "body": "Invite codes let you control exactly who joins. Each code can be used a set number of times.\n\n## Switch on invite-only joining\n\n1. Open **Platform Operations** in the admin menu and press **Settings**.\n2. In the **Joining and signing in** card, under **Who can join**, choose **Invite only**.\n3. Press **Save all changes**.\n\nAn **Invite Codes** area appears just below **Who can join**.\n\n## Create codes\n\n1. In **Invite Codes**, press **Generate Codes**.\n2. Choose the **Number of Codes** you want.\n3. Set **Max Uses per Code**. Leave it blank for no limit.\n4. Choose an **Expiry Date** if you want. Codes stop working at midnight on that date.\n5. Add a **Note (optional)** to remind you who the codes are for.\n6. Press **Generate**.\n\nThe new codes appear on screen. Press **Copy All Codes** to copy them, then send them to the people you are inviting. Press **Done** to close.\n\n## Managing codes\n\nThe list shows each code and its **Status**, such as **Active**, **Expired**, **Exhausted** (used up) or **Deactivated**. To stop a code working, press the deactivate button next to it.\n\n> Share codes privately, for example by email. Anyone who has a working code can join.",
             "summary": "Create invite codes so only the people you choose can join your community.",
             "title": "Inviting people with invite codes"
           },
@@ -50455,8 +50456,8 @@ export default interface Resources {
             "title": "Adding your logo"
           },
           "admin_registration_policy": {
-            "body": "You decide how new people join your community on the **Registration & Identity Verification** page.\n\n1. Open **Platform Operations** in the admin menu and press **Settings**.\n2. In the **Joining and signing in** card, press **More joining rules**.\n3. Under **Registration Method**, choose how people join.\n4. Press **Save Registration Policy**.\n\nThe change applies straight away to anyone who signs up after it.\n\n## The choices\n\n- **Mode Open**: anyone can join without approval.\n- **Open with Admin Approval**: anyone can sign up, but an admin or broker must approve them before they can use the site.\n- **Mode Invite**: people need an invite code. See \"Inviting people with invite codes\".\n- **Mode Waitlist**: people join a waiting list. They wait as pending members until you approve them.\n- **Mode Verified**: people must pass an identity check when they sign up. This needs an identity verification service to be set up first, under **Verification Settings**.\n\n## Settings only the platform team can change\n\nYou can switch approval on, but only the platform team can switch it off again. Turning off email checks is also theirs to change. On the **Community settings** page, these switches show **Set by the platform team**.\n\n**Who can join** on the **Community settings** page is a quick way to open sign-ups, make them invite only, or close them.",
-            "summary": "Decide whether anyone can join, whether you approve people first, or whether they need an invite code.",
+            "body": "You decide who can join on the **Community settings** page.\n\n1. Open **Platform Operations** in the admin menu and press **Settings**.\n2. In the **Joining and signing in** card, find **Who can join**.\n3. Choose **Open**, **Invite only** or **Closed**.\n4. Press **Save all changes**.\n\nThe change applies straight away to anyone who signs up after it.\n\n## The choices\n\n- **Open**: anyone can create an account.\n- **Invite only**: people need an invite code. See \"Inviting people with invite codes\".\n- **Closed**: no new accounts. Existing members can still sign in.\n\n## Settings only the platform team can change\n\nNew members confirm their email address, then wait for an admin or broker to approve them. Both are on unless the platform team has switched them off. On the **Community settings** page these switches show **Set by the platform team**. Waiting lists and identity checks are also set up by the platform team. Ask them if your community needs one.\n\n## If sign-ups pause by themselves\n\nIf an unusual number of new accounts arrive in one hour, sign-ups pause to keep spam out. The **New sign-ups** panel in the same card shows this. Press **Start sign-ups again** once you are sure the new accounts are genuine.",
+            "summary": "Decide whether anyone can join, only people with an invite code, or nobody for now.",
             "title": "Choosing how new people can join"
           },
           "admin_switch_features": {

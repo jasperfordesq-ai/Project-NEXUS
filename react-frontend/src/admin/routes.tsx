@@ -585,7 +585,13 @@ export function AdminRoutes() {
 
       {/* ─── SYSTEM ─── */}
       <Route path="settings" element={<Lazy><AdminSettings /></Lazy>} />
-      <Route path="settings/registration-policy" element={<Lazy><RegistrationPolicySettings /></Lazy>} />
+      {/* God accounts only (owner, 13 Nov 2026): joining methods beyond open /
+          invite only / closed, identity checks and provider keys are the
+          platform team's. Invite codes and resuming paused sign-ups, which a
+          community admin needs, live on the Settings page. */}
+      <Route element={<GodOnlyRoute />}>
+        <Route path="settings/registration-policy" element={<Lazy><RegistrationPolicySettings /></Lazy>} />
+      </Route>
       <Route path="onboarding-settings" element={<Lazy><OnboardingSettings /></Lazy>} />
       {/* /admin/tenant-features retired — unified into module-configuration */}
       <Route path="tenant-features" element={<TenantRedirect to="/admin/module-configuration" />} />

@@ -85,12 +85,14 @@ class TenantProviderCredentialService
      */
     public static function delete(int $tenantId, string $providerSlug): bool
     {
-        $stmt = DB::statement(
+        // DB::statement() returns a bool, so the rowCount() this used to call
+        // failed every time and "Remove keys" answered 500 (found 13 Nov 2026).
+        $deleted = DB::delete(
             "DELETE FROM tenant_provider_credentials WHERE tenant_id = ? AND provider_slug = ?",
             [$tenantId, $providerSlug]
         );
 
-        return $stmt->rowCount() > 0;
+        return $deleted > 0;
     }
 
     /**

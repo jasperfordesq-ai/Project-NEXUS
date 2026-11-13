@@ -579,7 +579,6 @@ describe('AdminSidebar', () => {
     '/test/admin/marketplace/cases',
     '/test/admin/marketplace/coupons',
     '/test/admin/gamification/badge-config',
-    '/test/admin/settings/registration-policy',
     '/test/admin/enterprise/fadp',
   ];
 
@@ -643,6 +642,28 @@ describe('AdminSidebar', () => {
     render(<AdminSidebar collapsed={false} />);
     hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
     for (const href of GOD_ONLY) expect(hrefs).toContain(href);
+  });
+
+  // Registration policy: god accounts only (owner, 13 Nov 2026). Invite codes
+  // and resuming paused sign-ups moved to Settings for everyone else.
+  it.each([
+    ['a plain admin', { id: 1, name: 'Admin User', role: 'admin' }],
+    ['a platform super admin who is not god', { id: 1, name: 'Super Admin', role: 'admin', is_super_admin: true }],
+  ])('hides Registration policy from %s, and shows it to a god account', async (_who, user) => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+    const HREF = '/test/admin/settings/registration-policy';
+
+    authState.user = user as User;
+    const { unmount } = render(<AdminSidebar collapsed={false} />);
+    let hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    expect(hrefs).not.toContain(HREF);
+    expect(hrefs).toContain('/test/admin/settings');
+    unmount();
+
+    authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
+    render(<AdminSidebar collapsed={false} />);
+    hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    expect(hrefs).toContain(HREF);
   });
 
   // Growth & Discovery is god-only (owner decision 2026-10-02), platform

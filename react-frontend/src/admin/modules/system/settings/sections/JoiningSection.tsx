@@ -9,7 +9,10 @@ import ArrowRight from 'lucide-react/icons/arrow-right';
 import UserPlus from 'lucide-react/icons/user-plus';
 import Lock from 'lucide-react/icons/lock';
 import { Button, Chip, Input, Switch, Textarea, Tooltip } from '@/components/ui';
-import { useTenant } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
+import { isGodUser } from '@/lib/access';
+import { InviteCodesPanel } from '../../InviteCodesPanel';
+import { RegistrationBreakerCard } from '../../RegistrationBreakerCard';
 import { SettingsSection, SettingsRow } from '../SettingsSection';
 import { RegistrationModeField } from '../RegistrationModeField';
 import { APPROVAL_EMAIL_MESSAGE_MAX_CHARS } from '../settingsForm';
@@ -21,6 +24,10 @@ export const JOINING_SECTION_ID = 'joining';
 export function JoiningSection({ state }: { state: AdminSettingsFormState }) {
   const { t } = useTranslation('admin_system');
   const { tenantPath } = useTenant();
+  const { user } = useAuth();
+  // Registration policy is god-only (owner, 13 Nov 2026); everyone else gets
+  // what they need from it here: invite codes and resuming paused sign-ups.
+  const isGod = isGodUser(user);
   const { form, setField, ctx } = state;
   // Email verification and member approval are platform-super-admin-only on
   // the server (F-054). Everyone else sees what is in force, but cannot change it.
@@ -42,20 +49,33 @@ export function JoiningSection({ state }: { state: AdminSettingsFormState }) {
       description={t('admin_settings.joining_section_desc')}
       layout="rows"
       actions={
-        <Button
-          as={Link}
-          to={tenantPath('/admin/settings/registration-policy')}
-          size="sm"
-          variant="secondary"
-          endContent={<ArrowRight size={14} aria-hidden="true" />}
-        >
-          {t('admin_settings.more_joining_rules')}
-        </Button>
+        isGod ? (
+          <Button
+            as={Link}
+            to={tenantPath('/admin/settings/registration-policy')}
+            size="sm"
+            variant="secondary"
+            endContent={<ArrowRight size={14} aria-hidden="true" />}
+          >
+            {t('admin_settings.more_joining_rules')}
+          </Button>
+        ) : undefined
       }
     >
-      <SettingsRow label={t('admin_settings.reg_mode_label')} help={t('admin_settings.reg_mode_help')}>
+      <SettingsRow
+        label={t('admin_settings.reg_mode_label')}
+        help={t(isGod ? 'admin_settings.reg_mode_help' : 'admin_settings.reg_mode_help_codes')}
+      >
         <RegistrationModeField value={form.registration_mode} onChange={(mode) => setField('registration_mode', mode)} />
       </SettingsRow>
+
+      {/* The codes exist whatever the mode; they are only needed, so only
+          shown, while Invite only is chosen. */}
+      {form.registration_mode === 'invite_only' && (
+        <div className="px-4 py-4 sm:px-5">
+          <InviteCodesPanel />
+        </div>
+      )}
 
       <SettingsRow
         label={t('admin_settings.email_verification_label')}
@@ -119,6 +139,12 @@ export function JoiningSection({ state }: { state: AdminSettingsFormState }) {
         />
         <span className="text-sm text-muted">{t('admin_settings.unit_minutes')}</span>
       </SettingsRow>
+
+      {/* Sign-ups pause themselves after a burst of new accounts in an hour;
+          a community admin can resume them here. */}
+      <div className="px-4 py-4 sm:px-5">
+        <RegistrationBreakerCard embedded />
+      </div>
 
       {/* Maintenance mode is switched from the server, never from here. Only
           the platform's own administrators can act on that, so the row is

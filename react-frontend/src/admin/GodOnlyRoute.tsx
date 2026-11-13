@@ -17,7 +17,7 @@
  * Enterprise dashboard — owner decisions 2026-10-02 — Enterprise Roles and
  * Permissions (2026-10-01), and the
  * platform-maintenance tools (tests, seed generator, WebP converter, blog
- * restore; F-534).
+ * restore; F-534), and Registration policy (owner, 13 Nov 2026).
  */
 
 import { Navigate, Outlet } from 'react-router-dom';

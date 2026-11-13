@@ -975,6 +975,17 @@ class AdminConfigController extends BaseApiController
             }
         }
 
+        // Member approval and email verification: report what the sign-up and
+        // sign-in gates actually enforce, not the raw `general.` row. The gates
+        // read the bare key as well and treat "nothing stored" as REQUIRED
+        // (TenantSettingsService::gateSettingIsRequired). Returning the raw row
+        // sent null for a community with no stored value, and the Settings page
+        // drew both switches OFF while the platform held every new member for
+        // verification and approval (owner report, 13 Nov 2026).
+        $tenantSettings = app(TenantSettingsService::class);
+        $generalSettings['email_verification'] = $tenantSettings->requiresEmailVerification((int) $tenantId) ? 'true' : 'false';
+        $generalSettings['admin_approval'] = $tenantSettings->requiresAdminApproval((int) $tenantId) ? 'true' : 'false';
+
         // Accessible (GOV.UK alpha) header colours live in tenants.configuration
         // (next to the header logo), not the tenant_settings KV table. Surface
         // them here so the admin colour pickers prefill with the current values.

@@ -272,7 +272,7 @@
     "related_operations": "Operazioni",
     "related_operations_desc": "Statistiche della cache e controlli del lavoro in background.",
     "related_registration_policy": "Politica di registrazione",
-    "related_registration_policy_desc": "Regole di registrazione granulari, codici di invito, domini consentiti e captcha.",
+    "related_registration_policy_desc": "Solo per il team della piattaforma: liste d'attesa, verifiche di identità e chiavi dei servizi di verifica dell'identità.",
     "related_safeguarding": "Tutela",
     "related_safeguarding_options": "Opzioni di salvaguardia",
     "related_safeguarding_options_desc": "Flussi di reporting, percorsi di escalation e politiche di salvaguardia.",

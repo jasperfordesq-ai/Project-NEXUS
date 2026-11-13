@@ -272,7 +272,7 @@
     "related_operations": "Operaties",
     "related_operations_desc": "Cachestatistieken en taakbedieningen op de achtergrond.",
     "related_registration_policy": "Registratiebeleid",
-    "related_registration_policy_desc": "Gedetailleerde aanmeldingsregels, uitnodigingscodes, domeinen op de toelatingslijst en captcha.",
+    "related_registration_policy_desc": "Alleen voor het platformteam: wachtlijsten, identiteitscontroles en de sleutels voor diensten die identiteit controleren.",
     "related_safeguarding": "Bescherming",
     "related_safeguarding_options": "Beschermingsopties",
     "related_safeguarding_options_desc": "Rapportagestromen, escalatiepaden en beschermingsbeleid.",

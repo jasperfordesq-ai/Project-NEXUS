@@ -229,13 +229,14 @@ describe('RegistrationPolicySettings', () => {
     expect(busy).toBeDefined();
   });
 
-  it('renders registration breaker card after load', async () => {
+  // Owner, 13 Nov 2026: this page is god-only, and what a community admin
+  // needs from it moved to the Settings page, so it is not here twice.
+  it('no longer shows the sign-up pause panel, which lives on the Settings page now', async () => {
     const { RegistrationPolicySettings } = await import('./RegistrationPolicySettings');
     render(<RegistrationPolicySettings />);
 
-    await waitFor(() => {
-      expect(screen.getByTestId('registration-breaker-card')).toBeInTheDocument();
-    });
+    await waitFor(() => expect(screen.getByText('Stripe Identity')).toBeInTheDocument());
+    expect(screen.queryByTestId('registration-breaker-card')).toBeNull();
   });
 
   it('renders identity provider names in accordion after load', async () => {
@@ -282,7 +283,7 @@ describe('RegistrationPolicySettings', () => {
     const { RegistrationPolicySettings } = await import('./RegistrationPolicySettings');
     render(<RegistrationPolicySettings />);
 
-    await waitFor(() => screen.getByTestId('registration-breaker-card'));
+    await waitFor(() => screen.getByText('Stripe Identity'));
 
     const saveBtn = screen.getAllByRole('button').find(
       (b) => b.textContent?.toLowerCase().includes('save')
@@ -303,7 +304,7 @@ describe('RegistrationPolicySettings', () => {
     const { RegistrationPolicySettings } = await import('./RegistrationPolicySettings');
     render(<RegistrationPolicySettings />);
 
-    await waitFor(() => screen.getByTestId('registration-breaker-card'));
+    await waitFor(() => screen.getByText('Stripe Identity'));
 
     const saveBtn = screen.getAllByRole('button').find(
       (b) => b.textContent?.toLowerCase().includes('save')
@@ -316,7 +317,7 @@ describe('RegistrationPolicySettings', () => {
     }
   });
 
-  it('shows invite codes section when mode is invite_only', async () => {
+  it('no longer shows invite codes, even in invite-only mode: they live on the Settings page now', async () => {
     setupMocks({ registration_mode: 'invite_only' });
     mockApi.get.mockImplementation((url: string) => {
       if (url.includes('/registration-policy')) {
@@ -334,10 +335,9 @@ describe('RegistrationPolicySettings', () => {
     const { RegistrationPolicySettings } = await import('./RegistrationPolicySettings');
     render(<RegistrationPolicySettings />);
 
-    await waitFor(() => {
-      // Invite codes section: shows the code
-      expect(screen.getByText('INVITE-ABC1')).toBeInTheDocument();
-    });
+    await waitFor(() => expect(screen.getByText('Stripe Identity')).toBeInTheDocument());
+    expect(screen.queryByText('INVITE-ABC1')).toBeNull();
+    expect(mockApi.get.mock.calls.some(([url]) => String(url).includes('/invite-codes'))).toBe(false);
   });
 
   it('renders the VerificationAuditLog stub', async () => {

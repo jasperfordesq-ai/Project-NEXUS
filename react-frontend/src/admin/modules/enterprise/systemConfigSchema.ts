@@ -131,6 +131,8 @@ export interface RelatedAdminPage {
   /** Path relative to the tenant root (e.g. "/admin/federation"). Pass through tenantPath() at render. */
   href: string;
   destLabelKey: string;
+  /** Listed only for god accounts: the page itself is god-only (GodOnlyRoute). */
+  godOnly?: boolean;
 }
 
 export const RELATED_ADMIN_PAGES: RelatedAdminPage[] = [
@@ -151,6 +153,7 @@ export const RELATED_ADMIN_PAGES: RelatedAdminPage[] = [
     descriptionKey: 'enterprise.related_registration_policy_desc',
     href: '/admin/settings/registration-policy',
     destLabelKey: 'enterprise.related_registration_policy',
+    godOnly: true,
   },
   {
     labelKey: 'enterprise.related_translation_settings',

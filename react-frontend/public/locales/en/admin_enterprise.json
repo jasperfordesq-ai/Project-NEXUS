@@ -272,7 +272,7 @@
     "related_operations": "Operations",
     "related_operations_desc": "Cache stats and background job controls.",
     "related_registration_policy": "Registration policy",
-    "related_registration_policy_desc": "Granular sign-up rules, invite codes, allowlisted domains, and captcha.",
+    "related_registration_policy_desc": "Platform team only: waiting lists, identity checks and the keys for identity check services.",
     "related_safeguarding": "Safeguarding",
     "related_safeguarding_options": "Safeguarding options",
     "related_safeguarding_options_desc": "Reporting flows, escalation paths, and safeguarding policies.",

@@ -681,9 +681,11 @@ function useAdminNav(): NavSection[] {
           // first notice. Listed first: it is where a new community's admin should start.
           { label: t('make_it_yours'), href: '/admin/make-it-yours', icon: Sparkles, keywords: keyword(t('search_keywords.make_it_yours_search')) },
           { label: t('settings'), href: '/admin/settings', icon: Settings },
-          // Who may join, and whether identity is checked — reachable before
-          // only through links inside the Settings page.
-          { label: t('registration_policy'), href: '/admin/settings/registration-policy', icon: UserCheck, keywords: keyword(t('search_keywords.registration_policy')) },
+          // Joining methods, identity checks and provider keys: god accounts
+          // only (owner, 13 Nov 2026), and guarded by GodOnlyRoute too, so a
+          // typed URL does not reach the page. Invite codes and resuming paused
+          // sign-ups are on Settings for every community admin.
+          ...(isGod ? [{ label: t('registration_policy'), href: '/admin/settings/registration-policy', icon: UserCheck, keywords: keyword(t('search_keywords.registration_policy')) }] : []),
           { label: t('onboarding_settings'), href: '/admin/onboarding-settings', icon: Heart },
           // The page has existed at this route since the legacy admin was retired but
           // was never linked from anywhere, so it was reachable only by typing the URL.

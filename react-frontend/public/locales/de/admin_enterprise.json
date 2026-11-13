@@ -272,7 +272,7 @@
     "related_operations": "Operationen",
     "related_operations_desc": "Cache-Statistiken und Hintergrundjobkontrollen.",
     "related_registration_policy": "Registrierungsrichtlinien",
-    "related_registration_policy_desc": "Detaillierte Anmelderegeln, Einladungscodes, zugelassene Domänen und Captcha.",
+    "related_registration_policy_desc": "Nur für das Plattform-Team: Wartelisten, Identitätsprüfungen und die Schlüssel für Dienste zur Identitätsprüfung.",
     "related_safeguarding": "Schutzmaßnahmen",
     "related_safeguarding_options": "Schutzoptionen",
     "related_safeguarding_options_desc": "Berichtsflüsse, Eskalationspfade und Schutzrichtlinien.",

@@ -1,5 +1,4 @@
-import { getFormattingLocale } from '@/lib/helpers';
-import { Card, CardBody, CardHeader, Button, Spinner, Chip, Input, Select, SelectItem, useDisclosure, Accordion, AccordionItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Tooltip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Snippet, useConfirm } from '@/components/ui';
+import { Card, CardBody, CardHeader, Button, Spinner, Chip, Select, SelectItem, Accordion, AccordionItem, Switch, Tooltip, Snippet, useConfirm } from '@/components/ui';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,10 +8,7 @@ import Save from 'lucide-react/icons/save';
 import Info from 'lucide-react/icons/info';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Key from 'lucide-react/icons/key';
-import Ticket from 'lucide-react/icons/ticket';
-import Plus from 'lucide-react/icons/plus';
 import Trash2 from 'lucide-react/icons/trash-2';
-import Copy from 'lucide-react/icons/copy';
 import Eye from 'lucide-react/icons/eye';
 import EyeOff from 'lucide-react/icons/eye-off';
 import CheckCircle2 from 'lucide-react/icons/circle-check';
@@ -27,7 +23,6 @@ import Shield from 'lucide-react/icons/shield';
 import { VerificationAuditLog } from './VerificationAuditLog';
 import { VerificationReviewQueue } from './VerificationReviewQueue';
 import { ProviderHealthDashboard } from './ProviderHealthDashboard';
-import { RegistrationBreakerCard } from './RegistrationBreakerCard';
 import { usePageTitle } from '@/hooks';
 import { useToast,
   useAuth } from '@/contexts';
@@ -74,23 +69,6 @@ interface ProviderInfo {
   has_credentials: boolean;
 }
 
-interface InviteCode {
-  id: number;
-  code: string;
-  max_uses: number;
-  uses_count: number;
-  note: string | null;
-  is_active: number;
-  expires_at: string | null;
-  created_at: string;
-  creator_name: string | null;
-}
-
-interface InviteCodesResponse {
-  items: InviteCode[];
-  total: number;
-}
-
 const REGISTRATION_MODE_ICONS: Record<string, typeof Globe> = {
   open: Globe,
   open_with_approval: UserCheck,
@@ -130,18 +108,6 @@ export function RegistrationPolicySettings() {
   const [credentialInputs, setCredentialInputs] = useState<Record<string, { api_key: string; webhook_secret: string }>>({});
   const [credentialVisibility, setCredentialVisibility] = useState<Record<string, { api_key: boolean; webhook_secret: boolean }>>({});
   const [savingCredentials, setSavingCredentials] = useState<Record<string, boolean>>({});
-
-  // Invite codes state
-  const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([]);
-  const [inviteCodesTotal, setInviteCodesTotal] = useState(0);
-  const [inviteCodesLoading, setInviteCodesLoading] = useState(false);
-  const [generateCount, setGenerateCount] = useState(1);
-  const [generateMaxUses, setGenerateMaxUses] = useState(1);
-  const [generateExpiry, setGenerateExpiry] = useState('');
-  const [generateNote, setGenerateNote] = useState('');
-  const [generating, setGenerating] = useState(false);
-  const [generatedCodes, setGeneratedCodes] = useState<string[]>([]);
-  const generateModal = useDisclosure();
 
   const REGISTRATION_MODES = [
     { key: 'open', label: t('system.reg.mode_open'), description: t('system.reg.mode_open_desc'), icon: REGISTRATION_MODE_ICONS.open, color: REGISTRATION_MODE_COLORS.open },
@@ -198,23 +164,7 @@ export function RegistrationPolicySettings() {
   }, [t, toast])
 
 
-  const fetchInviteCodes = useCallback(async () => {
-    setInviteCodesLoading(true);
-    try {
-      const res = await api.get<InviteCodesResponse>('/v2/admin/invite-codes');
-      if (res.data) {
-        setInviteCodes(res.data.items || []);
-        setInviteCodesTotal(res.data.total || 0);
-      }
-    } catch { /* ignore */ } finally {
-      setInviteCodesLoading(false);
-    }
-  }, []);
-
   useEffect(() => { fetchData(); }, [fetchData]);
-  useEffect(() => {
-    if (policy?.registration_mode === 'invite_only') fetchInviteCodes();
-  }, [policy?.registration_mode, fetchInviteCodes]);
 
   const handleSave = async () => {
     if (!policy) return;
@@ -282,45 +232,6 @@ export function RegistrationPolicySettings() {
     }
   };
 
-  const handleGenerateInviteCodes = async () => {
-    setGenerating(true);
-    try {
-      const res = await api.post<{ codes: string[] }>('/v2/admin/invite-codes', {
-        count: generateCount,
-        max_uses: generateMaxUses,
-        expires_at: generateExpiry || undefined,
-        note: generateNote || undefined,
-      });
-      if (res.data?.codes) {
-        setGeneratedCodes(res.data.codes);
-        fetchInviteCodes();
-        toast.success(t('system.reg.codes_generated'));
-      }
-    } catch {
-      toast.error(t('system.failed_to_generate_invite_codes'));
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const handleDeactivateCode = async (id: number) => {
-    try {
-      const res = await api.delete(`/v2/admin/invite-codes/${id}`);
-      if (res.success) {
-        toast.success(t('system.invite_code_deactivated'));
-        fetchInviteCodes();
-      } else {
-        toast.error(t('system.failed_to_deactivate_invite_code'));
-      }
-    } catch {
-      toast.error(t('system.failed_to_deactivate_invite_code'));
-    }
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(t('system.copied_to_clipboard'));
-  };
 
   const showVerificationOptions = policy?.registration_mode === 'verified_identity' || policy?.registration_mode === 'government_id';
   const selectedMode = REGISTRATION_MODES.find(m => m.key === policy?.registration_mode);
@@ -343,8 +254,9 @@ export function RegistrationPolicySettings() {
 
       <div className="space-y-6">
 
-        {/* ── Tenant Circuit Breaker (always visible, top of page) ── */}
-        <RegistrationBreakerCard />
+        {/* Invite codes and the sign-up pause ("resume sign-ups") moved to the
+            Settings page on 13 Nov 2026, when this page became god-only: a
+            community admin needs both. */}
 
         {/* ── Section 1: Registration Method ── */}
         <Card>
@@ -705,180 +617,6 @@ export function RegistrationPolicySettings() {
             </CardBody>
           </Card>
         )}
-
-        {/* ── Section 5: Invite Codes (conditional) ── */}
-        {policy.registration_mode === 'invite_only' && (
-          <Card>
-            <CardHeader className="flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Ticket size={20} className="text-warning" /> {t('system.reg.invite_codes')}
-                </h3>
-                <p className="text-sm text-muted mt-1">
-                  {t('system.reg.invite_codes_desc')}
-                </p>
-              </div>
-              <Button
-                size="sm"
-
-                startContent={<Plus size={14} />}
-                onPress={() => { setGeneratedCodes([]); setGenerateCount(1); setGenerateMaxUses(1); setGenerateExpiry(''); setGenerateNote(''); generateModal.onOpen(); }}
-              >
-                {t('system.reg.generate_codes')}
-              </Button>
-            </CardHeader>
-            <CardBody>
-              {inviteCodesLoading ? (
-                <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-4"><Spinner /></div>
-              ) : inviteCodes.length === 0 ? (
-                <div className="text-center py-8">
-              <Ticket size={32} className="mx-auto text-muted mb-2" />
-                  <p className="text-sm text-muted">{t('system.reg.no_invite_codes')}</p>
-                  <p className="text-xs text-muted mt-1">{t('system.reg.no_invite_codes_hint')}</p>
-                </div>
-              ) : (
-                <Table aria-label={t('system.reg.invite_codes')} removeWrapper>
-                  <TableHeader>
-                    <TableColumn>{t('system.reg.col_code')}</TableColumn>
-                    <TableColumn>{t('system.reg.col_uses')}</TableColumn>
-                    <TableColumn>{t('system.reg.col_status')}</TableColumn>
-                    <TableColumn>{t('system.reg.col_note')}</TableColumn>
-                    <TableColumn>{t('system.reg.col_expires')}</TableColumn>
-                    <TableColumn>{t('system.reg.col_actions')}</TableColumn>
-                  </TableHeader>
-                  <TableBody>
-                    {inviteCodes.map((ic) => (
-                      <TableRow key={ic.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <code className="text-sm font-mono">{ic.code}</code>
-                            <Button isIconOnly size="sm" variant="tertiary" aria-label={t('system.reg.copy_invite_code')} onPress={() => copyToClipboard(ic.code)}>
-                              <Copy size={12} />
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className={ic.uses_count >= ic.max_uses ? 'text-warning' : ''}>
-                            {ic.uses_count}/{ic.max_uses}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {!ic.is_active ? (
-                            <Chip size="sm" color="default" variant="soft">{t('system.reg.deactivated')}</Chip>
-                          ) : ic.uses_count >= ic.max_uses ? (
-                            <Chip size="sm" color="warning" variant="soft">{t('system.reg.exhausted')}</Chip>
-                          ) : ic.expires_at && new Date(ic.expires_at) < new Date() ? (
-                            <Chip size="sm" color="warning" variant="soft">{t('system.reg.expired')}</Chip>
-                          ) : (
-                            <Chip size="sm" color="success" variant="soft">{t('system.reg.active')}</Chip>
-                          )}
-                        </TableCell>
-                        <TableCell><span className="text-sm text-muted">{ic.note || '—'}</span></TableCell>
-                        <TableCell>
-                          <span className="text-sm text-muted">
-                            {ic.expires_at ? new Date(ic.expires_at).toLocaleDateString(getFormattingLocale()) : t('system.reg.never')}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {ic.is_active ? (
-                            <Button isIconOnly size="sm" variant="danger" aria-label={t('system.reg.deactivate_invite_code')} onPress={() => handleDeactivateCode(ic.id)}>
-                              <Trash2 size={14} />
-                            </Button>
-                          ) : null}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-              {inviteCodesTotal > 0 && (
-                <p className="text-xs text-muted mt-2">{t('system.reg.total_codes_count', { count: inviteCodesTotal })}</p>
-              )}
-            </CardBody>
-          </Card>
-        )}
-
-        {/* Generate Codes Modal */}
-        <Modal isOpen={generateModal.isOpen} onOpenChange={generateModal.onOpenChange} size="md">
-          <ModalContent>
-            <ModalHeader>{t('system.reg.generate_invite_codes')}</ModalHeader>
-            <ModalBody>
-              {generatedCodes.length > 0 ? (
-                <div className="space-y-2">
-                  <p className="text-sm text-muted">{t('system.reg.generated_share')}</p>
-                  <div className="space-y-1">
-                    {generatedCodes.map((code) => (
-                      <div key={code} className="flex items-center justify-between p-2 bg-surface-secondary rounded-lg">
-                        <code className="font-mono text-sm">{code}</code>
-                        <Button isIconOnly size="sm" variant="tertiary" aria-label={t('system.reg.copy_code')} onPress={() => copyToClipboard(code)}>
-                          <Copy size={14} />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onPress={() => copyToClipboard(generatedCodes.join('\n'))}
-                    startContent={<Copy size={14} />}
-                    className="mt-2"
-                  >
-                    {t('system.reg.copy_all_codes')}
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <Input
-                    label={t('system.label_number_of_codes')}
-                    type="number"
-                    min={1}
-                    max={100}
-                    value={String(generateCount)}
-                    onChange={(e) => setGenerateCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
-                    variant="secondary"
-                    description={t('system.reg.generate_count_desc')}
-                  />
-                  <Input
-                    label={t('system.label_max_uses_per_code')}
-                    type="number"
-                    min={1}
-                    max={1000}
-                    value={String(generateMaxUses)}
-                    onChange={(e) => setGenerateMaxUses(Math.max(1, Math.min(1000, parseInt(e.target.value) || 1)))}
-                    variant="secondary"
-                    description={t('system.reg.max_uses_desc')}
-                  />
-                  <Input
-                    label={t('system.reg.expiry_date')}
-                    type="date"
-                    value={generateExpiry}
-                    onChange={(e) => setGenerateExpiry(e.target.value)}
-                    variant="secondary"
-                    description={t('system.reg.expiry_desc')}
-                  />
-                  <Input
-                    label={t('system.reg.note_optional')}
-                    placeholder={t('system.reg.note_placeholder')}
-                    value={generateNote}
-                    onChange={(e) => setGenerateNote(e.target.value)}
-                    variant="secondary"
-                    description={t('system.reg.note_desc')}
-                  />
-                </div>
-              )}
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="secondary" onPress={generateModal.onClose}>
-                {generatedCodes.length > 0 ? t('system.reg.done') : t('system.reg.cancel')}
-              </Button>
-              {generatedCodes.length === 0 && (
-                <Button  onPress={handleGenerateInviteCodes} isLoading={generating} isDisabled={generating}>
-                  {t('system.reg.generate')}
-                </Button>
-              )}
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
 
         {/* ── Section 6: How Registration Modes Work ── */}
         <Card  className="bg-accent-soft dark:bg-accent-soft border border-accent dark:border-accent">
