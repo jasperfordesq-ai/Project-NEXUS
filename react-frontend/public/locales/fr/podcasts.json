@@ -28,7 +28,7 @@
   "show": {
     "load_failed": "Impossible de charger ce podcast",
     "retry": "Réessayer",
-    "not_found": "Émission de podcast introuvable",
+    "not_found": "Nous ne trouvons pas ce podcast",
     "no_summary": "Pas encore de résumé.",
     "byline": "Présenté par {{name}}",
     "community_show": "Émission communautaire",
@@ -52,7 +52,7 @@
     "load_failed": "Impossible de charger cet épisode de podcast",
     "retry": "Réessayer",
     "title": "Épisode de podcast",
-    "not_found": "Épisode de podcast introuvable",
+    "not_found": "Nous ne trouvons pas cet épisode",
     "no_summary": "Pas encore de résumé.",
     "listen": "Écouter",
     "from_show": "Dans {{title}}",

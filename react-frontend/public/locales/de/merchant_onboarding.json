@@ -49,8 +49,8 @@
   "badge_earned": "Marktplatz-Partner-Abzeichen erhalten",
   "success_cta": "Erste Anzeige erstellen",
   "errors": {
-    "save_failed": "Speichern fehlgeschlagen. Bitte versuchen Sie es erneut.",
-    "complete_failed": "Einrichtung konnte nicht abgeschlossen werden."
+    "save_failed": "Wir konnten das nicht speichern. Bitte versuchen Sie es noch einmal.",
+    "complete_failed": "Wir konnten die Einrichtung nicht abschließen. Bitte versuchen Sie es noch einmal."
   },
   "open_time": "Öffnungszeit",
   "close_time": "Schließzeit"

@@ -23,8 +23,8 @@
   "reasons_more": "+{{count}} もっと見る",
   "view_details": "マッチの詳細を見る",
   "not_interested": "興味がない",
-  "load_failed": "マッチの読み込みに失敗しました",
-  "load_error_title": "マッチを読み込めません",
+  "load_failed": "読み込めませんでした。しばらくしてからもう一度お試しください。",
+  "load_error_title": "マッチを読み込めませんでした",
   "retry": "再試行",
   "match_hidden": "マッチが非表示 — このようなものは少なく表示します",
   "page_meta": {
@@ -97,12 +97,12 @@
   },
   "preferences": {
     "subtitle": "スマート マッチングが接続を検索して通知する方法を制御します。",
-    "load_failed": "一致設定を読み込めませんでした",
+    "load_failed": "マッチ設定を読み込めませんでした",
     "load_error_desc": "保存された設定を読み込めませんでした。デフォルト値で上書きされないよう、編集は無効になっています。",
     "retry": "再試行",
     "save": "設定を保存する",
     "save_success": "一致設定が保存されました",
-    "save_failed": "一致設定の保存に失敗しました",
+    "save_failed": "保存できませんでした。もう一度お試しください。",
     "unsaved_changes": "未保存の変更があります",
     "pause": {
       "title": "マッチングを一時停止する",

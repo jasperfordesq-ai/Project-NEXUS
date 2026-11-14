@@ -7,7 +7,7 @@
       "description": "Supervisa cómo se comparte este evento con comunidades asociadas sin exponer datos privados de asistentes.",
       "refresh": "Actualizar",
       "loading": "Cargando el estado de federación...",
-      "load_error_title": "No se pudo cargar el estado de federación",
+      "load_error_title": "No hemos podido cargar el estado del uso compartido",
       "load_error_description": "No se pudieron cargar los diagnósticos de entrega. Inténtalo de nuevo.",
       "try_again": "Intentar de nuevo",
       "not_configured_title": "No hay comunidades asociadas configuradas",

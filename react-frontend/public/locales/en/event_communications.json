@@ -58,7 +58,7 @@
     "partial": "Sent on {{when}} · {{delivered}} of {{total}} delivered",
     "partial_skipped": "{{n}} skipped",
     "partial_failed": "{{n}} failed",
-    "failed": "Couldn't be sent on {{when}}",
+    "failed": "We couldn't send it on {{when}}",
     "cancelled": "Cancelled on {{when}}"
   },
   "progress_label": "How much has been sent",

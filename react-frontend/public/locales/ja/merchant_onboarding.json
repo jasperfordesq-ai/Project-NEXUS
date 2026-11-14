@@ -49,8 +49,8 @@
   "badge_earned": "Marktplatz-Partnerバッジを獲得しました",
   "success_cta": "最初のリストを作成する",
   "errors": {
-    "save_failed": "保存に失敗しました。もう一度お試しください。",
-    "complete_failed": "設定を完了できませんでした。"
+    "save_failed": "保存できませんでした。もう一度お試しください。",
+    "complete_failed": "設定を完了できませんでした。もう一度お試しください。"
   },
   "open_time": "開店時間",
   "close_time": "閉店時間"

@@ -7,7 +7,7 @@
       "description": "Controleer hoe dit evenement met partnergemeenschappen wordt gedeeld zonder privégegevens van deelnemers te tonen.",
       "refresh": "Vernieuwen",
       "loading": "Federatiestatus laden...",
-      "load_error_title": "Federatiestatus kan niet worden geladen",
+      "load_error_title": "We konden de deelstatus niet laden",
       "load_error_description": "De bezorgdiagnose kon niet worden geladen. Probeer het opnieuw.",
       "try_again": "Opnieuw proberen",
       "not_configured_title": "Geen partnergemeenschappen geconfigureerd",

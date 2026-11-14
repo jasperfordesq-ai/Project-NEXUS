@@ -6,7 +6,7 @@
     "all_categories": "Alle categorieën",
     "all_levels": "Alle niveaus",
     "load_more": "Meer laden",
-    "empty": "Geen cursussen gevonden.",
+    "empty": "Geen cursussen om te tonen.",
     "empty_hint": "Kom snel terug: er komen nieuwe cursussen aan."
   },
   "level": {
@@ -137,7 +137,7 @@
     "no_lessons": "Er zijn nog geen lessen om in kaart te brengen."
   },
   "form": {
-    "required": "Dit veld is verplicht."
+    "required": "Geef het een titel"
   },
   "nav": {
     "courses": "Cursussen"
@@ -198,7 +198,7 @@
     "instructor_granted": "Instructeurstoegang verleend",
     "instructor_revoked": "Toegang voor instructeurs is ingetrokken",
     "moderated": "Cursus bijgewerkt",
-    "error": "Er is iets misgegaan. Probeer het opnieuw.",
+    "error": "Dat is niet gelukt. Probeer het opnieuw.",
     "no_courses": "Nog geen cursussen.",
     "no_instructors": "Nog geen instructeurs toegekend.",
     "status_unknown": "Onbekende status"

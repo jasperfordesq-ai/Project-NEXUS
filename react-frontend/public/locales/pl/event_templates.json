@@ -18,11 +18,11 @@
         "all": "Wszystko"
       },
       "loading": "Ładowanie szablonów wydarzeń...",
-      "load_error_title": "Nie można wczytać szablonów wydarzeń",
+      "load_error_title": "Nie udało się nam wczytać szablonów wydarzeń",
       "load_error_description": "Nie można załadować biblioteki szablonów. Spróbuj ponownie.",
       "load_more_error": "Nie można załadować więcej szablonów.",
       "retry": "Spróbuj ponownie",
-      "empty_title": "Nie znaleziono szablonów",
+      "empty_title": "Brak szablonów do wyświetlenia",
       "empty_description": "Zapisz wydarzenie jako szablon, aby zbudować sprawdzoną bibliotekę konfiguracji wielokrotnego użytku.",
       "untitled": "Szablon bez tytułu",
       "source_label": "Źródło: {{title}}",
@@ -105,7 +105,7 @@
         "reason_recorded": "Powód archiwizacji jest rejestrowany w zachowanej historii audytów."
       },
       "audit_title": "Historia audytu szablonu",
-      "audit_error_title": "Nie można wczytać historii audytów",
+      "audit_error_title": "Nie udało się nam wczytać historii",
       "audit_error_description": "Nie można załadować historii niezmiennych szablonów.",
       "audit_empty": "Nie zwrócono żadnych wpisów kontroli.",
       "audit_load_more": "Załaduj więcej historii",

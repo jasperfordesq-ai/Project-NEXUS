@@ -28,7 +28,7 @@
   "show": {
     "load_failed": "Dieser Podcast konnte nicht geladen werden",
     "retry": "Erneut versuchen",
-    "not_found": "Podcast-Show nicht gefunden",
+    "not_found": "Wir finden diesen Podcast nicht",
     "no_summary": "Noch keine Zusammenfassung.",
     "byline": "Präsentiert von {{name}}",
     "community_show": "Gemeinschaftsshow",
@@ -50,7 +50,7 @@
     "load_failed": "Diese Podcastfolge konnte nicht geladen werden",
     "retry": "Erneut versuchen",
     "title": "Podcast-Folge",
-    "not_found": "Podcastfolge nicht gefunden",
+    "not_found": "Wir finden diese Folge nicht",
     "no_summary": "Noch keine Zusammenfassung.",
     "listen": "Anhören",
     "from_show": "Aus {{title}}",

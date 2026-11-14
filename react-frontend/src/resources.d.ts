@@ -447,8 +447,8 @@ export default interface Resources {
     "empty_title": "No recent activity",
     "endorsements_count_one": "{{count}} endorsement",
     "endorsements_count_other": "{{count}} endorsements",
-    "error_load_failed": "Failed to load activity dashboard",
-    "error_load_failed_detail": "Failed to load your activity data. Please try again.",
+    "error_load_failed": "Try again in a moment.",
+    "error_load_failed_detail": "Try again in a moment.",
     "groups_joined": "Groups Joined",
     "hours_suffix": "h",
     "likes_given_30d": "Likes Given (30d)",
@@ -481,7 +481,7 @@ export default interface Resources {
       "transactions_received": "Transactions Received"
     },
     "try_again": "Try Again",
-    "unable_to_load": "Unable to load"
+    "unable_to_load": "We couldn't load your activity"
   },
   "admin": {
     "common": {
@@ -34405,7 +34405,7 @@ export default interface Resources {
       "tue": "Tue",
       "wed": "Wed"
     },
-    "failed_to_load": "Failed to load availability",
+    "failed_to_load": "That didn't load. Try again in a moment.",
     "full_days": {
       "fri": "Friday",
       "mon": "Monday",
@@ -37832,9 +37832,9 @@ export default interface Resources {
     "disclaimer": "AI responses may not always be accurate. Verify important information.",
     "empty_description": "Ask me anything about timebanking, your account, or this community.",
     "empty_title": "AI Assistant",
-    "error_connection": "Failed to connect to the AI service. Please check your connection and try again.",
-    "error_generic": "Something went wrong. Please try again.",
-    "error_label": "Error",
+    "error_connection": "We can't connect. Check your internet connection and try again.",
+    "error_generic": "That didn't work. Please try again.",
+    "error_label": "That didn't work",
     "error_rate_limit": "You have reached your usage limit for now. Please try again later.",
     "feature_unavailable_description": "The AI Assistant feature is not enabled for this community. Contact your timebank administrator to learn more.",
     "feature_unavailable_title": "AI Assistant Not Available",
@@ -37876,7 +37876,7 @@ export default interface Resources {
     "starter_q5": "How do I create a listing to offer my skills?",
     "thumbs_down_aria": "Unhelpful answer",
     "thumbs_up_aria": "Helpful answer",
-    "toast_connection_error": "Failed to reach AI service",
+    "toast_connection_error": "We can't connect right now",
     "toast_rate_limit": "Usage limit reached",
     "tool_results": {
       "result_fallback": "Result",
@@ -41622,15 +41622,15 @@ export default interface Resources {
     "tab_pending": "Pending",
     "tab_sent": "Sent",
     "title": "Connections",
-    "toast_accept_failed": "Failed to accept connection",
+    "toast_accept_failed": "We couldn't accept that request. Please try again.",
     "toast_accepted": "Connection accepted!",
-    "toast_cancel_failed": "Failed to cancel request",
+    "toast_cancel_failed": "We couldn't cancel that request. Please try again.",
     "toast_cancelled": "Request cancelled",
-    "toast_decline_failed": "Failed to decline request",
+    "toast_decline_failed": "We couldn't decline that request. Please try again.",
     "toast_declined": "Request declined",
-    "toast_disconnect_failed": "Failed to disconnect",
+    "toast_disconnect_failed": "We couldn't remove that connection. Please try again.",
     "toast_disconnected": "Disconnected",
-    "toast_load_failed": "Failed to load connections",
+    "toast_load_failed": "We couldn't load your connections.",
     "wants_to_connect": "Wants to connect with you"
   },
   "courses": {
@@ -41639,7 +41639,7 @@ export default interface Resources {
       "approve": "Approve",
       "author": "Author",
       "course": "Course",
-      "error": "Something went wrong. Please try again.",
+      "error": "That didn't work. Please try again.",
       "grant_instructor": "Grant instructor",
       "instructor_granted": "Instructor access granted",
       "instructor_revoked": "Instructor access revoked",
@@ -41678,7 +41678,7 @@ export default interface Resources {
     "browse": {
       "all_categories": "All categories",
       "all_levels": "All levels",
-      "empty": "No courses found.",
+      "empty": "No courses to show.",
       "empty_hint": "Check back soon — new courses are on the way.",
       "load_more": "Load more",
       "search_placeholder": "Search courses…"
@@ -41775,7 +41775,7 @@ export default interface Resources {
       "title": "Discussion"
     },
     "form": {
-      "required": "This field is required."
+      "required": "Give it a title"
     },
     "grading": {
       "answer": "Answer",
@@ -44151,7 +44151,7 @@ export default interface Resources {
       "cancelled": "Cancelled on {{when}}",
       "draft": "Draft – not sent yet",
       "due": "Sending shortly…",
-      "failed": "Couldn't be sent on {{when}}",
+      "failed": "We couldn't send it on {{when}}",
       "partial": "Sent on {{when}} · {{delivered}} of {{total}} delivered",
       "partial_failed": "{{n}} failed",
       "partial_skipped": "{{n}} skipped",
@@ -44207,7 +44207,7 @@ export default interface Resources {
           "withdrawn": "Withdrawn from partners"
         },
         "load_error_description": "Delivery diagnostics could not be loaded. Please try again.",
-        "load_error_title": "Unable to load federation status",
+        "load_error_title": "We couldn't load the sharing status",
         "loading": "Loading federation status...",
         "metrics": {
           "configured_partners": "Configured partners",
@@ -44757,8 +44757,8 @@ export default interface Resources {
         "csv_email_column_missing": "email column missing",
         "csv_header_missing": "CSV header missing",
         "duplicate_target": "duplicate recipient",
-        "email_invalid": "invalid email address",
-        "member_not_found": "member not found"
+        "email_invalid": "that email address doesn't look right",
+        "member_not_found": "we can't find that member"
       },
       "errors": "Errors",
       "expires_at": "Invitation expires",
@@ -45275,7 +45275,7 @@ export default interface Resources {
         },
         "audit_empty": "No audit entries were returned.",
         "audit_error_description": "The immutable template history could not be loaded.",
-        "audit_error_title": "Unable to load audit history",
+        "audit_error_title": "We couldn't load the history",
         "audit_load_more": "Load more history",
         "audit_title": "Template audit history",
         "cancel": "Cancel",
@@ -45308,7 +45308,7 @@ export default interface Resources {
         "copied_title": "Configuration copied into the template",
         "description": "Save approved event configuration for reuse, review every copied field, and create a new event through a fresh draft workflow.",
         "empty_description": "Save an event as a template to build a reusable, reviewed configuration library.",
-        "empty_title": "No templates found",
+        "empty_title": "No templates to show",
         "fields": {
           "all_day": "All-day event",
           "allow_remote_attendance": "Allow remote attendance",
@@ -45327,7 +45327,7 @@ export default interface Resources {
         },
         "immutable_audit": "This audit entry is immutable.",
         "load_error_description": "The template library could not be loaded. Please try again.",
-        "load_error_title": "Unable to load event templates",
+        "load_error_title": "We couldn't load the event templates",
         "load_more": "Load more templates",
         "load_more_error": "More templates could not be loaded.",
         "loading": "Loading event templates...",
@@ -53534,22 +53534,22 @@ export default interface Resources {
     "empty": {
       "no_articles": "No knowledge base articles have been published yet.",
       "search_description": "Try a different search term.",
-      "title": "No articles found"
+      "title": "No articles to show"
     },
     "empty.no_articles": "No knowledge base articles have been published yet.",
     "empty.search_description": "Try a different search term.",
-    "empty.title": "No articles found",
+    "empty.title": "No articles to show",
     "error": {
-      "article_not_found": "Article not found.",
-      "article_title": "Unable to load article",
-      "title": "Unable to load"
+      "article_not_found": "We can't find that article.",
+      "article_title": "We couldn't load this article",
+      "title": "We couldn't load this page"
     },
-    "error.article_load_retry": "Failed to load article. Please try again.",
-    "error.article_not_found": "Article not found.",
-    "error.article_title": "Unable to load article",
-    "error.load_articles": "Failed to load knowledge base articles.",
-    "error.load_retry": "Failed to load articles. Please try again.",
-    "error.title": "Unable to load",
+    "error.article_load_retry": "Try again in a moment.",
+    "error.article_not_found": "We can't find that article.",
+    "error.article_title": "We couldn't load this article",
+    "error.load_articles": "Try again in a moment.",
+    "error.load_retry": "Try again in a moment.",
+    "error.title": "We couldn't load this page",
     "feedback": {
       "no": "No",
       "question": "Was this article helpful?",
@@ -53558,7 +53558,7 @@ export default interface Resources {
     "feedback.no": "No",
     "feedback.question": "Was this article helpful?",
     "feedback.yes": "Yes",
-    "feedback_failed": "Failed to submit feedback.",
+    "feedback_failed": "We couldn't send your feedback. Please try again.",
     "feedback_thanks": "Thank you for your feedback!",
     "general_category": "General",
     "loading": "Loading knowledge base...",
@@ -56071,8 +56071,8 @@ export default interface Resources {
     "filter_people_listings": "Offers and requests",
     "filter_tabs_aria": "Match module filter",
     "heading": "Your Matches",
-    "load_error_title": "Unable to load matches",
-    "load_failed": "Failed to load matches",
+    "load_error_title": "We couldn't load your matches",
+    "load_failed": "That didn't load. Try again in a moment.",
     "loading": "Loading matches...",
     "match_hidden": "Match hidden — we'll show you fewer like this",
     "not_interested": "Not interested",
@@ -56089,7 +56089,7 @@ export default interface Resources {
       },
       "heading": "Match Preferences",
       "load_error_desc": "Your saved preferences couldn't be loaded. Editing is disabled so they aren't overwritten with defaults.",
-      "load_failed": "Failed to load your match preferences",
+      "load_failed": "We couldn't load your match preferences",
       "notifications": {
         "daily": "Daily",
         "fortnightly": "Fortnightly",
@@ -56111,7 +56111,7 @@ export default interface Resources {
       },
       "retry": "Try again",
       "save": "Save preferences",
-      "save_failed": "Failed to save match preferences",
+      "save_failed": "We couldn't save that. Please try again.",
       "save_success": "Match preferences saved",
       "subtitle": "Control how Smart Matching finds and notifies you about connections.",
       "thresholds": {
@@ -56170,8 +56170,8 @@ export default interface Resources {
     },
     "display_name": "Display name",
     "errors": {
-      "complete_failed": "Failed to complete setup.",
-      "save_failed": "Failed to save. Please try again."
+      "complete_failed": "We couldn't finish the setup. Please try again.",
+      "save_failed": "We couldn't save that. Please try again."
     },
     "hero_subtitle": "Set up your business in 4 simple steps and start selling locally",
     "hero_title": "Become a Marktplatz Partner",
@@ -56588,8 +56588,8 @@ export default interface Resources {
     "empty_caught_up_desc": "You've read all your notifications",
     "empty_desc": "You'll see new notifications here",
     "empty_title": "No notifications",
-    "error_load": "Something went wrong loading your notifications",
-    "error_title": "Unable to load",
+    "error_load": "That didn't load. Try again in a moment.",
+    "error_title": "We couldn't load your notifications",
     "expand_group": "Expand",
     "filter_all": "All",
     "filter_unread": "Unread ({{count}})",
@@ -56664,10 +56664,10 @@ export default interface Resources {
       "all_deleted": "All notifications deleted",
       "all_read": "All notifications marked as read",
       "delete_all_failed": "We could not delete your notifications. Please try again.",
-      "delete_failed": "Failed to delete notification",
+      "delete_failed": "We couldn't delete that. Please try again.",
       "deleted": "Notification deleted",
-      "mark_all_failed": "Failed to mark all as read",
-      "mark_read_failed": "Failed to mark notification as read",
+      "mark_all_failed": "We couldn't mark them all as read. Please try again.",
+      "mark_read_failed": "We couldn't mark that as read. Please try again.",
       "undo_hint": "Click Undo to restore"
     },
     "try_again": "Try Again",
@@ -57149,7 +57149,7 @@ export default interface Resources {
       "listen": "Listen",
       "load_failed": "This podcast episode could not be loaded",
       "no_summary": "No summary yet.",
-      "not_found": "Podcast episode not found",
+      "not_found": "We can't find that episode",
       "react": "React",
       "reacted": "Reacted",
       "reaction_failed": "Could not update your reaction.",
@@ -57254,7 +57254,7 @@ export default interface Resources {
       "load_failed": "This podcast show could not be loaded",
       "no_episodes": "No published episodes yet.",
       "no_summary": "No summary yet.",
-      "not_found": "Podcast show not found",
+      "not_found": "We can't find that podcast",
       "retry": "Try again",
       "rss_feed": "RSS feed",
       "subscribe": "Follow show",
@@ -58992,7 +58992,7 @@ export default interface Resources {
       "empty": "You haven't written any reviews yet",
       "empty_subtitle": "After completing exchanges, you can leave reviews for other members."
     },
-    "load_error": "Failed to load reviews. Please try again.",
+    "load_error": "That didn't load. Try again in a moment.",
     "load_more": "Load more",
     "page_title": "Reviews",
     "pending": {
@@ -59009,7 +59009,7 @@ export default interface Resources {
       "anonymous": "Anonymous",
       "delete": "Delete Review",
       "delete_confirm": "Are you sure you want to delete this review?",
-      "delete_error": "Failed to delete review",
+      "delete_error": "We couldn't delete that. Please try again.",
       "delete_success": "Review deleted"
     },
     "stars": "{{count}} star",
@@ -59079,7 +59079,7 @@ export default interface Resources {
     "members_count_other": "{{count}} members",
     "no_query": "No query",
     "no_results_desc": "No results for \"{{query}}\". Try a different search term.",
-    "no_results_title": "No results found",
+    "no_results_title": "Nothing matches that search",
     "page_meta": {
       "description": "Search your community for listings, members, groups, events, and useful local activity across the Project NEXUS timebanking platform.",
       "title": "Search"
@@ -59141,9 +59141,9 @@ export default interface Resources {
     "toast": {
       "search_failed": "Search failed"
     },
-    "toast_search_delete_failed": "Failed to delete saved search",
+    "toast_search_delete_failed": "We couldn't delete that. Please try again.",
     "toast_search_deleted": "Saved search removed",
-    "toast_search_save_failed": "Failed to save search",
+    "toast_search_save_failed": "We couldn't save that. Please try again.",
     "toast_search_saved": "Search saved",
     "try_again": "Try Again",
     "view_all_events": "View all {{count}} events",

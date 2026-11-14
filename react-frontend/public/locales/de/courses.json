@@ -6,7 +6,7 @@
     "all_categories": "Alle Kategorien",
     "all_levels": "Alle Ebenen",
     "load_more": "Mehr laden",
-    "empty": "Keine Kurse gefunden.",
+    "empty": "Keine Kurse zum Anzeigen.",
     "empty_hint": "Schauen Sie bald wieder vorbei – neue Kurse sind in Vorbereitung."
   },
   "level": {
@@ -137,7 +137,7 @@
     "no_lessons": "Noch keine Lektionen zum Zeichnen."
   },
   "form": {
-    "required": "Dieses Feld ist erforderlich."
+    "required": "Geben Sie einen Titel ein"
   },
   "nav": {
     "courses": "Kurse"
@@ -198,7 +198,7 @@
     "instructor_granted": "Dozentenzugriff gewährt",
     "instructor_revoked": "Der Dozentenzugriff wurde widerrufen",
     "moderated": "Kurs aktualisiert",
-    "error": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
+    "error": "Das hat nicht geklappt. Bitte versuchen Sie es noch einmal.",
     "no_courses": "Noch keine Kurse.",
     "no_instructors": "Noch keine Lehrkräfte vergeben.",
     "status_unknown": "Unbekannter Status"

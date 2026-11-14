@@ -15,7 +15,7 @@
     "delete": "Bewertung löschen",
     "delete_confirm": "Möchten Sie diese Bewertung wirklich löschen?",
     "delete_success": "Bewertung gelöscht",
-    "delete_error": "Bewertung konnte nicht gelöscht werden"
+    "delete_error": "Wir konnten das nicht löschen. Bitte versuchen Sie es noch einmal."
   },
   "pending": {
     "empty": "Keine ausstehenden Bewertungen",
@@ -30,7 +30,7 @@
     "empty": "Sie haben noch keine Bewertungen geschrieben",
     "empty_subtitle": "Nach abgeschlossenen Austauschen können Sie andere Mitglieder bewerten."
   },
-  "load_error": "Bewertungen konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+  "load_error": "Das wurde nicht geladen. Versuchen Sie es gleich noch einmal.",
   "load_more": "Mehr laden",
   "stars": "{{count}} Stern",
   "stars_plural": "{{count}} Sterne",

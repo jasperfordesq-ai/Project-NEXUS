@@ -28,7 +28,7 @@
   "show": {
     "load_failed": "Níorbh fhéidir an podchraoladh seo a lódáil",
     "retry": "Bain triail eile as",
-    "not_found": "Níor aimsíodh seó podchraolta",
+    "not_found": "Ní féidir linn an podchraoladh sin a aimsiú",
     "no_summary": "Gan achoimre fós.",
     "byline": "Á chur i láthair ag {{name}}",
     "community_show": "Seó pobail",
@@ -56,7 +56,7 @@
     "load_failed": "Níorbh fhéidir an eipeasóid seo a lódáil",
     "retry": "Bain triail eile as",
     "title": "Eipeasóid podchraolta",
-    "not_found": "Níor aimsíodh eipeasóid podchraolta",
+    "not_found": "Ní féidir linn an eipeasóid sin a aimsiú",
     "no_summary": "Gan achoimre fós.",
     "listen": "Éist",
     "from_show": "Ó {{title}}",

@@ -2,7 +2,7 @@
   "set_your_availability": "Stel je beschikbaarheid in",
   "available": "Beschikbaar",
   "unavailable": "Niet beschikbaar",
-  "failed_to_load": "Beschikbaarheid laden mislukt",
+  "failed_to_load": "Dat is niet geladen. Probeer het zo nog eens.",
   "retry": "Opnieuw proberen",
   "save": "Opslaan",
   "save_success": "Beschikbaarheid opgeslagen",

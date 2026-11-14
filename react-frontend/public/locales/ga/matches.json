@@ -23,8 +23,8 @@
   "reasons_more": "+{{count}} eile",
   "view_details": "Féach ar shonraí meaitseála",
   "not_interested": "Níl suim agam",
-  "load_failed": "Theip ar na meaitseálacha a lódáil",
-  "load_error_title": "Ní féidir na meaitseálacha a lódáil",
+  "load_failed": "Níor lódáladh é sin. Bain triail eile as i gceann nóiméid.",
+  "load_error_title": "Níor éirigh linn do mheaitseálacha a lódáil",
   "retry": "Bain triail eile as",
   "match_hidden": "Meaitseáil i bhfolach — taispeánfaimid níos lú mar seo duit",
   "page_meta": {
@@ -97,12 +97,12 @@
   },
   "preferences": {
     "subtitle": "Rialaigh conas a aimsíonn Meaitseáil Chliste naisc duit agus conas a chuireann sí ar an eolas thú fúthu.",
-    "load_failed": "Theip ar do shainroghanna meaitseála a lódáil",
+    "load_failed": "Níor éirigh linn do shainroghanna meaitseála a lódáil",
     "load_error_desc": "Níorbh fhéidir do shainroghanna sábháilte a lódáil. Tá an eagarthóireacht díchumasaithe ionas nach ndéanfar iad a fhorscríobh le réamhshocruithe.",
     "retry": "Bain triail eile as",
     "save": "Sábháil sainroghanna",
     "save_success": "Sábháladh na sainroghanna meaitseála",
-    "save_failed": "Theip ar shábháil roghanna meaitseála",
+    "save_failed": "Níor éirigh linn é sin a shábháil. Bain triail eile as.",
     "unsaved_changes": "Tá athruithe gan sábháil agat",
     "pause": {
       "title": "Cuir meaitseáil ar sos",

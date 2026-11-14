@@ -7,7 +7,7 @@
       "description": "Überwachen Sie die Freigabe dieser Veranstaltung für Partnergemeinschaften, ohne private Teilnehmendendaten offenzulegen.",
       "refresh": "Aktualisieren",
       "loading": "Föderationsstatus wird geladen...",
-      "load_error_title": "Föderationsstatus konnte nicht geladen werden",
+      "load_error_title": "Wir konnten den Freigabestatus nicht laden",
       "load_error_description": "Die Zustelldiagnose konnte nicht geladen werden. Versuchen Sie es erneut.",
       "try_again": "Erneut versuchen",
       "not_configured_title": "Keine Partnergemeinschaften konfiguriert",

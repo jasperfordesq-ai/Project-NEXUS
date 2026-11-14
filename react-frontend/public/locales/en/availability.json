@@ -2,7 +2,7 @@
   "set_your_availability": "Set Your Availability",
   "available": "Available",
   "unavailable": "Unavailable",
-  "failed_to_load": "Failed to load availability",
+  "failed_to_load": "That didn't load. Try again in a moment.",
   "retry": "Retry",
   "save": "Save",
   "save_success": "Availability saved",

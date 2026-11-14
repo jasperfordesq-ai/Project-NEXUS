@@ -6,7 +6,7 @@
     "all_categories": "Todas las categorias",
     "all_levels": "Todos los niveles",
     "load_more": "Cargar mas",
-    "empty": "No se encontraron cursos.",
+    "empty": "No hay cursos que mostrar.",
     "empty_hint": "Vuelve pronto: hay nuevos cursos en camino."
   },
   "level": {
@@ -139,7 +139,7 @@
     "no_lessons": "Aún no hay lecciones para trazar."
   },
   "form": {
-    "required": "Este campo es obligatorio."
+    "required": "Ponle un título"
   },
   "nav": {
     "courses": "Cursos"
@@ -202,7 +202,7 @@
     "instructor_granted": "Acceso de instructor concedido",
     "instructor_revoked": "Acceso de instructor revocado",
     "moderated": "Curso actualizado",
-    "error": "Algo salió mal. Por favor inténtalo de nuevo.",
+    "error": "Eso no ha funcionado. Vuelve a intentarlo.",
     "no_courses": "Aún no hay cursos.",
     "no_instructors": "Aún no se han concedido instructores.",
     "status_unknown": "Estado desconocido"

@@ -6,7 +6,7 @@
     "all_categories": "Tutte le categorie",
     "all_levels": "Tutti i livelli",
     "load_more": "Carica altro",
-    "empty": "Nessun corso trovato.",
+    "empty": "Nessun corso da mostrare.",
     "empty_hint": "Torna presto: nuovi corsi sono in arrivo."
   },
   "level": {
@@ -139,7 +139,7 @@
     "no_lessons": "Nessuna lezione da tracciare ancora."
   },
   "form": {
-    "required": "Questo campo è obbligatorio."
+    "required": "Dagli un titolo"
   },
   "nav": {
     "courses": "Corsi"
@@ -202,7 +202,7 @@
     "instructor_granted": "Accesso istruttore concesso",
     "instructor_revoked": "Accesso insegnante revocato",
     "moderated": "Corso aggiornato",
-    "error": "Qualcosa è andato storto. Per favore riprova.",
+    "error": "Non ha funzionato. Riprova.",
     "no_courses": "Nessun corso ancora.",
     "no_instructors": "Nessun istruttore assegnato ancora.",
     "status_unknown": "Stato sconosciuto"

@@ -18,11 +18,11 @@
         "all": "Alle"
       },
       "loading": "Veranstaltungsvorlagen werden geladen...",
-      "load_error_title": "Ereignisvorlagen können nicht geladen werden",
+      "load_error_title": "Wir konnten die Veranstaltungsvorlagen nicht laden",
       "load_error_description": "Die Vorlagenbibliothek konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
       "load_more_error": "Weitere Vorlagen konnten nicht geladen werden.",
       "retry": "Versuchen Sie es erneut",
-      "empty_title": "Keine Vorlagen gefunden",
+      "empty_title": "Keine Vorlagen zum Anzeigen",
       "empty_description": "Speichern Sie ein Ereignis als Vorlage, um eine wiederverwendbare, überprüfte Konfigurationsbibliothek zu erstellen.",
       "untitled": "Vorlage ohne Titel",
       "source_label": "Quelle: {{title}}",
@@ -105,7 +105,7 @@
         "reason_recorded": "Ein Archivierungsgrund wird im aufbewahrten Prüfverlauf aufgezeichnet."
       },
       "audit_title": "Prüfverlauf der Vorlage",
-      "audit_error_title": "Der Prüfverlauf konnte nicht geladen werden",
+      "audit_error_title": "Wir konnten den Verlauf nicht laden",
       "audit_error_description": "Der unveränderliche Vorlagenverlauf konnte nicht geladen werden.",
       "audit_empty": "Es wurden keine Prüfeinträge zurückgegeben.",
       "audit_load_more": "Mehr Verlauf laden",

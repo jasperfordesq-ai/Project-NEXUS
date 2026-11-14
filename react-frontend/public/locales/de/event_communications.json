@@ -58,7 +58,7 @@
     "partial": "Am {{when}} gesendet · {{delivered}} von {{total}} zugestellt",
     "partial_skipped": "{{n}} übersprungen",
     "partial_failed": "{{n}} fehlgeschlagen",
-    "failed": "Konnte am {{when}} nicht gesendet werden",
+    "failed": "Wir konnten sie am {{when}} nicht senden",
     "cancelled": "Am {{when}} abgebrochen"
   },
   "progress_label": "Wie viel schon gesendet wurde",

@@ -49,8 +49,8 @@
   "badge_earned": "Gnóthaithe suaitheantas Marktplatz-Páirtí",
   "success_cta": "Cruthaigh do chéad liostú",
   "errors": {
-    "save_failed": "Theip ar shábháil. Déan iarracht arís.",
-    "complete_failed": "Theip ar chur i gcrích an tsuiteála."
+    "save_failed": "Níor éirigh linn é sin a shábháil. Bain triail eile as.",
+    "complete_failed": "Níor éirigh linn an socrú a chríochnú. Bain triail eile as."
   },
   "open_time": "Am oscailte",
   "close_time": "Am dúnta"

@@ -18,11 +18,11 @@
         "all": "Todos"
       },
       "loading": "Carregando modelos de eventos...",
-      "load_error_title": "Não foi possível carregar modelos de eventos",
+      "load_error_title": "Não conseguimos carregar os modelos de eventos",
       "load_error_description": "A biblioteca de modelos não pôde ser carregada. Por favor, tente novamente.",
       "load_more_error": "Não foi possível carregar mais modelos.",
       "retry": "Tente novamente",
-      "empty_title": "Nenhum modelo encontrado",
+      "empty_title": "Nenhum modelo para mostrar",
       "empty_description": "Salve um evento como modelo para criar uma biblioteca de configuração revisada e reutilizável.",
       "untitled": "Modelo sem título",
       "source_label": "Fonte: {{title}}",
@@ -105,7 +105,7 @@
         "reason_recorded": "Um motivo de arquivamento é registrado no histórico de auditoria retido."
       },
       "audit_title": "Histórico de auditoria de modelo",
-      "audit_error_title": "Não foi possível carregar o histórico de auditoria",
+      "audit_error_title": "Não conseguimos carregar o histórico",
       "audit_error_description": "O histórico imutável do modelo não pôde ser carregado.",
       "audit_empty": "Nenhuma entrada de auditoria foi retornada.",
       "audit_load_more": "Carregar mais histórico",

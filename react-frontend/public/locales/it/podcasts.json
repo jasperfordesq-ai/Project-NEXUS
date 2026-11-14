@@ -28,7 +28,7 @@
   "show": {
     "load_failed": "Impossibile caricare questo podcast",
     "retry": "Riprova",
-    "not_found": "Programma podcast non trovato",
+    "not_found": "Non troviamo quel podcast",
     "no_summary": "Nessun riepilogo ancora.",
     "byline": "Condotto da {{name}}",
     "community_show": "Programma della comunità",
@@ -52,7 +52,7 @@
     "load_failed": "Impossibile caricare questo episodio",
     "retry": "Riprova",
     "title": "Episodio podcast",
-    "not_found": "Episodio del podcast non trovato",
+    "not_found": "Non troviamo quell’episodio",
     "no_summary": "Nessun riepilogo ancora.",
     "listen": "Ascolta",
     "from_show": "Da {{title}}",

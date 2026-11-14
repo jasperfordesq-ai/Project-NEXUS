@@ -49,8 +49,8 @@
   "badge_earned": "Marktplatz-Partner-badge verdiend",
   "success_cta": "Maak uw eerste advertentie",
   "errors": {
-    "save_failed": "Opslaan mislukt. Probeer het opnieuw.",
-    "complete_failed": "Installatie kon niet worden voltooid."
+    "save_failed": "We konden dat niet opslaan. Probeer het opnieuw.",
+    "complete_failed": "We konden het instellen niet afronden. Probeer het opnieuw."
   },
   "open_time": "Openingstijd",
   "close_time": "Sluitingstijd"

@@ -61,7 +61,7 @@
     "partial": "Seolta ar {{when}} · {{delivered}} as {{total}} seachadta",
     "partial_skipped": "{{n}} scipeáilte",
     "partial_failed": "{{n}} teipthe",
-    "failed": "Níorbh fhéidir í a sheoladh ar {{when}}",
+    "failed": "Níor éirigh linn í a sheoladh ar {{when}}",
     "cancelled": "Cealaithe ar {{when}}"
   },
   "progress_label": "An méid atá seolta",

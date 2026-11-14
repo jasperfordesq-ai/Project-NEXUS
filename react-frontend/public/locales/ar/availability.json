@@ -2,7 +2,7 @@
   "set_your_availability": "حدد توفرك",
   "available": "متاح",
   "unavailable": "غير متاح",
-  "failed_to_load": "فشل تحميل التوفر",
+  "failed_to_load": "لم يتم التحميل. حاول مرة أخرى بعد قليل.",
   "retry": "إعادة المحاولة",
   "save": "حفظ",
   "save_success": "تم حفظ التوفر",

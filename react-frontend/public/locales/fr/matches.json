@@ -23,8 +23,8 @@
   "reasons_more": "+{{count}} de plus",
   "view_details": "Voir les détails de la correspondance",
   "not_interested": "Pas intéressé(e)",
-  "load_failed": "Échec du chargement des correspondances",
-  "load_error_title": "Impossible de charger les correspondances",
+  "load_failed": "Le chargement n’a pas abouti. Réessayez dans un instant.",
+  "load_error_title": "Nous n’avons pas pu charger vos correspondances",
   "retry": "Réessayer",
   "match_hidden": "Correspondance masquée — nous vous en montrerons moins comme celle-ci",
   "page_meta": {
@@ -97,12 +97,12 @@
   },
   "preferences": {
     "subtitle": "Contrôlez la façon dont Smart Matching recherche et vous informe des connexions.",
-    "load_failed": "Échec du chargement de vos préférences de correspondance",
+    "load_failed": "Nous n’avons pas pu charger vos préférences de correspondance",
     "load_error_desc": "Vos préférences enregistrées n'ont pas pu être chargées. La modification est désactivée afin qu'elles ne soient pas écrasées par les valeurs par défaut.",
     "retry": "Réessayer",
     "save": "Enregistrer les préférences",
     "save_success": "Préférences de correspondance enregistrées",
-    "save_failed": "Échec de l'enregistrement des préférences de correspondance",
+    "save_failed": "Nous n’avons pas pu enregistrer cela. Veuillez réessayer.",
     "unsaved_changes": "Vous avez des modifications non enregistrées",
     "pause": {
       "title": "Suspendre la correspondance",

@@ -28,7 +28,7 @@
   "show": {
     "load_failed": "Não foi possível carregar este podcast",
     "retry": "Tentar novamente",
-    "not_found": "Programa de podcast não encontrado",
+    "not_found": "Não encontramos esse podcast",
     "no_summary": "Ainda não há resumo.",
     "byline": "Apresentado por {{name}}",
     "community_show": "Programa comunitário",
@@ -52,7 +52,7 @@
     "load_failed": "Não foi possível carregar este episódio",
     "retry": "Tentar novamente",
     "title": "Episódio de podcast",
-    "not_found": "Episódio de podcast não encontrado",
+    "not_found": "Não encontramos esse episódio",
     "no_summary": "Ainda não há resumo.",
     "listen": "Ouvir",
     "from_show": "De {{title}}",

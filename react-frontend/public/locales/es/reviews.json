@@ -15,7 +15,7 @@
     "delete": "Eliminar reseña",
     "delete_confirm": "¿Estás seguro de que quieres eliminar esta reseña?",
     "delete_success": "Reseña eliminada",
-    "delete_error": "Error al eliminar la reseña"
+    "delete_error": "No hemos podido eliminar eso. Vuelve a intentarlo."
   },
   "pending": {
     "empty": "No hay reseñas pendientes",
@@ -30,7 +30,7 @@
     "empty": "Todavía no has escrito ninguna reseña",
     "empty_subtitle": "Tras completar intercambios, puedes dejar reseñas a otros miembros."
   },
-  "load_error": "Error al cargar las reseñas. Por favor, inténtalo de nuevo.",
+  "load_error": "Eso no se ha cargado. Inténtalo de nuevo en un momento.",
   "load_more": "Cargar más",
   "stars": "{{count}} estrella",
   "stars_plural": "{{count}} estrellas",

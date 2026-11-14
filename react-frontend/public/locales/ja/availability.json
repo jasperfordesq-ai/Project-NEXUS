@@ -2,7 +2,7 @@
   "set_your_availability": "対応可能時間を設定",
   "available": "利用可能",
   "unavailable": "利用不可",
-  "failed_to_load": "利用可能時間の読み込みに失敗しました",
+  "failed_to_load": "読み込めませんでした。しばらくしてからもう一度お試しください。",
   "retry": "再試行",
   "save": "保存",
   "save_success": "利用可能時間を保存しました",

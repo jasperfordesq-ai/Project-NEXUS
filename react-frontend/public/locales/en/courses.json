@@ -6,7 +6,7 @@
     "all_categories": "All categories",
     "all_levels": "All levels",
     "load_more": "Load more",
-    "empty": "No courses found.",
+    "empty": "No courses to show.",
     "empty_hint": "Check back soon — new courses are on the way."
   },
   "level": {
@@ -137,7 +137,7 @@
     "no_lessons": "No lessons to chart yet."
   },
   "form": {
-    "required": "This field is required."
+    "required": "Give it a title"
   },
   "nav": {
     "courses": "Courses"
@@ -199,7 +199,7 @@
     "instructor_granted": "Instructor access granted",
     "instructor_revoked": "Instructor access revoked",
     "moderated": "Course updated",
-    "error": "Something went wrong. Please try again.",
+    "error": "That didn't work. Please try again.",
     "no_courses": "No courses yet.",
     "no_instructors": "No instructors granted yet."
   },

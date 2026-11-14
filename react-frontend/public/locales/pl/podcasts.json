@@ -28,7 +28,7 @@
   "show": {
     "load_failed": "Nie udało się wczytać tego podcastu",
     "retry": "Spróbuj ponownie",
-    "not_found": "Nie znaleziono programu podcastu",
+    "not_found": "Nie możemy znaleźć tego podcastu",
     "no_summary": "Nie ma jeszcze podsumowania.",
     "byline": "Prowadzenie: {{name}}",
     "community_show": "Program społecznościowy",
@@ -54,7 +54,7 @@
     "load_failed": "Nie udało się wczytać tego odcinka",
     "retry": "Spróbuj ponownie",
     "title": "Odcinek podcastu",
-    "not_found": "Nie znaleziono odcinka podcastu",
+    "not_found": "Nie możemy znaleźć tego odcinka",
     "no_summary": "Nie ma jeszcze podsumowania.",
     "listen": "Słuchaj",
     "from_show": "Z programu {{title}}",

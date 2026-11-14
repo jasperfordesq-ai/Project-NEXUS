@@ -198,9 +198,9 @@
       }
     },
     "error_codes": {
-      "member_not_found": "lid niet gevonden",
+      "member_not_found": "we kunnen dat lid niet vinden",
       "duplicate_target": "dubbele ontvanger",
-      "email_invalid": "ongeldig e-mailadres",
+      "email_invalid": "dat e-mailadres lijkt niet te kloppen",
       "csv_header_missing": "CSV-koptekst ontbreekt",
       "csv_email_column_missing": "e-mailkolom ontbreekt"
     }

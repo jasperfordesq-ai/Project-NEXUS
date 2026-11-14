@@ -6,7 +6,7 @@
     "all_categories": "すべてのカテゴリ",
     "all_levels": "すべてのレベル",
     "load_more": "もっと読み込む",
-    "empty": "コースが見つかりませんでした。",
+    "empty": "表示できるコースはありません。",
     "empty_hint": "新しいコースも準備中です。"
   },
   "level": {
@@ -137,7 +137,7 @@
     "no_lessons": "グラフ化するレッスンはまだありません。"
   },
   "form": {
-    "required": "この項目は必須です。"
+    "required": "タイトルを入力してください"
   },
   "nav": {
     "courses": "コース"
@@ -198,7 +198,7 @@
     "instructor_granted": "インストラクターへのアクセスが許可されました",
     "instructor_revoked": "講師のアクセス権が取り消されました",
     "moderated": "コースを更新しました",
-    "error": "何か問題が発生しました。もう一度試してください。",
+    "error": "うまくいきませんでした。もう一度お試しください。",
     "no_courses": "まだコースはありません。",
     "no_instructors": "まだ講師は決まっていません。",
     "status_unknown": "状態不明"

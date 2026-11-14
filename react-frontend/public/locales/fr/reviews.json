@@ -15,7 +15,7 @@
     "delete": "Supprimer l'avis",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer cet avis ?",
     "delete_success": "Avis supprimé",
-    "delete_error": "Échec de la suppression de l'avis"
+    "delete_error": "Nous n’avons pas pu supprimer cela. Veuillez réessayer."
   },
   "pending": {
     "empty": "Aucun avis en attente",
@@ -30,7 +30,7 @@
     "empty": "Vous n'avez encore écrit aucun avis",
     "empty_subtitle": "Après avoir complété des échanges, vous pouvez laisser des avis à d'autres membres."
   },
-  "load_error": "Échec du chargement des avis. Veuillez réessayer.",
+  "load_error": "Le chargement n’a pas abouti. Réessayez dans un instant.",
   "load_more": "Charger plus",
   "stars": "{{count}} étoile",
   "stars_plural": "{{count}} étoiles",

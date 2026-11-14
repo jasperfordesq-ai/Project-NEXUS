@@ -18,11 +18,11 @@
         "all": "Tutto"
       },
       "loading": "Caricamento modelli evento...",
-      "load_error_title": "Impossibile caricare i modelli di eventi",
+      "load_error_title": "Non siamo riusciti a caricare i modelli di eventi",
       "load_error_description": "Impossibile caricare la libreria dei modelli. Per favore riprova.",
       "load_more_error": "Impossibile caricare altri modelli.",
       "retry": "Riprova",
-      "empty_title": "Nessun modello trovato",
+      "empty_title": "Nessun modello da mostrare",
       "empty_description": "Salva un evento come modello per creare una libreria di configurazione riutilizzabile e rivista.",
       "untitled": "Modello senza titolo",
       "source_label": "Fonte: {{title}}",
@@ -105,7 +105,7 @@
         "reason_recorded": "Un motivo di archiviazione viene registrato nella cronologia di audit conservata."
       },
       "audit_title": "Cronologia dell'audit del modello",
-      "audit_error_title": "Impossibile caricare la cronologia dei controlli",
+      "audit_error_title": "Non siamo riusciti a caricare la cronologia",
       "audit_error_description": "Impossibile caricare la cronologia del modello immutabile.",
       "audit_empty": "Non è stata restituita alcuna voce di controllo.",
       "audit_load_more": "Carica altra cronologia",

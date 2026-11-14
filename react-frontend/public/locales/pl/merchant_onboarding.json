@@ -49,8 +49,8 @@
   "badge_earned": "Odznaka Marktplatz-Partner zdobyta",
   "success_cta": "Utwórz swoje pierwsze ogłoszenie",
   "errors": {
-    "save_failed": "Zapisanie nie powiodło się. Spróbuj ponownie.",
-    "complete_failed": "Nie udało się zakończyć konfiguracji."
+    "save_failed": "Nie udało się nam tego zapisać. Spróbuj ponownie.",
+    "complete_failed": "Nie udało się nam dokończyć konfiguracji. Spróbuj ponownie."
   },
   "open_time": "Godzina otwarcia",
   "close_time": "Godzina zamknięcia"

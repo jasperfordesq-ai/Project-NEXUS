@@ -15,7 +15,7 @@
     "delete": "Eliminar avaliação",
     "delete_confirm": "Tens a certeza de que queres eliminar esta avaliação?",
     "delete_success": "Avaliação eliminada",
-    "delete_error": "Falha ao eliminar avaliação"
+    "delete_error": "Não conseguimos excluir isso. Tente novamente."
   },
   "pending": {
     "empty": "Nenhuma avaliação pendente",
@@ -30,7 +30,7 @@
     "empty": "Ainda não escreveste nenhuma avaliação",
     "empty_subtitle": "Após concluir trocas, podes deixar avaliações para outros membros."
   },
-  "load_error": "Falha ao carregar avaliações. Por favor, tenta novamente.",
+  "load_error": "Isso não carregou. Tente novamente daqui a pouco.",
   "load_more": "Carregar mais",
   "stars": "{{count}} estrela",
   "stars_plural": "{{count}} estrelas",

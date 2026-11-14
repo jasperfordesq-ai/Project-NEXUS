@@ -2,7 +2,7 @@
   "set_your_availability": "Establece tu disponibilidad",
   "available": "Disponible",
   "unavailable": "No disponible",
-  "failed_to_load": "No se pudo cargar la disponibilidad",
+  "failed_to_load": "Eso no se ha cargado. Inténtalo de nuevo en un momento.",
   "retry": "Reintentar",
   "save": "Guardar",
   "save_success": "Disponibilidad guardada",

@@ -49,8 +49,8 @@
   "badge_earned": "Marktplatz-Partner badge earned",
   "success_cta": "Create your first listing",
   "errors": {
-    "save_failed": "Failed to save. Please try again.",
-    "complete_failed": "Failed to complete setup."
+    "save_failed": "We couldn't save that. Please try again.",
+    "complete_failed": "We couldn't finish the setup. Please try again."
   },
   "open_time": "Opening time",
   "close_time": "Closing time"

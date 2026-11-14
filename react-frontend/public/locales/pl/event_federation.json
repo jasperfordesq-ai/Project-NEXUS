@@ -7,7 +7,7 @@
       "description": "Monitoruj udostępnianie wydarzenia społecznościom partnerskim bez ujawniania prywatnych danych uczestników.",
       "refresh": "Odśwież",
       "loading": "Wczytywanie stanu federacji...",
-      "load_error_title": "Nie można wczytać stanu federacji",
+      "load_error_title": "Nie udało się nam wczytać stanu udostępniania",
       "load_error_description": "Nie udało się wczytać diagnostyki dostarczania. Spróbuj ponownie.",
       "try_again": "Spróbuj ponownie",
       "not_configured_title": "Brak skonfigurowanych społeczności partnerskich",

@@ -15,7 +15,7 @@
     "delete": "Scrios an Léirmheas",
     "delete_confirm": "An bhfuil tú cinnte gur mhaith leat an léirmheas seo a scriosadh?",
     "delete_success": "Scriosadh an léirmheas",
-    "delete_error": "Níorbh fhéidir an léirmheas a scriosadh"
+    "delete_error": "Níor éirigh linn é sin a scriosadh. Bain triail eile as."
   },
   "pending": {
     "empty": "Níl aon léirmheas ar feitheamh",
@@ -30,7 +30,7 @@
     "empty": "Níl aon léirmheas scríofa agat go fóill",
     "empty_subtitle": "Tar éis malartuithe a chríochnú, is féidir leat léirmheasanna a fhágáil do bhaill eile."
   },
-  "load_error": "Níorbh fhéidir léirmheasanna a lódáil. Bain triail eile as.",
+  "load_error": "Níor lódáladh é sin. Bain triail eile as i gceann nóiméid.",
   "load_more": "Lódáil tuilleadh",
   "stars": "{{count}} réalta",
   "stars_plural": "{{count}} réalta",

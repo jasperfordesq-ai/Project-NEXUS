@@ -6,7 +6,7 @@
     "all_categories": "Gach catagóir",
     "all_levels": "Gach leibhéal",
     "load_more": "Luchtaigh tuilleadh",
-    "empty": "Níor aimsíodh aon chúrsaí.",
+    "empty": "Níl aon chúrsa le taispeáint.",
     "empty_hint": "Seiceáil siar go luath - tá cúrsaí nua ar an mbealach."
   },
   "level": {
@@ -143,7 +143,7 @@
     "no_lessons": "Níl aon cheachtanna le breacadh go fóill."
   },
   "form": {
-    "required": "Tá an réimse seo ag teastáil."
+    "required": "Tabhair teideal air"
   },
   "nav": {
     "courses": "Cúrsaí"
@@ -210,7 +210,7 @@
     "instructor_granted": "Cead rochtana do theagascóirí",
     "instructor_revoked": "Cúlghairm rochtain teagascóra",
     "moderated": "Cúrsa nuashonraithe",
-    "error": "Chuaigh rud éigin mícheart. Bain triail eile as.",
+    "error": "Níor oibrigh sé sin. Bain triail eile as.",
     "no_courses": "Níl cúrsaí ar bith fós.",
     "no_instructors": "Níl aon teagascóirí ceadaithe go fóill.",
     "status_unknown": "Stádas anaithnid"

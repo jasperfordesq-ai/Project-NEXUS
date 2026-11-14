@@ -7,7 +7,7 @@
       "description": "Déan monatóireacht ar an gcaoi a roinntear an t-imeacht seo le pobail chomhpháirtíochta gan sonraí príobháideacha lucht freastail a nochtadh.",
       "refresh": "Athnuaigh",
       "loading": "Stádas an chónaisc á lódáil...",
-      "load_error_title": "Níorbh fhéidir stádas an chónaisc a lódáil",
+      "load_error_title": "Níor éirigh linn stádas na comhroinnte a lódáil",
       "load_error_description": "Níorbh fhéidir diagnóisic seachadta a lódáil. Bain triail eile as.",
       "try_again": "Bain triail eile as",
       "not_configured_title": "Níl aon phobal comhpháirtíochta cumraithe",

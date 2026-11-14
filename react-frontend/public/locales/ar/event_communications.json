@@ -62,7 +62,7 @@
     "partial": "أُرسلت في {{when}} · وصل {{delivered}} من {{total}}",
     "partial_skipped": "تم تخطّي {{n}}",
     "partial_failed": "فشل {{n}}",
-    "failed": "تعذّر الإرسال في {{when}}",
+    "failed": "تعذّر علينا الإرسال في {{when}}",
     "cancelled": "أُلغيت في {{when}}"
   },
   "progress_label": "مقدار ما أُرسل",

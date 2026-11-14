@@ -18,11 +18,11 @@
         "all": "すべて"
       },
       "loading": "イベントテンプレートを読み込んでいます...",
-      "load_error_title": "イベントテンプレートをロードできません",
+      "load_error_title": "イベントテンプレートを読み込めませんでした",
       "load_error_description": "テンプレート ライブラリをロードできませんでした。もう一度試してください。",
       "load_more_error": "これ以上のテンプレートをロードできませんでした。",
       "retry": "もう一度試してください",
-      "empty_title": "テンプレートが見つかりません",
+      "empty_title": "表示できるテンプレートはありません",
       "empty_description": "イベントをテンプレートとして保存して、再利用可能なレビュー済み構成ライブラリを構築します。",
       "untitled": "無題のテンプレート",
       "source_label": "出典: {{title}}",
@@ -105,7 +105,7 @@
         "reason_recorded": "アーカイブ理由は、保持される監査履歴に記録されます。"
       },
       "audit_title": "テンプレートの監査履歴",
-      "audit_error_title": "監査履歴をロードできません",
+      "audit_error_title": "履歴を読み込めませんでした",
       "audit_error_description": "不変のテンプレート履歴をロードできませんでした。",
       "audit_empty": "監査エントリは返されませんでした。",
       "audit_load_more": "履歴をさらに読み込む",

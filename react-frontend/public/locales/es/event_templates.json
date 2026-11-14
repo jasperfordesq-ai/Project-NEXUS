@@ -18,11 +18,11 @@
         "all": "Todos"
       },
       "loading": "Cargando plantillas de eventos...",
-      "load_error_title": "No se pueden cargar plantillas de eventos",
+      "load_error_title": "No hemos podido cargar las plantillas de eventos",
       "load_error_description": "No se pudo cargar la biblioteca de plantillas. Por favor inténtalo de nuevo.",
       "load_more_error": "No se pudieron cargar más plantillas.",
       "retry": "Inténtalo de nuevo",
-      "empty_title": "No se encontraron plantillas",
+      "empty_title": "No hay plantillas que mostrar",
       "empty_description": "Guarde un evento como plantilla para crear una biblioteca de configuración revisada y reutilizable.",
       "untitled": "Plantilla sin título",
       "source_label": "Fuente: {{title}}",
@@ -105,7 +105,7 @@
         "reason_recorded": "Un motivo de archivo se registra en el historial de auditoría retenido."
       },
       "audit_title": "Historial de auditoría de plantilla",
-      "audit_error_title": "No se puede cargar el historial de auditoría",
+      "audit_error_title": "No hemos podido cargar el historial",
       "audit_error_description": "No se pudo cargar el historial de la plantilla inmutable.",
       "audit_empty": "No se devolvieron entradas de auditoría.",
       "audit_load_more": "Cargar más historial",

@@ -49,8 +49,8 @@
   "badge_earned": "Badge Marktplatz-Partner obtenu",
   "success_cta": "Créer votre première annonce",
   "errors": {
-    "save_failed": "Échec de l'enregistrement. Veuillez réessayer.",
-    "complete_failed": "Impossible de finaliser la configuration."
+    "save_failed": "Nous n’avons pas pu enregistrer cela. Veuillez réessayer.",
+    "complete_failed": "Nous n’avons pas pu terminer la configuration. Veuillez réessayer."
   },
   "open_time": "Heure d'ouverture",
   "close_time": "Heure de fermeture"

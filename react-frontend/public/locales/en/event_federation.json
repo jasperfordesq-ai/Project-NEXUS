@@ -7,7 +7,7 @@
       "description": "Monitor how this event is shared with partner communities without exposing private attendee data.",
       "refresh": "Refresh",
       "loading": "Loading federation status...",
-      "load_error_title": "Unable to load federation status",
+      "load_error_title": "We couldn't load the sharing status",
       "load_error_description": "Delivery diagnostics could not be loaded. Please try again.",
       "try_again": "Try again",
       "not_configured_title": "No partner communities configured",

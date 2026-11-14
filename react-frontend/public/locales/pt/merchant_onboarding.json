@@ -49,8 +49,8 @@
   "badge_earned": "Distintivo Marktplatz-Partner obtido",
   "success_cta": "Criar o seu primeiro anúncio",
   "errors": {
-    "save_failed": "Falha ao salvar. Por favor, tente novamente.",
-    "complete_failed": "Falha ao concluir a configuração."
+    "save_failed": "Não conseguimos salvar isso. Tente novamente.",
+    "complete_failed": "Não conseguimos concluir a configuração. Tente novamente."
   },
   "open_time": "Hora de abertura",
   "close_time": "Hora de fechamento"

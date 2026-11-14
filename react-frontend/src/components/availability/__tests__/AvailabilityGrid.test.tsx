@@ -167,7 +167,7 @@ describe('AvailabilityGrid', () => {
     render(<AvailabilityGrid editable={true} />);
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to load availability')).toBeInTheDocument();
+      expect(screen.getByText("That didn't load. Try again in a moment.")).toBeInTheDocument();
       expect(screen.getByText('Retry')).toBeInTheDocument();
     });
   });

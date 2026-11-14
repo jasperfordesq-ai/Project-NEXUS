@@ -28,7 +28,7 @@
   "show": {
     "load_failed": "No se pudo cargar este programa de pódcast",
     "retry": "Intentar de nuevo",
-    "not_found": "Programa de pódcast no encontrado",
+    "not_found": "No encontramos ese pódcast",
     "no_summary": "Aún no hay resumen.",
     "byline": "Presentado por {{name}}",
     "community_show": "Programa comunitario",
@@ -52,7 +52,7 @@
     "load_failed": "No se pudo cargar este episodio de pódcast",
     "retry": "Intentar de nuevo",
     "title": "Episodio de pódcast",
-    "not_found": "Episodio de pódcast no encontrado",
+    "not_found": "No encontramos ese episodio",
     "no_summary": "Aún no hay resumen.",
     "listen": "Escuchar",
     "from_show": "De {{title}}",

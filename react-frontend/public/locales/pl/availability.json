@@ -2,7 +2,7 @@
   "set_your_availability": "Ustaw swoją dostępność",
   "available": "Dostępny",
   "unavailable": "Niedostępny",
-  "failed_to_load": "Nie udało się załadować dostępności",
+  "failed_to_load": "Nie udało się tego wczytać. Spróbuj ponownie za chwilę.",
   "retry": "Ponów próbę",
   "save": "Zapisz",
   "save_success": "Dostępność zapisana",

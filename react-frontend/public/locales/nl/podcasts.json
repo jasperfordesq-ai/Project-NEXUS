@@ -28,7 +28,7 @@
   "show": {
     "load_failed": "Deze podcast kon niet worden geladen",
     "retry": "Opnieuw proberen",
-    "not_found": "Podcastshow niet gevonden",
+    "not_found": "We kunnen die podcast niet vinden",
     "no_summary": "Nog geen samenvatting.",
     "byline": "Gepresenteerd door {{name}}",
     "community_show": "Gemeenschapsshow",
@@ -50,7 +50,7 @@
     "load_failed": "Deze podcastaflevering kon niet worden geladen",
     "retry": "Opnieuw proberen",
     "title": "Podcast-aflevering",
-    "not_found": "Podcast-aflevering niet gevonden",
+    "not_found": "We kunnen die aflevering niet vinden",
     "no_summary": "Nog geen samenvatting.",
     "listen": "Luisteren",
     "from_show": "Van {{title}}",

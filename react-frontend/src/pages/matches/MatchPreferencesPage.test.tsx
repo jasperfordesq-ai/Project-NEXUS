@@ -92,14 +92,14 @@ describe('MatchPreferencesPage', () => {
     render(<MatchPreferencesPage />);
 
     expect(await screen.findByText('Pause matching')).toBeInTheDocument();
-    expect(screen.queryByText('Failed to load your match preferences')).not.toBeInTheDocument();
+    expect(screen.queryByText("We couldn't load your match preferences")).not.toBeInTheDocument();
   });
 
   it('shows an error with retry and BLOCKS the form/save path when the load fails', async () => {
     mockGet({ prefsFailTimes: 99 });
     render(<MatchPreferencesPage />);
 
-    expect(await screen.findByText('Failed to load your match preferences')).toBeInTheDocument();
+    expect(await screen.findByText("We couldn't load your match preferences")).toBeInTheDocument();
     expect(
       screen.getByText("Your saved preferences couldn't be loaded. Editing is disabled so they aren't overwritten with defaults."),
     ).toBeInTheDocument();
@@ -120,7 +120,7 @@ describe('MatchPreferencesPage', () => {
     fireEvent.click(retryBtn);
 
     expect(await screen.findByText('Pause matching')).toBeInTheDocument();
-    expect(screen.queryByText('Failed to load your match preferences')).not.toBeInTheDocument();
+    expect(screen.queryByText("We couldn't load your match preferences")).not.toBeInTheDocument();
 
     // Preferences endpoint hit twice: failed initial load + successful retry.
     const prefsCalls = vi.mocked(api.get).mock.calls
@@ -141,7 +141,7 @@ describe('MatchPreferencesPage', () => {
       expect(prefsCalls.length).toBeGreaterThanOrEqual(2);
     });
 
-    expect(await screen.findByText('Failed to load your match preferences')).toBeInTheDocument();
+    expect(await screen.findByText("We couldn't load your match preferences")).toBeInTheDocument();
     expect(screen.queryByText('Save preferences')).not.toBeInTheDocument();
     expect(api.put).not.toHaveBeenCalled();
   });

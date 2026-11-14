@@ -6,7 +6,7 @@
     "all_categories": "Toutes les catégories",
     "all_levels": "Tous niveaux",
     "load_more": "Charger plus",
-    "empty": "Aucun cours trouvé.",
+    "empty": "Aucun cours à afficher.",
     "empty_hint": "Revenez bientôt – de nouveaux cours sont en route."
   },
   "level": {
@@ -139,7 +139,7 @@
     "no_lessons": "Aucune leçon à tracer pour l’instant."
   },
   "form": {
-    "required": "Ce champ est obligatoire."
+    "required": "Donnez-lui un titre"
   },
   "nav": {
     "courses": "Cours"
@@ -202,7 +202,7 @@
     "instructor_granted": "Accès instructeur accordé",
     "instructor_revoked": "Accès instructeur révoqué",
     "moderated": "Cours mis à jour",
-    "error": "Quelque chose s'est mal passé. Veuillez réessayer.",
+    "error": "Cela n’a pas fonctionné. Veuillez réessayer.",
     "no_courses": "Pas encore de cours.",
     "no_instructors": "Aucun instructeur n'est encore accordé.",
     "status_unknown": "Statut inconnu"

@@ -200,7 +200,7 @@ describe('SearchPage', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('No results found')).toBeInTheDocument();
+      expect(screen.getByText('Nothing matches that search')).toBeInTheDocument();
     });
   });
 
@@ -362,7 +362,7 @@ describe('SearchPage', () => {
     });
 
     await waitFor(() => expect(screen.getByText('All (1)')).toBeInTheDocument());
-    expect(screen.queryByText('No results found')).not.toBeInTheDocument();
+    expect(screen.queryByText('Nothing matches that search')).not.toBeInTheDocument();
   });
 
   describe('phone layout', () => {

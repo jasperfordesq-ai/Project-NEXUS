@@ -7,7 +7,7 @@
       "description": "Acompanhe como este evento é compartilhado com comunidades parceiras sem expor dados privados de participantes.",
       "refresh": "Atualizar",
       "loading": "A carregar o estado da federação...",
-      "load_error_title": "Não foi possível carregar o estado da federação",
+      "load_error_title": "Não conseguimos carregar o estado do compartilhamento",
       "load_error_description": "Não foi possível carregar o diagnóstico de entrega. Tente novamente.",
       "try_again": "Tentar novamente",
       "not_configured_title": "Nenhuma comunidade parceira configurada",

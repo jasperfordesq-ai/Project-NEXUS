@@ -23,8 +23,8 @@
   "reasons_more": "+{{count}} mais",
   "view_details": "Ver detalhes da correspondência",
   "not_interested": "Sem interesse",
-  "load_failed": "Falha ao carregar correspondências",
-  "load_error_title": "Não é possível carregar correspondências",
+  "load_failed": "Isso não carregou. Tente novamente daqui a pouco.",
+  "load_error_title": "Não conseguimos carregar suas correspondências",
   "retry": "Tentar novamente",
   "match_hidden": "Correspondência oculta — mostraremos menos como esta",
   "page_meta": {
@@ -97,12 +97,12 @@
   },
   "preferences": {
     "subtitle": "Controle como o Smart Matching encontra e notifica você sobre conexões.",
-    "load_failed": "Falha ao carregar suas preferências de partida",
+    "load_failed": "Não conseguimos carregar suas preferências de correspondência",
     "load_error_desc": "Não foi possível carregar suas preferências salvas. A edição está desativada para que não sejam substituídas pelos padrões.",
     "retry": "Tentar novamente",
     "save": "Salvar preferências",
     "save_success": "Preferências de correspondência salvas",
-    "save_failed": "Falha ao salvar preferências de partida",
+    "save_failed": "Não conseguimos salvar isso. Tente novamente.",
     "unsaved_changes": "Você tem alterações não salvas",
     "pause": {
       "title": "Pausar correspondência",

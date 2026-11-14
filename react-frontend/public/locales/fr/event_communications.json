@@ -59,7 +59,7 @@
     "partial": "Envoyé le {{when}} · {{delivered}} sur {{total}} remis",
     "partial_skipped": "{{n}} ignorés",
     "partial_failed": "{{n}} en échec",
-    "failed": "N'a pas pu être envoyé le {{when}}",
+    "failed": "Nous n’avons pas pu l’envoyer le {{when}}",
     "cancelled": "Annulé le {{when}}"
   },
   "progress_label": "Progression de l'envoi",

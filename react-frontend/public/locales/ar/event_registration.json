@@ -198,9 +198,9 @@
       }
     },
     "error_codes": {
-      "member_not_found": "لم يتم العثور على العضو",
+      "member_not_found": "لا نجد هذا العضو",
       "duplicate_target": "مستلم مكرر",
-      "email_invalid": "عنوان بريد إلكتروني غير صالح",
+      "email_invalid": "عنوان البريد الإلكتروني هذا لا يبدو صحيحًا",
       "csv_header_missing": "رأس CSV مفقود",
       "csv_email_column_missing": "عمود البريد الإلكتروني مفقود"
     }

@@ -26,7 +26,7 @@
     "retry": "Try again"
   },
   "show": {
-    "not_found": "Podcast show not found",
+    "not_found": "We can't find that podcast",
     "no_summary": "No summary yet.",
     "byline": "Hosted by {{name}}",
     "community_show": "Community show",
@@ -48,7 +48,7 @@
   },
   "episode": {
     "title": "Podcast episode",
-    "not_found": "Podcast episode not found",
+    "not_found": "We can't find that episode",
     "load_failed": "This podcast episode could not be loaded",
     "retry": "Try again",
     "no_summary": "No summary yet.",

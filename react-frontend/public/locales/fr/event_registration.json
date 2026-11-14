@@ -198,9 +198,9 @@
       }
     },
     "error_codes": {
-      "member_not_found": "membre introuvable",
+      "member_not_found": "nous ne trouvons pas ce membre",
       "duplicate_target": "destinataire en double",
-      "email_invalid": "adresse e-mail invalide",
+      "email_invalid": "cette adresse e-mail ne semble pas correcte",
       "csv_header_missing": "En-tête CSV manquant",
       "csv_email_column_missing": "colonne email manquante"
     }

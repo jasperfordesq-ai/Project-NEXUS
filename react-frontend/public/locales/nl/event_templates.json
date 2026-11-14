@@ -18,11 +18,11 @@
         "all": "Allemaal"
       },
       "loading": "Evenementsjablonen laden...",
-      "load_error_title": "Kan gebeurtenissjablonen niet laden",
+      "load_error_title": "We konden de evenementsjablonen niet laden",
       "load_error_description": "De sjabloonbibliotheek kan niet worden geladen. Probeer het opnieuw.",
       "load_more_error": "Er konden niet meer sjablonen worden geladen.",
       "retry": "Probeer het opnieuw",
-      "empty_title": "Geen sjablonen gevonden",
+      "empty_title": "Geen sjablonen om te tonen",
       "empty_description": "Sla een gebeurtenis op als sjabloon om een ​​herbruikbare, beoordeelde configuratiebibliotheek op te bouwen.",
       "untitled": "Naamloze sjabloon",
       "source_label": "Bron: {{title}}",
@@ -105,7 +105,7 @@
         "reason_recorded": "In de bewaarde audithistorie wordt een archiefreden vastgelegd."
       },
       "audit_title": "Sjabloonauditgeschiedenis",
-      "audit_error_title": "Kan de auditgeschiedenis niet laden",
+      "audit_error_title": "We konden de geschiedenis niet laden",
       "audit_error_description": "De onveranderlijke sjabloongeschiedenis kan niet worden geladen.",
       "audit_empty": "Er zijn geen auditgegevens geretourneerd.",
       "audit_load_more": "Meer geschiedenis laden",

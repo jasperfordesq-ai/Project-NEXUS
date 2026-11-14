@@ -198,9 +198,9 @@
       }
     },
     "error_codes": {
-      "member_not_found": "Mitglied nicht gefunden",
+      "member_not_found": "wir finden dieses Mitglied nicht",
       "duplicate_target": "doppelter Empfänger",
-      "email_invalid": "Ungültige E-Mail-Adresse",
+      "email_invalid": "diese E-Mail-Adresse sieht nicht richtig aus",
       "csv_header_missing": "CSV-Header fehlt",
       "csv_email_column_missing": "E-Mail-Spalte fehlt"
     }

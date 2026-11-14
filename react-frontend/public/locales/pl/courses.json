@@ -6,7 +6,7 @@
     "all_categories": "Wszystkie kategorie",
     "all_levels": "Wszystkie poziomy",
     "load_more": "Załaduj więcej",
-    "empty": "Nie znaleziono kursów.",
+    "empty": "Brak kursów do wyświetlenia.",
     "empty_hint": "Zajrzyj tu wkrótce — nowe kursy są już w drodze."
   },
   "level": {
@@ -141,7 +141,7 @@
     "no_lessons": "Nie ma jeszcze żadnych lekcji do wykreślenia."
   },
   "form": {
-    "required": "To pole jest wymagane."
+    "required": "Nadaj tytuł"
   },
   "nav": {
     "courses": "Kursy"
@@ -206,7 +206,7 @@
     "instructor_granted": "Dostęp instruktora przyznany",
     "instructor_revoked": "Dostęp instruktora został odebrany",
     "moderated": "Kurs zaktualizowany",
-    "error": "Coś poszło nie tak. Spróbuj ponownie.",
+    "error": "To się nie udało. Spróbuj ponownie.",
     "no_courses": "Nie ma jeszcze żadnych kursów.",
     "no_instructors": "Nie przyznano jeszcze żadnych instruktorów.",
     "status_unknown": "Nieznany status"

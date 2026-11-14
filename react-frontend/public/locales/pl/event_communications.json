@@ -60,7 +60,7 @@
     "partial": "Wysłano {{when}} · dostarczono {{delivered}} z {{total}}",
     "partial_skipped": "pominięto: {{n}}",
     "partial_failed": "nieudane: {{n}}",
-    "failed": "Nie udało się wysłać {{when}}",
+    "failed": "Nie udało się nam wysłać {{when}}",
     "cancelled": "Anulowano {{when}}"
   },
   "progress_label": "Ile już wysłano",

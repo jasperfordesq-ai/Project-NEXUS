@@ -49,8 +49,8 @@
   "badge_earned": "Insignia Marktplatz-Partner obtenida",
   "success_cta": "Crear su primer anuncio",
   "errors": {
-    "save_failed": "Error al guardar. Por favor, inténtelo de nuevo.",
-    "complete_failed": "No se pudo completar la configuración."
+    "save_failed": "No hemos podido guardar eso. Vuelve a intentarlo.",
+    "complete_failed": "No hemos podido terminar la configuración. Vuelve a intentarlo."
   },
   "open_time": "Hora de apertura",
   "close_time": "Hora de cierre"

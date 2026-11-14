@@ -183,9 +183,9 @@
       "csv": { "label": "CSV data", "description": "Paste CSV with an email column. Invalid and duplicate rows are reported before send." }
     },
     "error_codes": {
-      "member_not_found": "member not found",
+      "member_not_found": "we can't find that member",
       "duplicate_target": "duplicate recipient",
-      "email_invalid": "invalid email address",
+      "email_invalid": "that email address doesn't look right",
       "csv_header_missing": "CSV header missing",
       "csv_email_column_missing": "email column missing"
     }

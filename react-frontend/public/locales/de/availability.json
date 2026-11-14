@@ -2,7 +2,7 @@
   "set_your_availability": "Verfügbarkeit festlegen",
   "available": "Verfügbar",
   "unavailable": "Nicht verfügbar",
-  "failed_to_load": "Verfügbarkeit konnte nicht geladen werden",
+  "failed_to_load": "Das wurde nicht geladen. Versuchen Sie es gleich noch einmal.",
   "retry": "Erneut versuchen",
   "save": "Speichern",
   "save_success": "Verfügbarkeit gespeichert",

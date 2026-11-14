@@ -23,8 +23,8 @@
   "reasons_more": "+{{count}} altri",
   "view_details": "Vedi dettagli abbinamento",
   "not_interested": "Non interessato",
-  "load_failed": "Impossibile caricare le corrispondenze",
-  "load_error_title": "Impossibile caricare le corrispondenze",
+  "load_failed": "Il caricamento non è riuscito. Riprova tra un momento.",
+  "load_error_title": "Non siamo riusciti a caricare le tue corrispondenze",
   "retry": "Riprova",
   "match_hidden": "Corrispondenza nascosta — te ne mostreremo meno di questo tipo",
   "page_meta": {
@@ -97,12 +97,12 @@
   },
   "preferences": {
     "subtitle": "Controlla il modo in cui Smart Matching trova e ti avvisa sulle connessioni.",
-    "load_failed": "Impossibile caricare le tue preferenze di corrispondenza",
+    "load_failed": "Non siamo riusciti a caricare le tue preferenze di corrispondenza",
     "load_error_desc": "Non è stato possibile caricare le tue preferenze salvate. La modifica è disabilitata per evitare che vengano sovrascritte con i valori predefiniti.",
     "retry": "Riprova",
     "save": "Salva le preferenze",
     "save_success": "Preferenze di corrispondenza salvate",
-    "save_failed": "Impossibile salvare le preferenze di corrispondenza",
+    "save_failed": "Non siamo riusciti a salvarlo. Riprova.",
     "unsaved_changes": "Sono presenti modifiche non salvate",
     "pause": {
       "title": "Metti in pausa la corrispondenza",

@@ -58,7 +58,7 @@
     "partial": "Verstuurd op {{when}} · {{delivered}} van {{total}} bezorgd",
     "partial_skipped": "{{n}} overgeslagen",
     "partial_failed": "{{n}} mislukt",
-    "failed": "Kon niet worden verstuurd op {{when}}",
+    "failed": "We konden het niet versturen op {{when}}",
     "cancelled": "Geannuleerd op {{when}}"
   },
   "progress_label": "Hoeveel er al is verstuurd",

@@ -7,7 +7,7 @@
       "description": "Surveillez le partage de cet événement avec les communautés partenaires sans exposer les données privées des participants.",
       "refresh": "Actualiser",
       "loading": "Chargement de l’état de fédération...",
-      "load_error_title": "Impossible de charger l’état de fédération",
+      "load_error_title": "Nous n’avons pas pu charger l’état du partage",
       "load_error_description": "Les diagnostics de livraison n’ont pas pu être chargés. Réessayez.",
       "try_again": "Réessayer",
       "not_configured_title": "Aucune communauté partenaire configurée",

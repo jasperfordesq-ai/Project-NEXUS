@@ -18,11 +18,11 @@
         "all": "Gach"
       },
       "loading": "Teimpléid imeachtaí á lódáil...",
-      "load_error_title": "Ní féidir teimpléid imeachtaí a lódáil",
+      "load_error_title": "Níor éirigh linn na teimpléid imeachtaí a lódáil",
       "load_error_description": "Níorbh fhéidir an leabharlann teimpléid a lódáil. Bain triail eile as.",
       "load_more_error": "Níorbh fhéidir a thuilleadh teimpléid a lódáil.",
       "retry": "Bain triail eile as",
-      "empty_title": "Níor aimsíodh teimpléid",
+      "empty_title": "Níl aon teimpléad le taispeáint",
       "empty_description": "Sábháil imeacht mar theimpléad chun leabharlann chumraíochta ath-inúsáidte, athbhreithnithe a thógáil.",
       "untitled": "Teimpléad gan teideal",
       "source_label": "Foinse: {{title}}",
@@ -105,7 +105,7 @@
         "reason_recorded": "Taifeadtar cúis cartlainne sa stair iniúchta coinnithe."
       },
       "audit_title": "Teimpléad stair iniúchta",
-      "audit_error_title": "Ní féidir an stair iniúchta a lódáil",
+      "audit_error_title": "Níor éirigh linn an stair a lódáil",
       "audit_error_description": "Níorbh fhéidir an stair teimpléad do-mhalartaithe a luchtú.",
       "audit_empty": "Níor cuireadh aon iontrálacha iniúchta ar ais.",
       "audit_load_more": "Lódáil tuilleadh staire",

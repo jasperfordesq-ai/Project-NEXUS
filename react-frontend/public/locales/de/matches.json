@@ -23,8 +23,8 @@
   "reasons_more": "+{{count}} mehr",
   "view_details": "Details zur Übereinstimmung ansehen",
   "not_interested": "Kein Interesse",
-  "load_failed": "Übereinstimmungen konnten nicht geladen werden",
-  "load_error_title": "Übereinstimmungen können nicht geladen werden",
+  "load_failed": "Das wurde nicht geladen. Versuchen Sie es gleich noch einmal.",
+  "load_error_title": "Wir konnten Ihre Übereinstimmungen nicht laden",
   "retry": "Erneut versuchen",
   "match_hidden": "Übereinstimmung ausgeblendet — ähnliche Ergebnisse werden seltener angezeigt",
   "page_meta": {
@@ -97,12 +97,12 @@
   },
   "preferences": {
     "subtitle": "Steuern Sie, wie Smart Matching Verbindungen findet und Sie darüber benachrichtigt.",
-    "load_failed": "Ihre Matching-Einstellungen konnten nicht geladen werden",
+    "load_failed": "Wir konnten Ihre Matching-Einstellungen nicht laden",
     "load_error_desc": "Ihre gespeicherten Einstellungen konnten nicht geladen werden. Die Bearbeitung ist deaktiviert, damit sie nicht mit Standardwerten überschrieben werden.",
     "retry": "Erneut versuchen",
     "save": "Einstellungen speichern",
     "save_success": "Matching-Einstellungen gespeichert",
-    "save_failed": "Matching-Einstellungen konnten nicht gespeichert werden",
+    "save_failed": "Wir konnten das nicht speichern. Bitte versuchen Sie es noch einmal.",
     "unsaved_changes": "Sie haben nicht gespeicherte Änderungen",
     "pause": {
       "title": "Abgleich pausieren",

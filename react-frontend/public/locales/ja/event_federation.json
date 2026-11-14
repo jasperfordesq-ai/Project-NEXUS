@@ -7,7 +7,7 @@
       "description": "参加者の非公開データを開示せずに、このイベントが提携コミュニティへ共有される状況を確認します。",
       "refresh": "更新",
       "loading": "連携状況を読み込んでいます...",
-      "load_error_title": "連携状況を読み込めません",
+      "load_error_title": "共有の状況を読み込めませんでした",
       "load_error_description": "配信診断を読み込めませんでした。もう一度お試しください。",
       "try_again": "もう一度試す",
       "not_configured_title": "提携コミュニティが設定されていません",

@@ -198,9 +198,9 @@
       }
     },
     "error_codes": {
-      "member_not_found": "メンバーが見つかりません",
+      "member_not_found": "このメンバーが見つかりません",
       "duplicate_target": "重複した受信者",
-      "email_invalid": "無効なメールアドレス",
+      "email_invalid": "このメールアドレスは正しくないようです",
       "csv_header_missing": "CSVヘッダーがありません",
       "csv_email_column_missing": "メール欄がありません"
     }

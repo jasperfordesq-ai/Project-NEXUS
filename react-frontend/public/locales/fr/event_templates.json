@@ -18,11 +18,11 @@
         "all": "Tout"
       },
       "loading": "Chargement des modèles d'événements...",
-      "load_error_title": "Impossible de charger les modèles d'événements",
+      "load_error_title": "Nous n’avons pas pu charger les modèles d’événements",
       "load_error_description": "La bibliothèque de modèles n'a pas pu être chargée. Veuillez réessayer.",
       "load_more_error": "Impossible de charger d'autres modèles.",
       "retry": "Réessayez",
-      "empty_title": "Aucun modèle trouvé",
+      "empty_title": "Aucun modèle à afficher",
       "empty_description": "Enregistrez un événement en tant que modèle pour créer une bibliothèque de configuration réutilisable et révisée.",
       "untitled": "Modèle sans titre",
       "source_label": "Source : {{title}}",
@@ -105,7 +105,7 @@
         "reason_recorded": "Un motif d'archivage est enregistré dans l'historique d'audit conservé."
       },
       "audit_title": "Historique d'audit du modèle",
-      "audit_error_title": "Impossible de charger l'historique d'audit",
+      "audit_error_title": "Nous n’avons pas pu charger l’historique",
       "audit_error_description": "L'historique du modèle immuable n'a pas pu être chargé.",
       "audit_empty": "Aucune entrée d'audit n'a été renvoyée.",
       "audit_load_more": "Charger plus d’historique",

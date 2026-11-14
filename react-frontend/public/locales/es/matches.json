@@ -23,8 +23,8 @@
   "reasons_more": "+{{count}} más",
   "view_details": "Ver detalles de coincidencia",
   "not_interested": "No me interesa",
-  "load_failed": "Error al cargar las coincidencias",
-  "load_error_title": "No se pueden cargar las coincidencias",
+  "load_failed": "Eso no se ha cargado. Inténtalo de nuevo en un momento.",
+  "load_error_title": "No hemos podido cargar tus coincidencias",
   "retry": "Intentar de nuevo",
   "match_hidden": "Coincidencia oculta — te mostraremos menos como esta",
   "page_meta": {
@@ -97,12 +97,12 @@
   },
   "preferences": {
     "subtitle": "Controle cómo Smart Matching encuentra conexiones y le notifica sobre ellas.",
-    "load_failed": "No se pudieron cargar tus preferencias de coincidencia",
+    "load_failed": "No hemos podido cargar tus preferencias de coincidencia",
     "load_error_desc": "No se pudieron cargar tus preferencias guardadas. La edición está deshabilitada para que no se sobrescriban con valores predeterminados.",
     "retry": "Intentar de nuevo",
     "save": "Guardar preferencias",
     "save_success": "Preferencias de coincidencias guardadas",
-    "save_failed": "No se pudieron guardar las preferencias de coincidencia",
+    "save_failed": "No hemos podido guardar eso. Vuelve a intentarlo.",
     "unsaved_changes": "Tienes cambios sin guardar",
     "pause": {
       "title": "Pausar coincidencia",

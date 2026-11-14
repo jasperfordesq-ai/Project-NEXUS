@@ -15,7 +15,7 @@
     "delete": "Usuń recenzję",
     "delete_confirm": "Czy na pewno chcesz usunąć tę recenzję?",
     "delete_success": "Recenzja usunięta",
-    "delete_error": "Nie udało się usunąć recenzji"
+    "delete_error": "Nie udało się nam tego usunąć. Spróbuj ponownie."
   },
   "pending": {
     "empty": "Brak oczekujących recenzji",
@@ -30,7 +30,7 @@
     "empty": "Nie napisałeś jeszcze żadnych recenzji",
     "empty_subtitle": "Po zakończeniu wymian możesz zostawiać recenzje innym członkom."
   },
-  "load_error": "Nie udało się załadować recenzji. Spróbuj ponownie.",
+  "load_error": "Nie udało się tego wczytać. Spróbuj ponownie za chwilę.",
   "load_more": "Załaduj więcej",
   "stars": "{{count}} gwiazdka",
   "stars_plural": "{{count}} gwiazdki",

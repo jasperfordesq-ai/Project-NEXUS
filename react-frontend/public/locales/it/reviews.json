@@ -15,7 +15,7 @@
     "delete": "Elimina recensione",
     "delete_confirm": "Sei sicuro di voler eliminare questa recensione?",
     "delete_success": "Recensione eliminata",
-    "delete_error": "Eliminazione della recensione non riuscita"
+    "delete_error": "Non siamo riusciti a eliminarlo. Riprova."
   },
   "pending": {
     "empty": "Nessuna recensione in sospeso",
@@ -30,7 +30,7 @@
     "empty": "Non hai ancora scritto nessuna recensione",
     "empty_subtitle": "Dopo aver completato degli scambi, puoi lasciare recensioni ad altri membri."
   },
-  "load_error": "Caricamento delle recensioni non riuscito. Riprova.",
+  "load_error": "Il caricamento non è riuscito. Riprova tra un momento.",
   "load_more": "Carica altro",
   "stars": "{{count}} stella",
   "stars_plural": "{{count}} stelle",

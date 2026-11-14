@@ -169,7 +169,7 @@ describe('MatchesPage', () => {
     mockApiGet.mockResolvedValue({ success: false, error: 'Server error' });
     render(<MatchesPage />);
 
-    expect(await screen.findByText('Unable to load matches')).toBeInTheDocument();
+    expect(await screen.findByText("We couldn't load your matches")).toBeInTheDocument();
     expect(screen.getByText('Try again')).toBeInTheDocument();
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
   });
@@ -183,7 +183,7 @@ describe('MatchesPage', () => {
     fireEvent.click(await screen.findByText('Try again'));
 
     await waitFor(() => expect(screen.getByTestId('empty-state')).toBeInTheDocument());
-    expect(screen.queryByText('Unable to load matches')).not.toBeInTheDocument();
+    expect(screen.queryByText("We couldn't load your matches")).not.toBeInTheDocument();
   });
 
   it('shows the paused banner when matching is paused', async () => {

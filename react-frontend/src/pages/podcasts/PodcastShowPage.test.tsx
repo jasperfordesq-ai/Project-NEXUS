@@ -169,9 +169,9 @@ describe('PodcastShowPage', () => {
 
     render(<PodcastShowPage />);
 
-    // i18n resolves 'show.not_found' → "Podcast show not found"
+    // i18n resolves 'show.not_found' → "We can't find that podcast"
     await waitFor(() => {
-      expect(screen.getByText(/Podcast show not found/i)).toBeInTheDocument();
+      expect(screen.getByText(/We can't find that podcast/i)).toBeInTheDocument();
     });
   });
 
@@ -184,7 +184,7 @@ describe('PodcastShowPage', () => {
     render(<PodcastShowPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Podcast show not found/i)).toBeInTheDocument();
+      expect(screen.getByText(/We can't find that podcast/i)).toBeInTheDocument();
     });
   });
 

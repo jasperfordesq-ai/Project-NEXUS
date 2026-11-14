@@ -15,7 +15,7 @@
     "delete": "Beoordeling verwijderen",
     "delete_confirm": "Weet je zeker dat je deze beoordeling wilt verwijderen?",
     "delete_success": "Beoordeling verwijderd",
-    "delete_error": "Verwijderen van beoordeling mislukt"
+    "delete_error": "We konden dat niet verwijderen. Probeer het opnieuw."
   },
   "pending": {
     "empty": "Geen openstaande beoordelingen",
@@ -30,7 +30,7 @@
     "empty": "Je hebt nog geen beoordelingen geschreven",
     "empty_subtitle": "Na het voltooien van uitwisselingen kun je beoordelingen achterlaten voor andere leden."
   },
-  "load_error": "Laden van beoordelingen mislukt. Probeer het opnieuw.",
+  "load_error": "Dat is niet geladen. Probeer het zo nog eens.",
   "load_more": "Meer laden",
   "stars": "{{count}} ster",
   "stars_plural": "{{count}} sterren",

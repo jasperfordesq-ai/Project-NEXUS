@@ -18,11 +18,11 @@
         "all": "All"
       },
       "loading": "Loading event templates...",
-      "load_error_title": "Unable to load event templates",
+      "load_error_title": "We couldn't load the event templates",
       "load_error_description": "The template library could not be loaded. Please try again.",
       "load_more_error": "More templates could not be loaded.",
       "retry": "Try again",
-      "empty_title": "No templates found",
+      "empty_title": "No templates to show",
       "empty_description": "Save an event as a template to build a reusable, reviewed configuration library.",
       "untitled": "Untitled template",
       "source_label": "Source: {{title}}",
@@ -105,7 +105,7 @@
         "reason_recorded": "An archive reason is recorded in the retained audit history."
       },
       "audit_title": "Template audit history",
-      "audit_error_title": "Unable to load audit history",
+      "audit_error_title": "We couldn't load the history",
       "audit_error_description": "The immutable template history could not be loaded.",
       "audit_empty": "No audit entries were returned.",
       "audit_load_more": "Load more history",

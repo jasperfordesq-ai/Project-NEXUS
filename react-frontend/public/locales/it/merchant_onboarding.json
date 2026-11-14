@@ -49,8 +49,8 @@
   "badge_earned": "Badge Marktplatz-Partner ottenuto",
   "success_cta": "Crea il tuo primo annuncio",
   "errors": {
-    "save_failed": "Salvataggio non riuscito. Riprova.",
-    "complete_failed": "Impossibile completare la configurazione."
+    "save_failed": "Non siamo riusciti a salvarlo. Riprova.",
+    "complete_failed": "Non siamo riusciti a completare la configurazione. Riprova."
   },
   "open_time": "Orario di apertura",
   "close_time": "Orario di chiusura"

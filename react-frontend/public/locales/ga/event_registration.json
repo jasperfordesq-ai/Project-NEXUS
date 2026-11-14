@@ -198,9 +198,9 @@
       }
     },
     "error_codes": {
-      "member_not_found": "ball gan aimsiú",
+      "member_not_found": "ní féidir linn an ball sin a aimsiú",
       "duplicate_target": "faighteoir dúblach",
-      "email_invalid": "seoladh ríomhphoist neamhbhailí",
+      "email_invalid": "ní cosúil go bhfuil an seoladh ríomhphoist sin ceart",
       "csv_header_missing": "Ceanntásc CSV in easnamh",
       "csv_email_column_missing": "colún ríomhphoist in easnamh"
     }
