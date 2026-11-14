@@ -58,7 +58,7 @@ export function FeaturePillsSection({ content }: FeaturePillsSectionProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto"
+      className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto px-4 sm:px-6"
     >
       {pills.map((pill, index) => (
         <motion.div

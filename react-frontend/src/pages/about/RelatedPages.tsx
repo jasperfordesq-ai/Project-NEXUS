@@ -55,6 +55,8 @@ export function RelatedPages({ current }: RelatedPagesProps) {
     ...(isHourTimebank ? hourTimebankAboutPages : []),
   ];
   const links = aboutPages.filter((p) => p.href !== current);
+  // Most communities have only the one guide page, so there is nothing to relate it to.
+  if (links.length === 0) return null;
 
   return (
     <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">

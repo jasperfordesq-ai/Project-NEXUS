@@ -6,7 +6,7 @@
   "heading": "Wie können wir Ihnen helfen?",
   "subtitle": "Schritt-für-Schritt-Anleitungen zu allem auf {{name}}, in einfacher Sprache.",
   "search_label": "Im Hilfezentrum suchen",
-  "search_placeholder": "Anleitungen durchsuchen, zum Beispiel „Stunden senden“",
+  "search_placeholder": "Anleitungen durchsuchen",
   "search_results_heading": "Anleitungen zu „{{query}}“",
   "search_results_count_one": "{{count}} Anleitung gefunden",
   "search_results_count_other": "{{count}} Anleitungen gefunden",

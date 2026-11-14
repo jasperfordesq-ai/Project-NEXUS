@@ -6,7 +6,7 @@
   "heading": "Come possiamo aiutarti?",
   "subtitle": "Guide passo per passo a tutto ciò che trovi su {{name}}, scritte in parole semplici.",
   "search_label": "Cerca nel Centro assistenza",
-  "search_placeholder": "Cerca nelle guide, ad esempio \"inviare ore\"",
+  "search_placeholder": "Cerca nelle guide",
   "search_results_heading": "Guide che corrispondono a \"{{query}}\"",
   "search_results_count_one": "{{count}} guida trovata",
   "search_results_count_many": "{{count}} guide trovate",

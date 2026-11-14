@@ -936,7 +936,7 @@ function StatCard({ icon, label, value, color, href, isLoading }: StatCardProps)
         <div className="flex items-center gap-4">
           <div data-testid="stat-icon" className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${colorClasses[color]}`}>{icon}</div>
           <div className="min-w-0">
-            <div className="truncate text-sm font-medium text-theme-secondary">{label}</div>
+            <div className="line-clamp-2 text-sm font-medium text-theme-secondary">{label}</div>
             {isLoading ? (<Skeleton className="mt-1 rounded-lg"><div className="h-8 w-16 rounded-lg bg-surface-tertiary" /></Skeleton>) : (<div className="truncate text-3xl font-bold leading-tight text-theme-primary">{value}</div>)}
           </div>
         </div>

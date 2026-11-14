@@ -10,7 +10,7 @@
     "heading": "How can we help?",
     "subtitle": "Step-by-step guides to everything on {{name}}, written in plain English.",
     "search_label": "Search the Help Centre",
-    "search_placeholder": "Search the guides, for example \"send hours\"",
+    "search_placeholder": "Search the guides",
     "search_results_heading": "Guides matching \"{{query}}\"",
     "search_results_count_one": "{{count}} guide found",
     "search_results_count_other": "{{count}} guides found",

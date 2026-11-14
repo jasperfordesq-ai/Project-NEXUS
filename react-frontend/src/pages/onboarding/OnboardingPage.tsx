@@ -36,6 +36,7 @@ import { Separator } from '@/components/ui/Separator';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
+import Circle from 'lucide-react/icons/circle';
 import HandHeart from 'lucide-react/icons/hand-heart';
 import HelpCircle from 'lucide-react/icons/circle-help';
 import Rocket from 'lucide-react/icons/rocket';
@@ -501,6 +502,8 @@ export function OnboardingPage() {
       }
 
       setIsComplete(true);
+      // The finish screen replaces a long form: start it at the top, not wherever the form was scrolled to.
+      window.scrollTo({ top: 0 });
       await refreshUser();
       if (!mountedRef.current) return;
 
@@ -1309,10 +1312,11 @@ function BenefitCard({ icon, title, description }: BenefitCardProps) {
 function ValidationItem({ checked, label }: { checked: boolean; label: string }) {
   return (
     <div className="flex items-center gap-2 text-sm">
-      <CheckCircle
-        className={`w-4 h-4 transition-colors ${checked ? 'text-emerald-500' : 'text-theme-subtle'}`}
-        aria-hidden="true"
-      />
+      {checked ? (
+        <CheckCircle className="w-4 h-4 text-emerald-500 transition-colors" aria-hidden="true" />
+      ) : (
+        <Circle className="w-4 h-4 text-theme-subtle transition-colors" aria-hidden="true" />
+      )}
       <span className={checked ? 'text-theme-primary' : 'text-theme-subtle'}>
         {label}
       </span>

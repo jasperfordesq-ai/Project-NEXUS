@@ -274,7 +274,7 @@
   "reciprocity_one_way_title": "Correspond à votre offre ou demande",
   "skill_tags": {
     "label": "Étiquettes de compétences",
-    "placeholder": "Saisissez une compétence et appuyez sur Entrée...",
+    "placeholder": "Ajoutez une compétence",
     "aria_add": "Ajouter une étiquette de compétence",
     "aria_add_count": "Ajouter une balise de compétence ({{current}} sur {{max}})",
     "aria_results": "{{count}} suggestions de compétences disponibles",

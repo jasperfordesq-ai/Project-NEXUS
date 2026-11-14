@@ -95,13 +95,6 @@ const STEP_KEYS = ['community', 'details', 'account', 'terms'] as const;
 
 const STEPS = STEP_KEYS.map((key, index) => ({ id: index + 1, key }));
 
-const requiredLabel = (label: string) => (
-  <span className="inline-flex items-center gap-0.5">
-    <span>{label}</span>
-    <span className="text-danger" aria-hidden="true">*</span>
-  </span>
-);
-
 // E.164 phone validation.
 const isPhoneValid = (value: string) => {
   if (!value.trim()) return false;
@@ -162,6 +155,7 @@ export function RegisterPage() {
   const [phone, setPhone] = useState('');
   const [locationTouched, setLocationTouched] = useState(false);
   const [phoneTouched, setPhoneTouched] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
 
   const phoneError = !phone.trim()
     ? t('register.phone_required')
@@ -365,8 +359,10 @@ export function RegisterPage() {
     location.trim() &&
     phone.trim() &&
     isPhoneValid(phone);
+  // Deliberately loose: something@something.something. The server does the real check.
+  const emailLooksRight = /^\S+@\S+\.\S+$/.test(email.trim());
   const isStep3Valid =
-    email.trim() &&
+    emailLooksRight &&
     password.trim() &&
     passwordConfirm.trim() &&
     passwordCheck.isAcceptable &&
@@ -755,7 +751,7 @@ export function RegisterPage() {
                 fallback={
                   <Input
                     type="text"
-                    label={requiredLabel(t('register.location_label'))}
+                    label={t('register.location_label')}
                     placeholder={t('register.location_placeholder')}
                     value={location}
                     onChange={(e) => {
@@ -775,7 +771,7 @@ export function RegisterPage() {
                 }
               >
                 <PlaceAutocompleteInput
-                  label={requiredLabel(t('register.location_label'))}
+                  label={t('register.location_label')}
                   placeholder={t('register.location_placeholder')}
                   value={location}
                   onChange={(val) => {
@@ -807,7 +803,7 @@ export function RegisterPage() {
             ) : (
               <Input
                 type="text"
-                label={requiredLabel(t('register.location_label'))}
+                label={t('register.location_label')}
                 placeholder={t('register.location_placeholder')}
                 value={location}
                 onFocus={activateLocationAutocomplete}
@@ -832,7 +828,7 @@ export function RegisterPage() {
             {/* Phone */}
             <Input
               type="tel"
-              label={requiredLabel(t('register.phone_label'))}
+              label={t('register.phone_label')}
               placeholder={t('register.phone_placeholder')}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -863,6 +859,9 @@ export function RegisterPage() {
               placeholder={t('register.email_placeholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setEmailTouched(true)}
+              isInvalid={emailTouched && email.trim() !== '' && !emailLooksRight}
+              errorMessage={emailTouched && email.trim() !== '' && !emailLooksRight ? t('register.email_invalid') : undefined}
               startContent={<Mail className="w-4 h-4 text-theme-subtle" aria-hidden="true" />}
               isRequired
               autoComplete="email"

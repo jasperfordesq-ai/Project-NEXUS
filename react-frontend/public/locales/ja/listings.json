@@ -273,7 +273,7 @@
   "reciprocity_one_way_title": "あなたの提供または依頼に合致しています",
   "skill_tags": {
     "label": "スキルタグ",
-    "placeholder": "スキルを入力してEnterを押してください...",
+    "placeholder": "スキルを追加",
     "aria_add": "スキルタグを追加",
     "aria_add_count": "スキルタグを追加（{{current}} の {{max}}）",
     "aria_results": "{{count}} のスキル提案が利用可能",

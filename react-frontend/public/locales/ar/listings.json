@@ -277,7 +277,7 @@
   "reciprocity_one_way_title": "يتطابق مع عرضك أو طلبك",
   "skill_tags": {
     "label": "علامات المهارة",
-    "placeholder": "اكتب مهارة واضغط Enter...",
+    "placeholder": "أضف مهارة",
     "aria_add": "إضافة علامة مهارة",
     "aria_add_count": "إضافة علامة المهارة ({{current}} من {{max}})",
     "aria_results": "{{count}} اقتراحات المهارات متاحة",

@@ -273,7 +273,7 @@
   "reciprocity_one_way_title": "Matches your offer or request",
   "skill_tags": {
     "label": "Skill tags",
-    "placeholder": "Type a skill and press Enter...",
+    "placeholder": "Add a skill",
     "aria_add": "Add skill tag",
     "aria_add_count": "Add skill tag ({{current}} of {{max}})",
     "aria_results": "{{count}} skill suggestions available",

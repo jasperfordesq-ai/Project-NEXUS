@@ -274,7 +274,7 @@
   "reciprocity_one_way_title": "Coincide con tu oferta o solicitud",
   "skill_tags": {
     "label": "Etiquetas de Habilidades",
-    "placeholder": "Escribe una habilidad y pulsa Enter...",
+    "placeholder": "Añade una habilidad",
     "aria_add": "Añadir etiqueta de habilidad",
     "aria_add_count": "Agregar etiqueta de habilidad ({{current}} de {{max}})",
     "aria_results": "{{count}} sugerencias de habilidades disponibles",

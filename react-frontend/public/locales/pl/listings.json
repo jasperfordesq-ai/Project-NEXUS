@@ -275,7 +275,7 @@
   "reciprocity_one_way_title": "Pasuje do twojej oferty lub prośby",
   "skill_tags": {
     "label": "Tagi umiejętności",
-    "placeholder": "Wpisz umiejętność i naciśnij Enter...",
+    "placeholder": "Dodaj umiejętność",
     "aria_add": "Dodaj tag umiejętności",
     "aria_add_count": "Dodaj znacznik umiejętności ({{current}} z {{max}})",
     "aria_results": "Dostępne sugestie umiejętności {{count}}",

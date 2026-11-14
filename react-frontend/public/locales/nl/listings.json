@@ -273,7 +273,7 @@
   "reciprocity_one_way_title": "Komt overeen met uw aanbod of verzoek",
   "skill_tags": {
     "label": "Vaardigheidstags",
-    "placeholder": "Typ een vaardigheid en druk op Enter...",
+    "placeholder": "Voeg een vaardigheid toe",
     "aria_add": "Voeg vaardigheidstag toe",
     "aria_add_count": "Vaardigheidstag toevoegen ({{current}} van {{max}})",
     "aria_results": "{{count}} vaardigheidssuggesties beschikbaar",

@@ -75,6 +75,16 @@ describe('StatsSection', () => {
     expect(screen.getByText('Communities')).toBeInTheDocument();
   });
 
+  it('leaves out the communities tile when there is only one — "1 Communities" says nothing', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: { ...mockStats, communities: 1 } });
+    render(<StatsSection />);
+    await waitFor(() => {
+      expect(screen.getByText('Active Members')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Hours Exchanged')).toBeInTheDocument();
+    expect(screen.queryByText('Communities')).not.toBeInTheDocument();
+  });
+
   it('renders formatted stat values after successful API response', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: mockStats });
     render(<StatsSection />);

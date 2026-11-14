@@ -10,7 +10,7 @@
     "heading": "Como podemos ajudar?",
     "subtitle": "Guias passo a passo sobre tudo em {{name}}, escritos em linguagem simples.",
     "search_label": "Pesquisar na Central de Ajuda",
-    "search_placeholder": "Pesquise nos guias, por exemplo \"enviar horas\"",
+    "search_placeholder": "Busque nos guias",
     "search_results_heading": "Guias que correspondem a \"{{query}}\"",
     "search_results_count_one": "{{count}} guia encontrado",
     "search_results_count_other": "{{count}} guias encontrados",

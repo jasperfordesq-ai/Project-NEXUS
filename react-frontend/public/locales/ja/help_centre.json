@@ -6,7 +6,7 @@
   "heading": "どのようなことでお困りですか?",
   "subtitle": "{{name}} のすべてを、わかりやすい言葉で一つずつ説明するガイドです。",
   "search_label": "ヘルプセンターを検索",
-  "search_placeholder": "ガイドを検索(例:「時間を送る」)",
+  "search_placeholder": "ガイドを検索",
   "search_results_heading": "「{{query}}」に一致するガイド",
   "search_results_count_other": "{{count}} 件のガイドが見つかりました",
   "search_no_results_title": "検索に一致するガイドはありませんでした",

@@ -6,7 +6,7 @@
   "heading": "كيف يمكننا مساعدتك؟",
   "subtitle": "أدلة خطوة بخطوة لكل ما في {{name}}، مكتوبة بلغة بسيطة وواضحة.",
   "search_label": "البحث في مركز المساعدة",
-  "search_placeholder": "ابحث في الأدلة، مثلًا «إرسال الساعات»",
+  "search_placeholder": "ابحث في الأدلة",
   "search_results_heading": "الأدلة المطابقة لـ «{{query}}»",
   "search_results_count_zero": "تم العثور على {{count}} دليل",
   "search_results_count_one": "تم العثور على {{count}} دليل",

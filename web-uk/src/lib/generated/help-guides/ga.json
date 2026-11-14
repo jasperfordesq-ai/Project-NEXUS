@@ -10,7 +10,7 @@
     "heading": "Conas is féidir linn cabhrú leat?",
     "subtitle": "Treoracha céim ar chéim ar gach rud ar {{name}}, scríofa i nGaeilge shimplí.",
     "search_label": "Cuardaigh san Ionad Cabhrach",
-    "search_placeholder": "Cuardaigh sna treoracha, mar shampla \"uaireanta a sheoladh\"",
+    "search_placeholder": "Cuardaigh na treoracha",
     "search_results_heading": "Treoracha a oireann do \"{{query}}\"",
     "search_results_count_one": "Aimsíodh {{count}} treoir",
     "search_results_count_other": "Aimsíodh {{count}} treoir",

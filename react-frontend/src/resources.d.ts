@@ -34232,6 +34232,7 @@ export default interface Resources {
       "data_protection_body": "By clicking \"Create Account,\" you are entering into a membership agreement. We collect your personal data solely to administer your account, facilitate safe exchanges between members, and send you essential community updates.",
       "data_protection_privacy_link": "View our full Privacy Policy",
       "data_protection_title": "Data Protection Notice",
+      "email_invalid": "That email address doesn't look right.",
       "email_label": "Email",
       "email_placeholder": "you@example.com",
       "failed": "We couldn't finish signing you up. Please check your details and try again.",
@@ -50736,7 +50737,7 @@ export default interface Resources {
     "search_label": "Search the Help Centre",
     "search_no_results_body": "Try a different or shorter word. You can also browse the topics, or contact us and a person will help.",
     "search_no_results_title": "No guides matched your search",
-    "search_placeholder": "Search the guides, for example \"send hours\"",
+    "search_placeholder": "Search the guides",
     "search_results_count_one": "{{count}} guide found",
     "search_results_count_other": "{{count}} guides found",
     "search_results_heading": "Guides matching \"{{query}}\"",
@@ -54936,7 +54937,7 @@ export default interface Resources {
       "aria_results_one": "{{count}} skill suggestions available",
       "aria_results_other": "{{count}} skill suggestions available",
       "label": "Skill tags",
-      "placeholder": "Type a skill and press Enter..."
+      "placeholder": "Add a skill"
     },
     "sort_label": "Sort",
     "sort_newest": "Newest first",

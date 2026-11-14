@@ -274,7 +274,7 @@
   "reciprocity_one_way_title": "Corrisponde alla tua offerta o richiesta",
   "skill_tags": {
     "label": "Tag Competenze",
-    "placeholder": "Digita una competenza e premi Invio...",
+    "placeholder": "Aggiungi una competenza",
     "aria_add": "Aggiungi tag competenza",
     "aria_add_count": "Aggiungi tag abilità ({{current}} di {{max}})",
     "aria_results": "{{count}} suggerimenti di abilità disponibili",

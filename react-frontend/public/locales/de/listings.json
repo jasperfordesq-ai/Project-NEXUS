@@ -273,7 +273,7 @@
   "reciprocity_one_way_title": "Passt zu Ihrem Angebot oder Gesuch",
   "skill_tags": {
     "label": "Fähigkeits-Tags",
-    "placeholder": "Eine Fähigkeit eingeben und Enter drücken...",
+    "placeholder": "Fähigkeit hinzufügen",
     "aria_add": "Fähigkeits-Tag hinzufügen",
     "aria_add_count": "Skill-Tag hinzufügen ({{current}} von {{max}})",
     "aria_results": "{{count}}-Skill-Vorschläge verfügbar",

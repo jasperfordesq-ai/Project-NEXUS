@@ -119,7 +119,8 @@ function getTimelineColor(action: string, newStatus?: string | null): string {
 }
 
 function getTimelineLabelKey(action: string, newStatus?: string | null): string {
-  if (action === 'created') return 'detail.timeline.created';
+  // The server records the first step as 'request_created' (ExchangeWorkflowService).
+  if (action === 'created' || action === 'request_created') return 'detail.timeline.created';
   if (action === 'accepted' || newStatus === 'accepted') return 'detail.timeline.accepted';
   if (action === 'declined') return 'detail.timeline.declined';
   if (action === 'started' || newStatus === 'in_progress') return 'detail.timeline.started';

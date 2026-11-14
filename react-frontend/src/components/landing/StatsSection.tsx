@@ -77,7 +77,10 @@ export function StatsSection({ content }: StatsSectionProps) {
         { value: <CountUp value={platformStats.members} format={formatStatNumber} />, label: t('home.stats.active_members') },
         { value: <CountUp value={platformStats.hours_exchanged} format={formatStatNumber} />, label: t('home.stats.hours_exchanged') },
         { value: <CountUp value={platformStats.listings} format={formatStatNumber} />, label: t('home.stats.active_listings') },
-        { value: <CountUp value={platformStats.communities} format={formatStatNumber} />, label: t('home.stats.communities') },
+        // A count of one says nothing on a community's own page (it read "1 Communities").
+        ...(platformStats.communities > 1
+          ? [{ value: <CountUp value={platformStats.communities} format={formatStatNumber} />, label: t('home.stats.communities') }]
+          : []),
       ]
     : [
         { value: '\u2014', label: t('home.stats.active_members') },
@@ -92,7 +95,7 @@ export function StatsSection({ content }: StatsSectionProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
-      className="mt-16 sm:mt-24 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8"
+      className={`mt-16 sm:mt-24 grid grid-cols-2 gap-4 sm:gap-8 ${stats.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-4'}`}
       role={isLoading ? 'status' : undefined}
       aria-busy={isLoading}
       aria-label={isLoading ? t('loading', { ns: 'common' }) : undefined}

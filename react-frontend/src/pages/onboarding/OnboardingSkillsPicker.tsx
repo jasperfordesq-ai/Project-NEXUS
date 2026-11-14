@@ -123,11 +123,12 @@ export function OnboardingSkillsPicker({
           onChange={(e) => setDraft(e.target.value)}
           maxLength={SKILL_NAME_MAX}
           isDisabled={atLimit}
-          className="flex-1"
+          className="min-w-0 flex-1"
         />
         <Button
           type="submit"
           variant="secondary"
+          className="shrink-0"
           isDisabled={!draftName || atLimit}
           startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
         >

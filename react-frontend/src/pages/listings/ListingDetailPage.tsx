@@ -662,7 +662,7 @@ export function ListingDetailPage() {
               <Button
                 size="sm"
                 variant="danger-soft"
-                className="bg-red-500/10 text-red-400"
+                className="bg-red-500/10 text-red-700 dark:text-red-400"
                 startContent={<Trash2 className="w-4 h-4" aria-hidden="true" />}
                 onPress={onDeleteOpen}
                 isLoading={isDeleting}

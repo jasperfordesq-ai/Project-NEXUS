@@ -466,7 +466,15 @@ export function ListingForm({
 
   async function doSubmit() {
     if (isSubmittingRef.current) return;
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      // The messages are beside their fields, which may be far up a long form: go to the first one.
+      window.requestAnimationFrame(() => {
+        const first = document.querySelector<HTMLElement>('[aria-invalid="true"]');
+        first?.scrollIntoView?.({ block: 'center' });
+        first?.focus?.({ preventScroll: true });
+      });
+      return;
+    }
 
     try {
       isSubmittingRef.current = true;

@@ -150,11 +150,7 @@ export function Footer({ children, copyright }: FooterProps) {
             ) : (
               <img src={partnerLogoUrl} alt={partnerLabel} width={176} height={64} className="h-auto max-h-16 w-auto max-w-44 object-contain" />
             )
-          ) : (
-            <div className="w-full max-w-[22rem] border-2 border-dashed border-theme-default/40 rounded-xl h-16 flex items-center justify-center">
-              <span className="text-xs text-theme-subtle/40">{t('footer.tenant_logo_placeholder')}</span>
-            </div>
-          )}
+          ) : null}
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-theme-subtle/70">
             <span>{t('footer.agpl_notice', { year })}</span>
             <span aria-hidden="true">&middot;</span>
@@ -290,13 +286,7 @@ export function Footer({ children, copyright }: FooterProps) {
                     ) : (
                       <img src={partnerLogoUrl} alt={partnerLabel} width={192} height={80} className="h-auto max-h-20 w-auto max-w-48 object-contain" />
                     )
-                  ) : (
-                    <div className="h-20 w-48 border-2 border-dashed border-theme-default/40 rounded-xl flex items-center justify-center">
-                      <span className="text-xs text-theme-subtle/40 text-center leading-snug px-3">
-                        {t('footer.tenant_logo_placeholder')}
-                      </span>
-                    </div>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* COL 2: Open source */}

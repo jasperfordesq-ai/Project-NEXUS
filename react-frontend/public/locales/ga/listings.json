@@ -276,7 +276,7 @@
   "reciprocity_one_way_title": "Meaitseálann le do thairiscint nó d'iarratas",
   "skill_tags": {
     "label": "Clibeanna Scileanna",
-    "placeholder": "Clóscríobh scil agus brúigh Iontráil...",
+    "placeholder": "Cuir scil leis",
     "aria_add": "Cuir clib scile leis",
     "aria_add_count": "Cuir clib scile leis ({{current}} de {{max}})",
     "aria_results": "{{count}} moltaí scile ar fáil",

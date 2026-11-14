@@ -160,7 +160,9 @@ export function AboutPage() {
         { icon: Users, value: formatStatNumber(stats.members), label: t('about.stats.members') },
         { icon: Clock, value: formatStatNumber(stats.hours_exchanged), label: t('about.stats.hours_exchanged') },
         { icon: ListTodo, value: formatStatNumber(stats.listings), label: t('about.stats.active_listings') },
-        { icon: Globe, value: formatStatNumber(stats.communities), label: t('about.stats.communities') },
+        ...(stats.communities > 1
+          ? [{ icon: Globe, value: formatStatNumber(stats.communities), label: t('about.stats.communities') }]
+          : []),
       ]
     : null;
 

@@ -93,13 +93,13 @@ describe('SkillTagsInput', () => {
 
   it('renders input field with placeholder', () => {
     render(<W><SkillTagsInput tags={[]} onChange={vi.fn()} /></W>);
-    expect(screen.getByPlaceholderText('Type a skill and press Enter...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Add a skill')).toBeInTheDocument();
   });
 
   it('calls onChange when Enter is pressed with a value', () => {
     const onChange = vi.fn();
     render(<W><SkillTagsInput tags={[]} onChange={onChange} /></W>);
-    const input = screen.getByPlaceholderText('Type a skill and press Enter...');
+    const input = screen.getByPlaceholderText('Add a skill');
     fireEvent.change(input, { target: { value: 'javascript' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     expect(onChange).toHaveBeenCalledWith(['javascript']);
@@ -108,7 +108,7 @@ describe('SkillTagsInput', () => {
   it('adds tag on comma key press', () => {
     const onChange = vi.fn();
     render(<W><SkillTagsInput tags={[]} onChange={onChange} /></W>);
-    const input = screen.getByPlaceholderText('Type a skill and press Enter...');
+    const input = screen.getByPlaceholderText('Add a skill');
     fireEvent.change(input, { target: { value: 'css' } });
     fireEvent.keyDown(input, { key: ',' });
     expect(onChange).toHaveBeenCalledWith(['css']);
@@ -117,7 +117,7 @@ describe('SkillTagsInput', () => {
   it('does not add duplicate tags', () => {
     const onChange = vi.fn();
     render(<W><SkillTagsInput tags={['react']} onChange={onChange} /></W>);
-    const input = screen.getByPlaceholderText('Type a skill and press Enter...');
+    const input = screen.getByPlaceholderText('Add a skill');
     fireEvent.change(input, { target: { value: 'React' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     expect(onChange).not.toHaveBeenCalled();
@@ -126,7 +126,7 @@ describe('SkillTagsInput', () => {
   it('hides input when max tags reached', () => {
     const tags = Array.from({ length: 10 }, (_, i) => `skill${i}`);
     render(<W><SkillTagsInput tags={tags} onChange={vi.fn()} maxTags={10} /></W>);
-    expect(screen.queryByPlaceholderText('Type a skill and press Enter...')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Add a skill')).not.toBeInTheDocument();
   });
 
   it('uses custom maxTags', () => {
@@ -137,7 +137,7 @@ describe('SkillTagsInput', () => {
   it('removes last tag on Backspace when input is empty', () => {
     const onChange = vi.fn();
     render(<W><SkillTagsInput tags={['react', 'node']} onChange={onChange} /></W>);
-    const input = screen.getByPlaceholderText('Type a skill and press Enter...');
+    const input = screen.getByPlaceholderText('Add a skill');
     fireEvent.keyDown(input, { key: 'Backspace' });
     expect(onChange).toHaveBeenCalledWith(['react']);
   });

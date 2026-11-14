@@ -179,6 +179,22 @@ describe('RegisterPage', () => {
     expect(phoneInput).not.toHaveAttribute('aria-invalid', 'true');
   });
 
+  it('says so when the email address has no @, instead of staying silent', async () => {
+    const user = userEvent.setup();
+    render(<RegisterPage />);
+
+    const email = await screen.findByLabelText(/^email/i);
+    await user.type(email, 'nora-at-example');
+    await user.tab();
+    expect(await screen.findByText("That email address doesn't look right.")).toBeInTheDocument();
+    expect(email).toHaveAttribute('aria-invalid', 'true');
+
+    await user.clear(email);
+    await user.type(email, 'nora@example.org');
+    await user.tab();
+    expect(screen.queryByText("That email address doesn't look right.")).not.toBeInTheDocument();
+  });
+
   it('keeps focus and typed letters in the location box when the place search loads', async () => {
     const user = userEvent.setup();
     render(<RegisterPage />);
