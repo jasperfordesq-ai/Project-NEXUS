@@ -3004,7 +3004,49 @@
                 "getting_started_body": "Explore lo que los miembros ofrecen y solicitan, cree su propio anuncio para ofrecer una habilidad y conéctese con personas cercanas a usted.",
                 "browse_listings": "Explorar anuncios",
                 "create_account": "Crear una cuenta",
-                "go_to_wallet": "Ir a su cartera"
+                "go_to_wallet": "Ir a su cartera",
+                "origins_title": "De dónde viene el banco de tiempo",
+                "origins_lead": "Empezó cuando un hombre se recuperaba de una enfermedad. Hoy pertenece a comunidades de todo el mundo.",
+                "origins_body": [
+                    "El banco de tiempo tal como lo conocemos empezó con Edgar Cahn, un abogado de derechos civiles y profesor de Derecho estadounidense. Junto a su esposa, Jean Camper Cahn, había dedicado años a conseguir que las personas sin dinero también pudieran contar con un abogado.",
+                    "En 1980, con 44 años, sufrió un infarto grave. Mientras se recuperaba, descubrió que no le gustaba ser alguien que solo podía recibir ayuda. De ahí nació una idea: ¿y si cada hora que dedicas a ayudar a alguien te diera derecho a una hora de ayuda? A esas horas las llamó «Time Dollars».",
+                    "Creía que a nadie se le debe dar por perdido como si no tuviera nada que aportar, y que la verdadera riqueza de una comunidad es su gente. Dedicó el resto de su vida a ayudar a poner en marcha bancos de tiempo por todo el mundo."
+                ],
+                "origins_note": "No fue el primero en intentarlo. En Japón, Teruko Mizushima había creado en 1973 un «Banco de Trabajo Voluntario» con la misma idea: una hora dada, una hora devuelta.",
+                "timeline_title": "Cómo creció la idea",
+                "timeline": [
+                    "En Japón, Teruko Mizushima crea el «Banco de Trabajo Voluntario».",
+                    "Edgar Cahn idea los Time Dollars mientras se recupera de un infarto.",
+                    "Su libro «Time Dollars», escrito con Jonathan Rowe, lleva la idea más lejos.",
+                    "Funda TimeBanks USA para ayudar a las comunidades a crear sus propios bancos de tiempo.",
+                    "Su libro «No More Throw-Away People» recoge los valores que los bancos de tiempo siguen todavía."
+                ],
+                "timeline_today": "Hoy",
+                "timeline_today_text": "Hay bancos de tiempo en comunidades de todo el mundo, entre ellas :community.",
+                "values_title": "Los cinco valores que comparte todo banco de tiempo",
+                "values_lead": "Edgar Cahn los puso por escrito, y los bancos de tiempo de todo el mundo los siguen todavía. Aquí van con nuestras propias palabras.",
+                "values": [
+                    {
+                        "title": "Todo el mundo tiene algo que dar",
+                        "description": "Cada uno de nosotros tiene algo que otra persona necesita: una habilidad, una palabra amable, una hora libre. Nadie es solo alguien a quien ayudar."
+                    },
+                    {
+                        "title": "Hay trabajos que no tienen precio",
+                        "description": "Criar a los hijos, cuidar de alguien, estar pendiente de los vecinos, mejorar el barrio. El dinero rara vez paga ese trabajo. El banco de tiempo lo cuenta."
+                    },
+                    {
+                        "title": "La ayuda va en los dos sentidos",
+                        "description": "Dar y recibir van juntos. La pregunta deja de ser «¿Cómo puedo ayudarte?» y pasa a ser «¿Cómo podemos ayudarnos?»."
+                    },
+                    {
+                        "title": "Nos necesitamos",
+                        "description": "Una comunidad es más fuerte que cualquier persona sola. Cada intercambio es un hilo más de confianza entre vecinos."
+                    },
+                    {
+                        "title": "Respeto por cada persona",
+                        "description": "Cada persona importa y merece que la escuchen, sea quien sea. Edgar Cahn añadió este quinto valor unos años después de los cuatro primeros."
+                    }
+                ]
             },
             "matches": {
                 "title": "Tus coincidencias",

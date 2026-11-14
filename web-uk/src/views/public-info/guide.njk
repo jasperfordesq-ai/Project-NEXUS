@@ -21,6 +21,38 @@
         <li><span class="govuk-!-font-weight-bold">{{ t("guide.step3_title") }}.</span> {{ t("guide.step3_body") }}</li>
       </ol>
 
+      {# Where timebanking comes from, and the five values (React TimebankingGuidePage,
+         14 Nov 2026). The history is checked fact: see the note on GUIDE_TIMELINE_YEARS
+         in routes/public-info.js before changing a date or a name. #}
+      <h2 class="govuk-heading-l" id="guide-origins">{{ t("guide.origins_title") }}</h2>
+      <p class="govuk-body">{{ t("guide.origins_lead") }}</p>
+      <h3 class="govuk-heading-m"><bdi>{{ founder.name }}</bdi> <span class="govuk-!-font-weight-regular">(<bdi>{{ founder.years }}</bdi>)</span></h3>
+      {% for paragraph in originsBody %}
+        <p class="govuk-body" dir="auto">{{ paragraph }}</p>
+      {% endfor %}
+      <div class="govuk-inset-text" dir="auto">{{ t("guide.origins_note") }}</div>
+
+      <h3 class="govuk-heading-m" id="guide-timeline">{{ t("guide.timeline_title") }}</h3>
+      <dl class="govuk-summary-list" data-guide-timeline>
+        {% for entry in timeline %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ entry.when }}</dt>
+            <dd class="govuk-summary-list__value" dir="auto">{{ entry.text }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+
+      <h2 class="govuk-heading-l" id="guide-values">{{ t("guide.values_title") }}</h2>
+      <p class="govuk-body">{{ t("guide.values_lead") }}</p>
+      <ol class="govuk-list govuk-list--number govuk-list--spaced" data-guide-values>
+        {% for value in values %}
+          <li>
+            <span class="govuk-!-font-weight-bold">{{ value.title }}</span><br>
+            {{ value.description }}
+          </li>
+        {% endfor %}
+      </ol>
+
       <h2 class="govuk-heading-l">{{ t("guide.getting_started_title") }}</h2>
       <p class="govuk-body">{{ t("guide.getting_started_body") }}</p>
 

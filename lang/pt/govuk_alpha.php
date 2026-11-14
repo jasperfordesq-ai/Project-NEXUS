@@ -1970,6 +1970,48 @@ return [
         'browse_listings' => 'Explorar anúncios',
         'create_account' => 'Criar uma conta',
         'go_to_wallet' => 'Ir para a sua carteira',
+        'origins_title' => 'De onde vem o banco de tempo',
+        'origins_lead' => 'Começou quando um homem se recuperava de uma doença. Hoje pertence a comunidades do mundo inteiro.',
+        'origins_body' => [
+            'O banco de tempo como conhecemos começou com Edgar Cahn, advogado de direitos civis e professor de Direito americano. Ao lado da esposa, Jean Camper Cahn, ele passou anos lutando para que pessoas sem dinheiro também pudessem contar com um advogado.',
+            'Em 1980, aos 44 anos, ele teve um infarto grave. Enquanto se recuperava, percebeu que não gostava de ser alguém que só podia receber ajuda. Daí veio uma ideia: e se cada hora dedicada a ajudar alguém rendesse uma hora de ajuda em troca? Ele chamou essas horas de “Time Dollars”.',
+            'Ele acreditava que ninguém deve ser descartado como se não tivesse nada a oferecer, e que a verdadeira riqueza de uma comunidade são as pessoas. Passou o resto da vida ajudando bancos de tempo a nascer pelo mundo.',
+        ],
+        'origins_note' => 'Ele não foi o primeiro a tentar. No Japão, Teruko Mizushima já tinha criado, em 1973, um “Banco de Trabalho Voluntário” com a mesma ideia: uma hora dada, uma hora devolvida.',
+        'timeline_title' => 'Como a ideia cresceu',
+        'timeline' => [
+            'No Japão, Teruko Mizushima cria o “Banco de Trabalho Voluntário”.',
+            'Edgar Cahn cria os Time Dollars enquanto se recupera de um infarto.',
+            'Seu livro “Time Dollars”, escrito com Jonathan Rowe, leva a ideia mais longe.',
+            'Ele funda a TimeBanks USA para ajudar comunidades a criar seus próprios bancos de tempo.',
+            'Seu livro “No More Throw-Away People” apresenta os valores que os bancos de tempo seguem até hoje.',
+        ],
+        'timeline_today' => 'Hoje',
+        'timeline_today_text' => 'Há bancos de tempo em comunidades do mundo inteiro, entre elas :community.',
+        'values_title' => 'Os cinco valores que todo banco de tempo compartilha',
+        'values_lead' => 'Edgar Cahn colocou esses valores no papel, e bancos de tempo do mundo inteiro os seguem até hoje. Aqui estão, com as nossas palavras.',
+        'values' => [
+            [
+                'title' => 'Todo mundo tem algo a oferecer',
+                'description' => 'Cada um de nós tem algo de que outra pessoa precisa: uma habilidade, uma palavra amiga, uma hora livre. Ninguém é só alguém a ser ajudado.',
+            ],
+            [
+                'title' => 'Há trabalhos que não têm preço',
+                'description' => 'Criar filhos, cuidar de alguém, olhar pelos vizinhos, melhorar o bairro. O dinheiro raramente paga esse trabalho. O banco de tempo conta.',
+            ],
+            [
+                'title' => 'A ajuda vai nos dois sentidos',
+                'description' => 'Dar e receber andam juntos. A pergunta deixa de ser “Como posso ajudar você?” e passa a ser “Como podemos nos ajudar?”',
+            ],
+            [
+                'title' => 'Precisamos uns dos outros',
+                'description' => 'Uma comunidade é mais forte do que qualquer pessoa sozinha. Cada troca é mais um fio de confiança entre vizinhos.',
+            ],
+            [
+                'title' => 'Respeito por cada pessoa',
+                'description' => 'Cada pessoa importa e merece ser ouvida, seja quem for. Edgar Cahn acrescentou este quinto valor alguns anos depois dos quatro primeiros.',
+            ],
+        ],
     ],
     'matches' => [
         'title' => 'As suas correspondências',

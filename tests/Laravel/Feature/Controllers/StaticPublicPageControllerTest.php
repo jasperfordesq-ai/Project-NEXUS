@@ -42,6 +42,55 @@ class StaticPublicPageControllerTest extends TestCase
         $this->assertContains('getting_started', array_column($response->json('data.sections'), 'key'));
     }
 
+    /**
+     * The guide tells where timebanking came from, and lists Edgar Cahn's five
+     * values (owner, 14 Nov 2026). The phone app draws these sections as they
+     * arrive, so the shape matters: a title and a description on each item.
+     */
+    public function test_timebanking_guide_tells_where_timebanking_came_from(): void
+    {
+        $response = $this->apiGet('/v2/public-page-content/timebanking-guide');
+
+        $response->assertStatus(200);
+        $sections = array_column($response->json('data.sections'), null, 'key');
+
+        $this->assertSame(
+            ['equal_time', 'steps', 'origins', 'timeline', 'values', 'getting_started'],
+            array_keys($sections)
+        );
+
+        $origins = $sections['origins'];
+        $this->assertSame('Where timebanking comes from', $origins['title']);
+        $this->assertSame('founder', $origins['items'][0]['key']);
+        $this->assertSame('Edgar S. Cahn (1935–2022)', $origins['items'][0]['title']);
+        $this->assertStringContainsString('Jean Camper Cahn', $origins['items'][0]['description']);
+        $this->assertCount(4, $origins['items']);
+        $this->assertStringContainsString('Teruko Mizushima', $origins['items'][3]['description']);
+
+        $timeline = $sections['timeline']['items'];
+        $this->assertSame(
+            ['1973', '1980', '1992', '1995', '2000', 'Today'],
+            array_column($timeline, 'title')
+        );
+        $this->assertStringContainsString('among them', $timeline[5]['description']);
+        $this->assertStringNotContainsString(':community', $timeline[5]['description']);
+
+        $values = $sections['values']['items'];
+        $this->assertSame(
+            [
+                'Everyone has something to give',
+                'Some work is beyond price',
+                'Helping goes both ways',
+                'We need each other',
+                'Respect for every person',
+            ],
+            array_column($values, 'title')
+        );
+        foreach ($values as $value) {
+            $this->assertNotSame('', trim((string) $value['description']));
+        }
+    }
+
     public function test_legal_hub_returns_public_document_summaries(): void
     {
         $response = $this->apiGet('/v2/public-page-content/legal');

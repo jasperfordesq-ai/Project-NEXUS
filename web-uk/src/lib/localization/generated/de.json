@@ -3004,7 +3004,49 @@
                 "getting_started_body": "Durchsuchen Sie, was Mitglieder anbieten und suchen, erstellen Sie Ihr eigenes Angebot für eine Fähigkeit und vernetzen Sie sich mit Menschen in Ihrer Nähe.",
                 "browse_listings": "Angebote durchsuchen",
                 "create_account": "Konto erstellen",
-                "go_to_wallet": "Zu Ihrem Portemonnaie"
+                "go_to_wallet": "Zu Ihrem Portemonnaie",
+                "origins_title": "Woher Zeitbanking kommt",
+                "origins_lead": "Es begann, als ein Mann sich von einer Krankheit erholte. Heute gehört die Idee Gemeinschaften auf der ganzen Welt.",
+                "origins_body": [
+                    "Zeitbanking, wie wir es heute kennen, begann mit Edgar Cahn, einem amerikanischen Bürgerrechtsanwalt und Rechtslehrer. Gemeinsam mit seiner Frau Jean Camper Cahn hatte er sich jahrelang dafür eingesetzt, dass auch Menschen ohne Geld anwaltliche Hilfe bekommen.",
+                    "1980, mit 44 Jahren, erlitt er einen schweren Herzinfarkt. Während er sich erholte, merkte er, dass er nicht jemand sein wollte, der nur Hilfe empfängt. Daraus entstand eine Idee: Was wäre, wenn jede Stunde, in der man jemandem hilft, eine Stunde Hilfe für einen selbst einbrächte? Er nannte diese Stunden „Time Dollars“.",
+                    "Er war überzeugt, dass niemand abgeschrieben werden darf, als hätte er nichts zu geben, und dass der wahre Reichtum einer Gemeinschaft ihre Menschen sind. Den Rest seines Lebens half er Zeitbanken auf der ganzen Welt beim Start."
+                ],
+                "origins_note": "Er war nicht der Erste, der es versuchte. In Japan hatte Teruko Mizushima schon 1973 eine „Freiwilligen-Arbeitsbank“ gegründet, nach demselben Gedanken: eine Stunde geben, eine Stunde zurückbekommen.",
+                "timeline_title": "Wie die Idee wuchs",
+                "timeline": [
+                    "In Japan gründet Teruko Mizushima die „Freiwilligen-Arbeitsbank“.",
+                    "Edgar Cahn erdenkt die Time Dollars, während er sich von einem Herzinfarkt erholt.",
+                    "Sein Buch „Time Dollars“, geschrieben mit Jonathan Rowe, trägt die Idee weiter.",
+                    "Er gründet TimeBanks USA, um Gemeinschaften beim Aufbau eigener Zeitbanken zu helfen.",
+                    "Sein Buch „No More Throw-Away People“ beschreibt die Werte, denen Zeitbanken bis heute folgen."
+                ],
+                "timeline_today": "Heute",
+                "timeline_today_text": "Zeitbanken gibt es in Gemeinschaften auf der ganzen Welt, auch bei :community.",
+                "values_title": "Die fünf Werte, die jede Zeitbank teilt",
+                "values_lead": "Edgar Cahn hat sie aufgeschrieben, und Zeitbanken auf der ganzen Welt folgen ihnen bis heute. Hier stehen sie in unseren eigenen Worten.",
+                "values": [
+                    {
+                        "title": "Jeder Mensch hat etwas zu geben",
+                        "description": "Jede und jeder von uns hat etwas, das ein anderer Mensch braucht: eine Fähigkeit, ein freundliches Wort, eine freie Stunde. Niemand ist nur jemand, dem geholfen werden muss."
+                    },
+                    {
+                        "title": "Manche Arbeit ist unbezahlbar",
+                        "description": "Kinder großziehen, jemanden pflegen, auf Nachbarn achten, einen Ort besser machen. Geld bezahlt diese Arbeit selten. Zeitbanking zählt sie."
+                    },
+                    {
+                        "title": "Helfen geht in beide Richtungen",
+                        "description": "Geben und Nehmen gehören zusammen. Aus der Frage „Wie kann ich Ihnen helfen?“ wird „Wie können wir einander helfen?“"
+                    },
+                    {
+                        "title": "Wir brauchen einander",
+                        "description": "Eine Gemeinschaft ist stärker als jeder Einzelne. Jeder Austausch ist ein weiterer Faden des Vertrauens zwischen Nachbarn."
+                    },
+                    {
+                        "title": "Respekt für jeden Menschen",
+                        "description": "Jeder Mensch zählt und verdient es, gehört zu werden, ganz gleich, wer er ist. Edgar Cahn fügte diesen fünften Wert einige Jahre nach den ersten vier hinzu."
+                    }
+                ]
             },
             "matches": {
                 "title": "Ihre Übereinstimmungen",

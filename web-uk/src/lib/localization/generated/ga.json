@@ -3004,7 +3004,49 @@
                 "getting_started_body": "Brabhsáil an méid atá comhaltaí ag tairiscint agus ag iarraidh, cruthaigh do liostáil féin chun scil a thairiscint, agus ceangail le daoine gar duit.",
                 "browse_listings": "Brabhsáil liostálacha",
                 "create_account": "Cruthaigh cuntas",
-                "go_to_wallet": "Téigh chuig do sparán"
+                "go_to_wallet": "Téigh chuig do sparán",
+                "origins_title": "Cá as a dtagann bancáil ama",
+                "origins_lead": "Thosaigh sé nuair a bhí fear amháin ag teacht chuige féin tar éis tinnis. Inniu, is le pobail ar fud an domhain é.",
+                "origins_body": [
+                    "Thosaigh bancáil ama mar is eol dúinn í le Edgar Cahn, dlíodóir cearta sibhialta agus múinteoir dlí Meiriceánach. In éineacht lena bhean chéile, Jean Camper Cahn, chaith sé blianta ag obair le cinntiú go bhféadfadh daoine gan airgead cabhair dlíodóra a fháil freisin.",
+                    "Sa bhliain 1980, agus é 44 bliain d’aois, bhuail taom croí trom é. Agus é ag teacht chuige féin, thuig sé nár thaitin sé leis a bheith ina dhuine nach bhféadfadh ach cabhair a fháil. Thug sé sin smaoineamh dó: cad a tharlódh dá dtuillfeadh gach uair a chaithfeá ag cabhrú le duine uair an chloig cabhrach duit féin? Thug sé “Time Dollars” ar na huaireanta sin.",
+                    "Chreid sé nár cheart aon duine a chaitheamh i leataobh amhail is nach mbeadh aon rud le tabhairt aige, agus gurb iad a daoine fíorshaibhreas an phobail. Chaith sé an chuid eile dá shaol ag cabhrú le bainc ama tosú ar fud an domhain."
+                ],
+                "origins_note": "Níorbh é an chéad duine a thriail é. Sa tSeapáin, bhí “Banc Saothair Dheonaigh” bunaithe ag Teruko Mizushima sa bhliain 1973 ar an smaoineamh céanna: uair a thugtar, uair a fhaightear ar ais.",
+                "timeline_title": "Mar a d’fhás an smaoineamh",
+                "timeline": [
+                    "Sa tSeapáin, bunaíonn Teruko Mizushima an “Banc Saothair Dheonaigh”.",
+                    "Smaoiníonn Edgar Cahn ar Time Dollars agus é ag teacht chuige féin tar éis taom croí.",
+                    "Scaipeann a leabhar “Time Dollars”, a scríobh sé le Jonathan Rowe, an smaoineamh níos faide.",
+                    "Bunaíonn sé TimeBanks USA chun cabhrú le pobail a mbainc ama féin a thosú.",
+                    "Leagann a leabhar “No More Throw-Away People” amach na luachanna a leanann bainc ama go fóill."
+                ],
+                "timeline_today": "Inniu",
+                "timeline_today_text": "Tá bainc ama ar siúl i bpobail ar fud an domhain, :community ina measc.",
+                "values_title": "Na cúig luach atá ag gach banc ama",
+                "values_lead": "Scríobh Edgar Cahn síos iad, agus leanann bainc ama ar fud an domhain iad go fóill. Seo iad inár bhfocail féin.",
+                "values": [
+                    {
+                        "title": "Tá rud éigin le tabhairt ag gach duine",
+                        "description": "Tá rud éigin ag gach duine againn a theastaíonn ó dhuine eile: scil, focal cineálta, uair an chloig le spáráil. Ní duine le cabhrú leis amháin é aon duine."
+                    },
+                    {
+                        "title": "Tá obair ann nach féidir luach a chur uirthi",
+                        "description": "Páistí a thógáil, aire a thabhairt do dhuine, súil a choinneáil ar na comharsana, áit a fheabhsú. Is annamh a íocann airgead as an obair seo. Áiríonn bancáil ama í."
+                    },
+                    {
+                        "title": "Téann an chabhair an dá threo",
+                        "description": "Téann tabhairt agus glacadh le chéile. In áit “Conas is féidir liom cabhrú leat?” is é an cheist ná “Conas is féidir linn cabhrú lena chéile?”"
+                    },
+                    {
+                        "title": "Teastaíonn a chéile uainn",
+                        "description": "Tá pobal níos láidre ná aon duine aonair. Is snáithe eile muiníne idir comharsana é gach malartú."
+                    },
+                    {
+                        "title": "Meas ar gach duine",
+                        "description": "Tá tábhacht le gach duine agus tá sé tuillte acu go n-éistfí leo, is cuma cé hiad. Chuir Edgar Cahn an cúigiú luach seo leis cúpla bliain tar éis na chéad cheithre cinn."
+                    }
+                ]
             },
             "matches": {
                 "title": "Do mheaitseálacha",

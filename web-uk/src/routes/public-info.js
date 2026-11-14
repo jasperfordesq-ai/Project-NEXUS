@@ -154,6 +154,21 @@ router.get('/about', async (req, res) => {
   });
 });
 
+/**
+ * How the timebanking idea grew: one year for each line of `guide.timeline`, in
+ * order. A year is a number, so it is not wording; the last line of the list
+ * ("Today") has none and comes from `guide.timeline_today`.
+ *
+ * The history is checked fact, not colour. The dates and names were looked up
+ * on 14 Nov 2026; the sources are listed at the top of the React page
+ * (react-frontend/src/pages/about/TimebankingGuidePage.tsx). Do not add a
+ * date, a quotation or a "first" that has not been checked the same way.
+ */
+const GUIDE_TIMELINE_YEARS = ['1973', '1980', '1992', '1995', '2000'];
+
+/** A person's name and the years he lived: neither is wording to translate. */
+const GUIDE_FOUNDER = Object.freeze({ name: 'Edgar S. Cahn', years: '1935–2022' });
+
 router.get('/guide', (req, res) => {
   const tenant = req.accessibleRouting?.tenant && typeof req.accessibleRouting.tenant === 'object'
     ? req.accessibleRouting.tenant
@@ -166,6 +181,19 @@ router.get('/guide', (req, res) => {
     breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('guide.title'), path: '/guide' }]),
     activeNav: 'guide',
     communityName: communityName(res),
+    founder: GUIDE_FOUNDER,
+    originsBody: catalogArray(res, 'guide.origins_body'),
+    // A dated line for each year, then "Today" with the community's own name.
+    timeline: [
+      ...catalogArray(res, 'guide.timeline')
+        .slice(0, GUIDE_TIMELINE_YEARS.length)
+        .map((text, index) => ({ when: GUIDE_TIMELINE_YEARS[index], text })),
+      {
+        when: res.locals.t('guide.timeline_today'),
+        text: res.locals.t('guide.timeline_today_text', { community: communityName(res) })
+      }
+    ],
+    values: catalogArray(res, 'guide.values'),
     isAuthenticated: res.locals.isAuthenticated,
     listingsEnabled: flagEnabled(tenant, 'listings', 'modules', true),
     walletEnabled: flagEnabled(tenant, 'wallet', 'modules', true),

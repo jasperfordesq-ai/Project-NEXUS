@@ -3004,7 +3004,49 @@
                 "getting_started_body": "Parcourez ce que les membres proposent et recherchent, créez votre propre annonce pour offrir une compétence et entrez en contact avec des personnes près de chez vous.",
                 "browse_listings": "Parcourir les annonces",
                 "create_account": "Créer un compte",
-                "go_to_wallet": "Accéder à votre portefeuille"
+                "go_to_wallet": "Accéder à votre portefeuille",
+                "origins_title": "D'où vient la banque de temps",
+                "origins_lead": "Tout a commencé pendant la convalescence d'un homme. Aujourd'hui, l'idée appartient à des communautés du monde entier.",
+                "origins_body": [
+                    "La banque de temps telle que nous la connaissons a commencé avec Edgar Cahn, un avocat des droits civiques et professeur de droit américain. Avec son épouse, Jean Camper Cahn, il s'était battu pendant des années pour que les personnes sans argent puissent elles aussi être aidées par un avocat.",
+                    "En 1980, à 44 ans, il a fait une grave crise cardiaque. Pendant sa convalescence, il s'est aperçu qu'il n'aimait pas être quelqu'un qui ne peut que recevoir de l'aide. Une idée lui est venue : et si chaque heure passée à aider quelqu'un donnait droit à une heure d'aide en retour ? Il a appelé ces heures des « Time Dollars ».",
+                    "Il était convaincu que personne ne doit être mis de côté comme s'il n'avait rien à donner, et que la vraie richesse d'une communauté, ce sont les gens qui la composent. Il a passé le reste de sa vie à aider des banques de temps à voir le jour partout dans le monde."
+                ],
+                "origins_note": "Il n'était pas le premier à essayer. Au Japon, Teruko Mizushima avait créé dès 1973 une « banque de travail bénévole » fondée sur la même idée : une heure donnée, une heure rendue.",
+                "timeline_title": "Comment l'idée a grandi",
+                "timeline": [
+                    "Au Japon, Teruko Mizushima crée la « banque de travail bénévole ».",
+                    "Edgar Cahn imagine les Time Dollars pendant qu'il se remet d'une crise cardiaque.",
+                    "Son livre « Time Dollars », écrit avec Jonathan Rowe, fait connaître l'idée plus largement.",
+                    "Il fonde TimeBanks USA pour aider les communautés à créer leur propre banque de temps.",
+                    "Son livre « No More Throw-Away People » expose les valeurs que les banques de temps suivent encore."
+                ],
+                "timeline_today": "Aujourd'hui",
+                "timeline_today_text": "Des banques de temps existent dans des communautés du monde entier, dont :community.",
+                "values_title": "Les cinq valeurs que partagent toutes les banques de temps",
+                "values_lead": "Edgar Cahn les a mises par écrit, et les banques de temps du monde entier les suivent encore. Les voici avec nos mots à nous.",
+                "values": [
+                    {
+                        "title": "Chacun a quelque chose à donner",
+                        "description": "Chacun de nous a quelque chose dont une autre personne a besoin : un savoir-faire, un mot gentil, une heure de libre. Personne n'est seulement quelqu'un qu'il faut aider."
+                    },
+                    {
+                        "title": "Certains travaux n'ont pas de prix",
+                        "description": "Élever des enfants, prendre soin de quelqu'un, veiller sur ses voisins, embellir son quartier. L'argent paie rarement ce travail. La banque de temps, elle, le compte."
+                    },
+                    {
+                        "title": "L'aide va dans les deux sens",
+                        "description": "Donner et recevoir vont ensemble. La question n'est plus « Comment puis-je vous aider ? » mais « Comment pouvons-nous nous entraider ? »"
+                    },
+                    {
+                        "title": "Nous avons besoin les uns des autres",
+                        "description": "Une communauté est plus forte que n'importe quelle personne seule. Chaque échange est un fil de confiance de plus entre voisins."
+                    },
+                    {
+                        "title": "Le respect de chaque personne",
+                        "description": "Chaque personne compte et mérite d'être écoutée, qui qu'elle soit. Edgar Cahn a ajouté cette cinquième valeur quelques années après les quatre premières."
+                    }
+                ]
             },
             "matches": {
                 "title": "Vos correspondances",

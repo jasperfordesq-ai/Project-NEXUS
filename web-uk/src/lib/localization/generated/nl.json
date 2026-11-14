@@ -3004,7 +3004,49 @@
                 "getting_started_body": "Bekijk wat leden aanbieden en zoeken, maak uw eigen aanbieding om een vaardigheid aan te bieden, en kom in contact met mensen in uw buurt.",
                 "browse_listings": "Aanbod bekijken",
                 "create_account": "Maak een account aan",
-                "go_to_wallet": "Ga naar uw portemonnee"
+                "go_to_wallet": "Ga naar uw portemonnee",
+                "origins_title": "Waar de tijdbank vandaan komt",
+                "origins_lead": "Het begon toen één man herstelde van een ziekte. Nu is het idee van gemeenschappen over de hele wereld.",
+                "origins_body": [
+                    "De tijdbank zoals wij die kennen begon bij Edgar Cahn, een Amerikaanse burgerrechtenadvocaat en rechtendocent. Samen met zijn vrouw, Jean Camper Cahn, had hij zich jarenlang ingezet zodat ook mensen zonder geld de hulp van een advocaat konden krijgen.",
+                    "In 1980, hij was 44, kreeg hij een zwaar hartinfarct. Tijdens zijn herstel merkte hij dat hij het niet prettig vond om iemand te zijn die alleen maar hulp kon ontvangen. Dat bracht hem op een idee: wat als elk uur dat je iemand helpt, je een uur hulp oplevert? Hij noemde die uren ‘Time Dollars’.",
+                    "Hij geloofde dat niemand mag worden afgeschreven alsof hij niets te geven heeft, en dat de echte rijkdom van een gemeenschap haar mensen zijn. De rest van zijn leven hielp hij tijdbanken over de hele wereld op weg."
+                ],
+                "origins_note": "Hij was niet de eerste die het probeerde. In Japan was Teruko Mizushima al in 1973 een ‘Vrijwilligersarbeidsbank’ begonnen vanuit hetzelfde idee: een uur gegeven, een uur terug.",
+                "timeline_title": "Hoe het idee groeide",
+                "timeline": [
+                    "In Japan begint Teruko Mizushima de ‘Vrijwilligersarbeidsbank’.",
+                    "Edgar Cahn bedenkt Time Dollars terwijl hij herstelt van een hartinfarct.",
+                    "Zijn boek ‘Time Dollars’, geschreven met Jonathan Rowe, brengt het idee verder.",
+                    "Hij richt TimeBanks USA op om gemeenschappen te helpen een eigen tijdbank te beginnen.",
+                    "Zijn boek ‘No More Throw-Away People’ beschrijft de waarden die tijdbanken nog altijd volgen."
+                ],
+                "timeline_today": "Nu",
+                "timeline_today_text": "Tijdbanken draaien in gemeenschappen over de hele wereld, waaronder :community.",
+                "values_title": "De vijf waarden die elke tijdbank deelt",
+                "values_lead": "Edgar Cahn schreef ze op, en tijdbanken over de hele wereld volgen ze nog steeds. Hier staan ze in onze eigen woorden.",
+                "values": [
+                    {
+                        "title": "Iedereen heeft iets te geven",
+                        "description": "Ieder van ons heeft iets wat een ander nodig heeft: een vaardigheid, een vriendelijk woord, een vrij uur. Niemand is alleen maar iemand die geholpen moet worden."
+                    },
+                    {
+                        "title": "Sommig werk is onbetaalbaar",
+                        "description": "Kinderen opvoeden, voor iemand zorgen, op de buren letten, de buurt mooier maken. Geld betaalt dit werk zelden. De tijdbank telt het mee."
+                    },
+                    {
+                        "title": "Helpen gaat twee kanten op",
+                        "description": "Geven en ontvangen horen bij elkaar. De vraag is niet langer ‘Hoe kan ik jou helpen?’ maar ‘Hoe kunnen we elkaar helpen?’"
+                    },
+                    {
+                        "title": "We hebben elkaar nodig",
+                        "description": "Een gemeenschap is sterker dan één persoon alleen. Elke uitwisseling is weer een draadje vertrouwen tussen buren."
+                    },
+                    {
+                        "title": "Respect voor ieder mens",
+                        "description": "Ieder mens telt en verdient het om gehoord te worden, wie hij of zij ook is. Edgar Cahn voegde deze vijfde waarde een paar jaar na de eerste vier toe."
+                    }
+                ]
             },
             "matches": {
                 "title": "Uw matches",

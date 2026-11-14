@@ -10,6 +10,17 @@ use App\Core\TenantContext;
 
 class StaticPublicPageContentService
 {
+    /** A person's name and the years he lived: neither is wording to translate. */
+    private const GUIDE_FOUNDER = 'Edgar S. Cahn (1935–2022)';
+
+    /**
+     * One year for each line of `govuk_alpha.guide.timeline`, in order. A year is
+     * a number, so it is not wording.
+     *
+     * @var list<string>
+     */
+    private const GUIDE_TIMELINE_YEARS = ['1973', '1980', '1992', '1995', '2000'];
+
     /**
      * @var array<string, array{route_key: string, path: string, translation_namespace: string, title: string, lead: string}>
      */
@@ -253,12 +264,100 @@ class StaticPublicPageContentService
                     ],
                 ],
             ],
+            $this->guideOriginsSection($params),
+            $this->guideTimelineSection($params),
+            [
+                'key' => 'values',
+                'title' => $this->translatedString('govuk_alpha.guide.values_title', $params),
+                'body' => $this->translatedString('govuk_alpha.guide.values_lead', $params),
+                'items' => $this->translatedArray('govuk_alpha.guide.values', $params),
+            ],
             [
                 'key' => 'getting_started',
                 'title' => $this->translatedString('govuk_alpha.guide.getting_started_title', $params),
                 'body' => $this->translatedString('govuk_alpha.guide.getting_started_body', $params),
                 'items' => [],
             ],
+        ];
+    }
+
+    /**
+     * Where timebanking comes from: Edgar Cahn, and Teruko Mizushima before him.
+     *
+     * The same history as the React guide and the accessible site's guide. It is
+     * checked fact (sources are listed at the top of
+     * react-frontend/src/pages/about/TimebankingGuidePage.tsx): do not add a date,
+     * a quotation or a "first" that has not been checked the same way.
+     *
+     * @param array<string, string> $params
+     * @return array<string, mixed>
+     */
+    private function guideOriginsSection(array $params): array
+    {
+        $paragraphs = array_values(array_filter(
+            $this->translatedArray('govuk_alpha.guide.origins_body', $params),
+            'is_string'
+        ));
+        $items = [];
+
+        foreach ($paragraphs as $index => $paragraph) {
+            $item = ['key' => 'story_' . $index, 'description' => $paragraph];
+
+            // The first paragraph introduces him, so it carries his name and years.
+            if ($index === 0) {
+                $item = ['key' => 'founder', 'title' => self::GUIDE_FOUNDER, 'description' => $paragraph];
+            }
+
+            $items[] = $item;
+        }
+
+        $items[] = [
+            'key' => 'earlier',
+            'description' => $this->translatedString('govuk_alpha.guide.origins_note', $params),
+        ];
+
+        return [
+            'key' => 'origins',
+            'title' => $this->translatedString('govuk_alpha.guide.origins_title', $params),
+            'body' => $this->translatedString('govuk_alpha.guide.origins_lead', $params),
+            'items' => $items,
+        ];
+    }
+
+    /**
+     * How the idea grew: one dated line per year, then "Today" with the
+     * community's own name.
+     *
+     * @param array<string, string> $params
+     * @return array<string, mixed>
+     */
+    private function guideTimelineSection(array $params): array
+    {
+        $lines = array_values(array_filter(
+            $this->translatedArray('govuk_alpha.guide.timeline', $params),
+            'is_string'
+        ));
+        $items = [];
+
+        foreach (self::GUIDE_TIMELINE_YEARS as $index => $year) {
+            if (!isset($lines[$index])) {
+                break;
+            }
+
+            $items[] = ['key' => $year, 'title' => $year, 'description' => $lines[$index]];
+        }
+
+        $items[] = [
+            'key' => 'today',
+            'title' => $this->translatedString('govuk_alpha.guide.timeline_today', $params),
+            'description' => $this->translatedString('govuk_alpha.guide.timeline_today_text', $params),
+        ];
+
+        return [
+            'key' => 'timeline',
+            'title' => $this->translatedString('govuk_alpha.guide.timeline_title', $params),
+            'body' => '',
+            'items' => $items,
         ];
     }
 

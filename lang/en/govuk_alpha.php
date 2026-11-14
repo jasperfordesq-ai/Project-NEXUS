@@ -2022,6 +2022,48 @@ return [
         'browse_listings' => 'Browse listings',
         'create_account' => 'Create an account',
         'go_to_wallet' => 'Go to your wallet',
+        'origins_title' => 'Where timebanking comes from',
+        'origins_lead' => 'It began while one man was recovering from an illness. Today it belongs to communities around the world.',
+        'origins_body' => [
+            'Timebanking as we know it began with Edgar Cahn, an American civil-rights lawyer and law teacher. With his wife, Jean Camper Cahn, he had spent years making sure that people without money could still get a lawyer\'s help.',
+            'In 1980, aged 44, he had a serious heart attack. While he recovered, he found he did not like being someone who could only receive help. It gave him an idea: what if every hour you spent helping someone earned you an hour of help in return? He called those hours “Time Dollars”.',
+            'He believed that nobody should be written off as having nothing to give, and that a community\'s real wealth is its people. He spent the rest of his life helping timebanks get started around the world.',
+        ],
+        'origins_note' => 'He was not the first to try it. In Japan, Teruko Mizushima had started a “Volunteer Labour Bank” in 1973 on the same idea: an hour given, an hour returned.',
+        'timeline_title' => 'How the idea grew',
+        'timeline' => [
+            'In Japan, Teruko Mizushima starts the “Volunteer Labour Bank”.',
+            'Edgar Cahn thinks up Time Dollars while recovering from a heart attack.',
+            'His book “Time Dollars”, written with Jonathan Rowe, carries the idea further.',
+            'He founds TimeBanks USA to help communities start timebanks of their own.',
+            'His book “No More Throw-Away People” sets out the values timebanks still follow.',
+        ],
+        'timeline_today' => 'Today',
+        'timeline_today_text' => 'Timebanks run in communities all over the world, :community among them.',
+        'values_title' => 'The five values every timebank shares',
+        'values_lead' => 'Edgar Cahn wrote them down, and timebanks around the world still follow them. Here they are in our own words.',
+        'values' => [
+            [
+                'title' => 'Everyone has something to give',
+                'description' => 'Each of us has something another person needs: a skill, a kind word, a spare hour. Nobody is only someone to be helped.',
+            ],
+            [
+                'title' => 'Some work is beyond price',
+                'description' => 'Raising children, caring for someone, looking out for neighbours, making a place better. Money rarely pays for this work. Timebanking counts it.',
+            ],
+            [
+                'title' => 'Helping goes both ways',
+                'description' => 'Giving and receiving belong together. The question stops being “How can I help you?” and becomes “How can we help each other?”',
+            ],
+            [
+                'title' => 'We need each other',
+                'description' => 'A community is stronger than any one person. Every exchange is one more thread of trust between neighbours.',
+            ],
+            [
+                'title' => 'Respect for every person',
+                'description' => 'Every person matters and deserves to be listened to, whoever they are. Edgar Cahn added this fifth value a few years after the first four.',
+            ],
+        ],
     ],
     'matches' => [
         'title' => 'Your matches',
