@@ -198,12 +198,33 @@
     "subtitle": "ما شاركه الجميع حتى الآن هذا الشهر.",
     "hours": "الساعات المشتركة",
     "members": "أعضاء جدد",
-    "listings": "عروض وطلبات جديدة"
+    "listings": "عروض وطلبات جديدة",
+    "thank_yous_zero": "{{count}} رسالة شكر في {{community}} هذا الشهر",
+    "thank_yous_one": "{{count}} رسالة شكر في {{community}} هذا الشهر",
+    "thank_yous_two": "{{count}} رسالتا شكر في {{community}} هذا الشهر",
+    "thank_yous_few": "{{count}} رسائل شكر في {{community}} هذا الشهر",
+    "thank_yous_many": "{{count}} رسالة شكر في {{community}} هذا الشهر",
+    "thank_yous_other": "{{count}} رسالة شكر في {{community}} هذا الشهر",
+    "helpers_zero": "{{count}} عضو مدّوا يد العون هذا الشهر",
+    "helpers_one": "{{count}} عضو مدّ يد العون هذا الشهر",
+    "helpers_two": "{{count}} عضوان مدّا يد العون هذا الشهر",
+    "helpers_few": "{{count}} أعضاء مدّوا يد العون هذا الشهر",
+    "helpers_many": "{{count}} عضوًا مدّوا يد العون هذا الشهر",
+    "helpers_other": "{{count}} عضو مدّوا يد العون هذا الشهر"
   },
   "anniversary": {
     "title": "ذكرى سعيدة!",
     "body": "انضممت إلى {{community}} في {{date}}. شكرًا لكونك جزءًا منه.",
     "close": "إغلاق"
+  },
+  "community_anniversary": {
+    "title_zero": "يحتفل {{community}} هذا الشهر بمرور {{count}} عام على تأسيسه",
+    "title_one": "يحتفل {{community}} هذا الشهر بمرور عام على تأسيسه",
+    "title_two": "يحتفل {{community}} هذا الشهر بمرور عامين على تأسيسه",
+    "title_few": "يحتفل {{community}} هذا الشهر بمرور {{count}} أعوام على تأسيسه",
+    "title_many": "يحتفل {{community}} هذا الشهر بمرور {{count}} عامًا على تأسيسه",
+    "title_other": "يحتفل {{community}} هذا الشهر بمرور {{count}} عام على تأسيسه",
+    "body": "شكرًا لكل من قدّم ساعة من وقته على مرّ الطريق."
   },
   "milestone": {
     "title": "{{hours}} ساعة تشاركناها معًا",

@@ -4111,5 +4111,8 @@
   "label_new_this_month": "Nuovi questo mese",
   "label_pending_approvals": "Approvazioni in attesa",
   "label_retention_rate": "Tasso di fidelizzazione",
-  "label_total_members": "Membri totali"
+  "label_total_members": "Membri totali",
+  "community_setup": {
+    "founded_invalid": "Scegli una data reale tra il 1900 e oggi."
+  }
 }

@@ -11,6 +11,7 @@ import type { CommunitySetupStatus } from '../../../api/adminApi';
 
 const api = vi.hoisted(() => ({
   setup: vi.fn(),
+  updateFounded: vi.fn(),
   getSettings: vi.fn(),
   saveHeaderColors: vi.fn(),
   updateSeoSettings: vi.fn(),
@@ -19,7 +20,7 @@ const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(
 const refreshTenant = vi.hoisted(() => vi.fn(async () => undefined));
 
 vi.mock('../../../api/adminApi', () => ({
-  adminCommunitySetup: { get: api.setup },
+  adminCommunitySetup: { get: api.setup, updateFounded: api.updateFounded },
   adminSettings: {
     get: api.getSettings,
     saveHeaderColors: api.saveHeaderColors,
@@ -59,6 +60,7 @@ function status(overrides: Partial<CommunitySetupStatus> = {}): CommunitySetupSt
     tagline: 'Neighbours helping neighbours',
     themes: { total: 12, with_picture: 3 },
     suggested_colours: ['#a3195b', '#0f766e'],
+    founded_on: null,
     ...overrides,
   };
 }
@@ -87,6 +89,72 @@ describe('MakeItYoursPage', () => {
     api.getSettings.mockResolvedValue({ success: true, data: SETTINGS });
     api.saveHeaderColors.mockResolvedValue({ success: true, data: {} });
     api.updateSeoSettings.mockResolvedValue({ success: true, data: { success: true } });
+    api.updateFounded.mockResolvedValue({ success: true, data: { founded_on: '2015-06-01' } });
+  });
+
+  // ---- The founded date (warmth phase 6, D4): optional, not a seventh step ----
+
+  it('offers the founded date as an optional extra, not a step, and fills in a saved one', async () => {
+    api.setup.mockResolvedValue({ success: true, data: status({ founded_on: '2015-06-01' }) });
+    await renderPage();
+
+    expect(screen.getAllByTestId(/^setup-step-/)).toHaveLength(6);
+    expect(screen.getByText('2 of 6 done')).toBeInTheDocument();
+    const section = screen.getByTestId('setup-founded');
+    expect(within(section).getByText('Optional')).toBeInTheDocument();
+    expect(within(section).getByLabelText('Founded on')).toHaveValue('2015-06-01');
+    expect(within(section).queryByText(/\{\{/)).toBeNull();
+  });
+
+  it('saves a founded date through its own endpoint and reads the page again', async () => {
+    await renderPage();
+    const section = screen.getByTestId('setup-founded');
+    const save = within(section).getByRole('button', { name: 'Save date' });
+    expect(save).toBeDisabled();
+    expect(within(section).queryByRole('button', { name: 'Remove date' })).toBeNull();
+
+    fireEvent.change(within(section).getByLabelText('Founded on'), { target: { value: '2015-06-01' } });
+    expect(save).toBeEnabled();
+    fireEvent.click(save);
+
+    await waitFor(() => expect(api.updateFounded).toHaveBeenCalledWith('2015-06-01'));
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Founded date saved'));
+    await waitFor(() => expect(api.setup.mock.calls.length).toBeGreaterThanOrEqual(2));
+  });
+
+  it('will not send a date in the future, and says why', async () => {
+    await renderPage();
+    const section = screen.getByTestId('setup-founded');
+    const tomorrow = new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10);
+
+    fireEvent.change(within(section).getByLabelText('Founded on'), { target: { value: tomorrow } });
+
+    expect(within(section).getByRole('button', { name: 'Save date' })).toBeDisabled();
+    expect(within(section).getByText('Choose a real date from 1900 to today.')).toBeInTheDocument();
+    expect(api.updateFounded).not.toHaveBeenCalled();
+  });
+
+  it('removes a saved founded date', async () => {
+    api.setup.mockResolvedValue({ success: true, data: status({ founded_on: '2015-06-01' }) });
+    api.updateFounded.mockResolvedValue({ success: true, data: { founded_on: null } });
+    await renderPage();
+
+    fireEvent.click(within(screen.getByTestId('setup-founded')).getByRole('button', { name: 'Remove date' }));
+
+    await waitFor(() => expect(api.updateFounded).toHaveBeenCalledWith(null));
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Founded date removed'));
+  });
+
+  it('shows the reason when the founded date is refused, and does not claim it saved', async () => {
+    api.updateFounded.mockResolvedValue({ success: false, error: 'Choose a real date from 1900 to today.' });
+    await renderPage();
+    const section = screen.getByTestId('setup-founded');
+
+    fireEvent.change(within(section).getByLabelText('Founded on'), { target: { value: '2015-06-01' } });
+    fireEvent.click(within(section).getByRole('button', { name: 'Save date' }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Choose a real date from 1900 to today.'));
+    expect(toast.success).not.toHaveBeenCalled();
   });
 
   it('walks the six steps in order and says how many are done', async () => {

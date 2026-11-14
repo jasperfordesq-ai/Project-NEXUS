@@ -4111,5 +4111,8 @@
     "gmail_token_failed": "Failed to obtain access token. Check credentials.",
     "gmail_connected": "Connected to Gmail API successfully. Email: :email",
     "gmail_verify_failed": "Failed to verify Gmail API connection"
+  },
+  "community_setup": {
+    "founded_invalid": "Choose a real date from 1900 to today."
   }
 }

@@ -182,12 +182,21 @@
     "subtitle": "What everyone has shared so far this month.",
     "hours": "Hours shared",
     "members": "New members",
-    "listings": "New offers and requests"
+    "listings": "New offers and requests",
+    "thank_yous_one": "{{count}} thank-you in {{community}} this month",
+    "thank_yous_other": "{{count}} thank-yous in {{community}} this month",
+    "helpers_one": "{{count}} member helped someone this month",
+    "helpers_other": "{{count}} members helped someone this month"
   },
   "anniversary": {
     "title": "Happy anniversary!",
     "body": "You joined {{community}} on {{date}}. Thank you for being part of it.",
     "close": "Close"
+  },
+  "community_anniversary": {
+    "title_one": "{{community}} is one this month",
+    "title_other": "{{community}} is {{count}} this month",
+    "body": "Thank you to everyone who has given an hour along the way."
   },
   "milestone": {
     "title": "{{hours}} hours shared together",

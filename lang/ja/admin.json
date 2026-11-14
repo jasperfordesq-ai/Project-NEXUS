@@ -4111,5 +4111,8 @@
   "label_new_this_month": "今月の新規",
   "label_pending_approvals": "承認待ち",
   "label_retention_rate": "継続率",
-  "label_total_members": "総メンバー数"
+  "label_total_members": "総メンバー数",
+  "community_setup": {
+    "founded_invalid": "1900年から今日までの正しい日付を選んでください。"
+  }
 }

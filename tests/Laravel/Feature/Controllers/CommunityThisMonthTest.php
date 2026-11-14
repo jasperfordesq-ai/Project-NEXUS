@@ -9,6 +9,7 @@ namespace Tests\Laravel\Feature\Controllers;
 use App\Http\Controllers\Api\FeedSidebarController;
 use App\Models\Listing;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +36,162 @@ class CommunityThisMonthTest extends TestCase
     protected function tearDown(): void
     {
         Cache::forget(FeedSidebarController::thisMonthCacheKey($this->testTenantId));
+        Carbon::setTestNow();
+        Cache::forget(FeedSidebarController::thisMonthCacheKey($this->testTenantId));
         parent::tearDown();
+    }
+
+    /**
+     * Move the clock to a month nothing else in the test database touches, so
+     * a count starts from zero. (Appreciations use a TIMESTAMP column, which
+     * stops in January 2038 — hence 2037.)
+     */
+    private function inAQuietMonth(): void
+    {
+        Carbon::setTestNow(Carbon::create(2037, 3, 15, 12, 0, 0));
+        Cache::forget(FeedSidebarController::thisMonthCacheKey($this->testTenantId));
+    }
+
+    private function thankYou(string $when, bool $public, ?int $tenantId = null): void
+    {
+        DB::table('appreciations')->insert([
+            'tenant_id' => $tenantId ?? $this->testTenantId,
+            'sender_id' => $this->member()->id,
+            'receiver_id' => $this->member()->id,
+            'message' => 'Thank you for the lift to the shops',
+            'is_public' => $public ? 1 : 0,
+            'created_at' => $when,
+            'updated_at' => $when,
+        ]);
+    }
+
+    /** A completed hand-over of time credits from $payer to $helper. */
+    private function helped(int $helperId, int $payerId, string $when, string $type = 'exchange', string $status = 'completed', ?int $tenantId = null): void
+    {
+        DB::table('transactions')->insert([
+            'tenant_id' => $tenantId ?? $this->testTenantId,
+            'sender_id' => $payerId,
+            'receiver_id' => $helperId,
+            'amount' => 1,
+            'transaction_type' => $type,
+            'status' => $status,
+            'created_at' => $when,
+            'updated_at' => $when,
+        ]);
+    }
+
+    private function setFoundedOn(?string $date): void
+    {
+        $config = json_decode((string) DB::table('tenants')->where('id', $this->testTenantId)->value('configuration'), true) ?: [];
+        if ($date === null) {
+            unset($config['founded_on']);
+        } else {
+            $config['founded_on'] = $date;
+        }
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['configuration' => json_encode($config)]);
+    }
+
+    // ================================================================
+    // Thank-yous this month (warmth phase 6, D3a)
+    // ================================================================
+
+    public function test_it_counts_this_months_thank_yous_whether_public_or_private(): void
+    {
+        $this->inAQuietMonth();
+        Sanctum::actingAs($this->member(['created_at' => now()->subYear()]), ['*']);
+
+        $thisMonth = now()->startOfMonth()->addHour()->toDateTimeString();
+        $this->thankYou($thisMonth, true);
+        $this->thankYou($thisMonth, false);
+        // Not counted: last month, and another community's note.
+        $this->thankYou(now()->startOfMonth()->subDay()->toDateTimeString(), true);
+        $otherTenant = (int) DB::table('tenants')->where('id', '!=', $this->testTenantId)->value('id');
+        $this->thankYou($thisMonth, true, $otherTenant);
+
+        $data = $this->apiGet('/v2/community/this-month')->assertOk()->json('data');
+
+        $this->assertSame(2, $data['thank_yous']);
+        // A count only: nothing about who wrote or received a note.
+        $this->assertStringNotContainsString('lift to the shops', json_encode($data));
+    }
+
+    public function test_a_month_without_thank_yous_counts_zero(): void
+    {
+        $this->inAQuietMonth();
+        Sanctum::actingAs($this->member(['created_at' => now()->subYear()]), ['*']);
+
+        $this->assertSame(0, $this->apiGet('/v2/community/this-month')->assertOk()->json('data.thank_yous'));
+    }
+
+    // ================================================================
+    // Members who helped someone this month (warmth phase 6, D8)
+    // ================================================================
+
+    public function test_it_counts_each_member_who_gave_time_this_month_once(): void
+    {
+        $this->inAQuietMonth();
+        Sanctum::actingAs($this->member(['created_at' => now()->subYear()]), ['*']);
+        $when = now()->startOfMonth()->addHour()->toDateTimeString();
+        $payer = $this->member()->id;
+        [$a, $b, $c] = [$this->member()->id, $this->member()->id, $this->member()->id];
+
+        // Counted: the members paid for their time — the one who did the work
+        // receives the credits. A helped twice and is counted once.
+        $this->helped($a, $payer, $when);
+        $this->helped($a, $payer, $when, 'transfer');
+        $this->helped($b, $payer, $when);
+        $this->helped($c, $payer, $when, 'transfer');
+        // Not counted: a grant, an exchange not yet completed, last month,
+        // and a hand-over recorded in another community.
+        $this->helped($this->member()->id, $payer, $when, 'admin_grant');
+        $this->helped($this->member()->id, $payer, $when, 'exchange', 'pending');
+        $this->helped($this->member()->id, $payer, now()->startOfMonth()->subDay()->toDateTimeString());
+        $otherTenant = (int) DB::table('tenants')->where('id', '!=', $this->testTenantId)->value('id');
+        $this->helped($this->member()->id, $payer, $when, 'exchange', 'completed', $otherTenant);
+
+        $this->assertSame(3, $this->apiGet('/v2/community/this-month')->assertOk()->json('data.members_helped'));
+    }
+
+    public function test_one_or_two_helpers_are_reported_as_none_so_nobody_can_be_picked_out(): void
+    {
+        $this->inAQuietMonth();
+        Sanctum::actingAs($this->member(['created_at' => now()->subYear()]), ['*']);
+        $when = now()->startOfMonth()->addHour()->toDateTimeString();
+        $payer = $this->member()->id;
+        $this->helped($this->member()->id, $payer, $when);
+        $this->helped($this->member()->id, $payer, $when);
+
+        $this->assertSame(0, $this->apiGet('/v2/community/this-month')->assertOk()->json('data.members_helped'));
+    }
+
+    // ================================================================
+    // The community's own anniversary (warmth phase 6, D4)
+    // ================================================================
+
+    public function test_the_anniversary_is_given_in_the_founding_month_from_the_first_year_on(): void
+    {
+        $this->inAQuietMonth(); // March 2037
+        Sanctum::actingAs($this->member(['created_at' => now()->subYear()]), ['*']);
+
+        $this->setFoundedOn('2034-03-28');
+        $this->assertSame(3, $this->apiGet('/v2/community/this-month')->assertOk()->json('data.anniversary_years'));
+
+        // Read fresh each time, not from the cached totals: an admin's change shows at once.
+        $this->setFoundedOn('2036-03-01');
+        $this->assertSame(1, $this->apiGet('/v2/community/this-month')->assertOk()->json('data.anniversary_years'));
+
+        foreach ([
+            '2034-04-02',   // another month
+            '2037-03-01',   // founded this month: no anniversary yet
+            'not-a-date',   // never stored by the admin screen, but never trusted either
+            null,           // no founded date
+        ] as $founded) {
+            $this->setFoundedOn($founded);
+            $this->assertNull(
+                $this->apiGet('/v2/community/this-month')->assertOk()->json('data.anniversary_years'),
+                (string) $founded,
+            );
+        }
     }
 
     private function member(array $overrides = []): User

@@ -4111,5 +4111,8 @@
   "label_new_this_month": "Nowi w tym miesiącu",
   "label_pending_approvals": "Oczekujące zatwierdzenia",
   "label_retention_rate": "Wskaźnik retencji",
-  "label_total_members": "Łączna liczba członków"
+  "label_total_members": "Łączna liczba członków",
+  "community_setup": {
+    "founded_invalid": "Wybierz prawdziwą datę od 1900 roku do dziś."
+  }
 }

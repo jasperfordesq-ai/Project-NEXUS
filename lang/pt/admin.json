@@ -4111,5 +4111,8 @@
   "label_new_this_month": "Novos este mês",
   "label_pending_approvals": "Aprovações pendentes",
   "label_retention_rate": "Taxa de retenção",
-  "label_total_members": "Total de membros"
+  "label_total_members": "Total de membros",
+  "community_setup": {
+    "founded_invalid": "Escolha uma data válida entre 1900 e hoje."
+  }
 }

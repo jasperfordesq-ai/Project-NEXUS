@@ -186,12 +186,24 @@
     "subtitle": "O que todos partilharam até agora este mês.",
     "hours": "Horas partilhadas",
     "members": "Novos membros",
-    "listings": "Novas ofertas e pedidos"
+    "listings": "Novas ofertas e pedidos",
+    "thank_yous_one": "{{count}} agradecimento em {{community}} neste mês",
+    "thank_yous_many": "{{count}} agradecimentos em {{community}} neste mês",
+    "thank_yous_other": "{{count}} agradecimentos em {{community}} neste mês",
+    "helpers_one": "{{count}} membro ajudou alguém neste mês",
+    "helpers_many": "{{count}} membros ajudaram alguém neste mês",
+    "helpers_other": "{{count}} membros ajudaram alguém neste mês"
   },
   "anniversary": {
     "title": "Feliz aniversário!",
     "body": "Juntou-se a {{community}} em {{date}}. Obrigado por fazer parte.",
     "close": "Fechar"
+  },
+  "community_anniversary": {
+    "title_one": "{{community}} faz um ano neste mês",
+    "title_many": "{{community}} faz {{count}} anos neste mês",
+    "title_other": "{{community}} faz {{count}} anos neste mês",
+    "body": "Obrigado a todas as pessoas que doaram uma hora ao longo do caminho."
   },
   "milestone": {
     "title": "{{hours}} horas partilhadas em conjunto",

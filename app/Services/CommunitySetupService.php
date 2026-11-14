@@ -20,9 +20,9 @@ use Illuminate\Support\Facades\DB;
  * On 12 Nov 2026, 4 of 14 live communities had chosen a colour and none had
  * a community photo: the settings existed but were spread over seven admin
  * menus. This reports, for ONE community, which of the six things that make
- * a site look like that community are in place. It only reads; nothing here
- * changes how a community looks. Each thing is still saved by the endpoint
- * that already owned it.
+ * a site look like that community are in place. Each of those is still saved
+ * by the endpoint that already owned it. The one value saved here is the
+ * optional founded date (warmth phase 6, D4), which lives only on this page.
  *
  * Every query is scoped to the community passed in.
  */
@@ -44,7 +44,8 @@ final class CommunitySetupService
      *     colour_strength: string,
      *     tagline: string,
      *     themes: array{total: int, with_picture: int},
-     *     suggested_colours: list<string>
+     *     suggested_colours: list<string>,
+     *     founded_on: ?string
      * }
      */
     public function status(int $tenantId, bool $withSuggestions = true): array
@@ -101,7 +102,56 @@ final class CommunitySetupService
             'tagline' => $tagline,
             'themes' => ['total' => $themesTotal, 'with_picture' => $themesWithPicture],
             'suggested_colours' => $withSuggestions ? $this->coloursFromLogo($logo) : [],
+            // Optional and not a step: it never moves the "x of 6" meter.
+            'founded_on' => self::validFoundedOn($config['founded_on'] ?? null, now()->toDateString()),
         ];
+    }
+
+    /**
+     * A founded date the community may keep: a real Y-m-d date from
+     * 1 January 1900 up to and including $today. Anything else is null.
+     */
+    public static function validFoundedOn(mixed $value, string $today): ?string
+    {
+        if (!is_string($value) || !preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $m)) {
+            return null;
+        }
+        if (!checkdate((int) $m[2], (int) $m[3], (int) $m[1])) {
+            return null;
+        }
+
+        // Y-m-d strings compare correctly as text.
+        return ($value >= '1900-01-01' && $value <= $today) ? $value : null;
+    }
+
+    /**
+     * Save (or, with null, remove) the community's founded date as
+     * configuration.founded_on — beside the other "Make it yours" values.
+     * The caller has already validated it. Only the one key changes; the row
+     * is locked so a colour saved at the same moment is not lost.
+     */
+    public function setFoundedOn(int $tenantId, ?string $foundedOn): void
+    {
+        DB::transaction(function () use ($tenantId, $foundedOn): void {
+            $row = DB::selectOne('SELECT configuration FROM tenants WHERE id = ? FOR UPDATE', [$tenantId]);
+            $config = [];
+            if ($row && !empty($row->configuration)) {
+                $decoded = json_decode((string) $row->configuration, true);
+                if (!is_array($decoded)) {
+                    // Never replace settings we could not read with a one-key object.
+                    throw new \RuntimeException('Community settings could not be read; the founded date was not saved.');
+                }
+                $config = $decoded;
+            }
+
+            if ($foundedOn === null) {
+                unset($config['founded_on']);
+            } else {
+                $config['founded_on'] = $foundedOn;
+            }
+
+            DB::update('UPDATE tenants SET configuration = ? WHERE id = ?', [json_encode($config), $tenantId]);
+        });
     }
 
     /**

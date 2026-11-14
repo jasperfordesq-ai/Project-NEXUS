@@ -182,12 +182,21 @@
     "subtitle": "Wat iedereen deze maand tot nu toe heeft gedeeld.",
     "hours": "Gedeelde uren",
     "members": "Nieuwe leden",
-    "listings": "Nieuwe aanbiedingen en verzoeken"
+    "listings": "Nieuwe aanbiedingen en verzoeken",
+    "thank_yous_one": "{{count}} bedankje in {{community}} deze maand",
+    "thank_yous_other": "{{count}} bedankjes in {{community}} deze maand",
+    "helpers_one": "{{count}} lid heeft deze maand iemand geholpen",
+    "helpers_other": "{{count}} leden hebben deze maand iemand geholpen"
   },
   "anniversary": {
     "title": "Gefeliciteerd met je jubileum!",
     "body": "Je bent op {{date}} lid geworden van {{community}}. Bedankt dat je erbij bent.",
     "close": "Sluiten"
+  },
+  "community_anniversary": {
+    "title_one": "{{community}} bestaat deze maand een jaar",
+    "title_other": "{{community}} bestaat deze maand {{count}} jaar",
+    "body": "Dank aan iedereen die onderweg een uur heeft gegeven."
   },
   "milestone": {
     "title": "{{hours}} uur samen gedeeld",

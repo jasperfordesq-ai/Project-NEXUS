@@ -190,12 +190,27 @@
     "subtitle": "Czym wszyscy podzielili się do tej pory w tym miesiącu.",
     "hours": "Udostępnione godziny",
     "members": "Nowi członkowie",
-    "listings": "Nowe oferty i prośby"
+    "listings": "Nowe oferty i prośby",
+    "thank_yous_one": "{{count}} podziękowanie w {{community}} w tym miesiącu",
+    "thank_yous_few": "{{count}} podziękowania w {{community}} w tym miesiącu",
+    "thank_yous_many": "{{count}} podziękowań w {{community}} w tym miesiącu",
+    "thank_yous_other": "{{count}} podziękowania w {{community}} w tym miesiącu",
+    "helpers_one": "{{count}} osoba pomogła komuś w tym miesiącu",
+    "helpers_few": "{{count}} osoby pomogły komuś w tym miesiącu",
+    "helpers_many": "{{count}} osób pomogło komuś w tym miesiącu",
+    "helpers_other": "{{count}} osoby pomogło komuś w tym miesiącu"
   },
   "anniversary": {
     "title": "Szczęśliwej rocznicy!",
     "body": "Dołączasz do {{community}} od {{date}}. Dziękujemy, że jesteś z nami.",
     "close": "Zamknij"
+  },
+  "community_anniversary": {
+    "title_one": "{{community}} kończy w tym miesiącu rok",
+    "title_few": "{{community}} kończy w tym miesiącu {{count}} lata",
+    "title_many": "{{community}} kończy w tym miesiącu {{count}} lat",
+    "title_other": "{{community}} kończy w tym miesiącu {{count}} roku",
+    "body": "Dziękujemy wszystkim, którzy po drodze podarowali swoją godzinę."
   },
   "milestone": {
     "title": "{{hours}} godzin wspólnie podzielonych",

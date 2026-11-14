@@ -186,12 +186,24 @@
     "subtitle": "Quello che tutti hanno condiviso finora questo mese.",
     "hours": "Ore condivise",
     "members": "Nuovi membri",
-    "listings": "Nuove offerte e richieste"
+    "listings": "Nuove offerte e richieste",
+    "thank_yous_one": "{{count}} messaggio di ringraziamento in {{community}} questo mese",
+    "thank_yous_many": "{{count}} messaggi di ringraziamento in {{community}} questo mese",
+    "thank_yous_other": "{{count}} messaggi di ringraziamento in {{community}} questo mese",
+    "helpers_one": "{{count}} membro ha aiutato qualcuno questo mese",
+    "helpers_many": "{{count}} membri hanno aiutato qualcuno questo mese",
+    "helpers_other": "{{count}} membri hanno aiutato qualcuno questo mese"
   },
   "anniversary": {
     "title": "Buon anniversario!",
     "body": "Sei entrato in {{community}} il {{date}}. Grazie di farne parte.",
     "close": "Chiudi"
+  },
+  "community_anniversary": {
+    "title_one": "{{community}} compie un anno questo mese",
+    "title_many": "{{community}} compie {{count}} anni questo mese",
+    "title_other": "{{community}} compie {{count}} anni questo mese",
+    "body": "Grazie a tutte le persone che hanno donato un’ora lungo il cammino."
   },
   "milestone": {
     "title": "{{hours}} ore condivise insieme",

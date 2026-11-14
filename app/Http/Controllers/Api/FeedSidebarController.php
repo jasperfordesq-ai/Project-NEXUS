@@ -92,6 +92,11 @@ class FeedSidebarController extends BaseApiController
      * [{ month: 'YYYY-MM', hours: float }]. A month with nothing shared is
      * present with 0, and the last entry always equals `hours_shared`.
      * Community totals only — never a figure for one member.
+     *
+     * Warmth phase 6 added two more counts — `thank_yous` (thank-you notes
+     * written this month, public or private) and `members_helped` (distinct
+     * members paid for their time this month, 0 when fewer than three) — and
+     * `anniversary_years`: how old the community turns this month, or null.
      */
     public function thisMonth(): JsonResponse
     {
@@ -122,6 +127,30 @@ class FeedSidebarController extends BaseApiController
                     ->where('created_at', '>=', $start)
                     ->count();
 
+                // Thank-you notes written this month (warmth phase 6, D3a). A
+                // count only, public and private notes alike: nothing about who
+                // wrote or received one leaves this query.
+                $thankYous = (int) DB::table('appreciations')
+                    ->where('tenant_id', $tenantId)
+                    ->where('created_at', '>=', $start)
+                    ->count();
+
+                // Members of this community who gave time this month (D8): the
+                // receivers of the same hand-overs `hours_shared` adds up — the
+                // member who did the work is the one paid the credits. Below
+                // MIN_MEMBERS_HELPED it is reported as 0: in a small community
+                // "1 member helped" can point at a person.
+                $helpers = (int) DB::table('transactions as t')
+                    ->join('users as u', function ($join) use ($tenantId) {
+                        $join->on('u.id', '=', 't.receiver_id')->where('u.tenant_id', '=', $tenantId);
+                    })
+                    ->where('t.tenant_id', $tenantId)
+                    ->whereIn('t.transaction_type', ['exchange', 'transfer'])
+                    ->where('t.status', 'completed')
+                    ->where('t.created_at', '>=', $start)
+                    ->distinct()
+                    ->count('t.receiver_id');
+
                 // The months before this one, in one grouped query. This month's
                 // bar is the figure above, so the two can never disagree.
                 $firstMonth = $start->copy()->subMonthsNoOverflow(self::MONTHLY_HOURS_MONTHS - 1);
@@ -147,9 +176,15 @@ class FeedSidebarController extends BaseApiController
                     'hours_shared' => round($hours, 2),
                     'new_members' => $members,
                     'new_listings' => $listings,
+                    'thank_yous' => $thankYous,
+                    'members_helped' => $helpers >= self::MIN_MEMBERS_HELPED ? $helpers : 0,
                     'monthly_hours' => $monthlyHours,
                 ];
             });
+
+            // Read on every request rather than cached with the totals, so a
+            // founded date an admin has just set shows straight away.
+            $data['anniversary_years'] = self::anniversaryYears($tenantId, now());
 
             return $this->respondWithData($data);
         } catch (\Throwable $e) {
@@ -160,6 +195,32 @@ class FeedSidebarController extends BaseApiController
 
     /** How many calendar months `monthly_hours` covers, this month included. */
     private const MONTHLY_HOURS_MONTHS = 6;
+
+    /** The fewest helpers `members_helped` will report; fewer is reported as 0. */
+    public const MIN_MEMBERS_HELPED = 3;
+
+    /**
+     * How many years old the community turns this month (warmth phase 6, D4),
+     * from the optional founded date its admin sets on "Make it yours"
+     * (tenants.configuration.founded_on, Y-m-d). Null when no date is set, in
+     * any other month, and before the first anniversary.
+     */
+    private static function anniversaryYears(int $tenantId, \Carbon\CarbonInterface $now): ?int
+    {
+        $raw = DB::table('tenants')->where('id', $tenantId)->value('configuration');
+        $config = is_string($raw) ? json_decode($raw, true) : null;
+        $founded = \App\Services\CommunitySetupService::validFoundedOn(
+            is_array($config) ? ($config['founded_on'] ?? null) : null,
+            $now->toDateString(),
+        );
+        if ($founded === null) {
+            return null;
+        }
+
+        $years = $now->year - (int) substr($founded, 0, 4);
+
+        return ((int) substr($founded, 5, 2) === $now->month && $years >= 1) ? $years : null;
+    }
 
     /** The cache key for a community's monthly highlight (one per calendar month). */
     public static function thisMonthCacheKey(int $tenantId): string

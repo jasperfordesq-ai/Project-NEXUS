@@ -11,6 +11,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Core\TenantContext;
 use App\Http\Controllers\Api\BaseApiController;
 use App\Services\CommunitySetupService;
+use App\Services\RedisCache;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -18,8 +19,10 @@ use Illuminate\Http\JsonResponse;
  * (warmth phase 6).
  *
  *   GET /v2/admin/community-setup[?suggestions=0]
+ *   PUT /v2/admin/community-setup/founded
  *
- * Read-only. Admins of the CURRENT community only: requireAdmin(), and the
+ * The GET only reads; the PUT saves the optional founded date, the one value
+ * that lives on this page alone. Admins of the CURRENT community only: requireAdmin(), and the
  * answer is built from TenantContext::getId() alone, so there is no id to
  * tamper with. `suggestions=0` skips reading the logo file (the admin
  * dashboard's small card does not show suggested colours).
@@ -30,6 +33,7 @@ class CommunitySetupController extends BaseApiController
 
     public function __construct(
         private readonly CommunitySetupService $service,
+        private readonly RedisCache $redisCache,
     ) {
     }
 
@@ -41,5 +45,39 @@ class CommunitySetupController extends BaseApiController
         return $this->respondWithData(
             $this->service->status(TenantContext::getId(), $this->queryBool('suggestions', true)),
         );
+    }
+
+    /**
+     * PUT /v2/admin/community-setup/founded  { founded_on: "YYYY-MM-DD" | null }
+     *
+     * The community's optional founded date (warmth phase 6, D4): members see
+     * "{community} is three this month" in the anniversary month. A real date
+     * from 1900 up to today; null (or an empty string) removes it. Same
+     * authorisation as the page itself: this community's admin only.
+     */
+    public function updateFounded(): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+        $input = $this->getAllInput();
+        $raw = $input['founded_on'] ?? null;
+
+        $foundedOn = null;
+        if ($raw !== null && $raw !== '') {
+            $foundedOn = CommunitySetupService::validFoundedOn($raw, now()->toDateString());
+            if ($foundedOn === null) {
+                return $this->respondWithError(
+                    'VALIDATION_ERROR',
+                    __('admin.community_setup.founded_invalid'),
+                    'founded_on',
+                    422,
+                );
+            }
+        }
+
+        $this->service->setFoundedOn($tenantId, $foundedOn);
+        $this->redisCache->delete('tenant_bootstrap', $tenantId);
+
+        return $this->respondWithData(['founded_on' => $foundedOn]);
     }
 }

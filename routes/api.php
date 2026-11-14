@@ -2928,6 +2928,8 @@ Route::get('/v2/admin/resources/{id}', [\App\Http\Controllers\Api\AdminResources
 Route::delete('/v2/admin/resources/{id}', [\App\Http\Controllers\Api\AdminResourcesController::class, 'destroy'])->middleware('feature:resources');
 // "Make it yours" — which of the things that dress a community's site are in place (read-only).
 Route::get('/v2/admin/community-setup', [\App\Http\Controllers\Api\Admin\CommunitySetupController::class, 'show']);
+// ...and the community's optional founded date, which lives on that page alone (warmth phase 6, D4).
+Route::put('/v2/admin/community-setup/founded', [\App\Http\Controllers\Api\Admin\CommunitySetupController::class, 'updateFounded']);
 // Community announcement banner — one-line notices shown across the top of the member website.
 Route::get('/v2/admin/announcements', [\App\Http\Controllers\Api\Admin\SiteAnnouncementAdminController::class, 'index']);
 Route::post('/v2/admin/announcements', [\App\Http\Controllers\Api\Admin\SiteAnnouncementAdminController::class, 'store']);

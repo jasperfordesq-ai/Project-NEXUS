@@ -233,8 +233,103 @@ class CommunitySetupControllerTest extends TestCase
     }
 
     // ================================================================
+    // The founded date (warmth phase 6, D4) — optional, not a step
+    // ================================================================
+
+    public function test_only_this_communitys_admin_may_set_the_founded_date(): void
+    {
+        $this->apiPut('/v2/admin/community-setup/founded', ['founded_on' => '2015-06-01'])->assertStatus(401);
+
+        Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->create());
+        $this->apiPut('/v2/admin/community-setup/founded', ['founded_on' => '2015-06-01'])->assertStatus(403);
+
+        Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker']));
+        $this->apiPut('/v2/admin/community-setup/founded', ['founded_on' => '2015-06-01'])->assertStatus(403);
+
+        $this->assertArrayNotHasKey('founded_on', $this->config());
+    }
+
+    public function test_the_founded_date_is_saved_shown_and_cleared_without_moving_the_meter(): void
+    {
+        $this->actAsAdmin();
+        $this->apiGet('/v2/admin/community-setup')->assertOk()->assertJsonPath('data.founded_on', null);
+
+        $this->apiPut('/v2/admin/community-setup/founded', ['founded_on' => '2015-06-01'])
+            ->assertOk()
+            ->assertJsonPath('data.founded_on', '2015-06-01');
+        $this->assertSame('2015-06-01', $this->config()['founded_on']);
+
+        // Optional: it is not one of the six steps and does not count towards them.
+        $response = $this->assertDone([]);
+        $response->assertJsonPath('data.founded_on', '2015-06-01')->assertJsonPath('data.total', 6);
+
+        // Other settings in the same configuration are left alone.
+        $this->setConfig(['primary_color' => '#A3195B']);
+        $this->apiPut('/v2/admin/community-setup/founded', ['founded_on' => null])
+            ->assertOk()
+            ->assertJsonPath('data.founded_on', null);
+        $this->assertArrayNotHasKey('founded_on', $this->config());
+        $this->assertSame('#A3195B', $this->config()['primary_color']);
+    }
+
+    public function test_a_founded_date_that_is_not_real_is_refused_and_nothing_is_stored(): void
+    {
+        $this->actAsAdmin();
+
+        foreach ([
+            now()->addDay()->toDateString(), // in the future
+            '1899-12-31',                    // before 1900
+            '2021-02-30',                    // no such day
+            '01/06/2015',                    // not the Y-m-d the screen sends
+            'next tuesday',
+            ['2015-06-01'],
+        ] as $bad) {
+            $this->apiPut('/v2/admin/community-setup/founded', ['founded_on' => $bad])
+                ->assertStatus(422)
+                ->assertJsonPath('errors.0.field', 'founded_on')
+                ->assertJsonPath('errors.0.message', 'Choose a real date from 1900 to today.');
+            $this->assertArrayNotHasKey('founded_on', $this->config(), json_encode($bad));
+        }
+
+        // The edges are allowed: 1 January 1900, and today.
+        $this->apiPut('/v2/admin/community-setup/founded', ['founded_on' => '1900-01-01'])->assertOk();
+        $this->apiPut('/v2/admin/community-setup/founded', ['founded_on' => now()->toDateString()])->assertOk();
+    }
+
+    public function test_setting_a_founded_date_never_touches_another_community(): void
+    {
+        DB::table('tenants')->updateOrInsert(
+            ['id' => self::OTHER_TENANT_ID],
+            [
+                'name' => 'Other Setup Timebank',
+                'slug' => 'other-setup-timebank-test',
+                'parent_id' => null,
+                'path' => '/' . self::OTHER_TENANT_ID . '/',
+                'depth' => 0,
+                'is_active' => true,
+                'configuration' => json_encode(['founded_on' => '1990-01-01']),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        );
+        $this->actAsAdmin();
+
+        $this->apiGet('/v2/admin/community-setup')->assertOk()->assertJsonPath('data.founded_on', null);
+        $this->apiPut('/v2/admin/community-setup/founded', ['founded_on' => '2015-06-01'])->assertOk();
+
+        $other = json_decode((string) DB::table('tenants')->where('id', self::OTHER_TENANT_ID)->value('configuration'), true);
+        $this->assertSame('1990-01-01', $other['founded_on']);
+    }
+
+    // ================================================================
     // Helpers
     // ================================================================
+
+    /** @return array<string, mixed> the test community's configuration */
+    private function config(): array
+    {
+        return json_decode((string) DB::table('tenants')->where('id', $this->testTenantId)->value('configuration'), true) ?: [];
+    }
 
     private function actAsAdmin(): User
     {

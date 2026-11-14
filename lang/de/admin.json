@@ -4111,5 +4111,8 @@
   "label_new_this_month": "Neu in diesem Monat",
   "label_pending_approvals": "Ausstehende Genehmigungen",
   "label_retention_rate": "Bindungsrate",
-  "label_total_members": "Mitglieder insgesamt"
+  "label_total_members": "Mitglieder insgesamt",
+  "community_setup": {
+    "founded_invalid": "Bitte wählen Sie ein gültiges Datum zwischen 1900 und heute."
+  }
 }

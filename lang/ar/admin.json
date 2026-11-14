@@ -4111,5 +4111,8 @@
   "label_new_this_month": "الجديد هذا الشهر",
   "label_pending_approvals": "الموافقات المعلقة",
   "label_retention_rate": "معدل الاستبقاء",
-  "label_total_members": "إجمالي الأعضاء"
+  "label_total_members": "إجمالي الأعضاء",
+  "community_setup": {
+    "founded_invalid": "اختر تاريخًا صحيحًا بين عام 1900 واليوم."
+  }
 }

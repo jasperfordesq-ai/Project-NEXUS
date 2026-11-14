@@ -19,12 +19,18 @@
  * choosing a colour should see where else it shows. The tagline saves through
  * the SEO endpoint that already owned it; themes and notices link to their
  * screens. Nothing changes for a community until its admin chooses it.
+ *
+ * One value IS stored from here (warmth phase 6, D4): the community's
+ * optional founded date, which lives on this page alone. It is not a step and
+ * never moves the meter; members see "{community} is three this month" on
+ * their dashboard in the anniversary month.
  */
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ArrowRight from 'lucide-react/icons/arrow-right';
+import CalendarHeart from 'lucide-react/icons/calendar-heart';
 import ExternalLink from 'lucide-react/icons/external-link';
 import Megaphone from 'lucide-react/icons/megaphone';
 import Quote from 'lucide-react/icons/quote';
@@ -34,7 +40,7 @@ import { Alert, Button, Card, Chip, Input, Skeleton } from '@/components/ui';
 import { useTenant, useToast } from '@/contexts';
 import { logError } from '@/lib/logger';
 import { useAdminPageMeta } from '../../../AdminMetaContext';
-import { adminSettings, type CommunitySetupStepKey } from '../../../api/adminApi';
+import { adminCommunitySetup, adminSettings, type CommunitySetupStepKey } from '../../../api/adminApi';
 import { AdminSaveBar } from '../../../components/AdminSaveBar';
 import { PageHeader } from '../../../components/PageHeader';
 import { TAGLINE_MAX } from '../../../components/SeoChoiceFields';
@@ -47,6 +53,30 @@ import { HeaderLogoSection } from '../settings/sections/HeaderLogoSection';
 import { useAdminSettingsForm } from '../settings/useAdminSettingsForm';
 import { SetupProgress, setupStepAnchor } from './SetupProgress';
 import { useCommunitySetup } from './useCommunitySetup';
+
+/** The earliest founded date the server accepts. */
+const FOUNDED_MIN = '1900-01-01';
+
+/** Today's date on this device as YYYY-MM-DD. */
+function localToday(): string {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+/**
+ * The rule the server applies (CommunitySetupService::validFoundedOn): a real
+ * YYYY-MM-DD date from 1 January 1900 up to today. Checked here too so a
+ * date that would be refused is never sent.
+ */
+export function isValidFoundedOn(value: string, today: string): boolean {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return false;
+  return value >= FOUNDED_MIN && value <= today;
+}
 
 /** A numbered step: its place in the walk, whether it is done, and the section itself. */
 function SetupStep({
@@ -122,6 +152,19 @@ export function MakeItYoursPage() {
   // the admin's place and flash the whole screen.
   const [ready, setReady] = useState(false);
 
+  const [founded, setFounded] = useState('');
+  const [savedFounded, setSavedFounded] = useState('');
+  const [savingFounded, setSavingFounded] = useState(false);
+
+  // The founded date follows the server's copy until the admin changes it.
+  useEffect(() => {
+    if (status && founded === savedFounded) {
+      setFounded(status.founded_on ?? '');
+      setSavedFounded(status.founded_on ?? '');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when the server's copy changes
+  }, [status?.founded_on]);
+
   // The tagline box follows the server's copy until the admin types in it.
   useEffect(() => {
     if (status && tagline === savedTagline) {
@@ -138,7 +181,8 @@ export function MakeItYoursPage() {
   }, [branding.logo, branding.communityPhoto, refetchSetup]);
 
   const taglineDirty = tagline.trim() !== savedTagline.trim();
-  useUnsavedChangesGuard((general.dirty || taglineDirty) && !savingColour && !savingTagline);
+  const foundedDirty = founded.trim() !== savedFounded;
+  useUnsavedChangesGuard((general.dirty || taglineDirty || foundedDirty) && !savingColour && !savingTagline && !savingFounded);
 
   const saveColour = useCallback(async () => {
     setSavingColour(true);
@@ -181,6 +225,30 @@ export function MakeItYoursPage() {
       setSavingTagline(false);
     }
   }, [tagline, refreshTenant, refetchSetup, toast, t]);
+
+  const saveFounded = useCallback(async (next: string | null) => {
+    setSavingFounded(true);
+    try {
+      const res = await adminCommunitySetup.updateFounded(next);
+      if (!res.success) {
+        // admin-i18n-ignore: localized server message — CommunitySetupController refusals are __() keys.
+        toast.error(res.error || t('system.save_failed'));
+        return;
+      }
+      setSavedFounded(next ?? '');
+      setFounded(next ?? '');
+      toast.success(next === null ? t('admin_settings.miy_founded_cleared') : t('admin_settings.miy_founded_saved'));
+      await refetchSetup();
+    } catch (err) {
+      logError('Founded date save error', err);
+      toast.error(t('system.failed_to_save_settings'));
+    } finally {
+      setSavingFounded(false);
+    }
+  }, [refetchSetup, toast, t]);
+
+  const today = localToday();
+  const foundedInvalid = founded.trim() !== '' && !isValidFoundedOn(founded.trim(), today);
 
   const done = (key: CommunitySetupStepKey) => status?.steps.find((s) => s.key === key)?.done ?? false;
   const total = status?.total ?? 6;
@@ -327,6 +395,60 @@ export function MakeItYoursPage() {
               </div>
             </SettingsSection>
           </SetupStep>
+
+          {/* Optional, and deliberately not a seventh step: a community that
+              leaves it empty is not "unfinished", so it never moves the meter.
+              It lives here only (one admin place per setting). */}
+          <section
+            id="make-it-yours-founded"
+            data-testid="setup-founded"
+            className="scroll-mt-24 space-y-2"
+          >
+            <div className="flex flex-wrap items-center gap-2 px-1">
+              <Chip size="sm" variant="soft" color="default">
+                {t('admin_settings.miy_founded_optional')}
+              </Chip>
+            </div>
+            <SettingsSection
+              id="make-it-yours-founded-date"
+              icon={<CalendarHeart size={20} aria-hidden="true" />}
+              title={t('admin_settings.miy_founded_title')}
+              description={t('admin_settings.miy_founded_desc', { name })}
+            >
+              <Input
+                type="date"
+                label={t('admin_settings.miy_founded_label')}
+                variant="secondary"
+                value={founded}
+                min={FOUNDED_MIN}
+                max={today}
+                onValueChange={setFounded}
+                isInvalid={foundedInvalid}
+                errorMessage={foundedInvalid ? t('admin_settings.miy_founded_invalid') : undefined}
+              />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  isDisabled={!foundedDirty || foundedInvalid || savingFounded}
+                  isLoading={savingFounded}
+                  onPress={() => void saveFounded(founded.trim() === '' ? null : founded.trim())}
+                >
+                  {t('admin_settings.miy_founded_save')}
+                </Button>
+                {savedFounded !== '' && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    isDisabled={savingFounded}
+                    onPress={() => void saveFounded(null)}
+                  >
+                    {t('admin_settings.miy_founded_clear')}
+                  </Button>
+                )}
+              </div>
+            </SettingsSection>
+          </section>
 
           {/* The colour choices (community colour, look, Soft / Vivid and the
               accessible site's header colours) are the only ones here that

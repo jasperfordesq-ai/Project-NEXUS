@@ -194,12 +194,30 @@
     "subtitle": "An méid atá roinnte ag cách go dtí seo an mhí seo.",
     "hours": "Uaireanta roinnte",
     "members": "Baill nua",
-    "listings": "Tairiscintí agus iarratais nua"
+    "listings": "Tairiscintí agus iarratais nua",
+    "thank_yous_one": "{{count}} nóta buíochais in {{community}} an mhí seo",
+    "thank_yous_two": "{{count}} nóta buíochais in {{community}} an mhí seo",
+    "thank_yous_few": "{{count}} nóta buíochais in {{community}} an mhí seo",
+    "thank_yous_many": "{{count}} nóta buíochais in {{community}} an mhí seo",
+    "thank_yous_other": "{{count}} nóta buíochais in {{community}} an mhí seo",
+    "helpers_one": "Chabhraigh {{count}} ball le duine éigin an mhí seo",
+    "helpers_two": "Chabhraigh {{count}} bhall le duine éigin an mhí seo",
+    "helpers_few": "Chabhraigh {{count}} bhall le duine éigin an mhí seo",
+    "helpers_many": "Chabhraigh {{count}} mball le duine éigin an mhí seo",
+    "helpers_other": "Chabhraigh {{count}} ball le duine éigin an mhí seo"
   },
   "anniversary": {
     "title": "Comóradh sona!",
     "body": "Chuaigh tú isteach in {{community}} ar {{date}}. Go raibh maith agat as a bheith páirteach ann.",
     "close": "Dún"
+  },
+  "community_anniversary": {
+    "title_one": "Tá {{community}} bliain d’aois an mhí seo",
+    "title_two": "Tá {{community}} {{count}} bhliain d’aois an mhí seo",
+    "title_few": "Tá {{community}} {{count}} bliana d’aois an mhí seo",
+    "title_many": "Tá {{community}} {{count}} mbliana d’aois an mhí seo",
+    "title_other": "Tá {{community}} {{count}} bliain d’aois an mhí seo",
+    "body": "Go raibh maith agaibh go léir a thug uair an chloig ar an mbealach."
   },
   "milestone": {
     "title": "{{hours}} uair an chloig roinnte le chéile",

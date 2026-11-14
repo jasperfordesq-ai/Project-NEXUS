@@ -816,13 +816,19 @@ export interface CommunitySetupStatus {
   themes: { total: number; with_picture: number };
   /** Colours taken from the community's logo, each already readable on white. */
   suggested_colours: string[];
+  /** The community's optional founded date (YYYY-MM-DD), or null. Not one of the steps. */
+  founded_on: string | null;
 }
 
-/** "Make it yours" (warmth phase 6): how far a community has got in dressing its own site. Read-only. */
+/** "Make it yours" (warmth phase 6): how far a community has got in dressing its own site. */
 export const adminCommunitySetup = {
   /** `withSuggestions: false` skips reading the logo file (the dashboard card shows no colours). */
   get: (withSuggestions = true) =>
     api.get<CommunitySetupStatus>(`/v2/admin/community-setup${withSuggestions ? '' : '?suggestions=0'}`),
+
+  /** Save the founded date (YYYY-MM-DD), or remove it with null — the one value this page stores itself. */
+  updateFounded: (foundedOn: string | null) =>
+    api.put<{ founded_on: string | null }>('/v2/admin/community-setup/founded', { founded_on: foundedOn }),
 };
 
 /** Community announcement banner (warmth phase 5): notices across the top of the member website. */

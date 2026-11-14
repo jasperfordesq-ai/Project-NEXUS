@@ -26,7 +26,13 @@ vi.mock('@/contexts', () => createMockContexts({
 
 import { CommunityMonthHighlight } from './CommunityMonthHighlight';
 
-const month = (data: Partial<{ hours_shared: number; new_members: number; new_listings: number }>) => ({
+const month = (data: Partial<{
+  hours_shared: number;
+  new_members: number;
+  new_listings: number;
+  thank_yous: number;
+  members_helped: number;
+}>) => ({
   success: true,
   data: { month: '2026-11', hours_shared: 0, new_members: 0, new_listings: 0, ...data },
 });
@@ -95,6 +101,51 @@ describe('CommunityMonthHighlight', () => {
     render(<CommunityMonthHighlight />);
     await waitFor(() => expect(mockApi.get).toHaveBeenCalled());
     expect(screen.queryByTestId('community-month-highlight')).toBeNull();
+  });
+
+  // Warmth phase 6, D3a + D8: two counts that name nobody.
+  it('counts the thank-yous and the members who helped someone this month', async () => {
+    mockApi.get.mockResolvedValueOnce(month({ hours_shared: 12, thank_yous: 42, members_helped: 7 }));
+    render(<CommunityMonthHighlight />);
+    const card = await screen.findByTestId('community-month-highlight');
+    expect(within(card).getByText('42 thank-yous in Hour Timebank this month')).toBeInTheDocument();
+    expect(within(card).getByText('7 members helped someone this month')).toBeInTheDocument();
+  });
+
+  it('says "thank-you" for a single note', async () => {
+    mockApi.get.mockResolvedValueOnce(month({ hours_shared: 1, thank_yous: 1 }));
+    render(<CommunityMonthHighlight />);
+    const card = await screen.findByTestId('community-month-highlight');
+    expect(within(card).getByText('1 thank-you in Hour Timebank this month')).toBeInTheDocument();
+  });
+
+  it('leaves a count out at zero, and the helpers out below three so nobody can be picked out', async () => {
+    mockApi.get.mockResolvedValueOnce(month({ hours_shared: 2, thank_yous: 0, members_helped: 2 }));
+    render(<CommunityMonthHighlight />);
+    const card = await screen.findByTestId('community-month-highlight');
+    expect(within(card).queryByTestId('community-month-thank-yous')).toBeNull();
+    expect(within(card).queryByTestId('community-month-helpers')).toBeNull();
+    expect(within(card).queryByText(/thank-you/)).toBeNull();
+    expect(within(card).queryByText(/helped someone/)).toBeNull();
+  });
+
+  it('shows the counts even in a month with no other totals yet', async () => {
+    mockApi.get.mockResolvedValueOnce(month({ thank_yous: 3 }));
+    render(<CommunityMonthHighlight />);
+    const card = await screen.findByTestId('community-month-highlight');
+    expect(within(card).getByText('3 thank-yous in Hour Timebank this month')).toBeInTheDocument();
+    expect(card.querySelector('dl')).toBeNull();
+  });
+
+  it('copes with an older reply that has no counts at all', async () => {
+    mockApi.get.mockResolvedValueOnce({
+      success: true,
+      data: { month: '2026-11', hours_shared: 4, new_members: 0, new_listings: 0 },
+    });
+    render(<CommunityMonthHighlight />);
+    const card = await screen.findByTestId('community-month-highlight');
+    expect(within(card).queryByTestId('community-month-thank-yous')).toBeNull();
+    expect(within(card).queryByTestId('community-month-helpers')).toBeNull();
   });
 
   it('leaves out offers and requests where the community has switched them off', async () => {

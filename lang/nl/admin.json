@@ -4111,5 +4111,8 @@
   "label_new_this_month": "Nieuw deze maand",
   "label_pending_approvals": "Goedkeuringen in afwachting",
   "label_retention_rate": "Retentiepercentage",
-  "label_total_members": "Totaal aantal leden"
+  "label_total_members": "Totaal aantal leden",
+  "community_setup": {
+    "founded_invalid": "Kies een echte datum tussen 1900 en vandaag."
+  }
 }

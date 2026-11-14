@@ -12,6 +12,11 @@
  *
  * Leaves out any total still at zero, and shows nothing in a quiet month (a
  * row of zeros is discouraging, not warm) or when the totals cannot be loaded.
+ *
+ * Below the tiles, two counts that name nobody (warmth phase 6, D3a + D8):
+ * the thank-you notes written this month, and how many members helped
+ * someone — the second only from three upwards, so it cannot point at one
+ * person in a small community.
  */
 
 import { CountUp } from '@/components/ui/CountUp';
@@ -19,6 +24,8 @@ import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
 import Clock from 'lucide-react/icons/clock';
 import Gift from 'lucide-react/icons/gift';
+import Heart from 'lucide-react/icons/heart';
+import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import Sparkles from 'lucide-react/icons/sparkles';
 import UserPlus from 'lucide-react/icons/user-plus';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -34,7 +41,14 @@ interface MonthTotals {
   hours_shared: number;
   new_members: number;
   new_listings: number;
+  /** Thank-you notes written this month (warmth phase 6, D3a). Absent in an older reply. */
+  thank_yous?: number;
+  /** Distinct members who gave time this month (D8); the server sends 0 below three. */
+  members_helped?: number;
 }
+
+/** Below this many helpers the count is left out: in a small community it could point at a person. */
+const MIN_HELPERS_SHOWN = 3;
 
 interface Tile {
   key: string;
@@ -77,14 +91,27 @@ export function CommunityMonthHighlight({ className = '' }: { className?: string
     ].filter((tile) => tile.value > 0);
   }, [totals, showListings, t]);
 
-  if (!totals || tiles.length === 0) return null;
+  const community = branding?.name || tenant?.name || '';
+  // Two counts that name nobody (warmth phase 6, D3a + D8). A zero is left
+  // out like the tiles' zeros, and the helpers below three as well.
+  const thankYous = Number(totals?.thank_yous ?? 0);
+  const helpers = Number(totals?.members_helped ?? 0);
+  const counts = [
+    ...(thankYous >= 1
+      ? [{ key: 'thank-yous', icon: Heart, text: t('month_highlight.thank_yous', { count: thankYous, community }) }]
+      : []),
+    ...(helpers >= MIN_HELPERS_SHOWN
+      ? [{ key: 'helpers', icon: HeartHandshake, text: t('month_highlight.helpers', { count: helpers }) }]
+      : []),
+  ];
+
+  if (!totals || (tiles.length === 0 && counts.length === 0)) return null;
 
   const locale = getFormattingLocale();
   const [year, monthNumber] = totals.month.split('-').map(Number);
   const monthName = year && monthNumber
     ? new Date(year, monthNumber - 1, 1).toLocaleDateString(locale, { month: 'long' })
     : '';
-  const community = branding?.name || tenant?.name || '';
 
   return (
     <GlassCard data-testid="community-month-highlight" className={`p-5 sm:p-6 ${className}`}>
@@ -95,31 +122,50 @@ export function CommunityMonthHighlight({ className = '' }: { className?: string
         </h2>
       </div>
       <p className="mt-1 text-sm text-theme-secondary">{t('month_highlight.subtitle')}</p>
-      <dl className={`mt-4 grid grid-cols-1 gap-3 ${GRID_COLUMNS[tiles.length] ?? 'sm:grid-cols-3'}`}>
-        {tiles.map((tile, i) => {
-          const Icon = tile.icon;
-          return (
-            // <dt> and <dd> sit directly in this <div>, as a description list
-            // requires (axe "definition-list"); the icon rides inside the <dt>,
-            // placed beside both lines. The value reads above its label.
-            <div
-              key={tile.key}
-              data-testid={`community-month-${tile.key}`}
-              className={`relative flex min-h-[4.5rem] min-w-0 flex-col-reverse justify-center rounded-2xl p-4 ps-[4.25rem] ${categoryColour(palette[i % palette.length]).band}`}
-            >
-              <dt className="text-sm font-medium">
-                <span className="absolute start-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-xl bg-white/60 dark:bg-white/10" aria-hidden="true">
-                  <Icon className="size-5" aria-hidden="true" />
-                </span>
-                {tile.label}
-              </dt>
-              <dd className="text-2xl font-bold leading-tight">
-                <CountUp value={tile.value} decimals={1} format={(n) => n.toLocaleString(locale, { maximumFractionDigits: 1 })} />
-              </dd>
-            </div>
-          );
-        })}
-      </dl>
+      {tiles.length > 0 && (
+        <dl className={`mt-4 grid grid-cols-1 gap-3 ${GRID_COLUMNS[tiles.length] ?? 'sm:grid-cols-3'}`}>
+          {tiles.map((tile, i) => {
+            const Icon = tile.icon;
+            return (
+              // <dt> and <dd> sit directly in this <div>, as a description list
+              // requires (axe "definition-list"); the icon rides inside the <dt>,
+              // placed beside both lines. The value reads above its label.
+              <div
+                key={tile.key}
+                data-testid={`community-month-${tile.key}`}
+                className={`relative flex min-h-[4.5rem] min-w-0 flex-col-reverse justify-center rounded-2xl p-4 ps-[4.25rem] ${categoryColour(palette[i % palette.length]).band}`}
+              >
+                <dt className="text-sm font-medium">
+                  <span className="absolute start-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-xl bg-white/60 dark:bg-white/10" aria-hidden="true">
+                    <Icon className="size-5" aria-hidden="true" />
+                  </span>
+                  {tile.label}
+                </dt>
+                <dd className="text-2xl font-bold leading-tight">
+                  <CountUp value={tile.value} decimals={1} format={(n) => n.toLocaleString(locale, { maximumFractionDigits: 1 })} />
+                </dd>
+              </div>
+            );
+          })}
+        </dl>
+      )}
+      {counts.length > 0 && (
+        <ul className="mt-4 space-y-2">
+          {counts.map((line) => {
+            const Icon = line.icon;
+            return (
+              <li
+                key={line.key}
+                data-testid={`community-month-${line.key}`}
+                className="flex items-center gap-2 text-sm font-medium text-theme-primary"
+              >
+                <Icon className="size-4 shrink-0 text-accent" aria-hidden="true" />
+                <span>{line.text}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </GlassCard>
   );
 }

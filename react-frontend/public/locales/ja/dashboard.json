@@ -182,12 +182,21 @@
     "subtitle": "今月これまでにみんなで分かち合ったこと。",
     "hours": "分かち合った時間",
     "members": "新しいメンバー",
-    "listings": "新しいオファーとリクエスト"
+    "listings": "新しいオファーとリクエスト",
+    "thank_yous_one": "今月、{{community}}で{{count}}件のお礼のメッセージが届きました",
+    "thank_yous_other": "今月、{{community}}で{{count}}件のお礼のメッセージが届きました",
+    "helpers_one": "今月は{{count}}人のメンバーが誰かの手助けをしました",
+    "helpers_other": "今月は{{count}}人のメンバーが誰かの手助けをしました"
   },
   "anniversary": {
     "title": "記念日おめでとうございます！",
     "body": "{{date}}に{{community}}に参加しました。いつもありがとうございます。",
     "close": "閉じる"
+  },
+  "community_anniversary": {
+    "title_one": "{{community}}は今月で1周年を迎えます",
+    "title_other": "{{community}}は今月で{{count}}周年を迎えます",
+    "body": "これまで時間を分かち合ってくださった皆さん、ありがとうございます。"
   },
   "milestone": {
     "title": "みんなで{{hours}}時間を分かち合いました",

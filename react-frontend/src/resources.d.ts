@@ -29955,6 +29955,15 @@ export default interface Resources {
       "miy_colour_save": "Save colour",
       "miy_colour_saved": "Colour saved",
       "miy_done": "Done",
+      "miy_founded_clear": "Remove date",
+      "miy_founded_cleared": "Founded date removed",
+      "miy_founded_desc": "Each year, in the month {{name}} began, members see a small birthday note on their dashboard. It is not one of the six steps.",
+      "miy_founded_invalid": "Choose a real date from 1900 to today.",
+      "miy_founded_label": "Founded on",
+      "miy_founded_optional": "Optional",
+      "miy_founded_save": "Save date",
+      "miy_founded_saved": "Founded date saved",
+      "miy_founded_title": "When your community began",
       "miy_intro": "Six short steps make this site look like {{name}}. Do them in any order. Nothing changes for your members until you choose it.",
       "miy_load_failed": "We couldn't load your set-up steps. Please reload the page.",
       "miy_logo_colours_hint": "Colours taken from the logo you uploaded, deepened where needed so that words in them can be read. Pick one to use it.",
@@ -41996,6 +42005,11 @@ export default interface Resources {
       "loading": "Loading"
     },
     "community_activity": "Here's what's happening in {{community}}",
+    "community_anniversary": {
+      "body": "Thank you to everyone who has given an hour along the way.",
+      "title_one": "{{community}} is one this month",
+      "title_other": "{{community}} is {{count}} this month"
+    },
     "events": {
       "browse": "Browse events",
       "empty": "No upcoming events",
@@ -42084,10 +42098,14 @@ export default interface Resources {
       "title": "{{hours}} hours shared together"
     },
     "month_highlight": {
+      "helpers_one": "{{count}} member helped someone this month",
+      "helpers_other": "{{count}} members helped someone this month",
       "hours": "Hours shared",
       "listings": "New offers and requests",
       "members": "New members",
       "subtitle": "What everyone has shared so far this month.",
+      "thank_yous_one": "{{count}} thank-you in {{community}} this month",
+      "thank_yous_other": "{{count}} thank-yous in {{community}} this month",
       "title": "{{month}} in {{community}}"
     },
     "new_listing": "New offer or request",

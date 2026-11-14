@@ -13,6 +13,7 @@ import { NewMembersStrip } from './NewMembersStrip';
 import { CommunityMonthHighlight } from './CommunityMonthHighlight';
 import { CommunityHoursChart } from './CommunityHoursChart';
 import { MembershipAnniversary } from './MembershipAnniversary';
+import { CommunityAnniversary } from './CommunityAnniversary';
 import { CommunityMilestone } from './CommunityMilestone';
 import { GettingStartedCard } from './GettingStartedCard';
 import { Card, CardBody } from '@/components/ui/Card';
@@ -497,6 +498,10 @@ export function DashboardPage() {
 
         {/* The member's own joining anniversary; renders nothing on other days. */}
         <MembershipAnniversary />
+
+        {/* The community's own birthday, through its founding month (from the
+            founded date its admin sets on "Make it yours"); nothing otherwise. */}
+        <CommunityAnniversary />
 
         {/* A round number of hours shared by the whole community (seen once per
             milestone), and one short list for a member with something left to
