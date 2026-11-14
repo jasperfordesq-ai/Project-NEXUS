@@ -28,7 +28,7 @@
   "accept": "Accept",
   "write_review": "Write review",
   "send_credits": "Send credits",
-  "level": "Lvl {{level}}",
+  "level": "Level {{level}}",
   "location_title": "Location",
   "stats": {
     "hours_given": "Hours given",

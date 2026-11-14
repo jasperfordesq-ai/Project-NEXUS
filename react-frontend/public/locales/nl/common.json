@@ -1120,7 +1120,7 @@
   "checking_authentication": "Authenticatie controleren...",
   "verification_status": "Verificatiestatus",
   "verify_identity": "Identiteit verifiëren",
-  "level_short": "Nv. {{level}}",
+  "level_short": "Niveau {{level}}",
   "cancel": "Annuleren",
   "confirm": "Confirm",
   "save": "Opslaan",

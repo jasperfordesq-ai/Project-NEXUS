@@ -1120,7 +1120,7 @@
   "checking_authentication": "Checking authentication...",
   "verification_status": "Verification Status",
   "verify_identity": "Verify Identity",
-  "level_short": "Lv. {{level}}",
+  "level_short": "Level {{level}}",
   "cancel": "Cancel",
   "confirm": "Confirm",
   "save": "Save",

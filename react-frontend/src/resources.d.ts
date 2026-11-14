@@ -39542,7 +39542,7 @@ export default interface Resources {
     "level_named": "Level {{level}} - {{name}}",
     "level_plain": "Level {{level}}",
     "level_progress_aria": "Level {{level}} progress: {{percentage}}%",
-    "level_short": "Lv. {{level}}",
+    "level_short": "Level {{level}}",
     "likert_options": {
       "1": "Very dissatisfied",
       "2": "Dissatisfied",
@@ -57657,7 +57657,7 @@ export default interface Resources {
     },
     "interests": "Interests",
     "joined": "Joined {{date}}",
-    "level": "Lvl {{level}}",
+    "level": "Level {{level}}",
     "like_failed": "We couldn't save your reaction. Please try again.",
     "listing_image_alt": "Photo for this offer or request",
     "listing_type": {

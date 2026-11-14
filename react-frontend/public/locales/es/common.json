@@ -1127,7 +1127,7 @@
   "checking_authentication": "Comprobando autenticación...",
   "verification_status": "Estado de verificación",
   "verify_identity": "Verificar identidad",
-  "level_short": "Niv. {{level}}",
+  "level_short": "Nivel {{level}}",
   "cancel": "Cancelar",
   "confirm": "Confirm",
   "save": "Guardar",

@@ -78,7 +78,13 @@ export function Autocomplete<T extends object = object>({
     >
       {label != null && <Label>{label}</Label>}
       <HeroAutocomplete.Trigger className={classNames?.trigger}>
-        {startContent}
+        {/* The trigger is an inline-flex row with no gap: without this holder a
+            start icon sat against the first letter of the value (B1 walk 6.5). */}
+        {startContent != null && startContent !== false && (
+          <span data-slot="start-content" className="me-2 inline-flex shrink-0 items-center self-center">
+            {startContent}
+          </span>
+        )}
         <HeroAutocomplete.Value className={classNames?.value} />
         <HeroAutocomplete.ClearButton />
         <HeroAutocomplete.Indicator />

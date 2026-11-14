@@ -1120,7 +1120,7 @@
   "checking_authentication": "認証を確認しています...",
   "verification_status": "認証ステータス",
   "verify_identity": "本人確認",
-  "level_short": "Lv.{{level}}",
+  "level_short": "レベル {{level}}",
   "cancel": "キャンセル",
   "confirm": "Confirm",
   "save": "保存",

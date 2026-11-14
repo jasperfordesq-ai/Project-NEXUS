@@ -1134,7 +1134,7 @@
   "checking_authentication": "Sprawdzanie uwierzytelnienia...",
   "verification_status": "Status weryfikacji",
   "verify_identity": "Zweryfikuj tożsamość",
-  "level_short": "Pz. {{level}}",
+  "level_short": "Poziom {{level}}",
   "cancel": "Anuluj",
   "confirm": "Potwierdź",
   "save": "Zapisz",

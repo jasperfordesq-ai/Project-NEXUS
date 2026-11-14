@@ -908,9 +908,13 @@ export function ListingForm({
           onValueChange={(value) => updateField('service_type', value as FormData['service_type'])}
           classNames={{
             label: 'text-sm font-medium text-theme-muted',
-            wrapper: 'grid grid-cols-1 sm:grid-cols-2 gap-3',
+            wrapper: 'flex flex-col gap-3',
           }}
         >
+          {/* The grid wraps only the four choices. It used to be the group's own
+              class, which made the group's label the first grid cell and left
+              the choices lopsided (B1 walk 6.6, 13 Nov 2026). */}
+          <div data-testid="service-type-options" className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Radio
             value="physical_only"
             classNames={{
@@ -971,6 +975,7 @@ export function ListingForm({
               </div>
             </div>
           </Radio>
+          </div>
         </RadioGroup>
       </section>
 

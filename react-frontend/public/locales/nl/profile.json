@@ -28,7 +28,7 @@
   "accept": "Accepteren",
   "write_review": "Schrijf Beoordeling",
   "send_credits": "Stuur Credits",
-  "level": "Niv {{level}}",
+  "level": "Niveau {{level}}",
   "location_title": "Locatie",
   "stats": {
     "hours_given": "Uren Gegeven",

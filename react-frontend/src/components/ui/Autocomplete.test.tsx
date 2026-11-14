@@ -27,6 +27,25 @@ describe('Autocomplete', () => {
     expect(screen.getByText('Germany')).toBeTruthy();
   });
 
+  // B1 walk 6.5 (13 Nov 2026): the trigger is an inline-flex row with no gap, so an
+  // icon passed as startContent sat jammed against the first letter of the value.
+  it('keeps a gap between the start icon and the value', () => {
+    render(
+      <Autocomplete
+        label="Category"
+        placeholder="Select a category"
+        startContent={<svg data-testid="start-icon" />}
+      >
+        <AutocompleteItem id="a">Alpha</AutocompleteItem>
+      </Autocomplete>
+    );
+
+    const holder = screen.getByTestId('start-icon').parentElement as HTMLElement;
+    expect(holder.getAttribute('data-slot')).toBe('start-content');
+    expect(holder.className).toMatch(/\bme-2\b/);
+    expect(holder.className).toMatch(/\bshrink-0\b/);
+  });
+
   it('accepts a render function over items', () => {
     const items = [{ id: 'a', name: 'Alpha' }, { id: 'b', name: 'Beta' }];
     expect(() =>

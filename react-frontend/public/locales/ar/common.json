@@ -1148,7 +1148,7 @@
   "checking_authentication": "جارٍ التحقق من المصادقة...",
   "verification_status": "حالة التحقق",
   "verify_identity": "تحقق من الهوية",
-  "level_short": "م. {{level}}",
+  "level_short": "المستوى {{level}}",
   "cancel": "إلغاء",
   "confirm": "Confirm",
   "save": "حفظ",

@@ -28,7 +28,13 @@ export function AuthLayout() {
         {t('accessibility.skip_to_content')}
       </a>
 
-      <div className="absolute top-[calc(var(--safe-area-top)+1rem)] right-[calc(var(--safe-area-right)+1rem)] z-20">
+      {/* On a phone the button has its own row above the card: floating, it sat on
+          the card's top-right corner at 375px (B1 walk 4.2, 13 Nov 2026). From
+          `sm` up the card is narrower than the screen, so it floats again. */}
+      <div
+        data-testid="auth-language-switcher"
+        className="relative z-20 flex justify-end pt-[calc(var(--safe-area-top)+1rem)] pr-[calc(var(--safe-area-right)+1rem)] pl-4 sm:absolute sm:top-[calc(var(--safe-area-top)+1rem)] sm:right-[calc(var(--safe-area-right)+1rem)] sm:p-0"
+      >
         <LanguageSwitcher
           triggerClassName="border border-theme-default bg-theme-elevated text-theme-primary shadow-sm backdrop-blur hover:border-theme-primary/40 hover:bg-theme-hover"
         />

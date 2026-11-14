@@ -28,7 +28,7 @@
   "accept": "Accepter",
   "write_review": "Rédiger une évaluation",
   "send_credits": "Envoyer des crédits",
-  "level": "Niv. {{level}}",
+  "level": "Niveau {{level}}",
   "location_title": "Localisation",
   "stats": {
     "hours_given": "Heures données",

@@ -28,7 +28,7 @@
   "accept": "Accetta",
   "write_review": "Scrivi Recensione",
   "send_credits": "Invia Crediti",
-  "level": "Liv. {{level}}",
+  "level": "Livello {{level}}",
   "location_title": "Posizione",
   "stats": {
     "hours_given": "Ore Date",

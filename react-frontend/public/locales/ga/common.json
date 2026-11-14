@@ -1141,7 +1141,7 @@
   "checking_authentication": "Á sheiceáil go bhfuil tú fíordheimhnithe...",
   "verification_status": "Stádas Fíoraithe",
   "verify_identity": "Fíoraigh Aitheantas",
-  "level_short": "Lbh. {{level}}",
+  "level_short": "Leibhéal {{level}}",
   "cancel": "Cealaigh",
   "confirm": "Deimhnigh",
   "save": "Sábháil",
