@@ -765,56 +765,52 @@
     "meta_title": "Acerca de {{name}}",
     "meta_description": "Descubra cómo {{name}} reúne a los vecinos para compartir habilidades utilizando créditos de tiempo. Por cada hora dedicada, se recupera una hora: una forma más justa de apoyarse mutuamente.",
     "hero_title": "Acerca de {{name}}",
-    "hero_description": "{{name}} es una plataforma moderna de banco de tiempo donde cada hora de servicio vale lo mismo. Ayudamos a las comunidades a intercambiar habilidades, construir confianza y crear una economía local más justa — una hora a la vez.",
+    "hero_description": "{{name}} es gente del barrio que comparte tiempo y habilidades. Da una hora de ayuda y recibe una hora a cambio.",
     "how_it_works": {
-      "title": "Cómo Funciona",
-      "subtitle": "Empezar es simple. Cuatro pasos para unirte y comenzar a intercambiar habilidades en tu comunidad.",
+      "title": "Una hora por una hora",
+      "subtitle": "Así es un intercambio. Unirse es gratis.",
       "steps": {
         "0": {
-          "title": "Crea Tu Perfil",
-          "description": "Regístrate gratis y lista las habilidades que puedes ofrecer a tu comunidad."
+          "title": "Anna da una hora",
+          "description": "Anna pasa una hora arreglando la bici de Sam."
         },
         "1": {
-          "title": "Encuentra Lo Que Necesitas",
-          "description": "Explora anuncios para descubrir servicios ofrecidos por miembros cerca de ti."
+          "title": "Anna gana un crédito de tiempo",
+          "description": "Esa hora le da a Anna un crédito de tiempo. Cada hora vale lo mismo, sea cual sea la tarea."
         },
         "2": {
-          "title": "Intercambia Servicios",
-          "description": "Conecta con miembros y organiza intercambios de habilidades que funcionen para ambos."
-        },
-        "3": {
-          "title": "Gana y Gasta Créditos",
-          "description": "Gana un crédito de tiempo por cada hora que das, y gástalos en servicios que necesites."
+          "title": "Anna lo gasta",
+          "description": "Más adelante, Anna gasta el crédito en una hora de ayuda en el jardín de parte de otro miembro."
         }
       }
     },
     "values": {
-      "title": "Nuestros Valores",
-      "subtitle": "Los principios que guían todo lo que hacemos en {{name}}.",
+      "title": "Lo que nos importa",
+      "subtitle": "En esto se basa {{name}}.",
       "items": {
         "0": {
-          "title": "Igualdad",
-          "description": "El tiempo de cada persona vale lo mismo. Una hora de jardinería vale lo mismo que una hora de tutoría."
+          "title": "La hora de cada persona vale lo mismo",
+          "description": "Una hora de jardinería vale lo mismo que una hora de clases particulares."
         },
         "1": {
-          "title": "Comunidad",
-          "description": "Creemos en construir conexiones locales fuertes. Cada intercambio fortalece el tejido de tu vecindario."
+          "title": "Primero, el vecindario",
+          "description": "Cada intercambio es una oportunidad para conocer a alguien que vive cerca."
         },
         "2": {
-          "title": "Confianza y Seguridad",
-          "description": "Las reseñas, valoraciones y la supervisión del coordinador aseguran un entorno seguro para que todos los miembros participen."
+          "title": "Nos cuidamos entre todos",
+          "description": "Los miembros pueden dejar una valoración después de un intercambio, y hay un coordinador por si lo necesitas."
         },
         "3": {
-          "title": "Sostenibilidad",
-          "description": "Al compartir habilidades localmente, reducimos el desperdicio, apoyamos economías circulares y fortalecemos la resiliencia local."
+          "title": "Compartir en vez de desperdiciar",
+          "description": "Compartir habilidades cerca de casa significa menos desperdicio y un barrio más fuerte."
         }
       }
     },
     "stats": {
-      "members": "Miembros",
-      "hours_exchanged": "Horas Intercambiadas",
-      "active_listings": "Ofertas y solicitudes activas",
-      "communities": "Comunidades"
+      "members": "miembros",
+      "hours_exchanged": "horas compartidas",
+      "active_listings": "ofertas y solicitudes abiertas ahora",
+      "communities": "comunidades"
     },
     "credits": {
       "title": "Impulsado por Project NEXUS",
@@ -830,10 +826,10 @@
       "source_code": "Código fuente de Project NEXUS en GitHub"
     },
     "cta": {
-      "title": "¿Listo para Participar?",
-      "description": "Ya sea que quieras compartir tus habilidades o encontrar ayuda con algo, nuestra comunidad está aquí para ti.",
+      "title": "Ponte en contacto",
+      "description": "¿Tienes una pregunta o no sabes por dónde empezar? Te ayudamos con gusto.",
       "dashboard": "Ir al Panel",
-      "join": "Únete Gratis",
+      "join": "Únete",
       "help_center": "Centro de Ayuda",
       "contact_us": "Contáctanos"
     }

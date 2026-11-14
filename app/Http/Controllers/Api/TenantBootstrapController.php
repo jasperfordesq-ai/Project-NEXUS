@@ -420,6 +420,14 @@ class TenantBootstrapController extends BaseApiController
         if (!empty($tenant['tagline'])) {
             $data['tagline'] = $tenant['tagline'];
         }
+        // Admin → Community settings → "Short description": the community's own
+        // words about itself, shown at the top of its About page. Plain text;
+        // left out when nothing is written so the page falls back to its own
+        // standard sentence.
+        $description = trim((string) ($tenant['description'] ?? ''));
+        if ($description !== '') {
+            $data['description'] = $description;
+        }
 
         // If this tenant has no custom domain but its parent does, expose that parent
         // domain so the SPA knows to use path-prefixed routing (e.g. timebanking.uk/cardiff).

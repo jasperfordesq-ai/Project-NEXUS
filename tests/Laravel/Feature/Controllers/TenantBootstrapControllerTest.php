@@ -794,4 +794,35 @@ class TenantBootstrapControllerTest extends TestCase
         $response->assertStatus(200);
         $this->assertStringEndsWith('/uploads/super-admin-share.png', (string) $response->json('data.branding.og_image_url'));
     }
+
+    /**
+     * Admin → Community settings → "Short description" (tenants.description)
+     * was saved but reached no member page until 2026-11-14. The About page
+     * opens with it, so the bootstrap has to carry it — trimmed, and left out
+     * altogether when the community has written nothing.
+     */
+    public function test_bootstrap_publishes_the_communitys_own_short_description(): void
+    {
+        $original = DB::table('tenants')->where('id', $this->testTenantId)->value('description');
+
+        try {
+            DB::table('tenants')->where('id', $this->testTenantId)
+                ->update(['description' => "  Neighbours in Riverside sharing time and skills.\n"]);
+            app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+
+            $response = $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug);
+            $response->assertStatus(200);
+            $response->assertJsonPath('data.description', 'Neighbours in Riverside sharing time and skills.');
+
+            DB::table('tenants')->where('id', $this->testTenantId)->update(['description' => '   ']);
+            app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+
+            $response = $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug);
+            $response->assertStatus(200);
+            $this->assertArrayNotHasKey('description', $response->json('data'));
+        } finally {
+            DB::table('tenants')->where('id', $this->testTenantId)->update(['description' => $original]);
+            app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+        }
+    }
 }

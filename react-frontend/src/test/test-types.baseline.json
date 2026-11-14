@@ -1709,9 +1709,6 @@
     "src/pages/profile/ProfilePage.test.tsx": {
       "TS2322": 3
     },
-    "src/pages/public/AboutPage.test.tsx": {
-      "TS2769": 1
-    },
     "src/pages/public/AcceptableUsePage.test.tsx": {
       "TS2322": 1
     },
@@ -1865,7 +1862,7 @@
     }
   },
   "totals": {
-    "fileCount": 551,
-    "errorCount": 1666
+    "fileCount": 550,
+    "errorCount": 1665
   }
 }

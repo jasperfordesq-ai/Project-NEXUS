@@ -765,55 +765,51 @@
     "meta_title": "Über {{name}}",
     "meta_description": "Erfahren Sie, wie {{name}} Nachbarn zusammenbringt, um mithilfe von Zeitguthaben Fähigkeiten auszutauschen. Für jede gegebene Stunde gibt es eine Stunde zurück – eine fairere Möglichkeit, sich gegenseitig zu unterstützen.",
     "hero_title": "Über {{name}}",
-    "hero_description": "{{name}} ist eine moderne Zeitbank-Plattform, auf der jede Stunde Dienstleistung gleichwertig ist. Wir helfen Gemeinschaften, Fähigkeiten auszutauschen, Vertrauen aufzubauen und eine gerechtere lokale Wirtschaft zu schaffen — eine Stunde nach der anderen.",
+    "hero_description": "{{name}} – das sind Nachbarinnen und Nachbarn, die Zeit und Fähigkeiten teilen. Schenken Sie eine Stunde Hilfe und bekommen Sie eine Stunde zurück.",
     "how_it_works": {
-      "title": "So funktioniert es",
-      "subtitle": "Der Einstieg ist einfach. Vier Schritte, um beizutreten und mit dem Fähigkeitenaustausch in Ihrer Gemeinschaft zu beginnen.",
+      "title": "Eine Stunde für eine Stunde",
+      "subtitle": "So läuft ein Austausch ab. Mitmachen kostet nichts.",
       "steps": {
         "0": {
-          "title": "Erstellen Sie Ihr Profil",
-          "description": "Registrieren Sie sich kostenlos und listen Sie die Fähigkeiten auf, die Sie Ihrer Gemeinschaft anbieten können."
+          "title": "Anna schenkt eine Stunde",
+          "description": "Anna repariert eine Stunde lang Sams Fahrrad."
         },
         "1": {
-          "title": "Finden Sie, was Sie brauchen",
-          "description": "Durchsuchen Sie Angebote, um Dienstleistungen von Mitgliedern in Ihrer Nähe zu entdecken."
+          "title": "Anna erhält eine Zeitgutschrift",
+          "description": "Für diese Stunde erhält Anna eine Zeitgutschrift. Jede Stunde ist gleich viel wert, egal um welche Aufgabe es geht."
         },
         "2": {
-          "title": "Dienstleistungen tauschen",
-          "description": "Verbinden Sie sich mit Mitgliedern und organisieren Sie Fähigkeitenaustausche, die für beide funktionieren."
-        },
-        "3": {
-          "title": "Guthaben verdienen und ausgeben",
-          "description": "Verdienen Sie ein Zeitguthaben für jede Stunde, die Sie geben, und geben Sie es für Dienstleistungen aus, die Sie benötigen."
+          "title": "Anna löst sie ein",
+          "description": "Später löst Anna die Gutschrift für eine Stunde Gartenhilfe von einem anderen Mitglied ein."
         }
       }
     },
     "values": {
-      "title": "Unsere Werte",
-      "subtitle": "Die Prinzipien, die alles leiten, was wir bei {{name}} tun.",
+      "title": "Was uns wichtig ist",
+      "subtitle": "Darauf baut {{name}} auf.",
       "items": {
         "0": {
-          "title": "Gleichheit",
-          "description": "Die Zeit jeder Person wird gleichwertig geschätzt. Eine Stunde Gartenarbeit ist gleich viel wert wie eine Stunde Nachhilfe."
+          "title": "Jede Stunde zählt gleich",
+          "description": "Eine Stunde Gartenarbeit ist genauso viel wert wie eine Stunde Nachhilfe."
         },
         "1": {
-          "title": "Gemeinschaft",
-          "description": "Wir glauben an den Aufbau starker lokaler Verbindungen. Jeder Austausch stärkt das Gefüge Ihrer Nachbarschaft."
+          "title": "Nachbarschaft zuerst",
+          "description": "Jeder Austausch ist eine Gelegenheit, jemanden aus der Nähe kennenzulernen."
         },
         "2": {
-          "title": "Vertrauen und Sicherheit",
-          "description": "Bewertungen, Beurteilungen und Broker-Aufsicht gewährleisten eine sichere Umgebung für alle Mitglieder."
+          "title": "Wir achten aufeinander",
+          "description": "Nach einem Austausch können Mitglieder eine Bewertung hinterlassen, und ein Koordinator ist für Sie da, wenn Sie Hilfe brauchen."
         },
         "3": {
-          "title": "Nachhaltigkeit",
-          "description": "Durch lokales Teilen von Fähigkeiten reduzieren wir Verschwendung, unterstützen Kreislaufwirtschaften und stärken die lokale Resilienz."
+          "title": "Teilen statt verschwenden",
+          "description": "Wer Fähigkeiten vor Ort teilt, verschwendet weniger und stärkt die Nachbarschaft."
         }
       }
     },
     "stats": {
       "members": "Mitglieder",
-      "hours_exchanged": "Getauschte Stunden",
-      "active_listings": "Aktive Angebote und Gesuche",
+      "hours_exchanged": "geteilte Stunden",
+      "active_listings": "offene Angebote und Gesuche",
       "communities": "Gemeinschaften"
     },
     "credits": {
@@ -830,10 +826,10 @@
       "source_code": "Quellcode von Project NEXUS auf GitHub"
     },
     "cta": {
-      "title": "Bereit mitzumachen?",
-      "description": "Ob Sie Ihre Fähigkeiten teilen oder Hilfe bei etwas finden möchten, unsere Gemeinschaft ist für Sie da.",
+      "title": "Sprechen Sie uns an",
+      "description": "Haben Sie eine Frage oder wissen Sie nicht, wo Sie anfangen sollen? Wir helfen Ihnen gern.",
       "dashboard": "Zum Dashboard",
-      "join": "Kostenlos beitreten",
+      "join": "Jetzt mitmachen",
       "help_center": "Hilfezentrum",
       "contact_us": "Kontaktieren Sie uns"
     }

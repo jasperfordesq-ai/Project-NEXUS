@@ -235,7 +235,7 @@
     "community_name_help": "يظهر في أنحاء الموقع، وفي تبويب المتصفح، وفي رسائل البريد الإلكتروني.",
     "community_description_label": "وصف قصير",
     "community_description_placeholder": "مثال: جيران في ريفرسايد يتبادلون الوقت والمهارات.",
-    "community_description_help": "جملة أو جملتان تعرّفان بمجتمعك.",
+    "community_description_help": "جملة أو جملتان تعرّفان بمجتمعك. تظهران في أعلى صفحة «من نحن».",
     "support_email_label": "البريد الإلكتروني للدعم",
     "support_email_help": "العنوان الذي يراسلك الناس عليه لطلب المساعدة.",
     "contact_phone_label": "هاتف التواصل",

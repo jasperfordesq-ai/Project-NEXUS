@@ -765,56 +765,52 @@
     "meta_title": "O {{name}}",
     "meta_description": "Dowiedz się, jak {{name}} łączy sąsiadów, aby dzielili się umiejętnościami za pomocą kredytów czasowych. Każda ofiarowana godzina zapewnia godzinę z powrotem — to bardziej sprawiedliwy sposób wzajemnego wspierania się.",
     "hero_title": "O {{name}}",
-    "hero_description": "{{name}} to nowoczesna platforma bankowości czasowej, na której każda godzina usługi jest wyceniana równo. Pomagamy społecznościom wymieniać umiejętności, budować zaufanie i tworzyć sprawiedliwszą lokalną gospodarkę — godzinę po godzinie.",
+    "hero_description": "{{name}} to sąsiedzi, którzy dzielą się czasem i umiejętnościami. Daj godzinę pomocy i otrzymaj godzinę w zamian.",
     "how_it_works": {
-      "title": "Jak to działa",
-      "subtitle": "Rozpoczęcie jest proste. Cztery kroki, aby dołączyć i zacząć wymieniać umiejętności w swojej społeczności.",
+      "title": "Godzina za godzinę",
+      "subtitle": "Tak wygląda jedna wymiana. Dołączenie nic nie kosztuje.",
       "steps": {
         "0": {
-          "title": "Utwórz swój profil",
-          "description": "Zarejestruj się za darmo i wymień umiejętności, które możesz zaoferować swojej społeczności."
+          "title": "Anna daje godzinę",
+          "description": "Anna przez godzinę naprawia rower Sama."
         },
         "1": {
-          "title": "Znajdź to, czego potrzebujesz",
-          "description": "Przeglądaj oferty, aby odkryć usługi oferowane przez członków w twojej okolicy."
+          "title": "Anna zdobywa kredyt czasu",
+          "description": "Za tę godzinę Anna dostaje jeden kredyt czasu. Każda godzina jest warta tyle samo, bez względu na rodzaj pracy."
         },
         "2": {
-          "title": "Wymień usługi",
-          "description": "Połącz się z członkami i zorganizuj wymiany umiejętności, które będą odpowiednie dla was obojga."
-        },
-        "3": {
-          "title": "Zarabiaj i wydawaj kredyty",
-          "description": "Zarabiaj jeden kredyt czasowy za każdą godzinę, którą poświęcasz, i wydawaj je na usługi, których potrzebujesz."
+          "title": "Anna go wydaje",
+          "description": "Później Anna wydaje ten kredyt na godzinę pomocy w ogrodzie od innej osoby ze społeczności."
         }
       }
     },
     "values": {
-      "title": "Nasze Wartości",
-      "subtitle": "Zasady, które kierują wszystkim, co robimy w {{name}}.",
+      "title": "Co jest dla nas ważne",
+      "subtitle": "Na tym opiera się {{name}}.",
       "items": {
         "0": {
-          "title": "Równość",
-          "description": "Czas każdej osoby jest wyceniany równo. Jedna godzina ogrodnictwa jest warta tyle samo, co jedna godzina korepetycji."
+          "title": "Godzina każdego jest warta tyle samo",
+          "description": "Godzina pracy w ogrodzie jest warta tyle samo, co godzina korepetycji."
         },
         "1": {
-          "title": "Wspólnota",
-          "description": "Wierzymy w budowanie silnych lokalnych połączeń. Każda wymiana wzmacnia tkankę twojej okolicy."
+          "title": "Najpierw sąsiedzi",
+          "description": "Każda wymiana to okazja, żeby poznać kogoś, kto mieszka w pobliżu."
         },
         "2": {
-          "title": "Zaufanie i Bezpieczeństwo",
-          "description": "Opinie, oceny i nadzór pośredników zapewniają bezpieczne środowisko dla wszystkich członków do uczestnictwa."
+          "title": "Dbamy o siebie nawzajem",
+          "description": "Po wymianie członkowie mogą zostawić opinię, a koordynator jest na miejscu, gdy go potrzebujesz."
         },
         "3": {
-          "title": "Zrównoważony rozwój",
-          "description": "Dzięki lokalnemu dzieleniu się umiejętnościami redukujemy odpady, wspieramy gospodarki cyrkularne i wzmacniamy lokalną odporność."
+          "title": "Dzielić się, a nie marnować",
+          "description": "Dzielenie się umiejętnościami blisko domu to mniej marnotrawstwa i silniejsze sąsiedztwo."
         }
       }
     },
     "stats": {
-      "members": "Członkowie",
-      "hours_exchanged": "Godziny wymienione",
-      "active_listings": "Aktywne oferty i prośby",
-      "communities": "Społeczności"
+      "members": "członkowie",
+      "hours_exchanged": "wymienione godziny",
+      "active_listings": "otwarte teraz oferty i prośby",
+      "communities": "społeczności"
     },
     "credits": {
       "title": "Zasilane przez Project NEXUS",
@@ -830,10 +826,10 @@
       "source_code": "Kod źródłowy Project NEXUS na GitHubie"
     },
     "cta": {
-      "title": "Gotowy, aby się zaangażować?",
-      "description": "Niezależnie od tego, czy chcesz podzielić się swoimi umiejętnościami, czy znaleźć pomoc w czymś, nasza społeczność jest tutaj dla Ciebie.",
+      "title": "Odezwij się do nas",
+      "description": "Masz pytanie albo nie wiesz, od czego zacząć? Chętnie pomożemy.",
       "dashboard": "Przejdź do Panelu",
-      "join": "Dołącz za darmo",
+      "join": "Dołącz do nas",
       "help_center": "Centrum Pomocy",
       "contact_us": "Skontaktuj się z nami"
     }

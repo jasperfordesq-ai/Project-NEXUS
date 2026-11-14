@@ -235,7 +235,7 @@
     "community_name_help": "サイト全体、ブラウザのタブ、メールに表示されます。",
     "community_description_label": "短い説明",
     "community_description_placeholder": "例：リバーサイドのご近所どうしで、時間と得意なことを分かち合っています。",
-    "community_description_help": "どんなコミュニティかを伝える、1〜2文の説明です。",
+    "community_description_help": "どんなコミュニティかを伝える、1〜2文の説明です。「概要」ページのいちばん上に表示されます。",
     "support_email_label": "サポート用メールアドレス",
     "support_email_help": "困ったときに連絡してもらうためのメールアドレスです。",
     "contact_phone_label": "連絡先電話番号",

@@ -1401,6 +1401,12 @@ export interface TenantConfig {
   /** Uppercase ISO 4217 payment currency resolved by the tenant bootstrap. */
   currency?: string;
   tagline?: string;
+  /**
+   * The community's own words about itself: Admin → Community settings →
+   * "Short description". Plain text; absent when nothing is written. The About
+   * page opens with it.
+   */
+  description?: string;
   features: Partial<TenantFeatures>;
   modules?: Partial<TenantModules>;
   branding?: Partial<TenantBranding>;

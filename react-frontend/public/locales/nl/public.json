@@ -765,56 +765,52 @@
     "meta_title": "Over {{name}}",
     "meta_description": "Ontdek hoe {{name}} buren samenbrengt om vaardigheden te delen met behulp van tijdskredieten. Elk gegeven uur verdient een uur terug – een eerlijkere manier om elkaar te steunen.",
     "hero_title": "Over {{name}}",
-    "hero_description": "{{name}} is een modern tijdbankplatform waar elk uur van dienstverlening gelijk wordt gewaardeerd. We helpen gemeenschappen vaardigheden uit te wisselen, vertrouwen op te bouwen en een eerlijkere lokale economie te creëren — uur voor uur.",
+    "hero_description": "{{name}} is buren die tijd en vaardigheden delen. Geef een uur hulp en krijg een uur terug.",
     "how_it_works": {
-      "title": "Hoe Het Werkt",
-      "subtitle": "Aan de slag gaan is eenvoudig. Vier stappen om je aan te sluiten en vaardigheden in jouw gemeenschap uit te wisselen.",
+      "title": "Een uur voor een uur",
+      "subtitle": "Zo gaat één uitwisseling. Meedoen is gratis.",
       "steps": {
         "0": {
-          "title": "Maak Je Profiel Aan",
-          "description": "Meld je gratis aan en vermeld de vaardigheden die je kunt aanbieden aan je gemeenschap."
+          "title": "Anna geeft een uur",
+          "description": "Anna is een uur bezig met het repareren van de fiets van Sam."
         },
         "1": {
-          "title": "Vind Wat Je Nodig Hebt",
-          "description": "Blader door aanbiedingen om diensten te ontdekken die door leden bij jou in de buurt worden aangeboden."
+          "title": "Anna verdient een tijdtegoed",
+          "description": "Dat uur levert Anna één tijdtegoed op. Elk uur is evenveel waard, wat de klus ook is."
         },
         "2": {
-          "title": "Diensten Uitwisselen",
-          "description": "Verbind met leden en regel vaardigheidsuitwisselingen die voor jullie beiden werken."
-        },
-        "3": {
-          "title": "Verdien & Besteed Credits",
-          "description": "Verdien één tijdcredit voor elk uur dat je geeft, en besteed ze aan de diensten die je nodig hebt."
+          "title": "Anna besteedt het",
+          "description": "Later besteedt Anna het tegoed aan een uur hulp in de tuin van een ander lid."
         }
       }
     },
     "values": {
-      "title": "Onze Waarden",
-      "subtitle": "De principes die alles wat we doen bij {{name}} begeleiden.",
+      "title": "Wat wij belangrijk vinden",
+      "subtitle": "Hier is {{name}} op gebouwd.",
       "items": {
         "0": {
-          "title": "Gelijkwaardigheid",
-          "description": "De tijd van elke persoon wordt gelijk gewaardeerd. Eén uur tuinieren is evenveel waard als één uur bijles geven."
+          "title": "Ieders uur is evenveel waard",
+          "description": "Een uur tuinieren is evenveel waard als een uur bijles."
         },
         "1": {
-          "title": "Gemeenschap",
-          "description": "We geloven in het opbouwen van sterke lokale verbindingen. Elke uitwisseling versterkt de basis van jouw buurt."
+          "title": "Buren eerst",
+          "description": "Elke uitwisseling is een kans om iemand uit de buurt te leren kennen."
         },
         "2": {
-          "title": "Vertrouwen & Veiligheid",
-          "description": "Beoordelingen, waarderingen en toezicht van een broker zorgen voor een veilige omgeving voor alle leden om deel te nemen."
+          "title": "We letten op elkaar",
+          "description": "Leden kunnen na een uitwisseling een beoordeling achterlaten, en er is een coördinator als je die nodig hebt."
         },
         "3": {
-          "title": "Duurzaamheid",
-          "description": "Door lokaal vaardigheden te delen, verminderen we afval, ondersteunen we circulaire economieën en versterken we de lokale veerkracht."
+          "title": "Delen in plaats van verspillen",
+          "description": "Vaardigheden dicht bij huis delen betekent minder verspilling en een sterkere buurt."
         }
       }
     },
     "stats": {
-      "members": "Leden",
-      "hours_exchanged": "Uren Uitgewisseld",
-      "active_listings": "Actief aanbod en verzoeken",
-      "communities": "Gemeenschappen"
+      "members": "leden",
+      "hours_exchanged": "gedeelde uren",
+      "active_listings": "aanbod en verzoeken die nu openstaan",
+      "communities": "gemeenschappen"
     },
     "credits": {
       "title": "Aangedreven door Project NEXUS",
@@ -830,12 +826,12 @@
       "source_code": "Broncode van Project NEXUS op GitHub"
     },
     "cta": {
-      "title": "Klaar om Betrokken te Raken?",
-      "description": "Of je nu je vaardigheden wilt delen of hulp zoekt met iets, onze community staat voor je klaar.",
+      "title": "Neem contact op",
+      "description": "Heb je een vraag, of weet je niet waar je moet beginnen? We helpen je graag.",
       "dashboard": "Ga naar Dashboard",
-      "join": "Word Gratis Lid",
+      "join": "Doe mee",
       "help_center": "Helpcentrum",
-      "contact_us": "Neem Contact met Ons Op"
+      "contact_us": "Neem contact met ons op"
     }
   },
   "contact": {

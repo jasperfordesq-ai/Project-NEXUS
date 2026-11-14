@@ -765,56 +765,52 @@
     "meta_title": "Sobre {{name}}",
     "meta_description": "Saiba como {{name}} reúne vizinhos para compartilhar habilidades usando créditos de tempo. Cada hora dada rende uma hora de volta – uma maneira mais justa de apoiar uns aos outros.",
     "hero_title": "Sobre {{name}}",
-    "hero_description": "{{name}} é uma plataforma moderna de timebanking onde cada hora de serviço é valorizada igualmente. Ajudamos as comunidades a trocar competências, construir confiança e criar uma economia local mais justa — uma hora de cada vez.",
+    "hero_description": "{{name}} é feito de vizinhos que compartilham tempo e habilidades. Dê uma hora de ajuda e receba uma hora de volta.",
     "how_it_works": {
-      "title": "Como Funciona",
-      "subtitle": "Começar é simples. Quatro passos para aderir e começar a trocar competências na sua comunidade.",
+      "title": "Uma hora por uma hora",
+      "subtitle": "Veja como acontece uma troca. Participar é de graça.",
       "steps": {
         "0": {
-          "title": "Crie o Seu Perfil",
-          "description": "Cadastre-se gratuitamente e liste as competências que pode oferecer à sua comunidade."
+          "title": "Anna dá uma hora",
+          "description": "Anna passa uma hora consertando a bicicleta de Sam."
         },
         "1": {
-          "title": "Encontre o Que Precisa",
-          "description": "Explore anúncios para descobrir serviços oferecidos por membros perto de si."
+          "title": "Anna ganha um crédito de tempo",
+          "description": "Essa hora rende a Anna um crédito de tempo. Toda hora vale o mesmo, seja qual for a tarefa."
         },
         "2": {
-          "title": "Troque Serviços",
-          "description": "Conecte-se com membros e organize trocas de competências que funcionem para ambos."
-        },
-        "3": {
-          "title": "Ganhe e Gaste Créditos",
-          "description": "Ganhe um crédito de tempo por cada hora que dá e gaste-os em serviços de que precisa."
+          "title": "Anna usa o crédito",
+          "description": "Mais tarde, Anna usa o crédito em uma hora de ajuda no jardim, dada por outro membro."
         }
       }
     },
     "values": {
-      "title": "Os Nossos Valores",
-      "subtitle": "Os princípios que orientam tudo o que fazemos em {{name}}.",
+      "title": "O que importa para nós",
+      "subtitle": "É nisso que {{name}} se apoia.",
       "items": {
         "0": {
-          "title": "Igualdade",
-          "description": "O tempo de cada pessoa é valorizado igualmente. Uma hora de jardinagem vale o mesmo que uma hora de tutoria."
+          "title": "A hora de cada pessoa vale o mesmo",
+          "description": "Uma hora de jardinagem vale o mesmo que uma hora de aula particular."
         },
         "1": {
-          "title": "Comunidade",
-          "description": "Acreditamos na construção de conexões locais fortes. Cada troca fortalece o tecido da sua vizinhança."
+          "title": "Vizinhos em primeiro lugar",
+          "description": "Cada troca é uma chance de conhecer alguém que mora por perto."
         },
         "2": {
-          "title": "Confiança e Segurança",
-          "description": "Avaliações, classificações e supervisão de mediador garantem um ambiente seguro para todos os membros participarem."
+          "title": "Cuidamos uns dos outros",
+          "description": "Depois de uma troca, os membros podem deixar uma avaliação, e há um coordenador se você precisar."
         },
         "3": {
-          "title": "Sustentabilidade",
-          "description": "Ao compartilhar competências localmente, reduzimos o desperdício, apoiamos economias circulares e fortalecemos a resiliência local."
+          "title": "Compartilhar em vez de desperdiçar",
+          "description": "Compartilhar habilidades perto de casa significa menos desperdício e uma vizinhança mais forte."
         }
       }
     },
     "stats": {
-      "members": "Membros",
-      "hours_exchanged": "Horas Trocadas",
-      "active_listings": "Ofertas e pedidos ativos",
-      "communities": "Comunidades"
+      "members": "membros",
+      "hours_exchanged": "horas compartilhadas",
+      "active_listings": "ofertas e pedidos abertos agora",
+      "communities": "comunidades"
     },
     "credits": {
       "title": "Com Tecnologia Project NEXUS",
@@ -830,12 +826,12 @@
       "source_code": "Código-fonte do Project NEXUS no GitHub"
     },
     "cta": {
-      "title": "Pronto para Participar?",
-      "description": "Quer compartilhar as suas competências ou encontrar ajuda com algo, a nossa comunidade está aqui para si.",
+      "title": "Fale com a gente",
+      "description": "Tem uma dúvida ou não sabe por onde começar? Ajudamos com prazer.",
       "dashboard": "Ir para o Painel",
-      "join": "Junte-se Gratuitamente",
+      "join": "Junte-se a nós",
       "help_center": "Centro de Ajuda",
-      "contact_us": "Contacte-nos"
+      "contact_us": "Fale conosco"
     }
   },
   "contact": {

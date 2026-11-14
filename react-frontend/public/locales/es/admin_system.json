@@ -235,7 +235,7 @@
     "community_name_help": "Se muestra en todo el sitio, en la pestaña del navegador y en los correos electrónicos.",
     "community_description_label": "Descripción breve",
     "community_description_placeholder": "Por ejemplo: Vecinos de Riverside que comparten tiempo y habilidades.",
-    "community_description_help": "Una o dos frases que digan qué es tu comunidad.",
+    "community_description_help": "Una o dos frases que digan qué es tu comunidad. Abren tu página «Acerca de».",
     "support_email_label": "Correo electrónico de soporte",
     "support_email_help": "La dirección a la que la gente puede escribirte para pedir ayuda.",
     "contact_phone_label": "Teléfono de contacto",

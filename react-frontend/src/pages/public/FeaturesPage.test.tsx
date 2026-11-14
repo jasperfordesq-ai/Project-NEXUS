@@ -33,20 +33,22 @@ function isOn(key: string): boolean {
 }
 
 vi.mock('@/contexts', () =>
+  // Only the fields this page reads; the helper's own types want every field
+  // of the real contexts.
   createMockContexts({
-    useTenant: () => ({
+    useTenant: (() => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
       branding: { name: 'Test Timebank' },
       tenantPath: (p: string) => `/test${p}`,
       supportedLanguages: state.languages,
       hasFeature: (key: string) => isOn(key),
       hasModule: (key: string) => isOn(key),
-    }),
-    useAuth: () => ({
+    })) as never,
+    useAuth: (() => ({
       user: state.isAuthenticated ? { id: 7, first_name: 'Maeve' } : null,
       isAuthenticated: state.isAuthenticated,
       isLoading: state.isLoading,
-    }),
+    })) as never,
   })
 );
 

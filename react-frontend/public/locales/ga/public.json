@@ -765,56 +765,52 @@
     "meta_title": "Maidir le {{name}}",
     "meta_description": "Foghlaim conas a thugann {{name}} comharsana le chéile chun scileanna a roinnt trí chreidmheasanna ama. As gach uair a thugann tú, tuilleann tú uair ar ais — bealach níos cothroime chun tacú lena chéile.",
     "hero_title": "Maidir le {{name}}",
-    "hero_description": "Is ardán nua-aimseartha baincéireachta ama é {{name}}, ina gcuirtear an luach céanna ar gach uair seirbhíse. Cabhraímid le pobail scileanna a mhalartú, muinín a chothú agus geilleagar áitiúil níos cothroime a chruthú — uair i ndiaidh uaire.",
+    "hero_description": "Comharsana ag roinnt ama agus scileanna atá in {{name}}. Tabhair uair an chloig cúnaimh, agus faigh uair an chloig ar ais.",
     "how_it_works": {
-      "title": "Conas a Oibríonn Sé",
-      "subtitle": "Is simplí tosú. Ceithre chéim le dul isteach agus tosú ag malartú scileanna i do phobal.",
+      "title": "Uair an chloig ar uair an chloig",
+      "subtitle": "Seo mar a tharlaíonn malartú amháin. Tá sé saor in aisce a bheith páirteach.",
       "steps": {
         "0": {
-          "title": "Cruthaigh Do Phróifíl",
-          "description": "Cláraigh saor in aisce agus luaigh na scileanna is féidir leat a thairiscint do do phobal."
+          "title": "Tugann Anna uair an chloig",
+          "description": "Caitheann Anna uair an chloig ag deisiú rothar Sam."
         },
         "1": {
-          "title": "Aimsigh a bhFuil Uait",
-          "description": "Brabhsáil liostálacha chun seirbhísí atá á dtairiscint ag baill i do cheantar a aimsiú."
+          "title": "Tuilleann Anna creidmheas ama",
+          "description": "Tuilleann an uair sin creidmheas ama amháin d'Anna. Is ionann luach gach uaire, is cuma cén obair atá i gceist."
         },
         "2": {
-          "title": "Malartaigh Seirbhísí",
-          "description": "Ceangail le baill agus eagraigh malartuithe scileanna a oibríonn don bheirt agaibh."
-        },
-        "3": {
-          "title": "Tuill agus Caith Creidmheasanna",
-          "description": "Tuill creidmheas ama amháin do gach uair a thugann tú, agus caith iad ar sheirbhísí a theastaíonn uait."
+          "title": "Caitheann Anna é",
+          "description": "Níos déanaí, caitheann Anna an creidmheas ar uair an chloig cúnaimh sa ghairdín ó bhall eile."
         }
       }
     },
     "values": {
-      "title": "Ár Luachanna",
-      "subtitle": "Na prionsabail a threoraíonn gach rud a dhéanaimid ag {{name}}.",
+      "title": "A bhfuil tábhachtach dúinn",
+      "subtitle": "Na rudaí a bhfuil {{name}} bunaithe orthu.",
       "items": {
         "0": {
-          "title": "Comhionannas",
-          "description": "Tá am gach duine ar comhluach. Tá uair an chloig garraíodóireachta ar an luach céanna le huair an chloig teagaisc."
+          "title": "Is ionann luach uair gach duine",
+          "description": "Is ionann luach uair an chloig garraíodóireachta agus uair an chloig teagaisc."
         },
         "1": {
-          "title": "Pobal",
-          "description": "Creidimid i naisc áitiúla láidre a thógáil. Neartaíonn gach malartú fíochán do chomharsanachta."
+          "title": "Comharsana ar dtús",
+          "description": "Is deis é gach malartú aithne a chur ar dhuine atá ina chónaí in aice láimhe."
         },
         "2": {
-          "title": "Muinín agus Sábháilteacht",
-          "description": "Cinntíonn athbhreithnithe, rátálacha agus maoirseacht bróicéirí timpeallacht shábháilte do gach ball a bheith páirteach."
+          "title": "Tugaimid aire dá chéile",
+          "description": "Is féidir le baill léirmheas a fhágáil tar éis malartaithe, agus tá comhordaitheoir ann má theastaíonn cabhair uait."
         },
         "3": {
-          "title": "Inbhuanaitheacht",
-          "description": "Trí scileanna a roinnt go háitiúil, laghdaímid dramhaíl, tacaímid le geilleagair chiorclacha, agus neartaímid athléimneacht áitiúil."
+          "title": "Roinn, ná cuir amú",
+          "description": "Nuair a roinntear scileanna gar don bhaile, bíonn níos lú dramhaíola ann agus comharsanacht níos láidre."
         }
       }
     },
     "stats": {
-      "members": "Baill",
-      "hours_exchanged": "Uaireanta Malartaithe",
-      "active_listings": "Tairiscintí agus iarratais ghníomhacha",
-      "communities": "Pobail"
+      "members": "baill",
+      "hours_exchanged": "uaireanta roinnte",
+      "active_listings": "tairiscintí agus iarratais oscailte anois",
+      "communities": "pobail"
     },
     "credits": {
       "title": "Cumhachtaithe ag Project NEXUS",
@@ -830,12 +826,12 @@
       "source_code": "Cód foinse Project NEXUS ar GitHub"
     },
     "cta": {
-      "title": "Réidh le Bheith Páirteach?",
-      "description": "Cibé an bhfuil tú ag iarraidh do scileanna a roinnt nó cabhair a fháil le rud éigin, tá ár bpobal anseo duit.",
+      "title": "Bí i dteagmháil",
+      "description": "An bhfuil ceist agat, nó nach bhfuil tú cinnte cá dtosóidh tú? Beidh áthas orainn cabhrú leat.",
       "dashboard": "Téigh chuig an Deais",
-      "join": "Bí Páirteach Saor in Aisce",
+      "join": "Bí linn",
       "help_center": "Ionad Cabhrach",
-      "contact_us": "Déan Teagmháil Linn"
+      "contact_us": "Déan teagmháil linn"
     }
   },
   "contact": {

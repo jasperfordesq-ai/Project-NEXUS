@@ -765,56 +765,52 @@
     "meta_title": "À propos de {{name}}",
     "meta_description": "Découvrez comment {{name}} rassemble les voisins pour partager leurs compétences en utilisant des crédits de temps. Chaque heure donnée rapporte une heure en retour – une manière plus juste de se soutenir mutuellement.",
     "hero_title": "À propos de {{name}}",
-    "hero_description": "{{name}} est une plateforme moderne de banque de temps où chaque heure de service a la même valeur. Nous aidons les communautés à échanger des compétences, à construire la confiance et à créer une économie locale plus juste — une heure à la fois.",
+    "hero_description": "{{name}}, ce sont des voisins qui partagent leur temps et leurs savoir-faire. Donnez une heure d'aide et recevez une heure en retour.",
     "how_it_works": {
-      "title": "Comment ça marche",
-      "subtitle": "Commencer est simple. Quatre étapes pour vous inscrire et commencer à échanger des compétences dans votre communauté.",
+      "title": "Une heure contre une heure",
+      "subtitle": "Voici comment se passe un échange. L'inscription est gratuite.",
       "steps": {
         "0": {
-          "title": "Créez votre profil",
-          "description": "Inscrivez-vous gratuitement et listez les compétences que vous pouvez offrir à votre communauté."
+          "title": "Anna donne une heure",
+          "description": "Anna passe une heure à réparer le vélo de Sam."
         },
         "1": {
-          "title": "Trouvez ce dont vous avez besoin",
-          "description": "Parcourez les annonces pour découvrir les services offerts par les membres près de chez vous."
+          "title": "Anna gagne un crédit-temps",
+          "description": "Cette heure rapporte à Anna un crédit-temps. Chaque heure a la même valeur, quelle que soit la tâche."
         },
         "2": {
-          "title": "Échangez des services",
-          "description": "Connectez-vous avec les membres et organisez des échanges de compétences qui conviennent à tous."
-        },
-        "3": {
-          "title": "Gagnez et dépensez des crédits",
-          "description": "Gagnez un crédit-temps pour chaque heure que vous donnez et dépensez-les pour les services dont vous avez besoin."
+          "title": "Anna le dépense",
+          "description": "Plus tard, Anna dépense ce crédit contre une heure d'aide au jardin, donnée par un autre membre."
         }
       }
     },
     "values": {
-      "title": "Nos valeurs",
-      "subtitle": "Les principes qui guident tout ce que nous faisons chez {{name}}.",
+      "title": "Ce qui compte pour nous",
+      "subtitle": "Ce sur quoi repose {{name}}.",
       "items": {
         "0": {
-          "title": "Égalité",
-          "description": "Le temps de chaque personne a la même valeur. Une heure de jardinage vaut autant qu'une heure de tutorat."
+          "title": "L'heure de chacun a la même valeur",
+          "description": "Une heure de jardinage vaut autant qu'une heure de soutien scolaire."
         },
         "1": {
-          "title": "Communauté",
-          "description": "Nous croyons en la construction de liens locaux solides. Chaque échange renforce le tissu de votre quartier."
+          "title": "Les voisins d'abord",
+          "description": "Chaque échange est l'occasion de faire connaissance avec quelqu'un qui habite tout près."
         },
         "2": {
-          "title": "Confiance et sécurité",
-          "description": "Les avis, les évaluations et la supervision des courtiers garantissent un environnement sûr pour la participation de tous les membres."
+          "title": "Nous veillons les uns sur les autres",
+          "description": "Les membres peuvent laisser un avis après un échange, et un coordinateur est là si vous en avez besoin."
         },
         "3": {
-          "title": "Durabilité",
-          "description": "En partageant les compétences localement, nous réduisons le gaspillage, soutenons les économies circulaires et renforçons la résilience locale."
+          "title": "Partager plutôt que gaspiller",
+          "description": "Partager ses savoir-faire près de chez soi, c'est moins de gaspillage et un quartier plus solidaire."
         }
       }
     },
     "stats": {
-      "members": "Membres",
-      "hours_exchanged": "Heures échangées",
-      "active_listings": "Offres et demandes actives",
-      "communities": "Communautés"
+      "members": "membres",
+      "hours_exchanged": "heures partagées",
+      "active_listings": "offres et demandes en cours",
+      "communities": "communautés"
     },
     "credits": {
       "title": "Propulsé par Project NEXUS",
@@ -830,10 +826,10 @@
       "source_code": "Code source de Project NEXUS sur GitHub"
     },
     "cta": {
-      "title": "Prêt à vous impliquer ?",
-      "description": "Que vous souhaitiez partager vos compétences ou trouver de l'aide, notre communauté est là pour vous.",
+      "title": "Prenez contact",
+      "description": "Une question, ou vous ne savez pas par où commencer ? Nous vous aidons avec plaisir.",
       "dashboard": "Aller au tableau de bord",
-      "join": "Rejoindre gratuitement",
+      "join": "Rejoignez-nous",
       "help_center": "Centre d'aide",
       "contact_us": "Contactez-nous"
     }
