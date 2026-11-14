@@ -29,7 +29,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from '@/lib/motion';
 
 import { Separator } from '@/components/ui/Separator';
@@ -74,6 +74,7 @@ import { resolveAvatarUrl } from '@/lib/helpers';
 import { SafeguardingStep } from './SafeguardingStep';
 import { SecurityStep } from './SecurityStep';
 import { OnboardingSkillsPicker } from './OnboardingSkillsPicker';
+import { hasOwnPhoto } from '../dashboard/PhotoPrompt';
 import { MemberLocationField } from '@/components/location/MemberLocationField';
 import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 import {
@@ -110,7 +111,7 @@ export function OnboardingPage() {
   const { t } = useTranslation('onboarding');
   usePageTitle(t('page_title'));
   const navigate = useNavigate();
-  const { tenantPath, tenant } = useTenant();
+  const { tenantPath, tenant, hasModule, hasFeature } = useTenant();
   const { loginTarget } = useLoginRedirect(tenantPath);
   const location = useLocation();
   // Where to go once onboarding is done: the page the member was sent here
@@ -212,7 +213,6 @@ export function OnboardingPage() {
 
   // Guard against state updates after unmount
   const mountedRef = useRef(true);
-  const completionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     // Re-arm on every (re)mount: StrictMode runs this cleanup once on its
     // simulated unmount, so a cleanup-only effect would leave the ref false
@@ -220,7 +220,6 @@ export function OnboardingPage() {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
-      if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
     };
   }, []);
 
@@ -504,20 +503,16 @@ export function OnboardingPage() {
       setIsComplete(true);
       // The finish screen replaces a long form: start it at the top, not wherever the form was scrolled to.
       window.scrollTo({ top: 0 });
+      // The finish screen stays until the member chooses where to go next (it used to
+      // move them to the dashboard after 1.8 seconds, with nothing to do when they got there).
       await refreshUser();
-      if (!mountedRef.current) return;
-
-      completionTimerRef.current = setTimeout(() => {
-        toast.success(t('toast_welcome_aboard'), t('toast_profile_all_set'));
-        navigate(afterOnboarding);
-      }, 1800);
     } catch (error) {
       logError('Failed to complete onboarding', error);
       toast.error(t('toast_setup_failed'), t('toast_something_went_wrong'));
     } finally {
       setIsSubmitting(false);
     }
-  }, [toast, navigate, afterOnboarding, loginTarget, refreshUser, goToStep, profileStepIdx, stepSlugToIndex, t, skillsPrefilled]);
+  }, [toast, navigate, loginTarget, refreshUser, goToStep, profileStepIdx, stepSlugToIndex, t, skillsPrefilled]);
 
   // ── Completion handler ───────────────────────────────────────────────────
 
@@ -577,6 +572,19 @@ export function OnboardingPage() {
   //    onboarding_completed=true which would otherwise cause return null) ───
 
   if (isComplete) {
+    // Good first things to do (warmth phase 6, B4). Each is left out when the community
+    // does not use that part of the site, or when the member has already done it.
+    const firstThings = [
+      ...(hasModule('listings')
+        ? [{ to: tenantPath('/listings/create'), icon: HandHeart, title: t('complete_first_offer_title'), body: t('complete_first_offer_body') }]
+        : []),
+      ...(hasFeature('connections')
+        ? [{ to: tenantPath('/members?sort=joined'), icon: Users, title: t('complete_say_hello_title'), body: t('complete_say_hello_body') }]
+        : []),
+      ...(!hasOwnPhoto(user)
+        ? [{ to: tenantPath('/settings'), icon: Camera, title: t('complete_photo_title'), body: t('complete_photo_body') }]
+        : []),
+    ];
     return (
       <div className="relative max-w-2xl mx-auto py-12">
         {/* A burst of confetti in the community's colours for the moment a
@@ -617,9 +625,43 @@ export function OnboardingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.0 }}
+            className="space-y-5"
           >
-            <div role="status" aria-busy="true" aria-label={t('common:loading')} className="flex justify-center py-4"><Spinner size="sm" color="success" /></div>
-            <p className="text-sm text-theme-subtle mt-2">{t('complete_redirecting')}</p>
+            {firstThings.length > 0 && (
+              <section aria-labelledby="first-things-heading" className="text-start">
+                <h2 id="first-things-heading" className="mb-3 text-center text-lg font-semibold text-theme-primary">
+                  {t('complete_next_heading')}
+                </h2>
+                <ul className="space-y-3">
+                  {firstThings.map((thing) => (
+                    <li key={thing.to}>
+                      <Link to={thing.to} className="block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                        <GlassCard hoverable className="p-4">
+                          {/* GlassCard lays its children out itself, so the row is its own element. */}
+                          <span className="flex items-center gap-4">
+                            <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-accent-soft-foreground">
+                              <thing.icon className="size-5" aria-hidden="true" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block font-semibold text-theme-primary">{thing.title}</span>
+                              <span className="block text-sm leading-6 text-theme-muted">{thing.body}</span>
+                            </span>
+                            <ArrowRight className="size-4 shrink-0 text-theme-subtle rtl:rotate-180" aria-hidden="true" />
+                          </span>
+                        </GlassCard>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            <Button
+              as={Link}
+              to={afterOnboarding}
+              className="bg-gradient-to-r from-accent-strong to-accent-strong-end font-medium text-white"
+            >
+              {afterOnboarding === tenantPath('/dashboard') ? t('complete_go_dashboard') : t('complete_carry_on')}
+            </Button>
           </motion.div>
         </motion.div>
       </div>

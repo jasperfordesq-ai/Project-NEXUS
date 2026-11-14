@@ -614,6 +614,43 @@ describe('OnboardingPage', () => {
     });
   });
 
+  // ── The finish screen ───────────────────────────────────────────────────
+
+  it('ends with good first things to do, and waits for the member instead of moving them on', async () => {
+    const { useAuth } = await import('@/contexts');
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: 1, first_name: 'Test', name: 'Test User', onboarding_completed: false, avatar_url: '/uploads/avatar.jpg', bio: 'A bio that is long enough to pass validation checks.' },
+      isAuthenticated: true,
+      refreshUser: vi.fn().mockResolvedValue(undefined),
+    } as unknown as ReturnType<typeof useAuth>);
+    vi.mocked(api.post).mockResolvedValue({ success: true, data: {} } as never);
+
+    const { userEvent } = await import('@/test/test-utils');
+    const user = userEvent.setup();
+
+    render(<OnboardingPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Step 3.*\(current\)/ })).toBeInTheDocument();
+    });
+    await user.click(screen.getByText('Skip'));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Step 4.*\(current\)/ })).toBeInTheDocument();
+    });
+    await user.click(screen.getByText(/Complete Setup|Finish|Complete/));
+
+    expect(await screen.findByRole('heading', { name: 'Good first things to do' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Post your first offer or request/ })).toHaveAttribute('href', '/test/listings/create');
+    expect(screen.getByRole('link', { name: /Say hello to someone/ })).toHaveAttribute('href', '/test/members?sort=joined');
+    // This member already has a photo, so they are not asked for one.
+    expect(screen.queryByRole('link', { name: /Add a photo of yourself/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Go to my dashboard' })).toHaveAttribute('href', '/test/dashboard');
+    // Nothing says they are about to be moved on, and they are not.
+    expect(screen.queryByText(/Taking you to your dashboard/)).not.toBeInTheDocument();
+    await new Promise((resolve) => setTimeout(resolve, 2100));
+    expect(screen.getByRole('heading', { name: 'Good first things to do' })).toBeInTheDocument();
+  });
+
   // ── Profile step blocks advancement ─────────────────────────────────────
 
   it('disables Next button on profile step when avatar and bio are missing', async () => {
