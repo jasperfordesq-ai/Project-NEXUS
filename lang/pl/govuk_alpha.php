@@ -4491,48 +4491,44 @@ return [
     'about' => [
         'caption' => ':community',
         'title' => 'O :name',
-        'description' => ':name to nowoczesna platforma bankowości czasu, w której każda godzina obsługi jest tak samo ceniona. Pomagamy społecznościom wymieniać umiejętności, budować zaufanie i tworzyć bardziej sprawiedliwą gospodarkę lokalną — jedną godzinę na raz.',
+        'description' => ':name to sąsiedzi, którzy dzielą się czasem i umiejętnościami. Daj godzinę pomocy i otrzymaj godzinę w zamian.',
         'how_it_works' => [
-            'title' => 'Jak to działa',
-            'subtitle' => 'Rozpoczęcie pracy jest proste. Cztery kroki, aby dołączyć i rozpocząć wymianę umiejętności w swojej społeczności.',
+            'title' => 'Godzina za godzinę',
+            'subtitle' => 'Tak wygląda jedna wymiana. Dołączenie nic nie kosztuje.',
             'steps' => [
                 '0' => [
-                    'title' => 'Utwórz swój profil',
-                    'description' => 'Zarejestruj się za darmo i wypisz umiejętności, które możesz zaoferować swojej społeczności.',
+                    'title' => 'Anna daje godzinę',
+                    'description' => 'Anna przez godzinę naprawia rower Sama.',
                 ],
                 '1' => [
-                    'title' => 'Znajdź to, czego potrzebujesz',
-                    'description' => 'Przeglądaj oferty, aby odkryć usługi oferowane przez członków w Twojej okolicy.',
+                    'title' => 'Anna zdobywa kredyt czasu',
+                    'description' => 'Za tę godzinę Anna dostaje jeden kredyt czasu. Każda godzina jest warta tyle samo, bez względu na rodzaj pracy.',
                 ],
                 '2' => [
-                    'title' => 'Usługi wymiany',
-                    'description' => 'Połącz się z członkami i zorganizuj wymianę umiejętności, która będzie skuteczna dla Was obojga.',
-                ],
-                '3' => [
-                    'title' => 'Zdobywaj i wydawaj kredyty',
-                    'description' => 'Zdobądź jednorazowe środki za każdą oddaną godzinę i wydawaj je na potrzebne usługi.',
+                    'title' => 'Anna go wydaje',
+                    'description' => 'Później Anna wydaje ten kredyt na godzinę pomocy w ogrodzie od innej osoby ze społeczności.',
                 ],
             ],
         ],
         'values' => [
-            'title' => 'Nasze wartości',
-            'subtitle' => 'Zasady, którymi kierujemy się we wszystkim, co robimy w :name.',
+            'title' => 'Co jest dla nas ważne',
+            'subtitle' => 'Na tym opiera się :name.',
             'items' => [
                 '0' => [
-                    'title' => 'Równość',
-                    'description' => 'Czas każdego człowieka jest ceniony jednakowo. Godzina pracy w ogrodzie jest warta tyle samo, co godzina korepetycji.',
+                    'title' => 'Godzina każdego jest warta tyle samo',
+                    'description' => 'Godzina pracy w ogrodzie jest warta tyle samo, co godzina korepetycji.',
                 ],
                 '1' => [
-                    'title' => 'Społeczność',
-                    'description' => 'Wierzymy w budowanie silnych powiązań lokalnych. Każda wymiana wzmacnia tkankę Twojej okolicy.',
+                    'title' => 'Najpierw sąsiedzi',
+                    'description' => 'Każda wymiana to okazja, żeby poznać kogoś, kto mieszka w pobliżu.',
                 ],
                 '2' => [
-                    'title' => 'Zaufanie i bezpieczeństwo',
-                    'description' => 'Recenzje, oceny i nadzór brokera zapewniają bezpieczne środowisko uczestnictwa wszystkim członkom.',
+                    'title' => 'Dbamy o siebie nawzajem',
+                    'description' => 'Po wymianie członkowie mogą zostawić opinię, a koordynator jest na miejscu, gdy go potrzebujesz.',
                 ],
                 '3' => [
-                    'title' => 'Zrównoważony rozwój',
-                    'description' => 'Dzieląc się umiejętnościami lokalnie, ograniczamy ilość odpadów, wspieramy gospodarkę o obiegu zamkniętym i wzmacniamy lokalną odporność.',
+                    'title' => 'Dzielić się, a nie marnować',
+                    'description' => 'Dzielenie się umiejętnościami blisko domu to mniej marnotrawstwa i silniejsze sąsiedztwo.',
                 ],
             ],
         ],
@@ -4540,7 +4536,7 @@ return [
             'title' => 'Nasz wpływ',
             'members' => 'Członkowie',
             'hours_exchanged' => 'Godziny wymienione',
-            'active_listings' => 'Aktywne oferty',
+            'active_listings' => 'Otwarte teraz oferty i prośby',
             'communities' => 'Społeczności',
         ],
         'credits' => [
@@ -4557,10 +4553,10 @@ return [
             'source_code' => 'Kod źródłowy Project NEXUS na GitHubie',
         ],
         'cta' => [
-            'title' => 'Chcesz się zaangażować%',
-            'description' => 'Niezależnie od tego, czy chcesz podzielić się swoimi umiejętnościami, czy znaleźć w czymś pomoc, nasza społeczność jest tu dla Ciebie.',
+            'title' => 'Odezwij się do nas',
+            'description' => 'Masz pytanie albo nie wiesz, od czego zacząć? Chętnie pomożemy.',
             'dashboard' => 'Przejdź do swojego pulpitu nawigacyjnego',
-            'join' => 'Dołącz za darmo',
+            'join' => 'Dołącz do nas',
             'contact_us' => 'Skontaktuj się z nami',
         ],
     ],

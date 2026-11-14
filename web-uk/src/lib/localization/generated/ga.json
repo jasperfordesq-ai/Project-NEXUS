@@ -5526,48 +5526,44 @@
             "about": {
                 "caption": ":community",
                 "title": "Maidir :name",
-                "description": "Is ardán baincéireachta nua-aimseartha é:name ina gcuirtear luach comhionann ar gach uair an chloig de sheirbhís. Cabhraímid le pobail scileanna a mhalartú, muinín a chothú, agus geilleagar áitiúil níos cothroime a chruthú — uair an chloig in aghaidh na huaire.",
+                "description": "Comharsana ag roinnt ama agus scileanna atá in :name. Tabhair uair an chloig cúnaimh, agus faigh uair an chloig ar ais.",
                 "how_it_works": {
-                    "title": "Conas a oibríonn sé",
-                    "subtitle": "Tá sé simplí tosú. Ceithre chéim le bheith páirteach agus tús a chur le scileanna a mhalartú i do phobal.",
+                    "title": "Uair an chloig ar uair an chloig",
+                    "subtitle": "Seo mar a tharlaíonn malartú amháin. Tá sé saor in aisce a bheith páirteach.",
                     "steps": [
                         {
-                            "title": "Cruthaigh do phróifíl",
-                            "description": "Cláraigh saor in aisce agus liostaigh na scileanna is féidir leat a thairiscint do do phobal."
+                            "title": "Tugann Anna uair an chloig",
+                            "description": "Caitheann Anna uair an chloig ag deisiú rothar Sam."
                         },
                         {
-                            "title": "Faigh an méid atá uait",
-                            "description": "Brabhsáil liostaí chun teacht ar na seirbhísí a thairgeann baill in aice leat."
+                            "title": "Tuilleann Anna creidmheas ama",
+                            "description": "Tuilleann an uair sin creidmheas ama amháin d'Anna. Is ionann luach gach uaire, is cuma cén obair atá i gceist."
                         },
                         {
-                            "title": "Seirbhísí malartaithe",
-                            "description": "Déan teagmháil le baill agus socraigh malartuithe scileanna a oibríonn don bheirt agaibh."
-                        },
-                        {
-                            "title": "Creidmheasanna a thuilleamh agus a chaitheamh",
-                            "description": "Déan creidmheas ama amháin a thuilleamh in aghaidh gach uair an chloig a thugann tú, agus iad a chaitheamh ar na seirbhísí a theastaíonn uait."
+                            "title": "Caitheann Anna é",
+                            "description": "Níos déanaí, caitheann Anna an creidmheas ar uair an chloig cúnaimh sa ghairdín ó bhall eile."
                         }
                     ]
                 },
                 "values": {
-                    "title": "Ár luachanna",
-                    "subtitle": "Na prionsabail a threoraíonn gach rud a dhéanaimid ag :name.",
+                    "title": "A bhfuil tábhachtach dúinn",
+                    "subtitle": "Na rudaí a bhfuil :name bunaithe orthu.",
                     "items": [
                         {
-                            "title": "Comhionannas",
-                            "description": "Cuirtear an luach céanna ar am gach duine. Is fiú uair an chloig de gharraíodóireacht mar an gcéanna le uair an chloig de theagasc."
+                            "title": "Is ionann luach uair gach duine",
+                            "description": "Is ionann luach uair an chloig garraíodóireachta agus uair an chloig teagaisc."
                         },
                         {
-                            "title": "Pobal",
-                            "description": "Creidimid i naisc láidre áitiúla a thógáil. Neartaíonn gach malartú creatlach do chomharsanachta."
+                            "title": "Comharsana ar dtús",
+                            "description": "Is deis é gach malartú aithne a chur ar dhuine atá ina chónaí in aice láimhe."
                         },
                         {
-                            "title": "Iontaobhas agus sábháilteacht",
-                            "description": "Cinntíonn athbhreithnithe, rátálacha agus maoirseacht bróicéirí timpeallacht shábháilte do gach ball."
+                            "title": "Tugaimid aire dá chéile",
+                            "description": "Is féidir le baill léirmheas a fhágáil tar éis malartaithe, agus tá comhordaitheoir ann má theastaíonn cabhair uait."
                         },
                         {
-                            "title": "Inbhuanaitheacht",
-                            "description": "Trí scileanna a roinnt go háitiúil, laghdaítear dramhaíl, tacaímid le geilleagair chiorclacha, agus neartaímid athléimneacht áitiúil."
+                            "title": "Roinn, ná cuir amú",
+                            "description": "Nuair a roinntear scileanna gar don bhaile, bíonn níos lú dramhaíola ann agus comharsanacht níos láidre."
                         }
                     ]
                 },
@@ -5575,7 +5571,7 @@
                     "title": "Ár dtionchar",
                     "members": "Baill",
                     "hours_exchanged": "Uaireanta a mhalartú",
-                    "active_listings": "Liostaí gníomhacha",
+                    "active_listings": "Tairiscintí agus iarratais oscailte anois",
                     "communities": "Pobail"
                 },
                 "credits": {
@@ -5592,10 +5588,10 @@
                     "source_code": "Cód foinse Project NEXUS ar GitHub"
                 },
                 "cta": {
-                    "title": "Réidh le bheith páirteach?",
-                    "description": "Cibé an bhfuil tú ag iarraidh do chuid scileanna a roinnt nó cabhair a fháil le rud éigin, tá ár bpobal anseo duit.",
+                    "title": "Bí i dteagmháil",
+                    "description": "An bhfuil ceist agat, nó nach bhfuil tú cinnte cá dtosóidh tú? Beidh áthas orainn cabhrú leat.",
                     "dashboard": "Téigh go dtí do dheais",
-                    "join": "Glac páirt saor in aisce",
+                    "join": "Bí linn",
                     "contact_us": "Déan teagmháil linn"
                 }
             },

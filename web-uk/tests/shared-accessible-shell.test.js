@@ -2004,17 +2004,20 @@ describe('shared accessible frontend shell', () => {
 
     expect(response.status).toBe(200);
     expect(response.text).toContain('About Project NEXUS Accessible');
-    expect(response.text).toContain('modern time banking platform where every hour of service is valued equally');
-    expect(response.text).toContain('How it works');
-    expect(response.text).toContain('Create your profile');
-    expect(response.text).toContain('Find what you need');
-    expect(response.text).toContain('Our values');
-    expect(response.text).toContain('Trust and safety');
+    // The wording became the community's own page on 2026-11-14 (see
+    // tests/about-page.test.js for the behaviour; this pins the page's outline).
+    expect(response.text).toContain('is neighbours sharing time and skills');
+    expect(response.text).not.toContain('modern time banking platform');
+    expect(response.text).toContain('An hour for an hour');
+    expect(response.text).toContain('Anna gives an hour');
+    expect(response.text).toContain('Anna earns a time credit');
+    expect(response.text).toContain('What matters to us');
+    expect(response.text).toContain('We look out for each other');
     expect(response.text).toContain('Our impact');
     expect(response.text).toContain('<dt>Members</dt>');
     expect(response.text).toContain('<dd>1,234</dd>');
     expect(response.text).toContain('<dd>5,679</dd>');
-    expect(response.text).toContain('<dt>Active listings</dt>');
+    expect(response.text).toContain('<dt>Offers and requests open now</dt>');
     expect(api.getPlatformStats).toHaveBeenCalledWith({});
     expect(response.text).toContain('Powered by Project NEXUS');
     // The open-source credit linked two repositories until 2026-11-13. The

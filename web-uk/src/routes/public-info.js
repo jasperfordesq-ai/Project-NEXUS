@@ -47,18 +47,49 @@ function platformStatsOptions(req) {
   return slug ? { slug } : {};
 }
 
-function normalizeAboutStats(result, res) {
+// The community's real numbers for the About page, in the order they are shown.
+// A figure that is zero is left out — a young community is not shown an empty
+// scoreboard — and "communities" appears only for a hub with more than one.
+// The same rule as the React About page (react-frontend/src/pages/public/AboutPage.tsx).
+function aboutFigures(result, res) {
   const stats = result?.data || result;
-  if (!stats || typeof stats !== 'object' || Array.isArray(stats) || !Object.keys(stats).length) {
-    return null;
+  if (!stats || typeof stats !== 'object' || Array.isArray(stats)) {
+    return [];
   }
 
-  const number = (value) => res.locals.formatLocaleNumber(value ?? 0, { maximumFractionDigits: 0 });
+  const communities = Number(stats.communities);
+  return [
+    { labelKey: 'about.stats.members', value: Number(stats.members) },
+    { labelKey: 'about.stats.hours_exchanged', value: Number(stats.hours_exchanged ?? stats.hoursExchanged) },
+    { labelKey: 'about.stats.active_listings', value: Number(stats.listings) },
+    { labelKey: 'about.stats.communities', value: communities > 1 ? communities : 0 }
+  ]
+    .filter((figure) => Number.isFinite(figure.value) && figure.value > 0)
+    .map((figure) => ({
+      labelKey: figure.labelKey,
+      // Formatted here rather than in the template, in the visitor's own locale.
+      value: res.locals.formatLocaleNumber(figure.value, { maximumFractionDigits: 0 })
+    }));
+}
+
+// What the community has told us about itself in Admin -> Community settings:
+// its own short description and its contact details. All plain text from the
+// tenant bootstrap; anything missing is simply left out of the page.
+function aboutCommunityDetails(req) {
+  const tenant = req.accessibleRouting?.tenant && typeof req.accessibleRouting.tenant === 'object'
+    ? req.accessibleRouting.tenant
+    : {};
+  const contact = tenant.contact && typeof tenant.contact === 'object' ? tenant.contact : {};
+  const text = (value) => (typeof value === 'string' ? value.trim() : '');
+  const phone = text(contact.phone);
+
   return {
-    members: number(stats.members),
-    hoursExchanged: number(stats.hours_exchanged ?? stats.hoursExchanged),
-    listings: number(stats.listings),
-    communities: number(stats.communities)
+    ownWords: text(tenant.description),
+    email: text(contact.email),
+    phone,
+    // Digits and a leading plus only, for the tel: link.
+    phoneHref: phone.replace(/[^\d+]/g, ''),
+    place: text(contact.address) || text(contact.location)
   };
 }
 
@@ -92,10 +123,11 @@ router.get('/about', async (req, res) => {
   const hasResearchNote = contributorGroups.contributor.some((person) => (
     person.note && person.note.toLowerCase().includes('study')
   ));
-  let stats = null;
+  const community = aboutCommunityDetails(req);
+  let figures = [];
 
   try {
-    stats = normalizeAboutStats(await getPlatformStats(platformStatsOptions(req)), res);
+    figures = aboutFigures(await getPlatformStats(platformStatsOptions(req)), res);
   } catch {
     // Laravel deliberately hides the optional stats band on any API failure.
   }
@@ -107,13 +139,15 @@ router.get('/about', async (req, res) => {
     // Each public page describes ITSELF to search engines, from the same text
     // its own lead paragraph shows, rather than every page repeating the
     // community-wide description.
-    metaDescription: pageDescription(res.locals.t('about.description', { name })),
+    // That lead is the community's own words when it has written some.
+    metaDescription: pageDescription(community.ownWords || res.locals.t('about.description', { name })),
     breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('about.title', { name }), path: '/about' }]),
     activeNav: 'about',
     communityName: name,
     steps: catalogArray(res, 'about.how_it_works.steps'),
     values: catalogArray(res, 'about.values.items'),
-    stats,
+    figures,
+    community,
     contributorGroups,
     hasResearchNote,
     isAuthenticated: res.locals.isAuthenticated

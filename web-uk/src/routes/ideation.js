@@ -291,7 +291,7 @@ function dashboardFrom(result) {
 
 function normalizeStats(stats, res) {
   const row = stats && typeof stats === 'object' ? stats : {};
-  // Formatted here rather than in the template, matching normalizeAboutStats:
+  // Formatted here rather than in the template, matching aboutFigures (public-info.js):
   // these are backend totals with no ceiling, so a four-figure count would
   // otherwise render in US grouping for every language.
   const formatNumber = typeof res?.locals?.formatLocaleNumber === 'function'

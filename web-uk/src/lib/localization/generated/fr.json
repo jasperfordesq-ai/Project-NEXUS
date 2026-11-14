@@ -5526,48 +5526,44 @@
             "about": {
                 "caption": ":community",
                 "title": "À propos de :name",
-                "description": ":name est une plateforme bancaire moderne où chaque heure de service est valorisée de la même manière. Nous aidons les communautés à échanger des compétences, à instaurer la confiance et à créer une économie locale plus équitable, une heure à la fois.",
+                "description": ":name, ce sont des voisins qui partagent leur temps et leurs savoir-faire. Donnez une heure d'aide et recevez une heure en retour.",
                 "how_it_works": {
-                    "title": "Comment ça marche",
-                    "subtitle": "La mise en route est simple. Quatre étapes pour rejoindre et commencer à échanger des compétences dans votre communauté.",
+                    "title": "Une heure contre une heure",
+                    "subtitle": "Voici comment se passe un échange. L'inscription est gratuite.",
                     "steps": [
                         {
-                            "title": "Créez votre profil",
-                            "description": "Inscrivez-vous gratuitement et répertoriez les compétences que vous pouvez offrir à votre communauté."
+                            "title": "Anna donne une heure",
+                            "description": "Anna passe une heure à réparer le vélo de Sam."
                         },
                         {
-                            "title": "Trouvez ce dont vous avez besoin",
-                            "description": "Parcourez les listes pour découvrir les services offerts par les membres près de chez vous."
+                            "title": "Anna gagne un crédit-temps",
+                            "description": "Cette heure rapporte à Anna un crédit-temps. Chaque heure a la même valeur, quelle que soit la tâche."
                         },
                         {
-                            "title": "Services d'échange",
-                            "description": "Connectez-vous avec les membres et organisez des échanges de compétences qui fonctionnent pour vous deux."
-                        },
-                        {
-                            "title": "Gagnez et dépensez des crédits",
-                            "description": "Gagnez un crédit de temps pour chaque heure que vous consacrez et dépensez-le pour les services dont vous avez besoin."
+                            "title": "Anna le dépense",
+                            "description": "Plus tard, Anna dépense ce crédit contre une heure d'aide au jardin, donnée par un autre membre."
                         }
                     ]
                 },
                 "values": {
-                    "title": "Nos valeurs",
-                    "subtitle": "Les principes qui guident tout ce que nous faisons chez :name.",
+                    "title": "Ce qui compte pour nous",
+                    "subtitle": "Ce sur quoi repose :name.",
                     "items": [
                         {
-                            "title": "Égalité",
-                            "description": "Le temps de chacun est valorisé de la même manière. Une heure de jardinage vaut une heure de tutorat."
+                            "title": "L'heure de chacun a la même valeur",
+                            "description": "Une heure de jardinage vaut autant qu'une heure de soutien scolaire."
                         },
                         {
-                            "title": "Communauté",
-                            "description": "Nous croyons en l’établissement de liens locaux solides. Chaque échange renforce le tissu de votre quartier."
+                            "title": "Les voisins d'abord",
+                            "description": "Chaque échange est l'occasion de faire connaissance avec quelqu'un qui habite tout près."
                         },
                         {
-                            "title": "Confiance et sécurité",
-                            "description": "Les évaluations, les notations et la surveillance des courtiers garantissent un environnement sûr pour la participation de tous les membres."
+                            "title": "Nous veillons les uns sur les autres",
+                            "description": "Les membres peuvent laisser un avis après un échange, et un coordinateur est là si vous en avez besoin."
                         },
                         {
-                            "title": "Durabilité",
-                            "description": "En partageant les compétences localement, nous réduisons les déchets, soutenons les économies circulaires et renforçons la résilience locale."
+                            "title": "Partager plutôt que gaspiller",
+                            "description": "Partager ses savoir-faire près de chez soi, c'est moins de gaspillage et un quartier plus solidaire."
                         }
                     ]
                 },
@@ -5575,7 +5571,7 @@
                     "title": "Notre impact",
                     "members": "Membres",
                     "hours_exchanged": "Heures échangées",
-                    "active_listings": "Annonces actives",
+                    "active_listings": "Offres et demandes en cours",
                     "communities": "Communautés"
                 },
                 "credits": {
@@ -5592,10 +5588,10 @@
                     "source_code": "Code source de Project NEXUS sur GitHub"
                 },
                 "cta": {
-                    "title": "Prêt à vous impliquer%",
-                    "description": "Que vous souhaitiez partager vos compétences ou trouver de l'aide pour quelque chose, notre communauté est là pour vous.",
+                    "title": "Prenez contact",
+                    "description": "Une question, ou vous ne savez pas par où commencer ? Nous vous aidons avec plaisir.",
                     "dashboard": "Accédez à votre tableau de bord",
-                    "join": "Inscrivez-vous gratuitement",
+                    "join": "Rejoignez-nous",
                     "contact_us": "Contactez-nous"
                 }
             },

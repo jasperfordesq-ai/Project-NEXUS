@@ -5526,48 +5526,44 @@
             "about": {
                 "caption": ":community",
                 "title": "About :name",
-                "description": ":name is a modern time banking platform where every hour of service is valued equally. We help communities exchange skills, build trust, and create a fairer local economy — one hour at a time.",
+                "description": ":name is neighbours sharing time and skills. Give an hour of help, and get an hour back.",
                 "how_it_works": {
-                    "title": "How it works",
-                    "subtitle": "Getting started is simple. Four steps to join and begin exchanging skills in your community.",
+                    "title": "An hour for an hour",
+                    "subtitle": "Here is how one exchange goes. Joining is free.",
                     "steps": [
                         {
-                            "title": "Create your profile",
-                            "description": "Sign up for free and list the skills you can offer to your community."
+                            "title": "Anna gives an hour",
+                            "description": "Anna spends an hour fixing Sam's bike."
                         },
                         {
-                            "title": "Find what you need",
-                            "description": "Browse listings to discover services offered by members near you."
+                            "title": "Anna earns a time credit",
+                            "description": "That hour earns Anna one time credit. Every hour is worth the same, whatever the job."
                         },
                         {
-                            "title": "Exchange services",
-                            "description": "Connect with members and arrange skill exchanges that work for both of you."
-                        },
-                        {
-                            "title": "Earn and spend credits",
-                            "description": "Earn one time credit for every hour you give, and spend them on services you need."
+                            "title": "Anna spends it",
+                            "description": "Later, Anna spends the credit on an hour of help in the garden from another member."
                         }
                     ]
                 },
                 "values": {
-                    "title": "Our values",
-                    "subtitle": "The principles that guide everything we do at :name.",
+                    "title": "What matters to us",
+                    "subtitle": "What :name is built on.",
                     "items": [
                         {
-                            "title": "Equality",
-                            "description": "Every person's time is valued equally. One hour of gardening is worth the same as one hour of tutoring."
+                            "title": "Everyone's hour is equal",
+                            "description": "An hour of gardening is worth the same as an hour of tutoring."
                         },
                         {
-                            "title": "Community",
-                            "description": "We believe in building strong local connections. Every exchange strengthens the fabric of your neighbourhood."
+                            "title": "Neighbours first",
+                            "description": "Every exchange is a chance to get to know someone who lives nearby."
                         },
                         {
-                            "title": "Trust and safety",
-                            "description": "Reviews, ratings, and broker oversight ensure a safe environment for all members to participate."
+                            "title": "We look out for each other",
+                            "description": "Members can leave a review after an exchange, and a coordinator is here if you need one."
                         },
                         {
-                            "title": "Sustainability",
-                            "description": "By sharing skills locally, we reduce waste, support circular economies, and strengthen local resilience."
+                            "title": "Share, don't waste",
+                            "description": "Sharing skills close to home means less waste and a stronger neighbourhood."
                         }
                     ]
                 },
@@ -5575,7 +5571,7 @@
                     "title": "Our impact",
                     "members": "Members",
                     "hours_exchanged": "Hours exchanged",
-                    "active_listings": "Active listings",
+                    "active_listings": "Offers and requests open now",
                     "communities": "Communities"
                 },
                 "credits": {
@@ -5592,10 +5588,10 @@
                     "source_code": "Project NEXUS source code on GitHub"
                 },
                 "cta": {
-                    "title": "Ready to get involved?",
-                    "description": "Whether you want to share your skills or find help with something, our community is here for you.",
+                    "title": "Get in touch",
+                    "description": "Have a question, or not sure where to start? We're happy to help.",
                     "dashboard": "Go to your dashboard",
-                    "join": "Join for free",
+                    "join": "Join us",
                     "contact_us": "Contact us"
                 }
             },

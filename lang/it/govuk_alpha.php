@@ -4491,48 +4491,44 @@ return [
     'about' => [
         'caption' => ':community',
         'title' => 'Informazioni su :name',
-        'description' => ':name è una moderna piattaforma di time banking in cui ogni ora di servizio ha lo stesso valore. Aiutiamo le comunità a scambiare competenze, creare fiducia e creare un\'economia locale più giusta, un\'ora alla volta.',
+        'description' => ':name è fatto di vicini che condividono tempo e competenze. Dai un\'ora di aiuto e ricevi un\'ora in cambio.',
         'how_it_works' => [
-            'title' => 'Come funziona',
-            'subtitle' => 'Iniziare è semplice. Quattro passaggi per aderire e iniziare a scambiare competenze nella tua comunità.',
+            'title' => 'Un\'ora per un\'ora',
+            'subtitle' => 'Ecco come funziona uno scambio. Iscriversi è gratis.',
             'steps' => [
                 '0' => [
-                    'title' => 'Crea il tuo profilo',
-                    'description' => 'Iscriviti gratuitamente ed elenca le competenze che puoi offrire alla tua comunità.',
+                    'title' => 'Anna dà un\'ora',
+                    'description' => 'Anna passa un\'ora a sistemare la bici di Sam.',
                 ],
                 '1' => [
-                    'title' => 'Trova ciò di cui hai bisogno',
-                    'description' => 'Sfoglia gli elenchi per scoprire i servizi offerti dai membri vicino a te.',
+                    'title' => 'Anna guadagna un credito tempo',
+                    'description' => 'Quell\'ora vale ad Anna un credito tempo. Ogni ora ha lo stesso valore, qualunque sia il lavoro.',
                 ],
                 '2' => [
-                    'title' => 'Servizi di scambio',
-                    'description' => 'Connettiti con i membri e organizza scambi di competenze che funzionino per entrambi.',
-                ],
-                '3' => [
-                    'title' => 'Guadagna e spendi crediti',
-                    'description' => 'Guadagna un credito una tantum per ogni ora che doni e spendilo per i servizi di cui hai bisogno.',
+                    'title' => 'Anna lo spende',
+                    'description' => 'Più avanti, Anna spende il credito per un\'ora di aiuto in giardino da parte di un altro membro.',
                 ],
             ],
         ],
         'values' => [
-            'title' => 'I nostri valori',
-            'subtitle' => 'I principi che guidano tutto ciò che facciamo in :name.',
+            'title' => 'Cosa conta per noi',
+            'subtitle' => 'Su questo si fonda :name.',
             'items' => [
                 '0' => [
-                    'title' => 'Uguaglianza',
-                    'description' => 'Il tempo di ogni persona ha lo stesso valore. Un\'ora di giardinaggio vale quanto un\'ora di tutoraggio.',
+                    'title' => 'L\'ora di ognuno vale uguale',
+                    'description' => 'Un\'ora di giardinaggio vale quanto un\'ora di ripetizioni.',
                 ],
                 '1' => [
-                    'title' => 'Comunità',
-                    'description' => 'Crediamo nella costruzione di forti legami locali. Ogni scambio rafforza il tessuto del tuo quartiere.',
+                    'title' => 'Prima di tutto, i vicini',
+                    'description' => 'Ogni scambio è un\'occasione per conoscere qualcuno che abita vicino.',
                 ],
                 '2' => [
-                    'title' => 'Fiducia e sicurezza',
-                    'description' => 'Recensioni, valutazioni e supervisione dei broker garantiscono un ambiente sicuro in cui tutti i membri possono partecipare.',
+                    'title' => 'Ci prendiamo cura gli uni degli altri',
+                    'description' => 'Dopo uno scambio i membri possono lasciare una recensione, e c\'è un coordinatore se ne hai bisogno.',
                 ],
                 '3' => [
-                    'title' => 'Sostenibilità',
-                    'description' => 'Condividendo le competenze a livello locale, riduciamo gli sprechi, supportiamo le economie circolari e rafforziamo la resilienza locale.',
+                    'title' => 'Condividere, non sprecare',
+                    'description' => 'Condividere le competenze vicino a casa significa meno sprechi e un quartiere più forte.',
                 ],
             ],
         ],
@@ -4540,7 +4536,7 @@ return [
             'title' => 'Il nostro impatto',
             'members' => 'Membri',
             'hours_exchanged' => 'Ore scambiate',
-            'active_listings' => 'Elenchi attivi',
+            'active_listings' => 'Offerte e richieste aperte ora',
             'communities' => 'Comunità',
         ],
         'credits' => [
@@ -4557,10 +4553,10 @@ return [
             'source_code' => 'Codice sorgente di Project NEXUS su GitHub',
         ],
         'cta' => [
-            'title' => 'Pronti a partecipare%',
-            'description' => 'Sia che tu voglia condividere le tue capacità o trovare aiuto per qualcosa, la nostra community è qui per te.',
+            'title' => 'Mettiti in contatto',
+            'description' => 'Hai una domanda o non sai da dove cominciare? Ti aiutiamo volentieri.',
             'dashboard' => 'Vai alla tua dashboard',
-            'join' => 'Iscriviti gratuitamente',
+            'join' => 'Unisciti a noi',
             'contact_us' => 'Contattaci',
         ],
     ],

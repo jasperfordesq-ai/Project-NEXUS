@@ -2,6 +2,15 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
+{#
+  The community's own page (owner, 14 Nov 2026), in the same order as the React
+  About page: the community's own words, its real numbers, one example
+  exchange, what matters to it, how to get in touch, then the software credits.
+
+  The credits are attribution: every name from contributors.json, the licence
+  and the source-code link stay on the page. They may be small; they may not be
+  removed.
+#}
 {% extends "layouts/base.njk" %}
 
 {% block content %}
@@ -9,18 +18,38 @@
     <div class="govuk-grid-column-two-thirds">
       <span class="govuk-caption-xl">{{ t("about.caption", { community: communityName }) }}</span>
       <h1 class="govuk-heading-xl">{{ t("about.title", { name: communityName }) if t else title }}</h1>
-      <p class="govuk-body-l">{{ t("about.description", { name: communityName }) }}</p>
+      {# Admin -> Community settings -> "Short description"; the standard sentence when it is empty. #}
+      {% if community.ownWords %}
+        <p class="govuk-body-l" dir="auto" data-about-own-words>{{ community.ownWords }}</p>
+      {% else %}
+        <p class="govuk-body-l">{{ t("about.description", { name: communityName }) }}</p>
+      {% endif %}
+      {% if not isAuthenticated %}
+        <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/register') }}" role="button" draggable="false">{{ t("about.cta.join") }}</a>
+      {% endif %}
     </div>
   </div>
+
+  {% if figures.length %}
+    <h2 class="govuk-heading-l">{{ t("about.stats.title") }}</h2>
+    <dl class="nexus-alpha-stat-grid" data-about-figures>
+      {% for figure in figures %}
+        <div class="nexus-alpha-stat">
+          <dt>{{ t(figure.labelKey) }}</dt>
+          <dd>{{ figure.value }}</dd>
+        </div>
+      {% endfor %}
+    </dl>
+  {% endif %}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <h2 class="govuk-heading-l">{{ t("about.how_it_works.title") }}</h2>
       <p class="govuk-body">{{ t("about.how_it_works.subtitle") }}</p>
-      <ol class="govuk-list govuk-list--number">
+      <ol class="govuk-list govuk-list--number govuk-list--spaced">
         {% for step in steps %}
           <li>
-            <span class="govuk-!-font-weight-bold">{{ step.title }}.</span>
+            <span class="govuk-!-font-weight-bold">{{ step.title }}</span><br>
             {{ step.description }}
           </li>
         {% endfor %}
@@ -32,39 +61,43 @@
         <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ value.title }}</h3>
         <p class="govuk-body" dir="auto">{{ value.description }}</p>
       {% endfor %}
+
+      <h2 class="govuk-heading-l">{{ t("about.cta.title") }}</h2>
+      <p class="govuk-body">{{ t("about.cta.description") }}</p>
+      {% if community.email or community.phone or community.place %}
+        <ul class="govuk-list" data-about-contact-details>
+          {% if community.email %}
+            <li><a class="govuk-link" href="mailto:{{ community.email }}">{{ community.email }}</a></li>
+          {% endif %}
+          {% if community.phone %}
+            <li><a class="govuk-link" href="tel:{{ community.phoneHref }}" dir="ltr">{{ community.phone }}</a></li>
+          {% endif %}
+          {% if community.place %}
+            <li class="app-formatted-text" dir="auto">{{ community.place }}</li>
+          {% endif %}
+        </ul>
+      {% endif %}
+      <div class="govuk-button-group">
+        {% if isAuthenticated %}
+          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/dashboard') }}" role="button" draggable="false">{{ t("about.cta.dashboard") }}</a>
+        {% else %}
+          <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/register') }}" role="button" draggable="false">{{ t("about.cta.join") }}</a>
+        {% endif %}
+        <a class="govuk-link" href="{{ urlFor('/contact') }}">{{ t("about.cta.contact_us") }}</a>
+      </div>
     </div>
   </div>
 
-  {% if stats %}
-    <h2 class="govuk-heading-l">{{ t("about.stats.title") }}</h2>
-    <dl class="nexus-alpha-stat-grid">
-      <div class="nexus-alpha-stat">
-        <dt>{{ t("about.stats.members") }}</dt>
-        <dd>{{ stats.members }}</dd>
-      </div>
-      <div class="nexus-alpha-stat">
-        <dt>{{ t("about.stats.hours_exchanged") }}</dt>
-        <dd>{{ stats.hoursExchanged }}</dd>
-      </div>
-      <div class="nexus-alpha-stat">
-        <dt>{{ t("about.stats.active_listings") }}</dt>
-        <dd>{{ stats.listings }}</dd>
-      </div>
-      <div class="nexus-alpha-stat">
-        <dt>{{ t("about.stats.communities") }}</dt>
-        <dd>{{ stats.communities }}</dd>
-      </div>
-    </dl>
-  {% endif %}
-
+  {# About the software: attribution. Smaller type, nothing left out. #}
   <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <h2 class="govuk-heading-l">{{ t("about.credits.title") }}</h2>
-      <p class="govuk-body">{{ t("about.credits.subtitle") }}</p>
+    <div class="govuk-grid-column-two-thirds" data-about-software>
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+      <h2 class="govuk-heading-m">{{ t("about.credits.title") }}</h2>
+      <p class="govuk-body-s">{{ t("about.credits.subtitle") }}</p>
 
       {% if contributorGroups.creator.length %}
         <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("about.credits.creator") }}</h3>
-        <ul class="govuk-list">
+        <ul class="govuk-list govuk-body-s">
           {% for person in contributorGroups.creator %}
             <li>{{ person.name }}{% if person.role %} - {{ person.role }}{% endif %}</li>
           {% endfor %}
@@ -73,7 +106,11 @@
 
       {% if contributorGroups.founder.length %}
         <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("about.credits.founders_heading") }}</h3>
-        <ul class="govuk-list">
+        <ul class="govuk-list govuk-body-s">
+          {# The creator is one of the founders (NOTICE; the React page lists both). #}
+          {% for person in contributorGroups.creator %}
+            <li>{{ person.name }}</li>
+          {% endfor %}
           {% for person in contributorGroups.founder %}
             <li>{{ person.name }}{% if person.role %} - {{ person.role }}{% endif %}</li>
           {% endfor %}
@@ -82,20 +119,20 @@
 
       {% if contributorGroups.contributor.length %}
         <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("about.credits.contributors") }}</h3>
-        <ul class="govuk-list">
+        <ul class="govuk-list govuk-body-s">
           {% for person in contributorGroups.contributor %}
             <li>{{ person.name }}{% if person.role %} - {{ person.role }}{% endif %}</li>
           {% endfor %}
         </ul>
         {% if hasResearchNote %}
           <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("about.credits.research_heading") }}</h3>
-          <p class="govuk-body">{{ t("about.credits.research_description") }}</p>
+          <p class="govuk-body-s">{{ t("about.credits.research_description") }}</p>
         {% endif %}
       {% endif %}
 
       {% if contributorGroups.acknowledgement.length %}
         <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("about.credits.acknowledgements") }}</h3>
-        <ul class="govuk-list">
+        <ul class="govuk-list govuk-body-s">
           {% for person in contributorGroups.acknowledgement %}
             <li>{{ person.name }}{% if person.role %} - {{ person.role }}{% endif %}</li>
           {% endfor %}
@@ -103,21 +140,10 @@
       {% endif %}
 
       <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("about.credits.open_source") }}</h3>
-      <p class="govuk-body">{{ t("about.credits.license_text") }}</p>
-      <p class="govuk-body">
+      <p class="govuk-body-s">{{ t("about.credits.license_text") }}</p>
+      <p class="govuk-body-s">
         <a class="govuk-link" href="https://github.com/jasperfordesq-ai/Project-NEXUS" rel="noopener noreferrer">{{ t("about.credits.source_code") }}</a>
       </p>
-
-      <h2 class="govuk-heading-l">{{ t("about.cta.title") }}</h2>
-      <p class="govuk-body">{{ t("about.cta.description") }}</p>
-      <div class="govuk-button-group">
-        {% if isAuthenticated %}
-          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/dashboard') }}" role="button" draggable="false">{{ t("about.cta.dashboard") }}</a>
-        {% else %}
-          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/register') }}" role="button" draggable="false">{{ t("about.cta.join") }}</a>
-        {% endif %}
-        <a class="govuk-link" href="{{ urlFor('/contact') }}">{{ t("about.cta.contact_us") }}</a>
-      </div>
     </div>
   </div>
 {% endblock %}

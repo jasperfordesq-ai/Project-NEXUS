@@ -4491,48 +4491,44 @@ return [
     'about' => [
         'caption' => ':community',
         'title' => 'Over :name',
-        'description' => ':name is een modern tijdbankplatform waar elk uur dienstverlening gelijk wordt gewaardeerd. We helpen gemeenschappen vaardigheden uit te wisselen, vertrouwen op te bouwen en een eerlijkere lokale economie te creëren – uur per keer.',
+        'description' => ':name is buren die tijd en vaardigheden delen. Geef een uur hulp en krijg een uur terug.',
         'how_it_works' => [
-            'title' => 'Hoe het werkt',
-            'subtitle' => 'Aan de slag gaan is eenvoudig. Vier stappen om lid te worden en vaardigheden uit te wisselen in uw gemeenschap.',
+            'title' => 'Een uur voor een uur',
+            'subtitle' => 'Zo gaat één uitwisseling. Meedoen is gratis.',
             'steps' => [
                 '0' => [
-                    'title' => 'Maak uw profiel aan',
-                    'description' => 'Meld u gratis aan en vermeld de vaardigheden die u aan uw gemeenschap kunt bieden.',
+                    'title' => 'Anna geeft een uur',
+                    'description' => 'Anna is een uur bezig met het repareren van de fiets van Sam.',
                 ],
                 '1' => [
-                    'title' => 'Vind wat je nodig hebt',
-                    'description' => 'Blader door de vermeldingen om diensten te ontdekken die worden aangeboden door leden bij u in de buurt.',
+                    'title' => 'Anna verdient een tijdtegoed',
+                    'description' => 'Dat uur levert Anna één tijdtegoed op. Elk uur is evenveel waard, wat de klus ook is.',
                 ],
                 '2' => [
-                    'title' => 'Wisseldiensten',
-                    'description' => 'Maak contact met leden en regel uitwisselingen van vaardigheden die voor jullie allebei werken.',
-                ],
-                '3' => [
-                    'title' => 'Credits verdienen en uitgeven',
-                    'description' => 'Verdien één tijdskrediet voor elk uur dat u geeft, en besteed dit aan diensten die u nodig heeft.',
+                    'title' => 'Anna besteedt het',
+                    'description' => 'Later besteedt Anna het tegoed aan een uur hulp in de tuin van een ander lid.',
                 ],
             ],
         ],
         'values' => [
-            'title' => 'Onze waarden',
-            'subtitle' => 'De principes die leidend zijn bij alles wat we doen bij :name.',
+            'title' => 'Wat wij belangrijk vinden',
+            'subtitle' => 'Hier is :name op gebouwd.',
             'items' => [
                 '0' => [
-                    'title' => 'Gelijkheid',
-                    'description' => 'De tijd van ieder mens wordt gelijk gewaardeerd. Een uur tuinieren is evenveel waard als een uur bijles.',
+                    'title' => 'Ieders uur is evenveel waard',
+                    'description' => 'Een uur tuinieren is evenveel waard als een uur bijles.',
                 ],
                 '1' => [
-                    'title' => 'Gemeenschap',
-                    'description' => 'Wij geloven in het opbouwen van sterke lokale verbindingen. Elke uitwisseling versterkt het weefsel van uw buurt.',
+                    'title' => 'Buren eerst',
+                    'description' => 'Elke uitwisseling is een kans om iemand uit de buurt te leren kennen.',
                 ],
                 '2' => [
-                    'title' => 'Vertrouwen en veiligheid',
-                    'description' => 'Recensies, beoordelingen en toezicht van makelaars zorgen voor een veilige omgeving waarin alle leden kunnen deelnemen.',
+                    'title' => 'We letten op elkaar',
+                    'description' => 'Leden kunnen na een uitwisseling een beoordeling achterlaten, en er is een coördinator als je die nodig hebt.',
                 ],
                 '3' => [
-                    'title' => 'Duurzaamheid',
-                    'description' => 'Door vaardigheden lokaal te delen, verminderen we de verspilling, ondersteunen we circulaire economieën en versterken we de lokale veerkracht.',
+                    'title' => 'Delen in plaats van verspillen',
+                    'description' => 'Vaardigheden dicht bij huis delen betekent minder verspilling en een sterkere buurt.',
                 ],
             ],
         ],
@@ -4540,7 +4536,7 @@ return [
             'title' => 'Onze impact',
             'members' => 'Leden',
             'hours_exchanged' => 'Uren uitgewisseld',
-            'active_listings' => 'Actieve vermeldingen',
+            'active_listings' => 'Aanbod en verzoeken die nu openstaan',
             'communities' => 'Gemeenschappen',
         ],
         'credits' => [
@@ -4557,10 +4553,10 @@ return [
             'source_code' => 'Broncode van Project NEXUS op GitHub',
         ],
         'cta' => [
-            'title' => 'Klaar om mee te doen%',
-            'description' => 'Of je nu je vaardigheden wilt delen of ergens hulp bij wilt zoeken, onze community staat voor je klaar.',
+            'title' => 'Neem contact op',
+            'description' => 'Heb je een vraag, of weet je niet waar je moet beginnen? We helpen je graag.',
             'dashboard' => 'Ga naar je dashboard',
-            'join' => 'Word gratis lid',
+            'join' => 'Doe mee',
             'contact_us' => 'Neem contact met ons op',
         ],
     ],
