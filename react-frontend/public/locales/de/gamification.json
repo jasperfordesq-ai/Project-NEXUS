@@ -3,7 +3,7 @@
     "page_title": "Erfolge",
     "title": "Erfolge",
     "subtitle": "Verfolgen Sie Ihre Abzeichen, XP und Ihren Fortschritt",
-    "unable_to_load": "Erfolge konnten nicht geladen werden",
+    "unable_to_load": "Wir konnten Ihre Erfolge nicht laden",
     "try_again": "Erneut versuchen",
     "level": "Stufe {{level}}",
     "xp_value": "{{xp}} XP",
@@ -81,7 +81,7 @@
       "claimed_message": "Sie haben {{xp}} XP verdient!",
       "claim_failed": "Abholen fehlgeschlagen",
       "claim_failed_desc": "Tägliche Belohnung konnte nicht abgeholt werden.",
-      "claim_error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+      "claim_error": "Das hat nicht geklappt. Bitte versuchen Sie es noch einmal.",
       "day_streak_one": "{{count}} Tage in Folge",
       "day_streak_other": "{{count}} Tage in Folge"
     },
@@ -99,7 +99,7 @@
       "reward_claimed_desc": "Die Herausforderungsbelohnung wurde Ihrem XP gutgeschrieben.",
       "claim_failed": "Abholen fehlgeschlagen",
       "claim_failed_desc": "Belohnung konnte nicht abgeholt werden.",
-      "claim_error": "Etwas ist schiefgelaufen."
+      "claim_error": "Das hat nicht geklappt. Bitte versuchen Sie es noch einmal."
     },
     "collections": {
       "empty_title": "Keine Sammlungen verfügbar",
@@ -125,7 +125,7 @@
       "purchase_complete_desc": "Sie haben \"{{name}}\" gekauft.",
       "purchase_failed": "Kauf fehlgeschlagen",
       "purchase_failed_desc": "Der Kauf konnte nicht abgeschlossen werden.",
-      "purchase_error": "Etwas ist schiefgelaufen.",
+      "purchase_error": "Das hat nicht geklappt. Bitte versuchen Sie es noch einmal.",
       "load_failed": "Laden fehlgeschlagen",
       "load_failed_desc": "Der XP-Shop konnte nicht geladen werden.",
       "stock_left_one": "{{count}} auf Lager",
@@ -167,11 +167,11 @@
       "updated_desc": "Ihre Abzeichen-Vitrine wurde gespeichert.",
       "save_failed": "Speichern fehlgeschlagen",
       "save_failed_desc": "Die Vitrine konnte nicht aktualisiert werden.",
-      "save_error": "Etwas ist schiefgelaufen.",
+      "save_error": "Das hat nicht geklappt. Bitte versuchen Sie es noch einmal.",
       "select_badges_one": "Wählen Sie bis zu 5 Abzeichen für Ihr Profil aus. ({{count}}/5 ausgewählt)",
       "select_badges_other": "Wählen Sie bis zu 5 Abzeichen für Ihr Profil aus. ({{count}}/5 ausgewählt)"
     },
-    "load_error": "Erfolge konnten nicht geladen werden. Bitte versuchen Sie es erneut."
+    "load_error": "Das wurde nicht geladen. Versuchen Sie es gleich noch einmal."
   },
   "goals": {
     "page_title": "Ziele",
@@ -191,11 +191,11 @@
     },
     "new_goal": "Neues Ziel",
     "from_template": "Aus Vorlage",
-    "load_error": "Ziele konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "load_error": "Das wurde nicht geladen. Versuchen Sie es gleich noch einmal.",
     "tab_my": "Meine Ziele",
     "tab_discover": "Entdecken",
     "tab_buddying": "Ziel-Begleiter",
-    "unable_to_load": "Ziele konnten nicht geladen werden",
+    "unable_to_load": "Wir konnten Ihre Ziele nicht laden",
     "try_again": "Erneut versuchen",
     "load_more": "Mehr laden",
     "create_goal": "Ziel erstellen",
@@ -264,23 +264,23 @@
     },
     "toast": {
       "created": "Ziel erstellt!",
-      "create_failed": "Ziel konnte nicht erstellt werden",
+      "create_failed": "Wir konnten Ihr Ziel nicht erstellen. Bitte versuchen Sie es noch einmal.",
       "updated": "Ziel aktualisiert!",
-      "update_failed": "Ziel konnte nicht aktualisiert werden",
+      "update_failed": "Wir konnten Ihre Änderungen nicht speichern. Bitte versuchen Sie es noch einmal.",
       "deleted": "Ziel gelöscht",
-      "delete_failed": "Ziel konnte nicht gelöscht werden",
+      "delete_failed": "Wir konnten das nicht löschen. Bitte versuchen Sie es noch einmal.",
       "completed": "Ziel abgeschlossen! Herzlichen Glückwunsch!",
-      "complete_failed": "Ziel konnte nicht als erledigt markiert werden",
+      "complete_failed": "Wir konnten dieses Ziel nicht als erreicht markieren. Bitte versuchen Sie es noch einmal.",
       "progress_updated": "Fortschritt aktualisiert!",
-      "progress_failed": "Fortschritt konnte nicht aktualisiert werden",
+      "progress_failed": "Wir konnten Ihren Fortschritt nicht speichern. Bitte versuchen Sie es noch einmal.",
       "buddy_joined": "Sie sind jetzt ein Begleiter!",
-      "buddy_failed": "Begleiter werden fehlgeschlagen",
+      "buddy_failed": "Wir konnten Sie nicht als Buddy eintragen. Bitte versuchen Sie es noch einmal.",
       "buddy_action_sent": "Buddy-Support gesendet",
-      "buddy_action_failed": "Buddy-Support konnte nicht gesendet werden",
+      "buddy_action_failed": "Wir konnten Ihre Unterstützung nicht senden. Bitte versuchen Sie es noch einmal.",
       "buddy_requested": "Angebot gesendet. Sie werden Begleiter, sobald die Person, der das Ziel gehört, zustimmt.",
       "buddy_request_accepted": "Begleitangebot angenommen",
       "buddy_request_declined": "Begleitangebot abgelehnt",
-      "buddy_request_failed": "Das Begleitangebot konnte nicht aktualisiert werden"
+      "buddy_request_failed": "Wir konnten das Buddy-Angebot nicht aktualisieren. Bitte versuchen Sie es noch einmal."
     },
     "streak_label_one": "{{count}} Check-in-Strecke",
     "streak_label_other": "{{count}} Check-in-Strecke",
@@ -314,7 +314,7 @@
       "spotlight": "Im Rampenlicht",
       "competitive": "Aktivste"
     },
-    "unable_to_load": "Rangliste konnte nicht geladen werden",
+    "unable_to_load": "Wir konnten die Bestenliste nicht laden",
     "try_again": "Erneut versuchen",
     "loading": "Rangliste wird geladen",
     "empty_title": "Noch keine Rangliste",
@@ -368,7 +368,7 @@
     "season_unavailable": "Saisondaten nicht verfügbar",
     "season_unavailable_desc": "Saisoninformationen konnten nicht geladen werden. Die Rangliste unten ist weiterhin verfügbar.",
     "session_expired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
-    "load_error": "Rangliste konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "load_error": "Das wurde nicht geladen. Versuchen Sie es gleich noch einmal.",
     "type_nexus_score": "NexusScore",
     "load_more": "Mehr laden",
     "retry": "Versuchen Sie erneut, die Bestenliste zu laden"
@@ -393,7 +393,7 @@
     "badges_awarded": "Abzeichen verliehen",
     "new_listings": "Neue Angebote und Gesuche",
     "new_posts": "Neue Beiträge",
-    "load_error": "Community-Daten konnten nicht geladen werden",
+    "load_error": "Wir konnten die Zahlen der Gemeinschaft nicht laden.",
     "no_change": "Keine Änderung"
   },
   "journey": {
@@ -407,7 +407,7 @@
     "volunteer_hours": "Freiwilligenstunden",
     "connections": "Verbindungen",
     "member_since": "Mitglied seit",
-    "load_error": "Reisedaten konnten nicht geladen werden",
+    "load_error": "Wir konnten Ihren Weg nicht laden.",
     "monthly_activity": "Monatliche Aktivität",
     "monthly_activity_bar_title": "{{month}}: {{xp}} XP, {{badges}} Abzeichen",
     "badge_timeline": "Abzeichen-Zeitachse",

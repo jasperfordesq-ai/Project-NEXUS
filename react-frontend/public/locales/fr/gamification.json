@@ -3,7 +3,7 @@
     "page_title": "Accomplissements",
     "title": "Accomplissements",
     "subtitle": "Suivez vos badges, XP et votre progression",
-    "unable_to_load": "Impossible de charger les accomplissements",
+    "unable_to_load": "Nous n’avons pas pu charger vos réussites",
     "try_again": "Réessayer",
     "level": "Niveau {{level}}",
     "xp_value": "{{xp}} XP",
@@ -83,7 +83,7 @@
       "claimed_message": "Vous avez gagné {{xp}} XP !",
       "claim_failed": "Échec de la réclamation",
       "claim_failed_desc": "Impossible de réclamer la récompense quotidienne.",
-      "claim_error": "Une erreur est survenue. Veuillez réessayer.",
+      "claim_error": "Cela n’a pas fonctionné. Veuillez réessayer.",
       "day_streak_many": "Série de {{count}} jours",
       "day_streak_one": "Série de {{count}} jours",
       "day_streak_other": "Série de {{count}} jours"
@@ -102,7 +102,7 @@
       "reward_claimed_desc": "La récompense du défi a été ajoutée à vos XP.",
       "claim_failed": "Échec de la réclamation",
       "claim_failed_desc": "Impossible de réclamer la récompense.",
-      "claim_error": "Une erreur est survenue."
+      "claim_error": "Cela n’a pas fonctionné. Veuillez réessayer."
     },
     "collections": {
       "empty_title": "Aucune collection disponible",
@@ -128,7 +128,7 @@
       "purchase_complete_desc": "Vous avez acheté « {{name}} ».",
       "purchase_failed": "Échec de l'achat",
       "purchase_failed_desc": "Impossible de finaliser l'achat.",
-      "purchase_error": "Une erreur est survenue.",
+      "purchase_error": "Cela n’a pas fonctionné. Veuillez réessayer.",
       "load_failed": "Échec du chargement",
       "load_failed_desc": "Impossible de charger la boutique XP.",
       "stock_left_many": "{{count}} en stock",
@@ -171,12 +171,12 @@
       "updated_desc": "Votre vitrine de badges a été enregistrée.",
       "save_failed": "Échec de l'enregistrement",
       "save_failed_desc": "Impossible de mettre à jour la vitrine.",
-      "save_error": "Une erreur est survenue.",
+      "save_error": "Cela n’a pas fonctionné. Veuillez réessayer.",
       "select_badges_many": "Sélectionnez jusqu'à 5 badges à afficher sur votre profil. ({{count}}/5 sélectionnés)",
       "select_badges_one": "Sélectionnez jusqu'à 5 badges à afficher sur votre profil. ({{count}}/5 sélectionnés)",
       "select_badges_other": "Sélectionnez jusqu'à 5 badges à afficher sur votre profil. ({{count}}/5 sélectionnés)"
     },
-    "load_error": "Échec du chargement des réalisations. Veuillez réessayer."
+    "load_error": "Le chargement n’a pas abouti. Réessayez dans un instant."
   },
   "goals": {
     "page_title": "Objectifs",
@@ -196,11 +196,11 @@
     },
     "new_goal": "Nouvel objectif",
     "from_template": "À partir d'un modèle",
-    "load_error": "Impossible de charger les objectifs. Veuillez réessayer.",
+    "load_error": "Le chargement n’a pas abouti. Réessayez dans un instant.",
     "tab_my": "Mes objectifs",
     "tab_discover": "Découvrir",
     "tab_buddying": "Partenaires d'objectif",
-    "unable_to_load": "Impossible de charger les objectifs",
+    "unable_to_load": "Nous n’avons pas pu charger vos objectifs",
     "try_again": "Réessayer",
     "load_more": "Charger plus",
     "create_goal": "Créer un objectif",
@@ -269,23 +269,23 @@
     },
     "toast": {
       "created": "Objectif créé !",
-      "create_failed": "Impossible de créer l'objectif",
+      "create_failed": "Nous n’avons pas pu créer votre objectif. Veuillez réessayer.",
       "updated": "Objectif mis à jour !",
-      "update_failed": "Impossible de mettre à jour l'objectif",
+      "update_failed": "Nous n’avons pas pu enregistrer vos modifications. Veuillez réessayer.",
       "deleted": "Objectif supprimé",
-      "delete_failed": "Impossible de supprimer l'objectif",
+      "delete_failed": "Nous n’avons pas pu supprimer cela. Veuillez réessayer.",
       "completed": "Objectif atteint ! Félicitations !",
-      "complete_failed": "Impossible de marquer l'objectif comme terminé",
+      "complete_failed": "Nous n’avons pas pu marquer cet objectif comme atteint. Veuillez réessayer.",
       "progress_updated": "Progression mise à jour !",
-      "progress_failed": "Impossible de mettre à jour la progression",
+      "progress_failed": "Nous n’avons pas pu enregistrer votre progression. Veuillez réessayer.",
       "buddy_joined": "Vous êtes maintenant partenaire !",
-      "buddy_failed": "Impossible de devenir partenaire",
+      "buddy_failed": "Nous n’avons pas pu vous inscrire comme binôme. Veuillez réessayer.",
       "buddy_action_sent": "Soutien d'ami envoyé",
-      "buddy_action_failed": "Échec de l'envoi de l'assistance d'un ami",
+      "buddy_action_failed": "Nous n’avons pas pu envoyer votre soutien. Veuillez réessayer.",
       "buddy_requested": "Proposition envoyée. Vous deviendrez partenaire dès que la personne propriétaire de l'objectif l'aura acceptée.",
       "buddy_request_accepted": "Proposition de partenaire acceptée",
       "buddy_request_declined": "Proposition de partenaire refusée",
-      "buddy_request_failed": "Impossible de mettre à jour la proposition de partenaire"
+      "buddy_request_failed": "Nous n’avons pas pu mettre à jour l’offre de binôme. Veuillez réessayer."
     },
     "streak_label_many": "{{count}} séquence d'enregistrement",
     "streak_label_one": "{{count}} séquence d'enregistrement",
@@ -320,7 +320,7 @@
       "spotlight": "En vedette",
       "competitive": "Les plus actifs"
     },
-    "unable_to_load": "Impossible de charger le classement",
+    "unable_to_load": "Nous n’avons pas pu charger le classement",
     "try_again": "Réessayer",
     "loading": "Chargement du classement",
     "empty_title": "Pas encore de classement",
@@ -375,7 +375,7 @@
     "season_unavailable": "Données de saison indisponibles",
     "season_unavailable_desc": "Impossible de charger les informations de saison. Le classement ci-dessous est toujours disponible.",
     "session_expired": "Votre session a expiré. Veuillez vous reconnecter.",
-    "load_error": "Échec du chargement du classement. Veuillez réessayer.",
+    "load_error": "Le chargement n’a pas abouti. Réessayez dans un instant.",
     "type_nexus_score": "NexusScore",
     "load_more": "Charger plus",
     "retry": "Réessayez de charger le classement"
@@ -400,7 +400,7 @@
     "badges_awarded": "Insignes décernés",
     "new_listings": "Nouvelles offres et demandes",
     "new_posts": "Nouveaux messages",
-    "load_error": "Échec du chargement des données de la communauté",
+    "load_error": "Nous n’avons pas pu charger les chiffres de la communauté.",
     "no_change": "Aucun changement"
   },
   "journey": {
@@ -414,7 +414,7 @@
     "volunteer_hours": "Heures de bénévolat",
     "connections": "Connexions",
     "member_since": "Membre depuis",
-    "load_error": "Impossible de charger les données du parcours",
+    "load_error": "Nous n’avons pas pu charger votre parcours.",
     "monthly_activity": "Activité mensuelle",
     "monthly_activity_bar_title": "{{month}} : {{xp}} XP, {{badges}} badges",
     "badge_timeline": "Chronologie des badges",

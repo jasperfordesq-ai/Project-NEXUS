@@ -134,7 +134,7 @@ describe('GroupExchangesPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('empty-state')).toBeInTheDocument();
     });
-    expect(screen.getByText('No Group Exchanges Found')).toBeInTheDocument();
+    expect(screen.getByText("No exchanges to show")).toBeInTheDocument();
   });
 
   it('displays group exchanges when loaded', async () => {

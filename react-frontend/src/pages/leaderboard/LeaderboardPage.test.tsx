@@ -288,7 +288,7 @@ describe('LeaderboardPage', () => {
     render(<LeaderboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Unable to Load Leaderboard')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load the leaderboard")).toBeInTheDocument();
     });
     expect(screen.getByText('Try Again')).toBeInTheDocument();
   });

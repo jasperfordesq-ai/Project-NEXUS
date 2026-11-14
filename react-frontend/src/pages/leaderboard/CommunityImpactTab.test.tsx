@@ -192,9 +192,9 @@ describe('CommunityImpactTab', () => {
 
     render(<CommunityImpactTab />);
 
-    // i18n resolves 'community.load_error' → "Failed to load community data"
+    // i18n resolves 'community.load_error' → "We couldn't load the community's figures."
     await waitFor(() => {
-      expect(screen.getByText(/Failed to load community data/i)).toBeInTheDocument();
+      expect(screen.getByText(/couldn't load the community's figures/i)).toBeInTheDocument();
     });
   });
 
@@ -218,7 +218,7 @@ describe('CommunityImpactTab', () => {
     // Degraded numbers render as zeros, not undefined/crash.
     expect(screen.getAllByText('0').length).toBeGreaterThanOrEqual(1);
     // It must NOT be the error state.
-    expect(screen.queryByText(/Failed to load community data/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/couldn't load the community's figures/i)).not.toBeInTheDocument();
   });
 
   it('formats large total_xp with locale separators', async () => {

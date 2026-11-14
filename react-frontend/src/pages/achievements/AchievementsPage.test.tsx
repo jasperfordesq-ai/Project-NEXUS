@@ -338,7 +338,7 @@ describe('AchievementsPage', () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Network error'));
     render(<AchievementsPage />);
     await waitFor(() => {
-      expect(screen.getByText('Unable to Load Achievements')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load your achievements")).toBeInTheDocument();
     });
     expect(screen.getByText('Try Again')).toBeInTheDocument();
   });

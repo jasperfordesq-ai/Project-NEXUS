@@ -98,6 +98,6 @@ describe('GoalBuddyRequests (F-004: the goal owner decides)', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Accept Alex Helper as your buddy' }));
 
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Could not update the buddy offer'));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("We couldn't update the buddy offer. Please try again."));
   });
 });

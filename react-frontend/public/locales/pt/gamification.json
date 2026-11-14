@@ -3,7 +3,7 @@
     "page_title": "Conquistas",
     "title": "Conquistas",
     "subtitle": "Acompanhe as suas insígnias, XP e progresso",
-    "unable_to_load": "Não Foi Possível Carregar as Conquistas",
+    "unable_to_load": "Não conseguimos carregar suas conquistas",
     "try_again": "Tentar Novamente",
     "level": "Nível {{level}}",
     "xp_value": "{{xp}}XP",
@@ -83,7 +83,7 @@
       "claimed_message": "Ganhou {{xp}} XP!",
       "claim_failed": "Falha ao Reclamar",
       "claim_failed_desc": "Não foi possível reclamar a recompensa diária.",
-      "claim_error": "Algo correu mal. Tente novamente.",
+      "claim_error": "Isso não funcionou. Tente novamente.",
       "day_streak_many": "{{count}} dias consecutivos",
       "day_streak_one": "{{count}} dias consecutivos",
       "day_streak_other": "{{count}} dias consecutivos"
@@ -102,7 +102,7 @@
       "reward_claimed_desc": "A recompensa do desafio foi adicionada ao seu XP.",
       "claim_failed": "Falha ao Reclamar",
       "claim_failed_desc": "Não foi possível reclamar a recompensa.",
-      "claim_error": "Algo correu mal."
+      "claim_error": "Isso não funcionou. Tente novamente."
     },
     "collections": {
       "empty_title": "Sem coleções disponíveis",
@@ -128,7 +128,7 @@
       "purchase_complete_desc": "Comprou \"{{name}}\".",
       "purchase_failed": "Compra Falhou",
       "purchase_failed_desc": "Não foi possível concluir a compra.",
-      "purchase_error": "Algo correu mal.",
+      "purchase_error": "Isso não funcionou. Tente novamente.",
       "load_failed": "Falha ao Carregar",
       "load_failed_desc": "Não foi possível carregar a loja XP.",
       "stock_left_many": "{{count}} restante(s) em stock",
@@ -171,12 +171,12 @@
       "updated_desc": "A sua vitrine de insígnias foi salva.",
       "save_failed": "Falha ao Salvar",
       "save_failed_desc": "Não foi possível atualizar a vitrine.",
-      "save_error": "Algo correu mal.",
+      "save_error": "Isso não funcionou. Tente novamente.",
       "select_badges_many": "Selecione até 5 insígnias para mostrar no seu perfil. ({{count}}/5 selecionadas)",
       "select_badges_one": "Selecione até 5 insígnias para mostrar no seu perfil. ({{count}}/5 selecionadas)",
       "select_badges_other": "Selecione até 5 insígnias para mostrar no seu perfil. ({{count}}/5 selecionadas)"
     },
-    "load_error": "Falha ao carregar as conquistas. Tente novamente."
+    "load_error": "Isso não carregou. Tente novamente daqui a pouco."
   },
   "goals": {
     "page_title": "Objetivos",
@@ -196,11 +196,11 @@
     },
     "new_goal": "Novo Objetivo",
     "from_template": "A Partir de Modelo",
-    "load_error": "Falha ao carregar objetivos. Tente novamente.",
+    "load_error": "Isso não carregou. Tente novamente daqui a pouco.",
     "tab_my": "Os Meus Objetivos",
     "tab_discover": "Descobrir",
     "tab_buddying": "Parceiros de Objetivo",
-    "unable_to_load": "Não Foi Possível Carregar os Objetivos",
+    "unable_to_load": "Não conseguimos carregar suas metas",
     "try_again": "Tentar Novamente",
     "load_more": "Carregar Mais",
     "create_goal": "Criar Objetivo",
@@ -269,23 +269,23 @@
     },
     "toast": {
       "created": "Objetivo criado!",
-      "create_failed": "Falha ao criar objetivo",
+      "create_failed": "Não conseguimos criar sua meta. Tente novamente.",
       "updated": "Objetivo atualizado!",
-      "update_failed": "Falha ao atualizar objetivo",
+      "update_failed": "Não conseguimos salvar suas alterações. Tente novamente.",
       "deleted": "Objetivo eliminado",
-      "delete_failed": "Falha ao eliminar objetivo",
+      "delete_failed": "Não conseguimos excluir isso. Tente novamente.",
       "completed": "Objetivo concluído! Parabéns!",
-      "complete_failed": "Falha ao marcar objetivo como concluído",
+      "complete_failed": "Não conseguimos marcar essa meta como concluída. Tente novamente.",
       "progress_updated": "Progresso atualizado!",
-      "progress_failed": "Falha ao atualizar progresso",
+      "progress_failed": "Não conseguimos salvar seu progresso. Tente novamente.",
       "buddy_joined": "Agora é um parceiro!",
-      "buddy_failed": "Falha ao tornar-se parceiro",
+      "buddy_failed": "Não conseguimos registrar você como parceiro. Tente novamente.",
       "buddy_action_sent": "Suporte amigo enviado",
-      "buddy_action_failed": "Falha ao enviar suporte de amigo",
+      "buddy_action_failed": "Não conseguimos enviar seu apoio. Tente novamente.",
       "buddy_requested": "Oferta enviada. Passará a ser parceiro quando a pessoa proprietária do objetivo a aceitar.",
       "buddy_request_accepted": "Oferta de parceiro aceite",
       "buddy_request_declined": "Oferta de parceiro recusada",
-      "buddy_request_failed": "Não foi possível atualizar a oferta de parceiro"
+      "buddy_request_failed": "Não conseguimos atualizar a oferta de parceria. Tente novamente."
     },
     "streak_label_many": "{{count}} sequência de check-in",
     "streak_label_one": "{{count}} sequência de check-in",
@@ -320,7 +320,7 @@
       "spotlight": "Destaque",
       "competitive": "Mais Ativos"
     },
-    "unable_to_load": "Não Foi Possível Carregar a Tabela",
+    "unable_to_load": "Não conseguimos carregar a classificação",
     "try_again": "Tentar Novamente",
     "loading": "A carregar tabela de classificação",
     "empty_title": "Ainda sem classificações",
@@ -375,7 +375,7 @@
     "season_unavailable": "Dados da temporada indisponíveis",
     "season_unavailable_desc": "Não foi possível carregar as informações da temporada. As classificações abaixo ainda estão disponíveis.",
     "session_expired": "A sua sessão expirou. Inicie sessão novamente.",
-    "load_error": "Falha ao carregar a classificação. Tente novamente.",
+    "load_error": "Isso não carregou. Tente novamente daqui a pouco.",
     "type_nexus_score": "NexusScore",
     "load_more": "Carregar mais",
     "retry": "Tente carregar novamente o placar"
@@ -400,7 +400,7 @@
     "badges_awarded": "Selos concedidos",
     "new_listings": "Novas ofertas e pedidos",
     "new_posts": "Novas postagens",
-    "load_error": "Falha ao carregar dados da comunidade",
+    "load_error": "Não conseguimos carregar os números da comunidade.",
     "no_change": "Sem alteração"
   },
   "journey": {
@@ -414,7 +414,7 @@
     "volunteer_hours": "Horas de voluntariado",
     "connections": "Ligações",
     "member_since": "Membro desde",
-    "load_error": "Não foi possível carregar os dados do percurso",
+    "load_error": "Não conseguimos carregar sua jornada.",
     "monthly_activity": "Atividade mensal",
     "monthly_activity_bar_title": "{{month}}: {{xp}} XP, {{badges}} emblemas",
     "badge_timeline": "Cronologia de emblemas",

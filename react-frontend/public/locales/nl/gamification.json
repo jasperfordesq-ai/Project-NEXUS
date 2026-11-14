@@ -3,7 +3,7 @@
     "page_title": "Prestaties",
     "title": "Prestaties",
     "subtitle": "Volg je badges, XP en voortgang",
-    "unable_to_load": "Kon prestaties niet laden",
+    "unable_to_load": "We konden je prestaties niet laden",
     "try_again": "Probeer het opnieuw",
     "level": "Niveau {{level}}",
     "xp_value": "{{xp}} XP",
@@ -81,7 +81,7 @@
       "claimed_message": "Je hebt {{xp}} XP verdiend!",
       "claim_failed": "Claimen Mislukt",
       "claim_failed_desc": "Kon dagelijkse beloning niet claimen.",
-      "claim_error": "Er is iets misgegaan. Probeer het opnieuw.",
+      "claim_error": "Dat is niet gelukt. Probeer het opnieuw.",
       "day_streak_one": "{{count}} dagen streak",
       "day_streak_other": "{{count}} dagen streak"
     },
@@ -99,7 +99,7 @@
       "reward_claimed_desc": "De uitdaging beloning is toegevoegd aan je XP.",
       "claim_failed": "Claimen Mislukt",
       "claim_failed_desc": "Kon de beloning niet claimen.",
-      "claim_error": "Er is iets misgegaan."
+      "claim_error": "Dat is niet gelukt. Probeer het opnieuw."
     },
     "collections": {
       "empty_title": "Geen collecties beschikbaar",
@@ -125,7 +125,7 @@
       "purchase_complete_desc": "Je hebt \"{{name}}\" gekocht.",
       "purchase_failed": "Aankoop Mislukt",
       "purchase_failed_desc": "Kon de aankoop niet voltooien.",
-      "purchase_error": "Er is iets misgegaan.",
+      "purchase_error": "Dat is niet gelukt. Probeer het opnieuw.",
       "load_failed": "Laden mislukt",
       "load_failed_desc": "Kon de XP-winkel niet laden.",
       "stock_left_one": "{{count}} op voorraad",
@@ -167,11 +167,11 @@
       "updated_desc": "Je badge showcase is opgeslagen.",
       "save_failed": "Opslaan Mislukt",
       "save_failed_desc": "Kon de showcase niet bijwerken.",
-      "save_error": "Er is iets misgegaan.",
+      "save_error": "Dat is niet gelukt. Probeer het opnieuw.",
       "select_badges_one": "Selecteer tot 5 badges om op je profiel te tonen. ({{count}}/5 geselecteerd)",
       "select_badges_other": "Selecteer tot 5 badges om op je profiel te tonen. ({{count}}/5 geselecteerd)"
     },
-    "load_error": "Kon de prestaties niet laden. Probeer het opnieuw."
+    "load_error": "Dat is niet geladen. Probeer het zo nog eens."
   },
   "goals": {
     "page_title": "Doelen",
@@ -191,11 +191,11 @@
     },
     "new_goal": "Nieuw Doel",
     "from_template": "Van Sjabloon",
-    "load_error": "Kon de doelen niet laden. Probeer het opnieuw.",
+    "load_error": "Dat is niet geladen. Probeer het zo nog eens.",
     "tab_my": "Mijn Doelen",
     "tab_discover": "Ontdekken",
     "tab_buddying": "Doelvrienden",
-    "unable_to_load": "Kon Doelen Niet Laden",
+    "unable_to_load": "We konden je doelen niet laden",
     "try_again": "Probeer Opnieuw",
     "load_more": "Laad Meer",
     "create_goal": "Doel Aanmaken",
@@ -264,23 +264,23 @@
     },
     "toast": {
       "created": "Doel aangemaakt!",
-      "create_failed": "Mislukt om doel aan te maken",
+      "create_failed": "We konden je doel niet aanmaken. Probeer het opnieuw.",
       "updated": "Doel bijgewerkt!",
-      "update_failed": "Mislukt om doel bij te werken",
+      "update_failed": "We konden je wijzigingen niet opslaan. Probeer het opnieuw.",
       "deleted": "Doel verwijderd",
-      "delete_failed": "Mislukt om doel te verwijderen",
+      "delete_failed": "We konden dat niet verwijderen. Probeer het opnieuw.",
       "completed": "Doel voltooid! Gefeliciteerd!",
-      "complete_failed": "Mislukt om doel als voltooid te markeren",
+      "complete_failed": "We konden dat doel niet als voltooid markeren. Probeer het opnieuw.",
       "progress_updated": "Voortgang bijgewerkt!",
-      "progress_failed": "Mislukt om voortgang bij te werken",
+      "progress_failed": "We konden je voortgang niet opslaan. Probeer het opnieuw.",
       "buddy_joined": "Je bent nu een buddy!",
-      "buddy_failed": "Mislukt om buddy te worden",
+      "buddy_failed": "We konden je niet als buddy aanmelden. Probeer het opnieuw.",
       "buddy_action_sent": "Buddy-ondersteuning verzonden",
-      "buddy_action_failed": "Kan buddy-ondersteuning niet verzenden",
+      "buddy_action_failed": "We konden je steun niet versturen. Probeer het opnieuw.",
       "buddy_requested": "Aanbod verstuurd. Je wordt buddy zodra de eigenaar van het doel het accepteert.",
       "buddy_request_accepted": "Buddy-aanbod geaccepteerd",
       "buddy_request_declined": "Buddy-aanbod geweigerd",
-      "buddy_request_failed": "Het buddy-aanbod kon niet worden bijgewerkt"
+      "buddy_request_failed": "We konden het buddy-aanbod niet bijwerken. Probeer het opnieuw."
     },
     "streak_label_one": "{{count}} check-inreeks",
     "streak_label_other": "{{count}} check-inreeks",
@@ -314,7 +314,7 @@
       "spotlight": "Spotlight",
       "competitive": "Meest Actief"
     },
-    "unable_to_load": "Kon ranglijst niet laden",
+    "unable_to_load": "We konden het klassement niet laden",
     "try_again": "Probeer het opnieuw",
     "loading": "Ranglijst aan het laden",
     "empty_title": "Nog geen ranglijsten",
@@ -368,7 +368,7 @@
     "season_unavailable": "Seizoen gegevens niet beschikbaar",
     "season_unavailable_desc": "Kon seizoensinformatie niet laden. Ranglijsten hieronder zijn nog steeds beschikbaar.",
     "session_expired": "Je sessie is verlopen. Log alsjeblieft opnieuw in.",
-    "load_error": "Laden van de ranglijst is mislukt. Probeer het opnieuw.",
+    "load_error": "Dat is niet geladen. Probeer het zo nog eens.",
     "type_nexus_score": "NexusScore",
     "load_more": "Laad meer",
     "retry": "Probeer het klassement opnieuw te laden"
@@ -393,7 +393,7 @@
     "badges_awarded": "Badges toegekend",
     "new_listings": "Nieuw aanbod en verzoeken",
     "new_posts": "Nieuwe berichten",
-    "load_error": "Kan communitygegevens niet laden",
+    "load_error": "We konden de cijfers van de gemeenschap niet laden.",
     "no_change": "Geen verandering"
   },
   "journey": {
@@ -407,7 +407,7 @@
     "volunteer_hours": "Vrijwilligersuren",
     "connections": "Verbindingen",
     "member_since": "Lid Sinds",
-    "load_error": "Kon reisgegevens niet laden",
+    "load_error": "We konden je reis niet laden.",
     "monthly_activity": "Maandelijkse Activiteit",
     "monthly_activity_bar_title": "{{month}}: {{xp}} XP, {{badges}}-badges",
     "badge_timeline": "Badge Tijdlijn",

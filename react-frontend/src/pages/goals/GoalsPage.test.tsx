@@ -205,7 +205,7 @@ describe('GoalsPage', () => {
     render(<GoalsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Unable to Load Goals')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load your goals")).toBeInTheDocument();
     });
     expect(screen.getByText('Try Again')).toBeInTheDocument();
   });

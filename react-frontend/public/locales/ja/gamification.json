@@ -3,7 +3,7 @@
     "page_title": "業績",
     "title": "業績",
     "subtitle": "バッジ、XP、進捗状況を追跡します",
-    "unable_to_load": "実績をロードできません",
+    "unable_to_load": "実績を読み込めませんでした",
     "try_again": "もう一度やり直してください",
     "level": "レベル {{level}}",
     "xp_value": "{{xp}} XP",
@@ -81,7 +81,7 @@
       "claimed_message": "{{xp}} XP を獲得しました!",
       "claim_failed": "請求が失敗しました",
       "claim_failed_desc": "毎日の報酬を請求できませんでした。",
-      "claim_error": "何か問題が発生しました。もう一度試してください。",
+      "claim_error": "うまくいきませんでした。もう一度お試しください。",
       "day_streak_other": "{{count}} 日の連続記録",
       "day_streak_one": "{{count}} 日連続"
     },
@@ -99,7 +99,7 @@
       "reward_claimed_desc": "チャレンジ報酬が XP に追加されました。",
       "claim_failed": "請求が失敗しました",
       "claim_failed_desc": "報酬を請求できませんでした。",
-      "claim_error": "何か問題が発生しました。"
+      "claim_error": "うまくいきませんでした。もう一度お試しください。"
     },
     "collections": {
       "empty_title": "利用可能なコレクションはありません",
@@ -125,7 +125,7 @@
       "purchase_complete_desc": "「{{name}}」を購入しました。",
       "purchase_failed": "購入に失敗しました",
       "purchase_failed_desc": "購入を完了できませんでした。",
-      "purchase_error": "何か問題が発生しました。",
+      "purchase_error": "うまくいきませんでした。もう一度お試しください。",
       "load_failed": "ロードに失敗しました",
       "load_failed_desc": "XP ショップをロードできませんでした。",
       "stock_left_one": "{{count}} の在庫が残っています",
@@ -167,11 +167,11 @@
       "updated_desc": "バッジ ショーケースが保存されました。",
       "save_failed": "保存に失敗しました",
       "save_failed_desc": "ショーケースを更新できませんでした。",
-      "save_error": "何か問題が発生しました。",
+      "save_error": "うまくいきませんでした。もう一度お試しください。",
       "select_badges_one": "プロフィールに表示するバッジを最大 5 つ選択します。 ({{count}}/5 が選択されました)",
       "select_badges_other": "プロフィールに表示するバッジを最大 5 つ選択します。 ({{count}}/5 が選択されました)"
     },
-    "load_error": "実績のロードに失敗しました。もう一度試してください。"
+    "load_error": "読み込めませんでした。しばらくしてからもう一度お試しください。"
   },
   "goals": {
     "page_title": "目標",
@@ -191,11 +191,11 @@
     },
     "new_goal": "新しい目標",
     "from_template": "テンプレートから",
-    "load_error": "目標をロードできませんでした。もう一度試してください。",
+    "load_error": "読み込めませんでした。しばらくしてからもう一度お試しください。",
     "tab_my": "私の目標",
     "tab_discover": "発見する",
     "tab_buddying": "ゴールバディ",
-    "unable_to_load": "目標をロードできません",
+    "unable_to_load": "目標を読み込めませんでした",
     "try_again": "もう一度やり直してください",
     "load_more": "もっと読み込む",
     "create_goal": "目標の作成",
@@ -264,23 +264,23 @@
     },
     "toast": {
       "created": "ゴールができました！",
-      "create_failed": "目標の作成に失敗しました",
+      "create_failed": "目標を作成できませんでした。もう一度お試しください。",
       "updated": "目標を更新しました！",
-      "update_failed": "目標を更新できませんでした",
+      "update_failed": "変更を保存できませんでした。もう一度お試しください。",
       "deleted": "目標が削除されました",
-      "delete_failed": "目標の削除に失敗しました",
+      "delete_failed": "削除できませんでした。もう一度お試しください。",
       "completed": "ゴール完了！おめでとう！",
-      "complete_failed": "目標を完了としてマークできませんでした",
+      "complete_failed": "この目標を完了にできませんでした。もう一度お試しください。",
       "progress_updated": "進捗状況が更新されました！",
-      "progress_failed": "進行状況を更新できませんでした",
+      "progress_failed": "進捗を保存できませんでした。もう一度お試しください。",
       "buddy_joined": "これであなたも仲間です！",
-      "buddy_failed": "仲間になれませんでした",
+      "buddy_failed": "バディとして登録できませんでした。もう一度お試しください。",
       "buddy_action_sent": "バディサポートを送信しました",
-      "buddy_action_failed": "バディサポートを送信できませんでした",
+      "buddy_action_failed": "応援を送信できませんでした。もう一度お試しください。",
       "buddy_requested": "申し出を送信しました。目標の所有者が承認すると仲間になります。",
       "buddy_request_accepted": "仲間の申し出を承認しました",
       "buddy_request_declined": "仲間の申し出を辞退しました",
-      "buddy_request_failed": "仲間の申し出を更新できませんでした"
+      "buddy_request_failed": "バディの申し出を更新できませんでした。もう一度お試しください。"
     },
     "streak_label_one": "{{count}} 連続チェックイン",
     "streak_label_other": "{{count}} 連続チェックイン",
@@ -314,7 +314,7 @@
       "spotlight": "スポットライト",
       "competitive": "最もアクティブな"
     },
-    "unable_to_load": "リーダーボードを読み込めません",
+    "unable_to_load": "リーダーボードを読み込めませんでした",
     "try_again": "もう一度やり直してください",
     "loading": "リーダーボードを読み込んでいます",
     "empty_title": "まだランキングはありません",
@@ -368,7 +368,7 @@
     "season_unavailable": "季節データは利用できません",
     "season_unavailable_desc": "季節情報を読み込めませんでした。以下のランキングは引き続きご利用いただけます。",
     "session_expired": "セッションの有効期限が切れました。再度ログインしてください。",
-    "load_error": "リーダーボードの読み込みに失敗しました。もう一度試してください。",
+    "load_error": "読み込めませんでした。しばらくしてからもう一度お試しください。",
     "type_nexus_score": "ネクサススコア",
     "load_more": "もっと読み込む",
     "retry": "リーダーボードの読み込みを再試行します"
@@ -393,7 +393,7 @@
     "badges_awarded": "獲得したバッジ",
     "new_listings": "新しい提供とリクエスト",
     "new_posts": "新しい投稿",
-    "load_error": "コミュニティデータのロードに失敗しました",
+    "load_error": "コミュニティの数値を読み込めませんでした。",
     "no_change": "変化なし"
   },
   "journey": {
@@ -407,7 +407,7 @@
     "volunteer_hours": "ボランティアの時間",
     "connections": "接続",
     "member_since": "メンバー歴",
-    "load_error": "旅行データのロードに失敗しました",
+    "load_error": "あなたの歩みを読み込めませんでした。",
     "monthly_activity": "毎月の活動",
     "monthly_activity_bar_title": "{{month}}: {{xp}} XP、{{badges}} バッジ",
     "badge_timeline": "バッジのタイムライン",

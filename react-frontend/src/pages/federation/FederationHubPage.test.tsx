@@ -179,9 +179,9 @@ describe('FederationHubPage', () => {
     render(<FederationHubPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Unable to Load')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load this page")).toBeInTheDocument();
     });
-    expect(screen.getByText('An error occurred. Please try again.')).toBeInTheDocument();
+    expect(screen.getByText("That didn't work. Please try again.")).toBeInTheDocument();
     expect(screen.getByText('Try Again')).toBeInTheDocument();
   });
 

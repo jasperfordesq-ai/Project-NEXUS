@@ -3,7 +3,7 @@
     "page_title": "Logros",
     "title": "Logros",
     "subtitle": "Sigue tus insignias, XP y progreso",
-    "unable_to_load": "No se Pudieron Cargar los Logros",
+    "unable_to_load": "No hemos podido cargar tus logros",
     "try_again": "Intentar de Nuevo",
     "level": "Nivel {{level}}",
     "xp_value": "{{xp}} XP",
@@ -83,7 +83,7 @@
       "claimed_message": "¡Ganaste {{xp}} XP!",
       "claim_failed": "Error al Reclamar",
       "claim_failed_desc": "No se pudo reclamar la recompensa diaria.",
-      "claim_error": "Algo salió mal. Por favor intenta de nuevo.",
+      "claim_error": "Eso no ha funcionado. Vuelve a intentarlo.",
       "day_streak_many": "Racha de {{count}} días",
       "day_streak_one": "Racha de {{count}} días",
       "day_streak_other": "Racha de {{count}} días"
@@ -102,7 +102,7 @@
       "reward_claimed_desc": "La recompensa del reto ha sido añadida a tu XP.",
       "claim_failed": "Error al Reclamar",
       "claim_failed_desc": "No se pudo reclamar la recompensa.",
-      "claim_error": "Algo salió mal."
+      "claim_error": "Eso no ha funcionado. Vuelve a intentarlo."
     },
     "collections": {
       "empty_title": "Sin colecciones disponibles",
@@ -128,7 +128,7 @@
       "purchase_complete_desc": "Compraste \"{{name}}\".",
       "purchase_failed": "Error en la Compra",
       "purchase_failed_desc": "No se pudo completar la compra.",
-      "purchase_error": "Algo salió mal.",
+      "purchase_error": "Eso no ha funcionado. Vuelve a intentarlo.",
       "load_failed": "Error al Cargar",
       "load_failed_desc": "No se pudo cargar la tienda XP.",
       "stock_left_many": "{{count}} disponibles",
@@ -171,12 +171,12 @@
       "updated_desc": "Tu vitrina de insignias ha sido guardada.",
       "save_failed": "Error al Guardar",
       "save_failed_desc": "No se pudo actualizar la vitrina.",
-      "save_error": "Algo salió mal.",
+      "save_error": "Eso no ha funcionado. Vuelve a intentarlo.",
       "select_badges_many": "Selecciona hasta 5 insignias para mostrar en tu perfil. ({{count}}/5 seleccionadas)",
       "select_badges_one": "Selecciona hasta 5 insignias para mostrar en tu perfil. ({{count}}/5 seleccionadas)",
       "select_badges_other": "Selecciona hasta 5 insignias para mostrar en tu perfil. ({{count}}/5 seleccionadas)"
     },
-    "load_error": "Error al cargar los logros. Inténtalo de nuevo."
+    "load_error": "Eso no se ha cargado. Inténtalo de nuevo en un momento."
   },
   "goals": {
     "page_title": "Metas",
@@ -196,11 +196,11 @@
     },
     "new_goal": "Nueva Meta",
     "from_template": "Desde Plantilla",
-    "load_error": "Error al cargar las metas. Por favor intenta de nuevo.",
+    "load_error": "Eso no se ha cargado. Inténtalo de nuevo en un momento.",
     "tab_my": "Mis Metas",
     "tab_discover": "Descubrir",
     "tab_buddying": "Compañeros de Meta",
-    "unable_to_load": "No se Pudieron Cargar las Metas",
+    "unable_to_load": "No hemos podido cargar tus objetivos",
     "try_again": "Intentar de Nuevo",
     "load_more": "Cargar Más",
     "create_goal": "Crear Meta",
@@ -269,23 +269,23 @@
     },
     "toast": {
       "created": "¡Meta creada!",
-      "create_failed": "Error al crear la meta",
+      "create_failed": "No hemos podido crear tu objetivo. Vuelve a intentarlo.",
       "updated": "¡Meta actualizada!",
-      "update_failed": "Error al actualizar la meta",
+      "update_failed": "No hemos podido guardar tus cambios. Vuelve a intentarlo.",
       "deleted": "Meta eliminada",
-      "delete_failed": "Error al eliminar la meta",
+      "delete_failed": "No hemos podido eliminar eso. Vuelve a intentarlo.",
       "completed": "¡Meta completada! ¡Felicidades!",
-      "complete_failed": "Error al marcar la meta como completada",
+      "complete_failed": "No hemos podido marcar ese objetivo como completado. Vuelve a intentarlo.",
       "progress_updated": "¡Progreso actualizado!",
-      "progress_failed": "Error al actualizar el progreso",
+      "progress_failed": "No hemos podido guardar tu progreso. Vuelve a intentarlo.",
       "buddy_joined": "¡Ahora eres compañero!",
-      "buddy_failed": "Error al unirse como compañero",
+      "buddy_failed": "No hemos podido apuntarte como compañero. Vuelve a intentarlo.",
       "buddy_action_sent": "Soporte de amigos enviado",
-      "buddy_action_failed": "No se pudo enviar soporte de amigo",
+      "buddy_action_failed": "No hemos podido enviar tu apoyo. Vuelve a intentarlo.",
       "buddy_requested": "Oferta enviada. Serás compañero cuando la persona propietaria del objetivo la acepte.",
       "buddy_request_accepted": "Oferta de compañero aceptada",
       "buddy_request_declined": "Oferta de compañero rechazada",
-      "buddy_request_failed": "No se pudo actualizar la oferta de compañero"
+      "buddy_request_failed": "No hemos podido actualizar la oferta de compañero. Vuelve a intentarlo."
     },
     "streak_label_many": "{{count}} racha de registros",
     "streak_label_one": "{{count}} racha de registros",
@@ -320,7 +320,7 @@
       "spotlight": "Destacados",
       "competitive": "Más activos"
     },
-    "unable_to_load": "No se Pudo Cargar la Clasificación",
+    "unable_to_load": "No hemos podido cargar la clasificación",
     "try_again": "Intentar de Nuevo",
     "loading": "Cargando clasificación",
     "empty_title": "Aún no hay clasificaciones",
@@ -375,7 +375,7 @@
     "season_unavailable": "Datos de temporada no disponibles",
     "season_unavailable_desc": "No se pudieron cargar los datos de la temporada. Las clasificaciones a continuación siguen disponibles.",
     "session_expired": "Tu sesión ha expirado. Inicia sesión de nuevo.",
-    "load_error": "Error al cargar la clasificación. Inténtalo de nuevo.",
+    "load_error": "Eso no se ha cargado. Inténtalo de nuevo en un momento.",
     "type_nexus_score": "Puntuación Nexus",
     "load_more": "Cargar más",
     "retry": "Reintentar cargar la tabla de clasificación"
@@ -400,7 +400,7 @@
     "badges_awarded": "Insignias otorgadas",
     "new_listings": "Nuevas ofertas y solicitudes",
     "new_posts": "Nuevas publicaciones",
-    "load_error": "No se pudieron cargar los datos de la comunidad",
+    "load_error": "No hemos podido cargar las cifras de la comunidad.",
     "no_change": "Sin cambios"
   },
   "journey": {
@@ -414,7 +414,7 @@
     "volunteer_hours": "Horas de voluntariado",
     "connections": "Conexiones",
     "member_since": "Miembro desde",
-    "load_error": "No se pudieron cargar los datos del recorrido",
+    "load_error": "No hemos podido cargar tu recorrido.",
     "monthly_activity": "Actividad mensual",
     "monthly_activity_bar_title": "{{month}}: {{xp}} XP, {{badges}} insignias",
     "badge_timeline": "Cronología de insignias",

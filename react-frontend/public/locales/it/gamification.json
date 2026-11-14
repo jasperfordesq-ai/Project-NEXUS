@@ -3,7 +3,7 @@
     "page_title": "Traguardi",
     "title": "Traguardi",
     "subtitle": "Segui i tuoi badge, XP e i progressi",
-    "unable_to_load": "Impossibile caricare i traguardi",
+    "unable_to_load": "Non siamo riusciti a caricare i tuoi traguardi",
     "try_again": "Riprova",
     "level": "Livello {{level}}",
     "xp_value": "{{xp}} XP",
@@ -83,7 +83,7 @@
       "claimed_message": "Ha guadagnato {{xp}} XP!",
       "claim_failed": "Reclamo fallito",
       "claim_failed_desc": "Impossibile reclamare la ricompensa giornaliera.",
-      "claim_error": "Si è verificato un errore. Riprova.",
+      "claim_error": "Non ha funzionato. Riprova.",
       "day_streak_many": "Serie di {{count}} giorni",
       "day_streak_one": "Serie di {{count}} giorni",
       "day_streak_other": "Serie di {{count}} giorni"
@@ -102,7 +102,7 @@
       "reward_claimed_desc": "La ricompensa della sfida è stata aggiunta ai tuoi XP.",
       "claim_failed": "Reclamo fallito",
       "claim_failed_desc": "Impossibile reclamare la ricompensa.",
-      "claim_error": "Si è verificato un errore."
+      "claim_error": "Non ha funzionato. Riprova."
     },
     "collections": {
       "empty_title": "Nessuna collezione disponibile",
@@ -128,7 +128,7 @@
       "purchase_complete_desc": "Ha acquistato \"{{name}}\".",
       "purchase_failed": "Acquisto fallito",
       "purchase_failed_desc": "Impossibile completare l'acquisto.",
-      "purchase_error": "Si è verificato un errore.",
+      "purchase_error": "Non ha funzionato. Riprova.",
       "load_failed": "Caricamento fallito",
       "load_failed_desc": "Impossibile caricare il negozio XP.",
       "stock_left_many": "{{count}} disponibili",
@@ -171,12 +171,12 @@
       "updated_desc": "La tua vetrina badge è stata salvata.",
       "save_failed": "Salvataggio fallito",
       "save_failed_desc": "Impossibile aggiornare la vetrina.",
-      "save_error": "Si è verificato un errore.",
+      "save_error": "Non ha funzionato. Riprova.",
       "select_badges_many": "Selezioni fino a 5 badge da mostrare sul Suo profilo. ({{count}}/5 selezionati)",
       "select_badges_one": "Selezioni fino a 5 badge da mostrare sul Suo profilo. ({{count}}/5 selezionati)",
       "select_badges_other": "Selezioni fino a 5 badge da mostrare sul Suo profilo. ({{count}}/5 selezionati)"
     },
-    "load_error": "Impossibile caricare i risultati. Riprova."
+    "load_error": "Il caricamento non è riuscito. Riprova tra un momento."
   },
   "goals": {
     "page_title": "Obiettivi",
@@ -196,11 +196,11 @@
     },
     "new_goal": "Nuovo obiettivo",
     "from_template": "Da modello",
-    "load_error": "Impossibile caricare gli obiettivi. La preghiamo di riprovare.",
+    "load_error": "Il caricamento non è riuscito. Riprova tra un momento.",
     "tab_my": "I miei obiettivi",
     "tab_discover": "Scopri",
     "tab_buddying": "Compagni di obiettivo",
-    "unable_to_load": "Impossibile caricare gli obiettivi",
+    "unable_to_load": "Non siamo riusciti a caricare i tuoi obiettivi",
     "try_again": "Riprova",
     "load_more": "Carica altro",
     "create_goal": "Crea obiettivo",
@@ -269,23 +269,23 @@
     },
     "toast": {
       "created": "Obiettivo creato!",
-      "create_failed": "Impossibile creare l'obiettivo",
+      "create_failed": "Non siamo riusciti a creare il tuo obiettivo. Riprova.",
       "updated": "Obiettivo aggiornato!",
-      "update_failed": "Impossibile aggiornare l'obiettivo",
+      "update_failed": "Non siamo riusciti a salvare le tue modifiche. Riprova.",
       "deleted": "Obiettivo eliminato",
-      "delete_failed": "Impossibile eliminare l'obiettivo",
+      "delete_failed": "Non siamo riusciti a eliminarlo. Riprova.",
       "completed": "Obiettivo raggiunto! Congratulazioni!",
-      "complete_failed": "Impossibile segnare l'obiettivo come completato",
+      "complete_failed": "Non siamo riusciti a segnare quell’obiettivo come completato. Riprova.",
       "progress_updated": "Progressi aggiornati!",
-      "progress_failed": "Impossibile aggiornare i progressi",
+      "progress_failed": "Non siamo riusciti a salvare i tuoi progressi. Riprova.",
       "buddy_joined": "Ora sei un compagno!",
-      "buddy_failed": "Impossibile diventare compagno",
+      "buddy_failed": "Non siamo riusciti a registrarti come compagno. Riprova.",
       "buddy_action_sent": "Supporto amico inviato",
-      "buddy_action_failed": "Impossibile inviare il supporto agli amici",
+      "buddy_action_failed": "Non siamo riusciti a inviare il tuo sostegno. Riprova.",
       "buddy_requested": "Offerta inviata. Diventerai compagno quando la persona proprietaria dell'obiettivo la accetterà.",
       "buddy_request_accepted": "Offerta di compagno accettata",
       "buddy_request_declined": "Offerta di compagno rifiutata",
-      "buddy_request_failed": "Impossibile aggiornare l'offerta di compagno"
+      "buddy_request_failed": "Non siamo riusciti ad aggiornare l’offerta di compagno. Riprova."
     },
     "streak_label_many": "{{count}} serie di check-in",
     "streak_label_one": "{{count}} serie di check-in",
@@ -320,7 +320,7 @@
       "spotlight": "In evidenza",
       "competitive": "Più attivi"
     },
-    "unable_to_load": "Impossibile caricare la classifica",
+    "unable_to_load": "Non siamo riusciti a caricare la classifica",
     "try_again": "Riprova",
     "loading": "Caricamento classifica",
     "empty_title": "Nessuna classifica ancora",
@@ -375,7 +375,7 @@
     "season_unavailable": "Dati della stagione non disponibili",
     "season_unavailable_desc": "Impossibile caricare le informazioni sulla stagione. Le classifiche qui sotto sono ancora disponibili.",
     "session_expired": "La sessione è scaduta. Effettua nuovamente l'accesso.",
-    "load_error": "Impossibile caricare la classifica. Riprova.",
+    "load_error": "Il caricamento non è riuscito. Riprova tra un momento.",
     "type_nexus_score": "NexusScore",
     "load_more": "Carica altro",
     "retry": "Riprova a caricare la classifica"
@@ -400,7 +400,7 @@
     "badges_awarded": "Distintivi assegnati",
     "new_listings": "Nuove offerte e richieste",
     "new_posts": "Nuovi post",
-    "load_error": "Impossibile caricare i dati della comunità",
+    "load_error": "Non siamo riusciti a caricare i numeri della comunità.",
     "no_change": "Nessun cambiamento"
   },
   "journey": {
@@ -414,7 +414,7 @@
     "volunteer_hours": "Ore di volontariato",
     "connections": "Connessioni",
     "member_since": "Membro dal",
-    "load_error": "Impossibile caricare i dati del percorso",
+    "load_error": "Non siamo riusciti a caricare il tuo percorso.",
     "monthly_activity": "Attività mensile",
     "monthly_activity_bar_title": "{{month}}: {{xp}} XP, {{badges}} badge",
     "badge_timeline": "Cronologia badge",

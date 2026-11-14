@@ -186,7 +186,7 @@ describe('FederationMemberProfilePage', () => {
 
   // The endpoint gates the CALLER before it looks anything up: a viewer who has
   // not opted into federation is refused with 403 FEDERATION_NOT_ENABLED. That
-  // was rendered as "Member not found", sending them to look for a person who
+  // was rendered as "We can't find that profile", sending them to look for a person who
   // exists and is reachable.
   it('tells a viewer who has not opted into federation what to do, not that the member is missing', async () => {
     vi.mocked(api.get).mockResolvedValue({
@@ -231,7 +231,7 @@ describe('FederationMemberProfilePage', () => {
   it('still reports a missing member as not found', async () => {
     vi.mocked(api.get).mockResolvedValue({
       success: false,
-      error: 'Member not found',
+      error: "We can't find that profile",
       code: 'MEMBER_NOT_FOUND',
     });
 

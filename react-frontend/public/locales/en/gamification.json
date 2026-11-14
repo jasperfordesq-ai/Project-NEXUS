@@ -3,7 +3,7 @@
     "page_title": "Achievements",
     "title": "Achievements",
     "subtitle": "Track your badges, XP, and progress",
-    "unable_to_load": "Unable to Load Achievements",
+    "unable_to_load": "We couldn't load your achievements",
     "try_again": "Try Again",
     "level": "Level {{level}}",
     "xp_value": "{{xp}} XP",
@@ -81,7 +81,7 @@
       "claimed_message": "You earned {{xp}} XP!",
       "claim_failed": "Claim Failed",
       "claim_failed_desc": "Could not claim daily reward.",
-      "claim_error": "Something went wrong. Please try again.",
+      "claim_error": "That didn't work. Please try again.",
       "day_streak_one": "{{count}} day streak",
       "day_streak_other": "{{count}} day streak"
     },
@@ -99,7 +99,7 @@
       "reward_claimed_desc": "Challenge reward has been added to your XP.",
       "claim_failed": "Claim Failed",
       "claim_failed_desc": "Could not claim reward.",
-      "claim_error": "Something went wrong."
+      "claim_error": "That didn't work. Please try again."
     },
     "collections": {
       "empty_title": "No collections available",
@@ -125,7 +125,7 @@
       "purchase_complete_desc": "You purchased \"{{name}}\".",
       "purchase_failed": "Purchase Failed",
       "purchase_failed_desc": "Could not complete purchase.",
-      "purchase_error": "Something went wrong.",
+      "purchase_error": "That didn't work. Please try again.",
       "load_failed": "Load Failed",
       "load_failed_desc": "Could not load the XP shop.",
       "stock_left_one": "{{count}} left in stock",
@@ -167,11 +167,11 @@
       "updated_desc": "Your badge showcase has been saved.",
       "save_failed": "Save Failed",
       "save_failed_desc": "Could not update showcase.",
-      "save_error": "Something went wrong.",
+      "save_error": "That didn't work. Please try again.",
       "select_badges_one": "Select up to 5 badges to showcase on your profile. ({{count}}/5 selected)",
       "select_badges_other": "Select up to 5 badges to showcase on your profile. ({{count}}/5 selected)"
     },
-    "load_error": "Failed to load achievements. Please try again."
+    "load_error": "That didn't load. Try again in a moment."
   },
   "goals": {
     "page_title": "Goals",
@@ -191,11 +191,11 @@
     },
     "new_goal": "New Goal",
     "from_template": "From Template",
-    "load_error": "Failed to load goals. Please try again.",
+    "load_error": "That didn't load. Try again in a moment.",
     "tab_my": "My Goals",
     "tab_discover": "Discover",
     "tab_buddying": "Goal Buddies",
-    "unable_to_load": "Unable to Load Goals",
+    "unable_to_load": "We couldn't load your goals",
     "try_again": "Try Again",
     "load_more": "Load More",
     "create_goal": "Create Goal",
@@ -264,23 +264,23 @@
     },
     "toast": {
       "created": "Goal created!",
-      "create_failed": "Failed to create goal",
+      "create_failed": "We couldn't create your goal. Please try again.",
       "updated": "Goal updated!",
-      "update_failed": "Failed to update goal",
+      "update_failed": "We couldn't save your changes. Please try again.",
       "deleted": "Goal deleted",
-      "delete_failed": "Failed to delete goal",
+      "delete_failed": "We couldn't delete that. Please try again.",
       "completed": "Goal completed! Congratulations!",
-      "complete_failed": "Failed to mark goal as complete",
+      "complete_failed": "We couldn't mark that goal as complete. Please try again.",
       "progress_updated": "Progress updated!",
-      "progress_failed": "Failed to update progress",
+      "progress_failed": "We couldn't save your progress. Please try again.",
       "buddy_joined": "You are now a buddy!",
-      "buddy_failed": "Failed to become buddy",
+      "buddy_failed": "We couldn't make you a buddy. Please try again.",
       "buddy_action_sent": "Buddy support sent",
-      "buddy_action_failed": "Failed to send buddy support",
+      "buddy_action_failed": "We couldn't send your support. Please try again.",
       "buddy_requested": "Offer sent. You will become a buddy once the goal owner accepts.",
       "buddy_request_accepted": "Buddy offer accepted",
       "buddy_request_declined": "Buddy offer declined",
-      "buddy_request_failed": "Could not update the buddy offer"
+      "buddy_request_failed": "We couldn't update the buddy offer. Please try again."
     },
     "streak_label_one": "{{count}} check-in streak",
     "streak_label_other": "{{count}} check-in streak",
@@ -314,7 +314,7 @@
       "spotlight": "Spotlight",
       "competitive": "Most Active"
     },
-    "unable_to_load": "Unable to Load Leaderboard",
+    "unable_to_load": "We couldn't load the leaderboard",
     "try_again": "Try Again",
     "loading": "Loading leaderboard",
     "empty_title": "No rankings yet",
@@ -368,7 +368,7 @@
     "season_unavailable": "Season data unavailable",
     "season_unavailable_desc": "Could not load season information. Rankings below are still available.",
     "session_expired": "Your session has expired. Please log in again.",
-    "load_error": "Failed to load leaderboard. Please try again.",
+    "load_error": "That didn't load. Try again in a moment.",
     "type_nexus_score": "NexusScore",
     "load_more": "Load More",
     "retry": "Retry loading leaderboard"
@@ -393,7 +393,7 @@
     "badges_awarded": "Badges Awarded",
     "new_listings": "New offers and requests",
     "new_posts": "New Posts",
-    "load_error": "Failed to load community data",
+    "load_error": "We couldn't load the community's figures.",
     "no_change": "No change"
   },
   "journey": {
@@ -407,7 +407,7 @@
     "volunteer_hours": "Volunteer Hours",
     "connections": "Connections",
     "member_since": "Member Since",
-    "load_error": "Failed to load journey data",
+    "load_error": "We couldn't load your journey.",
     "monthly_activity": "Monthly Activity",
     "monthly_activity_bar_title": "{{month}}: {{xp}} XP, {{badges}} badges",
     "badge_timeline": "Badge Timeline",

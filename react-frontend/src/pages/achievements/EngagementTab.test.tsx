@@ -77,7 +77,7 @@ describe('EngagementTab load states', () => {
     getMock.mockImplementationOnce(response);
     render(<EngagementTab />);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load achievements');
+    expect(await screen.findByRole('alert')).toHaveTextContent("That didn't load");
     expect(screen.getByRole('button', { name: 'Try Again' })).toBeInTheDocument();
     expect(screen.queryByText('0 of 12 months')).not.toBeInTheDocument();
     expect(screen.queryByText(backendDetail)).not.toBeInTheDocument();
@@ -108,7 +108,7 @@ describe('EngagementTab load states', () => {
 
     expect(await screen.findByText('1 of 12 months')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load achievements');
+    expect(await screen.findByRole('alert')).toHaveTextContent("That didn't load");
     expect(screen.getByText('1 of 12 months')).toBeInTheDocument();
   });
 
