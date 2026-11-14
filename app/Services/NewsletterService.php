@@ -6,8 +6,10 @@
 
 namespace App\Services;
 
+use App\Core\EmailPalette;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
+use App\Support\ColourContrast;
 use App\Models\Newsletter;
 use App\Models\NewsletterSegment;
 use Illuminate\Support\Facades\Cache;
@@ -819,9 +821,15 @@ class NewsletterService
         $unsubscribeLinks = $chrome['footerLinks'];
         $pixelHtml = $chrome['pixelHtml'];
 
-        // Brand colors
-        $color = '#6366f1';
-        $colorDark = '#4f46e5';
+        // Brand colours: the community's own when its admin chose one.
+        [
+            'color' => $color,
+            'colorDark' => $colorDark,
+            'linkColor' => $linkColor,
+            'linkHover' => $linkHover,
+            'quoteBg' => $quoteBg,
+            'quoteBgEnd' => $quoteBgEnd,
+        ] = self::richtextColours();
 
         return <<<HTML
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -839,8 +847,8 @@ class NewsletterService
         img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
         body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; background-color: #f3f4f6; }
         body, table, td, a { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
-        a { color: {$color}; }
-        a:hover { color: {$colorDark}; }
+        a { color: {$linkColor}; }
+        a:hover { color: {$linkHover}; }
         .content h1 { color: #1f2937; font-size: 28px; font-weight: 800; margin: 0 0 20px; line-height: 1.3; }
         .content h2 { color: #1f2937; font-size: 22px; font-weight: 700; margin: 25px 0 15px; line-height: 1.3; }
         .content h3 { color: #1f2937; font-size: 18px; font-weight: 700; margin: 20px 0 12px; line-height: 1.3; }
@@ -848,7 +856,7 @@ class NewsletterService
         .content ul, .content ol { color: #374151; font-size: 16px; line-height: 1.8; margin: 0 0 16px; padding-left: 24px; }
         .content li { margin-bottom: 8px; }
         .content img { max-width: 100%; height: auto; border-radius: 12px; margin: 20px 0; display: block; }
-        .content blockquote { margin: 20px 0; padding: 20px 25px; background-color: #f5f3ff; background-image: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border-left: 4px solid {$color}; border-radius: 0 12px 12px 0; font-style: italic; color: #4b5563; }
+        .content blockquote { margin: 20px 0; padding: 20px 25px; background-color: {$quoteBg}; background-image: linear-gradient(135deg, {$quoteBg} 0%, {$quoteBgEnd} 100%); border-left: 4px solid {$color}; border-radius: 0 12px 12px 0; font-style: italic; color: #4b5563; }
         @media screen and (max-width: 600px) {
             .email-container { width: 100% !important; max-width: 100% !important; }
             .content { padding: 30px 20px !important; }
@@ -915,6 +923,61 @@ class NewsletterService
 </body>
 </html>
 HTML;
+    }
+
+    /**
+     * Colours for the richtext newsletter shell.
+     *
+     * Today's indigo, unless the community's admin chose a community colour
+     * (Admin → Settings → "Community colour", tenants.configuration.primary_color).
+     * Then the header band, links and quote rule use it, shaded the way the
+     * member website and the other emails shade it (App\Core\EmailPalette), so
+     * the header's white text and the links on the white page read at 4.5:1.
+     * The ratios are checked here as well: if a shade still fell short, the
+     * whole set falls back to today's colours rather than send something
+     * unreadable. A community that never chose a colour sees no change.
+     *
+     * @return array{color: string, colorDark: string, linkColor: string, linkHover: string, quoteBg: string, quoteBgEnd: string}
+     */
+    private static function richtextColours(): array
+    {
+        $standard = [
+            'color' => '#6366f1',
+            'colorDark' => '#4f46e5',
+            'linkColor' => '#6366f1',
+            'linkHover' => '#4f46e5',
+            'quoteBg' => '#f5f3ff',
+            'quoteBgEnd' => '#ede9fe',
+        ];
+
+        $chosen = EmailPalette::communityColour();
+        if ($chosen === null) {
+            return $standard;
+        }
+
+        $palette = EmailPalette::fromColour($chosen);
+        $quoteText = '#4b5563';
+        $quoteBgEnd = EmailPalette::mix($chosen, '#ffffff', 0.86);
+        if (ColourContrast::ratio($quoteText, $quoteBgEnd) < ColourContrast::AA_NORMAL_TEXT) {
+            $quoteBgEnd = $palette['accentBg'];
+        }
+
+        $colours = [
+            'color' => $palette['button'],
+            'colorDark' => $palette['buttonEnd'],
+            'linkColor' => $palette['primary'],
+            'linkHover' => $palette['primaryDark'],
+            'quoteBg' => $palette['accentBg'],
+            'quoteBgEnd' => $quoteBgEnd,
+        ];
+
+        $readable = ColourContrast::ratio('#ffffff', $colours['color']) >= ColourContrast::AA_NORMAL_TEXT
+            && ColourContrast::ratio('#ffffff', $colours['colorDark']) >= ColourContrast::AA_NORMAL_TEXT
+            && ColourContrast::ratio($colours['linkColor'], '#ffffff') >= ColourContrast::AA_NORMAL_TEXT
+            && ColourContrast::ratio($colours['linkHover'], '#ffffff') >= ColourContrast::AA_NORMAL_TEXT
+            && ColourContrast::ratio($quoteText, $colours['quoteBg']) >= ColourContrast::AA_NORMAL_TEXT;
+
+        return $readable ? $colours : $standard;
     }
 
     /**
