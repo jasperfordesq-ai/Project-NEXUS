@@ -171,7 +171,7 @@ class RegionalPointTest extends TestCase
         $service = app(CaringRegionalPointService::class);
         $service->updateConfig(self::TENANT_ID, ['enabled' => true]);
 
-        $this->expectExceptionMessage('User not found');
+        $this->expectExceptionMessage("We can't find that account.");
         $service->issue($otherTenantUser, 10, 'Wrong tenant', $adminId);
     }
 
