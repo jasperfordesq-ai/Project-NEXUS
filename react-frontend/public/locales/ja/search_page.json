@@ -10,8 +10,8 @@
   "tab_members": "メンバー ({{count}})",
   "tab_events": "イベント ({{count}})",
   "tab_groups": "グループ ({{count}})",
-  "error_title": "検索エラー",
-  "error_message": "検索に失敗しました。もう一度お試しください。",
+  "error_title": "検索を実行できませんでした",
+  "error_message": "しばらくしてからもう一度お試しください。",
   "try_again": "もう一度試す",
   "no_results_title": "その検索に一致するものはありません",
   "no_results_desc": "\"{{query}}\" に対する結果はありません。別の検索語を試してください。",
@@ -37,7 +37,7 @@
   "initial_tip_people": "メンバー",
   "initial_tip_events": "イベント",
   "toast": {
-    "search_failed": "検索に失敗しました"
+    "search_failed": "検索を実行できませんでした。もう一度お試しください。"
   },
   "search_button": "検索",
   "saved_searches": "保存された検索 ({{count}})",

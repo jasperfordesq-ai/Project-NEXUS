@@ -10,8 +10,8 @@
   "tab_members": "الأعضاء ({{count}})",
   "tab_events": "الفعاليات ({{count}})",
   "tab_groups": "المجموعات ({{count}})",
-  "error_title": "خطأ في البحث",
-  "error_message": "فشل البحث. يرجى المحاولة مرة أخرى.",
+  "error_title": "تعذّر علينا تنفيذ هذا البحث",
+  "error_message": "حاول مرة أخرى بعد قليل.",
   "try_again": "حاول مرة أخرى",
   "no_results_title": "لا شيء يطابق هذا البحث",
   "no_results_desc": "لا توجد نتائج لـ \"{{query}}\". جرب مصطلح بحث مختلف.",
@@ -37,7 +37,7 @@
   "initial_tip_people": "الأشخاص",
   "initial_tip_events": "الفعاليات",
   "toast": {
-    "search_failed": "فشل البحث"
+    "search_failed": "تعذّر علينا تنفيذ هذا البحث. يُرجى المحاولة مرة أخرى."
   },
   "search_button": "بحث",
   "saved_searches": "البحث المحفوظ ({{count}})",

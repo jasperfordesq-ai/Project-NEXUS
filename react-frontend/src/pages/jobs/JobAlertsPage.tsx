@@ -36,8 +36,6 @@ import MapPin from 'lucide-react/icons/map-pin';
 import Tag from 'lucide-react/icons/tag';
 import Briefcase from 'lucide-react/icons/briefcase';
 import Wifi from 'lucide-react/icons/wifi';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
 import { useToast, useTenant } from '@/contexts';
@@ -47,6 +45,7 @@ import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
 
+import { LoadError } from '@/components/feedback/LoadError';
 interface JobAlert {
   id: number;
   user_id: number;
@@ -230,18 +229,7 @@ export function JobAlertsPage() {
 
       {/* Error State */}
       {error && !isLoading && (
-        <GlassCard className="p-8 text-center" role="alert">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('alerts.load_error')}</h2>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={loadAlerts}
-          >
-            {t('alerts.retry')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('alerts.load_error')} description={error} onRetry={loadAlerts} />
       )}
 
       {/* Alerts List */}

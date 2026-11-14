@@ -27,8 +27,6 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 import Globe from 'lucide-react/icons/globe';
 import Users from 'lucide-react/icons/users';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 import UsersRound from 'lucide-react/icons/users-round';
 import Lock from 'lucide-react/icons/lock';
 import { useTranslation } from 'react-i18next';
@@ -44,6 +42,7 @@ import { kindColour } from '@/components/feed/feedTypeColours';
 import { logError } from '@/lib/logger';
 import type { FederatedGroup, FederationPartner } from '@/types/api';
 
+import { LoadError } from '@/components/feedback/LoadError';
 const SEARCH_DEBOUNCE_MS = 300;
 const PER_PAGE = 20;
 
@@ -275,20 +274,7 @@ export function FederationGroupsPage() {
 
       {/* Error State */}
       {!isLoading && loadError && (
-        <GlassCard role="alert" className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">
-            {t('groups.unable_to_load')}
-          </h2>
-          <p className="text-theme-muted mb-4">{loadError}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => { setCursor(null); loadGroups(false); }}
-          >
-            {t('groups.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('groups.unable_to_load')} description={loadError} onRetry={() => { setCursor(null); loadGroups(false); }} />
       )}
 
       {/* Opt-in required */}

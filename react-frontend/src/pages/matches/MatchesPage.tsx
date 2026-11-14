@@ -47,6 +47,7 @@ import { MatchesEmptyState } from './components/MatchesEmptyState';
 import type { Match, MatchesMeta, MatchModule } from './types';
 import { matchElementId } from './types';
 
+import { LoadError } from '@/components/feedback/LoadError';
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -375,18 +376,7 @@ export function MatchesPage() {
           <Spinner size="lg" />
         </div>
       ) : loadError ? (
-        <GlassCard role="alert" className="p-8 text-center">
-          <Sparkles className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('load_error_title')}</h2>
-          <p className="text-theme-muted mb-4">{t('load_failed')}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => loadMatches()}
-          >
-            {t('retry')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('load_error_title')} onRetry={() => loadMatches()} />
       ) : filteredMatches.length === 0 ? (
         <MatchesEmptyState variant={emptyVariant} />
       ) : (

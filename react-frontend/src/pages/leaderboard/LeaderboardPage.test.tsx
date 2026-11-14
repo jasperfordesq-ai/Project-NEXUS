@@ -290,6 +290,6 @@ describe('LeaderboardPage', () => {
     await waitFor(() => {
       expect(screen.getByText("We couldn't load the leaderboard")).toBeInTheDocument();
     });
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
+    expect(screen.getByText('Try again')).toBeInTheDocument();
   });
 });

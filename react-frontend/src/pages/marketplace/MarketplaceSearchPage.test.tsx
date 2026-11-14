@@ -211,7 +211,7 @@ describe('MarketplaceSearchPage', () => {
     await renderPage();
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();
-      expect(screen.getByText('Search failed. Please try again.')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't run that search. Please try again.")).toBeInTheDocument();
     });
     expect(screen.queryByText("Nothing matches that search")).not.toBeInTheDocument();
   });

@@ -200,7 +200,7 @@ describe('MarketplaceMapSearchPage', () => {
 
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();
-      expect(screen.getAllByText('Map search failed. Please try again.').length).toBeGreaterThan(0);
+      expect(screen.getAllByText("We couldn't run that search. Please try again.").length).toBeGreaterThan(0);
     });
     expect(screen.queryByText('No Nearby Listings')).not.toBeInTheDocument();
   });

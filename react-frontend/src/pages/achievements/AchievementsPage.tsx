@@ -55,6 +55,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 
+import { LoadError } from '@/components/feedback/LoadError';
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1695,18 +1696,7 @@ export function AchievementsPage() {
 
       {/* Error State */}
       {error && !isLoading && (
-        <GlassCard className="p-8 text-center" role="alert">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('achievements.unable_to_load')}</h2>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={loadData}
-          >
-            {t('achievements.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('achievements.unable_to_load')} onRetry={loadData} />
       )}
 
       {!error && (

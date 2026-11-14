@@ -15,8 +15,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from '@/lib/motion';import Hash from 'lucide-react/icons/hash';
 import TrendingUp from 'lucide-react/icons/trending-up';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -31,6 +29,7 @@ import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 
+import { LoadError } from '@/components/feedback/LoadError';
 interface HashtagItem {
   tag: string;
   post_count: number;
@@ -153,18 +152,7 @@ export function HashtagsDiscoveryPage() {
 
       {/* Error */}
       {error && !isLoading && (
-        <GlassCard className="p-8 text-center" role="alert">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('hashtags.unable_to_load')}</h3>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={loadTrending}
-          >
-            {t('hashtags.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('hashtags.unable_to_load')} description={error} onRetry={loadTrending} />
       )}
 
       {/* Loading */}

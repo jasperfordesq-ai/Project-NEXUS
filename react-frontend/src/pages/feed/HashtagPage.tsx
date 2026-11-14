@@ -17,12 +17,10 @@ import { motion, AnimatePresence } from '@/lib/motion';
 import Hash from 'lucide-react/icons/hash';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import TrendingUp from 'lucide-react/icons/trending-up';
 import Sparkles from 'lucide-react/icons/sparkles';
 import Flag from 'lucide-react/icons/flag';
 import { Button } from '@/components/ui/Button';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Textarea } from '@/components/ui/Textarea';
 import { useDisclosure } from '@/components/ui/useDisclosure';
@@ -43,6 +41,7 @@ import { applyFeedSyncToItem, dispatchFeedSync, FEED_SYNC_EVENT, type FeedSyncPa
 import { logError } from '@/lib/logger';
 import type { ReactionType } from '@/components/social';
 
+import { LoadError } from '@/components/feedback/LoadError';
 export function HashtagPage() {
   const { t } = useTranslation('feed');
   const { tag } = useParams<{ tag: string }>();
@@ -382,18 +381,7 @@ export function HashtagPage() {
 
       {/* Error State */}
       {error && !isLoading && (
-        <GlassCard className="p-8 text-center" role="alert">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('hashtag.unable_to_load')}</h2>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => loadPosts()}
-          >
-            {t('hashtag.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('hashtag.unable_to_load')} description={error} onRetry={() => loadPosts()} />
       )}
 
       {/* Feed Items */}

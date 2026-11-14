@@ -10,8 +10,8 @@
   "tab_members": "Baill ({{count}})",
   "tab_events": "Imeachtaí ({{count}})",
   "tab_groups": "Grúpaí ({{count}})",
-  "error_title": "Earráid Chuardaigh",
-  "error_message": "Theip ar an gcuardach. Triail arís le do thoil.",
+  "error_title": "Níor éirigh linn an cuardach sin a dhéanamh",
+  "error_message": "Bain triail eile as i gceann nóiméid.",
   "try_again": "Triail Arís",
   "no_results_title": "Níl aon rud ag teacht leis an gcuardach sin",
   "no_results_desc": "Gan torthaí do \"{{query}}\". Bain triail as téarma cuardaigh eile.",
@@ -37,7 +37,7 @@
   "initial_tip_people": "Daoine",
   "initial_tip_events": "Imeachtaí",
   "toast": {
-    "search_failed": "Theip ar an gcuardach"
+    "search_failed": "Níor éirigh linn an cuardach sin a dhéanamh. Bain triail eile as."
   },
   "search_button": "Cuardaigh",
   "saved_searches": "Cuardaigh shábháilte ({{count}})",

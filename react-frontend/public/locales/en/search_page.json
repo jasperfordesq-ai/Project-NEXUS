@@ -10,8 +10,8 @@
   "tab_members": "Members ({{count}})",
   "tab_events": "Events ({{count}})",
   "tab_groups": "Groups ({{count}})",
-  "error_title": "Search Error",
-  "error_message": "Search failed. Please try again.",
+  "error_title": "We couldn't run that search",
+  "error_message": "Try again in a moment.",
   "try_again": "Try Again",
   "no_results_title": "Nothing matches that search",
   "no_results_desc": "No results for \"{{query}}\". Try a different search term.",
@@ -37,7 +37,7 @@
   "initial_tip_people": "People",
   "initial_tip_events": "Events",
   "toast": {
-    "search_failed": "Search failed"
+    "search_failed": "We couldn't run that search. Please try again."
   },
   "search_button": "Search",
   "saved_searches": "Saved Searches ({{count}})",

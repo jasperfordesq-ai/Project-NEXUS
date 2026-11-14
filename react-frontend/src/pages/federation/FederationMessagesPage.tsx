@@ -55,6 +55,7 @@ import type { FederatedMessage } from '@/types/api';
 import { isClearlyWrittenIn } from '@/lib/textLanguage/textLanguage';
 import { useReaderVocabulary } from '@/lib/textLanguage/useReaderVocabulary';
 
+import { LoadError } from '@/components/feedback/LoadError';
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -850,17 +851,7 @@ export function FederationMessagesPage() {
           <p className="text-theme-muted">{t('messages.loading')}</p>
         </GlassCard>
       ) : loadError ? (
-        <GlassCard role="alert" className="p-8 text-center">
-          <Globe className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('messages.unable_to_load')}</h3>
-          <p className="text-theme-muted mb-4">{t('messages.unable_to_load_description')}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            onPress={loadMessages}
-          >
-            {t('messages.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('messages.unable_to_load')} description={t('messages.unable_to_load_description')} onRetry={loadMessages} />
       ) : threads.length === 0 && !searchQuery ? (
         <GlassCard className="p-12 text-center">
           <div className="flex flex-col items-center gap-4">

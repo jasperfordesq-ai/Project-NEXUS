@@ -35,8 +35,6 @@ import Globe from 'lucide-react/icons/globe';
 import Hand from 'lucide-react/icons/hand';
 import Clock from 'lucide-react/icons/clock';
 import MapPin from 'lucide-react/icons/map-pin';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 import ListTodo from 'lucide-react/icons/list-todo';
 import { ThemedCover } from '@/components/ui/ThemedCover';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
@@ -58,6 +56,7 @@ import { resolveAvatarUrl, responsiveThumbnailProps, getFormattingLocale } from 
 import type { FederatedListing, FederationPartner } from '@/types/api';
 import { coverSeed } from '@/lib/coverSeeds';
 
+import { LoadError } from '@/components/feedback/LoadError';
 type ListingTypeFilter = 'all' | 'offer' | 'request';
 
 type FederationSourceMeta = {
@@ -382,20 +381,7 @@ export function FederationListingsPage() {
 
       {/* Error State */}
       {!isLoading && loadError && (
-        <GlassCard role="alert" className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">
-            {t('listings.unable_to_load')}
-          </h2>
-          <p className="text-theme-muted mb-4">{loadError}</p>
-          <Button
-            variant="primary"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => { setCursor(null); loadListings(false); }}
-          >
-            {t('listings.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('listings.unable_to_load')} description={loadError} onRetry={() => { setCursor(null); loadListings(false); }} />
       )}
 
       {/* Opt-in required */}

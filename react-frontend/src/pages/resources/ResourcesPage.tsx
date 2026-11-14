@@ -26,8 +26,6 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion } from '@/lib/motion';
 
 import FolderOpen from 'lucide-react/icons/folder-open';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Download from 'lucide-react/icons/download';
 import FileText from 'lucide-react/icons/file-text';
 import FileSpreadsheet from 'lucide-react/icons/file-spreadsheet';
@@ -69,6 +67,7 @@ import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { PageMeta } from '@/components/seo/PageMeta';
 
+import { LoadError } from '@/components/feedback/LoadError';
 /* ───────────────────────── Types ───────────────────────── */
 
 interface Resource {
@@ -871,19 +870,7 @@ export function ResourcesPage() {
 
       {/* Error */}
       {error && !isLoading && (
-        <GlassCard role="alert" className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('resources.unable_to_load')}</h2>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            color="warning"
-            className="text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => loadResources()}
-          >
-            {t('resources.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('resources.unable_to_load')} description={error} onRetry={() => loadResources()} />
       )}
 
       {/* Resources List */}

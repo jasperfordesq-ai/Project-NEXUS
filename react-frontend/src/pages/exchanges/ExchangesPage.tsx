@@ -26,8 +26,6 @@ import Clock from 'lucide-react/icons/clock';
 import Calendar from 'lucide-react/icons/calendar';
 import User from 'lucide-react/icons/user';
 import Plus from 'lucide-react/icons/plus';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
@@ -40,6 +38,7 @@ import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { api } from '@/lib/api';
+import { LoadError } from '@/components/feedback/LoadError';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { EXCHANGE_STATUS_CONFIG } from '@/lib/exchange-status';
@@ -342,28 +341,21 @@ export function ExchangesPage() {
 
       {/* Error State */}
       {error && !isLoading && (
-        <GlassCard className="p-8 text-center" role="alert">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('error.unable_to_load')}</h3>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => {
-              if (!configLoadedRef.current) {
-                // Config never loaded — refetch it; the load-effect picks up
-                // the exchanges once config arrives.
-                setError(null);
-                setIsLoading(true);
-                loadConfig();
-              } else {
-                loadExchanges();
-              }
-            }}
-          >
-            {t('try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError
+          title={t('error.unable_to_load')}
+          description={error}
+          onRetry={() => {
+            if (!configLoadedRef.current) {
+              // Config never loaded — refetch it; the load-effect picks up
+              // the exchanges once config arrives.
+              setError(null);
+              setIsLoading(true);
+              loadConfig();
+            } else {
+              loadExchanges();
+            }
+          }}
+        />
       )}
 
       {/* Exchanges List */}

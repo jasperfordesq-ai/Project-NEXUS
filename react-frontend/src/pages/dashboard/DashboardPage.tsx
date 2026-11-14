@@ -46,8 +46,6 @@ import Calendar from 'lucide-react/icons/calendar';
 import Bell from 'lucide-react/icons/bell';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import Plus from 'lucide-react/icons/plus';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Activity from 'lucide-react/icons/activity';
 import Sparkles from 'lucide-react/icons/sparkles';
 import MapPin from 'lucide-react/icons/map-pin';
@@ -69,6 +67,7 @@ import { formatDayOfMonth, formatMonthShort, formatRelativeTime, resolveAvatarUr
 import type { WalletBalance, Listing, Event, Group } from '@/types/api';
 import { CARING_COMMUNITY_ROUTE } from '@/pages/caring-community/config';
 
+import { LoadError } from '@/components/feedback/LoadError';
 interface GamificationProfile {
   level: number;
   xp: number;
@@ -444,12 +443,7 @@ export function DashboardPage() {
     return (
       <>
         <PageMeta title={t('meta.title')} description={t('meta.description')} noIndex />
-        <GlassCard className="mx-auto max-w-xl p-6 text-center sm:p-8" role="alert" aria-live="assertive">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load')}</h2>
-          <p className="mb-5 text-sm leading-6 text-theme-muted">{error}</p>
-          <Button className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white" startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />} onPress={() => loadDashboardData()}>{t('try_again')}</Button>
-        </GlassCard>
+        <LoadError title={t('unable_to_load')} description={error} onRetry={() => loadDashboardData()} className="mx-auto max-w-xl" />
       </>
     );
   }

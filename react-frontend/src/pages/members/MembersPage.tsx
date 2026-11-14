@@ -47,9 +47,7 @@ import Filter from 'lucide-react/icons/filter';
 import Grid from 'lucide-react/icons/grid-3x3';
 import List from 'lucide-react/icons/list';
 import MapIcon from 'lucide-react/icons/map';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 import X from 'lucide-react/icons/x';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Sparkles from 'lucide-react/icons/sparkles';
 import TrendingUp from 'lucide-react/icons/trending-up';
 import BadgeCheck from 'lucide-react/icons/badge-check';
@@ -75,6 +73,7 @@ import { ThemedCover } from '@/components/ui/ThemedCover';
 import { colourForSeed } from '@/lib/categoryColours';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 
+import { LoadError } from '@/components/feedback/LoadError';
 const LazyEntityMapView = lazy(() =>
   import('@/components/location/EntityMapView').then((module) => ({
     default: module.EntityMapView,
@@ -901,18 +900,7 @@ export function MembersPage() {
 
       {/* Error State */}
       {error && !isLoading && (
-        <GlassCard role="alert" className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('members.unable_to_load')}</h3>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => loadMembers()}
-          >
-            {t('members.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('members.unable_to_load')} description={error} onRetry={() => loadMembers()} />
       )}
 
       {/* Members Grid/List */}

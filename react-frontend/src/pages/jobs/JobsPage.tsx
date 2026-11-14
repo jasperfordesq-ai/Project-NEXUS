@@ -48,7 +48,6 @@ import MapPin from 'lucide-react/icons/map-pin';
 import Clock from 'lucide-react/icons/clock';
 import Eye from 'lucide-react/icons/eye';
 import FileText from 'lucide-react/icons/file-text';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import ChevronRight from 'lucide-react/icons/chevron-right';
 import Wifi from 'lucide-react/icons/wifi';
@@ -80,6 +79,7 @@ import { PageMeta } from '@/components/seo/PageMeta';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
 import type { JobConfig } from '@/types';
 
+import { LoadError } from '@/components/feedback/LoadError';
 interface JobVacancy {
   id: number;
   title: string;
@@ -808,18 +808,7 @@ export function JobsPage() {
 
           {/* Error State */}
           {error && !isLoading && (
-            <GlassCard role="alert" className="p-8 text-center">
-              <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load')}</h2>
-              <p className="text-theme-muted mb-4">{error}</p>
-              <Button
-                className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
-                startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-                onPress={() => loadVacancies()}
-              >
-                {t('try_again')}
-              </Button>
-            </GlassCard>
+            <LoadError title={t('unable_to_load')} description={error} onRetry={() => loadVacancies()} />
           )}
 
           {/* Vacancies List */}

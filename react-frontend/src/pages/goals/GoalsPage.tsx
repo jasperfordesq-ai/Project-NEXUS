@@ -38,8 +38,6 @@ import { motion } from '@/lib/motion';
 
 import Target from 'lucide-react/icons/target';
 import Plus from 'lucide-react/icons/plus';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Calendar from 'lucide-react/icons/calendar';
 import TrendingUp from 'lucide-react/icons/trending-up';
 import Users from 'lucide-react/icons/users';
@@ -77,6 +75,7 @@ import { GoalInsightsPanel } from './components/GoalInsightsPanel';
 import { GoalBuddyRequests } from './components/GoalBuddyRequests';
 import type { AcceptedBuddyGoal } from './components/GoalBuddyRequests';
 
+import { LoadError } from '@/components/feedback/LoadError';
 /* ───────────────────────── Types ───────────────────────── */
 
 interface Goal {
@@ -607,18 +606,7 @@ export function GoalsPage() {
 
       {/* Error State */}
       {error && !isLoading && (
-        <GlassCard role="alert" className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('goals.unable_to_load')}</h2>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => loadGoals()}
-          >
-            {t('goals.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('goals.unable_to_load')} onRetry={() => loadGoals()} />
       )}
 
       {/* Goals List */}

@@ -28,7 +28,6 @@ import Users from 'lucide-react/icons/users';
 import Podcast from 'lucide-react/icons/podcast';
 import Clock from 'lucide-react/icons/clock';
 import MapPin from 'lucide-react/icons/map-pin';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { useTranslation } from 'react-i18next';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
@@ -53,6 +52,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Category, Listing, User as UserType, Event, Group } from '@/types/api';
 import { searchNextCursor } from './searchPaging';
 
+import { LoadError } from '@/components/feedback/LoadError';
 interface SearchResults {
   listings: Listing[];
   users: UserType[];
@@ -665,17 +665,7 @@ export function SearchPage() {
 
           {/* Results Content */}
           {searchError ? (
-            <GlassCard role="alert" className="p-8 text-center">
-              <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('error_title')}</h2>
-              <p className="text-theme-muted mb-4">{searchError}</p>
-              <Button
-                className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
-                onPress={() => performSearch(query)}
-              >
-                {t('try_again')}
-              </Button>
-            </GlassCard>
+            <LoadError title={t('error_title')} description={searchError} onRetry={() => performSearch(query)} />
           ) : isLoading ? (
             <div role="status" aria-label={t('aria.loading_search_results')} aria-busy="true" className="space-y-4">
               {Array.from({ length: 6 }).map((_, i) => (

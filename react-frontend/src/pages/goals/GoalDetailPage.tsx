@@ -33,7 +33,6 @@ import Globe from 'lucide-react/icons/globe';
 import Lock from 'lucide-react/icons/lock';
 import History from 'lucide-react/icons/history';
 import Sparkles from 'lucide-react/icons/sparkles';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { EmptyState } from '@/components/feedback';
 import { PageMeta } from '@/components/seo';
 import { SocialInteractionPanel } from '@/components/social/SocialInteractionPanel';
@@ -47,6 +46,7 @@ import { GoalProgressHistory } from './components/GoalProgressHistory';
 import { GoalInsightsPanel } from './components/GoalInsightsPanel';
 import { GoalBuddyRequests } from './components/GoalBuddyRequests';
 
+import { LoadError } from '@/components/feedback/LoadError';
 interface Goal {
   id: number;
   user_id: number;
@@ -195,17 +195,7 @@ export function GoalDetailPage() {
       <div className="space-y-6">
         <PageMeta title={t('page_meta.goals.title')} noIndex />
         {backButton}
-        <GlassCard className="p-8 text-center" role="alert">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('goals.unable_to_load')}</h2>
-          <p className="text-theme-muted mb-4">{error ?? t('goals.load_error')}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            onPress={loadGoal}
-          >
-            {t('goals.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('goals.unable_to_load')} description={error ?? t('goals.load_error')} onRetry={loadGoal} />
       </div>
     );
   }

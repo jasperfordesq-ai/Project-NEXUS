@@ -88,6 +88,7 @@ import type { ProximityFilterParams } from '@/components/proximity/ProximityFilt
 import { extractCollectionItems } from './extractCollectionItems';
 import { ShiftSwapRequestModal, type SwapSourceShift } from './ShiftSwapRequestModal';
 import { MyHoursAndShiftsLists } from './MyHoursAndShiftsLists';
+import { LoadError } from '@/components/feedback/LoadError';
 const VolunteeringWelcome = React.lazy(() => import('./VolunteeringWelcome'));
 const RecommendedShiftsTab = React.lazy(() => import('./RecommendedShiftsTab'));
 const EmergencyAlertsTab = React.lazy(() => import('./EmergencyAlertsTab'));
@@ -799,18 +800,7 @@ function OpportunitiesTab({ isPhone, showMobileControls, hub }: OpportunitiesTab
 
       {/* Error */}
       {error && !isLoading && (
-        <GlassCard className="p-8 text-center" role="alert">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load_opportunities')}</h2>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className={VOL_GRADIENT}
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => loadOpportunities()}
-          >
-            {t('try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('unable_to_load_opportunities')} description={error} onRetry={() => loadOpportunities()} />
       )}
 
       {/* Opportunities List */}

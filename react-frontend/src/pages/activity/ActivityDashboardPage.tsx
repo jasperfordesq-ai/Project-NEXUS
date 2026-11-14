@@ -28,11 +28,8 @@ import TrendingUp from 'lucide-react/icons/trending-up';
 import Clock from 'lucide-react/icons/clock';
 import MessageSquare from 'lucide-react/icons/message-square';
 import Star from 'lucide-react/icons/star';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Sparkles from 'lucide-react/icons/sparkles';
 import BarChart3 from 'lucide-react/icons/chart-column';
-import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Spinner } from '@/components/ui/Spinner';
 import { EmptyState } from '@/components/feedback';
@@ -44,6 +41,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { formatRelativeTime } from '@/lib/helpers';
 
+import { LoadError } from '@/components/feedback/LoadError';
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -258,18 +256,7 @@ export function ActivityDashboardPage() {
   if (error) {
     return (
       <div className="max-w-4xl mx-auto">
-        <GlassCard className="p-8 text-center" role="alert">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load')}</h2>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={loadDashboard}
-          >
-            {t('try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('unable_to_load')} description={error} onRetry={loadDashboard} />
       </div>
     );
   }

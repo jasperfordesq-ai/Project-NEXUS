@@ -14,8 +14,6 @@ import { useTranslation } from 'react-i18next';
 
 import Save from 'lucide-react/icons/save';
 import MapPin from 'lucide-react/icons/map-pin';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 import PauseCircle from 'lucide-react/icons/pause-circle';
 import Target from 'lucide-react/icons/target';
 import Tags from 'lucide-react/icons/tags';
@@ -40,6 +38,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import type { MatchPreferences } from './types';
 
+import { LoadError } from '@/components/feedback/LoadError';
 interface Category {
   id: number;
   name: string;
@@ -164,18 +163,7 @@ export function MatchPreferencesPage() {
           accent="indigo"
         />
 
-        <GlassCard role="alert" className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{error}</h2>
-          <p className="text-theme-muted mb-4">{t('preferences.load_error_desc')}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => load()}
-          >
-            {t('preferences.retry')}
-          </Button>
-        </GlassCard>
+        <LoadError title={error} description={t('preferences.load_error_desc')} onRetry={() => load()} />
       </div>
     );
   }

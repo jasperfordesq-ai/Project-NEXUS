@@ -10,8 +10,8 @@
   "tab_members": "Mitglieder ({{count}})",
   "tab_events": "Veranstaltungen ({{count}})",
   "tab_groups": "Gruppen ({{count}})",
-  "error_title": "Suchfehler",
-  "error_message": "Suche fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "error_title": "Wir konnten diese Suche nicht ausführen",
+  "error_message": "Versuchen Sie es gleich noch einmal.",
   "try_again": "Erneut versuchen",
   "no_results_title": "Zu dieser Suche passt nichts",
   "no_results_desc": "Keine Ergebnisse für \"{{query}}\". Versuchen Sie einen anderen Suchbegriff.",
@@ -37,7 +37,7 @@
   "initial_tip_people": "Personen",
   "initial_tip_events": "Veranstaltungen",
   "toast": {
-    "search_failed": "Suche fehlgeschlagen"
+    "search_failed": "Wir konnten diese Suche nicht ausführen. Bitte versuchen Sie es noch einmal."
   },
   "search_button": "Suchen",
   "saved_searches": "Gespeicherte Suchen ({{count}})",

@@ -10,8 +10,8 @@
   "tab_members": "Leden ({{count}})",
   "tab_events": "Evenementen ({{count}})",
   "tab_groups": "Groepen ({{count}})",
-  "error_title": "Zoekfout",
-  "error_message": "Zoeken is mislukt. Probeer het opnieuw.",
+  "error_title": "We konden die zoekopdracht niet uitvoeren",
+  "error_message": "Probeer het zo nog eens.",
   "try_again": "Probeer opnieuw",
   "no_results_title": "Niets past bij die zoekopdracht",
   "no_results_desc": "Geen resultaten voor \"{{query}}\". Probeer een andere zoekterm.",
@@ -37,7 +37,7 @@
   "initial_tip_people": "Mensen",
   "initial_tip_events": "Evenementen",
   "toast": {
-    "search_failed": "Zoeken mislukt"
+    "search_failed": "We konden die zoekopdracht niet uitvoeren. Probeer het opnieuw."
   },
   "search_button": "Zoeken",
   "saved_searches": "Opgeslagen Zoekopdrachten ({{count}})",

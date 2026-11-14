@@ -9,8 +9,6 @@ import { Link } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 
 import ArrowLeft from 'lucide-react/icons/arrow-left';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 import ShieldOff from 'lucide-react/icons/shield-off';
 import UserX from 'lucide-react/icons/user-x';
 import { Avatar } from '@/components/ui/Avatar';
@@ -26,6 +24,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 
+import { LoadError } from '@/components/feedback/LoadError';
 interface BlockedUser {
   block_id: number;
   user_id: number;
@@ -133,17 +132,7 @@ export function BlockedUsersPage() {
 
       {/* List — never show the "No blocked users" empty state on a failed load */}
       {loadError ? (
-        <GlassCard role="alert" className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('blocked_users.load_error')}</h2>
-          <p className="text-theme-muted mb-4">{t('blocked_users.load_error_desc')}</p>
-          <Button
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={loadBlockedUsers}
-          >
-            {t('blocked_users.retry')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('blocked_users.load_error')} description={t('blocked_users.load_error_desc')} onRetry={loadBlockedUsers} />
       ) : blockedUsers.length === 0 ? (
         <EmptyState
           icon={<UserX className="w-12 h-12" />}

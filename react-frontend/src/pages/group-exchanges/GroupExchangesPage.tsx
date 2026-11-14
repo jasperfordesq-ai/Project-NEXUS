@@ -25,8 +25,6 @@ import Users from 'lucide-react/icons/users';
 import Clock from 'lucide-react/icons/clock';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import Calendar from 'lucide-react/icons/calendar';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -43,6 +41,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 
+import { LoadError } from '@/components/feedback/LoadError';
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -245,18 +244,7 @@ export function GroupExchangesPage() {
 
       {/* Error State */}
       {error && !isLoading && (
-        <GlassCard role="alert" className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load')}</h3>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => loadExchanges()}
-          >
-            {t('try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('unable_to_load')} description={error} onRetry={() => loadExchanges()} />
       )}
 
       {/* Exchange List */}

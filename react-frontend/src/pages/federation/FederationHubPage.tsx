@@ -32,8 +32,6 @@ import Settings from 'lucide-react/icons/settings';
 import Calendar from 'lucide-react/icons/calendar';
 import ListTodo from 'lucide-react/icons/list-todo';
 import ArrowRight from 'lucide-react/icons/arrow-right';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Activity from 'lucide-react/icons/activity';
 import Network from 'lucide-react/icons/network';
 import Handshake from 'lucide-react/icons/handshake';
@@ -66,6 +64,7 @@ import type {
   FederationActivityItem,
 } from '@/types/api';
 
+import { LoadError } from '@/components/feedback/LoadError';
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -791,19 +790,7 @@ export default function FederationHubPage() {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
         <Breadcrumbs items={breadcrumbs} />
-        <GlassCard role="alert" className="p-12 text-center mt-6">
-          <AlertTriangle className="w-12 h-12 text-warning mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">{t('hub.unable_to_load')}</h2>
-          <p className="text-muted mb-6">{error}</p>
-          <Button
-            color="primary"
-            variant="flat"
-            onPress={loadData}
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-          >
-            {t('hub.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('hub.unable_to_load')} description={error} onRetry={loadData} className="mt-6" />
       </div>
     );
   }

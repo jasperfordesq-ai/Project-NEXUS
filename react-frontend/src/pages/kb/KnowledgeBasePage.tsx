@@ -18,15 +18,12 @@ import { Link } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 
 import BookOpen from 'lucide-react/icons/book-open';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import ChevronRight from 'lucide-react/icons/chevron-right';
 import FileText from 'lucide-react/icons/file-text';
 import Clock from 'lucide-react/icons/clock';
 import Eye from 'lucide-react/icons/eye';
 import Folder from 'lucide-react/icons/folder';
 import File from 'lucide-react/icons/file';
-import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SearchField } from '@/components/ui/SearchField';
@@ -47,6 +44,7 @@ import { categoryColour, colourForSeed } from '@/lib/categoryColours';
 import { coverSeed } from '@/lib/coverSeeds';
 import { useCategoryListColours } from '@/hooks/useCategoryListColours';
 
+import { LoadError } from '@/components/feedback/LoadError';
 /* ───────────────────────── Types ───────────────────────── */
 
 interface KBArticle {
@@ -318,18 +316,7 @@ export function KnowledgeBasePage() {
 
       {/* Error */}
       {error && !isLoading && (
-        <GlassCard className="p-8 text-center" role="alert">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('error.title')}</h2>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={loadArticles}
-          >
-            {t('try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('error.title')} description={error} onRetry={loadArticles} />
       )}
 
       {/* Content */}

@@ -29,8 +29,6 @@ import Globe from 'lucide-react/icons/globe';
 import MapPin from 'lucide-react/icons/map-pin';
 import MessageSquare from 'lucide-react/icons/message-square';
 import User from 'lucide-react/icons/user';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Users from 'lucide-react/icons/users';
 import Compass from 'lucide-react/icons/compass';
 import Car from 'lucide-react/icons/car';
@@ -49,6 +47,7 @@ import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
 import type { FederatedMember, FederationPartner } from '@/types/api';
 
+import { LoadError } from '@/components/feedback/LoadError';
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Constants
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -483,20 +482,7 @@ export function FederationMembersPage() {
 
       {/* Error State */}
       {error && !isLoading && (
-        <GlassCard role="alert" className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h3 className="text-lg font-semibold text-theme-primary mb-2">
-            {t('members.unable_to_load')}
-          </h3>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            variant="primary"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => loadMembers()}
-          >
-            {t('members.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('members.unable_to_load')} description={error} onRetry={() => loadMembers()} />
       )}
 
       {/* Loading State */}

@@ -340,7 +340,7 @@ describe('AchievementsPage', () => {
     await waitFor(() => {
       expect(screen.getByText("We couldn't load your achievements")).toBeInTheDocument();
     });
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
+    expect(screen.getByText('Try again')).toBeInTheDocument();
   });
 
   it('shows showcased chip on showcased badges', async () => {

@@ -49,6 +49,7 @@ import { formatRelativeTime, resolveAvatarUrl, resolveUserDisplayName } from '@/
 import { logError } from '@/lib/logger';
 import type { Conversation, User } from '@/types/api';
 
+import { LoadError } from '@/components/feedback/LoadError';
 // Helper to get the other user from conversation (supports both API formats)
 function getOtherUser(conv: Conversation) {
   // Backend returns other_user as the primary field
@@ -751,18 +752,7 @@ export function MessagesPage() {
       {activeTab === 'inbox' ? (
         // Inbox view
         error ? (
-          <GlassCard role="alert" className="p-8 text-center">
-            <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-            <h3 className="text-lg font-semibold text-theme-primary mb-2">{t('load_error_title')}</h3>
-            <p className="text-theme-muted mb-4">{error}</p>
-            <Button
-              className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-              startContent={<RefreshCw className="h-4 w-4" aria-hidden="true" />}
-              onPress={() => loadConversations()}
-            >
-              {t('try_again')}
-            </Button>
-          </GlassCard>
+          <LoadError title={t('load_error_title')} description={error} onRetry={() => loadConversations()} />
         ) : isLoading ? (
           <ConversationListSkeleton label={t('aria_loading_conversations')} count={5} />
         ) : filteredConversations.length === 0 ? (

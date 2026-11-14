@@ -330,9 +330,9 @@ describe('SearchPage', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Search Error')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't run that search")).toBeInTheDocument();
     });
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
+    expect(screen.getByText('Try again')).toBeInTheDocument();
   });
 
   it('does not show the "no results" empty state on the All tab when a search returns matches', async () => {

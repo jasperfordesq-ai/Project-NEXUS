@@ -207,7 +207,7 @@ describe('GoalsPage', () => {
     await waitFor(() => {
       expect(screen.getByText("We couldn't load your goals")).toBeInTheDocument();
     });
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
+    expect(screen.getByText('Try again')).toBeInTheDocument();
   });
 
   describe('Load more re-entry guard', () => {

@@ -15,8 +15,6 @@ import Sparkles from 'lucide-react/icons/sparkles';
 import ChevronRight from 'lucide-react/icons/chevron-right';
 import ChevronDown from 'lucide-react/icons/chevron-down';
 import Users from 'lucide-react/icons/users';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import FolderTree from 'lucide-react/icons/folder-tree';
 import GraduationCap from 'lucide-react/icons/graduation-cap';
 import HandHelping from 'lucide-react/icons/hand-helping';
@@ -47,6 +45,7 @@ import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import type { SkillCategory } from '@/components/skills/SkillSelector';
 import { coverSeed } from '@/lib/coverSeeds';
 
+import { LoadError } from '@/components/feedback/LoadError';
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -356,20 +355,7 @@ export function SkillsBrowsePage() {
 
       {/* ── Error State ──────────────────────────────────────────────────── */}
       {error && !isLoading && (
-        <GlassCard role="alert" className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h3 className="text-lg font-semibold text-theme-primary mb-2">
-            {t('skills.unable_to_load')}
-          </h3>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            color="primary"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={loadCategories}
-          >
-            {t('skills.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('skills.unable_to_load')} description={error} onRetry={loadCategories} />
       )}
 
       {/* ── Loading ──────────────────────────────────────────────────────── */}

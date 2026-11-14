@@ -26,8 +26,6 @@ import Plus from 'lucide-react/icons/plus';
 import Lock from 'lucide-react/icons/lock';
 import Globe from 'lucide-react/icons/globe';
 import MessageSquare from 'lucide-react/icons/message-square';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Star from 'lucide-react/icons/star';
 import { useTranslation } from 'react-i18next';
 import { MemberPlainText } from '@/components/ui/MemberPlainText';
@@ -56,6 +54,7 @@ import { listGroupDirectory } from './api';
 import { GroupsFilterSheet } from './components/GroupsFilterSheet';
 import { useGroupDirectoryTypes } from './useGroupDirectoryTypes';
 
+import { LoadError } from '@/components/feedback/LoadError';
 type GroupFilter = 'all' | 'joined' | 'public' | 'private';
 
 const ITEMS_PER_PAGE = 20;
@@ -556,18 +555,7 @@ export function GroupsPage() {
 
       {/* Error State */}
       {error && !isLoading && (
-        <GlassCard className="p-8 text-center" role="alert">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('unable_to_load')}</h2>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => loadGroups()}
-          >
-            {t('try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('unable_to_load')} description={error} onRetry={() => loadGroups()} />
       )}
 
       {/* Groups Grid */}

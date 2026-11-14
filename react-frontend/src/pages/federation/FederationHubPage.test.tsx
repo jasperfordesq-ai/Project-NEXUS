@@ -182,7 +182,7 @@ describe('FederationHubPage', () => {
       expect(screen.getByText("We couldn't load this page")).toBeInTheDocument();
     });
     expect(screen.getByText("That didn't work. Please try again.")).toBeInTheDocument();
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
+    expect(screen.getByText('Try again')).toBeInTheDocument();
   });
 
   it('shows Federation Not Available when tenant federation is disabled', async () => {

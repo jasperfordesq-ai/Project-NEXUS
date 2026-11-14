@@ -39,6 +39,7 @@ import { PageMeta } from '@/components/seo';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
 import type { Notification } from '@/types/api';
 
+import { LoadError } from '@/components/feedback/LoadError';
 type NotificationFilter = 'all' | 'unread';
 
 const containerVariants = {
@@ -447,17 +448,7 @@ export function NotificationsPage() {
 
       {/* Load Error */}
       {loadError && !isLoading && (
-        <GlassCard role="alert" className="p-8 text-center">
-          <Bell className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4 opacity-50" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('error_title')}</h2>
-          <p className="text-theme-muted mb-4">{loadError}</p>
-          <Button
-            className="bg-linear-to-r from-accent-strong to-accent-strong-end text-white"
-            onPress={loadNotifications}
-          >
-            {t('try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('error_title')} onRetry={loadNotifications} />
       )}
 
       {/* Notifications List */}

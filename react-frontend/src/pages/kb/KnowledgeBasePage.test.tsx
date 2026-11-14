@@ -227,8 +227,8 @@ describe('KnowledgeBasePage', () => {
       expect(screen.getByText('error.title')).toBeInTheDocument();
     });
     const buttons = screen.getAllByRole('button');
-    // t('try_again') returns key 'try_again'
-    const tryAgainBtn = buttons.find((btn) => btn.textContent?.includes('try_again'));
+    // the shared LoadError button: t('couldnt_load_retry') returns its key
+    const tryAgainBtn = buttons.find((btn) => btn.textContent?.includes('couldnt_load_retry'));
     expect(tryAgainBtn).toBeTruthy();
   });
 

@@ -210,7 +210,7 @@ describe('OrganisationsPage', () => {
     await waitFor(() => {
       expect(screen.getByText("We couldn't load the organisations")).toBeInTheDocument();
     });
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
+    expect(screen.getByText('Try again')).toBeInTheDocument();
   });
 
   it('shows a "currently showing" hero stat reflecting the loaded count, not a partners grand total', async () => {

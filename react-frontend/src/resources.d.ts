@@ -55444,7 +55444,7 @@ export default interface Resources {
       "results_count": "{{count}} listings found nearby",
       "results_count_one": "{{count}} listings found nearby",
       "results_count_other": "{{count}} listings found nearby",
-      "search_failed": "Map search failed. Please try again.",
+      "search_failed": "We couldn't run that search. Please try again.",
       "search_placeholder": "Search nearby listings...",
       "search_this_area": "Search This Area",
       "use_my_location": "Use My Location",
@@ -55778,7 +55778,7 @@ export default interface Resources {
       "results_count_one": "{{count}} result",
       "results_count_other": "{{count}} results",
       "results_for": "for",
-      "search_failed": "Search failed. Please try again.",
+      "search_failed": "We couldn't run that search. Please try again.",
       "search_placeholder": "Search marketplace...",
       "seller_type_label": "Seller Type",
       "today": "Today"
@@ -59037,8 +59037,8 @@ export default interface Resources {
     "empty_tip_broaden": "Use broader words",
     "empty_tip_filters": "Reset filters",
     "empty_tip_spelling": "Check spelling",
-    "error_message": "Search failed. Please try again.",
-    "error_title": "Search Error",
+    "error_message": "Try again in a moment.",
+    "error_title": "We couldn't run that search",
     "filter_all_categories": "All Categories",
     "filter_all_types": "All Types",
     "filter_apply": "Apply Filters",
@@ -59139,7 +59139,7 @@ export default interface Resources {
     "tabs_aria": "Search result type filter",
     "title": "Search",
     "toast": {
-      "search_failed": "Search failed"
+      "search_failed": "We couldn't run that search. Please try again."
     },
     "toast_search_delete_failed": "We couldn't delete that. Please try again.",
     "toast_search_deleted": "Saved search removed",

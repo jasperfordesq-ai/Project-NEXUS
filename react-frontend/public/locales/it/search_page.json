@@ -10,8 +10,8 @@
   "tab_members": "Membri ({{count}})",
   "tab_events": "Eventi ({{count}})",
   "tab_groups": "Gruppi ({{count}})",
-  "error_title": "Errore di ricerca",
-  "error_message": "La ricerca non è riuscita. Riprova.",
+  "error_title": "Non siamo riusciti a eseguire quella ricerca",
+  "error_message": "Riprova tra un momento.",
   "try_again": "Riprova",
   "no_results_title": "Niente corrisponde a questa ricerca",
   "no_results_desc": "Nessun risultato per \"{{query}}\". Provi un altro termine di ricerca.",
@@ -37,7 +37,7 @@
   "initial_tip_people": "Persone",
   "initial_tip_events": "Eventi",
   "toast": {
-    "search_failed": "La ricerca non è riuscita"
+    "search_failed": "Non siamo riusciti a eseguire quella ricerca. Riprova."
   },
   "search_button": "Cerca",
   "saved_searches": "Ricerche salvate ({{count}})",

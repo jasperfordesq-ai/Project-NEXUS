@@ -55,6 +55,7 @@ import CommunityImpactTab from './CommunityImpactTab';
 import PersonalJourneyTab from './PersonalJourneyTab';
 import MemberSpotlightTab from './MemberSpotlightTab';
 
+import { LoadError } from '@/components/feedback/LoadError';
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -822,19 +823,7 @@ function CompetitiveLeaderboard(props: CompetitiveLeaderboardProps) {
 
       {/* Error State */}
       {error && !isLoading && (
-        <GlassCard className="p-8 text-center" role="alert">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('leaderboard.unable_to_load')}</h2>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            color="primary"
-            aria-label={t('leaderboard.retry')}
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={loadLeaderboard}
-          >
-            {t('leaderboard.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('leaderboard.unable_to_load')} description={error} onRetry={loadLeaderboard} />
       )}
 
       {/* Leaderboard Table */}

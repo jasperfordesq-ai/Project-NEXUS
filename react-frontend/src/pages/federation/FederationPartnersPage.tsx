@@ -21,8 +21,6 @@ import Globe from 'lucide-react/icons/globe';
 import MapPin from 'lucide-react/icons/map-pin';
 import Users from 'lucide-react/icons/users';
 import Eye from 'lucide-react/icons/eye';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Shield from 'lucide-react/icons/shield';
 import MessageSquare from 'lucide-react/icons/message-square';
 import ArrowRightLeft from 'lucide-react/icons/arrow-right-left';
@@ -48,6 +46,7 @@ import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import type { FederationPartner } from '@/types/api';
 
+import { LoadError } from '@/components/feedback/LoadError';
 // ─────────────────────────────────────────────────────────────────────────────
 // Federation Level Metadata
 // ─────────────────────────────────────────────────────────────────────────────
@@ -199,20 +198,7 @@ export function FederationPartnersPage() {
 
       {/* Error State */}
       {!isLoading && loadError && (
-        <GlassCard role="alert" className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">
-            {t('partners.unable_to_load')}
-          </h2>
-          <p className="text-theme-muted mb-4">{loadError}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={loadPartners}
-          >
-            {t('partners.try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('partners.unable_to_load')} description={loadError} onRetry={loadPartners} />
       )}
 
       {/* Empty State */}

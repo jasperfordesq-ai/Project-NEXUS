@@ -10,8 +10,8 @@
   "tab_members": "Członkowie ({{count}})",
   "tab_events": "Wydarzenia ({{count}})",
   "tab_groups": "Grupy ({{count}})",
-  "error_title": "Błąd wyszukiwania",
-  "error_message": "Wyszukiwanie nie powiodło się. Proszę spróbować ponownie.",
+  "error_title": "Nie udało się nam wykonać tego wyszukiwania",
+  "error_message": "Spróbuj ponownie za chwilę.",
   "try_again": "Spróbuj ponownie",
   "no_results_title": "Nic nie pasuje do tego wyszukiwania",
   "no_results_desc": "Brak wyników dla \"{{query}}\". Spróbuj innego terminu wyszukiwania.",
@@ -37,7 +37,7 @@
   "initial_tip_people": "Osoby",
   "initial_tip_events": "Wydarzenia",
   "toast": {
-    "search_failed": "Wyszukiwanie nie powiodło się"
+    "search_failed": "Nie udało się nam wykonać tego wyszukiwania. Spróbuj ponownie."
   },
   "search_button": "Szukaj",
   "saved_searches": "Zapisane wyszukiwania ({{count}})",

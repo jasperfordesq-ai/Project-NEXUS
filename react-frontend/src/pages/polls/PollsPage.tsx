@@ -43,8 +43,6 @@ import Users from 'lucide-react/icons/users';
 import Trash2 from 'lucide-react/icons/trash-2';
 import X from 'lucide-react/icons/x';
 import ChevronUp from 'lucide-react/icons/chevron-up';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Check from 'lucide-react/icons/check';
 import TrendingUp from 'lucide-react/icons/trending-up';
 import GripVertical from 'lucide-react/icons/grip-vertical';
@@ -65,6 +63,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, formatNumber, formatRelativeTime } from '@/lib/helpers';
 
+import { LoadError } from '@/components/feedback/LoadError';
 /* ───────────────────────── Types ───────────────────────── */
 
 interface PollOption {
@@ -1126,18 +1125,7 @@ export function PollsPage() {
 
       {/* Error State */}
       {error && !isLoading && (
-        <GlassCard className="p-8 text-center" role="alert">
-          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('errors.load_failed')}</h2>
-          <p className="text-theme-muted mb-4">{error}</p>
-          <Button
-            className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white"
-            startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-            onPress={() => loadPolls()}
-          >
-            {t('try_again')}
-          </Button>
-        </GlassCard>
+        <LoadError title={t('errors.load_failed')} onRetry={() => loadPolls()} />
       )}
 
       {/* Polls List */}
