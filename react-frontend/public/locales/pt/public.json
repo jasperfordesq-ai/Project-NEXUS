@@ -874,22 +874,37 @@
   "faq": {
     "page_title": "Perguntas frequentes",
     "meta_description": "Perguntas comuns sobre {{name}}: banco de tempo, créditos de tempo, listagens, trocas, confiança e segurança e associação – tudo que você precisa para começar.",
-    "title": "Perguntas Frequentes",
-    "subtitle_before_link": "Não encontra o que procura? Visite o nosso",
-    "help_center_link": "Centro de Ajuda",
-    "subtitle_after_link": "para guias detalhados.",
+    "title": "Perguntas frequentes",
+    "hero_description": "Respostas rápidas sobre como participar de {{name}}, créditos de tempo, como combinar uma ajuda e como se manter em segurança.",
+    "join": "Junte-se a nós",
     "search_placeholder": "Pesquisar perguntas...",
-    "no_results": "Nenhuma pergunta correspondente encontrada. Tente um termo de pesquisa diferente.",
+    "results_count": "Perguntas encontradas: {{total}}",
+    "clear_search": "Limpar a busca",
+    "no_results": "Nenhuma pergunta corresponde a isso. Tente outra palavra ou pergunte diretamente para a gente.",
+    "glance_heading": "Em poucas palavras",
+    "glance_0_value": "Grátis",
+    "glance_0_label": "Participar não custa nada.",
+    "glance_1_value": "1 hora = 1 crédito de tempo",
+    "glance_1_label": "Seja qual for a ajuda.",
+    "glance_2_value": "Toda habilidade conta",
+    "glance_2_label": "Fazer companhia, dar uma carona, ajudar com as compras: tudo ajuda.",
+    "topics_heading": "Navegue por tema",
     "cta_title": "Ainda tem perguntas?",
-    "cta_description": "A nossa equipe de suporte está aqui para ajudar.",
-    "cta_button": "Contactar Suporte",
+    "cta_description": "Envie uma mensagem e alguém de {{name}} vai responder.",
+    "cta_button": "Fale conosco",
+    "cta_help": "Centro de Ajuda",
+    "cta_guide": "Guia de Timebanking",
     "categories": {
       "getting_started": {
         "title": "Começar",
+        "description": "Como participar e seus primeiros passos.",
         "q1": {
           "question": "O que é timebanking?",
-          "answer_p1": "O timebanking é um sistema de troca comunitário onde uma hora de ajuda equivale a um crédito de tempo, independentemente do serviço prestado. Quer esteja a ensinar um idioma, a ajudar com jardinagem ou a fornecer apoio tecnológico, o seu tempo é valorizado igualmente.",
-          "answer_p2": "É uma forma de construir conexões comunitárias ao trocar competências e serviços sem dinheiro tradicional."
+          "answer_p1": "Timebanking é vizinho ajudando vizinho. Dê uma hora de ajuda e você ganha um crédito de tempo, seja qual for a ajuda. Ensinar um idioma, dar uma mão no jardim ou ajudar com o celular: tudo vale o mesmo.",
+          "answer_p2": "Não entra dinheiro. É um jeito de conhecer as pessoas ao seu redor, enquanto cada um compartilha o que sabe fazer.",
+          "answer_link_before": "Para conhecer a história toda, leia o ",
+          "guide_link": "Guia de Timebanking",
+          "answer_link_after": "."
         },
         "q2": {
           "question": "É gratuito aderir?",
@@ -901,14 +916,14 @@
           "answer_intro": "Eis como começar:",
           "step1_bold": "Complete o seu perfil",
           "step1_text": "Adicione uma foto, biografia e as suas competências",
-          "step2_bold": "Explore o mercado",
-          "step2_text": "Veja que serviços são oferecidos e necessitados",
+          "step2_bold": "Dê uma olhada",
+          "step2_text": "Veja o que as pessoas oferecem e o que pedem",
           "step3_bold": "Publique uma oferta",
           "step3_text": "Compartilhe em que pode ajudar outros",
           "step4_bold": "Faça um pedido",
           "step4_text": "Peça algo de que precisa",
           "step5_bold": "Conecte-se com membros",
-          "step5_text": "Construa a sua rede"
+          "step5_text": "Diga olá para quem está perto de você"
         },
         "q4": {
           "question": "Que competências posso oferecer?",
@@ -924,7 +939,8 @@
         }
       },
       "time_credits": {
-        "title": "Créditos de Tempo",
+        "title": "Créditos de tempo",
+        "description": "Como ganhar, usar e compartilhar créditos.",
         "q1": {
           "question": "O que é um crédito de tempo?",
           "answer_p1": "Um crédito de tempo equivale a uma hora de serviço. É a moeda da nossa comunidade.",
@@ -957,14 +973,15 @@
         },
         "q5": {
           "question": "E se enviei créditos para a pessoa errada?",
-          "answer_intro": "As transações não podem ser automaticamente revertidas. Se cometeu um erro:",
+          "answer_intro": "Uma transferência não pode ser desfeita automaticamente. Se os créditos foram para a pessoa errada:",
           "step1": "Contacte o destinatário e peça-lhe para devolver os créditos",
-          "step2": "Se não conseguir resolver, contacte o suporte para assistência",
+          "step2": "Se não der certo, fale com a gente e nós ajudamos",
           "answer_outro": "Verifique sempre o destinatário antes de confirmar uma transferência."
         }
       },
       "exchanges_safety": {
-        "title": "Trocas e Segurança",
+        "title": "Trocas e segurança",
+        "description": "Como combinar uma ajuda e cuidar uns dos outros.",
         "q1": {
           "question": "Como organizo uma troca?",
           "answer_intro": "O processo típico é:",
@@ -990,7 +1007,7 @@
           "answer_intro": "A comunicação é fundamental. Se houver um problema:",
           "step1": "Envie mensagem ao membro para discutir o que aconteceu",
           "step2": "Tente encontrar uma resolução juntos",
-          "step3": "Se não conseguir resolver, contacte o suporte",
+          "step3": "Se vocês não conseguirem resolver entre si, fale com a gente",
           "answer_outro": "Faltas repetidas ou mau comportamento podem resultar em restrições da conta."
         },
         "q4": {
@@ -999,10 +1016,11 @@
         }
       },
       "badges_rewards": {
-        "title": "Insígnias e Recompensas",
+        "title": "Insígnias e recompensas",
+        "description": "O lado divertido: insígnias, XP e níveis.",
         "q1": {
           "question": "O que são insígnias e XP?",
-          "answer_intro": "O nosso sistema de gamificação recompensa a participação comunitária:",
+          "answer_intro": "São um toque de diversão que reconhece o que você faz na comunidade:",
           "item1_bold": "XP (Pontos de Experiência)",
           "item1_text": "Ganhos por várias atividades, ajudando-o a subir de nível",
           "item2_bold": "Insígnias",
@@ -1031,7 +1049,8 @@
         }
       },
       "account_privacy": {
-        "title": "Conta e Privacidade",
+        "title": "Conta e privacidade",
+        "description": "Seus dados e quem pode vê-los.",
         "q1": {
           "question": "Como altero a minha senha?",
           "answer_before_link": "Vá a ",

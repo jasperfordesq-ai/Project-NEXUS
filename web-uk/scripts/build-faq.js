@@ -20,8 +20,9 @@
  *
  * Each answer is turned into blocks, in the order React writes the keys:
  *   paragraph   answer, answer_p1.., answer_intro, answer_outro
- *   list        stepN / tipN / itemN ... (with an optional _bold lead-in)
- *   link        *_before + wallet_link / settings_link + *_after
+ *   list        stepN / tipN / itemN ... (with an optional _bold lead-in);
+ *               stepN items are a numbered list, because their order matters
+ *   link        *_before + wallet_link / settings_link / guide_link + *_after
  * A key this does not recognise fails the build, so a new React answer shape
  * cannot be dropped silently.
  *
@@ -41,7 +42,14 @@ const localesRoot = path.join(repoRoot, 'react-frontend', 'public', 'locales');
 const outputFile = path.join(__dirname, '..', 'src', 'lib', 'generated', 'faq.json');
 
 const LOCALES = Object.freeze(['en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar']);
-const LINK_TARGETS = Object.freeze({ wallet_link: '/wallet', settings_link: '/settings', help_center_link: '/help' });
+// `guide_link` is the Timebanking Guide: /timebanking-guide in React, /guide here.
+const LINK_TARGETS = Object.freeze({
+  wallet_link: '/wallet',
+  settings_link: '/settings',
+  help_center_link: '/help',
+  guide_link: '/guide'
+});
+const NUMBERED_ITEM = /^step\d+$/;
 const PARAGRAPH = /^answer(_p\d+|_intro|_outro)?$/;
 const LIST_ITEM = /^([a-z]+\d+)(_bold|_text)?$/;
 const LINK_BEFORE = /^answer_(link_before|before_link)$/;
@@ -88,9 +96,11 @@ function answerBlocks(englishAnswer, localAnswer, where) {
     }
     const item = key.match(LIST_ITEM);
     if (item) {
+      // Steps happen in order, so they are numbered; everything else is bullets.
+      const listType = NUMBERED_ITEM.test(item[1]) ? 'ol' : 'ul';
       let list = blocks[blocks.length - 1];
-      if (!list || list.type !== 'ul') {
-        list = { type: 'ul', items: [] };
+      if (!list || list.type !== listType) {
+        list = { type: listType, items: [] };
         blocks.push(list);
       }
       if (item[2] === '_bold') {

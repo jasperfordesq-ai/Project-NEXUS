@@ -872,24 +872,39 @@
     "turnstile_error": "Impossible de charger le controle de securite. Actualisez la page puis reessayez."
   },
   "faq": {
-    "page_title": "Foire aux questions",
+    "page_title": "Questions fréquemment posées",
     "meta_description": "Questions courantes sur {{name}} : banque de temps, crédits de temps, annonces, échanges, confiance et sécurité, adhésion — tout ce dont vous avez besoin pour commencer.",
     "title": "Questions fréquemment posées",
-    "subtitle_before_link": "Vous ne trouvez pas ce que vous cherchez ? Visitez notre",
-    "help_center_link": "Centre d'aide",
-    "subtitle_after_link": "pour des guides détaillés.",
+    "hero_description": "Des réponses rapides pour rejoindre {{name}}, comprendre les crédits-temps, organiser un coup de main et rester en sécurité.",
+    "join": "Rejoignez-nous",
     "search_placeholder": "Rechercher des questions...",
-    "no_results": "Aucune question correspondante trouvée. Essayez un autre terme de recherche.",
+    "results_count": "Questions correspondantes : {{total}}",
+    "clear_search": "Effacer la recherche",
+    "no_results": "Aucune question ne correspond. Essayez un autre mot, ou posez-nous directement la question.",
+    "glance_heading": "En bref",
+    "glance_0_value": "Gratuit",
+    "glance_0_label": "L'adhésion ne coûte rien.",
+    "glance_1_value": "1 heure = 1 crédit",
+    "glance_1_label": "Quelle que soit l'aide apportée.",
+    "glance_2_value": "Chaque talent compte",
+    "glance_2_label": "Tenir compagnie, conduire quelqu'un, aider pour les courses : tout est utile.",
+    "topics_heading": "Parcourir par thème",
     "cta_title": "Encore des questions ?",
-    "cta_description": "Notre équipe de support est là pour vous aider.",
-    "cta_button": "Contacter le support",
+    "cta_description": "Envoyez-nous un message et quelqu'un de {{name}} vous répondra.",
+    "cta_button": "Contactez-nous",
+    "cta_help": "Centre d'aide",
+    "cta_guide": "Guide du Timebanking",
     "categories": {
       "getting_started": {
         "title": "Pour commencer",
+        "description": "Nous rejoindre, et vos premiers pas.",
         "q1": {
           "question": "Qu'est-ce que la banque de temps ?",
-          "answer_p1": "La banque de temps est un système d'échange communautaire où une heure d'aide équivaut à un crédit-temps, quel que soit le service fourni. Que vous enseigniez une langue, aidiez au jardinage ou fournissiez un support technique, votre temps est valorisé de manière égale.",
-          "answer_p2": "C'est un moyen de créer des liens communautaires tout en échangeant des compétences et des services sans argent traditionnel."
+          "answer_p1": "La banque de temps, ce sont des voisins qui s'entraident. Donnez une heure d'aide et vous gagnez un crédit-temps, quelle que soit l'aide. Enseigner une langue, donner un coup de main au jardin ou aider avec un téléphone : tout compte autant.",
+          "answer_p2": "Aucun argent ne circule. C'est une façon de faire connaissance avec les gens qui vous entourent, chacun partageant ce qu'il sait faire.",
+          "answer_link_before": "Pour toute l'histoire, lisez le ",
+          "guide_link": "Guide du Timebanking",
+          "answer_link_after": "."
         },
         "q2": {
           "question": "L'inscription est-elle gratuite ?",
@@ -901,14 +916,14 @@
           "answer_intro": "Voici comment débuter :",
           "step1_bold": "Complétez votre profil",
           "step1_text": "Ajoutez une photo, une biographie et vos compétences",
-          "step2_bold": "Parcourez la place de marché",
-          "step2_text": "Voyez quels services sont offerts et demandés",
+          "step2_bold": "Faites un tour",
+          "step2_text": "Voyez ce que les gens proposent et ce qu'ils demandent",
           "step3_bold": "Publiez une offre",
           "step3_text": "Partagez ce avec quoi vous pouvez aider les autres",
           "step4_bold": "Faites une demande",
           "step4_text": "Demandez quelque chose dont vous avez besoin",
           "step5_bold": "Connectez-vous avec les membres",
-          "step5_text": "Construisez votre réseau"
+          "step5_text": "Dites bonjour aux personnes près de chez vous"
         },
         "q4": {
           "question": "Quelles compétences puis-je offrir ?",
@@ -925,6 +940,7 @@
       },
       "time_credits": {
         "title": "Crédits-temps",
+        "description": "Comment les crédits se gagnent, se dépensent et se partagent.",
         "q1": {
           "question": "Qu'est-ce qu'un crédit-temps ?",
           "answer_p1": "Un crédit-temps équivaut à une heure de service. C'est la monnaie de notre communauté.",
@@ -957,14 +973,15 @@
         },
         "q5": {
           "question": "Que faire si j'ai envoyé des crédits à la mauvaise personne ?",
-          "answer_intro": "Les transactions ne peuvent pas être automatiquement annulées. Si vous avez fait une erreur :",
+          "answer_intro": "Un transfert ne peut pas être annulé automatiquement. Si des crédits sont partis vers la mauvaise personne :",
           "step1": "Contactez le destinataire et demandez-lui de renvoyer les crédits",
-          "step2": "Si vous ne pouvez pas résoudre le problème, contactez le support",
+          "step2": "Si cela ne suffit pas, contactez-nous et nous vous aiderons",
           "answer_outro": "Vérifiez toujours le destinataire avant de confirmer un transfert."
         }
       },
       "exchanges_safety": {
         "title": "Échanges et sécurité",
+        "description": "Organiser un coup de main et veiller les uns sur les autres.",
         "q1": {
           "question": "Comment organiser un échange ?",
           "answer_intro": "Le processus typique est :",
@@ -990,7 +1007,7 @@
           "answer_intro": "La communication est essentielle. En cas de problème :",
           "step1": "Envoyez un message au membre pour discuter de ce qui s'est passé",
           "step2": "Essayez de trouver une solution ensemble",
-          "step3": "Si vous ne pouvez pas résoudre le problème, contactez le support",
+          "step3": "Si vous n'arrivez pas à régler cela entre vous, contactez-nous",
           "answer_outro": "Les absences répétées ou les mauvais comportements peuvent entraîner des restrictions de compte."
         },
         "q4": {
@@ -1000,9 +1017,10 @@
       },
       "badges_rewards": {
         "title": "Badges et récompenses",
+        "description": "Le côté ludique : badges, XP et niveaux.",
         "q1": {
           "question": "Que sont les badges et les XP ?",
-          "answer_intro": "Notre système de gamification récompense la participation communautaire :",
+          "answer_intro": "C'est une touche ludique qui salue ce que vous faites dans la communauté :",
           "item1_bold": "XP (Points d'expérience)",
           "item1_text": "Gagnés pour diverses activités, vous aidant à monter de niveau",
           "item2_bold": "Insignes",
@@ -1032,6 +1050,7 @@
       },
       "account_privacy": {
         "title": "Compte et confidentialité",
+        "description": "Vos informations, et qui peut les voir.",
         "q1": {
           "question": "Comment changer mon mot de passe ?",
           "answer_before_link": "Allez dans ",

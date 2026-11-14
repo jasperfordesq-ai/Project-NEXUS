@@ -9,50 +9,41 @@
  * customise the text in places like FAQ?" The admin-written FAQs appeared only
  * in the Help Centre, so a community's own words never reached the menu's FAQ
  * page, which is fixed platform text. Renders nothing when there are none.
+ *
+ * The page loads the questions itself (`useCommunityFaqs`) and hands this
+ * component the ones to show, so the page's search box covers the community's
+ * questions as well as the standard ones (14 Nov 2026; until then it searched
+ * the standard ones only).
  */
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import MessagesSquare from 'lucide-react/icons/messages-square';
 import { Accordion, AccordionItem } from '@/components/ui/Accordion';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { SafeHtml } from '@/components/ui/SafeHtml';
 import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { faqAnswerText } from '@/pages/help/guides/faqText';
+import { FaqSection } from './FaqSection';
 
-interface CommunityFaq {
+export interface CommunityFaq {
   id: number | string;
   question: string;
   answer: string;
 }
 
-interface CommunityFaqGroup {
+export interface CommunityFaqGroup {
   category: string;
   faqs: CommunityFaq[];
 }
 
-function FaqAnswer({ faq, category }: { faq: CommunityFaq; category: string }) {
-  const [translated, setTranslated] = useState('');
-  return (
-    <>
-      {translated
-        ? <p className="text-sm leading-relaxed text-theme-muted whitespace-pre-wrap" dir="auto">{translated}</p>
-        : <SafeHtml content={faq.answer} className="text-sm leading-relaxed text-theme-muted" />}
-      <TranslateButton
-        contentType="faq"
-        contentId={faq.id}
-        sourceText={faqAnswerText(faq.answer)}
-        extraFields={{ question: faq.question, category }}
-        onTextChange={(text, isTranslated) => setTranslated(isTranslated ? text : '')}
-      />
-    </>
-  );
-}
-
-export function CommunityFaqs() {
-  const { t } = useTranslation('help_centre');
-  const { branding } = useTenant();
+/**
+ * The community's own questions, loaded once. Empty until they arrive, when
+ * there are none, and when they could not be loaded — the standard questions
+ * are still there, so a failure here is not worth an error on the page.
+ */
+export function useCommunityFaqs(): CommunityFaqGroup[] {
   const [groups, setGroups] = useState<CommunityFaqGroup[]>([]);
 
   useEffect(() => {
@@ -65,24 +56,70 @@ export function CommunityFaqs() {
     return () => { cancelled = true; };
   }, []);
 
+  return groups;
+}
+
+/** Every word a reader can see in one community question, for the page's search. */
+export function communityFaqText(faq: CommunityFaq, category: string): string {
+  return `${faq.question} ${faqAnswerText(faq.answer)} ${category}`;
+}
+
+function FaqAnswer({ faq, category }: { faq: CommunityFaq; category: string }) {
+  const [translated, setTranslated] = useState('');
+  return (
+    <>
+      {translated
+        ? <p className="whitespace-pre-wrap leading-7 text-theme-secondary" dir="auto">{translated}</p>
+        : <SafeHtml content={faq.answer} className="leading-7 text-theme-secondary" />}
+      <TranslateButton
+        contentType="faq"
+        contentId={faq.id}
+        sourceText={faqAnswerText(faq.answer)}
+        extraFields={{ question: faq.question, category }}
+        onTextChange={(text, isTranslated) => setTranslated(isTranslated ? text : '')}
+      />
+    </>
+  );
+}
+
+export interface CommunityFaqsProps {
+  /** The groups to show, already narrowed by the page's search. */
+  groups: CommunityFaqGroup[];
+}
+
+export function CommunityFaqs({ groups }: CommunityFaqsProps) {
+  const { t } = useTranslation('help_centre');
+  const { branding } = useTenant();
+
   if (groups.length === 0) return null;
 
   return (
-    <section aria-labelledby="community-faqs-heading" className="space-y-3">
-      <div>
-        <h2 id="community-faqs-heading" className="text-xl font-semibold text-theme-primary">{t('community_faqs_heading')}</h2>
-        <p className="mt-1 text-sm text-theme-muted">{t('community_faqs_description', { name: branding.name })}</p>
-      </div>
-      <GlassCard className="p-2 sm:p-4">
-        <Accordion variant="light" selectionMode="multiple">
-          {groups.flatMap((group) => group.faqs.map((faq) => (
-            <AccordionItem key={String(faq.id)} id={String(faq.id)} aria-label={faq.question} title={faq.question} subtitle={group.category}>
-              <FaqAnswer faq={faq} category={group.category} />
-            </AccordionItem>
-          )))}
-        </Accordion>
-      </GlassCard>
-    </section>
+    <FaqSection
+      id="faq-community"
+      icon={<MessagesSquare className="size-6" aria-hidden="true" />}
+      tint="bg-accent-soft text-accent-soft-foreground"
+      title={t('community_faqs_heading')}
+      description={t('community_faqs_description', { name: branding.name })}
+    >
+      <Accordion
+        variant="splitted"
+        selectionMode="multiple"
+        itemClasses={{ title: 'text-base font-medium text-foreground' }}
+        data-testid="faq-community-questions"
+      >
+        {groups.flatMap((group) => group.faqs.map((faq) => (
+          <AccordionItem
+            key={String(faq.id)}
+            id={String(faq.id)}
+            aria-label={faq.question}
+            title={faq.question}
+            subtitle={group.category}
+          >
+            <FaqAnswer faq={faq} category={group.category} />
+          </AccordionItem>
+        )))}
+      </Accordion>
+    </FaqSection>
   );
 }
 

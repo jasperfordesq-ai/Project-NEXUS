@@ -875,21 +875,36 @@
     "page_title": "Häufig gestellte Fragen",
     "meta_description": "Häufige Fragen zu {{name}}: Timebanking, Zeitguthaben, Listings, Börsen, Vertrauen und Sicherheit sowie Mitgliedschaft – alles, was Sie für den Einstieg benötigen.",
     "title": "Häufig gestellte Fragen",
-    "subtitle_before_link": "Finden Sie nicht, was Sie suchen? Besuchen Sie unser",
-    "help_center_link": "Hilfezentrum",
-    "subtitle_after_link": "für ausführliche Anleitungen.",
+    "hero_description": "Kurze Antworten zum Mitmachen bei {{name}}, zu Zeitguthaben, zum Verabreden von Hilfe und zur Sicherheit.",
+    "join": "Jetzt mitmachen",
     "search_placeholder": "Fragen durchsuchen...",
-    "no_results": "Keine passenden Fragen gefunden. Versuchen Sie einen anderen Suchbegriff.",
+    "results_count": "Passende Fragen: {{total}}",
+    "clear_search": "Suche löschen",
+    "no_results": "Dazu passt keine Frage. Versuchen Sie ein anderes Wort oder fragen Sie uns direkt.",
+    "glance_heading": "Kurz gesagt",
+    "glance_0_value": "Kostenlos",
+    "glance_0_label": "Mitmachen kostet nichts.",
+    "glance_1_value": "1 Stunde = 1 Zeitguthaben",
+    "glance_1_label": "Ganz gleich, welche Hilfe es war.",
+    "glance_2_value": "Jede Fähigkeit zählt",
+    "glance_2_label": "Gesellschaft, eine Mitfahrt, Hilfe beim Einkaufen: Alles hilft.",
+    "topics_heading": "Nach Thema stöbern",
     "cta_title": "Noch Fragen?",
-    "cta_description": "Unser Support-Team ist hier, um zu helfen.",
-    "cta_button": "Support kontaktieren",
+    "cta_description": "Schreiben Sie uns, und jemand von {{name}} meldet sich bei Ihnen.",
+    "cta_button": "Kontaktieren Sie uns",
+    "cta_help": "Hilfezentrum",
+    "cta_guide": "Timebanking-Leitfaden",
     "categories": {
       "getting_started": {
         "title": "Erste Schritte",
+        "description": "Mitmachen und Ihre ersten Schritte.",
         "q1": {
           "question": "Was ist Zeitbank?",
-          "answer_p1": "Zeitbank ist ein gemeinschaftliches Austauschsystem, bei dem eine Stunde Hilfe einem Zeitguthaben entspricht, unabhängig von der erbrachten Dienstleistung. Ob Sie eine Sprache unterrichten, bei der Gartenarbeit helfen oder technischen Support leisten — Ihre Zeit wird gleichwertig geschätzt.",
-          "answer_p2": "Es ist eine Möglichkeit, Gemeinschaftsverbindungen aufzubauen und gleichzeitig Fähigkeiten und Dienstleistungen ohne traditionelles Geld auszutauschen."
+          "answer_p1": "Zeitbank heißt: Nachbarn helfen Nachbarn. Für jede Stunde Hilfe erhalten Sie ein Zeitguthaben, ganz gleich, worum es ging. Eine Sprache unterrichten, im Garten mit anpacken oder beim Handy helfen: Alles zählt gleich viel.",
+          "answer_p2": "Es fließt kein Geld. So lernen Sie die Menschen in Ihrer Umgebung kennen, und jeder bringt ein, was er gut kann.",
+          "answer_link_before": "Die ganze Geschichte steht im ",
+          "guide_link": "Timebanking-Leitfaden",
+          "answer_link_after": "."
         },
         "q2": {
           "question": "Ist die Mitgliedschaft kostenlos?",
@@ -901,14 +916,14 @@
           "answer_intro": "So beginnen Sie:",
           "step1_bold": "Vervollständigen Sie Ihr Profil",
           "step1_text": "Fügen Sie ein Foto, eine Biografie und Ihre Fähigkeiten hinzu",
-          "step2_bold": "Durchsuchen Sie den Marktplatz",
-          "step2_text": "Sehen Sie, welche Dienstleistungen angeboten und gesucht werden",
+          "step2_bold": "Schauen Sie sich um",
+          "step2_text": "Sehen Sie, was andere anbieten und suchen",
           "step3_bold": "Erstellen Sie ein Angebot",
           "step3_text": "Teilen Sie mit, wobei Sie anderen helfen können",
           "step4_bold": "Stellen Sie eine Anfrage",
           "step4_text": "Fragen Sie nach etwas, das Sie brauchen",
           "step5_bold": "Verbinden Sie sich mit Mitgliedern",
-          "step5_text": "Bauen Sie Ihr Netzwerk auf"
+          "step5_text": "Sagen Sie Menschen in Ihrer Nähe Hallo"
         },
         "q4": {
           "question": "Welche Fähigkeiten kann ich anbieten?",
@@ -925,6 +940,7 @@
       },
       "time_credits": {
         "title": "Zeitguthaben",
+        "description": "Wie Zeitguthaben verdient, eingelöst und geteilt werden.",
         "q1": {
           "question": "Was ist ein Zeitguthaben?",
           "answer_p1": "Ein Zeitguthaben entspricht einer Stunde Dienstleistung. Es ist die Währung unserer Gemeinschaft.",
@@ -957,14 +973,15 @@
         },
         "q5": {
           "question": "Was ist, wenn ich Guthaben an die falsche Person gesendet habe?",
-          "answer_intro": "Transaktionen können nicht automatisch rückgängig gemacht werden. Wenn Sie einen Fehler gemacht haben:",
+          "answer_intro": "Eine Übertragung lässt sich nicht automatisch rückgängig machen. Wenn Guthaben bei der falschen Person gelandet ist:",
           "step1": "Kontaktieren Sie den Empfänger und bitten Sie ihn, die Guthaben zurückzusenden",
-          "step2": "Wenn Sie es nicht lösen können, wenden Sie sich an den Support",
+          "step2": "Wenn das nicht klappt, melden Sie sich bei uns, wir helfen Ihnen",
           "answer_outro": "Überprüfen Sie den Empfänger immer, bevor Sie eine Überweisung bestätigen."
         }
       },
       "exchanges_safety": {
         "title": "Austausch und Sicherheit",
+        "description": "Hilfe verabreden und aufeinander achten.",
         "q1": {
           "question": "Wie organisiere ich einen Austausch?",
           "answer_intro": "Der typische Ablauf ist:",
@@ -990,7 +1007,7 @@
           "answer_intro": "Kommunikation ist der Schlüssel. Wenn es ein Problem gibt:",
           "step1": "Schreiben Sie dem Mitglied, um zu besprechen, was passiert ist",
           "step2": "Versuchen Sie gemeinsam eine Lösung zu finden",
-          "step3": "Wenn Sie es nicht lösen können, wenden Sie sich an den Support",
+          "step3": "Wenn Sie es untereinander nicht klären können, melden Sie sich bei uns",
           "answer_outro": "Wiederholtes Nichterscheinen oder schlechtes Verhalten kann zu Kontobeschränkungen führen."
         },
         "q4": {
@@ -1000,9 +1017,10 @@
       },
       "badges_rewards": {
         "title": "Abzeichen und Belohnungen",
+        "description": "Die spielerische Seite: Abzeichen, XP und Level.",
         "q1": {
           "question": "Was sind Abzeichen und XP?",
-          "answer_intro": "Unser Gamification-System belohnt die Gemeinschaftsteilnahme:",
+          "answer_intro": "Sie sind eine spielerische Anerkennung für das, was Sie in der Gemeinschaft tun:",
           "item1_bold": "XP (Erfahrungspunkte)",
           "item1_text": "Verdient für verschiedene Aktivitäten, die Ihnen helfen aufzusteigen",
           "item2_bold": "Abzeichen",
@@ -1032,6 +1050,7 @@
       },
       "account_privacy": {
         "title": "Konto und Datenschutz",
+        "description": "Ihre Angaben, und wer sie sehen kann.",
         "q1": {
           "question": "Wie ändere ich mein Passwort?",
           "answer_before_link": "Gehen Sie zu ",

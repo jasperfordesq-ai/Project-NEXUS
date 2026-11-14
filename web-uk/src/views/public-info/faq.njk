@@ -51,6 +51,10 @@
                     <ul class="govuk-list govuk-list--bullet">
                       {% for item in block.items %}<li>{% if item.bold %}<strong>{{ item.bold }}</strong> — {% endif %}{{ item.text }}</li>{% endfor %}
                     </ul>
+                  {% elif block.type == "ol" %}
+                    <ol class="govuk-list govuk-list--number">
+                      {% for item in block.items %}<li>{% if item.bold %}<strong>{{ item.bold }}</strong> — {% endif %}{{ item.text }}</li>{% endfor %}
+                    </ol>
                   {% elif block.type == "link" %}
                     <p class="govuk-body">{{ block.before }}<a class="govuk-link" href="{{ urlFor(block.href) }}">{{ block.text }}</a>{{ block.after }}</p>
                   {% endif %}

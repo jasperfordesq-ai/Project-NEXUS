@@ -58022,6 +58022,7 @@ export default interface Resources {
     "faq": {
       "categories": {
         "account_privacy": {
+          "description": "Your details, and who can see them.",
           "q1": {
             "answer_after_link": " > Security to change your password. You'll need to enter your current password first. If you've forgotten your password, use the \"Forgot Password\" link on the login page.",
             "answer_before_link": "Go to ",
@@ -58054,11 +58055,12 @@ export default interface Resources {
             "item4": "We comply with GDPR and data protection regulations",
             "question": "How is my data protected?"
           },
-          "title": "Account & Privacy"
+          "title": "Account and privacy"
         },
         "badges_rewards": {
+          "description": "The fun side: badges, XP and levels.",
           "q1": {
-            "answer_intro": "Our gamification system rewards community participation:",
+            "answer_intro": "They're a bit of fun that marks what you do in the community:",
             "item1_bold": "XP (Experience Points)",
             "item1_text": "Earned for various activities, helping you level up",
             "item2_bold": "Badges",
@@ -58086,9 +58088,10 @@ export default interface Resources {
             "question": "Can I opt out of leaderboards?",
             "settings_link": "Settings"
           },
-          "title": "Badges & Rewards"
+          "title": "Badges and rewards"
         },
         "exchanges_safety": {
+          "description": "Arranging help and looking out for each other.",
           "q1": {
             "answer_intro": "The typical process is:",
             "question": "How do I arrange an exchange?",
@@ -58115,19 +58118,23 @@ export default interface Resources {
             "question": "What if someone doesn't show up or complete the service?",
             "step1": "Message the member to discuss what happened",
             "step2": "Try to find a resolution together",
-            "step3": "If you can't resolve it, contact support"
+            "step3": "If you can't sort it out between you, get in touch with us"
           },
           "q4": {
             "answer": "Exchanges are informal arrangements between community members. We don't provide insurance coverage for services. For higher-risk activities, discuss liability with the other member beforehand. Some members have their own professional insurance.",
             "question": "Are the services insured?"
           },
-          "title": "Exchanges & Safety"
+          "title": "Exchanges and safety"
         },
         "getting_started": {
+          "description": "Joining, and your first steps.",
           "q1": {
-            "answer_p1": "Time banking is a community exchange system where one hour of help equals one time credit, regardless of the service provided. Whether you're teaching a language, helping with gardening, or providing tech support, your time is valued equally.",
-            "answer_p2": "It's a way to build community connections while exchanging skills and services without traditional money.",
-            "question": "What is time banking?"
+            "answer_link_after": ".",
+            "answer_link_before": "For the whole story, read the ",
+            "answer_p1": "Timebanking is neighbours helping neighbours. Give an hour of help and you earn one time credit, whatever the help was. Teaching a language, a hand in the garden and help with a phone all count the same.",
+            "answer_p2": "No money changes hands. It's a way to get to know the people around you while sharing what you're each good at.",
+            "guide_link": "Timebanking Guide",
+            "question": "What is timebanking?"
           },
           "q2": {
             "answer_p1": "Yes! Membership is completely free. The only currency used is time credits, which you earn by helping others in the community.",
@@ -58139,14 +58146,14 @@ export default interface Resources {
             "question": "How do I get started?",
             "step1_bold": "Complete your profile",
             "step1_text": "Add a photo, bio, and your skills",
-            "step2_bold": "Browse the marketplace",
-            "step2_text": "See what services are offered and needed",
+            "step2_bold": "Have a look around",
+            "step2_text": "See what people are offering and asking for",
             "step3_bold": "Post an offer",
             "step3_text": "Share what you can help others with",
             "step4_bold": "Make a request",
             "step4_text": "Ask for something you need",
             "step5_bold": "Connect with members",
-            "step5_text": "Build your network"
+            "step5_text": "Say hello to people near you"
           },
           "q4": {
             "answer_intro": "Almost anything! Common offerings include:",
@@ -58160,9 +58167,10 @@ export default interface Resources {
             "skill6": "Companionship (walks, visits, conversation)",
             "skill7": "Professional skills (accounting, legal advice, etc.)"
           },
-          "title": "Getting Started"
+          "title": "Getting started"
         },
         "time_credits": {
+          "description": "How credits are earned, spent and shared.",
           "q1": {
             "answer_p1": "One time credit equals one hour of service. It's the currency of our community.",
             "answer_p2": "You can also exchange partial hours: 30 minutes = 0.5 credits, 15 minutes = 0.25 credits.",
@@ -58194,26 +58202,37 @@ export default interface Resources {
             "question": "Can my balance go negative?"
           },
           "q5": {
-            "answer_intro": "Transactions cannot be automatically reversed. If you made a mistake:",
+            "answer_intro": "A transfer can't be undone automatically. If credits went to the wrong person:",
             "answer_outro": "Always double-check the recipient before confirming a transfer.",
             "question": "What if I sent credits to the wrong person?",
             "step1": "Contact the recipient and ask them to send the credits back",
-            "step2": "If you can't resolve it, contact support for assistance"
+            "step2": "If that doesn't work, get in touch with us and we'll help"
           },
-          "title": "Time Credits"
+          "title": "Time credits"
         }
       },
-      "cta_button": "Contact Support",
-      "cta_description": "Our support team is here to help.",
+      "clear_search": "Clear the search",
+      "cta_button": "Contact us",
+      "cta_description": "Send us a message and someone from {{name}} will get back to you.",
+      "cta_guide": "Timebanking Guide",
+      "cta_help": "Help Center",
       "cta_title": "Still have questions?",
-      "help_center_link": "Help Center",
+      "glance_0_label": "Joining costs nothing.",
+      "glance_0_value": "Free",
+      "glance_1_label": "Whatever kind of help it was.",
+      "glance_1_value": "1 hour = 1 credit",
+      "glance_2_label": "Company, a lift, a hand with the shopping: it all helps.",
+      "glance_2_value": "Any skill counts",
+      "glance_heading": "The short answers",
+      "hero_description": "Quick answers about joining {{name}}, time credits, arranging help and staying safe.",
+      "join": "Join us",
       "meta_description": "Common questions about {{name}}: timebanking, time credits, listings, exchanges, trust and safety, and membership — everything you need to get started.",
-      "no_results": "No matching questions found. Try a different search term.",
-      "page_title": "Frequently Asked Questions",
+      "no_results": "No questions match that. Try a different word, or ask us directly.",
+      "page_title": "Frequently asked questions",
+      "results_count": "Matching questions: {{total}}",
       "search_placeholder": "Search questions...",
-      "subtitle_after_link": "for detailed guides.",
-      "subtitle_before_link": "Can't find what you're looking for? Visit our",
-      "title": "Frequently Asked Questions"
+      "title": "Frequently asked questions",
+      "topics_heading": "Browse by topic"
     },
     "features_page": {
       "availability_notice_body": "This page shows everything the Project NEXUS software can do. It is not a list of what is turned on for your own community.",

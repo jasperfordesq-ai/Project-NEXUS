@@ -872,24 +872,39 @@
     "turnstile_error": "Níorbh fhéidir seiceáil slándála a lódáil. Athnuaigh an leathanach chun triail eile a bhaint as."
   },
   "faq": {
-    "page_title": "Ceisteanna Coitianta",
+    "page_title": "Ceisteanna coitianta",
     "meta_description": "Ceisteanna coitianta faoi {{name}}: baincéireacht ama, creidmheasanna ama, liostálacha, malartuithe, muinín agus sábháilteacht, agus ballraíocht — gach a bhfuil uait chun tosú.",
-    "title": "Ceisteanna Coitianta",
-    "subtitle_before_link": "Ní féidir leat a bhfuil uait a aimsiú? Tabhair cuairt ar ár",
-    "help_center_link": "nIonad Cabhrach",
-    "subtitle_after_link": "le haghaidh treoracha mionsonraithe.",
+    "title": "Ceisteanna coitianta",
+    "hero_description": "Freagraí gasta faoi {{name}}: conas clárú, creidmheasanna ama, cabhair a shocrú agus fanacht sábháilte.",
+    "join": "Bí linn",
     "search_placeholder": "Cuardaigh ceisteanna...",
-    "no_results": "Níor aimsíodh aon cheisteanna comhoiriúnacha. Bain triail as téarma cuardaigh eile.",
+    "results_count": "Ceisteanna comhoiriúnacha: {{total}}",
+    "clear_search": "Glan an cuardach",
+    "no_results": "Níl aon cheist ag teacht leis sin. Bain triail as focal eile, nó cuir ceist orainn go díreach.",
+    "glance_heading": "Go hachomair",
+    "glance_0_value": "Saor in aisce",
+    "glance_0_label": "Níl aon chostas ar chlárú.",
+    "glance_1_value": "1 uair = 1 chreidmheas",
+    "glance_1_label": "Is cuma cén cineál cabhrach a bhí ann.",
+    "glance_2_value": "Áirítear gach scil",
+    "glance_2_label": "Comhluadar, síob, cabhair leis an tsiopadóireacht: cabhraíonn siad ar fad.",
+    "topics_heading": "Brabhsáil de réir ábhair",
     "cta_title": "An bhfuil ceisteanna agat fós?",
-    "cta_description": "Tá ár bhfoireann tacaíochta anseo chun cabhrú.",
-    "cta_button": "Déan Teagmháil le Tacaíocht",
+    "cta_description": "Seol teachtaireacht chugainn agus tiocfaidh duine ó {{name}} ar ais chugat.",
+    "cta_button": "Déan teagmháil linn",
+    "cta_help": "Ionad Cabhrach",
+    "cta_guide": "Treoir don Bhaincéireacht Ama",
     "categories": {
       "getting_started": {
-        "title": "Ag Tosú",
+        "title": "Ag tosú",
+        "description": "Clárú, agus do chéad chéimeanna.",
         "q1": {
           "question": "Cad is baincéireacht ama ann?",
-          "answer_p1": "Is córas malartaithe pobail í an bhaincéireacht ama ina bhfuil uair an chloig cabhrach cothrom le creidmheas ama amháin, beag beann ar an tseirbhís a chuirtear ar fáil. Cibé acu atá tú ag múineadh teanga, ag cabhrú le garraíodóireacht nó ag cur tacaíocht theicniúil ar fáil, cuirtear an luach céanna ar do chuid ama.",
-          "answer_p2": "Is bealach é chun naisc phobail a thógáil agus scileanna agus seirbhísí a mhalartú gan airgead traidisiúnta."
+          "answer_p1": "Is éard is baincéireacht ama ann ná comharsana ag cabhrú le comharsana. Tabhair uair an chloig cabhrach agus tuilleann tú creidmheas ama amháin, is cuma cén chabhair a bhí ann. Teanga a mhúineadh, lámh chúnta sa ghairdín nó cabhair le fón: is ionann luach dóibh ar fad.",
+          "answer_p2": "Níl aon airgead i gceist. Is bealach é chun aithne a chur ar na daoine thart ort, agus gach duine ag roinnt an ruda a bhfuil sé go maith aige.",
+          "answer_link_before": "Chun an scéal iomlán a fháil, léigh: ",
+          "guide_link": "Treoir don Bhaincéireacht Ama",
+          "answer_link_after": "."
         },
         "q2": {
           "question": "An bhfuil sé saor in aisce dul isteach?",
@@ -901,14 +916,14 @@
           "answer_intro": "Seo mar a thosaíonn tú:",
           "step1_bold": "Comhlánaigh do phróifíl",
           "step1_text": "Cuir grianghraf, beathaisnéis agus do scileanna leis",
-          "step2_bold": "Brabhsáil an margadh",
-          "step2_text": "Féach cé na seirbhísí atá á dtairiscint agus cé na cinn atá de dhíth",
+          "step2_bold": "Caith súil thart",
+          "step2_text": "Féach cad atá á thairiscint ag daoine agus cad atá á lorg acu",
           "step3_bold": "Cuir tairiscint suas",
           "step3_text": "Luaigh na rudaí ar féidir leat cabhrú le daoine eile leo",
           "step4_bold": "Cruthaigh iarraidh",
           "step4_text": "Iarr rud éigin a theastaíonn uait",
           "step5_bold": "Ceangail le baill",
-          "step5_text": "Tóg do líonra"
+          "step5_text": "Abair heileo le daoine in aice leat"
         },
         "q4": {
           "question": "Cad iad na scileanna is féidir liom a thairiscint?",
@@ -924,7 +939,8 @@
         }
       },
       "time_credits": {
-        "title": "Creidmheasanna Ama",
+        "title": "Creidmheasanna ama",
+        "description": "Conas a thuilltear, a chaitear agus a roinntear creidmheasanna.",
         "q1": {
           "question": "Cad é creidmheas ama?",
           "answer_p1": "Is ionann creidmheas ama amháin agus uair an chloig de sheirbhís. Is é sin airgeadra ár bpobail.",
@@ -957,14 +973,15 @@
         },
         "q5": {
           "question": "Cad a tharlaíonn má sheol mé creidmheasanna chuig an duine mícheart?",
-          "answer_intro": "Ní féidir idirbhearta a chúlghairm go huathoibríoch. Má rinne tú botún:",
+          "answer_intro": "Ní féidir aistriú a chealú go huathoibríoch. Má chuaigh creidmheasanna chuig an duine mícheart:",
           "step1": "Déan teagmháil leis an bhfaighteoir agus iarr orthu na creidmheasanna a sheoladh ar ais",
-          "step2": "Mura féidir leat é a réiteach, déan teagmháil leis an bhfoireann tacaíochta chun cabhair a fháil",
+          "step2": "Mura n-oibríonn sé sin, déan teagmháil linn agus cabhróimid leat",
           "answer_outro": "Seiceáil an faighteoir i gcónaí sula ndeimhníonn tú aistriú."
         }
       },
       "exchanges_safety": {
-        "title": "Malartuithe agus Sábháilteacht",
+        "title": "Malartuithe agus sábháilteacht",
+        "description": "Cabhair a shocrú agus aire a thabhairt dá chéile.",
         "q1": {
           "question": "Conas a eagraím malartú?",
           "answer_intro": "Is é an gnáthphróiseas ná:",
@@ -990,7 +1007,7 @@
           "answer_intro": "Tá cumarsáid ríthábhachtach. Má bhíonn fadhb ann:",
           "step1": "Seol teachtaireacht chuig an mball chun a phlé cad a tharla",
           "step2": "Déan iarracht réiteach a aimsiú le chéile",
-          "step3": "Mura féidir leat é a réiteach, déan teagmháil le tacaíocht",
+          "step3": "Mura féidir libh é a réiteach eadraibh féin, déan teagmháil linn",
           "answer_outro": "D'fhéadfadh srianta cuntais a bheith mar thoradh ar mhainneachtain arís agus arís eile teacht i láthair, nó ar dhrochiompar."
         },
         "q4": {
@@ -999,10 +1016,11 @@
         }
       },
       "badges_rewards": {
-        "title": "Suaitheantais agus Duaiseanna",
+        "title": "Suaitheantais agus duaiseanna",
+        "description": "An taobh spraíúil: suaitheantais, XP agus leibhéil.",
         "q1": {
           "question": "Cad iad suaitheantais agus XP?",
-          "answer_intro": "Tugann ár gcóras cluichíochta aitheantas do rannpháirtíocht phobail:",
+          "answer_intro": "Is píosa spraoi iad a thugann aitheantas dá ndéanann tú sa phobal:",
           "item1_bold": "XP (Pointí Taithí)",
           "item1_text": "Tuilltear iad as gníomhaíochtaí éagsúla agus cabhraíonn siad leat dul suas leibhéal",
           "item2_bold": "Suaitheantais",
@@ -1031,7 +1049,8 @@
         }
       },
       "account_privacy": {
-        "title": "Cuntas agus Príobháideacht",
+        "title": "Cuntas agus príobháideacht",
+        "description": "Do chuid sonraí, agus cé atá in ann iad a fheiceáil.",
         "q1": {
           "question": "Conas a athraím mo phasfhocal?",
           "answer_before_link": "Téigh chuig ",

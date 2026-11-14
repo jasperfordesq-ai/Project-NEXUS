@@ -875,21 +875,36 @@
     "page_title": "Domande frequenti",
     "meta_description": "Domande comuni su {{name}}: timebanking, crediti temporali, elenchi, scambi, fiducia e sicurezza e appartenenza: tutto ciò di cui hai bisogno per iniziare.",
     "title": "Domande frequenti",
-    "subtitle_before_link": "Non trova quello che cerca? Visiti il nostro",
-    "help_center_link": "Centro assistenza",
-    "subtitle_after_link": "per guide dettagliate.",
+    "hero_description": "Risposte rapide su come unirti a {{name}}, sui crediti di tempo, su come organizzare un aiuto e su come stare al sicuro.",
+    "join": "Unisciti a noi",
     "search_placeholder": "Cerca domande...",
-    "no_results": "Nessuna domanda corrispondente trovata. Provi con un termine di ricerca diverso.",
+    "results_count": "Domande corrispondenti: {{total}}",
+    "clear_search": "Cancella la ricerca",
+    "no_results": "Nessuna domanda corrisponde. Prova con un'altra parola, oppure chiedi direttamente a noi.",
+    "glance_heading": "In breve",
+    "glance_0_value": "Gratuito",
+    "glance_0_label": "Iscriversi non costa nulla.",
+    "glance_1_value": "1 ora = 1 credito",
+    "glance_1_label": "Qualunque sia stato l'aiuto.",
+    "glance_2_value": "Ogni capacità conta",
+    "glance_2_label": "Fare compagnia, dare un passaggio, aiutare con la spesa: tutto è utile.",
+    "topics_heading": "Sfoglia per argomento",
     "cta_title": "Ha ancora domande?",
-    "cta_description": "Il nostro team di supporto è qui per aiutarLa.",
-    "cta_button": "Contatta il supporto",
+    "cta_description": "Scrivici un messaggio e qualcuno di {{name}} ti risponderà.",
+    "cta_button": "Contattaci",
+    "cta_help": "Centro assistenza",
+    "cta_guide": "Guida al Timebanking",
     "categories": {
       "getting_started": {
         "title": "Per iniziare",
+        "description": "Come iscriverti e i tuoi primi passi.",
         "q1": {
           "question": "Cos'è la banca del tempo?",
-          "answer_p1": "La banca del tempo è un sistema di scambio comunitario dove un'ora di aiuto equivale a un credito di tempo, indipendentemente dal servizio fornito. Che Lei insegni una lingua, aiuti con il giardinaggio o fornisca supporto tecnico, il Suo tempo è valutato in modo uguale.",
-          "answer_p2": "È un modo per costruire connessioni comunitarie scambiando competenze e servizi senza denaro tradizionale."
+          "answer_p1": "La banca del tempo è vicini che aiutano vicini. Dai un'ora di aiuto e guadagni un credito di tempo, qualunque sia l'aiuto. Insegnare una lingua, dare una mano in giardino o aiutare con il telefono: tutto vale allo stesso modo.",
+          "answer_p2": "Non girano soldi. È un modo per conoscere le persone che ti stanno intorno, mentre ognuno condivide ciò che sa fare.",
+          "answer_link_before": "Per tutta la storia, leggi la ",
+          "guide_link": "Guida al Timebanking",
+          "answer_link_after": "."
         },
         "q2": {
           "question": "L'iscrizione è gratuita?",
@@ -901,14 +916,14 @@
           "answer_intro": "Ecco come iniziare:",
           "step1_bold": "Completa il tuo profilo",
           "step1_text": "Aggiungi una foto, una biografia e le tue competenze",
-          "step2_bold": "Esplora il marketplace",
-          "step2_text": "Veda quali servizi sono offerti e richiesti",
+          "step2_bold": "Dai un'occhiata in giro",
+          "step2_text": "Guarda cosa offrono e cosa chiedono le persone",
           "step3_bold": "Pubblichi un'offerta",
           "step3_text": "Condividi in cosa puoi aiutare gli altri",
           "step4_bold": "Faccia una richiesta",
           "step4_text": "Chiedi qualcosa di cui hai bisogno",
           "step5_bold": "Si connetta con i membri",
-          "step5_text": "Costruisci la tua rete"
+          "step5_text": "Saluta le persone vicino a te"
         },
         "q4": {
           "question": "Quali competenze posso offrire?",
@@ -925,6 +940,7 @@
       },
       "time_credits": {
         "title": "Crediti di tempo",
+        "description": "Come si guadagnano, si spendono e si condividono i crediti.",
         "q1": {
           "question": "Cos'è un credito di tempo?",
           "answer_p1": "Un credito di tempo equivale a un'ora di servizio. È la valuta della nostra comunità.",
@@ -957,14 +973,15 @@
         },
         "q5": {
           "question": "Cosa succede se ho inviato crediti alla persona sbagliata?",
-          "answer_intro": "Le transazioni non possono essere automaticamente annullate. Se ha commesso un errore:",
+          "answer_intro": "Un trasferimento non si può annullare automaticamente. Se i crediti sono andati alla persona sbagliata:",
           "step1": "Contatti il destinatario e chieda di restituire i crediti",
-          "step2": "Se non riesce a risolvere, contatti il supporto per assistenza",
+          "step2": "Se non funziona, scrivici e ti aiutiamo",
           "answer_outro": "Verifichi sempre il destinatario prima di confermare un trasferimento."
         }
       },
       "exchanges_safety": {
         "title": "Scambi e sicurezza",
+        "description": "Organizzare un aiuto e prendersi cura gli uni degli altri.",
         "q1": {
           "question": "Come si organizza uno scambio?",
           "answer_intro": "Il processo tipico è:",
@@ -990,7 +1007,7 @@
           "answer_intro": "La comunicazione è fondamentale. Se c'è un problema:",
           "step1": "Invii un messaggio al membro per discutere l'accaduto",
           "step2": "Cerca di trovare una soluzione insieme",
-          "step3": "Se non riesce a risolvere, contatti il supporto",
+          "step3": "Se non riuscite a risolvere tra di voi, scrivici",
           "answer_outro": "Le assenze ripetute o il cattivo comportamento possono comportare restrizioni dell'account."
         },
         "q4": {
@@ -1000,9 +1017,10 @@
       },
       "badges_rewards": {
         "title": "Badge e ricompense",
+        "description": "Il lato divertente: badge, XP e livelli.",
         "q1": {
           "question": "Cosa sono i badge e gli XP?",
-          "answer_intro": "Il nostro sistema di gamification premia la partecipazione alla comunità:",
+          "answer_intro": "Sono un tocco di divertimento che riconosce ciò che fai nella comunità:",
           "item1_bold": "XP (Punti esperienza)",
           "item1_text": "Guadagnati per varie attività, aiutandoLa a salire di livello",
           "item2_bold": "Badge",
@@ -1032,6 +1050,7 @@
       },
       "account_privacy": {
         "title": "Account e privacy",
+        "description": "I tuoi dati e chi può vederli.",
         "q1": {
           "question": "Come si cambia la password?",
           "answer_before_link": "Vai in ",

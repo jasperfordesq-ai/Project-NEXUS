@@ -872,24 +872,39 @@
     "turnstile_error": "Nie można załadować kontroli bezpieczeństwa. Odśwież stronę i spróbuj ponownie."
   },
   "faq": {
-    "page_title": "Często zadawane pytania",
+    "page_title": "Najczęściej zadawane pytania",
     "meta_description": "Często zadawane pytania o platformę {{name}}: banki czasu, kredyty czasowe, oferty, giełdy, zaufanie i bezpieczeństwo oraz członkostwo — wszystko, czego potrzebujesz na start.",
-    "title": "Najczęściej Zadawane Pytania",
-    "subtitle_before_link": "Nie możesz znaleźć tego, czego szukasz? Odwiedź nasze",
-    "help_center_link": "Centrum Pomocy",
-    "subtitle_after_link": "aby uzyskać szczegółowe przewodniki.",
+    "title": "Najczęściej zadawane pytania",
+    "hero_description": "Krótkie odpowiedzi o dołączaniu do {{name}}, kredytach czasowych, umawianiu pomocy i bezpieczeństwie.",
+    "join": "Dołącz do nas",
     "search_placeholder": "Szukaj pytań...",
-    "no_results": "Nie znaleziono pasujących pytań. Spróbuj innego hasła.",
+    "results_count": "Pasujące pytania: {{total}}",
+    "clear_search": "Wyczyść wyszukiwanie",
+    "no_results": "Żadne pytanie do tego nie pasuje. Spróbuj innego słowa albo zapytaj nas bezpośrednio.",
+    "glance_heading": "W skrócie",
+    "glance_0_value": "Za darmo",
+    "glance_0_label": "Dołączenie nic nie kosztuje.",
+    "glance_1_value": "1 godzina = 1 kredyt",
+    "glance_1_label": "Bez względu na rodzaj pomocy.",
+    "glance_2_value": "Każda umiejętność się liczy",
+    "glance_2_label": "Towarzystwo, podwiezienie, pomoc przy zakupach: wszystko się przydaje.",
+    "topics_heading": "Przeglądaj według tematu",
     "cta_title": "Masz jeszcze pytania?",
-    "cta_description": "Nasz zespół wsparcia jest tutaj, aby pomóc.",
-    "cta_button": "Skontaktuj się z pomocą",
+    "cta_description": "Napisz do nas, a ktoś z {{name}} się odezwie.",
+    "cta_button": "Skontaktuj się z nami",
+    "cta_help": "Centrum Pomocy",
+    "cta_guide": "Przewodnik po banku czasu",
     "categories": {
       "getting_started": {
         "title": "Jak zacząć",
+        "description": "Dołączanie i pierwsze kroki.",
         "q1": {
           "question": "Czym jest time banking?",
-          "answer_p1": "Time banking to system wymiany społecznej, w którym jedna godzina pomocy równa się jednemu kredytowi czasowemu, niezależnie od świadczonej usługi. Niezależnie od tego, czy uczysz języka, pomagasz w ogrodzie, czy zapewniasz wsparcie techniczne, twój czas jest ceniony równo.",
-          "answer_p2": "To sposób na budowanie więzi społecznych podczas wymiany umiejętności i usług bez tradycyjnych pieniędzy."
+          "answer_p1": "Time banking to sąsiedzi pomagający sąsiadom. Pomóż komuś przez godzinę, a zdobędziesz jeden kredyt czasowy, bez względu na rodzaj pomocy. Nauka języka, pomoc w ogrodzie czy przy telefonie: wszystko liczy się tak samo.",
+          "answer_p2": "Bez pieniędzy. To sposób, by poznać ludzi wokół siebie, a każdy dzieli się tym, w czym jest dobry.",
+          "answer_link_before": "Całą historię opisuje ",
+          "guide_link": "Przewodnik po banku czasu",
+          "answer_link_after": "."
         },
         "q2": {
           "question": "Czy przystąpienie jest darmowe?",
@@ -901,14 +916,14 @@
           "answer_intro": "Oto jak zacząć:",
           "step1_bold": "Uzupełnij swój profil",
           "step1_text": "Dodaj zdjęcie, biografię i swoje umiejętności",
-          "step2_bold": "Przeglądaj rynek",
-          "step2_text": "Zobacz, jakie usługi są oferowane i potrzebne",
+          "step2_bold": "Rozejrzyj się",
+          "step2_text": "Zobacz, co ludzie oferują i o co proszą",
           "step3_bold": "Opublikuj ofertę",
           "step3_text": "Podziel się tym, w czym możesz pomóc innym",
           "step4_bold": "Złóż prośbę",
           "step4_text": "Poproś o coś, czego potrzebujesz",
           "step5_bold": "Połącz się z członkami",
-          "step5_text": "Zbuduj swoją sieć"
+          "step5_text": "Przywitaj się z ludźmi w pobliżu"
         },
         "q4": {
           "question": "Jakie umiejętności mogę zaoferować?",
@@ -925,6 +940,7 @@
       },
       "time_credits": {
         "title": "Kredyty czasowe",
+        "description": "Jak zdobywać, wydawać i przekazywać kredyty.",
         "q1": {
           "question": "Czym jest kredyt czasowy?",
           "answer_p1": "Jeden kredyt czasowy to jedna godzina usługi. To waluta naszej społeczności.",
@@ -957,14 +973,15 @@
         },
         "q5": {
           "question": "Co jeśli wysłałem kredyty do niewłaściwej osoby?",
-          "answer_intro": "Transakcje nie mogą być automatycznie cofnięte. Jeśli popełniłeś błąd:",
+          "answer_intro": "Przelewu nie da się cofnąć automatycznie. Jeśli kredyty trafiły do niewłaściwej osoby:",
           "step1": "Skontaktuj się z odbiorcą i poproś go o odesłanie kredytów",
-          "step2": "Jeśli nie możesz tego rozwiązać, skontaktuj się z pomocą techniczną w celu uzyskania wsparcia",
+          "step2": "Jeśli to nie pomoże, napisz do nas, pomożemy",
           "answer_outro": "Zawsze dokładnie sprawdzaj odbiorcę przed potwierdzeniem transferu."
         }
       },
       "exchanges_safety": {
         "title": "Wymiany i bezpieczeństwo",
+        "description": "Umawianie pomocy i dbanie o siebie nawzajem.",
         "q1": {
           "question": "Jak zorganizować wymianę?",
           "answer_intro": "Typowy proces to:",
@@ -990,7 +1007,7 @@
           "answer_intro": "Komunikacja jest kluczem. Jeśli wystąpi problem:",
           "step1": "Napisz do członka, aby omówić, co się stało",
           "step2": "Spróbujcie wspólnie znaleźć rozwiązanie",
-          "step3": "Jeśli nie możecie tego rozwiązać, skontaktuj się z pomocą techniczną",
+          "step3": "Jeśli nie uda się wam tego wyjaśnić między sobą, napisz do nas",
           "answer_outro": "Powtarzające się nieobecności lub złe zachowanie mogą skutkować ograniczeniami konta."
         },
         "q4": {
@@ -1000,9 +1017,10 @@
       },
       "badges_rewards": {
         "title": "Odznaki i nagrody",
+        "description": "Dla zabawy: odznaki, XP i poziomy.",
         "q1": {
           "question": "Czym są odznaki i XP?",
-          "answer_intro": "Nasz system gamifikacji nagradza uczestnictwo w społeczności:",
+          "answer_intro": "To odrobina zabawy, która docenia to, co robisz w społeczności:",
           "item1_bold": "XP (Punkty Doświadczenia)",
           "item1_text": "Zdobywane za różne aktywności, pomagające Ci awansować",
           "item2_bold": "Odznaki",
@@ -1032,6 +1050,7 @@
       },
       "account_privacy": {
         "title": "Konto i prywatność",
+        "description": "Twoje dane i to, kto może je zobaczyć.",
         "q1": {
           "question": "Jak mogę zmienić swoje hasło?",
           "answer_before_link": "Przejdź do ",

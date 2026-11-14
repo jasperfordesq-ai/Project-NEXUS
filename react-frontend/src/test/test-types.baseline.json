@@ -1724,9 +1724,6 @@
     "src/pages/public/CustomPage.test.tsx": {
       "TS2322": 1
     },
-    "src/pages/public/FaqPage.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/public/HomePage.test.tsx": {
       "TS2769": 1
     },
@@ -1859,7 +1856,7 @@
     }
   },
   "totals": {
-    "fileCount": 549,
-    "errorCount": 1662
+    "fileCount": 548,
+    "errorCount": 1661
   }
 }

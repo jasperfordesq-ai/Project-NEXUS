@@ -68,6 +68,14 @@ describe('accessible FAQ follows React', () => {
     expect(res.text).toContain('govuk-list--bullet');
   });
 
+  // 14 Nov 2026: steps happen in order, and "What is timebanking?" points at the guide.
+  it('numbers the steps and links the first answer to the timebanking guide', async () => {
+    const res = await request(buildApp()).get('/faq');
+    expect((res.text.match(/<ol class="govuk-list govuk-list--number">/g) || []).length).toBe(5);
+    expect(res.text).toContain('<a class="govuk-link" href="/guide">Timebanking Guide</a>');
+    expect(res.text).toContain('<strong>Have a look around</strong> — See what people are offering and asking for');
+  });
+
   it('is translated', async () => {
     const res = await request(buildApp('ga')).get('/faq');
     expect(res.status).toBe(200);

@@ -3,19 +3,26 @@
     "en": [
       {
         "id": "getting_started",
-        "title": "Getting Started",
+        "title": "Getting started",
         "items": [
           {
             "id": "getting_started-q1",
-            "question": "What is time banking?",
+            "question": "What is timebanking?",
             "blocks": [
               {
                 "type": "p",
-                "text": "Time banking is a community exchange system where one hour of help equals one time credit, regardless of the service provided. Whether you're teaching a language, helping with gardening, or providing tech support, your time is valued equally."
+                "text": "Timebanking is neighbours helping neighbours. Give an hour of help and you earn one time credit, whatever the help was. Teaching a language, a hand in the garden and help with a phone all count the same."
               },
               {
                 "type": "p",
-                "text": "It's a way to build community connections while exchanging skills and services without traditional money."
+                "text": "No money changes hands. It's a way to get to know the people around you while sharing what you're each good at."
+              },
+              {
+                "type": "link",
+                "before": "For the whole story, read the ",
+                "text": "Timebanking Guide",
+                "href": "/guide",
+                "after": "."
               }
             ]
           },
@@ -42,15 +49,15 @@
                 "text": "Here's how to begin:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "Complete your profile",
                     "text": "Add a photo, bio, and your skills"
                   },
                   {
-                    "bold": "Browse the marketplace",
-                    "text": "See what services are offered and needed"
+                    "bold": "Have a look around",
+                    "text": "See what people are offering and asking for"
                   },
                   {
                     "bold": "Post an offer",
@@ -62,7 +69,7 @@
                   },
                   {
                     "bold": "Connect with members",
-                    "text": "Build your network"
+                    "text": "Say hello to people near you"
                   }
                 ]
               }
@@ -119,7 +126,7 @@
       },
       {
         "id": "time_credits",
-        "title": "Time Credits",
+        "title": "Time credits",
         "items": [
           {
             "id": "time_credits-q1",
@@ -212,10 +219,10 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Transactions cannot be automatically reversed. If you made a mistake:"
+                "text": "A transfer can't be undone automatically. If credits went to the wrong person:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -223,7 +230,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "If you can't resolve it, contact support for assistance"
+                    "text": "If that doesn't work, get in touch with us and we'll help"
                   }
                 ]
               },
@@ -237,7 +244,7 @@
       },
       {
         "id": "exchanges_safety",
-        "title": "Exchanges & Safety",
+        "title": "Exchanges and safety",
         "items": [
           {
             "id": "exchanges_safety-q1",
@@ -248,7 +255,7 @@
                 "text": "The typical process is:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -326,7 +333,7 @@
                 "text": "Communication is key. If there's an issue:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -338,7 +345,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "If you can't resolve it, contact support"
+                    "text": "If you can't sort it out between you, get in touch with us"
                   }
                 ]
               },
@@ -362,7 +369,7 @@
       },
       {
         "id": "badges_rewards",
-        "title": "Badges & Rewards",
+        "title": "Badges and rewards",
         "items": [
           {
             "id": "badges_rewards-q1",
@@ -370,7 +377,7 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Our gamification system rewards community participation:"
+                "text": "They're a bit of fun that marks what you do in the community:"
               },
               {
                 "type": "ul",
@@ -455,7 +462,7 @@
       },
       {
         "id": "account_privacy",
-        "title": "Account & Privacy",
+        "title": "Account and privacy",
         "items": [
           {
             "id": "account_privacy-q1",
@@ -513,7 +520,7 @@
                 "text": "If you wish to leave the community:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -572,7 +579,7 @@
     "ga": [
       {
         "id": "getting_started",
-        "title": "Ag Tosú",
+        "title": "Ag tosú",
         "items": [
           {
             "id": "getting_started-q1",
@@ -580,11 +587,18 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Is córas malartaithe pobail í an bhaincéireacht ama ina bhfuil uair an chloig cabhrach cothrom le creidmheas ama amháin, beag beann ar an tseirbhís a chuirtear ar fáil. Cibé acu atá tú ag múineadh teanga, ag cabhrú le garraíodóireacht nó ag cur tacaíocht theicniúil ar fáil, cuirtear an luach céanna ar do chuid ama."
+                "text": "Is éard is baincéireacht ama ann ná comharsana ag cabhrú le comharsana. Tabhair uair an chloig cabhrach agus tuilleann tú creidmheas ama amháin, is cuma cén chabhair a bhí ann. Teanga a mhúineadh, lámh chúnta sa ghairdín nó cabhair le fón: is ionann luach dóibh ar fad."
               },
               {
                 "type": "p",
-                "text": "Is bealach é chun naisc phobail a thógáil agus scileanna agus seirbhísí a mhalartú gan airgead traidisiúnta."
+                "text": "Níl aon airgead i gceist. Is bealach é chun aithne a chur ar na daoine thart ort, agus gach duine ag roinnt an ruda a bhfuil sé go maith aige."
+              },
+              {
+                "type": "link",
+                "before": "Chun an scéal iomlán a fháil, léigh: ",
+                "text": "Treoir don Bhaincéireacht Ama",
+                "href": "/guide",
+                "after": "."
               }
             ]
           },
@@ -611,15 +625,15 @@
                 "text": "Seo mar a thosaíonn tú:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "Comhlánaigh do phróifíl",
                     "text": "Cuir grianghraf, beathaisnéis agus do scileanna leis"
                   },
                   {
-                    "bold": "Brabhsáil an margadh",
-                    "text": "Féach cé na seirbhísí atá á dtairiscint agus cé na cinn atá de dhíth"
+                    "bold": "Caith súil thart",
+                    "text": "Féach cad atá á thairiscint ag daoine agus cad atá á lorg acu"
                   },
                   {
                     "bold": "Cuir tairiscint suas",
@@ -631,7 +645,7 @@
                   },
                   {
                     "bold": "Ceangail le baill",
-                    "text": "Tóg do líonra"
+                    "text": "Abair heileo le daoine in aice leat"
                   }
                 ]
               }
@@ -688,7 +702,7 @@
       },
       {
         "id": "time_credits",
-        "title": "Creidmheasanna Ama",
+        "title": "Creidmheasanna ama",
         "items": [
           {
             "id": "time_credits-q1",
@@ -781,10 +795,10 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Ní féidir idirbhearta a chúlghairm go huathoibríoch. Má rinne tú botún:"
+                "text": "Ní féidir aistriú a chealú go huathoibríoch. Má chuaigh creidmheasanna chuig an duine mícheart:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -792,7 +806,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Mura féidir leat é a réiteach, déan teagmháil leis an bhfoireann tacaíochta chun cabhair a fháil"
+                    "text": "Mura n-oibríonn sé sin, déan teagmháil linn agus cabhróimid leat"
                   }
                 ]
               },
@@ -806,7 +820,7 @@
       },
       {
         "id": "exchanges_safety",
-        "title": "Malartuithe agus Sábháilteacht",
+        "title": "Malartuithe agus sábháilteacht",
         "items": [
           {
             "id": "exchanges_safety-q1",
@@ -817,7 +831,7 @@
                 "text": "Is é an gnáthphróiseas ná:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -895,7 +909,7 @@
                 "text": "Tá cumarsáid ríthábhachtach. Má bhíonn fadhb ann:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -907,7 +921,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Mura féidir leat é a réiteach, déan teagmháil le tacaíocht"
+                    "text": "Mura féidir libh é a réiteach eadraibh féin, déan teagmháil linn"
                   }
                 ]
               },
@@ -931,7 +945,7 @@
       },
       {
         "id": "badges_rewards",
-        "title": "Suaitheantais agus Duaiseanna",
+        "title": "Suaitheantais agus duaiseanna",
         "items": [
           {
             "id": "badges_rewards-q1",
@@ -939,7 +953,7 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Tugann ár gcóras cluichíochta aitheantas do rannpháirtíocht phobail:"
+                "text": "Is píosa spraoi iad a thugann aitheantas dá ndéanann tú sa phobal:"
               },
               {
                 "type": "ul",
@@ -1024,7 +1038,7 @@
       },
       {
         "id": "account_privacy",
-        "title": "Cuntas agus Príobháideacht",
+        "title": "Cuntas agus príobháideacht",
         "items": [
           {
             "id": "account_privacy-q1",
@@ -1082,7 +1096,7 @@
                 "text": "Más mian leat an pobal a fhágáil:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -1149,11 +1163,18 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Zeitbank ist ein gemeinschaftliches Austauschsystem, bei dem eine Stunde Hilfe einem Zeitguthaben entspricht, unabhängig von der erbrachten Dienstleistung. Ob Sie eine Sprache unterrichten, bei der Gartenarbeit helfen oder technischen Support leisten — Ihre Zeit wird gleichwertig geschätzt."
+                "text": "Zeitbank heißt: Nachbarn helfen Nachbarn. Für jede Stunde Hilfe erhalten Sie ein Zeitguthaben, ganz gleich, worum es ging. Eine Sprache unterrichten, im Garten mit anpacken oder beim Handy helfen: Alles zählt gleich viel."
               },
               {
                 "type": "p",
-                "text": "Es ist eine Möglichkeit, Gemeinschaftsverbindungen aufzubauen und gleichzeitig Fähigkeiten und Dienstleistungen ohne traditionelles Geld auszutauschen."
+                "text": "Es fließt kein Geld. So lernen Sie die Menschen in Ihrer Umgebung kennen, und jeder bringt ein, was er gut kann."
+              },
+              {
+                "type": "link",
+                "before": "Die ganze Geschichte steht im ",
+                "text": "Timebanking-Leitfaden",
+                "href": "/guide",
+                "after": "."
               }
             ]
           },
@@ -1180,15 +1201,15 @@
                 "text": "So beginnen Sie:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "Vervollständigen Sie Ihr Profil",
                     "text": "Fügen Sie ein Foto, eine Biografie und Ihre Fähigkeiten hinzu"
                   },
                   {
-                    "bold": "Durchsuchen Sie den Marktplatz",
-                    "text": "Sehen Sie, welche Dienstleistungen angeboten und gesucht werden"
+                    "bold": "Schauen Sie sich um",
+                    "text": "Sehen Sie, was andere anbieten und suchen"
                   },
                   {
                     "bold": "Erstellen Sie ein Angebot",
@@ -1200,7 +1221,7 @@
                   },
                   {
                     "bold": "Verbinden Sie sich mit Mitgliedern",
-                    "text": "Bauen Sie Ihr Netzwerk auf"
+                    "text": "Sagen Sie Menschen in Ihrer Nähe Hallo"
                   }
                 ]
               }
@@ -1350,10 +1371,10 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Transaktionen können nicht automatisch rückgängig gemacht werden. Wenn Sie einen Fehler gemacht haben:"
+                "text": "Eine Übertragung lässt sich nicht automatisch rückgängig machen. Wenn Guthaben bei der falschen Person gelandet ist:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -1361,7 +1382,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Wenn Sie es nicht lösen können, wenden Sie sich an den Support"
+                    "text": "Wenn das nicht klappt, melden Sie sich bei uns, wir helfen Ihnen"
                   }
                 ]
               },
@@ -1386,7 +1407,7 @@
                 "text": "Der typische Ablauf ist:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -1464,7 +1485,7 @@
                 "text": "Kommunikation ist der Schlüssel. Wenn es ein Problem gibt:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -1476,7 +1497,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Wenn Sie es nicht lösen können, wenden Sie sich an den Support"
+                    "text": "Wenn Sie es untereinander nicht klären können, melden Sie sich bei uns"
                   }
                 ]
               },
@@ -1508,7 +1529,7 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Unser Gamification-System belohnt die Gemeinschaftsteilnahme:"
+                "text": "Sie sind eine spielerische Anerkennung für das, was Sie in der Gemeinschaft tun:"
               },
               {
                 "type": "ul",
@@ -1651,7 +1672,7 @@
                 "text": "Wenn Sie die Gemeinschaft verlassen möchten:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -1718,11 +1739,18 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "La banque de temps est un système d'échange communautaire où une heure d'aide équivaut à un crédit-temps, quel que soit le service fourni. Que vous enseigniez une langue, aidiez au jardinage ou fournissiez un support technique, votre temps est valorisé de manière égale."
+                "text": "La banque de temps, ce sont des voisins qui s'entraident. Donnez une heure d'aide et vous gagnez un crédit-temps, quelle que soit l'aide. Enseigner une langue, donner un coup de main au jardin ou aider avec un téléphone : tout compte autant."
               },
               {
                 "type": "p",
-                "text": "C'est un moyen de créer des liens communautaires tout en échangeant des compétences et des services sans argent traditionnel."
+                "text": "Aucun argent ne circule. C'est une façon de faire connaissance avec les gens qui vous entourent, chacun partageant ce qu'il sait faire."
+              },
+              {
+                "type": "link",
+                "before": "Pour toute l'histoire, lisez le ",
+                "text": "Guide du Timebanking",
+                "href": "/guide",
+                "after": "."
               }
             ]
           },
@@ -1749,15 +1777,15 @@
                 "text": "Voici comment débuter :"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "Complétez votre profil",
                     "text": "Ajoutez une photo, une biographie et vos compétences"
                   },
                   {
-                    "bold": "Parcourez la place de marché",
-                    "text": "Voyez quels services sont offerts et demandés"
+                    "bold": "Faites un tour",
+                    "text": "Voyez ce que les gens proposent et ce qu'ils demandent"
                   },
                   {
                     "bold": "Publiez une offre",
@@ -1769,7 +1797,7 @@
                   },
                   {
                     "bold": "Connectez-vous avec les membres",
-                    "text": "Construisez votre réseau"
+                    "text": "Dites bonjour aux personnes près de chez vous"
                   }
                 ]
               }
@@ -1919,10 +1947,10 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Les transactions ne peuvent pas être automatiquement annulées. Si vous avez fait une erreur :"
+                "text": "Un transfert ne peut pas être annulé automatiquement. Si des crédits sont partis vers la mauvaise personne :"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -1930,7 +1958,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Si vous ne pouvez pas résoudre le problème, contactez le support"
+                    "text": "Si cela ne suffit pas, contactez-nous et nous vous aiderons"
                   }
                 ]
               },
@@ -1955,7 +1983,7 @@
                 "text": "Le processus typique est :"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -2033,7 +2061,7 @@
                 "text": "La communication est essentielle. En cas de problème :"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -2045,7 +2073,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Si vous ne pouvez pas résoudre le problème, contactez le support"
+                    "text": "Si vous n'arrivez pas à régler cela entre vous, contactez-nous"
                   }
                 ]
               },
@@ -2077,7 +2105,7 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Notre système de gamification récompense la participation communautaire :"
+                "text": "C'est une touche ludique qui salue ce que vous faites dans la communauté :"
               },
               {
                 "type": "ul",
@@ -2220,7 +2248,7 @@
                 "text": "Si vous souhaitez quitter la communauté :"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -2287,11 +2315,18 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "La banca del tempo è un sistema di scambio comunitario dove un'ora di aiuto equivale a un credito di tempo, indipendentemente dal servizio fornito. Che Lei insegni una lingua, aiuti con il giardinaggio o fornisca supporto tecnico, il Suo tempo è valutato in modo uguale."
+                "text": "La banca del tempo è vicini che aiutano vicini. Dai un'ora di aiuto e guadagni un credito di tempo, qualunque sia l'aiuto. Insegnare una lingua, dare una mano in giardino o aiutare con il telefono: tutto vale allo stesso modo."
               },
               {
                 "type": "p",
-                "text": "È un modo per costruire connessioni comunitarie scambiando competenze e servizi senza denaro tradizionale."
+                "text": "Non girano soldi. È un modo per conoscere le persone che ti stanno intorno, mentre ognuno condivide ciò che sa fare."
+              },
+              {
+                "type": "link",
+                "before": "Per tutta la storia, leggi la ",
+                "text": "Guida al Timebanking",
+                "href": "/guide",
+                "after": "."
               }
             ]
           },
@@ -2318,15 +2353,15 @@
                 "text": "Ecco come iniziare:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "Completa il tuo profilo",
                     "text": "Aggiungi una foto, una biografia e le tue competenze"
                   },
                   {
-                    "bold": "Esplora il marketplace",
-                    "text": "Veda quali servizi sono offerti e richiesti"
+                    "bold": "Dai un'occhiata in giro",
+                    "text": "Guarda cosa offrono e cosa chiedono le persone"
                   },
                   {
                     "bold": "Pubblichi un'offerta",
@@ -2338,7 +2373,7 @@
                   },
                   {
                     "bold": "Si connetta con i membri",
-                    "text": "Costruisci la tua rete"
+                    "text": "Saluta le persone vicino a te"
                   }
                 ]
               }
@@ -2488,10 +2523,10 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Le transazioni non possono essere automaticamente annullate. Se ha commesso un errore:"
+                "text": "Un trasferimento non si può annullare automaticamente. Se i crediti sono andati alla persona sbagliata:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -2499,7 +2534,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Se non riesce a risolvere, contatti il supporto per assistenza"
+                    "text": "Se non funziona, scrivici e ti aiutiamo"
                   }
                 ]
               },
@@ -2524,7 +2559,7 @@
                 "text": "Il processo tipico è:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -2602,7 +2637,7 @@
                 "text": "La comunicazione è fondamentale. Se c'è un problema:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -2614,7 +2649,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Se non riesce a risolvere, contatti il supporto"
+                    "text": "Se non riuscite a risolvere tra di voi, scrivici"
                   }
                 ]
               },
@@ -2646,7 +2681,7 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Il nostro sistema di gamification premia la partecipazione alla comunità:"
+                "text": "Sono un tocco di divertimento che riconosce ciò che fai nella comunità:"
               },
               {
                 "type": "ul",
@@ -2789,7 +2824,7 @@
                 "text": "Se desidera lasciare la comunità:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -2856,11 +2891,18 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "O timebanking é um sistema de troca comunitário onde uma hora de ajuda equivale a um crédito de tempo, independentemente do serviço prestado. Quer esteja a ensinar um idioma, a ajudar com jardinagem ou a fornecer apoio tecnológico, o seu tempo é valorizado igualmente."
+                "text": "Timebanking é vizinho ajudando vizinho. Dê uma hora de ajuda e você ganha um crédito de tempo, seja qual for a ajuda. Ensinar um idioma, dar uma mão no jardim ou ajudar com o celular: tudo vale o mesmo."
               },
               {
                 "type": "p",
-                "text": "É uma forma de construir conexões comunitárias ao trocar competências e serviços sem dinheiro tradicional."
+                "text": "Não entra dinheiro. É um jeito de conhecer as pessoas ao seu redor, enquanto cada um compartilha o que sabe fazer."
+              },
+              {
+                "type": "link",
+                "before": "Para conhecer a história toda, leia o ",
+                "text": "Guia de Timebanking",
+                "href": "/guide",
+                "after": "."
               }
             ]
           },
@@ -2887,15 +2929,15 @@
                 "text": "Eis como começar:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "Complete o seu perfil",
                     "text": "Adicione uma foto, biografia e as suas competências"
                   },
                   {
-                    "bold": "Explore o mercado",
-                    "text": "Veja que serviços são oferecidos e necessitados"
+                    "bold": "Dê uma olhada",
+                    "text": "Veja o que as pessoas oferecem e o que pedem"
                   },
                   {
                     "bold": "Publique uma oferta",
@@ -2907,7 +2949,7 @@
                   },
                   {
                     "bold": "Conecte-se com membros",
-                    "text": "Construa a sua rede"
+                    "text": "Diga olá para quem está perto de você"
                   }
                 ]
               }
@@ -2964,7 +3006,7 @@
       },
       {
         "id": "time_credits",
-        "title": "Créditos de Tempo",
+        "title": "Créditos de tempo",
         "items": [
           {
             "id": "time_credits-q1",
@@ -3057,10 +3099,10 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "As transações não podem ser automaticamente revertidas. Se cometeu um erro:"
+                "text": "Uma transferência não pode ser desfeita automaticamente. Se os créditos foram para a pessoa errada:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -3068,7 +3110,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Se não conseguir resolver, contacte o suporte para assistência"
+                    "text": "Se não der certo, fale com a gente e nós ajudamos"
                   }
                 ]
               },
@@ -3082,7 +3124,7 @@
       },
       {
         "id": "exchanges_safety",
-        "title": "Trocas e Segurança",
+        "title": "Trocas e segurança",
         "items": [
           {
             "id": "exchanges_safety-q1",
@@ -3093,7 +3135,7 @@
                 "text": "O processo típico é:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -3171,7 +3213,7 @@
                 "text": "A comunicação é fundamental. Se houver um problema:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -3183,7 +3225,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Se não conseguir resolver, contacte o suporte"
+                    "text": "Se vocês não conseguirem resolver entre si, fale com a gente"
                   }
                 ]
               },
@@ -3207,7 +3249,7 @@
       },
       {
         "id": "badges_rewards",
-        "title": "Insígnias e Recompensas",
+        "title": "Insígnias e recompensas",
         "items": [
           {
             "id": "badges_rewards-q1",
@@ -3215,7 +3257,7 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "O nosso sistema de gamificação recompensa a participação comunitária:"
+                "text": "São um toque de diversão que reconhece o que você faz na comunidade:"
               },
               {
                 "type": "ul",
@@ -3300,7 +3342,7 @@
       },
       {
         "id": "account_privacy",
-        "title": "Conta e Privacidade",
+        "title": "Conta e privacidade",
         "items": [
           {
             "id": "account_privacy-q1",
@@ -3358,7 +3400,7 @@
                 "text": "Se desejar sair da comunidade:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -3417,7 +3459,7 @@
     "es": [
       {
         "id": "getting_started",
-        "title": "Primeros Pasos",
+        "title": "Primeros pasos",
         "items": [
           {
             "id": "getting_started-q1",
@@ -3425,11 +3467,18 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "El banco de tiempo es un sistema de intercambio comunitario donde una hora de ayuda equivale a un crédito de tiempo, sin importar el servicio proporcionado. Ya sea que enseñes un idioma, ayudes con jardinería o des soporte técnico, tu tiempo se valora por igual."
+                "text": "El banco de tiempo es vecinos que ayudan a vecinos. Da una hora de ayuda y ganas un crédito de tiempo, sea cual sea la ayuda. Enseñar un idioma, echar una mano en el jardín o ayudar con un móvil: todo cuenta igual."
               },
               {
                 "type": "p",
-                "text": "Es una forma de construir conexiones comunitarias mientras intercambias habilidades y servicios sin dinero tradicional."
+                "text": "No hay dinero de por medio. Es una forma de conocer a la gente que te rodea mientras cada quien comparte lo que se le da bien."
+              },
+              {
+                "type": "link",
+                "before": "Para conocer toda la historia, lee la ",
+                "text": "Guía de Timebanking",
+                "href": "/guide",
+                "after": "."
               }
             ]
           },
@@ -3456,15 +3505,15 @@
                 "text": "Así es como comenzar:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "Completa tu perfil",
                     "text": "Añade una foto, biografía y tus habilidades"
                   },
                   {
-                    "bold": "Explora el mercado",
-                    "text": "Mira qué servicios se ofrecen y necesitan"
+                    "bold": "Echa un vistazo",
+                    "text": "Mira lo que la gente ofrece y lo que pide"
                   },
                   {
                     "bold": "Publica una oferta",
@@ -3476,7 +3525,7 @@
                   },
                   {
                     "bold": "Conecta con miembros",
-                    "text": "Construye tu red"
+                    "text": "Saluda a la gente que tienes cerca"
                   }
                 ]
               }
@@ -3533,7 +3582,7 @@
       },
       {
         "id": "time_credits",
-        "title": "Créditos de Tiempo",
+        "title": "Créditos de tiempo",
         "items": [
           {
             "id": "time_credits-q1",
@@ -3626,10 +3675,10 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Las transacciones no pueden revertirse automáticamente. Si cometiste un error:"
+                "text": "Una transferencia no se puede deshacer automáticamente. Si los créditos llegaron a la persona equivocada:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -3637,7 +3686,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Si no puedes resolverlo, contacta con soporte para asistencia"
+                    "text": "Si eso no funciona, escríbenos y te ayudamos"
                   }
                 ]
               },
@@ -3651,7 +3700,7 @@
       },
       {
         "id": "exchanges_safety",
-        "title": "Intercambios y Seguridad",
+        "title": "Intercambios y seguridad",
         "items": [
           {
             "id": "exchanges_safety-q1",
@@ -3662,7 +3711,7 @@
                 "text": "El proceso típico es:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -3740,7 +3789,7 @@
                 "text": "La comunicación es clave. Si hay un problema:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -3752,7 +3801,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Si no pueden resolverlo, contacta con soporte"
+                    "text": "Si no logran resolverlo entre ustedes, escríbenos"
                   }
                 ]
               },
@@ -3776,7 +3825,7 @@
       },
       {
         "id": "badges_rewards",
-        "title": "Insignias y Recompensas",
+        "title": "Insignias y recompensas",
         "items": [
           {
             "id": "badges_rewards-q1",
@@ -3784,7 +3833,7 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Nuestro sistema de gamificación recompensa la participación comunitaria:"
+                "text": "Son un toque de diversión que reconoce lo que haces en la comunidad:"
               },
               {
                 "type": "ul",
@@ -3869,7 +3918,7 @@
       },
       {
         "id": "account_privacy",
-        "title": "Cuenta y Privacidad",
+        "title": "Cuenta y privacidad",
         "items": [
           {
             "id": "account_privacy-q1",
@@ -3927,7 +3976,7 @@
                 "text": "Si deseas dejar la comunidad:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -3986,7 +4035,7 @@
     "nl": [
       {
         "id": "getting_started",
-        "title": "Aan de Slag",
+        "title": "Aan de slag",
         "items": [
           {
             "id": "getting_started-q1",
@@ -3994,11 +4043,18 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Time banking is een gemeenschapsuitwisselingssysteem waarbij één uur hulp gelijkstaat aan één tijdskrediet, ongeacht de geleverde dienst. Of je nu een taal leert, helpt met tuinieren of technische ondersteuning biedt, jouw tijd wordt gelijk gewaardeerd."
+                "text": "Time banking is buren die buren helpen. Geef een uur hulp en je verdient één tijdcredit, wat voor hulp het ook was. Iemand een taal leren, een handje helpen in de tuin of hulp met een telefoon: het telt allemaal even zwaar."
               },
               {
                 "type": "p",
-                "text": "Het is een manier om gemeenschapsverbindingen op te bouwen terwijl je vaardigheden en diensten uitwisselt zonder traditioneel geld."
+                "text": "Er komt geen geld aan te pas. Het is een manier om de mensen om je heen te leren kennen, terwijl ieder deelt waar hij of zij goed in is."
+              },
+              {
+                "type": "link",
+                "before": "Lees het hele verhaal in de ",
+                "text": "Tijdbankgids",
+                "href": "/guide",
+                "after": "."
               }
             ]
           },
@@ -4025,15 +4081,15 @@
                 "text": "Zo begin je:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "Voltooi je profiel",
                     "text": "Voeg een foto, bio en je vaardigheden toe"
                   },
                   {
-                    "bold": "Blader door de marktplaats",
-                    "text": "Bekijk welke diensten worden aangeboden en nodig zijn"
+                    "bold": "Kijk eens rond",
+                    "text": "Bekijk wat mensen aanbieden en waar ze om vragen"
                   },
                   {
                     "bold": "Plaats een aanbod",
@@ -4045,7 +4101,7 @@
                   },
                   {
                     "bold": "Verbind met leden",
-                    "text": "Bouw je netwerk op"
+                    "text": "Zeg hallo tegen mensen bij jou in de buurt"
                   }
                 ]
               }
@@ -4195,10 +4251,10 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Transacties kunnen niet automatisch worden teruggedraaid. Als je een fout hebt gemaakt:"
+                "text": "Een overdracht kan niet automatisch worden teruggedraaid. Als credits bij de verkeerde persoon terecht zijn gekomen:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -4206,7 +4262,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Als je het niet kunt oplossen, neem dan contact op met de ondersteuning voor hulp"
+                    "text": "Lukt dat niet, neem dan contact met ons op, dan helpen we je"
                   }
                 ]
               },
@@ -4220,7 +4276,7 @@
       },
       {
         "id": "exchanges_safety",
-        "title": "Wisselingen & Veiligheid",
+        "title": "Uitwisselingen en veiligheid",
         "items": [
           {
             "id": "exchanges_safety-q1",
@@ -4231,7 +4287,7 @@
                 "text": "Het typische proces is:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -4309,7 +4365,7 @@
                 "text": "Communicatie is de sleutel. Als er een probleem is:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -4321,7 +4377,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Als je het niet kunt oplossen, neem dan contact op met de ondersteuning"
+                    "text": "Komen jullie er samen niet uit, neem dan contact met ons op"
                   }
                 ]
               },
@@ -4345,7 +4401,7 @@
       },
       {
         "id": "badges_rewards",
-        "title": "Badges & Beloningen",
+        "title": "Badges en beloningen",
         "items": [
           {
             "id": "badges_rewards-q1",
@@ -4353,7 +4409,7 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Ons gamificatiesysteem beloont deelname aan de gemeenschap:"
+                "text": "Ze zijn een leuk extraatje dat laat zien wat je in de gemeenschap doet:"
               },
               {
                 "type": "ul",
@@ -4496,7 +4552,7 @@
                 "text": "Als je de gemeenschap wilt verlaten:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -4563,11 +4619,18 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Time banking to system wymiany społecznej, w którym jedna godzina pomocy równa się jednemu kredytowi czasowemu, niezależnie od świadczonej usługi. Niezależnie od tego, czy uczysz języka, pomagasz w ogrodzie, czy zapewniasz wsparcie techniczne, twój czas jest ceniony równo."
+                "text": "Time banking to sąsiedzi pomagający sąsiadom. Pomóż komuś przez godzinę, a zdobędziesz jeden kredyt czasowy, bez względu na rodzaj pomocy. Nauka języka, pomoc w ogrodzie czy przy telefonie: wszystko liczy się tak samo."
               },
               {
                 "type": "p",
-                "text": "To sposób na budowanie więzi społecznych podczas wymiany umiejętności i usług bez tradycyjnych pieniędzy."
+                "text": "Bez pieniędzy. To sposób, by poznać ludzi wokół siebie, a każdy dzieli się tym, w czym jest dobry."
+              },
+              {
+                "type": "link",
+                "before": "Całą historię opisuje ",
+                "text": "Przewodnik po banku czasu",
+                "href": "/guide",
+                "after": "."
               }
             ]
           },
@@ -4594,15 +4657,15 @@
                 "text": "Oto jak zacząć:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "Uzupełnij swój profil",
                     "text": "Dodaj zdjęcie, biografię i swoje umiejętności"
                   },
                   {
-                    "bold": "Przeglądaj rynek",
-                    "text": "Zobacz, jakie usługi są oferowane i potrzebne"
+                    "bold": "Rozejrzyj się",
+                    "text": "Zobacz, co ludzie oferują i o co proszą"
                   },
                   {
                     "bold": "Opublikuj ofertę",
@@ -4614,7 +4677,7 @@
                   },
                   {
                     "bold": "Połącz się z członkami",
-                    "text": "Zbuduj swoją sieć"
+                    "text": "Przywitaj się z ludźmi w pobliżu"
                   }
                 ]
               }
@@ -4764,10 +4827,10 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Transakcje nie mogą być automatycznie cofnięte. Jeśli popełniłeś błąd:"
+                "text": "Przelewu nie da się cofnąć automatycznie. Jeśli kredyty trafiły do niewłaściwej osoby:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -4775,7 +4838,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Jeśli nie możesz tego rozwiązać, skontaktuj się z pomocą techniczną w celu uzyskania wsparcia"
+                    "text": "Jeśli to nie pomoże, napisz do nas, pomożemy"
                   }
                 ]
               },
@@ -4800,7 +4863,7 @@
                 "text": "Typowy proces to:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -4878,7 +4941,7 @@
                 "text": "Komunikacja jest kluczem. Jeśli wystąpi problem:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -4890,7 +4953,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "Jeśli nie możecie tego rozwiązać, skontaktuj się z pomocą techniczną"
+                    "text": "Jeśli nie uda się wam tego wyjaśnić między sobą, napisz do nas"
                   }
                 ]
               },
@@ -4922,7 +4985,7 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "Nasz system gamifikacji nagradza uczestnictwo w społeczności:"
+                "text": "To odrobina zabawy, która docenia to, co robisz w społeczności:"
               },
               {
                 "type": "ul",
@@ -5065,7 +5128,7 @@
                 "text": "Jeśli chcesz opuścić społeczność:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -5132,11 +5195,18 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "タイムバンキングは、1時間の助けが1つのタイムクレジットに等しいコミュニティ交換システムです。提供されるサービスに関係なく、言語を教えたり、庭仕事を手伝ったり、技術サポートを提供したりする場合でも、あなたの時間は平等に評価されます。"
+                "text": "タイムバンキングは、ご近所同士の助け合いです。1時間手助けをすると、内容にかかわらずタイムクレジットが1つもらえます。言葉を教えることも、庭仕事の手伝いも、スマートフォンの操作の手伝いも、すべて同じ価値です。"
               },
               {
                 "type": "p",
-                "text": "これは、伝統的なお金を使わずにスキルやサービスを交換しながらコミュニティのつながりを築く方法です。"
+                "text": "お金のやり取りはありません。それぞれの得意なことを分かち合いながら、身近な人たちと知り合える仕組みです。"
+              },
+              {
+                "type": "link",
+                "before": "くわしくは「",
+                "text": "タイムバンキングガイド",
+                "href": "/guide",
+                "after": "」をご覧ください。"
               }
             ]
           },
@@ -5163,15 +5233,15 @@
                 "text": "始める方法は次のとおりです："
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "プロフィールを完成させる",
                     "text": "写真、自己紹介、スキルを追加する"
                   },
                   {
-                    "bold": "マーケットプレイスをブラウズする",
-                    "text": "提供されているサービスと必要なサービスを確認する"
+                    "bold": "見てまわる",
+                    "text": "みんなが提供していること、求めていることを確認する"
                   },
                   {
                     "bold": "オファーを投稿する",
@@ -5183,7 +5253,7 @@
                   },
                   {
                     "bold": "メンバーとつながる",
-                    "text": "ネットワークを構築する"
+                    "text": "近くの人にあいさつする"
                   }
                 ]
               }
@@ -5333,10 +5403,10 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "取引は自動的に取り消すことができません。もし間違えた場合は:"
+                "text": "送ったクレジットを自動で取り消すことはできません。間違った相手に送ってしまった場合は："
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -5344,7 +5414,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "解決できない場合は、サポートに連絡して支援を求めてください"
+                    "text": "それでも解決しない場合は、ご連絡ください。お手伝いします"
                   }
                 ]
               },
@@ -5369,7 +5439,7 @@
                 "text": "一般的なプロセスは:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -5447,7 +5517,7 @@
                 "text": "コミュニケーションが重要です。問題がある場合は："
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -5459,7 +5529,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "解決できない場合は、サポートに連絡してください"
+                    "text": "当事者同士で解決できない場合は、ご連絡ください"
                   }
                 ]
               },
@@ -5491,7 +5561,7 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "私たちのゲーミフィケーションシステムは、コミュニティへの参加を報酬します："
+                "text": "コミュニティでの活動を楽しく記録するための仕組みです："
               },
               {
                 "type": "ul",
@@ -5634,7 +5704,7 @@
                 "text": "コミュニティを離れたい場合は："
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -5701,11 +5771,18 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "تبادل الوقت هو نظام تبادل مجتمعي حيث تعادل ساعة واحدة من المساعدة رصيدًا واحدًا من الوقت، بغض النظر عن الخدمة المقدمة. سواء كنت تعلم لغة، أو تساعد في البستنة، أو تقدم دعمًا تقنيًا، فإن وقتك يُقدَّر بالتساوي."
+                "text": "تبادل الوقت هو جيران يساعدون جيرانهم. قدّم ساعة من المساعدة لتكسب رصيد وقت واحدًا، أيًّا كانت المساعدة. تعليم لغة، أو العون في الحديقة، أو المساعدة في استخدام الهاتف: كلها تُحسب بالقدر نفسه."
               },
               {
                 "type": "p",
-                "text": "إنه وسيلة لبناء روابط مجتمعية أثناء تبادل المهارات والخدمات دون استخدام المال التقليدي."
+                "text": "لا مال في الأمر. إنها طريقة للتعرّف على من حولك، بينما يشارك كلٌّ منكم ما يجيده."
+              },
+              {
+                "type": "link",
+                "before": "للقصة كاملة، اقرأ ",
+                "text": "دليل بنك الوقت",
+                "href": "/guide",
+                "after": "."
               }
             ]
           },
@@ -5732,15 +5809,15 @@
                 "text": "إليك كيفية البدء:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "أكمل ملفك الشخصي",
                     "text": "أضف صورة، وسيرة ذاتية، ومهاراتك"
                   },
                   {
-                    "bold": "تصفح السوق",
-                    "text": "انظر ما هي الخدمات المعروضة والمطلوبة"
+                    "bold": "ألقِ نظرة",
+                    "text": "اطّلع على ما يعرضه الناس وما يطلبونه"
                   },
                   {
                     "bold": "نشر عرض",
@@ -5752,7 +5829,7 @@
                   },
                   {
                     "bold": "تواصل مع الأعضاء",
-                    "text": "قم ببناء شبكتك"
+                    "text": "ألقِ التحية على من هم بالقرب منك"
                   }
                 ]
               }
@@ -5902,10 +5979,10 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "لا يمكن عكس المعاملات تلقائيًا. إذا ارتكبت خطأ:"
+                "text": "لا يمكن التراجع عن التحويل تلقائيًا. إذا ذهب الرصيد إلى الشخص الخطأ:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -5913,7 +5990,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "إذا لم تتمكن من حلها، اتصل بالدعم للحصول على المساعدة"
+                    "text": "إذا لم ينجح ذلك، تواصل معنا وسنساعدك"
                   }
                 ]
               },
@@ -5938,7 +6015,7 @@
                 "text": "العملية النموذجية هي:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -6016,7 +6093,7 @@
                 "text": "التواصل هو المفتاح. إذا كانت هناك مشكلة:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
@@ -6028,7 +6105,7 @@
                   },
                   {
                     "bold": "",
-                    "text": "إذا لم تتمكن من حلها، اتصل بالدعم"
+                    "text": "إذا لم تتمكّنا من حلّ الأمر بينكما، تواصل معنا"
                   }
                 ]
               },
@@ -6060,7 +6137,7 @@
             "blocks": [
               {
                 "type": "p",
-                "text": "نظام الألعاب لدينا يكافئ المشاركة المجتمعية:"
+                "text": "هي لمسة من المرح تحتفي بما تفعله في المجتمع:"
               },
               {
                 "type": "ul",
@@ -6203,7 +6280,7 @@
                 "text": "إذا كنت ترغب في مغادرة المجتمع:"
               },
               {
-                "type": "ul",
+                "type": "ol",
                 "items": [
                   {
                     "bold": "",
