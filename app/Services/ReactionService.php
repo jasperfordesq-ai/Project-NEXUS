@@ -21,6 +21,14 @@ use App\Support\UserDisplayName;
  * choosing a different type replaces the existing one.
  *
  * Uses the unified `reactions` table with `target_type` / `target_id` / `emoji` columns.
+ *
+ * 🔴 This table is also where a LIKE lives. Until 2026-11-14 a like (the heart:
+ * POST /v2/feed/like, detail pages, the accessible frontend) was written to a
+ * separate `likes` table that the feed card never read, so the same item showed
+ * different counts on different pages and older likes vanished from the feed.
+ * A like is now the `like` reaction: toggleLike() below is the only like
+ * writer, and "likes_count" / "is_liked" anywhere in the API mean "reactions on
+ * this item" / "the viewer has reacted". Do not reintroduce a second store.
  */
 class ReactionService
 {
@@ -132,6 +140,8 @@ class ReactionService
             return ['added', $reactionType];
         });
 
+        self::syncPostCounter($entityType, $entityId, $tenantId);
+
         // Return updated reaction state
         $reactions = $this->getReactions($entityId, $entityType, $userId);
 
@@ -140,6 +150,110 @@ class ReactionService
             'reaction_type' => $resultType,
             'reactions' => $reactions,
         ];
+    }
+
+    /** The reaction a plain "like" (the heart) is stored as. */
+    public const LIKE_REACTION = 'like';
+
+    /**
+     * Toggle a plain like — the heart button on clients that offer no emoji
+     * picker (the accessible frontend, the phone app's exchange screen, the
+     * feed's double-tap).
+     *
+     * It is the same switch as a reaction, on the same row: with no reaction it
+     * adds `like`; with ANY reaction, whichever emoji, it removes it. That is
+     * what keeps a heart on one page and an emoji on another from disagreeing.
+     *
+     * @return array{action: 'liked'|'unliked', likes_count: int, reactions: array}
+     */
+    public function toggleLike(int $entityId, string $entityType, int $userId): array
+    {
+        $tenantId = TenantContext::getId();
+
+        if (!in_array($entityType, self::VALID_TARGET_TYPES, true)) {
+            throw new \InvalidArgumentException("Invalid entity type: {$entityType}");
+        }
+
+        if (!FeedItemTables::canView($entityType, $entityId, $userId)) {
+            throw new \RuntimeException('target_not_found');
+        }
+
+        $action = DB::transaction(function () use ($tenantId, $entityType, $entityId, $userId) {
+            $existing = DB::table('reactions')
+                ->where('tenant_id', $tenantId)
+                ->where('target_type', $entityType)
+                ->where('target_id', $entityId)
+                ->where('user_id', $userId)
+                ->lockForUpdate()
+                ->first();
+
+            if ($existing) {
+                // Taking a like back is always allowed (see assertReactionContactAllowed).
+                DB::table('reactions')
+                    ->where('id', $existing->id)
+                    ->where('tenant_id', $tenantId)
+                    ->delete();
+
+                return 'unliked';
+            }
+
+            $this->assertReactionContactAllowed($entityType, $entityId, $userId, $tenantId);
+
+            // INSERT IGNORE: `reactions_unique` settles two simultaneous taps.
+            DB::affectingStatement(
+                'INSERT IGNORE INTO reactions (tenant_id, target_type, target_id, user_id, emoji, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+                [$tenantId, $entityType, $entityId, $userId, self::LIKE_REACTION]
+            );
+
+            return 'liked';
+        });
+
+        self::syncPostCounter($entityType, $entityId, $tenantId);
+
+        $reactions = $this->getReactions($entityId, $entityType, $userId);
+
+        return [
+            'action' => $action,
+            'likes_count' => $reactions['total'],
+            'reactions' => $reactions,
+        ];
+    }
+
+    /**
+     * Remove every reaction on an item that is being deleted.
+     */
+    public static function deleteForTarget(string $entityType, int $entityId, int $tenantId): void
+    {
+        DB::table('reactions')
+            ->where('tenant_id', $tenantId)
+            ->where('target_type', $entityType)
+            ->where('target_id', $entityId)
+            ->delete();
+    }
+
+    /**
+     * `feed_posts.likes_count` is a stored copy of "reactions on this post",
+     * read by post analytics and the member data export. It is recounted, never
+     * incremented, so it cannot drift; it used to follow the `likes` table only
+     * and so ignored every emoji reaction.
+     */
+    private static function syncPostCounter(string $entityType, int $entityId, int $tenantId): void
+    {
+        if ($entityType !== 'post') {
+            return;
+        }
+
+        // `updated_at` is ON UPDATE CURRENT_TIMESTAMP; a recount is not an edit.
+        DB::update(
+            "UPDATE feed_posts
+             SET likes_count = (
+                     SELECT COUNT(*) FROM reactions
+                     WHERE tenant_id = ? AND target_type = 'post' AND target_id = ?
+                 ),
+                 updated_at = updated_at
+             WHERE id = ? AND tenant_id = ?",
+            [$tenantId, $entityId, $entityId, $tenantId]
+        );
     }
 
     /**

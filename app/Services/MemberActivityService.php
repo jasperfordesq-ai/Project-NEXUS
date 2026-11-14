@@ -473,18 +473,25 @@ class MemberActivityService
         $likesGiven = 0;
         $likesReceived = 0;
         try {
-            $likesGiven = Like::query()
+            // Likes and reactions are one store (`reactions`); the retired
+            // `likes` table stopped receiving rows on 2026-11-14.
+            $reactionTenantId = $tenantId ?? TenantContext::getId();
+
+            $likesGiven = (int) DB::table('reactions')
+                ->where('tenant_id', $reactionTenantId)
                 ->where('user_id', $userId)
                 ->where('created_at', '>=', $thirtyDaysAgo)
                 ->count();
 
-            $likesReceived = Like::query()
+            $likesReceived = (int) DB::table('reactions as r')
                 ->join('feed_posts as p', function ($join) {
-                    $join->on('likes.target_id', '=', 'p.id')
-                        ->where('likes.target_type', '=', 'post');
+                    $join->on('r.target_id', '=', 'p.id')
+                        ->on('r.tenant_id', '=', 'p.tenant_id')
+                        ->where('r.target_type', '=', 'post');
                 })
+                ->where('r.tenant_id', $reactionTenantId)
                 ->where('p.user_id', $userId)
-                ->where('likes.created_at', '>=', $thirtyDaysAgo)
+                ->where('r.created_at', '>=', $thirtyDaysAgo)
                 ->count();
         } catch (\Exception $e) {
             Log::debug('[MemberActivity] Failed to count likes for user ' . $userId . ': ' . $e->getMessage());

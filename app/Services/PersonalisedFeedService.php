@@ -122,19 +122,11 @@ class PersonalisedFeedService
         return (bool) Cache::remember($cacheKey, 300, function () use ($userId, $tenantId) {
             $count = 0;
             try {
-                // Likes live in the unified `likes` table (target_type='post')
-                // — there is no `feed_post_likes` table. The previous reference
-                // to it caused hasTable() to short-circuit to false, leaving
-                // every user permanently in cold-start mode and AG35
-                // personalisation effectively dead.
-                if (\Illuminate\Support\Facades\Schema::hasTable('likes')) {
-                    $count += (int) DB::table('likes')
-                        ->where('tenant_id', $tenantId)
-                        ->where('user_id', $userId)
-                        ->limit(self::MIN_ENGAGEMENT_EVENTS)
-                        ->count();
-                }
-                if ($count < self::MIN_ENGAGEMENT_EVENTS && \Illuminate\Support\Facades\Schema::hasTable('reactions')) {
+                // Likes and emoji reactions are one store, `reactions` (a like
+                // is the `like` reaction). The separate `likes` table is
+                // retired and no longer read; counting it as well would count
+                // every carried-over like twice.
+                if (\Illuminate\Support\Facades\Schema::hasTable('reactions')) {
                     $count += (int) DB::table('reactions')
                         ->where('tenant_id', $tenantId)
                         ->where('user_id', $userId)
@@ -447,11 +439,11 @@ class PersonalisedFeedService
         $cacheKey = "pfs:engaged_authors:{$tenantId}:{$userId}";
         return Cache::remember($cacheKey, 900, function () use ($similarUserIds, $tenantId) {
             try {
-                // Likes are in the polymorphic `likes` table (target_type='post').
-                if (!\Illuminate\Support\Facades\Schema::hasTable('likes')) {
+                // Likes are rows in the polymorphic `reactions` table (target_type='post').
+                if (!\Illuminate\Support\Facades\Schema::hasTable('reactions')) {
                     return [];
                 }
-                $rows = DB::table('likes as l')
+                $rows = DB::table('reactions as l')
                     ->join('feed_posts as fp', 'fp.id', '=', 'l.target_id')
                     ->where('l.tenant_id', $tenantId)
                     ->where('l.target_type', 'post')

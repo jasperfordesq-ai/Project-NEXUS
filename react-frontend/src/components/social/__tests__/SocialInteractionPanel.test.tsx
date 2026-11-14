@@ -14,10 +14,16 @@ import { MemoryRouter } from 'react-router-dom';
 import type { ReactElement } from 'react';
 
 const useSocialInteractionsMock = vi.hoisted(() => vi.fn());
+const useEntityReactionsMock = vi.hoisted(() => vi.fn());
 const mockAuthState = vi.hoisted(() => ({ isAuthenticated: true }));
 
 vi.mock('@/hooks/useSocialInteractions', () => ({
   useSocialInteractions: useSocialInteractionsMock,
+}));
+
+// Reactions come from the one reactions store, through this hook.
+vi.mock('@/hooks/useEntityReactions', () => ({
+  useEntityReactions: useEntityReactionsMock,
 }));
 
 vi.mock('@/contexts', () => ({
@@ -48,15 +54,19 @@ vi.mock('react-i18next', () => ({
       if (key === 'likes_count') return `${options?.count ?? 0} likes`;
       if (key === 'comments_count') return `${options?.count ?? 0} comments`;
       const labels: Record<string, string> = {
-        like: 'Like',
-        liked: 'Liked',
         comment_action: 'Comment',
         share: 'Share',
-        toggle_like: 'Toggle like',
         open_comments: 'Open comments',
         close_comments: 'Close comments',
-        view_likes: 'View likes',
         you: 'You',
+        // feed namespace, used by the shared reaction picker and summary
+        'card.like_action': 'Like',
+        'reaction.react_to_post': 'React',
+        'card.reactions': 'reactions',
+        'card.and': 'and',
+        'card.other': 'other',
+        'card.others': 'others',
+        'card.view_reactions_aria': 'View reactions: {{summary}}',
       };
       return labels[key] ?? key;
     },
@@ -69,11 +79,6 @@ vi.mock('../CommentsSection', () => ({
   ),
 }));
 
-vi.mock('../LikersModal', () => ({
-  LikersModal: ({ isOpen, likesCount }: { isOpen: boolean; likesCount: number }) => (
-    <div data-testid="likers-modal" data-open={isOpen} data-count={likesCount} />
-  ),
-}));
 
 vi.mock('../ShareButton', () => ({
   ShareButton: ({ canShareToFeed = true }: { canShareToFeed?: boolean }) => (
@@ -91,12 +96,24 @@ function renderPanel(ui: ReactElement) {
   );
 }
 
+function makeReactions(overrides: Record<string, unknown> = {}) {
+  return {
+    reactions: {
+      counts: { like: 2, love: 1 },
+      total: 3,
+      user_reaction: null,
+      top_reactors: [{ id: 3, name: 'Bea' }],
+    },
+    react: vi.fn().mockResolvedValue(undefined),
+    isReacting: false,
+    isLoaded: true,
+    failed: false,
+    ...overrides,
+  };
+}
+
 function makeSocial(overrides: Record<string, unknown> = {}) {
   return {
-    isLiked: false,
-    likesCount: 3,
-    isLiking: false,
-    toggleLike: vi.fn().mockResolvedValue(undefined),
     comments: [],
     commentsCount: 2,
     commentsLoading: false,
@@ -109,7 +126,6 @@ function makeSocial(overrides: Record<string, unknown> = {}) {
     toggleReaction: vi.fn().mockResolvedValue(undefined),
     shareToFeed: vi.fn().mockResolvedValue(true),
     searchMentions: vi.fn().mockResolvedValue([]),
-    loadLikers: vi.fn().mockResolvedValue({ likers: [], total_count: 0, has_more: false }),
     ...overrides,
   };
 }
@@ -120,17 +136,22 @@ describe('SocialInteractionPanel', () => {
     mockAuthState.isAuthenticated = true;
     window.history.replaceState(null, '', '/test/feed');
     useSocialInteractionsMock.mockReturnValue(makeSocial());
+    useEntityReactionsMock.mockReturnValue(makeReactions());
   });
 
   it('renders counts and shared social actions', () => {
     renderPanel(<SocialInteractionPanel targetType="event" targetId={42} title="Event" />);
 
-    expect(screen.getByText('3 likes')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'View reactions: Bea and 2 others' })).toBeInTheDocument();
     expect(screen.getByText('2 comments')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Toggle like' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'React' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Open comments' })).toBeInTheDocument();
     expect(screen.getByTestId('share-button')).toBeInTheDocument();
     expect(useSocialInteractionsMock).toHaveBeenCalledWith(expect.objectContaining({ enabled: true }));
+    // The panel asks the reactions store about exactly this item, as this viewer.
+    expect(useEntityReactionsMock).toHaveBeenCalledWith(
+      expect.objectContaining({ targetType: 'event', targetId: 42, viewerId: 7, enabled: true }),
+    );
   });
 
   it('does not load identity-bearing social data while anonymous', async () => {
@@ -145,17 +166,27 @@ describe('SocialInteractionPanel', () => {
     expect(screen.getByRole('button', { name: 'Open comments' })).toBeDisabled();
     expect(loadComments).not.toHaveBeenCalled();
     expect(screen.queryByTestId('comments-section')).not.toBeInTheDocument();
+    // Reactions are members-only on the server: a visitor's page must not ask.
+    expect(useEntityReactionsMock).toHaveBeenCalledWith(expect.objectContaining({ enabled: false }));
+    // A visitor sees how many reactions there are, but no names and no way to
+    // open the list of who reacted, and cannot react.
+    expect(screen.getByText('3 reactions')).toBeInTheDocument();
+    expect(screen.queryByText(/Bea/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /View reactions/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'React' })).toBeDisabled();
   });
 
-  it('toggles likes through the shared hook', async () => {
+  it('reacts through the shared reactions hook', async () => {
     const user = userEvent.setup();
-    const toggleLike = vi.fn().mockResolvedValue(undefined);
-    useSocialInteractionsMock.mockReturnValue(makeSocial({ toggleLike }));
+    const react = vi.fn().mockResolvedValue(undefined);
+    useEntityReactionsMock.mockReturnValue(makeReactions({ react }));
 
     renderPanel(<SocialInteractionPanel targetType="goal" targetId={9} />);
-    await user.click(screen.getByRole('button', { name: 'Toggle like' }));
+    await user.click(screen.getByRole('button', { name: 'React' }));
 
-    expect(toggleLike).toHaveBeenCalledTimes(1);
+    // A plain tap is the "like" reaction.
+    expect(react).toHaveBeenCalledTimes(1);
+    expect(react).toHaveBeenCalledWith('like');
   });
 
   it('opens comments and loads them on demand', async () => {
@@ -188,7 +219,7 @@ describe('SocialInteractionPanel', () => {
   it('hides unsupported share targets while keeping comments and likes', () => {
     renderPanel(<SocialInteractionPanel targetType="review" targetId={11} />);
 
-    expect(screen.getByRole('button', { name: 'Toggle like' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'React' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Open comments' })).toBeInTheDocument();
     expect(screen.queryByTestId('share-button')).not.toBeInTheDocument();
   });
@@ -196,7 +227,7 @@ describe('SocialInteractionPanel', () => {
   it('keeps resource comments interactive while hiding share', () => {
     renderPanel(<SocialInteractionPanel targetType="resource" targetId={18} />);
 
-    expect(screen.getByRole('button', { name: 'Toggle like' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'React' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Open comments' })).toBeInTheDocument();
     expect(screen.queryByTestId('share-button')).not.toBeInTheDocument();
   });
@@ -204,7 +235,7 @@ describe('SocialInteractionPanel', () => {
   it('honors explicit share suppression for otherwise shareable targets', () => {
     renderPanel(<SocialInteractionPanel targetType="event" targetId={42} showShare={false} />);
 
-    expect(screen.getByRole('button', { name: 'Toggle like' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'React' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Open comments' })).toBeInTheDocument();
     expect(screen.queryByTestId('share-button')).not.toBeInTheDocument();
   });

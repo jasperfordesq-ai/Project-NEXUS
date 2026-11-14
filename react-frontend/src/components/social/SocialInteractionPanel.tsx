@@ -4,28 +4,45 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * SocialInteractionPanel — shared Facebook-style likes, share, and comments.
+ * SocialInteractionPanel — shared reactions, share, and comments.
  *
  * This is the canonical React surface for polymorphic social targets
  * (post/listing/event/goal/poll/review/volunteer/challenge/resource/job/blog/discussion).
+ *
+ * Reactions here are the SAME reactions the item's feed card shows: the panel
+ * loads them itself from the one reactions store (useEntityReactions) and uses
+ * the feed's own picker and "who reacted" list. It used to keep a separate
+ * heart "like" in a different table, fed by `initialLiked` / `initialLikesCount`
+ * props that most pages could never fill in, so a like disappeared on reload
+ * and never matched the feed.
  */
 
 import { useCallback, useEffect, useState } from 'react';import { AnimatePresence, motion } from '@/lib/motion';
-import Heart from 'lucide-react/icons/heart';
 import MessageCircle from 'lucide-react/icons/message-circle';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '@/contexts';
+import { useAuth, useToast } from '@/contexts';
+import { useEntityReactions } from '@/hooks/useEntityReactions';
 import { useSocialInteractions } from '@/hooks/useSocialInteractions';
 import { cn, resolveUserDisplayName } from '@/lib/helpers';
 import { CommentsSection } from './CommentsSection';
-import { LikersModal } from './LikersModal';
+import { ReactionPicker, type ReactionType } from './ReactionPicker';
+import { ReactionSummary } from './ReactionSummary';
 import { ShareButton } from './ShareButton';
 import { Button } from '@/components/ui/Button';
 
 export interface SocialInteractionPanelProps {
   targetType: string;
   targetId: number;
+  /**
+   * @deprecated Ignored. The panel loads reaction state itself, so it is right
+   * whether or not the page's own endpoint sends like fields.
+   */
   initialLiked?: boolean;
+  /**
+   * Only used for a visitor who is not signed in, who may not ask the
+   * members-only reactions store: the bare count to show them. A signed-in
+   * member always gets the loaded reactions instead.
+   */
   initialLikesCount?: number;
   initialCommentsCount?: number;
   title?: string;
@@ -68,7 +85,6 @@ function getUserName(user: ReturnType<typeof useAuth>['user'], fallback: string)
 export function SocialInteractionPanel({
   targetType,
   targetId,
-  initialLiked = false,
   initialLikesCount = 0,
   initialCommentsCount = 0,
   title,
@@ -82,21 +98,36 @@ export function SocialInteractionPanel({
   compact = false,
 }: SocialInteractionPanelProps) {
   const { t } = useTranslation('social');
+  const { t: tFeed } = useTranslation('feed');
   const { user, isAuthenticated } = useAuth();
+  const toast = useToast();
   const [showComments, setShowComments] = useState(
     allowComments && (defaultShowComments || hasCommentHash()),
   );
-  const [isLikersOpen, setIsLikersOpen] = useState(false);
 
   const social = useSocialInteractions({
     targetType,
     targetId,
     enabled: isAuthenticated,
-    initialLiked,
-    initialLikesCount,
     initialCommentsCount,
   });
   const { commentsLoaded, commentsLoading, loadComments } = social;
+
+  const { reactions, react, isReacting, failed: reactionFailed } = useEntityReactions({
+    targetType,
+    targetId,
+    viewerId: user?.id ?? null,
+    enabled: isAuthenticated,
+    visitorTotal: initialLikesCount,
+  });
+
+  useEffect(() => {
+    if (reactionFailed) {
+      toast.error(tFeed('toast.like_failed'));
+    }
+    // Fires once per failure; `toast` and `tFeed` are stable enough not to matter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reactionFailed]);
 
   useEffect(() => {
     setShowComments(allowComments && (defaultShowComments || hasCommentHash()));
@@ -133,28 +164,19 @@ export function SocialInteractionPanel({
 
   return (
     <div className={cn('space-y-3', className)}>
-      {(social.likesCount > 0 || (allowComments && social.commentsCount > 0)) && (
+      {(reactions.total > 0 || (allowComments && social.commentsCount > 0)) && (
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-theme-subtle">
           <div>
-            {social.likesCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="min-h-[28px] px-0 py-0 text-xs text-theme-subtle hover:text-theme-primary"
-                isDisabled={!isAuthenticated}
-                onPress={() => {
-                  if (isAuthenticated) setIsLikersOpen(true);
-                }}
-                aria-label={t('view_likes')}
-              >
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-rose-500">
-                    <Heart className="h-2.5 w-2.5 fill-white text-white" aria-hidden="true" />
-                  </span>
-                  {t('likes_count', { count: social.likesCount })}
-                </span>
-              </Button>
-            )}
+            {/* Who reacted opens for signed-in members only; a visitor sees
+                the count and no names. */}
+            <ReactionSummary
+              counts={reactions.counts}
+              total={reactions.total}
+              topReactors={isAuthenticated ? reactions.top_reactors : []}
+              entityType={targetType}
+              entityId={targetId}
+              isInteractive={isAuthenticated}
+            />
           </div>
 
           {allowComments && social.commentsCount > 0 && (
@@ -180,24 +202,17 @@ export function SocialInteractionPanel({
           compact && 'gap-1 py-1.5',
         )}
       >
-        <Button
-          variant="light"
-          size={compact ? 'sm' : 'md'}
-          className={cn(
-            'flex-1 min-w-[7rem] text-theme-muted hover:bg-rose-500/10 hover:text-rose-500',
-            social.isLiked && 'bg-rose-500/10 text-rose-500',
-          )}
-          startContent={<Heart className={cn('h-4 w-4', social.isLiked && 'fill-current')} aria-hidden="true" />}
-          isDisabled={!isAuthenticated || social.isLiking}
-          isLoading={social.isLiking}
-          aria-pressed={social.isLiked}
-          aria-label={t('toggle_like')}
-          onPress={() => {
-            void social.toggleLike();
+        <ReactionPicker
+          userReaction={(reactions.user_reaction as ReactionType | null) ?? null}
+          onReact={(type) => {
+            void react(type);
           }}
-        >
-          {social.isLiked ? t('liked') : t('like')}
-        </Button>
+          isAuthenticated={isAuthenticated}
+          isDisabled={isReacting}
+          size={compact ? 'sm' : 'md'}
+          className="flex flex-1 min-w-[7rem]"
+          buttonClassName="flex-1"
+        />
 
         {allowComments && (
           <Button
@@ -258,13 +273,6 @@ export function SocialInteractionPanel({
           </motion.div>
         )}
       </AnimatePresence>
-
-      <LikersModal
-        isOpen={isAuthenticated && isLikersOpen}
-        onClose={() => setIsLikersOpen(false)}
-        loadLikers={social.loadLikers}
-        likesCount={social.likesCount}
-      />
     </div>
   );
 }

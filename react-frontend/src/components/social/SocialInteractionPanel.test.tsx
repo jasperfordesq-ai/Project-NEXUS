@@ -16,7 +16,6 @@ const { mockApi } = vi.hoisted(() => ({
 
 vi.mock('@/lib/api', () => ({ api: mockApi, default: mockApi }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
-vi.mock('@/lib/feedSync', () => ({ dispatchFeedSync: vi.fn() }));
 
 // ─── Stub heavy children ─────────────────────────────────────────────────────
 vi.mock('./CommentsSection', () => ({
@@ -25,9 +24,9 @@ vi.mock('./CommentsSection', () => ({
   ),
 }));
 
-vi.mock('./LikersModal', () => ({
-  LikersModal: ({ isOpen }: { isOpen: boolean }) => (
-    isOpen ? <div data-testid="likers-modal">Likers</div> : null
+vi.mock('./ReactionDetailsModal', () => ({
+  ReactionDetailsModal: ({ isOpen, entityType, entityId }: { isOpen: boolean; entityType: string; entityId: number }) => (
+    isOpen ? <div data-testid="reaction-details-modal">{entityType}:{entityId}</div> : null
   ),
 }));
 
@@ -69,26 +68,53 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 const defaultProps = {
   targetType: 'post',
   targetId: 42,
-  initialLiked: false,
-  initialLikesCount: 0,
   initialCommentsCount: 0,
 };
+
+type Summary = {
+  counts: Record<string, number>;
+  total: number;
+  user_reaction: string | null;
+  top_reactors?: Array<{ id: number; name: string }>;
+};
+
+/**
+ * The panel reads its reactions from the one store, GET /v2/reactions/batch.
+ * `summary` is what that store holds for post:42; comments keep their own
+ * endpoint.
+ */
+function serveReactions(summary: Summary | null) {
+  mockApi.get.mockImplementation((url: string) => {
+    if (url.startsWith('/v2/reactions/batch')) {
+      return Promise.resolve({ success: true, data: summary ? { 'post:42': summary } : {} });
+    }
+    return Promise.resolve({ success: true, data: { comments: [], count: 0 } });
+  });
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('SocialInteractionPanel', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockApi.get.mockResolvedValue({ success: true, data: { comments: [], count: 0 } });
-    mockApi.post.mockResolvedValue({ success: true, data: { status: 'liked', action: 'liked', likes_count: 1 } });
+    serveReactions(null);
+    mockApi.post.mockResolvedValue({
+      success: true,
+      data: {
+        action: 'added',
+        reaction_type: 'like',
+        reactions: { counts: { like: 1 }, total: 1, user_reaction: 'like', top_reactors: [{ id: 10, name: 'Alice' }] },
+      },
+    });
   });
 
   it('renders Like and Comment action buttons', async () => {
     const { SocialInteractionPanel } = await import('./SocialInteractionPanel');
     render(<SocialInteractionPanel {...defaultProps} />);
 
-    const likeBtn = screen.getByRole('button', { name: /like/i });
+    const likeBtn = screen.getByRole('button', { name: /react to this post/i });
     const commentBtn = screen.getByRole('button', { name: /comment|open/i });
     expect(likeBtn).toBeInTheDocument();
+    expect(likeBtn).toHaveTextContent('Like');
     expect(commentBtn).toBeInTheDocument();
   });
 
@@ -104,11 +130,12 @@ describe('SocialInteractionPanel', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: /toggle like/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /react to this post/i })).toBeInTheDocument();
     expect(screen.getByTestId('share-button')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /comment|open/i })).not.toBeInTheDocument();
     expect(screen.queryByTestId('comments-section')).not.toBeInTheDocument();
-    expect(mockApi.get).not.toHaveBeenCalled();
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalled());
+    expect(mockApi.get).not.toHaveBeenCalledWith(expect.stringContaining('/v2/comments'));
   });
 
   it('renders Share button for shareable target types', async () => {
@@ -127,15 +154,26 @@ describe('SocialInteractionPanel', () => {
     expect(screen.queryByTestId('share-button')).not.toBeInTheDocument();
   });
 
-  it('shows likes count when initialLikesCount > 0', async () => {
-    const { SocialInteractionPanel } = await import('./SocialInteractionPanel');
-    render(<SocialInteractionPanel {...defaultProps} initialLikesCount={7} />);
-
-    // The counts summary row should be rendered
-    await waitFor(() => {
-      const likeCountBtn = screen.getAllByRole('button').find(b => /7/.test(b.textContent ?? ''));
-      expect(likeCountBtn).toBeInTheDocument();
+  it('shows the reactions the item already has, whatever the page passed in', async () => {
+    // Regression: the panel used to show `initialLikesCount`, which most pages
+    // could not fill in, so an earlier like was "forgotten" on every reload.
+    serveReactions({
+      counts: { like: 4, celebrate: 3 },
+      total: 7,
+      user_reaction: 'celebrate',
+      top_reactors: [{ id: 3, name: 'Bea' }, { id: 4, name: 'Cal' }],
     });
+    const { SocialInteractionPanel } = await import('./SocialInteractionPanel');
+    render(<SocialInteractionPanel {...defaultProps} />);
+
+    expect(await screen.findByRole('button', { name: /view reactions: bea, cal, and 5 others/i })).toBeInTheDocument();
+    // The member's own earlier reaction is remembered on the button.
+    const mine = screen.getByRole('button', { name: /celebrate \(click to remove\)/i });
+    expect(mine).toHaveAttribute('aria-pressed', 'true');
+    // One batched request; other panels mounted in the same tick share it.
+    expect(mockApi.get).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/v2\/reactions\/batch\?items=.*post%3A42/),
+    );
   });
 
   it('shows comments count and clicking it opens comments', async () => {
@@ -188,57 +226,86 @@ describe('SocialInteractionPanel', () => {
     });
   });
 
-  it('Like button has disabled attribute when authenticated=false (default mock)', async () => {
-    // The top-level mock uses isAuthenticated: true, so we verify the attribute is NOT disabled
-    // by default. The component sets isDisabled={!isAuthenticated}.
+  it('the reaction button is enabled and unpressed for a member who has not reacted', async () => {
     const { SocialInteractionPanel } = await import('./SocialInteractionPanel');
     render(<SocialInteractionPanel {...defaultProps} />);
 
-    const likeBtn = screen.getByRole('button', { name: /toggle like/i });
-    // In the default top-level mock isAuthenticated=true, so the button is enabled
+    const likeBtn = screen.getByRole('button', { name: /react to this post/i });
     expect(likeBtn).not.toBeDisabled();
     expect(likeBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('opens likers modal when likes count is clicked', async () => {
-    const { SocialInteractionPanel } = await import('./SocialInteractionPanel');
-    render(<SocialInteractionPanel {...defaultProps} initialLikesCount={5} />);
-
-    // The button has aria-label="View likes" (translated from t('view_likes'))
-    const likesBtn = screen.getByRole('button', { name: /view likes/i });
-    await userEvent.click(likesBtn);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('likers-modal')).toBeInTheDocument();
-    });
-  });
-
-  it('toggles like via API call when Like button is pressed (authenticated)', async () => {
+  it('opens the list of who reacted when the reactions count is clicked', async () => {
+    serveReactions({ counts: { like: 5 }, total: 5, user_reaction: null, top_reactors: [{ id: 3, name: 'Bea' }] });
     const { SocialInteractionPanel } = await import('./SocialInteractionPanel');
     render(<SocialInteractionPanel {...defaultProps} />);
 
-    // aria-label="Toggle like"
-    const likeBtn = screen.getByRole('button', { name: /toggle like/i });
-    // Button is enabled for authenticated user
-    expect(likeBtn).not.toBeDisabled();
-    await userEvent.click(likeBtn);
+    await userEvent.click(await screen.findByRole('button', { name: /view reactions/i }));
+
+    // The same dialog the feed card opens, pointed at the same item.
+    expect(await screen.findByTestId('reaction-details-modal')).toHaveTextContent('post:42');
+  });
+
+  it('reacts through the one reactions endpoint, not the old like endpoint', async () => {
+    const { SocialInteractionPanel } = await import('./SocialInteractionPanel');
+    render(<SocialInteractionPanel {...defaultProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /react to this post/i }));
 
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith(
-        '/v2/feed/like',
-        expect.objectContaining({ target_type: 'post', target_id: 42 }),
+        '/v2/reactions',
+        { target_type: 'post', target_id: 42, reaction_type: 'like' },
       );
     });
+    expect(mockApi.post).not.toHaveBeenCalledWith('/v2/feed/like', expect.anything());
+    // The server's answer is what the panel shows.
+    expect(await screen.findByRole('button', { name: /view reactions: alice/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /like \(click to remove\)/i })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('puts the reaction back and says so when the server refuses it', async () => {
+    mockApi.post.mockResolvedValue({ success: false, error: 'nope' });
+    const { SocialInteractionPanel } = await import('./SocialInteractionPanel');
+    render(<SocialInteractionPanel {...defaultProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /react to this post/i }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: /react to this post/i })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.queryByRole('button', { name: /view reactions/i })).not.toBeInTheDocument();
+  });
+
+  it('follows a reaction made on the same item elsewhere on the page', async () => {
+    const { dispatchFeedSync } = await import('@/lib/feedSync');
+    const { SocialInteractionPanel } = await import('./SocialInteractionPanel');
+    render(<SocialInteractionPanel {...defaultProps} />);
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('/v2/reactions/batch')));
+    // Let the load settle before the outside change arrives.
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    React.act(() => {
+      dispatchFeedSync({
+        targetType: 'post',
+        targetId: 42,
+        patch: { reactions: { counts: { wow: 2 }, total: 2, user_reaction: 'wow', top_reactors: [] } },
+      });
+    });
+
+    expect(await screen.findByRole('button', { name: /view reactions: 2 reactions/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /wow \(click to remove\)/i })).toBeInTheDocument();
   });
 
   it('does not show counts row when both counts are zero', async () => {
     const { SocialInteractionPanel } = await import('./SocialInteractionPanel');
-    render(<SocialInteractionPanel {...defaultProps} initialLikesCount={0} initialCommentsCount={0} />);
+    render(<SocialInteractionPanel {...defaultProps} initialCommentsCount={0} />);
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('/v2/reactions/batch')));
 
     // Only action buttons visible, no count summary
     const buttons = screen.getAllByRole('button');
-    // Should have Like and Comment buttons but NO view-likes or view-comments count buttons
+    // Should have Like and Comment buttons but NO view-reactions or view-comments count buttons
     const countButtons = buttons.filter(b => /^\d+/.test(b.textContent?.trim() ?? ''));
     expect(countButtons).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: /view reactions/i })).not.toBeInTheDocument();
   });
 });

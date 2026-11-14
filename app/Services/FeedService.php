@@ -499,9 +499,12 @@ class FeedService
             });
         };
 
-        // Batch load like counts (single polymorphic query).
+        // Batch load like counts (single polymorphic query). A like is a row
+        // in `reactions` (see ReactionService): `likes_count` is every reaction
+        // on the item and `is_liked` is "the viewer has reacted", so these two
+        // fields always agree with the item's `reactions` summary.
         $likeCounts = [];
-        $likeCountRows = DB::table('likes')
+        $likeCountRows = DB::table('reactions')
             ->selectRaw('target_type, target_id, COUNT(*) as cnt')
             ->where('tenant_id', $tenantId)
             ->tap($applyPolymorphicTargetFilter)
@@ -528,7 +531,7 @@ class FeedService
         // Batch load liked status for current user (single polymorphic query).
         $likedSet = [];
         if ($currentUserId) {
-            $likedRows = DB::table('likes')
+            $likedRows = DB::table('reactions')
                 ->where('tenant_id', $tenantId)
                 ->where('user_id', $currentUserId)
                 ->tap($applyPolymorphicTargetFilter)
@@ -2058,7 +2061,7 @@ class FeedService
         $isLiked = false;
         if ($userId) {
             $liked = DB::selectOne(
-                "SELECT 1 FROM likes WHERE user_id = ? AND target_type = ? AND target_id = ? AND tenant_id = ?",
+                "SELECT 1 FROM reactions WHERE user_id = ? AND target_type = ? AND target_id = ? AND tenant_id = ?",
                 [$userId, $type, $id, $tenantId]
             );
             $isLiked = (bool) $liked;
@@ -2081,7 +2084,8 @@ class FeedService
                 'name' => self::authorName((int) $item['user_id'], $item['author_name'] ?? null),
                 'avatar_url' => $item['author_avatar'] ?? '/assets/img/defaults/default_avatar.png',
             ],
-            'likes_count' => (int) ($item['likes_count'] ?? 0),
+            // One store: the count is the reactions total when the type is reactable.
+            'likes_count' => $reactions !== null ? (int) $reactions['total'] : (int) ($item['likes_count'] ?? 0),
             'comments_count' => (int) ($item['comments_count'] ?? 0),
             'is_liked' => $isLiked,
             'created_at' => $item['created_at'],
@@ -2228,35 +2232,11 @@ class FeedService
             throw new \InvalidArgumentException('Post not found');
         }
 
-        // Use atomic INSERT IGNORE + check affected rows to prevent duplicate likes
-        // from concurrent requests (the uk_likes_user_target unique key enforces this)
-        $existing = DB::table('likes')
-            ->where('target_type', 'post')
-            ->where('target_id', $postId)
-            ->where('user_id', $userId)
-            ->where('tenant_id', $tenantId)
-            ->first();
-
-        if ($existing) {
-            DB::table('likes')
-                ->where('id', $existing->id)
-                ->where('tenant_id', $tenantId)
-                ->delete();
-            $liked = false;
-        } else {
-            // Use INSERT IGNORE to gracefully handle race condition with unique constraint
-            DB::statement(
-                'INSERT IGNORE INTO likes (target_type, target_id, user_id, tenant_id, created_at) VALUES (?, ?, ?, ?, NOW())',
-                ['post', $postId, $userId, $tenantId]
-            );
-            $liked = true;
-        }
-
-        $count = (int) DB::table('likes')
-            ->where('target_type', 'post')
-            ->where('target_id', $postId)
-            ->where('tenant_id', $tenantId)
-            ->count();
+        // The one like switch (ReactionService::toggleLike()), so a like given
+        // here is the same row the feed card and every detail page read.
+        $result = app(ReactionService::class)->toggleLike($postId, 'post', $userId);
+        $liked = $result['action'] === 'liked';
+        $count = (int) $result['likes_count'];
 
         return ['liked' => $liked, 'likes_count' => $count];
     }

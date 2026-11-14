@@ -897,7 +897,9 @@ class ListingService
 
         // Engagement counts (wrapped in try/catch — tables may not exist during migration)
         try {
-            $data['likes_count'] = (int) DB::table('likes')
+            // Likes and reactions are one store (`reactions`): this count is
+            // the same number the listing's feed card shows.
+            $data['likes_count'] = (int) DB::table('reactions')
                 ->where('tenant_id', $tenantId)
                 ->where('target_type', 'listing')
                 ->where('target_id', $id)
@@ -932,7 +934,7 @@ class ListingService
             }
 
             try {
-                $data['is_liked'] = DB::table('likes')
+                $data['is_liked'] = DB::table('reactions')
                     ->where('tenant_id', $tenantId)
                     ->where('target_type', 'listing')
                     ->where('target_id', $id)

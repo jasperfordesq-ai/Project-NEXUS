@@ -441,17 +441,29 @@ const FeedCardInner = React.memo(function FeedCardInner({
     onLongPress: () => { if (showOptionsMenu) setIsOptionsSheetOpen(true); },
   });
 
+  // Likes and reactions are one store, so "liked" means "has reacted". The
+  // reactions summary is the truth when the item carries one; `is_liked` is the
+  // same fact for items that do not.
+  const hasReacted = item.reactions ? item.reactions.user_reaction != null : item.is_liked;
+  const canReact = REACTABLE_FEED_TYPES.has(item.type);
+
   const handleDoubleTapLike = useCallback(() => {
     if (!isAuthenticated) return;
-    // Only like if not already liked
-    if (!item.is_liked) {
-      onToggleLike(item);
+    // Only like if not already reacted. With a reaction handler the double-tap
+    // IS the "like" reaction, so the card's summary updates at once; the plain
+    // like toggle is the fallback for a parent that offers no reactions.
+    if (canReact && !hasReacted) {
+      if (onReact) {
+        onReact(item, 'like');
+      } else {
+        onToggleLike(item);
+      }
     }
     // Always show the heart animation
     setShowHeartOverlay(true);
     if (heartTimeoutRef.current) clearTimeout(heartTimeoutRef.current);
     heartTimeoutRef.current = setTimeout(() => setShowHeartOverlay(false), 800);
-  }, [isAuthenticated, item, onToggleLike]);
+  }, [isAuthenticated, item, onToggleLike, onReact, canReact, hasReacted]);
 
   const doubleTapHandler = useDoubleTap(handleDoubleTapLike);
 
@@ -1479,15 +1491,16 @@ const FeedCardInner = React.memo(function FeedCardInner({
                   entityType={item.type}
                   entityId={item.id}
                 />
-              ) : item.likes_count > 0 ? (
-                <span className="flex items-center gap-1.5">
-                  <span className="flex -space-x-0.5">
-                    <span className="w-4 h-4 rounded-full bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center">
-                      <Heart className="w-2.5 h-2.5 text-white fill-white" aria-hidden="true" />
-                    </span>
-                  </span>
-                  {item.likes_count} {item.likes_count === 1 ? t('card.like') : t('card.likes')}
-                </span>
+              ) : item.likes_count > 0 && canReact ? (
+                // An item that arrived without a reactions summary still shows
+                // its count as the same tappable "who reacted" control. This
+                // branch used to be plain text nobody could open.
+                <ReactionSummary
+                  counts={{ like: item.likes_count }}
+                  total={item.likes_count}
+                  entityType={item.type}
+                  entityId={item.id}
+                />
               ) : null}
               {(item.views_count ?? 0) > 0 && (
                 <span className="flex items-center gap-1">
@@ -1532,7 +1545,7 @@ const FeedCardInner = React.memo(function FeedCardInner({
               ReactionService::VALID_TARGET_TYPES and
               SocialController::VALID_LIKE_TARGETS.
             */}
-            {REACTABLE_FEED_TYPES.has(item.type) ? (
+            {canReact ? (
               onReact ? (
                 <ReactionPicker
                   userReaction={(item.reactions?.user_reaction as ReactionType | null) ?? null}
@@ -1541,17 +1554,17 @@ const FeedCardInner = React.memo(function FeedCardInner({
                   size="sm"
                 />
               ) : (
-                <Tooltip content={item.is_liked ? t('card.unlike') : t('card.like_action')} delay={400} closeDelay={0} size="sm">
+                <Tooltip content={hasReacted ? t('card.unlike') : t('card.like_action')} delay={400} closeDelay={0} size="sm">
                   <Button
                     size="sm"
                     variant="light"
-                    className={`transition-all ${item.is_liked
+                    className={`transition-all ${hasReacted
                       ? 'text-rose-500 font-medium bg-rose-500/5'
                       : 'text-theme-muted hover:text-rose-500 hover:bg-rose-500/5'
                     }`}
                     startContent={
                       <Heart
-                        className={`w-[18px] h-[18px] transition-all ${item.is_liked ? 'fill-rose-500 text-rose-500 scale-110 animate-heart-pop' : ''}`}
+                        className={`w-[18px] h-[18px] transition-all ${hasReacted ? 'fill-rose-500 text-rose-500 scale-110 animate-heart-pop' : ''}`}
                         aria-hidden="true"
                       />
                     }

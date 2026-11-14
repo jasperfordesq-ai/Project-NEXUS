@@ -356,63 +356,33 @@ class SocialController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.target_not_found'), null, 404);
         }
 
-        // Check existing like (tenant-scoped)
-        $existing = DB::table('likes')
+        // A like is the `like` reaction, in the one `reactions` store — see
+        // ReactionService::toggleLike(). This endpoint used to write a separate
+        // `likes` table the feed card never read.
+        $alreadyReacted = DB::table('reactions')
+            ->where('tenant_id', $tenantId)
             ->where('user_id', $userId)
             ->where('target_type', $targetType)
             ->where('target_id', $targetId)
-            ->where('tenant_id', $tenantId)
-            ->first();
+            ->exists();
 
-        if ($existing) {
-            // Unlike
-            DB::table('likes')
-                ->where('id', $existing->id)
-                ->where('tenant_id', $tenantId)
-                ->delete();
+        // F-158: liking reaches the owner (bell, push, email), so it obeys the
+        // same block and safeguarding contact rules as comments and reactions.
+        // Unliking stays allowed.
+        if (!$alreadyReacted
+            && ($refusal = $this->engagementContactRefusal($targetType, (int) $targetId, $userId, $tenantId, 'like'))) {
+            return $refusal;
+        }
 
-            if ($targetType === 'post') {
-                DB::table('feed_posts')
-                    ->where('id', $targetId)
-                    ->where('tenant_id', $tenantId)
-                    ->update(['likes_count' => DB::raw('GREATEST(likes_count - 1, 0)')]);
-            }
+        try {
+            $result = $this->reactionService->toggleLike((int) $targetId, $targetType, $userId);
+        } catch (SafeguardingPolicyException $e) {
+            return $this->safeguardingPolicyError($e);
+        } catch (\RuntimeException | \InvalidArgumentException $e) {
+            return $this->respondWithError('NOT_FOUND', __('api.target_not_found'), null, 404);
+        }
 
-            $action = 'unliked';
-        } else {
-            // F-158: liking reaches the owner (bell, push, email), so it obeys
-            // the same block and safeguarding contact rules as comments and
-            // reactions. Unliking stays allowed.
-            if ($refusal = $this->engagementContactRefusal($targetType, (int) $targetId, $userId, $tenantId, 'like')) {
-                return $refusal;
-            }
-
-            // Like — use INSERT IGNORE to prevent duplicates from concurrent requests
-            // (protected by uk_likes_user_target unique constraint)
-            $affected = DB::affectingStatement(
-                'INSERT IGNORE INTO likes (user_id, target_type, target_id, tenant_id, created_at) VALUES (?, ?, ?, ?, NOW())',
-                [$userId, $targetType, $targetId, $tenantId]
-            );
-
-            if ($affected > 0 && $targetType === 'post') {
-                $updated = DB::table('feed_posts')
-                    ->where('id', $targetId)
-                    ->where('tenant_id', $tenantId)
-                    ->increment('likes_count');
-
-                if ($updated === 0) {
-                    // Post was deleted between our exists-check and increment; clean up the orphaned like
-                    DB::table('likes')
-                        ->where('user_id', $userId)
-                        ->where('target_type', $targetType)
-                        ->where('target_id', $targetId)
-                        ->where('tenant_id', $tenantId)
-                        ->delete();
-                }
-            }
-
-            $action = 'liked';
-
+        if ($result['action'] === 'liked') {
             // Send platform + email notification to content owner
             try {
                 $contentOwnerId = SocialNotificationService::getContentOwnerId($targetType, $targetId);
@@ -425,16 +395,12 @@ class SocialController extends BaseApiController
             }
         }
 
-        // Get updated count (tenant-scoped)
-        $count = (int) DB::table('likes')
-            ->where('target_type', $targetType)
-            ->where('target_id', $targetId)
-            ->where('tenant_id', $tenantId)
-            ->count();
-
         return $this->respondWithData([
-            'action'      => $action,
-            'likes_count' => $count,
+            'action'      => $result['action'],
+            'likes_count' => $result['likes_count'],
+            // The full summary, so a card that shows emoji reactions can update
+            // from a heart tap without a second request.
+            'reactions'   => $result['reactions'],
         ]);
     }
 
@@ -1069,7 +1035,7 @@ class SocialController extends BaseApiController
         ];
 
         try {
-            DB::table('likes')->count();
+            DB::table('reactions')->count();
             $debug['likes_table_exists'] = true;
         } catch (\Exception) {
             $debug['likes_error'] = 'Database error';
@@ -1107,69 +1073,45 @@ class SocialController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.target_not_found'), null, 404);
         }
 
+        // Same single store and same switch as likeV2().
+        $likeType = $targetType === 'volunteering' ? 'volunteer' : (string) $targetType;
+
         try {
-            $existing = DB::table('likes')
-                ->where('user_id', $userId)
-                ->where('target_type', $targetType)
-                ->where('target_id', $targetId)
+            $alreadyReacted = DB::table('reactions')
                 ->where('tenant_id', $tenantId)
-                ->first();
+                ->where('user_id', $userId)
+                ->where('target_type', $likeType)
+                ->where('target_id', $targetId)
+                ->exists();
 
-            if ($existing) {
-                DB::table('likes')->where('id', $existing->id)->where('tenant_id', $tenantId)->delete();
+            // F-158: same block and safeguarding contact rules as likeV2().
+            if (!$alreadyReacted
+                && ($refusal = $this->engagementContactRefusal($likeType, (int) $targetId, $userId, $tenantId, 'like'))) {
+                return $refusal;
+            }
 
-                if ($targetType === 'post') {
-                    DB::table('feed_posts')
-                        ->where('id', $targetId)
-                        ->where('tenant_id', $tenantId)
-                        ->update(['likes_count' => DB::raw('GREATEST(likes_count - 1, 0)')]);
-                }
+            $result = $this->reactionService->toggleLike((int) $targetId, $likeType, $userId);
 
-                $action = 'unliked';
-            } else {
-                // F-158: same block and safeguarding contact rules as likeV2().
-                $likeType = $targetType === 'volunteering' ? 'volunteer' : (string) $targetType;
-                if ($refusal = $this->engagementContactRefusal($likeType, (int) $targetId, $userId, $tenantId, 'like')) {
-                    return $refusal;
-                }
-
-                // Use INSERT IGNORE to prevent duplicates from concurrent requests
-                // (protected by uk_likes_user_target unique constraint)
-                DB::affectingStatement(
-                    'INSERT IGNORE INTO likes (user_id, target_type, target_id, tenant_id, created_at) VALUES (?, ?, ?, ?, NOW())',
-                    [$userId, $targetType, $targetId, $tenantId]
-                );
-
-                if ($targetType === 'post') {
-                    DB::table('feed_posts')
-                        ->where('id', $targetId)
-                        ->where('tenant_id', $tenantId)
-                        ->increment('likes_count');
-                }
-
-                $action = 'liked';
-
+            if ($result['action'] === 'liked') {
                 // Send notification to content owner
                 try {
-                    $contentOwnerId = $this->socialNotificationService->getContentOwnerId($targetType, $targetId);
+                    $contentOwnerId = $this->socialNotificationService->getContentOwnerId($likeType, $targetId);
                     if ($contentOwnerId && $contentOwnerId != $userId) {
-                        $this->socialNotificationService->notifyLike($contentOwnerId, $userId, $targetType, $targetId, '');
+                        $this->socialNotificationService->notifyLike($contentOwnerId, $userId, $likeType, $targetId, '');
                     }
                 } catch (\Throwable $e) {
                     \Illuminate\Support\Facades\Log::warning("notifyLike error (non-critical): " . $e->getMessage());
                 }
             }
 
-            $count = (int) DB::table('likes')
-                ->where('target_type', $targetType)
-                ->where('target_id', $targetId)
-                ->where('tenant_id', $tenantId)
-                ->count();
-
             return $this->respondWithData([
-                'status'      => $action,
-                'likes_count' => $count,
+                'status'      => $result['action'],
+                'likes_count' => $result['likes_count'],
             ]);
+        } catch (SafeguardingPolicyException $e) {
+            return $this->safeguardingPolicyError($e);
+        } catch (\RuntimeException | \InvalidArgumentException $e) {
+            return $this->respondWithError('NOT_FOUND', __('api.target_not_found'), null, 404);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning("Social Like Error: " . $e->getMessage());
             return $this->respondWithError('OPERATION_FAILED', __('api.social_like_failed'), null, 500);
@@ -1195,13 +1137,19 @@ class SocialController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.target_not_found'), null, 404);
         }
 
+        // Everyone who liked OR reacted: one store, so this list and the
+        // reactions dialog can never disagree about who is on it.
+        if ($targetType === 'volunteering') {
+            $targetType = 'volunteer';
+        }
+
         try {
             $likers = DB::select(
                 "SELECT u.id, " . \App\Support\UserDisplayName::sql('u', 'name') . ",
-                        u.avatar_url, l.created_at as liked_at
-                 FROM likes l JOIN users u ON l.user_id = u.id
+                        u.avatar_url, l.created_at as liked_at, l.emoji as reaction_type
+                 FROM reactions l JOIN users u ON l.user_id = u.id AND u.tenant_id = l.tenant_id
                  WHERE l.target_type = ? AND l.target_id = ? AND l.tenant_id = ?
-                 ORDER BY l.created_at DESC LIMIT ? OFFSET ?",
+                 ORDER BY l.created_at DESC, l.id DESC LIMIT ? OFFSET ?",
                 [$targetType, $targetId, $tenantId, $limit, $offset]
             );
 
@@ -1216,7 +1164,7 @@ class SocialController extends BaseApiController
                 return $l;
             }, $likers);
 
-            $totalCount = (int) DB::table('likes')
+            $totalCount = (int) DB::table('reactions')
                 ->where('target_type', $targetType)
                 ->where('target_id', $targetId)
                 ->where('tenant_id', $tenantId)
@@ -1420,8 +1368,8 @@ class SocialController extends BaseApiController
                 return $this->respondWithError('FORBIDDEN', __('api.social_delete_unauthorized'), null, 403);
             }
 
-            // Delete associated likes and comments
-            DB::table('likes')->where('target_type', $targetType)->where('target_id', $targetId)->where('tenant_id', $tenantId)->delete();
+            // Delete associated likes/reactions (one store) and comments
+            ReactionService::deleteForTarget((string) $targetType, (int) $targetId, (int) $tenantId);
             DB::table('comments')->where('target_type', $targetType)->where('target_id', $targetId)->where('tenant_id', $tenantId)->delete();
 
             if ($targetType === 'listing') {

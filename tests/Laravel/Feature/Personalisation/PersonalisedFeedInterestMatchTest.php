@@ -43,11 +43,13 @@ class PersonalisedFeedInterestMatchTest extends TestCase
         $member = User::factory()->forTenant($this->testTenantId)->create();
         // Cross MIN_ENGAGEMENT_EVENTS so personalisation is active.
         for ($i = 1; $i <= PersonalisedFeedService::MIN_ENGAGEMENT_EVENTS; $i++) {
-            DB::table('likes')->insert([
+            // A like is the `like` reaction; `reactions` is the one store.
+            DB::table('reactions')->insert([
                 'tenant_id'   => $this->testTenantId,
                 'user_id'     => $member->id,
                 'target_type' => 'post',
                 'target_id'   => 900_000 + $i,
+                'emoji'       => 'like',
                 'created_at'  => now(),
             ]);
         }

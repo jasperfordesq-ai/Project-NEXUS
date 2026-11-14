@@ -120,15 +120,20 @@ class PersonalisedFeedServiceTest extends TestCase
         ]);
     }
 
-    /** Insert N likes rows for the given user so engagement count reaches threshold. */
+    /**
+     * Insert N likes for the given user so engagement count reaches threshold.
+     * A like is the `like` reaction: `reactions` is the one store, and the
+     * retired `likes` table is no longer counted.
+     */
     private function insertLikes(int $userId, int $count): void
     {
         for ($i = 0; $i < $count; $i++) {
-            DB::table('likes')->insertOrIgnore([
+            DB::table('reactions')->insertOrIgnore([
                 'tenant_id'   => self::TENANT_ID,
                 'user_id'     => $userId,
                 'target_type' => 'post',
                 'target_id'   => 9000000 + $i,
+                'emoji'       => 'like',
                 'created_at'  => now(),
             ]);
         }
@@ -489,11 +494,12 @@ class PersonalisedFeedServiceTest extends TestCase
 
         // Insert likes for the same user_id but under a different tenant
         for ($i = 0; $i < PersonalisedFeedService::MIN_ENGAGEMENT_EVENTS; $i++) {
-            DB::table('likes')->insertOrIgnore([
+            DB::table('reactions')->insertOrIgnore([
                 'tenant_id'   => $otherTenantId,
                 'user_id'     => $userId,
                 'target_type' => 'post',
                 'target_id'   => 6000000 + $i,
+                'emoji'       => 'like',
                 'created_at'  => now(),
             ]);
         }

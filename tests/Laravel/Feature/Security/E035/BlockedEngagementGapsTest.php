@@ -349,9 +349,10 @@ class BlockedEngagementGapsTest extends TestCase
         return [$pollId, $options];
     }
 
+    /** A like is the `like` reaction; `reactions` is the one store. */
     private function likeExists(int $userId, int $postId): bool
     {
-        return DB::table('likes')
+        return DB::table('reactions')
             ->where('tenant_id', $this->testTenantId)
             ->where('user_id', $userId)
             ->where('target_type', 'post')

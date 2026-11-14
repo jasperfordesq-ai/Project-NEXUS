@@ -19,7 +19,6 @@ import Calendar from 'lucide-react/icons/calendar';
 import User from 'lucide-react/icons/user';
 import Tag from 'lucide-react/icons/tag';
 import MessageSquare from 'lucide-react/icons/message-square';
-import Heart from 'lucide-react/icons/heart';
 import Edit from 'lucide-react/icons/square-pen';
 import Trash2 from 'lucide-react/icons/trash-2';
 import AlertCircle from 'lucide-react/icons/circle-alert';
@@ -52,7 +51,8 @@ import { LoadingScreen, EmptyState, ErrorBoundary } from '@/components/feedback'
 import { PageMeta } from '@/components/seo/PageMeta';
 import { LocationMapCard } from '@/components/location/LocationMapCard';
 import { CommentsSection } from '@/components/social/CommentsSection';
-import { LikersModal } from '@/components/social/LikersModal';
+import { ReactionPicker, type ReactionType } from '@/components/social/ReactionPicker';
+import { ReactionSummary } from '@/components/social/ReactionSummary';
 import { ShareButton } from '@/components/social/ShareButton';
 import { ListingAnalyticsPanel } from '@/components/listings/ListingAnalyticsPanel';
 import { FeaturedBadge } from '@/components/listings/FeaturedBadge';
@@ -62,6 +62,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useEntityReactions } from '@/hooks/useEntityReactions';
 import { useSocialInteractions } from '@/hooks/useSocialInteractions';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -224,8 +225,28 @@ export function ListingDetailPage() {
   });
   const { commentsLoaded, commentsLoading, loadComments } = social;
 
-  // Likers modal
-  const { isOpen: isLikersOpen, onOpen: onLikersOpen, onClose: onLikersClose } = useDisclosure();
+  // Reactions — the same ones this listing's feed card shows (one store), with
+  // the feed's own picker and "who reacted" list. This page used to keep a
+  // separate heart "like" that the feed card never saw.
+  const { reactions, react, isReacting, failed: reactionFailed } = useEntityReactions({
+    targetType: 'listing',
+    targetId: Number(id) || 0,
+    viewerId: user?.id ?? null,
+    enabled: isAuthenticated,
+    // A visitor cannot ask the members-only reactions store; they see the
+    // count the listing itself reports.
+    visitorTotal: socialInit.likes,
+  });
+  const userReaction = (reactions.user_reaction as ReactionType | null) ?? null;
+  const handleReact = useCallback((type: ReactionType) => {
+    void react(type);
+  }, [react]);
+
+  useEffect(() => {
+    if (reactionFailed) {
+      toastRef.current.error(tRef.current('toast.like_failed', { ns: 'feed' }));
+    }
+  }, [reactionFailed]);
 
   const loadExchangeConfig = useCallback(async () => {
     try {
@@ -811,21 +832,18 @@ export function ListingDetailPage() {
         </div>
 
         {/* Social Proof */}
-        {(social.likesCount > 0 || social.commentsCount > 0) && (
-          <div className="flex gap-4 text-sm text-theme-subtle mb-4">
-            {social.likesCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onPress={onLikersOpen}
-                className="flex min-h-7 items-center gap-1.5 p-0 transition-colors hover:text-theme-primary"
-              >
-                <span className="w-4 h-4 rounded-full bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center">
-                  <Heart className="w-2.5 h-2.5 text-white fill-white" aria-hidden="true" />
-                </span>
-                {social.likesCount} {social.likesCount === 1 ? t('like') : t('likes')}
-              </Button>
-            )}
+        {(reactions.total > 0 || social.commentsCount > 0) && (
+          <div className="flex items-center gap-4 text-sm text-theme-subtle mb-4">
+            {/* Who reacted opens for signed-in members only; a visitor sees
+                the count and no names. */}
+            <ReactionSummary
+              counts={reactions.counts}
+              total={reactions.total}
+              topReactors={isAuthenticated ? reactions.top_reactors : []}
+              entityType="listing"
+              entityId={listing.id}
+              isInteractive={isAuthenticated}
+            />
             {social.commentsCount > 0 && (
               <Button
                 variant="ghost"
@@ -916,17 +934,14 @@ export function ListingDetailPage() {
               ) : null}
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-1 border-t border-accent/20 pt-3">
-            <Button
-              variant="ghost"
+            <ReactionPicker
+              userReaction={userReaction}
+              onReact={handleReact}
+              isAuthenticated={isAuthenticated}
+              isDisabled={isReacting}
               size="sm"
-              className={`${social.isLiked ? 'text-rose-700 dark:text-rose-300' : 'text-theme-primary'}`}
-              startContent={<Heart className={`w-4 h-4 ${social.isLiked ? 'fill-current' : ''}`} aria-hidden="true" />}
-              onPress={() => void social.toggleLike()}
-              isDisabled={social.isLiking}
-              aria-label={social.isLiked ? t('detail_unlike_aria', { title: listing.title }) : t('detail_like_aria', { title: listing.title })}
-            >
-              {social.likesCount > 0 ? `${social.likesCount} ` : ''}{social.isLiked ? t('detail_liked') : t('detail_like')}
-            </Button>
+              buttonClassName=""
+            />
             <Button
               variant="ghost"
               size="sm"
@@ -974,16 +989,14 @@ export function ListingDetailPage() {
 
         {isAuthenticated && isOwner && (
           <div className="grid grid-cols-1 gap-2 rounded-2xl border border-theme-default bg-theme-hover/70 p-3 sm:grid-cols-3 sm:p-4">
-            <Button
-              variant="secondary"
-              className={`w-full ${social.isLiked ? 'bg-rose-500/20 text-rose-500' : 'bg-theme-elevated text-theme-primary'}`}
-              startContent={<Heart className={`w-4 h-4 ${social.isLiked ? 'fill-current' : ''}`} aria-hidden="true" />}
-              onPress={() => void social.toggleLike()}
-              isDisabled={social.isLiking}
-              aria-label={social.isLiked ? t('detail_unlike_aria', { title: listing.title }) : t('detail_like_aria', { title: listing.title })}
-            >
-              {social.likesCount > 0 ? `${social.likesCount} ` : ''}{social.isLiked ? t('detail_liked') : t('detail_like')}
-            </Button>
+            <ReactionPicker
+              userReaction={userReaction}
+              onReact={handleReact}
+              isAuthenticated={isAuthenticated}
+              isDisabled={isReacting}
+              className="w-full"
+              buttonClassName="w-full bg-theme-elevated"
+            />
             <Button
               variant="secondary"
               className={`w-full ${showComments ? 'bg-accent/20 text-accent-soft-foreground' : 'bg-theme-elevated text-theme-primary'}`}
@@ -1275,14 +1288,6 @@ export function ListingDetailPage() {
           </div>
         </GlassCard>
       )}
-
-      {/* Likers Modal */}
-      <LikersModal
-        isOpen={isLikersOpen}
-        onClose={onLikersClose}
-        loadLikers={social.loadLikers}
-        likesCount={social.likesCount}
-      />
     </motion.div>
   );
 }

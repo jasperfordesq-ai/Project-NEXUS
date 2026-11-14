@@ -199,7 +199,7 @@ class LegacySocialFeedVisibilityTest extends TestCase
 
         $response->assertStatus(404);
         $this->assertFalse(
-            DB::table('likes')->where('user_id', $outsider->id)->where('target_type', 'post')->where('target_id', $postId)->exists()
+            DB::table('reactions')->where('user_id', $outsider->id)->where('target_type', 'post')->where('target_id', $postId)->exists()
         );
 
         // Control: a group member may still like it.
@@ -219,11 +219,13 @@ class LegacySocialFeedVisibilityTest extends TestCase
 
         $member = $this->member();
         $this->addGroupMember($groupId, $member);
-        DB::table('likes')->insert([
+        // A like is the `like` reaction; `reactions` is the one store.
+        DB::table('reactions')->insert([
             'tenant_id' => $this->testTenantId,
             'user_id' => $member->id,
             'target_type' => 'post',
             'target_id' => $postId,
+            'emoji' => 'like',
             'created_at' => now(),
         ]);
 

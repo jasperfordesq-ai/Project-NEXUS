@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Log;
  * Canonical endpoints:
  *   POST   /v2/reactions                          — toggle reaction (body: target_type, target_id, reaction_type)
  *   GET    /v2/reactions/{type}/{id}              — get reaction counts
+ *   GET    /v2/reactions/batch?items=type:id,...  — summaries for a page of items
  *   GET    /v2/reactions/{type}/{id}/users/{rxn}  — paginated reactors ({rxn} = a
  *                                                   reaction type, or "all" for everyone;
  *                                                   each row carries its reaction_type)
@@ -70,6 +71,57 @@ class ReactionController extends BaseApiController
     public function show(string $type, int $id): JsonResponse
     {
         return $this->doShow($type, $id);
+    }
+
+    /** Most items one batch request may ask about. */
+    private const BATCH_MAX_ITEMS = 50;
+
+    /**
+     * GET /v2/reactions/batch?items=listing:12,poll:7,…
+     *
+     * Reaction summaries for several items in one request, keyed "type:id" —
+     * the same shape show() returns for one. Detail pages and lists that are
+     * not the feed (polls, reviews, resources, a listing's own page) use it so
+     * every screen reads its counts from the same place the feed card does,
+     * instead of each detail endpoint having to remember to send like state
+     * (most never did, which is how a like vanished on reload).
+     *
+     * An item the viewer cannot see, an unknown type or a malformed entry is
+     * left out of the answer rather than failing the whole request.
+     *
+     * Members only, like every reactions route (it sits inside the
+     * `auth:sanctum` group): the answer names the members who reacted.
+     */
+    public function batch(): JsonResponse
+    {
+        $userId = $this->requireAuth();
+
+        $items = [];
+        foreach (explode(',', (string) $this->query('items', '')) as $entry) {
+            if (count($items) >= self::BATCH_MAX_ITEMS) {
+                break;
+            }
+            if (!preg_match('/^([a-z_]{1,30}):([1-9][0-9]{0,9})$/', trim($entry), $m)) {
+                continue;
+            }
+            $type = $m[1];
+            $id = (int) $m[2];
+            if (isset($items[$type . ':' . $id]) || !$this->targetExists($type, $id, $userId)) {
+                continue;
+            }
+            $items[$type . ':' . $id] = ['type' => $type, 'id' => $id];
+        }
+
+        try {
+            $summaries = $items === []
+                ? []
+                : $this->reactionService->getReactionsForItems(array_values($items), $userId);
+
+            // (object): an empty answer must be `{}`, not `[]`, for typed clients.
+            return $this->respondWithData((object) $summaries);
+        } catch (\Exception $e) {
+            return $this->respondWithError('REACTION_ERROR', __('api.failed_fetch_reactions'), null, 500);
+        }
     }
 
     /**

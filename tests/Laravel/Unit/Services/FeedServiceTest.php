@@ -683,24 +683,29 @@ class FeedServiceTest extends TestCase
 
     // ── 8. like() toggle behavior ─────────────────────────────────────
 
+    /**
+     * like() is the one like switch, ReactionService::toggleLike(): a like is
+     * the `like` reaction in the `reactions` store, never a row in the retired
+     * `likes` table. The toggle itself is covered against a real database in
+     * tests/Laravel/Feature/Reactions/UnifiedLikesAndReactionsTest.php.
+     */
     public function test_like_creates_like_when_not_exists(): void
     {
         $service = new FeedService(new FeedActivity(), new FeedPost());
 
-        // like() first verifies the target post exists in the tenant (feed_posts),
-        // then toggles the like. New like uses an atomic INSERT IGNORE via DB::statement.
         $feedPostsBuilder = Mockery::mock(\Illuminate\Database\Query\Builder::class);
         $feedPostsBuilder->shouldReceive('where')->andReturnSelf();
         $feedPostsBuilder->shouldReceive('exists')->once()->andReturn(true);
-
-        $likesBuilder = Mockery::mock(\Illuminate\Database\Query\Builder::class);
-        $likesBuilder->shouldReceive('where')->andReturnSelf();
-        $likesBuilder->shouldReceive('first')->once()->andReturn(null);
-        $likesBuilder->shouldReceive('count')->once()->andReturn(1);
-
         DB::shouldReceive('table')->with('feed_posts')->once()->andReturn($feedPostsBuilder);
-        DB::shouldReceive('table')->with('likes')->andReturn($likesBuilder);
-        DB::shouldReceive('statement')->once()->andReturn(true);
+        DB::shouldReceive('table')->with('likes')->never();
+
+        $reactions = Mockery::mock(\App\Services\ReactionService::class);
+        $reactions->shouldReceive('toggleLike')->once()->with(100, 'post', 10)->andReturn([
+            'action' => 'liked',
+            'likes_count' => 1,
+            'reactions' => ['counts' => ['like' => 1], 'total' => 1, 'user_reaction' => 'like', 'top_reactors' => []],
+        ]);
+        $this->app->instance(\App\Services\ReactionService::class, $reactions);
 
         $result = $service->like(100, 10);
 
@@ -712,20 +717,19 @@ class FeedServiceTest extends TestCase
     {
         $service = new FeedService(new FeedActivity(), new FeedPost());
 
-        $existingLike = (object) ['id' => 1, 'target_type' => 'post', 'target_id' => 100, 'user_id' => 10];
-
         $feedPostsBuilder = Mockery::mock(\Illuminate\Database\Query\Builder::class);
         $feedPostsBuilder->shouldReceive('where')->andReturnSelf();
         $feedPostsBuilder->shouldReceive('exists')->once()->andReturn(true);
-
-        $likesBuilder = Mockery::mock(\Illuminate\Database\Query\Builder::class);
-        $likesBuilder->shouldReceive('where')->andReturnSelf();
-        $likesBuilder->shouldReceive('first')->once()->andReturn($existingLike);
-        $likesBuilder->shouldReceive('delete')->once()->andReturn(1);
-        $likesBuilder->shouldReceive('count')->once()->andReturn(0);
-
         DB::shouldReceive('table')->with('feed_posts')->once()->andReturn($feedPostsBuilder);
-        DB::shouldReceive('table')->with('likes')->andReturn($likesBuilder);
+        DB::shouldReceive('table')->with('likes')->never();
+
+        $reactions = Mockery::mock(\App\Services\ReactionService::class);
+        $reactions->shouldReceive('toggleLike')->once()->with(100, 'post', 10)->andReturn([
+            'action' => 'unliked',
+            'likes_count' => 0,
+            'reactions' => ['counts' => [], 'total' => 0, 'user_reaction' => null, 'top_reactors' => []],
+        ]);
+        $this->app->instance(\App\Services\ReactionService::class, $reactions);
 
         $result = $service->like(100, 10);
 

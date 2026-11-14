@@ -125,9 +125,11 @@ describe('FeedCard', () => {
     expect(screen.getByText('2 hours ago')).toBeInTheDocument();
   });
 
-  it('shows like count', () => {
+  it('shows like count as a control that opens who reacted', () => {
+    // An item with a count but no reactions summary used to render plain text
+    // that could not be opened; likes and reactions are one store now.
     render(<FeedCard {...defaultProps} />);
-    expect(screen.getByText(/5 likes/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /view reactions: 5 reactions/i })).toBeInTheDocument();
   });
 
   it('shows comment count', () => {
@@ -402,7 +404,7 @@ describe('FeedCard', () => {
   it('shows singular "1 like" and "1 comment"', () => {
     const item = { ...baseFeedItem, likes_count: 1, comments_count: 1 };
     render(<FeedCard {...defaultProps} item={item} />);
-    expect(screen.getByText(/1 like$/)).toBeInTheDocument();
+    expect(screen.getByText(/1 reaction$/)).toBeInTheDocument();
     expect(screen.getByText(/1 comment$/)).toBeInTheDocument();
   });
 

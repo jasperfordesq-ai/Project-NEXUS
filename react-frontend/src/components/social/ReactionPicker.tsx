@@ -25,6 +25,10 @@ export interface ReactionPickerProps {
   isAuthenticated: boolean;
   isDisabled?: boolean;
   size?: 'sm' | 'md';
+  /** Extra classes for the wrapper, e.g. to let it grow in a button row. */
+  className?: string;
+  /** Replaces the trigger button's default width classes. */
+  buttonClassName?: string;
 }
 
 // The member's own reaction, as a small coloured label on a white card. The
@@ -60,6 +64,8 @@ export function ReactionPicker({
   isAuthenticated,
   isDisabled = false,
   size = 'md',
+  className,
+  buttonClassName = 'flex-1 max-w-[140px]',
 }: ReactionPickerProps) {
   const { t } = useTranslation('feed');
   const pickerId = useId();
@@ -196,7 +202,7 @@ export function ReactionPicker({
   return (
     <div
       ref={containerRef}
-      className="relative"
+      className={className ? `relative ${className}` : 'relative'}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -219,7 +225,7 @@ export function ReactionPicker({
         ref={triggerRef}
         size={size}
         variant="light"
-        className={`flex-1 max-w-[140px] ${getReactionColor(userReaction)} transition-colors`}
+        className={`${buttonClassName} ${getReactionColor(userReaction)} transition-colors`}
         startContent={
           buttonEmoji ? (
             userReaction === 'time_credit' ? (

@@ -103,6 +103,9 @@ describe('applyFeedSyncToItem', () => {
       patch: { reactions },
     });
     expect(out.reactions).toEqual(reactions);
+    // One store: the like fields are derived from the reactions summary.
+    expect(out.is_liked).toBe(true);
+    expect(out.likes_count).toBe(2);
   });
 
   it('applies bookmark and share flags', () => {

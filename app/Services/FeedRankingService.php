@@ -443,7 +443,7 @@ class FeedRankingService
                     WHEN va.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 2
                     ELSE 1
                 END) AS weighted_interactions FROM (
-                SELECT created_at FROM likes WHERE user_id=? AND target_type='post' AND tenant_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL ? DAY)
+                SELECT created_at FROM reactions WHERE user_id=? AND target_type='post' AND tenant_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL ? DAY)
                 UNION ALL
                 SELECT created_at FROM comments WHERE user_id=? AND target_type='post' AND tenant_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL ? DAY)
             ) AS va";
@@ -1156,7 +1156,7 @@ class FeedRankingService
                     WHEN va.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 2
                     ELSE 1
                 END) AS weighted_interactions FROM (
-                SELECT target_id, created_at FROM likes WHERE user_id=? AND target_type='post' AND tenant_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL ? DAY)
+                SELECT target_id, created_at FROM reactions WHERE user_id=? AND target_type='post' AND tenant_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL ? DAY)
                 UNION ALL
                 SELECT target_id, created_at FROM comments WHERE user_id=? AND target_type='post' AND tenant_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL ? DAY)
             ) AS va JOIN feed_posts p ON p.id=va.target_id AND p.tenant_id=? WHERE p.user_id IN ($ph) GROUP BY p.user_id";
@@ -1214,7 +1214,7 @@ class FeedRankingService
             foreach ($byType as $targetType => $ids) {
                 $ph  = implode(',', array_fill(0, count($ids), '?'));
                 $sql = "SELECT target_id, COUNT(*) AS velocity FROM (
-                    SELECT target_id FROM likes WHERE target_type=? AND target_id IN ($ph) AND tenant_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL ? HOUR)
+                    SELECT target_id FROM reactions WHERE target_type=? AND target_id IN ($ph) AND tenant_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL ? HOUR)
                     UNION ALL
                     SELECT target_id FROM comments WHERE target_type=? AND target_id IN ($ph) AND tenant_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL ? HOUR)
                 ) AS recent GROUP BY target_id";
@@ -1476,7 +1476,7 @@ class FeedRankingService
         try {
             $tenantId = TenantContext::getId();
             $sql = "SELECT fa.source_type, COUNT(*) AS engagements FROM (
-                SELECT target_id FROM likes WHERE user_id=? AND target_type='post' AND tenant_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL ? DAY)
+                SELECT target_id FROM reactions WHERE user_id=? AND target_type='post' AND tenant_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL ? DAY)
                 UNION ALL
                 SELECT target_id FROM comments WHERE user_id=? AND target_type='post' AND tenant_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL ? DAY)
             ) AS eng

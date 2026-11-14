@@ -1049,6 +1049,7 @@ Route::get('/v2/feed/hashtags/{tag}', [\App\Http\Controllers\Api\FeedSocialContr
 //   Reactions are polymorphic: post, listing, event, goal, poll, review,
 //   volunteer, challenge, resource, comment.
 Route::post('/v2/reactions', [\App\Http\Controllers\Api\ReactionController::class, 'toggle']);
+Route::get('/v2/reactions/batch', [\App\Http\Controllers\Api\ReactionController::class, 'batch']);
 Route::get('/v2/reactions/{type}/{id}', [\App\Http\Controllers\Api\ReactionController::class, 'show']);
 Route::get('/v2/reactions/{type}/{id}/users/{reactionType}', [\App\Http\Controllers\Api\ReactionController::class, 'reactors']);
 // Legacy aliases (kept for backward compatibility — delegate to polymorphic impl)

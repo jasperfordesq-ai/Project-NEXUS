@@ -177,7 +177,7 @@ class AdminFeedController extends BaseApiController
                     u.avatar_url as user_avatar,
                     t.name as tenant_name,
                     (SELECT COUNT(*) FROM comments c WHERE c.target_type = fa.source_type AND c.target_id = fa.source_id AND c.tenant_id = fa.tenant_id) as comments_count,
-                    (SELECT COUNT(*) FROM likes l WHERE l.target_type = fa.source_type AND l.target_id = fa.source_id AND l.tenant_id = fa.tenant_id) as likes_count
+                    (SELECT COUNT(*) FROM reactions l WHERE l.target_type = fa.source_type AND l.target_id = fa.source_id AND l.tenant_id = fa.tenant_id) as likes_count
              FROM feed_activity fa
              LEFT JOIN users u ON fa.user_id = u.id
              LEFT JOIN tenants t ON fa.tenant_id = t.id
@@ -409,7 +409,8 @@ class AdminFeedController extends BaseApiController
         DB::delete("DELETE FROM feed_activity WHERE source_type = ? AND source_id = ? AND tenant_id = ?", [$sourceType, $id, $itemTenantId]);
         // Remove related engagement data
         DB::delete("DELETE FROM feed_hidden WHERE target_type = ? AND target_id = ? AND tenant_id = ?", [$sourceType, $id, $itemTenantId]);
-        DB::delete("DELETE FROM likes WHERE target_type = ? AND target_id = ? AND tenant_id = ?", [$sourceType, $id, $itemTenantId]);
+        // Likes and reactions are one store (`reactions`).
+        DB::delete("DELETE FROM reactions WHERE target_type = ? AND target_id = ? AND tenant_id = ?", [$sourceType, $id, $itemTenantId]);
         DB::delete("DELETE FROM comments WHERE target_type = ? AND target_id = ? AND tenant_id = ?", [$sourceType, $id, $itemTenantId]);
 
         // If the source is a post, also soft-delete the feed_posts row

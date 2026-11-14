@@ -218,11 +218,11 @@ class ExploreService
                     u.profile_type AS author_profile_type,
                     u.organization_name AS author_organization_name,
                     u.avatar_url AS author_avatar,
-                    (SELECT COUNT(*) FROM likes lk WHERE lk.target_type = 'post' AND lk.target_id = fp.id AND lk.tenant_id = ?) AS likes_count,
+                    (SELECT COUNT(*) FROM reactions lk WHERE lk.target_type = 'post' AND lk.target_id = fp.id AND lk.tenant_id = ?) AS likes_count,
                     (SELECT COUNT(*) FROM comments c WHERE c.target_type = 'post' AND c.target_id = fp.id AND c.tenant_id = ?) AS comments_count,
-                    (SELECT COUNT(*) FROM likes lk WHERE lk.target_type = 'post' AND lk.target_id = fp.id AND lk.tenant_id = ?)
+                    (SELECT COUNT(*) FROM reactions lk WHERE lk.target_type = 'post' AND lk.target_id = fp.id AND lk.tenant_id = ?)
                         + (SELECT COUNT(*) FROM comments c WHERE c.target_type = 'post' AND c.target_id = fp.id AND c.tenant_id = ?) AS engagement,
-                    (SELECT COUNT(*) FROM likes lk2 WHERE lk2.target_type = 'post' AND lk2.target_id = fp.id AND lk2.tenant_id = ? AND lk2.created_at >= DATE_SUB(NOW(), INTERVAL 6 HOUR))
+                    (SELECT COUNT(*) FROM reactions lk2 WHERE lk2.target_type = 'post' AND lk2.target_id = fp.id AND lk2.tenant_id = ? AND lk2.created_at >= DATE_SUB(NOW(), INTERVAL 6 HOUR))
                         + (SELECT COUNT(*) FROM comments c2 WHERE c2.target_type = 'post' AND c2.target_id = fp.id AND c2.tenant_id = ? AND c2.created_at >= DATE_SUB(NOW(), INTERVAL 6 HOUR)) AS recent_engagement,
                     GREATEST(1, TIMESTAMPDIFF(HOUR, fp.created_at, NOW())) AS age_hours
                 FROM feed_posts fp
@@ -2232,7 +2232,7 @@ class ExploreService
                     u.profile_type AS author_profile_type,
                     u.organization_name AS author_organization_name,
                     u.avatar_url AS author_avatar,
-                    (SELECT COUNT(*) FROM likes lk WHERE lk.target_type = 'post' AND lk.target_id = fp.id AND lk.tenant_id = ?) AS likes_count,
+                    (SELECT COUNT(*) FROM reactions lk WHERE lk.target_type = 'post' AND lk.target_id = fp.id AND lk.tenant_id = ?) AS likes_count,
                     (SELECT COUNT(*) FROM comments c WHERE c.target_type = 'post' AND c.target_id = fp.id AND c.tenant_id = ?) AS comments_count
                 FROM feed_posts fp
                 JOIN users u ON u.id = fp.user_id AND u.tenant_id = ? AND u.status = 'active'
@@ -2244,7 +2244,7 @@ class ExploreService
                     AND (fp.scheduled_at IS NULL OR fp.scheduled_at <= NOW())
                     {$visibilitySql}
                 ORDER BY (
-                    (SELECT COUNT(*) FROM likes lk WHERE lk.target_type = 'post' AND lk.target_id = fp.id AND lk.tenant_id = ?)
+                    (SELECT COUNT(*) FROM reactions lk WHERE lk.target_type = 'post' AND lk.target_id = fp.id AND lk.tenant_id = ?)
                     + (SELECT COUNT(*) FROM comments c WHERE c.target_type = 'post' AND c.target_id = fp.id AND c.tenant_id = ?)
                 ) DESC, fp.created_at DESC
                 LIMIT ? OFFSET ?

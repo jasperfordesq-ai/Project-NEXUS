@@ -99,6 +99,10 @@ export function applyFeedSyncToItem<T extends SyncableFeedItem>(item: T, payload
   }
   if (patch.reactions !== undefined) {
     next.reactions = patch.reactions;
+    // Likes and reactions are one store: the like fields are just another
+    // view of the reactions summary, so they can never disagree with it.
+    next.is_liked = patch.reactions.user_reaction != null;
+    next.likes_count = Math.max(0, patch.reactions.total);
   }
 
   return next;

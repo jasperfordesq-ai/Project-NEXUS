@@ -38,6 +38,11 @@ export interface ReactionSummaryProps {
   entityType: string;
   /** Entity ID for loading reactor details */
   entityId: number;
+  /**
+   * False shows the count without opening the list of who reacted (a visitor
+   * who is not signed in). Defaults to true.
+   */
+  isInteractive?: boolean;
 }
 
 /* ───────────────────────── Component ───────────────────────── */
@@ -59,6 +64,7 @@ export function ReactionSummary({
   topReactors = [],
   entityType,
   entityId,
+  isInteractive = true,
 }: ReactionSummaryProps) {
   const { t } = useTranslation('feed');
   const tr = (key: string, fallback: string) => {
@@ -100,6 +106,28 @@ export function ReactionSummary({
     summaryText
   );
 
+  const emojiBadges = (
+    <span className="flex items-center -space-x-0.5">
+      {sortedTypes.slice(0, 3).map(([type]) => (
+        <span
+          key={type}
+          className="w-5 h-5 rounded-full bg-[var(--surface-elevated)] border border-[var(--border-default)] flex items-center justify-center text-xs"
+        >
+          {renderEmoji(type)}
+        </span>
+      ))}
+    </span>
+  );
+
+  if (!isInteractive) {
+    return (
+      <span className="flex min-h-[28px] items-center gap-1.5 text-xs text-[var(--text-subtle)]">
+        {emojiBadges}
+        <span>{summaryText}</span>
+      </span>
+    );
+  }
+
   /* ───── Render inline summary ───── */
 
   return (
@@ -112,17 +140,7 @@ export function ReactionSummary({
         className="flex min-h-[28px] items-center gap-1.5 px-0 py-0 text-xs text-[var(--text-subtle)] transition-colors hover:text-[var(--text-primary)]"
         aria-label={viewReactionsLabel}
       >
-        {/* Emoji badges */}
-        <span className="flex items-center -space-x-0.5">
-          {sortedTypes.slice(0, 3).map(([type]) => (
-            <span
-              key={type}
-              className="w-5 h-5 rounded-full bg-[var(--surface-elevated)] border border-[var(--border-default)] flex items-center justify-center text-xs"
-            >
-              {renderEmoji(type)}
-            </span>
-          ))}
-        </span>
+        {emojiBadges}
         <span>{summaryText}</span>
       </Button>
 
