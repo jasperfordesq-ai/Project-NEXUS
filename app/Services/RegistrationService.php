@@ -7,7 +7,6 @@
 namespace App\Services;
 
 use App\Core\ApiErrorCodes;
-use App\Core\EmailTemplate;
 use App\Core\TenantContext;
 use App\Core\Validator as NexusValidator;
 use App\Events\UserRegistered;

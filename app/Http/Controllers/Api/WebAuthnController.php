@@ -6,7 +6,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Core\EmailTemplate;
 use App\Core\EmailTemplateBuilder;
 use App\I18n\LocaleContext;
 use App\Models\Notification;

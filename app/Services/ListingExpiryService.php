@@ -6,7 +6,6 @@
 
 namespace App\Services;
 
-use App\Core\EmailTemplate;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use App\Models\ActivityLog;

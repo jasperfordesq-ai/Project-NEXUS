@@ -6,7 +6,6 @@
 
 namespace App\Services;
 
-use App\Core\EmailTemplate;
 use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
 use App\Exceptions\SafeguardingPolicyException;
