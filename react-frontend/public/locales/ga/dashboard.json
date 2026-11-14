@@ -11,11 +11,6 @@
   "common": {
     "loading": "Á lódáil"
   },
-  "onboarding": {
-    "banner_title": "Críochnaigh socrú do phróifíle",
-    "banner_subtitle": "Inis dúinn cad a thaitníonn leat agus cad is féidir leat a dhéanamh, agus molfaimid daoine agus tairiscintí a oireann duit.",
-    "get_started": "Tosaigh"
-  },
   "new_listing": "Tairiscint nó iarratas nua",
   "caring_community": {
     "title": "Pobal Cúraim",
@@ -211,10 +206,17 @@
     "body": "Tá níos mó ná {{hours}} uair an chloig de chabhair tugtha ag baill {{community}} dá chéile anois. Go raibh maith agat as a bheith páirteach ann.",
     "close": "Dún"
   },
-  "photo_prompt": {
-    "title": "Cuir grianghraf díot féin leis",
-    "body": "Cabhraíonn aghaidh chairdiúil le do chomharsana tú a aithint agus muinín a chur ionat. Ní thógann sé ach nóiméad.",
-    "action": "Cuir grianghraf leis",
-    "close": "Ní anois"
+  "getting_started": {
+    "title_new": "Ag tosú in {{name}}",
+    "title": "Cúpla rud fós le déanamh",
+    "progress": "{{done}} as {{total}} déanta",
+    "done": "Déanta",
+    "close": "Ní anois",
+    "steps_title": "Críochnaigh na céimeanna fáilte",
+    "steps_body": "Inis dúinn cad a thaitníonn leat agus cad is féidir leat a dhéanamh, agus molfaimid daoine agus tairiscintí a oireann duit.",
+    "photo_title": "Cuir grianghraf díot féin leis",
+    "photo_body": "Cabhraíonn aghaidh chairdiúil le do chomharsana tú a aithint agus muinín a chur ionat. Ní thógann sé ach nóiméad.",
+    "offer_title": "Postáil tairiscint nó iarratas",
+    "offer_body": "Abair cad is féidir leat a roinnt, nó cad a mbeadh lámh chúnta uait leis."
   }
 }

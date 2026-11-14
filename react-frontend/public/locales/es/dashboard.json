@@ -11,11 +11,6 @@
   "common": {
     "loading": "Cargando"
   },
-  "onboarding": {
-    "banner_title": "Termina de configurar tu perfil",
-    "banner_subtitle": "Cuéntanos qué te gusta y qué sabes hacer, y te sugeriremos personas y ofertas que encajen contigo.",
-    "get_started": "Empezar"
-  },
   "new_listing": "Nueva oferta o solicitud",
   "caring_community": {
     "title": "Comunidad de cuidados",
@@ -203,10 +198,17 @@
     "body": "Los miembros de {{community}} ya se han dado más de {{hours}} horas de ayuda. Gracias por formar parte.",
     "close": "Cerrar"
   },
-  "photo_prompt": {
-    "title": "Añade una foto tuya",
-    "body": "Una cara amable ayuda a tus vecinos a reconocerte y confiar en ti. Solo lleva un momento.",
-    "action": "Añadir una foto",
-    "close": "Ahora no"
+  "getting_started": {
+    "title_new": "Primeros pasos en {{name}}",
+    "title": "Aún quedan algunas cosas por hacer",
+    "progress": "{{done}} de {{total}} hechas",
+    "done": "Hecho",
+    "close": "Ahora no",
+    "steps_title": "Termina los pasos de bienvenida",
+    "steps_body": "Cuéntanos qué te gusta y qué sabes hacer, y te sugeriremos personas y ofertas que encajen contigo.",
+    "photo_title": "Añade una foto tuya",
+    "photo_body": "Una cara amable ayuda a tus vecinos a reconocerte y confiar en ti. Solo lleva un momento.",
+    "offer_title": "Publica una oferta o solicitud",
+    "offer_body": "Cuenta qué puedes compartir o con qué te vendría bien una mano."
   }
 }

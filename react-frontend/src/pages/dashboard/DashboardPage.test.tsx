@@ -355,7 +355,7 @@ describe('DashboardPage', () => {
     expect(screen.getByText('New offer or request')).toBeInTheDocument();
   });
 
-  it('shows onboarding banner when onboarding not completed', async () => {
+  it('asks a member who has not finished the welcome steps to finish them, in the getting-started card', async () => {
     const { useAuth } = await import('@/contexts');
     vi.mocked(useAuth).mockReturnValue({
       user: { id: 1, first_name: 'Test', name: 'Test User', onboarding_completed: false },
@@ -363,7 +363,7 @@ describe('DashboardPage', () => {
     } as ReturnType<typeof useAuth>);
 
     render(<DashboardPage />);
-    expect(screen.getByText('Finish setting up your profile')).toBeInTheDocument();
+    expect(await screen.findByText('Finish the welcome steps')).toBeInTheDocument();
   });
 
   describe('location reminder', () => {
@@ -405,12 +405,12 @@ describe('DashboardPage', () => {
       expect(screen.queryByText('Tell us where you are based')).not.toBeInTheDocument();
     });
 
-    it('also asks a member still in onboarding (alongside the onboarding banner)', async () => {
+    it('also asks a member still in onboarding (alongside the getting-started card)', async () => {
       await signInAs({ onboarding_completed: false, location_missing: true });
 
       render(<DashboardPage />);
 
-      expect(screen.getByText('Finish setting up your profile')).toBeInTheDocument();
+      expect(await screen.findByText('Finish the welcome steps')).toBeInTheDocument();
       expect(screen.getByText('Tell us where you are based')).toBeInTheDocument();
     });
 
@@ -419,7 +419,7 @@ describe('DashboardPage', () => {
 
       render(<DashboardPage />);
 
-      expect(screen.getByText('Finish setting up your profile')).toBeInTheDocument();
+      expect(await screen.findByText('Finish the welcome steps')).toBeInTheDocument();
       expect(screen.queryByText('Tell us where you are based')).not.toBeInTheDocument();
     });
 

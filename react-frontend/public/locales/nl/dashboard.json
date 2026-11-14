@@ -11,11 +11,6 @@
   "common": {
     "loading": "Laden"
   },
-  "onboarding": {
-    "banner_title": "Maak je profiel af",
-    "banner_subtitle": "Vertel ons wat je leuk vindt en wat je kunt, dan stellen we mensen en aanbod voor die bij je passen.",
-    "get_started": "Aan de slag"
-  },
   "new_listing": "Nieuw aanbod of verzoek",
   "caring_community": {
     "title": "Zorgzame gemeenschap",
@@ -199,10 +194,17 @@
     "body": "De leden van {{community}} hebben elkaar inmiddels meer dan {{hours}} uur geholpen. Bedankt dat je erbij hoort.",
     "close": "Sluiten"
   },
-  "photo_prompt": {
-    "title": "Voeg een foto van jezelf toe",
-    "body": "Een vriendelijk gezicht helpt buren je te herkennen en te vertrouwen. Het kost maar even.",
-    "action": "Foto toevoegen",
-    "close": "Niet nu"
+  "getting_started": {
+    "title_new": "Aan de slag bij {{name}}",
+    "title": "Nog een paar dingen te doen",
+    "progress": "{{done}} van {{total}} gedaan",
+    "done": "Gedaan",
+    "close": "Niet nu",
+    "steps_title": "Rond de welkomststappen af",
+    "steps_body": "Vertel ons wat je leuk vindt en wat je kunt, dan stellen we mensen en aanbod voor die bij je passen.",
+    "photo_title": "Voeg een foto van jezelf toe",
+    "photo_body": "Een vriendelijk gezicht helpt buren je te herkennen en te vertrouwen. Het kost maar even.",
+    "offer_title": "Plaats een aanbod of verzoek",
+    "offer_body": "Vertel wat je kunt delen, of waarbij je wel wat hulp kunt gebruiken."
   }
 }

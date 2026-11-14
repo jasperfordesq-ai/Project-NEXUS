@@ -11,11 +11,6 @@
   "common": {
     "loading": "Ładowanie"
   },
-  "onboarding": {
-    "banner_title": "Dokończ konfigurację swojego profilu",
-    "banner_subtitle": "Powiedz nam, co lubisz i co potrafisz, a podpowiemy Ci pasujące osoby i oferty.",
-    "get_started": "Zacznij"
-  },
   "new_listing": "Nowa oferta lub prośba",
   "caring_community": {
     "title": "Wspólnota opiekuńcza",
@@ -207,10 +202,17 @@
     "body": "Członkowie {{community}} podarowali sobie już ponad {{hours}} godzin pomocy. Dziękujemy, że jesteś z nami.",
     "close": "Zamknij"
   },
-  "photo_prompt": {
-    "title": "Dodaj swoje zdjęcie",
-    "body": "Przyjazna twarz pomaga sąsiadom rozpoznać Cię i Ci zaufać. To zajmie tylko chwilę.",
-    "action": "Dodaj zdjęcie",
-    "close": "Nie teraz"
+  "getting_started": {
+    "title_new": "Pierwsze kroki w {{name}}",
+    "title": "Jeszcze kilka rzeczy do zrobienia",
+    "progress": "Zrobione: {{done}} z {{total}}",
+    "done": "Zrobione",
+    "close": "Nie teraz",
+    "steps_title": "Dokończ kroki powitalne",
+    "steps_body": "Powiedz nam, co lubisz i co potrafisz, a podpowiemy Ci pasujące osoby i oferty.",
+    "photo_title": "Dodaj swoje zdjęcie",
+    "photo_body": "Przyjazna twarz pomaga sąsiadom rozpoznać Cię i Ci zaufać. To zajmie tylko chwilę.",
+    "offer_title": "Dodaj ofertę lub prośbę",
+    "offer_body": "Napisz, czym możesz się podzielić albo w czym przydałaby Ci się pomoc."
   }
 }

@@ -11,11 +11,6 @@
   "common": {
     "loading": "Loading"
   },
-  "onboarding": {
-    "banner_title": "Finish setting up your profile",
-    "banner_subtitle": "Tell us what you enjoy and what you can do, and we'll suggest people and offers that fit.",
-    "get_started": "Get started"
-  },
   "new_listing": "New offer or request",
   "caring_community": {
     "title": "Caring Community",
@@ -199,10 +194,17 @@
     "body": "Members of {{community}} have now given each other more than {{hours}} hours of help. Thank you for being part of it.",
     "close": "Close"
   },
-  "photo_prompt": {
-    "title": "Add a photo of yourself",
-    "body": "A friendly face helps neighbours recognise and trust you. It only takes a moment.",
-    "action": "Add a photo",
-    "close": "Not now"
+  "getting_started": {
+    "title_new": "Getting started in {{name}}",
+    "title": "A few things still to do",
+    "progress": "{{done}} of {{total}} done",
+    "done": "Done",
+    "close": "Not now",
+    "steps_title": "Finish the welcome steps",
+    "steps_body": "Tell us what you enjoy and what you can do, and we'll suggest people and offers that fit.",
+    "photo_title": "Add a photo of yourself",
+    "photo_body": "A friendly face helps neighbours recognise and trust you. It only takes a moment.",
+    "offer_title": "Post an offer or request",
+    "offer_body": "Say what you can share, or what you'd like a hand with."
   }
 }

@@ -74,7 +74,7 @@ import { resolveAvatarUrl } from '@/lib/helpers';
 import { SafeguardingStep } from './SafeguardingStep';
 import { SecurityStep } from './SecurityStep';
 import { OnboardingSkillsPicker } from './OnboardingSkillsPicker';
-import { hasOwnPhoto } from '../dashboard/PhotoPrompt';
+import { hasOwnPhoto } from '../dashboard/GettingStartedCard';
 import { MemberLocationField } from '@/components/location/MemberLocationField';
 import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 import {

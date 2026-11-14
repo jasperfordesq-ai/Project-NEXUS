@@ -11,11 +11,6 @@
   "common": {
     "loading": "Wird geladen"
   },
-  "onboarding": {
-    "banner_title": "Richten Sie Ihr Profil fertig ein",
-    "banner_subtitle": "Sagen Sie uns, was Ihnen Freude macht und was Sie können – dann schlagen wir Ihnen passende Menschen und Angebote vor.",
-    "get_started": "Jetzt starten"
-  },
   "new_listing": "Neues Angebot oder Gesuch",
   "caring_community": {
     "title": "Pflegende Gemeinschaft",
@@ -199,10 +194,17 @@
     "body": "Die Mitglieder von {{community}} haben einander inzwischen mehr als {{hours}} Stunden geholfen. Danke, dass du dabei bist.",
     "close": "Schließen"
   },
-  "photo_prompt": {
-    "title": "Füge ein Foto von dir hinzu",
-    "body": "Ein freundliches Gesicht hilft deinen Nachbarn, dich zu erkennen und dir zu vertrauen. Es dauert nur einen Moment.",
-    "action": "Foto hinzufügen",
-    "close": "Nicht jetzt"
+  "getting_started": {
+    "title_new": "Erste Schritte bei {{name}}",
+    "title": "Noch ein paar Dinge zu tun",
+    "progress": "{{done}} von {{total}} erledigt",
+    "done": "Erledigt",
+    "close": "Nicht jetzt",
+    "steps_title": "Schließen Sie die Willkommensschritte ab",
+    "steps_body": "Sagen Sie uns, was Ihnen Freude macht und was Sie können – dann schlagen wir Ihnen passende Menschen und Angebote vor.",
+    "photo_title": "Füge ein Foto von dir hinzu",
+    "photo_body": "Ein freundliches Gesicht hilft deinen Nachbarn, dich zu erkennen und dir zu vertrauen. Es dauert nur einen Moment.",
+    "offer_title": "Erstellen Sie ein Angebot oder Gesuch",
+    "offer_body": "Sagen Sie, was Sie teilen können oder wobei Sie Unterstützung möchten."
   }
 }

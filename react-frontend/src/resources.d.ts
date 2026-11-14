@@ -41984,6 +41984,19 @@ export default interface Resources {
       "xp_value_one": "{{count}} XP",
       "xp_value_other": "{{count}} XP"
     },
+    "getting_started": {
+      "close": "Not now",
+      "done": "Done",
+      "offer_body": "Say what you can share, or what you'd like a hand with.",
+      "offer_title": "Post an offer or request",
+      "photo_body": "A friendly face helps neighbours recognise and trust you. It only takes a moment.",
+      "photo_title": "Add a photo of yourself",
+      "progress": "{{done}} of {{total}} done",
+      "steps_body": "Tell us what you enjoy and what you can do, and we'll suggest people and offers that fit.",
+      "steps_title": "Finish the welcome steps",
+      "title": "A few things still to do",
+      "title_new": "Getting started in {{name}}"
+    },
     "groups": {
       "discover": "Discover groups",
       "empty": "You haven't joined any groups yet",
@@ -42041,17 +42054,6 @@ export default interface Resources {
       "say_hello_aria": "Say hello to {{name}}",
       "see_all": "See all members",
       "title": "Say hello to new members"
-    },
-    "onboarding": {
-      "banner_subtitle": "Tell us what you enjoy and what you can do, and we'll suggest people and offers that fit.",
-      "banner_title": "Finish setting up your profile",
-      "get_started": "Get started"
-    },
-    "photo_prompt": {
-      "action": "Add a photo",
-      "body": "A friendly face helps neighbours recognise and trust you. It only takes a moment.",
-      "close": "Not now",
-      "title": "Add a photo of yourself"
     },
     "quick_actions": {
       "browse_events": "Browse events",

@@ -14,7 +14,7 @@ import { CommunityMonthHighlight } from './CommunityMonthHighlight';
 import { CommunityHoursChart } from './CommunityHoursChart';
 import { MembershipAnniversary } from './MembershipAnniversary';
 import { CommunityMilestone } from './CommunityMilestone';
-import { PhotoPrompt } from './PhotoPrompt';
+import { GettingStartedCard } from './GettingStartedCard';
 import { Card, CardBody } from '@/components/ui/Card';
 import { useGreeting } from '@/hooks/useGreeting';
 import { GuardianConsentPrompt } from '@/components/safeguarding/GuardianConsentPrompt';
@@ -62,7 +62,6 @@ import { api } from '@/lib/api';
 import { vivid } from '@/lib/vivid';
 import { useSiteVivid } from '@/contexts/SiteAccentContext';
 import { logError } from '@/lib/logger';
-import { welcomeStepsSwitchedOn } from '@/lib/welcomeSteps';
 import { formatDayOfMonth, formatMonthShort, formatRelativeTime, resolveAvatarUrl } from '@/lib/helpers';
 import type { WalletBalance, Listing, Event, Group } from '@/types/api';
 import { CARING_COMMUNITY_ROUTE } from '@/pages/caring-community/config';
@@ -302,7 +301,7 @@ export function DashboardPage() {
   const { t } = useTranslation('dashboard');
   usePageTitle(t('meta.title'));
   const { user } = useAuth();
-  const { branding, tenantPath, tenant } = useTenant();
+  const { branding, tenantPath } = useTenant();
   const greeting = useGreeting(user?.first_name || user?.name?.split(' ')[0]);
   const { counts: notificationCounts } = useNotifications();
   const hasGamification = useFeature('gamification');
@@ -468,27 +467,6 @@ export function DashboardPage() {
           <SupportActionPrompt />
         </motion.div>
 
-        {/* Onboarding Banner */}
-        {/* Not while the community has the welcome steps switched off
-            (Admin → Welcome steps): "off" means nobody is invited to them. */}
-        {user && user.onboarding_completed === false
-          && welcomeStepsSwitchedOn(tenant?.settings as Record<string, unknown> | undefined) && (
-          <motion.div variants={itemVariants}>
-            <GlassCard className="border-l-4 border-l-accent p-4 sm:p-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex min-w-0 items-start gap-3">
-                  <SectionIcon color="indigo"><Sparkles className="w-4 h-4 text-accent dark:text-accent" aria-hidden="true" /></SectionIcon>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-theme-primary">{t('onboarding.banner_title')}</p>
-                    <p className="mt-1 text-sm leading-5 text-theme-muted">{t('onboarding.banner_subtitle')}</p>
-                  </div>
-                </div>
-                <Button as={Link} to={tenantPath('/onboarding')} size="sm" className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white sm:w-auto" endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}>{t('onboarding.get_started')}</Button>
-              </div>
-            </GlassCard>
-          </motion.div>
-        )}
-
         {/* "Where are you based?" — for a member with no town. Deliberately has no
             dismiss control: it stays until they add one (owner decision, 9 Oct 2026).
             Shown whether or not onboarding is finished; a member still in onboarding
@@ -521,10 +499,12 @@ export function DashboardPage() {
         <MembershipAnniversary />
 
         {/* A round number of hours shared by the whole community (seen once per
-            milestone), and a nudge to add a profile photo for a member without
-            one. Each renders nothing when it has nothing to say. */}
+            milestone), and one short list for a member with something left to
+            set up: the welcome steps, a photo, a first offer or request. It
+            replaced the separate welcome-steps banner and photo prompt
+            (14 Nov 2026). Each renders nothing when it has nothing to say. */}
         <CommunityMilestone />
-        <PhotoPrompt />
+        <GettingStartedCard hasListing={isLoading ? null : stats.activeListingsCount > 0} listingsOn={hasListingsModule} />
 
         {hasCaringCommunity && (
           <motion.div variants={itemVariants}>
