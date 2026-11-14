@@ -97,7 +97,7 @@ class VolunteerDonationServiceTest extends TestCase
     public function test_createDonation_throws_for_missing_payment_method(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Payment method is required');
+        $this->expectExceptionMessage("Please choose how you'd like to pay.");
 
         VolunteerDonationService::createDonation(1, [
             'amount' => 10,
@@ -133,7 +133,7 @@ class VolunteerDonationServiceTest extends TestCase
         ]);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Opportunity not found');
+        $this->expectExceptionMessage("We can't find that opportunity. It may have been removed.");
 
         VolunteerDonationService::createDonation(1, [
             'amount' => 10,
@@ -158,7 +158,7 @@ class VolunteerDonationServiceTest extends TestCase
         ]);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Giving day not found');
+        $this->expectExceptionMessage("We can't find that giving day. It may have been removed.");
 
         VolunteerDonationService::createDonation(1, [
             'amount' => 10,

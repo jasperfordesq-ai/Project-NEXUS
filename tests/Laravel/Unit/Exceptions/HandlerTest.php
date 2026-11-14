@@ -152,7 +152,7 @@ class HandlerTest extends TestCase
 
         $data = $response->getData(true);
         $this->assertEquals('SERVER_ERROR', $data['errors'][0]['code']);
-        $this->assertEquals('An unexpected error occurred.', $data['errors'][0]['message']);
+        $this->assertEquals('Something went wrong on our side. Please try again.', $data['errors'][0]['message']);
     }
 
     public function test_render_includes_debug_info_in_debug_mode(): void

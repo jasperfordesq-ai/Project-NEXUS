@@ -275,7 +275,7 @@ class StoryServiceTest extends TestCase
             ->andReturn(null);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Story not found');
+        $this->expectExceptionMessage("We can't find that story. It may have been deleted.");
 
         $this->service->getViewers(999, 1);
     }
@@ -324,7 +324,7 @@ class StoryServiceTest extends TestCase
             ->andReturn(null);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Story not found');
+        $this->expectExceptionMessage("We can't find that story. It may have been deleted.");
 
         $this->service->reactToStory(999, 1, 'heart');
     }
@@ -427,7 +427,7 @@ class StoryServiceTest extends TestCase
             ->andReturn(null);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Story not found');
+        $this->expectExceptionMessage("We can't find that story. It may have been deleted.");
 
         $this->service->votePoll(999, 1, 0);
     }
