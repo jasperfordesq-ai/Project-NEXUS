@@ -17,6 +17,7 @@
 
 import { lazy, Suspense, useState, useEffect, useRef, useCallback, type FormEvent } from 'react';
 import { CommunityWelcome } from '@/components/auth/CommunityWelcome';
+import { RegistrationPending } from '@/components/auth/RegistrationPending';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { buildReturnTarget, clearAuthReturn, explicitAuthReturn, rememberAuthReturn, resolveAuthReturn } from '@/lib/auth-return';
 
@@ -43,11 +44,8 @@ import Phone from 'lucide-react/icons/phone';
 import Check from 'lucide-react/icons/check';
 import X from 'lucide-react/icons/x';
 import ChevronLeft from 'lucide-react/icons/chevron-left';
-import MailCheck from 'lucide-react/icons/mail-check';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import Ticket from 'lucide-react/icons/ticket';
-import Clock from 'lucide-react/icons/clock';
-import Users from 'lucide-react/icons/users';
 import { useTranslation,
   Trans } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
@@ -1269,114 +1267,22 @@ export function RegisterPage() {
   };
 
   // ── Pending Registration Success Screen ──────────────────────────────────
+  // "Check your email" / "waiting for approval" / "on the waitlist". It lives in
+  // its own component so it can offer "Send it again" and "Start again".
   if (pendingResult) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md relative z-10"
-        >
-          <GlassCard className="overflow-hidden p-6 sm:p-8">
-            {/* The community first, as on the form itself: this screen was the
-                one step of joining that showed no sign of the community. */}
-            <CommunityWelcome className="-mx-6 -mt-6 mb-6 sm:-mx-8 sm:-mt-8" />
-            <div className="text-center">
-              <motion.div
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-success/15"
-              >
-                {pendingResult.requiresWaitlist ? (
-                  <Users className="w-8 h-8 text-accent dark:text-accent" aria-hidden="true" />
-                ) : pendingResult.requiresVerification ? (
-                  <MailCheck className="w-8 h-8 text-emerald-500 dark:text-emerald-400" aria-hidden="true" />
-                ) : (
-                  <ShieldCheck className="w-8 h-8 text-emerald-500 dark:text-emerald-400" aria-hidden="true" />
-                )}
-              </motion.div>
-
-              <h1 className="text-xl sm:text-2xl font-bold text-theme-primary mb-2">
-                {pendingResult.requiresWaitlist
-                  ? t('register.waitlist_title')
-                  : t('register.success_title', { name: firstName.trim() })}
-              </h1>
-
-              <div className="space-y-3 mt-4 text-left">
-                {pendingResult.requiresWaitlist && (
-                  <div className="p-3 rounded-xl bg-accent/10 border border-accent/20 text-sm">
-                    <div className="flex items-start gap-3">
-                      <Clock aria-hidden="true" className="w-5 h-5 text-accent dark:text-accent flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-accent dark:text-accent">
-                          {pendingResult.waitlistPosition
-                            ? t('register.waitlist_position', { position: pendingResult.waitlistPosition })
-                            : t('register.waitlist_joined')}
-                        </p>
-                        <p className="text-accent/80 dark:text-accent/80 mt-1">
-                          {t('register.waitlist_body')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {pendingResult.requiresVerification && (
-                  <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-sm">
-                    <div className="flex items-start gap-3">
-                      <MailCheck aria-hidden="true" className="w-5 h-5 text-[var(--color-info)] flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-blue-600 dark:text-blue-400">{t('register.verify_email_title')}</p>
-                        <p className="text-blue-600/80 dark:text-blue-300/80 mt-1">
-                          <Trans
-                            ns="auth"
-                            i18nKey="register.verify_email_body"
-                            values={{ email }}
-                            components={{ strong: <strong /> }} />
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {pendingResult.requiresApproval && (
-                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm">
-                    <div className="flex items-start gap-3">
-                      <ShieldCheck aria-hidden="true" className="w-5 h-5 text-[var(--color-warning)] flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-theme-warning">{t('register.approval_title')}</p>
-                        <p className="text-amber-600/80 dark:text-amber-300/80 mt-1">
-                          {t('register.approval_body')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <p className="text-theme-muted text-sm mt-6">
-                {pendingResult.requiresWaitlist
-                  ? t('register.waitlist_next')
-                  : pendingResult.requiresVerification && pendingResult.requiresApproval
-                    ? t('register.next_verify_approve')
-                    : pendingResult.requiresVerification
-                      ? t('register.next_verify')
-                      : t('register.next_approve')}
-              </p>
-
-              <Button
-                color="primary"
-                className="mt-6 w-full font-medium"
-                size="lg"
-                onPress={() => navigate(loginLink)}
-              >
-                {t('register.go_to_login')}
-              </Button>
-            </div>
-          </GlassCard>
-        </motion.div>
-      </div>
+      <RegistrationPending
+        result={pendingResult}
+        firstName={firstName}
+        email={email}
+        loginLink={loginLink}
+        returnTo={explicitDestination || undefined}
+        onStartAgain={() => {
+          // Back to the step that holds the email address, with every answer kept.
+          setPendingResult(null);
+          setCurrentStep(3);
+        }}
+      />
     );
   }
 

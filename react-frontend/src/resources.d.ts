@@ -34325,8 +34325,13 @@ export default interface Resources {
       "registration_status_checking_title": "Checking registration status",
       "registration_status_unavailable_body": "Please try again in a little while, or get in touch with a coordinator for this community.",
       "registration_status_unavailable_title": "We couldn't check whether this community is open to new members",
+      "resend_link": "Send it again",
+      "resend_link_failed": "We couldn't ask for a new link just now. Please try again in a moment.",
+      "resend_link_sent": "If that address still needs verifying, we've sent a new link. It can take a few minutes to arrive, so check your junk folder too.",
+      "resend_link_too_many": "You've asked a few times already. Please wait a few minutes, then try again.",
       "show_password": "Show password",
       "sign_in_link": "Sign in",
+      "start_again": "Start again",
       "step_account": "Account",
       "step_button_aria": "Go to step {{step}}: {{label}}",
       "step_community": "Community",
@@ -34347,7 +34352,8 @@ export default interface Resources {
       "waitlist_joined": "Added to the waitlist",
       "waitlist_next": "You'll receive an email when your account is activated.",
       "waitlist_position": "Position #{{position}} on the waitlist",
-      "waitlist_title": "You're on the waitlist!"
+      "waitlist_title": "You're on the waitlist!",
+      "wrong_address": "Wrong address?"
     },
     "resend_sent": "Check your inbox — we sent a new verification link",
     "reset_password": {
