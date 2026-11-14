@@ -287,7 +287,7 @@ export function TimebankingGuidePage() {
           <Card.Content className="grid gap-8 p-1 sm:p-3 lg:grid-cols-5">
             <div className="space-y-4 lg:col-span-3">
               <div className="flex items-center gap-3">
-                <span className="inline-flex shrink-0 rounded-2xl bg-accent-soft p-3 text-accent">
+                <span className="inline-flex shrink-0 rounded-2xl bg-accent-soft p-3 text-accent-soft-foreground">
                   <Lightbulb className={ICON} aria-hidden="true" />
                 </span>
                 <div className="min-w-0">

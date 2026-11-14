@@ -412,7 +412,7 @@ export default interface Resources {
       "hero_subtitle": "Give an hour of your time and earn a time credit. Spend it when you could use a hand yourself. Everyone's hour is worth the same.",
       "how_it_works_heading": "How it works",
       "how_it_works_subtitle": "No money changes hands. Only time, skill and goodwill.",
-      "meta_description": "How timebanking works at {{name}}: give an hour, earn a time credit, and spend it on help you need. Plus where the idea came from and the five values behind it.",
+      "meta_description": "How timebanking works at {{name}}: give an hour, earn a time credit, spend it on help you need. Plus where the idea came from and its five values.",
       "origins_heading": "Where timebanking comes from",
       "origins_para_0": "Timebanking as we know it began with Edgar Cahn, an American civil-rights lawyer and law teacher. With his wife, Jean Camper Cahn, he had spent years making sure that people without money could still get a lawyer's help.",
       "origins_para_1": "In 1980, aged 44, he had a serious heart attack. While he recovered, he found he did not like being someone who could only receive help. It gave him an idea: what if every hour you spent helping someone earned you an hour of help in return? He called those hours “Time Dollars”.",
@@ -43781,9 +43781,6 @@ export default interface Resources {
       "delete_failed": "Delete failed",
       "download_failed": "Download failed",
       "upload_failed": "Upload failed"
-    },
-    "group_invites": {
-
     },
     "idle_logout_message": "You were signed out automatically after a period of inactivity. Please log in again to continue.",
     "idle_logout_title": "Signed out due to inactivity",
