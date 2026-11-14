@@ -2,7 +2,7 @@
   "detail": {
     "back_to_goals": "Retour aux objectifs",
     "view_all_goals": "Voir tous les objectifs",
-    "not_found_title": "Objectif introuvable",
+    "not_found_title": "Nous ne trouvons pas cet objectif",
     "not_found_description": "Cet objectif a peut-être été supprimé ou n'a jamais existé.",
     "private_title": "Cet objectif est privé",
     "private_description": "Seul le propriétaire de l'objectif peut le consulter.",
@@ -11,12 +11,12 @@
     "checkin_frequency": "Fréquence de check-in"
   },
   "checkin_recorded": "Pointage enregistré !",
-  "checkin_failed": "Échec de l'enregistrement du pointage.",
-  "reminder_set_failed": "Échec de la définition du rappel.",
+  "checkin_failed": "Nous n’avons pas pu enregistrer votre point d’étape. Veuillez réessayer.",
+  "reminder_set_failed": "Nous n’avons pas pu enregistrer cela. Veuillez réessayer.",
   "reminder_removed": "Rappel supprimé.",
-  "reminder_remove_failed": "Échec de la suppression du rappel.",
+  "reminder_remove_failed": "Nous n’avons pas pu enregistrer cela. Veuillez réessayer.",
   "template_created": "Objectif créé à partir du modèle !",
-  "template_create_failed": "Échec de la création de l'objectif à partir du modèle.",
+  "template_create_failed": "Nous n’avons pas pu créer votre objectif. Veuillez réessayer.",
   "checkin": {
     "aria_progress_percentage": "Pourcentage de progression",
     "title": "Suivi",
@@ -60,7 +60,7 @@
   },
   "template": {
     "title": "Commencer à partir d’un modèle",
-    "loading_error": "Impossible de charger les modèles. Veuillez réessayer.",
+    "loading_error": "Le chargement n’a pas abouti. Réessayez dans un instant.",
     "try_again": "Réessayer",
     "no_templates": "Aucun modèle disponible pour le moment.",
     "all_categories": "Tous",
@@ -71,7 +71,7 @@
     "cancel": "Annuler"
   },
   "history": {
-    "load_failed": "Impossible de charger l’historique.",
+    "load_failed": "Le chargement n’a pas abouti. Réessayez dans un instant.",
     "retry": "Réessayer",
     "no_activity": "Aucune activité enregistrée pour le moment.",
     "progress_aria": "Progression : {{percent}} %",
@@ -87,7 +87,7 @@
   },
   "insights": {
     "loading": "Chargement des aperçus de l'objectif",
-    "load_failed": "Échec du chargement des aperçus de l'objectif.",
+    "load_failed": "Le chargement n’a pas abouti. Réessayez dans un instant.",
     "current_streak": "Série actuelle",
     "streak_value": "{{count}} enregistrements",
     "best_streak": "Meilleure série : {{count}}",
@@ -112,7 +112,7 @@
     "action_encourage": "Encourager",
     "action_offer_help": "Proposer de l'aide",
     "buddy_sent": "Soutien du binôme envoyé",
-    "buddy_failed": "Échec de l'envoi du soutien du binôme.",
+    "buddy_failed": "Nous n’avons pas pu envoyer votre soutien. Veuillez réessayer.",
     "recent_buddy_support": "Soutien récent du binôme",
     "note_type": {
       "nudge": "Rappel",
@@ -132,12 +132,12 @@
     "checkins_value_other": "{{count}} enregistrés"
   },
   "template_picker": {
-    "load_error": "Échec du chargement des modèles. Veuillez réessayer.",
+    "load_error": "Le chargement n’a pas abouti. Réessayez dans un instant.",
     "try_again": "Réessayer",
     "none_available": "Aucun modèle disponible pour le moment.",
     "none_in_category": "Aucun modèle dans cette catégorie."
   },
   "goals": {
-    "load_error": "Échec du chargement des objectifs. Veuillez réessayer."
+    "load_error": "Le chargement n’a pas abouti. Réessayez dans un instant."
   }
 }

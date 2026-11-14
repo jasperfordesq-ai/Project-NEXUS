@@ -4,7 +4,7 @@
     "edit_label": "Cuir trácht in eagar"
   },
   "comments_title": "Trachtanna",
-  "copy_failed": "Theip ar choipeail an naisc",
+  "copy_failed": "Níor éirigh linn an nasc a chóipeáil. Bain triail eile as.",
   "copy_link": "Coipeail Nasc",
   "delete": "Scrios",
   "delete_comment_confirm": "Scrios an tracht seo?",
@@ -44,7 +44,7 @@
   "send_reply": "Seol freagra",
   "share": "Roinn",
   "cannot_share_own_content": "Ní féidir leat do chuid ábhar féin a roinnt ar an gclár",
-  "share_failed": "Theip ar an roinnt",
+  "share_failed": "Níor éirigh linn é sin a roinnt. Bain triail eile as.",
   "share_options": "Roghanna roinnte",
   "share_to_feed": "Roinn ar an bhFotha",
   "shared_to_feed": "Roinnte ar d'fhotha",
@@ -52,7 +52,7 @@
   "write_reply": "Scriobh freagra...",
   "write_reply_to": "Freagair {{name}}...",
   "you": "Tú",
-  "endorsement_update_failed": "Theip ar nuashonrú an fhormhuinithe",
+  "endorsement_update_failed": "Níor éirigh linn é sin a shábháil. Bain triail eile as.",
   "presence": {
     "online": "Ar Líne",
     "away": "As Láthair",
@@ -81,7 +81,7 @@
   },
   "mention": {
     "suggestions_aria": "Moltaí luaite, {{count}} toradh",
-    "no_users": "Níor aimsíodh úsáideoirí",
+    "no_users": "Níl aon duine ag teacht leis sin",
     "connected": "Ceangailte",
     "suggestions_aria_few": "Moltaí luaite, {{count}} toradh",
     "suggestions_aria_many": "Moltaí luaite, {{count}} toradh",
@@ -117,8 +117,8 @@
     "aria_endorse": "Formhuinigh {{skillName}}",
     "endorsed": "Formhuinithe",
     "endorse": "Formhuinigh",
-    "remove_failed": "Theip ar an bhformhuiniú a bhaint",
-    "endorse_failed": "Theip ar an bhformhuiniú"
+    "remove_failed": "Níor éirigh linn é sin a shábháil. Bain triail eile as.",
+    "endorse_failed": "Níor éirigh linn é sin a shábháil. Bain triail eile as."
   },
   "bookmark": {
     "save": "Sábháil",
@@ -144,7 +144,7 @@
     "count": "{{count}} mír shábháilte",
     "remove": "Bain ó shábháilte",
     "removed": "Bainte ó shábháilte",
-    "remove_failed": "Theip ar bhaint",
+    "remove_failed": "Níor éirigh linn é sin a shábháil. Bain triail eile as.",
     "type_post": "Postáil",
     "type_listing": "Tairiscint nó iarratas",
     "type_event": "Imeacht",
@@ -156,9 +156,9 @@
     "load_more": "Luchtaigh tuilleadh",
     "collection_updated": "Bailiúchán nuashonraithe",
     "collection_created": "Bailiúchán cruthaithe",
-    "collection_save_failed": "Theip ar shábháil an bhailiúcháin",
+    "collection_save_failed": "Níor éirigh linn é sin a shábháil. Bain triail eile as.",
     "collection_deleted": "Bailiúchán scriosta",
-    "collection_delete_failed": "Theip ar scriosadh an bhailiúcháin",
+    "collection_delete_failed": "Níor éirigh linn é sin a scriosadh. Bain triail eile as.",
     "delete_collection_confirm": "Scrios an bailiúchán seo? Coinneofar na leabharmharcanna.",
     "delete_collection_title": "Scrios an bailiúchán",
     "delete_collection_body": "An bhfuil tú cinnte gur mhaith leat \"{{name}}\" a scriosadh? Coinneofar na leabharmharcanna sa bhailiúchán seo.",

@@ -54,20 +54,20 @@
   },
   "toast": {
     "created": "Umfrage erfolgreich erstellt!",
-    "create_failed": "Umfrage konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+    "create_failed": "Wir konnten Ihre Umfrage nicht erstellen. Bitte versuchen Sie es noch einmal.",
     "voted": "Stimme registriert!",
     "already_voted": "Sie haben bei dieser Umfrage bereits abgestimmt.",
-    "vote_failed": "Stimme konnte nicht registriert werden. Bitte versuchen Sie es erneut.",
+    "vote_failed": "Wir konnten Ihre Stimme nicht zählen. Bitte versuchen Sie es noch einmal.",
     "deleted": "Umfrage gelöscht.",
-    "delete_failed": "Umfrage konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+    "delete_failed": "Wir konnten das nicht löschen. Bitte versuchen Sie es noch einmal.",
     "csv_exported": "CSV erfolgreich exportiert.",
-    "export_failed": "Export der Umfrageergebnisse fehlgeschlagen."
+    "export_failed": "Wir konnten die Ergebnisse nicht exportieren. Bitte versuchen Sie es noch einmal."
   },
   "errors": {
     "question_required": "Bitte geben Sie eine Frage für Ihre Umfrage ein.",
     "min_options": "Bitte geben Sie mindestens 2 Optionen an.",
-    "load_failed": "Umfragen konnten nicht geladen werden.",
-    "load_more_failed": "Weitere Umfragen konnten nicht geladen werden."
+    "load_failed": "Wir konnten die Umfragen nicht laden.",
+    "load_more_failed": "Wir konnten nicht mehr laden. Versuchen Sie es gleich noch einmal."
   },
   "load_more": "Mehr laden",
   "try_again": "Erneut versuchen",

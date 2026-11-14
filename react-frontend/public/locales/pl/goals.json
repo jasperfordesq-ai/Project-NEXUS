@@ -2,7 +2,7 @@
   "detail": {
     "back_to_goals": "Powrót do celów",
     "view_all_goals": "Zobacz wszystkie cele",
-    "not_found_title": "Cel nie został znaleziony",
+    "not_found_title": "Nie możemy znaleźć tego celu",
     "not_found_description": "Ten cel mógł zostać usunięty lub nigdy nie istniał.",
     "private_title": "Ten cel jest prywatny",
     "private_description": "Tylko właściciel celu może go zobaczyć.",
@@ -11,12 +11,12 @@
     "checkin_frequency": "Częstotliwość check-inów"
   },
   "checkin_recorded": "Zapisano meldunek!",
-  "checkin_failed": "Nie udało się zapisać meldunku.",
-  "reminder_set_failed": "Nie udało się ustawić przypomnienia.",
+  "checkin_failed": "Nie udało się nam zapisać Twojego meldunku. Spróbuj ponownie.",
+  "reminder_set_failed": "Nie udało się nam tego zapisać. Spróbuj ponownie.",
   "reminder_removed": "Przypomnienie usunięte.",
-  "reminder_remove_failed": "Nie udało się usunąć przypomnienia.",
+  "reminder_remove_failed": "Nie udało się nam tego zapisać. Spróbuj ponownie.",
   "template_created": "Cel utworzony z szablonu!",
-  "template_create_failed": "Nie udało się utworzyć celu z szablonu.",
+  "template_create_failed": "Nie udało się nam utworzyć Twojego celu. Spróbuj ponownie.",
   "checkin": {
     "aria_progress_percentage": "Procent postępu",
     "title": "Zameldowanie",
@@ -60,7 +60,7 @@
   },
   "template": {
     "title": "Rozpocznij od szablonu",
-    "loading_error": "Nie udało się załadować szablonów. Proszę spróbować ponownie.",
+    "loading_error": "Nie udało się tego wczytać. Spróbuj ponownie za chwilę.",
     "try_again": "Spróbuj ponownie",
     "no_templates": "Brak dostępnych szablonów.",
     "all_categories": "Wszystkie",
@@ -71,7 +71,7 @@
     "cancel": "Anuluj"
   },
   "history": {
-    "load_failed": "Nie udało się załadować historii.",
+    "load_failed": "Nie udało się tego wczytać. Spróbuj ponownie za chwilę.",
     "retry": "Spróbuj ponownie",
     "no_activity": "Nie zarejestrowano jeszcze żadnej aktywności.",
     "progress_aria": "Postęp: {{percent}}%",
@@ -87,7 +87,7 @@
   },
   "insights": {
     "loading": "Ładowanie spostrzeżeń dotyczących celu",
-    "load_failed": "Nie udało się załadować spostrzeżeń dotyczących celu.",
+    "load_failed": "Nie udało się tego wczytać. Spróbuj ponownie za chwilę.",
     "current_streak": "Aktualna seria",
     "streak_value": "{{count}} check-inów",
     "best_streak": "Najlepsza seria: {{count}}",
@@ -112,7 +112,7 @@
     "action_encourage": "Zachęć",
     "action_offer_help": "Zaoferuj pomoc",
     "buddy_sent": "Wsparcie partnera wysłane",
-    "buddy_failed": "Nie udało się wysłać wsparcia partnera.",
+    "buddy_failed": "Nie udało się nam wysłać Twojego wsparcia. Spróbuj ponownie.",
     "recent_buddy_support": "Ostatnie wsparcie partnera",
     "note_type": {
       "nudge": "Przypomnienie",
@@ -135,12 +135,12 @@
     "checkins_value_other": "{{count}} zarejestrowanych"
   },
   "template_picker": {
-    "load_error": "Nie udało się załadować szablonów. Proszę spróbować ponownie.",
+    "load_error": "Nie udało się tego wczytać. Spróbuj ponownie za chwilę.",
     "try_again": "Spróbuj ponownie",
     "none_available": "Nie ma jeszcze dostępnych szablonów.",
     "none_in_category": "Brak szablonów w tej kategorii."
   },
   "goals": {
-    "load_error": "Nie udało się załadować celów. Spróbuj ponownie."
+    "load_error": "Nie udało się tego wczytać. Spróbuj ponownie za chwilę."
   }
 }

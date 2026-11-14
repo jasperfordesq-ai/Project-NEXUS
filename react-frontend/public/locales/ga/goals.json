@@ -2,7 +2,7 @@
   "detail": {
     "back_to_goals": "Ar ais chuig na spriocanna",
     "view_all_goals": "Féach ar gach sprioc",
-    "not_found_title": "Níor aimsíodh an sprioc",
+    "not_found_title": "Ní féidir linn an sprioc sin a aimsiú",
     "not_found_description": "Seans gur scriosadh an sprioc seo nó nach raibh sí ann riamh.",
     "private_title": "Tá an sprioc seo príobháideach",
     "private_description": "Ní féidir ach le húinéir na sprice féachaint uirthi.",
@@ -11,12 +11,12 @@
     "checkin_frequency": "Minicíocht an chláraithe isteach"
   },
   "checkin_recorded": "Taifeadadh an clárú isteach!",
-  "checkin_failed": "Níorbh fhéidir an clárú isteach a thaifeadadh.",
-  "reminder_set_failed": "Níorbh fhéidir an meabhrúchán a shocrú.",
+  "checkin_failed": "Níor éirigh linn do sheiceáil isteach a shábháil. Bain triail eile as.",
+  "reminder_set_failed": "Níor éirigh linn é sin a shábháil. Bain triail eile as.",
   "reminder_removed": "Baineadh an meabhrúchán.",
-  "reminder_remove_failed": "Níorbh fhéidir an meabhrúchán a bhaint.",
+  "reminder_remove_failed": "Níor éirigh linn é sin a shábháil. Bain triail eile as.",
   "template_created": "Cruthaíodh an sprioc ón teimpléad!",
-  "template_create_failed": "Níorbh fhéidir sprioc a chruthú ón teimpléad.",
+  "template_create_failed": "Níor éirigh linn do sprioc a chruthú. Bain triail eile as.",
   "checkin": {
     "aria_progress_percentage": "Céatadán an dul chun cinn",
     "title": "Cláraigh Isteach",
@@ -60,7 +60,7 @@
   },
   "template": {
     "title": "Tosaigh le Teimpléad",
-    "loading_error": "Níorbh fhéidir na teimpléid a luchtú. Bain triail eile as le do thoil.",
+    "loading_error": "Níor lódáladh é sin. Bain triail eile as i gceann nóiméid.",
     "try_again": "Bain triail eile as",
     "no_templates": "Níl teimpléid ar fáil fós.",
     "all_categories": "Gach",
@@ -71,7 +71,7 @@
     "cancel": "Cealaigh"
   },
   "history": {
-    "load_failed": "Níorbh fhéidir an stair a luchtú.",
+    "load_failed": "Níor lódáladh é sin. Bain triail eile as i gceann nóiméid.",
     "retry": "Bain triail eile as",
     "no_activity": "Níl gníomhaíocht ar bith taifeadta fós.",
     "progress_aria": "Dul chun cinn: {{percent}}%",
@@ -87,7 +87,7 @@
   },
   "insights": {
     "loading": "Léargais na sprice á luchtú",
-    "load_failed": "Níorbh fhéidir léargais na sprice a luchtú.",
+    "load_failed": "Níor lódáladh é sin. Bain triail eile as i gceann nóiméid.",
     "current_streak": "An tsraith reatha",
     "streak_value": "{{count}} clárú isteach",
     "best_streak": "An tsraith is fearr: {{count}}",
@@ -112,7 +112,7 @@
     "action_encourage": "Spreag",
     "action_offer_help": "Tairg cabhair",
     "buddy_sent": "Seoladh tacaíocht an chompánaigh",
-    "buddy_failed": "Níorbh fhéidir tacaíocht an chompánaigh a sheoladh.",
+    "buddy_failed": "Níor éirigh linn do thacaíocht a sheoladh. Bain triail eile as.",
     "recent_buddy_support": "Tacaíocht ón gcompánach le déanaí",
     "note_type": {
       "nudge": "Spreagadh beag",
@@ -138,12 +138,12 @@
     "checkins_value_two": "{{count}} taifeadta"
   },
   "template_picker": {
-    "load_error": "Níorbh fhéidir na teimpléid a luchtú. Déan iarracht arís.",
+    "load_error": "Níor lódáladh é sin. Bain triail eile as i gceann nóiméid.",
     "try_again": "Déan iarracht arís",
     "none_available": "Níl aon teimpléad ar fáil go fóill.",
     "none_in_category": "Níl aon teimpléad sa chatagóir seo."
   },
   "goals": {
-    "load_error": "Níorbh fhéidir na spriocanna a luchtú. Déan iarracht arís."
+    "load_error": "Níor lódáladh é sin. Bain triail eile as i gceann nóiméid."
   }
 }

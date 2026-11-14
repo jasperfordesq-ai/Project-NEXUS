@@ -54,20 +54,20 @@
   },
   "toast": {
     "created": "Pobalbhreith cruthaithe go rathúil!",
-    "create_failed": "Theip ar chruthú na pobalbhreithe. Bain triail eile as le do thoil.",
+    "create_failed": "Níor éirigh linn do phobalbhreith a chruthú. Bain triail eile as.",
     "voted": "Vóta taifeadta!",
     "already_voted": "Vótáil tú sa phobalbhreith seo cheana féin.",
-    "vote_failed": "Theip ar thaifeadadh an vóta. Bain triail eile as le do thoil.",
+    "vote_failed": "Níor éirigh linn do vóta a chlárú. Bain triail eile as.",
     "deleted": "Pobalbhreith scriosta.",
-    "delete_failed": "Theip ar scriosadh na pobalbhreithe. Bain triail eile as le do thoil.",
+    "delete_failed": "Níor éirigh linn é sin a scriosadh. Bain triail eile as.",
     "csv_exported": "CSV easpórtáilte go rathúil.",
-    "export_failed": "Theip ar thorthaí an phobalbhreith a easpórtáil."
+    "export_failed": "Níor éirigh linn na torthaí a easpórtáil. Bain triail eile as."
   },
   "errors": {
     "question_required": "Cuir ceist isteach do do phobalbhreith le do thoil.",
     "min_options": "Cuir ar a laghad 2 rogha ar fáil le do thoil.",
-    "load_failed": "Ní féidir pobalbhreitheanna a luchtú.",
-    "load_more_failed": "Theip ar luchtú tuilleadh pobalbhreitheanna."
+    "load_failed": "Níor éirigh linn na pobalbhreitheanna a lódáil.",
+    "load_more_failed": "Níor éirigh linn tuilleadh a lódáil. Bain triail eile as i gceann nóiméid."
   },
   "load_more": "Luchtaigh Tuilleadh",
   "try_again": "Bain Triail Eile As",

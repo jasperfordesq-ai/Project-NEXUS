@@ -63,7 +63,7 @@ describe('GoalProgressHistory', () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Network error'));
     render(<GoalProgressHistory goalId={5} />);
     await waitFor(() => {
-      expect(screen.getByText('Failed to load history.')).toBeInTheDocument();
+      expect(screen.getByText("That didn't load. Try again in a moment.")).toBeInTheDocument();
     });
     expect(screen.getByRole('button', { name: /Retry/i })).toBeInTheDocument();
   });

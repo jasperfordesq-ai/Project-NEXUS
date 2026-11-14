@@ -2,7 +2,7 @@
   "detail": {
     "back_to_goals": "العودة إلى الأهداف",
     "view_all_goals": "عرض جميع الأهداف",
-    "not_found_title": "الهدف غير موجود",
+    "not_found_title": "لا نجد هذا الهدف",
     "not_found_description": "ربما تم حذف هذا الهدف أو أنه لم يكن موجوداً.",
     "private_title": "هذا الهدف خاص",
     "private_description": "فقط صاحب الهدف يستطيع مشاهدته.",
@@ -11,12 +11,12 @@
     "checkin_frequency": "تكرار تسجيل الدخول"
   },
   "checkin_recorded": "تم تسجيل الدخول!",
-  "checkin_failed": "فشل تسجيل الدخول.",
-  "reminder_set_failed": "فشل في ضبط التذكير.",
+  "checkin_failed": "تعذّر علينا حفظ تسجيل حالتك. يُرجى المحاولة مرة أخرى.",
+  "reminder_set_failed": "تعذّر علينا حفظ ذلك. يُرجى المحاولة مرة أخرى.",
   "reminder_removed": "تم إزالة التذكير.",
-  "reminder_remove_failed": "فشل في إزالة التذكير.",
+  "reminder_remove_failed": "تعذّر علينا حفظ ذلك. يُرجى المحاولة مرة أخرى.",
   "template_created": "تم إنشاء الهدف من القالب!",
-  "template_create_failed": "فشل في إنشاء الهدف من القالب.",
+  "template_create_failed": "تعذّر علينا إنشاء هدفك. يُرجى المحاولة مرة أخرى.",
   "checkin": {
     "aria_progress_percentage": "نسبة التقدم",
     "title": "تسجيل الدخول",
@@ -60,7 +60,7 @@
   },
   "template": {
     "title": "ابدأ من القالب",
-    "loading_error": "فشل في تحميل القوالب. يرجى المحاولة مرة أخرى.",
+    "loading_error": "لم يتم التحميل. حاول مرة أخرى بعد قليل.",
     "try_again": "حاول مرة أخرى",
     "no_templates": "لا توجد قوالب متاحة بعد.",
     "all_categories": "الكل",
@@ -71,7 +71,7 @@
     "cancel": "إلغاء"
   },
   "history": {
-    "load_failed": "فشل في تحميل السجل.",
+    "load_failed": "لم يتم التحميل. حاول مرة أخرى بعد قليل.",
     "retry": "إعادة المحاولة",
     "no_activity": "لا توجد أنشطة مسجلة بعد.",
     "progress_aria": "التقدم: {{percent}}%",
@@ -87,7 +87,7 @@
   },
   "insights": {
     "loading": "تحميل رؤى الهدف",
-    "load_failed": "فشل تحميل رؤى الهدف.",
+    "load_failed": "لم يتم التحميل. حاول مرة أخرى بعد قليل.",
     "current_streak": "السلسلة الحالية",
     "streak_value": "{{count}} تسجيل دخول",
     "best_streak": "أفضل سلسلة: {{count}}",
@@ -112,7 +112,7 @@
     "action_encourage": "شجّع",
     "action_offer_help": "اعرض المساعدة",
     "buddy_sent": "تم إرسال دعم المرافق",
-    "buddy_failed": "فشل إرسال دعم المرافق.",
+    "buddy_failed": "تعذّر علينا إرسال دعمك. يُرجى المحاولة مرة أخرى.",
     "recent_buddy_support": "دعم المرافق الأخير",
     "note_type": {
       "nudge": "تنبيه",
@@ -141,12 +141,12 @@
     "checkins_value_zero": "{{count}} مُسجَّل"
   },
   "template_picker": {
-    "load_error": "فشل في تحميل القوالب. يرجى المحاولة مرة أخرى.",
+    "load_error": "لم يتم التحميل. حاول مرة أخرى بعد قليل.",
     "try_again": "حاول مرة أخرى",
     "none_available": "لا توجد قوالب متاحة بعد.",
     "none_in_category": "لا توجد قوالب في هذه الفئة."
   },
   "goals": {
-    "load_error": "فشل تحميل الأهداف. يرجى المحاولة مرة أخرى."
+    "load_error": "لم يتم التحميل. حاول مرة أخرى بعد قليل."
   }
 }

@@ -54,20 +54,20 @@
   },
   "toast": {
     "created": "Poll created successfully!",
-    "create_failed": "Failed to create poll. Please try again.",
+    "create_failed": "We couldn't create your poll. Please try again.",
     "voted": "Vote recorded!",
     "already_voted": "You've already voted on this poll.",
-    "vote_failed": "Failed to record vote. Please try again.",
+    "vote_failed": "We couldn't count your vote. Please try again.",
     "deleted": "Poll deleted.",
-    "delete_failed": "Failed to delete poll. Please try again.",
+    "delete_failed": "We couldn't delete that. Please try again.",
     "csv_exported": "CSV exported successfully.",
-    "export_failed": "Failed to export poll results."
+    "export_failed": "We couldn't export the results. Please try again."
   },
   "errors": {
     "question_required": "Please enter a question for your poll.",
     "min_options": "Please provide at least 2 options.",
-    "load_failed": "Unable to load polls.",
-    "load_more_failed": "Failed to load more polls."
+    "load_failed": "We couldn't load the polls.",
+    "load_more_failed": "We couldn't load more. Try again in a moment."
   },
   "load_more": "Load More",
   "try_again": "Try Again",

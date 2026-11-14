@@ -7,7 +7,7 @@
   "comment_edit_failed": "変更を保存できませんでした。もう一度お試しください。",
   "comment_post_failed": "コメントを投稿できませんでした。もう一度お試しください。",
   "comments_title": "コメント",
-  "copy_failed": "リンクのコピーに失敗しました",
+  "copy_failed": "リンクをコピーできませんでした。もう一度お試しください。",
   "copy_link": "リンクをコピー",
   "delete": "削除",
   "delete_comment_confirm": "このコメントを削除しますか？",
@@ -47,7 +47,7 @@
   "send_reply": "返信を送信",
   "share": "シェア",
   "cannot_share_own_content": "自分のコンテンツをフィードにシェアすることはできません",
-  "share_failed": "共有に失敗しました",
+  "share_failed": "共有できませんでした。もう一度お試しください。",
   "share_options": "共有オプション",
   "share_to_feed": "フィードに共有",
   "shared_to_feed": "あなたのフィードに共有されました",
@@ -55,7 +55,7 @@
   "write_reply": "返信を書く...",
   "write_reply_to": "{{name}}へ返信...",
   "you": "あなた",
-  "endorsement_update_failed": "推薦の更新に失敗しました",
+  "endorsement_update_failed": "保存できませんでした。もう一度お試しください。",
   "presence": {
     "online": "オンライン",
     "away": "離席中",
@@ -75,7 +75,7 @@
   },
   "mention": {
     "suggestions_aria": "メンションの提案、{{count}}件の結果",
-    "no_users": "ユーザーが見つかりませんでした",
+    "no_users": "一致する人はいません",
     "connected": "つながり済み",
     "suggestions_aria_one": "提案、{{count}} の結果について言及する",
     "suggestions_aria_other": "メンションの提案、{{count}}件の結果"
@@ -108,8 +108,8 @@
     "aria_endorse": "{{skillName}}を推薦",
     "endorsed": "推薦済み",
     "endorse": "推薦",
-    "remove_failed": "推薦の削除に失敗しました",
-    "endorse_failed": "推薦に失敗しました"
+    "remove_failed": "保存できませんでした。もう一度お試しください。",
+    "endorse_failed": "保存できませんでした。もう一度お試しください。"
   },
   "bookmark": {
     "save": "保存",
@@ -135,7 +135,7 @@
     "count": "{{count}}の保存したアイテム",
     "remove": "保存から削除",
     "removed": "保存から削除されました",
-    "remove_failed": "削除に失敗しました",
+    "remove_failed": "保存できませんでした。もう一度お試しください。",
     "type_post": "投稿",
     "type_listing": "提供・リクエスト",
     "type_event": "イベント",
@@ -147,9 +147,9 @@
     "load_more": "もっと読み込む",
     "collection_updated": "コレクションが更新されました",
     "collection_created": "コレクションが作成されました",
-    "collection_save_failed": "コレクションの保存に失敗しました",
+    "collection_save_failed": "保存できませんでした。もう一度お試しください。",
     "collection_deleted": "コレクションが削除されました",
-    "collection_delete_failed": "コレクションの削除に失敗しました",
+    "collection_delete_failed": "削除できませんでした。もう一度お試しください。",
     "delete_collection_confirm": "このコレクションを削除しますか？ブックマークは保持されます。",
     "delete_collection_title": "コレクションを削除",
     "delete_collection_body": "「{{name}}」を削除しますか？このコレクション内のブックマークは残ります。",

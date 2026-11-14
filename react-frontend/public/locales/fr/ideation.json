@@ -57,7 +57,7 @@
     "empty_description": "Il n'y a pas de défis d'idéation pour le moment. Revenez bientôt !",
     "empty_filtered": "Aucun défi ne correspond au filtre sélectionné.",
     "create": "Créer un défi",
-    "load_error": "Impossible de charger les défis",
+    "load_error": "Nous n’avons pas pu charger les défis.",
     "load_more": "Charger plus",
     "loading": "Chargement du défi..."
   },
@@ -81,7 +81,7 @@
     "edit": "Modifier l'idée",
     "delete": "Supprimer l'idée",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer cette idée ? Cette action est irréversible.",
-    "load_error": "Impossible de charger les idées",
+    "load_error": "Nous n’avons pas pu charger les idées.",
     "save_draft": "Enregistrer le brouillon",
     "publish_draft": "Publier l'idée",
     "draft_saved": "Brouillon enregistré",
@@ -116,7 +116,7 @@
     "delete": "Supprimer",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer ce commentaire ?",
     "load_more": "Charger plus de commentaires",
-    "load_error": "Impossible de charger les commentaires",
+    "load_error": "Nous n’avons pas pu charger les commentaires.",
     "loading": "Chargement des commentaires..."
   },
   "form": {
@@ -215,7 +215,7 @@
     "chatroom_deleted": "Canal supprimé",
     "message_posted": "Message publié",
     "template_applied": "Modèle appliqué avec succès",
-    "error_generic": "Une erreur s'est produite. Veuillez réessayer."
+    "error_generic": "Cela n’a pas fonctionné. Veuillez réessayer."
   },
   "favorites": {
     "add": "Ajouter aux favoris",
@@ -281,7 +281,7 @@
   "duplicate": {
     "button": "Dupliquer le défi",
     "success": "Défi dupliqué avec succès",
-    "error": "Échec de la duplication du défi"
+    "error": "Nous n’avons pas pu copier ce défi. Veuillez réessayer."
   },
   "idea_image": "Image de l'idée",
   "media": {
@@ -313,7 +313,7 @@
     "confirm": "Créer l'équipe",
     "creating": "Création...",
     "success": "Équipe de projet créée avec succès ! Redirection...",
-    "error": "Échec de la création de l'équipe",
+    "error": "Nous n’avons pas pu créer l’équipe. Veuillez réessayer.",
     "already_converted": "Cette idée a déjà été convertie en équipe"
   },
   "campaigns": {
@@ -418,12 +418,12 @@
     "delete_confirm": "Supprimer cette catégorie ?"
   },
   "validation": {
-    "title_required": "Le titre est requis",
-    "description_required": "La description est requise",
+    "title_required": "Donnez-lui un titre",
+    "description_required": "Ajoutez une description",
     "comment_required": "Le commentaire ne peut pas être vide",
-    "url_required": "L'URL est requise",
-    "name_required": "Le nom est requis",
-    "file_required": "Le fichier est requis"
+    "url_required": "Ajoutez une adresse web",
+    "name_required": "Ajoutez un nom",
+    "file_required": "Choisissez un fichier"
   },
   "page_meta": {
     "outcomes": {

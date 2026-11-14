@@ -2,7 +2,7 @@
   "detail": {
     "back_to_goals": "Volver a los objetivos",
     "view_all_goals": "Ver todos los objetivos",
-    "not_found_title": "Objetivo no encontrado",
+    "not_found_title": "No encontramos ese objetivo",
     "not_found_description": "Es posible que este objetivo haya sido eliminado o nunca haya existido.",
     "private_title": "Este objetivo es privado",
     "private_description": "Solo el propietario del objetivo puede verlo.",
@@ -11,12 +11,12 @@
     "checkin_frequency": "Frecuencia de check-in"
   },
   "checkin_recorded": "¡Registro completado!",
-  "checkin_failed": "Error al registrar el seguimiento.",
-  "reminder_set_failed": "Error al configurar el recordatorio.",
+  "checkin_failed": "No hemos podido guardar tu check-in. Vuelve a intentarlo.",
+  "reminder_set_failed": "No hemos podido guardar eso. Vuelve a intentarlo.",
   "reminder_removed": "Recordatorio eliminado.",
-  "reminder_remove_failed": "Error al eliminar el recordatorio.",
+  "reminder_remove_failed": "No hemos podido guardar eso. Vuelve a intentarlo.",
   "template_created": "¡Meta creada desde la plantilla!",
-  "template_create_failed": "Error al crear la meta desde la plantilla.",
+  "template_create_failed": "No hemos podido crear tu objetivo. Vuelve a intentarlo.",
   "checkin": {
     "aria_progress_percentage": "Porcentaje de progreso",
     "title": "Registro",
@@ -60,7 +60,7 @@
   },
   "template": {
     "title": "Comenzar desde Plantilla",
-    "loading_error": "No se pudieron cargar las plantillas. Por favor, inténtelo de nuevo.",
+    "loading_error": "Eso no se ha cargado. Inténtalo de nuevo en un momento.",
     "try_again": "Reintentar",
     "no_templates": "Aún no hay plantillas disponibles.",
     "all_categories": "Todas",
@@ -71,7 +71,7 @@
     "cancel": "Cancelar"
   },
   "history": {
-    "load_failed": "No se pudo cargar el historial.",
+    "load_failed": "Eso no se ha cargado. Inténtalo de nuevo en un momento.",
     "retry": "Reintentar",
     "no_activity": "Aún no se ha registrado actividad.",
     "progress_aria": "Progreso: {{percent}}%",
@@ -87,7 +87,7 @@
   },
   "insights": {
     "loading": "Cargando perspectivas del objetivo",
-    "load_failed": "Error al cargar las perspectivas del objetivo.",
+    "load_failed": "Eso no se ha cargado. Inténtalo de nuevo en un momento.",
     "current_streak": "Racha actual",
     "streak_value": "{{count}} registros",
     "best_streak": "Mejor racha: {{count}}",
@@ -112,7 +112,7 @@
     "action_encourage": "Animar",
     "action_offer_help": "Ofrecer ayuda",
     "buddy_sent": "Apoyo del compañero enviado",
-    "buddy_failed": "Error al enviar apoyo del compañero.",
+    "buddy_failed": "No hemos podido enviar tu apoyo. Vuelve a intentarlo.",
     "recent_buddy_support": "Apoyo reciente del compañero",
     "note_type": {
       "nudge": "Recordatorio",
@@ -132,12 +132,12 @@
     "checkins_value_other": "{{count}} registrados"
   },
   "template_picker": {
-    "load_error": "Error al cargar las plantillas. Por favor, inténtalo de nuevo.",
+    "load_error": "Eso no se ha cargado. Inténtalo de nuevo en un momento.",
     "try_again": "Inténtalo de nuevo",
     "none_available": "Aún no hay plantillas disponibles.",
     "none_in_category": "No hay plantillas en esta categoría."
   },
   "goals": {
-    "load_error": "Error al cargar los objetivos. Por favor, inténtalo de nuevo."
+    "load_error": "Eso no se ha cargado. Inténtalo de nuevo en un momento."
   }
 }

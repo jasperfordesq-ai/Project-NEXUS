@@ -4,7 +4,7 @@
     "edit_label": "Editar comentario"
   },
   "comments_title": "Comentarios",
-  "copy_failed": "Error al copiar el enlace",
+  "copy_failed": "No hemos podido copiar el enlace. Vuelve a intentarlo.",
   "copy_link": "Copiar Enlace",
   "delete": "Eliminar",
   "delete_comment_confirm": "¿Eliminar este comentario?",
@@ -44,7 +44,7 @@
   "send_reply": "Enviar respuesta",
   "share": "Compartir",
   "cannot_share_own_content": "No puedes compartir tu propio contenido en el feed",
-  "share_failed": "Error al compartir",
+  "share_failed": "No hemos podido compartir eso. Vuelve a intentarlo.",
   "share_options": "Opciones de compartir",
   "share_to_feed": "Compartir en el Feed",
   "shared_to_feed": "Compartido en tu feed",
@@ -52,7 +52,7 @@
   "write_reply": "Escribe una respuesta...",
   "write_reply_to": "Responder a {{name}}...",
   "you": "Tú",
-  "endorsement_update_failed": "Error al actualizar la recomendación",
+  "endorsement_update_failed": "No hemos podido guardar eso. Vuelve a intentarlo.",
   "presence": {
     "online": "En línea",
     "away": "Ausente",
@@ -75,7 +75,7 @@
   },
   "mention": {
     "suggestions_aria": "Sugerencias de mención, {{count}} resultados",
-    "no_users": "No se encontraron usuarios",
+    "no_users": "Nadie coincide con eso",
     "connected": "Conectado",
     "suggestions_aria_many": "Sugerencias de mención, {{count}} resultados",
     "suggestions_aria_one": "Sugerencias de mención, {{count}} resultados",
@@ -109,8 +109,8 @@
     "aria_endorse": "Recomendar {{skillName}}",
     "endorsed": "Recomendado",
     "endorse": "Recomendar",
-    "remove_failed": "Error al eliminar la recomendacion",
-    "endorse_failed": "Error al recomendar"
+    "remove_failed": "No hemos podido guardar eso. Vuelve a intentarlo.",
+    "endorse_failed": "No hemos podido guardar eso. Vuelve a intentarlo."
   },
   "bookmark": {
     "save": "Guardar",
@@ -136,7 +136,7 @@
     "count": "{{count}} artículos guardados",
     "remove": "Quitar de guardados",
     "removed": "Eliminado de guardados",
-    "remove_failed": "Error al eliminar",
+    "remove_failed": "No hemos podido guardar eso. Vuelve a intentarlo.",
     "type_post": "Publicación",
     "type_listing": "Oferta o solicitud",
     "type_event": "Evento",
@@ -148,9 +148,9 @@
     "load_more": "Cargar más",
     "collection_updated": "Colección actualizada",
     "collection_created": "Colección creada",
-    "collection_save_failed": "Error al guardar la colección",
+    "collection_save_failed": "No hemos podido guardar eso. Vuelve a intentarlo.",
     "collection_deleted": "Colección eliminada",
-    "collection_delete_failed": "Error al eliminar la colección",
+    "collection_delete_failed": "No hemos podido eliminar eso. Vuelve a intentarlo.",
     "delete_collection_confirm": "¿Eliminar esta colección? Los marcadores se mantendrán.",
     "delete_collection_title": "Eliminar colección",
     "delete_collection_body": "¿Eliminar \"{{name}}\"? Los marcadores de esta colección se conservarán.",

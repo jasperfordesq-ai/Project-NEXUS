@@ -76,7 +76,7 @@ describe('NewsletterUnsubscribePage', () => {
 
   it('shows invalid link state when no token provided', () => {
     render(<NewsletterUnsubscribePage />);
-    expect(screen.getByText(/invalid link/i)).toBeInTheDocument();
+    expect(screen.getByText(/link doesn't work/i)).toBeInTheDocument();
   });
 
   it('shows success state on successful unsubscribe', async () => {
@@ -107,7 +107,7 @@ describe('NewsletterUnsubscribePage', () => {
     mockApiPost.mockRejectedValue(new Error('Network error'));
     render(<NewsletterUnsubscribePage />);
     await waitFor(() => {
-      expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+      expect(screen.getByText(/that didn't work/i)).toBeInTheDocument();
     });
   });
 });

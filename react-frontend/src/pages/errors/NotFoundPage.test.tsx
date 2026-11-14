@@ -86,7 +86,7 @@ describe('NotFoundPage', () => {
     render(<NotFoundPage />);
     // utility.not_found.heading — real English copy from public/locales/en
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Page Not Found' })
+      screen.getByRole('heading', { level: 1, name: "We can't find that page" })
     ).toBeInTheDocument();
   });
 

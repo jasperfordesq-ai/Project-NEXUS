@@ -57,7 +57,7 @@
     "empty_description": "No hay retos de ideación en este momento. ¡Vuelve pronto!",
     "empty_filtered": "Ningún reto coincide con el filtro seleccionado.",
     "create": "Crear Reto",
-    "load_error": "No se pudieron cargar los retos",
+    "load_error": "No hemos podido cargar los desafíos.",
     "load_more": "Cargar Más",
     "loading": "Cargando desafío..."
   },
@@ -81,7 +81,7 @@
     "edit": "Editar Idea",
     "delete": "Eliminar Idea",
     "delete_confirm": "¿Estás seguro de que quieres eliminar esta idea? Esta acción no se puede deshacer.",
-    "load_error": "No se pudieron cargar las ideas",
+    "load_error": "No hemos podido cargar las ideas.",
     "save_draft": "Guardar Borrador",
     "publish_draft": "Publicar Idea",
     "draft_saved": "Borrador guardado",
@@ -116,7 +116,7 @@
     "delete": "Eliminar",
     "delete_confirm": "¿Estás seguro de que quieres eliminar este comentario?",
     "load_more": "Cargar Más Comentarios",
-    "load_error": "No se pudieron cargar los comentarios",
+    "load_error": "No hemos podido cargar los comentarios.",
     "loading": "Cargando comentarios..."
   },
   "form": {
@@ -215,7 +215,7 @@
     "chatroom_deleted": "Canal eliminado",
     "message_posted": "Mensaje publicado",
     "template_applied": "Plantilla aplicada exitosamente",
-    "error_generic": "Algo salió mal. Por favor intenta de nuevo."
+    "error_generic": "Eso no ha funcionado. Vuelve a intentarlo."
   },
   "favorites": {
     "add": "Añadir a favoritos",
@@ -281,7 +281,7 @@
   "duplicate": {
     "button": "Duplicar Reto",
     "success": "Reto duplicado exitosamente",
-    "error": "Error al duplicar el reto"
+    "error": "No hemos podido copiar ese desafío. Vuelve a intentarlo."
   },
   "idea_image": "Imagen de la idea",
   "media": {
@@ -313,7 +313,7 @@
     "confirm": "Crear Equipo",
     "creating": "Creando...",
     "success": "¡Equipo de proyecto creado exitosamente! Redirigiendo...",
-    "error": "Error al crear el equipo",
+    "error": "No hemos podido crear el equipo. Vuelve a intentarlo.",
     "already_converted": "Esta idea ya ha sido convertida en un equipo"
   },
   "campaigns": {
@@ -418,12 +418,12 @@
     "delete_confirm": "¿Eliminar esta categoría?"
   },
   "validation": {
-    "title_required": "El título es obligatorio",
-    "description_required": "La descripción es obligatoria",
+    "title_required": "Ponle un título",
+    "description_required": "Añade una descripción",
     "comment_required": "El comentario no puede estar vacío",
-    "url_required": "La URL es obligatoria",
-    "name_required": "El nombre es obligatorio",
-    "file_required": "El archivo es obligatorio"
+    "url_required": "Añade una dirección web",
+    "name_required": "Añade un nombre",
+    "file_required": "Elige un archivo"
   },
   "page_meta": {
     "outcomes": {

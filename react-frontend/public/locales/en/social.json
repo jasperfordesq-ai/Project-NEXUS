@@ -7,7 +7,7 @@
   "comment_edit_failed": "Couldn’t save your changes. Please try again.",
   "comment_post_failed": "Couldn’t post your comment. Please try again.",
   "comments_title": "Comments",
-  "copy_failed": "Failed to copy link",
+  "copy_failed": "We couldn't copy the link. Please try again.",
   "copy_link": "Copy Link",
   "delete": "Delete",
   "delete_comment_confirm": "Delete this comment?",
@@ -47,7 +47,7 @@
   "send_reply": "Send reply",
   "share": "Share",
   "cannot_share_own_content": "You cannot share your own content to feed",
-  "share_failed": "Failed to share",
+  "share_failed": "We couldn't share that. Please try again.",
   "share_options": "Share options",
   "share_to_feed": "Share to Feed",
   "shared_to_feed": "Shared to your feed",
@@ -55,7 +55,7 @@
   "write_reply": "Write a reply...",
   "write_reply_to": "Reply to {{name}}...",
   "you": "You",
-  "endorsement_update_failed": "Failed to update endorsement",
+  "endorsement_update_failed": "We couldn't save that. Please try again.",
   "presence": {
     "online": "Online",
     "away": "Away",
@@ -75,7 +75,7 @@
   },
   "mention": {
     "suggestions_aria": "Mention suggestions, {{count}} results",
-    "no_users": "No users found",
+    "no_users": "Nobody matches that",
     "connected": "Connected",
     "suggestions_aria_one": "Mention suggestions, {{count}} results",
     "suggestions_aria_other": "Mention suggestions, {{count}} results"
@@ -108,8 +108,8 @@
     "aria_endorse": "Endorse {{skillName}}",
     "endorsed": "Endorsed",
     "endorse": "Endorse",
-    "remove_failed": "Failed to remove endorsement",
-    "endorse_failed": "Failed to endorse"
+    "remove_failed": "We couldn't save that. Please try again.",
+    "endorse_failed": "We couldn't save that. Please try again."
   },
   "bookmark": {
     "save": "Save",
@@ -135,7 +135,7 @@
     "count": "{{count}} saved items",
     "remove": "Remove from saved",
     "removed": "Removed from saved",
-    "remove_failed": "Failed to remove",
+    "remove_failed": "We couldn't save that. Please try again.",
     "type_post": "Post",
     "type_listing": "Offer or request",
     "type_event": "Event",
@@ -147,9 +147,9 @@
     "load_more": "Load More",
     "collection_updated": "Collection updated",
     "collection_created": "Collection created",
-    "collection_save_failed": "Failed to save collection",
+    "collection_save_failed": "We couldn't save that. Please try again.",
     "collection_deleted": "Collection deleted",
-    "collection_delete_failed": "Failed to delete collection",
+    "collection_delete_failed": "We couldn't delete that. Please try again.",
     "delete_collection_confirm": "Delete this collection? Bookmarks will be kept.",
     "delete_collection_title": "Delete Collection",
     "delete_collection_body": "Delete \"{{name}}\"? Bookmarks in this collection will be kept.",

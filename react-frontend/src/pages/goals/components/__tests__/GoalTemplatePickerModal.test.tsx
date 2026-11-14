@@ -100,7 +100,7 @@ describe('GoalTemplatePickerModal', () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Network error'));
     render(<GoalTemplatePickerModal {...defaultProps} />);
     await waitFor(() => {
-      expect(screen.getByText('Failed to load templates. Please try again.')).toBeInTheDocument();
+      expect(screen.getByText("That didn't load. Try again in a moment.")).toBeInTheDocument();
     });
     expect(screen.getByRole('button', { name: /Try Again/i })).toBeInTheDocument();
   });

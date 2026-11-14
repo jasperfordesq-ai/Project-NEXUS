@@ -4,7 +4,7 @@
     "edit_label": "Modifier le commentaire"
   },
   "comments_title": "Commentaires",
-  "copy_failed": "Echec de la copie du lien",
+  "copy_failed": "Nous n’avons pas pu copier le lien. Veuillez réessayer.",
   "copy_link": "Copier le lien",
   "delete": "Supprimer",
   "delete_comment_confirm": "Supprimer ce commentaire ?",
@@ -44,7 +44,7 @@
   "send_reply": "Envoyer la reponse",
   "share": "Partager",
   "cannot_share_own_content": "Vous ne pouvez pas partager votre propre contenu dans le fil",
-  "share_failed": "Echec du partage",
+  "share_failed": "Nous n’avons pas pu partager cela. Veuillez réessayer.",
   "share_options": "Options de partage",
   "share_to_feed": "Partager dans le fil",
   "shared_to_feed": "Partage dans votre fil",
@@ -52,7 +52,7 @@
   "write_reply": "Ecrire une reponse...",
   "write_reply_to": "Répondre à {{name}}...",
   "you": "Vous",
-  "endorsement_update_failed": "Échec de la mise à jour de l'approbation",
+  "endorsement_update_failed": "Nous n’avons pas pu enregistrer cela. Veuillez réessayer.",
   "presence": {
     "online": "En ligne",
     "away": "Absent(e)",
@@ -75,7 +75,7 @@
   },
   "mention": {
     "suggestions_aria": "Suggestions de mentions, {{count}} résultats",
-    "no_users": "Aucun utilisateur trouvé",
+    "no_users": "Personne ne correspond",
     "connected": "Connecté(e)",
     "suggestions_aria_many": "Suggestions de mentions, {{count}} résultats",
     "suggestions_aria_one": "Suggestions de mentions, {{count}} résultats",
@@ -109,8 +109,8 @@
     "aria_endorse": "Recommander {{skillName}}",
     "endorsed": "Recommandé",
     "endorse": "Recommander",
-    "remove_failed": "Impossible de retirer la recommandation",
-    "endorse_failed": "Impossible de recommander"
+    "remove_failed": "Nous n’avons pas pu enregistrer cela. Veuillez réessayer.",
+    "endorse_failed": "Nous n’avons pas pu enregistrer cela. Veuillez réessayer."
   },
   "bookmark": {
     "save": "Enregistrer",
@@ -136,7 +136,7 @@
     "count": "{{count}} éléments enregistrés",
     "remove": "Retirer des éléments enregistrés",
     "removed": "Retiré des favoris",
-    "remove_failed": "Échec de la suppression",
+    "remove_failed": "Nous n’avons pas pu enregistrer cela. Veuillez réessayer.",
     "type_post": "Publication",
     "type_listing": "Offre ou demande",
     "type_event": "Événement",
@@ -148,9 +148,9 @@
     "load_more": "Charger plus",
     "collection_updated": "Collection mise à jour",
     "collection_created": "Collection créée",
-    "collection_save_failed": "Échec de l'enregistrement de la collection",
+    "collection_save_failed": "Nous n’avons pas pu enregistrer cela. Veuillez réessayer.",
     "collection_deleted": "Collection supprimée",
-    "collection_delete_failed": "Échec de la suppression de la collection",
+    "collection_delete_failed": "Nous n’avons pas pu supprimer cela. Veuillez réessayer.",
     "delete_collection_confirm": "Supprimer cette collection ? Les favoris seront conservés.",
     "delete_collection_title": "Supprimer la collection",
     "delete_collection_body": "Supprimer \"{{name}}\" ? Les favoris de cette collection seront conservés.",

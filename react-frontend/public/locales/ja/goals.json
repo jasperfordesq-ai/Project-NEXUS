@@ -2,7 +2,7 @@
   "detail": {
     "back_to_goals": "目標に戻る",
     "view_all_goals": "すべての目標を見る",
-    "not_found_title": "目標が見つかりません",
+    "not_found_title": "この目標が見つかりません",
     "not_found_description": "この目標は削除されたか、存在しない可能性があります。",
     "private_title": "この目標は非公開です",
     "private_description": "目標の所有者のみがこの目標を表示できます。",
@@ -11,12 +11,12 @@
     "checkin_frequency": "チェックインの頻度"
   },
   "checkin_recorded": "チェックインが記録されました！",
-  "checkin_failed": "チェックインの記録に失敗しました。",
-  "reminder_set_failed": "リマインダーの設定に失敗しました。",
+  "checkin_failed": "チェックインを保存できませんでした。もう一度お試しください。",
+  "reminder_set_failed": "保存できませんでした。もう一度お試しください。",
   "reminder_removed": "リマインダーが削除されました。",
-  "reminder_remove_failed": "リマインダーの削除に失敗しました。",
+  "reminder_remove_failed": "保存できませんでした。もう一度お試しください。",
   "template_created": "テンプレートから目標が作成されました！",
-  "template_create_failed": "テンプレートから目標の作成に失敗しました。",
+  "template_create_failed": "目標を作成できませんでした。もう一度お試しください。",
   "checkin": {
     "aria_progress_percentage": "進捗の割合",
     "title": "チェックイン",
@@ -60,7 +60,7 @@
   },
   "template": {
     "title": "テンプレートから始める",
-    "loading_error": "テンプレートの読み込みに失敗しました。もう一度お試しください。",
+    "loading_error": "読み込めませんでした。しばらくしてからもう一度お試しください。",
     "try_again": "もう一度試す",
     "no_templates": "まだ利用可能なテンプレートはありません。",
     "all_categories": "すべて",
@@ -71,7 +71,7 @@
     "cancel": "キャンセル"
   },
   "history": {
-    "load_failed": "履歴の読み込みに失敗しました。",
+    "load_failed": "読み込めませんでした。しばらくしてからもう一度お試しください。",
     "retry": "再試行",
     "no_activity": "まだアクティビティは記録されていません。",
     "progress_aria": "進捗: {{percent}}%",
@@ -87,7 +87,7 @@
   },
   "insights": {
     "loading": "目標の洞察を読み込み中",
-    "load_failed": "目標の洞察の読み込みに失敗しました。",
+    "load_failed": "読み込めませんでした。しばらくしてからもう一度お試しください。",
     "current_streak": "現在の連続記録",
     "streak_value": "{{count}}回のチェックイン",
     "best_streak": "最高連続記録: {{count}}",
@@ -112,7 +112,7 @@
     "action_encourage": "励ます",
     "action_offer_help": "助けを申し出る",
     "buddy_sent": "バディサポートを送りました",
-    "buddy_failed": "バディサポートの送信に失敗しました。",
+    "buddy_failed": "応援を送信できませんでした。もう一度お試しください。",
     "recent_buddy_support": "最近のバディサポート",
     "note_type": {
       "nudge": "ナッジ",
@@ -129,12 +129,12 @@
     "checkins_value_one": "{{count}} 記録"
   },
   "template_picker": {
-    "load_error": "テンプレートの読み込みに失敗しました。もう一度お試しください。",
+    "load_error": "読み込めませんでした。しばらくしてからもう一度お試しください。",
     "try_again": "もう一度試す",
     "none_available": "まだ利用可能なテンプレートはありません。",
     "none_in_category": "このカテゴリにはテンプレートがありません。"
   },
   "goals": {
-    "load_error": "目標の読み込みに失敗しました。もう一度お試しください。"
+    "load_error": "読み込めませんでした。しばらくしてからもう一度お試しください。"
   }
 }

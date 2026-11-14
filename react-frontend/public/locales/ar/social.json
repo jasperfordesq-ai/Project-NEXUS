@@ -4,7 +4,7 @@
     "edit_label": "تحرير التعليق"
   },
   "comments_title": "التعليقات",
-  "copy_failed": "فشل في نسخ الرابط",
+  "copy_failed": "تعذّر علينا نسخ الرابط. يُرجى المحاولة مرة أخرى.",
   "copy_link": "نسخ الرابط",
   "delete": "حذف",
   "delete_comment_confirm": "هل تريد حذف هذا التعليق؟",
@@ -44,7 +44,7 @@
   "send_reply": "إرسال رد",
   "share": "مشاركة",
   "cannot_share_own_content": "لا يمكنك مشاركة محتواك الخاص في الخلاصة",
-  "share_failed": "فشل في المشاركة",
+  "share_failed": "تعذّر علينا مشاركة ذلك. يُرجى المحاولة مرة أخرى.",
   "share_options": "خيارات المشاركة",
   "share_to_feed": "مشاركة في الخلاصة",
   "shared_to_feed": "تمت المشاركة في خلاصتك",
@@ -52,7 +52,7 @@
   "write_reply": "اكتب ردًا...",
   "write_reply_to": "رد على {{name}}...",
   "you": "أنت",
-  "endorsement_update_failed": "فشل في تحديث التأييد",
+  "endorsement_update_failed": "تعذّر علينا حفظ ذلك. يُرجى المحاولة مرة أخرى.",
   "presence": {
     "online": "متصل",
     "away": "بعيد",
@@ -84,7 +84,7 @@
   },
   "mention": {
     "suggestions_aria": "اقتراحات للذكر، {{count}} نتائج",
-    "no_users": "لم يتم العثور على مستخدمين",
+    "no_users": "لا أحد يطابق ذلك",
     "connected": "متصل",
     "suggestions_aria_few": "اقتراحات للذكر، {{count}} نتائج",
     "suggestions_aria_many": "اقتراحات للذكر، {{count}} نتائج",
@@ -121,8 +121,8 @@
     "aria_endorse": "تأييد {{skillName}}",
     "endorsed": "مؤيَّد",
     "endorse": "تأييد",
-    "remove_failed": "فشل في إزالة التأييد",
-    "endorse_failed": "فشل في التأييد"
+    "remove_failed": "تعذّر علينا حفظ ذلك. يُرجى المحاولة مرة أخرى.",
+    "endorse_failed": "تعذّر علينا حفظ ذلك. يُرجى المحاولة مرة أخرى."
   },
   "bookmark": {
     "save": "حفظ",
@@ -148,7 +148,7 @@
     "count": "{{count}} عناصر محفوظة",
     "remove": "إزالة من المحفوظات",
     "removed": "تمت إزالته من المحفوظات",
-    "remove_failed": "فشل في الإزالة",
+    "remove_failed": "تعذّر علينا حفظ ذلك. يُرجى المحاولة مرة أخرى.",
     "type_post": "منشور",
     "type_listing": "عرض أو طلب",
     "type_event": "فعالية",
@@ -160,9 +160,9 @@
     "load_more": "تحميل المزيد",
     "collection_updated": "تم تحديث المجموعة",
     "collection_created": "تم إنشاء المجموعة",
-    "collection_save_failed": "فشل في حفظ المجموعة",
+    "collection_save_failed": "تعذّر علينا حفظ ذلك. يُرجى المحاولة مرة أخرى.",
     "collection_deleted": "تم حذف المجموعة",
-    "collection_delete_failed": "فشل في حذف المجموعة",
+    "collection_delete_failed": "تعذّر علينا حذف ذلك. يُرجى المحاولة مرة أخرى.",
     "delete_collection_confirm": "هل تريد حذف هذه المجموعة؟ ستظل العلامات محفوظة.",
     "delete_collection_title": "حذف المجموعة",
     "delete_collection_body": "حذف \"{{name}}\"؟ سيتم الاحتفاظ بالعلامات المرجعية في هذه المجموعة.",

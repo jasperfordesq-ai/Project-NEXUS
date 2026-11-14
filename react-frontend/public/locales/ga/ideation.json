@@ -61,7 +61,7 @@
     "empty_description": "Níl aon dúshlán smaointeoireachta ann faoi láthair. Tar ar ais go luath!",
     "empty_filtered": "Ní oireann aon dúshlán don scagaire roghnaithe.",
     "create": "Cruthaigh Dúshlán",
-    "load_error": "Níorbh fhéidir na dúshláin a luchtú",
+    "load_error": "Níor éirigh linn na dúshláin a lódáil.",
     "load_more": "Luchtaigh Tuilleadh",
     "loading": "Dúshlán á lódáil..."
   },
@@ -85,7 +85,7 @@
     "edit": "Cuir Smaoineamh in Eagar",
     "delete": "Scrios Smaoineamh",
     "delete_confirm": "An bhfuil tú cinnte gur mhaith leat an smaoineamh seo a scriosadh? Ní féidir an gníomh seo a chur ar ceal.",
-    "load_error": "Níorbh fhéidir na smaointe a luchtú",
+    "load_error": "Níor éirigh linn na smaointe a lódáil.",
     "save_draft": "Sábháil Dréacht",
     "publish_draft": "Foilsigh Smaoineamh",
     "draft_saved": "Sábháladh an dreacht",
@@ -124,7 +124,7 @@
     "delete": "Scrios",
     "delete_confirm": "An bhfuil tú cinnte gur mhaith leat an trácht seo a scriosadh?",
     "load_more": "Luchtaigh Tuilleadh Tráchtanna",
-    "load_error": "Níorbh fhéidir na tráchtanna a luchtú",
+    "load_error": "Níor éirigh linn na tuairimí a lódáil.",
     "loading": "Tráchtanna á lódáil..."
   },
   "form": {
@@ -223,7 +223,7 @@
     "chatroom_deleted": "Scriosadh an cainéal",
     "message_posted": "Foilsíodh an teachtaireacht",
     "template_applied": "Cuireadh an teimpléad i bhfeidhm",
-    "error_generic": "Chuaigh rud éigin mícheart. Bain triail eile as le do thoil."
+    "error_generic": "Níor oibrigh sé sin. Bain triail eile as."
   },
   "favorites": {
     "add": "Cuir le ceanáin",
@@ -289,7 +289,7 @@
   "duplicate": {
     "button": "Dúblaigh Dúshlán",
     "success": "Dúblaíodh an dúshlán",
-    "error": "Níorbh fhéidir an dúshlán a dhúbailt"
+    "error": "Níor éirigh linn an dúshlán sin a chóipeáil. Bain triail eile as."
   },
   "idea_image": "Íomhá smaoinimh",
   "media": {
@@ -321,7 +321,7 @@
     "confirm": "Cruthaigh Foireann",
     "creating": "Á chruthú...",
     "success": "Cruthaíodh an fhoireann tionscadail! Á atreorú...",
-    "error": "Níorbh fhéidir an fhoireann a chruthú",
+    "error": "Níor éirigh linn an fhoireann a chruthú. Bain triail eile as.",
     "already_converted": "Tá an smaoineamh seo tiontaithe ina fhoireann cheana féin"
   },
   "campaigns": {
@@ -428,12 +428,12 @@
     "delete_confirm": "Scrios an chatagóir seo?"
   },
   "validation": {
-    "title_required": "Ní mór teideal a chur isteach",
-    "description_required": "Ní mór cur síos a chur isteach",
+    "title_required": "Tabhair teideal air",
+    "description_required": "Cuir cur síos leis",
     "comment_required": "Ní mór trácht a chur isteach",
-    "url_required": "Ní mór URL a chur isteach",
-    "name_required": "Ní mór ainm a chur isteach",
-    "file_required": "Ní mór comhad a roghnú"
+    "url_required": "Cuir seoladh gréasáin leis",
+    "name_required": "Cuir ainm leis",
+    "file_required": "Roghnaigh comhad"
   },
   "page_meta": {
     "outcomes": {

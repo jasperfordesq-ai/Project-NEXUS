@@ -2,7 +2,7 @@
   "detail": {
     "back_to_goals": "Terug naar doelen",
     "view_all_goals": "Alle doelen bekijken",
-    "not_found_title": "Doel niet gevonden",
+    "not_found_title": "We kunnen dat doel niet vinden",
     "not_found_description": "Dit doel is mogelijk verwijderd of heeft nooit bestaan.",
     "private_title": "Dit doel is privé",
     "private_description": "Alleen de doeleigenaar kan dit doel bekijken.",
@@ -11,12 +11,12 @@
     "checkin_frequency": "Check-in frequentie"
   },
   "checkin_recorded": "Incheck geregistreerd!",
-  "checkin_failed": "Incheck kon niet worden geregistreerd.",
-  "reminder_set_failed": "Herinnering kon niet worden ingesteld.",
+  "checkin_failed": "We konden je check-in niet opslaan. Probeer het opnieuw.",
+  "reminder_set_failed": "We konden dat niet opslaan. Probeer het opnieuw.",
   "reminder_removed": "Herinnering verwijderd.",
-  "reminder_remove_failed": "Verwijderen van herinnering is mislukt.",
+  "reminder_remove_failed": "We konden dat niet opslaan. Probeer het opnieuw.",
   "template_created": "Doel aangemaakt vanuit sjabloon!",
-  "template_create_failed": "Mislukt om doel vanuit sjabloon aan te maken.",
+  "template_create_failed": "We konden je doel niet aanmaken. Probeer het opnieuw.",
   "checkin": {
     "aria_progress_percentage": "Voortgang percentage",
     "title": "Inchecken",
@@ -60,7 +60,7 @@
   },
   "template": {
     "title": "Begin vanuit Sjabloon",
-    "loading_error": "Laden van sjablonen is mislukt. Probeer het opnieuw.",
+    "loading_error": "Dat is niet geladen. Probeer het zo nog eens.",
     "try_again": "Probeer Opnieuw",
     "no_templates": "Nog geen sjablonen beschikbaar.",
     "all_categories": "Alle",
@@ -71,7 +71,7 @@
     "cancel": "Annuleren"
   },
   "history": {
-    "load_failed": "Geschiedenis kon niet worden geladen.",
+    "load_failed": "Dat is niet geladen. Probeer het zo nog eens.",
     "retry": "Opnieuw proberen",
     "no_activity": "Er is nog geen activiteit geregistreerd.",
     "progress_aria": "Voortgang: {{percent}}%",
@@ -87,7 +87,7 @@
   },
   "insights": {
     "loading": "Doelinzichten laden",
-    "load_failed": "Doelinzichten konden niet worden geladen.",
+    "load_failed": "Dat is niet geladen. Probeer het zo nog eens.",
     "current_streak": "Huidige reeks",
     "streak_value": "{{count}} check-ins",
     "best_streak": "Beste reeks: {{count}}",
@@ -112,7 +112,7 @@
     "action_encourage": "Aanmoedigen",
     "action_offer_help": "Help aanbieden",
     "buddy_sent": "Buddy-ondersteuning verstuurd",
-    "buddy_failed": "Buddy-ondersteuning sturen mislukt.",
+    "buddy_failed": "We konden je steun niet versturen. Probeer het opnieuw.",
     "recent_buddy_support": "Recente buddy-ondersteuning",
     "note_type": {
       "nudge": "Por",
@@ -129,12 +129,12 @@
     "checkins_value_other": "{{count}} geregistreerd"
   },
   "template_picker": {
-    "load_error": "Sjablonen konden niet worden geladen. Probeer het opnieuw.",
+    "load_error": "Dat is niet geladen. Probeer het zo nog eens.",
     "try_again": "Probeer het opnieuw",
     "none_available": "Er zijn nog geen sjablonen beschikbaar.",
     "none_in_category": "Geen sjablonen in deze categorie."
   },
   "goals": {
-    "load_error": "Doelen konden niet worden geladen. Probeer het opnieuw."
+    "load_error": "Dat is niet geladen. Probeer het zo nog eens."
   }
 }

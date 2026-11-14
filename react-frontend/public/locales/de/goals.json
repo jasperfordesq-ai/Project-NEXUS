@@ -2,7 +2,7 @@
   "detail": {
     "back_to_goals": "Zurück zu den Zielen",
     "view_all_goals": "Alle Ziele ansehen",
-    "not_found_title": "Ziel nicht gefunden",
+    "not_found_title": "Wir finden dieses Ziel nicht",
     "not_found_description": "Dieses Ziel wurde möglicherweise gelöscht oder hat nie existiert.",
     "private_title": "Dieses Ziel ist privat",
     "private_description": "Nur der Zieleigentümer kann dieses Ziel ansehen.",
@@ -11,12 +11,12 @@
     "checkin_frequency": "Check-in-Häufigkeit"
   },
   "checkin_recorded": "Check-in aufgezeichnet!",
-  "checkin_failed": "Check-in konnte nicht aufgezeichnet werden.",
-  "reminder_set_failed": "Erinnerung konnte nicht gesetzt werden.",
+  "checkin_failed": "Wir konnten Ihren Check-in nicht speichern. Bitte versuchen Sie es noch einmal.",
+  "reminder_set_failed": "Wir konnten das nicht speichern. Bitte versuchen Sie es noch einmal.",
   "reminder_removed": "Erinnerung entfernt.",
-  "reminder_remove_failed": "Erinnerung konnte nicht entfernt werden.",
+  "reminder_remove_failed": "Wir konnten das nicht speichern. Bitte versuchen Sie es noch einmal.",
   "template_created": "Ziel aus Vorlage erstellt!",
-  "template_create_failed": "Ziel konnte nicht aus Vorlage erstellt werden.",
+  "template_create_failed": "Wir konnten Ihr Ziel nicht erstellen. Bitte versuchen Sie es noch einmal.",
   "checkin": {
     "aria_progress_percentage": "Fortschrittsprozentsatz",
     "title": "Einchecken",
@@ -60,7 +60,7 @@
   },
   "template": {
     "title": "Von Vorlage starten",
-    "loading_error": "Vorlagen konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "loading_error": "Das wurde nicht geladen. Versuchen Sie es gleich noch einmal.",
     "try_again": "Erneut versuchen",
     "no_templates": "Noch keine Vorlagen verfügbar.",
     "all_categories": "Alle",
@@ -71,7 +71,7 @@
     "cancel": "Abbrechen"
   },
   "history": {
-    "load_failed": "Verlauf konnte nicht geladen werden.",
+    "load_failed": "Das wurde nicht geladen. Versuchen Sie es gleich noch einmal.",
     "retry": "Erneut versuchen",
     "no_activity": "Noch keine Aktivität aufgezeichnet.",
     "progress_aria": "Fortschritt: {{percent}}%",
@@ -87,7 +87,7 @@
   },
   "insights": {
     "loading": "Zieleinblicke laden",
-    "load_failed": "Zieleinblicke konnten nicht geladen werden.",
+    "load_failed": "Das wurde nicht geladen. Versuchen Sie es gleich noch einmal.",
     "current_streak": "Aktuelle Serie",
     "streak_value": "{{count}} Check-ins",
     "best_streak": "Beste Serie: {{count}}",
@@ -112,7 +112,7 @@
     "action_encourage": "Ermutigen",
     "action_offer_help": "Hilfe anbieten",
     "buddy_sent": "Buddy-Unterstützung gesendet",
-    "buddy_failed": "Buddy-Unterstützung konnte nicht gesendet werden.",
+    "buddy_failed": "Wir konnten Ihre Unterstützung nicht senden. Bitte versuchen Sie es noch einmal.",
     "recent_buddy_support": "Kürzliche Buddy-Unterstützung",
     "note_type": {
       "nudge": "Erinnerung",
@@ -129,12 +129,12 @@
     "checkins_value_other": "{{count}} aufgezeichnet"
   },
   "template_picker": {
-    "load_error": "Vorlagen konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "load_error": "Das wurde nicht geladen. Versuchen Sie es gleich noch einmal.",
     "try_again": "Erneut versuchen",
     "none_available": "Noch keine Vorlagen verfügbar.",
     "none_in_category": "Keine Vorlagen in dieser Kategorie."
   },
   "goals": {
-    "load_error": "Ziele konnten nicht geladen werden. Bitte versuche es erneut."
+    "load_error": "Das wurde nicht geladen. Versuchen Sie es gleich noch einmal."
   }
 }

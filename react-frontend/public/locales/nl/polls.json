@@ -54,20 +54,20 @@
   },
   "toast": {
     "created": "Peiling succesvol aangemaakt!",
-    "create_failed": "Peiling kon niet worden aangemaakt. Probeer het opnieuw.",
+    "create_failed": "We konden je peiling niet aanmaken. Probeer het opnieuw.",
     "voted": "Stem geregistreerd!",
     "already_voted": "Je hebt al gestemd op deze peiling.",
-    "vote_failed": "Stem kon niet worden geregistreerd. Probeer het opnieuw.",
+    "vote_failed": "We konden je stem niet meetellen. Probeer het opnieuw.",
     "deleted": "Peiling verwijderd.",
-    "delete_failed": "Peiling kon niet worden verwijderd. Probeer het opnieuw.",
+    "delete_failed": "We konden dat niet verwijderen. Probeer het opnieuw.",
     "csv_exported": "CSV succesvol geëxporteerd.",
-    "export_failed": "Exporteren van peilingsresultaten mislukt."
+    "export_failed": "We konden de resultaten niet exporteren. Probeer het opnieuw."
   },
   "errors": {
     "question_required": "Voer een vraag in voor uw peiling.",
     "min_options": "Geef minimaal 2 opties op.",
-    "load_failed": "Niet mogelijk om peilingen te laden.",
-    "load_more_failed": "Mislukt om meer peilingen te laden."
+    "load_failed": "We konden de peilingen niet laden.",
+    "load_more_failed": "We konden niet meer laden. Probeer het zo nog eens."
   },
   "load_more": "Meer laden",
   "try_again": "Probeer het opnieuw",

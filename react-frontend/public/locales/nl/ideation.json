@@ -55,7 +55,7 @@
     "empty_description": "Er zijn op dit moment geen idee-uitdagingen. Kom snel terug!",
     "empty_filtered": "Geen uitdagingen passen bij de geselecteerde filter.",
     "create": "Uitdaging maken",
-    "load_error": "Kan uitdagingen niet laden",
+    "load_error": "We konden de uitdagingen niet laden.",
     "load_more": "Meer laden",
     "loading": "Uitdaging laden..."
   },
@@ -79,7 +79,7 @@
     "edit": "Idee Bewerken",
     "delete": "Idee Verwijderen",
     "delete_confirm": "Weet je zeker dat je dit idee wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
-    "load_error": "Kan ideeën niet laden",
+    "load_error": "We konden de ideeën niet laden.",
     "save_draft": "Concept Opslaan",
     "publish_draft": "Idee Publiceren",
     "draft_saved": "Concept opgeslagen",
@@ -112,7 +112,7 @@
     "delete": "Verwijderen",
     "delete_confirm": "Weet je zeker dat je deze reactie wilt verwijderen?",
     "load_more": "Laad Meer Reacties",
-    "load_error": "Kan reacties niet laden",
+    "load_error": "We konden de reacties niet laden.",
     "loading": "Opmerkingen laden..."
   },
   "form": {
@@ -211,7 +211,7 @@
     "chatroom_deleted": "Kanaal verwijderd",
     "message_posted": "Bericht geplaatst",
     "template_applied": "Sjabloon succesvol toegepast",
-    "error_generic": "Er is iets misgegaan. Probeer het opnieuw."
+    "error_generic": "Dat is niet gelukt. Probeer het opnieuw."
   },
   "favorites": {
     "add": "Toevoegen aan favorieten",
@@ -277,7 +277,7 @@
   "duplicate": {
     "button": "Dupliceer Uitdaging",
     "success": "Uitdaging succesvol gedupliceerd",
-    "error": "Dupliceer uitdaging mislukt"
+    "error": "We konden die uitdaging niet kopiëren. Probeer het opnieuw."
   },
   "idea_image": "Idee afbeelding",
   "media": {
@@ -309,7 +309,7 @@
     "confirm": "Team aanmaken",
     "creating": "Aanmaken...",
     "success": "Projectteam succesvol aangemaakt! Wordt omgeleid...",
-    "error": "Mislukt om team aan te maken",
+    "error": "We konden het team niet aanmaken. Probeer het opnieuw.",
     "already_converted": "Dit idee is al omgezet naar een team"
   },
   "campaigns": {
@@ -413,12 +413,12 @@
     "delete_confirm": "Deze categorie verwijderen?"
   },
   "validation": {
-    "title_required": "Titel is verplicht",
-    "description_required": "Beschrijving is verplicht",
+    "title_required": "Geef het een titel",
+    "description_required": "Voeg een beschrijving toe",
     "comment_required": "Opmerking mag niet leeg zijn",
-    "url_required": "URL is verplicht",
-    "name_required": "Naam is verplicht",
-    "file_required": "Bestand is verplicht"
+    "url_required": "Voeg een webadres toe",
+    "name_required": "Voeg een naam toe",
+    "file_required": "Kies een bestand"
   },
   "page_meta": {
     "outcomes": {

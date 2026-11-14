@@ -105,7 +105,7 @@ describe('CustomPage', () => {
     mockApiGet.mockResolvedValue({ success: false, data: null });
     render(<CustomPage />);
     await waitFor(() => {
-      expect(screen.getByText('Page Not Found')).toBeInTheDocument();
+      expect(screen.getByText("We can't find that page")).toBeInTheDocument();
     });
   });
 
@@ -140,7 +140,7 @@ describe('CustomPage', () => {
     mockApiGet.mockRejectedValue(new Error('Network error'));
     render(<CustomPage />);
     await waitFor(() => {
-      expect(screen.getByText('Page Not Found')).toBeInTheDocument();
+      expect(screen.getByText("We can't find that page")).toBeInTheDocument();
     });
     // A failed load is not a missing page: crawlers must not be told 404.
     expect(document.querySelector('meta[name="prerender-status-code"]')).toBeNull();
@@ -158,7 +158,7 @@ describe('CustomPage', () => {
   it('does not claim 404 for a server error', async () => {
     mockApiGet.mockResolvedValue({ success: false, code: 'SERVER_ERROR' });
     render(<CustomPage />);
-    await waitFor(() => expect(screen.getByText('Page Not Found')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("We can't find that page")).toBeInTheDocument());
     expect(document.querySelector('meta[name="prerender-status-code"]')).toBeNull();
   });
 

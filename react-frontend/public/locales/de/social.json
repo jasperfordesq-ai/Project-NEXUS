@@ -4,7 +4,7 @@
     "edit_label": "Kommentar bearbeiten"
   },
   "comments_title": "Kommentare",
-  "copy_failed": "Link konnte nicht kopiert werden",
+  "copy_failed": "Wir konnten den Link nicht kopieren. Bitte versuchen Sie es noch einmal.",
   "copy_link": "Link kopieren",
   "delete": "Löschen",
   "delete_comment_confirm": "Diesen Kommentar löschen?",
@@ -44,7 +44,7 @@
   "send_reply": "Antwort senden",
   "share": "Teilen",
   "cannot_share_own_content": "Sie können Ihren eigenen Inhalt nicht im Feed teilen",
-  "share_failed": "Teilen fehlgeschlagen",
+  "share_failed": "Wir konnten das nicht teilen. Bitte versuchen Sie es noch einmal.",
   "share_options": "Teilenoptionen",
   "share_to_feed": "Im Feed teilen",
   "shared_to_feed": "In Ihrem Feed geteilt",
@@ -52,7 +52,7 @@
   "write_reply": "Antwort schreiben...",
   "write_reply_to": "Antwort an {{name}}...",
   "you": "Sie",
-  "endorsement_update_failed": "Empfehlung konnte nicht aktualisiert werden",
+  "endorsement_update_failed": "Wir konnten das nicht speichern. Bitte versuchen Sie es noch einmal.",
   "presence": {
     "online": "Online",
     "away": "Abwesend",
@@ -72,7 +72,7 @@
   },
   "mention": {
     "suggestions_aria": "Erwähnungsvorschläge, {{count}} Ergebnisse",
-    "no_users": "Keine Benutzer gefunden",
+    "no_users": "Dazu passt niemand",
     "connected": "Verbunden",
     "suggestions_aria_one": "Erwähnungsvorschläge, {{count}} Ergebnisse",
     "suggestions_aria_other": "Erwähnungsvorschläge, {{count}} Ergebnisse"
@@ -105,8 +105,8 @@
     "aria_endorse": "{{skillName}} empfehlen",
     "endorsed": "Empfohlen",
     "endorse": "Empfehlen",
-    "remove_failed": "Empfehlung konnte nicht entfernt werden",
-    "endorse_failed": "Empfehlung konnte nicht abgegeben werden"
+    "remove_failed": "Wir konnten das nicht speichern. Bitte versuchen Sie es noch einmal.",
+    "endorse_failed": "Wir konnten das nicht speichern. Bitte versuchen Sie es noch einmal."
   },
   "bookmark": {
     "save": "Speichern",
@@ -132,7 +132,7 @@
     "count": "{{count}} gespeicherte Artikel",
     "remove": "Aus Gespeichertem entfernen",
     "removed": "Von Gespeichert entfernt",
-    "remove_failed": "Entfernen fehlgeschlagen",
+    "remove_failed": "Wir konnten das nicht speichern. Bitte versuchen Sie es noch einmal.",
     "type_post": "Beitrag",
     "type_listing": "Angebot oder Gesuch",
     "type_event": "Veranstaltung",
@@ -144,9 +144,9 @@
     "load_more": "Mehr laden",
     "collection_updated": "Sammlung aktualisiert",
     "collection_created": "Sammlung erstellt",
-    "collection_save_failed": "Speichern der Sammlung fehlgeschlagen",
+    "collection_save_failed": "Wir konnten das nicht speichern. Bitte versuchen Sie es noch einmal.",
     "collection_deleted": "Sammlung gelöscht",
-    "collection_delete_failed": "Löschen der Sammlung fehlgeschlagen",
+    "collection_delete_failed": "Wir konnten das nicht löschen. Bitte versuchen Sie es noch einmal.",
     "delete_collection_confirm": "Diese Sammlung löschen? Lesezeichen werden behalten.",
     "delete_collection_title": "Sammlung löschen",
     "delete_collection_body": "„{{name}}“ löschen? Lesezeichen in dieser Sammlung werden behalten.",

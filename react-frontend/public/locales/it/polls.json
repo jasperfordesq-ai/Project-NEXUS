@@ -54,20 +54,20 @@
   },
   "toast": {
     "created": "Sondaggio creato con successo!",
-    "create_failed": "Impossibile creare il sondaggio. Riprova.",
+    "create_failed": "Non siamo riusciti a creare il tuo sondaggio. Riprova.",
     "voted": "Voto registrato!",
     "already_voted": "Hai già votato in questo sondaggio.",
-    "vote_failed": "Impossibile registrare il voto. Riprova.",
+    "vote_failed": "Non siamo riusciti a registrare il tuo voto. Riprova.",
     "deleted": "Sondaggio eliminato.",
-    "delete_failed": "Impossibile eliminare il sondaggio. Riprova.",
+    "delete_failed": "Non siamo riusciti a eliminarlo. Riprova.",
     "csv_exported": "CSV esportato con successo.",
-    "export_failed": "Impossibile esportare i risultati del sondaggio."
+    "export_failed": "Non siamo riusciti a esportare i risultati. Riprova."
   },
   "errors": {
     "question_required": "Inserisci una domanda per il tuo sondaggio.",
     "min_options": "Fornisci almeno 2 opzioni.",
-    "load_failed": "Impossibile caricare i sondaggi.",
-    "load_more_failed": "Impossibile caricare altri sondaggi."
+    "load_failed": "Non siamo riusciti a caricare i sondaggi.",
+    "load_more_failed": "Non siamo riusciti a caricarne altri. Riprova tra un momento."
   },
   "load_more": "Carica Altro",
   "try_again": "Riprova",

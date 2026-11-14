@@ -2,7 +2,7 @@
   "detail": {
     "back_to_goals": "Torna agli obiettivi",
     "view_all_goals": "Vedi tutti gli obiettivi",
-    "not_found_title": "Obiettivo non trovato",
+    "not_found_title": "Non troviamo quell’obiettivo",
     "not_found_description": "Questo obiettivo potrebbe essere stato eliminato o non è mai esistito.",
     "private_title": "Questo obiettivo è privato",
     "private_description": "Solo il proprietario dell'obiettivo può visualizzarlo.",
@@ -11,12 +11,12 @@
     "checkin_frequency": "Frequenza di check-in"
   },
   "checkin_recorded": "Check-in registrato!",
-  "checkin_failed": "Impossibile registrare il check-in.",
-  "reminder_set_failed": "Impossibile impostare il promemoria.",
+  "checkin_failed": "Non siamo riusciti a salvare il tuo check-in. Riprova.",
+  "reminder_set_failed": "Non siamo riusciti a salvarlo. Riprova.",
   "reminder_removed": "Promemoria rimosso.",
-  "reminder_remove_failed": "Impossibile rimuovere il promemoria.",
+  "reminder_remove_failed": "Non siamo riusciti a salvarlo. Riprova.",
   "template_created": "Obiettivo creato dal modello!",
-  "template_create_failed": "Impossibile creare l'obiettivo dal modello.",
+  "template_create_failed": "Non siamo riusciti a creare il tuo obiettivo. Riprova.",
   "checkin": {
     "aria_progress_percentage": "Percentuale di avanzamento",
     "title": "Check-in",
@@ -60,7 +60,7 @@
   },
   "template": {
     "title": "Inizia da un Modello",
-    "loading_error": "Impossibile caricare i modelli. Riprova.",
+    "loading_error": "Il caricamento non è riuscito. Riprova tra un momento.",
     "try_again": "Riprova",
     "no_templates": "Nessun modello disponibile ancora.",
     "all_categories": "Tutti",
@@ -71,7 +71,7 @@
     "cancel": "Annulla"
   },
   "history": {
-    "load_failed": "Impossibile caricare la cronologia.",
+    "load_failed": "Il caricamento non è riuscito. Riprova tra un momento.",
     "retry": "Riprova",
     "no_activity": "Nessuna attività registrata ancora.",
     "progress_aria": "Progresso: {{percent}}%",
@@ -87,7 +87,7 @@
   },
   "insights": {
     "loading": "Caricamento approfondimenti obiettivo",
-    "load_failed": "Caricamento approfondimenti obiettivo non riuscito.",
+    "load_failed": "Il caricamento non è riuscito. Riprova tra un momento.",
     "current_streak": "Serie attuale",
     "streak_value": "{{count}} check-in",
     "best_streak": "Serie migliore: {{count}}",
@@ -112,7 +112,7 @@
     "action_encourage": "Incoraggia",
     "action_offer_help": "Offri aiuto",
     "buddy_sent": "Supporto del compagno inviato",
-    "buddy_failed": "Invio supporto del compagno non riuscito.",
+    "buddy_failed": "Non siamo riusciti a inviare il tuo sostegno. Riprova.",
     "recent_buddy_support": "Supporto recente del compagno",
     "note_type": {
       "nudge": "Promemoria",
@@ -132,12 +132,12 @@
     "checkins_value_other": "{{count}} registrati"
   },
   "template_picker": {
-    "load_error": "Impossibile caricare i modelli. Per favore riprova.",
+    "load_error": "Il caricamento non è riuscito. Riprova tra un momento.",
     "try_again": "Riprova",
     "none_available": "Nessun modello disponibile ancora.",
     "none_in_category": "Nessun modello in questa categoria."
   },
   "goals": {
-    "load_error": "Caricamento obiettivi non riuscito. Riprova."
+    "load_error": "Il caricamento non è riuscito. Riprova tra un momento."
   }
 }

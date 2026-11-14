@@ -54,20 +54,20 @@
   },
   "toast": {
     "created": "¡Encuesta creada con éxito!",
-    "create_failed": "Error al crear la encuesta. Por favor intenta de nuevo.",
+    "create_failed": "No hemos podido crear tu encuesta. Vuelve a intentarlo.",
     "voted": "¡Voto registrado!",
     "already_voted": "Ya has votado en esta encuesta.",
-    "vote_failed": "Error al registrar el voto. Por favor intenta de nuevo.",
+    "vote_failed": "No hemos podido registrar tu voto. Vuelve a intentarlo.",
     "deleted": "Encuesta eliminada.",
-    "delete_failed": "Error al eliminar la encuesta. Por favor intenta de nuevo.",
+    "delete_failed": "No hemos podido eliminar eso. Vuelve a intentarlo.",
     "csv_exported": "CSV exportado correctamente.",
-    "export_failed": "Error al exportar los resultados de la encuesta."
+    "export_failed": "No hemos podido exportar los resultados. Vuelve a intentarlo."
   },
   "errors": {
     "question_required": "Por favor introduce una pregunta para tu encuesta.",
     "min_options": "Por favor proporciona al menos 2 opciones.",
-    "load_failed": "No se pudieron cargar las encuestas.",
-    "load_more_failed": "Error al cargar más encuestas."
+    "load_failed": "No hemos podido cargar las encuestas.",
+    "load_more_failed": "No hemos podido cargar más. Inténtalo de nuevo en un momento."
   },
   "load_more": "Cargar Más",
   "try_again": "Intentar de Nuevo",

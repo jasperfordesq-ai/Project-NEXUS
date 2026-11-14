@@ -55,7 +55,7 @@
     "empty_description": "Es gibt derzeit keine Ideenwettbewerbe. Schauen Sie bald wieder vorbei!",
     "empty_filtered": "Keine Wettbewerbe entsprechen dem ausgewählten Filter.",
     "create": "Wettbewerb erstellen",
-    "load_error": "Wettbewerbe konnten nicht geladen werden",
+    "load_error": "Wir konnten die Challenges nicht laden.",
     "load_more": "Mehr laden",
     "loading": "Herausforderung wird geladen..."
   },
@@ -79,7 +79,7 @@
     "edit": "Idee bearbeiten",
     "delete": "Idee löschen",
     "delete_confirm": "Möchten Sie diese Idee wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "load_error": "Ideen konnten nicht geladen werden",
+    "load_error": "Wir konnten die Ideen nicht laden.",
     "save_draft": "Entwurf speichern",
     "publish_draft": "Idee veröffentlichen",
     "draft_saved": "Entwurf gespeichert",
@@ -112,7 +112,7 @@
     "delete": "Löschen",
     "delete_confirm": "Möchten Sie diesen Kommentar wirklich löschen?",
     "load_more": "Mehr Kommentare laden",
-    "load_error": "Kommentare konnten nicht geladen werden",
+    "load_error": "Wir konnten die Kommentare nicht laden.",
     "loading": "Kommentare werden geladen..."
   },
   "form": {
@@ -211,7 +211,7 @@
     "chatroom_deleted": "Kanal gelöscht",
     "message_posted": "Nachricht gepostet",
     "template_applied": "Vorlage erfolgreich angewendet",
-    "error_generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+    "error_generic": "Das hat nicht geklappt. Bitte versuchen Sie es noch einmal."
   },
   "favorites": {
     "add": "Zu Favoriten hinzufügen",
@@ -277,7 +277,7 @@
   "duplicate": {
     "button": "Wettbewerb duplizieren",
     "success": "Wettbewerb erfolgreich dupliziert",
-    "error": "Wettbewerb konnte nicht dupliziert werden"
+    "error": "Wir konnten diese Challenge nicht kopieren. Bitte versuchen Sie es noch einmal."
   },
   "idea_image": "Ideenbild",
   "media": {
@@ -309,7 +309,7 @@
     "confirm": "Team erstellen",
     "creating": "Wird erstellt...",
     "success": "Projektteam erfolgreich erstellt! Weiterleitung...",
-    "error": "Team konnte nicht erstellt werden",
+    "error": "Wir konnten das Team nicht erstellen. Bitte versuchen Sie es noch einmal.",
     "already_converted": "Diese Idee wurde bereits in ein Team umgewandelt"
   },
   "campaigns": {
@@ -413,12 +413,12 @@
     "delete_confirm": "Diese Kategorie löschen?"
   },
   "validation": {
-    "title_required": "Titel ist erforderlich",
-    "description_required": "Beschreibung ist erforderlich",
+    "title_required": "Geben Sie einen Titel ein",
+    "description_required": "Fügen Sie eine Beschreibung hinzu",
     "comment_required": "Kommentar darf nicht leer sein",
-    "url_required": "URL ist erforderlich",
-    "name_required": "Name ist erforderlich",
-    "file_required": "Datei ist erforderlich"
+    "url_required": "Geben Sie eine Webadresse an",
+    "name_required": "Geben Sie einen Namen an",
+    "file_required": "Wählen Sie eine Datei"
   },
   "page_meta": {
     "outcomes": {

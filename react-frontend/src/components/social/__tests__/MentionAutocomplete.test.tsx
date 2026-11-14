@@ -19,7 +19,7 @@ vi.mock('react-i18next', () => ({
       const translations: Record<string, string> = {
         'mention.suggestions_aria': 'Mention suggestions, {{count}} results',
         'mention.connected': 'Connected',
-        'mention.no_users': 'No users found',
+        'mention.no_users': "Nobody matches that",
       };
       const fallback = translations[key] ?? (typeof fallbackOrOpts === 'string' ? fallbackOrOpts : key);
       const vars = typeof fallbackOrOpts === 'object' ? fallbackOrOpts : opts;
@@ -225,7 +225,7 @@ describe('MentionAutocomplete', () => {
     expect(container.querySelector('[role="listbox"]')).toBeInTheDocument();
   });
 
-  it('shows "No users found" when suggestions are empty and not loading', () => {
+  it('shows "Nobody matches that" when suggestions are empty and not loading', () => {
     render(
       <W>
         <MentionAutocomplete
@@ -235,7 +235,7 @@ describe('MentionAutocomplete', () => {
         />
       </W>,
     );
-    expect(screen.getByText('No users found')).toBeInTheDocument();
+    expect(screen.getByText("Nobody matches that")).toBeInTheDocument();
   });
 
   it('highlights matching text in user names', () => {

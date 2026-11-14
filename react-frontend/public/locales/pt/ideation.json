@@ -57,7 +57,7 @@
     "empty_description": "Não há desafios de ideação neste momento. Volte em breve!",
     "empty_filtered": "Nenhum desafio corresponde ao filtro selecionado.",
     "create": "Criar Desafio",
-    "load_error": "Não foi possível carregar desafios",
+    "load_error": "Não conseguimos carregar os desafios.",
     "load_more": "Carregar Mais",
     "loading": "Carregando desafio..."
   },
@@ -81,7 +81,7 @@
     "edit": "Editar Ideia",
     "delete": "Eliminar Ideia",
     "delete_confirm": "Tem a certeza de que pretende eliminar esta ideia? Esta ação não pode ser revertida.",
-    "load_error": "Não foi possível carregar ideias",
+    "load_error": "Não conseguimos carregar as ideias.",
     "save_draft": "Salvar Rascunho",
     "publish_draft": "Publicar Ideia",
     "draft_saved": "Rascunho salvo",
@@ -116,7 +116,7 @@
     "delete": "Eliminar",
     "delete_confirm": "Tem a certeza de que pretende eliminar este comentário?",
     "load_more": "Carregar Mais Comentários",
-    "load_error": "Não foi possível carregar comentários",
+    "load_error": "Não conseguimos carregar os comentários.",
     "loading": "Carregando comentários..."
   },
   "form": {
@@ -215,7 +215,7 @@
     "chatroom_deleted": "Canal eliminado",
     "message_posted": "Mensagem publicada",
     "template_applied": "Modelo aplicado com sucesso",
-    "error_generic": "Algo correu mal. Tente novamente."
+    "error_generic": "Isso não funcionou. Tente novamente."
   },
   "favorites": {
     "add": "Adicionar aos favoritos",
@@ -281,7 +281,7 @@
   "duplicate": {
     "button": "Duplicar Desafio",
     "success": "Desafio duplicado com sucesso",
-    "error": "Falha ao duplicar desafio"
+    "error": "Não conseguimos copiar esse desafio. Tente novamente."
   },
   "idea_image": "Imagem da ideia",
   "media": {
@@ -313,7 +313,7 @@
     "confirm": "Criar Equipe",
     "creating": "A criar...",
     "success": "Equipe de projeto criada com sucesso! A redirecionar...",
-    "error": "Falha ao criar equipe",
+    "error": "Não conseguimos criar a equipe. Tente novamente.",
     "already_converted": "Esta ideia já foi convertida numa equipe"
   },
   "campaigns": {
@@ -418,12 +418,12 @@
     "delete_confirm": "Eliminar esta categoria?"
   },
   "validation": {
-    "title_required": "O título é obrigatório",
-    "description_required": "A descrição é obrigatória",
+    "title_required": "Dê um título",
+    "description_required": "Adicione uma descrição",
     "comment_required": "O comentário não pode estar vazio",
-    "url_required": "O URL é obrigatório",
-    "name_required": "O nome é obrigatório",
-    "file_required": "O arquivo é obrigatório"
+    "url_required": "Adicione um endereço web",
+    "name_required": "Adicione um nome",
+    "file_required": "Escolha um arquivo"
   },
   "page_meta": {
     "outcomes": {

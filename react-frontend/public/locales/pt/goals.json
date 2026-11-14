@@ -2,7 +2,7 @@
   "detail": {
     "back_to_goals": "Voltar aos objetivos",
     "view_all_goals": "Ver todos os objetivos",
-    "not_found_title": "Objetivo não encontrado",
+    "not_found_title": "Não encontramos essa meta",
     "not_found_description": "Este objetivo pode ter sido eliminado ou nunca existiu.",
     "private_title": "Este objetivo é privado",
     "private_description": "Apenas o proprietário do objetivo pode ver este objetivo.",
@@ -11,12 +11,12 @@
     "checkin_frequency": "Frequência de check-in"
   },
   "checkin_recorded": "Check-in registrado!",
-  "checkin_failed": "Falha ao registrar o check-in.",
-  "reminder_set_failed": "Falha ao definir o lembrete.",
+  "checkin_failed": "Não conseguimos salvar seu check-in. Tente novamente.",
+  "reminder_set_failed": "Não conseguimos salvar isso. Tente novamente.",
   "reminder_removed": "Lembrete removido.",
-  "reminder_remove_failed": "Falha ao remover o lembrete.",
+  "reminder_remove_failed": "Não conseguimos salvar isso. Tente novamente.",
   "template_created": "Meta criada a partir do modelo!",
-  "template_create_failed": "Falha ao criar meta a partir do modelo.",
+  "template_create_failed": "Não conseguimos criar sua meta. Tente novamente.",
   "checkin": {
     "aria_progress_percentage": "Percentagem de progresso",
     "title": "Check-in",
@@ -60,7 +60,7 @@
   },
   "template": {
     "title": "Começar a Partir de Modelo",
-    "loading_error": "Falha ao carregar modelos. Tente novamente.",
+    "loading_error": "Isso não carregou. Tente novamente daqui a pouco.",
     "try_again": "Tentar Novamente",
     "no_templates": "Ainda não existem modelos disponíveis.",
     "all_categories": "Todos",
@@ -71,7 +71,7 @@
     "cancel": "Cancelar"
   },
   "history": {
-    "load_failed": "Falha ao carregar histórico.",
+    "load_failed": "Isso não carregou. Tente novamente daqui a pouco.",
     "retry": "Tentar Novamente",
     "no_activity": "Ainda não foi registrada atividade.",
     "progress_aria": "Progresso: {{percent}}%",
@@ -87,7 +87,7 @@
   },
   "insights": {
     "loading": "A carregar perspetivas do objetivo",
-    "load_failed": "Falha ao carregar perspetivas do objetivo.",
+    "load_failed": "Isso não carregou. Tente novamente daqui a pouco.",
     "current_streak": "Sequência atual",
     "streak_value": "{{count}} check-ins",
     "best_streak": "Melhor sequência: {{count}}",
@@ -112,7 +112,7 @@
     "action_encourage": "Encorajar",
     "action_offer_help": "Oferecer ajuda",
     "buddy_sent": "Apoio do parceiro enviado",
-    "buddy_failed": "Falha ao enviar apoio do parceiro.",
+    "buddy_failed": "Não conseguimos enviar seu apoio. Tente novamente.",
     "recent_buddy_support": "Apoio recente do parceiro",
     "note_type": {
       "nudge": "Cutucar",
@@ -132,12 +132,12 @@
     "checkins_value_other": "{{count}} registrados"
   },
   "template_picker": {
-    "load_error": "Falha ao carregar os modelos. Por favor, tente novamente.",
+    "load_error": "Isso não carregou. Tente novamente daqui a pouco.",
     "try_again": "Tente novamente",
     "none_available": "Ainda não há modelos disponíveis.",
     "none_in_category": "Não há modelos nesta categoria."
   },
   "goals": {
-    "load_error": "Falha ao carregar objetivos. Por favor, tente novamente."
+    "load_error": "Isso não carregou. Tente novamente daqui a pouco."
   }
 }

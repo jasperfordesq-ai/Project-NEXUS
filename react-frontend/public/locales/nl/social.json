@@ -4,7 +4,7 @@
     "edit_label": "Opmerking bewerken"
   },
   "comments_title": "Reacties",
-  "copy_failed": "Link kopiëren is mislukt",
+  "copy_failed": "We konden de link niet kopiëren. Probeer het opnieuw.",
   "copy_link": "Kopieer link",
   "delete": "Verwijderen",
   "delete_comment_confirm": "Deze opmerking verwijderen?",
@@ -44,7 +44,7 @@
   "send_reply": "Stuur antwoord",
   "share": "Delen",
   "cannot_share_own_content": "Je kunt je eigen inhoud niet delen in het overzicht",
-  "share_failed": "Delen is mislukt",
+  "share_failed": "We konden dat niet delen. Probeer het opnieuw.",
   "share_options": "Deel opties",
   "share_to_feed": "Deel naar Feed",
   "shared_to_feed": "Gedeeld naar jouw feed",
@@ -52,7 +52,7 @@
   "write_reply": "Schrijf een antwoord...",
   "write_reply_to": "Antwoorden aan {{name}}...",
   "you": "Jij",
-  "endorsement_update_failed": "Bijwerken van goedkeuring is mislukt",
+  "endorsement_update_failed": "We konden dat niet opslaan. Probeer het opnieuw.",
   "presence": {
     "online": "Online",
     "away": "Afwezig",
@@ -72,7 +72,7 @@
   },
   "mention": {
     "suggestions_aria": "Vermelding suggesties, {{count}} resultaten",
-    "no_users": "Geen gebruikers gevonden",
+    "no_users": "Niemand past daarbij",
     "connected": "Verbonden",
     "suggestions_aria_one": "Vermelding suggesties, {{count}} resultaten",
     "suggestions_aria_other": "Vermelding suggesties, {{count}} resultaten"
@@ -105,8 +105,8 @@
     "aria_endorse": "Goedkeur {{skillName}}",
     "endorsed": "Aanbevolen",
     "endorse": "Aanbevelen",
-    "remove_failed": "Verwijderen van goedkeuring mislukt",
-    "endorse_failed": "Goedkeuren mislukt"
+    "remove_failed": "We konden dat niet opslaan. Probeer het opnieuw.",
+    "endorse_failed": "We konden dat niet opslaan. Probeer het opnieuw."
   },
   "bookmark": {
     "save": "Opslaan",
@@ -132,7 +132,7 @@
     "count": "{{count}} opgeslagen items",
     "remove": "Verwijderen uit opgeslagen",
     "removed": "Verwijderd uit opgeslagen",
-    "remove_failed": "Verwijderen mislukt",
+    "remove_failed": "We konden dat niet opslaan. Probeer het opnieuw.",
     "type_post": "Bericht",
     "type_listing": "Aanbod of verzoek",
     "type_event": "Evenement",
@@ -144,9 +144,9 @@
     "load_more": "Laad Meer",
     "collection_updated": "Collectie bijgewerkt",
     "collection_created": "Collectie aangemaakt",
-    "collection_save_failed": "Opslaan van collectie mislukt",
+    "collection_save_failed": "We konden dat niet opslaan. Probeer het opnieuw.",
     "collection_deleted": "Verzameling verwijderd",
-    "collection_delete_failed": "Verzameling kon niet worden verwijderd",
+    "collection_delete_failed": "We konden dat niet verwijderen. Probeer het opnieuw.",
     "delete_collection_confirm": "Deze verzameling verwijderen? Bladwijzers blijven behouden.",
     "delete_collection_title": "Collectie verwijderen",
     "delete_collection_body": "\"{{name}}\" verwijderen? Bladwijzers in deze collectie blijven behouden.",

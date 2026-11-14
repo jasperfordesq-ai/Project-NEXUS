@@ -55,7 +55,7 @@
     "empty_description": "There are no ideation challenges at the moment. Check back soon!",
     "empty_filtered": "No challenges match the selected filter.",
     "create": "Create Challenge",
-    "load_error": "Unable to load challenges",
+    "load_error": "We couldn't load the challenges.",
     "load_more": "Load More",
     "loading": "Loading challenge..."
   },
@@ -79,7 +79,7 @@
     "edit": "Edit Idea",
     "delete": "Delete Idea",
     "delete_confirm": "Are you sure you want to delete this idea? This action cannot be undone.",
-    "load_error": "Unable to load ideas",
+    "load_error": "We couldn't load the ideas.",
     "save_draft": "Save Draft",
     "publish_draft": "Publish Idea",
     "draft_saved": "Draft saved",
@@ -112,7 +112,7 @@
     "delete": "Delete",
     "delete_confirm": "Are you sure you want to delete this comment?",
     "load_more": "Load More Comments",
-    "load_error": "Unable to load comments",
+    "load_error": "We couldn't load the comments.",
     "loading": "Loading comments..."
   },
   "form": {
@@ -211,7 +211,7 @@
     "chatroom_deleted": "Channel deleted",
     "message_posted": "Message posted",
     "template_applied": "Template applied successfully",
-    "error_generic": "Something went wrong. Please try again."
+    "error_generic": "That didn't work. Please try again."
   },
   "favorites": {
     "add": "Add to favorites",
@@ -277,7 +277,7 @@
   "duplicate": {
     "button": "Duplicate Challenge",
     "success": "Challenge duplicated successfully",
-    "error": "Failed to duplicate challenge"
+    "error": "We couldn't copy that challenge. Please try again."
   },
   "idea_image": "Idea image",
   "media": {
@@ -309,7 +309,7 @@
     "confirm": "Create Team",
     "creating": "Creating...",
     "success": "Project team created successfully! Redirecting...",
-    "error": "Failed to create team",
+    "error": "We couldn't create the team. Please try again.",
     "already_converted": "This idea has already been converted to a team"
   },
   "campaigns": {
@@ -413,12 +413,12 @@
     "delete_confirm": "Delete this category?"
   },
   "validation": {
-    "title_required": "Title is required",
-    "description_required": "Description is required",
+    "title_required": "Give it a title",
+    "description_required": "Add a description",
     "comment_required": "Comment cannot be empty",
-    "url_required": "URL is required",
-    "name_required": "Name is required",
-    "file_required": "File is required"
+    "url_required": "Add a web address",
+    "name_required": "Add a name",
+    "file_required": "Choose a file"
   },
   "page_meta": {
     "outcomes": {

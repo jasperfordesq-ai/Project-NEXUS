@@ -55,7 +55,7 @@
     "empty_description": "現在、アイデアチャレンジはありません。もう一度チェックしてください！",
     "empty_filtered": "選択したフィルターに一致するチャレンジはありません。",
     "create": "チャレンジを作成",
-    "load_error": "チャレンジを読み込めません",
+    "load_error": "チャレンジを読み込めませんでした。",
     "load_more": "もっと読み込む",
     "loading": "チャレンジを読み込み中..."
   },
@@ -79,7 +79,7 @@
     "edit": "アイデアを編集",
     "delete": "アイデアを削除",
     "delete_confirm": "このアイデアを削除してもよろしいですか？この操作は元に戻せません。",
-    "load_error": "アイデアを読み込めません",
+    "load_error": "アイデアを読み込めませんでした。",
     "save_draft": "ドラフトを保存",
     "publish_draft": "アイデアを公開",
     "draft_saved": "ドラフトが保存されました",
@@ -112,7 +112,7 @@
     "delete": "削除",
     "delete_confirm": "このコメントを削除してもよろしいですか？",
     "load_more": "さらにコメントを読み込む",
-    "load_error": "コメントを読み込めません",
+    "load_error": "コメントを読み込めませんでした。",
     "loading": "コメントを読み込んでいます..."
   },
   "form": {
@@ -211,7 +211,7 @@
     "chatroom_deleted": "チャンネルが削除されました",
     "message_posted": "メッセージが投稿されました",
     "template_applied": "テンプレートが正常に適用されました",
-    "error_generic": "何かがうまくいきませんでした。もう一度お試しください。"
+    "error_generic": "うまくいきませんでした。もう一度お試しください。"
   },
   "favorites": {
     "add": "お気に入りに追加",
@@ -277,7 +277,7 @@
   "duplicate": {
     "button": "チャレンジを複製する",
     "success": "チャレンジが正常に複製されました",
-    "error": "チャレンジの複製に失敗しました"
+    "error": "このチャレンジを複製できませんでした。もう一度お試しください。"
   },
   "idea_image": "アイデア画像",
   "media": {
@@ -309,7 +309,7 @@
     "confirm": "チームを作成",
     "creating": "作成中...",
     "success": "プロジェクトチームが正常に作成されました！リダイレクト中...",
-    "error": "チームの作成に失敗しました",
+    "error": "チームを作成できませんでした。もう一度お試しください。",
     "already_converted": "このアイデアはすでにチームに変換されています"
   },
   "campaigns": {
@@ -413,12 +413,12 @@
     "delete_confirm": "このカテゴリを削除しますか？"
   },
   "validation": {
-    "title_required": "タイトルは必須です",
-    "description_required": "説明は必須です",
+    "title_required": "タイトルを入力してください",
+    "description_required": "説明を入力してください",
     "comment_required": "コメントは空にできません",
-    "url_required": "URLは必須です",
-    "name_required": "名前は必須です",
-    "file_required": "ファイルは必須です"
+    "url_required": "URLを入力してください",
+    "name_required": "名前を入力してください",
+    "file_required": "ファイルを選んでください"
   },
   "page_meta": {
     "outcomes": {

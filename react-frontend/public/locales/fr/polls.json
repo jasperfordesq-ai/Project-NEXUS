@@ -54,20 +54,20 @@
   },
   "toast": {
     "created": "Sondage cree avec succes !",
-    "create_failed": "Echec de la creation du sondage. Veuillez reessayer.",
+    "create_failed": "Nous n’avons pas pu créer votre sondage. Veuillez réessayer.",
     "voted": "Vote enregistre !",
     "already_voted": "Vous avez déjà voté dans ce sondage.",
-    "vote_failed": "Echec de l'enregistrement du vote. Veuillez reessayer.",
+    "vote_failed": "Nous n’avons pas pu enregistrer votre vote. Veuillez réessayer.",
     "deleted": "Sondage supprime.",
-    "delete_failed": "Echec de la suppression du sondage. Veuillez reessayer.",
+    "delete_failed": "Nous n’avons pas pu supprimer cela. Veuillez réessayer.",
     "csv_exported": "CSV exporté avec succès.",
-    "export_failed": "Échec de l'exportation des résultats du sondage."
+    "export_failed": "Nous n’avons pas pu exporter les résultats. Veuillez réessayer."
   },
   "errors": {
     "question_required": "Veuillez entrer une question pour votre sondage.",
     "min_options": "Veuillez fournir au moins 2 options.",
-    "load_failed": "Impossible de charger les sondages.",
-    "load_more_failed": "Echec du chargement des sondages supplementaires."
+    "load_failed": "Nous n’avons pas pu charger les sondages.",
+    "load_more_failed": "Nous n’avons pas pu en charger davantage. Réessayez dans un instant."
   },
   "load_more": "Charger plus",
   "try_again": "Reessayer",

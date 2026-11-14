@@ -54,20 +54,20 @@
   },
   "toast": {
     "created": "Ankieta została pomyślnie utworzona!",
-    "create_failed": "Nie udało się utworzyć ankiety. Proszę spróbować ponownie.",
+    "create_failed": "Nie udało się nam utworzyć Twojej ankiety. Spróbuj ponownie.",
     "voted": "Głos został zarejestrowany!",
     "already_voted": "Twój głos w tej ankiecie został już oddany.",
-    "vote_failed": "Nie udało się zarejestrować głosu. Proszę spróbować ponownie.",
+    "vote_failed": "Nie udało się nam zapisać Twojego głosu. Spróbuj ponownie.",
     "deleted": "Ankieta została usunięta.",
-    "delete_failed": "Nie udało się usunąć ankiety. Proszę spróbować ponownie.",
+    "delete_failed": "Nie udało się nam tego usunąć. Spróbuj ponownie.",
     "csv_exported": "CSV wyeksportowano pomyślnie.",
-    "export_failed": "Nie udało się wyeksportować wyników ankiety."
+    "export_failed": "Nie udało się nam wyeksportować wyników. Spróbuj ponownie."
   },
   "errors": {
     "question_required": "Proszę wpisać pytanie do swojej ankiety.",
     "min_options": "Proszę podać co najmniej 2 opcje.",
-    "load_failed": "Nie można załadować ankiet.",
-    "load_more_failed": "Nie udało się załadować więcej ankiet."
+    "load_failed": "Nie udało się nam wczytać ankiet.",
+    "load_more_failed": "Nie udało się nam wczytać więcej. Spróbuj ponownie za chwilę."
   },
   "load_more": "Załaduj więcej",
   "try_again": "Spróbuj ponownie",

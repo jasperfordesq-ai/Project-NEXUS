@@ -4,7 +4,7 @@
     "edit_label": "Edytuj komentarz"
   },
   "comments_title": "Komentarze",
-  "copy_failed": "Nie udało się skopiować linku",
+  "copy_failed": "Nie udało się nam skopiować linku. Spróbuj ponownie.",
   "copy_link": "Skopiuj link",
   "delete": "Usuń",
   "delete_comment_confirm": "Usunąć ten komentarz?",
@@ -44,7 +44,7 @@
   "send_reply": "Wyślij odpowiedź",
   "share": "Udostępnij",
   "cannot_share_own_content": "Nie możesz udostępniać własnych treści na tablicy",
-  "share_failed": "Nie udało się udostępnić",
+  "share_failed": "Nie udało się nam tego udostępnić. Spróbuj ponownie.",
   "share_options": "Opcje udostępniania",
   "share_to_feed": "Udostępnij na tablicy",
   "shared_to_feed": "Udostępniono na twojej tablicy",
@@ -52,7 +52,7 @@
   "write_reply": "Napisz odpowiedź...",
   "write_reply_to": "Odpowiedz {{name}}...",
   "you": "Ty",
-  "endorsement_update_failed": "Nie udało się zaktualizować poparcia",
+  "endorsement_update_failed": "Nie udało się nam tego zapisać. Spróbuj ponownie.",
   "presence": {
     "online": "W Internecie",
     "away": "Nieobecny",
@@ -78,7 +78,7 @@
   },
   "mention": {
     "suggestions_aria": "Sugestie wzmiankowania, {{count}} wyniki",
-    "no_users": "Nie znaleziono użytkowników",
+    "no_users": "Nikt do tego nie pasuje",
     "connected": "Połączony",
     "suggestions_aria_few": "Sugestie wzmiankowania, {{count}} wyniki",
     "suggestions_aria_many": "Sugestie wzmiankowania, {{count}} wyniki",
@@ -113,8 +113,8 @@
     "aria_endorse": "Poprzyj {{skillName}}",
     "endorsed": "Potwierdzone",
     "endorse": "Potwierdzenie",
-    "remove_failed": "Nie udało się usunąć poparcia",
-    "endorse_failed": "Nie udało się poprzeć"
+    "remove_failed": "Nie udało się nam tego zapisać. Spróbuj ponownie.",
+    "endorse_failed": "Nie udało się nam tego zapisać. Spróbuj ponownie."
   },
   "bookmark": {
     "save": "Zapisz",
@@ -140,7 +140,7 @@
     "count": "{{count}} zapisanych przedmiotów",
     "remove": "Usuń z zapisanych",
     "removed": "Usunięto z zapisanych",
-    "remove_failed": "Nie udało się usunąć",
+    "remove_failed": "Nie udało się nam tego zapisać. Spróbuj ponownie.",
     "type_post": "Post",
     "type_listing": "Oferta lub prośba",
     "type_event": "Wydarzenie",
@@ -152,9 +152,9 @@
     "load_more": "Załaduj więcej",
     "collection_updated": "Kolekcja zaktualizowana",
     "collection_created": "Kolekcja utworzona",
-    "collection_save_failed": "Nie udało się zapisać kolekcji",
+    "collection_save_failed": "Nie udało się nam tego zapisać. Spróbuj ponownie.",
     "collection_deleted": "Zbiór usunięty",
-    "collection_delete_failed": "Nie udało się usunąć zbioru",
+    "collection_delete_failed": "Nie udało się nam tego usunąć. Spróbuj ponownie.",
     "delete_collection_confirm": "Usunąć ten zbiór? Zakładki zostaną zachowane.",
     "delete_collection_title": "Usuń kolekcję",
     "delete_collection_body": "Usunąć „{{name}}”? Zakładki w tej kolekcji zostaną zachowane.",

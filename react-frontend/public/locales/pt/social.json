@@ -4,7 +4,7 @@
     "edit_label": "Editar comentário"
   },
   "comments_title": "Comentários",
-  "copy_failed": "Falha ao copiar link",
+  "copy_failed": "Não conseguimos copiar o link. Tente novamente.",
   "copy_link": "Copiar Link",
   "delete": "Eliminar",
   "delete_comment_confirm": "Eliminar este comentário?",
@@ -44,7 +44,7 @@
   "send_reply": "Enviar resposta",
   "share": "Compartilhar",
   "cannot_share_own_content": "Não pode compartilhar o seu próprio conteúdo no feed",
-  "share_failed": "Falha ao compartilhar",
+  "share_failed": "Não conseguimos compartilhar isso. Tente novamente.",
   "share_options": "Opções de compartilhamento",
   "share_to_feed": "Compartilhar no Feed",
   "shared_to_feed": "Compartilhado no seu feed",
@@ -52,7 +52,7 @@
   "write_reply": "Escreva uma resposta...",
   "write_reply_to": "Responder a {{name}}...",
   "you": "Você",
-  "endorsement_update_failed": "Falha ao atualizar recomendação",
+  "endorsement_update_failed": "Não conseguimos salvar isso. Tente novamente.",
   "presence": {
     "online": "On-line",
     "away": "Ausente",
@@ -75,7 +75,7 @@
   },
   "mention": {
     "suggestions_aria": "Sugestões de menção, {{count}} resultados",
-    "no_users": "Nenhum usuário encontrado",
+    "no_users": "Ninguém corresponde a isso",
     "connected": "Conectado",
     "suggestions_aria_many": "Sugestões de menção, {{count}} resultados",
     "suggestions_aria_one": "Sugestões de menção, {{count}} resultados",
@@ -109,8 +109,8 @@
     "aria_endorse": "Recomendar {{skillName}}",
     "endorsed": "Recomendado",
     "endorse": "Recomendar",
-    "remove_failed": "Falha ao remover recomendação",
-    "endorse_failed": "Falha ao recomendar"
+    "remove_failed": "Não conseguimos salvar isso. Tente novamente.",
+    "endorse_failed": "Não conseguimos salvar isso. Tente novamente."
   },
   "bookmark": {
     "save": "Salvar",
@@ -136,7 +136,7 @@
     "count": "{{count}} itens salvos",
     "remove": "Remover dos salvos",
     "removed": "Removido dos salvos",
-    "remove_failed": "Falha ao remover",
+    "remove_failed": "Não conseguimos salvar isso. Tente novamente.",
     "type_post": "Publicação",
     "type_listing": "Oferta ou pedido",
     "type_event": "Evento",
@@ -148,9 +148,9 @@
     "load_more": "Carregar Mais",
     "collection_updated": "Coleção atualizada",
     "collection_created": "Coleção criada",
-    "collection_save_failed": "Falha ao salvar a coleção",
+    "collection_save_failed": "Não conseguimos salvar isso. Tente novamente.",
     "collection_deleted": "Coleção excluída",
-    "collection_delete_failed": "Falha ao excluir a coleção",
+    "collection_delete_failed": "Não conseguimos excluir isso. Tente novamente.",
     "delete_collection_confirm": "Excluir esta coleção? Os marcadores serão mantidos.",
     "delete_collection_title": "Eliminar coleção",
     "delete_collection_body": "Eliminar \"{{name}}\"? Os marcadores desta coleção serão mantidos.",

@@ -313,7 +313,7 @@ describe('TeamTasks', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Delete: Fix the bug' }));
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalledWith('Something went wrong. Please try again.');
+      expect(mockToast.error).toHaveBeenCalledWith("That didn't work. Please try again.");
     });
   });
 });

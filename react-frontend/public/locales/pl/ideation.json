@@ -59,7 +59,7 @@
     "empty_description": "Obecnie nie ma wyzwań ideacyjnych. Sprawdź ponownie wkrótce!",
     "empty_filtered": "Brak wyzwań pasujących do wybranego filtra.",
     "create": "Utwórz Wyzwanie",
-    "load_error": "Nie można załadować wyzwań",
+    "load_error": "Nie udało się nam wczytać wyzwań.",
     "load_more": "Załaduj Więcej",
     "loading": "Ładowanie wyzwania..."
   },
@@ -83,7 +83,7 @@
     "edit": "Edytuj Pomysł",
     "delete": "Usuń Pomysł",
     "delete_confirm": "Czy na pewno chcesz usunąć ten pomysł? Ta akcja nie może być cofnięta.",
-    "load_error": "Nie można załadować pomysłów",
+    "load_error": "Nie udało się nam wczytać pomysłów.",
     "save_draft": "Zapisz Szkic",
     "publish_draft": "Opublikuj Pomysł",
     "draft_saved": "Szkic zapisany",
@@ -120,7 +120,7 @@
     "delete": "Usuń",
     "delete_confirm": "Czy na pewno chcesz usunąć ten komentarz?",
     "load_more": "Załaduj Więcej Komentarzy",
-    "load_error": "Nie można załadować komentarzy",
+    "load_error": "Nie udało się nam wczytać komentarzy.",
     "loading": "Ładowanie komentarzy..."
   },
   "form": {
@@ -219,7 +219,7 @@
     "chatroom_deleted": "Kanał usunięty",
     "message_posted": "Wiadomość opublikowana",
     "template_applied": "Szablon zastosowany pomyślnie",
-    "error_generic": "Coś poszło nie tak. Proszę spróbować ponownie."
+    "error_generic": "To się nie udało. Spróbuj ponownie."
   },
   "favorites": {
     "add": "Dodaj do ulubionych",
@@ -285,7 +285,7 @@
   "duplicate": {
     "button": "Duplikuj wyzwanie",
     "success": "Wyzwanie zostało pomyślnie skopiowane",
-    "error": "Nie udało się skopiować wyzwania"
+    "error": "Nie udało się nam skopiować tego wyzwania. Spróbuj ponownie."
   },
   "idea_image": "Obrazek pomysłu",
   "media": {
@@ -317,7 +317,7 @@
     "confirm": "Utwórz zespół",
     "creating": "Tworzenie...",
     "success": "Zespół projektu został pomyślnie utworzony! Przekierowuję...",
-    "error": "Nie udało się utworzyć zespołu",
+    "error": "Nie udało się nam utworzyć zespołu. Spróbuj ponownie.",
     "already_converted": "Ten pomysł został już przekształcony w zespół"
   },
   "campaigns": {
@@ -423,12 +423,12 @@
     "delete_confirm": "Czy chcesz usunąć tę kategorię?"
   },
   "validation": {
-    "title_required": "Tytuł jest wymagany",
-    "description_required": "Opis jest wymagany",
+    "title_required": "Nadaj tytuł",
+    "description_required": "Dodaj opis",
     "comment_required": "Komentarz nie może być pusty",
-    "url_required": "URL jest wymagany",
-    "name_required": "Nazwa jest wymagana",
-    "file_required": "Plik jest wymagany"
+    "url_required": "Dodaj adres internetowy",
+    "name_required": "Dodaj nazwę",
+    "file_required": "Wybierz plik"
   },
   "page_meta": {
     "outcomes": {

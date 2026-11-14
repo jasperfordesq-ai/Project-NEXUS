@@ -2,7 +2,7 @@
   "detail": {
     "back_to_goals": "Back to goals",
     "view_all_goals": "View all goals",
-    "not_found_title": "Goal not found",
+    "not_found_title": "We can't find that goal",
     "not_found_description": "This goal may have been deleted or never existed.",
     "private_title": "This goal is private",
     "private_description": "Only the goal owner can view this goal.",
@@ -11,12 +11,12 @@
     "checkin_frequency": "Check-in frequency"
   },
   "checkin_recorded": "Check-in recorded!",
-  "checkin_failed": "Failed to record check-in.",
-  "reminder_set_failed": "Failed to set reminder.",
+  "checkin_failed": "We couldn't save your check-in. Please try again.",
+  "reminder_set_failed": "We couldn't save that. Please try again.",
   "reminder_removed": "Reminder removed.",
-  "reminder_remove_failed": "Failed to remove reminder.",
+  "reminder_remove_failed": "We couldn't save that. Please try again.",
   "template_created": "Goal created from template!",
-  "template_create_failed": "Failed to create goal from template.",
+  "template_create_failed": "We couldn't create your goal. Please try again.",
   "checkin": {
     "aria_progress_percentage": "Progress percentage",
     "title": "Check In",
@@ -60,7 +60,7 @@
   },
   "template": {
     "title": "Start from Template",
-    "loading_error": "Failed to load templates. Please try again.",
+    "loading_error": "That didn't load. Try again in a moment.",
     "try_again": "Try Again",
     "no_templates": "No templates available yet.",
     "all_categories": "All",
@@ -71,7 +71,7 @@
     "cancel": "Cancel"
   },
   "history": {
-    "load_failed": "Failed to load history.",
+    "load_failed": "That didn't load. Try again in a moment.",
     "retry": "Retry",
     "no_activity": "No activity recorded yet.",
     "progress_aria": "Progress: {{percent}}%",
@@ -87,7 +87,7 @@
   },
   "insights": {
     "loading": "Loading goal insights",
-    "load_failed": "Failed to load goal insights.",
+    "load_failed": "That didn't load. Try again in a moment.",
     "current_streak": "Current streak",
     "streak_value": "{{count}} check-ins",
     "best_streak": "Best streak: {{count}}",
@@ -112,7 +112,7 @@
     "action_encourage": "Encourage",
     "action_offer_help": "Offer help",
     "buddy_sent": "Buddy support sent",
-    "buddy_failed": "Failed to send buddy support.",
+    "buddy_failed": "We couldn't send your support. Please try again.",
     "recent_buddy_support": "Recent buddy support",
     "note_type": {
       "nudge": "Nudge",
@@ -129,12 +129,12 @@
     "checkins_value_other": "{{count}} recorded"
   },
   "template_picker": {
-    "load_error": "Failed to load templates. Please try again.",
+    "load_error": "That didn't load. Try again in a moment.",
     "try_again": "Try again",
     "none_available": "No templates available yet.",
     "none_in_category": "No templates in this category."
   },
   "goals": {
-    "load_error": "Failed to load goals. Please try again."
+    "load_error": "That didn't load. Try again in a moment."
   }
 }
