@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-11-13T22:59:42.042Z",
+  "generatedAt": "2026-11-14T19:05:55.355Z",
   "provenance": {
-    "generatedAt": "2026-11-13T22:59:42.042Z",
+    "generatedAt": "2026-11-14T19:05:55.355Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "cf06444ae87353d4ca5ee047dbf260d0be72c93e",
+    "laravelCommitSha": "1834583695098c3849817cdb50d554d26403e14a",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "cf06444ae87353d4ca5ee047dbf260d0be72c93e",
+    "webUkRepositoryCommitSha": "1834583695098c3849817cdb50d554d26403e14a",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -23,7 +23,7 @@
       "routes/api-volunteering-qualifications.php",
       "routes/api-marketplace-admin.php"
     ],
-    "laravelApiRoutesSha256": "7cba438f9defe552c4accd2d233f104385f44a35e387081a71bea7cf5ed85a22"
+    "laravelApiRoutesSha256": "92380aa8ed631c761ddfc5ce569de68d2cea21755670212317aaebc5031c5662"
   },
   "summary": {
     "contracts": 983,
@@ -331,6 +331,7 @@
         "src/routes/auth.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/accessibility/default-english-resilience.spec.js",
         "tests/accessibility/public-pages.spec.js",
         "tests/account-under-minimum-age-session.test.js",
@@ -449,6 +450,7 @@
         "src/routes/auth.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/accessibility/public-pages.spec.js",
         "tests/account-under-minimum-age-session.test.js",
         "tests/account-under-minimum-age-sign-in.test.js",
@@ -1783,6 +1785,7 @@
         "src/routes/auth.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/accessibility/default-english-resilience.spec.js",
         "tests/accessibility/public-pages.spec.js",
         "tests/account-under-minimum-age-session.test.js",
@@ -1853,6 +1856,7 @@
         "src/routes/auth.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/account-under-minimum-age-sign-in.test.js",
         "tests/api.test.js",
         "tests/auth-login-return-to-group-invite.test.js",
@@ -1904,6 +1908,7 @@
         "src/routes/blog-posts.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/accessible-sitemap-help-guides.test.js",
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
@@ -23101,6 +23106,7 @@
         "src/routes/legal.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/accessible-sitemap-help-guides.test.js",
         "tests/api.test.js",
         "tests/developers-pages.test.js",
@@ -28969,6 +28975,7 @@
         "src/server.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/account-under-minimum-age-session.test.js",
         "tests/api.test.js",
         "tests/authenticated-no-store-cache.test.js",
@@ -29071,7 +29078,7 @@
       "method": "POST",
       "path": "/api/v2/newsletter/unsubscribe",
       "apiHelper": "callNewsletterApi",
-      "source": "src/routes/public-info.js:327",
+      "source": "src/routes/public-info.js:361",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "guest-capable; request tenant context still applies",
       "requestShape": "JSON object: token",
@@ -29339,6 +29346,7 @@
         "src/server.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/account-under-minimum-age-session.test.js",
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
@@ -30046,6 +30054,7 @@
         "src/server.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/account-under-minimum-age-session.test.js",
         "tests/api-load-protection.test.js",
         "tests/api.test.js",
@@ -31283,6 +31292,7 @@
         "src/routes/whats-on.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/accessible-sitemap-help-guides.test.js",
         "tests/api.test.js",
         "tests/developers-pages.test.js",
@@ -33102,6 +33112,7 @@
         "src/server.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/account-under-minimum-age-session.test.js",
         "tests/account-under-minimum-age-sign-in.test.js",
         "tests/api.test.js",
@@ -33177,6 +33188,7 @@
         "src/server.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/account-under-minimum-age-session.test.js",
         "tests/api.test.js",
         "tests/authenticated-no-store-cache.test.js",
@@ -33978,6 +33990,7 @@
         "src/lib/request-profile.js"
       ],
       "tests": [
+        "tests/about-page.test.js",
         "tests/account-under-minimum-age-session.test.js",
         "tests/admin-tier-authorisation.test.js",
         "tests/api.test.js",

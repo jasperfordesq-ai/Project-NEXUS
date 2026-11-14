@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-11-13T22:59:29.035Z",
+  "generatedAt": "2026-11-14T19:05:54.359Z",
   "provenance": {
-    "generatedAt": "2026-11-13T22:59:29.035Z",
+    "generatedAt": "2026-11-14T19:05:54.359Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "cf06444ae87353d4ca5ee047dbf260d0be72c93e",
+    "laravelCommitSha": "1834583695098c3849817cdb50d554d26403e14a",
     "laravelWorkingTreeDirty": false,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "cf06444ae87353d4ca5ee047dbf260d0be72c93e",
+    "webUkRepositoryCommitSha": "1834583695098c3849817cdb50d554d26403e14a",
     "webUkRepositoryWorkingTreeDirty": false,
     "caveat": "Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs."
   },
   "summary": {
-    "generatedAt": "2026-11-13T22:59:29.035Z",
+    "generatedAt": "2026-11-14T19:05:54.359Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
