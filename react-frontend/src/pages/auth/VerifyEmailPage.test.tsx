@@ -103,8 +103,13 @@ const mockUseAuth = useAuth as ReturnType<typeof vi.fn>;
 const mockUseTenant = useTenant as ReturnType<typeof vi.fn>;
 
 describe('VerifyEmailPage', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    // Start every test with no token, as the comments in the tests below assume.
+    // (A token left over from an earlier test now also shares that test's
+    // still-pending request, because the page sends one request per link.)
+    const { useSearchParams } = await import('react-router-dom');
+    vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams(), vi.fn()] as ReturnType<typeof useSearchParams>);
     mockUseAuth.mockReturnValue({ isAuthenticated: false, user: null });
     mockUseTenant.mockReturnValue({
       tenant: { id: 2, name: 'Test Tenant', slug: 'test', settings: {} },
@@ -298,6 +303,134 @@ describe('VerifyEmailPage', () => {
       await waitFor(() => expect(screen.queryByRole('status', { busy: true })).not.toBeInTheDocument());
       await waitFor(() => expect(robots()).toBe('noindex, nofollow'));
     });
+  });
+});
+
+/**
+ * B1 walk, 13 Nov 2026 (findings 3.1, 3.3, 3.4, 3.2's button).
+ *
+ * The server deletes a verification token the first time it is used. Opening the
+ * same link again — React's development double effect, a double click, going back,
+ * a mail scanner — used to show a red "failed" screen for an address that IS verified.
+ */
+describe('VerifyEmailPage — opening the same link twice', () => {
+  const setToken = async (token: string) => {
+    const { useSearchParams } = await import('react-router-dom');
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams(`token=${token}`),
+      vi.fn(),
+    ] as ReturnType<typeof useSearchParams>);
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(mockApi.post).mockReset();
+    window.localStorage.clear();
+    mockUseAuth.mockReturnValue({ isAuthenticated: false, user: null });
+    mockUseTenant.mockReturnValue({
+      tenant: { id: 2, name: 'Test Tenant', slug: 'test', settings: {} },
+      branding: { name: 'Test Community', logo_url: null },
+      tenantPath: (p: string) => `/test${p}`,
+      hasModule: vi.fn(() => true),
+    });
+  });
+
+  it('sends one request even when the verify effect runs twice for the same link', async () => {
+    let resolve!: (v: unknown) => void;
+    vi.mocked(mockApi.post).mockImplementation(() => new Promise((r) => { resolve = r; }));
+    await setToken('strict-token-1');
+
+    // Two mounts of the page at once: the effect runs twice while the first
+    // request is still in flight — what React's development double effect does.
+    const { StrictMode } = await import('react');
+    render(<StrictMode><VerifyEmailPage /><VerifyEmailPage /></StrictMode>);
+
+    await waitFor(() => expect(mockApi.post).toHaveBeenCalled());
+    resolve({ success: true, data: { verified: true } });
+
+    expect((await screen.findAllByText('Email verified')).length).toBe(2);
+    expect(mockApi.post).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the success state again when a link that worked here is reopened', async () => {
+    await setToken('reopened-token-1');
+    vi.mocked(mockApi.post).mockResolvedValueOnce({ success: true, data: { verified: true } });
+    const first = render(<VerifyEmailPage />);
+    expect(await screen.findByText('Email verified')).toBeInTheDocument();
+    first.unmount();
+
+    // Second open: the server has deleted the token and says it is invalid.
+    vi.mocked(mockApi.post).mockResolvedValueOnce({
+      success: false,
+      code: 'AUTH_TOKEN_INVALID',
+      error: 'Invalid or expired verification token.',
+    });
+    render(<VerifyEmailPage />);
+
+    expect(await screen.findByText('Email verified')).toBeInTheDocument();
+    expect(screen.queryByText("We couldn't verify your email")).toBeNull();
+  });
+
+  it('never stores the token itself in this browser', async () => {
+    await setToken('secret-token-value-1');
+    vi.mocked(mockApi.post).mockResolvedValueOnce({ success: true, data: { verified: true } });
+    render(<VerifyEmailPage />);
+    expect(await screen.findByText('Email verified')).toBeInTheDocument();
+
+    const everything = Object.keys(window.localStorage)
+      .map((k) => `${k}=${window.localStorage.getItem(k)}`)
+      .join('\n');
+    expect(everything).not.toContain('secret-token-value-1');
+    expect(everything.length).toBeGreaterThan(0);
+  });
+
+  it('still shows the dead-link message for a link that never worked here', async () => {
+    await setToken('never-worked-token');
+    vi.mocked(mockApi.post).mockResolvedValueOnce({
+      success: false,
+      code: 'AUTH_TOKEN_INVALID',
+      error: 'Invalid or expired verification token.',
+    });
+    render(<VerifyEmailPage />);
+    expect(await screen.findByText(/This link isn't working any more/)).toBeInTheDocument();
+  });
+
+  it('remembers that the member is still waiting for approval when the link is reopened', async () => {
+    await setToken('reopened-waiting-token');
+    vi.mocked(mockApi.post).mockResolvedValueOnce({ success: true, data: { verified: true, requires_approval: true } });
+    const first = render(<VerifyEmailPage />);
+    expect(await screen.findByText('Waiting for approval')).toBeInTheDocument();
+    first.unmount();
+
+    vi.mocked(mockApi.post).mockResolvedValueOnce({ success: false, code: 'AUTH_TOKEN_INVALID', error: 'x' });
+    render(<VerifyEmailPage />);
+    expect(await screen.findByText('Waiting for approval')).toBeInTheDocument();
+  });
+
+  it('does not send a member who is waiting for approval to a sign-in that will refuse them', async () => {
+    await setToken('waiting-token-2');
+    vi.mocked(mockApi.post).mockResolvedValueOnce({ success: true, data: { verified: true, requires_approval: true } });
+    render(<VerifyEmailPage />);
+
+    expect(await screen.findByText('Waiting for approval')).toBeInTheDocument();
+    const hrefs = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
+    expect(hrefs).toContain('/test/');
+    expect(hrefs.some((h) => h?.startsWith('/test/login'))).toBe(false);
+  });
+
+  it('shows the community welcome band on every state', async () => {
+    await setToken('band-token');
+    vi.mocked(mockApi.post).mockReturnValue(new Promise(() => {}));
+    render(<VerifyEmailPage />);
+    expect(screen.getByTestId('community-welcome')).toBeInTheDocument();
+  });
+
+  it('shows the community welcome band on the result screen', async () => {
+    await setToken('band-token-2');
+    vi.mocked(mockApi.post).mockResolvedValueOnce({ success: true, data: { verified: true } });
+    render(<VerifyEmailPage />);
+    expect(await screen.findByText('Email verified')).toBeInTheDocument();
+    expect(screen.getByTestId('community-welcome')).toBeInTheDocument();
   });
 });
 

@@ -89,8 +89,14 @@ class EmailVerificationController extends BaseApiController
             // Already verified - delete any remaining tokens and return success
             $this->cleanupVerificationTokens($userId, $tenantId);
 
+            // Carry the same approval flag as the first-time path (B1 walk 3.3,
+            // 13 Nov 2026): without it a verified member still waiting for a
+            // coordinator was told "you're all set, go to sign in", and sign-in
+            // then refused them. Reaching this branch needs a valid token for
+            // this address, so it reveals nothing the first-time reply doesn't.
             return $this->respondWithData([
                 'verified' => true,
+                'requires_approval' => $this->isStillPendingApproval((int) $userId, (int) $tenantId),
                 'message' => __('api_controllers_1.email_verification.already_verified')
             ]);
         }
@@ -149,23 +155,35 @@ class EmailVerificationController extends BaseApiController
         // Re-read the row rather than inferring from the UPDATE above: the approval
         // branch only activates an already-approved member, so "approval required"
         // does not by itself mean this member is still pending.
-        $stillPending = false;
-        try {
-            $state = DB::selectOne(
-                "SELECT status, is_approved FROM users WHERE id = ? AND tenant_id = ?",
-                [$userId, $tenantId]
-            );
-            $stillPending = $state !== null
-                && ((string) $state->status === 'pending' || (int) $state->is_approved !== 1);
-        } catch (\Throwable $e) {
-            Log::warning('[EmailVerification] Failed to read post-verification state: ' . $e->getMessage());
-        }
+        $stillPending = $this->isStillPendingApproval((int) $userId, (int) $tenantId);
 
         return $this->respondWithData([
             'verified' => true,
             'requires_approval' => $stillPending,
             'message' => __('api_controllers_1.email_verification.verified_successfully')
         ]);
+    }
+
+    /**
+     * Whether a member with a verified email is still waiting on an administrator
+     * (pending, or not yet approved). Shared by the first-time and the
+     * already-verified replies so both answer the same way. Tenant-scoped.
+     */
+    private function isStillPendingApproval(int $userId, int $tenantId): bool
+    {
+        try {
+            $state = DB::selectOne(
+                "SELECT status, is_approved FROM users WHERE id = ? AND tenant_id = ?",
+                [$userId, $tenantId]
+            );
+
+            return $state !== null
+                && ((string) $state->status === 'pending' || (int) $state->is_approved !== 1);
+        } catch (\Throwable $e) {
+            Log::warning('[EmailVerification] Failed to read post-verification state: ' . $e->getMessage());
+
+            return false;
+        }
     }
 
     /** POST /api/auth/resend-verification */

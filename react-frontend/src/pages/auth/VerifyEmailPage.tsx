@@ -19,6 +19,7 @@ import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Mail from 'lucide-react/icons/mail';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import { useTranslation } from 'react-i18next';
+import { CommunityWelcome } from '@/components/auth/CommunityWelcome';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Spinner } from '@/components/ui/Spinner';
@@ -29,8 +30,84 @@ import { useToast } from '@/contexts/ToastContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { buildReturnTarget, explicitAuthReturn } from '@/lib/auth-return';
 import { api } from '@/lib/api';
+import { safeLocalStorageGetJSON, safeLocalStorageSetJSON } from '@/lib/safeStorage';
 
 type VerifyState = 'loading' | 'success' | 'error';
+
+/*
+ * One verification link, one request (B1 walk 3.1, 13 Nov 2026).
+ *
+ * The server deletes a token the first time it is used, so a second request for
+ * the same link is always refused. React's development double effect, a double
+ * click or going back used to send that second request and show a red "failed"
+ * screen for an address that had just been verified. Two guards, both on this
+ * side only — the server check is unchanged:
+ *
+ *  1. A request already on its way for a token is shared, not repeated.
+ *  2. This browser remembers that a link worked — a short hash of the token,
+ *     never the token — so reopening it shows the success screen again.
+ */
+type VerifyOutcome =
+  | { ok: true; requiresApproval: boolean }
+  | { ok: false; code?: string; error?: string };
+
+const inFlightVerifications = new Map<string, Promise<VerifyOutcome>>();
+
+const VERIFIED_LINKS_KEY = 'nexus_verified_email_links';
+const VERIFIED_LINKS_KEPT = 5;
+
+interface RememberedLink { h: string; a: boolean }
+
+/** FNV-1a, 32-bit: enough to recognise a link again, useless for rebuilding it. */
+function shortLinkHash(token: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < token.length; i++) {
+    hash ^= token.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, '0');
+}
+
+function readRememberedLinks(): RememberedLink[] {
+  const stored = safeLocalStorageGetJSON<unknown>(VERIFIED_LINKS_KEY, []);
+  return Array.isArray(stored)
+    ? stored.filter((e): e is RememberedLink => !!e && typeof e.h === 'string')
+    : [];
+}
+
+function rememberVerifiedLink(token: string, requiresApproval: boolean): void {
+  const h = shortLinkHash(token);
+  const kept = readRememberedLinks().filter((e) => e.h !== h);
+  safeLocalStorageSetJSON(VERIFIED_LINKS_KEY, [{ h, a: requiresApproval }, ...kept].slice(0, VERIFIED_LINKS_KEPT));
+}
+
+function recallVerifiedLink(token: string): RememberedLink | null {
+  const h = shortLinkHash(token);
+  return readRememberedLinks().find((e) => e.h === h) ?? null;
+}
+
+function verifyTokenOnce(token: string): Promise<VerifyOutcome> {
+  const existing = inFlightVerifications.get(token);
+  if (existing) return existing;
+
+  const request = Promise.resolve()
+    .then(() => api.post<{ verified?: boolean; requires_approval?: boolean }>('/auth/verify-email', { token }))
+    .then((response): VerifyOutcome => {
+      if (response?.success) {
+        const requiresApproval = response.data?.requires_approval === true;
+        rememberVerifiedLink(token, requiresApproval);
+        return { ok: true, requiresApproval };
+      }
+      return { ok: false, code: response.code, error: response.error };
+    })
+    .catch((): VerifyOutcome => ({ ok: false }))
+    .finally(() => {
+      inFlightVerifications.delete(token);
+    });
+
+  inFlightVerifications.set(token, request);
+  return request;
+}
 
 export function VerifyEmailPage() {
   const { t } = useTranslation('auth');
@@ -81,34 +158,27 @@ export function VerifyEmailPage() {
 
     let cancelled = false;
 
-    async function verifyEmail() {
-      try {
-        const response = await api.post<{ verified?: boolean; requires_approval?: boolean }>(
-          '/auth/verify-email',
-          { token },
-        );
-        if (!cancelled) {
-          if (response.success) {
-            setRequiresApproval(response.data?.requires_approval === true);
-            setState('success');
-          } else {
-            setState('error');
-            // A dead link (used, run out, or mistyped) is the one refusal this page can
-            // explain better than the server's sentence: it also covers "you may already
-            // be verified". Any other refusal keeps the server's own words.
-            const deadLink = response.code === 'AUTH_TOKEN_INVALID';
-            setErrorMessage(deadLink || !response.error ? t('verify_email.expired_error') : response.error);
-          }
-        }
-      } catch {
-        if (!cancelled) {
-          setState('error');
-          setErrorMessage(t('verify_email.expired_error'));
-        }
+    verifyTokenOnce(token).then((outcome) => {
+      if (cancelled) return;
+      if (outcome.ok) {
+        setRequiresApproval(outcome.requiresApproval);
+        setState('success');
+        return;
       }
-    }
-
-    verifyEmail();
+      const deadLink = outcome.code === 'AUTH_TOKEN_INVALID';
+      // A dead link that already worked in this browser: the address is verified.
+      const remembered = deadLink ? recallVerifiedLink(token) : null;
+      if (remembered) {
+        setRequiresApproval(remembered.a === true);
+        setState('success');
+        return;
+      }
+      setState('error');
+      // A dead link (used, run out, or mistyped) is the one refusal this page can
+      // explain better than the server's sentence: it also covers "you may already
+      // be verified". Any other refusal keeps the server's own words.
+      setErrorMessage(deadLink || !outcome.error ? t('verify_email.expired_error') : outcome.error);
+    });
 
     return () => {
       cancelled = true;
@@ -155,7 +225,9 @@ export function VerifyEmailPage() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md"
         >
-          <GlassCard className="p-8 text-center">
+          <GlassCard className="overflow-hidden p-5 text-center sm:p-8">
+            {/* The community first, as on the sign-in and join cards. */}
+            <CommunityWelcome className="-mx-5 -mt-5 sm:-mx-8 sm:-mt-8" />
             <div role="status" aria-busy="true" aria-label={t('verify_email.loading_title')} className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent/20 flex items-center justify-center">
               <Spinner size="lg" aria-hidden="true" />
             </div>
@@ -184,7 +256,8 @@ export function VerifyEmailPage() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md"
         >
-          <GlassCard className="p-8 text-center">
+          <GlassCard className="overflow-hidden p-5 text-center sm:p-8">
+            <CommunityWelcome className="-mx-5 -mt-5 sm:-mx-8 sm:-mt-8" />
             <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
               <CheckCircle aria-hidden="true" className="w-8 h-8 text-emerald-400" />
             </div>
@@ -200,7 +273,7 @@ export function VerifyEmailPage() {
                   <ShieldCheck aria-hidden="true" className="w-5 h-5 text-[var(--color-warning)] shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium text-theme-warning">{t('verify_email.awaiting_approval_title')}</p>
-                    <p className="text-amber-600/80 dark:text-amber-300/80 mt-1">
+                    <p className="text-theme-secondary mt-1">
                       {t('verify_email.awaiting_approval_body')}
                     </p>
                   </div>
@@ -214,9 +287,16 @@ export function VerifyEmailPage() {
                   ? t('register.continue')
                   : dashboardEnabled ? t('verify_email.go_to_dashboard') : t('not_found.go_home', { ns: 'utility' })}
               </Button>
+            ) : requiresApproval ? (
+              // Still waiting for a coordinator: sign-in would refuse them, so the
+              // way on is the community's home page; the panel above says an
+              // email comes once they're approved (B1 walk 3.2).
+              <Button as={Link} to={tenantPath('/')} className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
+                {t('register.back_to_home')}
+              </Button>
             ) : (
               <Button as={Link} to={loginPath} className="w-full bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
-                {requiresApproval ? t('verify_email.back_to_login') : t('verify_email.go_to_login')}
+                {t('verify_email.go_to_login')}
               </Button>
             )}
           </GlassCard>
@@ -239,7 +319,8 @@ export function VerifyEmailPage() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <GlassCard className="p-8 text-center">
+        <GlassCard className="overflow-hidden p-5 text-center sm:p-8">
+          <CommunityWelcome className="-mx-5 -mt-5 sm:-mx-8 sm:-mt-8" />
           <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-red-500/20 flex items-center justify-center">
             <XCircle aria-hidden="true" className="w-8 h-8 text-red-400" />
           </div>

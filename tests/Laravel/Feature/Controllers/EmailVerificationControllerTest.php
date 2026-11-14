@@ -249,6 +249,68 @@ class EmailVerificationControllerTest extends TestCase
         $this->assertSame('active', $row->status);
     }
 
+    /**
+     * B1 walk 3.3 (13 Nov 2026): a member who is already verified but still waiting
+     * for a coordinator opened a second, fresh link. The "already verified" reply had
+     * no approval flag, so the page told them "you're all set, go to sign in" — and
+     * sign-in then refused them. The reply must carry the same flag as the first-time
+     * path, computed the same way.
+     */
+    public function test_already_verified_reply_says_when_the_member_still_waits_for_approval(): void
+    {
+        $this->ensureEmailVerificationTokenTable();
+
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'email_verified_at' => now(),
+            'is_verified' => true,
+            'is_approved' => false,
+            'status' => 'pending',
+        ]);
+
+        $plaintext = bin2hex(random_bytes(32));
+        DB::table('email_verification_tokens')->insert([
+            'user_id' => $user->id,
+            'tenant_id' => $this->testTenantId,
+            'token' => hash('sha256', $plaintext),
+            'expires_at' => now()->addDay(),
+        ]);
+
+        TenantContext::setById($this->testTenantId);
+        $response = $this->apiPost('/auth/verify-email', ['token' => $plaintext]);
+
+        $response->assertOk();
+        $this->assertTrue($response->json('data.verified'));
+        $this->assertTrue($response->json('data.requires_approval'));
+        // The used token is still cleaned up.
+        $this->assertSame(0, DB::table('email_verification_tokens')->where('user_id', $user->id)->count());
+    }
+
+    public function test_already_verified_reply_says_no_approval_wait_for_an_active_member(): void
+    {
+        $this->ensureEmailVerificationTokenTable();
+
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'email_verified_at' => now(),
+            'is_verified' => true,
+            'is_approved' => true,
+            'status' => 'active',
+        ]);
+
+        $plaintext = bin2hex(random_bytes(32));
+        DB::table('email_verification_tokens')->insert([
+            'user_id' => $user->id,
+            'tenant_id' => $this->testTenantId,
+            'token' => hash('sha256', $plaintext),
+            'expires_at' => now()->addDay(),
+        ]);
+
+        TenantContext::setById($this->testTenantId);
+        $response = $this->apiPost('/auth/verify-email', ['token' => $plaintext]);
+
+        $response->assertOk();
+        $this->assertSame(false, $response->json('data.requires_approval'));
+    }
+
     public function test_verify_email_does_not_release_an_account_held_for_its_identity_check(): void
     {
         // F-572: an administrator-created account in an identity-check
