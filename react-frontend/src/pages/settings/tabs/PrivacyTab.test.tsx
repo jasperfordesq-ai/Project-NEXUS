@@ -123,9 +123,9 @@ describe('PrivacyTab', () => {
   it('shows a retry action and no save button when privacy loading fails', async () => {
     const { userEvent } = await import('@/test/test-utils');
     const user = userEvent.setup();
-    render(<PrivacyTab {...defaultProps} privacyError="Failed to load privacy settings" />);
+    render(<PrivacyTab {...defaultProps} privacyError="We couldn't load your privacy settings" />);
 
-    expect(screen.getByText('Failed to load privacy settings')).toBeDefined();
+    expect(screen.getByText("We couldn't load your privacy settings")).toBeDefined();
     expect(screen.queryByText('Save Privacy Settings')).toBeNull();
     await user.click(screen.getByText('Try Again'));
     expect(defaultProps.onRetryPrivacy).toHaveBeenCalled();

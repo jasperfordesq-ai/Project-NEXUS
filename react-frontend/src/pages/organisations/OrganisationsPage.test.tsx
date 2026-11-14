@@ -118,7 +118,7 @@ describe('OrganisationsPage', () => {
     });
     render(<OrganisationsPage />);
     await waitFor(() => {
-      expect(screen.getByText('No organisations found')).toBeInTheDocument();
+      expect(screen.getByText("No organisations to show")).toBeInTheDocument();
     });
   });
 
@@ -208,7 +208,7 @@ describe('OrganisationsPage', () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Network error'));
     render(<OrganisationsPage />);
     await waitFor(() => {
-      expect(screen.getByText('Unable to Load Organisations')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load the organisations")).toBeInTheDocument();
     });
     expect(screen.getByText('Try Again')).toBeInTheDocument();
   });

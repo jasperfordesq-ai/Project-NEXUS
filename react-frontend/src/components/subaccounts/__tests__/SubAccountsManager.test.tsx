@@ -543,7 +543,7 @@ describe('SubAccountsManager', () => {
     render(<SubAccountsManager />);
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to load linked accounts')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load your linked accounts")).toBeInTheDocument();
       expect(screen.getByText('Retry')).toBeInTheDocument();
     });
   });

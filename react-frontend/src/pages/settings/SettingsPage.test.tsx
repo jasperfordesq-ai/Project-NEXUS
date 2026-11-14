@@ -325,7 +325,7 @@ vi.mock('react-i18next', () => {
     'unsaved_changes.leave': 'Leave Anyway',
     'unsaved_changes.stay': 'Stay',
     'privacy_sections.title': 'Privacy Settings',
-    'privacy_load_failed': 'Failed to load privacy settings',
+    'privacy_load_failed': "We couldn't load your privacy settings",
   };
   const stableTFn = (key: string, opts?: Record<string, unknown> | string): string => {
     if (typeof opts === 'object' && opts !== null && 'fallbackValue' in opts) {
