@@ -143,7 +143,7 @@ describe('SellerOrdersPage', () => {
     render(<SellerOrdersPage />);
 
     await waitFor(() => {
-      expect(screen.getAllByText(/listing.*not.found/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/can't find that item/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/Bob Buyer/)).toBeInTheDocument();
     });
   });

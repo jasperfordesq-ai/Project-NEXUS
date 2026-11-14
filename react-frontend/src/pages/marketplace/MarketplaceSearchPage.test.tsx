@@ -213,7 +213,7 @@ describe('MarketplaceSearchPage', () => {
       expect(mockToast.error).toHaveBeenCalled();
       expect(screen.getByText('Search failed. Please try again.')).toBeInTheDocument();
     });
-    expect(screen.queryByText('No Results Found')).not.toBeInTheDocument();
+    expect(screen.queryByText("Nothing matches that search")).not.toBeInTheDocument();
   });
 
   // ── breadcrumb ─────────────────────────────────────────────────────────────

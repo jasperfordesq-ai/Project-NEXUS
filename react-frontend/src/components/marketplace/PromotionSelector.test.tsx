@@ -173,7 +173,7 @@ describe('PromotionSelector', () => {
     render(<PromotionSelector {...DEFAULT_PROPS} />);
     await waitFor(() => {
       expect(
-        screen.getByText('Failed to load promotion options.')
+        screen.getByText("We couldn't load the promotion options.")
       ).toBeInTheDocument();
     });
   });
@@ -325,7 +325,7 @@ describe('PromotionSelector', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toBeInTheDocument();
-      expect(screen.getByRole('alert')).toHaveTextContent('Failed to create promotion.');
+      expect(screen.getByRole('alert')).toHaveTextContent("We couldn't set up the promotion. Please try again.");
     });
   });
 
@@ -348,7 +348,7 @@ describe('PromotionSelector', () => {
     fireEvent.click(screen.getByRole('button', { name: /promote for/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Failed to create promotion.');
+      expect(screen.getByRole('alert')).toHaveTextContent("We couldn't set up the promotion. Please try again.");
     });
   });
 

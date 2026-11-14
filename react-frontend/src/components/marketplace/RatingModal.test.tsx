@@ -284,7 +284,7 @@ describe('RatingModal', () => {
     fireEvent.click(screen.getByRole('button', { name: /submit rating/i }));
 
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalledWith('Failed to submit rating');
+      expect(mockToast.error).toHaveBeenCalledWith("We couldn't send your rating");
     });
   });
 
@@ -301,7 +301,7 @@ describe('RatingModal', () => {
     fireEvent.click(screen.getByRole('button', { name: /submit rating/i }));
 
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalledWith('Failed to submit rating');
+      expect(mockToast.error).toHaveBeenCalledWith("We couldn't send your rating");
     });
   });
 
