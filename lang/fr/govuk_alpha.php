@@ -423,6 +423,8 @@ return [
         'month_highlight_hours' => 'Heures partagées',
         'month_highlight_members' => 'Nouveaux membres',
         'month_highlight_listings' => 'Nouvelles offres et demandes',
+        'month_highlight_thank_yous' => 'Messages de remerciement écrits',
+        'month_highlight_helpers' => 'Membres qui ont aidé quelqu’un',
         'welcome' => 'Bienvenue, :name.',
         'new_listing' => 'Créer une annonce',
         'onboarding_title' => 'Finalisez la configuration de votre profil',

@@ -1460,6 +1460,8 @@
                 "month_highlight_hours": "Hours shared",
                 "month_highlight_members": "New members",
                 "month_highlight_listings": "New offers and requests",
+                "month_highlight_thank_yous": "Thank-you notes written",
+                "month_highlight_helpers": "Members who helped someone",
                 "welcome": "Welcome back, :name.",
                 "new_listing": "Create a listing",
                 "onboarding_title": "Finish setting up your profile",

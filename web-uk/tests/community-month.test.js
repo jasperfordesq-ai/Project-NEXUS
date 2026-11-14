@@ -41,6 +41,44 @@ describe('community month highlight', () => {
     expect(communityMonthHighlight({ data: { hours_shared: 3 } }, { t: en })).toBeNull();
   });
 
+  // Warmth phase 6 (D3a + D8): two counts that name nobody, as in React.
+  it('adds the thank-you notes and the members who helped someone this month', () => {
+    const rows = communityMonthHighlight(
+      { data: { ...payload.data, thank_yous: 42, members_helped: 7 } },
+      { t: en, community: 'X', locale: 'en-GB' }
+    ).rows;
+    expect(rows.slice(3)).toEqual([
+      { key: { text: 'Thank-you notes written' }, value: { text: '42' } },
+      { key: { text: 'Members who helped someone' }, value: { text: '7' } }
+    ]);
+  });
+
+  it('leaves out no thank-yous, and fewer than three helpers so nobody can be picked out', () => {
+    const rows = communityMonthHighlight(
+      { data: { ...payload.data, thank_yous: 0, members_helped: 2 } },
+      { t: en, locale: 'en-GB' }
+    ).rows;
+    expect(rows.map((row) => row.key.text)).toEqual(['Hours shared', 'New members', 'New offers and requests']);
+  });
+
+  it('shows the section for the counts alone in a month with no other figures yet', () => {
+    const highlight = communityMonthHighlight(
+      { data: { month: '2026-11', hours_shared: 0, new_members: 0, new_listings: 0, thank_yous: 3 } },
+      { t: en, locale: 'en-GB' }
+    );
+    expect(highlight.rows).toEqual([{ key: { text: 'Thank-you notes written' }, value: { text: '3' } }]);
+  });
+
+  it('has the two new labels in every language, not English copies', () => {
+    for (const locale of ['ar', 'de', 'es', 'fr', 'ga', 'it', 'ja', 'nl', 'pl', 'pt']) {
+      const t = createTranslator(locale);
+      for (const key of ['dashboard.month_highlight_thank_yous', 'dashboard.month_highlight_helpers']) {
+        expect(t(key)).not.toBe(key);
+        expect(t(key)).not.toBe(en(key));
+      }
+    }
+  });
+
   it('starts the heading with a capital in languages whose months are lower case', () => {
     const fr = communityMonthHighlight(payload, { t: createTranslator('fr'), community: 'AWID', locale: 'fr-FR' });
     expect(fr.title).toBe('Novembre à AWID');

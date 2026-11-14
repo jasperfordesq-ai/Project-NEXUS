@@ -1460,6 +1460,8 @@
                 "month_highlight_hours": "分かち合った時間",
                 "month_highlight_members": "新しいメンバー",
                 "month_highlight_listings": "新しいオファーとリクエスト",
+                "month_highlight_thank_yous": "書かれたお礼のメッセージ",
+                "month_highlight_helpers": "誰かの手助けをしたメンバー",
                 "welcome": "おかえりなさい、 :nameさん。",
                 "new_listing": "出品を作成する",
                 "onboarding_title": "プロフィールの設定を完了させましょう",

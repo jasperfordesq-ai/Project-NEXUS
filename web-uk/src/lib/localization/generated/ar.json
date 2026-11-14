@@ -1460,6 +1460,8 @@
                 "month_highlight_hours": "الساعات المشتركة",
                 "month_highlight_members": "أعضاء جدد",
                 "month_highlight_listings": "عروض وطلبات جديدة",
+                "month_highlight_thank_yous": "رسائل الشكر المكتوبة",
+                "month_highlight_helpers": "أعضاء ساعدوا أحدًا",
                 "welcome": "مرحبًا بعودتك، :name.",
                 "new_listing": "إنشاء إعلان",
                 "onboarding_title": "أكمل إعداد ملفك الشخصي",

@@ -11,10 +11,14 @@
  * feedback, Nov 2026: "energy, warmth, and community").
  *
  * Community-wide totals only (hours shared, members who joined, offers and
- * requests posted); nothing about any one member. As in React, a figure that is
+ * requests posted, thank-you notes written, members who helped someone);
+ * nothing about any one member. As in React, a figure that is
  * zero is left out, the offers row only shows while listings are on, and with
  * nothing to show there is no section at all.
  */
+
+/** Below this many helpers the count is left out (FeedSidebarController::MIN_MEMBERS_HELPED). */
+const MIN_HELPERS_SHOWN = 3;
 
 function positive(value) {
   const number = Number(value);
@@ -37,6 +41,14 @@ function communityMonthHighlight(payload, { listings = true, locale = 'en-GB', t
     ['members', positive(data.new_members)],
     ...(listings ? [['listings', positive(data.new_listings)]] : [])
   ].filter(([, value]) => value > 0);
+  // Warmth phase 6 (D3a + D8): thank-you notes written, and members who helped
+  // someone. Counts only, as in React; the helpers below three are left out so
+  // a small community's count cannot point at one person. A summary-list row
+  // ("label: number") needs no plural forms.
+  const thankYous = positive(data.thank_yous);
+  const helpers = positive(data.members_helped);
+  if (thankYous >= 1) figures.push(['thank_yous', thankYous]);
+  if (helpers >= MIN_HELPERS_SHOWN) figures.push(['helpers', helpers]);
   if (figures.length === 0) return null;
 
   const monthName = new Date(Date.UTC(Number(month[1]), Number(month[2]) - 1, 1))

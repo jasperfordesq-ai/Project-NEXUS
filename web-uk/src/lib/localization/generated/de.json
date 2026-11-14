@@ -1460,6 +1460,8 @@
                 "month_highlight_hours": "Geteilte Stunden",
                 "month_highlight_members": "Neue Mitglieder",
                 "month_highlight_listings": "Neue Angebote und Anfragen",
+                "month_highlight_thank_yous": "Geschriebene Dankesnachrichten",
+                "month_highlight_helpers": "Mitglieder, die jemandem geholfen haben",
                 "welcome": "Willkommen zurück, :name.",
                 "new_listing": "Inserat erstellen",
                 "onboarding_title": "Richten Sie Ihr Profil fertig ein",
