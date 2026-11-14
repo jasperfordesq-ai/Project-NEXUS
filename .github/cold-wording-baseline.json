@@ -1,16 +1,16 @@
 {
   "description": "Shrink-only ceiling for cold member-facing English messages on the React website. See scripts/check-cold-wording.mjs and docs/VOICE-AND-TONE.md.",
-  "ceiling": 539,
+  "ceiling": 447,
   "byKind": {
-    "failed_to": 251,
-    "unable_to": 63,
-    "not_found": 87,
-    "must_blunt": 48,
-    "invalid": 27,
-    "denied": 15,
-    "could_not_blunt": 14,
-    "error_word": 16,
-    "went_wrong": 18,
+    "failed_to": 205,
+    "unable_to": 35,
+    "not_found": 81,
+    "must_blunt": 45,
+    "invalid": 25,
+    "denied": 13,
+    "could_not_blunt": 12,
+    "error_word": 15,
+    "went_wrong": 15,
     "shouting": 1
   }
 }

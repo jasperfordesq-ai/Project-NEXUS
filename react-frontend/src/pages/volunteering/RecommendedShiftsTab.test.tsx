@@ -155,7 +155,7 @@ describe("RecommendedShiftsTab", () => {
     vi.mocked(api.get).mockResolvedValue({ success: false, data: null });
     render(<RecommendedShiftsTab />);
     await waitFor(() => {
-      expect(screen.getByText("Failed to load recommendations")).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load recommendations for you. Please try again.")).toBeInTheDocument();
     });
     expect(screen.getByRole("button", { name: /Try Again/i })).toBeInTheDocument();
   });

@@ -128,7 +128,7 @@ vi.mock("react-i18next", () => ({
         "volunteering.browse_organisations": "Browse Organisations",
         "volunteering.post_opportunity": "Post Opportunity",
         "volunteering.search_placeholder": "Search opportunities...",
-        "volunteering.no_opportunities_found": "No opportunities found",
+        "volunteering.no_opportunities_found": "No opportunities to show",
         "volunteering.apply": "Apply",
         "volunteering.applied": "Applied",
         "volunteering.unable_to_load_opportunities": "Unable to load opportunities",
@@ -611,7 +611,7 @@ describe('VolunteeringPage', () => {
     });
     render(<VolunteeringPage />);
     await waitFor(() => {
-      expect(screen.getByText('No opportunities found')).toBeInTheDocument();
+      expect(screen.getByText("No opportunities to show")).toBeInTheDocument();
     });
   });
 

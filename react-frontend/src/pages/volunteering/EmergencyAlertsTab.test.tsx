@@ -147,7 +147,7 @@ describe("EmergencyAlertsTab", () => {
     vi.mocked(api.get).mockResolvedValue({ success: false, data: null });
     render(<EmergencyAlertsTab />);
     await waitFor(() => {
-      expect(screen.getByText("Failed to load alerts")).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load the alerts.")).toBeInTheDocument();
     });
     expect(screen.getByRole("button", { name: /Try Again/i })).toBeInTheDocument();
   });

@@ -18,7 +18,7 @@ const translations: Record<string, string> = {
   'accessibility.save': 'Save Changes',
   'accessibility.privacy_notice': 'This is a private note for you. Organisations and coordinators cannot see it.',
   'accessibility.duplicate_type': 'Each type of need can only be added once.',
-  'accessibility.load_error': 'Unable to load accessibility needs.',
+  'accessibility.load_error': "We couldn't load your accessibility needs.",
   'accessibility.try_again': 'Try Again',
   'accessibility.no_needs_title': 'No accessibility needs added',
   'accessibility.no_needs_desc_private': 'Keep a private note of your accessibility needs. It is not shared with organisations or coordinators.',
@@ -181,7 +181,7 @@ describe('AccessibilityTab', () => {
     vi.mocked(api.get).mockResolvedValue({ success: false, data: null });
     render(<AccessibilityTab />);
     await waitFor(() => {
-      expect(screen.getByText('Unable to load accessibility needs.')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load your accessibility needs.")).toBeInTheDocument();
     });
     const buttons = screen.getAllByRole('button');
     const tryAgainBtn = buttons.find((btn) => btn.textContent?.includes('Try Again'));
@@ -197,7 +197,7 @@ describe('AccessibilityTab', () => {
     });
     render(<AccessibilityTab />);
     await waitFor(() => {
-      expect(screen.getByText('Unable to load accessibility needs.')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load your accessibility needs.")).toBeInTheDocument();
     });
     const buttons = screen.getAllByRole('button');
     const tryAgainBtn = buttons.find((btn) => btn.textContent?.includes('Try Again'));

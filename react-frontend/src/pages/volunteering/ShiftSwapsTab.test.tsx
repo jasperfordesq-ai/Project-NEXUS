@@ -52,7 +52,7 @@ vi.mock("react-i18next", () => ({
         "swaps.to": "To:",
         "swaps.to_unnamed": "To: the volunteer on that shift (named once they agree)",
         "swaps.cancel": "Cancel",
-        "swaps.accept_failed": "Failed to accept swap request.",
+        "swaps.accept_failed": "We couldn't accept that swap. Please try again.",
         "swaps.status_expired": "Expired",
         "swaps.status_admin_pending": "Pending Admin Review",
         load_more: "Load more",

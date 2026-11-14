@@ -258,7 +258,7 @@ describe('OrgQualificationsTab', () => {
     const user = userEvent.setup();
     vi.mocked(api.get).mockResolvedValueOnce({ success: false, error: 'boom', code: 'SERVER_ERROR' });
     render(<OrgQualificationsTab orgId={ORG_ID} />);
-    expect(await screen.findByText('Unable to load qualifications.')).toBeInTheDocument();
+    expect(await screen.findByText("We couldn't load the qualifications.")).toBeInTheDocument();
 
     vi.mocked(api.get).mockResolvedValue(listResponse([makeQualification()]));
     await user.click(screen.getByRole('button', { name: 'Try Again' }));

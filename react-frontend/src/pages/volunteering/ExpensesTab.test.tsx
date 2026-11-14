@@ -19,7 +19,7 @@ const translations: Record<string, string> = {
   'expenses.stats.total_claimed': 'Total Claimed',
   'expenses.stats.approved': 'Approved',
   'expenses.stats.paid': 'Paid',
-  'expenses.load_error': 'Unable to load expenses. Please try again.',
+  'expenses.load_error': "We couldn't load your expenses. Please try again.",
   'expenses.try_again': 'Try Again',
   'expenses.empty_title': 'No expenses yet',
 };
@@ -227,7 +227,7 @@ describe('ExpensesTab', () => {
     vi.mocked(api.get).mockResolvedValue({ success: false, data: null });
     render(<ExpensesTab />);
     await waitFor(() => {
-      expect(screen.getByText('Unable to load expenses. Please try again.')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load your expenses. Please try again.")).toBeInTheDocument();
     });
     const buttons = screen.getAllByRole('button');
     const tryAgainBtn = buttons.find((btn) => btn.textContent?.includes('Try Again'));
@@ -353,7 +353,7 @@ describe('ExpensesTab', () => {
     });
     render(<ExpensesTab />);
     await waitFor(() => {
-      expect(screen.getByText('Unable to load expenses. Please try again.')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load your expenses. Please try again.")).toBeInTheDocument();
     });
     const buttons = screen.getAllByRole('button');
     const tryAgainBtn = buttons.find((btn) => btn.textContent?.includes('Try Again'));

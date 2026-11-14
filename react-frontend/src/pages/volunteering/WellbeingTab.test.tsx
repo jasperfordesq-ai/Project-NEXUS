@@ -79,8 +79,8 @@ const stableT = (
     "wellbeing.switched_off_title": "Wellbeing check-ins are switched off",
     "wellbeing.switched_off_desc": "Your community has switched wellbeing check-ins off. If you need support, contact your community's team.",
     "wellbeing.rate_limited": "You have done this several times in a short while. Please wait a moment and try again.",
-    "wellbeing.load_error": "Unable to load wellbeing data. Please try again.",
-    "wellbeing.checkin_failed": "Failed to submit check-in. Please try again.",
+    "wellbeing.load_error": "We couldn't load your wellbeing information. Please try again.",
+    "wellbeing.checkin_failed": "We couldn't save your check-in. Please try again.",
     "wellbeing.suggested_rest_days": "Suggested Rest Days",
     "wellbeing.outcome_nobody": "Nobody could be told yet. We will try again with your next check-in.",
     "wellbeing.outcome_private": "Only you can see this check-in.",
@@ -595,7 +595,7 @@ describe("WellbeingTab", () => {
     render(<WellbeingTab />);
     expect(await screen.findByText("Wellbeing check-ins are switched off")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /try again/i })).not.toBeInTheDocument();
-    expect(screen.queryByText("Unable to load wellbeing data. Please try again.")).not.toBeInTheDocument();
+    expect(screen.queryByText("We couldn't load your wellbeing information. Please try again.")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Log How I.m Feeling/i })).not.toBeInTheDocument();
   });
 
@@ -611,7 +611,7 @@ describe("WellbeingTab", () => {
     pickMood("Okay");
     fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(expect.stringMatching(/please wait a moment/i)));
-    expect(mockToast.error).not.toHaveBeenCalledWith("Failed to submit check-in. Please try again.");
+    expect(mockToast.error).not.toHaveBeenCalledWith("We couldn't save your check-in. Please try again.");
   });
 
   it("shows the switched-off state when a check-in answers FEATURE_DISABLED", async () => {
@@ -620,7 +620,7 @@ describe("WellbeingTab", () => {
     pickMood("Okay");
     fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
     expect(await screen.findByText("Wellbeing check-ins are switched off")).toBeInTheDocument();
-    expect(mockToast.error).not.toHaveBeenCalledWith("Failed to submit check-in. Please try again.");
+    expect(mockToast.error).not.toHaveBeenCalledWith("We couldn't save your check-in. Please try again.");
   });
 
   it("shows the server's own sentence for a refused note", async () => {

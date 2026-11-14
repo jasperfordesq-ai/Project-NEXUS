@@ -155,7 +155,7 @@ describe('CertificatesTab', () => {
     vi.mocked(api.get).mockResolvedValue({ success: false, data: null });
     render(<CertificatesTab />);
     await waitFor(() => {
-      expect(screen.getByText('Failed to load certificates')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load your certificates.")).toBeInTheDocument();
     });
     expect(screen.getByRole('button', { name: /Try Again/i })).toBeInTheDocument();
   });

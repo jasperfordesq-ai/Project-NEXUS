@@ -31,7 +31,7 @@ const translations: Record<string, string> = {
   'donations.refresh': 'Refresh',
   'donations.record_pledge': 'Record a pledge',
   'donations.donate_with_card': 'Donate by card',
-  'donations.load_error': 'Unable to load donations data.',
+  'donations.load_error': "We couldn't load the donations.",
   'try_again': 'Try again',
   'donations.empty_title': 'No fundraising campaigns right now',
   'donations.empty_description': 'When a campaign is running you can donate here.',
@@ -85,8 +85,8 @@ const translations: Record<string, string> = {
   'donations.confirm': 'Record pledge',
   'donations.invalid_amount': 'Please enter a valid amount.',
   'donations.pledge_success': 'Pledge recorded.',
-  'donations.submit_error': 'Failed to record donation.',
-  'donations.submit_error_retry': 'Failed to record donation. Please try again.',
+  'donations.submit_error': "We couldn't record your donation. Please try again.",
+  'donations.submit_error_retry': "We couldn't record your donation. Please try again.",
 };
 const stableT = (key: string, fallbackOrOpts?: string | Record<string, unknown>, opts?: Record<string, unknown>) => {
   const fallback = typeof fallbackOrOpts === 'string' ? fallbackOrOpts : translations[key] ?? key;
@@ -320,7 +320,7 @@ describe('DonationsTab', () => {
     });
     const user = userEvent.setup();
     render(<DonationsTab />);
-    await screen.findByText('Unable to load donations data.');
+    await screen.findByText("We couldn't load the donations.");
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Try again' }));
@@ -331,7 +331,7 @@ describe('DonationsTab', () => {
   it('shows the error state (not the empty state) when a load returns success:false', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: false, error: 'boom', code: 'SERVER_ERROR' });
     render(<DonationsTab />);
-    await screen.findByText('Unable to load donations data.');
+    await screen.findByText("We couldn't load the donations.");
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
   });
 

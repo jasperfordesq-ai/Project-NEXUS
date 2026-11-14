@@ -444,7 +444,7 @@ describe('QualificationsTab', () => {
     });
     const user = userEvent.setup();
     render(<QualificationsTab />);
-    await screen.findByText('Unable to load your qualifications.');
+    await screen.findByText("We couldn't load your qualifications.");
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: translations.try_again }));
@@ -455,7 +455,7 @@ describe('QualificationsTab', () => {
   it('shows the error state (not the empty state) when a load returns success:false', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: false, error: 'boom', code: 'SERVER_ERROR' });
     render(<QualificationsTab />);
-    await screen.findByText('Unable to load your qualifications.');
+    await screen.findByText("We couldn't load your qualifications.");
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
   });
 });

@@ -17,7 +17,7 @@ const safeguardingTranslations: Record<string, string> = {
   'safeguarding.add_training': 'Add Training',
   'safeguarding.heading': 'Safeguarding',
   'safeguarding.incident_reports': 'Incident Reports',
-  'safeguarding.load_error': 'Unable to load safeguarding data.',
+  'safeguarding.load_error': "We couldn't load the safeguarding information.",
   'safeguarding.no_incidents_title': 'No incidents reported',
   'safeguarding.no_training_title': 'No training records',
   'safeguarding.report_incident': 'Report Incident',
@@ -196,7 +196,7 @@ describe('SafeguardingTab', () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Network error'));
     render(<SafeguardingTab />);
     await waitFor(() => {
-      expect(screen.getByText('Unable to load safeguarding data.')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load the safeguarding information.")).toBeInTheDocument();
     });
     const buttons = screen.getAllByRole('button');
     const tryAgainBtn = buttons.find((btn) => btn.textContent?.includes('Try Again'));
@@ -212,7 +212,7 @@ describe('SafeguardingTab', () => {
     });
     render(<SafeguardingTab />);
     await waitFor(() => {
-      expect(screen.getByText('Unable to load safeguarding data.')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load the safeguarding information.")).toBeInTheDocument();
     });
     const buttons = screen.getAllByRole('button');
     const tryAgainBtn = buttons.find((btn) => btn.textContent?.includes('Try Again'));

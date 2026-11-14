@@ -138,7 +138,7 @@ describe('VolOrgDashboardPage', () => {
     mockApi.get.mockRejectedValue(new Error('Network error'));
     render(<VolOrgDashboardPage />);
     await waitFor(() => {
-      // Should show a retry / try-again button, not "Access Denied"
+      // Should show a retry / try-again button, not "You don't have access to this page"
       const btns = screen.getAllByRole('button');
       const retryBtn = btns.find((b) => b.textContent?.toLowerCase().includes('try') || b.textContent?.toLowerCase().includes('retry'));
       expect(retryBtn).toBeDefined();

@@ -18,7 +18,7 @@ const communityProjectTranslations: Record<string, string> = {
   'community_projects.propose': 'Propose a Project',
   'community_projects.empty_title': 'No community projects yet',
   'community_projects.empty_description': 'Propose a project to mobilize your community.',
-  'community_projects.load_error': 'Unable to load community projects.',
+  'community_projects.load_error': "We couldn't load the community projects.",
   'community_projects.try_again': 'Try Again',
   'community_projects.status.proposed': 'Proposed',
 };
@@ -147,7 +147,7 @@ describe('CommunityProjectsTab', () => {
     vi.mocked(api.get).mockResolvedValue({ success: false, data: null });
     render(<CommunityProjectsTab />);
     await waitFor(() => {
-      expect(screen.getByText('Unable to load community projects.')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load the community projects.")).toBeInTheDocument();
     });
     const buttons = screen.getAllByRole('button');
     const tryAgainBtn = buttons.find((btn) => btn.textContent?.includes('Try Again'));
@@ -163,7 +163,7 @@ describe('CommunityProjectsTab', () => {
     });
     render(<CommunityProjectsTab />);
     await waitFor(() => {
-      expect(screen.getByText('Unable to load community projects.')).toBeInTheDocument();
+      expect(screen.getByText("We couldn't load the community projects.")).toBeInTheDocument();
     });
     const buttons = screen.getAllByRole('button');
     const tryAgainBtn = buttons.find((btn) => btn.textContent?.includes('Try Again'));

@@ -68,7 +68,7 @@ const translations: Record<string, string> = {
   wallet: 'Wallet',
   manage: 'Manage',
   my_organisations_none: 'No Organisations Yet',
-  my_organisations_load_error: 'Unable to load your organisations. Please try again.',
+  my_organisations_load_error: "We couldn't load your organisations. Please try again.",
   try_again: 'Try Again',
   status_declined: 'Declined',
   my_organisations_declined: 'Declined',
@@ -193,7 +193,7 @@ describe('MyOrganisationsPage', () => {
     render(<MyOrganisationsPage />);
 
     await waitFor(() =>
-      expect(screen.getByText('Unable to load your organisations. Please try again.')).toBeInTheDocument(),
+      expect(screen.getByText("We couldn't load your organisations. Please try again.")).toBeInTheDocument(),
     );
 
     // A failed request must NOT masquerade as "no organisations".
