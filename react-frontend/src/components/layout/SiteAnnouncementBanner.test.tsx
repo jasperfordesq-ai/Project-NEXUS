@@ -23,29 +23,55 @@ vi.mock('@/contexts/TenantContext', () => ({
 
 // The real button needs auth, preferences and the API; its own tests cover
 // when it shows. Here it stands in and "translates" on a press.
-vi.mock('@/components/i18n/TranslateButton', () => ({
-  TranslateButton: ({ contentType, contentId, sourceText, onTextChange, onFieldsChange }: {
-    contentType: string;
-    contentId: number;
-    sourceText: string;
-    onTextChange?: (text: string, translated: boolean) => void;
-    onFieldsChange?: (fields: Record<string, string> | null) => void;
-  }) => (
-    <button
-      type="button"
-      data-testid="translate-stub"
-      data-content-type={contentType}
-      data-content-id={String(contentId)}
-      data-source={sourceText}
-      onClick={() => {
-        onTextChange?.('Café de réparation ce samedi', true);
-        onFieldsChange?.({ link_label: 'Voir les événements' });
-      }}
-    >
-      translate
-    </button>
-  ),
-}));
+//
+// `reportsLikeTheRealButton` makes the stand-in keep the real button's other
+// habit: it tells its parent what it is showing from an effect that re-runs
+// whenever the callbacks it was given change (TranslateButton.tsx, the effect
+// with `onTextChange, onFieldsChange` in its dependencies). The stand-in used
+// to call back on a press only, so a banner that handed it brand-new callbacks
+// on every render, and stored a brand-new object on every call, looped for
+// ever in the browser while every test here stayed green.
+const stub = vi.hoisted(() => ({ reportsLikeTheRealButton: false, reports: 0 }));
+
+vi.mock('@/components/i18n/TranslateButton', async () => {
+  const { useEffect } = await import('react');
+
+  return {
+    TranslateButton: ({ contentType, contentId, sourceText, onTextChange, onFieldsChange }: {
+      contentType: string;
+      contentId: number;
+      sourceText: string;
+      onTextChange?: (text: string, translated: boolean) => void;
+      onFieldsChange?: (fields: Record<string, string> | null) => void;
+    }) => {
+      useEffect(() => {
+        if (!stub.reportsLikeTheRealButton) return;
+        stub.reports += 1;
+        // A runaway banner must fail the test, not hang the run: the loop it
+        // used to make never ended.
+        if (stub.reports > 25) return;
+        onTextChange?.(sourceText, false);
+        onFieldsChange?.(null);
+      }, [sourceText, onTextChange, onFieldsChange]);
+
+      return (
+        <button
+          type="button"
+          data-testid="translate-stub"
+          data-content-type={contentType}
+          data-content-id={String(contentId)}
+          data-source={sourceText}
+          onClick={() => {
+            onTextChange?.('Café de réparation ce samedi', true);
+            onFieldsChange?.({ link_label: 'Voir les événements' });
+          }}
+        >
+          translate
+        </button>
+      );
+    },
+  };
+});
 
 const NOW = Date.parse('2026-11-12T10:00:00Z');
 const base = {
@@ -154,6 +180,28 @@ describe('SiteAnnouncementBanner', () => {
     expect(screen.getByRole('region')).toHaveTextContent('Café de réparation ce samedi');
     expect(screen.getByRole('link')).toHaveTextContent('Voir les événements');
     expect(screen.getByRole('region')).not.toHaveTextContent(base.message);
+  });
+
+  it('settles when the Translate button reports what it is showing', () => {
+    // Regression: the banner re-rendered for ever on every page it appeared
+    // on. Each report stored a new object, each render gave the button new
+    // callbacks, and new callbacks made the button report again.
+    stub.reportsLikeTheRealButton = true;
+    stub.reports = 0;
+    try {
+      show({ ...base, link_url: '/events', link_label: 'See events' });
+
+      expect(screen.getByText(base.message)).toBeInTheDocument();
+      expect(stub.reports).toBeLessThanOrEqual(2);
+
+      // And a real translation still gets through afterwards.
+      fireEvent.click(screen.getByTestId('translate-stub'));
+      expect(screen.getByText('Café de réparation ce samedi')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Voir les événements' })).toBeInTheDocument();
+      expect(stub.reports).toBeLessThanOrEqual(2);
+    } finally {
+      stub.reportsLikeTheRealButton = false;
+    }
   });
 
   it('renders nothing when the community has no notice', () => {

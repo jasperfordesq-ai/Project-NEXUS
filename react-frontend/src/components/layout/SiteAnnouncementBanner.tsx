@@ -21,7 +21,7 @@
  *    moment; a snapshot is kept for days).
  */
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Megaphone from 'lucide-react/icons/megaphone';
@@ -129,6 +129,30 @@ export function SiteAnnouncementView({
   );
 }
 
+interface TranslatedNotice {
+  key: string;
+  message: string | null;
+  linkLabel: string | null;
+}
+
+/**
+ * The stored translation after a report from the Translate button. Returns the
+ * SAME object when the report changes nothing that is shown, so React skips the
+ * re-render (see the note on the callbacks below).
+ */
+function withTranslation(
+  prev: TranslatedNotice | null,
+  key: string,
+  message: string | null,
+  linkLabel: string | null,
+): TranslatedNotice | null {
+  const current = prev?.key === key ? prev : null;
+  if ((current?.message ?? null) === message && (current?.linkLabel ?? null) === linkLabel) {
+    return prev;
+  }
+  return { key, message, linkLabel };
+}
+
 export function SiteAnnouncementBanner() {
   const { tenant, tenantPath } = useTenant();
   const raw = tenant?.announcement;
@@ -149,7 +173,28 @@ export function SiteAnnouncementBanner() {
   const dismissKey = announcement ? announcementDismissKey(announcement) : null;
   const [closedKey, setClosedKey] = useState<string | null>(null);
   // What the Translate button is showing, for this version of the notice only.
-  const [translated, setTranslated] = useState<{ key: string; message: string | null; linkLabel: string | null } | null>(null);
+  const [translated, setTranslated] = useState<TranslatedNotice | null>(null);
+
+  // 🔴 The Translate button reports what it is showing from an effect that
+  // re-runs whenever the callbacks it was given change. So these two must keep
+  // their identity between renders, and a report that changes nothing must
+  // leave the state alone. They used to be inline arrows that stored a new
+  // object every time: report → new state → re-render → new callbacks →
+  // report again, for ever, on every page the banner appeared on.
+  const handleTextChange = useCallback((text: string, isTranslated: boolean) => {
+    if (!dismissKey) return;
+    setTranslated((prev) => {
+      const current = prev?.key === dismissKey ? prev : null;
+      return withTranslation(prev, dismissKey, isTranslated ? text : null, current?.linkLabel ?? null);
+    });
+  }, [dismissKey]);
+  const handleFieldsChange = useCallback((fields: Record<string, string> | null) => {
+    if (!dismissKey) return;
+    setTranslated((prev) => {
+      const current = prev?.key === dismissKey ? prev : null;
+      return withTranslation(prev, dismissKey, current?.message ?? null, fields?.link_label ?? null);
+    });
+  }, [dismissKey]);
 
   if (!announcement || !dismissKey || isSearchEngineSnapshot()) return null;
   if (closedKey === dismissKey || safeLocalStorageGet(dismissKey) !== null) return null;
@@ -167,16 +212,8 @@ export function SiteAnnouncementBanner() {
             contentId={announcement.id}
             sourceText={announcement.message}
             extraFields={{ link_label: announcement.linkLabel }}
-            onTextChange={(text, isTranslated) => setTranslated((prev) => ({
-              key: dismissKey,
-              message: isTranslated ? text : null,
-              linkLabel: prev?.key === dismissKey ? prev.linkLabel : null,
-            }))}
-            onFieldsChange={(fields) => setTranslated((prev) => ({
-              key: dismissKey,
-              message: prev?.key === dismissKey ? prev.message : null,
-              linkLabel: fields?.link_label ?? null,
-            }))}
+            onTextChange={handleTextChange}
+            onFieldsChange={handleFieldsChange}
             className={`shrink-0 ${STYLE[announcement.style].words} ${STYLE[announcement.style].quiet}`}
           />
         ),
