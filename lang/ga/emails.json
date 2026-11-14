@@ -319,9 +319,9 @@
   },
   "digest": {
     "title": "Do Achoimre {{frequency}}",
-    "subject": "Do Achoimre {{frequency}} ó Project NEXUS",
+    "subject": "Do Achoimre {{frequency}} ó {{community}}",
     "greeting": "Dia duit {{name}},",
-    "intro": "Seo achoimre ar an méid a chaill tú ar Project NEXUS:",
+    "intro": "Seo achoimre ar an méid a chaill tú ar {{community}}:",
     "opted_in_notice": "Fuair tú an ríomhphost seo toisc gur roghnaigh tú achoimre {{frequency}}.",
     "manage_notifications": "Bainistigh Fógraí",
     "unsubscribe_events": "Díliostáil ó ríomhphoist imeachtaí amháin",
@@ -482,7 +482,7 @@
     "vol_application_submitted": "Seoladh d'iarratas deonach",
     "vol_application_approved": "🎉 Glacadh le d'iarratas deonach",
     "vol_application_declined": "Nuashonrú ar d'iarratas deonach",
-    "default": "Fógra ó Project NEXUS",
+    "default": "Fógra ó {{community}}",
     "vol_volunteer_removed": "Nuashonrú ar d’obair dheonach"
   },
   "exchange_dispute": {

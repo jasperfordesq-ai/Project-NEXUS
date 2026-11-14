@@ -261,8 +261,115 @@ class EmailTemplateBuilder
             $contentHtml .= $this->renderBlock($block, $theme);
         }
 
+        $logoRow = self::renderLogoRow(self::communityLogo(), $safeTenantName, $theme);
+
         // Assemble the full email
-        return $this->renderWrapper($safeTitle, $previewText, $safeTenantName, $theme, $contentHtml, $settingsUrl, $year);
+        return $this->renderWrapper($safeTitle, $previewText, $safeTenantName, $theme, $contentHtml, $settingsUrl, $year, $logoRow);
+    }
+
+    // =========================================================================
+    // THE COMMUNITY'S LOGO
+    // =========================================================================
+
+    /** Formats every common mail app shows. SVG (blocked by Gmail) and WebP (not shown by desktop Outlook) are left out. */
+    private const LOGO_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif'];
+
+    private const LOGO_MAX_HEIGHT = 56;
+    private const LOGO_MAX_WIDTH = 240;
+
+    /**
+     * The logo of the community currently in context, ready for an email
+     * header, or null when there is nothing safe to show — in which case the
+     * header keeps the community's name as text, as it always has.
+     *
+     * Only the community's own header logo (tenants.configuration.logo_url,
+     * Admin → Settings) is used: never the parent community's, never the
+     * platform's. The platform master (id 1) gets none, so platform emails
+     * (super-admin, system alerts) look exactly as before.
+     *
+     * The file must be a raster upload on this server, so its real width and
+     * height can be written into the tag (mail apps that block images then keep
+     * the space, and Outlook does not stretch it). The address is the
+     * community's own web address, as the offers & requests round-up email
+     * does (ListingsDigestService::assetUrl).
+     *
+     * @return array{src: string, width: int, height: int, light: bool}|null
+     */
+    public static function communityLogo(): ?array
+    {
+        try {
+            if ((int) TenantContext::getId() <= 1) {
+                return null;
+            }
+            $path = trim((string) TenantContext::getSetting('logo_url', ''));
+            $base = rtrim((string) TenantContext::getFrontendUrl(), '/');
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if (preg_match('#^/uploads/[A-Za-z0-9._/\-]+$#', $path) !== 1 || str_contains($path, '..')) {
+            return null;
+        }
+        if (!in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), self::LOGO_EXTENSIONS, true)) {
+            return null;
+        }
+        if (preg_match('#^https://[^/?\#]+$#i', $base) !== 1) {
+            return null;
+        }
+
+        $file = base_path('httpdocs' . $path);
+        $size = is_file($file) ? @getimagesize($file) : false;
+        if ($size === false || (int) $size[0] <= 0 || (int) $size[1] <= 0) {
+            return null;
+        }
+
+        $ratio = $size[0] / $size[1];
+        $height = self::LOGO_MAX_HEIGHT;
+        $width = (int) round($height * $ratio);
+        if ($width > self::LOGO_MAX_WIDTH) {
+            $width = self::LOGO_MAX_WIDTH;
+            $height = max(1, (int) round($width / $ratio));
+        }
+        $width = max(1, $width);
+
+        return [
+            'src' => $base . $path,
+            'width' => $width,
+            'height' => $height,
+            'light' => \App\Support\LogoShape::tone($path) === 'light',
+        ];
+    }
+
+    /**
+     * A strip above the coloured header holding the logo. White, so a logo
+     * drawn for a light background reads as it does on the website; a mostly
+     * white logo sits on the community's colour instead. With images blocked
+     * the mail app shows the alt text — the community's name — in the same
+     * strip, and the name stays under the title either way.
+     *
+     * @param array{src: string, width: int, height: int, light: bool}|null $logo
+     */
+    private static function renderLogoRow(?array $logo, string $safeTenantName, array $theme): string
+    {
+        if ($logo === null) {
+            return '';
+        }
+
+        $src = self::esc($logo['src']);
+        $width = (int) $logo['width'];
+        $height = (int) $logo['height'];
+        $stripBg = $logo['light'] ? (string) $theme['button'] : '#ffffff';
+        $altColour = $logo['light'] ? '#ffffff' : '#111827';
+
+        return <<<HTML
+                    <!-- Community logo -->
+                    <tr>
+                        <td bgcolor="{$stripBg}" style="padding: 24px 40px 20px; text-align: center; background-color: {$stripBg};" class="email-logo">
+                            <img src="{$src}" width="{$width}" height="{$height}" alt="{$safeTenantName}" style="display: inline-block; width: {$width}px; height: {$height}px; max-width: 100%; border: 0; outline: none; text-decoration: none; font-size: 18px; font-weight: 700; color: {$altColour};">
+                        </td>
+                    </tr>
+
+HTML;
     }
 
     // =========================================================================
@@ -580,7 +687,7 @@ HTML;
     // FULL EMAIL WRAPPER
     // =========================================================================
 
-    private function renderWrapper(string $title, string $previewText, string $tenantName, array $theme, string $contentHtml, string $settingsUrl, string $year): string
+    private function renderWrapper(string $title, string $previewText, string $tenantName, array $theme, string $contentHtml, string $settingsUrl, string $year, string $logoRow = ''): string
     {
         $bgColor = '#f3f4f6';
         $mutedColor = '#6b7280';
@@ -674,7 +781,7 @@ HTML;
                 <!-- Container -->
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" align="center" class="email-container" style="margin: auto; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);">
 
-                    <!-- Header -->
+{$logoRow}                    <!-- Header -->
                     <tr>
                         <td bgcolor="{$headerBgColor}" style="padding: 32px 40px; text-align: center; {$headerBg}">
                             <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; line-height: 1.3;">{$title}</h1>

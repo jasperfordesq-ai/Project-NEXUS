@@ -471,7 +471,7 @@ class CronJobRunner
             [$subject, $body] = LocaleContext::withLocale(
                 $user['preferred_language'] ?? null,
                 fn () => [
-                    __('emails.digest.subject', ['frequency' => $frequency]),
+                    self::digestSubject($frequency),
                     $this->generateEmailHtml($user, $items, $frequency),
                 ]
             );
@@ -530,7 +530,7 @@ class CronJobRunner
 
             $subject = LocaleContext::withLocale(
                 $user['preferred_language'] ?? null,
-                fn () => __('emails.digest.subject', ['frequency' => $frequency])
+                fn () => self::digestSubject($frequency)
             );
 
             DB::table('email_log')->insert([
@@ -1139,7 +1139,28 @@ class CronJobRunner
         $translated = __($key);
 
         // If the key was not found, fall back to the default subject
-        return $translated !== $key ? $translated : __('emails.notification_subject.default');
+        return $translated !== $key ? $translated : __('emails.notification_subject.default', ['community' => self::communityName()]);
+    }
+
+    /**
+     * The digest email's subject, naming the recipient's community (the
+     * caller has set its context). It said "from Project NEXUS" until Nov 2026.
+     */
+    private static function digestSubject(string $frequency): string
+    {
+        return __('emails.digest.subject', ['frequency' => $frequency, 'community' => self::communityName()]);
+    }
+
+    /** The name of the community in context, for subjects that name the sender. */
+    private static function communityName(): string
+    {
+        try {
+            $name = trim((string) (TenantContext::get()['name'] ?? ''));
+        } catch (\Throwable) {
+            $name = '';
+        }
+
+        return $name !== '' ? $name : (string) __('emails.common.fallback_tenant_name');
     }
 
     private function generateEmailHtml($user, $items, $frequency)
@@ -1174,11 +1195,11 @@ class CronJobRunner
         $digestTitle = __('emails.digest.title', ['frequency' => $freqLabel]);
         $userName = htmlspecialchars($user['name'] ?? __('emails.common.fallback_name'), ENT_QUOTES, 'UTF-8');
         $digestGreeting = __('emails.digest.greeting', ['name' => $userName]);
-        $digestIntro = __('emails.digest.intro');
         $digestOptedIn = __('emails.digest.opted_in_notice', ['frequency' => $freqLabel]);
         $manageNotifications = __('emails.digest.manage_notifications');
         $settingsUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/dashboard?tab=notifications';
         $tenantName = htmlspecialchars(TenantContext::get()['name'] ?? __('emails.common.platform_name'), ENT_QUOTES, 'UTF-8');
+        $digestIntro = __('emails.digest.intro', ['community' => $tenantName]);
         $allRightsReserved = __('emails.footer.all_rights_reserved');
         $year = date('Y');
         $hasEvents = collect($items)->contains(

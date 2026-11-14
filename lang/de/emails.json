@@ -319,9 +319,9 @@
   },
   "digest": {
     "title": "Ihr {{frequency}} Bericht",
-    "subject": "Ihr {{frequency}} Bericht von Project NEXUS",
+    "subject": "Ihr {{frequency}} Bericht von {{community}}",
     "greeting": "Hallo {{name}},",
-    "intro": "Hier ist eine Zusammenfassung der Neuigkeiten bei Project NEXUS, die Sie verpasst haben:",
+    "intro": "Hier ist eine Zusammenfassung dessen, was Sie bei {{community}} verpasst haben:",
     "opted_in_notice": "Sie haben diese E-Mail erhalten, weil Sie sich für eine {{frequency}} Zusammenfassung entschieden haben.",
     "manage_notifications": "Benachrichtigungen verwalten",
     "unsubscribe_events": "Nur Veranstaltungs-E-Mails abbestellen",
@@ -482,7 +482,7 @@
     "vol_application_submitted": "Ihre Freiwilligen-Bewerbung wurde gesendet",
     "vol_application_approved": "🎉 Ihre Freiwilligen-Bewerbung wurde angenommen",
     "vol_application_declined": "Neuigkeiten zu Ihrer Freiwilligen-Bewerbung",
-    "default": "Benachrichtigung von Project NEXUS",
+    "default": "Benachrichtigung von {{community}}",
     "vol_volunteer_removed": "Neuigkeiten zu Ihrem Ehrenamt"
   },
   "exchange_dispute": {

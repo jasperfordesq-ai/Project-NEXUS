@@ -319,9 +319,9 @@
   },
   "digest": {
     "title": "Su resumen {{frequency}}",
-    "subject": "Su resumen {{frequency}} de Project NEXUS",
+    "subject": "Tu resumen {{frequency}} de {{community}}",
     "greeting": "Hola {{name}},",
-    "intro": "Aquí hay un resumen de lo que se perdió en Project NEXUS:",
+    "intro": "Aquí tienes un resumen de lo que te perdiste en {{community}}:",
     "opted_in_notice": "Ha recibido este correo electrónico porque optó por un resumen {{frequency}}.",
     "manage_notifications": "Gestionar notificaciones",
     "unsubscribe_events": "Dejar de recibir solo correos de eventos",
@@ -482,7 +482,7 @@
     "vol_application_submitted": "Tu solicitud de voluntariado se ha enviado",
     "vol_application_approved": "🎉 Tu solicitud de voluntariado ha sido aceptada",
     "vol_application_declined": "Novedades sobre tu solicitud de voluntariado",
-    "default": "Notificación de Project NEXUS",
+    "default": "Notificación de {{community}}",
     "vol_volunteer_removed": "Novedades sobre su voluntariado"
   },
   "exchange_dispute": {

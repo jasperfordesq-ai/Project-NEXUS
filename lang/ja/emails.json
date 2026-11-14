@@ -319,9 +319,9 @@
   },
   "digest": {
     "title": "{{frequency}} ダイジェスト",
-    "subject": "Project NEXUS からの {{frequency}} ダイジェスト",
+    "subject": "{{community}} からの {{frequency}} ダイジェスト",
     "greeting": "{{name}} 様、",
-    "intro": "Project NEXUS で見逃したものをまとめました：",
+    "intro": "{{community}} で見逃したものをまとめました：",
     "opted_in_notice": "{{frequency}} サマリーを選択したためこのメールをお送りしました。",
     "manage_notifications": "通知を管理する",
     "unsubscribe_events": "イベントメールのみ停止",
@@ -482,7 +482,7 @@
     "vol_application_submitted": "ボランティア応募を送信しました",
     "vol_application_approved": "🎉 ボランティア応募が承認されました",
     "vol_application_declined": "ボランティア応募についてのお知らせ",
-    "default": "Project NEXUS からの通知",
+    "default": "{{community}} からの通知",
     "vol_volunteer_removed": "ボランティア活動についてのお知らせ"
   },
   "exchange_dispute": {

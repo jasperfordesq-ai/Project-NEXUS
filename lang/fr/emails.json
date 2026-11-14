@@ -319,9 +319,9 @@
   },
   "digest": {
     "title": "Votre bilan {{frequency}}",
-    "subject": "Votre bilan {{frequency}} de Project NEXUS",
+    "subject": "Votre bilan {{frequency}} de {{community}}",
     "greeting": "Bonjour {{name}},",
-    "intro": "Voici un résumé de ce que vous avez manqué sur Project NEXUS :",
+    "intro": "Voici un résumé de ce que vous avez manqué dans {{community}} :",
     "opted_in_notice": "Vous avez reçu cet e-mail parce que vous avez opté pour un résumé {{frequency}}.",
     "manage_notifications": "Gérer les notifications",
     "unsubscribe_events": "Se désabonner uniquement des e-mails d’événements",
@@ -482,7 +482,7 @@
     "vol_application_submitted": "Votre candidature de bénévolat a été envoyée",
     "vol_application_approved": "🎉 Votre candidature de bénévolat a été acceptée",
     "vol_application_declined": "Du nouveau concernant votre candidature de bénévolat",
-    "default": "Notification de Project NEXUS",
+    "default": "Notification de {{community}}",
     "vol_volunteer_removed": "Du nouveau concernant votre bénévolat"
   },
   "exchange_dispute": {

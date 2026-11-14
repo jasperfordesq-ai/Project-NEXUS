@@ -319,9 +319,9 @@
   },
   "digest": {
     "title": "Il suo riepilogo {{frequency}}",
-    "subject": "Il suo riepilogo {{frequency}} da Project NEXUS",
+    "subject": "Il tuo riepilogo {{frequency}} da {{community}}",
     "greeting": "Salve {{name}},",
-    "intro": "Ecco un riepilogo di quello che si è perso su Project NEXUS:",
+    "intro": "Ecco un riepilogo di quello che ti sei perso su {{community}}:",
     "opted_in_notice": "Ha ricevuto questa e-mail perché ha optato per un riepilogo {{frequency}}.",
     "manage_notifications": "Gestisci notifiche",
     "unsubscribe_events": "Annulla solo le email sugli eventi",
@@ -482,7 +482,7 @@
     "vol_application_submitted": "La tua candidatura di volontariato è stata inviata",
     "vol_application_approved": "🎉 La tua candidatura di volontariato è stata accettata",
     "vol_application_declined": "Aggiornamento sulla tua candidatura di volontariato",
-    "default": "Notifica da Project NEXUS",
+    "default": "Notifica da {{community}}",
     "vol_volunteer_removed": "Un aggiornamento sul tuo volontariato"
   },
   "exchange_dispute": {

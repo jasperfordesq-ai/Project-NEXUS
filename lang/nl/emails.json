@@ -319,9 +319,9 @@
   },
   "digest": {
     "title": "Uw {{frequency}} overzicht",
-    "subject": "Uw {{frequency}} overzicht van Project NEXUS",
+    "subject": "Je {{frequency}} overzicht van {{community}}",
     "greeting": "Hallo {{name}},",
-    "intro": "Hier is een samenvatting van wat u heeft gemist op Project NEXUS:",
+    "intro": "Hier is een samenvatting van wat je hebt gemist bij {{community}}:",
     "opted_in_notice": "U ontvangt deze e-mail omdat u heeft gekozen voor een {{frequency}} samenvatting.",
     "manage_notifications": "Meldingen beheren",
     "unsubscribe_events": "Alleen e-mails over evenementen stoppen",
@@ -482,7 +482,7 @@
     "vol_application_submitted": "Je vrijwilligersaanmelding is verstuurd",
     "vol_application_approved": "🎉 Je vrijwilligersaanmelding is geaccepteerd",
     "vol_application_declined": "Nieuws over je vrijwilligersaanmelding",
-    "default": "Melding van Project NEXUS",
+    "default": "Melding van {{community}}",
     "vol_volunteer_removed": "Nieuws over uw vrijwilligerswerk"
   },
   "exchange_dispute": {

@@ -329,9 +329,9 @@
   },
   "digest": {
     "title": "Your {{frequency}} Digest",
-    "subject": "Your {{frequency}} Digest from Project NEXUS",
+    "subject": "Your {{frequency}} Digest from {{community}}",
     "greeting": "Hello {{name}},",
-    "intro": "Here is a summary of what you missed on Project NEXUS:",
+    "intro": "Here is a summary of what you missed in {{community}}:",
     "opted_in_notice": "You received this email because you opted for a {{frequency}} summary.",
     "manage_notifications": "Manage Notifications",
     "unsubscribe_events": "Stop only Event emails",
@@ -492,7 +492,7 @@
     "vol_application_submitted": "Your volunteer application was sent",
     "vol_application_approved": "🎉 Your volunteer application was accepted",
     "vol_application_declined": "An update on your volunteer application",
-    "default": "Notification from Project NEXUS",
+    "default": "Notification from {{community}}",
     "vol_volunteer_removed": "An update about your volunteering"
   },
   "exchange_dispute": {
