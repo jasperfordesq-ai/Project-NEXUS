@@ -1233,9 +1233,6 @@
     "src/pages/about/StrategicPlanPage.test.tsx": {
       "TS2322": 3
     },
-    "src/pages/about/TimebankingGuidePage.test.tsx": {
-      "TS2322": 3
-    },
     "src/pages/achievements/AchievementsPage.test.tsx": {
       "TS2322": 1,
       "TS2345": 2
@@ -1862,7 +1859,7 @@
     }
   },
   "totals": {
-    "fileCount": 550,
-    "errorCount": 1665
+    "fileCount": 549,
+    "errorCount": 1662
   }
 }

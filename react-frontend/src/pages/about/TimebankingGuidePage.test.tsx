@@ -4,22 +4,16 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * Tests for TimebankingGuidePage
+ * Tests for TimebankingGuidePage — how timebanking works, where it came from
+ * and what it stands for (14 Nov 2026).
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test/test-utils';
+import { render, screen, within } from '@/test/test-utils';
 
 vi.mock('@/contexts', () => ({
-  useTenant: vi.fn(() => ({
-    branding: { name: 'Test Timebank' },
-    tenantPath: (p: string) => `/test${p}`,
-    hasModule: vi.fn(() => true),
-  })),
-  useAuth: vi.fn(() => ({
-    isAuthenticated: false,
-    user: null,
-  })),
+  useTenant: vi.fn(),
+  useAuth: vi.fn(),
 
   useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
   useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
@@ -40,42 +34,22 @@ vi.mock('@/components/navigation/Breadcrumbs', () => ({
   Breadcrumbs: () => <nav aria-label="breadcrumb" />,
 }));
 vi.mock('./RelatedPages', () => ({
-  RelatedPages: () => <div data-testid="related-pages" />,
+  RelatedPages: ({ flush }: { flush?: boolean }) => (
+    <div data-testid="related-pages" data-flush={String(Boolean(flush))} />
+  ),
 }));
-
-vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
     ...actual,
-    Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
+    Link: ({ children, to, ...rest }: { children: React.ReactNode; to: string }) => (
+      <a href={to} {...rest}>
+        {children}
+      </a>
+    ),
   };
 });
-
-vi.mock('@/lib/motion', () => ({
-  motion: {
-    div: ({ children, ...props }: Record<string, unknown>) => {
-      const motionKeys = new Set(['variants', 'initial', 'animate', 'transition', 'exit', 'whileHover', 'whileTap', 'whileInView', 'viewport']);
-      const rest: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(props)) { if (!motionKeys.has(k)) rest[k] = v; }
-      return <div {...rest}>{children}</div>;
-    },
-    h1: ({ children, ...props }: Record<string, unknown>) => {
-      const motionKeys = new Set(['variants', 'initial', 'animate', 'transition', 'exit']);
-      const rest: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(props)) { if (!motionKeys.has(k)) rest[k] = v; }
-      return <h1 {...rest}>{children}</h1>;
-    },
-    p: ({ children, ...props }: Record<string, unknown>) => {
-      const motionKeys = new Set(['variants', 'initial', 'animate', 'transition', 'exit']);
-      const rest: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(props)) { if (!motionKeys.has(k)) rest[k] = v; }
-      return <p {...rest}>{children}</p>;
-    },
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
 
 import { TimebankingGuidePage } from './TimebankingGuidePage';
 import { useAuth, useTenant } from '@/contexts';
@@ -83,116 +57,199 @@ import { useAuth, useTenant } from '@/contexts';
 const mockUseAuth = useAuth as ReturnType<typeof vi.fn>;
 const mockUseTenant = useTenant as ReturnType<typeof vi.fn>;
 
+/** Any community that is not hour-timebank. */
+const someCommunity = (hasModule = true) => ({
+  tenant: { id: 7, slug: 'riverside' },
+  branding: { name: 'Riverside Timebank' },
+  tenantPath: (p: string) => `/riverside${p}`,
+  hasModule: vi.fn(() => hasModule),
+});
+
+const hourTimebank = () => ({
+  tenant: { id: 2, slug: 'hour-timebank' },
+  branding: { name: 'hOUR Timebank' },
+  tenantPath: (p: string) => `/hour-timebank${p}`,
+  hasModule: vi.fn(() => true),
+});
+
+const linksTo = (path: string) =>
+  screen.queryAllByRole('link').filter((a) => a.getAttribute('href') === path);
+
 describe('TimebankingGuidePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseAuth.mockReturnValue({ isAuthenticated: false, user: null });
-    mockUseTenant.mockReturnValue({
-      branding: { name: 'Test Timebank' },
-      tenantPath: (p: string) => `/test${p}`,
-      hasModule: vi.fn(() => true),
-    });
+    mockUseAuth.mockReturnValue({ isAuthenticated: false, isLoading: false, user: null });
+    mockUseTenant.mockReturnValue(someCommunity());
   });
 
-  it('renders without crashing', () => {
-    render(<TimebankingGuidePage />);
-    expect(document.body).toBeInTheDocument();
-  });
-
-  it('renders breadcrumb navigation', () => {
+  it('opens with the breadcrumb and the page heading', () => {
     render(<TimebankingGuidePage />);
     expect(screen.getByRole('navigation', { name: /breadcrumb/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Timebanking Guide' })).toBeInTheDocument();
   });
 
-  it('renders impact statistics', () => {
+  it('explains the three steps and the rule that every hour is worth the same', () => {
     render(<TimebankingGuidePage />);
-    // Impact stats: 16:1, 100%, 95%
-    expect(screen.getByText('16:1')).toBeInTheDocument();
-    expect(screen.getByText('100%')).toBeInTheDocument();
-    expect(screen.getByText('95%')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Give an hour' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Earn a time credit' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Spend it on help you need' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: "Everyone's hour is worth the same" })).toBeInTheDocument();
   });
 
-  it('renders the three "How It Works" steps', () => {
+  it('gives eight everyday examples of what people share', () => {
     render(<TimebankingGuidePage />);
-    // Step titles from the steps data
-    expect(screen.getByText('Give an Hour')).toBeInTheDocument();
-    expect(screen.getByText('Earn a Credit')).toBeInTheDocument();
-    expect(screen.getByText('Get Help')).toBeInTheDocument();
+    const examples = within(screen.getByTestId('guide-examples')).getAllByRole('listitem');
+    expect(examples).toHaveLength(8);
+    expect(examples[0]).toHaveTextContent('A lift to the shops');
   });
 
-  it('renders the four fundamental values', () => {
-    render(<TimebankingGuidePage />);
-    expect(screen.getByText('We Are All Assets')).toBeInTheDocument();
-    expect(screen.getByText('Redefining Work')).toBeInTheDocument();
-    expect(screen.getByText('Reciprocity')).toBeInTheDocument();
-    expect(screen.getByText('Social Networks')).toBeInTheDocument();
-  });
-
-  // 🔴 These CTAs are LINKS, not buttons. The page renders `<Button as={Link}>`,
-  // which produces an <a href> whose implicit ARIA role is `link` — the right
-  // element for something that navigates. The old queries asked for role
-  // "button", so they matched nothing and read as missing CTAs.
-  //
-  // (They were written for the '@/components/ui' uiMock, whose Button stub does
-  // render a <button href=…>. That mock never installed: the page imports Button
-  // from '@/components/ui/Button', its own path, so the real Button loads.)
-  const ctaLinksTo = (path: string) =>
-    screen.getAllByRole('link').filter(a => a.getAttribute('href')?.includes(path));
-
-  it('shows register CTA when user is not authenticated', () => {
-    render(<TimebankingGuidePage />);
-    expect(ctaLinksTo('/register').length).toBeGreaterThan(0);
-  });
-
-  it('shows listings CTA when user is authenticated', () => {
-    mockUseAuth.mockReturnValue({ isAuthenticated: true, user: { id: 1 } });
-    render(<TimebankingGuidePage />);
-    expect(ctaLinksTo('/listings').length).toBeGreaterThan(0);
-  });
-
-  it('does not show the listings CTA to a signed-in member when listings are disabled', () => {
-    mockUseAuth.mockReturnValue({ isAuthenticated: true, user: { id: 1 } });
-    mockUseTenant.mockReturnValue({
-      branding: { name: 'Test Timebank' },
-      tenantPath: (p: string) => `/test${p}`,
-      hasModule: vi.fn(() => false),
+  // The owner asked for the origins of timebanking and Edgar Cahn on every
+  // community's page (14 Nov 2026).
+  describe('where timebanking comes from', () => {
+    it('names Edgar Cahn, the years he lived and what he did', () => {
+      render(<TimebankingGuidePage />);
+      const origins = within(screen.getByTestId('guide-origins'));
+      expect(origins.getByRole('heading', { name: /Edgar S\. Cahn/ })).toHaveTextContent('1935–2022');
+      expect(origins.getByText(/founder of modern timebanking/)).toBeInTheDocument();
+      expect(origins.getByText(/Jean Camper Cahn/)).toBeInTheDocument();
     });
-    render(<TimebankingGuidePage />);
-    expect(screen.queryByRole('link', { name: /browse offers and requests/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /join/i })).not.toBeInTheDocument();
-  });
 
-  // `/partner` is wrapped in TenantSlugGate slug="hour-timebank" in both route
-  // files, so every other community is bounced off it. The CTA must only be
-  // offered where the page exists — same check the gate uses (tenant.slug).
-  it('renders the partner CTA for the hour-timebank community', () => {
-    mockUseTenant.mockReturnValue({
-      tenant: { id: 2, slug: 'hour-timebank' },
-      branding: { name: 'hOUR Timebank' },
-      tenantPath: (p: string) => `/hour-timebank${p}`,
-      hasModule: vi.fn(() => true),
+    it('credits Teruko Mizushima, who tried the idea before him', () => {
+      render(<TimebankingGuidePage />);
+      const origins = within(screen.getByTestId('guide-origins'));
+      expect(origins.getAllByText(/Teruko Mizushima/).length).toBeGreaterThan(0);
     });
-    render(<TimebankingGuidePage />);
-    expect(screen.getByRole('link', { name: /partner with us/i })).toHaveAttribute(
-      'href',
-      '/hour-timebank/partner',
-    );
-  });
 
-  it('does not render the partner CTA for any other community', () => {
-    mockUseTenant.mockReturnValue({
-      tenant: { id: 7, slug: 'some-other-timebank' },
-      branding: { name: 'Other Timebank' },
-      tenantPath: (p: string) => `/some-other-timebank${p}`,
-      hasModule: vi.fn(() => true),
+    it('tells how the idea grew in six dated steps, ending with this community', () => {
+      render(<TimebankingGuidePage />);
+      const steps = within(screen.getByTestId('guide-origins')).getAllByRole('listitem');
+      expect(steps).toHaveLength(6);
+      expect(steps.map((step) => step.querySelector('p')?.textContent)).toEqual([
+        '1973',
+        '1980',
+        '1992',
+        '1995',
+        '2000',
+        'Today',
+      ]);
+      expect(steps[5]).toHaveTextContent('Riverside Timebank among them');
     });
-    render(<TimebankingGuidePage />);
-    expect(screen.queryByRole('link', { name: /partner with us/i })).not.toBeInTheDocument();
-    expect(ctaLinksTo('/partner')).toHaveLength(0);
   });
 
-  it('renders the related pages section', () => {
+  it("lists Edgar Cahn's five values", () => {
     render(<TimebankingGuidePage />);
-    expect(screen.getByTestId('related-pages')).toBeInTheDocument();
+    const values = within(screen.getByTestId('guide-values'));
+    expect(values.getAllByRole('listitem')).toHaveLength(5);
+    for (const title of [
+      'Everyone has something to give',
+      'Some work is beyond price',
+      'Helping goes both ways',
+      'We need each other',
+      'Respect for every person',
+    ]) {
+      expect(values.getByRole('heading', { name: title })).toBeInTheDocument();
+    }
+  });
+
+  // The three figures are one timebank's (hOUR Timebank's 2023 study). Until
+  // 14 Nov 2026 every community's page showed them as if they were true of
+  // timebanking everywhere.
+  describe('what the research found', () => {
+    it('shows the three figures and says whose they are', () => {
+      render(<TimebankingGuidePage />);
+      const evidence = within(screen.getByTestId('guide-evidence'));
+      expect(evidence.getByText('€16')).toBeInTheDocument();
+      expect(evidence.getByText('100%')).toBeInTheDocument();
+      expect(evidence.getByText('95%')).toBeInTheDocument();
+      expect(evidence.getByText(/one timebank in Ireland, hOUR Timebank/)).toBeInTheDocument();
+      expect(evidence.getByText(/These are one timebank's results/)).toBeInTheDocument();
+    });
+
+    // `/impact-summary` is wrapped in TenantSlugGate slug="hour-timebank".
+    it('does not link to the full summary where that page does not exist', () => {
+      render(<TimebankingGuidePage />);
+      expect(screen.queryByRole('link', { name: /read the impact summary/i })).not.toBeInTheDocument();
+    });
+
+    it('links to the full summary for hour-timebank', () => {
+      mockUseTenant.mockReturnValue(hourTimebank());
+      render(<TimebankingGuidePage />);
+      expect(screen.getByRole('link', { name: /read the impact summary/i })).toHaveAttribute(
+        'href',
+        '/hour-timebank/impact-summary',
+      );
+    });
+  });
+
+  it('answers four common questions', () => {
+    render(<TimebankingGuidePage />);
+    const questions = within(screen.getByTestId('guide-questions'));
+    for (const question of [
+      'Do I need a special skill?',
+      'Is an hour really worth the same for everyone?',
+      'Is it the same as volunteering?',
+      'Does money change hands?',
+    ]) {
+      expect(questions.getByRole('button', { name: question })).toBeInTheDocument();
+    }
+  });
+
+  describe('invitations', () => {
+    it('invites a visitor to join, at the top and at the bottom', () => {
+      render(<TimebankingGuidePage />);
+      expect(linksTo('/riverside/register')).toHaveLength(2);
+      expect(linksTo('/riverside/listings')).toHaveLength(0);
+    });
+
+    // A member reloading the page must not be asked to join while the sign-in
+    // check is still running.
+    it('does not invite anyone to join while the sign-in check is running', () => {
+      mockUseAuth.mockReturnValue({ isAuthenticated: false, isLoading: true, user: null });
+      render(<TimebankingGuidePage />);
+      expect(linksTo('/riverside/register')).toHaveLength(0);
+    });
+
+    it('offers a signed-in member the offers and requests instead', () => {
+      mockUseAuth.mockReturnValue({ isAuthenticated: true, isLoading: false, user: { id: 1 } });
+      render(<TimebankingGuidePage />);
+      expect(linksTo('/riverside/listings')).toHaveLength(1);
+      expect(linksTo('/riverside/register')).toHaveLength(0);
+    });
+
+    it('does not offer the offers and requests where the community has them switched off', () => {
+      mockUseAuth.mockReturnValue({ isAuthenticated: true, isLoading: false, user: { id: 1 } });
+      mockUseTenant.mockReturnValue(someCommunity(false));
+      render(<TimebankingGuidePage />);
+      expect(linksTo('/riverside/listings')).toHaveLength(0);
+      expect(linksTo('/riverside/register')).toHaveLength(0);
+    });
+
+    it('always offers the help centre', () => {
+      render(<TimebankingGuidePage />);
+      expect(linksTo('/riverside/help')).toHaveLength(1);
+    });
+
+    // `/partner` is wrapped in TenantSlugGate slug="hour-timebank" in both route
+    // files, so every other community is bounced off it. The button must only be
+    // offered where the page exists — the same check the gate uses (tenant.slug).
+    it('offers the partner page to the hour-timebank community', () => {
+      mockUseTenant.mockReturnValue(hourTimebank());
+      render(<TimebankingGuidePage />);
+      expect(screen.getByRole('link', { name: /partner with us/i })).toHaveAttribute(
+        'href',
+        '/hour-timebank/partner',
+      );
+    });
+
+    it('does not offer the partner page to any other community', () => {
+      render(<TimebankingGuidePage />);
+      expect(screen.queryByRole('link', { name: /partner with us/i })).not.toBeInTheDocument();
+      expect(linksTo('/riverside/partner')).toHaveLength(0);
+    });
+  });
+
+  it('shows the related pages inside its own margins', () => {
+    render(<TimebankingGuidePage />);
+    expect(screen.getByTestId('related-pages')).toHaveAttribute('data-flush', 'true');
   });
 });

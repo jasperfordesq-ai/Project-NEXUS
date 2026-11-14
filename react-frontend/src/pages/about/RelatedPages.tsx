@@ -44,9 +44,14 @@ const hourTimebankAboutPages: AboutLink[] = [
 interface RelatedPagesProps {
   /** The href of the current page (e.g. '/timebanking-guide') — will be excluded from the list */
   current: string;
+  /**
+   * The page already has its own margins and width (the newer pages do), so
+   * this strip adds none of its own.
+   */
+  flush?: boolean;
 }
 
-export function RelatedPages({ current }: RelatedPagesProps) {
+export function RelatedPages({ current, flush = false }: RelatedPagesProps) {
   const { t } = useTranslation('about');
   const { tenant, tenantPath } = useTenant();
   const isHourTimebank = tenant?.slug === 'hour-timebank';
@@ -59,15 +64,15 @@ export function RelatedPages({ current }: RelatedPagesProps) {
   if (links.length === 0) return null;
 
   return (
-    <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
+    <section className={flush ? undefined : 'py-12 sm:py-16 px-4 sm:px-6 lg:px-8'}>
+      <div className={flush ? undefined : 'max-w-5xl mx-auto'}>
         <h2 className="text-sm font-semibold text-theme-subtle uppercase tracking-wider mb-4 px-1">
           {t('related.heading')}
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {links.map((link) => (
             <Link key={link.href} to={tenantPath(link.href)}>
-              <GlassCard className="p-4 flex items-center gap-3 group hover:scale-[1.01] transition-transform h-full">
+              <GlassCard className="p-4 flex flex-row items-center gap-3 group hover:scale-[1.01] transition-transform h-full">
                 <div className="flex-shrink-0 p-2 rounded-lg bg-accent/10">
                   <link.icon className="w-4 h-4 text-accent dark:text-accent" aria-hidden="true" />
                 </div>
@@ -75,7 +80,7 @@ export function RelatedPages({ current }: RelatedPagesProps) {
                   <p className="text-sm font-medium text-theme-primary truncate">{t(`related.link_${link.href.replace('/', '')}_label`)}</p>
                   <p className="text-xs text-theme-subtle truncate">{t(`related.link_${link.href.replace('/', '')}_description`)}</p>
                 </div>
-                <ArrowRight className="w-4 h-4 text-theme-subtle group-hover:text-accent transition-colors flex-shrink-0" aria-hidden="true" />
+                <ArrowRight className="w-4 h-4 text-theme-subtle group-hover:text-accent transition-colors flex-shrink-0 rtl:rotate-180" aria-hidden="true" />
               </GlassCard>
             </Link>
           ))}
