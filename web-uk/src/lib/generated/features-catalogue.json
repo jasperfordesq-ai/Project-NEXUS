@@ -540,7 +540,7 @@
       "meta_title": "Features",
       "meta_description": "Every module in Project NEXUS, the software behind {{name}}, with honest maturity labels for timebanking, marketplace, community care and safety.",
       "heading": "What Project NEXUS does",
-      "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v3.1.0 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
+      "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v3.2.0 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
       "maturity_key_title": "How we label maturity",
       "maturity_ga": "Generally Available - stable, supported, used in production across pilot tenants.",
       "maturity_beta": "Working in production today, but the public surface or wire protocol is still being hardened.",
@@ -607,7 +607,7 @@
             "native_mobile_app": {
               "title": "Native Mobile App",
               "description": "A separate app built with Expo and React Native, talking to the same API as the website. One codebase produces both the Android and the iOS build.",
-              "note": "The web app is still the main way in, and neither store build is published yet. Android is closest: signing, build profiles and push notifications are all in place. iOS is built from the same code but additionally needs an Apple developer account and App Store review, so it will follow."
+              "note": "Both store builds are published: on Google Play since August 2026 and on the App Store since October 2026, as one app called Timebank Global. They are early releases, so the web app is still the most complete way in."
             },
             "accessible_frontend": {
               "title": "Accessible Frontend",
@@ -665,7 +665,7 @@
           "title": "Member Experience",
           "items": {
             "service_listings": {
-              "title": "Service Listings",
+              "title": "Offers and requests",
               "description": "Post offers and requests, browse and smart-match listings."
             },
             "marketplace": {
@@ -1118,7 +1118,70 @@
       "results_summary": "Showing {{shown}} of {{total}} entries",
       "no_results_title": "Nothing matches that search",
       "no_results_body": "Try a shorter word, or choose Everything to bring the whole list back.",
-      "clear_filters": "Clear search and filters"
+      "clear_filters": "Clear search and filters",
+      "welcome": {
+        "heading": "What you can do in {{name}}",
+        "body": "Share a skill, ask for a hand and get to know the people around you. Here is what is waiting for you.",
+        "join": "Join us",
+        "cards_heading": "Things you can do here",
+        "cards": {
+          "share": {
+            "title": "Share your time and skills",
+            "body": "Offer what you are good at, and ask for a hand with what you are not."
+          },
+          "credits": {
+            "title": "Earn and spend time credits",
+            "body": "An hour of help earns one credit. Spend it on an hour of someone else's time."
+          },
+          "people": {
+            "title": "Meet people",
+            "body": "See who is here and get to know other members."
+          },
+          "events": {
+            "title": "Come along to events",
+            "body": "Find out what is on, say you are coming and turn up."
+          },
+          "groups": {
+            "title": "Join a group",
+            "body": "Find people who share an interest, or start a group of your own."
+          },
+          "volunteering": {
+            "title": "Volunteer",
+            "body": "Give some time to a local cause, as much or as little as suits you."
+          },
+          "messages": {
+            "title": "Keep in touch",
+            "body": "Send a message to arrange an exchange, or just to say hello."
+          },
+          "feed": {
+            "title": "See what's happening",
+            "body": "Read the latest news and posts from people in your community."
+          }
+        },
+        "good_to_know_heading": "Good to know",
+        "good_to_know": {
+          "phone": {
+            "title": "On your phone",
+            "body": "Use it in your browser, or add the app to your phone."
+          },
+          "language": {
+            "title": "In your language",
+            "body": "Choose the language you are most at home in."
+          },
+          "safety": {
+            "title": "Safe and looked after",
+            "body": "Find out how we keep this a safe place for everyone."
+          }
+        },
+        "catalogue_heading": "Everything the software can do",
+        "catalogue_count": "{{total}} things, in {{groups}} groups",
+        "catalogue_note": "This is the full list of what the software behind {{name}} can do. Each community chooses which parts to switch on, so some of these will not be in your menus. If one looks useful, ask whoever runs your community about it.",
+        "search_results": "Showing {{shown}} of {{total}}",
+        "no_results_body": "Try a shorter word, or clear the search to bring the whole list back.",
+        "clear_search": "Clear search",
+        "technical_heading": "For the technically minded",
+        "technical_body": "How we label what is finished, what the software is built with, and how to report a problem."
+      }
     },
     "ga": {
       "chips": {
@@ -1130,7 +1193,7 @@
       "meta_title": "Gnéithe",
       "meta_description": "Gach modúl atá ar fáil in Project NEXUS, na bogearraí ar a bhfuil {{name}} bunaithe, le lipéid mhacánta aibíochta don bhaincéireacht ama, don mhargadh, don chúram pobail agus don tsábháilteacht.",
       "heading": "Cad a dhéanann Project NEXUS",
-      "subheading": "Is ardán pobail iltionónta ar chaighdeán fiontair é Project NEXUS. Tá gach modúl thíos ar fáil in v3.1.0 anois. Cuirimid lipéid mhacánta ar a n-aibíocht: tá míreanna gan lipéad ar fáil go ginearálta; bíonn lipéad Béite nó Réamhamhairc ar ghnéithe níos nuaí nó ar ghnéithe atá fós á ndaingniú; agus ciallaíonn Tógtha, gan a bheith cumasaithe go bhfuil an obair críochnaithe ach múchta go dtí go mbeidh gá léi.",
+      "subheading": "Is ardán pobail iltionónta ar chaighdeán fiontair é Project NEXUS. Tá gach modúl thíos ar fáil in v3.2.0 anois. Cuirimid lipéid mhacánta ar a n-aibíocht: tá míreanna gan lipéad ar fáil go ginearálta; bíonn lipéad Béite nó Réamhamhairc ar ghnéithe níos nuaí nó ar ghnéithe atá fós á ndaingniú; agus ciallaíonn Tógtha, gan a bheith cumasaithe go bhfuil an obair críochnaithe ach múchta go dtí go mbeidh gá léi.",
       "maturity_key_title": "Conas a lipéadaímid aibíocht",
       "maturity_ga": "Ar fáil go ginearálta - cobhsaí, tacaithe, in úsáid i dtáirgeadh ar fud na dtionóntaí píolótacha.",
       "maturity_beta": "Ag obair i dtáirgeadh anois, ach tá an comhéadan poiblí nó an prótacal cumarsáide fós á dhaingniú.",
@@ -1197,7 +1260,7 @@
             "native_mobile_app": {
               "title": "Aip dhúchasach soghluaiste",
               "description": "Aip ar leith a tógadh le Expo agus React Native, agus a úsáideann an API céanna leis an suíomh gréasáin. Cruthaítear leagan Android agus leagan iOS ón mbunachar cód céanna.",
-              "note": "Is í an aip gréasáin an príomhbhealach isteach fós, agus níl ceachtar den dá leagan siopa foilsithe go fóill. Is é Android is gaire don eisiúint: tá síniú, próifílí tógála agus fógraí brú socraithe. Tógtar iOS ón gcód céanna, ach teastaíonn cuntas forbróra Apple agus athbhreithniú san App Store freisin, mar sin tiocfaidh sé ina dhiaidh."
+              "note": "Tá an dá leagan siopa foilsithe: ar Google Play ó Lúnasa 2026 agus ar an App Store ó Dheireadh Fómhair 2026, mar aip amháin darb ainm Timebank Global. Is luathleaganacha iad, mar sin is é an aip ghréasáin an bealach isteach is iomláine fós."
             },
             "accessible_frontend": {
               "title": "Comhéadan Inrochtana",
@@ -1255,7 +1318,7 @@
           "title": "Eispéireas na mBall",
           "items": {
             "service_listings": {
-              "title": "Liostálacha Seirbhísí",
+              "title": "Tairiscintí agus iarratais",
               "description": "Foilsigh tairiscintí agus iarrataí, brabhsáil liostálacha agus meaitseáil iad go cliste."
             },
             "marketplace": {
@@ -1708,7 +1771,70 @@
       "results_summary": "{{shown}} iontráil as {{total}} á dtaispeáint",
       "no_results_title": "Níl aon rud ag teacht leis an gcuardach sin",
       "no_results_body": "Bain triail as focal níos giorra, nó roghnaigh Gach rud chun an liosta iomlán a thabhairt ar ais.",
-      "clear_filters": "Glan an cuardach agus na scagairí"
+      "clear_filters": "Glan an cuardach agus na scagairí",
+      "welcome": {
+        "heading": "A bhfuil le déanamh agat in {{name}}",
+        "body": "Roinn scil, iarr lámh chúnta agus cuir aithne ar na daoine thart ort. Seo a bhfuil ag fanacht leat.",
+        "join": "Bí linn",
+        "cards_heading": "Rudaí is féidir leat a dhéanamh anseo",
+        "cards": {
+          "share": {
+            "title": "Roinn do chuid ama agus scileanna",
+            "body": "Tairg an rud a bhfuil tú go maith aige, agus iarr lámh chúnta leis an rud nach bhfuil."
+          },
+          "credits": {
+            "title": "Tuill agus caith creidmheasanna ama",
+            "body": "Tuilleann uair an chloig cúnaimh creidmheas amháin. Caith é ar uair an chloig d'am duine eile."
+          },
+          "people": {
+            "title": "Cas le daoine",
+            "body": "Féach cé atá anseo agus cuir aithne ar bhaill eile."
+          },
+          "events": {
+            "title": "Tar chuig imeachtaí",
+            "body": "Faigh amach cad atá ar siúl, abair go bhfuil tú ag teacht agus buail isteach."
+          },
+          "groups": {
+            "title": "Téigh i ngrúpa",
+            "body": "Aimsigh daoine a bhfuil an spéis chéanna acu, nó cuir tús le grúpa de do chuid féin."
+          },
+          "volunteering": {
+            "title": "Déan obair dheonach",
+            "body": "Tabhair roinnt ama do chúis áitiúil, a oiread nó a laghad agus a oireann duit."
+          },
+          "messages": {
+            "title": "Coinnigh i dteagmháil",
+            "body": "Seol teachtaireacht chun malartú a shocrú, nó díreach chun beannú do dhuine."
+          },
+          "feed": {
+            "title": "Féach cad atá ag tarlú",
+            "body": "Léigh an nuacht agus na postálacha is déanaí ó dhaoine i do phobal."
+          }
+        },
+        "good_to_know_heading": "Is fiú a bheith ar eolas",
+        "good_to_know": {
+          "phone": {
+            "title": "Ar d'fhón",
+            "body": "Úsáid i do bhrabhsálaí é, nó cuir an aip ar d'fhón."
+          },
+          "language": {
+            "title": "I do theanga féin",
+            "body": "Roghnaigh an teanga is compordaí duit."
+          },
+          "safety": {
+            "title": "Sábháilte agus faoi chúram",
+            "body": "Faigh amach conas a choinnímid an áit seo sábháilte do chách."
+          }
+        },
+        "catalogue_heading": "Gach rud is féidir leis na bogearraí a dhéanamh",
+        "catalogue_count": "Gnéithe: {{total}}. Grúpaí: {{groups}}.",
+        "catalogue_note": "Seo an liosta iomlán de na rudaí is féidir leis na bogearraí taobh thiar de {{name}} a dhéanamh. Roghnaíonn gach pobal na codanna a chuireann sé ar siúl, mar sin ní bheidh cuid acu seo i do roghchláir. Má tá ceann acu úsáideach duit, fiafraigh de na daoine a reáchtálann do phobal.",
+        "search_results": "{{shown}} as {{total}} á dtaispeáint",
+        "no_results_body": "Bain triail as focal níos giorra, nó glan an cuardach chun an liosta iomlán a fháil ar ais.",
+        "clear_search": "Glan an cuardach",
+        "technical_heading": "Dóibh siúd ar spéis leo an taobh teicniúil",
+        "technical_body": "An chaoi a léirímid a bhfuil críochnaithe, cad as a bhfuil na bogearraí tógtha agus conas fadhb a thuairisciú."
+      }
     },
     "de": {
       "chips": {
@@ -1787,7 +1913,7 @@
             "native_mobile_app": {
               "title": "Native Mobile-App",
               "description": "Eine separate App, die mit Expo und React Native erstellt wurde und mit derselben API wie die Website kommuniziert. Eine Codebasis produziert sowohl den Android- als auch den iOS-Build.",
-              "note": "Die Web-App ist immer noch der Haupteinstiegspunkt und noch ist keiner der Store-Builds veröffentlicht. Android kommt dem am nächsten: Signierung, Build-Profile und Push-Benachrichtigungen sind alle vorhanden. iOS basiert auf dem gleichen Code, erfordert aber zusätzlich ein Apple-Entwicklerkonto und eine Überprüfung im App Store, daher wird es folgen."
+              "note": "Beide Store-Versionen sind veröffentlicht: bei Google Play seit August 2026 und im App Store seit Oktober 2026, als eine App namens Timebank Global. Es sind frühe Versionen, daher ist die Web-App weiterhin der vollständigste Zugang."
             },
             "accessible_frontend": {
               "title": "Barrierefreies Frontend",
@@ -1845,7 +1971,7 @@
           "title": "Mitglieder-Erlebnis",
           "items": {
             "service_listings": {
-              "title": "Dienstleistungs-Inserate",
+              "title": "Angebote und Gesuche",
               "description": "Angebote und Gesuche einstellen, Inserate durchsuchen und smart matchen."
             },
             "marketplace": {
@@ -2298,7 +2424,70 @@
       "results_summary": "Es werden {{shown}} von {{total}} Einträgen angezeigt",
       "no_results_title": "Nichts entspricht dieser Suche",
       "no_results_body": "Versuchen Sie es mit einem kürzeren Wort oder wählen Sie „Alles“, um die gesamte Liste anzuzeigen.",
-      "clear_filters": "Klare Suche und Filter"
+      "clear_filters": "Klare Suche und Filter",
+      "welcome": {
+        "heading": "Was Sie bei {{name}} tun können",
+        "body": "Teilen Sie eine Fähigkeit, bitten Sie um Unterstützung und lernen Sie die Menschen in Ihrer Nähe kennen. Das alles wartet hier auf Sie.",
+        "join": "Jetzt mitmachen",
+        "cards_heading": "Das können Sie hier tun",
+        "cards": {
+          "share": {
+            "title": "Zeit und Fähigkeiten teilen",
+            "body": "Bieten Sie an, was Sie gut können, und bitten Sie um Hilfe bei dem, was Ihnen schwerfällt."
+          },
+          "credits": {
+            "title": "Zeitgutschriften sammeln und einlösen",
+            "body": "Eine Stunde Hilfe bringt eine Gutschrift. Lösen Sie sie für eine Stunde Zeit von jemand anderem ein."
+          },
+          "people": {
+            "title": "Menschen kennenlernen",
+            "body": "Sehen Sie, wer dabei ist, und lernen Sie andere Mitglieder kennen."
+          },
+          "events": {
+            "title": "Zu Veranstaltungen kommen",
+            "body": "Erfahren Sie, was los ist, sagen Sie zu und kommen Sie vorbei."
+          },
+          "groups": {
+            "title": "Einer Gruppe beitreten",
+            "body": "Finden Sie Menschen mit denselben Interessen oder gründen Sie eine eigene Gruppe."
+          },
+          "volunteering": {
+            "title": "Sich freiwillig engagieren",
+            "body": "Schenken Sie einer guten Sache vor Ort etwas Zeit, so viel oder so wenig, wie es für Sie passt."
+          },
+          "messages": {
+            "title": "In Kontakt bleiben",
+            "body": "Schreiben Sie eine Nachricht, um einen Austausch zu vereinbaren oder einfach Hallo zu sagen."
+          },
+          "feed": {
+            "title": "Sehen, was los ist",
+            "body": "Lesen Sie Neuigkeiten und Beiträge von Menschen aus Ihrer Gemeinschaft."
+          }
+        },
+        "good_to_know_heading": "Gut zu wissen",
+        "good_to_know": {
+          "phone": {
+            "title": "Auf Ihrem Handy",
+            "body": "Nutzen Sie die Seite im Browser oder holen Sie sich die App aufs Handy."
+          },
+          "language": {
+            "title": "In Ihrer Sprache",
+            "body": "Wählen Sie die Sprache, in der Sie sich am wohlsten fühlen."
+          },
+          "safety": {
+            "title": "Sicher und gut betreut",
+            "body": "Erfahren Sie, wie wir dafür sorgen, dass sich hier alle sicher fühlen."
+          }
+        },
+        "catalogue_heading": "Alles, was die Software kann",
+        "catalogue_count": "{{total}} Funktionen in {{groups}} Gruppen",
+        "catalogue_note": "Dies ist die vollständige Liste dessen, was die Software hinter {{name}} kann. Jede Gemeinschaft entscheidet selbst, welche Teile sie einschaltet. Manches davon finden Sie deshalb nicht in Ihren Menüs. Wenn Ihnen etwas davon nützlich erscheint, fragen Sie die Menschen, die Ihre Gemeinschaft leiten.",
+        "search_results": "{{shown}} von {{total}} werden angezeigt",
+        "no_results_body": "Versuchen Sie ein kürzeres Wort oder löschen Sie die Suche, um die ganze Liste wieder zu sehen.",
+        "clear_search": "Suche löschen",
+        "technical_heading": "Für technisch Interessierte",
+        "technical_body": "Wie wir kennzeichnen, was fertig ist, womit die Software gebaut ist und wie Sie ein Problem melden."
+      }
     },
     "fr": {
       "chips": {
@@ -2310,7 +2499,7 @@
       "meta_title": "Fonctionnalités",
       "meta_description": "Tous les modules de Project NEXUS, le logiciel de {{name}}, avec des indications honnêtes sur leur maturité : banque de temps, fédération, place de marché, outils communautaires et sécurité.",
       "heading": "Ce que Project NEXUS fait",
-      "subheading": "Le projet NEXUS est une plateforme communautaire multi-tenant de niveau entreprise. Chaque module ci-dessous est livré aujourd'hui en v3.1.0. Nous étiquetons les modules honnêtement : les éléments non marqués sont généralement disponibles ; Les surfaces plus récentes ou à durcissement actif portent une puce Beta ou Preview ; et une puce construite et non activée signifie que le travail est terminé et éteint, en attente de la demande.",
+      "subheading": "Le projet NEXUS est une plateforme communautaire multi-tenant de niveau entreprise. Chaque module ci-dessous est livré aujourd'hui en v3.2.0. Nous étiquetons les modules honnêtement : les éléments non marqués sont généralement disponibles ; Les surfaces plus récentes ou à durcissement actif portent une puce Beta ou Preview ; et une puce construite et non activée signifie que le travail est terminé et éteint, en attente de la demande.",
       "maturity_key_title": "Comment nous indiquons la maturité",
       "maturity_ga": "Disponibilité générale - stable, prise en charge, utilisée en production chez les locataires pilotes.",
       "maturity_beta": "Déjà en production, mais la surface publique ou le protocole filaire est encore en cours de renforcement.",
@@ -2377,7 +2566,7 @@
             "native_mobile_app": {
               "title": "Application mobile native",
               "description": "Une application distincte construite avec Expo et React Native, parlant avec la même API que le site Web. Une base de code produit à la fois la version Android et iOS.",
-              "note": "L’application Web reste le principal moyen d’accès et aucune des deux versions de magasin n’est encore publiée. Android est le plus proche : la signature, la création de profils et les notifications push sont toutes en place. iOS est construit à partir du même code mais nécessite en outre un compte de développeur Apple et un examen de l'App Store, il suivra donc."
+              "note": "Les deux versions sont publiées : sur Google Play depuis août 2026 et sur l'App Store depuis octobre 2026, sous la forme d'une seule application appelée Timebank Global. Ce sont des versions préliminaires : l'application web reste donc l'accès le plus complet."
             },
             "accessible_frontend": {
               "title": "Frontend accessible",
@@ -2435,7 +2624,7 @@
           "title": "Expérience membre",
           "items": {
             "service_listings": {
-              "title": "Annonces de services",
+              "title": "Offres et demandes",
               "description": "Publiez des offres et des demandes, parcourez et faites correspondre les annonces intelligemment."
             },
             "marketplace": {
@@ -2888,7 +3077,70 @@
       "results_summary": "Affichage de {{shown}} entrées sur {{total}}",
       "no_results_title": "Rien ne correspond à cette recherche",
       "no_results_body": "Essayez un mot plus court ou choisissez Tout pour ramener toute la liste.",
-      "clear_filters": "Effacer la recherche et les filtres"
+      "clear_filters": "Effacer la recherche et les filtres",
+      "welcome": {
+        "heading": "Ce que vous pouvez faire dans {{name}}",
+        "body": "Partagez un savoir-faire, demandez un coup de main et faites connaissance avec les personnes qui vous entourent. Voici ce qui vous attend.",
+        "join": "Rejoignez-nous",
+        "cards_heading": "Ce que vous pouvez faire ici",
+        "cards": {
+          "share": {
+            "title": "Partagez votre temps et vos savoir-faire",
+            "body": "Proposez ce que vous savez bien faire et demandez de l'aide pour le reste."
+          },
+          "credits": {
+            "title": "Gagnez et dépensez des crédits-temps",
+            "body": "Une heure d'aide rapporte un crédit. Dépensez-le contre une heure du temps de quelqu'un d'autre."
+          },
+          "people": {
+            "title": "Rencontrez des personnes",
+            "body": "Voyez qui est là et faites connaissance avec les autres membres."
+          },
+          "events": {
+            "title": "Venez aux événements",
+            "body": "Découvrez ce qui est prévu, dites que vous venez et passez nous voir."
+          },
+          "groups": {
+            "title": "Rejoignez un groupe",
+            "body": "Trouvez des personnes qui partagent vos centres d'intérêt, ou créez votre propre groupe."
+          },
+          "volunteering": {
+            "title": "Faites du bénévolat",
+            "body": "Donnez un peu de temps à une cause locale, autant ou aussi peu que vous le souhaitez."
+          },
+          "messages": {
+            "title": "Restez en contact",
+            "body": "Envoyez un message pour organiser un échange, ou simplement pour dire bonjour."
+          },
+          "feed": {
+            "title": "Voyez ce qui se passe",
+            "body": "Lisez les dernières nouvelles et publications des membres de votre communauté."
+          }
+        },
+        "good_to_know_heading": "Bon à savoir",
+        "good_to_know": {
+          "phone": {
+            "title": "Sur votre téléphone",
+            "body": "Utilisez le site dans votre navigateur ou ajoutez l'application à votre téléphone."
+          },
+          "language": {
+            "title": "Dans votre langue",
+            "body": "Choisissez la langue dans laquelle vous êtes le plus à l'aise."
+          },
+          "safety": {
+            "title": "Un lieu sûr et bien entouré",
+            "body": "Découvrez comment nous veillons à ce que chacun s'y sente en sécurité."
+          }
+        },
+        "catalogue_heading": "Tout ce que le logiciel sait faire",
+        "catalogue_count": "{{total}} fonctionnalités, en {{groups}} groupes",
+        "catalogue_note": "Voici la liste complète de ce que sait faire le logiciel derrière {{name}}. Chaque communauté choisit les parties qu'elle active : certaines n'apparaîtront donc pas dans vos menus. Si l'une d'elles vous semble utile, parlez-en aux personnes qui animent votre communauté.",
+        "search_results": "{{shown}} sur {{total}} affichées",
+        "no_results_body": "Essayez un mot plus court, ou effacez la recherche pour retrouver toute la liste.",
+        "clear_search": "Effacer la recherche",
+        "technical_heading": "Pour les esprits techniques",
+        "technical_body": "Comment nous indiquons ce qui est terminé, avec quoi le logiciel est construit et comment signaler un problème."
+      }
     },
     "it": {
       "chips": {
@@ -2967,7 +3219,7 @@
             "native_mobile_app": {
               "title": "App mobile nativa",
               "description": "Un'app separata creata con Expo e React Native, che comunica con la stessa API del sito web. Una base di codice produce sia la build Android che quella iOS.",
-              "note": "L'app Web è ancora la via principale e nessuna delle build del negozio è stata ancora pubblicata. Android è il più vicino: firma, creazione di profili e notifiche push sono tutti a posto. iOS è costruito con lo stesso codice ma necessita inoltre di un account sviluppatore Apple e della revisione dell'App Store, quindi seguirà."
+              "note": "Entrambe le versioni sono pubblicate: su Google Play da agosto 2026 e su App Store da ottobre 2026, come un'unica app chiamata Timebank Global. Sono versioni iniziali, quindi l'app web resta l'accesso più completo."
             },
             "accessible_frontend": {
               "title": "Frontend accessibile",
@@ -3025,7 +3277,7 @@
           "title": "Esperienza membro",
           "items": {
             "service_listings": {
-              "title": "Annunci di servizi",
+              "title": "Offerte e richieste",
               "description": "Pubblica offerte e richieste, sfoglia e abbina annunci in modo intelligente."
             },
             "marketplace": {
@@ -3478,7 +3730,70 @@
       "results_summary": "Visualizzazione di {{shown}} di {{total}} voci",
       "no_results_title": "Niente corrisponde a quella ricerca",
       "no_results_body": "Prova una parola più breve o scegli Tutto per ripristinare l'intero elenco.",
-      "clear_filters": "Cancella ricerca e filtri"
+      "clear_filters": "Cancella ricerca e filtri",
+      "welcome": {
+        "heading": "Cosa puoi fare in {{name}}",
+        "body": "Condividi una competenza, chiedi una mano e conosci le persone intorno a te. Ecco cosa ti aspetta.",
+        "join": "Unisciti a noi",
+        "cards_heading": "Cosa puoi fare qui",
+        "cards": {
+          "share": {
+            "title": "Condividi il tuo tempo e le tue competenze",
+            "body": "Offri quello che sai fare bene e chiedi una mano per quello che non sai fare."
+          },
+          "credits": {
+            "title": "Guadagna e spendi crediti tempo",
+            "body": "Un'ora di aiuto vale un credito. Spendilo per un'ora del tempo di qualcun altro."
+          },
+          "people": {
+            "title": "Conosci persone",
+            "body": "Guarda chi c'è e fai conoscenza con gli altri membri."
+          },
+          "events": {
+            "title": "Partecipa agli eventi",
+            "body": "Scopri cosa c'è in programma, di' che ci sarai e passa a trovarci."
+          },
+          "groups": {
+            "title": "Unisciti a un gruppo",
+            "body": "Trova persone con i tuoi stessi interessi, oppure crea un gruppo tutto tuo."
+          },
+          "volunteering": {
+            "title": "Fai volontariato",
+            "body": "Dedica un po' di tempo a una causa locale, tanto o poco quanto ti va."
+          },
+          "messages": {
+            "title": "Resta in contatto",
+            "body": "Manda un messaggio per organizzare uno scambio, o anche solo per salutare."
+          },
+          "feed": {
+            "title": "Guarda cosa succede",
+            "body": "Leggi le ultime notizie e i post delle persone della tua comunità."
+          }
+        },
+        "good_to_know_heading": "Buono a sapersi",
+        "good_to_know": {
+          "phone": {
+            "title": "Sul tuo telefono",
+            "body": "Usalo nel browser oppure aggiungi l'app al tuo telefono."
+          },
+          "language": {
+            "title": "Nella tua lingua",
+            "body": "Scegli la lingua in cui ti senti più a tuo agio."
+          },
+          "safety": {
+            "title": "Un posto sicuro e curato",
+            "body": "Scopri come facciamo in modo che questo sia un posto sicuro per tutti."
+          }
+        },
+        "catalogue_heading": "Tutto quello che il software sa fare",
+        "catalogue_count": "{{total}} funzioni, in {{groups}} gruppi",
+        "catalogue_note": "Questo è l'elenco completo di ciò che sa fare il software dietro {{name}}. Ogni comunità sceglie quali parti attivare, quindi alcune non compariranno nei tuoi menu. Se una ti sembra utile, chiedi a chi gestisce la tua comunità.",
+        "search_results": "{{shown}} di {{total}} in elenco",
+        "no_results_body": "Prova con una parola più corta, oppure cancella la ricerca per rivedere tutto l'elenco.",
+        "clear_search": "Cancella ricerca",
+        "technical_heading": "Per chi ama i dettagli tecnici",
+        "technical_body": "Come indichiamo ciò che è finito, con cosa è costruito il software e come segnalare un problema."
+      }
     },
     "pt": {
       "chips": {
@@ -3557,7 +3872,7 @@
             "native_mobile_app": {
               "title": "App móvel nativa",
               "description": "Um aplicativo separado desenvolvido com Expo e React Native, conversando com a mesma API do site. Uma base de código produz a versão Android e iOS.",
-              "note": "O aplicativo da web ainda é a principal forma de entrada e nenhuma versão da loja foi publicada ainda. O Android está mais próximo: assinatura, criação de perfis e notificações push estão disponíveis. O iOS é construído a partir do mesmo código, mas também precisa de uma conta de desenvolvedor da Apple e de uma revisão na App Store, portanto, seguirá."
+              "note": "As duas versões estão publicadas: no Google Play desde agosto de 2026 e na App Store desde outubro de 2026, como um único aplicativo chamado Timebank Global. São versões iniciais, então o aplicativo web continua sendo o acesso mais completo."
             },
             "accessible_frontend": {
               "title": "Front-end acessível",
@@ -3615,7 +3930,7 @@
           "title": "Experiência do membro",
           "items": {
             "service_listings": {
-              "title": "Anúncios de serviços",
+              "title": "Ofertas e pedidos",
               "description": "Publique ofertas e pedidos, explore e faça correspondências inteligentes de anúncios."
             },
             "marketplace": {
@@ -4068,7 +4383,70 @@
       "results_summary": "Mostrando entradas {{shown}} de {{total}}",
       "no_results_title": "Nada corresponde a essa pesquisa",
       "no_results_body": "Experimente uma palavra mais curta ou escolha Tudo para trazer de volta a lista inteira.",
-      "clear_filters": "Limpar pesquisa e filtros"
+      "clear_filters": "Limpar pesquisa e filtros",
+      "welcome": {
+        "heading": "O que você pode fazer em {{name}}",
+        "body": "Compartilhe uma habilidade, peça uma mãozinha e conheça as pessoas ao seu redor. Veja o que espera por você.",
+        "join": "Junte-se a nós",
+        "cards_heading": "O que você pode fazer aqui",
+        "cards": {
+          "share": {
+            "title": "Compartilhe seu tempo e suas habilidades",
+            "body": "Ofereça o que você sabe fazer bem e peça ajuda com o que não sabe."
+          },
+          "credits": {
+            "title": "Ganhe e use créditos de tempo",
+            "body": "Uma hora de ajuda rende um crédito. Use-o em uma hora do tempo de outra pessoa."
+          },
+          "people": {
+            "title": "Conheça pessoas",
+            "body": "Veja quem está aqui e conheça outros membros."
+          },
+          "events": {
+            "title": "Venha aos eventos",
+            "body": "Descubra o que vai acontecer, avise que vai e apareça."
+          },
+          "groups": {
+            "title": "Entre em um grupo",
+            "body": "Encontre pessoas com os mesmos interesses ou crie o seu próprio grupo."
+          },
+          "volunteering": {
+            "title": "Seja voluntário",
+            "body": "Dedique um pouco de tempo a uma causa local, tanto ou tão pouco quanto for bom para você."
+          },
+          "messages": {
+            "title": "Mantenha contato",
+            "body": "Envie uma mensagem para combinar uma troca ou só para dizer oi."
+          },
+          "feed": {
+            "title": "Veja o que está acontecendo",
+            "body": "Leia as últimas novidades e publicações das pessoas da sua comunidade."
+          }
+        },
+        "good_to_know_heading": "Bom saber",
+        "good_to_know": {
+          "phone": {
+            "title": "No seu celular",
+            "body": "Use no navegador ou adicione o aplicativo ao seu celular."
+          },
+          "language": {
+            "title": "No seu idioma",
+            "body": "Escolha o idioma em que você se sente mais à vontade."
+          },
+          "safety": {
+            "title": "Um lugar seguro e bem cuidado",
+            "body": "Saiba como cuidamos para que este seja um lugar seguro para todos."
+          }
+        },
+        "catalogue_heading": "Tudo o que o software faz",
+        "catalogue_count": "{{total}} recursos, em {{groups}} grupos",
+        "catalogue_note": "Esta é a lista completa do que faz o software por trás de {{name}}. Cada comunidade escolhe quais partes ativar, então algumas não vão aparecer nos seus menus. Se alguma parecer útil, pergunte a quem cuida da sua comunidade.",
+        "search_results": "Mostrando {{shown}} de {{total}}",
+        "no_results_body": "Tente uma palavra mais curta ou limpe a pesquisa para ver a lista inteira de novo.",
+        "clear_search": "Limpar pesquisa",
+        "technical_heading": "Para quem gosta dos detalhes técnicos",
+        "technical_body": "Como indicamos o que está pronto, com o que o software é feito e como avisar sobre um problema."
+      }
     },
     "es": {
       "chips": {
@@ -4147,7 +4525,7 @@
             "native_mobile_app": {
               "title": "App móvil nativa",
               "description": "Una aplicación separada creada con Expo y React Native, que habla con la misma API que el sitio web. Una base de código produce la versión de Android e iOS.",
-              "note": "La aplicación web sigue siendo la principal vía de entrada y ninguna de las versiones de la tienda está publicada todavía. Android es el más cercano: la firma, la creación de perfiles y las notificaciones automáticas están disponibles. iOS se construye a partir del mismo código, pero además necesita una cuenta de desarrollador de Apple y una revisión de la App Store, por lo que seguirá."
+              "note": "Las dos versiones están publicadas: en Google Play desde agosto de 2026 y en el App Store desde octubre de 2026, como una sola aplicación llamada Timebank Global. Son versiones preliminares, así que la aplicación web sigue siendo el acceso más completo."
             },
             "accessible_frontend": {
               "title": "Interfaz accesible",
@@ -4205,7 +4583,7 @@
           "title": "Experiencia del miembro",
           "items": {
             "service_listings": {
-              "title": "Anuncios de servicios",
+              "title": "Ofertas y solicitudes",
               "description": "Publica ofertas y solicitudes, navega y empareja anuncios de forma inteligente."
             },
             "marketplace": {
@@ -4658,7 +5036,70 @@
       "results_summary": "Mostrando {{shown}} de {{total}} entradas",
       "no_results_title": "Nada coincide con esa búsqueda.",
       "no_results_body": "Pruebe con una palabra más corta o elija Todo para recuperar la lista completa.",
-      "clear_filters": "Borrar búsqueda y filtros"
+      "clear_filters": "Borrar búsqueda y filtros",
+      "welcome": {
+        "heading": "Lo que puedes hacer en {{name}}",
+        "body": "Comparte una habilidad, pide que te echen una mano y conoce a la gente que te rodea. Esto es lo que te espera.",
+        "join": "Únete",
+        "cards_heading": "Cosas que puedes hacer aquí",
+        "cards": {
+          "share": {
+            "title": "Comparte tu tiempo y tus habilidades",
+            "body": "Ofrece lo que se te da bien y pide ayuda con lo que no."
+          },
+          "credits": {
+            "title": "Gana y gasta créditos de tiempo",
+            "body": "Una hora de ayuda te da un crédito. Gástalo en una hora del tiempo de otra persona."
+          },
+          "people": {
+            "title": "Conoce a gente",
+            "body": "Mira quién está aquí y conoce a otros miembros."
+          },
+          "events": {
+            "title": "Ven a los eventos",
+            "body": "Descubre qué hay programado, di que vas y acércate."
+          },
+          "groups": {
+            "title": "Únete a un grupo",
+            "body": "Encuentra a personas con tus mismos intereses o crea tu propio grupo."
+          },
+          "volunteering": {
+            "title": "Haz voluntariado",
+            "body": "Dedica algo de tiempo a una causa local, tanto o tan poco como te venga bien."
+          },
+          "messages": {
+            "title": "Mantente en contacto",
+            "body": "Envía un mensaje para organizar un intercambio o simplemente para saludar."
+          },
+          "feed": {
+            "title": "Mira lo que está pasando",
+            "body": "Lee las últimas novedades y publicaciones de la gente de tu comunidad."
+          }
+        },
+        "good_to_know_heading": "Conviene saber",
+        "good_to_know": {
+          "phone": {
+            "title": "En tu teléfono",
+            "body": "Úsalo en el navegador o añade la aplicación a tu teléfono."
+          },
+          "language": {
+            "title": "En tu idioma",
+            "body": "Elige el idioma en el que te sientas más a gusto."
+          },
+          "safety": {
+            "title": "Un lugar seguro y cuidado",
+            "body": "Descubre cómo cuidamos de que este sea un lugar seguro para todos."
+          }
+        },
+        "catalogue_heading": "Todo lo que el programa puede hacer",
+        "catalogue_count": "{{total}} funciones en {{groups}} grupos",
+        "catalogue_note": "Esta es la lista completa de lo que puede hacer el programa que hay detrás de {{name}}. Cada comunidad elige qué partes activar, así que algunas no aparecerán en tus menús. Si alguna te parece útil, pregunta a quien lleva tu comunidad.",
+        "search_results": "Mostrando {{shown}} de {{total}}",
+        "no_results_body": "Prueba con una palabra más corta o borra la búsqueda para recuperar la lista completa.",
+        "clear_search": "Limpiar búsqueda",
+        "technical_heading": "Para quien quiera los detalles técnicos",
+        "technical_body": "Cómo indicamos lo que está terminado, con qué está hecho el programa y cómo avisar de un problema."
+      }
     },
     "nl": {
       "chips": {
@@ -4670,7 +5111,7 @@
       "meta_title": "Functies",
       "meta_description": "Alle modules van Project NEXUS, de software achter {{name}}, met eerlijke volwassenheidslabels voor timebanking, federatie, marktplaats, community-tools en beveiliging.",
       "heading": "Wat Project NEXUS doet",
-      "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v3.1.0 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
+      "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v3.2.0 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
       "maturity_key_title": "Hoe we volwassenheid labelen",
       "maturity_ga": "Algemeen beschikbaar - stabiel, ondersteund, in productie bij pilot-tenants.",
       "maturity_beta": "Vandaag in productie, maar het publieke oppervlak of het wire-protocol wordt nog verhard.",
@@ -4737,7 +5178,7 @@
             "native_mobile_app": {
               "title": "Native mobiele app",
               "description": "Een aparte app gebouwd met Expo en React Native, die met dezelfde API praat als de website. Eén codebase produceert zowel de Android- als de iOS-build.",
-              "note": "De webapp is nog steeds de belangrijkste manier om binnen te komen, en er is nog geen winkelbuild gepubliceerd. Android komt het dichtst in de buurt: ondertekenen, profielen bouwen en pushmeldingen zijn allemaal aanwezig. iOS is opgebouwd uit dezelfde code, maar heeft daarnaast een Apple-ontwikkelaarsaccount en App Store-beoordeling nodig, dus dit zal volgen."
+              "note": "Beide store-versies zijn gepubliceerd: op Google Play sinds augustus 2026 en in de App Store sinds oktober 2026, als één app genaamd Timebank Global. Het zijn vroege versies, dus de webapp blijft de meest complete toegang."
             },
             "accessible_frontend": {
               "title": "Toegankelijke frontend",
@@ -4795,7 +5236,7 @@
           "title": "Ledenervaring",
           "items": {
             "service_listings": {
-              "title": "Service-advertenties",
+              "title": "Aanbod en verzoeken",
               "description": "Plaats aanbiedingen en verzoeken, blader door en match advertenties slim."
             },
             "marketplace": {
@@ -5248,7 +5689,70 @@
       "results_summary": "Toont {{shown}} van {{total}} vermeldingen",
       "no_results_title": "Niets komt overeen met die zoekopdracht",
       "no_results_body": "Probeer een korter woord of kies Alles om de hele lijst terug te brengen.",
-      "clear_filters": "Zoekopdracht en filters wissen"
+      "clear_filters": "Zoekopdracht en filters wissen",
+      "welcome": {
+        "heading": "Wat je kunt doen bij {{name}}",
+        "body": "Deel een vaardigheid, vraag om een helpende hand en leer de mensen om je heen kennen. Dit staat er voor je klaar.",
+        "join": "Doe mee",
+        "cards_heading": "Dit kun je hier doen",
+        "cards": {
+          "share": {
+            "title": "Deel je tijd en vaardigheden",
+            "body": "Bied aan waar je goed in bent en vraag hulp bij wat je minder goed kunt."
+          },
+          "credits": {
+            "title": "Verdien en besteed tijdtegoeden",
+            "body": "Een uur hulp levert één tegoed op. Besteed het aan een uur van de tijd van iemand anders."
+          },
+          "people": {
+            "title": "Ontmoet mensen",
+            "body": "Kijk wie er zijn en leer andere leden kennen."
+          },
+          "events": {
+            "title": "Kom naar evenementen",
+            "body": "Ontdek wat er te doen is, laat weten dat je komt en loop binnen."
+          },
+          "groups": {
+            "title": "Sluit je aan bij een groep",
+            "body": "Vind mensen met dezelfde interesse, of begin zelf een groep."
+          },
+          "volunteering": {
+            "title": "Doe vrijwilligerswerk",
+            "body": "Geef wat tijd aan een goed doel in de buurt, zo veel of zo weinig als je past."
+          },
+          "messages": {
+            "title": "Houd contact",
+            "body": "Stuur een bericht om een uitwisseling af te spreken, of gewoon om hallo te zeggen."
+          },
+          "feed": {
+            "title": "Zie wat er speelt",
+            "body": "Lees het laatste nieuws en de berichten van mensen uit je gemeenschap."
+          }
+        },
+        "good_to_know_heading": "Goed om te weten",
+        "good_to_know": {
+          "phone": {
+            "title": "Op je telefoon",
+            "body": "Gebruik het in je browser, of zet de app op je telefoon."
+          },
+          "language": {
+            "title": "In je eigen taal",
+            "body": "Kies de taal waarin je je het meest thuis voelt."
+          },
+          "safety": {
+            "title": "Veilig en goed verzorgd",
+            "body": "Lees hoe we ervoor zorgen dat dit voor iedereen een veilige plek is."
+          }
+        },
+        "catalogue_heading": "Alles wat de software kan",
+        "catalogue_count": "{{total}} functies, in {{groups}} groepen",
+        "catalogue_note": "Dit is de volledige lijst van wat de software achter {{name}} kan. Elke gemeenschap kiest zelf welke onderdelen aan staan, dus sommige vind je niet terug in je menu's. Lijkt iets je handig, vraag er dan naar bij wie je gemeenschap beheert.",
+        "search_results": "{{shown}} van {{total}} getoond",
+        "no_results_body": "Probeer een korter woord, of wis de zoekopdracht om de hele lijst terug te zien.",
+        "clear_search": "Zoekopdracht wissen",
+        "technical_heading": "Voor wie van techniek houdt",
+        "technical_body": "Hoe we aangeven wat af is, waarmee de software is gebouwd en hoe je een probleem meldt."
+      }
     },
     "pl": {
       "chips": {
@@ -5327,7 +5831,7 @@
             "native_mobile_app": {
               "title": "Natywna aplikacja mobilna",
               "description": "Oddzielna aplikacja zbudowana przy użyciu Expo i React Native, komunikująca się z tym samym API co strona internetowa. Jedna baza kodu tworzy zarówno wersję dla systemu Android, jak i iOS.",
-              "note": "Aplikacja internetowa jest nadal głównym narzędziem, a żadna wersja sklepu nie została jeszcze opublikowana. Android jest najbliżej: podpisywanie, tworzenie profili i powiadomienia push są dostępne. iOS jest zbudowany z tego samego kodu, ale dodatkowo wymaga konta programisty Apple i recenzji w App Store, więc będzie działać."
+              "note": "Obie wersje sklepowe są opublikowane: w Google Play od sierpnia 2026 r. i w App Store od października 2026 r., jako jedna aplikacja o nazwie Timebank Global. To wczesne wersje, więc aplikacja internetowa nadal jest najpełniejszym sposobem dostępu."
             },
             "accessible_frontend": {
               "title": "Dostępny interfejs",
@@ -5385,7 +5889,7 @@
           "title": "Doświadczenie członka",
           "items": {
             "service_listings": {
-              "title": "Ogłoszenia usług",
+              "title": "Oferty i prośby",
               "description": "Publikuj oferty i zapytania, przeglądaj i inteligentnie dopasowuj ogłoszenia."
             },
             "marketplace": {
@@ -5838,7 +6342,70 @@
       "results_summary": "Wyświetlanie {{shown}} z {{total}} wpisów",
       "no_results_title": "Nic nie pasuje do tego wyszukiwania",
       "no_results_body": "Spróbuj użyć krótszego słowa lub wybierz opcję Wszystko, aby wyświetlić całą listę.",
-      "clear_filters": "Wyczyść wyszukiwanie i filtry"
+      "clear_filters": "Wyczyść wyszukiwanie i filtry",
+      "welcome": {
+        "heading": "Co możesz robić w {{name}}",
+        "body": "Podziel się umiejętnością, poproś o pomoc i poznaj ludzi wokół siebie. Oto, co na Ciebie czeka.",
+        "join": "Dołącz do nas",
+        "cards_heading": "Co możesz tutaj robić",
+        "cards": {
+          "share": {
+            "title": "Dziel się czasem i umiejętnościami",
+            "body": "Zaproponuj to, w czym jesteś dobry, i poproś o pomoc w tym, co idzie Ci trudniej."
+          },
+          "credits": {
+            "title": "Zdobywaj i wydawaj kredyty czasu",
+            "body": "Godzina pomocy to jeden kredyt. Wydaj go na godzinę czasu innej osoby."
+          },
+          "people": {
+            "title": "Poznaj ludzi",
+            "body": "Zobacz, kto tu jest, i poznaj innych członków."
+          },
+          "events": {
+            "title": "Przyjdź na wydarzenia",
+            "body": "Sprawdź, co się dzieje, daj znać, że będziesz, i wpadnij."
+          },
+          "groups": {
+            "title": "Dołącz do grupy",
+            "body": "Znajdź osoby o podobnych zainteresowaniach albo załóż własną grupę."
+          },
+          "volunteering": {
+            "title": "Zostań wolontariuszem",
+            "body": "Poświęć trochę czasu lokalnej sprawie, tyle, ile Ci odpowiada."
+          },
+          "messages": {
+            "title": "Bądź w kontakcie",
+            "body": "Wyślij wiadomość, żeby umówić wymianę albo po prostu się przywitać."
+          },
+          "feed": {
+            "title": "Zobacz, co się dzieje",
+            "body": "Czytaj najnowsze wiadomości i wpisy osób z Twojej społeczności."
+          }
+        },
+        "good_to_know_heading": "Warto wiedzieć",
+        "good_to_know": {
+          "phone": {
+            "title": "Na Twoim telefonie",
+            "body": "Korzystaj w przeglądarce albo dodaj aplikację do telefonu."
+          },
+          "language": {
+            "title": "W Twoim języku",
+            "body": "Wybierz język, w którym czujesz się najswobodniej."
+          },
+          "safety": {
+            "title": "Bezpiecznie i z troską",
+            "body": "Dowiedz się, jak dbamy o to, żeby każdy czuł się tu bezpiecznie."
+          }
+        },
+        "catalogue_heading": "Wszystko, co potrafi oprogramowanie",
+        "catalogue_count": "Liczba funkcji: {{total}}, liczba grup: {{groups}}",
+        "catalogue_note": "To pełna lista tego, co potrafi oprogramowanie, z którego korzysta {{name}}. Każda społeczność sama wybiera, które części włączyć, więc niektórych nie znajdziesz w swoim menu. Jeśli coś wyda Ci się przydatne, zapytaj osoby prowadzące Twoją społeczność.",
+        "search_results": "Wyświetlono {{shown}} z {{total}}",
+        "no_results_body": "Spróbuj krótszego słowa albo wyczyść wyszukiwanie, żeby wróciła cała lista.",
+        "clear_search": "Wyczyść wyszukiwanie",
+        "technical_heading": "Dla zainteresowanych techniką",
+        "technical_body": "Jak oznaczamy to, co jest gotowe, z czego zbudowano oprogramowanie i jak zgłosić problem."
+      }
     },
     "ja": {
       "chips": {
@@ -5850,7 +6417,7 @@
       "meta_title": "機能",
       "meta_description": "{{name}} を支えるソフトウェア Project NEXUS のすべてのモジュールを、タイムバンキング、フェデレーション、マーケットプレイス、コミュニティツール、セキュリティの各分野で、正直な成熟度ラベルとともに紹介します。",
       "heading": "Project NEXUS でできること",
-      "subheading": "Project NEXUS は、エンタープライズ グレードのマルチテナント コミュニティ プラットフォームです。以下のすべてのモジュールは本日 v3.1.0 で出荷されます。私たちはモジュールに正直にラベルを付けています。マークのないアイテムは一般提供です。新しい表面や強化が進んでいる表面には、ベータ チップまたはプレビュー チップが搭載されています。内蔵されているが有効になっていないチップは、作業が終了してスイッチがオフになり、要求を待っていることを意味します。",
+      "subheading": "Project NEXUS は、エンタープライズ グレードのマルチテナント コミュニティ プラットフォームです。以下のすべてのモジュールは本日 v3.2.0 で出荷されます。私たちはモジュールに正直にラベルを付けています。マークのないアイテムは一般提供です。新しい表面や強化が進んでいる表面には、ベータ チップまたはプレビュー チップが搭載されています。内蔵されているが有効になっていないチップは、作業が終了してスイッチがオフになり、要求を待っていることを意味します。",
       "maturity_key_title": "成熟度の表記について",
       "maturity_ga": "一般提供 (GA) - 安定して稼働し、サポートされ、パイロットテナントで本番運用中。",
       "maturity_beta": "本番で稼働中ですが、公開インターフェイスやワイヤープロトコルはまだ強化作業中です。",
@@ -5917,7 +6484,7 @@
             "native_mobile_app": {
               "title": "ネイティブモバイルアプリ",
               "description": "Expo と React Native で構築された別のアプリで、Web サイトと同じ API と通信します。 1 つのコードベースで Android ビルドと iOS ビルドの両方が生成されます。",
-              "note": "Web アプリはまだ主要な手段であり、どちらのストア ビルドもまだ公開されていません。 Android が最も近いです。署名、プロファイルの構築、プッシュ通知がすべて整っています。 iOS は同じコードから構築されていますが、さらに Apple 開発者アカウントと App Store のレビューが必要なので、それに続くことになります。"
+              "note": "両方のストア版が公開されています。Google Play では 2026 年 8 月から、App Store では 2026 年 10 月から、「Timebank Global」という 1 つのアプリとして配信中です。早期リリース版のため、最も充実した利用方法は引き続きウェブアプリです。"
             },
             "accessible_frontend": {
               "title": "アクセシブルなフロントエンド",
@@ -5975,7 +6542,7 @@
           "title": "メンバー体験",
           "items": {
             "service_listings": {
-              "title": "サービスリスティング",
+              "title": "提供とリクエスト",
               "description": "提供と依頼を投稿し、リスティングを閲覧・スマートマッチング。"
             },
             "marketplace": {
@@ -6428,7 +6995,70 @@
       "results_summary": "{{total}} 件中 {{shown}} 件のエントリを表示しています",
       "no_results_title": "その検索に一致するものはありません",
       "no_results_body": "短い単語を試すか、「すべて」を選択してリスト全体を戻します。",
-      "clear_filters": "検索とフィルターをクリアする"
+      "clear_filters": "検索とフィルターをクリアする",
+      "welcome": {
+        "heading": "{{name}}でできること",
+        "body": "得意なことを分かち合い、手助けをお願いし、身近な人たちと知り合いましょう。ここでできることをご紹介します。",
+        "join": "参加する",
+        "cards_heading": "ここでできること",
+        "cards": {
+          "share": {
+            "title": "時間とスキルを分かち合う",
+            "body": "得意なことを提供し、苦手なことは手助けをお願いできます。"
+          },
+          "credits": {
+            "title": "タイムクレジットをためて使う",
+            "body": "1時間のお手伝いで1クレジット。ほかの人の1時間に使えます。"
+          },
+          "people": {
+            "title": "人と出会う",
+            "body": "どんな人がいるかを見て、ほかのメンバーと知り合えます。"
+          },
+          "events": {
+            "title": "イベントに参加する",
+            "body": "開催予定を確認し、参加を伝えて、気軽にお越しください。"
+          },
+          "groups": {
+            "title": "グループに入る",
+            "body": "同じ興味を持つ人を見つけたり、自分でグループを作ったりできます。"
+          },
+          "volunteering": {
+            "title": "ボランティアをする",
+            "body": "地域の活動に、無理のない範囲で時間を提供できます。"
+          },
+          "messages": {
+            "title": "連絡を取り合う",
+            "body": "交換の相談や、ちょっとしたあいさつのメッセージを送れます。"
+          },
+          "feed": {
+            "title": "いまの様子を見る",
+            "body": "コミュニティの人たちからの最新のお知らせや投稿を読めます。"
+          }
+        },
+        "good_to_know_heading": "知っておくと便利なこと",
+        "good_to_know": {
+          "phone": {
+            "title": "スマートフォンでも",
+            "body": "ブラウザでそのまま使えます。アプリを追加することもできます。"
+          },
+          "language": {
+            "title": "あなたの言語で",
+            "body": "いちばん使いやすい言語をお選びください。"
+          },
+          "safety": {
+            "title": "安心して使える場所",
+            "body": "みんなが安心して過ごせるための取り組みをご覧ください。"
+          }
+        },
+        "catalogue_heading": "このソフトウェアでできることのすべて",
+        "catalogue_count": "{{groups}}グループ、全{{total}}項目",
+        "catalogue_note": "{{name}}を支えるソフトウェアでできることの一覧です。どの部分を使うかはコミュニティごとに決めるため、メニューに表示されないものもあります。気になるものがあれば、コミュニティの運営者におたずねください。",
+        "search_results": "{{total}}件中{{shown}}件を表示",
+        "no_results_body": "短い言葉で試すか、検索をクリアすると一覧がすべて戻ります。",
+        "clear_search": "検索をクリア",
+        "technical_heading": "技術的な詳細を知りたい方へ",
+        "technical_body": "完成度の表示方法、ソフトウェアの構成、問題の報告方法について。"
+      }
     },
     "ar": {
       "chips": {
@@ -6507,7 +7137,7 @@
             "native_mobile_app": {
               "title": "تطبيق هاتف أصلي",
               "description": "تطبيق منفصل مصمم باستخدام Expo وReact Native، ويتحدث مع نفس واجهة برمجة التطبيقات مثل موقع الويب. تنتج قاعدة التعليمات البرمجية الواحدة كلا من نظامي Android وiOS.",
-              "note": "لا يزال تطبيق الويب هو الطريقة الرئيسية للدخول، ولم يتم نشر أي إصدار للمتجر بعد. Android هو الأقرب: التوقيع وإنشاء الملفات الشخصية ودفع الإشعارات كلها في مكانها الصحيح. تم إنشاء نظام التشغيل iOS من نفس الكود ولكنه يحتاج بالإضافة إلى ذلك إلى حساب مطور Apple ومراجعة App Store، لذلك سيتم اتباعه."
+              "note": "نُشر الإصداران على المتجرين: على Google Play منذ أغسطس 2026 وعلى App Store منذ أكتوبر 2026، كتطبيق واحد اسمه Timebank Global. إنهما إصداران مبكران، لذا يبقى تطبيق الويب الطريقة الأكثر اكتمالًا للاستخدام."
             },
             "accessible_frontend": {
               "title": "الواجهة الأمامية التي يمكن الوصول إليها",
@@ -6565,7 +7195,7 @@
           "title": "تجربة العضو",
           "items": {
             "service_listings": {
-              "title": "إعلانات الخدمات",
+              "title": "العروض والطلبات",
               "description": "انشر العروض والطلبات، وتصفّح الإعلانات وطابقها بذكاء."
             },
             "marketplace": {
@@ -7018,7 +7648,70 @@
       "results_summary": "عرض {{shown}} من إدخالات {{total}}",
       "no_results_title": "لا شيء يطابق هذا البحث",
       "no_results_body": "جرب كلمة أقصر، أو اختر كل شيء لإعادة القائمة بأكملها.",
-      "clear_filters": "مسح البحث والمرشحات"
+      "clear_filters": "مسح البحث والمرشحات",
+      "welcome": {
+        "heading": "ما يمكنك فعله في {{name}}",
+        "body": "شارك مهارة، واطلب المساعدة، وتعرّف على من حولك. هذا ما ينتظرك هنا.",
+        "join": "انضم إلينا",
+        "cards_heading": "ما يمكنك فعله هنا",
+        "cards": {
+          "share": {
+            "title": "شارك وقتك ومهاراتك",
+            "body": "اعرض ما تجيده، واطلب المساعدة فيما لا تجيده."
+          },
+          "credits": {
+            "title": "اكسب رصيد الوقت وأنفقه",
+            "body": "ساعة من المساعدة تمنحك رصيدًا واحدًا. أنفقه مقابل ساعة من وقت شخص آخر."
+          },
+          "people": {
+            "title": "تعرّف على أشخاص",
+            "body": "اطّلع على من هنا وتعرّف على الأعضاء الآخرين."
+          },
+          "events": {
+            "title": "احضر الفعاليات",
+            "body": "اعرف ما يُقام، وأخبرنا بحضورك، وتعال."
+          },
+          "groups": {
+            "title": "انضم إلى مجموعة",
+            "body": "اعثر على أشخاص يشاركونك الاهتمام، أو أنشئ مجموعتك الخاصة."
+          },
+          "volunteering": {
+            "title": "تطوّع",
+            "body": "امنح بعضًا من وقتك لقضية محلية، بالقدر الذي يناسبك."
+          },
+          "messages": {
+            "title": "ابقَ على تواصل",
+            "body": "أرسل رسالة لترتيب تبادل، أو لمجرد إلقاء التحية."
+          },
+          "feed": {
+            "title": "اطّلع على ما يجري",
+            "body": "اقرأ آخر الأخبار والمنشورات من أفراد مجتمعك."
+          }
+        },
+        "good_to_know_heading": "من المفيد أن تعرف",
+        "good_to_know": {
+          "phone": {
+            "title": "على هاتفك",
+            "body": "استخدمه في المتصفح، أو أضف التطبيق إلى هاتفك."
+          },
+          "language": {
+            "title": "بلغتك",
+            "body": "اختر اللغة التي ترتاح إليها أكثر."
+          },
+          "safety": {
+            "title": "مكان آمن ومحاط بالرعاية",
+            "body": "تعرّف على كيفية حرصنا على أن يكون هذا المكان آمنًا للجميع."
+          }
+        },
+        "catalogue_heading": "كل ما يستطيع البرنامج فعله",
+        "catalogue_count": "عدد الميزات: {{total}}، عدد المجموعات: {{groups}}",
+        "catalogue_note": "هذه هي القائمة الكاملة لما يستطيع فعله البرنامج الذي يعمل به {{name}}. كل مجتمع يختار الأجزاء التي يفعّلها، ولذلك لن يظهر بعضها في قوائمك. إذا بدا لك أحدها مفيدًا، فاسأل من يدير مجتمعك.",
+        "search_results": "عرض {{shown}} من {{total}}",
+        "no_results_body": "جرّب كلمة أقصر، أو امسح البحث لتعود القائمة كاملة.",
+        "clear_search": "مسح البحث",
+        "technical_heading": "للمهتمين بالتفاصيل التقنية",
+        "technical_body": "كيف نبيّن ما اكتمل، وممّ بُني البرنامج، وكيف تبلّغ عن مشكلة."
+      }
     }
   }
 }

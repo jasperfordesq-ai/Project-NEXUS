@@ -587,7 +587,70 @@
     "results_summary": "Es werden {{shown}} von {{total}} Einträgen angezeigt",
     "no_results_title": "Nichts entspricht dieser Suche",
     "no_results_body": "Versuchen Sie es mit einem kürzeren Wort oder wählen Sie „Alles“, um die gesamte Liste anzuzeigen.",
-    "clear_filters": "Klare Suche und Filter"
+    "clear_filters": "Klare Suche und Filter",
+    "welcome": {
+      "heading": "Was Sie bei {{name}} tun können",
+      "body": "Teilen Sie eine Fähigkeit, bitten Sie um Unterstützung und lernen Sie die Menschen in Ihrer Nähe kennen. Das alles wartet hier auf Sie.",
+      "join": "Jetzt mitmachen",
+      "cards_heading": "Das können Sie hier tun",
+      "cards": {
+        "share": {
+          "title": "Zeit und Fähigkeiten teilen",
+          "body": "Bieten Sie an, was Sie gut können, und bitten Sie um Hilfe bei dem, was Ihnen schwerfällt."
+        },
+        "credits": {
+          "title": "Zeitgutschriften sammeln und einlösen",
+          "body": "Eine Stunde Hilfe bringt eine Gutschrift. Lösen Sie sie für eine Stunde Zeit von jemand anderem ein."
+        },
+        "people": {
+          "title": "Menschen kennenlernen",
+          "body": "Sehen Sie, wer dabei ist, und lernen Sie andere Mitglieder kennen."
+        },
+        "events": {
+          "title": "Zu Veranstaltungen kommen",
+          "body": "Erfahren Sie, was los ist, sagen Sie zu und kommen Sie vorbei."
+        },
+        "groups": {
+          "title": "Einer Gruppe beitreten",
+          "body": "Finden Sie Menschen mit denselben Interessen oder gründen Sie eine eigene Gruppe."
+        },
+        "volunteering": {
+          "title": "Sich freiwillig engagieren",
+          "body": "Schenken Sie einer guten Sache vor Ort etwas Zeit, so viel oder so wenig, wie es für Sie passt."
+        },
+        "messages": {
+          "title": "In Kontakt bleiben",
+          "body": "Schreiben Sie eine Nachricht, um einen Austausch zu vereinbaren oder einfach Hallo zu sagen."
+        },
+        "feed": {
+          "title": "Sehen, was los ist",
+          "body": "Lesen Sie Neuigkeiten und Beiträge von Menschen aus Ihrer Gemeinschaft."
+        }
+      },
+      "good_to_know_heading": "Gut zu wissen",
+      "good_to_know": {
+        "phone": {
+          "title": "Auf Ihrem Handy",
+          "body": "Nutzen Sie die Seite im Browser oder holen Sie sich die App aufs Handy."
+        },
+        "language": {
+          "title": "In Ihrer Sprache",
+          "body": "Wählen Sie die Sprache, in der Sie sich am wohlsten fühlen."
+        },
+        "safety": {
+          "title": "Sicher und gut betreut",
+          "body": "Erfahren Sie, wie wir dafür sorgen, dass sich hier alle sicher fühlen."
+        }
+      },
+      "catalogue_heading": "Alles, was die Software kann",
+      "catalogue_count": "{{total}} Funktionen in {{groups}} Gruppen",
+      "catalogue_note": "Dies ist die vollständige Liste dessen, was die Software hinter {{name}} kann. Jede Gemeinschaft entscheidet selbst, welche Teile sie einschaltet. Manches davon finden Sie deshalb nicht in Ihren Menüs. Wenn Ihnen etwas davon nützlich erscheint, fragen Sie die Menschen, die Ihre Gemeinschaft leiten.",
+      "search_results": "{{shown}} von {{total}} werden angezeigt",
+      "no_results_body": "Versuchen Sie ein kürzeres Wort oder löschen Sie die Suche, um die ganze Liste wieder zu sehen.",
+      "clear_search": "Suche löschen",
+      "technical_heading": "Für technisch Interessierte",
+      "technical_body": "Wie wir kennzeichnen, was fertig ist, womit die Software gebaut ist und wie Sie ein Problem melden."
+    }
   },
   "changelog_page": {
     "title": "Änderungsprotokoll",

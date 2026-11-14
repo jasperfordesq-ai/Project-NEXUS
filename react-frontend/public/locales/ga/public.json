@@ -587,7 +587,70 @@
     "results_summary": "{{shown}} iontráil as {{total}} á dtaispeáint",
     "no_results_title": "Níl aon rud ag teacht leis an gcuardach sin",
     "no_results_body": "Bain triail as focal níos giorra, nó roghnaigh Gach rud chun an liosta iomlán a thabhairt ar ais.",
-    "clear_filters": "Glan an cuardach agus na scagairí"
+    "clear_filters": "Glan an cuardach agus na scagairí",
+    "welcome": {
+      "heading": "A bhfuil le déanamh agat in {{name}}",
+      "body": "Roinn scil, iarr lámh chúnta agus cuir aithne ar na daoine thart ort. Seo a bhfuil ag fanacht leat.",
+      "join": "Bí linn",
+      "cards_heading": "Rudaí is féidir leat a dhéanamh anseo",
+      "cards": {
+        "share": {
+          "title": "Roinn do chuid ama agus scileanna",
+          "body": "Tairg an rud a bhfuil tú go maith aige, agus iarr lámh chúnta leis an rud nach bhfuil."
+        },
+        "credits": {
+          "title": "Tuill agus caith creidmheasanna ama",
+          "body": "Tuilleann uair an chloig cúnaimh creidmheas amháin. Caith é ar uair an chloig d'am duine eile."
+        },
+        "people": {
+          "title": "Cas le daoine",
+          "body": "Féach cé atá anseo agus cuir aithne ar bhaill eile."
+        },
+        "events": {
+          "title": "Tar chuig imeachtaí",
+          "body": "Faigh amach cad atá ar siúl, abair go bhfuil tú ag teacht agus buail isteach."
+        },
+        "groups": {
+          "title": "Téigh i ngrúpa",
+          "body": "Aimsigh daoine a bhfuil an spéis chéanna acu, nó cuir tús le grúpa de do chuid féin."
+        },
+        "volunteering": {
+          "title": "Déan obair dheonach",
+          "body": "Tabhair roinnt ama do chúis áitiúil, a oiread nó a laghad agus a oireann duit."
+        },
+        "messages": {
+          "title": "Coinnigh i dteagmháil",
+          "body": "Seol teachtaireacht chun malartú a shocrú, nó díreach chun beannú do dhuine."
+        },
+        "feed": {
+          "title": "Féach cad atá ag tarlú",
+          "body": "Léigh an nuacht agus na postálacha is déanaí ó dhaoine i do phobal."
+        }
+      },
+      "good_to_know_heading": "Is fiú a bheith ar eolas",
+      "good_to_know": {
+        "phone": {
+          "title": "Ar d'fhón",
+          "body": "Úsáid i do bhrabhsálaí é, nó cuir an aip ar d'fhón."
+        },
+        "language": {
+          "title": "I do theanga féin",
+          "body": "Roghnaigh an teanga is compordaí duit."
+        },
+        "safety": {
+          "title": "Sábháilte agus faoi chúram",
+          "body": "Faigh amach conas a choinnímid an áit seo sábháilte do chách."
+        }
+      },
+      "catalogue_heading": "Gach rud is féidir leis na bogearraí a dhéanamh",
+      "catalogue_count": "Gnéithe: {{total}}. Grúpaí: {{groups}}.",
+      "catalogue_note": "Seo an liosta iomlán de na rudaí is féidir leis na bogearraí taobh thiar de {{name}} a dhéanamh. Roghnaíonn gach pobal na codanna a chuireann sé ar siúl, mar sin ní bheidh cuid acu seo i do roghchláir. Má tá ceann acu úsáideach duit, fiafraigh de na daoine a reáchtálann do phobal.",
+      "search_results": "{{shown}} as {{total}} á dtaispeáint",
+      "no_results_body": "Bain triail as focal níos giorra, nó glan an cuardach chun an liosta iomlán a fháil ar ais.",
+      "clear_search": "Glan an cuardach",
+      "technical_heading": "Dóibh siúd ar spéis leo an taobh teicniúil",
+      "technical_body": "An chaoi a léirímid a bhfuil críochnaithe, cad as a bhfuil na bogearraí tógtha agus conas fadhb a thuairisciú."
+    }
   },
   "changelog_page": {
     "title": "Loga Athruithe",

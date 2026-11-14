@@ -58763,7 +58763,70 @@ export default interface Resources {
         "search_value": "Meilisearch v1.7"
       },
       "tech_stack_title": "Modern Tech Stack",
-      "title": "Features"
+      "title": "Features",
+      "welcome": {
+        "body": "Share a skill, ask for a hand and get to know the people around you. Here is what is waiting for you.",
+        "cards": {
+          "credits": {
+            "body": "An hour of help earns one credit. Spend it on an hour of someone else's time.",
+            "title": "Earn and spend time credits"
+          },
+          "events": {
+            "body": "Find out what is on, say you are coming and turn up.",
+            "title": "Come along to events"
+          },
+          "feed": {
+            "body": "Read the latest news and posts from people in your community.",
+            "title": "See what's happening"
+          },
+          "groups": {
+            "body": "Find people who share an interest, or start a group of your own.",
+            "title": "Join a group"
+          },
+          "messages": {
+            "body": "Send a message to arrange an exchange, or just to say hello.",
+            "title": "Keep in touch"
+          },
+          "people": {
+            "body": "See who is here and get to know other members.",
+            "title": "Meet people"
+          },
+          "share": {
+            "body": "Offer what you are good at, and ask for a hand with what you are not.",
+            "title": "Share your time and skills"
+          },
+          "volunteering": {
+            "body": "Give some time to a local cause, as much or as little as suits you.",
+            "title": "Volunteer"
+          }
+        },
+        "cards_heading": "Things you can do here",
+        "catalogue_count": "{{total}} things, in {{groups}} groups",
+        "catalogue_heading": "Everything the software can do",
+        "catalogue_note": "This is the full list of what the software behind {{name}} can do. Each community chooses which parts to switch on, so some of these will not be in your menus. If one looks useful, ask whoever runs your community about it.",
+        "clear_search": "Clear search",
+        "good_to_know": {
+          "language": {
+            "body": "Choose the language you are most at home in.",
+            "title": "In your language"
+          },
+          "phone": {
+            "body": "Use it in your browser, or add the app to your phone.",
+            "title": "On your phone"
+          },
+          "safety": {
+            "body": "Find out how we keep this a safe place for everyone.",
+            "title": "Safe and looked after"
+          }
+        },
+        "good_to_know_heading": "Good to know",
+        "heading": "What you can do in {{name}}",
+        "join": "Join us",
+        "no_results_body": "Try a shorter word, or clear the search to bring the whole list back.",
+        "search_results": "Showing {{shown}} of {{total}}",
+        "technical_body": "How we label what is finished, what the software is built with, and how to report a problem.",
+        "technical_heading": "For the technically minded"
+      }
     },
     "home": {
       "audience_cards": {

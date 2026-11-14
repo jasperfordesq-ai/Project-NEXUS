@@ -587,7 +587,70 @@
     "results_summary": "Toont {{shown}} van {{total}} vermeldingen",
     "no_results_title": "Niets komt overeen met die zoekopdracht",
     "no_results_body": "Probeer een korter woord of kies Alles om de hele lijst terug te brengen.",
-    "clear_filters": "Zoekopdracht en filters wissen"
+    "clear_filters": "Zoekopdracht en filters wissen",
+    "welcome": {
+      "heading": "Wat je kunt doen bij {{name}}",
+      "body": "Deel een vaardigheid, vraag om een helpende hand en leer de mensen om je heen kennen. Dit staat er voor je klaar.",
+      "join": "Doe mee",
+      "cards_heading": "Dit kun je hier doen",
+      "cards": {
+        "share": {
+          "title": "Deel je tijd en vaardigheden",
+          "body": "Bied aan waar je goed in bent en vraag hulp bij wat je minder goed kunt."
+        },
+        "credits": {
+          "title": "Verdien en besteed tijdtegoeden",
+          "body": "Een uur hulp levert één tegoed op. Besteed het aan een uur van de tijd van iemand anders."
+        },
+        "people": {
+          "title": "Ontmoet mensen",
+          "body": "Kijk wie er zijn en leer andere leden kennen."
+        },
+        "events": {
+          "title": "Kom naar evenementen",
+          "body": "Ontdek wat er te doen is, laat weten dat je komt en loop binnen."
+        },
+        "groups": {
+          "title": "Sluit je aan bij een groep",
+          "body": "Vind mensen met dezelfde interesse, of begin zelf een groep."
+        },
+        "volunteering": {
+          "title": "Doe vrijwilligerswerk",
+          "body": "Geef wat tijd aan een goed doel in de buurt, zo veel of zo weinig als je past."
+        },
+        "messages": {
+          "title": "Houd contact",
+          "body": "Stuur een bericht om een uitwisseling af te spreken, of gewoon om hallo te zeggen."
+        },
+        "feed": {
+          "title": "Zie wat er speelt",
+          "body": "Lees het laatste nieuws en de berichten van mensen uit je gemeenschap."
+        }
+      },
+      "good_to_know_heading": "Goed om te weten",
+      "good_to_know": {
+        "phone": {
+          "title": "Op je telefoon",
+          "body": "Gebruik het in je browser, of zet de app op je telefoon."
+        },
+        "language": {
+          "title": "In je eigen taal",
+          "body": "Kies de taal waarin je je het meest thuis voelt."
+        },
+        "safety": {
+          "title": "Veilig en goed verzorgd",
+          "body": "Lees hoe we ervoor zorgen dat dit voor iedereen een veilige plek is."
+        }
+      },
+      "catalogue_heading": "Alles wat de software kan",
+      "catalogue_count": "{{total}} functies, in {{groups}} groepen",
+      "catalogue_note": "Dit is de volledige lijst van wat de software achter {{name}} kan. Elke gemeenschap kiest zelf welke onderdelen aan staan, dus sommige vind je niet terug in je menu's. Lijkt iets je handig, vraag er dan naar bij wie je gemeenschap beheert.",
+      "search_results": "{{shown}} van {{total}} getoond",
+      "no_results_body": "Probeer een korter woord, of wis de zoekopdracht om de hele lijst terug te zien.",
+      "clear_search": "Zoekopdracht wissen",
+      "technical_heading": "Voor wie van techniek houdt",
+      "technical_body": "Hoe we aangeven wat af is, waarmee de software is gebouwd en hoe je een probleem meldt."
+    }
   },
   "changelog_page": {
     "title": "Wijzigingslog",

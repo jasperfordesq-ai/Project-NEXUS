@@ -587,7 +587,70 @@
     "results_summary": "Showing {{shown}} of {{total}} entries",
     "no_results_title": "Nothing matches that search",
     "no_results_body": "Try a shorter word, or choose Everything to bring the whole list back.",
-    "clear_filters": "Clear search and filters"
+    "clear_filters": "Clear search and filters",
+    "welcome": {
+      "heading": "What you can do in {{name}}",
+      "body": "Share a skill, ask for a hand and get to know the people around you. Here is what is waiting for you.",
+      "join": "Join us",
+      "cards_heading": "Things you can do here",
+      "cards": {
+        "share": {
+          "title": "Share your time and skills",
+          "body": "Offer what you are good at, and ask for a hand with what you are not."
+        },
+        "credits": {
+          "title": "Earn and spend time credits",
+          "body": "An hour of help earns one credit. Spend it on an hour of someone else's time."
+        },
+        "people": {
+          "title": "Meet people",
+          "body": "See who is here and get to know other members."
+        },
+        "events": {
+          "title": "Come along to events",
+          "body": "Find out what is on, say you are coming and turn up."
+        },
+        "groups": {
+          "title": "Join a group",
+          "body": "Find people who share an interest, or start a group of your own."
+        },
+        "volunteering": {
+          "title": "Volunteer",
+          "body": "Give some time to a local cause, as much or as little as suits you."
+        },
+        "messages": {
+          "title": "Keep in touch",
+          "body": "Send a message to arrange an exchange, or just to say hello."
+        },
+        "feed": {
+          "title": "See what's happening",
+          "body": "Read the latest news and posts from people in your community."
+        }
+      },
+      "good_to_know_heading": "Good to know",
+      "good_to_know": {
+        "phone": {
+          "title": "On your phone",
+          "body": "Use it in your browser, or add the app to your phone."
+        },
+        "language": {
+          "title": "In your language",
+          "body": "Choose the language you are most at home in."
+        },
+        "safety": {
+          "title": "Safe and looked after",
+          "body": "Find out how we keep this a safe place for everyone."
+        }
+      },
+      "catalogue_heading": "Everything the software can do",
+      "catalogue_count": "{{total}} things, in {{groups}} groups",
+      "catalogue_note": "This is the full list of what the software behind {{name}} can do. Each community chooses which parts to switch on, so some of these will not be in your menus. If one looks useful, ask whoever runs your community about it.",
+      "search_results": "Showing {{shown}} of {{total}}",
+      "no_results_body": "Try a shorter word, or clear the search to bring the whole list back.",
+      "clear_search": "Clear search",
+      "technical_heading": "For the technically minded",
+      "technical_body": "How we label what is finished, what the software is built with, and how to report a problem."
+    }
   },
   "changelog_page": {
     "title": "Changelog",

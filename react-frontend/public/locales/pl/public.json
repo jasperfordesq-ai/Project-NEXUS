@@ -587,7 +587,70 @@
     "results_summary": "Wyświetlanie {{shown}} z {{total}} wpisów",
     "no_results_title": "Nic nie pasuje do tego wyszukiwania",
     "no_results_body": "Spróbuj użyć krótszego słowa lub wybierz opcję Wszystko, aby wyświetlić całą listę.",
-    "clear_filters": "Wyczyść wyszukiwanie i filtry"
+    "clear_filters": "Wyczyść wyszukiwanie i filtry",
+    "welcome": {
+      "heading": "Co możesz robić w {{name}}",
+      "body": "Podziel się umiejętnością, poproś o pomoc i poznaj ludzi wokół siebie. Oto, co na Ciebie czeka.",
+      "join": "Dołącz do nas",
+      "cards_heading": "Co możesz tutaj robić",
+      "cards": {
+        "share": {
+          "title": "Dziel się czasem i umiejętnościami",
+          "body": "Zaproponuj to, w czym jesteś dobry, i poproś o pomoc w tym, co idzie Ci trudniej."
+        },
+        "credits": {
+          "title": "Zdobywaj i wydawaj kredyty czasu",
+          "body": "Godzina pomocy to jeden kredyt. Wydaj go na godzinę czasu innej osoby."
+        },
+        "people": {
+          "title": "Poznaj ludzi",
+          "body": "Zobacz, kto tu jest, i poznaj innych członków."
+        },
+        "events": {
+          "title": "Przyjdź na wydarzenia",
+          "body": "Sprawdź, co się dzieje, daj znać, że będziesz, i wpadnij."
+        },
+        "groups": {
+          "title": "Dołącz do grupy",
+          "body": "Znajdź osoby o podobnych zainteresowaniach albo załóż własną grupę."
+        },
+        "volunteering": {
+          "title": "Zostań wolontariuszem",
+          "body": "Poświęć trochę czasu lokalnej sprawie, tyle, ile Ci odpowiada."
+        },
+        "messages": {
+          "title": "Bądź w kontakcie",
+          "body": "Wyślij wiadomość, żeby umówić wymianę albo po prostu się przywitać."
+        },
+        "feed": {
+          "title": "Zobacz, co się dzieje",
+          "body": "Czytaj najnowsze wiadomości i wpisy osób z Twojej społeczności."
+        }
+      },
+      "good_to_know_heading": "Warto wiedzieć",
+      "good_to_know": {
+        "phone": {
+          "title": "Na Twoim telefonie",
+          "body": "Korzystaj w przeglądarce albo dodaj aplikację do telefonu."
+        },
+        "language": {
+          "title": "W Twoim języku",
+          "body": "Wybierz język, w którym czujesz się najswobodniej."
+        },
+        "safety": {
+          "title": "Bezpiecznie i z troską",
+          "body": "Dowiedz się, jak dbamy o to, żeby każdy czuł się tu bezpiecznie."
+        }
+      },
+      "catalogue_heading": "Wszystko, co potrafi oprogramowanie",
+      "catalogue_count": "Liczba funkcji: {{total}}, liczba grup: {{groups}}",
+      "catalogue_note": "To pełna lista tego, co potrafi oprogramowanie, z którego korzysta {{name}}. Każda społeczność sama wybiera, które części włączyć, więc niektórych nie znajdziesz w swoim menu. Jeśli coś wyda Ci się przydatne, zapytaj osoby prowadzące Twoją społeczność.",
+      "search_results": "Wyświetlono {{shown}} z {{total}}",
+      "no_results_body": "Spróbuj krótszego słowa albo wyczyść wyszukiwanie, żeby wróciła cała lista.",
+      "clear_search": "Wyczyść wyszukiwanie",
+      "technical_heading": "Dla zainteresowanych techniką",
+      "technical_body": "Jak oznaczamy to, co jest gotowe, z czego zbudowano oprogramowanie i jak zgłosić problem."
+    }
   },
   "changelog_page": {
     "title": "Dziennik zmian",

@@ -587,7 +587,70 @@
     "results_summary": "Mostrando entradas {{shown}} de {{total}}",
     "no_results_title": "Nada corresponde a essa pesquisa",
     "no_results_body": "Experimente uma palavra mais curta ou escolha Tudo para trazer de volta a lista inteira.",
-    "clear_filters": "Limpar pesquisa e filtros"
+    "clear_filters": "Limpar pesquisa e filtros",
+    "welcome": {
+      "heading": "O que você pode fazer em {{name}}",
+      "body": "Compartilhe uma habilidade, peça uma mãozinha e conheça as pessoas ao seu redor. Veja o que espera por você.",
+      "join": "Junte-se a nós",
+      "cards_heading": "O que você pode fazer aqui",
+      "cards": {
+        "share": {
+          "title": "Compartilhe seu tempo e suas habilidades",
+          "body": "Ofereça o que você sabe fazer bem e peça ajuda com o que não sabe."
+        },
+        "credits": {
+          "title": "Ganhe e use créditos de tempo",
+          "body": "Uma hora de ajuda rende um crédito. Use-o em uma hora do tempo de outra pessoa."
+        },
+        "people": {
+          "title": "Conheça pessoas",
+          "body": "Veja quem está aqui e conheça outros membros."
+        },
+        "events": {
+          "title": "Venha aos eventos",
+          "body": "Descubra o que vai acontecer, avise que vai e apareça."
+        },
+        "groups": {
+          "title": "Entre em um grupo",
+          "body": "Encontre pessoas com os mesmos interesses ou crie o seu próprio grupo."
+        },
+        "volunteering": {
+          "title": "Seja voluntário",
+          "body": "Dedique um pouco de tempo a uma causa local, tanto ou tão pouco quanto for bom para você."
+        },
+        "messages": {
+          "title": "Mantenha contato",
+          "body": "Envie uma mensagem para combinar uma troca ou só para dizer oi."
+        },
+        "feed": {
+          "title": "Veja o que está acontecendo",
+          "body": "Leia as últimas novidades e publicações das pessoas da sua comunidade."
+        }
+      },
+      "good_to_know_heading": "Bom saber",
+      "good_to_know": {
+        "phone": {
+          "title": "No seu celular",
+          "body": "Use no navegador ou adicione o aplicativo ao seu celular."
+        },
+        "language": {
+          "title": "No seu idioma",
+          "body": "Escolha o idioma em que você se sente mais à vontade."
+        },
+        "safety": {
+          "title": "Um lugar seguro e bem cuidado",
+          "body": "Saiba como cuidamos para que este seja um lugar seguro para todos."
+        }
+      },
+      "catalogue_heading": "Tudo o que o software faz",
+      "catalogue_count": "{{total}} recursos, em {{groups}} grupos",
+      "catalogue_note": "Esta é a lista completa do que faz o software por trás de {{name}}. Cada comunidade escolhe quais partes ativar, então algumas não vão aparecer nos seus menus. Se alguma parecer útil, pergunte a quem cuida da sua comunidade.",
+      "search_results": "Mostrando {{shown}} de {{total}}",
+      "no_results_body": "Tente uma palavra mais curta ou limpe a pesquisa para ver a lista inteira de novo.",
+      "clear_search": "Limpar pesquisa",
+      "technical_heading": "Para quem gosta dos detalhes técnicos",
+      "technical_body": "Como indicamos o que está pronto, com o que o software é feito e como avisar sobre um problema."
+    }
   },
   "changelog_page": {
     "title": "Registro de alterações",

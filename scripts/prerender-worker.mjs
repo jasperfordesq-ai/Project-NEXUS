@@ -537,7 +537,15 @@ async function extractMarkdown(page) {
       const clone = root.cloneNode(true);
       // Strip chrome + scripts before walking.
       const KILL = ['header', 'nav', 'footer', 'aside', 'script', 'style', 'noscript',
-                    'form[role="search"]', '[aria-hidden="true"]', '[data-prerender-skip]'];
+                    // 🔴 `:not([hidden="until-found"])`: a closed disclosure panel
+                    // (React Aria) carries aria-hidden="true" AND
+                    // hidden="until-found". It is content the page chose to fold
+                    // away, not decoration, and the browser's own find-in-page
+                    // opens it. Stripping it emptied /features of its whole
+                    // catalogue in this Markdown copy while the HTML snapshot
+                    // kept it.
+                    'form[role="search"]', '[aria-hidden="true"]:not([hidden="until-found"])',
+                    '[data-prerender-skip]'];
       for (const sel of KILL) {
         for (const el of clone.querySelectorAll(sel)) el.remove();
       }
