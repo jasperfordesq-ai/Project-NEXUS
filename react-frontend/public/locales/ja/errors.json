@@ -1,14 +1,13 @@
 {
-  "community_not_found": "コミュニティが見つかりません",
-  "community_not_found_message": "'{{slug}}' にコミュニティが見つかりませんでした。",
+  "community_not_found": "このコミュニティが見つかりません",
+  "community_not_found_message": "'{{slug}}' にコミュニティはありません。",
   "community_not_found_detail": "このタイムバンクは移動、名称変更されたか、まだ存在しない可能性があります。",
   "go_home": "ホームへ戻る",
   "find_community": "コミュニティを探す",
   "admin": {
     "federation": {
       "unknown_key": "不明なキー: :key",
-      "must_be_array": ":field は配列でなければなりません",
-      "failed_to_load_partner": "パートナーの読み込みに失敗しました"
+      "must_be_array": ":field は配列でなければなりません"
     }
   },
   "validation": {
@@ -16,21 +15,13 @@
     "member_ids_must_be_array": "member_ids は配列でなければなりません"
   },
   "group_files": {
-    "listing_failed": "ファイル一覧の取得中にエラーが発生しました",
     "upload_failed": "アップロードに失敗しました",
     "download_failed": "ダウンロードに失敗しました",
     "delete_failed": "削除に失敗しました"
   },
-  "group_invites": {
-    "listing_failed": "招待一覧の取得中にエラーが発生しました",
-    "create_failed": "招待リンクの作成中にエラーが発生しました",
-    "send_failed": "招待の送信中にエラーが発生しました",
-    "revoke_failed": "招待の取り消し中にエラーが発生しました",
-    "accept_failed": "招待の承認中にエラーが発生しました"
-  },
+  "group_invites": {},
   "generic": {
-    "export_failed": "エクスポートに失敗しました",
-    "update_failed": "更新に失敗しました"
+    "export_failed": "エクスポートに失敗しました"
   },
   "federation": {
     "feature_disabled": "このコミュニティではフェデレーションが有効になっていません"
@@ -57,21 +48,21 @@
   "idle_warning_stay": "サインインしたままにする",
   "idle_warning_sign_out": "今すぐサインアウト",
   "api": {
-    "request_failed_title": "リクエストに失敗しました",
-    "request_failed": "リクエストを完了できませんでした。",
-    "service_unavailable": "サービスは一時的に利用できません。後でもう一度お試しください。",
-    "invalid_response": "サーバーが無効な応答を返しました。",
-    "request_timeout": "リクエストがタイムアウトしました。もう一度お試しください。",
-    "network_error": "接続できません。インターネット接続を確認して、再度お試しください。",
-    "invalid_request": "リクエストが無効です。入力内容を確認してください。",
+    "request_failed_title": "うまくいきませんでした",
+    "request_failed": "ただいま処理できませんでした。もう一度お試しください。",
+    "service_unavailable": "ただいまサイトに接続できません。しばらくしてからもう一度お試しください。",
+    "invalid_response": "読み取れない応答を受け取りました。もう一度お試しください。",
+    "request_timeout": "時間がかかりすぎました。もう一度お試しください。",
+    "network_error": "接続できません。インターネット接続を確認して、もう一度お試しください。",
+    "invalid_request": "入力内容に問題がありました。内容を確認して、もう一度お試しください。",
     "permission_denied": "この操作を実行する権限がありません。",
-    "resource_not_found": "要求されたリソースが見つかりませんでした。",
-    "too_many_requests": "リクエストが多すぎます。少し待ってから再度お試しください。",
-    "server_error": "予期しないサーバーエラーが発生しました。後でもう一度お試しください。",
-    "download_failed_status": "ダウンロードに失敗しました (HTTP {{status}})。",
-    "upload_failed": "アップロードに失敗しました。",
-    "upload_failed_retry": "アップロードに失敗しました。もう一度お試しください。",
+    "resource_not_found": "見つかりません。移動または削除された可能性があります。",
+    "too_many_requests": "一度に多くの操作がありました。少し待ってからもう一度お試しください。",
+    "server_error": "こちら側で問題が発生しました。しばらくしてからもう一度お試しください。",
+    "download_failed_status": "ダウンロードできませんでした（コード {{status}}）。",
+    "upload_failed": "アップロードできませんでした。",
+    "upload_failed_retry": "アップロードできませんでした。もう一度お試しください。",
     "upload_cancelled": "アップロードがキャンセルされました。",
-    "upload_timeout": "アップロードがタイムアウトしました。もう一度お試しください。"
+    "upload_timeout": "アップロードに時間がかかりすぎました。もう一度お試しください。"
   }
 }

@@ -126,7 +126,7 @@ describe('AppreciationWallPage', () => {
 
     renderWall();
 
-    expect(await screen.findByText("Couldn't load appreciations")).toBeInTheDocument();
+    expect(await screen.findByText("We couldn't load the thank-yous")).toBeInTheDocument();
     expect(screen.getByText('Try again')).toBeInTheDocument();
     expect(screen.queryByText('No appreciations yet')).not.toBeInTheDocument();
     expect(screen.queryByText('Thank you so much!')).not.toBeInTheDocument();
@@ -142,7 +142,7 @@ describe('AppreciationWallPage', () => {
     fireEvent.click(await screen.findByText('Try again'));
 
     await waitFor(() => expect(screen.getByText('Thank you so much!')).toBeInTheDocument());
-    expect(screen.queryByText("Couldn't load appreciations")).not.toBeInTheDocument();
+    expect(screen.queryByText("We couldn't load the thank-yous")).not.toBeInTheDocument();
   });
 
   it('calls POST /v2/appreciations/:id/react when a reaction button is clicked', async () => {

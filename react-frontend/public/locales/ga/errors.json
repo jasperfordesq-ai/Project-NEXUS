@@ -1,14 +1,13 @@
 {
-  "community_not_found": "Pobal gan aimsiú",
-  "community_not_found_message": "Níor aimsíodh pobal ag '{{slug}}'.",
+  "community_not_found": "Ní féidir linn an pobal sin a aimsiú",
+  "community_not_found_message": "Níl aon phobal ag '{{slug}}'.",
   "community_not_found_detail": "D'fhéadfadh an banc ama seo a bheith bogtha, athainmnithe, nó b'fhéidir nach bhfuil sé ann fós.",
   "go_home": "Téigh abhaile",
   "find_community": "Faigh pobal",
   "admin": {
     "federation": {
       "unknown_key": "Eochair anaithnid: :key",
-      "must_be_array": "ní mór do :field a bheith ina eagar",
-      "failed_to_load_partner": "Theip ar luchtú an chomhpháirtí"
+      "must_be_array": "ní mór do :field a bheith ina eagar"
     }
   },
   "validation": {
@@ -16,21 +15,13 @@
     "member_ids_must_be_array": "ní mór do member_ids a bheith ina eagar"
   },
   "group_files": {
-    "listing_failed": "Earráid agus comhaid á liostú",
     "upload_failed": "Theip ar an uaslódáil",
     "download_failed": "Theip ar an íoslódáil",
     "delete_failed": "Theip ar an scriosadh"
   },
-  "group_invites": {
-    "listing_failed": "Earráid agus cuirí á liostú",
-    "create_failed": "Earráid agus nasc cuiridh á chruthú",
-    "send_failed": "Earráid agus cuirí á seoladh",
-    "revoke_failed": "Earráid agus cuireadh á chúlghairm",
-    "accept_failed": "Earráid agus cuireadh á ghlacadh"
-  },
+  "group_invites": {},
   "generic": {
-    "export_failed": "Theip ar an easpórtáil",
-    "update_failed": "Theip ar an nuashonrú"
+    "export_failed": "Theip ar an easpórtáil"
   },
   "federation": {
     "feature_disabled": "Níl an líonra comhpháirtíochta cumasaithe don phobal seo"
@@ -57,21 +48,21 @@
   "idle_warning_stay": "Fan logáilte isteach",
   "idle_warning_sign_out": "Logáil amach anois",
   "api": {
-    "request_failed_title": "Theip ar an iarratas",
-    "request_failed": "Níorbh fhéidir an t-iarratas a chríochnú.",
-    "service_unavailable": "Tá an tseirbhís neamhghníomhach go sealadach. Déan iarracht arís níos déanaí.",
-    "invalid_response": "Thug an freastalaí freagra neamhbhailí.",
-    "request_timeout": "Tháinig deireadh leis an iarraidh. Déan iarracht arís le do thoil.",
-    "network_error": "Ní féidir nasc a dhéanamh. Seiceáil do nasc idirlín agus déan iarracht arís.",
-    "invalid_request": "Bhí an iarraidh neamhbhailí. Seiceáil do ionchur le do thoil.",
+    "request_failed_title": "Níor oibrigh sé sin",
+    "request_failed": "Níor éirigh linn é sin a dhéanamh faoi láthair. Bain triail eile as.",
+    "service_unavailable": "Ní féidir linn an suíomh a shroicheadh faoi láthair. Bain triail eile as i gceann tamaillín.",
+    "invalid_response": "Fuaireamar freagra nárbh fhéidir linn a léamh. Bain triail eile as.",
+    "request_timeout": "Thóg sé sin rófhada. Bain triail eile as.",
+    "network_error": "Ní féidir linn ceangal. Seiceáil do nasc idirlín agus bain triail eile as.",
+    "invalid_request": "Ní raibh rud éigin ansin ceart. Seiceáil an méid a chuir tú isteach agus bain triail eile as.",
     "permission_denied": "Níl cead agat an gníomh seo a dhéanamh.",
-    "resource_not_found": "Níor aimsíodh an acmhainn a iarradh.",
-    "too_many_requests": "Ró-mhór iarratais. Fan nóiméad agus déan iarracht arís le do thoil.",
-    "server_error": "Tharla earráid freastalaí neamhghnách. Déan iarracht arís níos déanaí le do thoil.",
-    "download_failed_status": "Theip ar an íoslódáil (HTTP {{status}}).",
-    "upload_failed": "Theip ar an uaslódáil.",
-    "upload_failed_retry": "Theip ar an uaslódáil. Déan iarracht arís, le do thoil.",
+    "resource_not_found": "Ní féidir linn é sin a aimsiú. Seans gur bogadh nó gur baineadh anuas é.",
+    "too_many_requests": "An iomarca iarrachtaí in éineacht. Fan nóiméad agus bain triail eile as.",
+    "server_error": "Bhí fadhb againn ar ár dtaobh féin. Bain triail eile as i gceann tamaillín.",
+    "download_failed_status": "Níor éirigh linn é sin a íoslódáil (cód {{status}}).",
+    "upload_failed": "Níor éirigh linn é sin a uaslódáil.",
+    "upload_failed_retry": "Níor éirigh linn é sin a uaslódáil. Bain triail eile as.",
     "upload_cancelled": "Uaslódáil curtha ar ceal.",
-    "upload_timeout": "Am an uaslódáil as am. Déan iarracht arís, le do thoil."
+    "upload_timeout": "Thóg an uaslódáil rófhada. Bain triail eile as."
   }
 }

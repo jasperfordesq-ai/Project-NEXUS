@@ -62,8 +62,8 @@ describe('FeatureErrorBoundary', () => {
         <ThrowingComponent />
       </FeatureErrorBoundary>
     );
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
-    expect(screen.getByText('An unexpected error occurred. Please try again or go back to the home page.')).toBeInTheDocument();
+    expect(screen.getByText("That didn't work — sorry")).toBeInTheDocument();
+    expect(screen.getByText("We hit a problem on our side. Try again, or go back to the home page.")).toBeInTheDocument();
     expect(screen.queryByText(/Dashboard/i)).not.toBeInTheDocument();
   });
 
@@ -82,7 +82,7 @@ describe('FeatureErrorBoundary', () => {
         <ThrowingComponent />
       </FeatureErrorBoundary>
     );
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
+    expect(screen.getByText("Try again")).toBeInTheDocument();
   });
 
   it('reports the crash to Sentry tagged with the feature name', async () => {

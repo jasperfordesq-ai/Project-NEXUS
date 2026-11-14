@@ -445,7 +445,7 @@ describe('GroupMediaTab', () => {
     const { GroupMediaTab } = await import('./GroupMediaTab');
     render(<GroupMediaTab groupId={42} isAdmin={true} />);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong');
+    expect(await screen.findByRole('alert')).toHaveTextContent("That didn't work");
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: "Try again" }));
     expect(await screen.findByAltText('Recovered photo')).toBeInTheDocument();

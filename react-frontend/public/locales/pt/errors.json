@@ -1,14 +1,13 @@
 {
-  "community_not_found": "Comunidade não encontrada",
-  "community_not_found_message": "Nenhuma comunidade encontrada em '{{slug}}'.",
+  "community_not_found": "Não encontramos essa comunidade",
+  "community_not_found_message": "Não há nenhuma comunidade em '{{slug}}'.",
   "community_not_found_detail": "Este banco de tempo pode ter sido movido, renomeado ou pode ainda não existir.",
   "go_home": "Ir para o início",
   "find_community": "Encontrar uma comunidade",
   "admin": {
     "federation": {
       "unknown_key": "Chave desconhecida: :key",
-      "must_be_array": ":field deve ser um array",
-      "failed_to_load_partner": "Falha ao carregar parceiro"
+      "must_be_array": ":field deve ser um array"
     }
   },
   "validation": {
@@ -16,21 +15,13 @@
     "member_ids_must_be_array": "member_ids deve ser um array"
   },
   "group_files": {
-    "listing_failed": "Erro ao listar arquivos",
     "upload_failed": "Falha no envio",
     "download_failed": "Falha no download",
     "delete_failed": "Falha ao eliminar"
   },
-  "group_invites": {
-    "listing_failed": "Erro ao listar convites",
-    "create_failed": "Erro ao criar link de convite",
-    "send_failed": "Erro ao enviar convites",
-    "revoke_failed": "Erro ao revogar convite",
-    "accept_failed": "Erro ao aceitar convite"
-  },
+  "group_invites": {},
   "generic": {
-    "export_failed": "Falha na exportação",
-    "update_failed": "Falha na atualização"
+    "export_failed": "Falha na exportação"
   },
   "federation": {
     "feature_disabled": "A federação não está ativada para esta comunidade"
@@ -57,21 +48,21 @@
   "idle_warning_stay": "Continuar com sessão iniciada",
   "idle_warning_sign_out": "Terminar sessão agora",
   "api": {
-    "request_failed_title": "Falha na solicitação",
-    "request_failed": "A solicitação não pôde ser concluída.",
-    "service_unavailable": "O serviço está temporariamente indisponível. Por favor, tente novamente mais tarde.",
-    "invalid_response": "O servidor retornou uma resposta inválida.",
-    "request_timeout": "O tempo da solicitação expirou. Por favor, tente novamente.",
-    "network_error": "Não foi possível conectar. Por favor, verifique sua conexão com a internet e tente novamente.",
-    "invalid_request": "A solicitação era inválida. Por favor, verifique sua entrada.",
+    "request_failed_title": "Isso não funcionou",
+    "request_failed": "Não conseguimos fazer isso agora. Tente novamente.",
+    "service_unavailable": "Não conseguimos acessar o site agora. Tente novamente daqui a pouco.",
+    "invalid_response": "Recebemos uma resposta que não conseguimos ler. Tente novamente.",
+    "request_timeout": "Isso demorou demais. Tente novamente.",
+    "network_error": "Não conseguimos conectar. Confira sua conexão com a internet e tente novamente.",
+    "invalid_request": "Algo não estava certo. Confira o que você digitou e tente novamente.",
     "permission_denied": "Você não tem permissão para realizar esta ação.",
-    "resource_not_found": "O recurso solicitado não foi encontrado.",
-    "too_many_requests": "Muitas solicitações. Por favor, espere um momento e tente novamente.",
-    "server_error": "Ocorreu um erro inesperado no servidor. Por favor, tente novamente mais tarde.",
-    "download_failed_status": "Falha no download (HTTP {{status}}).",
-    "upload_failed": "Falha no envio.",
-    "upload_failed_retry": "Falha no envio. Por favor, tente novamente.",
+    "resource_not_found": "Não encontramos isso. Talvez tenha sido movido ou retirado.",
+    "too_many_requests": "Muitas tentativas de uma vez. Aguarde um momento e tente novamente.",
+    "server_error": "Tivemos um problema do nosso lado. Tente novamente daqui a pouco.",
+    "download_failed_status": "Não conseguimos baixar isso (código {{status}}).",
+    "upload_failed": "Não conseguimos enviar isso.",
+    "upload_failed_retry": "Não conseguimos enviar isso. Tente novamente.",
     "upload_cancelled": "Envio cancelado.",
-    "upload_timeout": "O envio expirou. Por favor, tente novamente."
+    "upload_timeout": "O envio demorou demais. Tente novamente."
   }
 }

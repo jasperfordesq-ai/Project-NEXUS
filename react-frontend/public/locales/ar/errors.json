@@ -1,14 +1,13 @@
 {
-  "community_not_found": "المجتمع غير موجود",
-  "community_not_found_message": "لم يتم العثور على مجتمع في '{{slug}}'.",
+  "community_not_found": "لا نجد هذا المجتمع",
+  "community_not_found_message": "لا يوجد مجتمع على العنوان '{{slug}}'.",
   "community_not_found_detail": "ربما تم نقل هذا البنك الزمني أو إعادة تسميته، أو ربما لا يوجد بعد.",
   "go_home": "الذهاب إلى الصفحة الرئيسية",
   "find_community": "ابحث عن مجتمع",
   "admin": {
     "federation": {
       "unknown_key": "مفتاح غير معروف: :key",
-      "must_be_array": ":field يجب أن يكون مصفوفة",
-      "failed_to_load_partner": "فشل تحميل الشريك"
+      "must_be_array": ":field يجب أن يكون مصفوفة"
     }
   },
   "validation": {
@@ -16,21 +15,13 @@
     "member_ids_must_be_array": "member_ids يجب أن تكون مصفوفة"
   },
   "group_files": {
-    "listing_failed": "خطأ في عرض الملفات",
     "upload_failed": "فشل الرفع",
     "download_failed": "فشل التنزيل",
     "delete_failed": "فشل الحذف"
   },
-  "group_invites": {
-    "listing_failed": "خطأ في عرض الدعوات",
-    "create_failed": "خطأ في إنشاء رابط الدعوة",
-    "send_failed": "خطأ في إرسال الدعوات",
-    "revoke_failed": "خطأ في إلغاء الدعوة",
-    "accept_failed": "خطأ في قبول الدعوة"
-  },
+  "group_invites": {},
   "generic": {
-    "export_failed": "فشل التصدير",
-    "update_failed": "فشل التحديث"
+    "export_failed": "فشل التصدير"
   },
   "federation": {
     "feature_disabled": "الاتحاد غير مفعّل لهذا المجتمع"
@@ -57,21 +48,21 @@
   "idle_warning_stay": "البقاء مسجّلًا",
   "idle_warning_sign_out": "تسجيل الخروج الآن",
   "api": {
-    "request_failed_title": "فشل الطلب",
-    "request_failed": "لم يمكن إتمام الطلب.",
-    "service_unavailable": "الخدمة غير متوفرة مؤقتًا. الرجاء المحاولة لاحقًا.",
-    "invalid_response": "الخادم أعاد استجابة غير صالحة.",
-    "request_timeout": "انتهت مهلة الطلب. الرجاء المحاولة مرة أخرى.",
-    "network_error": "غير قادر على الاتصال. الرجاء التحقق من اتصال الإنترنت والمحاولة مرة أخرى.",
-    "invalid_request": "الطلب غير صالح. الرجاء التحقق من مدخلاتك.",
+    "request_failed_title": "لم ينجح ذلك",
+    "request_failed": "تعذّر علينا تنفيذ ذلك الآن. يُرجى المحاولة مرة أخرى.",
+    "service_unavailable": "لا يمكننا الوصول إلى الموقع الآن. يُرجى المحاولة مرة أخرى بعد قليل.",
+    "invalid_response": "وصلنا ردّ لم نتمكن من قراءته. يُرجى المحاولة مرة أخرى.",
+    "request_timeout": "استغرق ذلك وقتًا طويلًا. يُرجى المحاولة مرة أخرى.",
+    "network_error": "لا يمكننا الاتصال. تحقّق من اتصالك بالإنترنت وحاول مرة أخرى.",
+    "invalid_request": "هناك شيء غير صحيح. تحقّق مما أدخلته وحاول مرة أخرى.",
     "permission_denied": "ليس لديك الإذن لأداء هذا الإجراء.",
-    "resource_not_found": "المورد المطلوب لم يتم العثور عليه.",
-    "too_many_requests": "عدد الطلبات كبير جداً. يرجى الانتظار لحظة ثم حاول مرة أخرى.",
-    "server_error": "حدث خطأ خادمي غير متوقع. يرجى المحاولة مرة أخرى لاحقاً.",
-    "download_failed_status": "فشل التنزيل (HTTP {{status}}).",
-    "upload_failed": "فشل التحميل.",
-    "upload_failed_retry": "فشل التحميل. الرجاء المحاولة مرة أخرى.",
+    "resource_not_found": "لا نجد ذلك. ربما نُقل أو أُزيل.",
+    "too_many_requests": "محاولات كثيرة في وقت واحد. يُرجى الانتظار قليلًا ثم المحاولة مرة أخرى.",
+    "server_error": "واجهنا مشكلة من جهتنا. يُرجى المحاولة مرة أخرى بعد قليل.",
+    "download_failed_status": "تعذّر علينا تنزيل ذلك (الرمز {{status}}).",
+    "upload_failed": "تعذّر علينا رفع ذلك.",
+    "upload_failed_retry": "تعذّر علينا رفع ذلك. يُرجى المحاولة مرة أخرى.",
     "upload_cancelled": "تم إلغاء التحميل.",
-    "upload_timeout": "انتهى وقت التحميل. الرجاء المحاولة مرة أخرى."
+    "upload_timeout": "استغرق الرفع وقتًا طويلًا. يُرجى المحاولة مرة أخرى."
   }
 }

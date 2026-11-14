@@ -1,14 +1,13 @@
 {
-  "community_not_found": "Comunità non trovata",
-  "community_not_found_message": "Nessuna comunità trovata per '{{slug}}'.",
+  "community_not_found": "Non troviamo quella comunità",
+  "community_not_found_message": "Non c’è nessuna comunità all’indirizzo '{{slug}}'.",
   "community_not_found_detail": "Questa banca del tempo potrebbe essersi spostata, essere stata rinominata, o potrebbe non esistere ancora.",
   "go_home": "Vai alla home",
   "find_community": "Trova una comunità",
   "admin": {
     "federation": {
       "unknown_key": "Chiave sconosciuta: :key",
-      "must_be_array": ":field deve essere un array",
-      "failed_to_load_partner": "Impossibile caricare il partner"
+      "must_be_array": ":field deve essere un array"
     }
   },
   "validation": {
@@ -16,21 +15,13 @@
     "member_ids_must_be_array": "member_ids deve essere un array"
   },
   "group_files": {
-    "listing_failed": "Errore nell'elenco dei file",
     "upload_failed": "Caricamento fallito",
     "download_failed": "Download fallito",
     "delete_failed": "Eliminazione fallita"
   },
-  "group_invites": {
-    "listing_failed": "Errore nell'elenco degli inviti",
-    "create_failed": "Errore nella creazione del link d'invito",
-    "send_failed": "Errore nell'invio degli inviti",
-    "revoke_failed": "Errore nella revoca dell'invito",
-    "accept_failed": "Errore nell'accettazione dell'invito"
-  },
+  "group_invites": {},
   "generic": {
-    "export_failed": "Esportazione fallita",
-    "update_failed": "Aggiornamento fallito"
+    "export_failed": "Esportazione fallita"
   },
   "federation": {
     "feature_disabled": "La federazione non è abilitata per questa comunità"
@@ -57,21 +48,21 @@
   "idle_warning_stay": "Resta connesso",
   "idle_warning_sign_out": "Esci ora",
   "api": {
-    "request_failed_title": "Richiesta fallita",
-    "request_failed": "La richiesta non può essere completata.",
-    "service_unavailable": "Il servizio non è disponibile al momento. Per favore riprova più tardi.",
-    "invalid_response": "Il server ha restituito una risposta non valida.",
-    "request_timeout": "La richiesta è scaduta. Per favore riprova.",
-    "network_error": "Impossibile connettersi. Controlla la tua connessione a internet e riprova.",
-    "invalid_request": "La richiesta non è valida. Controlla i tuoi dati di input.",
+    "request_failed_title": "Non ha funzionato",
+    "request_failed": "Non siamo riusciti a farlo in questo momento. Riprova.",
+    "service_unavailable": "Non riusciamo a raggiungere il sito in questo momento. Riprova tra poco.",
+    "invalid_response": "Abbiamo ricevuto una risposta che non siamo riusciti a leggere. Riprova.",
+    "request_timeout": "Ci è voluto troppo tempo. Riprova.",
+    "network_error": "Non riusciamo a connetterci. Controlla la connessione a internet e riprova.",
+    "invalid_request": "Qualcosa non andava. Controlla ciò che hai inserito e riprova.",
     "permission_denied": "Non hai il permesso di eseguire questa azione.",
-    "resource_not_found": "La risorsa richiesta non è stata trovata.",
-    "too_many_requests": "Troppe richieste. Attendi un momento e riprova.",
-    "server_error": "Si è verificato un errore imprevisto del server. Riprova più tardi.",
-    "download_failed_status": "Download non riuscito (HTTP {{status}}).",
-    "upload_failed": "Caricamento fallito.",
-    "upload_failed_retry": "Caricamento fallito. Per favore riprova.",
+    "resource_not_found": "Non lo troviamo. Forse è stato spostato o rimosso.",
+    "too_many_requests": "Troppi tentativi insieme. Attendi un momento e riprova.",
+    "server_error": "Abbiamo avuto un problema da parte nostra. Riprova tra poco.",
+    "download_failed_status": "Non siamo riusciti a scaricarlo (codice {{status}}).",
+    "upload_failed": "Non siamo riusciti a caricarlo.",
+    "upload_failed_retry": "Non siamo riusciti a caricarlo. Riprova.",
     "upload_cancelled": "Caricamento annullato.",
-    "upload_timeout": "Il caricamento è scaduto. Per favore riprova."
+    "upload_timeout": "Il caricamento ha richiesto troppo tempo. Riprova."
   }
 }

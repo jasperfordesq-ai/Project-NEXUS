@@ -382,7 +382,7 @@ describe('TenantShell', () => {
 
       renderWithRouter('/dashboard');
 
-      expect(await screen.findByText('Unable to connect')).toBeInTheDocument();
+      expect(await screen.findByText("We can't connect right now")).toBeInTheDocument();
       expect(screen.queryByTestId('app-routes')).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
@@ -482,7 +482,7 @@ describe('TenantShell', () => {
         },
       });
       renderWithRouter('/nonexistent-community/dashboard');
-      expect(await screen.findByText('Community not found')).toBeInTheDocument();
+      expect(await screen.findByText("We can't find that community")).toBeInTheDocument();
       expect(screen.getByText(/nonexistent-community/)).toBeInTheDocument();
     });
 
@@ -533,8 +533,8 @@ describe('TenantShell', () => {
 
       renderWithRouter('/hour-timebank/events');
 
-      expect(await screen.findByText('Unable to connect')).toBeInTheDocument();
-      expect(screen.queryByText('Community not found')).not.toBeInTheDocument();
+      expect(await screen.findByText("We can't connect right now")).toBeInTheDocument();
+      expect(screen.queryByText("We can't find that community")).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
       expect(mockRefreshTenant).toHaveBeenCalledOnce();

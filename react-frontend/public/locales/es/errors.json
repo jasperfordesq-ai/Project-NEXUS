@@ -1,14 +1,13 @@
 {
-  "community_not_found": "Comunidad no encontrada",
-  "community_not_found_message": "No se encontró ninguna comunidad en '{{slug}}'.",
+  "community_not_found": "No encontramos esa comunidad",
+  "community_not_found_message": "No hay ninguna comunidad en '{{slug}}'.",
   "community_not_found_detail": "Es posible que este banco de tiempo se haya trasladado, cambiado de nombre o que aún no exista.",
   "go_home": "Ir al inicio",
   "find_community": "Buscar una comunidad",
   "admin": {
     "federation": {
       "unknown_key": "Clave desconocida: :key",
-      "must_be_array": ":field debe ser un array",
-      "failed_to_load_partner": "Error al cargar el socio"
+      "must_be_array": ":field debe ser un array"
     }
   },
   "validation": {
@@ -16,21 +15,13 @@
     "member_ids_must_be_array": "member_ids debe ser un array"
   },
   "group_files": {
-    "listing_failed": "Error al listar archivos",
     "upload_failed": "Error al subir",
     "download_failed": "Error al descargar",
     "delete_failed": "Error al eliminar"
   },
-  "group_invites": {
-    "listing_failed": "Error al listar invitaciones",
-    "create_failed": "Error al crear el enlace de invitación",
-    "send_failed": "Error al enviar invitaciones",
-    "revoke_failed": "Error al revocar la invitación",
-    "accept_failed": "Error al aceptar la invitación"
-  },
+  "group_invites": {},
   "generic": {
-    "export_failed": "Error al exportar",
-    "update_failed": "Error al actualizar"
+    "export_failed": "Error al exportar"
   },
   "federation": {
     "feature_disabled": "La federación no está habilitada para esta comunidad"
@@ -57,21 +48,21 @@
   "idle_warning_stay": "Seguir conectado",
   "idle_warning_sign_out": "Cerrar sesión ahora",
   "api": {
-    "request_failed_title": "La solicitud falló",
-    "request_failed": "No se pudo completar la solicitud.",
-    "service_unavailable": "El servicio no está disponible temporalmente. Por favor, inténtelo de nuevo más tarde.",
-    "invalid_response": "El servidor devolvió una respuesta no válida.",
-    "request_timeout": "La solicitud agotó el tiempo de espera. Por favor, inténtelo de nuevo.",
-    "network_error": "No se puede conectar. Por favor, compruebe su conexión a Internet e inténtelo de nuevo.",
-    "invalid_request": "La solicitud no es válida. Por favor, revise su entrada.",
+    "request_failed_title": "Eso no ha funcionado",
+    "request_failed": "No hemos podido hacer eso ahora mismo. Vuelve a intentarlo.",
+    "service_unavailable": "No podemos acceder al sitio ahora mismo. Vuelve a intentarlo dentro de un rato.",
+    "invalid_response": "Hemos recibido una respuesta que no hemos podido leer. Vuelve a intentarlo.",
+    "request_timeout": "Eso ha tardado demasiado. Vuelve a intentarlo.",
+    "network_error": "No podemos conectar. Revisa tu conexión a internet y vuelve a intentarlo.",
+    "invalid_request": "Algo no era correcto. Revisa lo que has introducido y vuelve a intentarlo.",
     "permission_denied": "No tiene permiso para realizar esta acción.",
-    "resource_not_found": "El recurso solicitado no fue encontrado.",
-    "too_many_requests": "Demasiadas solicitudes. Por favor, espere un momento y vuelva a intentarlo.",
-    "server_error": "Ocurrió un error inesperado en el servidor. Por favor, inténtelo de nuevo más tarde.",
-    "download_failed_status": "Descarga fallida (HTTP {{status}}).",
-    "upload_failed": "Subida fallida.",
-    "upload_failed_retry": "Subida fallida. Por favor, inténtelo de nuevo.",
+    "resource_not_found": "No encontramos eso. Puede que lo hayan movido o retirado.",
+    "too_many_requests": "Demasiados intentos a la vez. Espera un momento y vuelve a intentarlo.",
+    "server_error": "Hemos tenido un problema por nuestra parte. Vuelve a intentarlo dentro de un rato.",
+    "download_failed_status": "No hemos podido descargar eso (código {{status}}).",
+    "upload_failed": "No hemos podido subir eso.",
+    "upload_failed_retry": "No hemos podido subir eso. Vuelve a intentarlo.",
     "upload_cancelled": "Subida cancelada.",
-    "upload_timeout": "La subida ha caducado. Por favor, inténtelo de nuevo."
+    "upload_timeout": "La subida ha tardado demasiado. Vuelve a intentarlo."
   }
 }

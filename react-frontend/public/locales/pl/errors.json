@@ -1,14 +1,13 @@
 {
-  "community_not_found": "Nie znaleziono społeczności",
-  "community_not_found_message": "Nie znaleziono społeczności pod adresem '{{slug}}'.",
+  "community_not_found": "Nie możemy znaleźć tej społeczności",
+  "community_not_found_message": "Pod adresem '{{slug}}' nie ma żadnej społeczności.",
   "community_not_found_detail": "Ten bank czasu mógł zostać przeniesiony, zmienić nazwę lub jeszcze nie istnieje.",
   "go_home": "Przejdź do strony głównej",
   "find_community": "Znajdź społeczność",
   "admin": {
     "federation": {
       "unknown_key": "Nieznany klucz: :key",
-      "must_be_array": ":field musi być tablicą",
-      "failed_to_load_partner": "Nie udało się załadować partnera"
+      "must_be_array": ":field musi być tablicą"
     }
   },
   "validation": {
@@ -16,21 +15,13 @@
     "member_ids_must_be_array": "member_ids musi być tablicą"
   },
   "group_files": {
-    "listing_failed": "Błąd podczas wyświetlania plików",
     "upload_failed": "Przesyłanie nie powiodło się",
     "download_failed": "Pobieranie nie powiodło się",
     "delete_failed": "Usuwanie nie powiodło się"
   },
-  "group_invites": {
-    "listing_failed": "Błąd podczas wyświetlania zaproszeń",
-    "create_failed": "Błąd podczas tworzenia linku zaproszenia",
-    "send_failed": "Błąd podczas wysyłania zaproszeń",
-    "revoke_failed": "Błąd podczas cofania zaproszenia",
-    "accept_failed": "Błąd podczas akceptowania zaproszenia"
-  },
+  "group_invites": {},
   "generic": {
-    "export_failed": "Eksport nie powiódł się",
-    "update_failed": "Aktualizacja nie powiodła się"
+    "export_failed": "Eksport nie powiódł się"
   },
   "federation": {
     "feature_disabled": "Federacja nie jest włączona dla tej społeczności"
@@ -57,21 +48,21 @@
   "idle_warning_stay": "Pozostań zalogowany",
   "idle_warning_sign_out": "Wyloguj teraz",
   "api": {
-    "request_failed_title": "Żądanie nie powiodło się",
-    "request_failed": "Nie można było zakończyć żądania.",
-    "service_unavailable": "Usługa jest tymczasowo niedostępna. Proszę spróbować ponownie później.",
-    "invalid_response": "Serwer zwrócił nieprawidłową odpowiedź.",
-    "request_timeout": "Żądanie przekroczyło czas oczekiwania. Proszę spróbować ponownie.",
-    "network_error": "Nie można połączyć się. Proszę sprawdzić swoje połączenie internetowe i spróbować ponownie.",
-    "invalid_request": "Żądanie było nieprawidłowe. Proszę sprawdzić swoje dane wejściowe.",
+    "request_failed_title": "To się nie udało",
+    "request_failed": "Nie udało się nam teraz tego zrobić. Spróbuj ponownie.",
+    "service_unavailable": "Nie możemy teraz połączyć się z serwisem. Spróbuj ponownie za jakiś czas.",
+    "invalid_response": "Otrzymaliśmy odpowiedź, której nie udało się odczytać. Spróbuj ponownie.",
+    "request_timeout": "To trwało zbyt długo. Spróbuj ponownie.",
+    "network_error": "Nie możemy się połączyć. Sprawdź połączenie z internetem i spróbuj ponownie.",
+    "invalid_request": "Coś się nie zgadzało. Sprawdź wpisane dane i spróbuj ponownie.",
     "permission_denied": "Nie masz uprawnień do wykonania tej akcji.",
-    "resource_not_found": "Żądany zasób nie został znaleziony.",
-    "too_many_requests": "Zbyt wiele żądań. Proszę odczekać chwilę i spróbować ponownie.",
-    "server_error": "Wystąpił nieoczekiwany błąd serwera. Proszę spróbować ponownie później.",
-    "download_failed_status": "Pobieranie nie powiodło się (HTTP {{status}}).",
-    "upload_failed": "Przesyłanie nie powiodło się.",
-    "upload_failed_retry": "Przesyłanie nie powiodło się. Spróbuj ponownie.",
+    "resource_not_found": "Nie możemy tego znaleźć. Być może zostało przeniesione lub usunięte.",
+    "too_many_requests": "Zbyt wiele prób naraz. Poczekaj chwilę i spróbuj ponownie.",
+    "server_error": "Wystąpił problem po naszej stronie. Spróbuj ponownie za jakiś czas.",
+    "download_failed_status": "Nie udało się nam tego pobrać (kod {{status}}).",
+    "upload_failed": "Nie udało się nam tego przesłać.",
+    "upload_failed_retry": "Nie udało się nam tego przesłać. Spróbuj ponownie.",
     "upload_cancelled": "Przesyłanie anulowane.",
-    "upload_timeout": "Przekroczono czas przesyłania. Spróbuj ponownie."
+    "upload_timeout": "Przesyłanie trwało zbyt długo. Spróbuj ponownie."
   }
 }

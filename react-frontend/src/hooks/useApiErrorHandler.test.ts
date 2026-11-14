@@ -55,8 +55,8 @@ describe('useApiErrorHandler', () => {
     });
 
     expect(mockError).toHaveBeenCalledWith(
-      'Request failed',
-      'Unable to connect. Please check your internet connection and try again.'
+      "That didn't work",
+      "We can't connect. Check your internet connection and try again."
     );
   });
 
@@ -91,8 +91,8 @@ describe('useApiErrorHandler', () => {
     });
 
     expect(mockError).toHaveBeenCalledWith(
-      'Request failed',
-      'The requested resource was not found.'
+      "That didn't work",
+      "We can't find that. It may have been moved or removed."
     );
   });
 
@@ -108,8 +108,8 @@ describe('useApiErrorHandler', () => {
     });
 
     expect(mockError).toHaveBeenCalledWith(
-      'Request failed',
-      'An unexpected server error occurred. Please try again later.'
+      "That didn't work",
+      "We hit a problem on our side. Please try again in a little while."
     );
   });
 
@@ -125,8 +125,8 @@ describe('useApiErrorHandler', () => {
     });
 
     expect(mockError).toHaveBeenCalledWith(
-      'Request failed',
-      'Too many requests. Please wait a moment and try again.'
+      "That didn't work",
+      "Too many tries at once. Please wait a moment and try again."
     );
   });
 
@@ -170,8 +170,8 @@ describe('useApiErrorHandler', () => {
     });
 
     expect(mockError).toHaveBeenCalledWith(
-      'Request failed',
-      'The request could not be completed.'
+      "That didn't work",
+      "We couldn't do that just now. Please try again."
     );
   });
 

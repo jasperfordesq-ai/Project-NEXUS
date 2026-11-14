@@ -70,7 +70,7 @@ describe('ErrorBoundary', () => {
         <ThrowingComponent />
       </ErrorBoundary>
     );
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText("That didn't work — sorry")).toBeInTheDocument();
   });
 
   it('renders custom fallback when provided', () => {
@@ -99,7 +99,7 @@ describe('ErrorBoundary', () => {
         <ThrowingComponent />
       </ErrorBoundary>
     );
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
+    expect(screen.getByText("Try again")).toBeInTheDocument();
     expect(screen.getByText('Go Home')).toBeInTheDocument();
   });
 
@@ -121,6 +121,6 @@ describe('ErrorBoundary', () => {
     );
 
     expect(screen.queryByRole('button', { name: 'Report a problem' })).not.toBeInTheDocument();
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
+    expect(screen.getByText("Try again")).toBeInTheDocument();
   });
 });

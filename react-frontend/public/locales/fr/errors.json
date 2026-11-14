@@ -1,14 +1,13 @@
 {
-  "community_not_found": "Communauté introuvable",
-  "community_not_found_message": "Aucune communauté trouvée pour '{{slug}}'.",
+  "community_not_found": "Nous ne trouvons pas cette communauté",
+  "community_not_found_message": "Il n’y a pas de communauté à l’adresse '{{slug}}'.",
   "community_not_found_detail": "Cette banque de temps a peut-être été déplacée, renommée, ou n'existe pas encore.",
   "go_home": "Aller à l'accueil",
   "find_community": "Trouver une communauté",
   "admin": {
     "federation": {
       "unknown_key": "Clé inconnue : :key",
-      "must_be_array": ":field doit être un tableau",
-      "failed_to_load_partner": "Échec du chargement du partenaire"
+      "must_be_array": ":field doit être un tableau"
     }
   },
   "validation": {
@@ -16,21 +15,13 @@
     "member_ids_must_be_array": "member_ids doit être un tableau"
   },
   "group_files": {
-    "listing_failed": "Erreur lors de la liste des fichiers",
     "upload_failed": "Échec de l'envoi",
     "download_failed": "Échec du téléchargement",
     "delete_failed": "Échec de la suppression"
   },
-  "group_invites": {
-    "listing_failed": "Erreur lors de la liste des invitations",
-    "create_failed": "Erreur lors de la création du lien d'invitation",
-    "send_failed": "Erreur lors de l'envoi des invitations",
-    "revoke_failed": "Erreur lors de la révocation de l'invitation",
-    "accept_failed": "Erreur lors de l'acceptation de l'invitation"
-  },
+  "group_invites": {},
   "generic": {
-    "export_failed": "Échec de l'exportation",
-    "update_failed": "Échec de la mise à jour"
+    "export_failed": "Échec de l'exportation"
   },
   "federation": {
     "feature_disabled": "La fédération n'est pas activée pour cette communauté"
@@ -57,21 +48,21 @@
   "idle_warning_stay": "Rester connecté",
   "idle_warning_sign_out": "Se déconnecter maintenant",
   "api": {
-    "request_failed_title": "La requête a échoué",
-    "request_failed": "La demande n'a pas pu être complétée.",
-    "service_unavailable": "Le service est temporairement indisponible. Veuillez réessayer plus tard.",
-    "invalid_response": "Le serveur a renvoyé une réponse invalide.",
-    "request_timeout": "Le délai de la demande est dépassé. Veuillez réessayer.",
-    "network_error": "Impossible de se connecter. Veuillez vérifier votre connexion Internet et réessayer.",
-    "invalid_request": "La requête était invalide. Veuillez vérifier votre saisie.",
+    "request_failed_title": "Cela n’a pas fonctionné",
+    "request_failed": "Nous n’avons pas pu faire cela pour l’instant. Veuillez réessayer.",
+    "service_unavailable": "Nous n’arrivons pas à joindre le site pour l’instant. Veuillez réessayer dans un petit moment.",
+    "invalid_response": "Nous avons reçu une réponse que nous n’avons pas pu lire. Veuillez réessayer.",
+    "request_timeout": "Cela a pris trop de temps. Veuillez réessayer.",
+    "network_error": "Nous n’arrivons pas à nous connecter. Vérifiez votre connexion internet et réessayez.",
+    "invalid_request": "Quelque chose n’allait pas. Vérifiez ce que vous avez saisi et réessayez.",
     "permission_denied": "Vous n'avez pas la permission d'effectuer cette action.",
-    "resource_not_found": "La ressource demandée est introuvable.",
-    "too_many_requests": "Trop de requêtes. Veuillez patienter un moment et réessayer.",
-    "server_error": "Une erreur serveur inattendue est survenue. Veuillez réessayer plus tard.",
-    "download_failed_status": "Échec du téléchargement (HTTP {{status}}).",
-    "upload_failed": "Échec de l'envoi.",
-    "upload_failed_retry": "Échec de l'envoi. Veuillez réessayer.",
+    "resource_not_found": "Nous ne trouvons pas cela. Il a peut-être été déplacé ou retiré.",
+    "too_many_requests": "Trop de tentatives à la fois. Veuillez patienter un instant et réessayer.",
+    "server_error": "Nous avons rencontré un problème de notre côté. Veuillez réessayer dans un petit moment.",
+    "download_failed_status": "Nous n’avons pas pu télécharger cela (code {{status}}).",
+    "upload_failed": "Nous n’avons pas pu téléverser cela.",
+    "upload_failed_retry": "Nous n’avons pas pu téléverser cela. Veuillez réessayer.",
     "upload_cancelled": "Envoi annulé.",
-    "upload_timeout": "Le délai d'envoi a été dépassé. Veuillez réessayer."
+    "upload_timeout": "L’envoi a pris trop de temps. Veuillez réessayer."
   }
 }

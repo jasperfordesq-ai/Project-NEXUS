@@ -337,7 +337,7 @@ describe('ConnectedAccountsTab', () => {
     // The disconnect button for the sole identity should be aria-disabled
     const disconnectBtn = screen.getAllByRole('button').find((b) => {
       const txt = b.textContent ?? '';
-      return /cannot.disconnect|oauth\.cannot_disconnect/i.test(txt);
+      return /can't disconnect|oauth\.cannot_disconnect/i.test(txt);
     });
     expect(disconnectBtn).toBeTruthy();
   });

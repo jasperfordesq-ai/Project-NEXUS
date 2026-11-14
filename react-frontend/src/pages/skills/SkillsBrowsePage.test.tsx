@@ -162,7 +162,7 @@ describe('SkillsBrowsePage', () => {
     mockApiGet.mockRejectedValue(new Error('Network error'));
     render(<SkillsBrowsePage />);
     await waitFor(() => {
-      expect(screen.getByText('Try Again')).toBeInTheDocument();
+      expect(screen.getByText("Try again")).toBeInTheDocument();
     });
   });
 

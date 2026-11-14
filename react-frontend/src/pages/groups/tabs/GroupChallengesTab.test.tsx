@@ -537,7 +537,7 @@ describe('GroupChallengesTab — create flow', () => {
     const createButtons = await screen.findAllByRole('button', { name: "Create challenge" });
     await userEvent.click(createButtons[createButtons.length - 1]);
 
-    expect((await screen.findAllByText('Required')).length).toBeGreaterThanOrEqual(3);
+    expect((await screen.findAllByText("Please fill this in")).length).toBeGreaterThanOrEqual(3);
     expect(mockApi.post).not.toHaveBeenCalled();
   });
 

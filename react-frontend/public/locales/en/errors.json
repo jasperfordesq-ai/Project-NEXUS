@@ -1,14 +1,13 @@
 {
-  "community_not_found": "Community not found",
-  "community_not_found_message": "No community found at '{{slug}}'.",
+  "community_not_found": "We can't find that community",
+  "community_not_found_message": "There's no community at '{{slug}}'.",
   "community_not_found_detail": "This timebank may have moved, been renamed, or may not exist yet.",
   "go_home": "Go home",
   "find_community": "Find a community",
   "admin": {
     "federation": {
       "unknown_key": "Unknown key: :key",
-      "must_be_array": ":field must be an array",
-      "failed_to_load_partner": "Failed to load partner"
+      "must_be_array": ":field must be an array"
     }
   },
   "validation": {
@@ -16,39 +15,31 @@
     "member_ids_must_be_array": "member_ids must be an array"
   },
   "group_files": {
-    "listing_failed": "Error listing files",
     "upload_failed": "Upload failed",
     "download_failed": "Download failed",
     "delete_failed": "Delete failed"
   },
-  "group_invites": {
-    "listing_failed": "Error listing invites",
-    "create_failed": "Error creating invite link",
-    "send_failed": "Error sending invites",
-    "revoke_failed": "Error revoking invite",
-    "accept_failed": "Error accepting invite"
-  },
+  "group_invites": {},
   "generic": {
-    "export_failed": "Export failed",
-    "update_failed": "Failed to update"
+    "export_failed": "Export failed"
   },
   "api": {
-    "request_failed_title": "Request failed",
-    "request_failed": "The request could not be completed.",
-    "service_unavailable": "The service is temporarily unavailable. Please try again later.",
-    "invalid_response": "The server returned an invalid response.",
-    "request_timeout": "The request timed out. Please try again.",
-    "network_error": "Unable to connect. Please check your internet connection and try again.",
-    "invalid_request": "The request was invalid. Please check your input.",
+    "request_failed_title": "That didn't work",
+    "request_failed": "We couldn't do that just now. Please try again.",
+    "service_unavailable": "We can't reach the site right now. Please try again in a little while.",
+    "invalid_response": "We got an answer we couldn't read. Please try again.",
+    "request_timeout": "That took too long. Please try again.",
+    "network_error": "We can't connect. Check your internet connection and try again.",
+    "invalid_request": "Something in that wasn't right. Check what you entered and try again.",
     "permission_denied": "You do not have permission to perform this action.",
-    "resource_not_found": "The requested resource was not found.",
-    "too_many_requests": "Too many requests. Please wait a moment and try again.",
-    "server_error": "An unexpected server error occurred. Please try again later.",
-    "download_failed_status": "Download failed (HTTP {{status}}).",
-    "upload_failed": "Upload failed.",
-    "upload_failed_retry": "Upload failed. Please try again.",
+    "resource_not_found": "We can't find that. It may have been moved or removed.",
+    "too_many_requests": "Too many tries at once. Please wait a moment and try again.",
+    "server_error": "We hit a problem on our side. Please try again in a little while.",
+    "download_failed_status": "We couldn't download that (code {{status}}).",
+    "upload_failed": "We couldn't upload that.",
+    "upload_failed_retry": "We couldn't upload that. Please try again.",
     "upload_cancelled": "Upload cancelled.",
-    "upload_timeout": "The upload timed out. Please try again."
+    "upload_timeout": "The upload took too long. Please try again."
   },
   "federation": {
     "feature_disabled": "Federation is not enabled for this community"

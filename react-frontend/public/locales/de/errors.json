@@ -1,14 +1,13 @@
 {
-  "community_not_found": "Gemeinschaft nicht gefunden",
-  "community_not_found_message": "Keine Gemeinschaft unter '{{slug}}' gefunden.",
+  "community_not_found": "Wir finden diese Gemeinschaft nicht",
+  "community_not_found_message": "Unter '{{slug}}' gibt es keine Gemeinschaft.",
   "community_not_found_detail": "Diese Zeitbank wurde möglicherweise verschoben, umbenannt oder existiert noch nicht.",
   "go_home": "Zur Startseite",
   "find_community": "Gemeinschaft suchen",
   "admin": {
     "federation": {
       "unknown_key": "Unbekannter Schlüssel: :key",
-      "must_be_array": ":field muss ein Array sein",
-      "failed_to_load_partner": "Partner konnte nicht geladen werden"
+      "must_be_array": ":field muss ein Array sein"
     }
   },
   "validation": {
@@ -16,21 +15,13 @@
     "member_ids_must_be_array": "member_ids muss ein Array sein"
   },
   "group_files": {
-    "listing_failed": "Fehler beim Auflisten der Dateien",
     "upload_failed": "Hochladen fehlgeschlagen",
     "download_failed": "Herunterladen fehlgeschlagen",
     "delete_failed": "Löschen fehlgeschlagen"
   },
-  "group_invites": {
-    "listing_failed": "Fehler beim Auflisten der Einladungen",
-    "create_failed": "Fehler beim Erstellen des Einladungslinks",
-    "send_failed": "Fehler beim Senden der Einladungen",
-    "revoke_failed": "Fehler beim Widerrufen der Einladung",
-    "accept_failed": "Fehler beim Annehmen der Einladung"
-  },
+  "group_invites": {},
   "generic": {
-    "export_failed": "Export fehlgeschlagen",
-    "update_failed": "Aktualisierung fehlgeschlagen"
+    "export_failed": "Export fehlgeschlagen"
   },
   "federation": {
     "feature_disabled": "Föderation ist für diese Gemeinschaft nicht aktiviert"
@@ -57,21 +48,21 @@
   "idle_warning_stay": "Angemeldet bleiben",
   "idle_warning_sign_out": "Jetzt abmelden",
   "api": {
-    "request_failed_title": "Anforderung fehlgeschlagen",
-    "request_failed": "Die Anfrage konnte nicht abgeschlossen werden.",
-    "service_unavailable": "Der Dienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.",
-    "invalid_response": "Der Server hat eine ungültige Antwort zurückgegeben.",
-    "request_timeout": "Die Anfrage ist abgelaufen. Bitte versuchen Sie es erneut.",
-    "network_error": "Verbindung konnte nicht hergestellt werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
-    "invalid_request": "Die Anfrage war ungültig. Bitte überprüfen Sie Ihre Eingabe.",
+    "request_failed_title": "Das hat nicht geklappt",
+    "request_failed": "Das konnten wir gerade nicht erledigen. Bitte versuchen Sie es noch einmal.",
+    "service_unavailable": "Wir erreichen die Website gerade nicht. Bitte versuchen Sie es in Kürze noch einmal.",
+    "invalid_response": "Wir haben eine Antwort erhalten, die wir nicht lesen konnten. Bitte versuchen Sie es noch einmal.",
+    "request_timeout": "Das hat zu lange gedauert. Bitte versuchen Sie es noch einmal.",
+    "network_error": "Wir können keine Verbindung herstellen. Prüfen Sie Ihre Internetverbindung und versuchen Sie es noch einmal.",
+    "invalid_request": "Etwas daran stimmte nicht. Prüfen Sie Ihre Eingaben und versuchen Sie es noch einmal.",
     "permission_denied": "Sie haben keine Berechtigung, diese Aktion auszuführen.",
-    "resource_not_found": "Die angeforderte Ressource wurde nicht gefunden.",
-    "too_many_requests": "Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
-    "server_error": "Ein unerwarteter Serverfehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
-    "download_failed_status": "Download fehlgeschlagen (HTTP {{status}}).",
-    "upload_failed": "Upload fehlgeschlagen.",
-    "upload_failed_retry": "Upload fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "resource_not_found": "Wir finden das nicht. Vielleicht wurde es verschoben oder entfernt.",
+    "too_many_requests": "Zu viele Versuche auf einmal. Bitte warten Sie einen Moment und versuchen Sie es noch einmal.",
+    "server_error": "Bei uns ist ein Problem aufgetreten. Bitte versuchen Sie es in Kürze noch einmal.",
+    "download_failed_status": "Wir konnten das nicht herunterladen (Code {{status}}).",
+    "upload_failed": "Wir konnten das nicht hochladen.",
+    "upload_failed_retry": "Wir konnten das nicht hochladen. Bitte versuchen Sie es noch einmal.",
     "upload_cancelled": "Upload abgebrochen.",
-    "upload_timeout": "Der Upload hat ein Zeitlimit überschritten. Bitte versuchen Sie es erneut."
+    "upload_timeout": "Das Hochladen hat zu lange gedauert. Bitte versuchen Sie es noch einmal."
   }
 }

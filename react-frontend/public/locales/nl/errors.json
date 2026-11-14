@@ -1,14 +1,13 @@
 {
-  "community_not_found": "Gemeenschap niet gevonden",
-  "community_not_found_message": "Geen gemeenschap gevonden op '{{slug}}'.",
+  "community_not_found": "We kunnen die gemeenschap niet vinden",
+  "community_not_found_message": "Er is geen gemeenschap op '{{slug}}'.",
   "community_not_found_detail": "Deze tijdbank is mogelijk verplaatst, hernoemd, of bestaat nog niet.",
   "go_home": "Ga naar home",
   "find_community": "Zoek een gemeenschap",
   "admin": {
     "federation": {
       "unknown_key": "Onbekende sleutel: :key",
-      "must_be_array": ":field moet een array zijn",
-      "failed_to_load_partner": "Laden van partner mislukt"
+      "must_be_array": ":field moet een array zijn"
     }
   },
   "validation": {
@@ -16,21 +15,13 @@
     "member_ids_must_be_array": "member_ids moet een array zijn"
   },
   "group_files": {
-    "listing_failed": "Fout bij weergeven van bestanden",
     "upload_failed": "Uploaden mislukt",
     "download_failed": "Downloaden mislukt",
     "delete_failed": "Verwijderen mislukt"
   },
-  "group_invites": {
-    "listing_failed": "Fout bij weergeven van uitnodigingen",
-    "create_failed": "Fout bij aanmaken van uitnodigingslink",
-    "send_failed": "Fout bij verzenden van uitnodigingen",
-    "revoke_failed": "Fout bij intrekken van uitnodiging",
-    "accept_failed": "Fout bij accepteren van uitnodiging"
-  },
+  "group_invites": {},
   "generic": {
-    "export_failed": "Export mislukt",
-    "update_failed": "Bijwerken mislukt"
+    "export_failed": "Export mislukt"
   },
   "federation": {
     "feature_disabled": "Federatie is niet ingeschakeld voor deze gemeenschap"
@@ -57,21 +48,21 @@
   "idle_warning_stay": "Aangemeld blijven",
   "idle_warning_sign_out": "Nu afmelden",
   "api": {
-    "request_failed_title": "Verzoek mislukt",
-    "request_failed": "Het verzoek kon niet worden voltooid.",
-    "service_unavailable": "De service is tijdelijk niet beschikbaar. Probeer het later opnieuw.",
-    "invalid_response": "De server gaf een ongeldige reactie terug.",
-    "request_timeout": "Het verzoek is verlopen. Probeer het opnieuw.",
-    "network_error": "Kan geen verbinding maken. Controleer uw internetverbinding en probeer het opnieuw.",
-    "invalid_request": "Het verzoek was ongeldig. Controleer uw invoer.",
+    "request_failed_title": "Dat is niet gelukt",
+    "request_failed": "Dat lukte ons nu even niet. Probeer het opnieuw.",
+    "service_unavailable": "We kunnen de site nu niet bereiken. Probeer het over een poosje opnieuw.",
+    "invalid_response": "We kregen een antwoord dat we niet konden lezen. Probeer het opnieuw.",
+    "request_timeout": "Dat duurde te lang. Probeer het opnieuw.",
+    "network_error": "We kunnen geen verbinding maken. Controleer je internetverbinding en probeer het opnieuw.",
+    "invalid_request": "Er klopte iets niet. Controleer wat je hebt ingevuld en probeer het opnieuw.",
     "permission_denied": "U hebt geen toestemming om deze actie uit te voeren.",
-    "resource_not_found": "De gevraagde bron is niet gevonden.",
-    "too_many_requests": "Te veel verzoeken. Wacht een moment en probeer het opnieuw.",
-    "server_error": "Er is een onverwachte serverfout opgetreden. Probeer het later opnieuw.",
-    "download_failed_status": "Download mislukt (HTTP {{status}}).",
-    "upload_failed": "Upload mislukt.",
-    "upload_failed_retry": "Upload mislukt. Probeer het opnieuw.",
+    "resource_not_found": "We kunnen dat niet vinden. Misschien is het verplaatst of weggehaald.",
+    "too_many_requests": "Te veel pogingen tegelijk. Wacht even en probeer het opnieuw.",
+    "server_error": "Er was een probleem aan onze kant. Probeer het over een poosje opnieuw.",
+    "download_failed_status": "We konden dat niet downloaden (code {{status}}).",
+    "upload_failed": "We konden dat niet uploaden.",
+    "upload_failed_retry": "We konden dat niet uploaden. Probeer het opnieuw.",
     "upload_cancelled": "Upload geannuleerd.",
-    "upload_timeout": "De upload is verlopen. Probeer het opnieuw."
+    "upload_timeout": "Het uploaden duurde te lang. Probeer het opnieuw."
   }
 }
