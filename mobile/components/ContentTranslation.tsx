@@ -8,7 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/NativeButton';
 import { api } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
-import { useTenant } from '@/lib/hooks/useTenant';
+// Non-throwing on purpose: this control sits inside overlays, which render above
+// TenantProvider (see TenantContextBridge). A Translate button must never close the app.
+import { useOptionalTenantContext } from '@/lib/context/TenantContext';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useUgcTranslationPreferences } from '@/lib/context/UgcTranslationPreferencesContext';
 import { toPlainText } from '@/lib/utils/plainText';
@@ -42,7 +44,7 @@ type Result = { key: string; fields: Record<string, string>; partial: boolean };
 export default function ContentTranslation({ contentType, contentId, fields, companionFields, disabled = false }: Props) {
   const { t, i18n } = useTranslation('common');
   const theme = useTheme();
-  const { tenant } = useTenant();
+  const tenant = useOptionalTenantContext()?.tenant ?? null;
   const preferences = useUgcTranslationPreferences();
   const locale = preferences.automatic && preferences.target ? preferences.target : (i18n?.language || 'en').slice(0, 2);
   // Translate the plain text a reader sees: stored descriptions are HTML, and

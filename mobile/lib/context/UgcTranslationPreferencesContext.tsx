@@ -38,3 +38,11 @@ export function UgcTranslationPreferencesProvider({ children }: { children: Reac
   return <Context.Provider value={value.identity === identity ? value : { ...empty, identity }}>{children}</Context.Provider>;
 }
 export const useUgcTranslationPreferences = () => useContext(Context);
+/**
+ * Supplies preferences read OUTSIDE an overlay to the overlay's contents. heroui-native
+ * portals render above this provider (see TenantContextBridge in TenantContext.tsx), so
+ * without it a sheet's Translate controls lose the member's automatic-translation choice.
+ */
+export function UgcTranslationPreferencesBridge({ value, children }: { value: Preferences; children: React.ReactNode }) {
+  return <Context.Provider value={value}>{children}</Context.Provider>;
+}

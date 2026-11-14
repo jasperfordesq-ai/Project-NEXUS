@@ -23,6 +23,7 @@ import { loadReaderVocabulary } from '@/lib/textLanguage/readerVocabulary';
 let mockSignedIn = true;
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en' } }) }));
 jest.mock('@/lib/hooks/useTenant', () => ({ useTenant: () => ({ tenant: { id: 2, translation: { enabled: true } } }) }));
+jest.mock('@/lib/context/TenantContext', () => ({ useOptionalTenantContext: () => ({ tenant: { id: 2, translation: { enabled: true } } }) }));
 jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: mockSignedIn ? { id: 7 } : null }) }));
 jest.mock('@/lib/hooks/useTheme', () => ({ useTheme: () => ({ text: '#111', textMuted: '#444', textSecondary: '#333' }) }));
 jest.mock('@/lib/api/client', () => ({ api: { post: jest.fn() } }));

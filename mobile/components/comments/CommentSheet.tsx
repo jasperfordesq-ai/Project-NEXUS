@@ -33,6 +33,11 @@ import {
   type CommentTargetType,
 } from '@/lib/api/comments';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { TenantContextBridge, useOptionalTenantContext } from '@/lib/context/TenantContext';
+import {
+  UgcTranslationPreferencesBridge,
+  useUgcTranslationPreferences,
+} from '@/lib/context/UgcTranslationPreferencesContext';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
@@ -100,6 +105,12 @@ function CommentSheetContent({
   onCountChange,
 }: CommentSheetProps) {
   const primary = usePrimaryColor();
+  // 🔴 Read here, OUTSIDE the portal, and handed back to the sheet's contents below: the
+  // portal host sits above these providers, and each comment row's Translate control needs
+  // them (14 Nov 2026: without them every comment panel crashed the app once it held a
+  // comment). See TenantContextBridge.
+  const tenantContext = useOptionalTenantContext();
+  const translationPreferences = useUgcTranslationPreferences();
   const isMounted = useRef(true);
   const isVisible = useRef(visible);
   const visibilityVersion = useRef(0);
@@ -401,6 +412,8 @@ function CommentSheetContent({
         }}
       >
         <HeroBottomSheet.Portal unstable_accessibilityContainerViewIsModal>
+          <TenantContextBridge value={tenantContext}>
+          <UgcTranslationPreferencesBridge value={translationPreferences}>
           <HeroBottomSheet.Overlay isCloseOnPress className="bg-black/55" />
           <HeroBottomSheet.Content
             snapPoints={['62%', '90%']}
@@ -504,6 +517,8 @@ function CommentSheetContent({
               />
             </View>
           </HeroBottomSheet.Content>
+          </UgcTranslationPreferencesBridge>
+          </TenantContextBridge>
         </HeroBottomSheet.Portal>
       </HeroBottomSheet>
 

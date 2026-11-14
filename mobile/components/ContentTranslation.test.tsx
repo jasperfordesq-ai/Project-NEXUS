@@ -16,6 +16,7 @@ let mockTenant = 2;
 let mockEnabled = true;
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key, i18n: { language: mockLanguage } }) }));
 jest.mock('@/lib/hooks/useTenant', () => ({ useTenant: () => ({ tenant: { id: mockTenant, translation: { enabled: mockEnabled } } }) }));
+jest.mock('@/lib/context/TenantContext', () => ({ useOptionalTenantContext: () => ({ tenant: { id: mockTenant, translation: { enabled: mockEnabled } } }) }));
 jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUser } }) }));
 jest.mock('@/lib/hooks/useTheme', () => ({ useTheme: () => ({ text: '#111', textMuted: '#444', textSecondary: '#333' }) }));
 jest.mock('@/lib/api/client', () => ({ api: { post: jest.fn() } }));

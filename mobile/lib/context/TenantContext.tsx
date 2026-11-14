@@ -350,6 +350,20 @@ export function useOptionalTenantContext(): TenantContextValue | null {
   return useContext(TenantContext);
 }
 
+/**
+ * Supplies a tenant context that was read OUTSIDE an overlay to the overlay's contents.
+ *
+ * 🔴 heroui-native draws bottom sheets, dialogs and popovers at a PortalHost that lives in
+ * HeroUINativeProvider — ABOVE TenantProvider (and ErrorBoundary) in app/_layout.tsx. So
+ * anything rendered inside an overlay sees NO TenantProvider, and a throwing reader there
+ * closes the whole app with no crash report: on 14 Nov 2026 every comment panel did
+ * exactly that as soon as it held a comment. Read the context with
+ * `useOptionalTenantContext()` outside the portal and wrap the portal's children in this.
+ */
+export function TenantContextBridge({ value, children }: { value: TenantContextValue | null; children: React.ReactNode }) {
+  return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
+}
+
 /** Resolve the primary brand color, falling back to NEXUS blue */
 export function usePrimaryColor(): string {
   const { tenant } = useTenantContext();
