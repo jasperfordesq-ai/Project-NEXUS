@@ -447,6 +447,16 @@ describe('GroupHeader', () => {
     expect(screen.getByTestId('group-header-cover')).toHaveAttribute('data-colour', colourForSeed(7, paletteFor(null)));
   });
 
+  it("uses the colour of the group's type for that cover, when the community chose one", () => {
+    render(<GroupHeader {...defaultProps} group={makeGroup({ id: 7, type: { id: 2, name: 'Hobbies', color: '#16a34a' } })} />);
+    expect(screen.getByTestId('group-header-cover')).toHaveAttribute('data-colour', 'green');
+  });
+
+  it('keeps the colour from the group id when its type has no usable colour', () => {
+    render(<GroupHeader {...defaultProps} group={makeGroup({ id: 7, type: { id: 2, name: 'Hobbies', color: null } })} />);
+    expect(screen.getByTestId('group-header-cover')).toHaveAttribute('data-colour', colourForSeed(7, paletteFor(null)));
+  });
+
   it('says the member count and the date once, with the post count beside them', () => {
     render(<GroupHeader {...defaultProps} />);
     expect(screen.getAllByText(/12 members/)).toHaveLength(1);

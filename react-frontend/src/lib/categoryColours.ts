@@ -218,6 +218,19 @@ function nearestWheelIndex(accent?: string | null): number {
   return best;
 }
 
+/**
+ * The palette colour nearest to a colour an admin picked by hand (a group
+ * type's colour, stored as a hex value). The site paints covers from named
+ * colours whose text contrast is already checked, never from a raw hex — so a
+ * chosen colour is shown as the nearest of those. Gives null for a missing,
+ * malformed or grey value, so the caller keeps whatever it would have used.
+ */
+export function colourNameForHex(hex?: string | null): string | null {
+  const measured = hex ? hueAndSaturation(hex) : null;
+  if (!measured || measured.saturation < 0.15) return null;
+  return HUE_WHEEL[nearestWheelIndex(hex)]!.name;
+}
+
 const paletteCache = new Map<string, string[]>();
 
 /**

@@ -28,7 +28,7 @@ import { LocationMapCard } from '@/components/location/LocationMapCard';
 import { resolveAvatarUrl, responsiveThumbnailProps, formatDateValue, formatRelativeTime } from '@/lib/helpers';
 import type { Group } from '@/types/api';
 import { ThemedCover } from '@/components/ui/ThemedCover';
-import { colourForSeed } from '@/lib/categoryColours';
+import { colourForSeed, colourNameForHex } from '@/lib/categoryColours';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -154,6 +154,7 @@ export function GroupHeader({
   return (
     <GlassCard className="overflow-hidden" data-group-header>
       {/* The cover: the group's photo; else the colours its admins chose;
+          else the colour the community gave this kind of group;
           else a cover in the group's own colour — the one its card uses on
           the groups page (was a near-invisible pale wash). */}
       <div
@@ -170,7 +171,7 @@ export function GroupHeader({
             decoding="async"
           />
         ) : !brandedFallbackStyle && (
-          <ThemedCover data-testid="group-header-cover" colour={colourForSeed(group.id, palette)} seed={`group-${group.id}`} />
+          <ThemedCover data-testid="group-header-cover" colour={colourNameForHex(group.type?.color) ?? colourForSeed(group.id, palette)} seed={`group-${group.id}`} />
         )}
       </div>
 

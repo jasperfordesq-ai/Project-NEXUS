@@ -8,6 +8,7 @@ import {
   accentLineClasses,
   categoryColour,
   colourForSeed,
+  colourNameForHex,
   companionColourName,
   companionPaint,
   paletteFor,
@@ -67,6 +68,31 @@ describe('companionPaint — the companion colour as a CSS value', () => {
 const RASPBERRY = '#a3195b';
 const TEAL = '#0f766e';
 const STANDARD_INDIGO = '#6366f1';
+
+describe('colourNameForHex — the palette colour nearest to a colour an admin picked', () => {
+  it('names the nearest colour on the wheel', () => {
+    expect(colourNameForHex('#16a34a')).toBe('green');
+    expect(colourNameForHex('#DC2626')).toBe('red');
+    expect(colourNameForHex('#0d9488')).toBe('teal');
+  });
+
+  it('only ever returns a colour the class map knows', () => {
+    for (const hex of ['#16a34a', '#dc2626', '#7c3aed', '#f59e0b', '#0ea5e9', '#db2777']) {
+      const name = colourNameForHex(hex)!;
+      expect(HUE_WHEEL.map((entry) => entry.name)).toContain(name);
+      expect(categoryColour(name)).not.toBe(categoryColour('no-such-colour'));
+    }
+  });
+
+  it('gives nothing for a missing, malformed or grey colour, so the caller keeps its own choice', () => {
+    expect(colourNameForHex(null)).toBeNull();
+    expect(colourNameForHex(undefined)).toBeNull();
+    expect(colourNameForHex('')).toBeNull();
+    expect(colourNameForHex('green')).toBeNull();
+    expect(colourNameForHex('#777777')).toBeNull();
+    expect(colourNameForHex('javascript:alert(1)')).toBeNull();
+  });
+});
 
 describe('paletteFor — colours that go with the community colour', () => {
   it('starts with the hue nearest the community colour', () => {

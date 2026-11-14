@@ -353,6 +353,35 @@ describe('GroupsPage', () => {
     expect(container.querySelector('img')).toBeNull();
   });
 
+  it("gives a group with no picture a cover in its type's colour, when the community chose one", async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 7, name: 'Knitting Circle', description: 'Wool and chat.', image_url: null,
+          member_count: 3, members_count: 3, posts_count: 0, visibility: 'public',
+          tags: [], recent_members: [], created_at: '2026-01-01T00:00:00Z',
+          type: { id: 2, name: 'Hobbies', color: '#16a34a' },
+        },
+        {
+          id: 8, name: 'Walking Group', description: 'Sunday walks.', image_url: null,
+          member_count: 5, members_count: 5, posts_count: 0, visibility: 'public',
+          tags: [], recent_members: [], created_at: '2026-01-01T00:00:00Z',
+          type: { id: 3, name: 'Outdoors', color: 'not-a-colour' },
+        },
+      ],
+      meta: { has_more: false, total_items: 2, per_page: 20 },
+    });
+
+    render(<GroupsPage />);
+
+    const covers = await screen.findAllByTestId('group-cover');
+    expect(covers).toHaveLength(2);
+    expect(covers[0]).toHaveAttribute('data-colour', 'green');
+    // A type colour that is not a real colour is ignored: the group keeps the colour picked from its id.
+    expect(covers[1]).toHaveAttribute('data-colour', colourForSeed(8, paletteFor(null)));
+  });
+
   it('reads out the description written for the picture the card shows', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({
       success: true,

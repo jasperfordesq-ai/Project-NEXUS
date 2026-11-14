@@ -37,7 +37,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { ThemedCover } from '@/components/ui/ThemedCover';
 import { SmartImage } from '@/components/ui/SmartImage';
 import { useSitePalette } from '@/contexts/SiteAccentContext';
-import { colourForSeed } from '@/lib/categoryColours';
+import { colourForSeed, colourNameForHex } from '@/lib/categoryColours';
 import { useTenant } from '@/contexts/TenantContext';
 import { logError } from '@/lib/logger';
 import { joinList } from '@/lib/listFormat';
@@ -724,10 +724,11 @@ export const GroupCard = memo(function GroupCard({ group, featured }: GroupCardP
                 decoding="async"
               />
             ) : (
-              // No picture: a cover in a colour from the community palette,
-              // chosen by the group's id so it is stable and neighbours differ
-              // (was a grey box).
-              <ThemedCover data-testid="group-cover" colour={colourForSeed(group.id, palette)} icon={Users} size="sm" seed={`group-${group.id}`} />
+              // No picture: a cover in the colour the community gave this
+              // kind of group (until 14 Nov 2026 that colour showed only as
+              // a dot); else a colour from the community palette, chosen by
+              // the group's id so it is stable and neighbours differ.
+              <ThemedCover data-testid="group-cover" colour={colourNameForHex(group.type?.color) ?? colourForSeed(group.id, palette)} icon={Users} size="sm" seed={`group-${group.id}`} />
             )}
             {/* Shade only a photo, so its lock / globe badge stays readable. */}
             {imageProps && <div className="absolute inset-0 bg-linear-to-t from-black/35 to-transparent" aria-hidden="true" />}
