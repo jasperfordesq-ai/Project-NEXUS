@@ -37,25 +37,48 @@ class MatchingController extends BaseApiController
      * - limit: int (default 20, max 100)
      * - min_score: int (default 30, minimum match score 0-100)
      * - modules: string (comma-separated: 'listings,jobs,volunteering,groups')
-     * - user_id: int (admin only — view another user's matches)
-     * - debug: 'true' (admin only — include debug info)
+     * - user_id: int (platform team only — view another member's matches)
+     * - debug: 'true' (platform team only — include the scoring breakdown)
+     *
+     * 🔴 F-625: `user_id` and `debug` exist for the Match debug page, which is
+     * the platform team's. Until E-128 they were open to any caller whose role
+     * STRING was an admin one, and the requested member was never checked
+     * against the caller's community, so an admin could run the matching
+     * engine for a member of a different community. Pinned by
+     * tests/Laravel/Feature/Security/MatchDebugUserOverrideTest.php.
      */
     public function allMatches(): JsonResponse
     {
         $userId = $this->requireAuth();
+        $debug = false;
 
-        // Admin override: allow viewing any user's matches for MatchDebugPanel
-        $adminRoles = ['admin', 'tenant_admin', 'super_admin', 'god'];
-        $callerRole = $this->resolveUserRole();
         $requestedUserId = $this->queryInt('user_id');
-        if ($requestedUserId && in_array($callerRole, $adminRoles, true)) {
+        if ($requestedUserId && $requestedUserId !== $userId) {
+            // Another member's matches: refuse outright rather than quietly
+            // answering with the caller's own, which read as "it worked".
+            $this->requireGodPlatformAdmin();
+
+            $inThisCommunity = DB::table('users')
+                ->where('id', $requestedUserId)
+                ->where('tenant_id', $this->getTenantId())
+                ->where('status', 'active')
+                ->exists();
+            if (!$inThisCommunity) {
+                return $this->respondWithError('NOT_FOUND', __('api.member_not_found'), 'user_id', 404);
+            }
+
             $userId = $requestedUserId;
+            $debug = $this->query('debug') === 'true';
+        } elseif ($this->query('debug') === 'true') {
+            // Asking for the breakdown of your own matches is ignored, not
+            // refused, for everyone but the platform team.
+            $debug = \App\Support\Authorization\PlatformTeam::includes($userId);
         }
 
         $options = [
             'limit' => min(100, max(1, $this->queryInt('limit', 20))),
             'min_score' => max(0, min(100, $this->queryInt('min_score', 30))),
-            'debug' => $this->query('debug') === 'true' && in_array($callerRole, $adminRoles, true),
+            'debug' => $debug,
         ];
 
         $modulesParam = $this->query('modules');
