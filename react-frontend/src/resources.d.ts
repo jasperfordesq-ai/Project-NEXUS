@@ -57254,7 +57254,7 @@ export default interface Resources {
       "back_to_admin": "Back to the admin panel",
       "back_to_super_admin": "Back to the super admin panel",
       "brand": "Platform team",
-      "regional_analytics_subscriptions": "Regional analytics subscriptions",
+      "regional_analytics_subscriptions": "Analytics subscriptions",
       "tests": "Tests"
     },
     "sidebar": {

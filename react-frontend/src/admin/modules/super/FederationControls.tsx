@@ -305,13 +305,8 @@ export function FederationControls() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav aria-label={t('super.breadcrumb_nav_aria')} className="flex items-center gap-1 text-sm text-muted">
-        <Link to={tenantPath('/super-admin')} className="hover:text-accent">{t('super.breadcrumb_super_admin')}</Link>
-        <span>/</span>
-        <span className="text-foreground font-medium">{t('super.breadcrumb_federation_controls')}</span>
-      </nav>
-
+      {/* No breadcrumb line of its own: the page is in the Platform team panel
+          since 15 Nov 2026, and the panel's breadcrumbs sit above it. */}
       <PageHeader
         title={t('super.federation_controls_title')}
         description={t('super.federation_controls_desc')}

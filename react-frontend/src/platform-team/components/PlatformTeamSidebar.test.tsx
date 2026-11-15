@@ -156,6 +156,26 @@ describe('PlatformTeamSidebar', () => {
       expect(scrollIntoView.mock.contexts[0]).toBe(
         screen.getAllByRole('link').find((a) => a.getAttribute('aria-current') === 'page'),
       );
+      // Centred the first time, so it is not left under the fade at the edge.
+      expect(scrollIntoView).toHaveBeenLastCalledWith({ block: 'center' });
+    } finally {
+      Element.prototype.scrollIntoView = original;
+    }
+  });
+
+  it('after the first time, only scrolls as far as it has to (a click must not make the menu jump)', () => {
+    const scrollIntoView = vi.fn();
+    const original = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = scrollIntoView;
+    try {
+      locationState.value = { pathname: '/platform-team/match-debug', search: '', hash: '' };
+      const { rerender } = render(<PlatformTeamSidebar collapsed={false} onToggle={() => {}} />);
+
+      locationState.value = { pathname: '/platform-team/menus', search: '', hash: '' };
+      rerender(<PlatformTeamSidebar collapsed={false} onToggle={() => {}} />);
+
+      expect(scrollIntoView).toHaveBeenCalledTimes(2);
+      expect(scrollIntoView).toHaveBeenLastCalledWith({ block: 'nearest' });
     } finally {
       Element.prototype.scrollIntoView = original;
     }

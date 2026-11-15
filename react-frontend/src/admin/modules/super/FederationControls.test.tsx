@@ -266,6 +266,24 @@ describe('FederationControls', () => {
     });
   });
 
+  // The page lives in the Platform team panel since 15 Nov 2026, whose own
+  // breadcrumbs sit above it. It used to print a "Super Admin / Federation
+  // Controls" line of its own, linking to a panel the page is no longer in.
+  it('has no "Super Admin" breadcrumb line of its own, and links its sub-pages in the Platform team panel', async () => {
+    const { FederationControls } = await import('./FederationControls');
+    const { container } = render(<FederationControls />);
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId('stat-card').length).toBeGreaterThanOrEqual(4);
+    });
+
+    const hrefs = Array.from(container.querySelectorAll('a')).map((a) => a.getAttribute('href') ?? '');
+    expect(hrefs.filter((h) => /\/super-admin(\/|$)/.test(h))).toEqual([]);
+    expect(hrefs.some((h) => h.endsWith('/platform-team/federation/whitelist'))).toBe(true);
+    expect(hrefs.some((h) => h.endsWith('/platform-team/federation/partnerships'))).toBe(true);
+    expect(hrefs.some((h) => h.endsWith('/platform-team/federation/audit'))).toBe(true);
+  });
+
   it('renders federation-enabled switch', async () => {
     const { FederationControls } = await import('./FederationControls');
     render(<FederationControls />);

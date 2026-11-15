@@ -248,12 +248,16 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
     .reduce<string | null>((best, path) => (best === null || path.length > best.length ? path : best), null);
 
   // Bring the current page's entry into view (see the note at the top).
-  // `block: 'nearest'` does nothing when it is already on screen, so clicking
-  // an entry never makes the menu jump.
+  // The first time (a bookmark, an old address, a reload) it is centred, so it
+  // is not left under the fade at the menu's edge. After that `nearest` is
+  // used, which does nothing when the entry is already on screen: clicking an
+  // entry never makes the menu jump.
   const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
+  const hasScrolledOnce = useRef(false);
   useEffect(() => {
     if (activePath === null) return;
-    activeLinkRef.current?.scrollIntoView?.({ block: 'nearest' });
+    activeLinkRef.current?.scrollIntoView?.({ block: hasScrolledOnce.current ? 'nearest' : 'center' });
+    hasScrolledOnce.current = true;
   }, [activePath]);
 
   const renderItem = (item: NavItem) => {
