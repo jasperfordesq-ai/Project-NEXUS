@@ -638,7 +638,19 @@
     "content_placeholder": "Tosaigh ag scríobh ábhar na cáipéis dlíthiúla...",
     "notice_body_placeholder": "Cuir sonraí an fhógra anseo.",
     "notice_title_placeholder": "Fógra tábhachtach",
-    "preview_title_placeholder": "Réamhamharc na cáipéise dlíthiúla"
+    "preview_title_placeholder": "Réamhamharc na cáipéise dlíthiúla",
+    "html_view": "HTML",
+    "html_view_tip": "Cuir in eagar mar HTML",
+    "html_view_off": "Ar ais chuig an eagarthóir",
+    "html_label": "HTML",
+    "html_hint": "Greamaigh nó cuir an HTML in eagar anseo.",
+    "html_insert_image": "Cuir íomhá isteach",
+    "html_image_upload_failed": "Níorbh fhéidir linn an íomhá sin a uaslódáil. Bain triail eile as.",
+    "html_opened_notice": "Tá codanna anseo nach féidir leis an eagarthóir a thaispeáint, amhail íomhá nó tábla, mar sin osclaíodh é mar HTML.",
+    "html_leave_title": "Dul ar ais chuig an eagarthóir?",
+    "html_leave_body": "Ní féidir leis an eagarthóir íomhánna, táblaí, línte roinnte ná téacs réamhfhormáidithe a thaispeáint. Má théann tú ar ais, bainfear as an ábhar seo iad.",
+    "html_leave_stay": "Fan in HTML",
+    "html_leave_confirm": "Téigh ar ais agus bain iad"
   },
   "grapesjs_core": {
     "asset_manager": {

@@ -638,7 +638,19 @@
     "content_placeholder": "ابدأ في كتابة محتوى المستند القانوني...",
     "notice_body_placeholder": "أضف تفاصيل الإشعار هنا.",
     "notice_title_placeholder": "إشعار مهم",
-    "preview_title_placeholder": "معاينة المستند القانوني"
+    "preview_title_placeholder": "معاينة المستند القانوني",
+    "html_view": "HTML",
+    "html_view_tip": "التحرير بصيغة HTML",
+    "html_view_off": "العودة إلى المحرر",
+    "html_label": "HTML",
+    "html_hint": "الصق كود HTML هنا أو عدّله.",
+    "html_insert_image": "إدراج صورة",
+    "html_image_upload_failed": "تعذّر علينا رفع تلك الصورة. يُرجى المحاولة مرة أخرى.",
+    "html_opened_notice": "يحتوي هذا المحتوى على أجزاء لا يستطيع المحرر عرضها، مثل صورة أو جدول، لذلك فُتح بصيغة HTML.",
+    "html_leave_title": "هل تريد العودة إلى المحرر؟",
+    "html_leave_body": "لا يستطيع المحرر عرض الصور أو الجداول أو الفواصل أو النص المنسّق مسبقًا. إذا عدت، فستُحذف من هذا المحتوى.",
+    "html_leave_stay": "البقاء في HTML",
+    "html_leave_confirm": "العودة وحذفها"
   },
   "grapesjs_core": {
     "styles": {

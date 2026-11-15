@@ -79,6 +79,7 @@ vi.mock('@lexical/react/LexicalOnChangePlugin', () => ({
       <div
         data-testid="on-change-plugin"
         data-has-onchange={typeof onChange === 'function' ? 'true' : 'false'}
+        onClick={() => onChange({}, mockEditor)}
       />
     );
   },
@@ -124,10 +125,36 @@ vi.mock('lexical', () => ({
   $getSelection: vi.fn(() => null),
   $isRangeSelection: vi.fn(() => false),
   $createParagraphNode: vi.fn(() => ({})),
-  $getRoot: vi.fn(() => ({ clear: vi.fn(), append: vi.fn() })),
+  $getRoot: vi.fn(() => ({ clear: vi.fn(), append: vi.fn(), getChildrenSize: vi.fn(() => 1) })),
+  $isElementNode: vi.fn(() => true),
+  $isDecoratorNode: vi.fn(() => false),
+  $isTextNode: vi.fn(() => false),
   FORMAT_TEXT_COMMAND: 'FORMAT_TEXT',
   UNDO_COMMAND: 'UNDO',
   REDO_COMMAND: 'REDO',
+}));
+// The HTML view's editor is CodeMirror, which jsdom cannot lay out. A textarea
+// stands in for it and shows which props the editor handed over.
+vi.mock('./HtmlSourceEditor', () => ({
+  HtmlSourceEditor: ({
+    value,
+    onChange,
+    embedded,
+    labels,
+  }: {
+    value: string;
+    onChange: (html: string) => void;
+    embedded?: boolean;
+    labels: { label: string };
+  }) => (
+    <textarea
+      data-testid="html-source"
+      data-embedded={embedded ? 'true' : 'false'}
+      aria-label={labels.label}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  ),
 }));
 vi.mock('marked', () => ({
   marked: { parse: vi.fn(async (text: string) => `<p>${text}</p>`) },
@@ -312,5 +339,146 @@ describe('RichTextEditor', () => {
     );
     expect(h2Btn).toBeDefined();
     expect(h3Btn).toBeDefined();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+describe('RichTextEditor HTML view', () => {
+  const htmlToggle = () =>
+    screen.getAllByRole('button').find((b) => b.hasAttribute('aria-pressed')) as HTMLElement | undefined;
+  const boldButton = () =>
+    screen.getAllByRole('button').find((b) => b.getAttribute('aria-label')?.toLowerCase().includes('bold')) as HTMLElement;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('has no HTML button unless a form asks for one', async () => {
+    const { RichTextEditor } = await import('./RichTextEditor');
+    render(<RichTextEditor value="" onChange={vi.fn()} />);
+
+    expect(htmlToggle()).toBeUndefined();
+    expect(screen.queryByTestId('html-source')).not.toBeInTheDocument();
+  });
+
+  it('opens the content as HTML, one block per line, and switches the formatting buttons off', async () => {
+    const user = userEvent.setup();
+    const { RichTextEditor } = await import('./RichTextEditor');
+    render(<RichTextEditor value="<h2>Title</h2><p>Body</p>" onChange={vi.fn()} showHtmlSource />);
+
+    const toggle = htmlToggle();
+    expect(toggle).toBeDefined();
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(boldButton()).not.toBeDisabled();
+
+    await user.click(toggle as HTMLElement);
+
+    const source = await screen.findByTestId('html-source');
+    expect(source).toHaveValue('<h2>Title</h2>\n<p>Body</p>');
+    expect(source).toHaveAttribute('data-embedded', 'true');
+    expect(htmlToggle()).toHaveAttribute('aria-pressed', 'true');
+    expect(boldButton()).toBeDisabled();
+    // The visual editor stays mounted (it keeps its undo history), only hidden.
+    expect(screen.getByTestId('rich-text-plugin').parentElement).toHaveClass('hidden');
+  });
+
+  it('reports pasted HTML exactly as typed, and ignores the hidden visual editor', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { RichTextEditor } = await import('./RichTextEditor');
+    render(<RichTextEditor value="" onChange={onChange} showHtmlSource />);
+
+    await user.click(htmlToggle() as HTMLElement);
+    const source = await screen.findByTestId('html-source');
+    fireEvent.change(source, { target: { value: '<h2>Pasted</h2>\n\n<p>Kept as written</p>' } });
+
+    expect(onChange).toHaveBeenLastCalledWith('<h2>Pasted</h2>\n\n<p>Kept as written</p>');
+
+    // Lexical firing a change while the HTML view is open must not overwrite it.
+    onChange.mockClear();
+    fireEvent.click(screen.getByTestId('on-change-plugin'));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('goes straight back to the editor when nothing would be lost, and loads the HTML into it', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { RichTextEditor } = await import('./RichTextEditor');
+    render(<RichTextEditor value="" onChange={onChange} showHtmlSource />);
+
+    await user.click(htmlToggle() as HTMLElement);
+    fireEvent.change(await screen.findByTestId('html-source'), { target: { value: '<p>Plain</p>' } });
+    mockUpdate.mockClear();
+
+    await user.click(htmlToggle() as HTMLElement);
+
+    expect(screen.queryByTestId('html-source')).not.toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(mockUpdate).toHaveBeenCalledTimes(1);
+    expect(htmlToggle()).toHaveAttribute('aria-pressed', 'false');
+    expect(boldButton()).not.toBeDisabled();
+
+    // Back in the visual editor, its changes are reported again.
+    onChange.mockClear();
+    fireEvent.click(screen.getByTestId('on-change-plugin'));
+    expect(onChange).toHaveBeenCalledWith('<p>Hello</p>');
+  });
+
+  it('asks before going back when the HTML has an image the editor would remove', async () => {
+    const user = userEvent.setup();
+    const { RichTextEditor } = await import('./RichTextEditor');
+    render(<RichTextEditor value="" onChange={vi.fn()} showHtmlSource />);
+
+    await user.click(htmlToggle() as HTMLElement);
+    fireEvent.change(await screen.findByTestId('html-source'), {
+      target: { value: '<p>Hello</p><img src="/uploads/a.png" alt="A">' },
+    });
+    mockUpdate.mockClear();
+
+    await user.click(htmlToggle() as HTMLElement);
+
+    // Still in the HTML view, nothing loaded into the editor, and a warning shown.
+    expect(screen.getByTestId('html-source')).toBeInTheDocument();
+    expect(mockUpdate).not.toHaveBeenCalled();
+    const warning = screen.getByRole('alert');
+    const [stay, leave] = Array.from(warning.querySelectorAll('button'));
+    expect(stay).toBeDefined();
+    expect(leave).toBeDefined();
+
+    // "Stay" keeps the HTML view and the image.
+    await user.click(stay as HTMLElement);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByTestId('html-source')).toHaveValue('<p>Hello</p><img src="/uploads/a.png" alt="A">');
+    expect(mockUpdate).not.toHaveBeenCalled();
+
+    // Asking again and choosing to go back loads the HTML into the editor.
+    await user.click(htmlToggle() as HTMLElement);
+    const again = screen.getByRole('alert');
+    await user.click(Array.from(again.querySelectorAll('button'))[1] as HTMLElement);
+    expect(screen.queryByTestId('html-source')).not.toBeInTheDocument();
+    expect(mockUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens a post that already holds a table as HTML, so saving it cannot strip the table', async () => {
+    const onChange = vi.fn();
+    const stored = '<p>Intro</p><table><tbody><tr><td>1</td></tr></tbody></table>';
+    const { RichTextEditor } = await import('./RichTextEditor');
+    render(<RichTextEditor value={stored} onChange={onChange} showHtmlSource />);
+
+    const source = await screen.findByTestId('html-source');
+    expect((source as HTMLTextAreaElement).value.replace(/\n/g, '')).toBe(stored);
+    expect(htmlToggle()).toHaveAttribute('aria-pressed', 'true');
+
+    // Loading the post into the hidden visual editor reports nothing.
+    fireEvent.click(screen.getByTestId('on-change-plugin'));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('leaves a post with an image in the visual editor when the form has no HTML view', async () => {
+    const { RichTextEditor } = await import('./RichTextEditor');
+    render(<RichTextEditor value={'<p>Hi</p><img src="/uploads/a.png" alt="">'} onChange={vi.fn()} />);
+
+    expect(screen.queryByTestId('html-source')).not.toBeInTheDocument();
+    expect(screen.getByTestId('rich-text-plugin').parentElement).not.toHaveClass('hidden');
   });
 });

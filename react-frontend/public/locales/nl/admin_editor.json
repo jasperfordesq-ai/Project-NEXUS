@@ -638,7 +638,19 @@
     "content_placeholder": "Begin met het schrijven van de inhoud van het juridische document...",
     "notice_body_placeholder": "Voeg hier de details van de kennisgeving toe.",
     "notice_title_placeholder": "Belangrijke kennisgeving",
-    "preview_title_placeholder": "Voorbeeld van juridisch document"
+    "preview_title_placeholder": "Voorbeeld van juridisch document",
+    "html_view": "HTML",
+    "html_view_tip": "Bewerken als HTML",
+    "html_view_off": "Terug naar de editor",
+    "html_label": "HTML",
+    "html_hint": "Plak of bewerk de HTML hier.",
+    "html_insert_image": "Afbeelding invoegen",
+    "html_image_upload_failed": "We konden die afbeelding niet uploaden. Probeer het opnieuw.",
+    "html_opened_notice": "Deze inhoud heeft onderdelen die de editor niet kan tonen, zoals een afbeelding of een tabel. Daarom is hij als HTML geopend.",
+    "html_leave_title": "Terug naar de editor?",
+    "html_leave_body": "De editor kan geen afbeeldingen, tabellen, scheidingslijnen of vooraf opgemaakte tekst tonen. Als je teruggaat, worden ze uit deze inhoud verwijderd.",
+    "html_leave_stay": "In HTML blijven",
+    "html_leave_confirm": "Teruggaan en verwijderen"
   },
   "grapesjs_core": {
     "styles": {

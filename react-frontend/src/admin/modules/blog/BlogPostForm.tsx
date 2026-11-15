@@ -449,6 +449,7 @@ export function BlogPostForm() {
                 value={content}
                 onChange={setContent}
                 isDisabled={submitting}
+                showHtmlSource
               />
             </Suspense>
 

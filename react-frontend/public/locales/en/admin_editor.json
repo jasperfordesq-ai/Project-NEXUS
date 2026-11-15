@@ -638,7 +638,19 @@
     "preview": "Preview",
     "preview_title_placeholder": "Legal document preview",
     "split_view": "Split view",
-    "start_writing": "Start writing..."
+    "start_writing": "Start writing...",
+    "html_view": "HTML",
+    "html_view_tip": "Edit as HTML",
+    "html_view_off": "Back to editor",
+    "html_label": "HTML",
+    "html_hint": "Paste or edit the HTML here.",
+    "html_insert_image": "Insert image",
+    "html_image_upload_failed": "We couldn't upload that image. Please try again.",
+    "html_opened_notice": "This has parts the editor can't show, such as an image or a table, so it has opened as HTML.",
+    "html_leave_title": "Go back to the editor?",
+    "html_leave_body": "The editor can't show images, tables, dividers or preformatted text. Going back removes them from this content.",
+    "html_leave_stay": "Stay in HTML",
+    "html_leave_confirm": "Go back and remove them"
   },
   "grapesjs_core": {
     "asset_manager": {

@@ -638,7 +638,19 @@
     "content_placeholder": "Rozpocznij pisanie treści dokumentu prawnego...",
     "notice_body_placeholder": "Dodaj tutaj szczegóły zawiadomienia.",
     "notice_title_placeholder": "Ważne zawiadomienie",
-    "preview_title_placeholder": "Podgląd dokumentu prawnego"
+    "preview_title_placeholder": "Podgląd dokumentu prawnego",
+    "html_view": "HTML",
+    "html_view_tip": "Edytuj jako HTML",
+    "html_view_off": "Wróć do edytora",
+    "html_label": "HTML",
+    "html_hint": "Wklej lub edytuj tutaj kod HTML.",
+    "html_insert_image": "Wstaw obraz",
+    "html_image_upload_failed": "Nie udało się przesłać tego obrazu. Spróbuj ponownie.",
+    "html_opened_notice": "Ta treść zawiera elementy, których edytor nie potrafi pokazać, na przykład obraz lub tabelę, dlatego otworzyła się jako HTML.",
+    "html_leave_title": "Wrócić do edytora?",
+    "html_leave_body": "Edytor nie potrafi pokazać obrazów, tabel, linii oddzielających ani tekstu preformatowanego. Po powrocie zostaną usunięte z tej treści.",
+    "html_leave_stay": "Zostań w HTML",
+    "html_leave_confirm": "Wróć i usuń je"
   },
   "grapesjs_core": {
     "styles": {

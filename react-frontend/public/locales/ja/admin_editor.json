@@ -638,7 +638,19 @@
     "content_placeholder": "法的文書の内容の執筆を開始します...",
     "notice_body_placeholder": "ここに通知の詳細を追加してください。",
     "notice_title_placeholder": "重要なお知らせ",
-    "preview_title_placeholder": "法的文書のプレビュー"
+    "preview_title_placeholder": "法的文書のプレビュー",
+    "html_view": "HTML",
+    "html_view_tip": "HTMLとして編集",
+    "html_view_off": "エディターに戻る",
+    "html_label": "HTML",
+    "html_hint": "ここにHTMLを貼り付けるか、編集してください。",
+    "html_insert_image": "画像を挿入",
+    "html_image_upload_failed": "その画像をアップロードできませんでした。もう一度お試しください。",
+    "html_opened_notice": "このコンテンツには、画像や表など、エディターで表示できない部分があるため、HTMLとして開きました。",
+    "html_leave_title": "エディターに戻りますか?",
+    "html_leave_body": "エディターでは、画像、表、区切り線、整形済みテキストを表示できません。戻ると、このコンテンツから削除されます。",
+    "html_leave_stay": "HTMLのままにする",
+    "html_leave_confirm": "戻って削除する"
   },
   "grapesjs_core": {
     "asset_manager": {

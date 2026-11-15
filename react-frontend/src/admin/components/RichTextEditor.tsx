@@ -9,7 +9,7 @@
  * Uses HeroUI Button components for the toolbar and Tailwind CSS for styling.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -24,7 +24,7 @@ import { ListItemNode, ListNode } from '@lexical/list';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import {
-  $getSelection, $isRangeSelection, $createParagraphNode, FORMAT_TEXT_COMMAND, UNDO_COMMAND, REDO_COMMAND, type EditorState, type LexicalEditor, $getRoot, } from 'lexical';
+  $getSelection, $isRangeSelection, $createParagraphNode, $isElementNode, $isDecoratorNode, $isTextNode, FORMAT_TEXT_COMMAND, UNDO_COMMAND, REDO_COMMAND, type EditorState, type ElementNode, type LexicalEditor, $getRoot, } from 'lexical';
 import {
   INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST_COMMAND, } from '@lexical/list';
 import { $setBlocksType } from '@lexical/selection';
@@ -48,11 +48,18 @@ import Quote from 'lucide-react/icons/quote';
 import Undo2 from 'lucide-react/icons/undo-2';
 import Redo2 from 'lucide-react/icons/redo-2';
 import Code from 'lucide-react/icons/code';
+import CodeXml from 'lucide-react/icons/code-xml';
 import FileDown from 'lucide-react/icons/file-down';
 import { marked } from 'marked';
 import { useTranslation } from 'react-i18next';
-import { Button, Tooltip } from '@/components/ui';
+import { Alert, Button, Spinner, Tooltip } from '@/components/ui';
 import { logError } from '@/lib/logger';
+import { needsHtmlView, tidyHtmlForSource } from './richTextHtml';
+
+// CodeMirror only ships when someone opens the HTML view.
+const HtmlSourceEditor = lazy(() =>
+  import('./HtmlSourceEditor').then((m) => ({ default: m.HtmlSourceEditor })),
+);
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -69,6 +76,49 @@ interface RichTextEditorProps {
   label?: string;
   /** Show "Import Markdown" button in toolbar */
   showMarkdownImport?: boolean;
+  /**
+   * Show an "HTML" button that swaps the visual editor for the content's HTML,
+   * so prepared HTML can be pasted in and the markup can be edited by hand.
+   */
+  showHtmlSource?: boolean;
+}
+
+/* ───────────────────────── HTML → editor ───────────────────────── */
+
+/**
+ * Replace the editor's content with this HTML. Call inside editor.update().
+ *
+ * Only block nodes may sit directly under the root, and hand-written HTML has
+ * line breaks and sometimes loose text between its blocks. Appending those
+ * straight to the root throws, which Lexical turns into a discarded update:
+ * the editor would stay empty with no message. So loose inline nodes are
+ * gathered into a paragraph, and white space between blocks is skipped.
+ */
+function $setEditorHtml(editor: LexicalEditor, html: string): void {
+  const dom = new DOMParser().parseFromString(html, 'text/html');
+  const nodes = $generateNodesFromDOM(editor, dom);
+  const root = $getRoot();
+  root.clear();
+
+  let looseInline: ElementNode | null = null;
+  for (const node of nodes) {
+    if ($isElementNode(node) || $isDecoratorNode(node)) {
+      root.append(node);
+      looseInline = null;
+      continue;
+    }
+    if (looseInline === null) {
+      if ($isTextNode(node) && node.getTextContent().trim() === '') continue;
+      looseInline = $createParagraphNode();
+      root.append(looseInline);
+    }
+    looseInline.append(node);
+  }
+
+  // An empty root cannot take the cursor.
+  if (root.getChildrenSize() === 0) {
+    root.append($createParagraphNode());
+  }
 }
 
 /* ───────────────────────── Theme ───────────────────────── */
@@ -101,9 +151,26 @@ const editorTheme = {
 
 /* ───────────────────────── Toolbar ───────────────────────── */
 
-function ToolbarPlugin({ isDisabled, showMarkdownImport }: { isDisabled?: boolean; showMarkdownImport?: boolean }) {
+interface ToolbarPluginProps {
+  isDisabled?: boolean;
+  showMarkdownImport?: boolean;
+  showHtmlSource?: boolean;
+  isHtmlView?: boolean;
+  onToggleHtmlView?: (editor: LexicalEditor) => void;
+}
+
+function ToolbarPlugin({
+  isDisabled: isEditorDisabled,
+  showMarkdownImport,
+  showHtmlSource,
+  isHtmlView = false,
+  onToggleHtmlView,
+}: ToolbarPluginProps) {
   const [editor] = useLexicalComposerContext();
   const { t } = useTranslation('admin_editor');
+  // The formatting buttons act on the visual editor, which is hidden while the
+  // HTML view is open, so they switch off with it.
+  const isDisabled = isEditorDisabled || isHtmlView;
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
@@ -436,6 +503,26 @@ function ToolbarPlugin({ isDisabled, showMarkdownImport }: { isDisabled?: boolea
           </Tooltip>
         </>
       )}
+
+      {/* HTML view */}
+      {showHtmlSource && (
+        <div className="ml-auto flex items-center">
+          <Tooltip content={isHtmlView ? t('rte.html_view_off') : t('rte.html_view_tip')} size="sm" delay={500}>
+            <Button
+              size="sm"
+              variant={isHtmlView ? 'flat' : 'light'}
+              color={isHtmlView ? 'primary' : 'default'}
+              isDisabled={isEditorDisabled}
+              onPress={() => onToggleHtmlView?.(editor)}
+              aria-pressed={isHtmlView}
+              className="h-8 gap-1 text-xs px-2"
+              startContent={<CodeXml size={14} />}
+            >
+              {isHtmlView ? t('rte.html_view_off') : t('rte.html_view')}
+            </Button>
+          </Tooltip>
+        </div>
+      )}
     </div>
   );
 }
@@ -454,12 +541,7 @@ function HtmlImportPlugin({ html }: { html: string }) {
     if (hasLoadedRef.current || !html) return;
 
     editor.update(() => {
-      const parser = new DOMParser();
-      const dom = parser.parseFromString(html, 'text/html');
-      const nodes = $generateNodesFromDOM(editor, dom);
-      const root = $getRoot();
-      root.clear();
-      nodes.forEach((node) => root.append(node));
+      $setEditorHtml(editor, html);
     });
 
     hasLoadedRef.current = true;
@@ -481,6 +563,40 @@ function DisabledPlugin({ isDisabled }: { isDisabled?: boolean }) {
 }
 
 
+/* ───────────────────────── Leaving the HTML view ───────────────────────── */
+
+/**
+ * Shown instead of switching straight back when the HTML holds something the
+ * visual editor would remove. Lives inside the composer so "go back" can load
+ * the HTML into the editor it belongs to.
+ */
+function LeaveHtmlViewPrompt({ onStay, onLeave }: { onStay: () => void; onLeave: (editor: LexicalEditor) => void }) {
+  const [editor] = useLexicalComposerContext();
+  const { t } = useTranslation('admin_editor');
+
+  return (
+    <Alert
+      role="alert"
+      color="warning"
+      className="m-2"
+      title={t('rte.html_leave_title')}
+      description={
+        <>
+          {t('rte.html_leave_body')}
+          <span className="mt-2 flex flex-wrap gap-2">
+            <Button size="sm" variant="secondary" onPress={onStay}>
+              {t('rte.html_leave_stay')}
+            </Button>
+            <Button size="sm" variant="tertiary" onPress={() => onLeave(editor)}>
+              {t('rte.html_leave_confirm')}
+            </Button>
+          </span>
+        </>
+      }
+    />
+  );
+}
+
 /* ───────────────────────── Main Component ───────────────────────── */
 
 export function RichTextEditor({
@@ -490,9 +606,52 @@ export function RichTextEditor({
   isDisabled = false,
   label,
   showMarkdownImport = false,
+  showHtmlSource = false,
 }: RichTextEditorProps) {
   const { t } = useTranslation('admin_editor');
   const editorPlaceholder = placeholder ?? t('rte.start_writing');
+
+  // Content the visual editor cannot hold (an image, a table) opens as HTML,
+  // so opening and saving a post never strips it without anyone choosing that.
+  const [openedAsHtml] = useState(() => showHtmlSource && needsHtmlView(value));
+  const [isHtmlView, setIsHtmlView] = useState(openedAsHtml);
+  const [sourceHtml, setSourceHtml] = useState(() => (openedAsHtml ? tidyHtmlForSource(value) : ''));
+  const [askBeforeLeaving, setAskBeforeLeaving] = useState(false);
+  // Read by the Lexical change handler, which must not report the visual
+  // editor's (stale or simplified) HTML while the HTML view owns the content.
+  const isHtmlViewRef = useRef(openedAsHtml);
+
+  const openHtmlView = () => {
+    setSourceHtml(tidyHtmlForSource(value));
+    isHtmlViewRef.current = true;
+    setIsHtmlView(true);
+  };
+
+  const closeHtmlView = (editor: LexicalEditor) => {
+    setAskBeforeLeaving(false);
+    isHtmlViewRef.current = false;
+    setIsHtmlView(false);
+    // The change handler then reports what the visual editor kept.
+    editor.update(() => {
+      $setEditorHtml(editor, sourceHtml);
+    });
+  };
+
+  const toggleHtmlView = (editor: LexicalEditor) => {
+    if (!isHtmlView) {
+      openHtmlView();
+    } else if (needsHtmlView(sourceHtml)) {
+      setAskBeforeLeaving(true);
+    } else {
+      closeHtmlView(editor);
+    }
+  };
+
+  const handleSourceChange = (html: string) => {
+    setSourceHtml(html);
+    setAskBeforeLeaving(false);
+    onChange(html);
+  };
 
   const initialConfig = {
     namespace: 'NexusBlogEditor',
@@ -506,6 +665,7 @@ export function RichTextEditor({
 
   const handleChange = useCallback(
     (_editorState: EditorState, editor: LexicalEditor) => {
+      if (isHtmlViewRef.current) return;
       editor.read(() => {
         const html = $generateHtmlFromNodes(editor);
         // Lexical outputs <p><br></p> for empty content, normalize to empty string
@@ -535,8 +695,50 @@ export function RichTextEditor({
         `}
       >
         <LexicalComposer initialConfig={initialConfig}>
-          <ToolbarPlugin isDisabled={isDisabled} showMarkdownImport={showMarkdownImport} />
-          <div className="relative">
+          <ToolbarPlugin
+            isDisabled={isDisabled}
+            showMarkdownImport={showMarkdownImport}
+            showHtmlSource={showHtmlSource}
+            isHtmlView={isHtmlView}
+            onToggleHtmlView={toggleHtmlView}
+          />
+          {isHtmlView && (
+            <div>
+              {askBeforeLeaving ? (
+                <LeaveHtmlViewPrompt
+                  onStay={() => setAskBeforeLeaving(false)}
+                  onLeave={closeHtmlView}
+                />
+              ) : (
+                openedAsHtml && (
+                  <p className="border-b border-border px-3 py-2 text-xs text-muted">
+                    {t('rte.html_opened_notice')}
+                  </p>
+                )
+              )}
+              <Suspense
+                fallback={
+                  <div role="status" aria-busy="true" aria-label={t('rte.html_label')} className="flex justify-center py-16">
+                    <Spinner size="sm" />
+                  </div>
+                }
+              >
+                <HtmlSourceEditor
+                  embedded
+                  value={sourceHtml}
+                  onChange={handleSourceChange}
+                  isDisabled={isDisabled}
+                  labels={{
+                    label: label ? `${label} (${t('rte.html_label')})` : t('rte.html_label'),
+                    hint: t('rte.html_hint'),
+                    insertImage: t('rte.html_insert_image'),
+                    uploadFailed: t('rte.html_image_upload_failed'),
+                  }}
+                />
+              </Suspense>
+            </div>
+          )}
+          <div className={isHtmlView ? 'hidden' : 'relative'}>
             <RichTextPlugin
               contentEditable={
                 <ContentEditable

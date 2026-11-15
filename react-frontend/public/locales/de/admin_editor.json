@@ -638,7 +638,19 @@
     "content_placeholder": "Beginnen Sie mit dem Schreiben des Inhalts des Rechtsdokuments...",
     "notice_body_placeholder": "Fügen Sie hier die Details des Hinweises hinzu.",
     "notice_title_placeholder": "Wichtiger Hinweis",
-    "preview_title_placeholder": "Vorschau des Rechtsdokuments"
+    "preview_title_placeholder": "Vorschau des Rechtsdokuments",
+    "html_view": "HTML",
+    "html_view_tip": "Als HTML bearbeiten",
+    "html_view_off": "Zurück zum Editor",
+    "html_label": "HTML",
+    "html_hint": "Fügen Sie das HTML hier ein oder bearbeiten Sie es.",
+    "html_insert_image": "Bild einfügen",
+    "html_image_upload_failed": "Wir konnten dieses Bild nicht hochladen. Bitte versuchen Sie es erneut.",
+    "html_opened_notice": "Dieser Inhalt enthält Teile, die der Editor nicht anzeigen kann, etwa ein Bild oder eine Tabelle. Deshalb wurde er als HTML geöffnet.",
+    "html_leave_title": "Zurück zum Editor?",
+    "html_leave_body": "Der Editor kann keine Bilder, Tabellen, Trennlinien oder vorformatierten Text anzeigen. Wenn Sie zurückgehen, werden sie aus diesem Inhalt entfernt.",
+    "html_leave_stay": "Bei HTML bleiben",
+    "html_leave_confirm": "Zurückgehen und entfernen"
   },
   "saving": "Wird gespeichert …",
   "grapesjs_core": {

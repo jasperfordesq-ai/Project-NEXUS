@@ -638,7 +638,19 @@
     "content_placeholder": "Comienza a redactar el contenido del documento legal...",
     "notice_body_placeholder": "Agrega aquí los detalles del aviso.",
     "notice_title_placeholder": "Aviso importante",
-    "preview_title_placeholder": "Vista previa del documento legal"
+    "preview_title_placeholder": "Vista previa del documento legal",
+    "html_view": "HTML",
+    "html_view_tip": "Editar como HTML",
+    "html_view_off": "Volver al editor",
+    "html_label": "HTML",
+    "html_hint": "Pega o edita el HTML aquí.",
+    "html_insert_image": "Insertar imagen",
+    "html_image_upload_failed": "No pudimos subir esa imagen. Inténtalo de nuevo.",
+    "html_opened_notice": "Este contenido tiene partes que el editor no puede mostrar, como una imagen o una tabla, así que se ha abierto como HTML.",
+    "html_leave_title": "¿Volver al editor?",
+    "html_leave_body": "El editor no puede mostrar imágenes, tablas, separadores ni texto preformateado. Si vuelves, se quitarán de este contenido.",
+    "html_leave_stay": "Seguir en HTML",
+    "html_leave_confirm": "Volver y quitarlos"
   },
   "grapesjs_core": {
     "styles": {
