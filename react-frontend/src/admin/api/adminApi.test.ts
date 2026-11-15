@@ -1644,7 +1644,8 @@ describe('adminSettings', () => {
 
     // Left out, the key is not sent, so the server keeps the stored choice.
     await adminSettings.saveHeaderColors(null, null, null);
-    expect(mockPut.mock.calls.at(-1)?.[1]).not.toHaveProperty('default_theme');
+    const lastCall = mockPut.mock.calls[mockPut.mock.calls.length - 1];
+    expect(lastCall?.[1]).not.toHaveProperty('default_theme');
   });
 
   it('saveHeaderColors with nulls sends empty strings', async () => {
