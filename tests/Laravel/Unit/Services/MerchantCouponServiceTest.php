@@ -346,7 +346,7 @@ class MerchantCouponServiceTest extends TestCase
         TenantContext::setById(999); // non-existent tenant
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Coupon not found.');
+        $this->expectExceptionMessage("We can't find that coupon.");
         MerchantCouponService::validateCoupon('WRONGT1', $userId, 1000);
     }
 
@@ -692,7 +692,7 @@ class MerchantCouponServiceTest extends TestCase
         TenantContext::setById(self::TENANT_ID);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('QR token is invalid or has expired.');
+        $this->expectExceptionMessage("That QR code isn't valid or has run out. Please ask for a new one.");
         MerchantCouponService::redeemQrToken('NOTREAL000000000', 1);
     }
 

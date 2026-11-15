@@ -22,7 +22,7 @@ class MarketplaceReportServiceTest extends TestCase
         TenantContext::setById($this->testTenantId);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Marketplace listing not found.');
+        $this->expectExceptionMessage("We can't find that item. It may have been removed.");
 
         MarketplaceReportService::createReport(1, 999, [
             'reason' => 'spam',

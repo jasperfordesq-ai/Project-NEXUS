@@ -26,7 +26,7 @@ class ListingFeaturedServiceTest extends TestCase
 
         $result = $this->service->featureListing(999);
         $this->assertFalse($result['success']);
-        $this->assertSame('Listing not found', $result['error']);
+        $this->assertSame("We can't find that offer or request. It may have been removed.", $result['error']);
     }
 
     public function test_featureListing_success_without_days(): void

@@ -54,7 +54,7 @@ class BookmarkServiceTest extends TestCase
     public function test_toggle_throws_InvalidArgument_for_unsupported_type(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid bookmarkable type provided');
+        $this->expectExceptionMessage("This can't be saved.");
 
         $this->service->toggle(1, 'not_a_thing', 42);
     }
@@ -62,7 +62,7 @@ class BookmarkServiceTest extends TestCase
     public function test_getUserBookmarks_throws_on_invalid_type_filter(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid bookmarkable type provided');
+        $this->expectExceptionMessage("This can't be saved.");
 
         $this->service->getUserBookmarks(1, 'bogus');
     }
@@ -113,7 +113,7 @@ class BookmarkServiceTest extends TestCase
         $foreignListingId = $this->insertListing($user->id, self::OTHER_TENANT_ID);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Item not found');
+        $this->expectExceptionMessage("We can't find that, so it couldn't be saved.");
         $this->service->toggle($user->id, 'listing', $foreignListingId);
     }
 
@@ -122,7 +122,7 @@ class BookmarkServiceTest extends TestCase
         $user = $this->createUser();
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Item not found');
+        $this->expectExceptionMessage("We can't find that, so it couldn't be saved.");
         $this->service->toggle($user->id, 'listing', 999999999);
     }
 

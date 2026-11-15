@@ -44,7 +44,8 @@ class JobInterviewSchedulingServiceTest extends TestCase
         $errors = $this->service->getErrors();
         $this->assertCount(1, $errors);
         $this->assertSame('RESOURCE_NOT_FOUND', $errors[0]['code']);
-        $this->assertStringContainsString('not found', $errors[0]['message']);
+        // The wording is the platform's voice since 15 Nov 2026 (api.job_vacancy_not_found).
+        $this->assertStringContainsString("can't find that job", $errors[0]['message']);
     }
 
     public function test_createSlots_returns_forbidden_error_when_not_owner(): void

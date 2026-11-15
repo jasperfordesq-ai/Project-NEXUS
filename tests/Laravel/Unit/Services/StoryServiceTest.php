@@ -338,7 +338,7 @@ class StoryServiceTest extends TestCase
             ->andReturn((object) ['id' => 1, 'user_id' => 1]);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Invalid reaction type');
+        $this->expectExceptionMessage("We don't know that reaction. Please choose one from the list.");
 
         $this->service->reactToStory(1, 1, 'invalid_type');
     }
@@ -456,7 +456,7 @@ class StoryServiceTest extends TestCase
             ]);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Invalid option index');
+        $this->expectExceptionMessage('Please choose one of the options in this poll.');
 
         $this->service->votePoll(1, 1, 99);
     }

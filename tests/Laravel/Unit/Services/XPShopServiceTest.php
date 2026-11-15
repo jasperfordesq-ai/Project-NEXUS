@@ -53,7 +53,7 @@ class XPShopServiceTest extends TestCase
         $result = XPShopService::purchaseItem(1, 999);
 
         $this->assertFalse($result['success']);
-        $this->assertEquals('Item not found', $result['error']);
+        $this->assertEquals("We can't find that item in the shop.", $result['error']);
     }
 
     public function test_getUserPurchases_returns_array(): void

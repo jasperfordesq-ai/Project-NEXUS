@@ -166,7 +166,7 @@ class WalletServiceTest extends TestCase
 
         TenantContext::setById($this->testTenantId);
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Cannot transfer to yourself');
+        $this->expectExceptionMessage("You can't send credits to yourself. Please choose another member.");
 
         $this->service->transfer($user->id, [
             'recipient' => $user->id,
@@ -215,7 +215,7 @@ class WalletServiceTest extends TestCase
         ]);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Recipient is required');
+        $this->expectExceptionMessage('Please choose who to send this to.');
 
         $this->service->transfer($sender->id, [
             'amount' => 1.0,
@@ -230,7 +230,7 @@ class WalletServiceTest extends TestCase
         ]);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Recipient not found');
+        $this->expectExceptionMessage("We can't find that member.");
 
         $this->service->transfer($sender->id, [
             'recipient' => 999999,
@@ -254,7 +254,7 @@ class WalletServiceTest extends TestCase
 
         TenantContext::setById($this->testTenantId);
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Recipient not found');
+        $this->expectExceptionMessage("We can't find that member.");
 
         $this->service->transfer($sender->id, [
             'recipient' => $otherTenantUser->id,

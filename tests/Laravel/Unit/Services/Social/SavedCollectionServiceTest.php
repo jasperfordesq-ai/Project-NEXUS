@@ -438,7 +438,7 @@ class SavedCollectionServiceTest extends TestCase
         $foreignListingId = $this->insertItem('listing', $userId, self::OTHER_TENANT_ID);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Item not found');
+        $this->expectExceptionMessage("We can't find that, so it couldn't be saved.");
         $this->svc->saveItem($userId, null, 'listing', $foreignListingId);
     }
 
@@ -447,7 +447,7 @@ class SavedCollectionServiceTest extends TestCase
         $userId = $this->insertUser();
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Item not found');
+        $this->expectExceptionMessage("We can't find that, so it couldn't be saved.");
         $this->svc->saveItem($userId, null, 'listing', 999999999);
     }
 

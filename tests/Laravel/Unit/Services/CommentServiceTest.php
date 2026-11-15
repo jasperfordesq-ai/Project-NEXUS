@@ -99,7 +99,7 @@ class CommentServiceTest extends TestCase
             // parentId 999999 does not exist → parent-not-found branch
             $result = CommentService::addComment($userId, 2, 'post', $postId, 'Reply', 999999);
             $this->assertFalse($result['success']);
-            $this->assertSame('Parent comment not found', $result['error']);
+            $this->assertSame("We can't find the comment you're replying to. It may have been deleted.", $result['error']);
         } finally {
             DB::table('feed_posts')->where('id', $postId)->delete();
             DB::table('users')->where('id', $userId)->delete();
@@ -126,7 +126,7 @@ class CommentServiceTest extends TestCase
 
         $result = CommentService::deleteComment(1, 999);
         $this->assertFalse($result['success']);
-        $this->assertSame('Unauthorized', $result['error']);
+        $this->assertSame('You can only edit or delete your own comments.', $result['error']);
     }
 
     public function test_editComment_returns_error_when_content_empty(): void
