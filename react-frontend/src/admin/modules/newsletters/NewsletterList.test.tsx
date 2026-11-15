@@ -179,6 +179,7 @@ describe('NewsletterList', () => {
     resolveList([]);
     render(<NewsletterList />);
     const [createButton] = await screen.findAllByRole('button', { name: /create newsletter/i });
+    if (!createButton) throw new Error('expected a Create newsletter button');
 
     await userEvent.click(createButton);
     expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/admin/newsletters/create'));
