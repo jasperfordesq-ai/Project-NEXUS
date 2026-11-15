@@ -2612,13 +2612,13 @@
   "user_fallback": "User",
   "release_stage": "متاح بشكل عام (الإصدار 3.2.0)",
   "theme_picker": {
-    "title": "Appearance",
-    "subtitle": "ضبط نظام الألوان واللكنة والكثافة.",
+    "title": "المظهر",
+    "subtitle": "اضبط نظام الألوان ولون التمييز والكثافة.",
     "open_label": "افتح منتقي السمات",
     "color_scheme": "نظام الألوان",
-    "scheme_light": "Light",
-    "scheme_dark": "Dark",
-    "scheme_system": "System"
+    "scheme_light": "فاتح",
+    "scheme_dark": "داكن",
+    "scheme_system": "النظام"
   },
   "alpha_badge": "ألفا",
   "beta_badge": "بيتا",

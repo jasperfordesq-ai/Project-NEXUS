@@ -2552,12 +2552,12 @@
   "user_fallback": "User",
   "release_stage": "Allgemein verfügbar (v3.2.0)",
   "theme_picker": {
-    "title": "Appearance",
+    "title": "Darstellung",
     "subtitle": "Passen Sie Farbschema, Akzent und Dichte an.",
-    "open_label": "Öffnen Sie die Themenauswahl",
+    "open_label": "Darstellungsoptionen öffnen",
     "color_scheme": "Farbschema",
-    "scheme_light": "Light",
-    "scheme_dark": "Dark",
+    "scheme_light": "Hell",
+    "scheme_dark": "Dunkel",
     "scheme_system": "System"
   },
   "alpha_badge": "Alpha",

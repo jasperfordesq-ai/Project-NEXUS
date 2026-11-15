@@ -832,6 +832,18 @@
     "accent_color": "Akzentfarbe",
     "accent_color_desc": "Wählen Sie die Akzentfarbe, die in der gesamten Oberfläche verwendet wird",
     "select_color": "{{color}} als Akzentfarbe auswählen",
+    "color_names": {
+      "indigo": "Indigo",
+      "purple": "Lila",
+      "blue": "Blau",
+      "teal": "Blaugrün",
+      "green": "Grün",
+      "amber": "Bernstein",
+      "orange": "Orange",
+      "rose": "Rosenrot",
+      "pink": "Pink",
+      "cyan": "Cyan"
+    },
     "select_community_color": "Farbe Ihrer Community verwenden",
     "font_size": "Schriftgrösse",
     "font_size_desc": "Passen Sie die Basis-Textgrösse der Oberfläche an",

@@ -832,6 +832,18 @@
     "accent_color": "Couleur d'accentuation",
     "accent_color_desc": "Choisissez la couleur d'accentuation utilisée dans toute l'interface",
     "select_color": "Sélectionner {{color}} comme couleur d'accentuation",
+    "color_names": {
+      "indigo": "indigo",
+      "purple": "violet",
+      "blue": "bleu",
+      "teal": "bleu sarcelle",
+      "green": "vert",
+      "amber": "ambre",
+      "orange": "orange",
+      "rose": "rouge rosé",
+      "pink": "rose",
+      "cyan": "cyan"
+    },
     "select_community_color": "Utiliser la couleur de votre communauté",
     "font_size": "Taille de police",
     "font_size_desc": "Ajustez la taille du texte de base dans l'interface",

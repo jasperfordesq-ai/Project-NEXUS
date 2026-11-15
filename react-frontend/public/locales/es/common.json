@@ -2567,13 +2567,13 @@
   "user_fallback": "User",
   "release_stage": "Disponible de forma general (v3.2.0)",
   "theme_picker": {
-    "title": "Appearance",
-    "subtitle": "Ajuste la combinación de colores, el acento y la densidad.",
+    "title": "Apariencia",
+    "subtitle": "Ajusta el esquema de color, el color de acento y la densidad.",
     "open_label": "Abrir selector de temas",
-    "color_scheme": "esquema de color",
-    "scheme_light": "Light",
-    "scheme_dark": "Dark",
-    "scheme_system": "System"
+    "color_scheme": "Esquema de color",
+    "scheme_light": "Claro",
+    "scheme_dark": "Oscuro",
+    "scheme_system": "Sistema"
   },
   "alpha_badge": "Alfa",
   "beta_badge": "Beta",

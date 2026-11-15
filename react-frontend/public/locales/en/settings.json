@@ -832,6 +832,18 @@
     "accent_color": "Accent Color",
     "accent_color_desc": "Choose the accent color used throughout the interface",
     "select_color": "Select {{color}} as accent color",
+    "color_names": {
+      "indigo": "indigo",
+      "purple": "purple",
+      "blue": "blue",
+      "teal": "teal",
+      "green": "green",
+      "amber": "amber",
+      "orange": "orange",
+      "rose": "rose",
+      "pink": "pink",
+      "cyan": "cyan"
+    },
     "select_community_color": "Use your community's color",
     "font_size": "Font Size",
     "font_size_desc": "Adjust the base text size across the interface",

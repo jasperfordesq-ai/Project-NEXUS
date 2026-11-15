@@ -832,6 +832,18 @@
     "accent_color": "Kolor akcentu",
     "accent_color_desc": "Wybierz kolor akcentu używany w całym interfejsie",
     "select_color": "Wybierz {{color}} jako kolor akcentu",
+    "color_names": {
+      "indigo": "indygo",
+      "purple": "fioletowy",
+      "blue": "niebieski",
+      "teal": "morski",
+      "green": "zielony",
+      "amber": "bursztynowy",
+      "orange": "pomarańczowy",
+      "rose": "różanoczerwony",
+      "pink": "różowy",
+      "cyan": "cyjan"
+    },
     "select_community_color": "Użyj koloru swojej społeczności",
     "font_size": "Rozmiar czcionki",
     "font_size_desc": "Dostosuj podstawowy rozmiar tekstu w całym interfejsie",

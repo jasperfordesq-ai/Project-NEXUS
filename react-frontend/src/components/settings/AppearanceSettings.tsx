@@ -115,7 +115,9 @@ export function AppearanceSettings() {
                 size="sm"
                 aria-label={followsCommunity
                   ? t('appearance_prefs.select_community_color')
-                  : t('appearance_prefs.select_color', { color: color.name })}
+                  : t('appearance_prefs.select_color', {
+                      color: t(`appearance_prefs.color_names.${color.name}`),
+                    })}
                 className={[
                   'w-9 h-9 min-w-0 rounded-full border-2 border-transparent transition-transform',
                   followsCommunity ? 'ring-[var(--accent-color)]' : color.swatchClass,

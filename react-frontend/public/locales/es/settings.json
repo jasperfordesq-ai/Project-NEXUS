@@ -832,6 +832,18 @@
     "accent_color": "Color de acento",
     "accent_color_desc": "Elige el color de acento usado en toda la interfaz",
     "select_color": "Seleccionar {{color}} como color de acento",
+    "color_names": {
+      "indigo": "índigo",
+      "purple": "morado",
+      "blue": "azul",
+      "teal": "verde azulado",
+      "green": "verde",
+      "amber": "ámbar",
+      "orange": "naranja",
+      "rose": "rojo rosado",
+      "pink": "rosa",
+      "cyan": "cian"
+    },
     "select_community_color": "Usar el color de tu comunidad",
     "font_size": "Tamaño de fuente",
     "font_size_desc": "Ajusta el tamaño base del texto en la interfaz",

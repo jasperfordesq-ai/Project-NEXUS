@@ -2552,13 +2552,13 @@
   "user_fallback": "User",
   "release_stage": "Algemeen beschikbaar (v3.2.0)",
   "theme_picker": {
-    "title": "Appearance",
-    "subtitle": "Stem het kleurenschema, accent en dichtheid af.",
+    "title": "Weergave",
+    "subtitle": "Pas het kleurenschema, de accentkleur en de dichtheid aan.",
     "open_label": "Themakiezer openen",
     "color_scheme": "Kleurenschema",
-    "scheme_light": "Light",
-    "scheme_dark": "Dark",
-    "scheme_system": "System"
+    "scheme_light": "Licht",
+    "scheme_dark": "Donker",
+    "scheme_system": "Systeem"
   },
   "alpha_badge": "Alfa",
   "beta_badge": "Bèta",

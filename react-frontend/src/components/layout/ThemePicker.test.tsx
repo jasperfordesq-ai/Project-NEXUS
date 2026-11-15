@@ -147,6 +147,15 @@ describe('ThemePicker — popover content', () => {
     expect(swatch).toHaveStyle({ backgroundColor: '#6366f1' });
   });
 
+  // The colour in a swatch's name comes from the wording files, not from the
+  // preset's code name, so a screen reader hears it in the reader's language.
+  it('names each accent swatch from the translated colour names', async () => {
+    await openPicker();
+    for (const colour of ['purple', 'blue', 'teal', 'green', 'amber', 'orange', 'rose', 'pink', 'cyan']) {
+      expect(screen.getByRole('button', { name: `Select ${colour} as accent color` })).toBeInTheDocument();
+    }
+  });
+
   it('calls setDensity when a density button is pressed', async () => {
     await openPicker();
     // settings.appearance_prefs.density_compact — 'comfortable' is the current

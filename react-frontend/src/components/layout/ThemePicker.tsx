@@ -159,7 +159,9 @@ export function ThemePicker({
                     type="button"
                     aria-label={followsCommunity
                       ? t('settings:appearance_prefs.select_community_color')
-                      : t('settings:appearance_prefs.select_color', { color: color.name })}
+                      : t('settings:appearance_prefs.select_color', {
+                          color: t(`appearance_prefs.color_names.${color.name}`, { ns: 'settings' }),
+                        })}
                     aria-pressed={isSelected}
                     onClick={() => setAccentColor(color.hex)}
                     style={{ backgroundColor: colour }}

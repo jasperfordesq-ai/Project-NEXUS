@@ -10,8 +10,17 @@
  *
  * `swatchClass` is written out in full so Tailwind generates it.
  */
+/**
+ * The presets by name. Each has a translated name for screen readers at
+ * `settings:appearance_prefs.color_names.<name>`, so adding one here means
+ * adding its name in every language.
+ */
+export type AccentName =
+  | 'indigo' | 'purple' | 'blue' | 'teal' | 'green'
+  | 'amber' | 'orange' | 'rose' | 'pink' | 'cyan';
+
 export interface AccentPreset {
-  name: string;
+  name: AccentName;
   hex: string;
   swatchClass: string;
 }

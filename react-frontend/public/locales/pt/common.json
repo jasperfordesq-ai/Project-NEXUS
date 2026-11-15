@@ -2567,13 +2567,13 @@
   "user_fallback": "User",
   "release_stage": "Geralmente disponível (v3.2.0)",
   "theme_picker": {
-    "title": "Appearance",
-    "subtitle": "Ajuste o esquema de cores, destaque e densidade.",
+    "title": "Aparência",
+    "subtitle": "Ajuste o esquema de cores, a cor de destaque e a densidade.",
     "open_label": "Abrir seletor de tema",
     "color_scheme": "Esquema de cores",
-    "scheme_light": "Light",
-    "scheme_dark": "Dark",
-    "scheme_system": "System"
+    "scheme_light": "Claro",
+    "scheme_dark": "Escuro",
+    "scheme_system": "Sistema"
   },
   "alpha_badge": "Alfa",
   "beta_badge": "Beta",

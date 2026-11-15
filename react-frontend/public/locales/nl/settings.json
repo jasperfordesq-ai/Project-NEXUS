@@ -832,6 +832,18 @@
     "accent_color": "Accentkleur",
     "accent_color_desc": "Kies de accentkleur die door de interface wordt gebruikt",
     "select_color": "Selecteer {{color}} als accentkleur",
+    "color_names": {
+      "indigo": "indigo",
+      "purple": "paars",
+      "blue": "blauw",
+      "teal": "blauwgroen",
+      "green": "groen",
+      "amber": "amber",
+      "orange": "oranje",
+      "rose": "rozerood",
+      "pink": "roze",
+      "cyan": "cyaan"
+    },
     "select_community_color": "De kleur van je community gebruiken",
     "font_size": "Lettergrootte",
     "font_size_desc": "Pas de basis tekstgrootte aan in de interface",

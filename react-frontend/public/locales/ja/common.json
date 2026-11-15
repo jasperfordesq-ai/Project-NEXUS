@@ -2552,13 +2552,13 @@
   "user_fallback": "User",
   "release_stage": "一般提供 (v3.2.0)",
   "theme_picker": {
-    "title": "Appearance",
+    "title": "外観",
     "subtitle": "配色、アクセント、密度を調整します。",
     "open_label": "テーマピッカーを開く",
     "color_scheme": "配色",
-    "scheme_light": "Light",
-    "scheme_dark": "Dark",
-    "scheme_system": "System"
+    "scheme_light": "ライト",
+    "scheme_dark": "ダーク",
+    "scheme_system": "システム"
   },
   "alpha_badge": "アルファ",
   "beta_badge": "ベータ",

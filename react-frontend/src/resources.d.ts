@@ -59414,6 +59414,18 @@ export default interface Resources {
       "accent_color_desc": "Choose the accent color used throughout the interface",
       "accessibility_profile": "Accessibility Profile",
       "accessibility_profile_desc": "Choose how the interface should adapt for easier reading, calmer motion, and simpler screens",
+      "color_names": {
+        "amber": "amber",
+        "blue": "blue",
+        "cyan": "cyan",
+        "green": "green",
+        "indigo": "indigo",
+        "orange": "orange",
+        "pink": "pink",
+        "purple": "purple",
+        "rose": "rose",
+        "teal": "teal"
+      },
       "color_scheme_desc": "Choose light, dark, or follow your device.",
       "density": "Layout Density",
       "density_comfortable": "Comfortable",

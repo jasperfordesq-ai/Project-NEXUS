@@ -2567,13 +2567,13 @@
   "user_fallback": "User",
   "release_stage": "Generalmente disponibile (v3.2.0)",
   "theme_picker": {
-    "title": "Appearance",
-    "subtitle": "Ottimizza la combinazione di colori, l'accento e la densità.",
+    "title": "Aspetto",
+    "subtitle": "Regola la combinazione di colori, il colore di accentuazione e la densità.",
     "open_label": "Apri il selettore dei temi",
     "color_scheme": "Combinazione di colori",
-    "scheme_light": "Light",
-    "scheme_dark": "Dark",
-    "scheme_system": "System"
+    "scheme_light": "Chiaro",
+    "scheme_dark": "Scuro",
+    "scheme_system": "Sistema"
   },
   "alpha_badge": "Alfa",
   "beta_badge": "Beta",

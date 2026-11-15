@@ -832,6 +832,18 @@
     "accent_color": "Dath Béime",
     "accent_color_desc": "Roghnaigh an dath béime a úsáidtear ar fud an chomhéadain",
     "select_color": "Roghnaigh {{color}} mar dhath béime",
+    "color_names": {
+      "indigo": "indeagó",
+      "purple": "corcra",
+      "blue": "gorm",
+      "teal": "gormghlas",
+      "green": "uaine",
+      "amber": "ómra",
+      "orange": "oráiste",
+      "rose": "rósdearg",
+      "pink": "bándearg",
+      "cyan": "cian"
+    },
     "select_community_color": "Úsáid dath do phobail",
     "font_size": "Méid cló",
     "font_size_desc": "Coigeartaigh méid bunúsach an téacs ar fud an chomhéadain",

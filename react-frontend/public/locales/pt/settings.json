@@ -832,6 +832,18 @@
     "accent_color": "Cor de destaque",
     "accent_color_desc": "Escolha a cor de destaque utilizada em toda a interface",
     "select_color": "Selecionar {{color}} como cor de destaque",
+    "color_names": {
+      "indigo": "índigo",
+      "purple": "roxo",
+      "blue": "azul",
+      "teal": "verde-azulado",
+      "green": "verde",
+      "amber": "âmbar",
+      "orange": "laranja",
+      "rose": "rosa-avermelhado",
+      "pink": "rosa",
+      "cyan": "ciano"
+    },
     "select_community_color": "Usar a cor da sua comunidade",
     "font_size": "Tamanho da fonte",
     "font_size_desc": "Ajuste o tamanho base do texto na interface",
