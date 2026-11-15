@@ -50,6 +50,7 @@ const { createTranslator, isSupportedLocale } = require('./localization');
 const { buildSeoLocals, canonicalUrlFor } = require('./seo-meta');
 const { requestHost } = require('../middleware/tenant-routing');
 const { footerLinks: tbiFooterLinks } = require('./tbi-pages');
+const { currentSiteAnnouncement } = require('./site-announcement');
 
 const localeOptions = [
   ['en', 'English'],
@@ -1011,6 +1012,10 @@ function buildShellLocals(req, isAuthenticated) {
     // line entirely rather than printing "version" followed by nothing, because a blank
     // or wrong version number is worse than no version number.
     platformVersion: String(tenantConfig.platform_version || '').trim(),
+    // The community notice banner (warmth phase 6, E6): the one notice the
+    // bootstrap says to show now, re-checked against the clock because the
+    // bootstrap is cached. Rendered by partials/site-announcement.njk.
+    siteAnnouncement: currentSiteAnnouncement(routedTenant.announcement, { urlFor }),
     sharedAccessibleStatus: 'candidate_not_certified'
   };
 }

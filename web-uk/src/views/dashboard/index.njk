@@ -132,6 +132,14 @@
     </div>
   {% endif %}
 
+  {# The React dashboard's moments as plain text (lib/dashboard-moments.js, warmth phase 6 E8): the member's joining anniversary, the community's birthday and its hours milestone. Each is absent when it does not apply. #}
+  {% for moment in dashboardMoments %}
+    <div class="govuk-inset-text" data-dashboard-moment="{{ moment.kind }}">
+      <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ moment.title }}</h2>
+      <p class="govuk-body govuk-!-margin-bottom-0">{{ moment.body }}</p>
+    </div>
+  {% endfor %}
+
   {# What the community has shared so far this month (lib/community-month.js); absent when there is nothing to show. #}
   {% if monthHighlight %}
     <section class="govuk-!-margin-bottom-8" id="dashboard-month-highlight" aria-labelledby="dashboard-month-highlight-title">
@@ -227,6 +235,9 @@
       <ul class="govuk-list govuk-list--spaced">
         <li><a class="govuk-link" href="{{ urlFor('/profile') }}">{{ t("dashboard.view_profile") }}</a></li>
         <li><a class="govuk-link" href="{{ urlFor('/profile/settings') }}">{{ t("dashboard.edit_profile") }}</a></li>
+        {% if dashboardFeatures.appreciations and profile.id %}
+          <li><a class="govuk-link" href="{{ urlFor('/users/' + (profile.id | string) + '/appreciations') }}">{{ t("dashboard.your_thank_you_notes") }}</a></li>
+        {% endif %}
         {% if dashboardFeatures.feed %}
           <li><a class="govuk-link" href="{{ urlFor('/feed') }}">{{ t("dashboard.view_feed") }}</a></li>
         {% endif %}
@@ -280,7 +291,10 @@
     <div class="govuk-grid-column-one-half">
       <h2 class="govuk-heading-l">{{ t("dashboard.my_listings_title") }}</h2>
       {% if not listings or not listings.length %}
-        <div class="govuk-inset-text">{{ t("dashboard.my_listings_empty") }}</div>
+        <div class="govuk-inset-text">
+          <p class="govuk-body">{{ t("dashboard.my_listings_empty") }}</p>
+          {% if dashboardFeatures.listings %}<p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/listings/new') }}">{{ t("listings.create.title") }}</a></p>{% endif %}
+        </div>
       {% else %}
         <div class="nexus-alpha-card-list">
           {% for listing in listings %}

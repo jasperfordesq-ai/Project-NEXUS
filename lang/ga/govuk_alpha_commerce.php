@@ -139,6 +139,7 @@ return [
         'error_create' => 'Ár leithscéal, níorbh fhéidir do liostú a chruthú. Bain triail eile as.',
 
         'created_pending' => 'Cruthaíodh do liostú agus seoladh é le hathbhreithniú. Ní fheicfidh ach tusa é go dtí go gceadaíonn modhnóir é.',
+        'created' => 'Foilsíodh do liostú.',
 
         'pending_review_notice' => 'Tá an liostú seo ag fanacht le hathbhreithniú. Ní fheicfidh ach tusa é go dtí go gceadaíonn modhnóir é.',
         'error_update' => 'Ár leithscéal, níorbh fhéidir do chuid athruithe a shábháil. Bain triail eile as.',

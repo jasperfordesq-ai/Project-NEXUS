@@ -17,6 +17,7 @@ const {
   getMemberEndorsements,
   getFeedSidebar,
   getCommunityThisMonth,
+  getPlatformStats,
   getTopEndorsedMembers,
   getConnectionSuggestions,
   updateProfile,
@@ -31,6 +32,7 @@ const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 const { getRequestProfile } = require('../lib/request-profile');
 const { communityMonthHighlight } = require('../lib/community-month');
+const { membershipAnniversary, communityAnniversary, communityMilestone } = require('../lib/dashboard-moments');
 const { welcomeStepsSwitchedOn } = require('../lib/welcome-steps');
 
 const router = express.Router();
@@ -418,7 +420,9 @@ router.get('/', asyncRoute(async (req, res) => {
     events: flagEnabled(tenant, 'events', 'features', true),
     volunteering: flagEnabled(tenant, 'volunteering', 'features', true),
     exchangeWorkflow: flagEnabled(tenant, 'exchange_workflow', 'features', true),
-    groups: flagEnabled(tenant, 'groups', 'features', true)
+    groups: flagEnabled(tenant, 'groups', 'features', true),
+    // The member's own thank-you notes (warmth phase 6, E9).
+    appreciations: flagEnabled(tenant, 'appreciations', 'features', true)
   };
   // Each dashboard card loads independently and falls back to an empty/zero shape on
   // failure. `track` keeps that resilience (one broken card never blanks the whole page)
@@ -479,7 +483,8 @@ router.get('/', asyncRoute(async (req, res) => {
   // Also absorbs a synchronous throw, so no panel can take the page down.
   const guarded = (read) => Promise.resolve().then(read).catch(quiet);
   const sidePanelsOn = dashboardFeatures.feed;
-  const [exchangeAttentionData, endorsementsData, sidebarData, topEndorsedData, suggestionsData, guardiansData, supportActionsData, myGroupsData, thisMonthData] = await Promise.all([
+  const tenantSlug = String(tenant.slug || req.accessibleRouting?.tenantSlug || '').trim();
+  const [exchangeAttentionData, endorsementsData, sidebarData, topEndorsedData, suggestionsData, guardiansData, supportActionsData, myGroupsData, thisMonthData, platformStatsData] = await Promise.all([
     dashboardFeatures.listings && dashboardFeatures.exchangeWorkflow
       ? getExchangeAttentionCount(req.token).catch(track({ data: { count: 0, items: [] } }))
       : Promise.resolve({ data: { count: 0, items: [] } }),
@@ -502,7 +507,10 @@ router.get('/', asyncRoute(async (req, res) => {
       ? guarded(() => getGroups(req.token, { user_id: currentProfileId, per_page: 3 }))
       : Promise.resolve(null),
     // React's CommunityMonthHighlight: the community's figures so far this month.
-    guarded(() => getCommunityThisMonth(req.token))
+    guarded(() => getCommunityThisMonth(req.token)),
+    // React's CommunityMilestone: this community's own shared hours
+    // (GET /v2/platform/stats, the figure the public home page shows).
+    tenantSlug ? guarded(() => getPlatformStats({ slug: tenantSlug })) : Promise.resolve(null)
   ]);
   const pendingCount = (result) => {
     const value = Number((result && (dataFrom(result) || {}).pending_count) ?? 0);
@@ -520,7 +528,15 @@ router.get('/', asyncRoute(async (req, res) => {
   };
 
   const communityName = res.locals.tenantName || res.locals.serviceName || 'Project NEXUS Accessible';
+  // Warmth phase 6 (E8): the React dashboard's moments as plain text.
+  const momentLocale = getRequestIntlLocale();
+  const dashboardMoments = [
+    ['anniversary', membershipAnniversary(safeProfile.created_at, { t, locale: momentLocale, community: communityName })],
+    ['community-birthday', communityAnniversary(thisMonthData, { t, tc, community: communityName })],
+    ['milestone', communityMilestone(platformStatsData, { t, locale: momentLocale, community: communityName })]
+  ].filter(([, moment]) => moment).map(([kind, moment]) => ({ kind, ...moment }));
   res.render('dashboard/index', {
+    dashboardMoments,
     monthHighlight: communityMonthHighlight(thisMonthData, {
       listings: dashboardFeatures.listings, locale: getRequestIntlLocale(), t, community: communityName
     }),

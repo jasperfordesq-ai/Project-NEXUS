@@ -1000,7 +1000,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('href="/feed/posts/77"');
     expect(response.text).toContain('Neighbour offer');
     expect(response.text).not.toContain('href="/feed/posts/78"');
-    expect(response.text).toContain('Your listings');
+    expect(response.text).toContain('Your offers and requests');
     expect(response.text).toContain('Borrow a repair kit');
     expect(response.text).toContain('href="/listings/new"');
     expect(response.text).not.toContain('shared accessible frontend preparation page');
@@ -1079,10 +1079,10 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain(translate('ar', 'listings.offer'));
     expect(response.text).toContain(translate('ar', 'listings.image_alt', { title: 'Borrow a repair kit' }));
     expect(response.text).not.toContain('Welcome back');
-    expect(response.text).not.toContain('Create a listing');
+    expect(response.text).not.toContain('Share an offer or request');
     expect(response.text).not.toContain('Hours given');
     expect(response.text).not.toContain('Posted by');
-    expect(response.text).not.toContain('Your listings');
+    expect(response.text).not.toContain('Your offers and requests');
   });
 
   it('honours Laravel dashboard tenant gates before calling or linking disabled features', async () => {
@@ -29763,8 +29763,8 @@ describe('shared accessible frontend shell', () => {
     expect(deleted.status).toBe(200);
     expect(deleted.text).toContain('aria-labelledby="listing-deleted-title"');
     expect(deleted.text).toContain('id="listing-deleted-title"');
-    expect(deleted.text).toContain('Your listing has been deleted.');
-    expect((deleted.text.match(/Your listing has been deleted\./g) || [])).toHaveLength(1);
+    expect(deleted.text).toContain('Your offer or request has been deleted.');
+    expect((deleted.text.match(/Your offer or request has been deleted\./g) || [])).toHaveLength(1);
 
     expect(unrelated.status).toBe(200);
     expect(unrelated.text).not.toContain('Listing created successfully');
@@ -29795,7 +29795,7 @@ describe('shared accessible frontend shell', () => {
     expect(created.status).toBe(200);
     expect(created.text).toContain('aria-labelledby="listing-created-title"');
     expect(created.text).toContain('id="listing-created-title"');
-    expect(created.text).toContain('Your listing has been published.');
+    expect(created.text).toContain('Your offer or request is now live.');
 
     expect(saved.status).toBe(200);
     expect(saved.text).toContain('aria-labelledby="listing-action-status-title"');
@@ -29832,7 +29832,8 @@ describe('shared accessible frontend shell', () => {
 
     expect(unfiltered.status).toBe(200);
     expect(unfiltered.text).toContain('No results found');
-    expect(unfiltered.text).toContain('No listings match your filters.');
+    expect(unfiltered.text).toContain('No offers or requests to show');
+    expect(unfiltered.text).toContain('href="/listings/new">Share an offer or request</a>');
     expect(unfiltered.text).not.toContain('>Clear filters<');
     expect(unfiltered.text).not.toContain('Create your first listing');
 
@@ -29859,7 +29860,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(200);
     expect(response.text).toContain('Sign in to use this page.');
     expect(response.text).toContain('id="listings-auth-required-title"');
-    expect(response.text).not.toContain('Listings could not be loaded. Try again.');
+    expect(response.text).not.toContain('We could not load offers and requests. Please try again.');
     expect(response.text).not.toContain('class="nexus-alpha-card-list"');
     expect(response.text).not.toContain('name="q"');
     expect(api.getListings).not.toHaveBeenCalled();
@@ -29874,7 +29875,7 @@ describe('shared accessible frontend shell', () => {
 
     expect(response.status).toBe(200);
     expect(response.text).toContain('class="govuk-error-summary"');
-    expect(response.text).toContain('Listings could not be loaded. Try again.');
+    expect(response.text).toContain('We could not load offers and requests. Please try again.');
     expect(response.text).not.toContain('id="listings-auth-required-title"');
     expect(response.text).not.toContain('class="nexus-alpha-card-list"');
   });
@@ -30292,7 +30293,7 @@ describe('shared accessible frontend shell', () => {
         .set('Cookie', signedCookieHeader());
 
       expect(detail.status).toBe(200);
-      expect(detail.text).toContain('Your listing has been published.');
+      expect(detail.text).toContain('Your offer or request is now live.');
       expect(detail.text).toContain('Your listing was created, but its skills could not be saved. Edit the listing to try again.');
       expect(detail.text).toContain('Your listing was created, but its image could not be uploaded. Edit the listing to try again.');
     });

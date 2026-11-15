@@ -288,6 +288,8 @@
             },
             html: '<a class="govuk-link" href="' ~ feedbackUrl ~ '">' ~ shellFeedback ~ '</a>'
           }) }}
+          {# The community notice (warmth phase 6, E6). Outside beforeContent and <main> for the same reason as the phase banner: no page can lose it. #}
+          {% include "partials/site-announcement.njk" %}
           {% block beforeContent %}{% endblock %}
         {% endblock %}
 

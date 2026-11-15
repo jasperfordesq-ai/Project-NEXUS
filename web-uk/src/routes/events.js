@@ -625,7 +625,8 @@ function eventAttendee(row = {}, t = (key) => key) {
   const legacyUser = row.user && typeof row.user === 'object' ? row.user : {};
   const name = trimmed(
     member.display_name || member.name || row.display_name || row.name || legacyUser.name
-      || [row.first_name || legacyUser.first_name, row.last_name || legacyUser.last_name].filter(Boolean).join(' ')
+      // First name only (no surnames to members, E-122): the server shortens display_name itself; never add a surname here.
+      || row.first_name || legacyUser.first_name
   ) || t('govuk_alpha.members.unknown_member');
   const legacyStatus = trimmed(row.rsvp_status || row.status).toLowerCase();
   const status = registration.state === 'confirmed' || legacyStatus === 'going'
@@ -4522,3 +4523,4 @@ router.post('/:id(\\d+)/rsvp', requireAuth, audit.eventRsvp(), asyncRoute(async 
 }));
 
 module.exports = router;
+module.exports._test = { eventAttendee };

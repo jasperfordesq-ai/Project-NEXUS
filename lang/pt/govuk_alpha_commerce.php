@@ -137,6 +137,7 @@ return [
         'error_price' => 'Insira um preço monetário ou um preço de crédito temporal',
         'error_create' => 'Desculpe, não foi possível criar sua listagem. Por favor, tente novamente.',
         'created_pending' => 'Sua listagem foi criada e enviada para revisão. Somente você pode vê-la até que um moderador a aprove.',
+        'created' => 'Sua listagem foi publicada.',
         'pending_review_notice' => 'Esta listagem está aguardando revisão. Somente você pode vê-la até que um moderador a aprove.',
         'error_update' => 'Desculpe, não foi possível salvar suas alterações. Por favor, tente novamente.',
         'error_suspended' => 'Sua conta de vendedor está suspensa, portanto você não pode criar novas listagens.',

@@ -1,0 +1,33 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  The community notice banner (warmth phase 6, E6) — the one-line notice the
+  community's admins post, as a GOV.UK notification banner. `siteAnnouncement`
+  comes from lib/site-announcement.js via the shell locals: dates, style and
+  link are already checked there.
+
+  The default (non-success) banner: role="region", labelled by its heading, so
+  it is read in page order and never interrupts a screen reader — the same
+  choice the React banner makes. The admin's words are escaped text; the link,
+  when there is one, is GOV.UK's notification-banner link. Not dismissible
+  (see lib/site-announcement.js).
+#}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% if siteAnnouncement and siteAnnouncement.message %}
+  {% set siteAnnouncementHtml %}
+    <p class="govuk-notification-banner__heading">
+      {{- siteAnnouncement.message -}}
+      {%- if siteAnnouncement.link %} <a class="govuk-notification-banner__link" href="{{ siteAnnouncement.link.href }}">{{ siteAnnouncement.link.label }}</a>{% endif -%}
+    </p>
+  {% endset %}
+  {{ govukNotificationBanner({
+    titleText: t('web_uk.site_announcement.title_important') if siteAnnouncement.style == 'important' else t('web_uk.site_announcement.title'),
+    titleId: 'site-announcement-title',
+    html: siteAnnouncementHtml,
+    attributes: { 'data-site-announcement': siteAnnouncement.style }
+  }) }}
+{% endif %}

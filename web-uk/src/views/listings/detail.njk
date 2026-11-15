@@ -30,7 +30,10 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      {% if status == "listing-created" or status == "listing-updated" %}
+      {% if status == "listing-created-first" %}
+        {# The member's first offer or request (warmth phase 6, E8): a confirmation panel instead of the success banner. #}
+        {% include "partials/first-time-panel.njk" %}
+      {% elif status == "listing-created" or status == "listing-updated" %}
         <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="listing-created-title">
           <div class="govuk-notification-banner__header">
             <h2 class="govuk-notification-banner__title" id="listing-created-title">{{ t("states.success_title") }}</h2>

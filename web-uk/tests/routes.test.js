@@ -1050,10 +1050,10 @@ describe('Protected Routes', () => {
       const response = await request(app).get('/listings');
 
       expect(response.status).toBe(200);
-      expect(response.text).toContain('<h1 class="govuk-heading-xl">Listings</h1>');
+      expect(response.text).toContain('<h1 class="govuk-heading-xl">Offers and requests</h1>');
       expect(response.text).toContain('Sign in to use this page.');
       expect(response.text).toContain('href="/login"');
-      expect(response.text).not.toContain('Listings could not be loaded');
+      expect(response.text).not.toContain('We could not load offers and requests');
       expect(api.getListings).not.toHaveBeenCalled();
     });
 

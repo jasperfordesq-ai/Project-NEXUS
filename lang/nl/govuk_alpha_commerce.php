@@ -137,6 +137,7 @@ return [
         'error_price' => 'Voer een geldprijs of een tijdskredietprijs in',
         'error_create' => 'Sorry, uw vermelding kan niet worden gemaakt. Probeer het opnieuw.',
         'created_pending' => 'Uw vermelding is gemaakt en ter beoordeling verzonden. Alleen u kunt deze zien totdat een moderator deze goedkeurt.',
+        'created' => 'Uw vermelding is gepubliceerd.',
         'pending_review_notice' => 'Deze vermelding wacht op beoordeling. Alleen u kunt deze zien totdat een moderator deze goedkeurt.',
         'error_update' => 'Sorry, uw wijzigingen konden niet worden opgeslagen. Probeer het opnieuw.',
         'error_suspended' => 'Uw verkopersaccount is opgeschort, u kunt dus geen nieuwe vermeldingen maken.',

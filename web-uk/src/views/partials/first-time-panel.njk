@@ -1,0 +1,21 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  "Your first offer or request is up!" (warmth phase 6, E8): a GOV.UK
+  confirmation panel on the new listing's page when the create response said
+  it was the member's first (lib/first-time.js). A level-2 heading, because
+  the page's own h1 is the listing's title.
+#}
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+
+{% if status == "listing-created-first" %}
+  {{ govukPanel({
+    titleText: t("listings.create.first_title"),
+    text: t("listings.create.first_text"),
+    headingLevel: 2,
+    attributes: { "data-first-time": "first_listing" }
+  }) }}
+{% endif %}

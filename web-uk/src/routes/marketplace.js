@@ -129,7 +129,7 @@ const MARKETPLACE_SUCCESS_MESSAGES = {
 const MARKETPLACE_SUCCESS_MESSAGE_KEYS = {
   unsaved: 'govuk_alpha_commerce.saved.status_unsaved',
   reported: 'govuk_alpha_commerce.report.status_reported',
-  'listing-created': 'listings.create.created',
+  'listing-created': 'govuk_alpha_commerce.listing_form.created',
   'listing-created-pending': 'govuk_alpha_commerce.listing_form.created_pending',
   deleted: 'govuk_alpha_commerce.my_listings.status_deleted',
   renewed: 'govuk_alpha_commerce.my_listings.status_renewed',

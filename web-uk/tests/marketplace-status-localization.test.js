@@ -46,7 +46,7 @@ describe('request-scoped Marketplace status localization', () => {
   it.each([
     ['unsaved', 'govuk_alpha_commerce.saved.status_unsaved'],
     ['reported', 'govuk_alpha_commerce.report.status_reported'],
-    ['listing-created', 'listings.create.created'],
+    ['listing-created', 'govuk_alpha_commerce.listing_form.created'],
     ['deleted', 'govuk_alpha_commerce.my_listings.status_deleted'],
     ['renewed', 'govuk_alpha_commerce.my_listings.status_renewed'],
     ['accepted', 'govuk_alpha_commerce.offers.status_accepted_done'],
@@ -157,7 +157,7 @@ describe('request-scoped Marketplace status localization', () => {
     expect(response.status).toBe(200);
     expect(response.body.locals.status).toEqual({
       type: 'success',
-      message: createTranslator('ga')('listings.create.created')
+      message: createTranslator('ga')('govuk_alpha_commerce.listing_form.created')
     });
     expect(response.body.locals.status.message).not.toBe('Your listing has been published.');
   });

@@ -137,6 +137,7 @@ return [
         'error_price' => 'Saisir un prix en argent ou un prix en crédit temps',
         'error_create' => 'Désolé, votre annonce n\'a pas pu être créée. Veuillez réessayer.',
         'created_pending' => 'Votre annonce a été créée et envoyée pour vérification. Vous seul pouvez la voir jusqu\'à ce qu\'un modérateur l\'approuve.',
+        'created' => 'Votre annonce a été publiée.',
         'pending_review_notice' => 'Cette annonce est en attente de vérification. Vous seul pouvez la voir jusqu\'à ce qu\'un modérateur l\'approuve.',
         'error_update' => 'Désolé, vos modifications n\'ont pas pu être enregistrées. Veuillez réessayer.',
         'error_suspended' => 'Votre compte vendeur est suspendu, vous ne pouvez donc pas créer de nouvelles annonces.',

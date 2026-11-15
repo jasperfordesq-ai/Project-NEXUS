@@ -40,6 +40,7 @@ const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 const { resolveBackendMediaUrl, flagEnabled } = require('../lib/accessible-shell');
 const { themeTagClasses, tagClassForColour } = require('../lib/theme-tags');
+const { listingCreatedStatus } = require('../lib/first-time');
 
 const { translateFields, preferences, translationBinding, validSavedTranslation, translateCommentTree } = require('../lib/ugc-translation');
 const router = express.Router();
@@ -1647,7 +1648,8 @@ router.post('/new', requireAuth, audit.listingCreate(), asyncRoute(async (req, r
     if (req.flash && secondaryFailures.length > 0) {
       req.flash('error', secondaryFailures.join(' '));
     }
-    return redirectTo(res, `/listings/${listingId}?status=listing-created`);
+    // The member's first offer or request opens with a confirmation panel (warmth phase 6, E8).
+    return redirectTo(res, `/listings/${listingId}?status=${listingCreatedStatus(result)}`);
   } catch (error) {
     if (isOnboardingRequired(error)) return redirectTo(res, '/onboarding');
     if (error instanceof ApiError && [400, 409, 422].includes(error.status)) {
@@ -1787,7 +1789,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     listingShareUrl: urlFor(res, `/listings/${listing.id}`),
     ...exchangeContext,
     status,
-    supplementalErrorMessage: ['listing-created', 'listing-updated'].includes(status) ? flashedError : null,
+    supplementalErrorMessage: ['listing-created', 'listing-created-first', 'listing-updated'].includes(status) ? flashedError : null,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { notFoundTitle: 'Listing not found' }));
