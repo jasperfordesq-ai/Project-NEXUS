@@ -16,12 +16,18 @@
  * Every existing test mocks `fetch`, so all of them passed throughout. The defect lived
  * entirely in the gap between the app and the server that serves it — this asserts the
  * serving rule exists, next to the page that depends on it.
+ *
+ * Since 15 Nov 2026 the page reads `/changelog-data/index.json` and one file per release
+ * from the same folder, not `/changelog.md`. The same gap applies to them, so the same
+ * check does. `/changelog.md` is still copied and still served, so its rule stays pinned.
  */
 
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+
+import { CHANGELOG_DATA_PATH } from './changelog/useChangelog';
 
 const frontendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 
@@ -45,12 +51,31 @@ describe('the server actually serves the file the Changelog page asks for', () =
     expect(body).toMatch(/default_type\s+text\/markdown;/);
   });
 
-  it('the page and the server rule name the same path', () => {
-    const page = readFileSync(path.join(frontendRoot, 'src/pages/public/ChangelogPage.tsx'), 'utf8');
-    const fetched = /fetch\(\s*'([^']+)'/.exec(page)?.[1];
+  it('blue/green nginx reads the per-release data files from disk, and 404s a missing one', () => {
+    const conf = config('nginx.bluegreen.conf');
 
-    expect(fetched).toBe('/changelog.md');
-    expect(config('nginx.bluegreen.conf')).toContain(`location = ${fetched}`);
+    // The page builds every address from this constant, so the rule is checked
+    // against the path the page really asks for.
+    expect(CHANGELOG_DATA_PATH).toBe('/changelog-data/');
+    const rule = `location ^~ ${CHANGELOG_DATA_PATH} {`;
+    expect(conf).toContain(rule);
+
+    const block = conf.slice(conf.indexOf(rule));
+    const body = block.slice(0, block.indexOf('}'));
+
+    // Never fall through to the SPA shell: a missing release must be a 404,
+    // which the page shows as "could not load", not as app markup.
+    expect(body).toMatch(/try_files\s+\$uri\s+=404;/);
+    expect(body).toMatch(/default_type\s+application\/json;/);
+  });
+
+  it('the build writes the data files where the page looks for them', () => {
+    const script = readFileSync(path.join(frontendRoot, 'scripts/copy-changelog.mjs'), 'utf8');
+    const folder = CHANGELOG_DATA_PATH.replace(/\//g, '');
+
+    expect(script).toContain(`'public', '${folder}'`);
+    // Generated at build time, so it must not be committed.
+    expect(readFileSync(path.join(frontendRoot, '.gitignore'), 'utf8')).toContain(`public/${folder}/`);
   });
 
   it('the single-colour config still resolves it too, so the two cannot drift apart', () => {

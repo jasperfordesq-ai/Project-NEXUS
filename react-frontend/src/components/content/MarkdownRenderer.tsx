@@ -9,7 +9,7 @@ import remarkGfm from "remark-gfm";
 interface MarkdownRendererProps {
   content: string;
   className?: string;
-  variant?: "default" | "changelog" | "knowledgeBase";
+  variant?: "default" | "changelog" | "changelogEntry" | "knowledgeBase";
 }
 
 const proseClasses = [
@@ -30,6 +30,24 @@ const changelogProseClasses = [
   "[&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:border [&_pre]:border-theme-default [&_pre]:bg-theme-elevated [&_pre]:p-4",
   "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
   "[&_hr]:my-8 [&_hr]:border-theme-default",
+].join(" ");
+
+// The detail of one change on the Changelog page, shown when its title is
+// opened. Compact, and without the card-per-bullet look of `changelog` above:
+// here a bullet is a nested point inside one change, not a change itself.
+const changelogEntryProseClasses = [
+  "changelog-entry-markdown",
+  "max-w-none text-sm text-theme-secondary wrap-anywhere",
+  "[&_p]:my-2 [&_p]:leading-7 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0",
+  "[&_a]:font-medium [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-4",
+  "[&_strong]:font-semibold [&_strong]:text-theme-primary",
+  "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5",
+  "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-5",
+  "[&_li]:leading-7",
+  "[&_li>p]:my-0",
+  "[&_code]:rounded-sm [&_code]:bg-theme-elevated [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[0.85em] [&_code]:font-medium [&_code]:text-accent",
+  "[&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:border [&_pre]:border-theme-default [&_pre]:bg-theme-elevated [&_pre]:p-3",
+  "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
 ].join(" ");
 
 const knowledgeBaseProseClasses = [
@@ -62,6 +80,8 @@ function classesForVariant(variant: MarkdownRendererProps["variant"]): string {
   switch (variant) {
     case "changelog":
       return changelogProseClasses;
+    case "changelogEntry":
+      return changelogEntryProseClasses;
     case "knowledgeBase":
       return knowledgeBaseProseClasses;
     default:

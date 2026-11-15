@@ -153,6 +153,19 @@ describe('MarkdownRenderer', () => {
     expect(wrapper.className).toContain('[&_li]:rounded-md');
   });
 
+  it('applies the compact presentation for the detail of one changelog entry', async () => {
+    const { MarkdownRenderer } = await import('./MarkdownRenderer');
+    const { container } = render(
+      <MarkdownRenderer content={'The detail, with `code.ts`.\n\n- a nested point'} variant="changelogEntry" />
+    );
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper.className).toContain('changelog-entry-markdown');
+    // A bullet here is a point inside one change, not a change of its own:
+    // it must not get the card look the whole-file variant gives each bullet.
+    expect(wrapper.className).toContain('[&_ul]:list-disc');
+    expect(wrapper.className).not.toContain('[&_li]:rounded-md');
+  });
+
   it('applies the knowledge base article presentation variant', async () => {
     const { MarkdownRenderer } = await import('./MarkdownRenderer');
     const { container } = render(

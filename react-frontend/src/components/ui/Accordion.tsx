@@ -106,6 +106,12 @@ export interface AccordionItemProps
   extends Omit<HeroAccordionItemProps, 'children' | 'id'> {
   children?: ReactNode;
   classNames?: LegacyAccordionItemClasses;
+  /**
+   * The level of the heading the row's button sits in (HeroUI's default is 3).
+   * Set it where the rows are not third-level headings in the page's outline,
+   * e.g. rows nested inside another accordion's panel.
+   */
+  headingLevel?: number;
   hideIndicator?: boolean;
   id?: HeroAccordionItemProps['id'];
   indicator?: ReactNode | ((props: { isOpen?: boolean; isDisabled?: boolean }) => ReactNode);
@@ -118,6 +124,7 @@ export function AccordionItem({
   children,
   className,
   classNames,
+  headingLevel,
   hideIndicator,
   id,
   indicator,
@@ -131,7 +138,7 @@ export function AccordionItem({
 
   return (
     <HeroAccordion.Item {...props} id={id} className={cn(resolvedClassNames.base, className as string | undefined)}>
-      <HeroAccordion.Heading className={resolvedClassNames.heading}>
+      <HeroAccordion.Heading className={resolvedClassNames.heading} level={headingLevel}>
         <HeroAccordion.Trigger className={cn('gap-3', resolvedClassNames.trigger)}>
           {startContent}
           <span className="flex min-w-0 flex-1 flex-col text-left">
