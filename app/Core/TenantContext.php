@@ -674,7 +674,7 @@ class TenantContext
             'trust-and-safety', 'account-deletion', 'child-safety', 'pilot-inquiry', 'pilot-apply', 'verify-certificate', 'developers',
             'regional-analytics', 'partner-analytics', 'pricing',
             // System / admin
-            'admin', 'admin-legacy', 'super-admin', 'broker', 'partner-timebanks', 'dev',
+            'admin', 'admin-legacy', 'super-admin', 'platform-team', 'broker', 'partner-timebanks', 'dev',
             'api', 'v2', 'assets', 'downloads', 'uploads',
             'cron', 'test-email', 'mobile', 'mobile-download', 'install-app', 'share-target',
             'migrate-messages',

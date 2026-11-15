@@ -40,7 +40,7 @@ final class SpaRouteSegments
         'newsletters', 'nexus-score', 'notifications', 'onboarding', 'onboarding-settings', 'operations',
         'organisations', 'page', 'pages', 'partner', 'partner-analytics', 'partner-timebanks',
         'partner-venues', 'password', 'performance', 'pilot-apply', 'pilot-inquiry', 'plans', 'platform',
-        'platform-capabilities', 'podcasts', 'polls', 'premium', 'pricing', 'privacy', 'profile',
+        'platform-capabilities', 'platform-team', 'podcasts', 'polls', 'premium', 'pricing', 'privacy', 'profile',
         'provisioning-requests', 'qualifications', 'regional-analytics', 'regional-points', 'register',
         'reports', 'residency-verifications', 'resources', 'retention', 'reviews', 'risk-tags',
         'safeguarding', 'safeguarding-options', 'saved', 'search', 'search-analytics', 'seed-generator',

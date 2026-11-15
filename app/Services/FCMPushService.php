@@ -755,7 +755,7 @@ class FCMPushService
         }
 
         $path = '/' . ltrim(rawurldecode((string) ($parts['path'] ?? '')), '/');
-        foreach (['/admin', '/admin-legacy', '/broker', '/super-admin', '/support-actions/confirm', '/password/reset', '/marketplace/reports'] as $blockedPrefix) {
+        foreach (['/admin', '/admin-legacy', '/broker', '/super-admin', '/platform-team', '/support-actions/confirm', '/password/reset', '/marketplace/reports'] as $blockedPrefix) {
             if ($path === $blockedPrefix || str_starts_with($path, $blockedPrefix . '/')) {
                 return '/notifications';
             }
@@ -862,7 +862,7 @@ class FCMPushService
             return false;
         }
         $segments = array_values(array_filter(explode('/', rawurldecode((string) ($parts['path'] ?? '')))));
-        $blocked = ['admin', 'admin-legacy', 'broker', 'super-admin', 'auth'];
+        $blocked = ['admin', 'admin-legacy', 'broker', 'super-admin', 'platform-team', 'auth'];
         foreach ($segments as $index => $segment) {
             if ($index > 1) {
                 break;

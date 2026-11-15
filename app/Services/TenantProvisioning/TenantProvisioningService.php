@@ -47,7 +47,7 @@ class TenantProvisioningService
     public const RESERVED_SLUGS = [
         'admin', 'api', 'www', 'app', 'mail', 'ftp', 'blog', 'status',
         'support', 'help', 'docs', 'agoris', 'hour-timebank', 'master',
-        'platform', 'super-admin', 'auth', 'login', 'register', 'static',
+        'platform', 'platform-team', 'super-admin', 'auth', 'login', 'register', 'static',
         'assets', 'cdn', 'media', 'public', 'private', 'internal',
         'test', 'staging', 'production', 'dev', 'local',
     ];

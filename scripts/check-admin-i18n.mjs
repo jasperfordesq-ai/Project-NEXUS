@@ -25,6 +25,7 @@ const require = createRequire(import.meta.url);
 const ts = require(join(PROJECT_ROOT, 'react-frontend', 'node_modules', 'typescript'));
 const ADMIN_SRC_DIR = join(PROJECT_ROOT, 'react-frontend', 'src', 'admin');
 const SUPER_ADMIN_SRC_DIR = join(PROJECT_ROOT, 'react-frontend', 'src', 'super-admin');
+const PLATFORM_TEAM_SRC_DIR = join(PROJECT_ROOT, 'react-frontend', 'src', 'platform-team');
 const LOCALES_DIR = join(PROJECT_ROOT, 'react-frontend', 'public', 'locales', 'en');
 const MODULE_REGISTRY_FILE = join(
   PROJECT_ROOT,
@@ -38,7 +39,7 @@ const MODULE_REGISTRY_FILE = join(
 
 const MODULE_IDS = readModuleIds(MODULE_REGISTRY_FILE);
 const LOCALE_KEYSETS = loadLocaleKeysets(LOCALES_DIR);
-const SOURCE_FILES = [ADMIN_SRC_DIR, SUPER_ADMIN_SRC_DIR]
+const SOURCE_FILES = [ADMIN_SRC_DIR, SUPER_ADMIN_SRC_DIR, PLATFORM_TEAM_SRC_DIR]
   .filter(existsSync)
   .flatMap((directory) => walkFiles(directory, /\.(ts|tsx)$/));
 const INDIRECT_REQUIREMENTS = readIndirectTranslationRequirements();

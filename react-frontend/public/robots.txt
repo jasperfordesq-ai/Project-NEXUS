@@ -352,6 +352,8 @@ Disallow: /admin-legacy/
 Disallow: /*/admin-legacy/
 Disallow: /super-admin/
 Disallow: /*/super-admin/
+Disallow: /platform-team/
+Disallow: /*/platform-team/
 
 # ── Test/legacy routes (nginx returns 410 or 301, but prevent fresh discovery) ──
 Disallow: /login-test$

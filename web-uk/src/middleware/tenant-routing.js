@@ -131,6 +131,7 @@ const RESERVED_CHILD_SEGMENTS = new Set([
   'polls',
   'podcasts',
   'platform',
+  'platform-team',
   'post',
   'premium',
   'pricing',

@@ -19,6 +19,7 @@ const BROWSER_ONLY_COMPONENTS = [
   '/admin-legacy/*',
   '/broker/*',
   '/super-admin/*',
+  '/platform-team/*',
   '/partner-timebanks/*',
   // Every staff email link carries the community slug first
   // (`/hour-timebank/admin/users?filter=pending`), which `/admin/*` alone never
@@ -29,6 +30,7 @@ const BROWSER_ONLY_COMPONENTS = [
   '/*/admin-legacy/*',
   '/*/broker/*',
   '/*/super-admin/*',
+  '/*/platform-team/*',
   '/*/partner-timebanks/*',
   '/auth/*',
   '/verify-identity/callback*',

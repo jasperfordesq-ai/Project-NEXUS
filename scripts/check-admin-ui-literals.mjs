@@ -33,6 +33,7 @@ const ts = require(path.join(ROOT, 'react-frontend', 'node_modules', 'typescript
 const SOURCE_ROOTS = [
   'react-frontend/src/admin',
   'react-frontend/src/super-admin',
+  'react-frontend/src/platform-team',
 ].map((relativePath) => path.join(ROOT, relativePath));
 
 const SHARED_SOURCE_FILES = [

@@ -27,6 +27,11 @@
             "comment": "Keep this browser-owned or staff-only flow out of the native app."
           },
           {
+            "/": "/platform-team/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
             "/": "/partner-timebanks/*",
             "exclude": true,
             "comment": "Keep this browser-owned or staff-only flow out of the native app."
@@ -48,6 +53,11 @@
           },
           {
             "/": "/*/super-admin/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
+            "/": "/*/platform-team/*",
             "exclude": true,
             "comment": "Keep this browser-owned or staff-only flow out of the native app."
           },

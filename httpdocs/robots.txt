@@ -9,6 +9,7 @@ Allow: /
 Disallow: /admin/
 Disallow: /admin-legacy/
 Disallow: /super-admin/
+Disallow: /platform-team/
 Disallow: /cron/
 Disallow: /api/
 Disallow: /laravel/health

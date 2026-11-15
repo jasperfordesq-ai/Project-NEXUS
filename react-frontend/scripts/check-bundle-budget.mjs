@@ -60,7 +60,7 @@ const startupImportBudgets = [
   },
   {
     file: 'src/index.css',
-    pattern: /@source\s+not\s+["']\.\/(?:admin|broker|caring|partners|super-admin)\/\*\*\//,
+    pattern: /@source\s+not\s+["']\.\/(?:admin|broker|caring|partners|platform-team|super-admin)\/\*\*\//,
     message: 'src/index.css must include panel source folders in the main Tailwind scan; late-loaded panel utility stylesheets corrupt the member header/footer after returning from admin.',
   },
   {
@@ -102,6 +102,11 @@ const startupImportBudgets = [
     file: 'src/super-admin/SuperAdminApp.tsx',
     pattern: /import\s+['"]\.\/super-admin\.css['"]/,
     message: 'SuperAdminApp.tsx must not import a lazy global super-admin stylesheet; panel utilities belong in the main Tailwind stylesheet to protect the member shell after panel navigation.',
+  },
+  {
+    file: 'src/platform-team/PlatformTeamApp.tsx',
+    pattern: /import\s+['"]\.\/platform-team\.css['"]/,
+    message: 'PlatformTeamApp.tsx must not import a lazy global platform-team stylesheet; panel utilities belong in the main Tailwind stylesheet to protect the member shell after panel navigation.',
   },
   {
     file: 'src/main.tsx',
@@ -577,6 +582,11 @@ const startupImportBudgets = [
     file: 'src/super-admin/SuperAdminApp.tsx',
     pattern: /useTranslation\([^)]*['"]admin['"]/,
     message: 'SuperAdminApp.tsx must not preload the monolithic admin locale namespace.',
+  },
+  {
+    file: 'src/platform-team/PlatformTeamApp.tsx',
+    pattern: /useTranslation\([^)]*['"]admin['"]/,
+    message: 'PlatformTeamApp.tsx must not preload the monolithic admin locale namespace.',
   },
   {
     file: 'src/broker/BrokerApp.tsx',
