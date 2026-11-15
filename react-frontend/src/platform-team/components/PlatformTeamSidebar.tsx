@@ -17,9 +17,14 @@
  * placement here follows the endpoint-by-endpoint read recorded in the design
  * (`.local-docs-archive/platform-team-panel/`, section 6.3).
  *
- * Item labels reuse the admin menu's wording (`admin_nav`), so a page is
- * called the same thing it was called in the admin panel. The panel's own
- * words (zones, groups, the brand) are in `platform_team`.
+ * Item labels reuse the wording of the menu a page came from (`admin_nav` for
+ * the admin panel, `super_admin` for the super admin panel), so a page is
+ * called the same thing it was called there. The panel's own words (zones,
+ * groups, the brand) are in `platform_team`.
+ *
+ * The menu is longer than a screen, so the current page's entry is scrolled
+ * into view: a page opened from a bookmark or an old address would otherwise
+ * show a menu with nothing highlighted.
  *
  * 🔴 The current page is found with `isOnPanelPath()`, never by comparing
  * `useLocation().pathname` with `tenantPath(path)`: inside the app's routes the
@@ -29,6 +34,7 @@
  * the Enterprise dashboard, and `/platform-team/plans/edit/3` marks Plans.
  */
 
+import { useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts';
@@ -40,20 +46,29 @@ import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import BarChart3 from 'lucide-react/icons/chart-column';
 import Building2 from 'lucide-react/icons/building-2';
 import CreditCard from 'lucide-react/icons/credit-card';
+import FileSearch from 'lucide-react/icons/file-search';
 import FileText from 'lucide-react/icons/file-text';
+import Globe from 'lucide-react/icons/globe';
+import Handshake from 'lucide-react/icons/handshake';
 import Heart from 'lucide-react/icons/heart';
 import KeyIcon from 'lucide-react/icons/key';
+import Landmark from 'lucide-react/icons/landmark';
+import Languages from 'lucide-react/icons/languages';
 import ListChecks from 'lucide-react/icons/list-checks';
 import Mail from 'lucide-react/icons/mail';
 import Menu from 'lucide-react/icons/menu';
 import PanelLeft from 'lucide-react/icons/panel-left';
 import PanelLeftClose from 'lucide-react/icons/panel-left-close';
+import ScrollText from 'lucide-react/icons/scroll-text';
 import Settings from 'lucide-react/icons/settings';
+import Shield from 'lucide-react/icons/shield';
 import ShieldCheck from 'lucide-react/icons/shield-check';
+import SlidersHorizontal from 'lucide-react/icons/sliders-horizontal';
 import Stethoscope from 'lucide-react/icons/stethoscope';
 import Target from 'lucide-react/icons/target';
 import Timer from 'lucide-react/icons/timer';
 import UserCheck from 'lucide-react/icons/user-check';
+import Wallet from 'lucide-react/icons/wallet';
 import Webhook from 'lucide-react/icons/webhook';
 import Wrench from 'lucide-react/icons/wrench';
 import Zap from 'lucide-react/icons/zap';
@@ -88,6 +103,8 @@ const P = '/platform-team';
 export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebarProps) {
   const { t } = useTranslation('platform_team');
   const { t: tNav } = useTranslation('admin_nav');
+  // The pages that came from the super admin panel keep the names they had in its menu.
+  const { t: tSuper } = useTranslation('super_admin');
   const location = useLocation();
   const { tenantPath, tenant } = useTenant();
 
@@ -114,8 +131,31 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           key: 'money',
           title: t('sidebar.group_money'),
           items: [
+            { label: tSuper('nav.billing_control'), icon: Wallet, path: `${P}/billing` },
+            { label: tSuper('nav.revenue_dashboard'), icon: BarChart3, path: `${P}/billing/revenue` },
             { label: tNav('plans_pricing'), icon: CreditCard, path: `${P}/plans` },
             { label: tNav('subscriptions'), icon: CreditCard, path: `${P}/plans/subscriptions` },
+          ],
+        },
+        {
+          key: 'communities',
+          title: t('sidebar.group_communities'),
+          items: [
+            { label: tSuper('nav.provisioning_queue'), icon: Building2, path: `${P}/provisioning-requests` },
+            { label: tSuper('nav.pilot_inquiries'), icon: FileSearch, path: `${P}/platform/pilot-inquiries` },
+            { label: tNav('platform_capabilities'), icon: SlidersHorizontal, path: `${P}/platform-capabilities` },
+          ],
+        },
+        {
+          // Links with other installations and other platforms. The name and
+          // the four entries are the super admin menu's own, unchanged.
+          key: 'federation',
+          title: tSuper('sidebar.section_federation'),
+          items: [
+            { label: tSuper('nav.federation_dashboard'), icon: Globe, path: `${P}/federation` },
+            { label: tSuper('nav.whitelist'), icon: Shield, path: `${P}/federation/whitelist` },
+            { label: tSuper('nav.partnerships'), icon: Handshake, path: `${P}/federation/partnerships` },
+            { label: tSuper('nav.federation_audit'), icon: ScrollText, path: `${P}/federation/audit` },
           ],
         },
         {
@@ -131,6 +171,21 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           items: [
             { label: tNav('enterprise_dashboard'), icon: Building2, path: `${P}/enterprise` },
             { label: tNav('permissions_list'), icon: ListChecks, path: `${P}/enterprise/permissions` },
+          ],
+        },
+        {
+          key: 'products',
+          title: t('sidebar.group_products'),
+          items: [
+            { label: t('nav.regional_analytics_subscriptions'), icon: BarChart3, path: `${P}/regional-analytics/subscriptions` },
+            { label: tSuper('nav.national_dashboard'), icon: Landmark, path: `${P}/national/kiss` },
+          ],
+        },
+        {
+          key: 'keys',
+          title: t('sidebar.group_keys'),
+          items: [
+            { label: tSuper('nav.platform_translation'), icon: Languages, path: `${P}/platform/translation` },
           ],
         },
       ],
@@ -192,6 +247,15 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
     .filter((path) => isOnPanelPath(location.pathname, path, tenantPath))
     .reduce<string | null>((best, path) => (best === null || path.length > best.length ? path : best), null);
 
+  // Bring the current page's entry into view (see the note at the top).
+  // `block: 'nearest'` does nothing when it is already on screen, so clicking
+  // an entry never makes the menu jump.
+  const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
+  useEffect(() => {
+    if (activePath === null) return;
+    activeLinkRef.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [activePath]);
+
   const renderItem = (item: NavItem) => {
     const active = item.path === activePath;
     const Icon = item.icon;
@@ -199,6 +263,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
       <li key={item.path}>
         <Link
           to={tenantPath(item.path)}
+          ref={active ? activeLinkRef : undefined}
           aria-current={active ? 'page' : undefined}
           aria-label={collapsed ? item.label : undefined}
           className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${

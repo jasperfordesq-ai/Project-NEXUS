@@ -18,6 +18,7 @@
     "brand": "فريق المنصة",
     "back_to_admin": "العودة إلى لوحة الإدارة",
     "back_to_super_admin": "العودة إلى لوحة المشرف العام",
+    "regional_analytics_subscriptions": "اشتراكات التحليلات الإقليمية",
     "tests": "الاختبارات"
   },
   "sidebar": {
@@ -28,8 +29,11 @@
     "zone_community": "هذا المجتمع: {{name}}",
     "group_health": "السلامة",
     "group_money": "المال",
+    "group_communities": "المجتمعات",
     "group_connections": "الروابط",
     "group_access": "الصلاحيات",
+    "group_products": "المنتجات",
+    "group_keys": "المفاتيح",
     "group_email": "البريد الإلكتروني",
     "group_joining": "الانضمام والأدوار",
     "group_site": "الموقع والبحث",

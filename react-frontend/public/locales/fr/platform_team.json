@@ -18,6 +18,7 @@
     "brand": "Équipe de la plateforme",
     "back_to_admin": "Retour à l'espace d'administration",
     "back_to_super_admin": "Retour à l'espace super administrateur",
+    "regional_analytics_subscriptions": "Abonnements à l'analytique régionale",
     "tests": "Tests"
   },
   "sidebar": {
@@ -28,8 +29,11 @@
     "zone_community": "Cette communauté : {{name}}",
     "group_health": "État",
     "group_money": "Argent",
+    "group_communities": "Communautés",
     "group_connections": "Connexions",
     "group_access": "Accès",
+    "group_products": "Produits",
+    "group_keys": "Clés",
     "group_email": "E-mail",
     "group_joining": "Adhésion et rôles",
     "group_site": "Site et recherche",

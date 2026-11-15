@@ -13,7 +13,6 @@ import { Suspense, lazy } from 'react';
 import { Route, Navigate, Outlet, useParams } from 'react-router-dom';
 import { LoadingScreen } from '@/components/feedback';
 import { useTenant } from '@/contexts';
-import { SuperAdminRoute } from './SuperAdminRoute';
 import { MovedToPlatformTeam } from '@/platform-team/MovedToPlatformTeam';
 import type { TenantFeatures } from '@/types';
 
@@ -259,7 +258,6 @@ const OnboardingSettings = lazy(() => import('./modules/system/OnboardingSetting
 const AiSettings = lazy(() => import('./modules/advanced/AiSettings'));
 const AlgorithmSettings = lazy(() => import('./modules/advanced/AlgorithmSettings'));
 const SeoOverview = lazy(() => import('./modules/advanced/SeoOverview'));
-const PlatformCapabilities = lazy(() => import('./modules/advanced/PlatformCapabilities'));
 
 // CRM module
 const CrmDashboard = lazy(() => import('./modules/crm/CrmDashboard'));
@@ -455,9 +453,8 @@ export function AdminRoutes() {
       {/* The "Integrations" breadcrumb links here; webhooks is its only page. */}
       <Route path="integrations" element={<MovedToPlatformTeam />} />
       <Route path="integrations/webhooks" element={<MovedToPlatformTeam />} />
-      <Route element={<SuperAdminRoute />}>
-        <Route path="platform-capabilities" element={<Lazy><PlatformCapabilities /></Lazy>} />
-      </Route>
+      {/* Platform capabilities — moved to the Platform team panel (15 Nov 2026); redirects. */}
+      <Route path="platform-capabilities" element={<MovedToPlatformTeam />} />
       <Route path="match-debug" element={<MovedToPlatformTeam />} />
 
       {/* ─── BILLING ─── */}
@@ -710,10 +707,10 @@ export function AdminRoutes() {
       <Route path="analytics/regional" element={<MovedToPlatformTeam />} />
 
       {/* AG71 — Pilot region inquiry funnel */}
-      <Route path="platform/pilot-inquiries" element={<TenantRedirect to="/super-admin/platform/pilot-inquiries" />} />
+      <Route path="platform/pilot-inquiries" element={<MovedToPlatformTeam />} />
 
       {/* AG44 — Self-service tenant provisioning queue (super-admin) */}
-      <Route path="provisioning-requests" element={<TenantRedirect to="/super-admin/provisioning-requests" />} />
+      <Route path="provisioning-requests" element={<MovedToPlatformTeam />} />
 
       {/* ─── EVENTS ─── */}
       <Route path="events" element={<Lazy><EventsAdmin /></Lazy>} />
@@ -779,7 +776,7 @@ export function AdminRoutes() {
       <Route path="super/*" element={<TenantSplatRedirect to="/super-admin" />} />
 
       {/* ─── NATIONAL CARING COMMUNITY FOUNDATION DASHBOARD (super-admin / national_admin) ─── */}
-      <Route path="national/kiss" element={<TenantRedirect to="/super-admin/national/kiss" />} />
+      <Route path="national/kiss" element={<MovedToPlatformTeam />} />
 
       {/* ─── ANALYTICS & REPORTING ─── */}
       <Route path="community-analytics" element={<Lazy><CommunityAnalytics /></Lazy>} />
@@ -794,7 +791,7 @@ export function AdminRoutes() {
       {/* Content Queue (moderation/queue) retired — now at /broker/moderation/queue. */}
 
       {/* ─── SELLABLE PRODUCTS — Regional Analytics (AG59) ─── */}
-      <Route path="regional-analytics/subscriptions" element={<TenantRedirect to="/super-admin/regional-analytics/subscriptions" />} />
+      <Route path="regional-analytics/subscriptions" element={<MovedToPlatformTeam />} />
 
       {/* ─── INTEGRATIONS — API Partners (AG60) ─── */}
       {/* Retired from the admin panel 2026-07-02 (no redirects) — now at

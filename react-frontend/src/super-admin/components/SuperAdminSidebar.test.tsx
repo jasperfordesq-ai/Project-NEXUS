@@ -16,11 +16,10 @@ vi.mock('@/contexts', () =>
       hasModule: vi.fn(() => true),
     }),
     /*
-     * 🔴 Required now that the panel is two-tiered. The platform-only sections
-     * (Federation, Commercial, Provisioning) render only for an explicit
-     * 'master' level, and createMockContexts defaults `user` to null — which
-     * resolves to 'none' and hides them. This file asserts the FULL platform
-     * navigation, so it must act as a platform super-admin.
+     * Acts as a platform super-admin ('master'). Since 15 Nov 2026 the menu is
+     * the same for every caller: the platform-only sections (Federation,
+     * Commercial, Provisioning) moved to the Platform team panel, and the cases
+     * below assert they are gone even for this account.
      */
     // Cast: only `user` matters here, and a partial AuthContext shape would trip
     // the test-type ratchet (which is shrink-only, so it must not grow).
@@ -60,14 +59,14 @@ describe('SuperAdminSidebar — expanded', () => {
     expect(all.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders the Federation section heading', () => {
+  it('no longer renders a Federation section (moved to the Platform team panel)', () => {
     render(<SuperAdminSidebar {...defaultProps} />);
-    expect(screen.getByText('Federation')).toBeInTheDocument();
+    expect(screen.queryByText('Federation')).not.toBeInTheDocument();
   });
 
-  it('renders the Commercial section heading', () => {
+  it('no longer renders a Commercial section (moved to the Platform team panel)', () => {
     render(<SuperAdminSidebar {...defaultProps} />);
-    expect(screen.getByText('Commercial')).toBeInTheDocument();
+    expect(screen.queryByText('Commercial')).not.toBeInTheDocument();
   });
 
   // Overview section heading is intentionally hidden (section.key === 'overview')
@@ -85,7 +84,6 @@ describe('SuperAdminSidebar — expanded', () => {
 
   it('renders a Dashboard link pointing to /test/super-admin', () => {
     render(<SuperAdminSidebar {...defaultProps} />);
-    // Multiple "Dashboard" links exist (main + federation); find by href
     const links = screen.getAllByRole('link', { name: 'Dashboard' });
     const dashLink = links.find((l) => l.getAttribute('href') === '/test/super-admin');
     expect(dashLink).toBeDefined();
@@ -106,23 +104,20 @@ describe('SuperAdminSidebar — expanded', () => {
     expect(link).toHaveAttribute('href', '/test/super-admin/users');
   });
 
-  it('renders a Federation Dashboard link pointing to /test/super-admin/federation', () => {
+  it('has one Dashboard link only — the federation dashboard moved out', () => {
     render(<SuperAdminSidebar {...defaultProps} />);
     const links = screen.getAllByRole('link', { name: 'Dashboard' });
-    const fedLink = links.find((l) => l.getAttribute('href') === '/test/super-admin/federation');
-    expect(fedLink).toBeDefined();
+    expect(links.map((l) => l.getAttribute('href'))).toEqual(['/test/super-admin']);
   });
 
-  it('renders a Billing Control link', () => {
+  it('no longer renders a Billing Control link', () => {
     render(<SuperAdminSidebar {...defaultProps} />);
-    const link = screen.getByRole('link', { name: 'Billing Control' });
-    expect(link).toHaveAttribute('href', '/test/super-admin/billing');
+    expect(screen.queryByRole('link', { name: 'Billing Control' })).not.toBeInTheDocument();
   });
 
-  it('renders a Provisioning Queue link', () => {
+  it('no longer renders a Provisioning Queue link', () => {
     render(<SuperAdminSidebar {...defaultProps} />);
-    const link = screen.getByRole('link', { name: 'Provisioning Queue' });
-    expect(link).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Provisioning Queue' })).not.toBeInTheDocument();
   });
 
   it('renders an Audit Log link', () => {

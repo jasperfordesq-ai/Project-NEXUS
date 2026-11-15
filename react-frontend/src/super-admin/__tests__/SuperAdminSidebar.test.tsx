@@ -11,9 +11,9 @@ vi.mock('@/contexts', () => ({
   useTenant: vi.fn(() => ({
     tenantPath: (path: string) => `/test${path}`,
   })),
-  // The sidebar reads the caller's super-panel level to decide whether to show
-  // the platform-only sections (federation, commercial, provisioning). A platform
-  // super-admin sees everything; see the regional cases below.
+  // The menu no longer depends on the caller's super-panel level: the
+  // platform-only sections (federation, commercial, provisioning) moved to the
+  // Platform team panel on 15 Nov 2026, so every caller sees the same entries.
   useAuth: vi.fn(() => ({ user: { is_super_admin: true } })),
 }));
 
@@ -109,7 +109,44 @@ describe('SuperAdminSidebar', () => {
     });
   });
 
-  it('keeps every section for an explicit platform-level caller', () => {
+  /**
+   * 🔴 One tier since 15 Nov 2026. The platform-wide pages moved to the Platform
+   * team panel, so a global super admin ('master') and a tenant super admin
+   * ('regional') are offered exactly the same six pages here.
+   */
+  function panelLinks(user: Record<string, unknown>): string[] {
+    vi.mocked(useAuth).mockReturnValue({ user } as never);
+    const { unmount } = render(
+      <MemoryRouter initialEntries={['/test/super-admin']}>
+        <SuperAdminSidebar collapsed={false} onToggle={vi.fn()} />
+      </MemoryRouter>,
+    );
+    const hrefs = screen
+      .getAllByRole('navigation')[0]!
+      .querySelectorAll('a');
+    const list = Array.from(hrefs).map((a) => a.getAttribute('href') ?? '');
+    unmount();
+    return list;
+  }
+
+  const SIX_PAGES = [
+    '/test/super-admin',
+    '/test/super-admin/tenants',
+    '/test/super-admin/tenants/hierarchy',
+    '/test/super-admin/users',
+    '/test/super-admin/bulk',
+    '/test/super-admin/audit',
+  ];
+
+  it('offers a global super admin exactly the six branch pages', () => {
+    expect(panelLinks({ is_super_admin: true, super_panel_level: 'master' })).toEqual(SIX_PAGES);
+  });
+
+  it('offers a tenant super admin the same six pages', () => {
+    expect(panelLinks({ is_tenant_super_admin: true, super_panel_level: 'regional' })).toEqual(SIX_PAGES);
+  });
+
+  it('no longer lists the platform-wide pages, even for a global super admin', () => {
     vi.mocked(useAuth).mockReturnValue({
       user: { is_super_admin: true, super_panel_level: 'master' },
     } as never);
@@ -120,14 +157,19 @@ describe('SuperAdminSidebar', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('link', { name: 'Billing Control' })).toBeInTheDocument();
-    // 🔴 Assert the section HEADING, not a "Federation Dashboard" link — that
-    // label does not exist. `nav.federation_dashboard` is literally "Dashboard",
-    // which collides with the Overview entry. An earlier version of this file
-    // queried the non-existent name, which made the negative assertions in the
-    // regional cases below pass vacuously.
-    expect(screen.getByText('Federation')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Whitelist' })).toBeInTheDocument();
+    // Section headings plus unambiguous items. Do NOT assert on a "Federation
+    // Dashboard" link: no such label exists (`nav.federation_dashboard` is
+    // literally "Dashboard"), so it would pass whatever the component did.
+    expect(screen.queryByText('Federation')).toBeNull();
+    expect(screen.queryByText('Commercial')).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Billing Control' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Revenue Dashboard' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Whitelist' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Partnerships' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Provisioning Queue' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Pilot Inquiries' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Translation key' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'National Dashboard' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Bulk Ops' })).toBeInTheDocument();
   });
 

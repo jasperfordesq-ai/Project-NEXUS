@@ -90,8 +90,25 @@ vi.mock('@/admin/modules/dashboard/AdminDashboard', () => ({ default: () => <div
 vi.mock('@/admin/modules/billing/BillingPage', () => ({ default: () => <div>page:BillingPage</div> }));
 vi.mock('@/admin/modules/impact/ImpactReport', () => ({ default: () => <div>page:ImpactReport</div> }));
 vi.mock('@/admin/modules/advanced/SeoOverview', () => ({ default: () => <div>page:SeoOverview</div> }));
+// Phase 2: the platform-wide half of the super admin panel, and what stays there.
+vi.mock('@/admin/modules/super/FederationControls', () => ({ default: () => <div>page:FederationControls</div> }));
+vi.mock('@/admin/modules/super/FederationWhitelist', () => ({ default: () => <div>page:FederationWhitelist</div> }));
+vi.mock('@/admin/modules/super/SuperPartnerships', () => ({ default: () => <div>page:SuperPartnerships</div> }));
+vi.mock('@/admin/modules/super/FederationAuditLog', () => ({ default: () => <div>page:FederationAuditLog</div> }));
+vi.mock('@/admin/modules/billing/BillingControl', () => ({ default: () => <div>page:BillingControl</div> }));
+vi.mock('@/admin/modules/billing/RevenueDashboard', () => ({ default: () => <div>page:RevenueDashboard</div> }));
+vi.mock('@/admin/modules/super/PilotInquiryAdminPage', () => ({ default: () => <div>page:PilotInquiryAdminPage</div> }));
+vi.mock('@/admin/modules/super/PlatformTranslationKeyPage', () => ({ default: () => <div>page:PlatformTranslationKeyPage</div> }));
+vi.mock('@/admin/modules/provisioning/ProvisioningRequestsPage', () => ({ default: () => <div>page:ProvisioningRequestsPage</div> }));
+vi.mock('@/admin/modules/national/NationalKissDashboardPage', () => ({ default: () => <div>page:NationalKissDashboardPage</div> }));
+vi.mock('@/admin/modules/regional-analytics/RegionalAnalyticsAdminPage', () => ({ default: () => <div>page:RegionalAnalyticsAdminPage</div> }));
+vi.mock('@/admin/modules/advanced/PlatformCapabilities', () => ({ default: () => <div>page:PlatformCapabilities</div> }));
+vi.mock('@/admin/modules/super/SuperDashboard', () => ({ default: () => <div>page:SuperDashboard</div> }));
+vi.mock('@/admin/modules/super/FederationTenantFeatures', () => ({ default: () => <div>page:FederationTenantFeatures</div> }));
 
 import { AdminRoutes } from '@/admin/routes';
+import { SuperAdminRoute } from '@/admin/SuperAdminRoute';
+import { SuperAdminRoutes } from '@/super-admin/SuperAdminRoutes';
 import { PlatformTeamRoute } from './PlatformTeamRoute';
 import { PlatformTeamRoutes } from './PlatformTeamRoutes';
 
@@ -106,6 +123,9 @@ function renderAt(address: string) {
       <Routes>
         <Route element={<><Outlet /><LocationProbe /></>}>
           <Route path="/test/admin/*">{AdminRoutes()}</Route>
+          <Route path="/test/super-admin/*" element={<SuperAdminRoute />}>
+            {SuperAdminRoutes()}
+          </Route>
           <Route path="/test/platform-team/*" element={<PlatformTeamRoute />}>
             {PlatformTeamRoutes()}
           </Route>
@@ -165,6 +185,25 @@ const PAGES: Array<[string, string]> = [
   ['match-debug', 'page:MatchDebugPanel'],
   ['tests', 'page:TestRunner'],
 ];
+
+// Phase 2 — the platform-wide half of the super admin panel. Same tails as
+// they had under `/super-admin`.
+const SUPER_PAGES: Array<[string, string]> = [
+  ['federation', 'page:FederationControls'],
+  ['federation/whitelist', 'page:FederationWhitelist'],
+  ['federation/partnerships', 'page:SuperPartnerships'],
+  ['federation/audit', 'page:FederationAuditLog'],
+  ['billing', 'page:BillingControl'],
+  ['billing/revenue', 'page:RevenueDashboard'],
+  ['platform/pilot-inquiries', 'page:PilotInquiryAdminPage'],
+  ['platform/translation', 'page:PlatformTranslationKeyPage'],
+  ['provisioning-requests', 'page:ProvisioningRequestsPage'],
+  ['national/kiss', 'page:NationalKissDashboardPage'],
+  ['regional-analytics/subscriptions', 'page:RegionalAnalyticsAdminPage'],
+];
+
+const GLOBAL_SUPER_ADMIN_NOT_ON_TEAM = { id: 3, role: 'super_admin', is_super_admin: true, super_panel_level: 'master' };
+const TENANT_SUPER_ADMIN = { id: 6, role: 'admin', is_tenant_super_admin: true, super_panel_level: 'regional' };
 
 beforeEach(() => {
   auth.user = { ...PLATFORM_TEAM };
@@ -241,6 +280,84 @@ describe('someone who is not on the platform team', () => {
     auth.user = { id: 5, role: 'member' };
     renderAt('/test/platform-team/cron-jobs');
     expect(await screen.findByText('page:Dashboard')).toBeInTheDocument();
+  });
+});
+
+describe('the platform-wide half of the super admin panel lives in the Platform team panel', () => {
+  it.each([...SUPER_PAGES, ['platform-capabilities', 'page:PlatformCapabilities'] as [string, string]])(
+    '/platform-team/%s opens for the platform team',
+    async (tail, page) => {
+      renderAt(`/test/platform-team/${tail}`);
+      expect(await screen.findByText(page)).toBeInTheDocument();
+      expect(await address()).toBe(`/test/platform-team/${tail}`);
+    },
+  );
+
+  it.each(SUPER_PAGES)('/super-admin/%s lands on the same page in the panel', async (tail, page) => {
+    renderAt(`/test/super-admin/${tail}`);
+    expect(await screen.findByText(page)).toBeInTheDocument();
+    expect(await address()).toBe(`/test/platform-team/${tail}`);
+  });
+
+  it('keeps the query string and the fragment of an old super admin bookmark', async () => {
+    renderAt('/test/super-admin/billing/revenue?year=2026#totals');
+    expect(await screen.findByText('page:RevenueDashboard')).toBeInTheDocument();
+    expect(await address()).toBe('/test/platform-team/billing/revenue?year=2026#totals');
+  });
+
+  it('forwards the old admin address of Platform capabilities', async () => {
+    renderAt('/test/admin/platform-capabilities');
+    expect(await screen.findByText('page:PlatformCapabilities')).toBeInTheDocument();
+    expect(await address()).toBe('/test/platform-team/platform-capabilities');
+  });
+
+  // These four admin addresses were already redirects into the super admin
+  // panel; they now go straight to where the page is.
+  it.each([
+    ['platform/pilot-inquiries', 'page:PilotInquiryAdminPage'],
+    ['provisioning-requests', 'page:ProvisioningRequestsPage'],
+    ['national/kiss', 'page:NationalKissDashboardPage'],
+    ['regional-analytics/subscriptions', 'page:RegionalAnalyticsAdminPage'],
+  ])('the older /admin/%s address lands in the panel too', async (tail, page) => {
+    renderAt(`/test/admin/${tail}`);
+    expect(await screen.findByText(page)).toBeInTheDocument();
+    expect(await address()).toBe(`/test/platform-team/${tail}`);
+  });
+});
+
+// Review Focus 4: an old super admin address must never leave someone on a
+// blank page or throw them out of the panel they are allowed in.
+describe('someone in the super admin panel who is not on the platform team', () => {
+  it.each(SUPER_PAGES)('a tenant super admin typing /super-admin/%s lands on the super admin home page', async (tail, page) => {
+    auth.user = { ...TENANT_SUPER_ADMIN };
+    renderAt(`/test/super-admin/${tail}`);
+    expect(await screen.findByText('page:SuperDashboard')).toBeInTheDocument();
+    expect(await address()).toBe('/test/super-admin');
+    expect(screen.queryByText(page)).not.toBeInTheDocument();
+  });
+
+  it.each(SUPER_PAGES)('a global super admin who is not on the team typing /super-admin/%s lands there too', async (tail, page) => {
+    auth.user = { ...GLOBAL_SUPER_ADMIN_NOT_ON_TEAM };
+    renderAt(`/test/super-admin/${tail}`);
+    expect(await screen.findByText('page:SuperDashboard')).toBeInTheDocument();
+    expect(await address()).toBe('/test/super-admin');
+    expect(screen.queryByText(page)).not.toBeInTheDocument();
+  });
+
+  it('a global super admin who is not on the team cannot open Platform capabilities by its old address', async () => {
+    auth.user = { ...GLOBAL_SUPER_ADMIN_NOT_ON_TEAM };
+    renderAt('/test/admin/platform-capabilities');
+    expect(await screen.findByText('page:AdminDashboard')).toBeInTheDocument();
+    expect(await address()).toBe('/test/admin');
+  });
+
+  // The per-community federation switches did NOT move: the server confines
+  // them to the caller's own branch, so a tenant super admin may use them.
+  it('a tenant super admin still opens a community\'s federation switches in the super admin panel', async () => {
+    auth.user = { ...TENANT_SUPER_ADMIN };
+    renderAt('/test/super-admin/federation/tenant/12/features');
+    expect(await screen.findByText('page:FederationTenantFeatures')).toBeInTheDocument();
+    expect(await address()).toBe('/test/super-admin/federation/tenant/12/features');
   });
 });
 

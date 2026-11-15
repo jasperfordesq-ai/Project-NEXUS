@@ -4,11 +4,12 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
-const { mockAdminFederation } = vi.hoisted(() => ({
+const { mockAdminFederation, authState } = vi.hoisted(() => ({
   mockAdminFederation: { getSettings: vi.fn() },
+  authState: { user: null as Record<string, unknown> | null },
 }));
 
 vi.mock('@/admin/api/adminApi', () => ({
@@ -24,6 +25,8 @@ vi.mock('@/contexts', () =>
       hasFeature: vi.fn(() => true),
       hasModule: vi.fn(() => true),
     }),
+    // Cast: only `user` matters here (the test-type ratchet is shrink-only).
+    useAuth: () => ({ user: authState.user } as never),
   })
 );
 
@@ -45,6 +48,7 @@ const NOT_AFFECTED = 'Partnerships with other communities on this platform are n
 describe('ExternalFederationBanner', () => {
   beforeEach(async () => {
     vi.resetAllMocks();
+    authState.user = null;
     goTo('/test/partner-timebanks/external-partners');
     // The hook shares one in-flight request across consumers; drop it so each
     // test observes its own fixture rather than the previous test's.
@@ -125,6 +129,35 @@ describe('ExternalFederationBanner', () => {
     expect(alarm).toHaveTextContent('Federation emergency lockdown is active');
     expect(alarm.className).toContain('danger');
     expect(alarm).not.toHaveTextContent(NOT_AFFECTED);
+  });
+
+  // The switch lives on the Federation dashboard, in the Platform team panel
+  // since 15 Nov 2026. Only the platform team can open it, so only they are
+  // offered the link; anyone else would follow it and land somewhere else.
+  it('offers the platform team a link to the Federation dashboard in the Platform team panel', async () => {
+    authState.user = { id: 1, role: 'super_admin', is_super_admin: true, is_god: true };
+    mockAdminFederation.getSettings.mockResolvedValue(settings(OFF));
+    const { ExternalFederationBanner } = await import('./ExternalFederationBanner');
+    render(<ExternalFederationBanner />);
+
+    const note = await screen.findByRole('status');
+    expect(within(note).getByRole('link')).toHaveAttribute('href', '/test/platform-team/federation');
+  });
+
+  it.each([
+    ['a community admin', { id: 2, role: 'admin' }],
+    ['a tenant super admin', { id: 3, role: 'admin', is_tenant_super_admin: true, super_panel_level: 'regional' }],
+    ['a global super admin who is not on the platform team', { id: 4, role: 'super_admin', is_super_admin: true }],
+    ['an account with is_god but no super admin', { id: 5, role: 'admin', is_god: true }],
+  ])('offers %s no link, only the notice', async (_who, user) => {
+    authState.user = user;
+    mockAdminFederation.getSettings.mockResolvedValue(settings(OFF));
+    const { ExternalFederationBanner } = await import('./ExternalFederationBanner');
+    render(<ExternalFederationBanner />);
+
+    const note = await screen.findByRole('status');
+    expect(note).toHaveTextContent(NOT_AFFECTED);
+    expect(within(note).queryByRole('link')).not.toBeInTheDocument();
   });
 
   it('stays silent when external federation is live', async () => {

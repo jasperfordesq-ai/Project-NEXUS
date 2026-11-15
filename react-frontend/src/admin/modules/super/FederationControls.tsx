@@ -298,9 +298,9 @@ export function FederationControls() {
   };
 
   const quickLinks = [
-    { label: t('super.link_whitelist'), description: t('super.link_whitelist_desc'), href: '/super-admin/federation/whitelist', icon: ListChecks, color: 'success' as const },
-    { label: t('super.link_partnerships'), description: t('super.link_partnerships_desc'), href: '/super-admin/federation/partnerships', icon: Handshake, color: 'default' as const },
-    { label: t('super.link_audit_log'), description: t('super.link_audit_log_desc'), href: '/super-admin/federation/audit', icon: Activity, color: 'warning' as const },
+    { label: t('super.link_whitelist'), description: t('super.link_whitelist_desc'), href: '/platform-team/federation/whitelist', icon: ListChecks, color: 'success' as const },
+    { label: t('super.link_partnerships'), description: t('super.link_partnerships_desc'), href: '/platform-team/federation/partnerships', icon: Handshake, color: 'default' as const },
+    { label: t('super.link_audit_log'), description: t('super.link_audit_log_desc'), href: '/platform-team/federation/audit', icon: Activity, color: 'warning' as const },
   ];
 
   return (
@@ -824,7 +824,7 @@ export function FederationControls() {
             </div>
             <Button
               as={Link}
-              to={tenantPath('/super-admin/federation/whitelist')}
+              to={tenantPath('/platform-team/federation/whitelist')}
               size="sm"
               variant="tertiary"
               endContent={<ArrowRight aria-hidden="true" size={14} />}
@@ -875,7 +875,7 @@ export function FederationControls() {
             </div>
             <Button
               as={Link}
-              to={tenantPath('/super-admin/federation/partnerships')}
+              to={tenantPath('/platform-team/federation/partnerships')}
               size="sm"
               variant="tertiary"
               endContent={<ArrowRight aria-hidden="true" size={14} />}

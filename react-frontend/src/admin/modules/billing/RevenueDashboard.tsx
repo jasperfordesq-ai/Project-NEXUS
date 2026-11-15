@@ -20,7 +20,7 @@ import { BillingDevelopmentNotice } from './BillingDevelopmentNotice';
 
 /**
  * RevenueDashboard
- * God-only page: platform-wide billing overview at /super-admin/billing/revenue
+ * God-only page: platform-wide billing overview at /platform-team/billing/revenue
  */
 
 
@@ -191,7 +191,7 @@ export function RevenueDashboard() {
         </div>
         <Button
           as={Link}
-          to={tenantPath('/super-admin/billing')}
+          to={tenantPath('/platform-team/billing')}
           variant="tertiary"
           size="sm"
         >

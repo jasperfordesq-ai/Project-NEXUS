@@ -18,6 +18,7 @@
     "brand": "Foireann an ardáin",
     "back_to_admin": "Ar ais chuig an bpainéal riaracháin",
     "back_to_super_admin": "Ar ais chuig painéal an fhor-riarthóra",
+    "regional_analytics_subscriptions": "Síntiúis don anailís réigiúnach",
     "tests": "Tástálacha"
   },
   "sidebar": {
@@ -28,8 +29,11 @@
     "zone_community": "An pobal seo: {{name}}",
     "group_health": "Sláinte",
     "group_money": "Airgead",
+    "group_communities": "Pobail",
     "group_connections": "Naisc",
     "group_access": "Rochtain",
+    "group_products": "Táirgí",
+    "group_keys": "Eochracha",
     "group_email": "Ríomhphost",
     "group_joining": "Ballraíocht agus róil",
     "group_site": "Suíomh agus cuardach",

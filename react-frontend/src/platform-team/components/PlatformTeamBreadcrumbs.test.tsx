@@ -94,6 +94,47 @@ describe('PlatformTeamBreadcrumbs', () => {
     ]);
   });
 
+  // A step that is only part of an address, not a page of its own, must not be
+  // a link: it would open the panel's "not in this panel" page.
+  it.each([
+    ['/platform-team/seo/audit', 1],
+    ['/platform-team/settings/registration-policy', 1],
+    ['/platform-team/analytics/regional', 1],
+    ['/platform-team/platform/translation', 1],
+    ['/platform-team/national/kiss', 1],
+    ['/platform-team/regional-analytics/subscriptions', 1],
+    ['/platform-team/menus/builder/7', 2],
+    ['/platform-team/deliverability/edit/12', 2],
+  ])('does not link the step of %s that is not a page', (pathname, index) => {
+    state.pathname = pathname;
+    render(<PlatformTeamBreadcrumbs />);
+
+    expect(crumbs()[index]![1]).toBeNull();
+    // The panel itself is still a link.
+    expect(crumbs()[0]![1]).toBe('/test/platform-team');
+  });
+
+  it('still links a step that IS a page', () => {
+    state.pathname = '/platform-team/federation/whitelist';
+    render(<PlatformTeamBreadcrumbs />);
+
+    expect(crumbs()[1]![1]).toBe('/test/platform-team/federation');
+  });
+
+  // Pages that came from the super admin panel, or whose admin wording would
+  // mislead, are named with the wording their own menu entry uses.
+  it.each([
+    ['/platform-team/platform/translation', 'super_admin:breadcrumbs.translation'],
+    ['/platform-team/platform-capabilities', 'admin_nav:platform_capabilities'],
+    ['/platform-team/national/kiss', 'super_admin:nav.national_dashboard'],
+  ])('names the last step of %s', (pathname, label) => {
+    state.pathname = pathname;
+    render(<PlatformTeamBreadcrumbs />);
+
+    const all = crumbs();
+    expect(all[all.length - 1]![0]).toBe(label);
+  });
+
   it('shows the address step itself when there is no wording for it, never a blank', () => {
     state.pathname = '/platform-team/something-new/logs';
     render(<PlatformTeamBreadcrumbs />);

@@ -40,6 +40,12 @@ const PLATFORM_ZONE = [
   'enterprise/monitoring', 'cron-jobs', 'cron-jobs/logs', 'cron-jobs/setup', 'cron-jobs/settings',
   'seo/prerender', '404-errors', 'tests', 'plans', 'plans/subscriptions', 'integrations/webhooks',
   'enterprise', 'enterprise/permissions',
+  // Moved in from the super admin panel's platform-wide half (phase 2).
+  'billing', 'billing/revenue',
+  'provisioning-requests', 'platform/pilot-inquiries', 'platform-capabilities',
+  'federation', 'federation/whitelist', 'federation/partnerships', 'federation/audit',
+  'regional-analytics/subscriptions', 'national/kiss',
+  'platform/translation',
 ];
 const COMMUNITY_ZONE = [
   'email-settings', 'email-deliverability', 'deliverability', 'settings/registration-policy', 'enterprise/roles',
@@ -120,6 +126,51 @@ describe('PlatformTeamSidebar', () => {
     render(<PlatformTeamSidebar collapsed={false} onToggle={() => {}} />);
 
     expect(currentLinks()).toEqual(['/test/platform-team/enterprise/roles']);
+  });
+
+  it('marks Federation audit, not the Federation dashboard, on the audit page', () => {
+    locationState.value = { pathname: '/platform-team/federation/audit', search: '', hash: '' };
+    render(<PlatformTeamSidebar collapsed={false} onToggle={() => {}} />);
+
+    expect(currentLinks()).toEqual(['/test/platform-team/federation/audit']);
+  });
+
+  it('marks Revenue, not Billing control, on the revenue page', () => {
+    locationState.value = { pathname: '/platform-team/billing/revenue', search: '', hash: '' };
+    render(<PlatformTeamSidebar collapsed={false} onToggle={() => {}} />);
+
+    expect(currentLinks()).toEqual(['/test/platform-team/billing/revenue']);
+  });
+
+  // The menu is longer than the screen. A page opened from a bookmark or an
+  // old address must not leave its highlighted entry off-screen.
+  it('brings the current page\'s entry into view', () => {
+    const scrollIntoView = vi.fn();
+    const original = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = scrollIntoView;
+    try {
+      locationState.value = { pathname: '/platform-team/match-debug', search: '', hash: '' };
+      render(<PlatformTeamSidebar collapsed={false} onToggle={() => {}} />);
+
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+      expect(scrollIntoView.mock.contexts[0]).toBe(
+        screen.getAllByRole('link').find((a) => a.getAttribute('aria-current') === 'page'),
+      );
+    } finally {
+      Element.prototype.scrollIntoView = original;
+    }
+  });
+
+  it('does not scroll the menu on the panel\'s own front page', () => {
+    const scrollIntoView = vi.fn();
+    const original = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = scrollIntoView;
+    try {
+      render(<PlatformTeamSidebar collapsed={false} onToggle={() => {}} />);
+      expect(scrollIntoView).not.toHaveBeenCalled();
+    } finally {
+      Element.prototype.scrollIntoView = original;
+    }
   });
 
   it('marks nothing on the panel\'s own front page', () => {

@@ -62,6 +62,7 @@ function renderAdminRoutes(initialEntry: string) {
           {AdminRoutes()}
         </Route>
         <Route path="/test/super-admin/*" element={<div data-testid="new-super-admin-route">New Super Admin Route</div>} />
+        <Route path="/test/platform-team/*" element={<div data-testid="platform-team-route">Platform Team Route</div>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -74,9 +75,19 @@ describe('super admin legacy redirects', () => {
     expect(await screen.findByTestId('new-super-admin-route')).toBeInTheDocument();
   });
 
-  it('redirects old standalone admin super-admin URLs to their new super-admin paths', async () => {
-    renderAdminRoutes('/test/admin/provisioning-requests');
+  // These standalone admin addresses used to forward into the super admin
+  // panel. Their pages moved to the Platform team panel on 15 Nov 2026, so the
+  // old addresses now go straight there (one hop, not two).
+  it.each([
+    '/test/admin/provisioning-requests',
+    '/test/admin/platform/pilot-inquiries',
+    '/test/admin/national/kiss',
+    '/test/admin/regional-analytics/subscriptions',
+    '/test/admin/platform-capabilities',
+  ])('redirects the old standalone address %s into the Platform team panel', async (address) => {
+    renderAdminRoutes(address);
 
-    expect(await screen.findByTestId('new-super-admin-route')).toBeInTheDocument();
+    expect(await screen.findByTestId('platform-team-route')).toBeInTheDocument();
+    expect(screen.queryByTestId('new-super-admin-route')).not.toBeInTheDocument();
   });
 });

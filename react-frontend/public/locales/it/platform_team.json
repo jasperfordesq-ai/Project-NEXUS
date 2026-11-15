@@ -18,6 +18,7 @@
     "brand": "Team della piattaforma",
     "back_to_admin": "Torna al pannello di amministrazione",
     "back_to_super_admin": "Torna al pannello del super amministratore",
+    "regional_analytics_subscriptions": "Abbonamenti all'analisi regionale",
     "tests": "Test"
   },
   "sidebar": {
@@ -28,8 +29,11 @@
     "zone_community": "Questa comunità: {{name}}",
     "group_health": "Stato",
     "group_money": "Denaro",
+    "group_communities": "Comunità",
     "group_connections": "Collegamenti",
     "group_access": "Accesso",
+    "group_products": "Prodotti",
+    "group_keys": "Chiavi",
     "group_email": "Email",
     "group_joining": "Adesione e ruoli",
     "group_site": "Sito e ricerca",

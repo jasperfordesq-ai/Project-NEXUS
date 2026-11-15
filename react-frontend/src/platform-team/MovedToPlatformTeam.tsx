@@ -14,7 +14,10 @@
  * the query and the fragment, which is why this does not reuse them.)
  *
  * The target is behind PlatformTeamRoute, so someone who is not on the
- * platform team is sent on to their own panel from there.
+ * platform team is sent on to their own panel from there. The one exception
+ * is `from="super-admin"`: a tenant super admin, or a global super admin who
+ * is not on the platform team, is kept in the super admin panel (its home
+ * page) rather than bounced out of it.
  *
  * `from` is the panel segment the page used to live under. The pathname may
  * or may not carry the community slug (TenantShell strips it inside the app's
@@ -22,7 +25,8 @@
  */
 
 import { Navigate, useLocation } from 'react-router-dom';
-import { useTenant } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
+import { isPlatformTeamUser } from '@/lib/access';
 
 export function movedAddressTail(pathname: string, from: 'admin' | 'super-admin'): string {
   const match = pathname.match(new RegExp(`^(?:.*?)/${from}(/.*)?$`));
@@ -31,8 +35,17 @@ export function movedAddressTail(pathname: string, from: 'admin' | 'super-admin'
 
 export function MovedToPlatformTeam({ from = 'admin' }: { from?: 'admin' | 'super-admin' }) {
   const { tenantPath } = useTenant();
+  const { user } = useAuth();
   const location = useLocation();
   const tail = movedAddressTail(location.pathname, from);
+
+  // A page that left the super admin panel: whoever is here is already allowed
+  // in that panel (SuperAdminRoute sits above these routes), so someone who is
+  // not on the platform team stays in it, on its home page. Sending them on to
+  // the Platform team panel would have its guard drop them in the admin panel.
+  if (from === 'super-admin' && !isPlatformTeamUser(user)) {
+    return <Navigate to={tenantPath('/super-admin')} replace />;
+  }
 
   return (
     <Navigate

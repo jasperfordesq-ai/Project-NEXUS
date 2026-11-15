@@ -7,7 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Info from 'lucide-react/icons/info';
-import { useTenant } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
+import { isPlatformTeamUser } from '@/lib/access';
 import { useExternalFederationStatus } from './useExternalFederationStatus';
 import { isOnPanelPath } from '@/lib/panelPath';
 
@@ -49,6 +50,7 @@ const EXTERNAL_PAGES = [
 export function ExternalFederationBanner() {
   const { t } = useTranslation('partners');
   const { tenantPath } = useTenant();
+  const { user } = useAuth();
   const { pathname } = useLocation();
   const status = useExternalFederationStatus();
 
@@ -88,12 +90,17 @@ export function ExternalFederationBanner() {
         {!lockdown && (
           <p className="mt-2 text-sm text-foreground">{t('external_federation.banner_internal_unaffected')}</p>
         )}
-        <Link
-          to={tenantPath('/super-admin/federation')}
-          className={`mt-2 inline-block text-sm font-medium underline ${lockdown ? 'text-danger' : 'text-foreground'}`}
-        >
-          {t('external_federation.banner_manage_link')}
-        </Link>
+        {/* The switch is on the Federation dashboard, which only the platform
+            team can open (Platform team panel). Anyone else would follow the
+            link and land on a different page, so they are not offered it. */}
+        {isPlatformTeamUser(user) && (
+          <Link
+            to={tenantPath('/platform-team/federation')}
+            className={`mt-2 inline-block text-sm font-medium underline ${lockdown ? 'text-danger' : 'text-foreground'}`}
+          >
+            {t('external_federation.banner_manage_link')}
+          </Link>
+        )}
       </div>
     </div>
   );

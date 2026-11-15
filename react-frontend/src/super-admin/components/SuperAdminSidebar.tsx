@@ -5,31 +5,22 @@
 
 /**
  * Super Admin Sidebar
- * Focused navigation for platform-wide and cross-tenant tools.
+ * Navigation for the tools that work across a branch of communities.
  */
 
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useTenant } from '@/contexts';
-import { isPlatformTeamUser, superPanelLevel } from '@/lib/access';
+import { isPlatformTeamUser } from '@/lib/access';
 import { ScrollShadow } from '@/components/ui';
 import { Button, Tooltip } from '@/components/ui';
-import Languages from 'lucide-react/icons/languages';
-import Activity from 'lucide-react/icons/activity';
-import BarChart3 from 'lucide-react/icons/chart-column';
 import Building2 from 'lucide-react/icons/building-2';
-import CreditCard from 'lucide-react/icons/credit-card';
-import FileSearch from 'lucide-react/icons/file-search';
-import Globe from 'lucide-react/icons/globe';
-import Handshake from 'lucide-react/icons/handshake';
-import Landmark from 'lucide-react/icons/landmark';
 import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
 import ListChecks from 'lucide-react/icons/list-checks';
 import Network from 'lucide-react/icons/network';
 import PanelLeft from 'lucide-react/icons/panel-left';
 import PanelLeftClose from 'lucide-react/icons/panel-left-close';
 import ScrollText from 'lucide-react/icons/scroll-text';
-import Shield from 'lucide-react/icons/shield';
 import Users from 'lucide-react/icons/users';
 import Settings from 'lucide-react/icons/settings';
 import ShieldCheck from 'lucide-react/icons/shield-check';
@@ -60,26 +51,17 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
   const { user } = useAuth();
 
   /*
-   * 🔴 Two tiers, matching the API exactly.
+   * 🔴 One tier. Everything in this menu is confined by the server to the
+   * caller's own branch (their community and the communities below it), so a
+   * global super admin and a tenant super admin see the SAME six entries.
    *
-   * A 'regional' caller — the super-admin of a community that has communities
-   * beneath it — may use the community/member/hierarchy/audit screens, which the
-   * backend confines to their own branch. They are refused everything
-   * platform-wide: platform income and pricing, the federation switches, the
-   * provisioning queue and platform enquiries.
-   *
-   * The API enforces this regardless (tier B sits behind EnsureIsSuperAdmin, which
-   * refuses tenant super-admins). Hiding it here is so the panel does not show
-   * controls that can only fail. If you add a section, decide which tier it is in
-   * and gate it — an ungated addition shows a tenant super admin a dead end.
-   *
-   * Fail closed: ask for an explicit 'master'. An earlier version asked "is this
-   * caller regional?" and hid the sections if so — which meant a caller resolving
-   * to 'none' (no super-panel reach at all) was shown every platform control.
-   * Nobody like that should reach this component, but "should not" is not a
-   * guarantee, so ask for the positive.
+   * The platform-wide pages that used to sit here behind a 'master' check
+   * (pilot enquiries, the provisioning queue, the translation key, the
+   * federation controls, platform billing and revenue, regional analytics
+   * subscriptions, the national dashboard) moved to the Platform team panel on
+   * 15 Nov 2026 (owner: "Yes, move it"). Do not add a platform-wide entry
+   * here: it belongs in src/platform-team/components/PlatformTeamSidebar.tsx.
    */
-  const showPlatformSections = superPanelLevel(user) === 'master';
 
   const sections: NavSection[] = [
     {
@@ -87,13 +69,6 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
       title: t('sidebar.section_overview'),
       items: [
         { key: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard, path: '/super-admin' },
-        // Platform-only: enquiries and the provisioning queue span the whole
-        // installation, and approving a request assigns a parent anywhere in the tree.
-        ...(showPlatformSections ? [
-          { key: 'pilot-inquiries', label: t('nav.pilot_inquiries'), icon: FileSearch, path: '/super-admin/platform/pilot-inquiries' },
-          { key: 'provisioning', label: t('nav.provisioning_queue'), icon: Building2, path: '/super-admin/provisioning-requests' },
-          { key: 'platform-translation', label: t('nav.platform_translation'), icon: Languages, path: '/super-admin/platform/translation' },
-        ] : []),
       ],
     },
     {
@@ -107,31 +82,6 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
         { key: 'audit', label: t('nav.audit_log'), icon: ScrollText, path: '/super-admin/audit' },
       ],
     },
-    // Platform-only: these control connections to other installations for the
-    // whole platform, including the external kill switches.
-    ...(showPlatformSections ? [{
-      key: 'federation',
-      title: t('sidebar.section_federation'),
-      items: [
-        { key: 'federation-dashboard', label: t('nav.federation_dashboard'), icon: Globe, path: '/super-admin/federation' },
-        { key: 'whitelist', label: t('nav.whitelist'), icon: Shield, path: '/super-admin/federation/whitelist' },
-        { key: 'partnerships', label: t('nav.partnerships'), icon: Handshake, path: '/super-admin/federation/partnerships' },
-        { key: 'federation-audit', label: t('nav.federation_audit'), icon: Activity, path: '/super-admin/federation/audit' },
-      ],
-    }] : []),
-    // Platform-only: platform income and pricing. The billing endpoints also take
-    // the community they act on from the request without a branch check, which is
-    // the concrete reason a tenant super admin must not reach them.
-    ...(showPlatformSections ? [{
-      key: 'commercial',
-      title: t('sidebar.section_commercial'),
-      items: [
-        { key: 'billing', label: t('nav.billing_control'), icon: CreditCard, path: '/super-admin/billing' },
-        { key: 'revenue', label: t('nav.revenue_dashboard'), icon: BarChart3, path: '/super-admin/billing/revenue' },
-        { key: 'regional-analytics', label: t('nav.regional_analytics'), icon: BarChart3, path: '/super-admin/regional-analytics/subscriptions' },
-        { key: 'national-kiss', label: t('nav.national_dashboard'), icon: Landmark, path: '/super-admin/national/kiss' },
-      ],
-    }] : []),
   ];
 
   const isActive = (path: string) => {

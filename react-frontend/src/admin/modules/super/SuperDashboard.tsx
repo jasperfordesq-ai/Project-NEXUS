@@ -25,7 +25,7 @@ import Activity from 'lucide-react/icons/activity';
 import ListChecks from 'lucide-react/icons/list-checks';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useTenant, useToast } from '@/contexts';
-import { superPanelLevel } from '@/lib/access';
+import { isPlatformTeamUser, superPanelLevel } from '@/lib/access';
 import { adminSuper } from '../../api/adminApi';
 import { StatCard } from '../../components/StatCard';
 import { PageHeader } from '../../components/PageHeader';
@@ -82,10 +82,10 @@ export function SuperDashboard() {
   const isPlatformLevel = superPanelLevel(user) === 'master';
 
   /*
-   * 🔴 Federation Controls is TIER B — platform-only. Its endpoints
-   * (`/admin/super/federation/*`) sit behind `EnsureIsSuperAdmin` and answer 403
-   * to the super-admin of a branch, verified by hand on 2026-08-05. Offering the
-   * card to a `regional` user is a control the API will refuse, which is the one
+   * 🔴 Federation Controls is the platform team's (`is_god` AND super admin)
+   * and lives in the Platform team panel since 15 Nov 2026. Its kill-switch
+   * endpoints answer 403 to everyone else, so the card is offered to the
+   * platform team only: offering a control the API will refuse is the one
    * thing this panel must never do. Every other action here is tier A and is
    * subtree-scoped server-side, so it is safe for both levels.
    */
@@ -95,8 +95,8 @@ export function SuperDashboard() {
     { label: t('super.bulk_operations'), href: tenantPath('/super-admin/bulk'), icon: ListChecks },
     { label: t('super.cross_tenant_users'), href: tenantPath('/super-admin/users'), icon: Users },
     { label: t('super.audit_log'), href: tenantPath('/super-admin/audit'), icon: Activity },
-    ...(isPlatformLevel
-      ? [{ label: t('super.federation_controls'), href: tenantPath('/super-admin/federation'), icon: Globe }]
+    ...(isPlatformTeamUser(user)
+      ? [{ label: t('super.federation_controls'), href: tenantPath('/platform-team/federation'), icon: Globe }]
       : []),
   ];
 

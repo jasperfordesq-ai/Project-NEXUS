@@ -97,12 +97,24 @@ describe('SuperDashboard', () => {
    * they lack permission or the platform is broken.
    */
   describe('tier-B controls by panel level', () => {
-    it('offers Federation Controls to the platform owner', async () => {
-      mockUser.current = { id: 1, super_panel_level: 'master', is_super_admin: true };
+    // Federation Controls lives in the Platform team panel since 15 Nov 2026,
+    // and only the platform team (is_god AND super admin) can open it.
+    it('offers the platform team Federation Controls, in the Platform team panel', async () => {
+      mockUser.current = { id: 1, super_panel_level: 'master', is_super_admin: true, is_god: true };
       render(<SuperDashboard />);
       await waitFor(() => {
         expect(screen.getByRole('link', { name: /federation/i })).toBeInTheDocument();
       });
+      expect(screen.getByRole('link', { name: /federation/i }).getAttribute('href')).toMatch(/\/platform-team\/federation$/);
+    });
+
+    it('hides Federation Controls from a global super admin who is not on the platform team', async () => {
+      mockUser.current = { id: 3, super_panel_level: 'master', is_super_admin: true };
+      render(<SuperDashboard />);
+      await waitFor(() => {
+        expect(screen.getByRole('link', { name: /hierarchy/i })).toBeInTheDocument();
+      });
+      expect(screen.queryByRole('link', { name: /federation/i })).not.toBeInTheDocument();
     });
 
     it('hides Federation Controls from the super-admin of a branch', async () => {

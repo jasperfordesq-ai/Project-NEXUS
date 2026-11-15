@@ -12,9 +12,11 @@
  * endpoint these pages call is locked to the platform team on the server
  * (tests/Laravel/Feature/Security/PlatformTeamLocks).
  *
- * 🔴 Each page keeps the SAME address tail it had under `/admin` (owner-approved
- * design, 15 Nov 2026): `/admin/cron-jobs/logs` is `/platform-team/cron-jobs/logs`.
- * The old addresses stay in `admin/routes.tsx` as redirects (MovedToPlatformTeam),
+ * 🔴 Each page keeps the SAME address tail it had under `/admin` or
+ * `/super-admin` (owner-approved design, 15 Nov 2026): `/admin/cron-jobs/logs`
+ * is `/platform-team/cron-jobs/logs`, `/super-admin/billing/revenue` is
+ * `/platform-team/billing/revenue`. The old addresses stay in `admin/routes.tsx`
+ * and `super-admin/SuperAdminRoutes.tsx` as redirects (MovedToPlatformTeam),
  * so a bookmark still lands on the same record. Keep the two in step:
  * platform-team-routes.test.tsx drives both tables and fails when they differ.
  *
@@ -65,6 +67,20 @@ const OutboundWebhooks = lazy(() => import('@/admin/modules/integrations/Outboun
 const MatchingDiagnostic = lazy(() => import('@/admin/modules/diagnostics/MatchingDiagnostic'));
 const MatchDebugPanel = lazy(() => import('@/admin/modules/advanced/MatchDebugPanel'));
 const TestRunner = lazy(() => import('@/admin/modules/system/TestRunner'));
+// Phase 2 — the platform-wide half of the super admin panel (same tails as
+// they had under /super-admin), and Platform capabilities from the admin panel.
+const FederationControls = lazy(() => import('@/admin/modules/super/FederationControls'));
+const FederationWhitelist = lazy(() => import('@/admin/modules/super/FederationWhitelist'));
+const SuperPartnerships = lazy(() => import('@/admin/modules/super/SuperPartnerships'));
+const FederationAuditLog = lazy(() => import('@/admin/modules/super/FederationAuditLog'));
+const BillingControl = lazy(() => import('@/admin/modules/billing/BillingControl'));
+const RevenueDashboard = lazy(() => import('@/admin/modules/billing/RevenueDashboard'));
+const PilotInquiryAdminPage = lazy(() => import('@/admin/modules/super/PilotInquiryAdminPage'));
+const PlatformTranslationKeyPage = lazy(() => import('@/admin/modules/super/PlatformTranslationKeyPage'));
+const ProvisioningRequestsPage = lazy(() => import('@/admin/modules/provisioning/ProvisioningRequestsPage'));
+const NationalKissDashboardPage = lazy(() => import('@/admin/modules/national/NationalKissDashboardPage'));
+const RegionalAnalyticsAdminPage = lazy(() => import('@/admin/modules/regional-analytics/RegionalAnalyticsAdminPage'));
+const PlatformCapabilities = lazy(() => import('@/admin/modules/advanced/PlatformCapabilities'));
 
 function Lazy({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<LoadingScreen />}>{children}</Suspense>;
@@ -118,6 +134,23 @@ export function PlatformTeamRoutes() {
       <Route path="matching-diagnostic" element={<Lazy><MatchingDiagnostic /></Lazy>} />
       <Route path="match-debug" element={<Lazy><MatchDebugPanel /></Lazy>} />
       <Route path="tests" element={<Lazy><TestRunner /></Lazy>} />
+
+      {/* Moved from the super admin panel (phase 2). "/platform-team/billing" is the
+          PLATFORM's billing control; a community's own billing page stays at
+          "/admin/billing". The per-community federation switches
+          ("/super-admin/federation/tenant/:id/features") did not move. */}
+      <Route path="federation" element={<Lazy><FederationControls /></Lazy>} />
+      <Route path="federation/whitelist" element={<Lazy><FederationWhitelist /></Lazy>} />
+      <Route path="federation/partnerships" element={<Lazy><SuperPartnerships /></Lazy>} />
+      <Route path="federation/audit" element={<Lazy><FederationAuditLog /></Lazy>} />
+      <Route path="billing" element={<Lazy><BillingControl /></Lazy>} />
+      <Route path="billing/revenue" element={<Lazy><RevenueDashboard /></Lazy>} />
+      <Route path="platform/pilot-inquiries" element={<Lazy><PilotInquiryAdminPage /></Lazy>} />
+      <Route path="platform/translation" element={<Lazy><PlatformTranslationKeyPage /></Lazy>} />
+      <Route path="provisioning-requests" element={<Lazy><ProvisioningRequestsPage /></Lazy>} />
+      <Route path="national/kiss" element={<Lazy><NationalKissDashboardPage /></Lazy>} />
+      <Route path="regional-analytics/subscriptions" element={<Lazy><RegionalAnalyticsAdminPage /></Lazy>} />
+      <Route path="platform-capabilities" element={<Lazy><PlatformCapabilities /></Lazy>} />
 
       <Route path="*" element={<PlatformTeamIndex notFound />} />
     </>

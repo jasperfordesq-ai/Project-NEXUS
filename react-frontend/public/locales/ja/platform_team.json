@@ -18,6 +18,7 @@
     "brand": "プラットフォームチーム",
     "back_to_admin": "管理パネルに戻る",
     "back_to_super_admin": "スーパー管理者パネルに戻る",
+    "regional_analytics_subscriptions": "地域別分析のサブスクリプション",
     "tests": "テスト"
   },
   "sidebar": {
@@ -28,8 +29,11 @@
     "zone_community": "このコミュニティ：{{name}}",
     "group_health": "稼働状況",
     "group_money": "お金",
+    "group_communities": "コミュニティ",
     "group_connections": "連携",
     "group_access": "アクセス",
+    "group_products": "製品",
+    "group_keys": "キー",
     "group_email": "メール",
     "group_joining": "参加と役割",
     "group_site": "サイトと検索",

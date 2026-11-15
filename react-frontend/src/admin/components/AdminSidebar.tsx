@@ -96,7 +96,7 @@ import { Accordion, AccordionItem } from '@/components/ui/Accordion';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { canAccessSuperPanel, isGodUser, isPlatformTeamUser, isPlatformSuperAdminUser, isSuperAdminUser } from '@/lib/access';
+import { canAccessSuperPanel, isGodUser, isPlatformTeamUser, isSuperAdminUser } from '@/lib/access';
 import { isOnPanelPath } from '@/lib/panelPath';
 import { useAdminBadgeCounts, badgeForCount } from '@/admin/hooks/useAdminBadgeCounts';
 import type { LucideIcon } from 'lucide-react';
@@ -194,7 +194,6 @@ function useAdminNav(): NavSection[] {
 
   const isGod = isGodUser(user);
   const isSuperAdmin = isSuperAdminUser(user);
-  const isPlatformSuperAdmin = isPlatformSuperAdminUser(user);
   // The platform team: is_god AND super admin, an exact mirror of the server
   // (lib/access.ts). Their pages live in their own panel since 15 Nov 2026;
   // this menu only links to it.
@@ -667,7 +666,7 @@ function useAdminNav(): NavSection[] {
           // was never linked from anywhere, so it was reachable only by typing the URL.
           { label: t('breadcrumbs.native_app'), href: '/admin/native-app', icon: Smartphone, keywords: keyword(t('search_keywords.native_app')) },
           ...(isSuperAdmin ? [{ label: t('module_configuration'), href: '/admin/module-configuration', icon: Puzzle }] : []),
-          ...(isPlatformSuperAdmin ? [{ label: t('platform_capabilities'), href: '/admin/platform-capabilities', icon: SlidersHorizontal }] : []),
+          // Platform switches (platform capabilities) is in the Platform team panel since 15 Nov 2026.
           { label: t('operations'), href: '/admin/operations', icon: Activity },
           { label: t('support_reports'), href: '/admin/support-reports', icon: Bug, keywords: keyword(t('search_keywords.support_reports')) },
           // No Help Centre entry here: the pinned footer links to the admin guide
@@ -727,7 +726,7 @@ function useAdminNav(): NavSection[] {
     // arrives, the memo is never recomputed, and the super-panel entry never
     // appears — the exact "there is no link to the panel" symptom reported on
     // 2026-08-05.
-  }, [canSeePlatformTeamPanel, canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, pendingVolApplicationsBadge, pendingVolExpensesBadge, pendingVolHoursBadge, pendingVolProjectsBadge, pendingVolSwapsBadge, activeWellbeingBadge, t]);
+  }, [canSeePlatformTeamPanel, canSeeSuperPanel, hasFeature, hasModule, isGod, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, pendingVolApplicationsBadge, pendingVolExpensesBadge, pendingVolHoursBadge, pendingVolProjectsBadge, pendingVolSwapsBadge, activeWellbeingBadge, t]);
 }
 
 interface AdminSidebarProps {

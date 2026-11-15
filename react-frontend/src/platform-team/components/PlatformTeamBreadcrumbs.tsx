@@ -24,10 +24,26 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   // No admin breadcrumb wording exists for these two.
   'search-analytics': 'breadcrumbs.search_analytics',
   '404-errors': 'breadcrumbs.errors_404',
+  // Pages that came from the super admin panel, or whose admin breadcrumb
+  // wording would mislead: named with the wording their own menu entry uses.
+  translation: 'super_admin:breadcrumbs.translation',
+  'platform-capabilities': 'admin_nav:platform_capabilities',
+  kiss: 'super_admin:nav.national_dashboard',
 };
 
+/**
+ * Address steps that are not pages of their own (`/platform-team/seo` is
+ * nothing; `/platform-team/seo/audit` is the page). They are shown as plain
+ * text: a link would open the panel's "not in this panel" page.
+ */
+const NOT_A_PAGE = new Set([
+  'seo', 'settings', 'analytics', 'platform', 'national', 'regional-analytics', 'builder', 'edit',
+]);
+
 export function PlatformTeamBreadcrumbs() {
-  const { t, i18n } = useTranslation('platform_team');
+  // All three are loaded here so a label never depends on the menu having
+  // loaded its wording first. `t` still defaults to `platform_team`.
+  const { t, i18n } = useTranslation(['platform_team', 'admin_nav', 'super_admin']);
   const location = useLocation();
   const { tenantSlug } = useTenant();
 
@@ -36,7 +52,7 @@ export function PlatformTeamBreadcrumbs() {
   // is one name per page and nothing to translate twice.
   const labelFor = (segment: string): string => {
     const own = SEGMENT_LABEL_KEYS[segment];
-    if (own) return t(own);
+    if (own) return String(t(own as never));
 
     const adminKey = `admin_nav:breadcrumbs.${segment.replace(/-/g, '_')}`;
     if (i18n.exists(adminKey)) return String(i18n.t(adminKey as never));
@@ -62,7 +78,7 @@ export function PlatformTeamBreadcrumbs() {
 
     crumbs.push({
       label: labelFor(segment),
-      href: isLast ? undefined : currentPath,
+      href: isLast || NOT_A_PAGE.has(segment) ? undefined : currentPath,
     });
   }
 
@@ -79,8 +95,11 @@ export function PlatformTeamBreadcrumbs() {
               <Link to={crumb.href} className="max-w-[9rem] truncate transition-colors hover:text-foreground sm:max-w-[14rem]">
                 {crumb.label}
               </Link>
-            ) : (
+            ) : index === crumbs.length - 1 ? (
               <span className="max-w-[12rem] truncate font-medium text-foreground sm:max-w-[18rem]">{crumb.label}</span>
+            ) : (
+              // A step that is not a page: plain text, not styled as the current page.
+              <span className="max-w-[9rem] truncate sm:max-w-[14rem]">{crumb.label}</span>
             )}
           </li>
         ))}

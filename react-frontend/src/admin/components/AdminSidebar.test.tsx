@@ -727,6 +727,23 @@ describe('AdminSidebar', () => {
     expect(hrefs.filter((h) => h.includes('/platform-team'))).toEqual(['/test/platform-team']);
   });
 
+  // Phase 2: Platform capabilities ("Platform switches") moved too. It was
+  // offered to every global super admin; it is the platform team's now.
+  it.each([
+    ['the platform team', { ...PLATFORM_TEAM }],
+    ['a global super admin who is not on the platform team', { id: 1, name: 'Super Admin', role: 'super_admin', is_super_admin: true }],
+  ])('no longer lists Platform switches for %s', async (_who, user) => {
+    authState.user = user as User;
+    const { AdminSidebar } = await import('./AdminSidebar');
+    const { container } = render(<AdminSidebar collapsed={false} />);
+
+    const hrefs = everyHref(container);
+    expect(hrefs).not.toContain('/test/admin/platform-capabilities');
+    expect(hrefs).not.toContain('/test/platform-team/platform-capabilities');
+    // Control: the neighbouring super-admin-only link is still there.
+    expect(hrefs).toContain('/test/admin/module-configuration');
+  });
+
   it('has no Communications or Integrations section any more', async () => {
     authState.user = { ...PLATFORM_TEAM };
     const { AdminSidebar } = await import('./AdminSidebar');
