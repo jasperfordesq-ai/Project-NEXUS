@@ -57,49 +57,74 @@ vi.mock('react-router-dom', async (importOriginal) => {
 import { NewsletterList } from './NewsletterList';
 
 // ── Test data ─────────────────────────────────────────────────────────────────
+// These are the rows GET /v2/admin/newsletters really returns (pinned from the
+// server side by AdminNewsletterControllerTest::test_index_reports_open_and_
+// click_rates_for_sent_newsletters). The earlier fixtures carried an
+// `open_rate` the server never sent, so the test passed while every real row
+// showed "--".
 const DRAFT_NL = {
   id: 1,
   name: 'Draft Newsletter',
   subject: 'Hello World',
+  preview_text: null,
   status: 'draft',
-  recipients_count: 0,
-  total_recipients: 100,
-  open_rate: 0,
-  click_rate: 0,
+  scheduled_at: null,
   sent_at: null,
-  created_at: '2026-01-01T00:00:00Z',
+  created_at: '2026-01-01 00:00:00',
+  target_audience: 'all_members',
+  total_recipients: 0,
+  total_sent: 0,
+  total_failed: 0,
+  total_opens: 0,
+  unique_opens: 0,
+  total_clicks: 0,
+  unique_clicks: 0,
+  open_rate: null,
+  click_rate: null,
   is_recurring: false,
   ab_test_enabled: false,
 };
 
 const SENT_NL = {
+  ...DRAFT_NL,
   id: 2,
   name: 'Sent Newsletter',
   subject: 'Monthly Update',
+  preview_text: 'What happened this month',
   status: 'sent',
-  recipients_count: 200,
-  total_recipients: 200,
+  sent_at: '2026-01-15 10:00:00',
+  created_at: '2026-01-10 00:00:00',
+  total_recipients: 210,
+  total_sent: 200,
+  total_failed: 10,
+  total_opens: 150,
+  unique_opens: 91,
+  total_clicks: 40,
+  unique_clicks: 25,
   open_rate: 45.5,
-  click_rate: 12.3,
-  sent_at: '2026-01-15T10:00:00Z',
-  created_at: '2026-01-10T00:00:00Z',
-  is_recurring: false,
-  ab_test_enabled: false,
+  click_rate: 12.5,
 };
+
+const COUNTS = { all: 12, draft: 3, scheduled: 1, sending: 0, sent: 8, failed: 0 };
 
 // Mirrors what the shared api client (src/lib/api.ts) really resolves with: it
 // unwraps the `data` envelope, so `data` is the bare row array and pagination
 // lives on the sibling `meta`. Earlier fixtures nested `meta` inside `data`, a
 // shape the client never produces, which hid that the page ignored `meta`.
-function listResponse(items: unknown[], meta: { total?: number; total_pages?: number } = {}) {
+type ListMeta = { total?: number; total_pages?: number; status_counts?: Record<string, number> };
+
+function listResponse(items: unknown[], meta: ListMeta = {}) {
   return {
     success: true,
     data: items,
-    meta: { current_page: 1, per_page: 20, total: items.length, total_pages: items.length ? 1 : 0, ...meta },
+    meta: {
+      current_page: 1, per_page: 20, total: items.length, total_pages: items.length ? 1 : 0,
+      status_counts: COUNTS, ...meta,
+    },
   };
 }
 
-function resolveList(items: unknown[], meta: { total?: number; total_pages?: number } = {}) {
+function resolveList(items: unknown[], meta: ListMeta = {}) {
   mockNLList.mockResolvedValue(listResponse(items, meta));
 }
 
@@ -145,17 +170,17 @@ describe('NewsletterList', () => {
   it('shows empty-state message when list is empty', async () => {
     resolveList([]);
     render(<NewsletterList />);
-    await waitFor(() => {
-      expect(screen.getByText(/no newsletters found/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText('No newsletters yet')).toBeInTheDocument();
+    // Both the header and the empty list offer the way forward.
+    expect(screen.getAllByRole('button', { name: /create newsletter/i })).toHaveLength(2);
   });
 
   it('navigates to create page when Create Newsletter button is pressed', async () => {
     resolveList([]);
     render(<NewsletterList />);
-    await waitFor(() => screen.getByText(/create newsletter/i));
+    const [createButton] = await screen.findAllByRole('button', { name: /create newsletter/i });
 
-    await userEvent.click(screen.getByText(/create newsletter/i));
+    await userEvent.click(createButton);
     expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/admin/newsletters/create'));
   });
 
@@ -251,22 +276,160 @@ describe('NewsletterList', () => {
     });
   });
 
-  it('shows open_rate percentage when available', async () => {
+  it('shows the open and click rates the server worked out, with the numbers behind them', async () => {
     resolveList([SENT_NL]);
     render(<NewsletterList />);
+
+    const row = (await screen.findByText('Monthly Update')).closest('tr') as HTMLElement;
+    expect(within(row).getByText('45.5%')).toBeInTheDocument();
+    expect(within(row).getByText('91 of 200')).toBeInTheDocument();
+    expect(within(row).getByText('12.5%')).toBeInTheDocument();
+    expect(within(row).getByText('25 of 200')).toBeInTheDocument();
+    expect(within(row).getByText("Didn't send: 10")).toBeInTheDocument();
+    // The date is in its own column on a wide screen and under the subject on a narrower one.
+    expect(within(row).getAllByText(/^Sent /).length).toBeGreaterThanOrEqual(1);
+    // The caveat about open tracking only appears once there is a rate to read.
+    expect(screen.getByText(/Open rates are a guide/)).toBeInTheDocument();
+  });
+
+  it('says a draft has not been sent rather than showing a 0% rate', async () => {
+    resolveList([DRAFT_NL]);
+    render(<NewsletterList />);
+
+    const row = (await screen.findByText('Hello World')).closest('tr') as HTMLElement;
+    expect(within(row).queryByText(/%/)).not.toBeInTheDocument();
+    expect(within(row).getAllByText('Not sent yet').length).toBeGreaterThanOrEqual(2);
+    expect(within(row).getAllByText(/^Created /).length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/Open rates are a guide/)).not.toBeInTheDocument();
+  });
+
+  it('names a newsletter that is still going out, with how far it has got', async () => {
+    resolveList(
+      [{ ...SENT_NL, id: 3, subject: 'Going out', status: 'sending', sent_at: null, total_recipients: 300, total_sent: 120, total_failed: 0 }],
+      { status_counts: { ...COUNTS, sending: 1 } },
+    );
+    render(<NewsletterList />);
+
+    const row = (await screen.findByText('Going out')).closest('tr') as HTMLElement;
+    expect(within(row).getByText('Sending')).toBeInTheDocument();
+    expect(within(row).getByText('120 of 300')).toBeInTheDocument();
+    // "Sending" only earns a tab while something is sending.
+    expect(screen.getByRole('tab', { name: /Sending/ })).toBeInTheDocument();
+  });
+
+  it('shows how many newsletters sit behind each tab, and hides the tabs that are empty and rare', async () => {
+    resolveList([DRAFT_NL, SENT_NL]);
+    render(<NewsletterList />);
+    await screen.findByText('Hello World');
+
+    expect(screen.getByRole('tab', { name: /All.*12/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Draft.*3/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Sent.*8/ })).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Sending/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Failed/ })).not.toBeInTheDocument();
+  });
+
+  it('asks the server for one status when its tab is chosen', async () => {
+    const user = userEvent.setup();
+    resolveList([DRAFT_NL, SENT_NL]);
+    render(<NewsletterList />);
+    await screen.findByText('Hello World');
+
+    await user.click(screen.getByRole('tab', { name: /Sent/ }));
+
     await waitFor(() => {
-      expect(screen.getByText(/45\.5%/)).toBeInTheDocument();
+      expect(mockNLList).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'sent', page: 1 }));
     });
   });
 
-  it('gracefully handles API error on initial load', async () => {
+  // Regression: the search box was drawn but connected to nothing. Typing in
+  // it neither filtered the rows nor asked the server.
+  it('searches on the server when something is typed in the search box', async () => {
+    const user = userEvent.setup();
+    resolveList([DRAFT_NL, SENT_NL]);
+    render(<NewsletterList />);
+    await screen.findByText('Hello World');
+
+    await user.type(screen.getByRole('searchbox'), 'harvest');
+
+    await waitFor(() => {
+      expect(mockNLList).toHaveBeenLastCalledWith(expect.objectContaining({ search: 'harvest', page: 1 }));
+    });
+  });
+
+  it('says nothing matches, not that there are no newsletters, when a search finds none', async () => {
+    const user = userEvent.setup();
+    mockNLList.mockImplementation(async (params: { search?: string }) =>
+      listResponse(params.search ? [] : [DRAFT_NL]));
+    render(<NewsletterList />);
+    await screen.findByText('Hello World');
+
+    await user.type(screen.getByRole('searchbox'), 'zzz');
+
+    expect(await screen.findByText('No newsletters match that')).toBeInTheDocument();
+    expect(screen.queryByText('No newsletters yet')).not.toBeInTheDocument();
+  });
+
+  it('sorts on the server when a column heading is pressed', async () => {
+    const user = userEvent.setup();
+    resolveList([DRAFT_NL, SENT_NL]);
+    render(<NewsletterList />);
+    await screen.findByText('Hello World');
+
+    await user.click(screen.getByRole('columnheader', { name: /open rate/i }));
+
+    await waitFor(() => {
+      expect(mockNLList).toHaveBeenLastCalledWith(expect.objectContaining({ sort: 'open_rate' }));
+    });
+  });
+
+  it('opens a sent newsletter on its results and a draft for editing when the row is pressed', async () => {
+    const user = userEvent.setup();
+    resolveList([DRAFT_NL, SENT_NL]);
+    render(<NewsletterList />);
+
+    await user.click(await screen.findByText('Monthly Update'));
+    expect(mockNavigate).toHaveBeenLastCalledWith(expect.stringContaining('/admin/newsletters/2/stats'));
+
+    await user.click(screen.getByText('Hello World'));
+    expect(mockNavigate).toHaveBeenLastCalledWith(expect.stringContaining('/admin/newsletters/edit/1'));
+  });
+
+  it('offers only the actions that fit a sent newsletter', async () => {
+    const user = userEvent.setup();
+    resolveList([SENT_NL]);
+    render(<NewsletterList />);
+    await screen.findByText('Monthly Update');
+
+    await user.click(screen.getByRole('button', { name: /actions/i }));
+
+    const menu = await screen.findByRole('menu');
+    expect(within(menu).getByText('Stats')).toBeInTheDocument();
+    expect(within(menu).getByText('Resend to Non Openers')).toBeInTheDocument();
+    expect(within(menu).queryByText('Send Now')).not.toBeInTheDocument();
+  });
+
+  // Regression: a failed load used to look exactly like a community that had
+  // never written a newsletter.
+  it('says the list could not be loaded, and tries again when asked', async () => {
+    const user = userEvent.setup();
+    mockNLList.mockResolvedValueOnce({ success: false, error: 'Server error' });
+    mockNLList.mockResolvedValue(listResponse([DRAFT_NL]));
+    render(<NewsletterList />);
+
+    expect(await screen.findByText("We couldn't load your newsletters")).toBeInTheDocument();
+    expect(screen.queryByText('No newsletters yet')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+
+    expect(await screen.findByText('Hello World')).toBeInTheDocument();
+  });
+
+  it('shows the same card when the request itself fails', async () => {
     mockNLList.mockRejectedValue(new Error('Network error'));
     render(<NewsletterList />);
-    // Should not crash — empty list with no items rendered
-    await waitFor(() => {
-      // DataTable will show empty state or just no rows; no uncaught error
-      expect(screen.queryByText(/hello world/i)).not.toBeInTheDocument();
-    });
+
+    expect(await screen.findByText("We couldn't load your newsletters")).toBeInTheDocument();
   });
 
   // Regression: with more than 20 newsletters the page counted only the 20 rows

@@ -1255,5 +1255,22 @@
     "confirm_message_other": "Cela envoie toutes les offres et demandes actuelles à {{count}} membres qui n'ont pas désactivé le récapitulatif. Action irréversible.",
     "confirm_send": "Envoyer à tout le monde",
     "cancel": "Annuler"
+  },
+  "newsletter_list": {
+    "description": "Rédigez et envoyez des e-mails à votre communauté, puis suivez leur accueil.",
+    "tabs_aria": "Afficher les newsletters par statut",
+    "status_sending": "Envoi en cours",
+    "part_of_whole": "{{part}} sur {{whole}}",
+    "not_sent_yet": "Pas encore envoyée",
+    "failed_count": "Non envoyés : {{number}}",
+    "date_sent": "Envoyée le {{date}}",
+    "date_scheduled": "Planifiée pour le {{date}}",
+    "date_created": "Créée le {{date}}",
+    "opens_hint": "Les taux d’ouverture sont une indication, pas un décompte exact. Certaines applications de messagerie ouvrent les messages toutes seules, d’autres masquent les ouvertures. Les clics sont plus fiables.",
+    "no_match_title": "Aucune newsletter ne correspond",
+    "no_match_text": "Essayez un autre mot ou regardez sous un autre onglet.",
+    "empty_title": "Pas encore de newsletter",
+    "empty_text": "Rédigez la première et elle apparaîtra ici.",
+    "load_error_title": "Nous n’avons pas pu charger vos newsletters"
   }
 }

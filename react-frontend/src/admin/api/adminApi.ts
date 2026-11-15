@@ -1657,7 +1657,13 @@ export const adminEmailPreview = {
 };
 
 export const adminNewsletters = {
-  list: (params: { page?: number; status?: string } = {}) =>
+  list: (params: {
+    page?: number;
+    status?: string;
+    search?: string;
+    sort?: string;
+    direction?: 'asc' | 'desc';
+  } = {}) =>
     api.get<PaginatedResponse<Newsletter>>(`/v2/admin/newsletters${buildQuery(params)}`),
 
   get: (id: number) => api.get<Newsletter & Record<string, unknown>>(`/v2/admin/newsletters/${id}`),

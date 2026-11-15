@@ -70,7 +70,10 @@ const HIDE_BELOW_CLASS: Record<ColumnBreakpoint, string> = {
   '2xl': 'hidden 2xl:table-cell',
 };
 const STICKY_ACTIONS_CELL = 'sticky right-0 z-[1] bg-surface shadow-[-10px_0_10px_-10px_rgba(0,0,0,0.25)]';
-const STICKY_ACTIONS_HEAD = 'sticky right-0 z-[2] bg-surface-secondary shadow-[-10px_0_10px_-10px_rgba(0,0,0,0.25)]';
+// `!` because the table's own header style is the same colour at 70% opacity
+// and won the cascade: the pinned heading was see-through, so the heading of
+// whichever column had scrolled underneath showed through it.
+const STICKY_ACTIONS_HEAD = 'sticky right-0 z-[2] !bg-surface-secondary shadow-[-10px_0_10px_-10px_rgba(0,0,0,0.25)]';
 
 function isActionsColumn<T>(col: Column<T>): boolean {
   return col.isActions ?? col.key === 'actions';

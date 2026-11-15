@@ -236,7 +236,7 @@
     "col_campaign": "Campagne",
     "col_category": "Categorie",
     "col_click_count": "Klik op Tellen",
-    "col_click_rate": "Klik op Beoordeel",
+    "col_click_rate": "Klikpercentage",
     "clicks_label": "Klikken",
     "col_clicks": "Klikken",
     "col_created": "Gemaakt",
@@ -252,7 +252,7 @@
     "col_name": "Naam",
     "col_newsletters": "Nieuwsbrieven",
     "col_open_count": "Telling openen",
-    "col_open_rate": "Open tarief",
+    "col_open_rate": "Openingspercentage",
     "col_opens": "Opent",
     "col_reason": "Reden",
     "col_recipients": "Ontvangers",
@@ -1246,5 +1246,22 @@
     "confirm_message_other": "Hiermee gaat al het huidige aanbod en alle vragen naar {{count}} leden die het overzicht niet hebben uitgezet. Dit kan niet ongedaan worden gemaakt.",
     "confirm_send": "Naar iedereen versturen",
     "cancel": "Annuleren"
+  },
+  "newsletter_list": {
+    "description": "Schrijf en verstuur e-mails naar je gemeenschap en volg hoe ze worden ontvangen.",
+    "tabs_aria": "Nieuwsbrieven per status tonen",
+    "status_sending": "Wordt verzonden",
+    "part_of_whole": "{{part}} van {{whole}}",
+    "not_sent_yet": "Nog niet verzonden",
+    "failed_count": "Niet verzonden: {{number}}",
+    "date_sent": "Verzonden op {{date}}",
+    "date_scheduled": "Ingepland voor {{date}}",
+    "date_created": "Gemaakt op {{date}}",
+    "opens_hint": "Openingspercentages zijn een indicatie, geen exacte telling. Sommige e-mailapps openen berichten vanzelf en andere verbergen wanneer iemand er een opent. Klikken zijn betrouwbaarder.",
+    "no_match_title": "Geen nieuwsbrief past daarbij",
+    "no_match_text": "Probeer een ander woord of kijk onder een ander tabblad.",
+    "empty_title": "Nog geen nieuwsbrieven",
+    "empty_text": "Schrijf je eerste en die verschijnt hier.",
+    "load_error_title": "We konden je nieuwsbrieven niet laden"
   }
 }

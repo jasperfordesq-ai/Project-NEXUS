@@ -239,7 +239,7 @@
     "col_campaign": "Campagna",
     "col_category": "Categoria",
     "col_click_count": "Fare clic su Conteggio",
-    "col_click_rate": "Fare clic su Tasso",
+    "col_click_rate": "Tasso di clic",
     "clicks_label": "Clic",
     "col_clicks": "Clic",
     "col_created": "Creato",
@@ -1255,5 +1255,22 @@
     "confirm_message_other": "Verranno inviate tutte le offerte e richieste attuali a {{count}} membri che non hanno disattivato il riepilogo. L'azione è irreversibile.",
     "confirm_send": "Invia a tutti",
     "cancel": "Annulla"
+  },
+  "newsletter_list": {
+    "description": "Scrivi e invia email alla tua comunità e segui come vengono accolte.",
+    "tabs_aria": "Mostra le newsletter per stato",
+    "status_sending": "Invio in corso",
+    "part_of_whole": "{{part}} su {{whole}}",
+    "not_sent_yet": "Non ancora inviata",
+    "failed_count": "Non inviate: {{number}}",
+    "date_sent": "Inviata il {{date}}",
+    "date_scheduled": "Pianificata per il {{date}}",
+    "date_created": "Creata il {{date}}",
+    "opens_hint": "I tassi di apertura sono un’indicazione, non un conteggio esatto. Alcune app di posta aprono i messaggi da sole, altre nascondono quando qualcuno li apre. I clic sono più affidabili.",
+    "no_match_title": "Nessuna newsletter corrisponde",
+    "no_match_text": "Prova con un’altra parola o guarda in un’altra scheda.",
+    "empty_title": "Ancora nessuna newsletter",
+    "empty_text": "Scrivi la prima e comparirà qui.",
+    "load_error_title": "Non siamo riusciti a caricare le tue newsletter"
   }
 }

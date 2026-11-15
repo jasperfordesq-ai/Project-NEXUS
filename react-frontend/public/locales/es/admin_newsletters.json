@@ -1255,5 +1255,22 @@
     "confirm_message_other": "Se enviarán todas las ofertas y solicitudes actuales a {{count}} miembros que no han desactivado el resumen. No se puede deshacer.",
     "confirm_send": "Enviar a todos",
     "cancel": "Cancelar"
+  },
+  "newsletter_list": {
+    "description": "Escribe y envía correos a tu comunidad y sigue cómo se reciben.",
+    "tabs_aria": "Mostrar boletines por estado",
+    "status_sending": "Enviando",
+    "part_of_whole": "{{part}} de {{whole}}",
+    "not_sent_yet": "Aún no enviado",
+    "failed_count": "No enviados: {{number}}",
+    "date_sent": "Enviado el {{date}}",
+    "date_scheduled": "Programado para el {{date}}",
+    "date_created": "Creado el {{date}}",
+    "opens_hint": "Las tasas de apertura son orientativas, no un recuento exacto. Algunas aplicaciones de correo abren los mensajes solas y otras ocultan cuándo alguien abre uno. Los clics son más fiables.",
+    "no_match_title": "Ningún boletín coincide con eso",
+    "no_match_text": "Prueba con otra palabra o mira en otra pestaña.",
+    "empty_title": "Todavía no hay boletines",
+    "empty_text": "Escribe el primero y aparecerá aquí.",
+    "load_error_title": "No hemos podido cargar tus boletines"
   }
 }

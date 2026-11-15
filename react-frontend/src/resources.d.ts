@@ -23735,6 +23735,23 @@ export default interface Resources {
       "towns_placeholder": "Town or city names...",
       "unable_to_calculate": "Unable to calculate"
     },
+    "newsletter_list": {
+      "date_created": "Created {{date}}",
+      "date_scheduled": "Scheduled for {{date}}",
+      "date_sent": "Sent {{date}}",
+      "description": "Write, send and keep track of the emails you send to your community.",
+      "empty_text": "Write your first one and it will appear here.",
+      "empty_title": "No newsletters yet",
+      "failed_count": "Didn't send: {{number}}",
+      "load_error_title": "We couldn't load your newsletters",
+      "no_match_text": "Try a different word, or look under another tab.",
+      "no_match_title": "No newsletters match that",
+      "not_sent_yet": "Not sent yet",
+      "opens_hint": "Open rates are a guide, not an exact count. Some email apps open messages by themselves and others hide when someone opens one. Clicks are more reliable.",
+      "part_of_whole": "{{part}} of {{whole}}",
+      "status_sending": "Sending",
+      "tabs_aria": "Show newsletters by status"
+    },
     "newsletter_resend": {
       "cancel": "Cancel",
       "clicked": "Clicked",

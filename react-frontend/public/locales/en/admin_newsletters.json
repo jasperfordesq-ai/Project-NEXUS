@@ -1246,5 +1246,22 @@
     "confirm_message_other": "This emails every current offer and request to {{count}} members who have not turned the round-up off. It cannot be undone.",
     "confirm_send": "Send to everyone",
     "cancel": "Cancel"
+  },
+  "newsletter_list": {
+    "description": "Write, send and keep track of the emails you send to your community.",
+    "tabs_aria": "Show newsletters by status",
+    "status_sending": "Sending",
+    "part_of_whole": "{{part}} of {{whole}}",
+    "not_sent_yet": "Not sent yet",
+    "failed_count": "Didn't send: {{number}}",
+    "date_sent": "Sent {{date}}",
+    "date_scheduled": "Scheduled for {{date}}",
+    "date_created": "Created {{date}}",
+    "opens_hint": "Open rates are a guide, not an exact count. Some email apps open messages by themselves and others hide when someone opens one. Clicks are more reliable.",
+    "no_match_title": "No newsletters match that",
+    "no_match_text": "Try a different word, or look under another tab.",
+    "empty_title": "No newsletters yet",
+    "empty_text": "Write your first one and it will appear here.",
+    "load_error_title": "We couldn't load your newsletters"
   }
 }

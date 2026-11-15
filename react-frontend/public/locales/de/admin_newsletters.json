@@ -240,7 +240,7 @@
     "col_campaign": "Kampagne",
     "col_category": "Kategorie",
     "col_click_count": "Klicken Sie auf Zählen",
-    "col_click_rate": "Klicken Sie auf „Bewerten“.",
+    "col_click_rate": "Klickrate",
     "clicks_label": "Klicks",
     "col_clicks": "Klicks",
     "col_created": "Erstellt",
@@ -1246,5 +1246,22 @@
     "confirm_message_other": "Damit gehen alle aktuellen Angebote und Gesuche an {{count}} Mitglieder, die den Überblick nicht abbestellt haben. Das lässt sich nicht rückgängig machen.",
     "confirm_send": "An alle senden",
     "cancel": "Abbrechen"
+  },
+  "newsletter_list": {
+    "description": "Schreiben und versenden Sie E-Mails an Ihre Gemeinschaft und behalten Sie im Blick, wie sie ankommen.",
+    "tabs_aria": "Newsletter nach Status anzeigen",
+    "status_sending": "Wird gesendet",
+    "part_of_whole": "{{part}} von {{whole}}",
+    "not_sent_yet": "Noch nicht gesendet",
+    "failed_count": "Nicht gesendet: {{number}}",
+    "date_sent": "Gesendet am {{date}}",
+    "date_scheduled": "Geplant für {{date}}",
+    "date_created": "Erstellt am {{date}}",
+    "opens_hint": "Öffnungsraten sind ein Richtwert, keine genaue Zählung. Manche E-Mail-Programme öffnen Nachrichten von selbst, andere verbergen, wenn jemand eine öffnet. Klicks sind verlässlicher.",
+    "no_match_title": "Dazu passt kein Newsletter",
+    "no_match_text": "Versuchen Sie ein anderes Wort oder sehen Sie in einem anderen Tab nach.",
+    "empty_title": "Noch keine Newsletter",
+    "empty_text": "Schreiben Sie Ihren ersten, dann erscheint er hier.",
+    "load_error_title": "Wir konnten Ihre Newsletter nicht laden"
   }
 }

@@ -239,7 +239,7 @@
     "col_campaign": "Feachtas",
     "col_category": "Catagóir",
     "col_click_count": "Cliceáil Comhaireamh",
-    "col_click_rate": "Cliceáil Ráta",
+    "col_click_rate": "Ráta Cliceála",
     "clicks_label": "Cliceáil",
     "col_clicks": "Cliceáil",
     "col_created": "Cruthaithe",
@@ -1282,5 +1282,22 @@
     "confirm_message_many": "Seolfaidh sé seo gach tairiscint agus iarratas reatha chuig {{count}} ball nár mhúch an achoimre. Ní féidir é a chealú.",
     "confirm_send": "Seol chuig gach duine",
     "cancel": "Cealaigh"
+  },
+  "newsletter_list": {
+    "description": "Scríobh agus seol ríomhphoist chuig do phobal, agus coinnigh súil ar conas a d’éirigh leo.",
+    "tabs_aria": "Taispeáin nuachtlitreacha de réir stádais",
+    "status_sending": "Á seoladh",
+    "part_of_whole": "{{part}} as {{whole}}",
+    "not_sent_yet": "Gan seoladh fós",
+    "failed_count": "Nár seoladh: {{number}}",
+    "date_sent": "Seolta {{date}}",
+    "date_scheduled": "Sceidealaithe do {{date}}",
+    "date_created": "Cruthaithe {{date}}",
+    "opens_hint": "Is treoir iad na rátaí oscailte, ní comhaireamh beacht. Osclaíonn roinnt aipeanna ríomhphoist teachtaireachtaí astu féin, agus ceileann cinn eile nuair a osclaíonn duine ceann. Tá na cliceálacha níos iontaofa.",
+    "no_match_title": "Níl aon nuachtlitir ag teacht leis sin",
+    "no_match_text": "Bain triail as focal eile, nó féach faoi chluaisín eile.",
+    "empty_title": "Níl aon nuachtlitir ann fós",
+    "empty_text": "Scríobh an chéad cheann agus beidh sé le feiceáil anseo.",
+    "load_error_title": "Níor éirigh linn do nuachtlitreacha a lódáil"
   }
 }

@@ -63,6 +63,146 @@ class AdminNewsletterControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * @return array<string, mixed> One list row's defaults; add to it per row.
+     */
+    private function listRowBase(int $createdBy): array
+    {
+        return [
+            'tenant_id' => $this->testTenantId,
+            'content' => '<p>Hello</p>',
+            'target_audience' => 'all_members',
+            'created_by' => $createdBy,
+            'created_at' => now()->subDays(5),
+            'updated_at' => now()->subDays(5),
+        ];
+    }
+
+    /**
+     * Regression: the list page reads `open_rate` and `click_rate`, which are
+     * not columns. The endpoint returned the raw rows, so both were missing and
+     * every newsletter showed "--" for both rates. The earlier index tests only
+     * asserted a 200 and a `data` key, which a list of empty rows satisfies.
+     */
+    public function test_index_reports_open_and_click_rates_for_sent_newsletters(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $sentId = DB::table('newsletters')->insertGetId($this->listRowBase($admin->id) + [
+            'name' => 'Rates sent', 'subject' => 'Rates sent zzq', 'status' => 'sent',
+            'total_recipients' => 210, 'total_sent' => 200, 'total_failed' => 10,
+            'total_opens' => 150, 'unique_opens' => 91, 'total_clicks' => 40, 'unique_clicks' => 25,
+            'sent_at' => now()->subDay(),
+        ]);
+        $draftId = DB::table('newsletters')->insertGetId($this->listRowBase($admin->id) + [
+            'name' => 'Rates draft', 'subject' => 'Rates draft zzq', 'status' => 'draft',
+        ]);
+
+        $response = $this->apiGet('/v2/admin/newsletters?search=zzq');
+
+        $response->assertStatus(200);
+        $rows = collect($response->json('data'))->keyBy('id');
+
+        $sent = $rows[$sentId];
+        $this->assertEquals(45.5, $sent['open_rate'], 'unique opens / emails sent, as a percentage');
+        $this->assertEquals(12.5, $sent['click_rate'], 'unique clicks / emails sent, as a percentage');
+        $this->assertSame(200, $sent['total_sent']);
+        $this->assertSame(91, $sent['unique_opens']);
+        $this->assertSame(25, $sent['unique_clicks']);
+
+        // Nothing has gone out, so there is no rate to report: null, never 0.
+        $draft = $rows[$draftId];
+        $this->assertArrayHasKey('open_rate', $draft);
+        $this->assertNull($draft['open_rate']);
+        $this->assertNull($draft['click_rate']);
+
+        // Flags are booleans: a bare 0 from the database is drawn as "0" by React.
+        $this->assertFalse($draft['is_recurring']);
+        $this->assertFalse($draft['ab_test_enabled']);
+
+        // The list never needs the email body; twenty of them is a heavy page.
+        $this->assertArrayNotHasKey('content', $sent);
+        $this->assertArrayNotHasKey('design_json', $sent);
+    }
+
+    public function test_index_search_finds_newsletters_by_subject_only_in_this_community(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $otherTenantId = (int) DB::table('tenants')->where('id', '!=', $this->testTenantId)->value('id');
+        $this->assertGreaterThan(0, $otherTenantId, 'A second community is needed to prove the search stays in its own');
+        $otherAdmin = User::factory()->forTenant($otherTenantId)->admin()->create();
+
+        $mineId = DB::table('newsletters')->insertGetId($this->listRowBase($admin->id) + [
+            'name' => 'Harvest qqx', 'subject' => 'Harvest supper qqx', 'status' => 'draft',
+        ]);
+        DB::table('newsletters')->insert($this->listRowBase($admin->id) + [
+            'name' => 'Something else', 'subject' => 'Something else entirely', 'status' => 'draft',
+        ]);
+        DB::table('newsletters')->insert(['tenant_id' => $otherTenantId] + $this->listRowBase($otherAdmin->id) + [
+            'name' => 'Harvest qqx elsewhere', 'subject' => 'Harvest supper qqx elsewhere', 'status' => 'draft',
+        ]);
+
+        $response = $this->apiGet('/v2/admin/newsletters?search=' . urlencode('supper qqx'));
+
+        $response->assertStatus(200);
+        $this->assertSame([$mineId], array_column($response->json('data'), 'id'));
+        $this->assertSame(1, $response->json('meta.total'));
+    }
+
+    public function test_index_counts_each_status_and_filters_by_it(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $base = $this->listRowBase($admin->id);
+        DB::table('newsletters')->insert([
+            $base + ['name' => 'Tab a', 'subject' => 'Tab kkv a', 'status' => 'draft', 'sent_at' => null],
+            $base + ['name' => 'Tab b', 'subject' => 'Tab kkv b', 'status' => 'draft', 'sent_at' => null],
+            $base + ['name' => 'Tab c', 'subject' => 'Tab kkv c', 'status' => 'sent', 'sent_at' => now()->subDay()],
+        ]);
+
+        $response = $this->apiGet('/v2/admin/newsletters?search=kkv&status=draft');
+
+        $response->assertStatus(200);
+        $this->assertSame(['draft', 'draft'], array_column($response->json('data'), 'status'));
+        $this->assertSame(2, $response->json('meta.total'));
+        // The tabs show every status's count whichever tab is open.
+        $counts = $response->json('meta.status_counts');
+        $this->assertSame(3, $counts['all']);
+        $this->assertSame(2, $counts['draft']);
+        $this->assertSame(1, $counts['sent']);
+        $this->assertSame(0, $counts['scheduled']);
+
+        // A status that does not exist is ignored rather than returning nothing.
+        $this->assertSame(3, $this->apiGet('/v2/admin/newsletters?search=kkv&status=nonsense')->json('meta.total'));
+    }
+
+    public function test_index_sorts_by_open_rate_on_the_server(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $base = $this->listRowBase($admin->id) + ['status' => 'sent', 'sent_at' => now()->subDay(), 'total_sent' => 100];
+        DB::table('newsletters')->insert([
+            $base + ['name' => 'Sort low', 'subject' => 'Sort jjw low', 'unique_opens' => 10],
+            $base + ['name' => 'Sort high', 'subject' => 'Sort jjw high', 'unique_opens' => 80],
+            $base + ['name' => 'Sort mid', 'subject' => 'Sort jjw mid', 'unique_opens' => 40],
+        ]);
+
+        $desc = $this->apiGet('/v2/admin/newsletters?search=jjw&sort=open_rate&direction=desc');
+        $this->assertSame(['Sort jjw high', 'Sort jjw mid', 'Sort jjw low'], array_column($desc->json('data'), 'subject'));
+
+        $asc = $this->apiGet('/v2/admin/newsletters?search=jjw&sort=open_rate&direction=asc');
+        $this->assertSame(['Sort jjw low', 'Sort jjw mid', 'Sort jjw high'], array_column($asc->json('data'), 'subject'));
+
+        // An unknown sort column falls back to newest first; it is never put into the query.
+        $this->apiGet('/v2/admin/newsletters?search=jjw&sort=' . urlencode('id; DROP TABLE newsletters'))
+            ->assertStatus(200);
+    }
+
     public function test_support_endpoints_return_401_for_unauthenticated(): void
     {
         $this->apiGet('/v2/admin/newsletters/segments')->assertStatus(401);

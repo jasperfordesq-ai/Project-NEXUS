@@ -1255,5 +1255,22 @@
     "confirm_message_other": "Isto envia todas as ofertas e pedidos atuais a {{count}} membros que não desativaram o resumo. Não é possível anular.",
     "confirm_send": "Enviar a todos",
     "cancel": "Cancelar"
+  },
+  "newsletter_list": {
+    "description": "Escreva e envie e-mails para a sua comunidade e acompanhe como são recebidos.",
+    "tabs_aria": "Mostrar boletins por estado",
+    "status_sending": "Enviando",
+    "part_of_whole": "{{part}} de {{whole}}",
+    "not_sent_yet": "Ainda não enviado",
+    "failed_count": "Não enviados: {{number}}",
+    "date_sent": "Enviado em {{date}}",
+    "date_scheduled": "Agendado para {{date}}",
+    "date_created": "Criado em {{date}}",
+    "opens_hint": "As taxas de abertura são uma indicação, não uma contagem exata. Alguns aplicativos de e-mail abrem as mensagens sozinhos e outros escondem quando alguém abre uma. Os cliques são mais confiáveis.",
+    "no_match_title": "Nenhum boletim corresponde a isso",
+    "no_match_text": "Tente outra palavra ou procure em outra aba.",
+    "empty_title": "Ainda não há boletins",
+    "empty_text": "Escreva o primeiro e ele aparecerá aqui.",
+    "load_error_title": "Não conseguimos carregar os seus boletins"
   }
 }

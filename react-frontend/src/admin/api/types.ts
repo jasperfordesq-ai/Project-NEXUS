@@ -644,17 +644,34 @@ export interface WalletGrant {
 // Newsletters
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** One row of the admin newsletter list (`GET /v2/admin/newsletters`). */
 export interface Newsletter {
   id: number;
-  name: string;
+  name: string | null;
   subject: string;
-  status: 'draft' | 'scheduled' | 'sending' | 'sent';
-  recipients_count: number;
-  open_rate: number;
-  click_rate: number;
+  preview_text: string | null;
+  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed';
+  scheduled_at: string | null;
   sent_at: string | null;
   created_at: string;
+  target_audience: string | null;
+  total_recipients: number;
+  total_sent: number;
+  total_failed: number;
+  total_opens: number;
+  unique_opens: number;
+  total_clicks: number;
+  unique_clicks: number;
+  /** Percentage of sent emails that were opened; null until something has gone out. */
+  open_rate: number | null;
+  /** Percentage of sent emails with a click; null until something has gone out. */
+  click_rate: number | null;
+  is_recurring: boolean;
+  ab_test_enabled: boolean;
 }
+
+/** How many newsletters sit behind each tab of the list, sent as `meta.status_counts`. */
+export type NewsletterStatusCounts = Record<'all' | Newsletter['status'], number>;
 
 export interface NewsletterBounce {
   id: number;

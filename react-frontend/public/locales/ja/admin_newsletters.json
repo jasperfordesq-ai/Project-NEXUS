@@ -1246,5 +1246,22 @@
     "confirm_message_other": "まとめをオフにしていない{{count}}人のメンバーに、現在のすべての提供とリクエストを送信します。取り消しはできません。",
     "confirm_send": "全員に送信",
     "cancel": "キャンセル"
+  },
+  "newsletter_list": {
+    "description": "コミュニティへのメールを作成・送信し、反応を確認できます。",
+    "tabs_aria": "ステータス別にニュースレターを表示",
+    "status_sending": "送信中",
+    "part_of_whole": "{{whole}}件中{{part}}件",
+    "not_sent_yet": "未送信",
+    "failed_count": "送信できなかった件数：{{number}}",
+    "date_sent": "{{date}}に送信",
+    "date_scheduled": "{{date}}に送信予定",
+    "date_created": "{{date}}に作成",
+    "opens_hint": "開封率は目安であり、正確な数ではありません。メールアプリによっては自動的にメッセージを開いたり、開封を隠したりすることがあります。クリック数のほうが信頼できます。",
+    "no_match_title": "一致するニュースレターがありません",
+    "no_match_text": "別の言葉で試すか、ほかのタブをご確認ください。",
+    "empty_title": "ニュースレターはまだありません",
+    "empty_text": "最初の1通を作成すると、ここに表示されます。",
+    "load_error_title": "ニュースレターを読み込めませんでした"
   }
 }

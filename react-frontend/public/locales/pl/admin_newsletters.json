@@ -239,7 +239,7 @@
     "col_campaign": "Kampania",
     "col_category": "Kategoria",
     "col_click_count": "Kliknij opcję Licz",
-    "col_click_rate": "Kliknij Oceń",
+    "col_click_rate": "Wskaźnik kliknięć",
     "clicks_label": "Kliknięcia",
     "col_clicks": "Kliknięcia",
     "col_created": "Utworzono",
@@ -255,7 +255,7 @@
     "col_name": "Imię",
     "col_newsletters": "Biuletyny",
     "col_open_count": "Otwórz licznik",
-    "col_open_rate": "Kurs otwarcia",
+    "col_open_rate": "Wskaźnik otwarć",
     "col_opens": "Otwiera się",
     "col_reason": "Powód",
     "col_recipients": "Odbiorcy",
@@ -1270,5 +1270,22 @@
     "confirm_message_many": "Wszystkie aktualne oferty i prośby zostaną wysłane do członków, którzy nie wyłączyli podsumowania (liczba: {{count}}). Tej operacji nie można cofnąć.",
     "confirm_send": "Wyślij do wszystkich",
     "cancel": "Anuluj"
+  },
+  "newsletter_list": {
+    "description": "Pisz i wysyłaj e-maile do swojej społeczności i sprawdzaj, jak są odbierane.",
+    "tabs_aria": "Pokaż biuletyny według statusu",
+    "status_sending": "Wysyłanie",
+    "part_of_whole": "{{part}} z {{whole}}",
+    "not_sent_yet": "Jeszcze nie wysłano",
+    "failed_count": "Nie wysłano: {{number}}",
+    "date_sent": "Wysłano {{date}}",
+    "date_scheduled": "Zaplanowano na {{date}}",
+    "date_created": "Utworzono {{date}}",
+    "opens_hint": "Wskaźniki otwarć to wskazówka, a nie dokładna liczba. Niektóre aplikacje pocztowe same otwierają wiadomości, a inne ukrywają, że ktoś je otworzył. Kliknięcia są bardziej wiarygodne.",
+    "no_match_title": "Żaden biuletyn do tego nie pasuje",
+    "no_match_text": "Spróbuj innego słowa albo zajrzyj do innej karty.",
+    "empty_title": "Nie ma jeszcze biuletynów",
+    "empty_text": "Napisz pierwszy, a pojawi się tutaj.",
+    "load_error_title": "Nie udało się nam wczytać biuletynów"
   }
 }

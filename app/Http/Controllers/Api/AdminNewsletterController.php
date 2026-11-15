@@ -37,6 +37,26 @@ class AdminNewsletterController extends BaseApiController
     private const CONTENT_FORMATS = ['plaintext', 'richtext', 'html', 'builder'];
 
     /**
+     * Every value of `newsletters.status`, in the order the list's tabs show them.
+     */
+    private const LIST_STATUSES = ['draft', 'scheduled', 'sending', 'sent', 'failed'];
+
+    /**
+     * What the list may be sorted by: the name the page sends => the SQL it
+     * stands for. A request can only ever pick a key from this list, so nothing
+     * a caller types reaches ORDER BY. The two rates are worked out, not stored.
+     */
+    private const LIST_SORTS = [
+        'subject' => 'subject',
+        'status' => 'status',
+        'total_sent' => 'total_sent',
+        'open_rate' => '(unique_opens / NULLIF(total_sent, 0))',
+        'click_rate' => '(unique_clicks / NULLIF(total_sent, 0))',
+        'date' => 'COALESCE(sent_at, scheduled_at, created_at)',
+        'created_at' => 'created_at',
+    ];
+
+    /**
      * Allowed tables for existence checks — prevents SQL injection via table name.
      */
     private const ALLOWED_TABLES = [
@@ -125,35 +145,105 @@ class AdminNewsletterController extends BaseApiController
         $page = $this->queryInt('page', 1, 1);
         $perPage = 20;
         $offset = ($page - 1) * $perPage;
-        $status = $this->query('status');
+        $emptyCounts = ['all' => 0] + array_fill_keys(self::LIST_STATUSES, 0);
 
         if (!$this->tableExists('newsletters')) {
-            return $this->respondWithPaginatedCollection([], 0, $page, $perPage);
+            return $this->respondWithNewsletterPage([], 0, $page, $perPage, $emptyCounts);
         }
 
-        try {
-            $where = 'WHERE tenant_id = ?';
-            $params = [$tenantId];
-            if ($status) {
-                $where .= ' AND status = ?';
-                $params[] = $status;
+        // No try/catch on purpose, for the reason given in analytics(): a catch
+        // here turned any SQL error into "this community has no newsletters".
+
+        // Everything the page can ask for is matched against a fixed list; only
+        // the search text and the status reach the query, and only as bindings.
+        $status = $this->query('status');
+        $status = is_string($status) && in_array($status, self::LIST_STATUSES, true) ? $status : null;
+
+        $search = $this->query('search');
+        $search = is_string($search) ? trim(mb_substr($search, 0, 100)) : '';
+
+        $sort = $this->query('sort');
+        $orderBy = self::LIST_SORTS[is_string($sort) ? $sort : ''] ?? 'created_at';
+        $direction = strtolower((string) $this->query('direction', 'desc')) === 'asc' ? 'ASC' : 'DESC';
+
+        $where = 'WHERE tenant_id = ?';
+        $params = [$tenantId];
+        if ($search !== '') {
+            // Escape LIKE's own wildcards so "50%" finds "50%", not everything.
+            $like = '%' . addcslashes($search, '\\%_') . '%';
+            $where .= ' AND (subject LIKE ? OR name LIKE ?)';
+            $params[] = $like;
+            $params[] = $like;
+        }
+
+        // One count per status for the tabs. It follows the search but not the
+        // open tab, so every tab keeps its number while another is selected.
+        $counts = $emptyCounts;
+        foreach (DB::select("SELECT status, COUNT(*) AS cnt FROM newsletters {$where} GROUP BY status", $params) as $row) {
+            $counts['all'] += (int) $row->cnt;
+            if (isset($counts[(string) $row->status])) {
+                $counts[(string) $row->status] = (int) $row->cnt;
             }
-
-            $countRow = DB::selectOne("SELECT COUNT(*) as cnt FROM newsletters {$where}", $params);
-            $total = (int) ($countRow->cnt ?? 0);
-
-            $params[] = $perPage;
-            $params[] = $offset;
-            $rows = DB::select(
-                "SELECT * FROM newsletters {$where} ORDER BY created_at DESC LIMIT ? OFFSET ?",
-                $params
-            );
-            $items = array_map(fn($r) => (array)$r, $rows);
-
-            return $this->respondWithPaginatedCollection($items, $total, $page, $perPage);
-        } catch (\Exception $e) {
-            return $this->respondWithPaginatedCollection([], 0, $page, $perPage);
         }
+
+        if ($status !== null) {
+            $where .= ' AND status = ?';
+            $params[] = $status;
+        }
+        $total = $status !== null ? $counts[$status] : $counts['all'];
+
+        // Named columns, never `SELECT *`: the email body and the builder's
+        // design are both LONGTEXT and the list uses neither.
+        $rows = DB::select(
+            "SELECT id, name, subject, preview_text, status, scheduled_at, sent_at, created_at,
+                    target_audience, total_recipients, total_sent, total_failed,
+                    total_opens, unique_opens, total_clicks, unique_clicks,
+                    is_recurring, ab_test_enabled
+             FROM newsletters {$where}
+             ORDER BY {$orderBy} {$direction}, id DESC
+             LIMIT ? OFFSET ?",
+            [...$params, $perPage, $offset]
+        );
+
+        $items = array_map(static function ($r): array {
+            $item = (array) $r;
+            foreach (['total_recipients', 'total_sent', 'total_failed', 'total_opens', 'unique_opens', 'total_clicks', 'unique_clicks'] as $counter) {
+                $item[$counter] = (int) ($item[$counter] ?? 0);
+            }
+            $item['is_recurring'] = (bool) ($item['is_recurring'] ?? false);
+            $item['ab_test_enabled'] = (bool) ($item['ab_test_enabled'] ?? false);
+
+            // The same sum the analytics page uses: people who opened / emails
+            // that went out. Null until something has gone out, so a draft
+            // reads as "not sent yet" and never as a 0% newsletter.
+            $sent = $item['total_sent'];
+            $item['open_rate'] = $sent > 0 ? round($item['unique_opens'] / $sent * 100, 1) : null;
+            $item['click_rate'] = $sent > 0 ? round($item['unique_clicks'] / $sent * 100, 1) : null;
+
+            return $item;
+        }, $rows);
+
+        return $this->respondWithNewsletterPage($items, $total, $page, $perPage, $counts);
+    }
+
+    /**
+     * A page of the newsletter list, with the per-status counts the tabs show.
+     *
+     * @param array<int, array<string, mixed>> $items
+     * @param array<string, int> $statusCounts
+     */
+    private function respondWithNewsletterPage(array $items, int $total, int $page, int $perPage, array $statusCounts): JsonResponse
+    {
+        $totalPages = $total > 0 ? (int) ceil($total / $perPage) : 0;
+
+        return $this->respondWithData($items, [
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+            'total_pages' => $totalPages,
+            'has_more' => $page < $totalPages,
+            'status_counts' => $statusCounts,
+        ]);
     }
 
     public function show(int $id): JsonResponse

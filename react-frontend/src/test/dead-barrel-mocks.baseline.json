@@ -7,8 +7,7 @@
         "DataTable",
         "EmptyState",
         "PageHeader",
-        "StatCard",
-        "StatusBadge"
+        "StatCard"
       ]
     },
     "src/admin/modules/__tests__/ReportModules.test.tsx": {
@@ -529,6 +528,6 @@
   },
   "totals": {
     "offenderFileCount": 79,
-    "rowCount": 254
+    "rowCount": 253
   }
 }
