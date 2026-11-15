@@ -11,7 +11,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useTenant } from '@/contexts';
-import { superPanelLevel } from '@/lib/access';
+import { isPlatformTeamUser, superPanelLevel } from '@/lib/access';
 import { ScrollShadow } from '@/components/ui';
 import { Button, Tooltip } from '@/components/ui';
 import Languages from 'lucide-react/icons/languages';
@@ -32,6 +32,7 @@ import ScrollText from 'lucide-react/icons/scroll-text';
 import Shield from 'lucide-react/icons/shield';
 import Users from 'lucide-react/icons/users';
 import Settings from 'lucide-react/icons/settings';
+import ShieldCheck from 'lucide-react/icons/shield-check';
 import type { LucideIcon } from 'lucide-react';
 
 interface SuperAdminSidebarProps {
@@ -209,6 +210,20 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
       </ScrollShadow>
 
       <div className="border-t border-divider px-2 py-3">
+        {/* The Platform team panel, for the platform team only: the whole-platform
+            pages live there (15 Nov 2026). */}
+        {isPlatformTeamUser(user) && (
+          <Link
+            to={tenantPath('/platform-team')}
+            aria-label={collapsed ? t('nav.platform_team_panel') : undefined}
+            className={`mb-1 flex items-center rounded-lg text-sm text-muted transition-colors hover:bg-surface-secondary hover:text-foreground ${
+              collapsed ? 'justify-center px-2 py-2' : 'gap-3 px-3 py-2'
+            }`}
+          >
+            <ShieldCheck size={18} aria-hidden="true" />
+            {!collapsed && <span>{t('nav.platform_team_panel')}</span>}
+          </Link>
+        )}
         {collapsed ? (
           <Tooltip content={t('nav.back_to_platform_admin')} placement="right">
             <Link

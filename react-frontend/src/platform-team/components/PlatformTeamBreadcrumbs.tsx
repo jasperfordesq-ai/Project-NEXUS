@@ -6,8 +6,9 @@
 /**
  * Platform team panel — breadcrumbs, built from the address.
  *
- * A segment with no entry in SEGMENT_LABEL_KEYS shows as the segment itself
- * (`breadcrumbs.unknown`), so a newly mounted page is never blank here.
+ * A segment with no wording of its own or in the admin menu shows as the
+ * segment itself (`breadcrumbs.unknown`), so a newly mounted page is never
+ * blank here.
  */
 
 import { Link, useLocation } from 'react-router-dom';
@@ -20,12 +21,28 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   'platform-team': 'breadcrumbs.root',
   create: 'breadcrumbs.create',
   edit: 'breadcrumbs.edit',
+  // No admin breadcrumb wording exists for these two.
+  'search-analytics': 'breadcrumbs.search_analytics',
+  '404-errors': 'breadcrumbs.errors_404',
 };
 
 export function PlatformTeamBreadcrumbs() {
-  const { t } = useTranslation('platform_team');
+  const { t, i18n } = useTranslation('platform_team');
   const location = useLocation();
   const { tenantSlug } = useTenant();
+
+  // The moved pages keep the names they had in the admin panel: its
+  // breadcrumb wording (`admin_nav:breadcrumbs.<segment>`) is reused, so there
+  // is one name per page and nothing to translate twice.
+  const labelFor = (segment: string): string => {
+    const own = SEGMENT_LABEL_KEYS[segment];
+    if (own) return t(own);
+
+    const adminKey = `admin_nav:breadcrumbs.${segment.replace(/-/g, '_')}`;
+    if (i18n.exists(adminKey)) return String(i18n.t(adminKey as never));
+
+    return t('breadcrumbs.unknown', { segment });
+  };
 
   let path = location.pathname;
   if (tenantSlug && (path === `/${tenantSlug}` || path.startsWith(`/${tenantSlug}/`))) {
@@ -41,11 +58,10 @@ export function PlatformTeamBreadcrumbs() {
     if (!segment || /^\d+$/.test(segment)) continue;
 
     currentPath += `/${segment}`;
-    const labelKey = SEGMENT_LABEL_KEYS[segment] ?? 'breadcrumbs.unknown';
     const isLast = index === segments.length - 1;
 
     crumbs.push({
-      label: t(labelKey, { segment }),
+      label: labelFor(segment),
       href: isLast ? undefined : currentPath,
     });
   }

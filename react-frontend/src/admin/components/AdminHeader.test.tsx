@@ -47,8 +47,10 @@ interface MockUser {
   avatar_url: null;
   avatar: null;
   tenant_id?: number;
-  role?: 'admin';
+  role?: 'admin' | 'super_admin';
   is_tenant_super_admin?: boolean;
+  is_super_admin?: boolean;
+  is_god?: boolean;
 }
 const DEFAULT_USER = vi.hoisted((): MockUser => ({ id: 1, name: 'Alice Admin', avatar_url: null, avatar: null }));
 const authState = vi.hoisted(() => ({ user: { ...DEFAULT_USER } as MockUser }));
@@ -467,6 +469,36 @@ describe('AdminHeader', () => {
 
     await user.click(button);
     expect(mockNavigate).toHaveBeenCalledWith('/hour-timebank/admin/make-it-yours');
+  });
+
+  // The platform team's pages live in their own panel (15 Nov 2026). Owner rule:
+  // a new admin area gets a header link as well as a menu entry.
+  it('gives the platform team a button that opens the Platform team panel', async () => {
+    authState.user = { ...DEFAULT_USER, role: 'super_admin', is_god: true, is_super_admin: true };
+    const user = userEvent.setup();
+    const { AdminHeader } = await import('./AdminHeader');
+    render(<AdminHeader sidebarCollapsed={false} />);
+
+    const button = screen.getAllByRole('button').find(
+      (btn) => btn.getAttribute('aria-label') === 'Platform team'
+    )!;
+    expect(button).toBeDefined();
+    expect(button.querySelector('svg')).not.toBeNull();
+
+    await user.click(button);
+    expect(mockNavigate).toHaveBeenCalledWith('/hour-timebank/platform-team');
+  });
+
+  it('does not show the Platform team button to anyone else', async () => {
+    const { AdminHeader } = await import('./AdminHeader');
+    const first = render(<AdminHeader sidebarCollapsed={false} />);
+    expect(screen.getAllByRole('button').find((btn) => btn.getAttribute('aria-label') === 'Platform team')).toBeUndefined();
+    first.unmount();
+
+    // A global super admin who is not on the platform team.
+    authState.user = { ...DEFAULT_USER, role: 'super_admin', is_super_admin: true };
+    render(<AdminHeader sidebarCollapsed={false} />);
+    expect(screen.getAllByRole('button').find((btn) => btn.getAttribute('aria-label') === 'Platform team')).toBeUndefined();
   });
 
   it('renders a settings button that opens the admin Settings page', async () => {

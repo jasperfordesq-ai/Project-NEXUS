@@ -32,12 +32,10 @@ import Building2 from 'lucide-react/icons/building-2';
 import Smartphone from 'lucide-react/icons/smartphone';
 import Globe from 'lucide-react/icons/globe';
 import Settings from 'lucide-react/icons/settings';
-import Webhook from 'lucide-react/icons/webhook';
 import PanelLeftClose from 'lucide-react/icons/panel-left-close';
 import PanelLeft from 'lucide-react/icons/panel-left';
 import UserCheck from 'lucide-react/icons/user-check';
 import FileText from 'lucide-react/icons/file-text';
-import Menu from 'lucide-react/icons/menu';
 import FolderTree from 'lucide-react/icons/folder-tree';
 import Tags from 'lucide-react/icons/tags';
 import Tag from 'lucide-react/icons/tag';
@@ -56,7 +54,6 @@ import CreditCard from 'lucide-react/icons/credit-card';
 import KeyIcon from 'lucide-react/icons/key';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import Heart from 'lucide-react/icons/heart';
-import Timer from 'lucide-react/icons/timer';
 import Contact from 'lucide-react/icons/contact';
 import StickyNote from 'lucide-react/icons/sticky-note';
 import ClipboardList from 'lucide-react/icons/clipboard-list';
@@ -65,7 +62,6 @@ import Activity from 'lucide-react/icons/activity';
 import Crown from 'lucide-react/icons/crown';
 import HandHeart from 'lucide-react/icons/hand-heart';
 import Mail from 'lucide-react/icons/mail';
-import Wrench from 'lucide-react/icons/wrench';
 import Stethoscope from 'lucide-react/icons/stethoscope';
 import UserX from 'lucide-react/icons/user-x';
 import Calendar from 'lucide-react/icons/calendar';
@@ -89,7 +85,6 @@ import BellRing from 'lucide-react/icons/bell-ring';
 import Bug from 'lucide-react/icons/bug';
 import HelpCircle from 'lucide-react/icons/help-circle';
 import ClipboardCheck from 'lucide-react/icons/clipboard-check';
-import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import CalendarClock from 'lucide-react/icons/calendar-clock';
 import Receipt from 'lucide-react/icons/receipt';
 import FolderKanban from 'lucide-react/icons/folder-kanban';
@@ -101,7 +96,7 @@ import { Accordion, AccordionItem } from '@/components/ui/Accordion';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { canAccessSuperPanel, isGodPlatformAdmin, isGodUser, isPlatformSuperAdminUser, isSuperAdminUser } from '@/lib/access';
+import { canAccessSuperPanel, isGodUser, isPlatformTeamUser, isPlatformSuperAdminUser, isSuperAdminUser } from '@/lib/access';
 import { isOnPanelPath } from '@/lib/panelPath';
 import { useAdminBadgeCounts, badgeForCount } from '@/admin/hooks/useAdminBadgeCounts';
 import type { LucideIcon } from 'lucide-react';
@@ -146,7 +141,7 @@ interface FilteredNavItem extends NavItem {
 }
 
 const ZONES: NavZone[] = [
-  { key: 'overview', label: 'zone_overview', sectionKeys: ['dashboard', 'broker-panel', 'super-admin', 'partner-timebanks-panel'] },
+  { key: 'overview', label: 'zone_overview', sectionKeys: ['dashboard', 'broker-panel', 'super-admin', 'platform-team-panel', 'partner-timebanks-panel'] },
   { key: 'people', label: 'zone_people', sectionKeys: ['users', 'crm'] },
   { key: 'community', label: 'zone_community', sectionKeys: ['volunteering', 'community', 'listings', 'content', 'jobs'] },
   { key: 'communications', label: 'zone_communications', sectionKeys: ['communications', 'marketing', 'advertising'] },
@@ -200,9 +195,10 @@ function useAdminNav(): NavSection[] {
   const isGod = isGodUser(user);
   const isSuperAdmin = isSuperAdminUser(user);
   const isPlatformSuperAdmin = isPlatformSuperAdminUser(user);
-  // Both flags — a god who is also a platform super admin (owner decision
-  // 2026-10-18). Neither isGod nor isPlatformSuperAdmin alone means this.
-  const canSeeIntegrations = isGodPlatformAdmin(user);
+  // The platform team: is_god AND super admin, an exact mirror of the server
+  // (lib/access.ts). Their pages live in their own panel since 15 Nov 2026;
+  // this menu only links to it.
+  const canSeePlatformTeamPanel = isPlatformTeamUser(user);
   // Server-resolved: covers both a platform super-admin and the super-admin of a
   // community that has communities beneath it. See the super-admin entry below.
   const canSeeSuperPanel = canAccessSuperPanel(user);
@@ -293,6 +289,15 @@ function useAdminNav(): NavSection[] {
         label: t('super_admin_panel'),
         icon: Crown,
         href: '/super-admin',
+        zone: 'overview' as const,
+      }] : []),
+      // The Platform team panel: everything that acts on the whole platform,
+      // and the per-community pages the owner keeps for the platform team.
+      ...(canSeePlatformTeamPanel ? [{
+        key: 'platform-team-panel',
+        label: t('platform_team_panel'),
+        icon: ShieldCheck,
+        href: '/platform-team',
         zone: 'overview' as const,
       }] : []),
       // One entry to the dedicated Partner Timebanks panel replaces the old
@@ -465,7 +470,6 @@ function useAdminNav(): NavSection[] {
           { label: t('pages'), href: '/admin/pages', icon: FileText },
           { label: t('landing_page'), href: '/admin/landing-page', icon: Palette },
           { label: t('announcements'), href: '/admin/announcements', icon: Megaphone },
-          ...(isGod ? [{ label: t('menus'), href: '/admin/menus', icon: Menu }] : []),
           // Categories normally live under Listings now (see categoriesItem).
           // They stay here only when the listings module is off, so a community
           // running events or volunteering without listings can still reach the
@@ -493,22 +497,8 @@ function useAdminNav(): NavSection[] {
       // /broker/safeguarding, /broker/safeguarding-options) on 2026-07-02.
       // Smart Matching is the only remaining item here — it now lives in the
       // Intelligence & Diagnostics section below.
-      // Email settings / deliverability are restricted to GOD accounts only
-      // (owner decision 2026-10-02; super admins until then). The routes are
-      // guarded by GodOnlyRoute too, so a typed URL does not reach them. When
-      // this is the only surviving section in the communications zone, hiding
-      // it also removes the zone header (the zone-empty filter drops it).
-      ...(isGod ? [{
-        key: 'communications',
-        label: t('communications'),
-        icon: Mail,
-        zone: 'communications' as const,
-        items: [
-          { label: t('email_settings'), href: '/admin/email-settings', icon: Mail, keywords: keyword(t('search_keywords.email_settings')) },
-          { label: t('email_deliverability'), href: '/admin/email-deliverability', icon: Mail, keywords: keyword(t('search_keywords.email_deliverability')) },
-          { label: t('deliverability'), href: '/admin/deliverability', icon: Mail, keywords: keyword(t('search_keywords.deliverability')) },
-        ],
-      }] : []),
+      // Email settings, Email deliverability and Deliverability moved to the
+      // Platform team panel (15 Nov 2026).
       {
         key: 'marketing',
         label: t('marketing'),
@@ -574,8 +564,9 @@ function useAdminNav(): NavSection[] {
         zone: 'growth',
         items: [
           { label: t('community_analytics'), href: '/admin/community-analytics', icon: BarChart3 },
-          // God-only in the sidebar (owner decision, 2026-10-02). This hides the
-          // link only — the page and its API keep their existing admin gates.
+          // Shown to the platform team only (owner decision, 2026-10-02; kept in
+          // this panel, 15 Nov 2026). This hides the link only — the page and
+          // its API keep their admin gates, and the help guide links to it.
           ...(isGod ? [{ label: t('impact_report'), href: '/admin/impact-report', icon: FileText }] : []),
           { label: t('member_reports'), href: '/admin/reports/members', icon: Users },
           ...(hasModule('wallet') ? [{ label: t('hours_reports'), href: '/admin/reports/hours', icon: Clock }] : []),
@@ -583,10 +574,6 @@ function useAdminNav(): NavSection[] {
           // Previously reachable only by typing the URL.
           ...(hasModule('wallet') ? [{ label: t('user_report'), href: '/admin/timebanking/user-report', icon: Clock }] : []),
           ...(hasFeature('caring_community') ? [{ label: t('municipal_impact'), href: '/caring/municipal-impact', icon: FileText }] : []),
-          // God accounts only until it is reworked (owner decision 2026-10-02):
-          // its figures come from volunteering + Caring Community data, so a
-          // timebank sees a page of zeros. The route and API are god-only too.
-          ...(isGod ? [{ label: t('regional_analytics'), href: '/admin/analytics/regional', icon: BarChart3 }] : []),
           // Each of these mirrors the gate on its own module's section — an
           // analytics link for a disabled module is a dead end, and there is a
           // regression test asserting exactly that for newsletters.
@@ -594,17 +581,12 @@ function useAdminNav(): NavSection[] {
           ...(hasFeature('newsletter') ? [{ label: t('newsletters'), href: '/admin/newsletters/analytics', icon: Mail }] : []),
           ...(hasFeature('exchange_workflow') ? [{ label: t('smart_matching'), href: '/admin/smart-matching/analytics', icon: Zap }] : []),
           { label: t('nexus_score'), href: '/admin/nexus-score/analytics', icon: Activity },
-          // God accounts only (owner decision 2026-10-02). The route is guarded
-          // by GodOnlyRoute too, so a typed URL does not reach the page.
-          ...(isGod ? [{ label: t('performance'), href: '/admin/performance', icon: Activity }] : []),
         ],
       },
-      // The whole Growth & Discovery section is god accounts only (owner
-      // decision 2026-10-02; the Prerender Engine alone was god-only before).
-      // Every god-only route below is guarded by GodOnlyRoute too, so a typed
-      // URL does not reach the pages. The SEO overview alone is open to every
-      // tenant admin again (owner decision 2026-10-22): its settings are per
-      // community and tenant-scoped on the backend.
+      // Only the SEO overview is a community admin's page (owner decision
+      // 2026-10-22). The rest of Growth & Discovery (SEO audit, URL redirects,
+      // Search analytics, Prerender engine, 404 tracking) is in the Platform
+      // team panel.
       {
         key: 'discovery',
         label: t('growth_discovery'),
@@ -612,14 +594,6 @@ function useAdminNav(): NavSection[] {
         zone: 'growth' as const,
         items: [
           { label: t('seo_overview'), href: '/admin/seo', icon: Search },
-          ...(isGod ? [
-            // Neither page was linked from anywhere, the SEO overview included.
-            { label: t('seo_audit'), href: '/admin/seo/audit', icon: ListChecks },
-            { label: t('url_redirects'), href: '/admin/seo/redirects', icon: ArrowLeftRight, keywords: keyword(t('search_keywords.url_redirects')) },
-            { label: t('search_analytics'), href: '/admin/search-analytics', icon: BarChart3, keywords: keyword(t('search_keywords.search_analytics')) },
-            { label: t('prerender_engine'), href: '/admin/seo/prerender', icon: Zap },
-            { label: t('error_404_tracking'), href: '/admin/404-errors', icon: AlertTriangle, keywords: keyword(t('search_keywords.error_404_tracking')) },
-          ] : []),
         ],
       },
       {
@@ -638,9 +612,11 @@ function useAdminNav(): NavSection[] {
           // Donation refunds moved to the Volunteering section (2026-10-02):
           // donations belong to volunteering giving days, and every
           // /admin/volunteering page now lives in that one section.
+          // The community's own subscription, plan and invoices. Shown to the
+          // platform team only for now (owner, 15 Nov 2026: it stays here in case
+          // communities come to pay for themselves). Plans & Pricing and
+          // Subscriptions are in the Platform team panel.
           ...(isGod ? [
-            { label: t('plans_pricing'), href: '/admin/plans', icon: CreditCard },
-            { label: t('subscriptions'), href: '/admin/plans/subscriptions', icon: CreditCard },
             { label: t('billing'), href: '/admin/billing', icon: CreditCard },
           ] : []),
           // The community's own Stripe account: one-off donations ride on
@@ -686,11 +662,6 @@ function useAdminNav(): NavSection[] {
           // for every community admin.
           { label: t('email_preview'), href: '/admin/email-preview', icon: Mail, keywords: keyword(t('search_keywords.email_preview')) },
           { label: t('settings'), href: '/admin/settings', icon: Settings },
-          // Joining methods, identity checks and provider keys: god accounts
-          // only (owner, 13 Nov 2026), and guarded by GodOnlyRoute too, so a
-          // typed URL does not reach the page. Invite codes and resuming paused
-          // sign-ups are on Settings for every community admin.
-          ...(isGod ? [{ label: t('registration_policy'), href: '/admin/settings/registration-policy', icon: UserCheck, keywords: keyword(t('search_keywords.registration_policy')) }] : []),
           { label: t('onboarding_settings'), href: '/admin/onboarding-settings', icon: Heart },
           // The page has existed at this route since the legacy admin was retired but
           // was never linked from anywhere, so it was reachable only by typing the URL.
@@ -705,15 +676,6 @@ function useAdminNav(): NavSection[] {
           { label: t('activity_log'), href: '/admin/activity-log', icon: Activity },
           { label: t('retention_policies'), href: '/admin/retention', icon: Activity, keywords: keyword(t('search_keywords.retention_policies')) },
           { label: t('sso_providers'), href: '/admin/sso', icon: KeyIcon, keywords: keyword(t('search_keywords.sso_providers')) },
-          // Cron jobs are god accounts only (owner decision 2026-10-02). The
-          // routes are guarded by GodOnlyRoute too, so a typed URL does not
-          // reach the pages.
-          ...(isGod ? [
-            { label: t('cron_jobs'), href: '/admin/cron-jobs', icon: Timer },
-            { label: t('cron_logs'), href: '/admin/cron-jobs/logs', icon: FileText },
-            { label: t('cron_setup'), href: '/admin/cron-jobs/setup', icon: Wrench },
-            { label: t('cron_settings'), href: '/admin/cron-jobs/settings', icon: Settings },
-          ] : []),
         ],
       },
       {
@@ -722,39 +684,13 @@ function useAdminNav(): NavSection[] {
         icon: Building2,
         zone: 'platform',
         items: [
-          // God-only (owner decisions: Roles & Permissions 2026-10-01, the
-          // dashboard 2026-10-02 — much of it is unfinished). The routes are
-          // guarded by GodOnlyRoute too, so a typed URL does not reach the
-          // pages; the API behind them is still gated on requireAdmin().
-          ...(isGod ? [
-            { label: t('enterprise_dashboard'), href: '/admin/enterprise', icon: Building2 },
-            { label: t('roles_permissions'), href: '/admin/enterprise/roles', icon: KeyIcon },
-            // Read-only catalogue that sits beside Roles; it had no link at all.
-            { label: t('permissions_list'), href: '/admin/enterprise/permissions', icon: ListChecks },
-          ] : []),
           { label: t('gdpr_dashboard'), href: '/admin/enterprise/gdpr', icon: ShieldCheck },
           { label: t('legal_documents'), href: '/admin/legal-documents', icon: FileText },
           { label: t('compliance_dashboard'), href: '/admin/legal-documents/compliance', icon: ShieldCheck },
           // Swiss data-protection register. Opt-in feature, off by default.
           ...(hasFeature('fadp_compliance') ? [{ label: t('fadp'), href: '/admin/enterprise/fadp', icon: ShieldCheck, keywords: keyword(t('search_keywords.fadp')) }] : []),
-          // God-only in the sidebar (owner decision, 2026-10-02). This hides the
-          // link only — the page and its API keep their existing admin gates.
-          ...(isGod ? [{ label: t('monitoring'), href: '/admin/enterprise/monitoring', icon: Heart }] : []),
         ],
       },
-      // Integrations — outbound webhooks, moved from the volunteering Settings
-      // page (owner decision 2026-10-18). Visible only to a god who is also a
-      // platform super admin; the route is guarded by GodPlatformRoute too, so
-      // a typed URL does not reach the page.
-      ...(canSeeIntegrations ? [{
-        key: 'integrations',
-        label: t('integrations'),
-        icon: Webhook,
-        zone: 'platform' as const,
-        items: [
-          { label: t('outbound_webhooks'), href: '/admin/integrations/webhooks', icon: Webhook, keywords: keyword(t('search_keywords.outbound_webhooks')) },
-        ],
-      }] : []),
       {
         key: 'intelligence',
         label: t('intelligence_diagnostics'),
@@ -775,10 +711,6 @@ function useAdminNav(): NavSection[] {
             { label: t('agent_runs'), href: '/admin/agents/runs', icon: Bot },
           ] : []),
           { label: t('algorithm_settings'), href: '/admin/algorithm-settings', icon: Cpu },
-          ...(isGod ? [
-            { label: t('diagnostics'), href: '/admin/matching-diagnostic', icon: Stethoscope },
-            { label: t('match_debug_panel'), href: '/admin/match-debug', icon: Target },
-          ] : []),
         ],
       },
     ];
@@ -795,7 +727,7 @@ function useAdminNav(): NavSection[] {
     // arrives, the memo is never recomputed, and the super-panel entry never
     // appears — the exact "there is no link to the panel" symptom reported on
     // 2026-08-05.
-  }, [canSeeIntegrations, canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, pendingVolApplicationsBadge, pendingVolExpensesBadge, pendingVolHoursBadge, pendingVolProjectsBadge, pendingVolSwapsBadge, activeWellbeingBadge, t]);
+  }, [canSeePlatformTeamPanel, canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, pendingVolApplicationsBadge, pendingVolExpensesBadge, pendingVolHoursBadge, pendingVolProjectsBadge, pendingVolSwapsBadge, activeWellbeingBadge, t]);
 }
 
 interface AdminSidebarProps {

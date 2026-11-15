@@ -839,5 +839,6 @@
   "subscriptions": "Subscriptions",
   "stripe_account": "Stripe account",
   "listings_digest": "Email Digest",
-  "email_preview": "What your members receive"
+  "email_preview": "What your members receive",
+  "platform_team_panel": "Platform team"
 }

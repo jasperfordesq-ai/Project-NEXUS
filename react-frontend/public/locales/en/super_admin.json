@@ -21,7 +21,8 @@
     "revenue_dashboard": "Revenue Dashboard",
     "regional_analytics": "Regional Analytics",
     "national_dashboard": "National Dashboard",
-    "platform_translation": "Translation key"
+    "platform_translation": "Translation key",
+    "platform_team_panel": "Platform team panel"
   },
   "layout": {
     "loading": "Loading super admin",

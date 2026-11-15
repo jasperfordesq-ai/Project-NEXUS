@@ -366,22 +366,6 @@ describe('AdminSidebar', () => {
     expect(screen.queryByRole('link', { name: 'Roles & Permissions' })).not.toBeInTheDocument();
   });
 
-  it('shows Roles & Permissions under Enterprise to god users only', async () => {
-    authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
-    const { AdminSidebar } = await import('./AdminSidebar');
-    render(<AdminSidebar collapsed={false} />);
-
-    await userEvent.click(screen.getByRole('button', { name: 'Enterprise' }));
-    expect(screen.getByRole('link', { name: 'Enterprise Dashboard' })).toHaveAttribute(
-      'href',
-      '/test/admin/enterprise',
-    );
-    expect(screen.getByRole('link', { name: 'Roles & Permissions' })).toHaveAttribute(
-      'href',
-      '/test/admin/enterprise/roles',
-    );
-  });
-
   it('hides Roles & Permissions from a platform super admin who is not god', async () => {
     authState.user = { id: 1, name: 'Super Admin', role: 'admin', is_super_admin: true } as User;
     const { AdminSidebar } = await import('./AdminSidebar');
@@ -452,21 +436,6 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('link', { name: 'Phone app' })).toBeInTheDocument();
     const hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
     expect(hrefs.filter((h) => h?.includes('/admin/cron-jobs'))).toEqual([]);
-  });
-
-  // ─── Integrations ─────────────────────────────────────────────────────────
-  // Outbound webhooks moved from the volunteering Settings page to a platform
-  // Integrations section on 2026-10-18 (owner decision), for a god account that
-  // is ALSO a platform super admin — both flags. The route is guarded by
-  // GodPlatformRoute too, so a typed URL does not reach the page.
-  it('shows the Integrations section with Outbound webhooks to a god who is also a platform super admin', async () => {
-    authState.user = { id: 1, name: 'Owner', role: 'super_admin', is_god: true, is_super_admin: true } as User;
-    const { AdminSidebar } = await import('./AdminSidebar');
-    render(<AdminSidebar collapsed={false} />);
-
-    await userEvent.click(screen.getByRole('button', { name: 'Integrations' }));
-    const link = screen.getByRole('link', { name: 'Outbound webhooks' });
-    expect(link).toHaveAttribute('href', '/test/admin/integrations/webhooks');
   });
 
   it.each([
@@ -678,43 +647,6 @@ describe('AdminSidebar', () => {
     expect(hrefs).toContain('/test/admin/help/faqs');
   });
 
-  it('shows the permissions list and subscriptions to god accounts only', async () => {
-    const GOD_ONLY = ['/test/admin/enterprise/permissions', '/test/admin/plans/subscriptions'];
-    const { AdminSidebar } = await import('./AdminSidebar');
-
-    const { unmount } = render(<AdminSidebar collapsed={false} />);
-    let hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
-    for (const href of GOD_ONLY) expect(hrefs).not.toContain(href);
-    unmount();
-
-    authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
-    render(<AdminSidebar collapsed={false} />);
-    hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
-    for (const href of GOD_ONLY) expect(hrefs).toContain(href);
-  });
-
-  // Registration policy: god accounts only (owner, 13 Nov 2026). Invite codes
-  // and resuming paused sign-ups moved to Settings for everyone else.
-  it.each([
-    ['a plain admin', { id: 1, name: 'Admin User', role: 'admin' }],
-    ['a platform super admin who is not god', { id: 1, name: 'Super Admin', role: 'admin', is_super_admin: true }],
-  ])('hides Registration policy from %s, and shows it to a god account', async (_who, user) => {
-    const { AdminSidebar } = await import('./AdminSidebar');
-    const HREF = '/test/admin/settings/registration-policy';
-
-    authState.user = user as User;
-    const { unmount } = render(<AdminSidebar collapsed={false} />);
-    let hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
-    expect(hrefs).not.toContain(HREF);
-    expect(hrefs).toContain('/test/admin/settings');
-    unmount();
-
-    authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
-    render(<AdminSidebar collapsed={false} />);
-    hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
-    expect(hrefs).toContain(HREF);
-  });
-
   // Growth & Discovery is god-only (owner decision 2026-10-02), platform
   // super admins included — EXCEPT the SEO overview, open to every tenant
   // admin again since 2026-10-22 (its settings are per community).
@@ -744,46 +676,86 @@ describe('AdminSidebar', () => {
     expect(hrefs).toContain('/test/admin/settings');
   });
 
-  it('keeps Growth & Discovery pages out of sidebar search for non-god admins', async () => {
+  // ── The Platform team panel (15 Nov 2026) ──────────────────────────────────
+  // The platform team's pages left this menu for their own panel. What is left
+  // here is one entry into that panel, shown to the platform team only.
+  const PLATFORM_TEAM = { id: 1, name: 'Owner', role: 'super_admin', is_god: true, is_super_admin: true } as User;
+  const MOVED_TAILS = [
+    'menus', 'email-settings', 'email-deliverability', 'deliverability', 'analytics/regional', 'performance',
+    'seo/audit', 'seo/redirects', 'search-analytics', 'seo/prerender', '404-errors', 'plans', 'plans/subscriptions',
+    'settings/registration-policy', 'cron-jobs', 'cron-jobs/logs', 'cron-jobs/setup', 'cron-jobs/settings',
+    'enterprise', 'enterprise/roles', 'enterprise/permissions', 'enterprise/monitoring', 'integrations/webhooks',
+    'matching-diagnostic', 'match-debug',
+  ];
+
+  function everyHref(container: HTMLElement): string[] {
+    // Includes links inside collapsed sections, which role queries cannot see.
+    return Array.from(container.querySelectorAll('a')).map((a) => a.getAttribute('href') ?? '');
+  }
+
+  it('gives the platform team one entry into the Platform team panel', async () => {
+    authState.user = { ...PLATFORM_TEAM };
     const { AdminSidebar } = await import('./AdminSidebar');
-
-    // Control: a god account searching the same word does find the page.
-    authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
-    const { unmount } = render(<AdminSidebar collapsed={false} />);
-    await userEvent.type(screen.getByRole('searchbox'), 'redirects');
-    await waitFor(() => {
-      expect(screen.getAllByRole('link').map((l) => l.getAttribute('href'))).toContain('/test/admin/seo/redirects');
-    });
-    unmount();
-
-    authState.user = { id: 1, name: 'Super Admin', role: 'admin', is_super_admin: true } as User;
     render(<AdminSidebar collapsed={false} />);
-    await userEvent.type(screen.getByRole('searchbox'), 'redirects');
-    await waitFor(() => {
-      expect(screen.getByRole('searchbox')).toHaveValue('redirects');
-    });
-    expect(screen.queryAllByRole('link').map((l) => l.getAttribute('href'))).not.toContain('/test/admin/seo/redirects');
+
+    expect(screen.getByRole('link', { name: 'Platform team' })).toHaveAttribute('href', '/test/platform-team');
   });
 
-  it('shows every Growth & Discovery link to a god account', async () => {
-    authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
+  it.each([
+    ['a community admin', { id: 1, name: 'Admin User', role: 'admin' }],
+    ['a global super admin who is not on the platform team', { id: 1, name: 'Super Admin', role: 'super_admin', is_super_admin: true }],
+    ['an account with is_god but not super admin', { id: 1, name: 'God', role: 'admin', is_god: true }],
+  ])('does not offer the Platform team panel to %s', async (_who, user) => {
+    authState.user = user as User;
     const { AdminSidebar } = await import('./AdminSidebar');
-    render(<AdminSidebar collapsed={false} />);
+    const { container } = render(<AdminSidebar collapsed={false} />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Growth & Discovery' }));
-    const hrefs = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
-    for (const href of GROWTH_DISCOVERY_HREFS) expect(hrefs).toContain(href);
+    expect(everyHref(container).filter((h) => h.includes('/platform-team'))).toEqual([]);
   });
 
-  it('shows all four cron job links to a god account', async () => {
-    authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
+  it('no longer lists any of the platform team\'s pages, even for the platform team', async () => {
+    authState.user = { ...PLATFORM_TEAM };
     const { AdminSidebar } = await import('./AdminSidebar');
-    render(<AdminSidebar collapsed={false} />);
+    const { container } = render(<AdminSidebar collapsed={false} />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Platform Operations' }));
-    const hrefs = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
-    for (const href of CRON_HREFS) {
-      expect(hrefs).toContain(href);
+    const hrefs = everyHref(container);
+    for (const tail of MOVED_TAILS) {
+      expect(hrefs).not.toContain(`/test/admin/${tail}`);
+      expect(hrefs).not.toContain(`/test/platform-team/${tail}`);
     }
+    // The only link into the panel is the entry itself.
+    expect(hrefs.filter((h) => h.includes('/platform-team'))).toEqual(['/test/platform-team']);
+  });
+
+  it('has no Communications or Integrations section any more', async () => {
+    authState.user = { ...PLATFORM_TEAM };
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    expect(screen.queryByRole('button', { name: 'Communications' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Integrations' })).not.toBeInTheDocument();
+  });
+
+  // Owner, 15 Nov 2026: these stay in the admin panel, hidden from community
+  // admins exactly as before.
+  it('keeps the Impact report and Billing links for the platform team, hidden from a community admin', async () => {
+    authState.user = { ...PLATFORM_TEAM };
+    const { AdminSidebar } = await import('./AdminSidebar');
+    const first = render(<AdminSidebar collapsed={false} />);
+    expect(everyHref(first.container)).toEqual(expect.arrayContaining(['/test/admin/impact-report', '/test/admin/billing']));
+    first.unmount();
+
+    authState.user = { ...ADMIN_USER };
+    const second = render(<AdminSidebar collapsed={false} />);
+    const hrefs = everyHref(second.container);
+    expect(hrefs).not.toContain('/test/admin/impact-report');
+    expect(hrefs).not.toContain('/test/admin/billing');
+  });
+
+  it('still shows the SEO overview to a community admin', async () => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+    const { container } = render(<AdminSidebar collapsed={false} />);
+
+    expect(everyHref(container)).toContain('/test/admin/seo');
   });
 });

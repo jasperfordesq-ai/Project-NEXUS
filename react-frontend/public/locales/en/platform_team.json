@@ -17,20 +17,32 @@
   "nav": {
     "brand": "Platform team",
     "back_to_admin": "Back to the admin panel",
-    "back_to_super_admin": "Back to the super admin panel"
+    "back_to_super_admin": "Back to the super admin panel",
+    "tests": "Tests"
   },
   "sidebar": {
     "expand": "Show the menu",
     "collapse": "Hide the menu",
     "nav_label": "Platform team menu",
     "zone_platform": "The whole platform",
-    "zone_community": "This community: {{name}}"
+    "zone_community": "This community: {{name}}",
+    "group_health": "Health",
+    "group_money": "Money",
+    "group_connections": "Connections",
+    "group_access": "Access",
+    "group_email": "Email",
+    "group_joining": "Joining and roles",
+    "group_site": "Site and search",
+    "group_reports": "Reports",
+    "group_matching": "Matching"
   },
   "breadcrumbs": {
     "aria_label": "Where you are",
     "root": "Platform team",
     "create": "Create",
     "edit": "Edit",
+    "search_analytics": "Search analytics",
+    "errors_404": "404 error tracking",
     "unknown": "{{segment}}"
   },
   "index": {

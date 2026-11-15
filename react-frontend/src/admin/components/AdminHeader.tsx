@@ -19,11 +19,12 @@ import LifeBuoy from 'lucide-react/icons/life-buoy';
 import LogOut from 'lucide-react/icons/log-out';
 import Menu from 'lucide-react/icons/menu';
 import Settings from 'lucide-react/icons/settings';
+import ShieldCheck from 'lucide-react/icons/shield-check';
 import Sparkles from 'lucide-react/icons/sparkles';
 import User from 'lucide-react/icons/user';
 import { resolveAvatarUrl } from '@/lib/helpers';
 import { adminSupportReports } from '@/admin/api/adminApi';
-import { isVisitingManager } from '@/lib/access';
+import { isPlatformTeamUser, isVisitingManager } from '@/lib/access';
 
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -148,6 +149,22 @@ export function AdminHeader({ sidebarCollapsed, onSidebarToggle }: AdminHeaderPr
 
       {/* Right: User menu */}
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        {/* The Platform team panel, for the platform team only (15 Nov 2026):
+            their pages left this panel for their own. The same entry is in
+            the sidebar's overview zone. */}
+        {isPlatformTeamUser(user) && (
+          <Button
+            variant="tertiary"
+            size="sm"
+            onPress={() => navigate(tenantPath('/platform-team'))}
+            startContent={<ShieldCheck size={18} aria-hidden="true" />}
+            aria-label={t('platform_team_panel')}
+            className="min-w-0 bg-surface-secondary/70 px-2 text-muted hover:bg-surface-tertiary/70 sm:px-3"
+          >
+            <span className="hidden whitespace-nowrap lg:inline" aria-hidden="true">{t('platform_team_panel')}</span>
+          </Button>
+        )}
+
         {/* Shortcut to "Make it yours" — the guided page for the community's
             own logo, colour, photo and tagline (owner, 13 Nov 2026: a header
             link with an icon and a label). Same page as the sidebar entry. */}
