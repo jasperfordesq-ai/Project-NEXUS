@@ -43,6 +43,9 @@ const AdminApp = lazyWithRetry(() => import('@/admin/AdminApp'));
 // Super Admin Panel (lazy-loaded — separate platform-wide admin area)
 const SuperAdminApp = lazyWithRetry(() => import('@/super-admin/SuperAdminApp'));
 
+// Platform team panel (lazy-loaded; only the platform team can open it)
+const PlatformTeamApp = lazyWithRetry(() => import('@/platform-team/PlatformTeamApp'));
+
 // Broker Panel (lazy-loaded — simplified admin interface for brokers)
 const BrokerApp = lazyWithRetry(() => import('@/broker/BrokerApp'));
 
@@ -1879,6 +1882,9 @@ export function AppRoutes() {
 
       {/* Super Admin Panel (separate platform-wide area) â€” fully lazy-loaded */}
       <Route path="super-admin/*" element={<SuperAdminApp />} />
+
+      {/* Platform team panel (the whole platform; guard inside the panel) - fully lazy-loaded */}
+      <Route path="platform-team/*" element={<PlatformTeamApp />} />
 
       {/* Broker Panel (simplified admin for brokers) â€” fully lazy-loaded */}
       <Route path="broker/*" element={<BrokerApp />} />

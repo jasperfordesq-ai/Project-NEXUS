@@ -160,6 +160,30 @@ export function isGodPlatformAdmin(user: UserLike): boolean {
 }
 
 /**
+ * The platform team: the people who run the whole installation. On screen it
+ * is always "Platform team" (owner, 15 Nov 2026); in the data it is `is_god`
+ * AND super admin. This is the check for the Platform team panel
+ * (`/platform-team`) and every link into it.
+ *
+ * 🔴 An EXACT mirror of the server's `App\Support\Authorization\PlatformTeam`
+ * (`requireGodPlatformAdmin()`, the `platform-team` route middleware):
+ *
+ *   - the first leg is the `is_god` FLAG only. The role string `god` is not
+ *     accepted, unlike `isGodUser()` / `isGodPlatformAdmin()` above: the server
+ *     reads the column and nothing else, so accepting the role here would show
+ *     a panel whose every request is refused;
+ *   - the second leg is `is_super_admin` or the role `super_admin`.
+ *     `is_tenant_super_admin` is not a platform super admin.
+ *
+ * The server re-reads both flags from the database on every request. This is
+ * only so the browser does not offer what the server will refuse.
+ */
+export function isPlatformTeamUser(user: UserLike): boolean {
+  if (user?.is_god !== true) return false;
+  return user.is_super_admin === true || userRole(user) === 'super_admin';
+}
+
+/**
  * How far the super panel reaches for this user. Server-resolved.
  *
  * 'master' is the platform owner only. 'regional' is a tenant super-admin: its

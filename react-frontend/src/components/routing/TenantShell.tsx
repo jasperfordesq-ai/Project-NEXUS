@@ -34,6 +34,7 @@ import { useCookieConsent } from '@/contexts/CookieConsentContext';
 import { detectTenantFromUrl, isSharedPlatformHost } from '@/lib/tenant-routing';
 import { CARING_COMMUNITY_ROUTE } from '@/pages/caring-community/config';
 import { LoadingScreen } from '@/components/feedback/LoadingScreen';
+import { staysOpenDuringMaintenance } from './maintenanceBypass';
 import { lazy, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ContextType } from 'react';
 import { listenForImpersonationToken } from '@/lib/impersonate';
 import {
@@ -304,6 +305,7 @@ function isAuthEntryPath(pathname: string, slugPrefix?: string): boolean {
 const protectedRuntimePrefixes = [
   'admin',
   'super-admin',
+  'platform-team',
   'broker',
   'dashboard',
   'feed',
@@ -541,10 +543,8 @@ function TenantGuard({
   const lowerPath = location.pathname.toLowerCase();
   const lowerPrefix = slugPrefix?.toLowerCase();
 
-  const isAdminRoute = lowerPath === '/admin' ||
-                       lowerPath.startsWith('/admin/') ||
-                       (lowerPrefix ? (lowerPath === `/${lowerPrefix}/admin` ||
-                                       lowerPath.startsWith(`/${lowerPrefix}/admin/`)) : false);
+  // The admin panel and the Platform team panel — see maintenanceBypass.ts.
+  const isAdminRoute = staysOpenDuringMaintenance(location.pathname, slugPrefix);
 
   const isAuthRoute = authPaths.some((p) =>
     lowerPath === `/${p}` ||

@@ -88,6 +88,9 @@ describe('tenant-routing', () => {
       expect(RESERVED_PATHS.has('caring-community')).toBe(true);
       expect(RESERVED_PATHS.has('broker')).toBe(true);
       expect(RESERVED_PATHS.has('partner-timebanks')).toBe(true);
+      // The Platform team panel. An unreserved first segment is read as a
+      // community's name, so the panel would 404 as "community not found".
+      expect(RESERVED_PATHS.has('platform-team')).toBe(true);
     });
 
     // Regression: these are real top-level app routes. If any is missing here,

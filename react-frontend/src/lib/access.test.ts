@@ -12,6 +12,7 @@ import {
   canAccessSuperPanel,
   isGodPlatformAdmin,
   isPlatformSuperAdminUser,
+  isPlatformTeamUser,
   isVisitingManager,
   isRegionalSuperPanelUser,
   adminSecurityTier,
@@ -124,6 +125,43 @@ describe('isGodPlatformAdmin', () => {
     expect(isGodPlatformAdmin({ role: 'super_admin' })).toBe(false);
     expect(isGodPlatformAdmin({ role: 'admin', is_admin: true })).toBe(false);
     expect(isGodPlatformAdmin(null)).toBe(false);
+  });
+});
+
+// Mirrors App\Support\Authorization\PlatformTeam::includes() row for row
+// (tests/Laravel/Unit/Authorization/PlatformTeamTest.php). A mirror looser
+// than the server shows a panel whose every request is refused.
+describe('isPlatformTeamUser', () => {
+  it('is true for is_god with the super admin flag', () => {
+    expect(isPlatformTeamUser({ is_god: true, is_super_admin: true })).toBe(true);
+  });
+
+  it('is true for is_god with the super admin role', () => {
+    expect(isPlatformTeamUser({ is_god: true, role: 'super_admin' })).toBe(true);
+  });
+
+  it('is false for is_god alone', () => {
+    expect(isPlatformTeamUser({ is_god: true })).toBe(false);
+  });
+
+  it('is false for a global super admin alone', () => {
+    expect(isPlatformTeamUser({ is_super_admin: true, role: 'super_admin' })).toBe(false);
+  });
+
+  it('matches the server: role "god" without the is_god flag is not the platform team', () => {
+    expect(isPlatformTeamUser({ role: 'god', is_super_admin: true })).toBe(false);
+    expect(isPlatformTeamUser({ role: 'god' })).toBe(false);
+  });
+
+  it('is false for is_god with only the tenant super admin flag', () => {
+    expect(isPlatformTeamUser({ is_god: true, is_tenant_super_admin: true, role: 'admin' })).toBe(false);
+  });
+
+  it('is false for anything that is not literally true, and for nobody', () => {
+    expect(isPlatformTeamUser({ is_god: 1, is_super_admin: 1 })).toBe(false);
+    expect(isPlatformTeamUser({ role: 'admin', is_admin: true })).toBe(false);
+    expect(isPlatformTeamUser(null)).toBe(false);
+    expect(isPlatformTeamUser(undefined)).toBe(false);
   });
 });
 

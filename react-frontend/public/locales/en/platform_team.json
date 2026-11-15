@@ -1,0 +1,42 @@
+{
+  "layout": {
+    "loading": "Opening the platform team panel",
+    "skip_to_main": "Skip to main content",
+    "navigation": "Platform team menu",
+    "close_navigation": "Close the platform team menu"
+  },
+  "header": {
+    "back_to_admin": "Back to admin",
+    "toggle_sidebar": "Open or close the menu",
+    "notifications": "Notifications",
+    "user_fallback": "Platform team",
+    "user_menu": "Your account",
+    "my_profile": "My profile",
+    "sign_out": "Sign out"
+  },
+  "nav": {
+    "brand": "Platform team",
+    "back_to_admin": "Back to the admin panel",
+    "back_to_super_admin": "Back to the super admin panel"
+  },
+  "sidebar": {
+    "expand": "Show the menu",
+    "collapse": "Hide the menu",
+    "nav_label": "Platform team menu",
+    "zone_platform": "The whole platform",
+    "zone_community": "This community: {{name}}"
+  },
+  "breadcrumbs": {
+    "aria_label": "Where you are",
+    "root": "Platform team",
+    "create": "Create",
+    "edit": "Edit",
+    "unknown": "{{segment}}"
+  },
+  "index": {
+    "title": "Platform team",
+    "body": "This panel is for the people who run the whole platform. Its pages are being moved here from the admin panel. Choose a page from the menu.",
+    "not_found_title": "That page is not in this panel",
+    "not_found_body": "The address may be mistyped, or the page may have moved. Choose a page from the menu."
+  }
+}
