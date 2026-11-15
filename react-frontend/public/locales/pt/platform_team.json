@@ -1,0 +1,54 @@
+{
+  "layout": {
+    "loading": "Abrindo o painel da equipe da plataforma",
+    "skip_to_main": "Ir para o conteúdo principal",
+    "navigation": "Menu da equipe da plataforma",
+    "close_navigation": "Fechar o menu da equipe da plataforma"
+  },
+  "header": {
+    "back_to_admin": "Voltar para a administração",
+    "toggle_sidebar": "Abrir ou fechar o menu",
+    "notifications": "Notificações",
+    "user_fallback": "Equipe da plataforma",
+    "user_menu": "Sua conta",
+    "my_profile": "Meu perfil",
+    "sign_out": "Sair"
+  },
+  "nav": {
+    "brand": "Equipe da plataforma",
+    "back_to_admin": "Voltar para o painel de administração",
+    "back_to_super_admin": "Voltar para o painel do superadministrador",
+    "tests": "Testes"
+  },
+  "sidebar": {
+    "expand": "Mostrar o menu",
+    "collapse": "Ocultar o menu",
+    "nav_label": "Menu da equipe da plataforma",
+    "zone_platform": "A plataforma inteira",
+    "zone_community": "Esta comunidade: {{name}}",
+    "group_health": "Saúde",
+    "group_money": "Dinheiro",
+    "group_connections": "Conexões",
+    "group_access": "Acesso",
+    "group_email": "E-mail",
+    "group_joining": "Entrada e funções",
+    "group_site": "Site e busca",
+    "group_reports": "Relatórios",
+    "group_matching": "Correspondência"
+  },
+  "breadcrumbs": {
+    "aria_label": "Onde você está",
+    "root": "Equipe da plataforma",
+    "create": "Criar",
+    "edit": "Editar",
+    "search_analytics": "Análise de buscas",
+    "errors_404": "Acompanhamento de erros 404",
+    "unknown": "{{segment}}"
+  },
+  "index": {
+    "title": "Equipe da plataforma",
+    "body": "Este painel é para as pessoas que cuidam da plataforma inteira. Escolha uma página no menu.",
+    "not_found_title": "Essa página não está neste painel",
+    "not_found_body": "Talvez o endereço esteja digitado errado, ou a página tenha mudado de lugar. Escolha uma página no menu."
+  }
+}

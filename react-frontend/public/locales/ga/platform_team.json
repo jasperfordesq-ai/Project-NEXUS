@@ -1,0 +1,54 @@
+{
+  "layout": {
+    "loading": "Painéal fhoireann an ardáin á oscailt",
+    "skip_to_main": "Léim go dtí an príomhábhar",
+    "navigation": "Roghchlár fhoireann an ardáin",
+    "close_navigation": "Dún roghchlár fhoireann an ardáin"
+  },
+  "header": {
+    "back_to_admin": "Ar ais chuig an riarachán",
+    "toggle_sidebar": "Oscail nó dún an roghchlár",
+    "notifications": "Fógraí",
+    "user_fallback": "Foireann an ardáin",
+    "user_menu": "Do chuntas",
+    "my_profile": "Mo phróifíl",
+    "sign_out": "Sínigh amach"
+  },
+  "nav": {
+    "brand": "Foireann an ardáin",
+    "back_to_admin": "Ar ais chuig an bpainéal riaracháin",
+    "back_to_super_admin": "Ar ais chuig painéal an fhor-riarthóra",
+    "tests": "Tástálacha"
+  },
+  "sidebar": {
+    "expand": "Taispeáin an roghchlár",
+    "collapse": "Folaigh an roghchlár",
+    "nav_label": "Roghchlár fhoireann an ardáin",
+    "zone_platform": "An t-ardán ar fad",
+    "zone_community": "An pobal seo: {{name}}",
+    "group_health": "Sláinte",
+    "group_money": "Airgead",
+    "group_connections": "Naisc",
+    "group_access": "Rochtain",
+    "group_email": "Ríomhphost",
+    "group_joining": "Ballraíocht agus róil",
+    "group_site": "Suíomh agus cuardach",
+    "group_reports": "Tuarascálacha",
+    "group_matching": "Meaitseáil"
+  },
+  "breadcrumbs": {
+    "aria_label": "An áit a bhfuil tú",
+    "root": "Foireann an ardáin",
+    "create": "Cruthaigh",
+    "edit": "Cuir in eagar",
+    "search_analytics": "Anailís chuardaigh",
+    "errors_404": "Rianú earráidí 404",
+    "unknown": "{{segment}}"
+  },
+  "index": {
+    "title": "Foireann an ardáin",
+    "body": "Tá an painéal seo ann do na daoine a ritheann an t-ardán ar fad. Roghnaigh leathanach ón roghchlár.",
+    "not_found_title": "Níl an leathanach sin sa phainéal seo",
+    "not_found_body": "B'fhéidir go bhfuil an seoladh mícheart, nó gur bogadh an leathanach. Roghnaigh leathanach ón roghchlár."
+  }
+}

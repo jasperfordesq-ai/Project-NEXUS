@@ -1,0 +1,54 @@
+{
+  "layout": {
+    "loading": "Otwieranie panelu zespołu platformy",
+    "skip_to_main": "Przejdź do głównej treści",
+    "navigation": "Menu zespołu platformy",
+    "close_navigation": "Zamknij menu zespołu platformy"
+  },
+  "header": {
+    "back_to_admin": "Wróć do administracji",
+    "toggle_sidebar": "Otwórz lub zamknij menu",
+    "notifications": "Powiadomienia",
+    "user_fallback": "Zespół platformy",
+    "user_menu": "Twoje konto",
+    "my_profile": "Mój profil",
+    "sign_out": "Wyloguj się"
+  },
+  "nav": {
+    "brand": "Zespół platformy",
+    "back_to_admin": "Wróć do panelu administracyjnego",
+    "back_to_super_admin": "Wróć do panelu superadministratora",
+    "tests": "Testy"
+  },
+  "sidebar": {
+    "expand": "Pokaż menu",
+    "collapse": "Ukryj menu",
+    "nav_label": "Menu zespołu platformy",
+    "zone_platform": "Cała platforma",
+    "zone_community": "Ta społeczność: {{name}}",
+    "group_health": "Stan",
+    "group_money": "Pieniądze",
+    "group_connections": "Połączenia",
+    "group_access": "Dostęp",
+    "group_email": "E-mail",
+    "group_joining": "Dołączanie i role",
+    "group_site": "Strona i wyszukiwanie",
+    "group_reports": "Raporty",
+    "group_matching": "Dopasowywanie"
+  },
+  "breadcrumbs": {
+    "aria_label": "Gdzie jesteś",
+    "root": "Zespół platformy",
+    "create": "Utwórz",
+    "edit": "Edytuj",
+    "search_analytics": "Analiza wyszukiwań",
+    "errors_404": "Śledzenie błędów 404",
+    "unknown": "{{segment}}"
+  },
+  "index": {
+    "title": "Zespół platformy",
+    "body": "Ten panel jest dla osób, które prowadzą całą platformę. Wybierz stronę z menu.",
+    "not_found_title": "Tej strony nie ma w tym panelu",
+    "not_found_body": "Być może adres został wpisany błędnie albo strona została przeniesiona. Wybierz stronę z menu."
+  }
+}

@@ -131,7 +131,7 @@
       "move_tenant_confirm": "Czy na pewno chcesz przenieść tego użytkownika do innej organizacji?",
       "actions_card_title": "Akcje",
       "view_tenant_btn": "Zobacz organizację",
-      "god_card_title": "Globalny Super Admin (tylko dla Boga)",
+      "god_card_title": "Globalny superadministrator (tylko zespół platformy)",
       "god_warning": "OSTRZEŻENIE:",
       "god_warning_text": "Globalni Super Administratorzy mają dostęp do WSZYSTKICH organizacji na platformie.",
       "god_has_access": "Użytkownik ma GLOBALNY dostęp Super Administratora",

@@ -1,0 +1,54 @@
+{
+  "layout": {
+    "loading": "Ouverture de l'espace de l'équipe de la plateforme",
+    "skip_to_main": "Aller au contenu principal",
+    "navigation": "Menu de l'équipe de la plateforme",
+    "close_navigation": "Fermer le menu de l'équipe de la plateforme"
+  },
+  "header": {
+    "back_to_admin": "Retour à l'administration",
+    "toggle_sidebar": "Ouvrir ou fermer le menu",
+    "notifications": "Notifications",
+    "user_fallback": "Équipe de la plateforme",
+    "user_menu": "Votre compte",
+    "my_profile": "Mon profil",
+    "sign_out": "Se déconnecter"
+  },
+  "nav": {
+    "brand": "Équipe de la plateforme",
+    "back_to_admin": "Retour à l'espace d'administration",
+    "back_to_super_admin": "Retour à l'espace super administrateur",
+    "tests": "Tests"
+  },
+  "sidebar": {
+    "expand": "Afficher le menu",
+    "collapse": "Masquer le menu",
+    "nav_label": "Menu de l'équipe de la plateforme",
+    "zone_platform": "Toute la plateforme",
+    "zone_community": "Cette communauté : {{name}}",
+    "group_health": "État",
+    "group_money": "Argent",
+    "group_connections": "Connexions",
+    "group_access": "Accès",
+    "group_email": "E-mail",
+    "group_joining": "Adhésion et rôles",
+    "group_site": "Site et recherche",
+    "group_reports": "Rapports",
+    "group_matching": "Mise en relation"
+  },
+  "breadcrumbs": {
+    "aria_label": "Où vous êtes",
+    "root": "Équipe de la plateforme",
+    "create": "Créer",
+    "edit": "Modifier",
+    "search_analytics": "Analyse des recherches",
+    "errors_404": "Suivi des erreurs 404",
+    "unknown": "{{segment}}"
+  },
+  "index": {
+    "title": "Équipe de la plateforme",
+    "body": "Cet espace est destiné aux personnes qui font fonctionner toute la plateforme. Choisissez une page dans le menu.",
+    "not_found_title": "Cette page n'est pas dans cet espace",
+    "not_found_body": "L'adresse est peut-être mal saisie, ou la page a été déplacée. Choisissez une page dans le menu."
+  }
+}

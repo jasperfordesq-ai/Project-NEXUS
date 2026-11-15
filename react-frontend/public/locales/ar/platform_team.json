@@ -1,0 +1,54 @@
+{
+  "layout": {
+    "loading": "جارٍ فتح لوحة فريق المنصة",
+    "skip_to_main": "انتقل إلى المحتوى الرئيسي",
+    "navigation": "قائمة فريق المنصة",
+    "close_navigation": "إغلاق قائمة فريق المنصة"
+  },
+  "header": {
+    "back_to_admin": "العودة إلى الإدارة",
+    "toggle_sidebar": "فتح القائمة أو إغلاقها",
+    "notifications": "الإشعارات",
+    "user_fallback": "فريق المنصة",
+    "user_menu": "حسابك",
+    "my_profile": "ملفي الشخصي",
+    "sign_out": "تسجيل الخروج"
+  },
+  "nav": {
+    "brand": "فريق المنصة",
+    "back_to_admin": "العودة إلى لوحة الإدارة",
+    "back_to_super_admin": "العودة إلى لوحة المشرف العام",
+    "tests": "الاختبارات"
+  },
+  "sidebar": {
+    "expand": "إظهار القائمة",
+    "collapse": "إخفاء القائمة",
+    "nav_label": "قائمة فريق المنصة",
+    "zone_platform": "المنصة كلها",
+    "zone_community": "هذا المجتمع: {{name}}",
+    "group_health": "السلامة",
+    "group_money": "المال",
+    "group_connections": "الروابط",
+    "group_access": "الصلاحيات",
+    "group_email": "البريد الإلكتروني",
+    "group_joining": "الانضمام والأدوار",
+    "group_site": "الموقع والبحث",
+    "group_reports": "التقارير",
+    "group_matching": "المطابقة"
+  },
+  "breadcrumbs": {
+    "aria_label": "أين أنت",
+    "root": "فريق المنصة",
+    "create": "إنشاء",
+    "edit": "تعديل",
+    "search_analytics": "تحليلات البحث",
+    "errors_404": "تتبع أخطاء 404",
+    "unknown": "{{segment}}"
+  },
+  "index": {
+    "title": "فريق المنصة",
+    "body": "هذه اللوحة للأشخاص الذين يديرون المنصة كلها. اختر صفحة من القائمة.",
+    "not_found_title": "هذه الصفحة ليست في هذه اللوحة",
+    "not_found_body": "ربما كُتب العنوان خطأ، أو نُقلت الصفحة. اختر صفحة من القائمة."
+  }
+}

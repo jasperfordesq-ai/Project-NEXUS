@@ -1,0 +1,54 @@
+{
+  "layout": {
+    "loading": "プラットフォームチームのパネルを開いています",
+    "skip_to_main": "メインコンテンツへ移動",
+    "navigation": "プラットフォームチームのメニュー",
+    "close_navigation": "プラットフォームチームのメニューを閉じる"
+  },
+  "header": {
+    "back_to_admin": "管理画面に戻る",
+    "toggle_sidebar": "メニューを開く・閉じる",
+    "notifications": "通知",
+    "user_fallback": "プラットフォームチーム",
+    "user_menu": "アカウント",
+    "my_profile": "マイプロフィール",
+    "sign_out": "ログアウト"
+  },
+  "nav": {
+    "brand": "プラットフォームチーム",
+    "back_to_admin": "管理パネルに戻る",
+    "back_to_super_admin": "スーパー管理者パネルに戻る",
+    "tests": "テスト"
+  },
+  "sidebar": {
+    "expand": "メニューを表示",
+    "collapse": "メニューを隠す",
+    "nav_label": "プラットフォームチームのメニュー",
+    "zone_platform": "プラットフォーム全体",
+    "zone_community": "このコミュニティ：{{name}}",
+    "group_health": "稼働状況",
+    "group_money": "お金",
+    "group_connections": "連携",
+    "group_access": "アクセス",
+    "group_email": "メール",
+    "group_joining": "参加と役割",
+    "group_site": "サイトと検索",
+    "group_reports": "レポート",
+    "group_matching": "マッチング"
+  },
+  "breadcrumbs": {
+    "aria_label": "現在の場所",
+    "root": "プラットフォームチーム",
+    "create": "作成",
+    "edit": "編集",
+    "search_analytics": "検索の分析",
+    "errors_404": "404エラーの追跡",
+    "unknown": "{{segment}}"
+  },
+  "index": {
+    "title": "プラットフォームチーム",
+    "body": "このパネルは、プラットフォーム全体を運営する人のためのものです。メニューからページを選んでください。",
+    "not_found_title": "そのページはこのパネルにありません",
+    "not_found_body": "アドレスが間違っているか、ページが移動した可能性があります。メニューからページを選んでください。"
+  }
+}

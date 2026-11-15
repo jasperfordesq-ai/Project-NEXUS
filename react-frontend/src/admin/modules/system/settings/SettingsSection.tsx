@@ -35,7 +35,7 @@ export interface SettingsSectionProps {
   title: string;
   description?: ReactNode;
   tone?: SettingsSectionTone;
-  /** Small chip beside the title (e.g. "God only"). */
+  /** Small chip beside the title (e.g. "Platform team only"). */
   badge?: ReactNode;
   /** Right-aligned header controls (e.g. a link to an advanced page). */
   actions?: ReactNode;

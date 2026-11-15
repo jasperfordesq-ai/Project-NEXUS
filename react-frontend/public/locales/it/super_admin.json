@@ -21,7 +21,8 @@
     "revenue_dashboard": "Cruscotto delle entrate",
     "regional_analytics": "Analisi regionale",
     "national_dashboard": "Cruscotto nazionale",
-    "platform_translation": "Chiave di traduzione"
+    "platform_translation": "Chiave di traduzione",
+    "platform_team_panel": "Pannello del team della piattaforma"
   },
   "layout": {
     "loading": "Caricamento super amministratore",
@@ -189,7 +190,7 @@
       "move_tenant_confirm": "Sei sicuro di voler spostare questo utente in un tenant diverso?",
       "actions_card_title": "Azioni",
       "view_tenant_btn": "Visualizza inquilino",
-      "god_card_title": "Super amministratore globale (God Only)",
+      "god_card_title": "Super amministratore globale (solo team della piattaforma)",
       "god_warning_text": "I super amministratori globali possono accedere a TUTTI i tenant sulla piattaforma.",
       "god_has_access": "L'utente ha accesso super amministratore GLOBALE",
       "god_revoke_btn": "Revoca il super amministratore globale",

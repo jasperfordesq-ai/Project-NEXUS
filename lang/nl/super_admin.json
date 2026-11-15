@@ -131,7 +131,7 @@
       "move_tenant_confirm": "Weet u zeker dat u deze gebruiker naar een andere huurder wilt verplaatsen?",
       "actions_card_title": "Acties",
       "view_tenant_btn": "Huurder bekijken",
-      "god_card_title": "Globale Super Admin (Alleen God)",
+      "god_card_title": "Globale superbeheerder (alleen platformteam)",
       "god_warning": "WAARSCHUWING:",
       "god_warning_text": "Globale Super Admins hebben toegang tot ALLE huurders op het platform.",
       "god_has_access": "Gebruiker heeft GLOBALE super admin toegang",

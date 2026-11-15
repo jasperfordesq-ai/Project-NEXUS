@@ -21,7 +21,8 @@
     "revenue_dashboard": "Painéal Tuillimh",
     "regional_analytics": "Anailís Réigiúnach",
     "national_dashboard": "Painéal Náisiúnta",
-    "platform_translation": "Eochair aistriúcháin"
+    "platform_translation": "Eochair aistriúcháin",
+    "platform_team_panel": "Painéal fhoireann an ardáin"
   },
   "layout": {
     "loading": "Super admin íoslódáil",
@@ -189,7 +190,7 @@
       "move_tenant_confirm": "An bhfuil tú cinnte gur mhaith leat an t-úsáideoir seo a bhogadh chuig tionónta eile?",
       "actions_card_title": "Gníomhartha",
       "view_tenant_btn": "Féach Tionónta",
-      "god_card_title": "Sár-Riarachán Domhanda (Dia amháin)",
+      "god_card_title": "For-riarthóir domhanda (foireann an ardáin amháin)",
       "god_warning_text": "Is féidir le Global Super Admins rochtain a fháil ar GACH tionónta ar an ardán.",
       "god_has_access": "Tá sár-rochtain admin DOMHANDA ag an úsáideoir",
       "god_revoke_btn": "Sár-Riarachán Domhanda a chúlghairm",

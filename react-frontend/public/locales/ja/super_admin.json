@@ -21,7 +21,8 @@
     "revenue_dashboard": "収益ダッシュボード",
     "regional_analytics": "地域別分析",
     "national_dashboard": "全国ダッシュボード",
-    "platform_translation": "翻訳キー"
+    "platform_translation": "翻訳キー",
+    "platform_team_panel": "プラットフォームチームのパネル"
   },
   "layout": {
     "loading": "スーパー管理者の読み込み中",
@@ -189,7 +190,7 @@
       "move_tenant_confirm": "このユーザーを別のテナントに移動してもよろしいですか?",
       "actions_card_title": "アクション",
       "view_tenant_btn": "テナントを見る",
-      "god_card_title": "グローバルスーパー管理者（神のみ）",
+      "god_card_title": "グローバルスーパー管理者（プラットフォームチームのみ）",
       "god_warning_text": "グローバル スーパー管理者は、プラットフォーム上のすべてのテナントにアクセスできます。",
       "god_has_access": "ユーザーはグローバルスーパー管理者アクセス権を持っています",
       "god_revoke_btn": "グローバルスーパー管理者の取り消し",

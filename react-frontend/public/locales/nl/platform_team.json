@@ -1,0 +1,54 @@
+{
+  "layout": {
+    "loading": "Het paneel van het platformteam wordt geopend",
+    "skip_to_main": "Ga naar de hoofdinhoud",
+    "navigation": "Menu van het platformteam",
+    "close_navigation": "Menu van het platformteam sluiten"
+  },
+  "header": {
+    "back_to_admin": "Terug naar beheer",
+    "toggle_sidebar": "Menu openen of sluiten",
+    "notifications": "Meldingen",
+    "user_fallback": "Platformteam",
+    "user_menu": "Je account",
+    "my_profile": "Mijn profiel",
+    "sign_out": "Uitloggen"
+  },
+  "nav": {
+    "brand": "Platformteam",
+    "back_to_admin": "Terug naar het beheerpaneel",
+    "back_to_super_admin": "Terug naar het superbeheerpaneel",
+    "tests": "Tests"
+  },
+  "sidebar": {
+    "expand": "Menu tonen",
+    "collapse": "Menu verbergen",
+    "nav_label": "Menu van het platformteam",
+    "zone_platform": "Het hele platform",
+    "zone_community": "Deze gemeenschap: {{name}}",
+    "group_health": "Gezondheid",
+    "group_money": "Geld",
+    "group_connections": "Koppelingen",
+    "group_access": "Toegang",
+    "group_email": "E-mail",
+    "group_joining": "Aanmelden en rollen",
+    "group_site": "Site en zoeken",
+    "group_reports": "Rapporten",
+    "group_matching": "Matching"
+  },
+  "breadcrumbs": {
+    "aria_label": "Waar je bent",
+    "root": "Platformteam",
+    "create": "Aanmaken",
+    "edit": "Bewerken",
+    "search_analytics": "Zoekanalyse",
+    "errors_404": "404-fouten volgen",
+    "unknown": "{{segment}}"
+  },
+  "index": {
+    "title": "Platformteam",
+    "body": "Dit paneel is voor de mensen die het hele platform draaiende houden. Kies een pagina in het menu.",
+    "not_found_title": "Die pagina staat niet in dit paneel",
+    "not_found_body": "Misschien is het adres verkeerd getypt, of is de pagina verplaatst. Kies een pagina in het menu."
+  }
+}

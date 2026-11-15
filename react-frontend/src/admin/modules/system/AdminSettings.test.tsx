@@ -651,6 +651,7 @@ describe('AdminSettings', () => {
       const related = document.getElementById('settings-section-related')!;
       const hrefs = Array.from(related.querySelectorAll('a')).map((a) => a.getAttribute('href'));
       expect(hrefs).not.toContain('/test/admin/settings/registration-policy');
+      expect(hrefs).not.toContain('/test/platform-team/settings/registration-policy');
       // Control: the list itself is there.
       expect(hrefs).toContain('/test/admin/module-configuration');
       expect(screen.getByText(/Invite codes appear just below when you choose Invite only\.$/)).toBeInTheDocument();
@@ -678,7 +679,7 @@ describe('AdminSettings', () => {
   it('gives a god account the way to the Registration policy page', async () => {
     mockAuthState.user = { id: 1, name: 'Platform', role: 'admin', is_god: true, is_super_admin: true };
     await renderPage();
-    expect(screen.getByRole('link', { name: /more joining rules/i })).toHaveAttribute('href', '/test/admin/settings/registration-policy');
+    expect(screen.getByRole('link', { name: /more joining rules/i })).toHaveAttribute('href', '/test/platform-team/settings/registration-policy');
   });
 
   // Maintenance mode is switched on the server. Only the platform's own
@@ -709,7 +710,7 @@ describe('AdminSettings', () => {
   it('shows the Powered-by section for a platform god', async () => {
     mockAuthState.user = { id: 1, name: 'Platform', role: 'admin', is_god: true };
     await renderPage();
-    expect(screen.getByText('God only')).toBeInTheDocument();
+    expect(screen.getByText('Platform team only')).toBeInTheDocument();
   });
 
   // The network badge is what a hub (e.g. Timebanking UK) hands down to every

@@ -21,7 +21,8 @@
     "revenue_dashboard": "Inkomstendashboard",
     "regional_analytics": "Regionale analyse",
     "national_dashboard": "Nationaal dashboard",
-    "platform_translation": "Vertaalsleutel"
+    "platform_translation": "Vertaalsleutel",
+    "platform_team_panel": "Paneel van het platformteam"
   },
   "layout": {
     "loading": "Superbeheerder laden",
@@ -189,7 +190,7 @@
       "move_tenant_confirm": "Weet u zeker dat u deze gebruiker naar een andere tenant wilt verplaatsen?",
       "actions_card_title": "Acties",
       "view_tenant_btn": "Bekijk huurder",
-      "god_card_title": "Wereldwijde superbeheerder (alleen God)",
+      "god_card_title": "Globale superbeheerder (alleen platformteam)",
       "god_warning_text": "Globale superbeheerders hebben toegang tot ALLE tenants op het platform.",
       "god_has_access": "Gebruiker heeft GLOBAL superadmin-toegang",
       "god_revoke_btn": "Algemene superbeheerder intrekken",

@@ -72,7 +72,7 @@ export function Footer({ children, copyright }: FooterProps) {
   const { resetConsent } = useCookieConsent();
   const year = new Date().getFullYear();
 
-  // Powered-by branding: hardcoded NEXUS defaults, overridable per-tenant by God only.
+  // Powered-by branding: hardcoded NEXUS defaults, overridable per-tenant by the platform team only.
   // DEFAULT_PB_URL is the marketing site, which moved from .ie to .net in 2026-09.
   // Communities that set their own general.powered_by_url are unaffected by it;
   // everyone else — including communities with only a custom badge image — uses this.

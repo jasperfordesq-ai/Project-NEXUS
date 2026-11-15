@@ -21,7 +21,8 @@
     "regional_analytics": "Regionale Analysen",
     "national_dashboard": "Nationales Dashboard",
     "whitelist": "Weiße Liste",
-    "platform_translation": "Übersetzungsschlüssel"
+    "platform_translation": "Übersetzungsschlüssel",
+    "platform_team_panel": "Bereich des Plattform-Teams"
   },
   "layout": {
     "loading": "Super Admin wird geladen",
@@ -189,7 +190,7 @@
       "move_tenant_confirm": "Sind Sie sicher, dass Sie diesen Benutzer zu einem anderen Mandanten verschieben möchten?",
       "actions_card_title": "Aktionen",
       "view_tenant_btn": "Mieter anzeigen",
-      "god_card_title": "Globaler Superadministrator (nur Gott)",
+      "god_card_title": "Globaler Super-Admin (nur Plattform-Team)",
       "god_warning_text": "Globale Super Admins können auf ALLE Mandanten auf der Plattform zugreifen.",
       "god_has_access": "Der Benutzer verfügt über GLOBAL Super Admin-Zugriff",
       "god_revoke_btn": "Widerrufen Sie den globalen Superadministrator",

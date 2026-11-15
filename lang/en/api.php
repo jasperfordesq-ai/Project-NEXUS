@@ -280,7 +280,7 @@ return [
     'impersonation_session_not_found'       => 'No impersonated session to end',
     'cannot_modify_own_super_admin'        => 'You cannot modify your own super admin status',
     'only_super_admins_manage_status'      => 'Only super admins can manage super admin status',
-    'only_god_manage_global_super_admin'   => 'Only god users can manage global super admin status',
+    'only_god_manage_global_super_admin'   => 'Only the platform team can manage global super admin status',
     'user_created_failed'                  => 'Failed to create user — email may already exist',
     'caring_paper_onboarding_file_required' => 'Upload a scanned consent or onboarding form.',
     'caring_paper_onboarding_invalid_file_type' => 'Upload a PDF, JPEG, PNG, or WebP file.',
@@ -1088,7 +1088,7 @@ return [
     // ============================================
     // ADMIN — SUPER ADMIN
     // ============================================
-    'god_level_access_required'            => 'God-level access required for this action',
+    'god_level_access_required'            => 'Only the platform team can do this.',
     'super_panel_access_denied'            => 'Super Panel access denied: :reason',
     'unknown_reason'                       => 'Unknown reason',
     'parent_id_required'                   => 'parent_id is required',

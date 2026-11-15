@@ -131,7 +131,7 @@
       "move_tenant_confirm": "Êtes-vous sûr de vouloir déplacer cet utilisateur vers un autre locataire ?",
       "actions_card_title": "Actions",
       "view_tenant_btn": "Voir le locataire",
-      "god_card_title": "Super admin global (Dieu uniquement)",
+      "god_card_title": "Super administrateur global (équipe de la plateforme uniquement)",
       "god_warning": "AVERTISSEMENT :",
       "god_warning_text": "Les super admins globaux peuvent accéder à TOUS les locataires de la plateforme.",
       "god_has_access": "L'utilisateur dispose d'un accès super admin GLOBAL",

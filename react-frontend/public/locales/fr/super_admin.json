@@ -21,7 +21,8 @@
     "revenue_dashboard": "Tableau de bord des revenus",
     "regional_analytics": "Analytique régionale",
     "national_dashboard": "Tableau de bord national",
-    "platform_translation": "Clé de traduction"
+    "platform_translation": "Clé de traduction",
+    "platform_team_panel": "Espace de l'équipe de la plateforme"
   },
   "layout": {
     "loading": "Chargement du super administrateur",
@@ -189,7 +190,7 @@
       "move_tenant_confirm": "Êtes-vous sûr de vouloir déplacer cet utilisateur vers un autre locataire ?",
       "actions_card_title": "Actions",
       "view_tenant_btn": "Voir le locataire",
-      "god_card_title": "Super administrateur mondial (Dieu uniquement)",
+      "god_card_title": "Super administrateur global (équipe de la plateforme uniquement)",
       "god_warning_text": "Les super administrateurs mondiaux peuvent accéder à TOUS les locataires de la plateforme.",
       "god_has_access": "L'utilisateur dispose d'un accès super-administrateur GLOBAL",
       "god_revoke_btn": "Révoquer le super-administrateur global",

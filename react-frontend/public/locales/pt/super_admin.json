@@ -21,7 +21,8 @@
     "revenue_dashboard": "Painel de Receitas",
     "regional_analytics": "Análise Regional",
     "national_dashboard": "Painel Nacional",
-    "platform_translation": "Chave de tradução"
+    "platform_translation": "Chave de tradução",
+    "platform_team_panel": "Painel da equipe da plataforma"
   },
   "layout": {
     "loading": "Carregando superadministrador",
@@ -189,7 +190,7 @@
       "move_tenant_confirm": "Tem certeza de que deseja mover este usuário para um locatário diferente?",
       "actions_card_title": "Ações",
       "view_tenant_btn": "Ver inquilino",
-      "god_card_title": "Superadministrador Global (Somente Deus)",
+      "god_card_title": "Superadministrador global (somente a equipe da plataforma)",
       "god_warning_text": "Superadministradores globais podem acessar TODOS os locatários da plataforma.",
       "god_has_access": "O usuário tem acesso GLOBAL de superadministrador",
       "god_revoke_btn": "Revogar superadministrador global",

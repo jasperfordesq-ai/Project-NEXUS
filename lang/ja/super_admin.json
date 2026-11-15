@@ -131,7 +131,7 @@
       "move_tenant_confirm": "このユーザーを別のテナントに移動してもよろしいですか？",
       "actions_card_title": "操作",
       "view_tenant_btn": "テナントを表示",
-      "god_card_title": "グローバルスーパー管理者（God限定）",
+      "god_card_title": "グローバルスーパー管理者（プラットフォームチームのみ）",
       "god_warning": "警告：",
       "god_warning_text": "グローバルスーパー管理者はプラットフォーム上のすべてのテナントにアクセスできます。",
       "god_has_access": "ユーザーはGLOBALスーパー管理者権限を持っています",

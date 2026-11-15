@@ -131,7 +131,7 @@
       "move_tenant_confirm": "Tem a certeza que pretende mover este utilizador para outro inquilino?",
       "actions_card_title": "Ações",
       "view_tenant_btn": "Ver Inquilino",
-      "god_card_title": "Super Admin Global (Apenas Deus)",
+      "god_card_title": "Superadministrador global (somente a equipe da plataforma)",
       "god_warning": "AVISO:",
       "god_warning_text": "Os Super Admins Globais podem aceder a TODOS os inquilinos na plataforma.",
       "god_has_access": "O utilizador tem acesso de super admin GLOBAL",

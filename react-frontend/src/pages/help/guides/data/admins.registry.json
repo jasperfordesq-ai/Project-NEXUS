@@ -58,11 +58,11 @@
       },
       {
         "id": "admin_registration_policy",
-        "link": "/admin/settings/registration-policy"
+        "link": "/admin/settings"
       },
       {
         "id": "admin_invite_codes",
-        "link": "/admin/settings/registration-policy"
+        "link": "/admin/settings"
       },
       {
         "id": "admin_translation_settings",

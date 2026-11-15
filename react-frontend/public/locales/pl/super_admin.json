@@ -21,7 +21,8 @@
     "revenue_dashboard": "Panel przychodów",
     "regional_analytics": "Analizy regionalne",
     "national_dashboard": "Panel krajowy",
-    "platform_translation": "Klucz tłumaczenia"
+    "platform_translation": "Klucz tłumaczenia",
+    "platform_team_panel": "Panel zespołu platformy"
   },
   "layout": {
     "loading": "Ładowanie superadministratora",
@@ -189,7 +190,7 @@
       "move_tenant_confirm": "Czy na pewno chcesz przenieść tego użytkownika do innego dzierżawcy?",
       "actions_card_title": "Działania",
       "view_tenant_btn": "Zobacz Najemcę",
-      "god_card_title": "Globalny superadministrator (tylko Bóg)",
+      "god_card_title": "Globalny superadministrator (tylko zespół platformy)",
       "god_warning_text": "Globalni superadministratorzy mają dostęp do WSZYSTKICH najemców na platformie.",
       "god_has_access": "Użytkownik ma GLOBALNY dostęp superadministratora",
       "god_revoke_btn": "Odwołaj globalnego superadministratora",

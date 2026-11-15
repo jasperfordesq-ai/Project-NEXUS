@@ -131,7 +131,7 @@
       "move_tenant_confirm": "Möchten Sie diesen Benutzer wirklich zu einem anderen Mandanten verschieben?",
       "actions_card_title": "Aktionen",
       "view_tenant_btn": "Mandant anzeigen",
-      "god_card_title": "Globaler Super-Admin (nur für Gott)",
+      "god_card_title": "Globaler Super-Admin (nur Plattform-Team)",
       "god_warning": "WARNUNG:",
       "god_warning_text": "Globale Super-Admins können auf ALLE Mandanten der Plattform zugreifen.",
       "god_has_access": "Benutzer hat GLOBALEN Super-Admin-Zugriff",

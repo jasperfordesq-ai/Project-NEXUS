@@ -1,0 +1,54 @@
+{
+  "layout": {
+    "loading": "Bereich des Plattform-Teams wird geöffnet",
+    "skip_to_main": "Zum Hauptinhalt springen",
+    "navigation": "Menü des Plattform-Teams",
+    "close_navigation": "Menü des Plattform-Teams schließen"
+  },
+  "header": {
+    "back_to_admin": "Zurück zur Verwaltung",
+    "toggle_sidebar": "Menü öffnen oder schließen",
+    "notifications": "Benachrichtigungen",
+    "user_fallback": "Plattform-Team",
+    "user_menu": "Ihr Konto",
+    "my_profile": "Mein Profil",
+    "sign_out": "Abmelden"
+  },
+  "nav": {
+    "brand": "Plattform-Team",
+    "back_to_admin": "Zurück zum Verwaltungsbereich",
+    "back_to_super_admin": "Zurück zum Super-Admin-Bereich",
+    "tests": "Tests"
+  },
+  "sidebar": {
+    "expand": "Menü anzeigen",
+    "collapse": "Menü ausblenden",
+    "nav_label": "Menü des Plattform-Teams",
+    "zone_platform": "Die ganze Plattform",
+    "zone_community": "Diese Gemeinschaft: {{name}}",
+    "group_health": "Zustand",
+    "group_money": "Geld",
+    "group_connections": "Verbindungen",
+    "group_access": "Zugriff",
+    "group_email": "E-Mail",
+    "group_joining": "Beitritt und Rollen",
+    "group_site": "Website und Suche",
+    "group_reports": "Berichte",
+    "group_matching": "Zuordnung"
+  },
+  "breadcrumbs": {
+    "aria_label": "Wo Sie sind",
+    "root": "Plattform-Team",
+    "create": "Erstellen",
+    "edit": "Bearbeiten",
+    "search_analytics": "Suchauswertung",
+    "errors_404": "404-Fehler verfolgen",
+    "unknown": "{{segment}}"
+  },
+  "index": {
+    "title": "Plattform-Team",
+    "body": "Dieser Bereich ist für die Menschen, die die ganze Plattform betreiben. Wählen Sie eine Seite aus dem Menü.",
+    "not_found_title": "Diese Seite gibt es in diesem Bereich nicht",
+    "not_found_body": "Vielleicht ist die Adresse falsch geschrieben, oder die Seite ist umgezogen. Wählen Sie eine Seite aus dem Menü."
+  }
+}

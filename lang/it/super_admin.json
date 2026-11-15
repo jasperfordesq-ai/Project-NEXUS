@@ -131,7 +131,7 @@
       "move_tenant_confirm": "Sei sicuro di voler spostare questo utente in un altro tenant?",
       "actions_card_title": "Azioni",
       "view_tenant_btn": "Visualizza tenant",
-      "god_card_title": "Super Admin globale (solo God)",
+      "god_card_title": "Super amministratore globale (solo team della piattaforma)",
       "god_warning": "ATTENZIONE:",
       "god_warning_text": "I Super Admin globali possono accedere a TUTTI i tenant della piattaforma.",
       "god_has_access": "L'utente ha accesso super admin GLOBALE",

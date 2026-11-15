@@ -47,7 +47,7 @@
   },
   "index": {
     "title": "Platform team",
-    "body": "This panel is for the people who run the whole platform. Its pages are being moved here from the admin panel. Choose a page from the menu.",
+    "body": "This panel is for the people who run the whole platform. Choose a page from the menu.",
     "not_found_title": "That page is not in this panel",
     "not_found_body": "The address may be mistyped, or the page may have moved. Choose a page from the menu."
   }
