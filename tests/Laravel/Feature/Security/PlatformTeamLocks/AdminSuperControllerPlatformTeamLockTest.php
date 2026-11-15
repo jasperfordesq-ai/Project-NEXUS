@@ -22,9 +22,10 @@ namespace Tests\Laravel\Feature\Security\PlatformTeamLocks;
  * and the partnership list / suspend / terminate endpoints are also called by
  * the per-community federation page, which stays in the super admin panel
  * (reactivate stays open with them, as the undo of suspend);
- * the audit log and the community list are shared with pages that stay too;
- * and the read-only federation overview, which no screen calls, is the tier B
- * control of RegionalPanelIsolationTest.
+ * the audit log and the community list are shared with pages that stay too.
+ * (The read-only federation overview was left open for a few hours on 15 Nov
+ * 2026 because RegionalPanelIsolationTest used it as its tier B control; the
+ * owner said to lock it, and that control now uses the whitelist.)
  */
 final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTestCase
 {
@@ -32,6 +33,7 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
     {
         return [
             // Federation dashboard — its own endpoints.
+            'federation overview' => ['GET', '/v2/admin/super/federation'],
             'federation switches' => ['GET', '/v2/admin/super/federation/system-controls'],
             'federation signing key status' => ['GET', '/v2/admin/super/federation/jwt-status'],
             'external federation status' => ['GET', '/v2/admin/super/federation/external-status'],
@@ -66,9 +68,6 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
             // No staying screen calls reactivate, but it is the undo of suspend:
             // whoever may suspend a partnership must be able to put it back.
             'reactivate a partnership' => ['POST', '/v2/admin/super/federation/partnerships/999999999/reactivate'],
-            // No screen calls this read-only summary; RegionalPanelIsolationTest
-            // (not to be edited) uses it as its tier B control, so it stays.
-            'federation overview' => ['GET', '/v2/admin/super/federation'],
             // Shared with the super admin audit log and community pages.
             'audit log' => ['GET', '/v2/admin/super/audit'],
             'community list' => ['GET', '/v2/admin/super/tenants'],

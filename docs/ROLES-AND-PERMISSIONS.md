@@ -372,7 +372,6 @@ gets an answer:
 | `GET /v2/admin/matching/stats` | Smart matching |
 | federation whitelist (read, add, remove) and partnerships (list, suspend, terminate, reactivate) under `/v2/admin/super/federation/` | the per-community federation switches page, which stays in the super admin panel — open to a global super admin, as before. Reactivate is not called by that page but stays open with suspend, because it is its undo |
 | `GET /v2/admin/super/audit`, `GET /v2/admin/super/tenants` | the super admin audit log and community pages (tier A, confined to the caller's branch) |
-| `GET /v2/admin/super/federation` (read-only overview) | no screen; `RegionalPanelIsolationTest` uses it as its control that a global super admin still reaches tier B |
 | everything under `/v2/admin/national/kiss/` | the national dashboard's endpoints are not changed (they also admit holders of `national.kiss_dashboard.view`); only the screen moved |
 
 **Not in the panel.** Community billing (`/admin/billing*`), the Impact report

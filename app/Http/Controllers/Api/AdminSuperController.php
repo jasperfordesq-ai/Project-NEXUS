@@ -2338,12 +2338,10 @@ class AdminSuperController extends BaseApiController
     /** GET /api/v2/super-admin/federation */
     public function federationOverview(): JsonResponse
     {
-        // 🔴 Deliberately NOT the platform-team check, unlike every other
-        // Federation dashboard endpoint below (E-128, 15 Nov 2026). No screen
-        // calls this read-only summary, and RegionalPanelIsolationTest uses it
-        // as its control that a global super admin still reaches tier B.
-        // Pinned by AdminSuperControllerPlatformTeamLockTest.
-        $this->requireSuperAdmin();
+        // Platform team only, like the rest of the Federation dashboard
+        // (E-128, owner decision O-291, 15 Nov 2026): the switch positions and
+        // the recent federation audit rows are installation-wide.
+        $this->requireGodPlatformAdmin();
 
         $systemControls = $this->federationFeatureService->getSystemControls();
         $partnershipStats = $this->federationPartnershipService->getStats();
