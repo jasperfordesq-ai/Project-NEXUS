@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\DB;
 use App\Core\ApiErrorCodes;
 use App\Core\TenantContext;
 use App\Core\RateLimiter;
-use App\Core\EmailTemplate;
 use App\Models\ActivityLog;
 use App\Services\RateLimitService;
 use App\Jobs\SendEmailVerificationResend;
