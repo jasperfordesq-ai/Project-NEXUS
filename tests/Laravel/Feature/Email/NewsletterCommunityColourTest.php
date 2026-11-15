@@ -54,18 +54,20 @@ class NewsletterCommunityColourTest extends TestCase
     /** The solid colour behind the header's white community name. */
     private function headerFill(string $html): string
     {
-        // The CSS inliner rewrites the attribute with single quotes.
-        $this->assertSame(1, preg_match('/class="header" style=\'[^\']*background-color: (#[0-9a-f]{6});/', $html, $m), 'header fill not found');
+        // The inliner's serialiser picks the quote character, and libxml
+        // versions differ (single quotes in local Docker, double quotes with
+        // &quot; escaping on newer libxml in CI), so accept either delimiter.
+        $this->assertSame(1, preg_match('/class="header" style=(["\'])(?:(?!\1).)*?background-color: (#[0-9a-f]{6});/s', $html, $m), 'header fill not found');
 
-        return $m[1];
+        return $m[2];
     }
 
     /** The colour of the body link (wrapped for click tracking, styled by the inliner). */
     private function linkColour(string $html): string
     {
-        $this->assertSame(1, preg_match('/<a href="[^"]*example\.test[^"]*" style=\'[^\']*color: (#[0-9a-f]{6});[^\']*\'>A link<\/a>/', $html, $m), 'body link not found');
+        $this->assertSame(1, preg_match('/<a href="[^"]*example\.test[^"]*" style=(["\'])(?:(?!\1).)*?color: (#[0-9a-f]{6});(?:(?!\1).)*\1>A link<\/a>/s', $html, $m), 'body link not found');
 
-        return $m[1];
+        return $m[2];
     }
 
     public function test_a_community_that_never_chose_a_colour_keeps_todays_newsletter(): void

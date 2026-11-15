@@ -163,7 +163,9 @@ describe('CommunityGoal', () => {
     expect(card).toHaveTextContent('We did it!');
     expect(card).toHaveTextContent('512 of 500 hours shared');
     expect(within(card).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
-    expect(screen.getByTestId('community-goal-confetti')).toBeInTheDocument();
+    // The confetti waits for the card to be in view (an observer callback a
+    // tick after the card renders), so wait for it rather than query at once.
+    expect(await screen.findByTestId('community-goal-confetti')).toBeInTheDocument();
     // Counted as seen once it has had time to play.
     await waitFor(() => expect(localStorage.getItem(CELEBRATED)).toBe('1'), { timeout: CELEBRATION_MS + 1500 });
     first.unmount();

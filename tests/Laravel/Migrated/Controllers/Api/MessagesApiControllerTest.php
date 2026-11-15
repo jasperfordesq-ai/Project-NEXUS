@@ -156,7 +156,10 @@ class MessagesApiControllerTest extends LegacyBridgeTestCase
         $this->assertSame([], $result, 'Failed send should return an empty array');
         $errors = $this->messageService->getErrors();
         $this->assertNotEmpty($errors, 'Should record an error for missing recipient');
-        $this->assertStringContainsString('recipient', strtolower($errors[0]['message'] ?? ''));
+        // Assert on the translation, not on English wording: the message text is
+        // copy that gets reworded (warmth phase 6 voice pass), the key does not.
+        $this->assertSame('VALIDATION_ERROR', $errors[0]['code'] ?? null);
+        $this->assertSame(__('api.message_recipient_required'), $errors[0]['message'] ?? null);
     }
 
     /**

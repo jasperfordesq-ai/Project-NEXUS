@@ -520,6 +520,10 @@
       "status": "native",
       "mobile": "skills"
     },
+    "thank-yous": {
+      "status": "gap",
+      "reason": "The community thank-you page (notes their receivers chose to show, first names only) was added to the website on 15 Nov 2026 behind the 'Thank-you page' module switch, off by default; the app shows a member's own thank-yous (appreciations) but has no community-wide page yet."
+    },
     "users/:userId/appreciations": {
       "status": "native",
       "mobile": "appreciations"
