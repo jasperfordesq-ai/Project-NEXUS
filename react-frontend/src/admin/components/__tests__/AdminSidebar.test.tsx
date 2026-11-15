@@ -331,7 +331,7 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('link', { name: 'Recurring Supporters' })).toHaveAttribute('href', '/test/admin/member-premium/subscribers');
   });
 
-  it('shows commercial financial links to god users', () => {
+  it('keeps Billing for god users; Plans & Pricing has moved to the Platform team panel', () => {
     Object.assign(mockUser, {
       role: 'admin',
       is_super_admin: false,
@@ -348,7 +348,7 @@ describe('AdminSidebar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Financial' }));
 
-    expect(screen.getByRole('link', { name: 'Plans & Pricing' })).toHaveAttribute('href', '/test/admin/plans');
+    expect(screen.queryByRole('link', { name: 'Plans & Pricing' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Billing' })).toHaveAttribute('href', '/test/admin/billing');
     expect(screen.getByRole('link', { name: 'Donations & Support' })).toHaveAttribute('href', '/test/admin/member-premium');
     expect(screen.getByRole('link', { name: 'Recurring Supporters' })).toHaveAttribute('href', '/test/admin/member-premium/subscribers');
@@ -366,7 +366,7 @@ describe('AdminSidebar', () => {
     expect(screen.queryByRole('link', { name: 'Match Debug Panel' })).not.toBeInTheDocument();
   });
 
-  it('shows diagnostic debug links to god users', () => {
+  it('no longer lists the diagnostic debug links, even for god users (Platform team panel)', () => {
     Object.assign(mockUser, {
       role: 'admin',
       is_super_admin: false,
@@ -380,8 +380,9 @@ describe('AdminSidebar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Intelligence & Diagnostics' }));
 
-    expect(screen.getByRole('link', { name: 'Diagnostics' })).toHaveAttribute('href', '/test/admin/matching-diagnostic');
-    expect(screen.getByRole('link', { name: 'Match Debug Panel' })).toHaveAttribute('href', '/test/admin/match-debug');
+    expect(screen.getByRole('link', { name: 'Algorithm Settings' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Diagnostics' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Match Debug Panel' })).not.toBeInTheDocument();
   });
 
   it('hides the menus content link from non-god super admins', () => {
@@ -395,7 +396,7 @@ describe('AdminSidebar', () => {
     expect(screen.queryByRole('link', { name: 'Menus' })).not.toBeInTheDocument();
   });
 
-  it('shows the menus content link to god users', () => {
+  it('no longer lists the menus content link, even for god users (Platform team panel)', () => {
     Object.assign(mockUser, {
       role: 'admin',
       is_super_admin: false,
@@ -409,7 +410,8 @@ describe('AdminSidebar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Content' }));
 
-    expect(screen.getByRole('link', { name: 'Menus' })).toHaveAttribute('href', '/test/admin/menus');
+    expect(screen.getByRole('link', { name: 'Pages' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Menus' })).not.toBeInTheDocument();
   });
 
   it('hides the whole Communications section from non-god super admins', () => {
@@ -424,7 +426,7 @@ describe('AdminSidebar', () => {
     expect(screen.queryByRole('link', { name: 'Deliverability' })).not.toBeInTheDocument();
   });
 
-  it('shows the Communications section to god users', () => {
+  it('no longer has a Communications section, even for god users (Platform team panel)', () => {
     Object.assign(mockUser, {
       role: 'admin',
       is_super_admin: false,
@@ -436,11 +438,10 @@ describe('AdminSidebar', () => {
       <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Communications' }));
-
-    expect(screen.getByRole('link', { name: 'Email Settings' })).toHaveAttribute('href', '/test/admin/email-settings');
-    expect(screen.getByRole('link', { name: 'Email Deliverability' })).toHaveAttribute('href', '/test/admin/email-deliverability');
-    expect(screen.getByRole('link', { name: 'Deliverability' })).toHaveAttribute('href', '/test/admin/deliverability');
+    expect(screen.queryByRole('button', { name: 'Communications' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Email Settings' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Email Deliverability' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Deliverability' })).not.toBeInTheDocument();
   });
 
   it('hides the Performance link from non-god super admins', () => {
@@ -455,7 +456,7 @@ describe('AdminSidebar', () => {
     expect(screen.queryByRole('link', { name: 'Performance' })).not.toBeInTheDocument();
   });
 
-  it('shows the Performance link to god users', () => {
+  it('no longer lists the Performance link, even for god users (Platform team panel)', () => {
     Object.assign(mockUser, {
       role: 'admin',
       is_super_admin: false,
@@ -469,7 +470,8 @@ describe('AdminSidebar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Analytics & Reporting' }));
 
-    expect(screen.getByRole('link', { name: 'Performance' })).toHaveAttribute('href', '/test/admin/performance');
+    expect(screen.getByRole('link', { name: 'Community Analytics' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Performance' })).not.toBeInTheDocument();
   });
 
   it('hides the Monitoring link from non-god super admins', () => {
@@ -484,7 +486,7 @@ describe('AdminSidebar', () => {
     expect(screen.queryByRole('link', { name: 'Monitoring' })).not.toBeInTheDocument();
   });
 
-  it('shows the Monitoring link to god users', () => {
+  it('no longer lists the Monitoring link, even for god users (Platform team panel)', () => {
     Object.assign(mockUser, {
       role: 'admin',
       is_super_admin: false,
@@ -498,7 +500,8 @@ describe('AdminSidebar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Enterprise' }));
 
-    expect(screen.getByRole('link', { name: 'Monitoring' })).toHaveAttribute('href', '/test/admin/enterprise/monitoring');
+    expect(screen.getByRole('link', { name: 'GDPR Dashboard' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Monitoring' })).not.toBeInTheDocument();
   });
 
   it('hides the Regional Analytics link from non-god super admins', () => {
@@ -513,7 +516,7 @@ describe('AdminSidebar', () => {
     expect(screen.queryByRole('link', { name: 'Regional Analytics' })).not.toBeInTheDocument();
   });
 
-  it('shows the Regional Analytics link to god users', () => {
+  it('no longer lists the Regional Analytics link, even for god users (Platform team panel)', () => {
     Object.assign(mockUser, {
       role: 'admin',
       is_super_admin: false,
@@ -527,7 +530,8 @@ describe('AdminSidebar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Analytics & Reporting' }));
 
-    expect(screen.getByRole('link', { name: 'Regional Analytics' })).toHaveAttribute('href', '/test/admin/analytics/regional');
+    expect(screen.getByRole('link', { name: 'Community Analytics' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Regional Analytics' })).not.toBeInTheDocument();
   });
 
   it('hides the Impact Report link from non-god super admins', () => {
@@ -576,7 +580,7 @@ describe('AdminSidebar', () => {
     expect(screen.queryByRole('link', { name: 'URL Redirects', hidden: true })).not.toBeInTheDocument();
   });
 
-  it('shows the Prerender Engine link to god users', () => {
+  it('no longer lists the Prerender Engine link, even for god users (Platform team panel)', () => {
     Object.assign(mockUser, {
       role: 'admin',
       is_super_admin: false,
@@ -590,7 +594,8 @@ describe('AdminSidebar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Growth & Discovery' }));
 
-    expect(screen.getByRole('link', { name: 'Prerender Engine' })).toHaveAttribute('href', '/test/admin/seo/prerender');
+    expect(screen.getByRole('link', { name: 'SEO Overview' })).toHaveAttribute('href', '/test/admin/seo');
+    expect(screen.queryByRole('link', { name: 'Prerender Engine', hidden: true })).not.toBeInTheDocument();
   });
 
   it('shows the Module Configuration link to super admins', () => {

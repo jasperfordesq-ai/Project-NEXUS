@@ -728,6 +728,22 @@ admin** (`is_super_admin`: platform-wide) → **god** (`is_god` **and**
 - 🔴 God accounts need `is_super_admin` too: `BaseApiController::requireSuperAdmin()`
   (first check on every super-panel endpoint) does not read `is_god`, and
   `requireGod()` reads only the `is_god` column, not `role = 'god'`.
+- 🔴 **The Platform team panel (owner, 15 Nov 2026).** The god level has its own
+  panel at `/platform-team` (`react-frontend/src/platform-team/`), and **on
+  screen it is always "Platform team", never "God"** — the code keeps `is_god`.
+  Platform team = `is_god` **and** super admin, one definition:
+  `App\Support\Authorization\PlatformTeam::includes()`, reached through
+  `requireGodPlatformAdmin()` in a controller or the `platform-team` route
+  middleware, and mirrored in the browser by `isPlatformTeamUser()`
+  (`lib/access.ts`). A global super admin without `is_god` is **not** on it. A
+  page in the panel is locked on the server, not only hidden: every endpoint
+  that only panel pages call starts with `requireGodPlatformAdmin()`, pinned
+  per controller in `tests/Laravel/Feature/Security/PlatformTeamLocks/`. An
+  endpoint a screen outside the panel still calls is left open on purpose and
+  listed in `docs/ROLES-AND-PERMISSIONS.md`. Old `/admin/...` addresses of moved
+  pages are redirects (`MovedToPlatformTeam`). 🔴 `GodOnlyRoute` and
+  `GodPlatformRoute` **no longer exist** — do not look for them or restore
+  them; a platform-team-only page goes in the panel.
 
 - `app/Support/Authorization/AdminTier.php` is the canonical predicate. It
   **deliberately returns `false` for `broker`/`coordinator`** — a broker is an

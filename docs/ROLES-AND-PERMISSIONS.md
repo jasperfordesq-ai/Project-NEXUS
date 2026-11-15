@@ -1,6 +1,6 @@
 # Roles & Permissions
 
-Last reviewed: 2026-10-12
+Last reviewed: 2026-11-15
 
 This page describes the authorisation model as it exists in code. It was written
 by reading `app/Support/Authorization/AdminTier.php`, the `app/Http/Middleware/EnsureIs*.php`
@@ -28,7 +28,7 @@ appears only in historical records and in the names of some older test files.
 | tenant admin | **own tenant** | `role = 'admin'` (or `'tenant_admin'`), or legacy `is_admin = 1` | `app/Http/Middleware/EnsureIsAdmin.php` |
 | tenant super admin | **own tenant + every tenant below it** in the hierarchy | `is_tenant_super_admin = 1`, on a tenant with `allows_subtenants = 1` | `EnsureIsAdmin`; super-admin panel tier A (`EnsureSuperPanelAccess`) |
 | global super admin | **every tenant** (platform-wide) | `is_super_admin = 1` (or `role = 'super_admin'`) | `app/Http/Middleware/EnsureIsSuperAdmin.php` |
-| global super admin with "god" status | every tenant, plus the god-only actions | `is_god = 1` **and** `is_super_admin = 1` (see below) | `EnsureIsSuperAdmin`, plus `requireGod()` in `AdminSuperController` |
+| global super admin with "god" status — on screen, the **platform team** | every tenant, plus the god-only actions and the [Platform team panel](#the-platform-team-panel-15-november-2026) | `is_god = 1` **and** `is_super_admin = 1` (see below) | `EnsureIsSuperAdmin`, plus `requireGod()` in `AdminSuperController`; `requireGodPlatformAdmin()` / middleware `platform-team` for the panel |
 
 ### The reach rule (owner, 12 October 2026)
 
@@ -287,6 +287,72 @@ resolve a report they filed, and cannot approve a match they submitted. A broker
 also cannot adjust their own balance. Regression tests live in
 `tests/Laravel/Feature/Controllers/BrokerModerationAuthorizationTest.php` and
 `BrokerMatchApprovalAuthorizationTest.php`.
+
+---
+
+## The Platform team panel (15 November 2026)
+
+The people who run the whole installation have their own panel at
+`/platform-team`, beside the admin, broker, partner and super admin panels. On
+screen the tier is always called **"Platform team"** (owner, 15 November 2026).
+The code keeps the names it had: `is_god`, `requireGod()`, `isGodUser()`.
+
+**Who is on the platform team.** `users.is_god = 1` **and** super admin
+(`is_super_admin = 1` or `role = 'super_admin'`). Both legs:
+
+- `is_god` is the column. The role string `god` is not accepted.
+- `is_tenant_super_admin` is not a platform super admin.
+- A global super admin without `is_god` is **not** on the platform team.
+
+**One definition, three callers.**
+
+| Where | What |
+|---|---|
+| `app/Support/Authorization/PlatformTeam.php` | `PlatformTeam::includes(int $userId)` reads the three columns from the database on every call |
+| `BaseApiController::requireGodPlatformAdmin()` | the controller check; delegates to `PlatformTeam::includes()` |
+| route middleware `platform-team` (`EnsureIsPlatformTeam`) | the same check for a route group |
+| `react-frontend/src/lib/access.ts` `isPlatformTeamUser()` | the browser's mirror; decides whether the panel and its links are shown |
+
+**The browser.** `react-frontend/src/platform-team/` holds the guard
+(`PlatformTeamRoute`), the frame and the routes. The page components stay in
+`src/admin/modules/` and are imported from there. Someone who is not on the
+platform team and opens a panel address lands on their own panel: an admin on
+`/admin`, a broker on `/broker`, a member on `/dashboard`, a signed-out visitor
+on the login page. Every old `/admin/...` address of a moved page is a redirect
+(`MovedToPlatformTeam`) that keeps the record id, the query string and the
+fragment. `GodOnlyRoute` and `GodPlatformRoute` no longer exist.
+
+**The server.** A page in the panel is locked on the server, not only hidden:
+every endpoint that only panel pages call starts with
+`requireGodPlatformAdmin()`. A community admin, a global super admin who is not
+on the platform team, and an account with `is_god` alone each get 403. The locks
+are pinned one file per controller in
+`tests/Laravel/Feature/Security/PlatformTeamLocks/`, each endpoint requested as
+four accounts (`tests/Laravel/Concerns/ActsAsAccessTiers.php`).
+
+**Left open on purpose.** An endpoint that a screen outside the panel still
+calls keeps its previous check, and a test pins that a community admin still
+gets an answer:
+
+| Endpoint | Still used by |
+|---|---|
+| `GET` / `POST /v2/admin/tools/seo-audit` | the SEO overview (`/admin/seo`) |
+| `GET /v2/admin/pages` | Pages |
+| invite codes, the sign-up pause status | Community settings → Joining |
+| `GET /v2/admin/matching/stats` | Smart matching |
+
+**Not in the panel.** Community billing (`/admin/billing*`), the Impact report
+and the SEO overview stay in the admin panel (owner, 15 November 2026). Controls
+*inside* pages that stay (the footer badge switch, the global super admin switch
+on a user, permanent purge) keep their own checks and are only relabelled.
+
+**Adding a page to the panel.** Mount it in `PlatformTeamRoutes.tsx`, add it to
+`PlatformTeamSidebar.tsx` in the zone that matches what the page acts on ("The
+whole platform" or "This community"), start each of its endpoints with
+`requireGodPlatformAdmin()`, and add the endpoint to its controller's lock test.
+Before locking an endpoint, grep `react-frontend/src`, `mobile/` and `web-uk/`
+for other callers: one that stays outside the panel makes the endpoint a
+left-open exception, recorded in the table above.
 
 ---
 

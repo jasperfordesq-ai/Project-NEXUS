@@ -425,9 +425,9 @@ After rendering the HTML snapshot, the worker also extracts a clean Markdown bod
 
 nginx writes a JSONL bot-only access log to the shared prerender volume (`.bot-access.jsonl`). The admin Analytics tab reads it via `crawlerAnalytics()`, surfacing hits by status / crawler / host, top URIs, IP-verification rate, and the spoofed-vs-verified breakdown for major crawlers. IP verification uses `/etc/nginx/prerender-trusted-bot-ips.list` (refreshed weekly by `scripts/refresh-bot-ip-ranges.sh` pulling Google / Bing / DuckDuckGo / Apple feeds).
 
-### Admin UI (`/admin/seo/prerender`)
+### Admin UI (`/platform-team/seo/prerender`)
 
-**Access:** platform super-admin only. Sidebar hides the entry for tenant super-admins because the engine operates cross-tenant. Backend uses `requirePlatformSuperAdmin` on every mutating endpoint.
+**Access:** the platform team only (`is_god` and super admin) since 15 November 2026. The page lives in the Platform team panel; the old `/admin/seo/prerender` address redirects there. The engine operates cross-tenant, so every endpoint calls `requireGodPlatformAdmin()` — except the machine paths of `invalidate` (bearer token, signed request), which are unchanged.
 
 Nine tabs:
 - **Overview** — health banner (auto-hides when green), KPIs, Freshness automation, **TTL inspector** (which `config/prerender.php` pattern owns a route + the TTL), **Sitemap explorer** (static + dynamic routes per tenant), wildcard purge, force-refresh

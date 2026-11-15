@@ -127,21 +127,28 @@ The route map in `react-frontend/src/admin/routes.tsx` defines all admin pages. 
 | Timebanking / wallet | `/admin/timebanking` | `AdminTimebankingController`, `AdminWalletGrantController` |
 | Gamification | `/admin/gamification` | `AdminGamificationController` |
 | Smart matching | `/admin/smart-matching` | `AdminMatchingController` |
-| Content (blog, pages, menus) | `/admin/blog`, `/admin/pages`, `/admin/menus` | `AdminBlogController`, `AdminContentController` |
+| Content (blog, pages) | `/admin/blog`, `/admin/pages` | `AdminBlogController`, `AdminContentController` |
 | Events | `/admin/events` | `AdminEventsController` |
 | Groups | `/admin/groups` | `AdminGroupsController` |
 | Volunteering | `/admin/volunteering` | `AdminVolunteerController` |
-| Enterprise / GDPR | `/admin/enterprise` | `AdminEnterpriseController` |
+| Enterprise / GDPR | `/admin/enterprise/gdpr` | `AdminEnterpriseController` |
 | Analytics | `/admin/community-analytics` | `AdminCommunityAnalyticsController`, `AdminAnalyticsReportsController` |
 | Newsletters | `/admin/newsletters` | `AdminNewsletterController` |
 | Analytics reports | `/admin/reports/members`, `/admin/reports/hours`, `/admin/reports/inactive-members` | `AdminAnalyticsReportsController` |
-| System / settings | `/admin/settings`, `/admin/cron-jobs`, `/admin/sso` | `AdminConfigController`, `AdminCronController`, `AdminSsoProvidersController` |
+| System / settings | `/admin/settings`, `/admin/sso` | `AdminConfigController`, `AdminSsoProvidersController` |
 | Retention policies | `/admin/retention` | `AdminRetentionController` |
 | Activity log | `/admin/activity-log` | `AdminAuditLogController` |
 | Jobs | `/admin/jobs` | `AdminJobsController` |
 | Marketplace | `/admin/marketplace` | `AdminMarketplaceController` |
 | Billing | `/admin/billing` | `AdminBillingController` |
 | SSO providers | `/admin/sso` | `AdminSsoProvidersController` |
+
+Pages only the platform team may open are not in the admin panel. Since
+15 November 2026 they live in the Platform team panel at `/platform-team`
+(menus, email settings, deliverability, performance, cron jobs, plans, the
+enterprise dashboard, roles, monitoring and the rest), and their old
+`/admin/...` addresses redirect there. See
+[ROLES-AND-PERMISSIONS.md](../ROLES-AND-PERMISSIONS.md#the-platform-team-panel-15-november-2026).
 
 ### Retired from the admin panel (2026-07-02, no redirects)
 
