@@ -372,7 +372,7 @@ export function AdminDashboard() {
             {isGod && (
               <Button
                 as={Link}
-                to={tenantPath('/admin/enterprise')}
+                to={tenantPath('/platform-team/enterprise')}
                 size="sm"
                 variant="tertiary"
                 className="rounded-full"

@@ -159,7 +159,7 @@ describe('MenusAdmin — populated state', () => {
     render(<MenusAdmin />);
     await waitFor(() => screen.getByText('Main Menu'));
     await userEvent.click(screen.getByText('Main Menu'));
-    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/admin/menus/builder/1'));
+    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/platform-team/menus/builder/1'));
   });
 });
 

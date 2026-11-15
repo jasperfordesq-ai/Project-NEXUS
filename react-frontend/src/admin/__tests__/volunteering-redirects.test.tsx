@@ -124,21 +124,7 @@ describe('guessed volunteering admin addresses', () => {
   });
 });
 
-describe('the Integrations breadcrumb', () => {
-  // Found on the e2e walk of 2026-10-18: the "Integrations" crumb above the
-  // Outbound webhooks page linked to /admin/integrations, which had no route.
-  it('/admin/integrations lands on Outbound webhooks for a god platform admin', async () => {
-    vi.mocked(useAuth).mockReturnValue({
-      user: { id: 1, role: 'super_admin', is_admin: true, is_super_admin: true, is_god: true },
-      isAuthenticated: true,
-      isLoading: false,
-      status: 'authenticated',
-    } as unknown as ReturnType<typeof useAuth>);
-
-    renderAt('/test/admin/integrations');
-
-    expect(await screen.findByText('Outbound webhooks page')).toBeInTheDocument();
-    expect(screen.getByLabelText('path')).toHaveTextContent('/test/admin/integrations/webhooks');
-    expect(screen.queryByText('Admin Not Found')).not.toBeInTheDocument();
-  });
-});
+// The Integrations breadcrumb case (2026-10-18) moved with the page: Outbound
+// webhooks is in the Platform team panel now, and both `/admin/integrations`
+// and `/platform-team/integrations` are covered by
+// src/platform-team/platform-team-routes.test.tsx.

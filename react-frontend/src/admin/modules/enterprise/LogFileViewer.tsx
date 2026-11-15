@@ -156,7 +156,7 @@ export function LogFileViewer() {
           <Button
             variant="tertiary"
             startContent={<ArrowLeft size={16} />}
-            onPress={() => navigate(tenantPath('/admin/enterprise/monitoring/log-files'))}
+            onPress={() => navigate(tenantPath('/platform-team/enterprise/monitoring/log-files'))}
             size="sm"
           >
             {t('enterprise.log_viewer_back')}

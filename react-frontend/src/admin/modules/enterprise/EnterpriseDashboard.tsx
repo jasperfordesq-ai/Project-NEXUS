@@ -62,9 +62,9 @@ export function EnterpriseDashboard() {
     : '---';
 
   const quickLinks = [
-    { label: t('enterprise.link_roles_permissions'), href: tenantPath('/admin/enterprise/roles'), icon: Shield },
+    { label: t('enterprise.link_roles_permissions'), href: tenantPath('/platform-team/enterprise/roles'), icon: Shield },
     { label: t('enterprise.link_gdpr_dashboard'), href: tenantPath('/admin/enterprise/gdpr'), icon: FileWarning },
-    { label: t('enterprise.link_system_monitoring'), href: tenantPath('/admin/enterprise/monitoring'), icon: HeartPulse },
+    { label: t('enterprise.link_system_monitoring'), href: tenantPath('/platform-team/enterprise/monitoring'), icon: HeartPulse },
     { label: t('enterprise.link_legal_documents'), href: tenantPath('/admin/legal-documents'), icon: FileWarning },
   ];
 

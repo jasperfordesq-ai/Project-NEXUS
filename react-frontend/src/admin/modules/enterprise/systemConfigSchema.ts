@@ -151,7 +151,7 @@ export const RELATED_ADMIN_PAGES: RelatedAdminPage[] = [
   {
     labelKey: 'enterprise.related_registration_policy',
     descriptionKey: 'enterprise.related_registration_policy_desc',
-    href: '/admin/settings/registration-policy',
+    href: '/platform-team/settings/registration-policy',
     destLabelKey: 'enterprise.related_registration_policy',
     godOnly: true,
   },

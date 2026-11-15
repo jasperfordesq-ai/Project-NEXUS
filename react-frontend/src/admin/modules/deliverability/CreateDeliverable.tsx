@@ -69,7 +69,7 @@ export function CreateDeliverable() {
       });
       if (res?.success) {
         toast.success(t('deliverability.created_success'));
-        navigate(tenantPath('/admin/deliverability/list'));
+        navigate(tenantPath('/platform-team/deliverability/list'));
       } else {
         toast.error(t('deliverability.create_failed'));
       }
@@ -85,7 +85,7 @@ export function CreateDeliverable() {
       <PageHeader
         title={t('deliverability.create_title')}
         description={t('deliverability.create_description')}
-        actions={<Button variant="tertiary" startContent={<ArrowLeft size={16} />} onPress={() => navigate(tenantPath('/admin/deliverability/list'))}>{t('common.back')}</Button>}
+        actions={<Button variant="tertiary" startContent={<ArrowLeft size={16} />} onPress={() => navigate(tenantPath('/platform-team/deliverability/list'))}>{t('common.back')}</Button>}
       />
 
       <Card >
@@ -150,7 +150,7 @@ export function CreateDeliverable() {
             onValueChange={(v) => handleChange('assigned_to', v)}
           />
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="tertiary" onPress={() => navigate(tenantPath('/admin/deliverability/list'))}>{t('common.cancel')}</Button>
+            <Button variant="tertiary" onPress={() => navigate(tenantPath('/platform-team/deliverability/list'))}>{t('common.cancel')}</Button>
             <Button
               startContent={<Save size={16} />}
               onPress={handleSave}

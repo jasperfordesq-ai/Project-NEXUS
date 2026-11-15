@@ -52,7 +52,7 @@ export function JoiningSection({ state }: { state: AdminSettingsFormState }) {
         isGod ? (
           <Button
             as={Link}
-            to={tenantPath('/admin/settings/registration-policy')}
+            to={tenantPath('/platform-team/settings/registration-policy')}
             size="sm"
             variant="secondary"
             endContent={<ArrowRight size={14} aria-hidden="true" />}

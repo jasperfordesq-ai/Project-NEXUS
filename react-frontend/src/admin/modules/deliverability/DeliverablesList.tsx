@@ -155,7 +155,7 @@ export function DeliverablesList() {
             isIconOnly
             size="sm"
             variant="tertiary"
-            onPress={() => navigate(tenantPath(`/admin/deliverability/edit/${item.id}`))}
+            onPress={() => navigate(tenantPath(`/platform-team/deliverability/edit/${item.id}`))}
             aria-label={t('deliverability.label_edit_deliverable')}
           >
             <Pencil size={14} />
@@ -191,7 +191,7 @@ export function DeliverablesList() {
         actions={
           <Button
             startContent={<Plus size={16} />}
-            onPress={() => navigate(tenantPath('/admin/deliverability/create'))}
+            onPress={() => navigate(tenantPath('/platform-team/deliverability/create'))}
           >
             {t('deliverability.create_deliverable')}
           </Button>
@@ -213,7 +213,7 @@ export function DeliverablesList() {
           title={t('deliverability.no_deliverables')}
           description={t('deliverability.desc_create_deliverables_to_track_project_mil')}
           actionLabel={t('deliverability.create_deliverable')}
-          onAction={() => navigate(tenantPath('/admin/deliverability/create'))}
+          onAction={() => navigate(tenantPath('/platform-team/deliverability/create'))}
         />
       ) : (
         <DataTable

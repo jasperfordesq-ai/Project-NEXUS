@@ -165,7 +165,7 @@ describe('RoleList', () => {
     await userEvent.click(editBtns[0]);
 
     expect(mockNavigate).toHaveBeenCalledWith(
-      expect.stringContaining('/admin/enterprise/roles/'),
+      expect.stringContaining('/platform-team/enterprise/roles/'),
     );
   });
 

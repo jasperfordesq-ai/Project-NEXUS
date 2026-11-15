@@ -110,6 +110,34 @@ describe('CronJobs', () => {
     expect(screen.queryByText('Daily digest')).not.toBeInTheDocument();
   });
 
+  // E-128: these endpoints are the platform team's. If an account is taken off
+  // the team mid-session the browser still shows the page and the server answers
+  // 403. The page must settle (no spinner left running, no crash) rather than
+  // break. It shows its empty state, which does not SAY it was refused: that is
+  // recorded as a follow-up, not asserted here as good.
+  it('settles without crashing when the server refuses both requests', async () => {
+    mockAdminSystem.getCronJobs.mockResolvedValue({ success: false, error: 'Only the platform team can do this.', code: 'forbidden' });
+    mockAdminCron.getHealthMetrics.mockResolvedValue({ success: false, error: 'Only the platform team can do this.', code: 'forbidden' });
+    const { CronJobs } = await import('./CronJobs');
+    render(<CronJobs />);
+    await waitFor(() => {
+      const spinners = screen.queryAllByRole('status');
+      expect(spinners.find((el) => el.getAttribute('aria-busy') === 'true')).toBeUndefined();
+    });
+    expect(mockAdminSystem.getCronJobs).toHaveBeenCalledTimes(1);
+  });
+
+  it('settles without crashing when both requests fail outright', async () => {
+    mockAdminSystem.getCronJobs.mockRejectedValue(new Error('403'));
+    mockAdminCron.getHealthMetrics.mockRejectedValue(new Error('403'));
+    const { CronJobs } = await import('./CronJobs');
+    render(<CronJobs />);
+    await waitFor(() => {
+      const spinners = screen.queryAllByRole('status');
+      expect(spinners.find((el) => el.getAttribute('aria-busy') === 'true')).toBeUndefined();
+    });
+  });
+
   it('renders job name and schedule when jobs are present', async () => {
     mockAdminSystem.getCronJobs.mockResolvedValue({ success: true, data: [makeJob()] });
     const { CronJobs } = await import('./CronJobs');

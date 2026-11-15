@@ -572,7 +572,7 @@ export function MenuBuilder() {
           } else {
             toast.success(t('menu_builder.menu_created'));
           }
-          navigate(tenantPath('/admin/menus'));
+          navigate(tenantPath('/platform-team/menus'));
           return;
         } else {
           toast.error(t('menu_builder.failed_to_create_menu'));
@@ -815,7 +815,7 @@ export function MenuBuilder() {
             <Button
               variant="secondary"
               startContent={<ArrowLeft size={16} aria-hidden="true" />}
-              onPress={() => navigate(tenantPath('/admin/menus'))}
+              onPress={() => navigate(tenantPath('/platform-team/menus'))}
             >
               {t('menu_builder.back')}
             </Button>

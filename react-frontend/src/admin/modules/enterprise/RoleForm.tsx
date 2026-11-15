@@ -146,7 +146,7 @@ export function RoleForm() {
 
       if (res.success) {
         toast.success(isEdit ? t('enterprise.role_updated') : t('enterprise.role_created'));
-        navigate(tenantPath('/admin/enterprise/roles'));
+        navigate(tenantPath('/platform-team/enterprise/roles'));
       } else {
         const error = t('enterprise.save_failed');
         toast.error(error);
@@ -176,7 +176,7 @@ export function RoleForm() {
           <Button
             variant="tertiary"
             startContent={<ArrowLeft size={16} />}
-            onPress={() => navigate(tenantPath('/admin/enterprise/roles'))}
+            onPress={() => navigate(tenantPath('/platform-team/enterprise/roles'))}
             size="sm"
           >
             {t('enterprise.back_to_roles')}
@@ -253,7 +253,7 @@ export function RoleForm() {
         <div className="flex justify-end gap-3">
           <Button
             variant="tertiary"
-            onPress={() => navigate(tenantPath('/admin/enterprise/roles'))}
+            onPress={() => navigate(tenantPath('/platform-team/enterprise/roles'))}
           >
             {t('enterprise.cancel')}
           </Button>

@@ -40,7 +40,6 @@ vi.mock('../modules/groups/GroupTypes', () => ({ default: () => <div>page:GroupT
 vi.mock('../modules/groups/GroupRanking', () => ({ default: () => <div>page:GroupRanking</div> }));
 vi.mock('../modules/matching/MatchingAnalytics', () => ({ default: () => <div>page:MatchingAnalytics</div> }));
 vi.mock('../modules/dashboard/AdminDashboard', () => ({ default: () => <div>page:AdminDashboard</div> }));
-vi.mock('../modules/system/TestRunner', () => ({ default: () => <div>page:TestRunner</div> }));
 vi.mock('../modules/AdminNotFound', () => ({ default: () => <div>page:AdminNotFound</div> }));
 
 import { AdminRoutes } from '../routes';
@@ -80,44 +79,7 @@ describe('legacy hyphenated admin paths redirect to their gated pages', () => {
   });
 });
 
-// F-534: platform-maintenance tools had no route guard. They act on, or
-// report about, the whole installation, so they are god accounts only — the
-// same guard as the other maintenance pages (owner decisions 2026-10-02).
-// F-535: three of the four maintenance pages reported success for work they
-// never did. The owner chose to delete them (15 Nov 2026): the pages, their
-// routes and their endpoints are gone, so the addresses are simply not found.
-describe('the three placeholder maintenance tools are gone', () => {
-  it.each(['seed-generator', 'webp-converter', 'blog-restore'])(
-    '/admin/%s is not a page any more, even for the platform team',
-    async (path) => {
-      auth.user = { id: 1, role: 'super_admin', is_god: true, is_super_admin: true };
-      renderAt(`/test/admin/${path}`);
-      expect(await screen.findByText('page:AdminNotFound')).toBeInTheDocument();
-    },
-  );
-});
-
-describe('platform-maintenance pages are god accounts only', () => {
-  const pages: Array<[string, string]> = [
-    ['tests', 'page:TestRunner'],
-  ];
-
-  it.each(pages)('sends a community administrator away from /admin/%s', async (path, page) => {
-    renderAt(`/test/admin/${path}`);
-    expect(await screen.findByLabelText('path')).toHaveTextContent(/^\/test\/admin$/);
-    expect(screen.queryByText(page)).not.toBeInTheDocument();
-  });
-
-  it.each(pages)('sends a platform super admin who is not a god away from /admin/%s', async (path, page) => {
-    auth.user = { id: 1, role: 'admin', is_super_admin: true };
-    renderAt(`/test/admin/${path}`);
-    expect(await screen.findByLabelText('path')).toHaveTextContent(/^\/test\/admin$/);
-    expect(screen.queryByText(page)).not.toBeInTheDocument();
-  });
-
-  it.each(pages)('opens /admin/%s for a god account', async (path, page) => {
-    auth.user = { id: 1, role: 'admin', is_god: true };
-    renderAt(`/test/admin/${path}`);
-    expect(await screen.findByText(page)).toBeInTheDocument();
-  });
-});
+// F-534: the four platform-maintenance pages had no route guard. Three were
+// deleted (above) and the fourth, Tests, moved to the Platform team panel on
+// 15 Nov 2026: `/admin/tests` is a redirect, and who may open the page is
+// covered by src/platform-team/platform-team-routes.test.tsx.

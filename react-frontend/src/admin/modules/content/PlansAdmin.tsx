@@ -129,7 +129,7 @@ export function PlansAdmin() {
             <Button
               type="button"
               variant="tertiary"
-              onPress={() => navigate(tenantPath(`/admin/plans/edit/${item.id}`))}
+              onPress={() => navigate(tenantPath(`/platform-team/plans/edit/${item.id}`))}
               className="text-left font-semibold text-accent hover:underline min-w-0 min-h-10 p-0 justify-start"
             >
               {item.name}
@@ -219,7 +219,7 @@ export function PlansAdmin() {
           <Tooltip content={t('content.edit_plan')}>
             <Button
               isIconOnly size="sm" variant="tertiary"
-              onPress={() => navigate(tenantPath(`/admin/plans/edit/${item.id}`))}
+              onPress={() => navigate(tenantPath(`/platform-team/plans/edit/${item.id}`))}
               aria-label={t('content.label_edit_plan')}
             >
               <Pencil size={14} />
@@ -268,7 +268,7 @@ export function PlansAdmin() {
           isSuperAdmin ? (
             <Button
               startContent={<Plus size={16} />}
-              onPress={() => navigate(tenantPath('/admin/plans/create'))}
+              onPress={() => navigate(tenantPath('/platform-team/plans/create'))}
             >
               {t('breadcrumbs.create')} {t('content.plan')}
             </Button>
@@ -283,7 +283,7 @@ export function PlansAdmin() {
           description={t('content.desc_create_subscription_plans_to_offer_diffe')}
           {...(isSuperAdmin ? {
             actionLabel: `${t('breadcrumbs.create')} ${t('content.plan')}`,
-            onAction: () => navigate(tenantPath('/admin/plans/create')),
+            onAction: () => navigate(tenantPath('/platform-team/plans/create')),
           } : {})}
         />
       ) : (

@@ -112,7 +112,7 @@ export function SystemMonitoring() {
           <div className="flex gap-2">
             <Button
               as={Link}
-              to={tenantPath('/admin/enterprise/monitoring/health')}
+              to={tenantPath('/platform-team/enterprise/monitoring/health')}
               variant="tertiary"
               size="sm"
               endContent={<ArrowRight aria-hidden="true" size={14} />}
@@ -121,7 +121,7 @@ export function SystemMonitoring() {
             </Button>
             <Button
               as={Link}
-              to={tenantPath('/admin/enterprise/monitoring/logs')}
+              to={tenantPath('/platform-team/enterprise/monitoring/logs')}
               variant="tertiary"
               size="sm"
               endContent={<ArrowRight aria-hidden="true" size={14} />}
@@ -130,7 +130,7 @@ export function SystemMonitoring() {
             </Button>
             <Button
               as={Link}
-              to={tenantPath('/admin/enterprise/monitoring/log-files')}
+              to={tenantPath('/platform-team/enterprise/monitoring/log-files')}
               variant="tertiary"
               size="sm"
               endContent={<ArrowRight aria-hidden="true" size={14} />}
@@ -139,7 +139,7 @@ export function SystemMonitoring() {
             </Button>
             <Button
               as={Link}
-              to={tenantPath('/admin/enterprise/monitoring/requirements')}
+              to={tenantPath('/platform-team/enterprise/monitoring/requirements')}
               variant="tertiary"
               size="sm"
               endContent={<ArrowRight aria-hidden="true" size={14} />}
@@ -271,7 +271,7 @@ export function SystemMonitoring() {
 
           {/* Quick Links */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Card  isPressable as={Link} to={tenantPath('/admin/enterprise/monitoring/log-files')}>
+            <Card  isPressable as={Link} to={tenantPath('/platform-team/enterprise/monitoring/log-files')}>
               <CardBody className="flex flex-row items-center gap-3 p-4">
                 <FileText aria-hidden="true" size={20} className="text-accent" />
                 <div>
@@ -280,7 +280,7 @@ export function SystemMonitoring() {
                 </div>
               </CardBody>
             </Card>
-            <Card  isPressable as={Link} to={tenantPath('/admin/enterprise/monitoring/requirements')}>
+            <Card  isPressable as={Link} to={tenantPath('/platform-team/enterprise/monitoring/requirements')}>
               <CardBody className="flex flex-row items-center gap-3 p-4">
                 <Settings aria-hidden="true" size={20} className="text-warning" />
                 <div>

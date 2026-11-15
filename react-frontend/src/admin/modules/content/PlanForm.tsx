@@ -152,7 +152,7 @@ export function PlanForm() {
         const res = await adminPlans.update(Number(id), buildPayload());
         if (res?.success) {
           toast.success(t('content.plan_updated'));
-          navigate(tenantPath('/admin/plans'));
+          navigate(tenantPath('/platform-team/plans'));
         } else {
           toast.error(t('content.failed_to_update_plan'));
         }
@@ -160,7 +160,7 @@ export function PlanForm() {
         const res = await adminPlans.create(buildPayload());
         if (res?.success) {
           toast.success(t('content.plan_created'));
-          navigate(tenantPath('/admin/plans'));
+          navigate(tenantPath('/platform-team/plans'));
         } else {
           toast.error(t('content.failed_to_create_plan'));
         }
@@ -214,7 +214,7 @@ export function PlanForm() {
           ? t('content.plans_admin_desc')
           : t('content.desc_create_subscription_plans_to_offer_diffe')}
         actions={
-          <Button variant="tertiary" startContent={<ArrowLeft size={16} />} onPress={() => navigate(tenantPath('/admin/plans'))}>
+          <Button variant="tertiary" startContent={<ArrowLeft size={16} />} onPress={() => navigate(tenantPath('/platform-team/plans'))}>
             {t('common.back')}
           </Button>
         }
@@ -407,7 +407,7 @@ export function PlanForm() {
             >
               {isEdit ? t('federation.save_changes') : t('content.plan_create_title')}
             </Button>
-            <Button variant="tertiary" onPress={() => navigate(tenantPath('/admin/plans'))} fullWidth>
+            <Button variant="tertiary" onPress={() => navigate(tenantPath('/platform-team/plans'))} fullWidth>
               {t('cancel')}
             </Button>
           </div>

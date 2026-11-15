@@ -120,7 +120,7 @@ export function MenusAdmin() {
         <Button
           type="button"
           variant="tertiary"
-          onPress={() => navigate(tenantPath(`/admin/menus/builder/${item.id}`))}
+          onPress={() => navigate(tenantPath(`/platform-team/menus/builder/${item.id}`))}
           className="text-left font-medium text-accent hover:underline min-w-0 min-h-10 p-0 justify-start"
         >
           {item.name}
@@ -161,7 +161,7 @@ export function MenusAdmin() {
             isIconOnly
             size="sm"
             variant="tertiary"
-            onPress={() => navigate(tenantPath(`/admin/menus/builder/${item.id}`))}
+            onPress={() => navigate(tenantPath(`/platform-team/menus/builder/${item.id}`))}
             aria-label={t('content.label_edit_menu')}
           >
             <Pencil size={14} />
@@ -201,7 +201,7 @@ export function MenusAdmin() {
         actions={
           <Button
             startContent={<Plus size={16} />}
-            onPress={() => navigate(tenantPath('/admin/menus/builder/new'))}
+            onPress={() => navigate(tenantPath('/platform-team/menus/builder/new'))}
           >
             {t('content.create_menu_title')}
           </Button>
@@ -260,7 +260,7 @@ export function MenusAdmin() {
           title={t('content.no_data_available')}
           description={t('content.desc_create_custom_navigation_menus_for_your_')}
           actionLabel={t('content.create_menu_title')}
-          onAction={() => navigate(tenantPath('/admin/menus/builder/new'))}
+          onAction={() => navigate(tenantPath('/platform-team/menus/builder/new'))}
         />
       ) : (
         <DataTable

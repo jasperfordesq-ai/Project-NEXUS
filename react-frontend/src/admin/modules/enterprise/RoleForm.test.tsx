@@ -173,7 +173,7 @@ describe('RoleForm — create mode (no :id param)', () => {
         })
       );
       expect(mockToast.success).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith('/test/admin/enterprise/roles');
+      expect(mockNavigate).toHaveBeenCalledWith('/test/platform-team/enterprise/roles');
     });
   });
 
@@ -221,7 +221,7 @@ describe('RoleForm — create mode (no :id param)', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /^Cancel$/i })).toBeInTheDocument());
     await user.click(screen.getByRole('button', { name: /^Cancel$/i }));
 
-    expect(mockNavigate).toHaveBeenCalledWith('/test/admin/enterprise/roles');
+    expect(mockNavigate).toHaveBeenCalledWith('/test/platform-team/enterprise/roles');
   });
 });
 

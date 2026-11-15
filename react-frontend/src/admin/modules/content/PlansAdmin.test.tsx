@@ -153,7 +153,7 @@ describe('PlansAdmin', () => {
 
     const createBtns = screen.getAllByRole('button', { name: /create/i });
     await userEvent.click(createBtns[0]);
-    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/admin/plans/create'));
+    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/platform-team/plans/create'));
   });
 
   it('opens delete confirm modal for plans with 0 tenants', async () => {

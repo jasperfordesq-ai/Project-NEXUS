@@ -139,7 +139,7 @@ export function RoleList() {
             isIconOnly
             size="sm"
             variant="tertiary"
-            onPress={() => navigate(tenantPath(`/admin/enterprise/roles/${role.id}/edit`))}
+            onPress={() => navigate(tenantPath(`/platform-team/enterprise/roles/${role.id}/edit`))}
             aria-label={t('enterprise.label_edit_role')}
           >
             <Pencil size={14} />
@@ -167,7 +167,7 @@ export function RoleList() {
         actions={
           <Button
             as={Link}
-            to={tenantPath('/admin/enterprise/roles/create')}
+            to={tenantPath('/platform-team/enterprise/roles/create')}
             startContent={<Plus size={16} />}
             size="sm"
           >

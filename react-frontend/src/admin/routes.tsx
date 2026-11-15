@@ -14,9 +14,18 @@ import { Route, Navigate, Outlet, useParams } from 'react-router-dom';
 import { LoadingScreen } from '@/components/feedback';
 import { useTenant } from '@/contexts';
 import { SuperAdminRoute } from './SuperAdminRoute';
-import { GodOnlyRoute } from './GodOnlyRoute';
-import { GodPlatformRoute } from './GodPlatformRoute';
+import { MovedToPlatformTeam } from '@/platform-team/MovedToPlatformTeam';
 import type { TenantFeatures } from '@/types';
+
+/*
+ * 🔴 The platform team's pages are NOT here any more (15 Nov 2026). They are
+ * mounted in `src/platform-team/PlatformTeamRoutes.tsx`, behind one guard, at
+ * the same address tail under `/platform-team`. What is left in this file for
+ * them is a `<MovedToPlatformTeam />` redirect per old address, so bookmarks
+ * keep working. Do not mount a platform-team page here again: a route in this
+ * table is reachable by every community admin unless it carries its own guard,
+ * which is how eight pages ended up hidden but not locked (F-623).
+ */
 
 /** Small wrapper so Navigate targets can use tenantPath() inside Route elements. */
 export function TenantRedirect({ to }: { to: string }) {
@@ -76,10 +85,6 @@ const ActivityLog = lazy(() => import('./modules/system/ActivityLog'));
 const RetentionPolicies = lazy(() => import('./modules/system/RetentionPolicies'));
 const SsoProviders = lazy(() => import('./modules/system/SsoProviders'));
 const CategoriesAdmin = lazy(() => import('./modules/categories/CategoriesAdmin'));
-const CronJobs = lazy(() => import('./modules/system/CronJobs'));
-const CronJobLogs = lazy(() => import('./modules/system/CronJobLogs'));
-const CronJobSettings = lazy(() => import('./modules/system/CronJobSettings'));
-const CronJobSetup = lazy(() => import('./modules/system/CronJobSetup'));
 const BlogAdmin = lazy(() => import('./modules/blog/BlogAdmin'));
 const BlogPostForm = lazy(() => import('./modules/blog/BlogPostForm'));
 const SmartMatchingOverview = lazy(() => import('./modules/matching/SmartMatchingOverview'));
@@ -113,19 +118,12 @@ const GroupRanking = lazy(() => import('./modules/groups/GroupRanking'));
 const ResidencyVerifications = lazy(() => import('./modules/users/ResidencyVerifications'));
 
 // Enterprise module
-const EnterpriseDashboard = lazy(() => import('./modules/enterprise/EnterpriseDashboard'));
-const RoleList = lazy(() => import('./modules/enterprise/RoleList'));
-const RoleForm = lazy(() => import('./modules/enterprise/RoleForm'));
-const PermissionBrowser = lazy(() => import('./modules/enterprise/PermissionBrowser'));
 const GdprDashboard = lazy(() => import('./modules/enterprise/GdprDashboard'));
 const FadpAdminPage = lazy(() => import('./modules/legal/FadpAdminPage'));
 const GdprRequests = lazy(() => import('./modules/enterprise/GdprRequests'));
 const GdprConsents = lazy(() => import('./modules/enterprise/GdprConsents'));
 const GdprBreaches = lazy(() => import('./modules/enterprise/GdprBreaches'));
 const GdprAuditLog = lazy(() => import('./modules/enterprise/GdprAuditLog'));
-const SystemMonitoring = lazy(() => import('./modules/enterprise/SystemMonitoring'));
-const HealthCheck = lazy(() => import('./modules/enterprise/HealthCheck'));
-const ErrorLogs = lazy(() => import('./modules/enterprise/ErrorLogs'));
 const LegalDocList = lazy(() => import('./modules/enterprise/LegalDocList'));
 const LegalDocForm = lazy(() => import('./modules/enterprise/LegalDocForm'));
 const LegalDocVersionList = lazy(() => import('./modules/enterprise/LegalDocVersionList'));
@@ -135,12 +133,8 @@ const GdprRequestDetail = lazy(() => import('./modules/enterprise/GdprRequestDet
 const GdprRequestCreate = lazy(() => import('./modules/enterprise/GdprRequestCreate'));
 const GdprConsentTypes = lazy(() => import('./modules/enterprise/GdprConsentTypes'));
 const GdprBreachDetail = lazy(() => import('./modules/enterprise/GdprBreachDetail'));
-const LogFiles = lazy(() => import('./modules/enterprise/LogFiles'));
-const LogFileViewer = lazy(() => import('./modules/enterprise/LogFileViewer'));
-const SystemRequirements = lazy(() => import('./modules/enterprise/SystemRequirements'));
 
 // Performance module
-const PerformanceDashboard = lazy(() => import('./modules/performance/PerformanceDashboard'));
 
 // Newsletter module
 const NewsletterList = lazy(() => import('./modules/newsletters/NewsletterList'));
@@ -190,7 +184,6 @@ function VolunteeringSettingsRedirect() {
 }
 
 // Integrations (platform level)
-const OutboundWebhooks = lazy(() => import('./modules/integrations/OutboundWebhooks'));
 // Caring Community pages moved to /caring/* (CaringApp) — no longer registered here.
 
 // Advertising module
@@ -208,7 +201,6 @@ const AgentProposalsPage = lazy(() => import('./modules/agents/AgentProposalsPag
 const AgentRunsPage = lazy(() => import('./modules/agents/AgentRunsPage'));
 
 // Regional analytics
-const RegionalAnalyticsPage = lazy(() => import('./modules/analytics/RegionalAnalyticsPage'));
 
 // Platform — pilot inquiries (super-admin)
 
@@ -265,16 +257,9 @@ const OnboardingSettings = lazy(() => import('./modules/system/OnboardingSetting
 
 // Advanced/SEO module
 const AiSettings = lazy(() => import('./modules/advanced/AiSettings'));
-const EmailSettings = lazy(() => import('./modules/advanced/EmailSettings'));
-const EmailDeliverability = lazy(() => import('./modules/advanced/EmailDeliverability'));
 const AlgorithmSettings = lazy(() => import('./modules/advanced/AlgorithmSettings'));
 const SeoOverview = lazy(() => import('./modules/advanced/SeoOverview'));
-const SeoAudit = lazy(() => import('./modules/advanced/SeoAudit'));
-const PrerenderAdmin = lazy(() => import('./modules/advanced/prerender/PrerenderAdmin'));
 const PlatformCapabilities = lazy(() => import('./modules/advanced/PlatformCapabilities'));
-const Redirects = lazy(() => import('./modules/advanced/Redirects'));
-const Error404Tracking = lazy(() => import('./modules/advanced/Error404Tracking'));
-const MatchDebugPanel = lazy(() => import('./modules/advanced/MatchDebugPanel'));
 
 // CRM module
 const CrmDashboard = lazy(() => import('./modules/crm/CrmDashboard'));
@@ -286,24 +271,15 @@ const ActivityTimeline = lazy(() => import('./modules/crm/ActivityTimeline'));
 
 // System tools
 const AdminSettings = lazy(() => import('./modules/system/AdminSettings'));
-const RegistrationPolicySettings = lazy(() => import('./modules/system/RegistrationPolicySettings'));
-const TestRunner = lazy(() => import('./modules/system/TestRunner'));
 const NativeApp = lazy(() => import('./modules/system/NativeApp'));
 
 // Deliverability module
-const DeliverabilityDashboard = lazy(() => import('./modules/deliverability/DeliverabilityDashboard'));
-const DeliverablesList = lazy(() => import('./modules/deliverability/DeliverablesList'));
-const CreateDeliverable = lazy(() => import('./modules/deliverability/CreateDeliverable'));
-const EditDeliverable = lazy(() => import('./modules/deliverability/EditDeliverable'));
-const DeliverabilityAnalytics = lazy(() => import('./modules/deliverability/DeliverabilityAnalytics'));
 
 // Diagnostics module
-const MatchingDiagnostic = lazy(() => import('./modules/diagnostics/MatchingDiagnostic'));
 const NexusScoreAnalytics = lazy(() => import('./modules/diagnostics/NexusScoreAnalytics'));
 
 // Analytics & Reporting
 const CommunityAnalytics = lazy(() => import('./modules/analytics/CommunityAnalytics'));
-const SearchAnalytics = lazy(() => import('./modules/analytics/SearchAnalytics'));
 const ImpactReport = lazy(() => import('./modules/impact/ImpactReport'));
 
 // Admin Reports & Moderation Queue (A1-A5, A7)
@@ -343,15 +319,10 @@ const CheckoutReturn = lazy(() => import('./modules/billing/CheckoutReturn'));
 // Content module
 const PagesAdmin = lazy(() => import('./modules/content/PagesAdmin'));
 const PageBuilder = lazy(() => import('./modules/content/PageBuilder'));
-const MenusAdmin = lazy(() => import('./modules/content/MenusAdmin'));
-const MenuBuilder = lazy(() => import('./modules/content/MenuBuilder'));
 const AttributesAdmin = lazy(() => import('./modules/content/AttributesAdmin'));
 const AnnouncementsAdmin = lazy(() => import('./modules/content/AnnouncementsAdmin'));
 const MakeItYoursPage = lazy(() => import('./modules/system/make-it-yours/MakeItYoursPage'));
 const EmailPreviewPage = lazy(() => import('./modules/system/EmailPreviewPage'));
-const PlansAdmin = lazy(() => import('./modules/content/PlansAdmin'));
-const PlanForm = lazy(() => import('./modules/content/PlanForm'));
-const SubscriptionsAdmin = lazy(() => import('./modules/content/Subscriptions'));
 const LandingPageBuilder = lazy(() => import('./modules/content/LandingPageBuilder'));
 // AG60 — API Partners admin retired 2026-07-02 → /partner-timebanks/inbound-api
 // AG59 — Paid Regional Analytics admin (super-admin only)
@@ -394,8 +365,8 @@ export function AdminRoutes() {
       <Route path="blog/edit/:id" element={<Lazy><BlogPostForm /></Lazy>} />
       <Route path="pages" element={<Lazy><PagesAdmin /></Lazy>} />
       <Route path="pages/builder/:id" element={<Lazy><PageBuilder /></Lazy>} />
-      <Route path="menus" element={<Lazy><MenusAdmin /></Lazy>} />
-      <Route path="menus/builder/:id" element={<Lazy><MenuBuilder /></Lazy>} />
+      <Route path="menus" element={<MovedToPlatformTeam />} />
+      <Route path="menus/builder/:id" element={<MovedToPlatformTeam />} />
       <Route path="categories" element={<Lazy><CategoriesAdmin /></Lazy>} />
       <Route path="categories/create" element={<Lazy><CategoriesAdmin /></Lazy>} />
       <Route path="categories/edit/:id" element={<Lazy><CategoriesAdmin /></Lazy>} />
@@ -462,38 +433,32 @@ export function AdminRoutes() {
 
       {/* ─── ADVANCED ─── */}
       <Route path="ai-settings" element={<Lazy><AiSettings /></Lazy>} />
-      {/* Communications section — god accounts only (owner decision 2026-10-02). */}
-      <Route element={<GodOnlyRoute />}>
-        <Route path="email-settings" element={<Lazy><EmailSettings /></Lazy>} />
-        <Route path="email-deliverability" element={<Lazy><EmailDeliverability /></Lazy>} />
-      </Route>
+      {/* Communications section — moved to the Platform team panel (15 Nov 2026); redirects. */}
+      <Route path="email-settings" element={<MovedToPlatformTeam />} />
+      <Route path="email-deliverability" element={<MovedToPlatformTeam />} />
       <Route path="feed-algorithm" element={<TenantRedirect to="/admin/algorithm-settings" />} />
       <Route path="algorithm-settings" element={<Lazy><AlgorithmSettings /></Lazy>} />
       {/* SEO overview — open to every tenant admin again (owner decision
           2026-10-22): its settings are per community (meta title and
           description, title suffix, verification tags, sharing toggles) and
           the backend scopes them by tenant. The rest of Growth & Discovery
-          stays god-only (owner decision 2026-10-02); Search Analytics, in the
-          same section, is guarded below. */}
+          is the platform team's and moved to the Platform team panel
+          (15 Nov 2026); the addresses below are redirects. */}
       <Route path="seo" element={<Lazy><SeoOverview /></Lazy>} />
-      <Route element={<GodOnlyRoute />}>
-        <Route path="seo/audit" element={<Lazy><SeoAudit /></Lazy>} />
-        <Route path="seo/redirects" element={<Lazy><Redirects /></Lazy>} />
-        <Route path="seo/prerender" element={<Lazy><PrerenderAdmin /></Lazy>} />
-        <Route path="404-errors" element={<Lazy><Error404Tracking /></Lazy>} />
-      </Route>
+      <Route path="seo/audit" element={<MovedToPlatformTeam />} />
+      <Route path="seo/redirects" element={<MovedToPlatformTeam />} />
+      <Route path="seo/prerender" element={<MovedToPlatformTeam />} />
+      <Route path="404-errors" element={<MovedToPlatformTeam />} />
       {/* Integrations — outbound webhooks. A god account that is ALSO a platform
           super admin, both flags (owner decision 2026-10-18); moved here from
           /admin/volunteering/config. The API enforces the same rule. */}
-      <Route element={<GodPlatformRoute />}>
-        {/* The "Integrations" breadcrumb links here; webhooks is its only page. */}
-        <Route path="integrations" element={<Navigate to="webhooks" replace />} />
-        <Route path="integrations/webhooks" element={<Lazy><OutboundWebhooks /></Lazy>} />
-      </Route>
+      {/* The "Integrations" breadcrumb links here; webhooks is its only page. */}
+      <Route path="integrations" element={<MovedToPlatformTeam />} />
+      <Route path="integrations/webhooks" element={<MovedToPlatformTeam />} />
       <Route element={<SuperAdminRoute />}>
         <Route path="platform-capabilities" element={<Lazy><PlatformCapabilities /></Lazy>} />
       </Route>
-      <Route path="match-debug" element={<Lazy><MatchDebugPanel /></Lazy>} />
+      <Route path="match-debug" element={<MovedToPlatformTeam />} />
 
       {/* ─── BILLING ─── */}
       <Route path="stripe-account" element={<Lazy><StripeAccountPage /></Lazy>} />
@@ -521,24 +486,20 @@ export function AdminRoutes() {
       <Route path="timebanking/create-org" element={<Lazy><OrgWallets /></Lazy>} />
       <Route path="timebanking/starting-balances" element={<Lazy><StartingBalances /></Lazy>} />
       <Route path="timebanking/community-fund" element={<Lazy><CommunityFund /></Lazy>} />
-      <Route path="plans" element={<Lazy><PlansAdmin /></Lazy>} />
-      <Route path="plans/subscriptions" element={<Lazy><SubscriptionsAdmin /></Lazy>} />
-      <Route element={<SuperAdminRoute />}>
-        <Route path="plans/create" element={<Lazy><PlanForm /></Lazy>} />
-        <Route path="plans/edit/:id" element={<Lazy><PlanForm /></Lazy>} />
-      </Route>
+      <Route path="plans" element={<MovedToPlatformTeam />} />
+      <Route path="plans/subscriptions" element={<MovedToPlatformTeam />} />
+      <Route path="plans/create" element={<MovedToPlatformTeam />} />
+      <Route path="plans/edit/:id" element={<MovedToPlatformTeam />} />
 
       {/* ─── ENTERPRISE ─── */}
-      {/* Enterprise dashboard, Roles and Permissions — god accounts only (owner
-          decisions 2026-10-01/02; the roles editor was never finished). */}
-      <Route element={<GodOnlyRoute />}>
-        <Route path="enterprise" element={<Lazy><EnterpriseDashboard /></Lazy>} />
-        <Route path="enterprise/roles" element={<Lazy><RoleList /></Lazy>} />
-        <Route path="enterprise/roles/create" element={<Lazy><RoleForm /></Lazy>} />
-        <Route path="enterprise/roles/:id" element={<Lazy><RoleForm /></Lazy>} />
-        <Route path="enterprise/roles/:id/edit" element={<Lazy><RoleForm /></Lazy>} />
-        <Route path="enterprise/permissions" element={<Lazy><PermissionBrowser /></Lazy>} />
-      </Route>
+      {/* Enterprise dashboard, Roles and Permissions — moved to the Platform team panel (15 Nov 2026); redirects
+          (the roles editor was never finished). */}
+      <Route path="enterprise" element={<MovedToPlatformTeam />} />
+      <Route path="enterprise/roles" element={<MovedToPlatformTeam />} />
+      <Route path="enterprise/roles/create" element={<MovedToPlatformTeam />} />
+      <Route path="enterprise/roles/:id" element={<MovedToPlatformTeam />} />
+      <Route path="enterprise/roles/:id/edit" element={<MovedToPlatformTeam />} />
+      <Route path="enterprise/permissions" element={<MovedToPlatformTeam />} />
       <Route path="enterprise/gdpr" element={<Lazy><GdprDashboard /></Lazy>} />
       <Route path="enterprise/gdpr/requests" element={<Lazy><GdprRequests /></Lazy>} />
       <Route path="enterprise/gdpr/requests/create" element={<Lazy><GdprRequestCreate /></Lazy>} />
@@ -551,17 +512,15 @@ export function AdminRoutes() {
 
       {/* AG42 — Swiss FADP compliance */}
       <Route path="enterprise/fadp" element={<Lazy><FadpAdminPage /></Lazy>} />
-      <Route path="enterprise/monitoring" element={<Lazy><SystemMonitoring /></Lazy>} />
-      <Route path="enterprise/monitoring/health" element={<Lazy><HealthCheck /></Lazy>} />
-      <Route path="enterprise/monitoring/logs" element={<Lazy><ErrorLogs /></Lazy>} />
-      <Route path="enterprise/monitoring/log-files" element={<Lazy><LogFiles /></Lazy>} />
-      <Route path="enterprise/monitoring/log-files/:filename" element={<Lazy><LogFileViewer /></Lazy>} />
-      <Route path="enterprise/monitoring/requirements" element={<Lazy><SystemRequirements /></Lazy>} />
+      <Route path="enterprise/monitoring" element={<MovedToPlatformTeam />} />
+      <Route path="enterprise/monitoring/health" element={<MovedToPlatformTeam />} />
+      <Route path="enterprise/monitoring/logs" element={<MovedToPlatformTeam />} />
+      <Route path="enterprise/monitoring/log-files" element={<MovedToPlatformTeam />} />
+      <Route path="enterprise/monitoring/log-files/:filename" element={<MovedToPlatformTeam />} />
+      <Route path="enterprise/monitoring/requirements" element={<MovedToPlatformTeam />} />
 
-      {/* ─── PERFORMANCE ─── god accounts only (owner decision 2026-10-02). */}
-      <Route element={<GodOnlyRoute />}>
-        <Route path="performance" element={<Lazy><PerformanceDashboard /></Lazy>} />
-      </Route>
+      {/* ─── PERFORMANCE ─── moved to the Platform team panel (15 Nov 2026); redirects. */}
+      <Route path="performance" element={<MovedToPlatformTeam />} />
       <Route path="legal-documents" element={<Lazy><LegalDocList /></Lazy>} />
       <Route path="legal-documents/create" element={<Lazy><LegalDocForm /></Lazy>} />
       <Route path="legal-documents/compliance" element={<Lazy><LegalDocComplianceDashboard /></Lazy>} />
@@ -584,13 +543,11 @@ export function AdminRoutes() {
 
       {/* ─── SYSTEM ─── */}
       <Route path="settings" element={<Lazy><AdminSettings /></Lazy>} />
-      {/* God accounts only (owner, 13 Nov 2026): joining methods beyond open /
-          invite only / closed, identity checks and provider keys are the
-          platform team's. Invite codes and resuming paused sign-ups, which a
-          community admin needs, live on the Settings page. */}
-      <Route element={<GodOnlyRoute />}>
-        <Route path="settings/registration-policy" element={<Lazy><RegistrationPolicySettings /></Lazy>} />
-      </Route>
+      {/* Registration policy — moved to the Platform team panel (15 Nov 2026); redirects. Joining methods
+          beyond open / invite only / closed, identity checks and provider keys
+          are the platform team's (owner, 13 Nov 2026). Invite codes and resuming
+          paused sign-ups, which a community admin needs, live on Settings. */}
+      <Route path="settings/registration-policy" element={<MovedToPlatformTeam />} />
       <Route path="onboarding-settings" element={<Lazy><OnboardingSettings /></Lazy>} />
       {/* /admin/tenant-features retired — unified into module-configuration */}
       <Route path="tenant-features" element={<TenantRedirect to="/admin/module-configuration" />} />
@@ -598,22 +555,17 @@ export function AdminRoutes() {
       <Route path="operations" element={<Lazy><Operations /></Lazy>} />
       <Route path="support-reports" element={<Lazy><SupportReportsPage /></Lazy>} />
       <Route path="translation-config" element={<Lazy><TranslationConfig /></Lazy>} />
-      {/* Cron jobs — god accounts only (owner decision 2026-10-02). */}
-      <Route element={<GodOnlyRoute />}>
-        <Route path="cron-jobs" element={<Lazy><CronJobs /></Lazy>} />
-        <Route path="cron-jobs/logs" element={<Lazy><CronJobLogs /></Lazy>} />
-        <Route path="cron-jobs/settings" element={<Lazy><CronJobSettings /></Lazy>} />
-        <Route path="cron-jobs/setup" element={<Lazy><CronJobSetup /></Lazy>} />
-      </Route>
+      {/* Cron jobs — moved to the Platform team panel (15 Nov 2026); redirects. */}
+      <Route path="cron-jobs" element={<MovedToPlatformTeam />} />
+      <Route path="cron-jobs/logs" element={<MovedToPlatformTeam />} />
+      <Route path="cron-jobs/settings" element={<MovedToPlatformTeam />} />
+      <Route path="cron-jobs/setup" element={<MovedToPlatformTeam />} />
       <Route path="activity-log" element={<Lazy><ActivityLog /></Lazy>} />
       <Route path="retention" element={<Lazy><RetentionPolicies /></Lazy>} />
       <Route path="sso" element={<Lazy><SsoProviders /></Lazy>} />
-      {/* Platform-maintenance tools — god accounts only (F-534). They act on, or
-          report about, the whole installation; the seed tool's API is platform
-          super admin only and the others are placeholders (F-535). */}
-      <Route element={<GodOnlyRoute />}>
-        <Route path="tests" element={<Lazy><TestRunner /></Lazy>} />
-      </Route>
+      {/* The Tests page — moved to the Platform team panel (15 Nov 2026); redirects. The seed generator,
+          WebP converter and blog restore pages were deleted (F-535). */}
+      <Route path="tests" element={<MovedToPlatformTeam />} />
       <Route path="native-app" element={<Lazy><NativeApp /></Lazy>} />
 
       {/* ─── COMMUNITY TOOLS ─── */}
@@ -753,11 +705,9 @@ export function AdminRoutes() {
       <Route path="agents/runs" element={<Lazy><AgentRunsPage /></Lazy>} />
 
       {/* AG59 — Regional analytics product */}
-      {/* God accounts only until it is reworked (owner decision 2026-10-02) — its
-          figures come from volunteering + Caring Community data, so a timebank sees zeros. */}
-      <Route element={<GodOnlyRoute />}>
-        <Route path="analytics/regional" element={<Lazy><RegionalAnalyticsPage /></Lazy>} />
-      </Route>
+      {/* Regional analytics — moved to the Platform team panel (15 Nov 2026); redirects. Its figures come
+          from volunteering + Caring Community data, so a timebank sees zeros. */}
+      <Route path="analytics/regional" element={<MovedToPlatformTeam />} />
 
       {/* AG71 — Pilot region inquiry funnel */}
       <Route path="platform/pilot-inquiries" element={<TenantRedirect to="/super-admin/platform/pilot-inquiries" />} />
@@ -811,17 +761,15 @@ export function AdminRoutes() {
       {/* ─── IDEATION / CHALLENGES ─── */}
       <Route path="ideation" element={<Lazy><IdeationAdmin /></Lazy>} />
 
-      {/* ─── DELIVERABILITY ─── god accounts only (owner decision 2026-10-02). */}
-      <Route element={<GodOnlyRoute />}>
-        <Route path="deliverability" element={<Lazy><DeliverabilityDashboard /></Lazy>} />
-        <Route path="deliverability/list" element={<Lazy><DeliverablesList /></Lazy>} />
-        <Route path="deliverability/create" element={<Lazy><CreateDeliverable /></Lazy>} />
-        <Route path="deliverability/edit/:id" element={<Lazy><EditDeliverable /></Lazy>} />
-        <Route path="deliverability/analytics" element={<Lazy><DeliverabilityAnalytics /></Lazy>} />
-      </Route>
+      {/* ─── DELIVERABILITY ─── moved to the Platform team panel (15 Nov 2026); redirects. */}
+      <Route path="deliverability" element={<MovedToPlatformTeam />} />
+      <Route path="deliverability/list" element={<MovedToPlatformTeam />} />
+      <Route path="deliverability/create" element={<MovedToPlatformTeam />} />
+      <Route path="deliverability/edit/:id" element={<MovedToPlatformTeam />} />
+      <Route path="deliverability/analytics" element={<MovedToPlatformTeam />} />
 
       {/* ─── MATCHING DIAGNOSTIC ─── */}
-      <Route path="matching-diagnostic" element={<Lazy><MatchingDiagnostic /></Lazy>} />
+      <Route path="matching-diagnostic" element={<MovedToPlatformTeam />} />
 
       {/* ─── NEXUS SCORE ─── */}
       <Route path="nexus-score/analytics" element={<Lazy><NexusScoreAnalytics /></Lazy>} />
@@ -835,10 +783,8 @@ export function AdminRoutes() {
 
       {/* ─── ANALYTICS & REPORTING ─── */}
       <Route path="community-analytics" element={<Lazy><CommunityAnalytics /></Lazy>} />
-      {/* Listed under Growth & Discovery — god accounts only (owner decision 2026-10-02). */}
-      <Route element={<GodOnlyRoute />}>
-        <Route path="search-analytics" element={<Lazy><SearchAnalytics /></Lazy>} />
-      </Route>
+      {/* Search analytics — moved to the Platform team panel (15 Nov 2026); redirects. */}
+      <Route path="search-analytics" element={<MovedToPlatformTeam />} />
       <Route path="impact-report" element={<Lazy><ImpactReport /></Lazy>} />
       <Route path="reports/social-value" element={<TenantRedirect to="/admin/impact-report" />} />
       <Route path="reports/members" element={<Lazy><MemberReportsPage /></Lazy>} />

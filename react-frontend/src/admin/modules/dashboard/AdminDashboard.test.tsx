@@ -354,12 +354,12 @@ describe('AdminDashboard', () => {
     setupSuccessfulLoad();
     const { unmount } = render(<AdminDashboard />);
     await waitFor(() => expect(screen.getByTestId('headline-stats')).toBeInTheDocument());
-    expect(document.querySelector('a[href="/test/admin/enterprise"]')).toBeNull();
+    expect(document.querySelector('a[href="/test/platform-team/enterprise"]')).toBeNull();
     unmount();
 
     mockAuthUser.current = { id: 1, role: 'admin', is_god: true };
     render(<AdminDashboard />);
-    await waitFor(() => expect(document.querySelector('a[href="/test/admin/enterprise"]')).not.toBeNull());
+    await waitFor(() => expect(document.querySelector('a[href="/test/platform-team/enterprise"]')).not.toBeNull());
   });
 
   // ── Safeguarding banner ──────────────────────────────────────────────────────

@@ -148,7 +148,7 @@ import { MenuBuilder } from '../content/MenuBuilder';
 describe('MenuBuilder', () => {
   it('renders without crashing with route param', () => {
     const { container } = render(
-      <WRoute path="/admin/menus/:id" entry="/admin/menus/1">
+      <WRoute path="/platform-team/menus/:id" entry="/platform-team/menus/1">
         <MenuBuilder />
       </WRoute>
     );
@@ -202,7 +202,7 @@ import { PlanForm } from '../content/PlanForm';
 describe('PlanForm', () => {
   it('renders without crashing with route param', () => {
     const { container } = render(
-      <WRoute path="/admin/plans/:id" entry="/admin/plans/1">
+      <WRoute path="/platform-team/plans/:id" entry="/platform-team/plans/1">
         <PlanForm />
       </WRoute>
     );

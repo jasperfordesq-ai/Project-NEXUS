@@ -188,7 +188,7 @@ export function LogFiles() {
             const iconColor = getFileIconColor(file.name);
 
             return (
-              <Card key={file.name}  isPressable as={Link} to={tenantPath(`/admin/enterprise/monitoring/log-files/${file.name}`)}>
+              <Card key={file.name}  isPressable as={Link} to={tenantPath(`/platform-team/enterprise/monitoring/log-files/${file.name}`)}>
                 <CardBody className="p-4">
                   <div className="flex items-start gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-secondary">

@@ -366,7 +366,7 @@ describe('RoleForm', () => {
 
   it('renders without crashing (edit mode with route param)', () => {
     const { container } = render(
-      <WRoute path="/admin/enterprise/roles/:id/edit" entry="/admin/enterprise/roles/1/edit">
+      <WRoute path="/platform-team/enterprise/roles/:id/edit" entry="/platform-team/enterprise/roles/1/edit">
         <RoleForm />
       </WRoute>
     );
