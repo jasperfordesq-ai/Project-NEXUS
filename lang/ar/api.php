@@ -29,6 +29,7 @@ return [
     'auth_required_detail' => 'يجب عليك تسجيل الدخول للوصول إلى هذا المورد.',
     'admin_access_required' => 'مطلوب وصول المشرف',
     'super_admin_required' => 'مطلوب وصول المشرف المتميز',
+    'platform_team_required'       => 'فريق المنصة فقط يمكنه القيام بذلك.',
     'insufficient_permissions' => 'أذونات غير كافية',
     'rate_limit_exceeded' => 'تم تجاوز الحد الأقصى للسعر. يرجى المحاولة مرة أخرى في وقت لاحق.',
     'prerender_plan_unavailable' => 'خطة مسارات التصيير المسبق للمستأجر غير متاحة.',

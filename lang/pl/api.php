@@ -29,6 +29,7 @@ return [
     'auth_required_detail' => 'Aby uzyskać dostęp do tego zasobu, musisz się zalogować.',
     'admin_access_required' => 'Wymagany dostęp administratora',
     'super_admin_required' => 'Wymagany dostęp superadministratora',
+    'platform_team_required'       => 'Może to zrobić tylko zespół platformy.',
     'insufficient_permissions' => 'Niewystarczające uprawnienia',
     'rate_limit_exceeded' => 'Przekroczono limit stawki. Spróbuj ponownie później.',
     'prerender_plan_unavailable' => 'Plan tras renderowania wstępnego tenantu jest niedostępny.',

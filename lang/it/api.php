@@ -29,6 +29,7 @@ return [
     'auth_required_detail' => 'Devi essere loggato per accedere a questa risorsa.',
     'admin_access_required' => 'È richiesto l\'accesso amministrativo',
     'super_admin_required' => 'È richiesto l\'accesso come super amministratore',
+    'platform_team_required'       => 'Solo il team della piattaforma può farlo.',
     'insufficient_permissions' => 'Autorizzazioni insufficienti',
     'rate_limit_exceeded' => 'Limite di velocità superato. Per favore riprova più tardi.',
     'prerender_plan_unavailable' => 'Il piano delle rotte di pre-rendering del tenant non è disponibile.',

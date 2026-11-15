@@ -29,6 +29,7 @@ return [
     'auth_required_detail' => 'Sie müssen angemeldet sein, um auf diese Ressource zugreifen zu können.',
     'admin_access_required' => 'Administratorzugriff erforderlich',
     'super_admin_required' => 'Super Admin-Zugriff erforderlich',
+    'platform_team_required'       => 'Das kann nur das Plattform-Team tun.',
     'insufficient_permissions' => 'Unzureichende Berechtigungen',
     'rate_limit_exceeded' => 'Ratenlimit überschritten. Bitte versuchen Sie es später noch einmal.',
     'prerender_plan_unavailable' => 'Der Pre-Rendering-Routenplan des Mandanten ist nicht verfügbar.',

@@ -29,6 +29,7 @@ return [
     'auth_required_detail' => 'Debe iniciar sesión para acceder a este recurso.',
     'admin_access_required' => 'Se requiere acceso de administrador',
     'super_admin_required' => 'Se requiere acceso de superadministrador',
+    'platform_team_required'       => 'Solo el equipo de la plataforma puede hacer esto.',
     'insufficient_permissions' => 'Permisos insuficientes',
     'rate_limit_exceeded' => 'Se superó el límite de tarifa. Inténtelo de nuevo más tarde.',
     'prerender_plan_unavailable' => 'El plan de rutas de pre-renderizado del tenant no está disponible.',

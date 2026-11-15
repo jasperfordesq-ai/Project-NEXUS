@@ -29,6 +29,7 @@ return [
     'auth_required_detail' => 'Vous devez être connecté pour accéder à cette ressource.',
     'admin_access_required' => 'Accès administrateur requis',
     'super_admin_required' => 'Accès super administrateur requis',
+    'platform_team_required'       => 'Seule l\'équipe de la plateforme peut faire cela.',
     'insufficient_permissions' => 'Autorisations insuffisantes',
     'rate_limit_exceeded' => 'Limite de débit dépassée. Veuillez réessayer plus tard.',
     'prerender_plan_unavailable' => 'Le plan des routes de prérendu du locataire est indisponible.',

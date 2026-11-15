@@ -29,6 +29,7 @@ return [
     'auth_required_detail' => 'Ní mór duit a bheith logáilte isteach chun an acmhainn seo a rochtain.',
     'admin_access_required' => 'Rochtain admin ag teastáil',
     'super_admin_required' => 'Sár-rochtain admin ag teastáil',
+    'platform_team_required'       => 'Is féidir le foireann an ardáin amháin é seo a dhéanamh.',
     'insufficient_permissions' => 'Ceadanna neamhleor',
     'rate_limit_exceeded' => 'Sáraíodh teorainn an ráta. Bain triail eile as ar ball.',
     'prerender_plan_unavailable' => 'Níl plean bealaí réamhrindreála an tionónta ar fáil.',

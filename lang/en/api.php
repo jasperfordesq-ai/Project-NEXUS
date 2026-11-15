@@ -39,6 +39,7 @@ return [
     'broker_cannot_review_own_match' => 'Brokers cannot review a match they are a party to.',
     'broker_cannot_moderate_own_content' => 'Brokers cannot moderate content they are a party to.',
     'super_admin_required'         => 'Super admin access required',
+    'platform_team_required'       => 'Only the platform team can do this.',
     'insufficient_permissions'     => 'Insufficient permissions',
 
     // ============================================

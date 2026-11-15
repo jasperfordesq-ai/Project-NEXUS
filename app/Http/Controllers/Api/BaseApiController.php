@@ -968,13 +968,12 @@ abstract class BaseApiController extends Controller
      */
     protected function requireGodPlatformAdmin(): int
     {
+        // The `is_god` leg first, so its refusal keeps its own message.
         $userId = $this->requireGod();
-        $user = $this->resolveUser();
 
-        $isPlatformSuperAdmin = ($user->is_super_admin ?? false)
-            || (($user->role ?? 'member') === 'super_admin');
-
-        if (!$isPlatformSuperAdmin) {
+        // The one definition of the platform team (E-128), read from the
+        // database: the same question the `platform-team` middleware asks.
+        if (!\App\Support\Authorization\PlatformTeam::includes($userId)) {
             throw new \Illuminate\Http\Exceptions\HttpResponseException(
                 $this->error(__('api.super_admin_required'), 403, 'AUTH_INSUFFICIENT_PERMISSIONS')
             );

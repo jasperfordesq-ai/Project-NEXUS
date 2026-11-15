@@ -29,6 +29,7 @@ return [
     'auth_required_detail' => 'U moet ingelogd zijn om toegang te krijgen tot deze bron.',
     'admin_access_required' => 'Beheerderstoegang vereist',
     'super_admin_required' => 'Superbeheerderstoegang vereist',
+    'platform_team_required'       => 'Alleen het platformteam kan dit doen.',
     'insufficient_permissions' => 'Onvoldoende machtigingen',
     'rate_limit_exceeded' => 'Tarieflimiet overschreden. Probeer het later opnieuw.',
     'prerender_plan_unavailable' => 'Het prerender-routeplan van de tenant is niet beschikbaar.',

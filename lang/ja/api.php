@@ -29,6 +29,7 @@ return [
     'auth_required_detail' => 'このリソースにアクセスするには、ログインする必要があります。',
     'admin_access_required' => '管理者アクセスが必要です',
     'super_admin_required' => 'スーパー管理者アクセスが必要です',
+    'platform_team_required'       => 'この操作はプラットフォームチームのみ行えます。',
     'insufficient_permissions' => '権限が不十分です',
     'rate_limit_exceeded' => 'レート制限を超えました。後でもう一度試してください。',
     'prerender_plan_unavailable' => 'テナントのプリレンダールート計画を利用できません。',
