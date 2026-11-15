@@ -32,8 +32,9 @@ const mockLocation = { pathname: '/platform-team', search: '', hash: '' };
 
 vi.mock('@/contexts', () =>
   createMockContexts({
-    useAuth: () => ({ ...mockAuth }),
-    useTenant: () => ({ ...mockTenant }),
+    // Cast: partial context shapes would trip the shrink-only test-type ratchet.
+    useAuth: () => ({ ...mockAuth }) as never,
+    useTenant: () => ({ ...mockTenant }) as never,
   })
 );
 

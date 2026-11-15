@@ -16,10 +16,11 @@ const authState = vi.hoisted(() => ({ user: {} as Record<string, unknown> }));
 
 vi.mock('@/contexts', () =>
   createMockContexts({
+    // Cast: partial context shapes would trip the shrink-only test-type ratchet.
     useTenant: () => ({
       tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
-    }),
+    }) as never,
     useAuth: () => ({ user: authState.user } as never),
   })
 );
