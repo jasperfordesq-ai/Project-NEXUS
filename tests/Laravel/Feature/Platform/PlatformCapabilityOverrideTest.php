@@ -193,6 +193,8 @@ final class PlatformCapabilityOverrideTest extends TestCase
             'is_approved' => true,
             'role' => 'admin',
             'is_super_admin' => true,
+            // Platform team only since 15 Nov 2026 (E-128).
+            'is_god' => true,
         ]);
         $this->actingAs($owner);
 
@@ -248,6 +250,8 @@ final class PlatformCapabilityOverrideTest extends TestCase
             'is_approved' => true,
             'role' => 'admin',
             'is_super_admin' => true,
+            // Platform team only since 15 Nov 2026 (E-128).
+            'is_god' => true,
         ]);
         $this->actingAs($owner);
 

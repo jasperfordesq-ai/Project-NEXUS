@@ -12,11 +12,12 @@ use App\Services\Translation\TranslationEngine;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Super admin → Translation: the platform's fallback Google Cloud Translation
- * key, used by every community that has not saved its own (owner, 30 Oct 2026).
- * Global super admins and god only (the `super-admin` route group refuses
- * tenant super admins; requirePlatformSuperAdmin() checks again). The key is
- * stored encrypted and never returned — only whether it is set.
+ * Platform team panel → Translation key: the platform's fallback Google Cloud
+ * Translation key, used by every community that has not saved its own (owner,
+ * 30 Oct 2026). Platform team only (`is_god` AND super admin) since 15 Nov
+ * 2026: requireGodPlatformAdmin() on every action, behind the `super-admin`
+ * route group. The key is stored encrypted and never returned — only whether
+ * it is set.
  */
 class SuperTranslationKeyController extends BaseApiController
 {
@@ -27,7 +28,7 @@ class SuperTranslationKeyController extends BaseApiController
     /** GET /api/v2/admin/super/translation/google-key */
     public function show(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         return $this->respondWithData($this->status());
     }
@@ -35,7 +36,7 @@ class SuperTranslationKeyController extends BaseApiController
     /** PUT /api/v2/admin/super/translation/google-key  { api_key } */
     public function update(): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
         $key = trim((string) $this->input('api_key', ''));
         if ($key === '' || strlen($key) < 20 || strlen($key) > 200 || preg_match('/\s/', $key) === 1) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.translation_google_key_invalid'), 'api_key', 422);
@@ -50,7 +51,7 @@ class SuperTranslationKeyController extends BaseApiController
     /** DELETE /api/v2/admin/super/translation/google-key */
     public function destroy(): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
         $this->secrets->forget(PlatformSecretStore::GOOGLE_TRANSLATE_KEY);
         ActivityLog::log($userId, 'super_translation_google_key_removed', 'Removed the platform Google Translate key');
 

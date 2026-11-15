@@ -32,6 +32,8 @@ class GenerateReportTest extends TestCase
 
         $admin = User::factory()->forTenant($this->testTenantId)->create([
             'is_super_admin' => true,
+            // Platform team only since 15 Nov 2026 (E-128).
+            'is_god' => true,
             'role' => 'super_admin',
             'is_verified' => true,
             'is_approved' => true,
@@ -64,6 +66,8 @@ class GenerateReportTest extends TestCase
     {
         $admin = User::factory()->forTenant($this->testTenantId)->create([
             'is_super_admin' => true,
+            // Platform team only since 15 Nov 2026 (E-128).
+            'is_god' => true,
             'role' => 'super_admin',
             'is_verified' => true,
             'is_approved' => true,

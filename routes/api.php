@@ -3397,9 +3397,10 @@ Route::get('/v2/admin/integrations/webhooks/{id}/logs', [\App\Http\Controllers\A
 Route::get('/v2/admin/super/tenants/{id}/purge-preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurgePreview']);
 Route::post('/v2/admin/super/tenants/{id}/purge', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurge'])->middleware('step-up');
 
-// Platform rollout switches. Platform super-admin only — these set the ceiling
-// every community own settings sit under, so they are not tenant-admin
-// endpoints. Authorisation is enforced in the controller, not just here.
+// Platform rollout switches. Platform team only since 15 Nov 2026 — these set
+// the ceiling every community own settings sit under, so they are not
+// tenant-admin endpoints. Authorisation is enforced in the controller
+// (requireGodPlatformAdmin()), not just here.
 Route::get('/v2/admin/super/platform-capabilities', [\App\Http\Controllers\Api\SuperAdmin\PlatformCapabilityController::class, 'index']);
 Route::put('/v2/admin/super/platform-capabilities', [\App\Http\Controllers\Api\SuperAdmin\PlatformCapabilityController::class, 'update']);
 
@@ -3408,6 +3409,12 @@ Route::post('/v2/admin/super/users/{id}/grant-global-super-admin', [\App\Http\Co
 Route::post('/v2/admin/super/users/{id}/revoke-global-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userRevokeGlobalSuperAdmin'])->middleware('step-up');
 
 // Installation-wide federation control, including the external kill switches.
+// 🔴 Platform team only since 15 Nov 2026 (requireGodPlatformAdmin() in the
+// controller): overview, system controls, signing-key and external status, the
+// lockdown pair and reactivate. The whitelist and partnership list / suspend /
+// terminate stay open to any global super admin ON PURPOSE: the per-community
+// federation page, which stays in the super admin panel, calls them. Pinned
+// both ways by AdminSuperControllerPlatformTeamLockTest.
 Route::get('/v2/admin/super/federation', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationOverview']);
 Route::get('/v2/admin/super/federation/system-controls', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationGetSystemControls']);
 Route::get('/v2/admin/super/federation/jwt-status', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationGetJwtStatus']);
@@ -3436,7 +3443,7 @@ Route::put('/v2/admin/super/identity/fee', [\App\Http\Controllers\Api\AdminSuper
 // 🔴 These read a tenant id from the body with no canAccessTenant() check — see
 // reason 2 in the block comment above.
 Route::get('/v2/admin/super/billing/snapshot', [\App\Http\Controllers\Api\AdminSuperController::class, 'getBillingSnapshot']);
-// Platform fallback Google Translate key (global super admin / god only).
+// Platform fallback Google Translate key (platform team only since 15 Nov 2026).
 Route::get('/v2/admin/super/translation/google-key', [\App\Http\Controllers\Api\SuperTranslationKeyController::class, 'show']);
 Route::put('/v2/admin/super/translation/google-key', [\App\Http\Controllers\Api\SuperTranslationKeyController::class, 'update']);
 Route::delete('/v2/admin/super/translation/google-key', [\App\Http\Controllers\Api\SuperTranslationKeyController::class, 'destroy']);
@@ -3449,8 +3456,9 @@ Route::post('/v2/admin/super/billing/pause', [\App\Http\Controllers\Api\AdminSup
 Route::post('/v2/admin/super/billing/resume', [\App\Http\Controllers\Api\AdminSuperController::class, 'resumeTenantBilling']);
 Route::post('/v2/admin/super/billing/grace-period', [\App\Http\Controllers\Api\AdminSuperController::class, 'setBillingGracePeriod']);
 
-// AG44 — Tenant provisioning queue (super-admin review + approve).
-// Approval assigns a parent tenant anywhere in the tree, so platform-only.
+// AG44 — Tenant provisioning queue (review + approve).
+// Approval assigns a parent tenant anywhere in the tree, so platform-only —
+// and the platform team's alone since 15 Nov 2026 (checked in the controller).
 Route::get('/v2/super-admin/provisioning-requests', [\App\Http\Controllers\Api\SuperAdmin\TenantProvisioningController::class, 'index']);
 Route::get('/v2/super-admin/provisioning-requests/{id}', [\App\Http\Controllers\Api\SuperAdmin\TenantProvisioningController::class, 'show'])->whereNumber('id');
 Route::post('/v2/super-admin/provisioning-requests/{id}/approve', [\App\Http\Controllers\Api\SuperAdmin\TenantProvisioningController::class, 'approve'])->whereNumber('id');
@@ -4488,6 +4496,9 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 
 // AG71 — Pilot Region Inquiry & Qualification Funnel
 // Deliberately public: logged-out lead-capture form (throttled). Do NOT wrap.
+// The admin endpoints below are the platform team's since 15 Nov 2026
+// (requireGodPlatformAdmin() in the controller); the `admin` group is only
+// the outer barrier. Until then they answered any community admin (F-623).
 Route::post('/v2/pilot-inquiry', [\App\Http\Controllers\Api\PilotInquiryController::class, 'submitInquiry'])->middleware('throttle:nexus-route-5-per-1m');
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/v2/admin/pilot-inquiries', [\App\Http\Controllers\Api\PilotInquiryController::class, 'adminList']);
@@ -4599,7 +4610,8 @@ Route::middleware('throttle:nexus-route-30-per-1m')->prefix('partner-analytics')
         ->whereNumber('id');
 });
 
-// Super-admin CRUD + report generation + access log
+// Subscription CRUD + report generation + access log. Platform team only since
+// 15 Nov 2026 (checked in the controller); `super-admin` is the outer barrier.
 Route::middleware(['auth:sanctum', 'super-admin'])->prefix('super-admin/regional-analytics')->group(function () {
     Route::get('/subscriptions', [\App\Http\Controllers\Api\SuperAdmin\RegionalAnalyticsAdminController::class, 'index']);
     Route::post('/subscriptions', [\App\Http\Controllers\Api\SuperAdmin\RegionalAnalyticsAdminController::class, 'store']);

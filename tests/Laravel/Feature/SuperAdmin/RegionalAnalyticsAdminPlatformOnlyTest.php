@@ -57,13 +57,24 @@ class RegionalAnalyticsAdminPlatformOnlyTest extends TestCase
             ->assertStatus(403);
     }
 
-    public function test_a_platform_super_admin_is_still_admitted(): void
+    // Platform team only since 15 Nov 2026 (E-128): the page moved to the
+    // Platform team panel, so the account that is admitted has both flags.
+    public function test_the_platform_team_is_still_admitted(): void
+    {
+        $this->withoutMiddleware(EnsureIsSuperAdmin::class);
+        $this->actAs(['is_super_admin' => 1, 'is_tenant_super_admin' => 0, 'is_god' => 1]);
+
+        $this->getJson('/api/super-admin/regional-analytics/subscriptions', $this->withTenantHeader())
+            ->assertStatus(200);
+    }
+
+    public function test_a_global_super_admin_who_is_not_on_the_platform_team_is_refused_by_the_controller_itself(): void
     {
         $this->withoutMiddleware(EnsureIsSuperAdmin::class);
         $this->actAs(['is_super_admin' => 1, 'is_tenant_super_admin' => 0, 'is_god' => 0]);
 
         $this->getJson('/api/super-admin/regional-analytics/subscriptions', $this->withTenantHeader())
-            ->assertStatus(200);
+            ->assertStatus(403);
     }
 
     public function test_with_the_route_middleware_a_tenant_super_admin_is_refused_too(): void

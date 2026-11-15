@@ -2338,6 +2338,11 @@ class AdminSuperController extends BaseApiController
     /** GET /api/v2/super-admin/federation */
     public function federationOverview(): JsonResponse
     {
+        // 🔴 Deliberately NOT the platform-team check, unlike every other
+        // Federation dashboard endpoint below (E-128, 15 Nov 2026). No screen
+        // calls this read-only summary, and RegionalPanelIsolationTest uses it
+        // as its control that a global super admin still reaches tier B.
+        // Pinned by AdminSuperControllerPlatformTeamLockTest.
         $this->requireSuperAdmin();
 
         $systemControls = $this->federationFeatureService->getSystemControls();
@@ -2356,7 +2361,7 @@ class AdminSuperController extends BaseApiController
     /** GET /api/v2/super-admin/federation/system-controls */
     public function federationGetSystemControls(): JsonResponse
     {
-        $this->requireSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $controls = $this->federationFeatureService->getSystemControls();
 
@@ -2373,7 +2378,7 @@ class AdminSuperController extends BaseApiController
      */
     public function federationGetJwtStatus(): JsonResponse
     {
-        $this->requireSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $secret = (string) config('federation.jwt_secret', '');
         $issuer = (string) config('federation.jwt_issuer', config('app.url', ''));
@@ -2394,7 +2399,7 @@ class AdminSuperController extends BaseApiController
     /** PUT /api/v2/super-admin/federation/system-controls */
     public function federationUpdateSystemControls(): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
 
         $input = $this->getAllInput();
 
@@ -2514,7 +2519,7 @@ class AdminSuperController extends BaseApiController
      */
     public function federationGetExternalStatus(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $status = $this->federationFeatureService->externalProtocolStatus();
 
@@ -2559,7 +2564,7 @@ class AdminSuperController extends BaseApiController
         // Platform-wide action: defense-in-depth beyond the route middleware —
         // a tenant-scoped super-admin must never reach this even if the
         // middleware stack changes.
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
 
         $input = $this->getAllInput();
         $reason = $input['reason'] ?? 'Emergency lockdown triggered via API';
@@ -2576,7 +2581,7 @@ class AdminSuperController extends BaseApiController
     /** POST /api/v2/super-admin/federation/lift-lockdown */
     public function federationLiftLockdown(): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
 
         $result = $this->federationFeatureService->liftEmergencyLockdown($userId);
 
@@ -2680,7 +2685,7 @@ class AdminSuperController extends BaseApiController
     /** POST /api/v2/admin/super/federation/partnerships/{id}/reactivate */
     public function federationReactivatePartnership($id): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
 
         $partnershipId = (int) $id;
 
@@ -2833,8 +2838,7 @@ class AdminSuperController extends BaseApiController
     /** GET /api/v2/admin/super/billing/snapshot */
     public function getBillingSnapshot(): JsonResponse
     {
-        $userId = $this->requireSuperAdmin();
-        $this->requireGod();
+        $userId = $this->requireGodPlatformAdmin();
         $snapshot = TenantBillingService::getBillingSnapshot();
         return $this->respondWithData($snapshot);
     }
@@ -2842,8 +2846,7 @@ class AdminSuperController extends BaseApiController
     /** POST /api/v2/admin/super/billing/assign-plan */
     public function assignPlan(): JsonResponse
     {
-        $userId = $this->requireSuperAdmin();
-        $this->requireGod();
+        $userId = $this->requireGodPlatformAdmin();
         $input    = $this->getAllInput();
         $tenantId = (int) ($input['tenant_id'] ?? 0);
         $planId   = (int) ($input['pay_plan_id'] ?? 0);
@@ -2882,16 +2885,14 @@ class AdminSuperController extends BaseApiController
     /** GET /api/v2/admin/super/billing/revenue */
     public function getRevenueDashboard(): JsonResponse
     {
-        $userId = $this->requireSuperAdmin();
-        $this->requireGod();
+        $userId = $this->requireGodPlatformAdmin();
         return $this->respondWithData(TenantBillingService::getRevenueDashboard());
     }
 
     /** GET /api/v2/admin/super/billing/export */
     public function exportBillingCsv(): \Illuminate\Http\Response
     {
-        $userId = $this->requireSuperAdmin();
-        $this->requireGod();
+        $userId = $this->requireGodPlatformAdmin();
         $csv = TenantBillingService::exportCsv();
         return response($csv, 200, [
             'Content-Type'        => 'text/csv',
@@ -2902,8 +2903,7 @@ class AdminSuperController extends BaseApiController
     /** POST /api/v2/admin/super/billing/delegate/grant */
     public function grantBillingDelegate(): JsonResponse
     {
-        $userId = $this->requireSuperAdmin();
-        $this->requireGod();
+        $userId = $this->requireGodPlatformAdmin();
         $input        = $this->getAllInput();
         $targetUserId = (int) ($input['user_id'] ?? 0);
         $scope        = $input['scope'] ?? '';
@@ -2917,8 +2917,7 @@ class AdminSuperController extends BaseApiController
     /** POST /api/v2/admin/super/billing/delegate/revoke */
     public function revokeBillingDelegate(): JsonResponse
     {
-        $userId = $this->requireSuperAdmin();
-        $this->requireGod();
+        $userId = $this->requireGodPlatformAdmin();
         $input        = $this->getAllInput();
         $targetUserId = (int) ($input['user_id'] ?? 0);
         $scope        = $input['scope'] ?? '';
@@ -2932,8 +2931,7 @@ class AdminSuperController extends BaseApiController
     /** POST /api/v2/admin/super/billing/pause */
     public function pauseTenantBilling(): JsonResponse
     {
-        $userId   = $this->requireSuperAdmin();
-        $this->requireGod();
+        $userId   = $this->requireGodPlatformAdmin();
         $input    = $this->getAllInput();
         $tenantId = (int) ($input['tenant_id'] ?? 0);
         if ($tenantId < 1) {
@@ -2946,8 +2944,7 @@ class AdminSuperController extends BaseApiController
     /** POST /api/v2/admin/super/billing/resume */
     public function resumeTenantBilling(): JsonResponse
     {
-        $userId   = $this->requireSuperAdmin();
-        $this->requireGod();
+        $userId   = $this->requireGodPlatformAdmin();
         $input    = $this->getAllInput();
         $tenantId = (int) ($input['tenant_id'] ?? 0);
         if ($tenantId < 1) {
@@ -2960,8 +2957,7 @@ class AdminSuperController extends BaseApiController
     /** POST /api/v2/admin/super/billing/grace-period */
     public function setBillingGracePeriod(): JsonResponse
     {
-        $userId   = $this->requireSuperAdmin();
-        $this->requireGod();
+        $userId   = $this->requireGodPlatformAdmin();
         $input    = $this->getAllInput();
         $tenantId = (int) ($input['tenant_id'] ?? 0);
         $days     = (int) ($input['days'] ?? 0);

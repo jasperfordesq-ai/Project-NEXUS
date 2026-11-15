@@ -16,7 +16,9 @@ use Illuminate\Http\JsonResponse;
  * Platform rollout switches, for the platform owner.
  *
  * These are deliberately NOT tenant-admin endpoints: they set the ceiling every
- * community sits under, so they require platform super-admin. A tenant
+ * community sits under, so they are the platform team's (`is_god` AND super
+ * admin, requireGodPlatformAdmin()) since the page moved to the Platform team
+ * panel on 15 Nov 2026; before that any global super admin could save them. A tenant
  * administrator still controls their own community's switches on the events
  * settings screen, and can never exceed what is set here.
  */
@@ -28,7 +30,7 @@ final class PlatformCapabilityController extends BaseApiController
 
     public function index(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         return $this->respondWithData([
             'capabilities' => $this->capabilities->inspect(),
@@ -37,7 +39,7 @@ final class PlatformCapabilityController extends BaseApiController
 
     public function update(): JsonResponse
     {
-        $actorId = $this->requirePlatformSuperAdmin();
+        $actorId = $this->requireGodPlatformAdmin();
         $this->rateLimit('platform_capability_update', 20, 60);
 
         // getAllInput(), not getJsonInput() — the latter does not exist on

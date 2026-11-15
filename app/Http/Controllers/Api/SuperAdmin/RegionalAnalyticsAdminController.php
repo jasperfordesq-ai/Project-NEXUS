@@ -23,10 +23,12 @@ use Illuminate\Support\Str;
  * Used internally by the platform sales team to provision, suspend,
  * and trigger reports for municipality / SME partner subscribers.
  *
- * 🔴 Platform-wide data: every action calls requirePlatformSuperAdmin(), which
- * refuses a tenant super admin. It used requireSuperAdmin() (which admits one)
- * until 12 Oct 2026, leaving the route group's `super-admin` middleware as the
- * only barrier (F-594).
+ * 🔴 Platform-wide data, platform team only (`is_god` AND super admin) since
+ * 15 Nov 2026: the page lives in the Platform team panel and every action
+ * calls requireGodPlatformAdmin(). History: it used requireSuperAdmin() (which
+ * admits a tenant super admin) until 12 Oct 2026, leaving the route group's
+ * `super-admin` middleware as the only barrier (F-594), then
+ * requirePlatformSuperAdmin() (any global super admin) until the move.
  */
 class RegionalAnalyticsAdminController extends BaseApiController
 {
@@ -34,7 +36,7 @@ class RegionalAnalyticsAdminController extends BaseApiController
 
     public function index(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $subs = DB::table('regional_analytics_subscriptions')
             ->orderBy('id', 'desc')
@@ -47,7 +49,7 @@ class RegionalAnalyticsAdminController extends BaseApiController
 
     public function show(int $id): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $sub = DB::table('regional_analytics_subscriptions')->where('id', $id)->first();
         if (! $sub) {
@@ -69,7 +71,7 @@ class RegionalAnalyticsAdminController extends BaseApiController
 
     public function store(Request $request): JsonResponse
     {
-        $adminId = $this->requirePlatformSuperAdmin();
+        $adminId = $this->requireGodPlatformAdmin();
 
         $tenantId = (int) $request->input('tenant_id', 0);
         $partnerName = trim((string) $request->input('partner_name', ''));
@@ -144,7 +146,7 @@ class RegionalAnalyticsAdminController extends BaseApiController
 
     public function update(Request $request, int $id): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $sub = DB::table('regional_analytics_subscriptions')->where('id', $id)->first();
         if (! $sub) {
@@ -173,7 +175,7 @@ class RegionalAnalyticsAdminController extends BaseApiController
 
     public function destroy(int $id): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $sub = DB::table('regional_analytics_subscriptions')->where('id', $id)->first();
         if (! $sub) {
@@ -194,7 +196,7 @@ class RegionalAnalyticsAdminController extends BaseApiController
 
     public function generateReport(int $id): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $sub = DB::table('regional_analytics_subscriptions')->where('id', $id)->first();
         if (! $sub) {
@@ -211,7 +213,7 @@ class RegionalAnalyticsAdminController extends BaseApiController
 
     public function accessLog(Request $request): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $page = max(1, (int) $request->query('page', 1));
         $perPage = min(200, max(1, (int) $request->query('per_page', 50)));

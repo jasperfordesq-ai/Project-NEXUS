@@ -103,7 +103,7 @@ class PilotInquiryController extends BaseApiController
      */
     public function adminList(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
 
         if (! PilotInquiryService::isAvailable()) {
             return $this->respondWithError('SERVICE_UNAVAILABLE', __('api.pilot_inquiry_service_unavailable'), null, 503);
@@ -124,7 +124,7 @@ class PilotInquiryController extends BaseApiController
      */
     public function adminGet(int $id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
 
         if (! PilotInquiryService::isAvailable()) {
             return $this->respondWithError('SERVICE_UNAVAILABLE', __('api.pilot_inquiry_service_unavailable'), null, 503);
@@ -147,7 +147,7 @@ class PilotInquiryController extends BaseApiController
      */
     public function adminUpdateStage(int $id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
 
         if (! PilotInquiryService::isAvailable()) {
             return $this->respondWithError('SERVICE_UNAVAILABLE', __('api.pilot_inquiry_service_unavailable'), null, 503);
@@ -180,7 +180,7 @@ class PilotInquiryController extends BaseApiController
      */
     public function adminAssign(int $id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
 
         if (! PilotInquiryService::isAvailable()) {
             return $this->respondWithError('SERVICE_UNAVAILABLE', __('api.pilot_inquiry_service_unavailable'), null, 503);
@@ -204,7 +204,7 @@ class PilotInquiryController extends BaseApiController
      */
     public function adminUpdateNotes(int $id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
 
         if (! PilotInquiryService::isAvailable()) {
             return $this->respondWithError('SERVICE_UNAVAILABLE', __('api.pilot_inquiry_service_unavailable'), null, 503);
@@ -229,7 +229,7 @@ class PilotInquiryController extends BaseApiController
      */
     public function adminPipelineStats(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
 
         if (! PilotInquiryService::isAvailable()) {
             return $this->respondWithError('SERVICE_UNAVAILABLE', __('api.pilot_inquiry_service_unavailable'), null, 503);
@@ -247,7 +247,7 @@ class PilotInquiryController extends BaseApiController
      */
     public function adminExportCsv(): Response
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
 
         $inquiries = PilotInquiryService::isAvailable()
             ? PilotInquiryService::listInquiries($this->getTenantId())

@@ -84,9 +84,11 @@ class F255SetSuperAdminRankTest extends TestCase
         $this->assertRankRefusal($this->apiPut("/v2/admin/users/{$target->id}/super-admin", ['grant' => true]));
         $this->assertEquals($before, $this->row((int) $target->id));
 
-        // The peer keeps its platform routes.
+        // The peer keeps its platform routes. (Was platform-capabilities until
+        // 15 Nov 2026, when that page became the platform team's; the
+        // federation whitelist is still open to any global super admin.)
         Sanctum::actingAs(User::find($target->id));
-        $this->apiGet('/v2/admin/super/platform-capabilities')->assertStatus(200);
+        $this->apiGet('/v2/admin/super/federation/whitelist')->assertStatus(200);
     }
 
     public function test_super_admin_cannot_revoke_on_a_flagged_super_admin_peer(): void

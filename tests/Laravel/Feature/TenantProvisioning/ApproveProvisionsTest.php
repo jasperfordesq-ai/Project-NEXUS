@@ -29,9 +29,11 @@ class ApproveProvisionsTest extends TestCase
 
         Bus::fake();
 
+        // The provisioning queue is the platform team's since 15 Nov 2026 (E-128).
         $superAdmin = User::factory()->create([
             'tenant_id'      => $this->testTenantId,
             'is_super_admin' => true,
+            'is_god'         => true,
         ]);
         Sanctum::actingAs($superAdmin);
 

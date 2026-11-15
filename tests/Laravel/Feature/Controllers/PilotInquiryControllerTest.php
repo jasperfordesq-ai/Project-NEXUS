@@ -50,7 +50,13 @@ class PilotInquiryControllerTest extends TestCase
 
     public function test_admin_can_advance_pilot_inquiry_stage(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        // Pilot inquiries are the platform team's since 15 Nov 2026 (E-128):
+        // is_god AND super admin. A community admin is refused (see
+        // PilotInquiryControllerPlatformTeamLockTest).
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create([
+            'is_god' => true,
+            'is_super_admin' => true,
+        ]);
         Sanctum::actingAs($admin);
 
         $id = DB::table('pilot_inquiries')->insertGetId([

@@ -16,9 +16,15 @@ use InvalidArgumentException;
 use RuntimeException;
 
 /**
- * AG44 — Super-admin queue for tenant provisioning.
+ * AG44 — The queue of requests for a new community.
  *
- * Routes (all require super_admin):
+ * 🔴 Platform team only (`is_god` AND super admin) since 15 Nov 2026: the page
+ * lives in the Platform team panel, and approving a request creates a
+ * community anywhere in the tree. Every action calls
+ * requireGodPlatformAdmin(); the route group's `super-admin` middleware is
+ * the outer barrier, not the rule.
+ *
+ * Routes:
  *   GET  /v2/super-admin/provisioning-requests
  *   GET  /v2/super-admin/provisioning-requests/{id}
  *   POST /v2/super-admin/provisioning-requests/{id}/approve
@@ -29,26 +35,9 @@ class TenantProvisioningController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
-    protected function requireSuperAdmin(): int
-    {
-        $userId = $this->requireAuth();
-        $user = $this->resolveUser();
-        $role = $user->role ?? 'member';
-        $isSuper = ($user->is_super_admin ?? false)
-            || in_array($role, ['super_admin', 'god'], true);
-
-        if (! $isSuper) {
-            throw new \Illuminate\Http\Exceptions\HttpResponseException(
-                $this->error(__('api.admin_access_required'), 403, 'AUTH_INSUFFICIENT_PERMISSIONS')
-            );
-        }
-
-        return $userId;
-    }
-
     public function index(): JsonResponse
     {
-        $this->requireSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         if (! TenantProvisioningService::isAvailable()) {
             return $this->respondWithData([]);
@@ -61,7 +50,7 @@ class TenantProvisioningController extends BaseApiController
 
     public function show(int $id): JsonResponse
     {
-        $this->requireSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         if (! TenantProvisioningService::isAvailable()) {
             return $this->respondNotFound(__('api.provisioning_request_not_found'));
@@ -76,7 +65,7 @@ class TenantProvisioningController extends BaseApiController
 
     public function approve(int $id): JsonResponse
     {
-        $reviewerId = $this->requireSuperAdmin();
+        $reviewerId = $this->requireGodPlatformAdmin();
 
         if (! TenantProvisioningService::isAvailable()) {
             return $this->respondWithError('SERVICE_UNAVAILABLE', __('api.provisioning_service_unavailable'), null, 503);
@@ -95,7 +84,7 @@ class TenantProvisioningController extends BaseApiController
 
     public function reject(int $id): JsonResponse
     {
-        $reviewerId = $this->requireSuperAdmin();
+        $reviewerId = $this->requireGodPlatformAdmin();
 
         if (! TenantProvisioningService::isAvailable()) {
             return $this->respondWithError('SERVICE_UNAVAILABLE', __('api.provisioning_service_unavailable'), null, 503);
@@ -118,7 +107,7 @@ class TenantProvisioningController extends BaseApiController
 
     public function retry(int $id): JsonResponse
     {
-        $reviewerId = $this->requireSuperAdmin();
+        $reviewerId = $this->requireGodPlatformAdmin();
 
         if (! TenantProvisioningService::isAvailable()) {
             return $this->respondWithError('SERVICE_UNAVAILABLE', __('api.provisioning_service_unavailable'), null, 503);

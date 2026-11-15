@@ -261,7 +261,13 @@ class GoogleTranslateEngineTest extends TestCase
         $this->admin();
         $this->apiPut('/v2/admin/super/translation/google-key', ['api_key' => 'x'])->assertStatus(403);
 
-        $super = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true, 'is_super_admin' => 1, 'role' => 'admin']);
+        // Platform team only since 15 Nov 2026 (E-128): a global super admin
+        // without is_god is refused too.
+        $globalSuper = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true, 'is_super_admin' => 1, 'role' => 'admin']);
+        Sanctum::actingAs($globalSuper, ['*']);
+        $this->apiPut('/v2/admin/super/translation/google-key', ['api_key' => 'x'])->assertStatus(403);
+
+        $super = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true, 'is_super_admin' => 1, 'is_god' => 1, 'role' => 'admin']);
         Sanctum::actingAs($super, ['*']);
         $this->apiPut('/v2/admin/super/translation/google-key', ['api_key' => self::PLATFORM_GOOGLE_KEY])->assertStatus(200);
         $this->apiGet('/v2/admin/super/translation/google-key')

@@ -340,8 +340,11 @@ final class F482AdminWritesReportWhatTheyChangedTest extends TestCase
 
     public function test_pilot_inquiry_notes_refuses_a_foreign_inquiry_and_the_owner_still_saves_the_note(): void
     {
-        $owner = $this->admin(self::HOME);
-        $stranger = $this->admin(self::OTHER);
+        // Pilot inquiries are the platform team's since 15 Nov 2026 (E-128).
+        // The community boundary on the record is unchanged and still tested:
+        // a platform-team account working in another community gets 404.
+        $owner = $this->platformTeam(self::HOME);
+        $stranger = $this->platformTeam(self::OTHER);
 
         $id = (int) DB::table('pilot_inquiries')->insertGetId([
             'tenant_id' => self::HOME,
