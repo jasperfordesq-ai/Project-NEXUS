@@ -2864,6 +2864,8 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'admin_image_size_limit_2mb' => 'يجب ألا يزيد حجم الصورة عن 2 ميغابايت.',
     'community_photo_invalid_type' => 'يجب أن تكون الصورة بصيغة JPEG أو PNG أو WebP.',
     'community_photo_too_large' => 'يجب ألا يزيد حجم الصورة عن 8 ميغابايت.',
+    'app_icon_invalid_type' => 'يجب أن تكون أيقونة التطبيق صورة بصيغة PNG أو JPEG أو WebP.',
+    'app_icon_not_square' => 'يجب أن تكون أيقونة التطبيق مربعة وبحجم 512 × 512 بكسل على الأقل.',
     'category_icon_invalid' => 'اختر صورة من القائمة.',
     'billing_checkout_session_failed' => 'تعذّر إنشاء جلسة الدفع. يرجى المحاولة مرة أخرى.',
     'billing_free_downgrade_support_required' => 'لا يمكن الانتقال إلى خطة مجانية عبر الخدمة الذاتية. يرجى الاتصال بالدعم.',

@@ -692,7 +692,16 @@
       "active_members": "アクティブメンバー",
       "hours_exchanged": "交換された時間",
       "active_listings": "公開中の提供とリクエスト",
-      "communities": "コミュニティ"
+      "communities": "コミュニティ",
+      "goal_label": "私たちの共通の目標",
+      "goal_hours_one": "{{current}} / {{target}} 時間を分かち合いました",
+      "goal_hours_other": "{{current}} / {{target}} 時間を分かち合いました",
+      "goal_exchanges_one": "{{current}} / {{target}} 件の交換が完了しました",
+      "goal_exchanges_other": "{{current}} / {{target}} 件の交換が完了しました",
+      "goal_offers_one": "{{current}} / {{target}} 件の提供・依頼が掲載されました",
+      "goal_offers_other": "{{current}} / {{target}} 件の提供・依頼が掲載されました",
+      "goal_events_one": "{{current}} / {{target}} 件のイベントを開催しました",
+      "goal_events_other": "{{current}} / {{target}} 件のイベントを開催しました"
     },
     "scroll_down": "下にスクロール",
     "audience_cards": {

@@ -4113,6 +4113,11 @@
     "gmail_verify_failed": "Failed to verify Gmail API connection"
   },
   "community_setup": {
-    "founded_invalid": "Choose a real date from 1900 to today."
+    "founded_invalid": "Choose a real date from 1900 to today.",
+    "goal_title_invalid": "Give the goal a name of up to 120 characters.",
+    "goal_metric_invalid": "Choose what the goal counts.",
+    "goal_target_invalid": "Choose a whole number from 1 to 1,000,000.",
+    "goal_starts_on_invalid": "Choose a real start date, today or earlier.",
+    "goal_ends_on_invalid": "Choose an end date after the start, not yet passed, and no more than two years later."
   }
 }

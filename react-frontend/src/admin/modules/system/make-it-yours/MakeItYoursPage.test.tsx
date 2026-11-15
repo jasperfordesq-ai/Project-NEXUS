@@ -106,6 +106,28 @@ describe('MakeItYoursPage', () => {
     expect(within(section).queryByText(/\{\{/)).toBeNull();
   });
 
+  // ---- The shared goal (warmth phase 6, D1): optional, not a seventh step ----
+
+  it('offers the shared goal as an optional extra that never moves the meter', async () => {
+    api.setup.mockResolvedValue({
+      success: true,
+      data: status({
+        community_goal: {
+          id: 'b0a1c2d3e4f5', title: "Let's share 500 hours by spring", metric: 'hours', target: 500,
+          starts_on: '2026-11-01', ends_on: '2099-03-31', current: 12, reached: false, finished: false,
+        },
+      }),
+    });
+    await renderPage();
+
+    expect(screen.getAllByTestId(/^setup-step-/)).toHaveLength(6);
+    expect(screen.getByText('2 of 6 done')).toBeInTheDocument();
+    const section = screen.getByTestId('setup-goal');
+    expect(within(section).getByText('Optional')).toBeInTheDocument();
+    expect(within(section).getByLabelText('Name of the goal')).toHaveValue("Let's share 500 hours by spring");
+    expect(section).toHaveTextContent('So far: 12 of 500');
+  });
+
   it('saves a founded date through its own endpoint and reads the page again', async () => {
     await renderPage();
     const section = screen.getByTestId('setup-founded');
@@ -329,5 +351,18 @@ describe('MakeItYoursPage', () => {
     expect(link).toHaveAttribute('href', '/riverside/');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link.getAttribute('rel')).toContain('noopener');
+  });
+
+  // ---- The app icon (warmth phase 6, A4): optional, not a seventh step ----
+
+  it('offers the app icon as an optional extra that never moves the meter', async () => {
+    await renderPage();
+
+    expect(screen.getAllByTestId(/^setup-step-/)).toHaveLength(6);
+    expect(screen.getByText('2 of 6 done')).toBeInTheDocument();
+    const section = screen.getByTestId('setup-app-icon');
+    expect(within(section).getByText('Optional')).toBeInTheDocument();
+    expect(within(section).getByRole('heading', { name: 'App icon' })).toBeInTheDocument();
+    expect(within(section).getByRole('button', { name: /upload image/i })).toBeInTheDocument();
   });
 });

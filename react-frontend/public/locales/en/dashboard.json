@@ -203,6 +203,25 @@
     "body": "Members of {{community}} have now given each other more than {{hours}} hours of help. Thank you for being part of it.",
     "close": "Close"
   },
+  "community_goal": {
+    "label": "Our shared goal",
+    "reached_label": "We did it!",
+    "progress_label": "Progress towards our shared goal",
+    "progress_hours_one": "{{current}} of {{target}} hour shared",
+    "progress_hours_other": "{{current}} of {{target}} hours shared",
+    "progress_exchanges_one": "{{current}} of {{target}} exchange completed",
+    "progress_exchanges_other": "{{current}} of {{target}} exchanges completed",
+    "progress_offers_one": "{{current}} of {{target}} offer or request posted",
+    "progress_offers_other": "{{current}} of {{target}} offers and requests posted",
+    "progress_events_one": "{{current}} of {{target}} event held",
+    "progress_events_other": "{{current}} of {{target}} events held",
+    "days_left_one": "{{count}} day to go",
+    "days_left_other": "{{count}} days to go",
+    "last_day": "Today is the last day",
+    "reached_body": "Thank you, everyone, for making it happen.",
+    "done_title": "What we've done together",
+    "done_reached": "Goal reached"
+  },
   "getting_started": {
     "title_new": "Getting started in {{name}}",
     "title": "A few things still to do",

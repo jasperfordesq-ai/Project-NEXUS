@@ -4113,6 +4113,11 @@
   "label_retention_rate": "Tasa de retención",
   "label_total_members": "Miembros totales",
   "community_setup": {
-    "founded_invalid": "Elige una fecha real entre 1900 y hoy."
+    "founded_invalid": "Elige una fecha real entre 1900 y hoy.",
+    "goal_title_invalid": "Ponle al objetivo un nombre de hasta 120 caracteres.",
+    "goal_metric_invalid": "Elige qué cuenta para el objetivo.",
+    "goal_target_invalid": "Elige un número entero del 1 al 1.000.000.",
+    "goal_starts_on_invalid": "Elige una fecha de inicio real, hoy o antes.",
+    "goal_ends_on_invalid": "Elige una fecha de fin posterior al inicio, que aún no haya pasado y no más de dos años después."
   }
 }

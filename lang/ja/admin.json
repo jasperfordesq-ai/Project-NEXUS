@@ -4113,6 +4113,11 @@
   "label_retention_rate": "継続率",
   "label_total_members": "総メンバー数",
   "community_setup": {
-    "founded_invalid": "1900年から今日までの正しい日付を選んでください。"
+    "founded_invalid": "1900年から今日までの正しい日付を選んでください。",
+    "goal_title_invalid": "目標に120文字以内の名前を付けてください。",
+    "goal_metric_invalid": "目標で数えるものを選んでください。",
+    "goal_target_invalid": "1から1,000,000までの整数を選んでください。",
+    "goal_starts_on_invalid": "今日以前の正しい開始日を選んでください。",
+    "goal_ends_on_invalid": "開始日より後で、まだ過ぎておらず、2年以内の終了日を選んでください。"
   }
 }

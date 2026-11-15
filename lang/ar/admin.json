@@ -4113,6 +4113,11 @@
   "label_retention_rate": "معدل الاستبقاء",
   "label_total_members": "إجمالي الأعضاء",
   "community_setup": {
-    "founded_invalid": "اختر تاريخًا صحيحًا بين عام 1900 واليوم."
+    "founded_invalid": "اختر تاريخًا صحيحًا بين عام 1900 واليوم.",
+    "goal_title_invalid": "أعطِ الهدف اسمًا لا يزيد على 120 حرفًا.",
+    "goal_metric_invalid": "اختر ما يحسبه الهدف.",
+    "goal_target_invalid": "اختر عددًا صحيحًا من 1 إلى 1,000,000.",
+    "goal_starts_on_invalid": "اختر تاريخ بدء صحيحًا، اليوم أو قبله.",
+    "goal_ends_on_invalid": "اختر تاريخ انتهاء بعد البداية، لم يمضِ بعد، وفي غضون عامين على الأكثر."
   }
 }

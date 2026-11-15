@@ -135,4 +135,41 @@ describe('StatsSection', () => {
     render(<StatsSection content={{ show_live_stats: false }} />);
     expect(api.get).not.toHaveBeenCalled();
   });
+
+  // ---- The community's shared goal (warmth phase 6, D1) ----
+
+  it("shows a small progress line for the community's shared goal", async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: {
+        ...mockStats,
+        communities: 1,
+        community_goal: { title: "Let's share 500 hours by spring", metric: 'hours', target: 500, current: 212.5 },
+      },
+    });
+    render(<StatsSection />);
+
+    const line = await screen.findByTestId('landing-community-goal');
+    expect(line).toHaveTextContent('Our shared goal');
+    expect(line).toHaveTextContent("Let's share 500 hours by spring");
+    expect(line).toHaveTextContent('212.5 of 500 hours shared');
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '42.5');
+    expect(line).not.toHaveTextContent(/\{\{/);
+  });
+
+  it('words the goal for what it counts', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: { ...mockStats, community_goal: { title: 'Ten events', metric: 'events', target: 10, current: 3 } },
+    });
+    render(<StatsSection />);
+    expect(await screen.findByTestId('landing-community-goal')).toHaveTextContent('3 of 10 events held');
+  });
+
+  it('shows no goal line when the community has no goal running', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: { ...mockStats, community_goal: null } });
+    render(<StatsSection />);
+    await screen.findByText('Active Members');
+    expect(screen.queryByTestId('landing-community-goal')).toBeNull();
+  });
 });

@@ -203,6 +203,25 @@
     "body": "{{community}}のメンバーは、これまでに{{hours}}時間以上の助け合いをしてきました。ご参加ありがとうございます。",
     "close": "閉じる"
   },
+  "community_goal": {
+    "label": "私たちの共通の目標",
+    "reached_label": "達成しました！",
+    "progress_label": "共通の目標への進み具合",
+    "progress_hours_one": "{{current}} / {{target}} 時間を分かち合いました",
+    "progress_hours_other": "{{current}} / {{target}} 時間を分かち合いました",
+    "progress_exchanges_one": "{{current}} / {{target}} 件の交換が完了しました",
+    "progress_exchanges_other": "{{current}} / {{target}} 件の交換が完了しました",
+    "progress_offers_one": "{{current}} / {{target}} 件の提供・依頼が掲載されました",
+    "progress_offers_other": "{{current}} / {{target}} 件の提供・依頼が掲載されました",
+    "progress_events_one": "{{current}} / {{target}} 件のイベントを開催しました",
+    "progress_events_other": "{{current}} / {{target}} 件のイベントを開催しました",
+    "days_left_one": "あと{{count}}日",
+    "days_left_other": "あと{{count}}日",
+    "last_day": "今日が最終日です",
+    "reached_body": "ご協力いただいた皆さん、ありがとうございます。",
+    "done_title": "みんなで成し遂げたこと",
+    "done_reached": "目標達成"
+  },
   "getting_started": {
     "title_new": "{{name}}でのはじめの一歩",
     "title": "あと少しだけ",

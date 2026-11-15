@@ -818,6 +818,29 @@ export interface CommunitySetupStatus {
   suggested_colours: string[];
   /** The community's optional founded date (YYYY-MM-DD), or null. Not one of the steps. */
   founded_on: string | null;
+  /** The community's one shared goal (warmth phase 6, D1), or null. Not one of the steps. */
+  community_goal?: AdminCommunityGoal | null;
+}
+
+/** What a shared community goal counts (warmth phase 6, D1). */
+export type CommunityGoalMetric = 'hours' | 'exchanges' | 'offers' | 'events';
+
+/** A shared goal as the admin sets it. Dates are YYYY-MM-DD. */
+export interface CommunityGoalInput {
+  title: string;
+  metric: CommunityGoalMetric;
+  target: number;
+  starts_on: string;
+  ends_on: string;
+}
+
+/** A shared goal as the admin sees it: the community's progress so far (a total, never one member's). */
+export interface AdminCommunityGoal extends CommunityGoalInput {
+  id: string;
+  current: number;
+  reached: boolean;
+  /** True once its end date has passed: it is filed as done when the next goal is set or this one is ended. */
+  finished: boolean;
 }
 
 /** "Make it yours" (warmth phase 6): how far a community has got in dressing its own site. */
@@ -829,6 +852,13 @@ export const adminCommunitySetup = {
   /** Save the founded date (YYYY-MM-DD), or remove it with null — the one value this page stores itself. */
   updateFounded: (foundedOn: string | null) =>
     api.put<{ founded_on: string | null }>('/v2/admin/community-setup/founded', { founded_on: foundedOn }),
+
+  /** Set or change the community's one shared goal (warmth phase 6, D1). */
+  updateGoal: (goal: CommunityGoalInput) =>
+    api.put<{ community_goal: AdminCommunityGoal }>('/v2/admin/community-setup/goal', goal),
+
+  /** End the shared goal now; members then see it under "What we've done together". */
+  endGoal: () => api.delete<{ community_goal: null }>('/v2/admin/community-setup/goal'),
 };
 
 /** Community announcement banner (warmth phase 5): notices across the top of the member website. */
@@ -2469,6 +2499,9 @@ export const adminSettings = {
   removeHeaderLogoDark:  () => api.delete<{ url: string | null }>('/v2/admin/settings/header-logo-dark'),
   uploadCommunityPhoto:  (file: File) => api.upload<{ url: string }>('/v2/admin/settings/community-photo', file, 'photo'),
   removeCommunityPhoto:  () => api.delete<{ url: string | null }>('/v2/admin/settings/community-photo'),
+  // The community's square app icon (Make it yours, warmth phase 6 A4).
+  uploadAppIcon:         (file: File) => api.upload<{ url: string }>('/v2/admin/settings/app-icon', file, 'icon'),
+  removeAppIcon:         () => api.delete<{ url: string | null }>('/v2/admin/settings/app-icon'),
   // Accessible (GOV.UK alpha) header colours and the community colour (the
   // member website's accent). Pass null / '' to clear an override: the header
   // reverts to the stock GOV.UK black + blue, the website to its standard colour.

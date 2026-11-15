@@ -15,6 +15,7 @@ import { CommunityHoursChart } from './CommunityHoursChart';
 import { MembershipAnniversary } from './MembershipAnniversary';
 import { CommunityAnniversary } from './CommunityAnniversary';
 import { CommunityMilestone } from './CommunityMilestone';
+import { CommunityGoal } from './CommunityGoal';
 import { GettingStartedCard } from './GettingStartedCard';
 import { Card, CardBody } from '@/components/ui/Card';
 import { useGreeting } from '@/hooks/useGreeting';
@@ -551,6 +552,10 @@ export function DashboardPage() {
 
         {/* FLAT 2-COLUMN GRID — V2 layout (no sidebar) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-w-0">
+
+          {/* The community's shared goal (span 2): its progress, or a short list
+              of finished goals; renders nothing when the admin has set none. */}
+          <CommunityGoal className="md:col-span-2" />
 
           {/* This month in the community (span 2); renders nothing in a quiet month */}
           <CommunityMonthHighlight className="md:col-span-2" />

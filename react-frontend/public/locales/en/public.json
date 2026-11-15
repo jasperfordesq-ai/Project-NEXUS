@@ -692,7 +692,16 @@
       "active_members": "Active Members",
       "hours_exchanged": "Hours Exchanged",
       "active_listings": "Active offers and requests",
-      "communities": "Communities"
+      "communities": "Communities",
+      "goal_label": "Our shared goal",
+      "goal_hours_one": "{{current}} of {{target}} hour shared",
+      "goal_hours_other": "{{current}} of {{target}} hours shared",
+      "goal_exchanges_one": "{{current}} of {{target}} exchange completed",
+      "goal_exchanges_other": "{{current}} of {{target}} exchanges completed",
+      "goal_offers_one": "{{current}} of {{target}} offer or request posted",
+      "goal_offers_other": "{{current}} of {{target}} offers and requests posted",
+      "goal_events_one": "{{current}} of {{target}} event held",
+      "goal_events_other": "{{current}} of {{target}} events held"
     },
     "scroll_down": "Scroll down",
     "audience_cards": {

@@ -4113,6 +4113,11 @@
   "label_retention_rate": "Retentiepercentage",
   "label_total_members": "Totaal aantal leden",
   "community_setup": {
-    "founded_invalid": "Kies een echte datum tussen 1900 en vandaag."
+    "founded_invalid": "Kies een echte datum tussen 1900 en vandaag.",
+    "goal_title_invalid": "Geef het doel een naam van maximaal 120 tekens.",
+    "goal_metric_invalid": "Kies wat er voor het doel telt.",
+    "goal_target_invalid": "Kies een heel getal van 1 tot 1.000.000.",
+    "goal_starts_on_invalid": "Kies een echte begindatum, vandaag of eerder.",
+    "goal_ends_on_invalid": "Kies een einddatum na het begin, die nog niet voorbij is en hooguit twee jaar later valt."
   }
 }

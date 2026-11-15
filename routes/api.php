@@ -1934,6 +1934,9 @@ Route::delete('/v2/admin/settings/header-logo-dark', [\App\Http\Controllers\Api\
 Route::put('/v2/admin/settings/header-colors',       [\App\Http\Controllers\Api\AdminConfigController::class, 'saveHeaderColors']);
 Route::post('/v2/admin/settings/community-photo',    [\App\Http\Controllers\Api\AdminConfigController::class, 'uploadCommunityPhoto']);
 Route::delete('/v2/admin/settings/community-photo',  [\App\Http\Controllers\Api\AdminConfigController::class, 'removeCommunityPhoto']);
+// The community's square app icon (Make it yours, warmth phase 6 A4).
+Route::post('/v2/admin/settings/app-icon',           [\App\Http\Controllers\Api\AdminConfigController::class, 'uploadAppIcon']);
+Route::delete('/v2/admin/settings/app-icon',         [\App\Http\Controllers\Api\AdminConfigController::class, 'removeAppIcon']);
 Route::get('/v2/admin/config/registration-policy', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'getPolicy']);
 Route::put('/v2/admin/config/registration-policy', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'updatePolicy']);
 Route::get('/v2/admin/identity/providers', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'listProviders']);
@@ -2930,6 +2933,9 @@ Route::delete('/v2/admin/resources/{id}', [\App\Http\Controllers\Api\AdminResour
 Route::get('/v2/admin/community-setup', [\App\Http\Controllers\Api\Admin\CommunitySetupController::class, 'show']);
 // ...and the community's optional founded date, which lives on that page alone (warmth phase 6, D4).
 Route::put('/v2/admin/community-setup/founded', [\App\Http\Controllers\Api\Admin\CommunitySetupController::class, 'updateFounded']);
+// ...and the community's one shared goal, set, changed and ended there alone (warmth phase 6, D1).
+Route::put('/v2/admin/community-setup/goal', [\App\Http\Controllers\Api\Admin\CommunitySetupController::class, 'updateGoal']);
+Route::delete('/v2/admin/community-setup/goal', [\App\Http\Controllers\Api\Admin\CommunitySetupController::class, 'endGoal']);
 // Community announcement banner — one-line notices shown across the top of the member website.
 Route::get('/v2/admin/announcements', [\App\Http\Controllers\Api\Admin\SiteAnnouncementAdminController::class, 'index']);
 Route::post('/v2/admin/announcements', [\App\Http\Controllers\Api\Admin\SiteAnnouncementAdminController::class, 'store']);

@@ -4113,6 +4113,11 @@
   "label_retention_rate": "Wskaźnik retencji",
   "label_total_members": "Łączna liczba członków",
   "community_setup": {
-    "founded_invalid": "Wybierz prawdziwą datę od 1900 roku do dziś."
+    "founded_invalid": "Wybierz prawdziwą datę od 1900 roku do dziś.",
+    "goal_title_invalid": "Nadaj celowi nazwę o długości do 120 znaków.",
+    "goal_metric_invalid": "Wybierz, co liczy się do celu.",
+    "goal_target_invalid": "Wybierz liczbę całkowitą od 1 do 1 000 000.",
+    "goal_starts_on_invalid": "Wybierz prawdziwą datę rozpoczęcia, dzisiejszą lub wcześniejszą.",
+    "goal_ends_on_invalid": "Wybierz datę zakończenia po rozpoczęciu, która jeszcze nie minęła i nie później niż dwa lata potem."
   }
 }

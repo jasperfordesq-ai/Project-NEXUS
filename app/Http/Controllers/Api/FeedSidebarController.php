@@ -97,6 +97,11 @@ class FeedSidebarController extends BaseApiController
      * written this month, public or private) and `members_helped` (distinct
      * members paid for their time this month, 0 when fewer than three) — and
      * `anniversary_years`: how old the community turns this month, or null.
+     *
+     * D1 added `community_goal` (the admin's one running shared goal with the
+     * community's progress, or null) and `community_goals_done` (up to three
+     * finished goals the community did something towards). See
+     * CommunityGoalService::memberView().
      */
     public function thisMonth(): JsonResponse
     {
@@ -185,6 +190,11 @@ class FeedSidebarController extends BaseApiController
             // Read on every request rather than cached with the totals, so a
             // founded date an admin has just set shows straight away.
             $data['anniversary_years'] = self::anniversaryYears($tenantId, now());
+
+            // The community's shared goal (warmth phase 6, D1): read outside the
+            // month's cache too, so a goal an admin has just set shows at once.
+            // Its own count is cached briefly per goal. Totals only.
+            $data += \App\Services\CommunityGoalService::memberView($tenantId);
 
             return $this->respondWithData($data);
         } catch (\Throwable $e) {

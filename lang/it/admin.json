@@ -4113,6 +4113,11 @@
   "label_retention_rate": "Tasso di fidelizzazione",
   "label_total_members": "Membri totali",
   "community_setup": {
-    "founded_invalid": "Scegli una data reale tra il 1900 e oggi."
+    "founded_invalid": "Scegli una data reale tra il 1900 e oggi.",
+    "goal_title_invalid": "Dai all’obiettivo un nome di massimo 120 caratteri.",
+    "goal_metric_invalid": "Scegli che cosa conta per l’obiettivo.",
+    "goal_target_invalid": "Scegli un numero intero da 1 a 1.000.000.",
+    "goal_starts_on_invalid": "Scegli una data di inizio reale, oggi o prima.",
+    "goal_ends_on_invalid": "Scegli una data di fine dopo l’inizio, non ancora passata e non oltre due anni dopo."
   }
 }

@@ -35,6 +35,7 @@ export type UploadSlot =
   | 'header_light'
   | 'header_dark'
   | 'community_photo'
+  | 'app_icon'
   | 'powered_light'
   | 'powered_dark'
   | 'network_powered_light'
@@ -108,6 +109,7 @@ export function useAdminSettingsForm(options: AdminSettingsFormOptions = {}): Ad
     header_light: false,
     header_dark: false,
     community_photo: false,
+    app_icon: false,
     powered_light: false,
     powered_dark: false,
     network_powered_light: false,
@@ -249,6 +251,19 @@ export function useAdminSettingsForm(options: AdminSettingsFormOptions = {}): Ad
             toast.success(t('admin_settings.community_photo_uploaded'));
             break;
           }
+          case 'app_icon': {
+            // Lives in tenants.configuration; reaches the install manifest and
+            // the iPhone home-screen icon as branding.app_icon_url.
+            const res = await adminSettings.uploadAppIcon(file);
+            if (!res.data?.url) {
+              // admin-i18n-ignore: localized server message — the icon's type,
+              // size and shape refusals are __() keys.
+              toast.error(res.error || t('admin_settings.upload_failed'));
+              return;
+            }
+            toast.success(t('admin_settings.app_icon_uploaded'));
+            break;
+          }
         }
         await refreshTenant();
       } catch (err) {
@@ -305,6 +320,21 @@ export function useAdminSettingsForm(options: AdminSettingsFormOptions = {}): Ad
             await refreshTenant();
           } catch (err) {
             logError('Community photo remove error', err);
+            toast.error(t('admin_settings.upload_failed'));
+          }
+          return;
+        }
+        case 'app_icon': {
+          try {
+            const res = await adminSettings.removeAppIcon();
+            if (res.success === false) {
+              toast.error(t('admin_settings.upload_failed'));
+              return;
+            }
+            toast.success(t('admin_settings.app_icon_removed'));
+            await refreshTenant();
+          } catch (err) {
+            logError('App icon remove error', err);
             toast.error(t('admin_settings.upload_failed'));
           }
         }

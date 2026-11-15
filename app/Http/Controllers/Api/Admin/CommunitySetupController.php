@@ -10,6 +10,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Core\TenantContext;
 use App\Http\Controllers\Api\BaseApiController;
+use App\Services\CommunityGoalService;
 use App\Services\CommunitySetupService;
 use App\Services\RedisCache;
 use Illuminate\Http\JsonResponse;
@@ -20,6 +21,7 @@ use Illuminate\Http\JsonResponse;
  *
  *   GET /v2/admin/community-setup[?suggestions=0]
  *   PUT /v2/admin/community-setup/founded
+ *   PUT|DELETE /v2/admin/community-setup/goal   (warmth phase 6, D1)
  *
  * The GET only reads; the PUT saves the optional founded date, the one value
  * that lives on this page alone. Admins of the CURRENT community only: requireAdmin(), and the
@@ -42,9 +44,12 @@ class CommunitySetupController extends BaseApiController
     {
         $this->requireAdmin();
 
-        return $this->respondWithData(
-            $this->service->status(TenantContext::getId(), $this->queryBool('suggestions', true)),
-        );
+        $tenantId = TenantContext::getId();
+        $status = $this->service->status($tenantId, $this->queryBool('suggestions', true));
+        // The shared goal (warmth phase 6, D1): optional, never one of the steps.
+        $status['community_goal'] = CommunityGoalService::adminView($tenantId);
+
+        return $this->respondWithData($status);
     }
 
     /**
@@ -79,5 +84,49 @@ class CommunitySetupController extends BaseApiController
         $this->redisCache->delete('tenant_bootstrap', $tenantId);
 
         return $this->respondWithData(['founded_on' => $foundedOn]);
+    }
+
+    // ------------------------------------------------------------------
+    // The shared community goal (warmth phase 6, D1)
+    // ------------------------------------------------------------------
+
+    /**
+     * PUT /v2/admin/community-setup/goal
+     *   { title, metric: hours|exchanges|offers|events, target, starts_on, ends_on }
+     *
+     * Set or change the community's one shared goal. Members see the whole
+     * community's progress on their dashboard (totals only). Same
+     * authorisation as the page itself: this community's admin only.
+     */
+    public function updateGoal(): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+
+        [$goal, $badField] = CommunityGoalService::validate($this->getAllInput(), now()->toDateString());
+        if ($goal === null) {
+            return $this->respondWithError(
+                'VALIDATION_ERROR',
+                __('admin.community_setup.goal_' . $badField . '_invalid'),
+                $badField,
+                422,
+            );
+        }
+
+        return $this->respondWithData(['community_goal' => CommunityGoalService::set($tenantId, $goal)]);
+    }
+
+    /**
+     * DELETE /v2/admin/community-setup/goal
+     *
+     * End the goal now; it is kept, with its final count, as "What we've done
+     * together". Ending when there is no goal changes nothing.
+     */
+    public function endGoal(): JsonResponse
+    {
+        $this->requireAdmin();
+        CommunityGoalService::end(TenantContext::getId());
+
+        return $this->respondWithData(['community_goal' => null]);
     }
 }

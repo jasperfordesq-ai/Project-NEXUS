@@ -381,6 +381,12 @@ class TenantBootstrapController extends BaseApiController
             'skills' => $skillsListed,
             'communities' => $communities,
             'scope' => $scopedTenantId !== null ? 'tenant' : 'platform',
+            // The community's shared goal (warmth phase 6, D1): its name,
+            // target and total so far, for the front page's progress line.
+            // Community totals only; null with no running goal or platform-wide.
+            'community_goal' => $scopedTenantId !== null
+                ? \App\Services\CommunityGoalService::publicView($scopedTenantId)
+                : null,
         ];
 
         $this->redisCache->set($cacheKey, $data, 300);
@@ -868,6 +874,15 @@ class TenantBootstrapController extends BaseApiController
         if (is_string($communityPhoto) && preg_match('#^/uploads/[A-Za-z0-9._/\-]+$#', $communityPhoto) === 1
             && !str_contains($communityPhoto, '..')) {
             $branding['community_photo_url'] = $communityPhoto;
+        }
+
+        // The community's square app icon (Admin → Make it yours, warmth phase 6
+        // A4). Only ever set by AdminConfigController::uploadAppIcon, so only an
+        // uploaded raster file is published; it becomes a home-screen icon.
+        $appIcon = $config['app_icon_url'] ?? null;
+        if (is_string($appIcon) && preg_match('#^/uploads/[A-Za-z0-9._/\-]+\.(png|jpe?g|webp)$#i', $appIcon) === 1
+            && !str_contains($appIcon, '..') && !str_contains($appIcon, '//')) {
+            $branding['app_icon_url'] = $appIcon;
         }
 
         // Aspect-ratio bucket so the SPA can size the header logo (and grow the

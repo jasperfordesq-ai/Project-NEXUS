@@ -203,6 +203,25 @@
     "body": "Die Mitglieder von {{community}} haben einander inzwischen mehr als {{hours}} Stunden geholfen. Danke, dass du dabei bist.",
     "close": "Schließen"
   },
+  "community_goal": {
+    "label": "Unser gemeinsames Ziel",
+    "reached_label": "Geschafft!",
+    "progress_label": "Fortschritt zu unserem gemeinsamen Ziel",
+    "progress_hours_one": "{{current}} von {{target}} Stunde geteilt",
+    "progress_hours_other": "{{current}} von {{target}} Stunden geteilt",
+    "progress_exchanges_one": "{{current}} von {{target}} Tauschaktion abgeschlossen",
+    "progress_exchanges_other": "{{current}} von {{target}} Tauschaktionen abgeschlossen",
+    "progress_offers_one": "{{current}} von {{target}} Angebot oder Gesuch eingestellt",
+    "progress_offers_other": "{{current}} von {{target}} Angeboten und Gesuchen eingestellt",
+    "progress_events_one": "{{current}} von {{target}} Veranstaltung durchgeführt",
+    "progress_events_other": "{{current}} von {{target}} Veranstaltungen durchgeführt",
+    "days_left_one": "Noch {{count}} Tag",
+    "days_left_other": "Noch {{count}} Tage",
+    "last_day": "Heute ist der letzte Tag",
+    "reached_body": "Danke an alle, die dazu beigetragen haben.",
+    "done_title": "Was wir gemeinsam geschafft haben",
+    "done_reached": "Ziel erreicht"
+  },
   "getting_started": {
     "title_new": "Erste Schritte bei {{name}}",
     "title": "Noch ein paar Dinge zu tun",

@@ -692,7 +692,20 @@
       "active_members": "Membri attivi",
       "hours_exchanged": "Ore scambiate",
       "active_listings": "Offerte e richieste attive",
-      "communities": "Comunità"
+      "communities": "Comunità",
+      "goal_label": "Il nostro obiettivo comune",
+      "goal_hours_one": "{{current}} su {{target}} ora condivisa",
+      "goal_hours_many": "{{current}} su {{target}} ore condivise",
+      "goal_hours_other": "{{current}} su {{target}} ore condivise",
+      "goal_exchanges_one": "{{current}} su {{target}} scambio completato",
+      "goal_exchanges_many": "{{current}} su {{target}} scambi completati",
+      "goal_exchanges_other": "{{current}} su {{target}} scambi completati",
+      "goal_offers_one": "{{current}} su {{target}} offerta o richiesta pubblicata",
+      "goal_offers_many": "{{current}} su {{target}} offerte e richieste pubblicate",
+      "goal_offers_other": "{{current}} su {{target}} offerte e richieste pubblicate",
+      "goal_events_one": "{{current}} su {{target}} evento svolto",
+      "goal_events_many": "{{current}} su {{target}} eventi svolti",
+      "goal_events_other": "{{current}} su {{target}} eventi svolti"
     },
     "scroll_down": "Scorri verso il basso",
     "audience_cards": {

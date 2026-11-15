@@ -4113,6 +4113,11 @@
   "label_retention_rate": "Bindungsrate",
   "label_total_members": "Mitglieder insgesamt",
   "community_setup": {
-    "founded_invalid": "Bitte wählen Sie ein gültiges Datum zwischen 1900 und heute."
+    "founded_invalid": "Bitte wählen Sie ein gültiges Datum zwischen 1900 und heute.",
+    "goal_title_invalid": "Geben Sie dem Ziel einen Namen mit bis zu 120 Zeichen.",
+    "goal_metric_invalid": "Wählen Sie, was für das Ziel gezählt wird.",
+    "goal_target_invalid": "Wählen Sie eine ganze Zahl von 1 bis 1.000.000.",
+    "goal_starts_on_invalid": "Wählen Sie ein gültiges Startdatum, heute oder früher.",
+    "goal_ends_on_invalid": "Wählen Sie ein Enddatum nach dem Start, das noch nicht vorbei ist und höchstens zwei Jahre später liegt."
   }
 }

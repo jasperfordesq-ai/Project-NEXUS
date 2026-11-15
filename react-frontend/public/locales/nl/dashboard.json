@@ -203,6 +203,25 @@
     "body": "De leden van {{community}} hebben elkaar inmiddels meer dan {{hours}} uur geholpen. Bedankt dat je erbij hoort.",
     "close": "Sluiten"
   },
+  "community_goal": {
+    "label": "Ons gezamenlijke doel",
+    "reached_label": "Het is gelukt!",
+    "progress_label": "Voortgang naar ons gezamenlijke doel",
+    "progress_hours_one": "{{current}} van {{target}} uur gedeeld",
+    "progress_hours_other": "{{current}} van {{target}} uur gedeeld",
+    "progress_exchanges_one": "{{current}} van {{target}} ruil afgerond",
+    "progress_exchanges_other": "{{current}} van {{target}} ruilen afgerond",
+    "progress_offers_one": "{{current}} van {{target}} aanbod of verzoek geplaatst",
+    "progress_offers_other": "{{current}} van {{target}} aanbiedingen en verzoeken geplaatst",
+    "progress_events_one": "{{current}} van {{target}} evenement gehouden",
+    "progress_events_other": "{{current}} van {{target}} evenementen gehouden",
+    "days_left_one": "Nog {{count}} dag",
+    "days_left_other": "Nog {{count}} dagen",
+    "last_day": "Vandaag is de laatste dag",
+    "reached_body": "Dank je wel, iedereen, voor je bijdrage.",
+    "done_title": "Wat we samen hebben bereikt",
+    "done_reached": "Doel bereikt"
+  },
   "getting_started": {
     "title_new": "Aan de slag bij {{name}}",
     "title": "Nog een paar dingen te doen",

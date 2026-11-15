@@ -1478,6 +1478,79 @@ class AdminConfigController extends BaseApiController
     }
 
     /**
+     * POST /api/v2/admin/settings/app-icon
+     *
+     * The community's square app icon (Admin → Make it yours → "App icon",
+     * warmth phase 6, A4): what a phone puts on its home screen when a member
+     * installs the community's site. Stored in tenants.configuration
+     * .app_icon_url, published as branding.app_icon_url and used for the
+     * install manifest's icons and the iPhone home-screen icon.
+     *
+     * Raster only (a phone cannot use an SVG home-screen icon), square, and at
+     * least 512 pixels so it is sharp on every phone. ImageUploader re-encodes
+     * it and strips its metadata, as it does for the logo and photo.
+     */
+    public function uploadAppIcon(): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+        $this->rateLimit('admin_logo_upload', 10, 60);
+
+        $file = request()->file('icon');
+        if (!$file || !$file->isValid()) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.file_required'), 'icon', 400);
+        }
+
+        if (!in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/webp'], true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.app_icon_invalid_type'), 'icon', 422);
+        }
+
+        if ($file->getSize() > 2 * 1024 * 1024) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.admin_image_size_limit_2mb'), 'icon', 422);
+        }
+
+        $size = @getimagesize((string) $file->getRealPath());
+        if ($size === false) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.app_icon_invalid_type'), 'icon', 422);
+        }
+        [$width, $height] = $size;
+        if ($width !== $height || $width < 512) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.app_icon_not_square'), 'icon', 422);
+        }
+
+        try {
+            $imageUrl = \App\Core\ImageUploader::upload([
+                'name'     => $file->getClientOriginalName(),
+                'type'     => $file->getMimeType(),
+                'tmp_name' => $file->getRealPath(),
+                'error'    => UPLOAD_ERR_OK,
+                'size'     => $file->getSize(),
+            ], 'app-icons');
+
+            $this->setTenantConfigValue($tenantId, 'app_icon_url', $imageUrl);
+
+            return $this->respondWithData(['url' => $imageUrl]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('App icon upload failed', [
+                'error'     => $e->getMessage(),
+                'tenant_id' => $tenantId,
+            ]);
+            return $this->respondWithError('UPLOAD_FAILED', __('api.failed_upload_image'), 'icon', 500);
+        }
+    }
+
+    /** DELETE /api/v2/admin/settings/app-icon — back to the standard icon. */
+    public function removeAppIcon(): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+
+        $this->setTenantConfigValue($tenantId, 'app_icon_url', null);
+
+        return $this->respondWithData(['url' => null]);
+    }
+
+    /**
      * Clear a header-logo variant, reverting the header to the tenant default
      * (initials avatar in React, text name in the accessible frontend).
      */

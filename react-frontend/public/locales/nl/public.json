@@ -692,7 +692,16 @@
       "active_members": "Actieve Leden",
       "hours_exchanged": "Uren Gewisseld",
       "active_listings": "Actief aanbod en verzoeken",
-      "communities": "Gemeenschappen"
+      "communities": "Gemeenschappen",
+      "goal_label": "Ons gezamenlijke doel",
+      "goal_hours_one": "{{current}} van {{target}} uur gedeeld",
+      "goal_hours_other": "{{current}} van {{target}} uur gedeeld",
+      "goal_exchanges_one": "{{current}} van {{target}} ruil afgerond",
+      "goal_exchanges_other": "{{current}} van {{target}} ruilen afgerond",
+      "goal_offers_one": "{{current}} van {{target}} aanbod of verzoek geplaatst",
+      "goal_offers_other": "{{current}} van {{target}} aanbiedingen en verzoeken geplaatst",
+      "goal_events_one": "{{current}} van {{target}} evenement gehouden",
+      "goal_events_other": "{{current}} van {{target}} evenementen gehouden"
     },
     "scroll_down": "Scroll naar beneden",
     "audience_cards": {

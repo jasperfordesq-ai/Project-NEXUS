@@ -4113,6 +4113,11 @@
   "label_retention_rate": "Ráta Coinneála",
   "label_total_members": "Baill Iomlána",
   "community_setup": {
-    "founded_invalid": "Roghnaigh dáta ceart idir 1900 agus inniu."
+    "founded_invalid": "Roghnaigh dáta ceart idir 1900 agus inniu.",
+    "goal_title_invalid": "Tabhair ainm don sprioc, suas le 120 carachtar.",
+    "goal_metric_invalid": "Roghnaigh cad a chomhaireann an sprioc.",
+    "goal_target_invalid": "Roghnaigh slánuimhir ó 1 go 1,000,000.",
+    "goal_starts_on_invalid": "Roghnaigh dáta tosaigh ceart, inniu nó níos luaithe.",
+    "goal_ends_on_invalid": "Roghnaigh dáta deiridh tar éis an tosaigh, nach bhfuil caite fós, agus nach mó ná dhá bhliain níos déanaí."
   }
 }

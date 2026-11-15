@@ -24,6 +24,9 @@
  * optional founded date, which lives on this page alone. It is not a step and
  * never moves the meter; members see "{community} is three this month" on
  * their dashboard in the anniversary month.
+ *
+ * And one more (D1): the community's shared goal, set, changed and ended in
+ * its own section (CommunityGoalSection). Also optional, also never a step.
  */
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
@@ -51,6 +54,8 @@ import { CommunityPhotoSection } from '../settings/sections/CommunityPhotoSectio
 import { HeaderColorsSection } from '../settings/sections/HeaderColorsSection';
 import { HeaderLogoSection } from '../settings/sections/HeaderLogoSection';
 import { useAdminSettingsForm } from '../settings/useAdminSettingsForm';
+import { CommunityGoalSection } from './CommunityGoalSection';
+import { AppIconSection } from './AppIconSection';
 import { SetupProgress, setupStepAnchor } from './SetupProgress';
 import { useCommunitySetup } from './useCommunitySetup';
 
@@ -155,6 +160,9 @@ export function MakeItYoursPage() {
   const [founded, setFounded] = useState('');
   const [savedFounded, setSavedFounded] = useState('');
   const [savingFounded, setSavingFounded] = useState(false);
+  // The shared goal (warmth phase 6, D1) keeps its own form; the page only
+  // needs to know whether it holds unsaved changes.
+  const [goalDirty, setGoalDirty] = useState(false);
 
   // The founded date follows the server's copy until the admin changes it.
   useEffect(() => {
@@ -182,7 +190,7 @@ export function MakeItYoursPage() {
 
   const taglineDirty = tagline.trim() !== savedTagline.trim();
   const foundedDirty = founded.trim() !== savedFounded;
-  useUnsavedChangesGuard((general.dirty || taglineDirty || foundedDirty) && !savingColour && !savingTagline && !savingFounded);
+  useUnsavedChangesGuard((general.dirty || taglineDirty || foundedDirty || goalDirty) && !savingColour && !savingTagline && !savingFounded);
 
   const saveColour = useCallback(async () => {
     setSavingColour(true);
@@ -448,6 +456,32 @@ export function MakeItYoursPage() {
                 )}
               </div>
             </SettingsSection>
+          </section>
+
+          {/* The community's one shared goal (warmth phase 6, D1): optional,
+              not a step, and set here alone. */}
+          <CommunityGoalSection
+            goal={status.community_goal ?? null}
+            name={name}
+            today={today}
+            onChanged={refetchSetup}
+            onDirtyChange={setGoalDirty}
+          />
+
+          {/* The community on the member's phone (warmth phase 6, A4): an
+              optional square app icon. Not a step, so it never moves the
+              meter; saves as it uploads, like the logo and photo. */}
+          <section
+            id="make-it-yours-app-icon"
+            data-testid="setup-app-icon"
+            className="scroll-mt-24 space-y-2"
+          >
+            <div className="flex flex-wrap items-center gap-2 px-1">
+              <Chip size="sm" variant="soft" color="default">
+                {t('admin_settings.miy_founded_optional')}
+              </Chip>
+            </div>
+            <AppIconSection state={general} />
           </section>
 
           {/* The colour choices (community colour, look, Soft / Vivid and the
