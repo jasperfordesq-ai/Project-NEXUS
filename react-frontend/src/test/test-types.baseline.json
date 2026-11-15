@@ -530,9 +530,6 @@
       "TS2322": 1,
       "TS2769": 1
     },
-    "src/admin/modules/system/BlogRestore.test.tsx": {
-      "TS2345": 2
-    },
     "src/admin/modules/system/CronJobLogs.test.tsx": {
       "TS2345": 1
     },
@@ -551,9 +548,6 @@
     },
     "src/admin/modules/system/RetentionPolicies.test.tsx": {
       "TS2345": 5
-    },
-    "src/admin/modules/system/SeedGenerator.test.tsx": {
-      "TS2345": 7
     },
     "src/admin/modules/system/VerificationAuditLog.test.tsx": {
       "TS2532": 1

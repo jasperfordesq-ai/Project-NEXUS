@@ -288,10 +288,7 @@ const ActivityTimeline = lazy(() => import('./modules/crm/ActivityTimeline'));
 const AdminSettings = lazy(() => import('./modules/system/AdminSettings'));
 const RegistrationPolicySettings = lazy(() => import('./modules/system/RegistrationPolicySettings'));
 const TestRunner = lazy(() => import('./modules/system/TestRunner'));
-const SeedGenerator = lazy(() => import('./modules/system/SeedGenerator'));
-const WebpConverter = lazy(() => import('./modules/system/WebpConverter'));
 const NativeApp = lazy(() => import('./modules/system/NativeApp'));
-const BlogRestore = lazy(() => import('./modules/system/BlogRestore'));
 
 // Deliverability module
 const DeliverabilityDashboard = lazy(() => import('./modules/deliverability/DeliverabilityDashboard'));
@@ -616,9 +613,6 @@ export function AdminRoutes() {
           super admin only and the others are placeholders (F-535). */}
       <Route element={<GodOnlyRoute />}>
         <Route path="tests" element={<Lazy><TestRunner /></Lazy>} />
-        <Route path="seed-generator" element={<Lazy><SeedGenerator /></Lazy>} />
-        <Route path="webp-converter" element={<Lazy><WebpConverter /></Lazy>} />
-        <Route path="blog-restore" element={<Lazy><BlogRestore /></Lazy>} />
       </Route>
       <Route path="native-app" element={<Lazy><NativeApp /></Lazy>} />
 

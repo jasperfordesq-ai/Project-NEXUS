@@ -15,8 +15,9 @@ use Tests\Laravel\TestCase;
 /**
  * Feature tests for AdminToolsController.
  *
- * Covers redirects CRUD, 404 errors, health check, WebP stats,
- * seed generator, blog backups, SEO audit, IP debug.
+ * Covers redirects CRUD, 404 errors, health check,
+ * SEO audit, IP debug. (The WebP, seed and blog-backup placeholders were
+ * deleted on 15 Nov 2026, F-535; see AdminToolsControllerPlatformTeamLockTest.)
  */
 class AdminToolsControllerTest extends TestCase
 {
@@ -157,95 +158,6 @@ class AdminToolsControllerTest extends TestCase
         $response = $this->apiPost('/v2/admin/tools/health-check');
 
         $response->assertStatus(403);
-    }
-
-    // ================================================================
-    // WEBP STATS — GET /v2/admin/tools/webp-stats
-    // ================================================================
-
-    public function test_webp_stats_returns_200_for_admin(): void
-    {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
-
-        $response = $this->apiGet('/v2/admin/tools/webp-stats');
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'data' => ['total_images', 'webp_images', 'pending_conversion'],
-        ]);
-    }
-
-    // ================================================================
-    // SEED GENERATOR — POST /v2/admin/tools/seed
-    // ================================================================
-
-    // runSeedGenerator() is gated by requirePlatformSuperAdmin(); a plain tenant
-    // admin receives 403 before validation runs. These tests use a super admin.
-
-    public function test_seed_generator_requires_types(): void
-    {
-        $superAdmin = User::factory()->forTenant($this->testTenantId)->admin()->create(['role' => 'super_admin']);
-        Sanctum::actingAs($superAdmin);
-
-        $response = $this->apiPost('/v2/admin/tools/seed', []);
-
-        $response->assertStatus(422);
-    }
-
-    public function test_seed_generator_rejects_invalid_types(): void
-    {
-        $superAdmin = User::factory()->forTenant($this->testTenantId)->admin()->create(['role' => 'super_admin']);
-        Sanctum::actingAs($superAdmin);
-
-        $response = $this->apiPost('/v2/admin/tools/seed', [
-            'types' => ['invalid_type'],
-        ]);
-
-        $response->assertStatus(422);
-    }
-
-    public function test_seed_generator_returns_200_for_valid_types(): void
-    {
-        $superAdmin = User::factory()->forTenant($this->testTenantId)->admin()->create(['role' => 'super_admin']);
-        Sanctum::actingAs($superAdmin);
-
-        $response = $this->apiPost('/v2/admin/tools/seed', [
-            'types' => ['users', 'listings'],
-            'counts' => ['users' => 10, 'listings' => 5],
-        ]);
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'data' => ['started', 'message', 'types'],
-        ]);
-    }
-
-    public function test_seed_generator_returns_403_for_tenant_admin(): void
-    {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
-
-        $response = $this->apiPost('/v2/admin/tools/seed', [
-            'types' => ['users'],
-        ]);
-
-        $response->assertStatus(403);
-    }
-
-    // ================================================================
-    // BLOG BACKUPS — GET /v2/admin/tools/blog-backups
-    // ================================================================
-
-    public function test_blog_backups_returns_200_for_admin(): void
-    {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
-
-        $response = $this->apiGet('/v2/admin/tools/blog-backups');
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure(['data']);
     }
 
     // ================================================================

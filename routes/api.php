@@ -3123,11 +3123,6 @@ Route::get('/v2/admin/tools/404-errors', [\App\Http\Controllers\Api\AdminToolsCo
 Route::delete('/v2/admin/tools/404-errors/{id}', [\App\Http\Controllers\Api\AdminToolsController::class, 'delete404Error']);
 Route::post('/v2/admin/tools/health-check', [\App\Http\Controllers\Api\AdminToolsController::class, 'runHealthCheck']);
 Route::get('/v2/admin/tools/ip-debug', [\App\Http\Controllers\Api\AdminToolsController::class, 'ipDebug']);
-Route::get('/v2/admin/tools/webp-stats', [\App\Http\Controllers\Api\AdminToolsController::class, 'getWebpStats']);
-Route::post('/v2/admin/tools/webp-convert', [\App\Http\Controllers\Api\AdminToolsController::class, 'runWebpConversion']);
-Route::post('/v2/admin/tools/seed', [\App\Http\Controllers\Api\AdminToolsController::class, 'runSeedGenerator']);
-Route::get('/v2/admin/tools/blog-backups', [\App\Http\Controllers\Api\AdminToolsController::class, 'getBlogBackups']);
-Route::post('/v2/admin/tools/blog-backups/{id}/restore', [\App\Http\Controllers\Api\AdminToolsController::class, 'restoreBlogBackup']);
 Route::get('/v2/admin/tools/seo-audit', [\App\Http\Controllers\Api\AdminToolsController::class, 'getSeoAudit']);
 Route::post('/v2/admin/tools/seo-audit', [\App\Http\Controllers\Api\AdminToolsController::class, 'runSeoAudit']);
 

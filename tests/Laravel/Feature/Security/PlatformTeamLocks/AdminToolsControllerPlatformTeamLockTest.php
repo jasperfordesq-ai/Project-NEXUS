@@ -27,6 +27,23 @@ final class AdminToolsControllerPlatformTeamLockTest extends PlatformTeamLockTes
         ];
     }
 
+    /**
+     * F-535: three maintenance endpoints reported success for work they never
+     * did (`started: true` with nothing queued, `restored: true` with nothing
+     * restored) and two listed files belonging to the whole platform. The
+     * owner chose to delete them (15 Nov 2026) rather than build them.
+     */
+    public function test_the_placeholder_maintenance_endpoints_are_gone(): void
+    {
+        $this->actAsPlatformTeam();
+
+        $this->apiGet('/v2/admin/tools/webp-stats')->assertStatus(404);
+        $this->apiPost('/v2/admin/tools/webp-convert')->assertStatus(404);
+        $this->apiPost('/v2/admin/tools/seed')->assertStatus(404);
+        $this->apiGet('/v2/admin/tools/blog-backups')->assertStatus(404);
+        $this->apiPost('/v2/admin/tools/blog-backups/1/restore')->assertStatus(404);
+    }
+
     public function test_the_seo_audit_stays_open_to_a_community_admin(): void
     {
         $this->assertCommunityAdminReaches('GET', '/v2/admin/tools/seo-audit');

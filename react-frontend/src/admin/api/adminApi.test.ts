@@ -1713,21 +1713,6 @@ describe('adminTools', () => {
     expect(mockPost).toHaveBeenCalledWith('/v2/admin/tools/health-check');
   });
 
-  it('runWebpConversion posts to webp-convert', async () => {
-    mockPost.mockResolvedValueOnce({ success: true, data: {} });
-    await adminTools.runWebpConversion();
-    expect(mockPost).toHaveBeenCalledWith('/v2/admin/tools/webp-convert');
-  });
-
-  it('runSeedGenerator posts types and counts', async () => {
-    mockPost.mockResolvedValueOnce({ success: true, data: {} });
-    await adminTools.runSeedGenerator({ types: ['users'], counts: { users: 10 } });
-    expect(mockPost).toHaveBeenCalledWith('/v2/admin/tools/seed', {
-      types: ['users'],
-      counts: { users: 10 },
-    });
-  });
-
   it('runSeoAudit posts to seo-audit', async () => {
     mockPost.mockResolvedValueOnce({ success: true, data: [] });
     await adminTools.runSeoAudit();
@@ -1740,11 +1725,6 @@ describe('adminTools', () => {
     expect(mockGet).toHaveBeenCalledWith('/v2/admin/tools/seo-audit');
   });
 
-  it('restoreBlogBackup posts to restore', async () => {
-    mockPost.mockResolvedValueOnce({ success: true, data: {} });
-    await adminTools.restoreBlogBackup(2);
-    expect(mockPost).toHaveBeenCalledWith('/v2/admin/tools/blog-backups/2/restore');
-  });
 });
 
 // ─── Prerender ────────────────────────────────────────────────────────────────

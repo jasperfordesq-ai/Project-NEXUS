@@ -5,9 +5,8 @@
 
 /**
  * Batch render tests for System admin modules (extra, separate from SystemModules.test.tsx):
- * - ActivityLog, AdminSettings, BlogRestore, CronJobLogs, CronJobs,
- *   CronJobSettings, CronJobSetup, NativeApp,
- *   SeedGenerator, TestRunner, WebpConverter
+ * - ActivityLog, AdminSettings, CronJobLogs, CronJobs,
+ *   CronJobSettings, CronJobSetup, NativeApp, TestRunner
  *
  * Smoke tests only — verify each component renders without crashing.
  */
@@ -116,11 +115,6 @@ vi.mock('../../api/adminApi', () => ({
     getNativeAppMembers: vi.fn().mockResolvedValue({ success: true, data: [], meta: { total: 0 } }),
   },
   adminTools: {
-    getBlogBackups: vi.fn().mockResolvedValue({ success: true, data: [] }),
-    restoreBlogBackup: vi.fn().mockResolvedValue({ success: true }),
-    getWebpStats: vi.fn().mockResolvedValue({ success: true, data: { total: 0, converted: 0 } }),
-    runWebpConversion: vi.fn().mockResolvedValue({ success: true }),
-    runSeedGenerator: vi.fn().mockResolvedValue({ success: true }),
     runHealthCheck: vi.fn().mockResolvedValue({ success: true, data: { results: [] } }),
   },
 }));
@@ -155,17 +149,6 @@ import { AdminSettings } from '../system/AdminSettings';
 describe('AdminSettings', () => {
   it('renders without crashing', () => {
     const { container } = render(<W><AdminSettings /></W>);
-    expect(container.querySelector('div')).toBeTruthy();
-  });
-});
-
-// ─── BlogRestore ────────────────────────────────────────────────────────────
-
-import { BlogRestore } from '../system/BlogRestore';
-
-describe('BlogRestore', () => {
-  it('renders without crashing', () => {
-    const { container } = render(<W><BlogRestore /></W>);
     expect(container.querySelector('div')).toBeTruthy();
   });
 });
@@ -241,17 +224,6 @@ describe('NativeApp', () => {
   });
 });
 
-// ─── SeedGenerator ──────────────────────────────────────────────────────────
-
-import { SeedGenerator } from '../system/SeedGenerator';
-
-describe('SeedGenerator', () => {
-  it('renders without crashing', () => {
-    const { container } = render(<W><SeedGenerator /></W>);
-    expect(container.querySelector('div')).toBeTruthy();
-  });
-});
-
 // ─── TestRunner ─────────────────────────────────────────────────────────────
 
 import { TestRunner } from '../system/TestRunner';
@@ -259,17 +231,6 @@ import { TestRunner } from '../system/TestRunner';
 describe('TestRunner', () => {
   it('renders without crashing', () => {
     const { container } = render(<W><TestRunner /></W>);
-    expect(container.querySelector('div')).toBeTruthy();
-  });
-});
-
-// ─── WebpConverter ──────────────────────────────────────────────────────────
-
-import { WebpConverter } from '../system/WebpConverter';
-
-describe('WebpConverter', () => {
-  it('renders without crashing', () => {
-    const { container } = render(<W><WebpConverter /></W>);
     expect(container.querySelector('div')).toBeTruthy();
   });
 });

@@ -40,10 +40,8 @@ vi.mock('../modules/groups/GroupTypes', () => ({ default: () => <div>page:GroupT
 vi.mock('../modules/groups/GroupRanking', () => ({ default: () => <div>page:GroupRanking</div> }));
 vi.mock('../modules/matching/MatchingAnalytics', () => ({ default: () => <div>page:MatchingAnalytics</div> }));
 vi.mock('../modules/dashboard/AdminDashboard', () => ({ default: () => <div>page:AdminDashboard</div> }));
-vi.mock('../modules/system/SeedGenerator', () => ({ default: () => <div>page:SeedGenerator</div> }));
-vi.mock('../modules/system/WebpConverter', () => ({ default: () => <div>page:WebpConverter</div> }));
 vi.mock('../modules/system/TestRunner', () => ({ default: () => <div>page:TestRunner</div> }));
-vi.mock('../modules/system/BlogRestore', () => ({ default: () => <div>page:BlogRestore</div> }));
+vi.mock('../modules/AdminNotFound', () => ({ default: () => <div>page:AdminNotFound</div> }));
 
 import { AdminRoutes } from '../routes';
 
@@ -85,12 +83,23 @@ describe('legacy hyphenated admin paths redirect to their gated pages', () => {
 // F-534: platform-maintenance tools had no route guard. They act on, or
 // report about, the whole installation, so they are god accounts only — the
 // same guard as the other maintenance pages (owner decisions 2026-10-02).
+// F-535: three of the four maintenance pages reported success for work they
+// never did. The owner chose to delete them (15 Nov 2026): the pages, their
+// routes and their endpoints are gone, so the addresses are simply not found.
+describe('the three placeholder maintenance tools are gone', () => {
+  it.each(['seed-generator', 'webp-converter', 'blog-restore'])(
+    '/admin/%s is not a page any more, even for the platform team',
+    async (path) => {
+      auth.user = { id: 1, role: 'super_admin', is_god: true, is_super_admin: true };
+      renderAt(`/test/admin/${path}`);
+      expect(await screen.findByText('page:AdminNotFound')).toBeInTheDocument();
+    },
+  );
+});
+
 describe('platform-maintenance pages are god accounts only', () => {
   const pages: Array<[string, string]> = [
-    ['seed-generator', 'page:SeedGenerator'],
-    ['webp-converter', 'page:WebpConverter'],
     ['tests', 'page:TestRunner'],
-    ['blog-restore', 'page:BlogRestore'],
   ];
 
   it.each(pages)('sends a community administrator away from /admin/%s', async (path, page) => {

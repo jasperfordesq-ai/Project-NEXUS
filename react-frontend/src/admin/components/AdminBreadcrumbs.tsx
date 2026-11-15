@@ -157,10 +157,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   setup: 'breadcrumbs.setup',
   'activity-log': 'breadcrumbs.activity_log',
   tests: 'breadcrumbs.tests',
-  'seed-generator': 'breadcrumbs.seed_generator',
-  'webp-converter': 'breadcrumbs.webp_converter',
   'native-app': 'breadcrumbs.native_app',
-  'blog-restore': 'breadcrumbs.blog_restore',
 
   // Community / Groups
   groups: 'breadcrumbs.groups',

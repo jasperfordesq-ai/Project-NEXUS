@@ -2602,17 +2602,6 @@ export const adminTools = {
     summary: { total: number; passed: number; failed: number; overall: string };
   }>('/v2/admin/tools/health-check'),
 
-  getWebpStats: () => api.get<{ total_images: number; webp_images: number; pending_conversion: number }>('/v2/admin/tools/webp-stats'),
-  runWebpConversion: () => api.post<{ converted: number }>('/v2/admin/tools/webp-convert'),
-
-  runSeedGenerator: (data: { types: string[]; counts: Record<string, number> }) =>
-    api.post<{ success: boolean; created: Record<string, number> }>('/v2/admin/tools/seed', data),
-
-  getBlogBackups: () => api.get<Array<{ id: number; filename: string; created_at: string; size: string }>>('/v2/admin/tools/blog-backups'),
-
-  restoreBlogBackup: (backupId: number) =>
-    api.post<{ restored_count: number }>(`/v2/admin/tools/blog-backups/${backupId}/restore`),
-
   runSeoAudit: () =>
     api.post<SeoAuditResult>('/v2/admin/tools/seo-audit'),
 

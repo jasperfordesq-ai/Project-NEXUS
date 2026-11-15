@@ -25,7 +25,7 @@ final class SpaRouteSegments
         '404-errors', 'about', 'acceptable-use', 'accessibility', 'account-deletion', 'achievements',
         'activity', 'activity-log', 'admin', 'advertise', 'advertising', 'agents', 'ai', 'ai-settings',
         'algorithm-settings', 'analytics', 'announcements', 'archives', 'attributes', 'auth', 'billing', 'blog',
-        'blog-restore', 'broker', 'campaigns', 'caring', 'caring-community', 'categories', 'certificates',
+        'broker', 'campaigns', 'caring', 'caring-community', 'categories', 'certificates',
         'changelog', 'chat', 'child-safety', 'clubs', 'community-analytics', 'community-guidelines',
         'configuration', 'connections', 'contact', 'cookies', 'coupons', 'courses', 'crm', 'cron-jobs',
         'custom-badges', 'dashboard', 'deliverability', 'developers', 'development-status', 'donations',
@@ -43,13 +43,13 @@ final class SpaRouteSegments
         'platform-capabilities', 'platform-team', 'podcasts', 'polls', 'premium', 'pricing', 'privacy', 'profile',
         'provisioning-requests', 'qualifications', 'regional-analytics', 'regional-points', 'register',
         'reports', 'residency-verifications', 'resources', 'retention', 'reviews', 'risk-tags',
-        'safeguarding', 'safeguarding-options', 'saved', 'search', 'search-analytics', 'seed-generator',
+        'safeguarding', 'safeguarding-options', 'saved', 'search', 'search-analytics',
         'seo', 'settings', 'skills', 'smart-match-monitoring', 'smart-match-users', 'smart-matching',
         'social-prescribing', 'sso', 'strategic-plan', 'stripe-account', 'super', 'super-admin',
         'support-actions', 'support-reports', 'swaps', 'tenant-features', 'terms', 'tests', 'thank-yous', 'timebanking',
         'timebanking-guide', 'training', 'translation-config', 'trust-and-safety', 'users', 'venues',
         'verify-certificate', 'verify-email', 'verify-identity', 'verify-identity-optional', 'vetting',
-        'volunteer-org', 'volunteering', 'wallet', 'webp-converter', 'whats-on',
+        'volunteer-org', 'volunteering', 'wallet', 'whats-on',
     ];
 
     public static function isKnown(string $segment): bool
