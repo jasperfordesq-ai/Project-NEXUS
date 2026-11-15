@@ -2443,7 +2443,7 @@
     "community_title": "Bedankjes in {{community}}",
     "community_intro": "Berichten die leden wilden tonen, de nieuwste eerst. Een bericht verschijnt hier alleen als de ontvanger heeft besloten het te delen.",
     "community_empty_title": "Nog geen bedankjes om te tonen",
-    "community_empty_desc": "Als iemand een ontvangen bedankje toont, verschijnt het hier. Wil je zelf iemand bedanken? Open dan diens profiel en kies ‘Zeg bedankt’.",
+    "community_empty_desc": "Als iemand een ontvangen bedankje toont, verschijnt het hier. Om zelf iemand te bedanken, open je diens profiel en kies je ‘Zeg bedankt’.",
     "community_more": "Oudere bedankjes tonen",
     "community_link": "Bekijk de bedankjes in {{community}}"
   },
