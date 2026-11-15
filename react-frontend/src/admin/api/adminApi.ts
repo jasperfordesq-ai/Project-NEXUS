@@ -814,6 +814,12 @@ export interface CommunitySetupStatus {
   colour_strength: 'soft' | 'vivid';
   tagline: string;
   themes: { total: number; with_picture: number };
+  /**
+   * Step 6. `showing` is the notice members see right now, in the shape the
+   * member website is given (read it with `currentAnnouncement`), or null.
+   * `total` counts every saved notice, showing or not.
+   */
+  notice?: { total: number; showing: unknown };
   /** Colours taken from the community's logo, each already readable on white. */
   suggested_colours: string[];
   /** The community's optional founded date (YYYY-MM-DD), or null. Not one of the steps. */

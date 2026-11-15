@@ -12,6 +12,7 @@ use App\Core\ApiErrorCodes;
 use App\Support\SiteAnnouncementStyle;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Community announcement banner (Nov 2026).
@@ -142,6 +143,20 @@ class SiteAnnouncementService
         }
 
         $this->clearBootstrapCache($tenantId);
+
+        // "Make it yours" counts "Post a first notice" as done once a notice
+        // has been posted. With the row gone, that has to be written down or
+        // taking a notice off the site would undo the step. The notice is
+        // already deleted at this point, so a failure here is logged and the
+        // delete still reports what happened: the notice has gone.
+        try {
+            CommunitySetupService::rememberNoticePosted($tenantId);
+        } catch (\Throwable $e) {
+            Log::error('Could not record that a community has posted a notice', [
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return true;
     }

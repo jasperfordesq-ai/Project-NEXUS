@@ -86,7 +86,8 @@ class CommunitySetupControllerTest extends TestCase
             ->assertJsonPath('data.look', null)
             ->assertJsonPath('data.colour_strength', 'soft')
             ->assertJsonPath('data.tagline', '')
-            ->assertJsonPath('data.suggested_colours', []);
+            ->assertJsonPath('data.suggested_colours', [])
+            ->assertJsonPath('data.notice', ['total' => 0, 'showing' => null]);
     }
 
     public function test_each_step_is_done_once_its_setting_is_in_place(): void
@@ -169,6 +170,105 @@ class CommunitySetupControllerTest extends TestCase
 
         $response->assertJsonPath('data.done', 0)->assertJsonPath('data.tagline', '');
         $this->assertStringNotContainsString('someone else', (string) $response->getContent());
+    }
+
+    // ================================================================
+    // The notice step: what is showing now, and staying done after a delete
+    // ================================================================
+
+    public function test_it_reports_the_notice_members_see_now_and_none_when_it_is_switched_off(): void
+    {
+        $this->actAsAdmin();
+
+        $id = $this->apiPost('/v2/admin/announcements', [
+            'message' => 'Repair cafe this Saturday',
+            'style' => 'celebration',
+            'link_url' => '/events',
+            'link_label' => 'See what is on',
+        ])->assertStatus(201)->json('data.announcement.id');
+
+        // The same notice, and the same fields, the member website is given.
+        $this->apiGet('/v2/admin/community-setup')->assertOk()
+            ->assertJsonPath('data.notice.total', 1)
+            ->assertJsonPath('data.notice.showing.id', $id)
+            ->assertJsonPath('data.notice.showing.message', 'Repair cafe this Saturday')
+            ->assertJsonPath('data.notice.showing.style', 'celebration')
+            ->assertJsonPath('data.notice.showing.link_url', '/events')
+            ->assertJsonPath('data.notice.showing.link_label', 'See what is on')
+            ->assertJsonPath('data.notice.showing.is_dismissible', true);
+
+        // Switched off: still saved, still counts as the step done, shown to nobody.
+        $this->apiPut('/v2/admin/announcements/' . $id, ['is_active' => false])->assertOk();
+        $this->assertDone(['notice'])
+            ->assertJsonPath('data.notice.total', 1)
+            ->assertJsonPath('data.notice.showing', null);
+    }
+
+    public function test_a_notice_that_has_ended_or_not_started_is_not_reported_as_showing(): void
+    {
+        $this->actAsAdmin();
+        $this->notice($this->testTenantId, ['is_active' => 1, 'message' => 'Over', 'ends_at' => now()->subHour()]);
+        $this->notice($this->testTenantId, ['is_active' => 1, 'message' => 'Not yet', 'starts_at' => now()->addDay()]);
+
+        $this->apiGet('/v2/admin/community-setup')->assertOk()
+            ->assertJsonPath('data.notice.total', 2)
+            ->assertJsonPath('data.notice.showing', null);
+    }
+
+    public function test_the_notice_step_stays_done_after_the_only_notice_is_deleted(): void
+    {
+        $this->actAsAdmin();
+        $this->setConfig(['primary_color' => '#A3195B']);
+
+        $id = $this->apiPost('/v2/admin/announcements', ['message' => 'Welcome, everyone'])
+            ->assertStatus(201)->json('data.announcement.id');
+        $this->assertDone(['colour', 'notice']);
+        // Nothing is written down while the notice itself is still there.
+        $this->assertArrayNotHasKey('first_notice_posted', $this->config());
+
+        $this->apiDelete('/v2/admin/announcements/' . $id)->assertOk();
+
+        // Gone for everyone, and taking it down has not undone the step.
+        $this->assertSame(0, DB::table('site_announcements')->where('tenant_id', $this->testTenantId)->count());
+        $this->assertDone(['colour', 'notice'])
+            ->assertJsonPath('data.notice', ['total' => 0, 'showing' => null]);
+
+        // Recorded beside the other settings, which are left alone.
+        $this->assertTrue($this->config()['first_notice_posted']);
+        $this->assertSame('#A3195B', $this->config()['primary_color']);
+        $this->assertSame(['events' => true], $this->config()['modules']);
+    }
+
+    public function test_deleting_a_notice_in_another_community_never_marks_this_one(): void
+    {
+        DB::table('tenants')->updateOrInsert(
+            ['id' => self::OTHER_TENANT_ID],
+            [
+                'name' => 'Other Setup Timebank',
+                'slug' => 'other-setup-timebank-test',
+                'parent_id' => null,
+                'path' => '/' . self::OTHER_TENANT_ID . '/',
+                'depth' => 0,
+                'is_active' => true,
+                'configuration' => json_encode(['primary_color' => '#15803d']),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        );
+        $this->notice(self::OTHER_TENANT_ID, ['is_active' => 1, 'message' => 'Theirs, not ours']);
+        $otherId = (int) DB::table('site_announcements')->where('tenant_id', self::OTHER_TENANT_ID)->value('id');
+
+        $this->assertTrue(app(\App\Services\SiteAnnouncementService::class)->delete(self::OTHER_TENANT_ID, $otherId));
+
+        $other = json_decode((string) DB::table('tenants')->where('id', self::OTHER_TENANT_ID)->value('configuration'), true);
+        $this->assertTrue($other['first_notice_posted']);
+        $this->assertSame('#15803d', $other['primary_color']);
+
+        $this->actAsAdmin();
+        $this->assertArrayNotHasKey('first_notice_posted', $this->config());
+        $response = $this->assertDone([]);
+        $response->assertJsonPath('data.notice', ['total' => 0, 'showing' => null]);
+        $this->assertStringNotContainsString('Theirs, not ours', (string) $response->getContent());
     }
 
     // ================================================================
@@ -371,9 +471,10 @@ class CommunitySetupControllerTest extends TestCase
         ]);
     }
 
-    private function notice(int $tenantId): void
+    /** @param array<string, mixed> $overrides */
+    private function notice(int $tenantId, array $overrides = []): void
     {
-        DB::table('site_announcements')->insert([
+        DB::table('site_announcements')->insert(array_merge([
             'tenant_id' => $tenantId,
             'message' => 'Welcome to our new look',
             'style' => 'info',
@@ -381,7 +482,7 @@ class CommunitySetupControllerTest extends TestCase
             'is_active' => 0,
             'created_at' => now(),
             'updated_at' => now(),
-        ]);
+        ], $overrides));
     }
 
     /**

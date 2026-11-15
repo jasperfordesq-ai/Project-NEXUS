@@ -35,6 +35,18 @@ final class CommunitySetupService
     private const UPLOADS_PATH = '#^/uploads/[A-Za-z0-9._/\-]+$#';
 
     /**
+     * tenants.configuration key: this community has posted a notice at some
+     * point. Written when a notice is deleted (rememberNoticePosted), so
+     * "Post a first notice" stays done after the notice itself has gone.
+     */
+    public const NOTICE_POSTED_KEY = 'first_notice_posted';
+
+    public function __construct(
+        private readonly SiteAnnouncementService $announcements,
+    ) {
+    }
+
+    /**
      * @return array{
      *     steps: list<array{key: string, done: bool}>,
      *     done: int,
@@ -44,6 +56,7 @@ final class CommunitySetupService
      *     colour_strength: string,
      *     tagline: string,
      *     themes: array{total: int, with_picture: int},
+     *     notice: array{total: int, showing: ?array<string, mixed>},
      *     suggested_colours: list<string>,
      *     founded_on: ?string
      * }
@@ -73,7 +86,12 @@ final class CommunitySetupService
         $themesTotal = (int) ($themes->total ?? 0);
         $themesWithPicture = (int) ($themes->with_picture ?? 0);
 
-        $hasNotice = DB::selectOne('SELECT 1 AS present FROM site_announcements WHERE tenant_id = ? LIMIT 1', [$tenantId]) !== null;
+        $notices = DB::selectOne('SELECT COUNT(*) AS total FROM site_announcements WHERE tenant_id = ?', [$tenantId]);
+        $noticesTotal = (int) ($notices->total ?? 0);
+        // "Post a first notice" is about having done it once. A notice that
+        // was later deleted leaves no row, so deleting it records the fact
+        // (rememberNoticePosted) and the step stays done.
+        $hasNotice = $noticesTotal > 0 || ($config[self::NOTICE_POSTED_KEY] ?? false) === true;
 
         $done = [
             'logo' => $logo !== '',
@@ -101,6 +119,13 @@ final class CommunitySetupService
             'colour_strength' => ColourStrength::fromStored($config['colour_strength'] ?? null),
             'tagline' => $tagline,
             'themes' => ['total' => $themesTotal, 'with_picture' => $themesWithPicture],
+            // The notice members see right now (the same rule the member
+            // website uses), so the page can show it and offer to change or
+            // remove it. `total` counts every saved notice, showing or not.
+            'notice' => [
+                'total' => $noticesTotal,
+                'showing' => $this->announcements->currentForTenant($tenantId),
+            ],
             'suggested_colours' => $withSuggestions ? $this->coloursFromLogo($logo) : [],
             // Optional and not a step: it never moves the "x of 6" meter.
             'founded_on' => self::validFoundedOn($config['founded_on'] ?? null, now()->toDateString()),
@@ -132,25 +157,71 @@ final class CommunitySetupService
      */
     public function setFoundedOn(int $tenantId, ?string $foundedOn): void
     {
-        DB::transaction(function () use ($tenantId, $foundedOn): void {
+        self::changeConfiguration(
+            $tenantId,
+            static function (array $config) use ($foundedOn): array {
+                if ($foundedOn === null) {
+                    unset($config['founded_on']);
+                } else {
+                    $config['founded_on'] = $foundedOn;
+                }
+
+                return $config;
+            },
+            'Community settings could not be read; the founded date was not saved.',
+        );
+    }
+
+    /**
+     * Record that this community has posted a notice at some point, as
+     * configuration.first_notice_posted. SiteAnnouncementService calls it when
+     * a notice is deleted: from then on no row may be left to show that the
+     * "Post a first notice" step was ever done. Static so that service does
+     * not need this one built (this one already depends on it).
+     */
+    public static function rememberNoticePosted(int $tenantId): void
+    {
+        self::changeConfiguration(
+            $tenantId,
+            static function (array $config): array {
+                $config[self::NOTICE_POSTED_KEY] = true;
+
+                return $config;
+            },
+            'Community settings could not be read; the posted notice was not recorded.',
+        );
+    }
+
+    /**
+     * Change one community's configuration with the row locked, so a colour
+     * saved at the same moment is not lost. Nothing is written when $change
+     * returns the configuration as it was.
+     *
+     * @param \Closure(array<string, mixed>): array<string, mixed> $change
+     */
+    private static function changeConfiguration(int $tenantId, \Closure $change, string $unreadable): void
+    {
+        DB::transaction(static function () use ($tenantId, $change, $unreadable): void {
             $row = DB::selectOne('SELECT configuration FROM tenants WHERE id = ? FOR UPDATE', [$tenantId]);
+            if ($row === null) {
+                return;
+            }
             $config = [];
-            if ($row && !empty($row->configuration)) {
+            if (!empty($row->configuration)) {
                 $decoded = json_decode((string) $row->configuration, true);
                 if (!is_array($decoded)) {
                     // Never replace settings we could not read with a one-key object.
-                    throw new \RuntimeException('Community settings could not be read; the founded date was not saved.');
+                    throw new \RuntimeException($unreadable);
                 }
                 $config = $decoded;
             }
 
-            if ($foundedOn === null) {
-                unset($config['founded_on']);
-            } else {
-                $config['founded_on'] = $foundedOn;
+            $next = $change($config);
+            if ($next === $config) {
+                return;
             }
 
-            DB::update('UPDATE tenants SET configuration = ? WHERE id = ?', [json_encode($config), $tenantId]);
+            DB::update('UPDATE tenants SET configuration = ? WHERE id = ?', [json_encode($next), $tenantId]);
         });
     }
 

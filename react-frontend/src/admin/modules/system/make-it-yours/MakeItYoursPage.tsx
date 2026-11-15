@@ -21,7 +21,10 @@
  * same call, and it is the one new value here that IS stored — for someone who
  * has not chosen for themselves; a person's own choice always wins. The tagline saves through
  * the SEO endpoint that already owned it; themes and notices link to their
- * screens. Nothing changes for a community until its admin chooses it.
+ * screens. Step 6 also shows the notice that is on the site now (15 Nov 2026),
+ * because "Write a notice" alone did not say where one is taken down; it is
+ * still changed and removed on the Announcements screen, never here.
+ * Nothing changes for a community until its admin chooses it.
  *
  * One value IS stored from here (warmth phase 6, D4): the community's
  * optional founded date, which lives on this page alone. It is not a step and
@@ -32,7 +35,7 @@
  * its own section (CommunityGoalSection). Also optional, also never a step.
  */
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ArrowRight from 'lucide-react/icons/arrow-right';
@@ -44,7 +47,9 @@ import Shapes from 'lucide-react/icons/shapes';
 import Sparkles from 'lucide-react/icons/sparkles';
 import { Alert, Button, Card, Chip, Input, Skeleton } from '@/components/ui';
 import { useTenant, useToast } from '@/contexts';
+import { SiteAnnouncementView } from '@/components/layout/SiteAnnouncementBanner';
 import { logError } from '@/lib/logger';
+import { currentAnnouncement } from '@/lib/siteAnnouncement';
 import { useAdminPageMeta } from '../../../AdminMetaContext';
 import { adminCommunitySetup, adminSettings, type CommunitySetupStepKey } from '../../../api/adminApi';
 import { AdminSaveBar } from '../../../components/AdminSaveBar';
@@ -262,6 +267,12 @@ export function MakeItYoursPage() {
   const today = localToday();
   const foundedInvalid = founded.trim() !== '' && !isValidFoundedOn(founded.trim(), today);
 
+  // Step 6: the notice members see now. Checked with the member website's own
+  // reader, so a notice past its end time, or with an unsafe link, is shown
+  // here exactly as it would be there (not at all, or without the link).
+  const noticeShowing = useMemo(() => currentAnnouncement(status?.notice?.showing ?? null), [status?.notice?.showing]);
+  const noticesSaved = status?.notice?.total ?? 0;
+
   const done = (key: CommunitySetupStepKey) => status?.steps.find((s) => s.key === key)?.done ?? false;
   const total = status?.total ?? 6;
   const complete = status !== null && status.done >= status.total;
@@ -401,16 +412,37 @@ export function MakeItYoursPage() {
               title={t('admin_settings.miy_notice_title')}
               description={t('admin_settings.miy_notice_desc')}
             >
-              <div>
-                <Button
-                  as={Link}
-                  to={tenantPath('/admin/announcements')}
-                  size="sm"
-                  variant="secondary"
-                  endContent={<ArrowRight size={14} aria-hidden="true" />}
-                >
-                  {t('admin_settings.miy_notice_open')}
-                </Button>
+              {/* The notice that is on the site now, as members see it, and the
+                  way to take it down. Without this the only button read
+                  "Write a notice", and nothing said that the same screen is
+                  where a notice is removed for everyone. */}
+              <div className="space-y-3">
+                {noticeShowing ? (
+                  <>
+                    <p className="text-sm font-medium text-foreground">{t('admin_settings.miy_notice_showing')}</p>
+                    <div className="overflow-hidden rounded-xl border border-divider">
+                      <SiteAnnouncementView announcement={noticeShowing} linkPath={tenantPath} />
+                    </div>
+                    <p className="text-sm text-muted">{t('admin_settings.miy_notice_showing_hint')}</p>
+                  </>
+                ) : noticesSaved > 0 ? (
+                  <p className="text-sm text-muted">{t('admin_settings.miy_notice_none_showing')}</p>
+                ) : null}
+                <div>
+                  <Button
+                    as={Link}
+                    to={tenantPath('/admin/announcements')}
+                    size="sm"
+                    variant="secondary"
+                    endContent={<ArrowRight size={14} aria-hidden="true" />}
+                  >
+                    {noticeShowing
+                      ? t('admin_settings.miy_notice_manage')
+                      : noticesSaved > 0
+                        ? t('admin_settings.miy_notice_see_saved')
+                        : t('admin_settings.miy_notice_open')}
+                  </Button>
+                </div>
               </div>
             </SettingsSection>
           </SetupStep>

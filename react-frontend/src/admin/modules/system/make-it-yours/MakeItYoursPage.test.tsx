@@ -28,17 +28,22 @@ vi.mock('../../../api/adminApi', () => ({
   },
 }));
 
+const useTenant = vi.hoisted(() => () => ({
+  tenant: { id: 106, name: 'Riverside Timebank', slug: 'riverside' },
+  branding: { name: 'Riverside Timebank', logo: null, logoDark: null, communityPhoto: null },
+  tenantPath: (p: string) => `/riverside${p}`,
+  refreshTenant,
+  hasFeature: vi.fn(() => true),
+  hasModule: vi.fn(() => true),
+}));
+
 vi.mock('@/contexts', () => createMockContexts({
   useToast: () => toast,
-  useTenant: () => ({
-    tenant: { id: 106, name: 'Riverside Timebank', slug: 'riverside' },
-    branding: { name: 'Riverside Timebank', logo: null, logoDark: null, communityPhoto: null },
-    tenantPath: (p: string) => `/riverside${p}`,
-    refreshTenant,
-    hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
-  }),
+  useTenant,
 }));
+// Step 6 shows the real notice banner, whose file reads the community from
+// this path rather than from '@/contexts'; both must answer the same.
+vi.mock('@/contexts/TenantContext', () => ({ useTenant }));
 
 import { MakeItYoursPage } from './MakeItYoursPage';
 
@@ -352,6 +357,91 @@ describe('MakeItYoursPage', () => {
     expect(screen.getByTestId('setup-themes-count')).toHaveTextContent('You have chosen a picture for 3 of your 12 themes.');
     expect(screen.getByRole('link', { name: /choose theme pictures/i })).toHaveAttribute('href', '/riverside/admin/categories');
     expect(screen.getByRole('link', { name: /write a notice/i })).toHaveAttribute('href', '/riverside/admin/announcements');
+  });
+
+  // ---- Step 6: the notice that is on the site now, and where to take it down ----
+
+  it('shows the notice that is on the site now, as members see it, with a way to change or remove it', async () => {
+    api.setup.mockResolvedValue({
+      success: true,
+      data: status({
+        notice: {
+          total: 2,
+          showing: {
+            id: 41,
+            message: 'Repair cafe this Saturday',
+            style: 'celebration',
+            link_url: '/events',
+            link_label: 'See what is on',
+            is_dismissible: true,
+            starts_at: null,
+            ends_at: null,
+            updated_at: '2026-11-14T10:00:00+00:00',
+          },
+        },
+      }),
+    });
+    await renderPage();
+
+    const step = screen.getByTestId('setup-step-notice');
+    expect(within(step).getByText('On your site now')).toBeInTheDocument();
+    // The real banner, in the style the admin chose.
+    const banner = within(step).getByTestId('site-announcement');
+    expect(banner).toHaveAttribute('data-style', 'celebration');
+    expect(banner).toHaveTextContent('Repair cafe this Saturday');
+    expect(within(banner).getByRole('link', { name: 'See what is on' })).toHaveAttribute('href', '/riverside/events');
+    // An admin looking at their own notice cannot close it from here.
+    expect(within(banner).queryByRole('button')).toBeNull();
+    // Says that removing it is for everyone, and where that is done.
+    expect(within(step).getByText(/to take it down for everyone, delete it or switch it off/i)).toBeInTheDocument();
+    expect(within(step).getByRole('link', { name: /change or remove it/i })).toHaveAttribute('href', '/riverside/admin/announcements');
+    expect(within(step).queryByRole('link', { name: /write a notice/i })).toBeNull();
+    expect(within(step).queryByText(/\{\{/)).toBeNull();
+  });
+
+  it('says so when notices are saved but none is on the site, and links to them', async () => {
+    api.setup.mockResolvedValue({ success: true, data: status({ notice: { total: 3, showing: null } }) });
+    await renderPage();
+
+    const step = screen.getByTestId('setup-step-notice');
+    expect(within(step).getByText(/no notice is on your site right now/i)).toBeInTheDocument();
+    expect(within(step).queryByTestId('site-announcement')).toBeNull();
+    expect(within(step).getByRole('link', { name: /see your notices/i })).toHaveAttribute('href', '/riverside/admin/announcements');
+  });
+
+  it('offers to write a notice when none is saved, even after the first was deleted', async () => {
+    api.setup.mockResolvedValue({
+      success: true,
+      data: status({
+        steps: status().steps.map((s) => (s.key === 'notice' ? { ...s, done: true } : s)),
+        done: 3,
+        notice: { total: 0, showing: null },
+      }),
+    });
+    await renderPage();
+
+    const step = screen.getByTestId('setup-step-notice');
+    // Deleting the notice did not undo the step.
+    expect(step).toHaveAttribute('data-done', 'true');
+    expect(within(step).queryByText(/no notice is on your site right now/i)).toBeNull();
+    expect(within(step).getByRole('link', { name: /write a notice/i })).toHaveAttribute('href', '/riverside/admin/announcements');
+  });
+
+  it('never shows a notice whose end time has already passed', async () => {
+    api.setup.mockResolvedValue({
+      success: true,
+      data: status({
+        notice: {
+          total: 1,
+          showing: { id: 7, message: 'Yesterday only', style: 'info', ends_at: '2020-01-01T00:00:00+00:00' },
+        },
+      }),
+    });
+    await renderPage();
+
+    const step = screen.getByTestId('setup-step-notice');
+    expect(within(step).queryByTestId('site-announcement')).toBeNull();
+    expect(within(step).getByText(/no notice is on your site right now/i)).toBeInTheDocument();
   });
 
   it('tells a community with no themes to add some first', async () => {
