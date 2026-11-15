@@ -341,7 +341,7 @@ class AdminContentController extends BaseApiController
 
     public function getMenus(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
 
         $menus = array_map(fn($r) => (array)$r, DB::select(
@@ -357,7 +357,7 @@ class AdminContentController extends BaseApiController
 
     public function getMenu($id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
         $id = (int) $id;
 
@@ -383,7 +383,7 @@ class AdminContentController extends BaseApiController
 
     public function createMenu(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
 
         $input = $this->getAllInput();
@@ -411,7 +411,7 @@ class AdminContentController extends BaseApiController
 
     public function updateMenu($id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
         $id = (int) $id;
 
@@ -454,7 +454,7 @@ class AdminContentController extends BaseApiController
 
     public function deleteMenu($id): JsonResponse
     {
-        $adminId = $this->requireAdmin();
+        $adminId = $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
         $id = (int) $id;
 
@@ -478,7 +478,7 @@ class AdminContentController extends BaseApiController
 
     public function getMenuItems($menuId): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
         $menuId = (int) $menuId;
 
@@ -492,7 +492,7 @@ class AdminContentController extends BaseApiController
 
     public function createMenuItem($menuId): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
         $menuId = (int) $menuId;
 
@@ -545,7 +545,7 @@ class AdminContentController extends BaseApiController
 
     public function reorderMenuItems($menuId): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
         $menuId = (int) $menuId;
 
@@ -594,7 +594,7 @@ class AdminContentController extends BaseApiController
 
     public function updateMenuItem($id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
         $id = (int) $id;
 
@@ -674,7 +674,7 @@ class AdminContentController extends BaseApiController
 
     public function deleteMenuItem($id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
         $id = (int) $id;
 
@@ -699,7 +699,7 @@ class AdminContentController extends BaseApiController
 
     public function getPlans(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $plans = array_map(fn($r) => (array)$r, DB::select(
             "SELECT pp.id, pp.name, pp.slug, pp.description, pp.tier_level, pp.features,
@@ -722,7 +722,7 @@ class AdminContentController extends BaseApiController
 
     public function syncPlanToStripe($id): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $id = (int) $id;
 
         if ($id < 1) { return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'id', 400); }
@@ -747,7 +747,7 @@ class AdminContentController extends BaseApiController
 
     public function getPlan($id): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $id = (int) $id;
 
         if ($id < 1) { return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'id', 400); }
@@ -768,7 +768,7 @@ class AdminContentController extends BaseApiController
 
     public function createPlan(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $input = $this->getAllInput();
         $name = trim($input['name'] ?? '');
@@ -822,7 +822,7 @@ class AdminContentController extends BaseApiController
 
     public function updatePlan($id): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $id = (int) $id;
 
         if ($id < 1) { return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'id', 400); }
@@ -883,7 +883,7 @@ class AdminContentController extends BaseApiController
 
     public function deletePlan($id): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $id = (int) $id;
 
         if ($id < 1) { return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'id', 400); }
@@ -907,7 +907,7 @@ class AdminContentController extends BaseApiController
 
     public function getSubscriptions(): JsonResponse
     {
-        $adminId = $this->requireAdmin();
+        $adminId = $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         // Platform super-admins may view all subscriptions (cross-tenant).

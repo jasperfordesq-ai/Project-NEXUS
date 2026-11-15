@@ -71,13 +71,15 @@ trait ActsAsAccessTiers
     }
 
     /**
-     * The endpoint refuses everyone but the platform team with 403, and does
-     * not refuse the platform team (it may still answer 404 or 422 for the
-     * made-up input a lock test sends: only 401 and 403 mean "refused").
+     * The endpoint refuses, with 403, every tier below the platform team.
+     *
+     * On its own for an endpoint whose success path must not run in a test (it
+     * starts a job, sends mail, touches files) or sits behind a second gate the
+     * test actor cannot pass; otherwise use assertPlatformTeamOnly().
      *
      * @param array<string, mixed> $payload
      */
-    protected function assertPlatformTeamOnly(string $method, string $uri, array $payload = []): void
+    protected function assertRefusedBelowPlatformTeam(string $method, string $uri, array $payload = []): void
     {
         $refused = [
             'a community admin' => fn () => $this->actAsCommunityAdmin(),
@@ -90,6 +92,18 @@ trait ActsAsAccessTiers
             $status = $this->requestAs($method, $uri, $payload)->getStatusCode();
             $this->assertSame(403, $status, "{$method} {$uri} must refuse {$who} with 403, got {$status}");
         }
+    }
+
+    /**
+     * The endpoint refuses everyone but the platform team with 403, and does
+     * not refuse the platform team (it may still answer 404 or 422 for the
+     * made-up input a lock test sends: only 401 and 403 mean "refused").
+     *
+     * @param array<string, mixed> $payload
+     */
+    protected function assertPlatformTeamOnly(string $method, string $uri, array $payload = []): void
+    {
+        $this->assertRefusedBelowPlatformTeam($method, $uri, $payload);
 
         $this->actAsPlatformTeam();
         $status = $this->requestAs($method, $uri, $payload)->getStatusCode();
