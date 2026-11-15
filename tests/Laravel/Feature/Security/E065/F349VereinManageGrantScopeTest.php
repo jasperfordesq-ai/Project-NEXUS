@@ -266,7 +266,8 @@ final class F349VereinManageGrantScopeTest extends TestCase
     private function makeAdmin(): int
     {
         $id = $this->makeMember('f349.rbacadmin');
-        DB::table('users')->where('id', $id)->update(['role' => 'admin', 'is_admin' => 1]);
+        // The role editor is a Platform team page (E-128): is_god AND super admin.
+        DB::table('users')->where('id', $id)->update(['role' => 'super_admin', 'is_admin' => 1, 'is_super_admin' => 1, 'is_god' => 1]);
 
         return $id;
     }

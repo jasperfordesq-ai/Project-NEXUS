@@ -37,26 +37,17 @@ class RegionalAnalyticsController extends BaseApiController
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
-     * Admit god accounts only. requireAdmin() runs first so a non-admin still
-     * gets the ordinary admin refusal; an admin who is not a god is refused.
-     *
-     * Kept apart from BaseApiController::requireGod() (2026-10-18): this one
-     * also accepts `role = 'god'`, which the shared check deliberately does
-     * not, and changing an analytics gate's reach was out of that change's
-     * scope.
+     * The platform team only (E-128): `is_god` AND super admin, the shared
+     * check. Until 15 Nov 2026 this controller had its own gate, which also
+     * accepted the role string `god` and admitted `is_god` without super
+     * admin. requireAdmin() still runs first so a non-admin gets the ordinary
+     * admin refusal.
      */
     private function requireGodForRegionalAnalytics(): int
     {
-        $userId = $this->requireAdmin();
-        $user = $this->resolveUser();
+        $this->requireAdmin();
 
-        if (($user->role ?? null) === 'god' || !empty($user->is_god)) {
-            return $userId;
-        }
-
-        throw new \Illuminate\Http\Exceptions\HttpResponseException(
-            $this->error(__('api.god_level_access_required'), 403, 'AUTH_INSUFFICIENT_PERMISSIONS')
-        );
+        return $this->requireGodPlatformAdmin();
     }
 
     private function resolvePeriod(string $default = 'last_30d'): string

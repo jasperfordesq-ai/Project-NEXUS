@@ -1103,9 +1103,9 @@ class AdminConfigControllerTest extends TestCase
     // CRON JOBS — GET /v2/admin/system/cron-jobs
     // ================================================================
 
-    public function test_get_cron_jobs_returns_200_for_admin(): void
+    public function test_get_cron_jobs_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
             $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
         )]);

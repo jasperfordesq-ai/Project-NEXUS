@@ -40,7 +40,8 @@ class UrlRedirectsTest extends TestCase
         DB::table('tenants')->where('id', $this->testTenantId)->update(['domain' => $this->host, 'is_active' => 1]);
         DB::table('seo_redirects')->where('tenant_id', $this->testTenantId)->delete();
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        // URL redirects is a Platform team page (E-128): is_god AND super admin.
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
     }
 

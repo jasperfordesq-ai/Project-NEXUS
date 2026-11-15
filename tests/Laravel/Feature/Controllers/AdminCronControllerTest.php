@@ -25,9 +25,9 @@ class AdminCronControllerTest extends TestCase
     // LOGS — GET /v2/admin/system/cron-jobs/logs
     // ================================================================
 
-    public function test_get_logs_returns_200_for_admin(): void
+    public function test_get_logs_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/system/cron-jobs/logs');
@@ -57,9 +57,9 @@ class AdminCronControllerTest extends TestCase
     // CLEAR LOGS — DELETE /v2/admin/system/cron-jobs/logs
     // ================================================================
 
-    public function test_clear_logs_returns_200_for_admin(): void
+    public function test_clear_logs_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiDelete('/v2/admin/system/cron-jobs/logs');
@@ -81,14 +81,11 @@ class AdminCronControllerTest extends TestCase
     // GLOBAL SETTINGS — GET /v2/admin/system/cron-jobs/settings
     // ================================================================
 
-    public function test_get_global_settings_returns_200_for_admin(): void
+    public function test_get_global_settings_returns_200_for_the_platform_team(): void
     {
         // Global cron settings live in the platform-wide `cron_settings` table
-        // (no tenant_id), so the controller now requires a PLATFORM super-admin
-        // (role super_admin/god or is_super_admin), not a tenant admin.
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create([
-            'role' => 'super_admin',
-        ]);
+        // (no tenant_id): a Platform team page (E-128), is_god AND super admin.
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/system/cron-jobs/settings');
@@ -111,13 +108,11 @@ class AdminCronControllerTest extends TestCase
     // UPDATE GLOBAL SETTINGS — PUT /v2/admin/system/cron-jobs/settings
     // ================================================================
 
-    public function test_update_global_settings_returns_200_for_admin(): void
+    public function test_update_global_settings_returns_200_for_the_platform_team(): void
     {
         // Updating global cron settings touches the platform-wide `cron_settings`
-        // table, so the controller now requires a PLATFORM super-admin.
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create([
-            'role' => 'super_admin',
-        ]);
+        // table: the platform team only (E-128).
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiPut('/v2/admin/system/cron-jobs/settings', [
@@ -131,9 +126,9 @@ class AdminCronControllerTest extends TestCase
     // HEALTH METRICS — GET /v2/admin/system/cron-jobs/health
     // ================================================================
 
-    public function test_get_health_metrics_returns_200_for_admin(): void
+    public function test_get_health_metrics_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/system/cron-jobs/health');

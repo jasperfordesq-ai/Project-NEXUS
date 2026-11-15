@@ -54,6 +54,17 @@ final class F482AdminWritesReportWhatTheyChangedTest extends TestCase
         ]);
     }
 
+    private function platformTeam(int $tenant): User
+    {
+        return User::factory()->forTenant($tenant)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'is_god' => true,
+            'is_super_admin' => true,
+            'role' => 'super_admin',
+        ]);
+    }
+
     private function actAs(User $u, int $tenant): void
     {
         Sanctum::actingAs($u, ['*']);
@@ -146,8 +157,12 @@ final class F482AdminWritesReportWhatTheyChangedTest extends TestCase
 
     public function test_enterprise_role_delete_refuses_a_foreign_role_and_the_owner_still_deletes_it(): void
     {
-        $owner = $this->admin(self::HOME);
-        $stranger = $this->admin(self::OTHER);
+        // The role editor is a Platform team page (E-128). Both accounts are on
+        // the platform team, so the refusal below is the community check and
+        // not the lock: even the platform team, working in one community,
+        // cannot delete another community's role.
+        $owner = $this->platformTeam(self::HOME);
+        $stranger = $this->platformTeam(self::OTHER);
 
         $id = (int) DB::table('roles')->insertGetId([
             'tenant_id' => self::HOME,

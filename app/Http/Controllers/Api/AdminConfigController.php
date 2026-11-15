@@ -583,7 +583,7 @@ class AdminConfigController extends BaseApiController
     /** GET /api/v2/admin/config/cron-jobs */
     public function getCronJobs(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
 
         $jobs = $this->getCronJobDefinitions();
@@ -652,7 +652,7 @@ class AdminConfigController extends BaseApiController
     /** POST /api/v2/admin/config/cron-jobs/run */
     public function runCronJob(): JsonResponse
     {
-        $adminId = $this->requirePlatformSuperAdmin();
+        $adminId = $this->requireGodPlatformAdmin();
 
         $uri = request()->getRequestUri();
         preg_match('#/api/v2/admin/system/cron-jobs/(\d+)/run#', $uri, $matches);

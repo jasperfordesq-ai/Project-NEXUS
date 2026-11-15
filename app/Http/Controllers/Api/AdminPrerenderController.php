@@ -31,7 +31,7 @@ class AdminPrerenderController extends BaseApiController
     /** GET /api/v2/admin/prerender/summary */
     public function summary(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         return $this->respondWithData($this->service->summary());
     }
 
@@ -43,7 +43,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function inventory(Request $r): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantSlug = $r->query('tenant');
         if (is_string($tenantSlug)) {
             $tenantSlug = trim($tenantSlug);
@@ -79,7 +79,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function inspect(Request $r): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $path = (string) $r->query('path', '');
         if ($path === '') {
             return $this->error('Missing path', 400, 'VALIDATION_REQUIRED_FIELD');
@@ -94,7 +94,7 @@ class AdminPrerenderController extends BaseApiController
     /** GET /api/v2/admin/prerender/coverage */
     public function coverage(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         return $this->respondWithData([
             'expected_routes' => PrerenderService::EXPECTED_ROUTES,
             'rows'            => $this->service->coverage(),
@@ -104,7 +104,7 @@ class AdminPrerenderController extends BaseApiController
     /** GET /api/v2/admin/prerender/tenant-safety?tenant=slug */
     public function tenantSafety(Request $r): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $slug = (string) $r->query('tenant', '');
         if ($slug === '' || !preg_match('/^[A-Za-z0-9_-]{1,64}$/', $slug)) {
             return $this->error('Valid tenant slug required', 400, 'VALIDATION_INVALID');
@@ -133,7 +133,7 @@ class AdminPrerenderController extends BaseApiController
     /** GET /api/v2/admin/prerender/events?limit=200 */
     public function events(Request $r): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $limit = (int) $r->query('limit', 200);
         return $this->respondWithData([
             'events' => $this->service->tailEvents($limit),
@@ -143,7 +143,7 @@ class AdminPrerenderController extends BaseApiController
     /** GET /api/v2/admin/prerender/failures */
     public function failures(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         return $this->respondWithData([
             'items' => $this->service->readFailures(),
         ]);
@@ -152,7 +152,7 @@ class AdminPrerenderController extends BaseApiController
     /** GET /api/v2/admin/prerender/jobs?status=&limit= */
     public function jobs(Request $r): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $status = $r->query('status');
         $limit = (int) $r->query('limit', 50);
         return $this->respondWithData([
@@ -163,7 +163,7 @@ class AdminPrerenderController extends BaseApiController
     /** GET /api/v2/admin/prerender/jobs/{id} */
     public function showJob(int $id): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $row = $this->service->getJob($id);
         if (!$row) return $this->error('Job not found', 404, 'NOT_FOUND');
         return $this->respondWithData($row);
@@ -183,7 +183,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function enqueue(Request $r): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
         if (!$this->checkActionRate($userId, 'enqueue', 30, 60)) {
             return $this->error('Too many enqueue requests — slow down', 429, 'RATE_LIMITED');
         }
@@ -272,7 +272,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function purge(Request $r): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
         if (!$this->checkActionRate($userId, 'purge', 10, 60)) {
             return $this->error('Too many purge requests', 429, 'RATE_LIMITED');
         }
@@ -440,7 +440,7 @@ class AdminPrerenderController extends BaseApiController
     /** POST /api/v2/admin/prerender/jobs/{id}/cancel */
     public function cancelJob(Request $r, int $id): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
         $ok = $this->service->cancelJob($id);
         if (!$ok) {
             return $this->error('Job is not cancellable (already claimed or finished)', 409, 'CONFLICT');
@@ -464,7 +464,7 @@ class AdminPrerenderController extends BaseApiController
      *   2. X-Nexus-Signature: hex-HMAC-SHA256 of "<timestamp>.<raw body>" with that token,
      *      where the timestamp is the value of the X-Nexus-Timestamp header (Unix seconds).
      *      Requests with a timestamp older than ±5 minutes are rejected (replay protection).
-     *   3. Admin session (platform super-admin)                 (fallback for ops UI)
+     *   3. Signed-in platform team (is_god AND super admin)     (fallback for ops UI)
      *
      * Body:
      *   tenant_id:    int       — required
@@ -531,7 +531,7 @@ class AdminPrerenderController extends BaseApiController
             // Fall back to admin-session auth so the admin UI can call this
             // directly without needing the shared secret.
             try {
-                $actorUserId = $this->requirePlatformSuperAdmin();
+                $actorUserId = $this->requireGodPlatformAdmin();
                 $authed = true;
                 $authMode = 'admin_session';
             } catch (\Throwable $e) {
@@ -615,7 +615,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function analytics(Request $r): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $since = $r->query('since');
         $limit = (int) $r->query('limit', 200);
         $limit = max(10, min(1000, $limit));
@@ -632,7 +632,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function autoRecache(Request $r): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
         if (!$this->checkActionRate($userId, 'auto_recache', 5, 60)) {
             return $this->error('Too many requests', 429, 'RATE_LIMITED');
         }
@@ -656,7 +656,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function detectDrift(Request $r): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
         if (!$this->checkActionRate($userId, 'detect_drift', 5, 60)) {
             return $this->error('Too many requests', 429, 'RATE_LIMITED');
         }
@@ -686,7 +686,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function purgeUnexpected(Request $r): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
         if (!$this->checkActionRate($userId, 'purge_unexpected', 5, 60)) {
             return $this->error('Too many requests', 429, 'RATE_LIMITED');
         }
@@ -786,7 +786,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function metrics(): \Symfony\Component\HttpFoundation\Response
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $body = $this->service->prometheusMetrics();
         return response($body, 200, [
             'Content-Type' => 'text/plain; version=0.0.4; charset=utf-8',
@@ -802,7 +802,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function realtimeChannel(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         return $this->respondWithData([
             'channel' => \App\Services\PrerenderService::REALTIME_CHANNEL,
             'event'   => \App\Services\PrerenderService::REALTIME_EVENT,
@@ -822,7 +822,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function health(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $data = $this->service->health();
         // HTTP 200 even on red — uptime monitors decide what to alert on by
         // reading the body's status field. A 5xx would mask the engine being
@@ -837,7 +837,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function auditLog(Request $r): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $action = $r->query('action');
         $limit  = (int) $r->query('limit', 100);
         return $this->respondWithData([
@@ -854,7 +854,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function resetBreaker(Request $r): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
         if (!$this->checkActionRate($userId, 'reset_breaker', 5, 60)) {
             return $this->error('Too many requests', 429, 'RATE_LIMITED');
         }
@@ -878,7 +878,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function resetQueue(Request $r): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
         if (!$this->checkActionRate($userId, 'reset_queue', 2, 300)) {
             return $this->error('Too many requests — wait a few minutes', 429, 'RATE_LIMITED');
         }
@@ -967,7 +967,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function resetAll(Request $r): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
         if ((string) $r->json('confirmation', '') !== 'RESET ALL SNAPSHOTS') {
             return $this->error(__('api.prerender_reset_confirmation'), 422, 'VALIDATION_INVALID');
         }
@@ -1004,7 +1004,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function exportCsv(Request $r, string $kind): \Symfony\Component\HttpFoundation\StreamedResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $kind = strtolower($kind);
         if (!in_array($kind, ['audit', 'inventory', 'jobs'], true)) {
             abort(404, 'Unknown export kind');
@@ -1098,7 +1098,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function retryJob(Request $r, int $id): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        $userId = $this->requireGodPlatformAdmin();
         if (!$this->checkActionRate($userId, 'retry', 30, 60)) {
             return $this->error('Too many retries', 429, 'RATE_LIMITED');
         }
@@ -1141,7 +1141,7 @@ class AdminPrerenderController extends BaseApiController
      */
     public function sitemapExplorer(Request $r): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $slug = (string) $r->query('tenant', '');
         if ($slug === '' || !preg_match('/^[A-Za-z0-9_-]{1,64}$/', $slug)) {
             return $this->error('Valid tenant slug required', 400, 'VALIDATION_INVALID');
@@ -1178,7 +1178,7 @@ class AdminPrerenderController extends BaseApiController
 
     public function ttlInspector(Request $r): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $route = (string) $r->query('route', '');
         if ($route === '' || $route[0] !== '/') {
             return $this->error('route must start with "/"', 400, 'VALIDATION_INVALID');

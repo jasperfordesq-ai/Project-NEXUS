@@ -33,7 +33,7 @@ class AdminDeliverabilityController extends BaseApiController
     /** GET /api/v2/admin/deliverability/dashboard */
     public function getDashboard(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $total = (int) DB::selectOne("SELECT COUNT(*) as cnt FROM deliverables WHERE tenant_id = ?", [$tenantId])->cnt;
@@ -71,7 +71,7 @@ class AdminDeliverabilityController extends BaseApiController
     /** GET /api/v2/admin/deliverability/analytics */
     public function getAnalytics(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $completionTrends = DB::select(
@@ -109,7 +109,7 @@ class AdminDeliverabilityController extends BaseApiController
     /** GET /api/v2/admin/deliverability */
     public function getDeliverables(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $page = max(1, $this->queryInt('page', 1));
@@ -202,7 +202,7 @@ class AdminDeliverabilityController extends BaseApiController
     /** GET /api/v2/admin/deliverability/{id} */
     public function getDeliverable(int $id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $deliverableRow = DB::selectOne(
@@ -317,7 +317,7 @@ class AdminDeliverabilityController extends BaseApiController
     /** POST /api/v2/admin/deliverability */
     public function createDeliverable(): JsonResponse
     {
-        $adminId = $this->requireAdmin();
+        $adminId = $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $data = $this->getAllInput();
@@ -421,7 +421,7 @@ class AdminDeliverabilityController extends BaseApiController
     /** PUT /api/v2/admin/deliverability/{id} */
     public function updateDeliverable(int $id): JsonResponse
     {
-        $adminId = $this->requireAdmin();
+        $adminId = $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $existingRow = DB::selectOne(
@@ -576,7 +576,7 @@ class AdminDeliverabilityController extends BaseApiController
     /** DELETE /api/v2/admin/deliverability/{id} */
     public function deleteDeliverable(int $id): JsonResponse
     {
-        $adminId = $this->requireAdmin();
+        $adminId = $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $deliverable = DB::selectOne("SELECT id, title FROM deliverables WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
@@ -597,7 +597,7 @@ class AdminDeliverabilityController extends BaseApiController
     /** POST /api/v2/admin/deliverability/{id}/comments */
     public function addComment(int $id): JsonResponse
     {
-        $adminId = $this->requireAdmin();
+        $adminId = $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $deliverable = DB::selectOne("SELECT id FROM deliverables WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);

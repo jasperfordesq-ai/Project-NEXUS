@@ -56,9 +56,9 @@ class AdminEmailControllerTest extends TestCase
     // CONFIG — GET /v2/admin/email/config
     // ================================================================
 
-    public function test_get_config_returns_200_for_admin(): void
+    public function test_get_config_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/email/config');
@@ -81,9 +81,9 @@ class AdminEmailControllerTest extends TestCase
     // UPDATE CONFIG — PUT /v2/admin/email/config
     // ================================================================
 
-    public function test_update_config_returns_200_for_admin(): void
+    public function test_update_config_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiPut('/v2/admin/email/config', [

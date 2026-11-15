@@ -231,7 +231,8 @@ final class AdminPlatformLowFindingsTest extends TestCase
 
     public function test_f061_redirect_destination_must_be_a_same_host_path(): void
     {
-        Sanctum::actingAs($this->user(['role' => 'admin']));
+        // URL redirects is a Platform team page (E-128).
+        Sanctum::actingAs($this->user(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']));
 
         foreach (['https://evil.example/login', '//evil.example', '/\\evil.example', 'javascript:alert(1)', "/\t/evil.example"] as $i => $destination) {
             $this->apiPost('/v2/admin/tools/redirects', ['from_url' => "/f061-bad-{$i}", 'to_url' => $destination])
@@ -290,7 +291,8 @@ final class AdminPlatformLowFindingsTest extends TestCase
 
     public function test_f062_saving_a_private_smtp_host_is_refused(): void
     {
-        $admin = $this->user(['role' => 'admin']);
+        // Email settings is a Platform team page (E-128).
+        $admin = $this->user(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         foreach (['127.0.0.1', 'localhost', '10.0.0.5', '192.168.1.10', '169.254.169.254', '::1', 'redis.internal'] as $host) {
@@ -395,15 +397,16 @@ final class AdminPlatformLowFindingsTest extends TestCase
             'duration_seconds' => 1, 'executed_at' => now(), 'tenant_id' => $this->testTenantId,
         ]);
 
+        // Since E-128 the cron pages are the platform team's: a community admin
+        // is refused outright, which is stronger than being shown its own rows.
         $admin = $this->user(['role' => 'admin']);
         Sanctum::actingAs($admin);
-        $ids = array_column($this->apiGet('/v2/admin/system/cron-jobs/logs?jobId=' . $jobId)->assertOk()->json('data'), 'id');
-        $this->assertNotContains($platformLogId, $ids);
-        $this->assertContains($ownLogId, $ids, 'control: the community\'s own log stays visible');
-        $this->apiGet("/v2/admin/system/cron-jobs/logs/{$platformLogId}")->assertStatus(404);
+        $this->apiGet('/v2/admin/system/cron-jobs/logs?jobId=' . $jobId)->assertStatus(403);
+        $this->apiGet("/v2/admin/system/cron-jobs/logs/{$platformLogId}")->assertStatus(403);
+        $this->apiGet("/v2/admin/system/cron-jobs/logs/{$ownLogId}")->assertStatus(403);
 
-        // Control: a platform super-admin sees the platform-wide run.
-        Sanctum::actingAs($this->user(['role' => 'admin', 'is_super_admin' => 1]));
+        // Control: the platform team sees the platform-wide run.
+        Sanctum::actingAs($this->user(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']));
         $ids = array_column($this->apiGet('/v2/admin/system/cron-jobs/logs?jobId=' . $jobId)->assertOk()->json('data'), 'id');
         $this->assertContains($platformLogId, $ids);
         $this->apiGet("/v2/admin/system/cron-jobs/logs/{$platformLogId}")->assertOk();

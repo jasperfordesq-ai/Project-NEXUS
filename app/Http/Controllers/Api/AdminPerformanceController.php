@@ -35,7 +35,7 @@ class AdminPerformanceController extends BaseApiController
      */
     public function summary(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $maxHours = max(1, (int) config('performance.limits.max_window_hours', 720));

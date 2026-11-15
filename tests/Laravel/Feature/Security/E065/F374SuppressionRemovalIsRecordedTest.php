@@ -162,7 +162,8 @@ class F374SuppressionRemovalIsRecordedTest extends TestCase
             'role' => 'admin',
         ]);
 
-        DB::table('users')->where('id', $admin->id)->update(['is_super_admin' => 1]);
+        // Email deliverability is a Platform team page (E-128): is_god AND super admin.
+        DB::table('users')->where('id', $admin->id)->update(['is_super_admin' => 1, 'is_god' => 1]);
 
         return User::find($admin->id);
     }

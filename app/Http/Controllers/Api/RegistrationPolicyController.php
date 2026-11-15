@@ -40,7 +40,7 @@ class RegistrationPolicyController extends BaseApiController
     /** GET /api/v2/admin/config/registration-policy */
     public function getPolicy(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $policy = $this->registrationPolicyService->getEffectivePolicy($tenantId);
@@ -64,7 +64,7 @@ class RegistrationPolicyController extends BaseApiController
      */
     public function updatePolicy(): JsonResponse
     {
-        $this->requireGod();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
         $input = $this->getAllInput();
 
@@ -125,7 +125,7 @@ class RegistrationPolicyController extends BaseApiController
     /** GET /api/v2/admin/identity/providers */
     public function listProviders(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $providers = $this->identityProviderRegistry->listForAdmin();
@@ -216,7 +216,7 @@ class RegistrationPolicyController extends BaseApiController
     /** GET /api/v2/admin/identity/provider-credentials */
     public function listProviderCredentials(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $configured = $this->tenantProviderCredentialService->listConfigured($tenantId);
@@ -241,7 +241,7 @@ class RegistrationPolicyController extends BaseApiController
     /** PUT /api/v2/admin/identity/provider-credentials/{slug} — god accounts only (13 Nov 2026), like the policy itself. */
     public function saveProviderCredentials($slug): JsonResponse
     {
-        $this->requireGod();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         if (!$slug || !$this->identityProviderRegistry->has($slug)) {
@@ -270,7 +270,7 @@ class RegistrationPolicyController extends BaseApiController
     /** DELETE /api/v2/admin/identity/provider-credentials/{slug} — god accounts only (13 Nov 2026), like the policy itself. */
     public function deleteProviderCredentials($slug): JsonResponse
     {
-        $this->requireGod();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         if (!$slug || !$this->identityProviderRegistry->has($slug)) {

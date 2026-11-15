@@ -45,7 +45,7 @@ class PerformanceSummaryContractTest extends TestCase
 
     public function test_summary_returns_every_key_the_page_reads(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/performance/summary?hours=24');
@@ -71,7 +71,7 @@ class PerformanceSummaryContractTest extends TestCase
 
     public function test_summary_states_whether_recording_is_switched_on(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         config(['performance.enabled' => false]);
@@ -86,7 +86,7 @@ class PerformanceSummaryContractTest extends TestCase
 
     public function test_summary_reports_recorded_rows_with_derived_warnings(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         config([
@@ -191,7 +191,7 @@ class PerformanceSummaryContractTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/performance/summary?hours=24');
@@ -221,7 +221,7 @@ class PerformanceSummaryContractTest extends TestCase
 
     public function test_summary_clamps_an_absurd_window(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/performance/summary?hours=999999');

@@ -267,7 +267,7 @@ class MailerHeaderInjectionTest extends TestCase
 
     public function test_admin_settings_refuse_a_sender_name_or_address_with_a_line_break(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         foreach (['smtp_from_name', 'gmail_sender_name', 'smtp_from_email', 'gmail_sender_email'] as $key) {
@@ -283,7 +283,7 @@ class MailerHeaderInjectionTest extends TestCase
 
     public function test_control_admin_settings_accept_an_ordinary_sender_name(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiPut('/v2/admin/email/config', [

@@ -116,7 +116,7 @@ class AdminEmailController extends BaseApiController
     /** GET /api/v2/admin/email/config */
     public function getConfig(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
 
         $settings = EmailSettings::getAllForTenant($tenantId);
@@ -154,7 +154,7 @@ class AdminEmailController extends BaseApiController
     /** PUT /api/v2/admin/email/config */
     public function updateConfig(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
         $input = $this->getAllInput();
 
@@ -276,7 +276,7 @@ class AdminEmailController extends BaseApiController
     /** POST /api/v2/admin/email/test-provider */
     public function testProvider(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = TenantContext::getId();
         $to = $this->input('to', '');
 

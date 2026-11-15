@@ -35,7 +35,7 @@ class AdminToolsController extends BaseApiController
     /** GET /api/v2/admin/tools/redirects */
     public function getRedirects(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         try {
@@ -63,7 +63,7 @@ class AdminToolsController extends BaseApiController
     /** POST /api/v2/admin/tools/redirects */
     public function createRedirect(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $sourceUrl = trim($this->input('source_url', $this->input('from_url', '')));
@@ -105,7 +105,7 @@ class AdminToolsController extends BaseApiController
     /** DELETE /api/v2/admin/tools/redirects/{id} */
     public function deleteRedirect(int $id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         try {
@@ -130,7 +130,7 @@ class AdminToolsController extends BaseApiController
     public function get404Errors(): JsonResponse
     {
         // Global log — intentionally cross-tenant (super-admin only). error_404_log has no tenant_id column.
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $page = $this->queryInt('page', 1, 1);
         $perPage = $this->queryInt('per_page', 50, 1, 100);
@@ -166,7 +166,7 @@ class AdminToolsController extends BaseApiController
     public function delete404Error(int $id): JsonResponse
     {
         // Global log — intentionally cross-tenant (super-admin only). error_404_log has no tenant_id column.
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         try {
             $error = DB::selectOne("SELECT id FROM error_404_log WHERE id = ?", [$id]);
@@ -188,7 +188,7 @@ class AdminToolsController extends BaseApiController
     /** POST /api/v2/admin/tools/health-check */
     public function runHealthCheck(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $tests = [];

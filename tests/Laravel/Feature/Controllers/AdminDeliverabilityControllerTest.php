@@ -25,9 +25,9 @@ class AdminDeliverabilityControllerTest extends TestCase
     // DASHBOARD — GET /v2/admin/deliverability/dashboard
     // ================================================================
 
-    public function test_dashboard_returns_200_for_admin(): void
+    public function test_dashboard_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/deliverability/dashboard');
@@ -59,9 +59,9 @@ class AdminDeliverabilityControllerTest extends TestCase
     // ANALYTICS — GET /v2/admin/deliverability/analytics
     // ================================================================
 
-    public function test_analytics_returns_200_for_admin(): void
+    public function test_analytics_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/deliverability/analytics');
@@ -84,9 +84,9 @@ class AdminDeliverabilityControllerTest extends TestCase
     // LIST DELIVERABLES — GET /v2/admin/deliverability
     // ================================================================
 
-    public function test_get_deliverables_returns_200_for_admin(): void
+    public function test_get_deliverables_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/deliverability');
@@ -109,9 +109,9 @@ class AdminDeliverabilityControllerTest extends TestCase
     // CREATE DELIVERABLE — POST /v2/admin/deliverability
     // ================================================================
 
-    public function test_create_deliverable_returns_success_for_admin(): void
+    public function test_create_deliverable_returns_success_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiPost('/v2/admin/deliverability', [
@@ -143,7 +143,7 @@ class AdminDeliverabilityControllerTest extends TestCase
 
     public function test_delete_deliverable_returns_404_for_nonexistent(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiDelete('/v2/admin/deliverability/999999');

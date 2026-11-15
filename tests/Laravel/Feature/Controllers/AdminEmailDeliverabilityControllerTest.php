@@ -23,7 +23,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Email deliverability queue tables are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'queue-diagnostics-member@example.test',
         ]);
@@ -80,7 +80,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Notification queue table is not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $tenantMember = User::factory()->forTenant($this->testTenantId)->create();
         $otherMember = User::factory()->forTenant(999)->create();
         Sanctum::actingAs($admin);
@@ -123,7 +123,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Marketplace report notification table is not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'marketplace-report-queue@example.test',
         ]);
@@ -170,7 +170,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             }
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $buyer = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'marketplace-rating-dispute-buyer@example.test',
         ]);
@@ -304,7 +304,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Event reminder tables are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'event-reminder-queue@example.test',
         ]);
@@ -353,7 +353,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Listing expiry reminder evidence tables are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'listing-expiry-evidence@example.com',
         ]);
@@ -401,7 +401,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Civic digest delivery claim tables are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'civic-digest-claim-queue@example.test',
         ]);
@@ -459,7 +459,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Newsletter queue tables are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'newsletter-statuses@example.test',
         ]);
@@ -512,7 +512,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Civic digest delivery claim tables are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'civic-digest-statuses@example.test',
         ]);
@@ -585,7 +585,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Notification delivery ledger tables are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'delivery-ledger-queue@example.test',
         ]);
@@ -692,7 +692,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Reminder delivery claim tables are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'reminder-claim-queue@example.test',
         ]);
@@ -777,7 +777,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Goal reminder tables are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'goal-reminder-queue@example.test',
         ]);
@@ -830,7 +830,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Job interview reminder audit tables are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $poster = User::factory()->forTenant($this->testTenantId)->create();
         $candidate = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'job-interview-reminder-queue@example.test',
@@ -916,7 +916,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Volunteer reminder evidence tables are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'volunteer-reminder-evidence@example.com',
         ]);
@@ -959,7 +959,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Federated review delivery columns are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $reviewer = User::factory()->forTenant(999)->create();
         $receiver = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'federated-review-queue@example.test',
@@ -1015,7 +1015,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             }
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $receiver = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'federation-source-queue@example.test',
         ]);
@@ -1101,7 +1101,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Safeguarding email evidence tables are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'safeguarding-evidence-queue@example.test',
         ]);
@@ -1174,7 +1174,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Member subscription event delivery columns are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'member-subscription-event-queue@example.test',
         ]);
@@ -1239,7 +1239,7 @@ class AdminEmailDeliverabilityControllerTest extends TestCase
             $this->markTestSkipped('Donation receipt email evidence columns are not available.');
         }
 
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         DB::table('vol_donations')->insert([

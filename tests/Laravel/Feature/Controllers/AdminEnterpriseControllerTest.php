@@ -25,9 +25,9 @@ class AdminEnterpriseControllerTest extends TestCase
     // DASHBOARD — GET /v2/admin/enterprise/dashboard
     // ================================================================
 
-    public function test_dashboard_returns_200_for_admin(): void
+    public function test_dashboard_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/enterprise/dashboard');
@@ -59,9 +59,9 @@ class AdminEnterpriseControllerTest extends TestCase
     // ROLES — GET /v2/admin/enterprise/roles
     // ================================================================
 
-    public function test_roles_returns_200_for_admin(): void
+    public function test_roles_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/enterprise/roles');
@@ -84,9 +84,9 @@ class AdminEnterpriseControllerTest extends TestCase
     // PERMISSIONS — GET /v2/admin/enterprise/permissions
     // ================================================================
 
-    public function test_permissions_returns_200_for_admin(): void
+    public function test_permissions_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/enterprise/permissions');
@@ -296,9 +296,9 @@ class AdminEnterpriseControllerTest extends TestCase
     // MONITORING — GET /v2/admin/enterprise/monitoring
     // ================================================================
 
-    public function test_monitoring_returns_200_for_admin(): void
+    public function test_monitoring_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/enterprise/monitoring');
@@ -321,9 +321,9 @@ class AdminEnterpriseControllerTest extends TestCase
     // HEALTH CHECK — GET /v2/admin/enterprise/monitoring/health
     // ================================================================
 
-    public function test_health_check_returns_200_for_admin(): void
+    public function test_health_check_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/enterprise/monitoring/health');
@@ -342,9 +342,9 @@ class AdminEnterpriseControllerTest extends TestCase
     // LOGS — GET /v2/admin/enterprise/monitoring/logs
     // ================================================================
 
-    public function test_logs_returns_200_for_admin(): void
+    public function test_logs_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/enterprise/monitoring/logs');

@@ -48,6 +48,14 @@ class AdminCrossTenantReferenceTest extends TestCase
         return $admin;
     }
 
+    /** The Deliverability module is a Platform team page (E-128). */
+    private function actingPlatformTeam(): User
+    {
+        $team = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
+        Sanctum::actingAs($team);
+        return $team;
+    }
+
     // ── GDPR requests ────────────────────────────────────────────────────────
 
     public function test_gdpr_request_cannot_be_raised_for_a_foreign_member(): void
@@ -135,7 +143,7 @@ class AdminCrossTenantReferenceTest extends TestCase
     public function test_deliverable_cannot_be_assigned_to_a_foreign_member(): void
     {
         $victim = $this->foreignVictim();
-        $this->actingAdmin();
+        $this->actingPlatformTeam();
 
         $this->apiPost('/v2/admin/deliverability', [
             'title' => 'Ship it',
@@ -154,7 +162,7 @@ class AdminCrossTenantReferenceTest extends TestCase
     public function test_deliverable_can_be_assigned_to_an_own_member(): void
     {
         $member = User::factory()->forTenant($this->testTenantId)->create();
-        $this->actingAdmin();
+        $this->actingPlatformTeam();
 
         $this->apiPost('/v2/admin/deliverability', [
             'title' => 'Ship it',

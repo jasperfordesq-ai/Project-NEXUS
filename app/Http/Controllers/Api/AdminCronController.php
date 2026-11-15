@@ -28,7 +28,7 @@ class AdminCronController extends BaseApiController
     /** GET /api/v2/admin/cron/logs */
     public function getLogs(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $where = [$this->getCronLogVisibilityClause()];
@@ -96,7 +96,7 @@ class AdminCronController extends BaseApiController
     /** GET /api/v2/admin/cron/logs/{logId} */
     public function getLogDetail(int $logId): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $log = DB::selectOne(
@@ -125,7 +125,7 @@ class AdminCronController extends BaseApiController
     /** DELETE /api/v2/admin/cron/logs */
     public function clearLogs(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
         $beforeDate = $this->query('before');
 
@@ -153,7 +153,7 @@ class AdminCronController extends BaseApiController
     public function getJobSettings(string $jobId): JsonResponse
     {
         // cron_job_settings is a global platform table with no tenant_id column — platform super-admin only.
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $settings = DB::selectOne("SELECT * FROM cron_job_settings WHERE job_id = ?", [$jobId]);
 
@@ -178,7 +178,7 @@ class AdminCronController extends BaseApiController
     public function updateJobSettings(string $jobId): JsonResponse
     {
         // cron_job_settings is a global platform table with no tenant_id column — platform super-admin only.
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $data = $this->getAllInput();
 
         $existing = DB::selectOne("SELECT id FROM cron_job_settings WHERE job_id = ?", [$jobId]);
@@ -233,7 +233,7 @@ class AdminCronController extends BaseApiController
     public function getGlobalSettings(): JsonResponse
     {
         // cron_settings is a global platform table (no tenant_id) — platform super-admin only.
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $rows = DB::select("SELECT setting_key, setting_value FROM cron_settings");
         $map = [];
@@ -252,7 +252,7 @@ class AdminCronController extends BaseApiController
     public function updateGlobalSettings(): JsonResponse
     {
         // cron_settings is a global platform table (no tenant_id) — platform super-admin only.
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
         $data = $this->getAllInput();
 
         $allowedKeys = ['default_notify_email', 'log_retention_days', 'max_concurrent_jobs'];
@@ -275,7 +275,7 @@ class AdminCronController extends BaseApiController
     /** GET /api/v2/admin/cron/health */
     public function getHealthMetrics(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
         $joinSql = $this->getCronLogJoinSql();
         $visibilityClause = $this->getCronLogVisibilityClause();

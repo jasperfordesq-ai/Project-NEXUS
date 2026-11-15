@@ -26,9 +26,9 @@ class AdminToolsControllerTest extends TestCase
     // REDIRECTS — GET /v2/admin/tools/redirects
     // ================================================================
 
-    public function test_redirects_returns_200_for_admin(): void
+    public function test_redirects_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/tools/redirects');
@@ -60,7 +60,7 @@ class AdminToolsControllerTest extends TestCase
 
     public function test_create_redirect_requires_from_url(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiPost('/v2/admin/tools/redirects', [
@@ -72,7 +72,7 @@ class AdminToolsControllerTest extends TestCase
 
     public function test_create_redirect_requires_to_url(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiPost('/v2/admin/tools/redirects', [
@@ -99,11 +99,11 @@ class AdminToolsControllerTest extends TestCase
     // 404 ERRORS — GET /v2/admin/tools/404-errors
     // ================================================================
 
-    public function test_404_errors_returns_200_for_super_admin(): void
+    public function test_404_errors_returns_200_for_the_platform_team(): void
     {
         // get404Errors() reads the global, cross-tenant error_404_log and is
         // gated by requirePlatformSuperAdmin() — a tenant admin gets 403.
-        $superAdmin = User::factory()->forTenant($this->testTenantId)->admin()->create(['role' => 'super_admin']);
+        $superAdmin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($superAdmin);
 
         $response = $this->apiGet('/v2/admin/tools/404-errors');
@@ -136,9 +136,9 @@ class AdminToolsControllerTest extends TestCase
     // HEALTH CHECK — POST /v2/admin/tools/health-check
     // ================================================================
 
-    public function test_health_check_returns_200_for_admin(): void
+    public function test_health_check_returns_200_for_the_platform_team(): void
     {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         Sanctum::actingAs($admin);
 
         $response = $this->apiPost('/v2/admin/tools/health-check');

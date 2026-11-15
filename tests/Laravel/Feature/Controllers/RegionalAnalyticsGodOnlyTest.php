@@ -66,7 +66,7 @@ class RegionalAnalyticsGodOnlyTest extends TestCase
 
     public function test_god_can_read_the_overview(): void
     {
-        $god = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $god = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
         // is_god is a flag written straight to the column, never a role string.
         DB::table('users')->where('id', $god->id)->update(['is_god' => 1]);
         Sanctum::actingAs($god->fresh());

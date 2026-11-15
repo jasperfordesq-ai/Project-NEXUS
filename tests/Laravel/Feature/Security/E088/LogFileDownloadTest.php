@@ -43,7 +43,7 @@ final class LogFileDownloadTest extends TestCase
     public function test_platform_super_admin_downloads_a_log_as_plain_text_attachment(): void
     {
         Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->create([
-            'role' => 'super_admin', 'is_super_admin' => true,
+            'role' => 'super_admin', 'is_super_admin' => true, 'is_god' => true,
         ]));
 
         $response = $this->get($this->url($this->filename), $this->withTenantHeader([]));
@@ -64,7 +64,7 @@ final class LogFileDownloadTest extends TestCase
     public function test_only_log_files_inside_the_log_directory(): void
     {
         Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->create([
-            'role' => 'super_admin', 'is_super_admin' => true,
+            'role' => 'super_admin', 'is_super_admin' => true, 'is_god' => true,
         ]));
 
         // An encoded slash either fails route matching (404) or the name check (400).

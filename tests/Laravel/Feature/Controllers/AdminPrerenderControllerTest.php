@@ -73,7 +73,7 @@ class AdminPrerenderControllerTest extends TestCase
             ->assertStatus(403);
     }
 
-    public function test_enqueue_creates_a_job_for_super_admin(): void
+    public function test_enqueue_creates_a_job_for_the_platform_team(): void
     {
         Sanctum::actingAs($this->makeSuperAdmin());
         $r = $this->apiPost('/v2/admin/prerender/jobs', [
@@ -416,9 +416,11 @@ class AdminPrerenderControllerTest extends TestCase
 
     private function makeSuperAdmin(): User
     {
+        // The prerender engine is a Platform team page (E-128): is_god AND
+        // super admin. A global super admin on their own is now refused; that
+        // is pinned in AdminPrerenderControllerPlatformTeamLockTest.
         return User::factory()
             ->forTenant($this->testTenantId)
-            ->admin()
-            ->create(['is_super_admin' => true]);
+            ->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
     }
 }

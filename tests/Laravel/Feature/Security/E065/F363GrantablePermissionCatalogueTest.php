@@ -160,8 +160,11 @@ final class F363GrantablePermissionCatalogueTest extends TestCase
             'email' => $email,
             'username' => 'f363_' . substr(md5($email), 0, 10),
             'password' => password_hash('password', PASSWORD_BCRYPT),
-            'role' => 'admin',
+            // The role editor is a Platform team page (E-128): is_god AND super admin.
+            'role' => 'super_admin',
             'is_admin' => 1,
+            'is_super_admin' => 1,
+            'is_god' => 1,
             'status' => 'active',
             'is_approved' => 1,
             'created_at' => now(),

@@ -489,7 +489,7 @@ class AdminListingsController extends BaseApiController
     /** GET /api/v2/admin/search/analytics */
     public function searchAnalytics(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $days = $this->queryInt('days', 30, 1, 90);
 
         $analytics = $this->searchLogService->getAnalyticsSummary($days);
@@ -500,7 +500,7 @@ class AdminListingsController extends BaseApiController
     /** GET /api/v2/admin/search/trending */
     public function searchTrending(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $days = $this->queryInt('days', 7, 1, 90);
         $limit = $this->queryInt('limit', 20, 1, 50);
 
@@ -512,7 +512,7 @@ class AdminListingsController extends BaseApiController
     /** GET /api/v2/admin/search/zero-results */
     public function searchZeroResults(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $days = $this->queryInt('days', 30, 1, 90);
         $limit = $this->queryInt('limit', 20, 1, 50);
 

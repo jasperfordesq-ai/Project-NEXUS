@@ -80,12 +80,11 @@ Broadcast::channel('tenant.{tenantId}.chat.{chatId}', function (User $user, int 
     return $user->id === $userA || $user->id === $userB;
 });
 
-// Admin-only prerender engine channel — broadcasts job lifecycle updates.
-// Super admins only (cross-tenant operation surface).
+// Prerender engine channel — broadcasts job lifecycle updates across every
+// community. The platform team only (is_god AND super admin), the same rule as
+// the Prerender engine's endpoints (E-128).
 Broadcast::channel('admin-prerender', function (User $user) {
-    return ($user->is_super_admin ?? false)
-        || ($user->is_god ?? false)
-        || in_array(($user->role ?? null), ['super_admin', 'god'], true);
+    return \App\Support\Authorization\PlatformTeam::includes((int) $user->id);
 });
 
 // Presence channel for online members in a tenant

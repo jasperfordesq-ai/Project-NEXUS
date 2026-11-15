@@ -146,6 +146,8 @@ final class F355LogClearAuditTest extends TestCase
             'role' => $role,
             'is_admin' => 1,
             'is_super_admin' => $superAdmin ? 1 : 0,
+            // Log files are the platform team's (E-128): is_god AND super admin.
+            'is_god' => $superAdmin ? 1 : 0,
             'status' => 'active',
             'is_approved' => 1,
             'created_at' => now(),

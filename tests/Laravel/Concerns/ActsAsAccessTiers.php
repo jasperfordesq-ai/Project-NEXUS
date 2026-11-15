@@ -89,8 +89,16 @@ trait ActsAsAccessTiers
 
         foreach ($refused as $who => $become) {
             $become();
-            $status = $this->requestAs($method, $uri, $payload)->getStatusCode();
+            $response = $this->requestAs($method, $uri, $payload);
+            $status = $response->getStatusCode();
             $this->assertSame(403, $status, "{$method} {$uri} must refuse {$who} with 403, got {$status}");
+            // A 403 from the second-factor step would pass the line above
+            // without the endpoint's own lock ever being asked.
+            $this->assertStringNotContainsString(
+                \App\Http\Middleware\RequireRecentSecondFactor::ERROR_CODE,
+                (string) $response->getContent(),
+                "{$method} {$uri} refused {$who} at the second-factor step, not at the platform-team lock"
+            );
         }
     }
 

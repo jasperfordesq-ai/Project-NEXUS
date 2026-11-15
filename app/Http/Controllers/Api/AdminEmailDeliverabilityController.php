@@ -49,7 +49,7 @@ class AdminEmailDeliverabilityController extends BaseApiController
      */
     public function summary(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->resolveAdminTenantFilter($this->isSuperAdmin(), $this->getTenantId());
 
         $windowDays = (int) ($this->input('days', 7) ?: 7);
@@ -98,7 +98,7 @@ class AdminEmailDeliverabilityController extends BaseApiController
      */
     public function pushSummary(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->resolveAdminTenantFilter($this->isSuperAdmin(), $this->getTenantId());
         $windowDays = max(1, min((int) ($this->input('days', 7) ?: 7), 90));
 
@@ -162,7 +162,7 @@ class AdminEmailDeliverabilityController extends BaseApiController
      */
     public function triggerAudit(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->resolveAdminTenantFilter($this->isSuperAdmin(), $this->getTenantId());
         $windowHours = max(1, min((int) ($this->input('hours', 24) ?: 24), 168));
 
@@ -179,7 +179,7 @@ class AdminEmailDeliverabilityController extends BaseApiController
      */
     public function logs(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->resolveAdminTenantFilter($this->isSuperAdmin(), $this->getTenantId());
 
         $limit = max(1, min((int) ($this->input('limit', 50) ?: 50), 200));
@@ -235,7 +235,7 @@ class AdminEmailDeliverabilityController extends BaseApiController
      */
     public function queues(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->resolveAdminTenantFilter($this->isSuperAdmin(), $this->getTenantId());
 
         $limit = max(1, min((int) ($this->input('limit', 50) ?: 50), 100));
@@ -2642,7 +2642,7 @@ class AdminEmailDeliverabilityController extends BaseApiController
      */
     public function suppressions(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         $limit = max(1, min((int) ($this->input('limit', 50) ?: 50), 200));
         $offset = max(0, (int) ($this->input('offset', 0)));
@@ -2702,7 +2702,7 @@ class AdminEmailDeliverabilityController extends BaseApiController
      */
     public function removeSuppression(int $id): JsonResponse
     {
-        $adminId = $this->requirePlatformSuperAdmin();
+        $adminId = $this->requireGodPlatformAdmin();
 
         $row = DB::table('email_suppression')->where('id', $id)->first();
         if (!$row) {
@@ -2758,7 +2758,7 @@ class AdminEmailDeliverabilityController extends BaseApiController
      */
     public function userHistory(int $userId): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         $user = DB::table('users')

@@ -92,7 +92,7 @@ class AdminEnterpriseController extends BaseApiController
     /** GET /api/v2/admin/enterprise/dashboard */
     public function dashboard(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         try { $userCount = (int)(DB::selectOne("SELECT COUNT(*) as cnt FROM users WHERE tenant_id = ?", [$tenantId])->cnt ?? 0); } catch (\Exception $e) { \Illuminate\Support\Facades\Log::warning('[AdminEnterprise] User count query failed: ' . $e->getMessage()); $userCount = 0; }
@@ -149,7 +149,7 @@ class AdminEnterpriseController extends BaseApiController
     /** GET /api/v2/admin/enterprise/roles */
     public function roles(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         try {
@@ -177,7 +177,7 @@ class AdminEnterpriseController extends BaseApiController
     /** GET /api/v2/admin/enterprise/roles/{id} */
     public function showRole(int $id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         try {
@@ -198,7 +198,7 @@ class AdminEnterpriseController extends BaseApiController
     /** POST /api/v2/admin/enterprise/roles */
     public function createRole(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $data = $this->getAllInput();
         $tenantId = TenantContext::getId();
 
@@ -261,7 +261,7 @@ class AdminEnterpriseController extends BaseApiController
     /** PUT /api/v2/admin/enterprise/roles/{id} */
     public function updateRole(int $id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $data = $this->getAllInput();
         $tenantId = TenantContext::getId();
 
@@ -332,7 +332,7 @@ class AdminEnterpriseController extends BaseApiController
     /** DELETE /api/v2/admin/enterprise/roles/{id} */
     public function deleteRole(int $id): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
         try {
             // F-482: the delete count was discarded, so a role belonging to
@@ -355,7 +355,7 @@ class AdminEnterpriseController extends BaseApiController
      */
     public function permissions(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         return $this->respondWithData(self::GRANTABLE_PERMISSIONS);
     }
 
@@ -794,7 +794,7 @@ class AdminEnterpriseController extends BaseApiController
     /** GET /api/v2/admin/enterprise/monitoring */
     public function monitoring(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $memUsage = memory_get_usage(true);
 
         // Real DB connectivity check (never hardcode true)
@@ -849,7 +849,7 @@ class AdminEnterpriseController extends BaseApiController
     /** GET /api/v2/admin/enterprise/health */
     public function healthCheck(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $dbOk = false; try { DB::select("SELECT 1"); $dbOk = true; } catch (\Exception $e) { \Illuminate\Support\Facades\Log::warning('AdminEnterpriseController: ' . $e->getMessage(), ['context' => __METHOD__]); }
         $redisOk = false; try { $stats = app(\App\Services\RedisCache::class)->getStats(); $redisOk = !empty($stats['enabled']); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('AdminEnterpriseController: ' . $e->getMessage(), ['context' => __METHOD__]); }
 
@@ -887,7 +887,7 @@ class AdminEnterpriseController extends BaseApiController
     /** GET /api/v2/admin/enterprise/logs */
     public function logs(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
         $page = $this->queryInt('page', 1, 1);
         $perPage = $this->queryInt('per_page', 50, 1, 200);
@@ -2063,7 +2063,7 @@ class AdminEnterpriseController extends BaseApiController
     /** GET /api/v2/admin/enterprise/monitoring/log-files */
     public function logFiles(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         try {
             $logDir = storage_path('logs');
@@ -2113,7 +2113,7 @@ class AdminEnterpriseController extends BaseApiController
     /** GET /api/v2/admin/enterprise/monitoring/log-files/{filename} */
     public function viewLogFile(string $filename): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         // Security: no path traversal
         if (str_contains($filename, '/') || str_contains($filename, '\\') || str_contains($filename, '..')) {
@@ -2175,7 +2175,7 @@ class AdminEnterpriseController extends BaseApiController
      */
     public function downloadLogFile(string $filename): \Symfony\Component\HttpFoundation\Response
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         if (str_contains($filename, '/') || str_contains($filename, '\\') || str_contains($filename, '..')) {
             return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_1.admin_enterprise.invalid_log_filename'), 'filename', 400);
@@ -2199,7 +2199,7 @@ class AdminEnterpriseController extends BaseApiController
     /** DELETE /api/v2/admin/enterprise/monitoring/log-files/{filename} */
     public function clearLogFile(string $filename): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $this->requireGodPlatformAdmin();
 
         if (str_contains($filename, '/') || str_contains($filename, '\\') || str_contains($filename, '..')) {
             return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_1.admin_enterprise.invalid_log_filename'), 'filename', 400);
@@ -2247,7 +2247,7 @@ class AdminEnterpriseController extends BaseApiController
     /** GET /api/v2/admin/enterprise/monitoring/requirements */
     public function systemRequirements(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
 
         // PHP version
         $php = [
@@ -2316,7 +2316,7 @@ class AdminEnterpriseController extends BaseApiController
     /** GET /api/v2/admin/enterprise/monitoring/health-history */
     public function healthCheckHistory(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
         $tenantId = $this->getTenantId();
 
         try {
