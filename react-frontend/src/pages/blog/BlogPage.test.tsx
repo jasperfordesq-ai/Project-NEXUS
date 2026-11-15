@@ -141,6 +141,32 @@ describe('BlogPage', () => {
     expect(document.querySelector('img[src*="member-avatar"]')).toBeNull();
   });
 
+  // The boxes were fixed heights (`h-48`, `md:h-72`) that cropped to fill, so
+  // their shape changed with the screen: the "latest post" card on a tablet
+  // showed only the middle two thirds of a picture's width.
+  it('shows post pictures whole, in one shape, on the latest-post card and the grid cards', async () => {
+    const posts = [
+      { ...POST, id: 9, title: 'Latest post', slug: 'latest', featured_image: '/uploads/latest.png' },
+      { ...POST, id: 10, title: 'Older post', slug: 'older', featured_image: '/uploads/older.png' },
+    ];
+    mockApiGet.mockImplementation((url: string) => Promise.resolve({
+      success: true,
+      data: url.includes('/categories') ? [] : posts,
+      meta: {},
+    } as never));
+
+    render(<BlogPage />);
+
+    for (const title of ['Latest post', 'Older post']) {
+      const picture = await screen.findByRole('img', { name: title });
+      expect(picture).toHaveClass('object-contain');
+      expect(picture).not.toHaveClass('object-cover');
+      const box = picture.closest('[data-testid="blog-picture"]');
+      expect(box).toHaveClass('aspect-[1200/630]');
+      expect(box?.className).not.toMatch(/(^|\s)(md:)?h-\d/);
+    }
+  });
+
   it('gives posts with no picture a colour cover, shared by posts in the same category', async () => {
     const posts = [
       { ...POST, id: 9, title: 'First post', slug: 'first', category: CATEGORY },

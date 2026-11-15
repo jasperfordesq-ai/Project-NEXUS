@@ -137,6 +137,9 @@ export function BlogPostForm() {
     ? responsiveThumbnailProps(featuredImage.trim(), {
         width: 960,
         height: 520,
+        // The whole picture, never a crop: this is where an admin checks what
+        // they uploaded.
+        fit: 'contain',
         sizes: '(min-width: 1024px) 640px, 92vw',
       })
     : null;
@@ -576,10 +579,13 @@ export function BlogPostForm() {
               >
                 {featuredImagePreviewProps ? (
                   <div className="relative">
+                    {/* Whole picture at its own shape. It was `h-52 object-cover`,
+                        a strip of about 4:1 on a wide form that showed only the
+                        middle band of a standard 1200x630 picture. */}
                     <img
                       {...featuredImagePreviewProps}
                       alt={t('blog.featured_image_preview_alt')}
-                      className="h-52 w-full object-cover"
+                      className="mx-auto max-h-96 w-full object-contain"
                       loading="lazy"
                       decoding="async"
                       onError={() => setImagePreviewError(true)}

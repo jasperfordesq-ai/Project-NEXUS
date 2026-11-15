@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { DetailCover } from '@/components/ui/DetailCover';
+import { BlogPicture } from '@/components/blog/BlogPicture';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Breadcrumbs } from '@/components/navigation';
@@ -314,19 +315,18 @@ export function BlogPostPage() {
 
         {/* Featured Image — the page's largest paint (LCP): loaded eagerly at
             high priority, its space reserved by the requested thumbnail size,
-            and visible from the first frame rather than faded in. */}
+            and visible from the first frame rather than faded in. Shown whole,
+            at its own shape (it was cropped to a fixed height). */}
         {imageProps && (
-          <div className="rounded-2xl overflow-hidden">
-            <img
-              {...imageProps}
-              alt={post.title}
-              width={BLOG_HERO_WIDTH}
-              height={BLOG_HERO_HEIGHT}
-              className="w-full h-auto max-h-48 sm:max-h-96 object-cover"
-              loading="eager"
-              fetchPriority="high"
-            />
-          </div>
+          <BlogPicture
+            image={imageProps}
+            alt={post.title}
+            shape="natural"
+            className="rounded-2xl"
+            priority
+            width={BLOG_HERO_WIDTH}
+            height={BLOG_HERO_HEIGHT}
+          />
         )}
 
         {/* No picture: a cover in the post's own colour, the same as its card on the blog page. */}

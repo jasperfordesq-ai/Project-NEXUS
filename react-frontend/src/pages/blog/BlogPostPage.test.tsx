@@ -326,4 +326,16 @@ describe('BlogPostPage', () => {
     expect(img).toHaveAttribute('width', '1200');
     expect(img).toHaveAttribute('height', '675');
   });
+
+  // It was `max-h-48 sm:max-h-96 object-cover`: between about 370px and 640px
+  // wide the picture was cropped to 192px high, which cut the top and bottom
+  // third off a standard 1200x630 picture.
+  it('shows the whole hero picture instead of cropping it to a height', async () => {
+    mockApiGet.mockResolvedValue({ success: true, data: { ...mockPost, featured_image: '/uploads/hero.jpg' } });
+    render(<BlogPostPage />);
+    const img = await screen.findByRole('img', { name: 'How Timebanking Works' });
+    expect(img).toHaveClass('object-contain');
+    expect(img).not.toHaveClass('object-cover');
+    expect(img.className).not.toContain('max-h-48');
+  });
 });

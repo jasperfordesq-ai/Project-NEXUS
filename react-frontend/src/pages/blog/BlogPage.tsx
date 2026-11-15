@@ -33,6 +33,7 @@ import { PublicEmptyState } from '@/components/public/PublicEmptyState';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
 import { BlogFilterSheet } from '@/components/blog/BlogFilterSheet';
+import { BlogPicture } from '@/components/blog/BlogPicture';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
@@ -88,6 +89,9 @@ const itemVariants = {
 };
 
 const POSTS_PER_PAGE = 12;
+/** The picture area of every card, with or without a picture: see BlogPicture. */
+const BLOG_PICTURE_SHAPE = 'aspect-[1200/630]';
+const PICTURE_HOVER_ZOOM = 'group-hover:scale-105 transition-transform duration-300';
 /** Phones render fewer skeletons — six full-height cards is ~1,700px of grey. */
 const SKELETON_KEYS = [1, 2, 3, 4, 5, 6];
 const PHONE_SKELETON_KEYS = [1, 2, 3];
@@ -378,7 +382,7 @@ export function BlogPage() {
             <div role="status" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-busy="true" aria-label={t('loading_posts')}>
               {(isPhone ? PHONE_SKELETON_KEYS : SKELETON_KEYS).map((i) => (
                 <GlassCard key={i} className="overflow-hidden">
-                  <Skeleton className="h-48 rounded-none" />
+                  <Skeleton className={`${BLOG_PICTURE_SHAPE} rounded-none`} />
                   <div className="p-5">
                     <Skeleton className="mb-3 h-4 w-1/4 rounded" />
                     <Skeleton className="mb-2 h-5 w-3/4 rounded" />
@@ -501,21 +505,22 @@ function FeaturedPostCard({ post, categoryColors }: PostCardProps) {
       <GlassCard className="overflow-hidden">
         <div className="flex flex-col md:flex-row">
           {/* Image */}
-          <div className="md:w-1/2 h-48 md:h-72 bg-theme-elevated flex items-center justify-center overflow-hidden">
-            {imageProps ? (
-              <img
-                {...imageProps}
-                alt={post.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
-                width={600}
-                height={288}
-              />
-            ) : (
+          {/* One shape at every width (it was a fixed height that cropped to
+              fill). Beside a taller text column the box stretches, and the
+              picture stays whole inside it. */}
+          {imageProps ? (
+            <BlogPicture
+              image={imageProps}
+              alt={post.title}
+              shape="card"
+              className="md:w-1/2"
+              imageClassName={PICTURE_HOVER_ZOOM}
+            />
+          ) : (
+            <div className={`md:w-1/2 ${BLOG_PICTURE_SHAPE} bg-theme-elevated flex items-center justify-center overflow-hidden`}>
               <ThemedCover data-testid="blog-cover" size="lg" colour={coverColour} icon={BookOpen} label={post.category?.name} seed={`post-${post.id}`} />
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Content */}
           <div className="md:w-1/2 p-4 sm:p-6 flex flex-col justify-center">
@@ -571,19 +576,18 @@ function BlogPostCard({ post, categoryColors }: PostCardProps) {
     <Link to={tenantPath(`/blog/${post.slug}`)} className="block group h-full">
       <GlassCard className="overflow-hidden h-full flex flex-col">
         {/* Image */}
-        <div className="h-48 bg-theme-elevated flex items-center justify-center overflow-hidden">
-          {imageProps ? (
-            <img
-              {...imageProps}
-              alt={post.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
+        {imageProps ? (
+          <BlogPicture
+            image={imageProps}
+            alt={post.title}
+            shape="card"
+            imageClassName={PICTURE_HOVER_ZOOM}
+          />
+        ) : (
+          <div className={`${BLOG_PICTURE_SHAPE} bg-theme-elevated flex items-center justify-center overflow-hidden`}>
             <ThemedCover data-testid="blog-cover" colour={coverColour} icon={BookOpen} label={post.category?.name} seed={`post-${post.id}`} />
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Content */}
         <div className="p-5 flex-1 flex flex-col">

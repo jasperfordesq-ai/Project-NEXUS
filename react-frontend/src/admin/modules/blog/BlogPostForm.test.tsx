@@ -310,6 +310,28 @@ describe('BlogPostForm — create mode', () => {
     });
   });
 
+  // The preview was a 208px-high strip that cropped to fill (`h-52 object-cover`).
+  // On a wide form that is roughly 4:1, so a standard 1200x630 picture showed
+  // only its middle band: the logo and the last line of a designed picture were
+  // cut off, and it looked broken to the admin who had just uploaded it.
+  it('shows the whole featured picture in the preview instead of cropping it to a strip', async () => {
+    mockAdminBlog.uploadFeaturedImage.mockResolvedValueOnce({
+      success: true,
+      data: { url: 'https://api.example.test/storage/tenant_2/uploads/blog/hero.webp', path: 'tenant_2/uploads/blog/hero.webp' },
+    });
+    renderCreate();
+    await waitFor(() => getTitleInput());
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [new File(['hero'], 'hero.webp', { type: 'image/webp' })] } });
+
+    const preview = await screen.findByRole('img', { name: /featured_image_preview_alt|featured image preview/i });
+    expect(preview).toHaveClass('object-contain');
+    expect(preview).not.toHaveClass('object-cover');
+    // A fixed height is what forced the crop; the picture keeps its own shape.
+    expect(preview.className).not.toMatch(/(^|\s)h-\d/);
+  });
+
   it('accepts image uploads by extension when the browser omits the MIME type', async () => {
     mockAdminBlog.uploadFeaturedImage.mockResolvedValueOnce({
       success: true,
