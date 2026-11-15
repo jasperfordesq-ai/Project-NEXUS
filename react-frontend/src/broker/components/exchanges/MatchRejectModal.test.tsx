@@ -34,7 +34,7 @@ describe('MatchRejectModal', () => {
     render(<MatchRejectModal match={MATCH} onClose={onClose} onRejected={onRejected} />);
 
     expect(screen.getByText('Rejecting the match between Alice Member and Bob Owner.')).toBeInTheDocument();
-    const submit = screen.getByRole('button', { name: 'Reject Match' });
+    const submit = screen.getByRole('button', { name: 'Reject match' });
     expect(submit).toBeDisabled();
 
     await user.type(screen.getByLabelText(/rejection reason/i), 'Too far apart');
@@ -53,7 +53,7 @@ describe('MatchRejectModal', () => {
     render(<MatchRejectModal match={MATCH} onClose={onClose} onRejected={onRejected} />);
 
     await user.type(screen.getByLabelText(/rejection reason/i), 'Too far apart');
-    await user.click(screen.getByRole('button', { name: 'Reject Match' }));
+    await user.click(screen.getByRole('button', { name: 'Reject match' }));
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Server said no'));
     expect(onClose).not.toHaveBeenCalled();
@@ -67,7 +67,7 @@ describe('MatchRejectModal', () => {
     render(<MatchRejectModal match={MATCH} onClose={onClose} onRejected={onRejected} />);
 
     await user.type(screen.getByLabelText(/rejection reason/i), 'Too far apart');
-    await user.click(screen.getByRole('button', { name: 'Reject Match' }));
+    await user.click(screen.getByRole('button', { name: 'Reject match' }));
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to reject match'));
     expect(onClose).not.toHaveBeenCalled();

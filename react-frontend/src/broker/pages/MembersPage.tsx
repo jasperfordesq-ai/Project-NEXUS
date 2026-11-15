@@ -62,7 +62,7 @@ import { parseServerTimestamp,
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter, Avatar, Tabs, Tab, Tooltip, Select, SelectItem, useConfirm } from '@/components/ui';
 import {
   BrokerPageShell,
-  BrokerStatCard,
+  BrokerTabCount,
   BrokerSkeleton,
   BrokerEmptyState,
   BrokerStatusChip,
@@ -74,7 +74,7 @@ import {
 
 type StatusTab = 'all' | 'pending' | 'active' | 'suspended' | 'never_logged_in' | 'onboarding_incomplete';
 
-/** KPI counts derived from the list endpoint (meta.total with limit=1). */
+/** The counts on the tabs, derived from the list endpoint (meta.total with limit=1). */
 interface MemberStats {
   total: number | null;
   pending: number | null;
@@ -304,7 +304,7 @@ export default function MembersPage() {
     void fetchMembers();
   }, [fetchMembers]);
 
-  /** Re-count the KPI cards. `quiet` keeps the current numbers up (no skeleton) — used by auto-refresh. */
+  /** Re-count the tabs. `quiet` keeps the current numbers up — used by auto-refresh. */
   const loadStats = useCallback(async (quiet = false) => {
     if (!quiet) setStatsLoading(true);
     const [totalCount, pending, active, suspended] = await Promise.all([
@@ -568,7 +568,7 @@ export default function MembersPage() {
         sortable: true,
         label: t('members.col_status'),
         render: (user: AdminUser) => (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col items-start gap-1">
             <BrokerStatusChip status={user.status} />
             {user.onboarding_completed === false && user.status !== 'pending' && (
               <Chip size="sm" variant="soft" color="warning" className="text-xs">
@@ -809,6 +809,7 @@ export default function MembersPage() {
                 <div className="flex items-center gap-2">
                   <Users size={14} aria-hidden="true" />
                   <span>{t('members.tab_all')}</span>
+                  <BrokerTabCount value={stats?.total} />
                 </div>
               }
             />
@@ -818,11 +819,7 @@ export default function MembersPage() {
                 <div className="flex items-center gap-2">
                   <Clock size={14} aria-hidden="true" />
                   <span>{t('members.tab_pending')}</span>
-                  {typeof stats?.pending === 'number' && stats.pending > 0 && (
-                    <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
-                      {stats.pending}
-                    </Chip>
-                  )}
+                  <BrokerTabCount value={stats?.pending} tone="warning" />
                 </div>
               }
             />
@@ -832,6 +829,7 @@ export default function MembersPage() {
                 <div className="flex items-center gap-2">
                   <UserCheck size={14} aria-hidden="true" />
                   <span>{t('members.tab_active')}</span>
+                  <BrokerTabCount value={stats?.active} />
                 </div>
               }
             />
@@ -841,11 +839,7 @@ export default function MembersPage() {
                 <div className="flex items-center gap-2">
                   <UserX size={14} aria-hidden="true" />
                   <span>{t('members.tab_suspended')}</span>
-                  {typeof stats?.suspended === 'number' && stats.suspended > 0 && (
-                    <Chip size="sm" variant="soft" color="danger" className="tabular-nums">
-                      {stats.suspended}
-                    </Chip>
-                  )}
+                  <BrokerTabCount value={stats?.suspended} tone="danger" />
                 </div>
               }
             />
@@ -893,41 +887,9 @@ export default function MembersPage() {
         </div>
       }
     >
-      {/* ── KPI header — counts come from the same list endpoint, deep-linked ── */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <BrokerStatCard
-          label={t('members.stat_total')}
-          value={stats?.total ?? null}
-          icon={Users}
-          color="accent"
-          loading={statsLoading}
-          to={tenantPath('/broker/members')}
-        />
-        <BrokerStatCard
-          label={t('members.stat_pending')}
-          value={stats?.pending ?? null}
-          icon={Clock}
-          color="warning"
-          loading={statsLoading}
-          to={tenantPath('/broker/members?status=pending')}
-        />
-        <BrokerStatCard
-          label={t('members.stat_active')}
-          value={stats?.active ?? null}
-          icon={UserCheck}
-          color="success"
-          loading={statsLoading}
-          to={tenantPath('/broker/members?status=active')}
-        />
-        <BrokerStatCard
-          label={t('members.stat_suspended')}
-          value={stats?.suspended ?? null}
-          icon={UserX}
-          color="danger"
-          loading={statsLoading}
-          to={tenantPath('/broker/members?status=suspended')}
-        />
-      </div>
+      {/* The four number tiles that sat here repeated the tabs above (total,
+          waiting, active, suspended) and pushed the list most of the way down
+          a laptop screen. Each tab now carries its own count. */}
 
       {/* ── Bulk-action bar ──────────────────────────────────────────────────── */}
       {selectedIds.size > 0 && (

@@ -160,17 +160,18 @@ describe('OnboardingPage', () => {
   it('renders the page shell title and KPI stat cards', async () => {
     render(<OnboardingPage />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Onboarding' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'New member progress' })).toBeInTheDocument();
 
     await waitFor(() => {
       // KPI label — also reused as the funnel-footer label, hence getAllByText
-      expect(screen.getAllByText('Overall conversion').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Reached the last step').length).toBeGreaterThan(0);
     });
-    expect(screen.getByText('Pending approvals')).toBeInTheDocument();
-    expect(screen.getByText('Biggest drop-off')).toBeInTheDocument();
-    // 'Registered' appears as the KPI label AND as a funnel stage label
-    expect(screen.getAllByText('Registered').length).toBeGreaterThan(0);
-    // Overall conversion 20/100 → 20.0% (KPI card + funnel footer)
+    // The people waiting are the heading of the list at the top, not a tile.
+    expect(screen.getByRole('heading', { level: 2, name: 'Waiting for approval' })).toBeInTheDocument();
+    expect(screen.getByText('Where most people stop')).toBeInTheDocument();
+    // 'Signed up' appears as the tile label AND as the first step's label
+    expect(screen.getAllByText('Signed up').length).toBeGreaterThan(0);
+    // Reached the last step 20/100 → 20.0% (KPI card + funnel footer)
     expect(screen.getAllByText('20.0%').length).toBeGreaterThan(0);
   });
 
@@ -178,12 +179,12 @@ describe('OnboardingPage', () => {
     render(<OnboardingPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Email Verified')).toBeInTheDocument();
+      expect(screen.getByText('Email confirmed')).toBeInTheDocument();
     });
-    expect(screen.getByText('Profile Complete')).toBeInTheDocument();
-    // 'First Exchange' also appears in the drop-off KPI description and the
+    expect(screen.getByText('Profile filled in')).toBeInTheDocument();
+    // 'First exchange' also appears in the drop-off KPI description and the
     // funnel footer, so multiple matches are expected.
-    expect(screen.getAllByText('First Exchange').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('First exchange').length).toBeGreaterThan(0);
     // Stage counts render numerically (100 also appears in the Registered KPI)
     expect(screen.getAllByText('100').length).toBeGreaterThan(0);
   });
@@ -200,7 +201,7 @@ describe('OnboardingPage', () => {
   it('renders the registrations trend section when monthly data is present', async () => {
     render(<OnboardingPage />);
 
-    expect(await screen.findByText('Registrations Trend')).toBeInTheDocument();
+    expect(await screen.findByText('New members each month')).toBeInTheDocument();
   });
 
   it('hides the trend section when monthly_registrations is absent (older API)', async () => {
@@ -212,9 +213,9 @@ describe('OnboardingPage', () => {
     render(<OnboardingPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Email Verified')).toBeInTheDocument();
+      expect(screen.getByText('Email confirmed')).toBeInTheDocument();
     });
-    expect(screen.queryByText('Registrations Trend')).not.toBeInTheDocument();
+    expect(screen.queryByText('New members each month')).not.toBeInTheDocument();
   });
 
   it('shows no-data message when funnel has no stages', async () => {
@@ -227,7 +228,7 @@ describe('OnboardingPage', () => {
 
     expect(await screen.findByText('No data available.')).toBeInTheDocument();
     // No stages → no trend chart either
-    expect(screen.queryByText('Registrations Trend')).not.toBeInTheDocument();
+    expect(screen.queryByText('New members each month')).not.toBeInTheDocument();
   });
 
   it('renders pending member names in the table', async () => {
@@ -239,7 +240,7 @@ describe('OnboardingPage', () => {
     expect(screen.getByText('Jane Roe')).toBeInTheDocument();
   });
 
-  it('shows the all-caught-up empty state when no members are pending', async () => {
+  it('says in one line that nobody is waiting, instead of an empty table', async () => {
     vi.mocked(adminUsers.list).mockResolvedValue({
       success: true,
       data: [],
@@ -247,8 +248,8 @@ describe('OnboardingPage', () => {
 
     render(<OnboardingPage />);
 
-    expect(await screen.findByText('All caught up')).toBeInTheDocument();
-    expect(screen.getByText('No pending members to approve.')).toBeInTheDocument();
+    expect(await screen.findByText('No members are waiting for approval.')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Waiting for approval' })).not.toBeInTheDocument();
     expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
   });
 
@@ -333,9 +334,9 @@ describe('OnboardingPage', () => {
       expect(mockToast.error).toHaveBeenCalled();
     });
     expect(
-      await screen.findByText("Pending members couldn't be loaded"),
+      await screen.findByText("The members waiting for approval couldn't be loaded"),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
   });
 
   it('handles funnel API failure without a toast and offers a retry', async () => {
@@ -350,8 +351,8 @@ describe('OnboardingPage', () => {
     expect(mockToast.error).not.toHaveBeenCalled();
 
     // Honest inline error state with a retry button — never a fake "all clear"
-    expect(await screen.findByText("The funnel couldn't be loaded")).toBeInTheDocument();
-    const retryBtn = screen.getByRole('button', { name: 'Retry' });
+    expect(await screen.findByText("The steps couldn't be loaded")).toBeInTheDocument();
+    const retryBtn = screen.getByRole('button', { name: 'Try again' });
     await userEvent.click(retryBtn);
 
     await waitFor(() => {
@@ -361,11 +362,23 @@ describe('OnboardingPage', () => {
 
   // ─── Package B1 polish ─────────────────────────────────────────────────────
 
-  it('links the Pending approvals card to the pending members list', async () => {
+  // The list of people a broker can approve was under four tiles, the steps
+  // and a chart — about two laptop screens down (Nov 2026).
+  it('puts the people waiting for approval above the steps, with an Approve button on each row', async () => {
     render(<OnboardingPage />);
 
-    const card = await screen.findByRole('link', { name: 'Pending approvals' });
-    expect(card.getAttribute('href')).toBe('/test/broker/members?status=pending');
+    const waiting = await screen.findByRole('heading', { level: 2, name: 'Waiting for approval' });
+    const steps = await screen.findByRole('heading', { level: 2, name: 'How far new members have got' });
+    expect(waiting.compareDocumentPosition(steps) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(await screen.findByRole('button', { name: /Approve John Doe/ })).toBeInTheDocument();
+  });
+
+  it('says what share of people stop, and before which step', async () => {
+    render(<OnboardingPage />);
+
+    const tile = (await screen.findByText('Where most people stop')).closest('div[class*="rounded"]');
+    expect(tile).not.toBeNull();
+    expect(await screen.findByText(/^Before “.+”$/)).toBeInTheDocument();
   });
 
   it('resolves avatar paths before rendering them', async () => {
@@ -380,7 +393,7 @@ describe('OnboardingPage', () => {
   it('styles the chart tooltip with theme tokens only — no raw colours', async () => {
     render(<OnboardingPage />);
 
-    expect(await screen.findByText('Registrations Trend')).toBeInTheDocument();
+    expect(await screen.findByText('New members each month')).toBeInTheDocument();
     const style = tooltipProps.current?.contentStyle as Record<string, string> | undefined;
     expect(style).toBeDefined();
     expect(style?.boxShadow).toBe('var(--shadow-md)');

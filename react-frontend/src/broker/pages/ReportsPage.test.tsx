@@ -51,7 +51,7 @@ describe('ReportsPage (broker)', () => {
     const Component = (await import('./ReportsPage')).default;
     render(<Component />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Reports' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Member reports' })).toBeInTheDocument();
     expect(screen.getByText('Triage and resolve member reports about content and other members.')).toBeInTheDocument();
     expect(screen.getByTestId('admin-reports-management')).toBeInTheDocument();
     expect(mockAdmin).toHaveBeenCalledTimes(1);
@@ -70,7 +70,7 @@ describe('ReportsPage (broker)', () => {
     render(<Component />);
 
     expect(titleEffects).toContain('Admin: Reports');
-    expect(titleEffects[titleEffects.length - 1]).toBe('Reports');
+    expect(titleEffects[titleEffects.length - 1]).toBe('Member reports');
   });
 
   it('links to the plain-English guide for this page', async () => {

@@ -16,7 +16,8 @@ import Flag from 'lucide-react/icons/flag';
 import MessageSquare from 'lucide-react/icons/message-square';
 import type { LucideIcon } from 'lucide-react';
 
-import { Chip, Tab, Tabs } from '@/components/ui';
+import { Tab, Tabs } from '@/components/ui';
+import { BrokerTabCount, type BrokerTabCountTone } from '../BrokerTabCount';
 
 // `urgent` = flagged and not yet reviewed: what the dashboard's Safeguarding
 // Alerts card counts. It replaced the safeguarding "Flagged messages" page
@@ -38,30 +39,20 @@ const TAB_ICONS: Record<MessageFilter, LucideIcon> = {
 interface MessageStatusTabsProps {
   filter: MessageFilter;
   onChange: (next: MessageFilter) => void;
-  unreviewedCount: number | null;
-  urgentCount: number | null;
+  /** The count behind each tab; null while unknown (nothing is drawn). "All" shows none. */
+  counts: { unreviewed: number | null; urgent: number | null; flagged: number | null; reviewed: number | null };
 }
 
-export function MessageStatusTabs({ filter, onChange, unreviewedCount, urgentCount }: MessageStatusTabsProps) {
-  const { t } = useTranslation('broker');
+/** Unreviewed and urgent should fall to zero; flagged and reviewed are plain totals. */
+const TAB_TONE: Partial<Record<MessageFilter, BrokerTabCountTone>> = {
+  unreviewed: 'warning',
+  urgent: 'danger',
+  flagged: 'neutral',
+  reviewed: 'neutral',
+};
 
-  const badge = (key: MessageFilter) => {
-    if (key === 'unreviewed' && unreviewedCount !== null && unreviewedCount > 0) {
-      return (
-        <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
-          {unreviewedCount}
-        </Chip>
-      );
-    }
-    if (key === 'urgent' && urgentCount !== null && urgentCount > 0) {
-      return (
-        <Chip size="sm" variant="soft" color="danger" className="tabular-nums">
-          {urgentCount}
-        </Chip>
-      );
-    }
-    return null;
-  };
+export function MessageStatusTabs({ filter, onChange, counts }: MessageStatusTabsProps) {
+  const { t } = useTranslation('broker');
 
   return (
     <Tabs
@@ -80,7 +71,7 @@ export function MessageStatusTabs({ filter, onChange, unreviewedCount, urgentCou
               <div className="flex items-center gap-2">
                 <Icon size={14} aria-hidden="true" />
                 <span>{t(`messages.tab_${key}`)}</span>
-                {badge(key)}
+                {key !== 'all' && <BrokerTabCount value={counts[key]} tone={TAB_TONE[key]} />}
               </div>
             }
           />

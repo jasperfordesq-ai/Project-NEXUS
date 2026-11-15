@@ -17,6 +17,5 @@ export { BrokerDateRangeFilter, type DateRangeValue } from './BrokerDateRangeFil
 export { MessageHotkeyHints, type HotkeyHint } from './MessageHotkeyHints';
 export { buildMessageColumns, HIGHLIGHT_ATTR } from './messageColumns';
 export { buildMessageExportColumns } from './messageExportColumns';
-export { MessageKpiCards, type MessageQueueTotals } from './MessageKpiCards';
 export { MessageStatusTabs, MESSAGE_FILTERS, MESSAGE_QUEUE_FILTERS, type MessageFilter } from './MessageStatusTabs';
 export { FLAG_SEVERITIES, type FlagSeverity, normalizeSeverity, copyReasonLabel } from './messageLabels';

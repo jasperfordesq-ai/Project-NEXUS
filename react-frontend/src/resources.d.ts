@@ -34898,12 +34898,12 @@ export default interface Resources {
       "col_listing": "Listing",
       "col_receiver": "Receiver",
       "col_sender": "Sender",
-      "copy_reason_first_contact": "First Contact",
-      "copy_reason_flagged_user": "Flagged User",
-      "copy_reason_high_risk_listing": "High Risk Listing",
-      "copy_reason_manual_monitoring": "Manual Monitoring",
-      "copy_reason_new_member": "New Member",
-      "copy_reason_random_sample": "Random Sample",
+      "copy_reason_first_contact": "First contact",
+      "copy_reason_flagged_user": "Flagged member",
+      "copy_reason_high_risk_listing": "High-risk listing",
+      "copy_reason_manual_monitoring": "Manual monitoring",
+      "copy_reason_new_member": "New member",
+      "copy_reason_random_sample": "Random sample",
       "date_range_clear": "Clear dates",
       "date_range_label": "Date range",
       "decision_approved": "Approved",
@@ -34945,7 +34945,7 @@ export default interface Resources {
       "no_snapshot": "No conversation snapshot available.",
       "not_found": "Archive record not found.",
       "open_record": "Open record",
-      "page_title": "Review Archive",
+      "page_title": "Past message checks",
       "read_only_badge": "Read-only",
       "record_id": "Record #{{id}}",
       "record_unavailable": "Record unavailable",
@@ -34971,30 +34971,30 @@ export default interface Resources {
       "tab_approved": "Approved",
       "tab_flagged": "Flagged",
       "tabs_aria": "Review archive filter",
-      "title": "Review Archive"
+      "title": "Past message checks"
     },
     "breadcrumbs": {
-      "archives": "Review Archive",
+      "archives": "Past message checks",
       "aria_label": "Breadcrumb navigation",
-      "configuration": "Configuration",
+      "configuration": "Broker settings",
       "dashboard": "Broker Panel",
       "exchanges": "Exchanges",
       "help": "Help",
-      "insurance": "Insurance",
-      "match_approvals": "Match Approvals",
+      "insurance": "Insurance certificates",
+      "match_approvals": "Suggested matches",
       "members": "Members",
-      "messages": "Messages",
-      "moderation": "Moderation",
+      "messages": "Message checks",
+      "moderation": "Posts and reports",
       "moderation_comments": "Comments",
-      "moderation_feed": "Feed Posts",
-      "moderation_queue": "Content Queue",
-      "moderation_reports": "Reports",
+      "moderation_feed": "Feed posts",
+      "moderation_queue": "Posts to approve",
+      "moderation_reports": "Member reports",
       "moderation_reviews": "Reviews",
-      "monitoring": "User Monitoring",
-      "onboarding": "Onboarding",
-      "risk_tags": "Risk Tags",
+      "monitoring": "Monitored members",
+      "onboarding": "New member progress",
+      "risk_tags": "Listing risk tags",
       "safeguarding": "Safeguarding",
-      "safeguarding_options": "Safeguarding Options",
+      "safeguarding_options": "Safeguarding options",
       "vetting": "Vetting confirmations"
     },
     "checking_permissions": "Checking permissions...",
@@ -35106,7 +35106,7 @@ export default interface Resources {
       "load_failed": "Failed to load broker configuration.",
       "no_unsaved_changes": "All changes saved",
       "number_out_of_range": "{{field}} must be between {{min}} and {{max}}.",
-      "page_title": "Broker Configuration",
+      "page_title": "Broker settings",
       "retry": "Retry",
       "save_bar_aria": "Save or discard changes",
       "save_changes": "Save Changes",
@@ -35124,7 +35124,7 @@ export default interface Resources {
       "section_messaging_desc": "How members reach brokers and which conversations enter the review queue.",
       "section_risk_tagging": "Risk Tagging",
       "section_risk_tagging_desc": "Automatic risk classification and the alerts it raises for broker review.",
-      "title": "Broker Configuration",
+      "title": "Broker settings",
       "unsaved_changes": "Unsaved changes",
       "unsaved_leave_body": "You have unsaved changes on this page. If you leave now, they will be lost.",
       "unsaved_leave_confirm": "Leave page",
@@ -35221,31 +35221,15 @@ export default interface Resources {
       "activity_drawer_title": "All recent activity",
       "all_clear": "All clear",
       "all_clear_hint": "Nothing is waiting on your review right now. New work will appear here the moment it arrives.",
-      "broker_actions_heading": "Broker Actions",
+      "broker_actions_heading": "Broker actions",
       "could_not_load": "Could not load",
       "deleted_user": "Deleted user",
       "description": "What needs your attention today, at a glance.",
-      "high_risk_listings": "High Risk Listings",
-      "links": {
-        "configuration_desc": "Configure broker control settings.",
-        "configuration_title": "Configuration",
-        "exchanges_desc": "Review and approve exchange requests flagged for broker attention.",
-        "exchanges_title": "Exchange Management",
-        "match_approvals_desc": "Review smart-match proposals between members and listings.",
-        "match_approvals_title": "Match Approvals",
-        "messages_desc": "Review broker copies of flagged conversations.",
-        "messages_title": "Message Review",
-        "monitoring_desc": "Track members under broker oversight.",
-        "monitoring_title": "User Monitoring",
-        "risk_tags_desc": "Manage risk classifications on listings.",
-        "risk_tags_title": "Risk Tags",
-        "vetting_desc": "Review member requests and record community safeguarding decisions.",
-        "vetting_title": "Vetting confirmations"
-      },
+      "high_risk_listings": "High-risk listings",
       "load_error_hint": "Try again — if it keeps failing, the API may be unavailable.",
       "load_error_title": "Couldn't load the activity feed",
       "load_failed": "Failed to load broker dashboard",
-      "monitored_users": "Monitored Users",
+      "monitored_users": "Monitored members",
       "my_week": {
         "avg_review_hours": "Average time to review a match",
         "avg_review_value": "{{hours}} h",
@@ -35271,15 +35255,15 @@ export default interface Resources {
       "open_reports": "Member reports to check",
       "partial_body": "Cards showing a dash (–) could not be counted just now. Press Refresh to try again. If a dash is still there, tell an admin.",
       "partial_title": "Some numbers couldn't be loaded",
-      "pending_exchanges": "Pending Exchanges",
+      "pending_exchanges": "Exchanges needing a decision",
       "pending_members": "New members to approve",
-      "quick_access": "Quick Access",
-      "quick_actions": "Quick Actions",
-      "recent_activity": "Recent Activity",
+      "recent_activity": "Recent activity",
       "refresh": "Refresh",
-      "safeguarding_alerts": "Safeguarding Alerts",
+      "safeguarding_alerts": "Safeguarding alerts",
       "safeguarding_flags": "Support needs not yet seen",
       "see_all": "See all",
+      "standing_hint": "These two numbers stay as they are until someone changes them, so they are not counted above.",
+      "standing_title": "Also worth knowing",
       "time_days_ago": "{{count}}d ago",
       "time_days_ago_one": "{{count}}d ago",
       "time_days_ago_other": "{{count}}d ago",
@@ -35291,10 +35275,9 @@ export default interface Resources {
       "time_minutes_ago_one": "{{count}}m ago",
       "time_minutes_ago_other": "{{count}}m ago",
       "title": "Broker Dashboard",
-      "unreviewed_messages": "Unreviewed Messages",
+      "unreviewed_messages": "Messages to check",
       "vetting_review_requests": "Vetting review requests",
-      "view_all": "View All",
-      "vs_previous_fortnight": "vs previous fortnight"
+      "view_all": "View All"
     },
     "exchanges": {
       "action_failed": "Exchange action failed",
@@ -35314,7 +35297,7 @@ export default interface Resources {
       "col_from": "From",
       "col_hours": "Hours",
       "col_listing": "Listing",
-      "col_parties": "Parties",
+      "col_parties": "Members",
       "col_provider": "Provider",
       "col_requester": "Requester",
       "col_service": "Service",
@@ -35364,7 +35347,7 @@ export default interface Resources {
       "detail_view_messages": "View their message copies",
       "empty_hint": "Exchanges will appear here as soon as they match this filter.",
       "empty_needs_action_hint": "No exchanges are waiting for approval or in dispute.",
-      "empty_needs_action_title": "Nothing needs your action",
+      "empty_needs_action_title": "Nothing needs a decision",
       "empty_pending_hint": "Every exchange that needed broker review has been handled.",
       "empty_pending_title": "No exchanges waiting",
       "exchange_actions_aria": "Exchange actions",
@@ -35423,14 +35406,9 @@ export default interface Resources {
       "settle_picks_label": "Use a figure from the exchange",
       "settle_success": "Dispute settled. {{amount}} paid.",
       "settle_title": "This exchange needs you to settle it",
-      "stat_disputed": "Disputed",
       "stat_disputed_hint": "Members disagree about the hours",
-      "stat_needs_action": "Needs action",
       "stat_needs_action_hint": "Awaiting your approval or in dispute",
-      "stat_pending": "Pending broker review",
       "stat_pending_hint": "Awaiting your decision",
-      "stat_total": "Total exchanges",
-      "stat_total_hint": "Across all statuses",
       "status_filter_aria": "Exchange status filter",
       "tab_accepted": "Approved",
       "tab_all": "All",
@@ -35438,12 +35416,12 @@ export default interface Resources {
       "tab_cancelled": "Cancelled",
       "tab_completed": "Completed",
       "tab_disputed": "Disputed",
-      "tab_in_progress": "In Progress",
-      "tab_needs_action": "Needs action",
-      "tab_pending": "Pending",
-      "tab_pending_broker": "Pending",
+      "tab_in_progress": "In progress",
+      "tab_needs_action": "Needs a decision",
+      "tab_pending": "Waiting for approval",
+      "tab_pending_broker": "Waiting for approval",
       "tabs_aria": "Exchange status filter",
-      "title": "Exchange Management",
+      "title": "Exchanges",
       "view_details_aria": "View Exchange Details"
     },
     "header": {
@@ -35691,7 +35669,7 @@ export default interface Resources {
       "modal_view_title": "Insurance Certificate",
       "no_members_found": "No members found.",
       "page_description": "Keep track of members' insurance certificates and whether each one has been checked.",
-      "page_title": "Insurance Certificates",
+      "page_title": "Insurance certificates",
       "reject": "Reject",
       "reject_certificate_aria": "Reject certificate",
       "reject_failed": "Failed to reject insurance certificate.",
@@ -35722,7 +35700,7 @@ export default interface Resources {
       "tab_submitted": "Submitted",
       "tab_verified": "Verified",
       "tabs_aria": "Insurance certificate status filter",
-      "title": "Insurance Certificates",
+      "title": "Insurance certificates",
       "type_employers_liability": "Employer's Liability",
       "type_other": "Other",
       "type_personal_accident": "Personal Accident",
@@ -35752,11 +35730,11 @@ export default interface Resources {
       "skip_to_main": "Skip to main content"
     },
     "matching": {
-      "approve": "Approve Match",
+      "approve": "Approve match",
       "approve_failed": "Failed to approve match",
       "approved_toast": "Match approved — the member will be notified",
       "associated_listing": "Associated Listing",
-      "back": "Back to Match Approvals",
+      "back": "Back to suggested matches",
       "cancel": "Cancel",
       "category": "Category",
       "col_actions": "Actions",
@@ -35765,9 +35743,9 @@ export default interface Resources {
       "col_score": "Score",
       "col_status": "Status",
       "col_submitted": "Submitted",
-      "description": "Review smart-match proposals between members and listings before the member is notified.",
+      "description": "Matches the platform has suggested between a member and a listing. Approve or reject each one before the member is told.",
       "detail_description": "Check why these two were matched, then approve or reject before the member is told.",
-      "detail_title": "Match Approval",
+      "detail_title": "Suggested match",
       "distance": "Distance",
       "distance_km": "{{km}} km",
       "empty_pending_hint": "Nothing to review. A match appears here when either member asked for coordinator approval or restricted matching, or is under monitoring.",
@@ -35778,7 +35756,7 @@ export default interface Resources {
       "listing_type_offer": "Offer",
       "listing_type_request": "Request",
       "load_error_hint": "Something went wrong while fetching the approval queue. Check your connection and try again.",
-      "load_error_title": "Couldn't load match approvals",
+      "load_error_title": "Couldn't load the suggested matches",
       "load_failed": "Failed to load match approval",
       "match_information": "Match Information",
       "match_reasons": "Why they were matched",
@@ -35787,11 +35765,11 @@ export default interface Resources {
       "matched_member": "Matched Member",
       "no_listing": "No listing",
       "no_reasons": "No reasons recorded.",
-      "not_found_hint": "This match approval may have been removed, or the link is wrong.",
+      "not_found_hint": "This suggested match may have been removed, or the link is wrong.",
       "not_found_title": "Match not found",
       "notes_label": "Notes",
       "refresh": "Refresh",
-      "reject": "Reject Match",
+      "reject": "Reject match",
       "reject_failed": "Failed to reject match",
       "reject_reason_label": "Rejection reason",
       "reject_reason_placeholder": "Explain why this match is being rejected — the member will see this.",
@@ -35807,16 +35785,13 @@ export default interface Resources {
       "score_good": "Good match",
       "score_label": "Match score",
       "score_low": "Low match",
-      "stat_approval_rate": "Approval Rate",
-      "stat_approved": "Approved",
-      "stat_pending": "Pending Review",
-      "stat_rejected": "Rejected",
+      "stat_approval_rate": "Approval rate",
       "tab_all": "All",
       "tab_approved": "Approved",
-      "tab_pending": "Pending",
+      "tab_pending": "Waiting for approval",
       "tab_rejected": "Rejected",
-      "tabs_aria": "Filter match approvals by status",
-      "title": "Match Approvals",
+      "tabs_aria": "Filter suggested matches by status",
+      "title": "Suggested matches",
       "type_mutual": "Mutual",
       "type_one_way": "One way",
       "unknown": "Unknown",
@@ -35954,7 +35929,7 @@ export default interface Resources {
       "col_balance": "Balance",
       "col_email": "Email",
       "col_joined": "Joined",
-      "col_last_active": "Last Active",
+      "col_last_active": "Last active",
       "col_name": "Member",
       "col_role": "Role",
       "col_status": "Status",
@@ -35967,7 +35942,7 @@ export default interface Resources {
       "confirm_reactivate_title": "Reactivate member",
       "confirm_suspend_message": "Are you sure you want to suspend this member? They will lose access to the platform.",
       "confirm_suspend_title": "Suspend Member",
-      "description": "View and manage community members.",
+      "description": "Everyone in your community. Approve new members, keep notes, and suspend or bring back an account.",
       "email_unverified": "Unverified",
       "email_verified": "Verified",
       "empty_active_hint": "Approved members will appear here once they're active.",
@@ -35975,9 +35950,9 @@ export default interface Resources {
       "empty_all_hint": "New registrations will appear here as people join.",
       "empty_all_title": "No members yet",
       "empty_never_logged_in_hint": "No approved members are still waiting to sign in for the first time.",
-      "empty_never_logged_in_title": "Everyone has logged in",
-      "empty_onboarding_incomplete_hint": "No members have unfinished onboarding steps.",
-      "empty_onboarding_incomplete_title": "Everyone finished onboarding",
+      "empty_never_logged_in_title": "Everyone has signed in",
+      "empty_onboarding_incomplete_hint": "No member has welcome steps left to do.",
+      "empty_onboarding_incomplete_title": "Everyone has finished the welcome steps",
       "empty_pending_hint": "You're all caught up — new registrations will land here for review.",
       "empty_pending_title": "No members awaiting approval",
       "empty_search_hint": "Try a different name or email.",
@@ -36008,7 +35983,7 @@ export default interface Resources {
       "notes": "Notes",
       "notes_for": "Notes — {{name}}",
       "notes_load_failed": "Notes couldn't be loaded.",
-      "onboarding_incomplete": "Onboarding incomplete",
+      "onboarding_incomplete": "Welcome steps not finished",
       "open_notes_for": "Open notes for {{name}}",
       "page_title": "Members - Broker",
       "reactivate": "Reactivate",
@@ -36026,17 +36001,13 @@ export default interface Resources {
       "search_placeholder": "Search members...",
       "send_message": "Send Message",
       "send_note": "Send note",
-      "stat_active": "Active members",
-      "stat_pending": "Pending approval",
-      "stat_suspended": "Suspended members",
-      "stat_total": "Total members",
       "suspend": "Suspend",
       "suspended_success": "Member suspended successfully.",
       "tab_active": "Active",
       "tab_all": "All",
-      "tab_never_logged_in": "Never logged in",
-      "tab_onboarding_incomplete": "Onboarding incomplete",
-      "tab_pending": "Pending",
+      "tab_never_logged_in": "Never signed in",
+      "tab_onboarding_incomplete": "Welcome steps not finished",
+      "tab_pending": "Waiting for approval",
       "tab_suspended": "Suspended",
       "tabs_aria": "Member status filter",
       "time_days_ago": "{{count}}d ago",
@@ -36085,12 +36056,12 @@ export default interface Resources {
       "col_status": "Status",
       "content_label": "Message Content",
       "conversation_label": "Conversation",
-      "copy_reason_first_contact": "First Contact",
-      "copy_reason_flagged_user": "Flagged User",
-      "copy_reason_high_risk_listing": "High Risk Listing",
-      "copy_reason_manual_monitoring": "Manual Monitoring",
-      "copy_reason_new_member": "New Member",
-      "copy_reason_random_sample": "Random Sample",
+      "copy_reason_first_contact": "First contact",
+      "copy_reason_flagged_user": "Flagged member",
+      "copy_reason_high_risk_listing": "High-risk listing",
+      "copy_reason_manual_monitoring": "Manual monitoring",
+      "copy_reason_new_member": "New member",
+      "copy_reason_random_sample": "Random sample",
       "date_range_clear": "Clear dates",
       "date_range_label": "Date range",
       "description": "Review flagged conversations requiring broker oversight.",
@@ -36220,14 +36191,6 @@ export default interface Resources {
       "shortcut_open": "Open the highlighted message",
       "shortcut_review": "Mark the message reviewed (never a flagged one)",
       "shortcuts_section": "Message review",
-      "stat_filtered": "Matching this filter",
-      "stat_filtered_hint": "Messages in the current tab",
-      "stat_flagged_total": "Flagged messages",
-      "stat_flagged_total_hint": "Every flagged message, not just this page",
-      "stat_reviewed_total": "Reviewed messages",
-      "stat_reviewed_total_hint": "Every reviewed message, not just this page",
-      "stat_unreviewed": "Unreviewed messages",
-      "stat_unreviewed_hint": "Across the whole queue",
       "status_reviewed": "Reviewed",
       "status_unreviewed": "Unreviewed",
       "tab_all": "All",
@@ -36236,28 +36199,28 @@ export default interface Resources {
       "tab_unreviewed": "Unreviewed",
       "tab_urgent": "Urgent",
       "tag_listing": "Tag the listing",
-      "title": "Message Review",
+      "title": "Message checks",
       "view": "View"
     },
     "moderation_comments": {
       "description": "Review and moderate member comments across the community.",
-      "title": "Comments Moderation"
+      "title": "Comments"
     },
     "moderation_feed": {
       "description": "Review and moderate posts, listings, events, and other feed content.",
-      "title": "Feed Moderation"
+      "title": "Feed posts"
     },
     "moderation_queue": {
       "description": "Posts, listings and events waiting for approval before members can see them.",
-      "title": "Content Queue"
+      "title": "Posts to approve"
     },
     "moderation_reports": {
       "description": "Triage and resolve member reports about content and other members.",
-      "title": "Reports"
+      "title": "Member reports"
     },
     "moderation_reviews": {
       "description": "Review, flag, and moderate member reviews.",
-      "title": "Reviews Moderation"
+      "title": "Reviews"
     },
     "monitoring": {
       "add_button": "Add User",
@@ -36309,7 +36272,7 @@ export default interface Resources {
       "no_expiry": "No expiry",
       "no_users_found": "No users found.",
       "page_description": "Members whose messages are being checked by a broker for a while, and when that ends.",
-      "page_title": "User Monitoring",
+      "page_title": "Monitored members",
       "reason_label": "Reason",
       "reason_placeholder": "Why is this user being monitored?",
       "reason_required": "A reason is required.",
@@ -36331,65 +36294,65 @@ export default interface Resources {
       "tab_expiring_soon": "Expiring soon ({{days}} days)",
       "tab_messaging_off": "Messaging off",
       "tabs_aria": "Monitoring filter",
-      "title": "User Monitoring"
+      "title": "Monitored members"
     },
     "nav": {
-      "archives": "Review Archive",
-      "configuration": "Configuration",
+      "archives": "Past message checks",
+      "configuration": "Broker settings",
       "dashboard": "Dashboard",
       "exchanges": "Exchanges",
       "help": "Help",
-      "insurance": "Insurance",
-      "match_approvals": "Match Approvals",
+      "insurance": "Insurance certificates",
+      "match_approvals": "Suggested matches",
       "members": "Members",
-      "messages": "Messages",
+      "messages": "Message checks",
       "moderation_comments": "Comments",
-      "moderation_feed": "Feed Posts",
-      "moderation_queue": "Content Queue",
-      "moderation_reports": "Reports",
+      "moderation_feed": "Feed posts",
+      "moderation_queue": "Posts to approve",
+      "moderation_reports": "Member reports",
       "moderation_reviews": "Reviews",
-      "monitoring": "User Monitoring",
-      "onboarding": "Onboarding",
-      "risk_tags": "Risk Tags",
+      "monitoring": "Monitored members",
+      "onboarding": "New member progress",
+      "risk_tags": "Listing risk tags",
       "safeguarding": "Safeguarding",
       "safeguarding_guardians": "Guardians",
-      "safeguarding_options": "Safeguarding Options",
+      "safeguarding_options": "Safeguarding options",
       "safeguarding_support_actions": "Support actions",
       "safeguarding_support_needs": "Members' support needs",
       "safeguarding_volunteering": "Volunteering incidents",
       "vetting": "Vetting confirmations"
     },
     "onboarding": {
-      "description": "Track new member progress and approve pending registrations.",
+      "description": "See how far new members have got since they signed up, and approve the ones still waiting.",
       "empty_pending_title": "All caught up",
-      "funnel_error_hint": "Retry — if the failure persists, check the broker logs.",
-      "funnel_error_title": "The funnel couldn't be loaded",
-      "funnel_subtitle": "Member progression from registration to first exchange.",
-      "funnel_title": "Onboarding Funnel",
-      "kpi_conversion": "Overall conversion",
-      "kpi_dropoff": "Biggest drop-off",
-      "kpi_none": "No drop-off",
-      "kpi_pending": "Pending approvals",
-      "kpi_registered": "Registered",
+      "funnel_error_hint": "Try again. If it keeps happening, tell an admin.",
+      "funnel_error_title": "The steps couldn't be loaded",
+      "funnel_subtitle": "Each step from signing up to exchanging, and how many members have reached it.",
+      "funnel_title": "How far new members have got",
+      "kpi_conversion": "Reached the last step",
+      "kpi_dropoff": "Where most people stop",
+      "kpi_dropoff_before": "Before “{{step}}”",
+      "kpi_none": "Nobody has stopped",
+      "kpi_registered": "Signed up",
       "kpi_vs_last_month": "vs last month",
-      "members_error_hint": "The approval queue failed to load. Retry to fetch it again.",
-      "members_error_title": "Pending members couldn't be loaded",
-      "no_pending": "No pending members to approve.",
-      "page_title": "Onboarding - Broker",
-      "pending_approvals": "Pending Approvals",
-      "retry": "Retry",
-      "stage_email_verified": "Email Verified",
-      "stage_first_exchange": "First Exchange",
-      "stage_first_listing": "First Listing",
-      "stage_profile_complete": "Profile Complete",
-      "stage_registered": "Registered",
-      "stage_repeat_user": "Repeat User",
-      "stage_unknown": "Unknown Stage",
-      "title": "Onboarding",
-      "trend_aria": "Monthly registrations trend chart",
-      "trend_registrations": "Registrations",
-      "trend_subtitle": "New member registrations per month over the last six months.",
-      "trend_title": "Registrations Trend"
+      "members_error_hint": "Try again. If it keeps happening, tell an admin.",
+      "members_error_title": "The members waiting for approval couldn't be loaded",
+      "no_pending": "No members are waiting for approval.",
+      "page_title": "New member progress - Broker",
+      "pending_approvals": "Waiting for approval",
+      "retry": "Try again",
+      "stage_email_verified": "Email confirmed",
+      "stage_first_exchange": "First exchange",
+      "stage_first_listing": "First offer or request",
+      "stage_profile_complete": "Profile filled in",
+      "stage_registered": "Signed up",
+      "stage_repeat_user": "Two or more exchanges",
+      "stage_unknown": "Unknown step",
+      "title": "New member progress",
+      "trend_aria": "Chart of sign-ups each month",
+      "trend_registrations": "Sign-ups",
+      "trend_subtitle": "How many people signed up in each of the last six months.",
+      "trend_title": "New members each month"
     },
     "palette": {
       "action_next_unreviewed": "Next unreviewed message",
@@ -36496,7 +36459,7 @@ export default interface Resources {
       "tab_elevated": "High and critical",
       "tabs_aria": "Risk level filter",
       "tag_listing": "Tag Listing",
-      "title": "Risk Tags",
+      "title": "Listing risk tags",
       "update_tag": "Update Tag",
       "updated_success": "Risk tag updated.",
       "view_level_aria": "View {{level}} risk tags",
@@ -36552,20 +36515,22 @@ export default interface Resources {
     },
     "safeguarding_options": {
       "description": "Configure the safeguarding declaration options members can select.",
-      "title": "Safeguarding Options"
+      "title": "Safeguarding options"
     },
     "sidebar": {
       "collapse": "Collapse sidebar",
       "expand": "Expand sidebar",
       "full_admin": "Full Admin Panel",
       "nav_label": "Broker navigation",
-      "section_compliance": "Compliance & Oversight",
-      "section_daily": "Daily Workflow",
-      "section_moderation": "Moderation",
+      "section_compliance": "Checks and records",
+      "section_daily": "Every day",
+      "section_moderation": "Posts and reports",
       "section_overview": "Overview",
-      "section_records": "Records",
       "section_safeguarding": "Safeguarding",
-      "section_settings": "Settings",
+      "section_settings": "Settings and help",
+      "section_waiting": "{{count}} waiting",
+      "section_waiting_one": "{{count}} waiting",
+      "section_waiting_other": "{{count}} waiting",
       "title": "Broker Panel"
     },
     "status": {
@@ -36589,7 +36554,7 @@ export default interface Resources {
       "medium": "Medium",
       "not_confirmed": "Not confirmed",
       "pending": "Pending",
-      "pending_broker": "Pending Broker Approval",
+      "pending_broker": "Waiting for approval",
       "pending_confirmation": "Pending Confirmation",
       "pending_provider": "Pending Provider",
       "rejected": "Rejected",
@@ -50226,12 +50191,12 @@ export default interface Resources {
             "title": "Managing groups"
           },
           "admin_listings": {
-            "body": "Listings are the offers and requests members post. You manage them on the **Listings Admin** page. Open **Listings** in the admin menu and press **All Content**.\n\n## Finding listings\n\nUse the filters **All**, **Active**, **Inactive** and **Pending**. **Pending** shows listings waiting for approval. Use the search box to find a listing by its words.\n\n## Approving, rejecting and deleting\n\nEach listing has actions:\n\n- **Approve**: the listing goes live.\n- **Reject**: the listing does not go live.\n- **Delete**: removes the listing for good. This cannot be undone.\n\nYou are asked to confirm each time.\n\n## Featuring\n\nFeatured listings are shown more prominently to members. Press **Feature** on a listing, or open the **Featured** tab and search for an active listing. Press **Unfeature** to stop featuring it.\n\n## Holding new listings for checking\n\nTo check every new listing before members see it, open [Module Configuration](/admin/module-configuration). Press **Configure** on **Listings** and switch on **Require Moderation**. Then press **Save Changes**.\n\n> Brokers can also check held content in the Broker Panel, under **Content Queue**.",
+            "body": "Listings are the offers and requests members post. You manage them on the **Listings Admin** page. Open **Listings** in the admin menu and press **All Content**.\n\n## Finding listings\n\nUse the filters **All**, **Active**, **Inactive** and **Pending**. **Pending** shows listings waiting for approval. Use the search box to find a listing by its words.\n\n## Approving, rejecting and deleting\n\nEach listing has actions:\n\n- **Approve**: the listing goes live.\n- **Reject**: the listing does not go live.\n- **Delete**: removes the listing for good. This cannot be undone.\n\nYou are asked to confirm each time.\n\n## Featuring\n\nFeatured listings are shown more prominently to members. Press **Feature** on a listing, or open the **Featured** tab and search for an active listing. Press **Unfeature** to stop featuring it.\n\n## Holding new listings for checking\n\nTo check every new listing before members see it, open [Module Configuration](/admin/module-configuration). Press **Configure** on **Listings** and switch on **Require Moderation**. Then press **Save Changes**.\n\n> Brokers can also check held content in the Broker Panel, under **Posts to approve**.",
             "summary": "Check new listings, approve or reject them, and feature the best ones.",
             "title": "Approving and featuring listings"
           },
           "admin_moderation": {
-            "body": "Checking content is done in the **Broker Panel**, which admins can use too. Press **Broker Panel** under **Overview** in the admin menu.\n\n## Content waiting for approval\n\nOpen **Content Queue**. It lists items held for checking, such as new listings or events.\n\n1. Read the item.\n2. Press **Approve** to let it go live.\n3. Or press **Reject**. Write a short reason so the author knows why.\n\nThe **Moderation Settings** on this page let you choose which kinds of content need checking, and whether suspicious content is flagged automatically.\n\n## Reports from members\n\nMembers can report content they think breaks your rules. Open **Reports** in the Broker Panel. The page is called **Reports Management**.\n\n1. Press **View details** to see what was reported, by whom and why.\n2. Deal with the content if needed, for example by removing it.\n3. Press **Resolve** when you have dealt with it, or **Dismiss** if no action is needed.\n\n## Other checks\n\nThe Broker Panel also has **Feed Posts** and **Comments** pages, and **Reviews** if your community uses reviews.\n\n> Be consistent. Decide with your team what is and is not allowed, and write it in your community guidelines.",
+            "body": "Checking content is done in the **Broker Panel**, which admins can use too. Press **Broker Panel** under **Overview** in the admin menu.\n\n## Content waiting for approval\n\nOpen **Posts to approve**. It lists items held for checking, such as new listings or events.\n\n1. Read the item.\n2. Press **Approve** to let it go live.\n3. Or press **Reject**. Write a short reason so the author knows why.\n\nThe **Moderation Settings** on this page let you choose which kinds of content need checking, and whether suspicious content is flagged automatically.\n\n## Reports from members\n\nMembers can report content they think breaks your rules. Open **Member reports** in the Broker Panel. The page is called **Reports Management**.\n\n1. Press **View details** to see what was reported, by whom and why.\n2. Deal with the content if needed, for example by removing it.\n3. Press **Resolve** when you have dealt with it, or **Dismiss** if no action is needed.\n\n## Other checks\n\nThe Broker Panel also has **Feed Posts** and **Comments** pages, and **Reviews** if your community uses reviews.\n\n> Be consistent. Decide with your team what is and is not allowed, and write it in your community guidelines.",
             "summary": "Review content waiting for approval and deal with reports from members, in the Broker Panel.",
             "title": "Checking reported and held content"
           },
@@ -50540,37 +50505,37 @@ export default interface Resources {
       "broker_exchanges": {
         "articles": {
           "broker_approve_exchange": {
-            "body": "Exchanges waiting for you appear under the **Pending** tab in **Exchanges**.\n\n1. Open [Exchanges](/broker/exchanges). The counter **Pending broker review** shows how many are waiting.\n2. Press the **Pending** tab.\n3. Press the view button on a row to open the exchange. Check who the **Requester** and **Provider** are, the listing, and any **Risk Tag**.\n4. Press **Approve** or **Reject**.\n\n## Approving\n\nAdd a note in **Notes (optional)** if it helps, for example \"Please meet in a public place for the first session\". Press **Approve** to confirm.\n\nBoth members are told the exchange is approved and they can begin. Your note appears on their exchange page under **Broker Notes**.\n\n## Rejecting\n\nYou must give a reason in **Reason (required)**. Press **Reject** to confirm.\n\nThe exchange is cancelled. Both members get a notification that includes your reason. Your reason also appears on their exchange page, under the heading **Broker Notes**. Both members can read it, so write it kindly and plainly.\n\n## Things to know\n\n- You cannot approve or reject an exchange you are part of. Another broker must do it.\n- You cannot change the hours or add conditions when you approve. If something needs to change, reject it with a clear reason, or talk to the members before approving.\n\n> Before you approve, it helps to look at both members' records and any safeguarding choices they made.",
+            "body": "Exchanges waiting for you appear under the **Waiting for approval** tab in **Exchanges**.\n\n1. Open [Exchanges](/broker/exchanges). The number on the **Waiting for approval** tab shows how many are waiting.\n2. Press the **Waiting for approval** tab.\n3. Press the view button on a row to open the exchange. Check who the **Requester** and **Provider** are, the listing, and any **Risk Tag**.\n4. Press **Approve** or **Reject**.\n\n## Approving\n\nAdd a note in **Notes (optional)** if it helps, for example \"Please meet in a public place for the first session\". Press **Approve** to confirm.\n\nBoth members are told the exchange is approved and they can begin. Your note appears on their exchange page under **Broker Notes**.\n\n## Rejecting\n\nYou must give a reason in **Reason (required)**. Press **Reject** to confirm.\n\nThe exchange is cancelled. Both members get a notification that includes your reason. Your reason also appears on their exchange page, under the heading **Broker Notes**. Both members can read it, so write it kindly and plainly.\n\n## Things to know\n\n- You cannot approve or reject an exchange you are part of. Another broker must do it.\n- You cannot change the hours or add conditions when you approve. If something needs to change, reject it with a clear reason, or talk to the members before approving.\n\n> Before you approve, it helps to look at both members' records and any safeguarding choices they made.",
             "summary": "Check an exchange that is waiting for a broker, then approve it or reject it with a reason.",
             "title": "How do I approve or reject an exchange?"
           },
           "broker_exchange_list": {
-            "body": "[Exchanges](/broker/exchanges) lists the exchanges in your community. Use the tabs to filter them:\n\n- **All**: every exchange\n- **Pending**: waiting for a broker's approval\n- **Approved**: approved and ready to start\n- **In Progress**: the members are doing the work\n- **Completed**: finished and the hours have moved\n- **Cancelled**: stopped, or rejected by a broker\n- **Disputed**: the members disagree\n\nEach row shows the two members, the listing, the status, the hours and the date. The hours appear once the members have confirmed them.\n\n## The exchange page\n\nPress the view button on a row to open the exchange. It shows:\n\n- **Exchange progress**: where the exchange has got to\n- the **Requester** (the member asking for help) and the **Provider** (the member giving time)\n- any **Risk Tag** on the listing, and whether it needs **Broker approval required** or **Insurance required**\n- **Broker Notes** from the broker who decided on it\n- **History**: each step, such as **Request created**, **Provider confirmed hours** and **Requester confirmed hours**, with who did it and when\n\nPress **Back to Exchanges** to return to the list.",
+            "body": "[Exchanges](/broker/exchanges) lists the exchanges in your community. Use the tabs to filter them:\n\n- **All**: every exchange\n- **Waiting for approval**: waiting for a broker's approval\n- **Approved**: approved and ready to start\n- **In progress**: the members are doing the work\n- **Completed**: finished and the hours have moved\n- **Cancelled**: stopped, or rejected by a broker\n- **Disputed**: the members disagree\n\nEach row shows the two members, the listing, the status, the hours and the date. The hours appear once the members have confirmed them.\n\n## The exchange page\n\nPress the view button on a row to open the exchange. It shows:\n\n- **Exchange progress**: where the exchange has got to\n- the **Requester** (the member asking for help) and the **Provider** (the member giving time)\n- any **Risk Tag** on the listing, and whether it needs **Broker approval required** or **Insurance required**\n- **Broker Notes** from the broker who decided on it\n- **History**: each step, such as **Request created**, **Provider confirmed hours** and **Requester confirmed hours**, with who did it and when\n\nPress **Back to Exchanges** to return to the list.",
             "summary": "What each tab and status means, and what the exchange detail page shows.",
             "title": "Understanding the Exchanges list"
           },
           "broker_exchange_problems": {
-            "body": "Sometimes members disagree about an exchange, or hours are recorded wrongly. Here is what to do.\n\n## Disputed exchanges\n\nAn exchange becomes **Disputed** when:\n\n- the two members confirm very different hours, or\n- a member presses **Report a problem** on the exchange in the phone app, for example because the other person did not turn up. The website does not have this button.\n\nThe members are told a broker will review it. You can see these exchanges under the **Needs action** tab in [Exchanges](/broker/exchanges). While an exchange is disputed, no hours move.\n\n## What to do\n\n1. Open the exchange. It shows the hours agreed when it was requested, the hours each member says, and its **History**.\n2. Contact both members. Listen to each side.\n3. Decide what is fair, then choose one:\n   - **Settle dispute**: choose the hours to pay and write what you decided and why. The hours must stay inside the range the page shows, which is set in Configuration. The time credits move straight away.\n   - **Close with no hours**: use this when the work did not happen. The exchange is cancelled and no time credits move.\n4. Both members can see your note, and both are told.\n5. If the dispute is about behaviour or safety, also follow your community's safeguarding process.\n\nYou cannot settle an exchange you are part of, or one where a member is staff at or above your level. Ask an admin.\n\n## A completed exchange with the wrong hours\n\nOpen the exchange and press **Reverse exchange**, then write why. Both members' balances go back to where they were before the exchange, and a correcting entry is recorded beside the original. If a member has already spent the credits, their balance can go below zero.\n\nTo record the right hours, the members can then make a new exchange.\n\n> Keep corrections rare, fair and explained. Members can see each one and its reason.",
+            "body": "Sometimes members disagree about an exchange, or hours are recorded wrongly. Here is what to do.\n\n## Disputed exchanges\n\nAn exchange becomes **Disputed** when:\n\n- the two members confirm very different hours, or\n- a member presses **Report a problem** on the exchange in the phone app, for example because the other person did not turn up. The website does not have this button.\n\nThe members are told a broker will review it. You can see these exchanges under the **Needs a decision** tab in [Exchanges](/broker/exchanges). While an exchange is disputed, no hours move.\n\n## What to do\n\n1. Open the exchange. It shows the hours agreed when it was requested, the hours each member says, and its **History**.\n2. Contact both members. Listen to each side.\n3. Decide what is fair, then choose one:\n   - **Settle dispute**: choose the hours to pay and write what you decided and why. The hours must stay inside the range the page shows, which is set in Configuration. The time credits move straight away.\n   - **Close with no hours**: use this when the work did not happen. The exchange is cancelled and no time credits move.\n4. Both members can see your note, and both are told.\n5. If the dispute is about behaviour or safety, also follow your community's safeguarding process.\n\nYou cannot settle an exchange you are part of, or one where a member is staff at or above your level. Ask an admin.\n\n## A completed exchange with the wrong hours\n\nOpen the exchange and press **Reverse exchange**, then write why. Both members' balances go back to where they were before the exchange, and a correcting entry is recorded beside the original. If a member has already spent the credits, their balance can go below zero.\n\nTo record the right hours, the members can then make a new exchange.\n\n> Keep corrections rare, fair and explained. Members can see each one and its reason.",
             "summary": "How disputes happen, what the Broker Panel can and cannot do about them, and how to correct mistakes.",
             "title": "What can I do when an exchange goes wrong?"
           },
           "broker_exchange_when_approval": {
-            "body": "An exchange is an agreement between two members to swap time. In some communities a broker must approve an exchange before it can go ahead.\n\n## How it works\n\n1. A member asks to swap time with another member, usually from a listing.\n2. The other member accepts.\n3. At that point the site checks whether a broker needs to approve it.\n4. If so, the exchange waits in [Exchanges](/broker/exchanges) with the status **Pending Broker Approval**. Brokers and admins get a notification.\n\n## What decides it\n\n- **Safeguarding.** If either member chose a safeguarding option that needs broker approval, their exchanges always wait for a broker.\n- **Your community's rules.** An admin can turn on **Broker approval required** in [Configuration](/broker/configuration). With only that setting on, every exchange waits for a broker.\n- **Low-risk exchanges.** If an admin also turns on **Auto-approve low-risk exchanges**, most exchanges go ahead without a broker.\n\nEven with auto-approve on, a broker is still needed when:\n\n- the listing has a **High** or **Critical** risk tag\n- the listing's risk tag says **Broker approval required**\n- the hours are above **Max hours without approval**\n\n## What members see\n\nWhile they wait, both members see that the exchange is waiting for a broker. Nothing else happens until a broker approves or rejects it. Please deal with waiting exchanges promptly, because the members cannot start until you do.",
+            "body": "An exchange is an agreement between two members to swap time. In some communities a broker must approve an exchange before it can go ahead.\n\n## How it works\n\n1. A member asks to swap time with another member, usually from a listing.\n2. The other member accepts.\n3. At that point the site checks whether a broker needs to approve it.\n4. If so, the exchange waits in [Exchanges](/broker/exchanges) with the status **Waiting for approval**. Brokers and admins get a notification.\n\n## What decides it\n\n- **Safeguarding.** If either member chose a safeguarding option that needs broker approval, their exchanges always wait for a broker.\n- **Your community's rules.** An admin can turn on **Broker approval required** in [Broker settings](/broker/configuration). With only that setting on, every exchange waits for a broker.\n- **Low-risk exchanges.** If an admin also turns on **Auto-approve low-risk exchanges**, most exchanges go ahead without a broker.\n\nEven with auto-approve on, a broker is still needed when:\n\n- the listing has a **High** or **Critical** risk tag\n- the listing's risk tag says **Broker approval required**\n- the hours are above **Max hours without approval**\n\n## What members see\n\nWhile they wait, both members see that the exchange is waiting for a broker. Nothing else happens until a broker approves or rejects it. Please deal with waiting exchanges promptly, because the members cannot start until you do.",
             "summary": "Which exchanges wait for a broker, and what members see while they wait.",
             "title": "When does an exchange need a broker's approval?"
           },
           "broker_insurance": {
-            "body": "Some activities need insurance. [Insurance](/broker/insurance) keeps a record of members' insurance.\n\nIf an admin has turned on **Insurance tracking enabled**, members can add their own insurance details from the **Privacy** tab in their **Settings**. These arrive here for you to check. If it is off, members cannot add them, and you add certificates for them here.\n\n## Adding a certificate for a member\n\n1. Press **Add Certificate**.\n2. Use **Search Member** to find the member.\n3. Choose the **Insurance Type**, such as **Public Liability** or **Professional Indemnity**.\n4. Fill in **Provider Name**, **Policy Number**, **Coverage Amount**, **Start Date** and **Expiry Date**.\n5. Press **Add Certificate**.\n\n## Checking a certificate\n\n- Use the tabs to see **Pending**, **Submitted**, **Verified**, **Expiring Soon**, **Expired** and **Rejected** certificates.\n- Press the view button to see the details. If a file is attached, press **View Certificate File**.\n- Press the verify button when you have checked it.\n- Press the reject button if it is not acceptable, and give a reason.\n- Press the delete button to remove a record you added in error.\n\n## Why it matters\n\nIf a listing's risk tag says **Insurance required**, the member who posted the listing needs a verified insurance certificate that has not expired. This is the member shown as **Provider** on the exchange. Without one, nobody can start an exchange on that listing. This check applies even when **Insurance tracking enabled** is off.\n\n> Follow your community's rules on what counts as acceptable insurance. Do not collect more personal information than you need.",
+            "body": "Some activities need insurance. [Insurance certificates](/broker/insurance) keeps a record of members' insurance.\n\nIf an admin has turned on **Insurance tracking enabled**, members can add their own insurance details from the **Privacy** tab in their **Settings**. These arrive here for you to check. If it is off, members cannot add them, and you add certificates for them here.\n\n## Adding a certificate for a member\n\n1. Press **Add Certificate**.\n2. Use **Search Member** to find the member.\n3. Choose the **Insurance Type**, such as **Public Liability** or **Professional Indemnity**.\n4. Fill in **Provider Name**, **Policy Number**, **Coverage Amount**, **Start Date** and **Expiry Date**.\n5. Press **Add Certificate**.\n\n## Checking a certificate\n\n- Use the tabs to see **Pending**, **Submitted**, **Verified**, **Expiring Soon**, **Expired** and **Rejected** certificates.\n- Press the view button to see the details. If a file is attached, press **View Certificate File**.\n- Press the verify button when you have checked it.\n- Press the reject button if it is not acceptable, and give a reason.\n- Press the delete button to remove a record you added in error.\n\n## Why it matters\n\nIf a listing's risk tag says **Insurance required**, the member who posted the listing needs a verified insurance certificate that has not expired. This is the member shown as **Provider** on the exchange. Without one, nobody can start an exchange on that listing. This check applies even when **Insurance tracking enabled** is off.\n\n> Follow your community's rules on what counts as acceptable insurance. Do not collect more personal information than you need.",
             "summary": "Add, check, verify or reject members' insurance records.",
             "title": "Recording insurance certificates"
           },
           "broker_match_approvals": {
-            "body": "[Match Approvals](/broker/match-approvals) holds suggested matches between a member and a listing that need a broker's check first. Neither member is told about the match until a broker approves it.\n\n## Which matches come here\n\nA match comes here when either member:\n\n- chose a safeguarding option with **Require coordinator approval** or **Restrict matching**, or\n- is under monitoring.\n\nAll other matches are shown to members straight away. When nothing is waiting, the page shows **No matches waiting**.\n\nBrokers, coordinators and admins get a notification when a match arrives. For one member, at most five new matches are sent at a time. The rest follow later.\n\n## Approving or rejecting\n\n- If you approve, both members are told. The member sees the listing among their matches, and the listing's owner is told who may get in touch.\n- If you reject, you must give a reason. Neither member is told, because neither of them ever saw the match. The same match is not sent again.\n\nYour decision and your name are recorded.\n\n## The page itself\n\nThe page has the tabs **Pending**, **Approved**, **Rejected** and **All**, and counters such as **Pending Review**. You cannot act on a match you are part of.\n\n> Agree with your safeguarding lead what to check before you approve a match.",
-            "summary": "Match Approvals holds suggested matches that a broker must check before either member is told about them.",
-            "title": "What is the Match Approvals page?"
+            "body": "[Suggested matches](/broker/match-approvals) holds suggested matches between a member and a listing that need a broker's check first. Neither member is told about the match until a broker approves it.\n\n## Which matches come here\n\nA match comes here when either member:\n\n- chose a safeguarding option with **Require coordinator approval** or **Restrict matching**, or\n- is under monitoring.\n\nAll other matches are shown to members straight away. When nothing is waiting, the page shows **No matches waiting**.\n\nBrokers, coordinators and admins get a notification when a match arrives. For one member, at most five new matches are sent at a time. The rest follow later.\n\n## Approving or rejecting\n\n- If you approve, both members are told. The member sees the listing among their matches, and the listing's owner is told who may get in touch.\n- If you reject, you must give a reason. Neither member is told, because neither of them ever saw the match. The same match is not sent again.\n\nYour decision and your name are recorded.\n\n## The page itself\n\nThe page has the tabs **Waiting for approval**, **Approved**, **Rejected** and **All**. A number on a tab shows how many matches are in it. You cannot act on a match you are part of.\n\n> Agree with your safeguarding lead what to check before you approve a match.",
+            "summary": "This page holds suggested matches that a broker must check before either member is told about them.",
+            "title": "What is the Suggested matches page?"
           },
           "broker_risk_tags": {
-            "body": "A risk tag marks a listing that needs extra care, for example work at height or help with money. The tag is on the listing, not on the member.\n\n## Tagging a listing\n\n1. Open [Risk Tags](/broker/risk-tags).\n2. Press **Tag Listing**.\n3. In **Search Listing**, type part of the listing title and choose it.\n4. Choose a **Risk Level**: **Low**, **Medium**, **High** or **Critical**.\n5. Choose a **Risk Category**, such as **Safeguarding**, **Financial**, **Health & Safety**, **Legal**, **Reputation** or **Potential Fraud**.\n6. Add **Internal Notes** for other brokers if useful.\n7. Turn on **Broker approval required** if exchanges for this listing should wait for a broker. See the limits below.\n8. Turn on **Insurance required** if the member who posted the listing must have insurance on record.\n9. Press **Create Tag**.\n\nBrokers and admins are notified when a listing is tagged **High** or **Critical**.\n\n## What a tag changes\n\n- **Insurance required** always applies. No exchange on the listing can start until the member who posted it has a verified insurance certificate that has not expired.\n- **Broker approval required**, and a **High** or **Critical** level, only change approval when an admin has turned on both **Broker approval required** and **Auto-approve low-risk exchanges** in Configuration. Otherwise every exchange already waits for a broker, or none does.\n- If your community copies messages about high-risk listings, messages about **High** and **Critical** listings are copied to brokers.\n\n## Changing or removing a tag\n\nThe tabs filter tags by level. Use the edit button on a row to change a tag and press **Update Tag**. Use the remove button to delete it.",
+            "body": "A risk tag marks a listing that needs extra care, for example work at height or help with money. The tag is on the listing, not on the member.\n\n## Tagging a listing\n\n1. Open [Listing risk tags](/broker/risk-tags).\n2. Press **Tag Listing**.\n3. In **Search Listing**, type part of the listing title and choose it.\n4. Choose a **Risk Level**: **Low**, **Medium**, **High** or **Critical**.\n5. Choose a **Risk Category**, such as **Safeguarding**, **Financial**, **Health & Safety**, **Legal**, **Reputation** or **Potential Fraud**.\n6. Add **Internal Notes** for other brokers if useful.\n7. Turn on **Broker approval required** if exchanges for this listing should wait for a broker. See the limits below.\n8. Turn on **Insurance required** if the member who posted the listing must have insurance on record.\n9. Press **Create Tag**.\n\nBrokers and admins are notified when a listing is tagged **High** or **Critical**.\n\n## What a tag changes\n\n- **Insurance required** always applies. No exchange on the listing can start until the member who posted it has a verified insurance certificate that has not expired.\n- **Broker approval required**, and a **High** or **Critical** level, only change approval when an admin has turned on both **Broker approval required** and **Auto-approve low-risk exchanges** in Configuration. Otherwise every exchange already waits for a broker, or none does.\n- If your community copies messages about high-risk listings, messages about **High** and **Critical** listings are copied to brokers.\n\n## Changing or removing a tag\n\nThe tabs filter tags by level. Use the edit button on a row to change a tag and press **Update Tag**. Use the remove button to delete it.",
             "summary": "Risk tags mark listings to watch, and can require insurance or, in some set-ups, broker approval.",
             "title": "Tagging a listing that needs extra care"
           }
@@ -50581,7 +50546,7 @@ export default interface Resources {
       "broker_good_practice": {
         "articles": {
           "broker_daily_routine": {
-            "body": "A few minutes each day keeps members safe and stops work piling up. This is a suggested routine. Adapt it to your community.\n\n1. Open the [Broker Dashboard](/broker) and read **What needs you now**.\n2. Deal with safeguarding first. Check **Safeguarding Alerts**, then flagged and unreviewed items in [Messages](/broker/messages).\n3. Check your notifications for coordinator help requests. Reply to each one.\n4. Approve or reject exchanges waiting in [Exchanges](/broker/exchanges). Members cannot start until you do.\n5. Approve new members waiting in [Members](/broker/members).\n6. Check [Reports](/broker/moderation/reports) and the [Content Queue](/broker/moderation/queue).\n7. Answer vetting review requests in [Vetting confirmations](/broker/vetting).\n8. Skim **Recent Activity** to see what other brokers have done.\n\n## Weekly\n\n- Look at [User Monitoring](/broker/monitoring). Decide whether each member still needs it, especially those in **Expiring within 7 days**.\n- Look at the **Never logged in** and **Onboarding incomplete** tabs in [Members](/broker/members). Offer help.\n- Check [Insurance](/broker/insurance) for certificates that are **Expiring Soon**.\n\n## Sharing the work\n\nIf several brokers share the work, agree who covers which days. Use member notes so everyone knows what has been done.",
+            "body": "A few minutes each day keeps members safe and stops work piling up. This is a suggested routine. Adapt it to your community.\n\n1. Open the [Broker Dashboard](/broker) and read **What needs you now**.\n2. Deal with safeguarding first. Check **Safeguarding alerts**, then flagged and unreviewed items in [Message checks](/broker/messages).\n3. Check your notifications for coordinator help requests. Reply to each one.\n4. Approve or reject exchanges waiting in [Exchanges](/broker/exchanges). Members cannot start until you do.\n5. Approve new members waiting in [Members](/broker/members).\n6. Check [Member reports](/broker/moderation/reports) and the [Posts to approve](/broker/moderation/queue).\n7. Answer vetting review requests in [Vetting confirmations](/broker/vetting).\n8. Skim **Recent activity** to see what other brokers have done.\n\n## Weekly\n\n- Look at [Monitored members](/broker/monitoring). Decide whether each member still needs it, especially those in **Expiring within 7 days**.\n- Look at the **Never signed in** and **Welcome steps not finished** tabs in [Members](/broker/members). Offer help.\n- Check [Insurance certificates](/broker/insurance) for certificates that are **Expiring Soon**.\n\n## Sharing the work\n\nIf several brokers share the work, agree who covers which days. Use member notes so everyone knows what has been done.",
             "summary": "A short checklist to keep on top of the work without missing anything urgent.",
             "title": "A simple daily routine for brokers"
           },
@@ -50596,12 +50561,12 @@ export default interface Resources {
             "title": "Keeping members' information private"
           },
           "broker_safe_exchanges": {
-            "body": "Most exchanges are simple and safe. A little planning helps keep them that way.\n\n## Advice to share with members\n\n- Meet somewhere public for a first meeting, or have someone else there.\n- Tell a friend or family member where you are going and when you expect to be back.\n- Keep money, bank cards and passwords out of exchanges.\n- Trust your feelings. It is fine to say no, or to stop an exchange that feels wrong.\n- Tell a broker if anything worries you.\n\n## Extra care for some activities\n\nSome activities carry more risk. Examples are visiting someone's home, driving, work with tools, or support for someone who may be at risk. For these:\n\n- Tag the listing in [Risk Tags](/broker/risk-tags), so other brokers know to take care.\n- Ask for insurance with **Insurance required** where your community's rules say so.\n- Record vetting decisions for members who work with people at risk.\n- Consider arranging the first meeting yourself.\n\nA tag on its own does not always make exchanges wait for a broker. **Broker approval required** on a tag only takes effect when an admin has turned on both **Broker approval required** and **Auto-approve low-risk exchanges** in Configuration. Check with your admin how your community is set up.\n\n## Protected members\n\nSome members have asked for extra protection. Respect their choices, even if it makes arranging help slower. Never pass on their contact details without their agreement.\n\n> If you think someone is in danger, contact the emergency services first.",
+            "body": "Most exchanges are simple and safe. A little planning helps keep them that way.\n\n## Advice to share with members\n\n- Meet somewhere public for a first meeting, or have someone else there.\n- Tell a friend or family member where you are going and when you expect to be back.\n- Keep money, bank cards and passwords out of exchanges.\n- Trust your feelings. It is fine to say no, or to stop an exchange that feels wrong.\n- Tell a broker if anything worries you.\n\n## Extra care for some activities\n\nSome activities carry more risk. Examples are visiting someone's home, driving, work with tools, or support for someone who may be at risk. For these:\n\n- Tag the listing in [Listing risk tags](/broker/risk-tags), so other brokers know to take care.\n- Ask for insurance with **Insurance required** where your community's rules say so.\n- Record vetting decisions for members who work with people at risk.\n- Consider arranging the first meeting yourself.\n\nA tag on its own does not always make exchanges wait for a broker. **Broker approval required** on a tag only takes effect when an admin has turned on both **Broker approval required** and **Auto-approve low-risk exchanges** in Configuration. Check with your admin how your community is set up.\n\n## Protected members\n\nSome members have asked for extra protection. Respect their choices, even if it makes arranging help slower. Never pass on their contact details without their agreement.\n\n> If you think someone is in danger, contact the emergency services first.",
             "summary": "Practical safety advice for members, and the tools brokers can use when an exchange carries more risk.",
             "title": "Helping members stay safe"
           },
           "broker_welcoming_members": {
-            "body": "The first few weeks decide whether a new member stays. A friendly broker makes a big difference.\n\n## When you approve someone\n\n- Approve new members promptly. People lose interest if they wait.\n- Send a short welcome message. Press **Send Message** from their row in [Members](/broker/members).\n- Offer a phone call or a meeting if they would like help getting started.\n\n## Helping them take their first step\n\n- Help them add a clear profile and one or two listings: something they can offer and something they would like.\n- Suggest a simple first exchange with a friendly, experienced member.\n- Tell them how hours work: one hour given earns one hour to spend.\n\n## Following up\n\n- Use [Onboarding](/broker/onboarding) to see where new members get stuck.\n- Check the **Onboarding incomplete** and **Never logged in** tabs in [Members](/broker/members) every week.\n- Add a note with the category **Onboarding** when you contact someone, so other brokers know.\n\n> Do not rush people. Some members take a while to feel confident. A kind word often matters more than any feature.",
+            "body": "The first few weeks decide whether a new member stays. A friendly broker makes a big difference.\n\n## When you approve someone\n\n- Approve new members promptly. People lose interest if they wait.\n- Send a short welcome message. Press **Send Message** from their row in [Members](/broker/members).\n- Offer a phone call or a meeting if they would like help getting started.\n\n## Helping them take their first step\n\n- Help them add a clear profile and one or two listings: something they can offer and something they would like.\n- Suggest a simple first exchange with a friendly, experienced member.\n- Tell them how hours work: one hour given earns one hour to spend.\n\n## Following up\n\n- Use [New member progress](/broker/onboarding) to see where new members get stuck.\n- Check the **Welcome steps not finished** and **Never signed in** tabs in [Members](/broker/members) every week.\n- Add a note with the category **Onboarding** when you contact someone, so other brokers know.\n\n> Do not rush people. Some members take a while to feel confident. A kind word often matters more than any feature.",
             "summary": "A warm start helps new members make their first exchange.",
             "title": "Welcoming new members"
           }
@@ -50643,7 +50608,7 @@ export default interface Resources {
             "title": "How do I correct a member's time balance?"
           },
           "broker_approve_new_members": {
-            "body": "If your community checks people before they can take part, each new registration waits for approval. You approve them from **Members** or **Onboarding**.\n\n1. Open [Members](/broker/members).\n2. Press the **Pending** tab. The red number on **Members** in the menu shows how many are waiting.\n3. Find the person. Press the three-dot menu at the end of their row and choose **View details** to check their details first.\n4. Press the three-dot menu again and choose **Approve**.\n5. Press **Approve** again to confirm.\n\nThe member can now sign in and use the site. They get a welcome email and a notification.\n\n## Starting hours\n\nWhen you approve someone, the site adds starting hours to their balance. This is 5 hours unless an admin has set a different starting balance. If your admin has set it to 0, no hours are added. Each member only ever gets their starting hours once.\n\n## Approving several people at once\n\n1. On the **Pending** tab, tick the box next to each person.\n2. Press **Approve selected**.\n\nStarting hours are added for each person you approve this way too. Use this only when you have already checked each person.\n\n## If you do not want to approve someone\n\nThere is no reject button in the Broker Panel. Leave the person pending and talk to your admin or your community's lead about what to do. Do not approve someone to \"sort it out later\".\n\n> The [Onboarding](/broker/onboarding) page has the same pending list under **Pending Approvals**, with an **Approve** option in each row's menu.",
+            "body": "If your community checks people before they can take part, each new registration waits for approval. You approve them from **Members** or **New member progress**.\n\n1. Open [Members](/broker/members).\n2. Press the **Waiting for approval** tab. The red number on **Members** in the menu shows how many are waiting.\n3. Find the person. Press the three-dot menu at the end of their row and choose **View details** to check their details first.\n4. Press the three-dot menu again and choose **Approve**.\n5. Press **Approve** again to confirm.\n\nThe member can now sign in and use the site. They get a welcome email and a notification.\n\n## Starting hours\n\nWhen you approve someone, the site adds starting hours to their balance. This is 5 hours unless an admin has set a different starting balance. If your admin has set it to 0, no hours are added. Each member only ever gets their starting hours once.\n\n## Approving several people at once\n\n1. On the **Waiting for approval** tab, tick the box next to each person.\n2. Press **Approve selected**.\n\nStarting hours are added for each person you approve this way too. Use this only when you have already checked each person.\n\n## If you do not want to approve someone\n\nThere is no reject button in the Broker Panel. Leave the person pending and talk to your admin or your community's lead about what to do. Do not approve someone to \"sort it out later\".\n\n> The [New member progress](/broker/onboarding) page has the same pending list under **Waiting for approval**, with an **Approve** option in each row's menu.",
             "summary": "New registrations wait in the Pending tab until a broker or admin approves them.",
             "title": "How do I approve a new member?"
           },
@@ -50658,17 +50623,17 @@ export default interface Resources {
             "title": "Keeping private notes about a member"
           },
           "broker_members_list": {
-            "body": "[Members](/broker/members) lists everyone in your community. Across the top you see **Total members**, **Pending approval**, **Active members** and **Suspended members**. Press a counter to open that list.\n\n## Tabs\n\n- **All**: everyone\n- **Pending**: waiting for approval\n- **Active**: approved members who can use the site\n- **Suspended**: members who cannot sign in at the moment\n- **Never logged in**: approved members who have not signed in yet\n- **Onboarding incomplete**: members who have not finished the setup steps\n\nThe last two tabs are a good place to start when you want to offer help to people who are stuck.\n\n## Searching and filtering\n\n- Type a name or email into **Search members...**.\n- Use **Filter by role** to show only members, brokers or admins, for example.\n\n## What each row shows\n\nEach row shows the member's name, status, role, whether their email is verified, their balance in hours, when they were last active and when they joined.\n\n## Row actions\n\nPress the three-dot menu at the end of a row to:\n\n- **View details**: open the member's full record\n- **View Profile**: see their public profile in a new tab\n- **Send Message**: start a message to them in a new tab\n- **Notes**: read or add private notes\n- **Check Vetting**: open their vetting record\n- **Approve**, **Suspend** or **Reactivate**, depending on their status",
+            "body": "[Members](/broker/members) lists everyone in your community. A number on a tab shows how many members are in it.\n\n## Tabs\n\n- **All**: everyone\n- **Waiting for approval**: new members you have not approved yet\n- **Active**: approved members who can use the site\n- **Suspended**: members who cannot sign in at the moment\n- **Never signed in**: approved members who have not signed in yet\n- **Welcome steps not finished**: members who have not finished the setup steps\n\nThe last two tabs are a good place to start when you want to offer help to people who are stuck.\n\n## Searching and filtering\n\n- Type a name or email into **Search members...**.\n- Use **Filter by role** to show only members, brokers or admins, for example.\n\n## What each row shows\n\nEach row shows the member's name, status, role, whether their email is verified, their balance in hours, when they were last active and when they joined.\n\n## Row actions\n\nPress the three-dot menu at the end of a row to:\n\n- **View details**: open the member's full record\n- **View Profile**: see their public profile in a new tab\n- **Send Message**: start a message to them in a new tab\n- **Notes**: read or add private notes\n- **Check Vetting**: open their vetting record\n- **Approve**, **Suspend** or **Reactivate**, depending on their status",
             "summary": "Search the member list and use tabs to find people who are pending, suspended or have never signed in.",
             "title": "Finding and filtering members"
           },
           "broker_supporting_members": {
-            "body": "Some members find websites confusing or stressful. You can make a big difference by being patient and practical.\n\n## Ways to help\n\n- Use the **Never logged in** and **Onboarding incomplete** tabs in [Members](/broker/members) to find people who may be stuck. Offer a phone call.\n- Sit with the member, or talk them through each step on the phone. Let them press the buttons themselves where they can.\n- Send a password reset or a verification email for them from their record.\n- With their permission, correct small mistakes in their profile, such as a spelling error in their name.\n- Suggest the accessible version of the site if your community offers one. It is simpler and works well with screen readers.\n- Write a note on their record about what helps them, such as \"prefers phone calls\".\n\n## What you cannot do for them\n\nThe Broker Panel does not let you post listings, send messages or record exchanges as if you were the member. Every action a member takes must come from their own account.\n\nNever ask for a member's password, and never sign in as them.\n\n## Family members and carers\n\nA member can link their account with a family member or carer they trust. The member does this themselves from the **Linked** tab in their **Settings**. The linked person can then help in the ways the member agrees to. This is the member's choice. Brokers cannot set it up for them.",
+            "body": "Some members find websites confusing or stressful. You can make a big difference by being patient and practical.\n\n## Ways to help\n\n- Use the **Never signed in** and **Welcome steps not finished** tabs in [Members](/broker/members) to find people who may be stuck. Offer a phone call.\n- Sit with the member, or talk them through each step on the phone. Let them press the buttons themselves where they can.\n- Send a password reset or a verification email for them from their record.\n- With their permission, correct small mistakes in their profile, such as a spelling error in their name.\n- Suggest the accessible version of the site if your community offers one. It is simpler and works well with screen readers.\n- Write a note on their record about what helps them, such as \"prefers phone calls\".\n\n## What you cannot do for them\n\nThe Broker Panel does not let you post listings, send messages or record exchanges as if you were the member. Every action a member takes must come from their own account.\n\nNever ask for a member's password, and never sign in as them.\n\n## Family members and carers\n\nA member can link their account with a family member or carer they trust. The member does this themselves from the **Linked** tab in their **Settings**. The linked person can then help in the ways the member agrees to. This is the member's choice. Brokers cannot set it up for them.",
             "summary": "Practical ways to help members who struggle with the website, and what the site does not let you do for them.",
             "title": "Supporting members who find technology hard"
           },
           "broker_suspend_member": {
-            "body": "Suspending a member stops them signing in and taking part. It is reversible.\n\n## Suspending\n\n1. Open [Members](/broker/members) and find the member.\n2. Press the three-dot menu on their row and choose **Suspend**.\n3. Read the message and press **Suspend** to confirm.\n\nThe member gets a notification. Write a note on their record explaining why, so other brokers understand.\n\n## Suspending several members\n\nTick the box next to each person and press **Suspend selected**.\n\n## Reactivating\n\n1. Press the **Suspended** tab.\n2. Press the three-dot menu on the member's row and choose **Reactivate**.\n\nThe member can sign in again and is told their account is active. Press **Reactivate** only once: each press sends them another message.\n\n## Limits\n\n- You can only suspend and reactivate ordinary members. You cannot change another broker's or an admin's account.\n- If an admin banned a member, only an admin can reactivate them.\n\n> Suspension is a serious step. For a safeguarding concern, follow your community's safeguarding process first. You may only need to turn off the member's messaging, which you can do from **User Monitoring**.",
+            "body": "Suspending a member stops them signing in and taking part. It is reversible.\n\n## Suspending\n\n1. Open [Members](/broker/members) and find the member.\n2. Press the three-dot menu on their row and choose **Suspend**.\n3. Read the message and press **Suspend** to confirm.\n\nThe member gets a notification. Write a note on their record explaining why, so other brokers understand.\n\n## Suspending several members\n\nTick the box next to each person and press **Suspend selected**.\n\n## Reactivating\n\n1. Press the **Suspended** tab.\n2. Press the three-dot menu on the member's row and choose **Reactivate**.\n\nThe member can sign in again and is told their account is active. Press **Reactivate** only once: each press sends them another message.\n\n## Limits\n\n- You can only suspend and reactivate ordinary members. You cannot change another broker's or an admin's account.\n- If an admin banned a member, only an admin can reactivate them.\n\n> Suspension is a serious step. For a safeguarding concern, follow your community's safeguarding process first. You may only need to turn off the member's messaging, which you can do from **Monitored members**.",
             "summary": "Suspending stops a member signing in. You can reactivate them later.",
             "title": "Suspending or reactivating a member"
           }
@@ -50684,17 +50649,17 @@ export default interface Resources {
             "title": "Removing comments and reviews"
           },
           "broker_content_queue": {
-            "body": "The [Content Queue](/broker/moderation/queue) holds content that is waiting for a moderator before members can see it.\n\n## What arrives here\n\n- **Posts that look like spam.** The site hides a post automatically if it looks like spam, for example very long links or lots of capital letters. These posts arrive with the status **Flagged**.\n- **Events waiting for review.** If your community reviews new events, they wait here. An admin must approve events.\n\nThe list shows pending items when it opens. To see flagged posts, change the status filter at the top of the list to flagged.\n\n## Reviewing a post\n\n1. Read the item in the list.\n2. Press the approve button if it is fine. The post becomes visible to members.\n3. Press the reject button if it breaks the rules. Type a **Rejection Reason** and press **Reject Content**. The post stays hidden.\n\nThe counters at the top show how many items are **Pending Review**, **Flagged**, **Approved** and **Rejected**. Press **Refresh** to update the list.\n\n> You cannot review content you wrote yourself. Another broker or an admin must do it.",
+            "body": "The [Posts to approve](/broker/moderation/queue) holds content that is waiting for a moderator before members can see it.\n\n## What arrives here\n\n- **Posts that look like spam.** The site hides a post automatically if it looks like spam, for example very long links or lots of capital letters. These posts arrive with the status **Flagged**.\n- **Events waiting for review.** If your community reviews new events, they wait here. An admin must approve events.\n\nThe list shows pending items when it opens. To see flagged posts, change the status filter at the top of the list to flagged.\n\n## Reviewing a post\n\n1. Read the item in the list.\n2. Press the approve button if it is fine. The post becomes visible to members.\n3. Press the reject button if it breaks the rules. Type a **Rejection Reason** and press **Reject Content**. The post stays hidden.\n\nThe counters at the top show how many items are **Pending Review**, **Flagged**, **Approved** and **Rejected**. Press **Refresh** to update the list.\n\n> You cannot review content you wrote yourself. Another broker or an admin must do it.",
             "summary": "Posts that look like spam are held back for review. Approve them or reject them with a reason.",
-            "title": "Using the Content Queue"
+            "title": "Using the Posts to approve page"
           },
           "broker_feed_posts": {
-            "body": "[Feed Posts](/broker/moderation/feed) lists everything in your community's feed: posts, listings, events, polls and more.\n\n## Finding an item\n\n- Type in **Search Posts or Users...** to search by words or by the author's name.\n- Use **Post Type** to show one kind of item. Press **Apply**, or **Clear** to reset.\n\nEach row shows the author, the content, the type, whether it is **Visible** or **Hidden**, and when it was created.\n\n## Hiding an item\n\nPress **Hide**, then **Hide Post** to confirm. Members can no longer see it in the feed. The author gets a notification that their post was hidden. There is no button to show it again, so be sure first.\n\n## Deleting an item\n\nPress **Delete**, then **Delete Post** to confirm. There is no button to undo this. The item leaves the feed, and its likes and comments are deleted for good. The site keeps a record of a deleted post, but nobody can see it.\n\nThe author gets a notification and an email. The email says their post was removed because it broke the community's standards. It offers a link to contact support if they think it was a mistake. It does not include a reason from you, so tell the author yourself if they need to know more.\n\nFor a listing or an event, **Delete** removes it from the feed only. The listing or event itself stays.\n\n> You cannot hide or delete something you wrote. If a post only needs a small change, it is often kinder to message the author first.",
+            "body": "[Feed posts](/broker/moderation/feed) lists everything in your community's feed: posts, listings, events, polls and more.\n\n## Finding an item\n\n- Type in **Search Posts or Users...** to search by words or by the author's name.\n- Use **Post Type** to show one kind of item. Press **Apply**, or **Clear** to reset.\n\nEach row shows the author, the content, the type, whether it is **Visible** or **Hidden**, and when it was created.\n\n## Hiding an item\n\nPress **Hide**, then **Hide Post** to confirm. Members can no longer see it in the feed. The author gets a notification that their post was hidden. There is no button to show it again, so be sure first.\n\n## Deleting an item\n\nPress **Delete**, then **Delete Post** to confirm. There is no button to undo this. The item leaves the feed, and its likes and comments are deleted for good. The site keeps a record of a deleted post, but nobody can see it.\n\nThe author gets a notification and an email. The email says their post was removed because it broke the community's standards. It offers a link to contact support if they think it was a mistake. It does not include a reason from you, so tell the author yourself if they need to know more.\n\nFor a listing or an event, **Delete** removes it from the feed only. The listing or event itself stays.\n\n> You cannot hide or delete something you wrote. If a post only needs a small change, it is often kinder to message the author first.",
             "summary": "Remove posts and other items from the community feed.",
             "title": "Hiding or deleting feed posts"
           },
           "broker_reports": {
-            "body": "Members can report content that worries them, such as a post, comment, listing, event or review. Reports arrive in [Reports](/broker/moderation/reports). Brokers and admins get a notification when a new report arrives.\n\n## Reading a report\n\n1. Open [Reports](/broker/moderation/reports). The counters show **Total Reports**, **Pending**, **Resolved** and **Dismissed**.\n2. Use **Status** and **Content Type** to filter, then press **Apply**.\n3. Press **View details** on a report. You see who reported it, the reported item and its author, and the reason.\n\n## Closing a report\n\n- **Resolve**: you agree there was a problem and you have dealt with it. The person who reported it is told.\n- **Dismiss**: you looked at it and no action is needed. The person who reported it gets a neutral message.\n\nEach asks you to confirm.\n\n## Resolving does not remove anything\n\nResolving or dismissing a report only closes the report. It does not change the reported content. If content should go, remove it yourself from **Feed Posts**, **Comments** or **Reviews**.\n\nIf the reported item is deleted completely, the site can no longer tell who owned it. Only an admin can then close that report. Deleting a comment removes it completely. So for a report about a comment, resolve the report first, then delete the comment.\n\n> You cannot close a report you made, a report about you, or a report about something that is yours, such as your post, listing or comment, or a review you wrote or received. Leave those to another broker or an admin.",
+            "body": "Members can report content that worries them, such as a post, comment, listing, event or review. Reports arrive in [Member reports](/broker/moderation/reports). Brokers and admins get a notification when a new report arrives.\n\n## Reading a report\n\n1. Open [Member reports](/broker/moderation/reports). The counters show **Total Reports**, **Pending**, **Resolved** and **Dismissed**.\n2. Use **Status** and **Content Type** to filter, then press **Apply**.\n3. Press **View details** on a report. You see who reported it, the reported item and its author, and the reason.\n\n## Closing a report\n\n- **Resolve**: you agree there was a problem and you have dealt with it. The person who reported it is told.\n- **Dismiss**: you looked at it and no action is needed. The person who reported it gets a neutral message.\n\nEach asks you to confirm.\n\n## Resolving does not remove anything\n\nResolving or dismissing a report only closes the report. It does not change the reported content. If content should go, remove it yourself from **Feed posts**, **Comments** or **Reviews**.\n\nIf the reported item is deleted completely, the site can no longer tell who owned it. Only an admin can then close that report. Deleting a comment removes it completely. So for a report about a comment, resolve the report first, then delete the comment.\n\n> You cannot close a report you made, a report about you, or a report about something that is yours, such as your post, listing or comment, or a review you wrote or received. Leave those to another broker or an admin.",
             "summary": "Read reports that members make about content, then resolve or dismiss them.",
             "title": "Dealing with members' reports"
           }
@@ -50705,12 +50670,12 @@ export default interface Resources {
       "broker_reports": {
         "articles": {
           "broker_figures_and_records": {
-            "body": "The Broker Panel shows counts and records to help you plan your work. It does not have downloads or exports. If you need a report for funders or your committee, ask your admin.\n\n## Counts\n\n- The [Broker Dashboard](/broker) shows what is waiting across the whole panel.\n- Most pages have counters at the top. For example, [Members](/broker/members) shows **Total members**, **Pending approval**, **Active members** and **Suspended members**.\n- [Onboarding](/broker/onboarding) shows how new members progress and how many register each month.\n- The red numbers in the menu show waiting work, updated about once a minute.\n\n## Activity history\n\n**Recent Activity** on the dashboard lists the 20 latest exchange approvals, message reviews, risk tags, monitoring changes, Broker Panel setting changes and insurance records, with who did each and when. It does not show member approvals or suspensions, content moderation, vetting or safeguarding changes.\n\n## Permanent records\n\n- [Review Archive](/broker/archives): read-only records of message reviews\n- Member notes: on each member's record\n- Exchange **History**: on each exchange page\n- Vetting decisions: in [Vetting confirmations](/broker/vetting)\n\n## Figures that could not load\n\nIf a counter shows a dash, or you see **Some numbers couldn't be loaded**, press **Refresh**. A dash means the number could not be loaded. It does not mean zero.",
+            "body": "The Broker Panel shows counts and records to help you plan your work. It does not have downloads or exports. If you need a report for funders or your committee, ask your admin.\n\n## Counts\n\n- The [Broker Dashboard](/broker) shows what is waiting across the whole panel.\n- Most pages show a number on each tab. For example, [Members](/broker/members) shows how many members are waiting for approval, active and suspended.\n- [New member progress](/broker/onboarding) shows how new members progress and how many register each month.\n- The red numbers in the menu show waiting work, updated about once a minute.\n\n## Activity history\n\n**Recent activity** on the dashboard lists the 20 latest exchange approvals, message reviews, risk tags, monitoring changes, Broker Panel setting changes and insurance records, with who did each and when. It does not show member approvals or suspensions, content moderation, vetting or safeguarding changes.\n\n## Permanent records\n\n- [Past message checks](/broker/archives): read-only records of message reviews\n- Member notes: on each member's record\n- Exchange **History**: on each exchange page\n- Vetting decisions: in [Vetting confirmations](/broker/vetting)\n\n## Figures that could not load\n\nIf a counter shows a dash, or you see **Some numbers couldn't be loaded**, press **Refresh**. A dash means the number could not be loaded. It does not mean zero.",
             "summary": "Where to find counts, activity history and permanent records in the Broker Panel.",
             "title": "What figures and records can brokers see?"
           },
           "broker_onboarding_funnel": {
-            "body": "[Onboarding](/broker/onboarding) shows how new members are getting on. It helps you see where people get stuck, so you can offer help.\n\n## The counters\n\n- **Registered**: how many people have signed up, compared with last month\n- **Overall conversion**: the share of registered people who reached the last step, **Repeat User**\n- **Pending approvals**: people waiting for approval\n- **Biggest drop-off**: the step where most people stop\n\n## The Onboarding Funnel\n\nThe funnel shows how many members reached each step:\n\n1. **Registered**\n2. **Email Verified**\n3. **Profile Complete**\n4. **First Listing**\n5. **First Exchange**\n6. **Repeat User**\n\nA big drop between two steps shows where people need help. For example, many people who verify their email but never complete their profile may need a welcome call.\n\n## Registrations Trend\n\nThis chart shows new registrations each month for the last six months.\n\n## Pending Approvals\n\nAt the bottom is the list of people waiting for approval. Use the three-dot menu on a row to **Approve** them or **View Profile**.",
+            "body": "[New member progress](/broker/onboarding) shows how new members are getting on. It helps you see where people get stuck, so you can offer help.\n\n## Waiting for approval\n\nAt the top is the list of people waiting for approval. Press **Approve** on a row to let them in.\n\n## The counters\n\n- **Signed up**: how many people have signed up, compared with last month\n- **Reached the last step**: the share of registered people who reached the last step, **Two or more exchanges**\n- **Where most people stop**: the share of people who go no further, and the step they stop before\n\n## How far new members have got\n\nThis shows how many members reached each step:\n\n1. **Signed up**\n2. **Email confirmed**\n3. **Profile filled in**\n4. **First offer or request**\n5. **First exchange**\n6. **Two or more exchanges**\n\nA big drop between two steps shows where people need help. For example, many people who verify their email but never complete their profile may need a welcome call.\n\n## New members each month\n\nThis chart shows new registrations each month for the last six months.",
             "summary": "The Onboarding page shows how far new members get, from registering to their first exchange.",
             "title": "Seeing how new members are getting on"
           }
@@ -50731,17 +50696,17 @@ export default interface Resources {
             "title": "What can a broker do, and what is only for admins?"
           },
           "broker_configuration": {
-            "body": "[Configuration](/broker/configuration) holds the settings for broker work in your community. Settings marked **Admin only** can only be changed by an admin. You can see them, but not change them.\n\nAfter changing anything, press **Save Changes**. **Unsaved changes** shows until you do.\n\n## Settings brokers can change\n\nThese decide which messages are copied to brokers:\n\n- **Copy first contact between members**: copies the first message between any two members.\n- **Copy messages from new members**: copies messages from members who joined recently. **New-member monitoring window (days)** sets how long \"recently\" is.\n- **Copy messages on high-risk listings**: copies messages about listings tagged high or critical risk.\n- **Random sample percentage**: copies this share of all other messages at random, for spot checks. For example, 5 means about 5 in every 100. At 100, every message is copied, the same as **Copy all messages to broker**, so agree any high number with your admin first.\n- **Archive retention (days)**: how long reviewed, unflagged message copies are kept before they are deleted.\n\n## Settings only an admin can change\n\n- **Broker messaging enabled**: the main switch. When it is off, no messages are copied to brokers, whatever the other settings say.\n- **Copy all messages to broker**: copies every message between members.\n- **Broker approval required**: exchanges wait for a broker's approval.\n- **Auto-approve low-risk exchanges**: lets most exchanges go ahead without a broker.\n- **Max hours without approval**: with auto-approve on, exchanges above this many hours still need a broker.\n- **Insurance tracking enabled**: lets members add insurance records in their settings.\n\n## Choosing settings\n\nCopying more messages gives brokers more to read. It also reaches further into members' privacy. Agree the settings with your admin and safeguarding lead. Choose the lightest settings that keep people safe.\n\n> This guide describes the settings that change how the site behaves. If you are unsure what a setting does, ask your admin before changing it.",
+            "body": "[Broker settings](/broker/configuration) holds the settings for broker work in your community. Settings marked **Admin only** can only be changed by an admin. You can see them, but not change them.\n\nAfter changing anything, press **Save Changes**. **Unsaved changes** shows until you do.\n\n## Settings brokers can change\n\nThese decide which messages are copied to brokers:\n\n- **Copy first contact between members**: copies the first message between any two members.\n- **Copy messages from new members**: copies messages from members who joined recently. **New-member monitoring window (days)** sets how long \"recently\" is.\n- **Copy messages on high-risk listings**: copies messages about listings tagged high or critical risk.\n- **Random sample percentage**: copies this share of all other messages at random, for spot checks. For example, 5 means about 5 in every 100. At 100, every message is copied, the same as **Copy all messages to broker**, so agree any high number with your admin first.\n- **Archive retention (days)**: how long reviewed, unflagged message copies are kept before they are deleted.\n\n## Settings only an admin can change\n\n- **Broker messaging enabled**: the main switch. When it is off, no messages are copied to brokers, whatever the other settings say.\n- **Copy all messages to broker**: copies every message between members.\n- **Broker approval required**: exchanges wait for a broker's approval.\n- **Auto-approve low-risk exchanges**: lets most exchanges go ahead without a broker.\n- **Max hours without approval**: with auto-approve on, exchanges above this many hours still need a broker.\n- **Insurance tracking enabled**: lets members add insurance records in their settings.\n\n## Choosing settings\n\nCopying more messages gives brokers more to read. It also reaches further into members' privacy. Agree the settings with your admin and safeguarding lead. Choose the lightest settings that keep people safe.\n\n> This guide describes the settings that change how the site behaves. If you are unsure what a setting does, ask your admin before changing it.",
             "summary": "Which messages are copied to brokers and how exchange approval works are set in Configuration.",
             "title": "Changing the Broker Panel settings"
           },
           "broker_dashboard": {
-            "body": "The **Broker Dashboard** is the first page you see. It tells you what needs you now.\n\n## What needs you now\n\nAt the top, a box lists the kinds of work waiting for review, with the most urgent first. Press any line to go straight to that list. When nothing is waiting you see **All clear**.\n\n## The counters\n\nBelow that are counters. Each one opens the matching list, already filtered:\n\n- **Pending Exchanges**: exchanges waiting for broker approval\n- **Unreviewed Messages**: message copies nobody has reviewed yet\n- **High Risk Listings**: listings tagged high risk\n- **Monitored Users**: members under monitoring\n- **Vetting review requests**: members who asked for a vetting review\n- **Safeguarding Alerts**: urgent safeguarding items\n- **Support needs not yet seen**: members who told us they would like extra support and whom no broker has marked as seen yet\n\nIf a counter shows a dash, it could not load. Press **Refresh** to try again.\n\n## Quick Access and Recent Activity\n\n**Quick Access** has shortcuts to the main tools.\n\n**Recent Activity** lists the latest broker actions of some kinds only: exchange approvals and rejections, message reviews, risk tags, monitoring changes, Broker Panel setting changes and insurance records. It shows who did what and when.\n\nIt does not show member approvals or suspensions, balance changes, notes, content moderation, reports or vetting decisions. To check whether someone else has already dealt with one of these, look at the item itself, such as the member's record or notes.",
+            "body": "The **Broker Dashboard** is the first page you see. It tells you what needs you now.\n\n## What needs you now\n\nAt the top, a box lists the kinds of work waiting for review, with the most urgent first. Press any line to go straight to that list. When nothing is waiting you see **All clear**.\n\nEach line shows how many are waiting and, where we know it, how long the oldest has waited. These are the lines you may see:\n\n- **Safeguarding alerts**: urgent safeguarding items\n- **Messages to check**: message copies nobody has reviewed yet\n- **Exchanges needing a decision**: exchanges waiting for broker approval\n- **Member reports to check**\n- **New members to approve**\n- **Support needs not yet seen**: members who told us they would like extra support and whom no broker has marked as seen yet\n- **Vetting review requests**: members who asked for a vetting review\n\nIf a line shows a dash, it could not load. Press **Refresh** to try again.\n\n## Also worth knowing\n\nThese two numbers stay as they are until someone changes them, so they are not counted above.\n\n- **High-risk listings**: listings tagged high risk\n- **Monitored members**: members under monitoring\n\n## Recent activity\n\n**Recent activity** lists the latest broker actions of some kinds only: exchange approvals and rejections, message reviews, risk tags, monitoring changes, Broker Panel setting changes and insurance records. It shows who did what and when.\n\nIt does not show member approvals or suspensions, balance changes, notes, content moderation, reports or vetting decisions. To check whether someone else has already dealt with one of these, look at the item itself, such as the member's record or notes.",
             "summary": "The dashboard shows what is waiting for you, key counts and some recent broker actions.",
             "title": "Using the Broker Dashboard"
           },
           "broker_finding_your_way": {
-            "body": "The Broker Panel has a menu on the left and a bar along the top. On a phone, press the menu button to open the menu.\n\n## The menu\n\nThe menu is grouped by type of work:\n\n- **Overview**: **Dashboard**, which shows what needs your attention now\n- **Daily Workflow**: **Members**, **Onboarding**, **Exchanges**, **Match Approvals** and **Messages**\n- **Moderation**: **Content Queue**, **Feed Posts**, **Comments**, **Reviews** and **Reports**\n- **Compliance & Oversight**: **Safeguarding**, **Safeguarding Options**, **Vetting confirmations**, **User Monitoring**, **Risk Tags** and **Insurance**\n- **Records**: **Review Archive**\n- **Settings**: **Configuration** and **Help**\n\nSome items only appear if your community uses that section. For example, **Exchanges** and **Match Approvals** only appear when your community uses the exchange workflow.\n\nA red number next to a menu item shows how many things are waiting. The numbers update about once a minute.\n\n## The top bar\n\n- **Back to Site** takes you back to the member side of the site.\n- **Search** opens a box where you type a page name, such as \"vetting\", and jump straight to it. You can also press Ctrl and K together (Cmd and K on a Mac).\n- **Help Center** opens the Broker Panel's own guidance page.\n- The bell opens your notifications.\n- Your name opens a menu with **My Profile** and **Sign Out**.\n\nTo make the menu narrower, press **Collapse sidebar** at the top of the menu.",
+            "body": "The Broker Panel has a menu on the left and a bar along the top. On a phone, press the menu button to open the menu.\n\n## The menu\n\nThe menu is grouped by type of work:\n\n- **Dashboard**, which shows what needs your attention now\n- **Every day**: **Members**, **New member progress**, **Exchanges**, **Suggested matches**, **Message checks**\n- **Safeguarding**: **Members' support needs**, **Guardians**, **Support actions**, **Volunteering incidents**\n- **Posts and reports**: **Posts to approve**, **Feed posts**, **Comments**, **Reviews**, **Member reports**\n- **Checks and records**: **Vetting confirmations**, **Monitored members**, **Listing risk tags**, **Insurance certificates**, **Past message checks**\n- **Settings and help**: **Broker settings**, **Safeguarding options**, **Help**\n\nPress a group’s heading to open or close it. When a group is closed, a number beside its heading shows how many things are waiting inside.\n\nSome items only appear if your community uses that section. For example, **Exchanges** and **Suggested matches** only appear when your community uses the exchange workflow.\n\nA red number next to a menu item shows how many things are waiting. The numbers update about once a minute.\n\n## The top bar\n\n- **Back to Site** takes you back to the member side of the site.\n- **Search** opens a box where you type a page name, such as \"vetting\", and jump straight to it. You can also press Ctrl and K together (Cmd and K on a Mac).\n- **Help Center** opens the Broker Panel's own guidance page.\n- The bell opens your notifications.\n- Your name opens a menu with **My Profile** and **Sign Out**.\n\nTo make the menu narrower, press **Collapse sidebar** at the top of the menu.",
             "summary": "The menu, the top bar, the search box and the red counters explained.",
             "title": "Finding your way around the Broker Panel"
           },
@@ -50762,42 +50727,42 @@ export default interface Resources {
             "title": "When a member asks for coordinator help"
           },
           "broker_member_safeguarding_choices": {
-            "body": "When members join, your community asks whether they consider themselves a vulnerable adult. Members who joined earlier may have chosen other options, such as needing a coordinator to arrange their exchanges. Each option can switch on one or more protections, called triggers.\n\n## What each trigger does\n\n- **Contact through a coordinator**: only coordinators can message this member directly, and the member can message only coordinators. Anyone else who tries is offered **Request coordinator help** instead. The member is also left out of suggested matches. Their messages are not copied to brokers.\n- **Require coordinator approval**: any ordinary exchange this member takes part in waits for a broker's approval. Group exchanges have no approval step. Their suggested matches also wait in Match Approvals.\n- **Vetted members only**: only coordinators and members with a confirmed vetting decision can contact this member, and the member can contact only them. Until vetting is recorded for someone, only coordinators can reach the member.\n- **Restrict matching**: suggested matches involving this member wait in Match Approvals until a broker approves them. Neither member is told about a match before that.\n- **Notify safeguarding staff**: brokers and admins get a notification when a member ticks the option while joining.\n\nIf a member ticks several options, all their triggers apply together. The vulnerable adult option switches on vetted contact, coordinator approval, restricted matching and a notification to safeguarding staff.\n\nThese limits apply to contact aimed at the member: messages, @mentions, time credits and exchanges. Groups and events they belong to work as normal.\n\n## Changing their mind\n\nMembers can see and revoke their choices from the **Safeguarding & support** tab in their **Settings**. When they revoke a choice, brokers and admins are notified. Its protections stop unless another option they chose still applies them.\n\n## Seeing members' choices\n\nThe **Support needs not yet seen** counter on the [Broker Dashboard](/broker) shows how many members told us they would like extra support and have not been marked as seen since they last answered. Press it to open [Members' support needs](/broker/safeguarding/support-needs), where you can read each member's answers and mark them as seen.\n\n> Treat these choices as private. Only other brokers and admins should know about them. Never mention them to other members.",
+            "body": "When members join, your community asks whether they consider themselves a vulnerable adult. Members who joined earlier may have chosen other options, such as needing a coordinator to arrange their exchanges. Each option can switch on one or more protections, called triggers.\n\n## What each trigger does\n\n- **Contact through a coordinator**: only coordinators can message this member directly, and the member can message only coordinators. Anyone else who tries is offered **Request coordinator help** instead. The member is also left out of suggested matches. Their messages are not copied to brokers.\n- **Require coordinator approval**: any ordinary exchange this member takes part in waits for a broker's approval. Group exchanges have no approval step. Their suggested matches also wait in **Suggested matches**.\n- **Vetted members only**: only coordinators and members with a confirmed vetting decision can contact this member, and the member can contact only them. Until vetting is recorded for someone, only coordinators can reach the member.\n- **Restrict matching**: suggested matches involving this member wait in **Suggested matches** until a broker approves them. Neither member is told about a match before that.\n- **Notify safeguarding staff**: brokers and admins get a notification when a member ticks the option while joining.\n\nIf a member ticks several options, all their triggers apply together. The vulnerable adult option switches on vetted contact, coordinator approval, restricted matching and a notification to safeguarding staff.\n\nThese limits apply to contact aimed at the member: messages, @mentions, time credits and exchanges. Groups and events they belong to work as normal.\n\n## Changing their mind\n\nMembers can see and revoke their choices from the **Safeguarding & support** tab in their **Settings**. When they revoke a choice, brokers and admins are notified. Its protections stop unless another option they chose still applies them.\n\n## Seeing members' choices\n\nThe **Support needs not yet seen** counter on the [Broker Dashboard](/broker) shows how many members told us they would like extra support and have not been marked as seen since they last answered. Press it to open [Members' support needs](/broker/safeguarding/support-needs), where you can read each member's answers and mark them as seen.\n\n> Treat these choices as private. Only other brokers and admins should know about them. Never mention them to other members.",
             "summary": "Each safeguarding option can switch on protections. Here is what each one does.",
             "title": "What happens when a member chooses a safeguarding option?"
           },
           "broker_message_review": {
-            "body": "Your community can copy some members' messages to brokers so you can check that people are safe. The message is still delivered normally. The copy goes to [Messages](/broker/messages) for review.\n\n## Why a message is copied\n\nEach copy shows a **Copy Reason**:\n\n- **First Contact**: the first message between two members\n- **New Member**: a message from someone who joined recently\n- **High Risk Listing**: a message about a listing tagged high or critical risk\n- **Flagged User**: a message to or from a member under monitoring\n- **Random Sample**: a message chosen at random for spot checks\n\nWhich of these apply depends on the settings in [Configuration](/broker/configuration).\n\n## What you can see\n\nWhen you open a copied message, you see it together with the messages that came before it in the same conversation, up to the 50 most recent. Messages sent after it are not shown. Earlier messages appear even if they were not copied. For a group conversation, you see the group's earlier messages. A message the sender has changed is marked **edited**.\n\n## What members are told\n\nWhen message copying is switched on, members see a notice in their conversations. It says messages may be reviewed by a coordinator for safeguarding.\n\n## Your responsibility\n\n- Read only what you need to make a decision.\n- Never share what you read, except with your safeguarding lead or when the law requires it.\n- Opening a copied message is recorded, and so are your review decisions, with your name.",
+            "body": "Your community can copy some members' messages to brokers so you can check that people are safe. The message is still delivered normally. The copy goes to [Message checks](/broker/messages) for review.\n\n## Why a message is copied\n\nEach copy shows a **Copy Reason**:\n\n- **First contact**: the first message between two members\n- **New member**: a message from someone who joined recently\n- **High-risk listing**: a message about a listing tagged high or critical risk\n- **Flagged member**: a message to or from a member under monitoring\n- **Random sample**: a message chosen at random for spot checks\n\nWhich of these apply depends on the settings in [Broker settings](/broker/configuration).\n\n## What you can see\n\nWhen you open a copied message, you see it together with the messages that came before it in the same conversation, up to the 50 most recent. Messages sent after it are not shown. Earlier messages appear even if they were not copied. For a group conversation, you see the group's earlier messages. A message the sender has changed is marked **edited**.\n\n## What members are told\n\nWhen message copying is switched on, members see a notice in their conversations. It says messages may be reviewed by a coordinator for safeguarding.\n\n## Your responsibility\n\n- Read only what you need to make a decision.\n- Never share what you read, except with your safeguarding lead or when the law requires it.\n- Opening a copied message is recorded, and so are your review decisions, with your name.",
             "summary": "Which messages are copied for review, what you can see, and what members are told.",
             "title": "Why are messages copied to brokers?"
           },
           "broker_review_archive": {
-            "body": "The [Review Archive](/broker/archives) keeps a permanent record of message copies that a broker approved and archived. Records here cannot be edited.\n\n## Finding a record\n\n- Use the tabs: **All**, **Approved** or **Flagged**.\n- Type in **Search archive...** to search.\n\nEach row shows the sender, receiver, listing, **Copy Reason**, **Decision**, who decided and when.\n\n## Opening a record\n\nPress a row to open it. You see:\n\n- **Target Message**: the message that was copied\n- **Decision**: what was decided, by whom, and any **Decision Notes**\n- **Conversation Snapshot**: the messages between the two members, saved at the moment the record was archived\n\nA note at the top reminds you the record is preserved exactly as it was reviewed.\n\nIf the sender later edits the message, the archive record does not change. The updated copy goes back to **Unreviewed** in **Messages** for a new review.\n\n## Why it matters\n\nThe archive shows what your community knew and when it acted. It can support a safeguarding investigation. It also shows that reviews happened.\n\n> Records in the archive are kept. Message copies in **Messages** are different: once reviewed, unflagged copies are deleted after the number of days in **Archive retention (days)** in [Configuration](/broker/configuration). Flagged copies are kept longer.",
-            "summary": "The Review Archive keeps permanent, read-only records of message reviews.",
-            "title": "Using the Review Archive"
+            "body": "The [Past message checks](/broker/archives) keeps a permanent record of message copies that a broker approved and archived. Records here cannot be edited.\n\n## Finding a record\n\n- Use the tabs: **All**, **Approved** or **Flagged**.\n- Type in **Search archive...** to search.\n\nEach row shows the sender, receiver, listing, **Copy Reason**, **Decision**, who decided and when.\n\n## Opening a record\n\nPress a row to open it. You see:\n\n- **Target Message**: the message that was copied\n- **Decision**: what was decided, by whom, and any **Decision Notes**\n- **Conversation Snapshot**: the messages between the two members, saved at the moment the record was archived\n\nA note at the top reminds you the record is preserved exactly as it was reviewed.\n\nIf the sender later edits the message, the archive record does not change. The updated copy goes back to **Unreviewed** in **Message checks** for a new review.\n\n## Why it matters\n\nThe archive shows what your community knew and when it acted. It can support a safeguarding investigation. It also shows that reviews happened.\n\n> Records in the archive are kept. Message copies in **Message checks** are different: once reviewed, unflagged copies are deleted after the number of days in **Archive retention (days)** in [Broker settings](/broker/configuration). Flagged copies are kept longer.",
+            "summary": "This page keeps permanent, read-only records of message reviews.",
+            "title": "Using the Past message checks page"
           },
           "broker_review_message": {
-            "body": "Message copies waiting for review are under the **Unreviewed** tab in **Messages**. The red number on **Messages** in the menu shows how many are waiting.\n\n1. Open [Messages](/broker/messages).\n2. Press the **Unreviewed** tab.\n3. Press the eye button on a row for a quick look, or open the message to see the conversation before it.\n4. Choose what to do.\n\n## Your choices\n\n- **Mark Reviewed** (or **Review** in the list): you have read it and there is no concern. In the quick view you can add **Review Notes** first.\n- **Flag**: you have a concern. Choose a **Severity** (**Info**, **Warning**, **Concern** or **Urgent**) and describe the concern in **Flag Reason**. A reason is required.\n- **Approve & Archive**: on the message page, this saves a permanent, read-only copy of the record in the **Review Archive**. You can add **Decision Notes**. Once archived, the record cannot be changed.\n\n## Tabs\n\n- **Unreviewed**: waiting for a broker\n- **Urgent**: flagged messages nobody has reviewed yet. Check these first.\n- **Flagged**: messages a broker has flagged\n- **Reviewed**: messages already reviewed\n- **All**: everything\n\n## When the sender edits a message\n\nIf the sender changes a message after it was copied, the copy is updated with the new wording. It goes back to **Unreviewed**, even if someone had already reviewed or archived it, so a broker reads the new version. Any archive record already made stays as it was. A flag on the copy stays in place.\n\n## After you flag a message\n\nFlagging records your concern. It does not stop the member or warn anyone by itself. Decide what else is needed. You might place the member under monitoring, turn off their messaging, or contact your safeguarding lead.\n\n> Do not tell the member you have flagged their message unless your safeguarding lead agrees.",
+            "body": "Message copies waiting for review are under the **Unreviewed** tab in **Message checks**. The red number on **Message checks** in the menu shows how many are waiting.\n\n1. Open [Message checks](/broker/messages).\n2. Press the **Unreviewed** tab.\n3. Press the eye button on a row for a quick look, or open the message to see the conversation before it.\n4. Choose what to do.\n\n## Your choices\n\n- **Mark Reviewed** (or **Review** in the list): you have read it and there is no concern. In the quick view you can add **Review Notes** first.\n- **Flag**: you have a concern. Choose a **Severity** (**Info**, **Warning**, **Concern** or **Urgent**) and describe the concern in **Flag Reason**. A reason is required.\n- **Approve & Archive**: on the message page, this saves a permanent, read-only copy of the record in the **Past message checks**. You can add **Decision Notes**. Once archived, the record cannot be changed.\n\n## Tabs\n\n- **Unreviewed**: waiting for a broker\n- **Urgent**: flagged messages nobody has reviewed yet. Check these first.\n- **Flagged**: messages a broker has flagged\n- **Reviewed**: messages already reviewed\n- **All**: everything\n\n## When the sender edits a message\n\nIf the sender changes a message after it was copied, the copy is updated with the new wording. It goes back to **Unreviewed**, even if someone had already reviewed or archived it, so a broker reads the new version. Any archive record already made stays as it was. A flag on the copy stays in place.\n\n## After you flag a message\n\nFlagging records your concern. It does not stop the member or warn anyone by itself. Decide what else is needed. You might place the member under monitoring, turn off their messaging, or contact your safeguarding lead.\n\n> Do not tell the member you have flagged their message unless your safeguarding lead agrees.",
             "summary": "Mark a message as reviewed, flag a concern, or approve and archive it.",
             "title": "How do I review a copied message?"
           },
           "broker_safeguarding_options": {
-            "body": "[Safeguarding Options](/broker/safeguarding-options) is the list of choices members see when they join. Brokers and admins can change it.\n\nThe page shows **Active Options** that members can choose, and **Inactive Options** that have been switched off.\n\n## Adding an option\n\n1. Press **Add Option**.\n2. Fill in **Option Key**. This is a short internal name with no spaces, such as needs_coordinator. Members do not see it.\n3. Fill in **Display Label**. This is the sentence members tick, for example \"I would like a coordinator to help arrange my exchanges\".\n4. Add **Description Help** to explain the option in plain words. Add a **Help URL** if your community has a page about it.\n5. Choose the **Option Type**: **Checkbox** for a simple tick box, **Select** for a list of answers, or **Info** for text only.\n6. Turn on **Required** only if every member must answer it.\n7. Under **Behavioral Triggers**, turn on the protections this option should switch on.\n8. Press **Create Option**.\n\nTo turn on **Vetted members only**, you also choose a **Required Vetting Type**. It must match the jurisdiction your admin chose. If no jurisdiction is chosen yet, the site will not save it.\n\n## Offering an option to new members\n\nEach option shows how many members chose it. Switch off **Offer to new members** to stop new members seeing it. Members who already chose it keep it, and its protections stay in place.\n\n## Editing or switching off an option\n\n- Press the edit button on an option, make your changes and press **Save Changes**.\n- Press the switch-off button and confirm with **Deactivate**. Members can no longer choose it.\n\n## Changes that are blocked\n\nIf members have chosen an option that protects them, you cannot:\n\n- switch the option off\n- turn off one of its protections\n- change its **Required Vetting Type**\n\nYou will see an error instead. This keeps members' protections in place. You can still change the wording.\n\n> Changing options affects vulnerable people. Agree changes with your safeguarding lead first. Keep the wording short, kind and clear.",
+            "body": "[Safeguarding options](/broker/safeguarding-options) is the list of choices members see when they join. Brokers and admins can change it.\n\nThe page shows **Active Options** that members can choose, and **Inactive Options** that have been switched off.\n\n## Adding an option\n\n1. Press **Add Option**.\n2. Fill in **Option Key**. This is a short internal name with no spaces, such as needs_coordinator. Members do not see it.\n3. Fill in **Display Label**. This is the sentence members tick, for example \"I would like a coordinator to help arrange my exchanges\".\n4. Add **Description Help** to explain the option in plain words. Add a **Help URL** if your community has a page about it.\n5. Choose the **Option Type**: **Checkbox** for a simple tick box, **Select** for a list of answers, or **Info** for text only.\n6. Turn on **Required** only if every member must answer it.\n7. Under **Behavioral Triggers**, turn on the protections this option should switch on.\n8. Press **Create Option**.\n\nTo turn on **Vetted members only**, you also choose a **Required Vetting Type**. It must match the jurisdiction your admin chose. If no jurisdiction is chosen yet, the site will not save it.\n\n## Offering an option to new members\n\nEach option shows how many members chose it. Switch off **Offer to new members** to stop new members seeing it. Members who already chose it keep it, and its protections stay in place.\n\n## Editing or switching off an option\n\n- Press the edit button on an option, make your changes and press **Save Changes**.\n- Press the switch-off button and confirm with **Deactivate**. Members can no longer choose it.\n\n## Changes that are blocked\n\nIf members have chosen an option that protects them, you cannot:\n\n- switch the option off\n- turn off one of its protections\n- change its **Required Vetting Type**\n\nYou will see an error instead. This keeps members' protections in place. You can still change the wording.\n\n> Changing options affects vulnerable people. Agree changes with your safeguarding lead first. Keep the wording short, kind and clear.",
             "summary": "Add, edit or switch off the safeguarding options members see when they join.",
             "title": "Changing the safeguarding options members can choose"
           },
           "broker_safeguarding_overview": {
-            "body": "Safeguarding means protecting members from harm, especially members who may be at risk. The Broker Panel gives you several tools for this. Each one has its own article.\n\n- **Members' safeguarding choices.**  When they join, members are asked whether they consider themselves a vulnerable adult. Their choices can limit who contacts them or send their exchanges to a broker.\n- **Coordinator help requests.** When a member cannot message someone who is protected, they can ask a coordinator to help. Brokers and admins get a notification.\n- **Message review.** Some messages are copied to brokers to read, depending on your community's settings. You review them in **Messages**.\n- **User monitoring.** You can place a member under monitoring, so their messages are copied to brokers. You can also turn off their messaging.\n- **Vetting confirmations.**  You record whether your community has completed its safety checks on a member. Members who consider themselves vulnerable adults can be contacted only by coordinators and vetted members.\n- **Safeguarding Options.** You can change the list of choices members see when they join.\n\n## Your community's process comes first\n\nThese tools support your community's safeguarding process. They do not replace it. Your community should have a named safeguarding lead. Know who that person is and how to reach them.\n\n> If someone is in immediate danger, contact the emergency services first. Then tell your safeguarding lead.",
+            "body": "Safeguarding means protecting members from harm, especially members who may be at risk. The Broker Panel gives you several tools for this. Each one has its own article.\n\n- **Members' safeguarding choices.**  When they join, members are asked whether they consider themselves a vulnerable adult. Their choices can limit who contacts them or send their exchanges to a broker.\n- **Coordinator help requests.** When a member cannot message someone who is protected, they can ask a coordinator to help. Brokers and admins get a notification.\n- **Message review.** Some messages are copied to brokers to read, depending on your community's settings. You review them in **Message checks**.\n- **User monitoring.** You can place a member under monitoring, so their messages are copied to brokers. You can also turn off their messaging.\n- **Vetting confirmations.**  You record whether your community has completed its safety checks on a member. Members who consider themselves vulnerable adults can be contacted only by coordinators and vetted members.\n- **Safeguarding Options.** You can change the list of choices members see when they join.\n\n## Your community's process comes first\n\nThese tools support your community's safeguarding process. They do not replace it. Your community should have a named safeguarding lead. Know who that person is and how to reach them.\n\n> If someone is in immediate danger, contact the emergency services first. Then tell your safeguarding lead.",
             "summary": "An overview of the safeguarding tools brokers use, and how they fit together.",
             "title": "How safeguarding works in the Broker Panel"
           },
           "broker_safeguarding_page": {
-            "body": "Safeguarding has its own section in the sidebar. Each page does one job:\n\n- **Members' support needs**: members who told us they would like extra support, what that changes for them, and whether a broker has seen it. Start here. Read each new answer, then press **Mark as seen**.\n- **Guardians**: guardian arrangements staff have recorded, and whether the member has agreed.\n- **Support actions**: things a supporter set up for a member, waiting for the member's yes. If the member gave you their answer by phone, in person or on paper, record it here. This is also where you note that you have seen the legal document that lets a supporter act alone.\n\nFlagged messages are in [Messages](/broker/messages), under the **Urgent** tab.\n\n## When a member changes their answers\n\nIf a member changes their answers after you marked them as seen, they show as **Not yet seen** again. That way you never miss a change.\n\n## Other safeguarding pages\n\n- [User Monitoring](/broker/monitoring) for monitoring members and turning off messaging\n- [Vetting confirmations](/broker/vetting) for vetting decisions\n- [Safeguarding Options](/broker/safeguarding-options) for the choices members see",
+            "body": "Safeguarding has its own section in the sidebar. Each page does one job:\n\n- **Members' support needs**: members who told us they would like extra support, what that changes for them, and whether a broker has seen it. Start here. Read each new answer, then press **Mark as seen**.\n- **Guardians**: guardian arrangements staff have recorded, and whether the member has agreed.\n- **Support actions**: things a supporter set up for a member, waiting for the member's yes. If the member gave you their answer by phone, in person or on paper, record it here. This is also where you note that you have seen the legal document that lets a supporter act alone.\n\nFlagged messages are in [Message checks](/broker/messages), under the **Urgent** tab.\n\n## When a member changes their answers\n\nIf a member changes their answers after you marked them as seen, they show as **Not yet seen** again. That way you never miss a change.\n\n## Other safeguarding pages\n\n- [Monitored members](/broker/monitoring) for monitoring members and turning off messaging\n- [Vetting confirmations](/broker/vetting) for vetting decisions\n- [Safeguarding options](/broker/safeguarding-options) for the choices members see",
             "summary": "The Safeguarding page gathers flagged messages, guardian arrangements and members' choices. It needs extra access.",
             "title": "What is on the Safeguarding page?"
           },
           "broker_user_monitoring": {
-            "body": "Monitoring copies every message a member sends or receives to brokers for review. Use it when you have a concern about a member.\n\n## Adding a member\n\n1. Open [User Monitoring](/broker/monitoring).\n2. Press **Add User**.\n3. In **Search User**, type a name or email and choose the member.\n4. In **Reason**, explain why. This is required. Future brokers will read it.\n5. Choose a **Duration**: 7, 14, 30, 60 or 90 days. Monitoring then ends by itself: copying stops, messaging is switched back on if you turned it off, and the member is told their restrictions have been lifted.\n6. If the member should not send messages at all for now, turn on **Disable messaging while monitored**.\n7. Press **Add User**.\n\n## What happens\n\n- The member gets a notification that their account is under review. If you turned off messaging, it says their messaging is restricted.\n- Copies of their messages arrive in [Messages](/broker/messages) with the reason **Flagged User**. Brokers and admins get a notification for each copy.\n- With messaging turned off, the member cannot send messages. They can still receive them.\n\n## Changing or ending monitoring\n\n- Press the edit button on the row to change the reason, duration or messaging setting, then press **Save Changes**.\n- Press the remove button and confirm with **Remove** to end monitoring. The member is told their restrictions have been lifted.\n\nThe counter **Expiring within 7 days** shows who will come off monitoring soon.\n\n> Monitoring is a serious step that affects a member's privacy. Keep it as short as possible, record why, and review it before it ends.",
+            "body": "Monitoring copies every message a member sends or receives to brokers for review. Use it when you have a concern about a member.\n\n## Adding a member\n\n1. Open [Monitored members](/broker/monitoring).\n2. Press **Add User**.\n3. In **Search User**, type a name or email and choose the member.\n4. In **Reason**, explain why. This is required. Future brokers will read it.\n5. Choose a **Duration**: 7, 14, 30, 60 or 90 days. Monitoring then ends by itself: copying stops, messaging is switched back on if you turned it off, and the member is told their restrictions have been lifted.\n6. If the member should not send messages at all for now, turn on **Disable messaging while monitored**.\n7. Press **Add User**.\n\n## What happens\n\n- The member gets a notification that their account is under review. If you turned off messaging, it says their messaging is restricted.\n- Copies of their messages arrive in [Message checks](/broker/messages) with the reason **Flagged member**. Brokers and admins get a notification for each copy.\n- With messaging turned off, the member cannot send messages. They can still receive them.\n\n## Changing or ending monitoring\n\n- Press the edit button on the row to change the reason, duration or messaging setting, then press **Save Changes**.\n- Press the remove button and confirm with **Remove** to end monitoring. The member is told their restrictions have been lifted.\n\nThe counter **Expiring within 7 days** shows who will come off monitoring soon.\n\n> Monitoring is a serious step that affects a member's privacy. Keep it as short as possible, record why, and review it before it ends.",
             "summary": "Copy a member's messages to brokers for a set time, and turn off their messaging if needed.",
             "title": "Placing a member under monitoring"
           },
@@ -50817,7 +50782,7 @@ export default interface Resources {
             "title": "Following up a volunteer's wellbeing alert"
           },
           "broker_worried_about_member": {
-            "body": "If you are worried that a member is being harmed, or may harm someone, act promptly and calmly.\n\n## If someone is in immediate danger\n\nContact the emergency services straight away. Then tell your safeguarding lead.\n\n## Otherwise\n\n1. **Write down what you know.** Stick to facts: what you saw or were told, when, and by whom. Add a note with the category **Concern** on the member's record.\n2. **Tell your safeguarding lead.** They decide what happens next, including whether to involve outside agencies.\n3. **Do not investigate alone.** Do not question the people involved in detail unless your lead asks you to.\n4. **Do not warn the person you are worried about.** It could put someone at risk.\n5. **Do not delete anything.** Messages, notes and records may be needed as evidence.\n\n## Tools that can help while your lead decides\n\n- Place the member under monitoring, and turn off their messaging if needed, in [User Monitoring](/broker/monitoring).\n- Reject exchanges that are waiting for approval, with a neutral reason.\n- Tag a listing that worries you in [Risk Tags](/broker/risk-tags).\n- Revoke a vetting confirmation in [Vetting confirmations](/broker/vetting).\n- Suspend the member in [Members](/broker/members) if your lead agrees.\n\n## Look after yourself\n\nSafeguarding concerns can be upsetting. Talk to your safeguarding lead or another broker about how you feel.",
+            "body": "If you are worried that a member is being harmed, or may harm someone, act promptly and calmly.\n\n## If someone is in immediate danger\n\nContact the emergency services straight away. Then tell your safeguarding lead.\n\n## Otherwise\n\n1. **Write down what you know.** Stick to facts: what you saw or were told, when, and by whom. Add a note with the category **Concern** on the member's record.\n2. **Tell your safeguarding lead.** They decide what happens next, including whether to involve outside agencies.\n3. **Do not investigate alone.** Do not question the people involved in detail unless your lead asks you to.\n4. **Do not warn the person you are worried about.** It could put someone at risk.\n5. **Do not delete anything.** Messages, notes and records may be needed as evidence.\n\n## Tools that can help while your lead decides\n\n- Place the member under monitoring, and turn off their messaging if needed, in [Monitored members](/broker/monitoring).\n- Reject exchanges that are waiting for approval, with a neutral reason.\n- Tag a listing that worries you in [Listing risk tags](/broker/risk-tags).\n- Revoke a vetting confirmation in [Vetting confirmations](/broker/vetting).\n- Suspend the member in [Members](/broker/members) if your lead agrees.\n\n## Look after yourself\n\nSafeguarding concerns can be upsetting. Talk to your safeguarding lead or another broker about how you feel.",
             "summary": "Steps to take when you have a safeguarding concern, and the tools that can help.",
             "title": "What should I do if I am worried about a member?"
           }

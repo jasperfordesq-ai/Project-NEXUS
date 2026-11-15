@@ -57,7 +57,7 @@ describe('ContentQueuePage (broker)', () => {
     const Component = (await import('./ContentQueuePage')).default;
     render(<Component />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Content Queue' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Posts to approve' })).toBeInTheDocument();
     expect(screen.getByTestId('admin-content-queue')).toBeInTheDocument();
   });
 
@@ -82,8 +82,8 @@ describe('ContentQueuePage (broker)', () => {
     render(<Component />);
 
     expect(titleEffects).toContain('Admin: Moderation Queue');
-    expect(titleEffects[titleEffects.length - 1]).toBe('Content Queue');
-    expect(titleEffects.indexOf('Admin: Moderation Queue')).toBeLessThan(titleEffects.indexOf('Content Queue'));
+    expect(titleEffects[titleEffects.length - 1]).toBe('Posts to approve');
+    expect(titleEffects.indexOf('Admin: Moderation Queue')).toBeLessThan(titleEffects.indexOf('Posts to approve'));
   });
 
   it('links to the plain-English guide for this page', async () => {

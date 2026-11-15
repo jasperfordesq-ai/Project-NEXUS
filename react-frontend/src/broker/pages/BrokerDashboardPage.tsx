@@ -6,19 +6,23 @@
 /**
  * Broker Command Center
  *
- * The flagship broker page, top to bottom:
- *   1. "What needs you now" — the open review queues ranked by severity.
+ * The broker's first page, top to bottom:
+ *   1. "What needs you now" — one line per kind of work that is waiting, most
+ *      urgent first, with how many and how long the oldest has waited.
  *   2. A compact warning when the community has no safeguarding jurisdiction.
- *   3. Quick links — one row of small buttons (the sidebar has the same pages).
- *   4. "Waiting for you" (the first items of each queue, with quick decisions)
+ *   3. "Waiting for you" (the first items of each kind, with quick decisions)
  *      beside "My week" (what this broker decided in the last 7 days).
- *   5. The KPI grid — every tile deep-links with its filter applied, says how
- *      long its oldest item has waited, and shows a fortnight of arrivals.
- *   6. Recent activity — the broker action timeline, with "See all".
- *   7. The collapsible guide.
+ *   4. "Also worth knowing" — the two standing counts (monitored members,
+ *      high-risk listings). They do not fall as a broker works, so they are
+ *      not part of the waiting total: counted there, the page could never
+ *      say "All clear" while one listing stayed tagged high risk.
+ *   5. Recent activity — the broker action timeline, with "See all".
+ *   6. The collapsible guide.
  *
- * Each number appears once: the hero ranks the queues, the inbox shows the
- * items, the tiles carry the age and the trend.
+ * Until Nov 2026 each number was shown three times (a pill in the hero, a
+ * tile with a small graph further down, the menu badge) and a row of seven
+ * shortcut buttons repeated the menu. Brokers found the page hard to read;
+ * the pills, the queue tiles and the shortcuts are now the one list.
  *
  * Parity: AdminBrokerController::dashboard()
  */
@@ -31,15 +35,14 @@ import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import MessageSquareWarning from 'lucide-react/icons/message-square-warning';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import Eye from 'lucide-react/icons/eye';
+import ChevronRight from 'lucide-react/icons/chevron-right';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import Settings from 'lucide-react/icons/settings';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import CheckCircle2 from 'lucide-react/icons/circle-check-big';
 import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
 import Zap from 'lucide-react/icons/zap';
-import UserCheck from 'lucide-react/icons/user-check';
 import UserPlus from 'lucide-react/icons/user-plus';
 import Flag from 'lucide-react/icons/flag';
 import CalendarCheck from 'lucide-react/icons/calendar-check';
@@ -76,8 +79,9 @@ import { BrokerInbox } from '../components/BrokerInbox';
 export { formatActivityDetails } from '../components/BrokerActivityTimeline';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Triage queues — severity-weighted so the hero always surfaces the most
-// urgent work first. Labels reuse the stat-card keys; paths carry the filter.
+// The kinds of work that wait for a broker — severity-weighted so the list
+// always puts the most urgent first. Paths carry the filter. Standing counts
+// (monitored members, high-risk listings) are deliberately not here.
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface QueueDef {
@@ -88,39 +92,27 @@ interface QueueDef {
   path: string;
   /** Higher = more urgent; ties broken by count. */
   weight: number;
+  /** The queue's key in `oldest_waiting`, when the server reports one. */
+  ageKey?: BrokerTrendQueue;
 }
 
 const QUEUES: QueueDef[] = [
-  { key: 'safeguarding_alerts', labelKey: 'dashboard.safeguarding_alerts', icon: AlertTriangle, color: 'danger', path: '/broker/messages?status=urgent', weight: 6 },
-  { key: 'high_risk_listings', labelKey: 'dashboard.high_risk_listings', icon: ShieldAlert, color: 'danger', path: '/broker/risk-tags?level=elevated', weight: 5 },
-  { key: 'unreviewed_messages', labelKey: 'dashboard.unreviewed_messages', icon: MessageSquareWarning, color: 'warning', path: '/broker/messages?status=unreviewed', weight: 4 },
-  { key: 'pending_exchanges', labelKey: 'dashboard.pending_exchanges', icon: ArrowLeftRight, color: 'accent', path: '/broker/exchanges?status=needs_action', weight: 4 },
-  { key: 'open_reports', labelKey: 'dashboard.open_reports', icon: Flag, color: 'warning', path: '/broker/moderation/reports?status=pending', weight: 4 },
-  { key: 'pending_members', labelKey: 'dashboard.pending_members', icon: UserPlus, color: 'accent', path: '/broker/members?status=pending', weight: 3 },
+  { key: 'safeguarding_alerts', labelKey: 'dashboard.safeguarding_alerts', icon: AlertTriangle, color: 'danger', path: '/broker/messages?status=urgent', weight: 6, ageKey: 'safeguarding_alerts' },
+  { key: 'unreviewed_messages', labelKey: 'dashboard.unreviewed_messages', icon: MessageSquareWarning, color: 'warning', path: '/broker/messages?status=unreviewed', weight: 4, ageKey: 'unreviewed_messages' },
+  { key: 'pending_exchanges', labelKey: 'dashboard.pending_exchanges', icon: ArrowLeftRight, color: 'accent', path: '/broker/exchanges?status=needs_action', weight: 4, ageKey: 'pending_exchanges' },
+  { key: 'open_reports', labelKey: 'dashboard.open_reports', icon: Flag, color: 'warning', path: '/broker/moderation/reports?status=pending', weight: 4, ageKey: 'open_reports' },
+  { key: 'pending_members', labelKey: 'dashboard.pending_members', icon: UserPlus, color: 'accent', path: '/broker/members?status=pending', weight: 3, ageKey: 'pending_members' },
   { key: 'onboarding_safeguarding_flags', labelKey: 'dashboard.safeguarding_flags', icon: ShieldAlert, color: 'warning', path: '/broker/safeguarding/support-needs', weight: 3 },
-  { key: 'vetting_review_requests', labelKey: 'dashboard.vetting_review_requests', icon: ShieldCheck, color: 'warning', path: '/broker/vetting?status=review_requested', weight: 3 },
+  { key: 'vetting_review_requests', labelKey: 'dashboard.vetting_review_requests', icon: ShieldCheck, color: 'warning', path: '/broker/vetting?status=review_requested', weight: 3, ageKey: 'vetting_review_requests' },
 ];
 
-const queuePillClass: Record<BrokerStatColor, string> = {
-  danger: 'border-danger/30 bg-danger/10 text-danger hover:bg-danger/15',
-  warning: 'border-warning/30 bg-warning/10 text-warning hover:bg-warning/15',
-  success: 'border-success/30 bg-success/10 text-success hover:bg-success/15',
-  accent: 'border-accent/30 bg-accent/10 text-accent-soft-foreground hover:bg-accent/15',
-  neutral: 'border-divider bg-surface-secondary text-muted hover:bg-surface-tertiary',
+const queueIconClass: Record<BrokerStatColor, string> = {
+  danger: 'bg-danger/10 text-danger',
+  warning: 'bg-warning/10 text-warning',
+  success: 'bg-success/10 text-success',
+  accent: 'bg-accent/10 text-accent-soft-foreground',
+  neutral: 'bg-surface-tertiary text-muted',
 };
-
-// Quick-link metadata. Titles are translated at render time from the
-// broker.dashboard.links.* namespace; the sidebar lists the same pages, so
-// these are a single compact row rather than seven cards.
-const QUICK_LINKS = [
-  { key: 'exchanges',       icon: ArrowLeftRight,       path: '/broker/exchanges',       feature: 'exchange_workflow' as const },
-  { key: 'match_approvals', icon: UserCheck,            path: '/broker/match-approvals', feature: 'exchange_workflow' as const },
-  { key: 'risk_tags',       icon: ShieldAlert,          path: '/broker/risk-tags' },
-  { key: 'messages',        icon: MessageSquareWarning, path: '/broker/messages' },
-  { key: 'monitoring',      icon: Eye,                  path: '/broker/monitoring' },
-  { key: 'vetting',         icon: ShieldCheck,          path: '/broker/vetting' },
-  { key: 'configuration',   icon: Settings,             path: '/broker/configuration' },
-];
 
 type TFunc = (key: string, options?: Record<string, unknown>) => string;
 
@@ -270,43 +262,33 @@ export function BrokerDashboard() {
   }, [loadDashboard]);
   useBrokerAutoRefresh(() => void loadDashboard(true));
 
+  const failedMetrics = stats?._failed_metrics ?? [];
+  const failed = (metric: string) => failedMetrics.includes(metric);
+
+  const shownQueues = QUEUES.filter((q) => showExchanges || q.key !== 'pending_exchanges');
+
   // Rank the non-empty queues: severity first, then volume. `_partial` loads
   // can leave some counters null — those are excluded rather than treated as 0
   // so a failed query never silently reads as "all clear".
-  const activeQueues = QUEUES
-    .filter((q) => (showExchanges || q.key !== 'pending_exchanges'))
+  const activeQueues = shownQueues
     .map((q) => ({ ...q, count: stats ? Number(stats[q.key] ?? 0) : 0 }))
     .filter((q) => Number.isFinite(q.count) && q.count > 0)
     .sort((a, b) => b.weight - a.weight || b.count - a.count);
 
+  // A queue whose count could not be worked out gets a line of its own with a
+  // dash, after the ones that loaded. Without it, a page whose only failure
+  // was the safeguarding count would still have said "All clear".
+  const failedQueues = shownQueues.filter((q) => failed(q.key));
+
   // Safeguarding alerts are flagged messages nobody has reviewed — a subset of
-  // Unreviewed Messages. Both chips stay (the urgent one is the point), but
+  // the messages to check. Both lines stay (the urgent one is the point), but
   // the total counts each message once.
   const overlap = activeQueues.some((q) => q.key === 'unreviewed_messages')
     ? Number(activeQueues.find((q) => q.key === 'safeguarding_alerts')?.count ?? 0)
     : 0;
   const totalOpen = activeQueues.reduce((sum, q) => sum + q.count, 0) - overlap;
   const hasDanger = activeQueues.some((q) => q.color === 'danger');
-
-  const quickLinks = QUICK_LINKS.filter((l) => !l.feature || hasFeature(l.feature));
-
-  const failedMetrics = stats?._failed_metrics ?? [];
-  const failed = (metric: string) => failedMetrics.includes(metric);
-
-  // What every KPI tile gets beyond its count: the sparkline and delta from
-  // the queue's trend, how long its oldest item has waited, and whether its
-  // own figure failed. A flat zero fortnight draws no sparkline.
-  const queueTileProps = (key: BrokerTrendQueue, count: number | null | undefined) => {
-    const trend = stats?.trends?.[key];
-    const points = trend?.points && trend.points.some((p) => p > 0) ? trend.points : undefined;
-    return {
-      trend: points,
-      delta: typeof trend?.delta === 'number' ? trend.delta : undefined,
-      deltaLabel: t('dashboard.vs_previous_fortnight'),
-      description: count ? oldestWaitingLabel(stats?.oldest_waiting?.[key], t) : undefined,
-      failed: failed(key),
-    };
-  };
+  const allClear = totalOpen === 0 && failedQueues.length === 0;
 
   const canSetJurisdiction = isAdminTierUser(user);
 
@@ -361,7 +343,7 @@ export function BrokerDashboard() {
       {loading && !stats ? (
         <div className="space-y-6">
           <BrokerSkeleton variant="cards" count={1} />
-          <BrokerSkeleton variant="stats" count={8} />
+          <BrokerSkeleton variant="stats" count={2} />
           <BrokerSkeleton variant="timeline" count={4} />
         </div>
       ) : loadError && !stats ? (
@@ -380,18 +362,18 @@ export function BrokerDashboard() {
         />
       ) : (
         <>
-          {/* ── "What needs you now" triage hero ─────────────────────────── */}
+          {/* ── "What needs you now" — one line per kind of work waiting ──── */}
           <Card
             className={`mb-6 rounded-2xl border shadow-sm shadow-black/[0.03] ${
-              totalOpen === 0
+              allClear
                 ? 'border-success/30 bg-gradient-to-br from-success/10 via-surface to-surface'
                 : hasDanger
                   ? 'border-danger/30 bg-gradient-to-br from-danger/10 via-surface to-surface'
                   : 'border-accent/30 bg-gradient-to-br from-accent/10 via-surface to-surface'
             }`}
           >
-            <CardBody className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-              {totalOpen === 0 ? (
+            <CardBody className="p-5 sm:p-6">
+              {allClear ? (
                 <div className="flex items-center gap-4">
                   <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-success/15 text-success ring-1 ring-inset ring-success/20">
                     <CheckCircle2 size={26} />
@@ -404,9 +386,8 @@ export function BrokerDashboard() {
                   </div>
                 </div>
               ) : (
-                <>
-                  {/* shrink-0: with several queues the chips wrap, not the heading. */}
-                  <div className="flex shrink-0 items-center gap-4">
+                <section aria-labelledby="broker-needs-you-title">
+                  <div className="flex items-center gap-4">
                     <span
                       className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ring-inset ring-current/20 ${
                         hasDanger ? 'bg-danger/15 text-danger' : 'bg-accent/15 text-accent-soft-foreground'
@@ -415,36 +396,67 @@ export function BrokerDashboard() {
                       <Zap size={26} />
                     </span>
                     <div>
-                      <p className="text-xl font-semibold tracking-tight text-foreground">
+                      <h2 id="broker-needs-you-title" className="text-xl font-semibold tracking-tight text-foreground">
                         {t('dashboard.needs_attention')}
-                      </p>
-                      <p className="text-sm text-muted">
-                        <span className="font-semibold tabular-nums text-foreground">
-                          <HeroTotal value={totalOpen} />
-                        </span>{' '}
-                        {t('dashboard.open_items', { count: totalOpen })}
-                      </p>
+                      </h2>
+                      {totalOpen > 0 && (
+                        <p className="text-sm text-muted">
+                          <span className="font-semibold tabular-nums text-foreground">
+                            <HeroTotal value={totalOpen} />
+                          </span>{' '}
+                          {t('dashboard.open_items', { count: totalOpen })}
+                        </p>
+                      )}
                     </div>
                   </div>
-                  <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end">
+                  <ul className="mt-4 divide-y divide-divider/70 overflow-hidden rounded-xl border border-divider/70 bg-surface">
                     {activeQueues.map((q) => {
                       const QIcon = q.icon;
+                      const age = q.ageKey ? oldestWaitingLabel(stats?.oldest_waiting?.[q.ageKey], t) : undefined;
                       return (
-                        <Link
-                          key={q.key}
-                          to={tenantPath(q.path)}
-                          className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none ${queuePillClass[q.color]}`}
-                        >
-                          <QIcon size={15} aria-hidden="true" />
-                          <span className="text-foreground">{t(q.labelKey)}</span>
-                          <span className="rounded-full bg-surface px-1.5 text-xs font-semibold tabular-nums">
-                            {q.count}
-                          </span>
-                        </Link>
+                        <li key={q.key}>
+                          <Link
+                            to={tenantPath(q.path)}
+                            className="flex items-center gap-3 px-3 py-3 transition-colors hover:bg-surface-secondary motion-reduce:transition-none sm:px-4"
+                          >
+                            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${queueIconClass[q.color]}`}>
+                              <QIcon size={18} aria-hidden="true" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-sm font-medium text-foreground">{t(q.labelKey)}</span>
+                              {age && <span className="block text-xs text-muted">{age}</span>}
+                            </span>
+                            <span className="text-lg font-semibold tabular-nums text-foreground">
+                              {q.count.toLocaleString(getFormattingLocale())}
+                            </span>
+                            <ChevronRight size={16} className="shrink-0 text-muted" aria-hidden="true" />
+                          </Link>
+                        </li>
                       );
                     })}
-                  </div>
-                </>
+                    {failedQueues.map((q) => {
+                      const QIcon = q.icon;
+                      return (
+                        <li key={q.key}>
+                          <Link
+                            to={tenantPath(q.path)}
+                            className="flex items-center gap-3 px-3 py-3 transition-colors hover:bg-surface-secondary motion-reduce:transition-none sm:px-4"
+                          >
+                            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${queueIconClass.neutral}`}>
+                              <QIcon size={18} aria-hidden="true" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-sm font-medium text-foreground">{t(q.labelKey)}</span>
+                              <span className="block text-xs font-medium text-warning">{t('dashboard.could_not_load')}</span>
+                            </span>
+                            <span className="text-lg font-semibold text-muted">—</span>
+                            <ChevronRight size={16} className="shrink-0 text-muted" aria-hidden="true" />
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
               )}
             </CardBody>
           </Card>
@@ -478,26 +490,6 @@ export function BrokerDashboard() {
             </Card>
           )}
 
-          {/* ── Quick links — one compact row; the sidebar has the same pages ── */}
-          <nav aria-label={t('dashboard.quick_access')} className="mb-6 flex flex-wrap gap-2">
-            {quickLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <Button
-                  key={link.path}
-                  as={Link}
-                  to={tenantPath(link.path)}
-                  size="sm"
-                  variant="secondary"
-                  className="rounded-full"
-                  startContent={<Icon size={14} aria-hidden="true" />}
-                >
-                  {t(`dashboard.links.${link.key}_title`)}
-                </Button>
-              );
-            })}
-          </nav>
-
           {/* ── Waiting for you (the first items of each queue, with quick
               decisions) beside My week ────────────────────────────────────── */}
           <div className={`mb-8 grid grid-cols-1 gap-4 ${inboxVisible ? 'xl:grid-cols-[2fr_1fr]' : ''}`}>
@@ -512,92 +504,34 @@ export function BrokerDashboard() {
             />
           </div>
 
-          {/* ── KPI grid — each tile deep-links with the filter applied ──── */}
-          <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
-            <BrokerStatCard
-              label={t('dashboard.pending_members')}
-              value={stats?.pending_members ?? null}
-              icon={UserPlus}
-              color="accent"
-              loading={loading}
-              to={tenantPath('/broker/members?status=pending')}
-              {...queueTileProps('pending_members', stats?.pending_members)}
-            />
-            <BrokerStatCard
-              label={t('dashboard.open_reports')}
-              value={stats?.open_reports ?? null}
-              icon={Flag}
-              color="warning"
-              loading={loading}
-              to={tenantPath('/broker/moderation/reports?status=pending')}
-              {...queueTileProps('open_reports', stats?.open_reports)}
-            />
-            {showExchanges && (
+          {/* ── Also worth knowing — the two counts that do not fall as a
+              broker works, kept apart from the waiting list above ─────────── */}
+          <section aria-labelledby="broker-standing-title" className="mb-8">
+            <h2 id="broker-standing-title" className="text-lg font-semibold tracking-tight text-foreground">
+              {t('dashboard.standing_title')}
+            </h2>
+            <p className="mb-4 mt-1 text-sm text-muted">{t('dashboard.standing_hint')}</p>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <BrokerStatCard
-                label={t('dashboard.pending_exchanges')}
-                value={stats?.pending_exchanges ?? null}
-                icon={ArrowLeftRight}
-                color="accent"
+                label={t('dashboard.monitored_users')}
+                value={stats?.monitored_users ?? null}
+                icon={Eye}
+                color="neutral"
                 loading={loading}
-                to={tenantPath('/broker/exchanges?status=needs_action')}
-                {...queueTileProps('pending_exchanges', stats?.pending_exchanges)}
+                to={tenantPath('/broker/monitoring')}
+                failed={failed('monitored_users')}
               />
-            )}
-            <BrokerStatCard
-              label={t('dashboard.unreviewed_messages')}
-              value={stats?.unreviewed_messages ?? null}
-              icon={MessageSquareWarning}
-              color="warning"
-              loading={loading}
-              to={tenantPath('/broker/messages?status=unreviewed')}
-              {...queueTileProps('unreviewed_messages', stats?.unreviewed_messages)}
-            />
-            <BrokerStatCard
-              label={t('dashboard.high_risk_listings')}
-              value={stats?.high_risk_listings ?? null}
-              icon={ShieldAlert}
-              color="danger"
-              loading={loading}
-              to={tenantPath('/broker/risk-tags?level=elevated')}
-              failed={failed('high_risk_listings')}
-            />
-            <BrokerStatCard
-              label={t('dashboard.monitored_users')}
-              value={stats?.monitored_users ?? null}
-              icon={Eye}
-              color="warning"
-              loading={loading}
-              to={tenantPath('/broker/monitoring')}
-              failed={failed('monitored_users')}
-            />
-            <BrokerStatCard
-              label={t('dashboard.vetting_review_requests')}
-              value={stats?.vetting_review_requests ?? null}
-              icon={ShieldCheck}
-              color="warning"
-              loading={loading}
-              to={tenantPath('/broker/vetting?status=review_requested')}
-              {...queueTileProps('vetting_review_requests', stats?.vetting_review_requests)}
-            />
-            <BrokerStatCard
-              label={t('dashboard.safeguarding_alerts')}
-              value={stats?.safeguarding_alerts ?? null}
-              icon={AlertTriangle}
-              color="danger"
-              loading={loading}
-              to={tenantPath('/broker/messages?status=urgent')}
-              {...queueTileProps('safeguarding_alerts', stats?.safeguarding_alerts)}
-            />
-            <BrokerStatCard
-              label={t('dashboard.safeguarding_flags')}
-              value={stats?.onboarding_safeguarding_flags ?? null}
-              icon={ShieldAlert}
-              color="warning"
-              loading={loading}
-              to={tenantPath('/broker/safeguarding/support-needs')}
-              failed={failed('onboarding_safeguarding_flags')}
-            />
-          </div>
+              <BrokerStatCard
+                label={t('dashboard.high_risk_listings')}
+                value={stats?.high_risk_listings ?? null}
+                icon={ShieldAlert}
+                color="warning"
+                loading={loading}
+                to={tenantPath('/broker/risk-tags?level=elevated')}
+                failed={failed('high_risk_listings')}
+              />
+            </div>
+          </section>
 
           {/* ── Activity timeline ────────────────────────────────────────── */}
           <div className="mb-8">

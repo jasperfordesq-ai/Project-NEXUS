@@ -269,18 +269,15 @@ describe('MessageReview (broker)', () => {
     });
   });
 
-  it('renders the KPI header with the global unreviewed count', async () => {
+  it('shows the unreviewed count on its tab, with no row of number tiles', async () => {
     mockAdminBroker.getUnreviewedCount.mockResolvedValue({ success: true, data: { count: 7 } });
     const { MessageReview } = await import('./MessageReviewPage');
     render(<MessageReview />);
 
-    expect(await screen.findByText('Unreviewed messages')).toBeInTheDocument();
-    expect(screen.getByText('Flagged messages')).toBeInTheDocument();
-    expect(screen.getByText('Reviewed messages')).toBeInTheDocument();
-    expect(screen.getByText('Matching this filter')).toBeInTheDocument();
-    await waitFor(() => {
-      expect(screen.getAllByText('7').length).toBeGreaterThan(0);
-    });
+    const unreviewed = await screen.findByRole('tab', { name: /Unreviewed/ });
+    await waitFor(() => expect(unreviewed.textContent).toContain('7'));
+    expect(screen.queryByText('Unreviewed messages')).not.toBeInTheDocument();
+    expect(screen.queryByText('Matching this filter')).not.toBeInTheDocument();
   });
 
   // The Flagged / Reviewed cards used to count the rows on the current page
@@ -299,10 +296,9 @@ describe('MessageReview (broker)', () => {
     expect(screen.queryByText('Flagged on this page')).not.toBeInTheDocument();
     expect(screen.queryByText('Reviewed on this page')).not.toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByText('7')).toBeInTheDocument();
-      expect(screen.getByText('12')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Flagged/ }).textContent).toContain('7');
     });
-    expect(screen.getByText('Every flagged message, not just this page')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /^Reviewed|Reviewed/ }).textContent).toContain('12');
     expect(screen.getByRole('tab', { name: /Urgent/ }).textContent).toContain('3');
     expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, per_page: 1, filter: 'flagged' });
     expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, per_page: 1, filter: 'reviewed' });
@@ -359,7 +355,7 @@ describe('MessageReview (broker)', () => {
     await waitFor(() => expect(screen.getByText('Hi')).toBeInTheDocument());
 
     // Translated label (table column + quick view), never the slug.
-    expect(screen.getAllByText('First Contact').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('First contact').length).toBeGreaterThanOrEqual(2);
     expect(screen.queryByText('first_contact')).not.toBeInTheDocument();
     const dialogButtons = Array.from(document.querySelectorAll('[role="dialog"] button')).map((b) => b.textContent?.trim());
     expect(dialogButtons).toContain('Close');

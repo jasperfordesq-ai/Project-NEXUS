@@ -39,7 +39,6 @@ vi.mock('react-i18next', () => ({
       'sidebar.section_overview': 'Overview',
       'sidebar.section_daily': 'Daily',
       'sidebar.section_compliance': 'Compliance',
-      'sidebar.section_records': 'Records',
       'sidebar.section_settings': 'Settings',
       'sidebar.title': 'Broker Panel',
       'sidebar.expand': 'Expand',
@@ -73,6 +72,16 @@ vi.mock('react-i18next', () => ({
 }));
 
 import { BrokerSidebar, type BrokerBadgeCounts } from '../components/BrokerSidebar';
+
+// Every menu group open, so a test can reach any link. The groups' own opening
+// and closing has tests of its own.
+const MENU_GROUPS_KEY = 'nexus_broker_menu_sections';
+beforeEach(() => {
+  window.localStorage.setItem(
+    MENU_GROUPS_KEY,
+    JSON.stringify({ daily: true, safeguarding: true, moderation: true, compliance: true, settings: true }),
+  );
+});
 
 const EMPTY_BADGES: BrokerBadgeCounts = {
   pending_members: 0,
@@ -126,7 +135,7 @@ describe('BrokerSidebar', () => {
     expect(screen.getByText('Content Queue')).toBeInTheDocument();
   });
 
-  it('gives safeguarding its own section, support needs first, and hides volunteering incidents without the feature', () => {
+  it('gives safeguarding its own section, support needs first, with its options page down among the settings, and hides volunteering incidents without the feature', () => {
     mockUseAuth.mockReturnValue({ user: { id: 1, role: 'broker' } });
     mockUseTenant.mockReturnValue({
       tenant: { id: 2, slug: 'test-tenant', name: 'Test Tenant' },

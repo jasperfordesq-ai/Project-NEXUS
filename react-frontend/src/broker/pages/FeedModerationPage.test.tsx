@@ -51,7 +51,7 @@ describe('FeedModerationPage (broker)', () => {
     const Component = (await import('./FeedModerationPage')).default;
     render(<Component />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Feed Moderation' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Feed posts' })).toBeInTheDocument();
     expect(screen.getByText('Review and moderate posts, listings, events, and other feed content.')).toBeInTheDocument();
     expect(screen.getByTestId('admin-feed-moderation')).toBeInTheDocument();
     expect(mockAdmin).toHaveBeenCalledTimes(1);
@@ -70,7 +70,7 @@ describe('FeedModerationPage (broker)', () => {
     render(<Component />);
 
     expect(titleEffects).toContain('Admin: Feed Moderation');
-    expect(titleEffects[titleEffects.length - 1]).toBe('Feed Moderation');
+    expect(titleEffects[titleEffects.length - 1]).toBe('Feed posts');
   });
 
   it('links to the plain-English guide for this page', async () => {

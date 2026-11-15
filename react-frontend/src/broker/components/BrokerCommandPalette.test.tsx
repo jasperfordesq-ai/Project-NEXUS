@@ -85,7 +85,7 @@ describe('BrokerCommandPalette', () => {
       expect(await screen.findByText('Recent')).toBeInTheDocument();
       // "Vetting confirmations" appears once under Recent and once under Pages.
       expect(screen.getAllByRole('option', { name: /vetting confirmations/i })).toHaveLength(2);
-      const detail = screen.getByRole('option', { name: /messages.*#12/i });
+      const detail = screen.getByRole('option', { name: /message checks.*#12/i });
       await userEvent.setup().click(detail);
       expect(mockNavigate).toHaveBeenCalledWith('/test/broker/messages/12');
     });
@@ -201,7 +201,7 @@ describe('BrokerCommandPalette', () => {
     await waitFor(() => {
       expect(screen.getByRole('option', { name: /dashboard/i })).toBeInTheDocument();
     });
-    expect(screen.getByRole('option', { name: /match approvals/i })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /suggested matches/i })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: /vetting/i })).toBeInTheDocument();
   });
 
@@ -238,7 +238,7 @@ describe('BrokerCommandPalette', () => {
     await waitFor(() => {
       expect(screen.getByRole('option', { name: /dashboard/i })).toBeInTheDocument();
     });
-    expect(screen.queryByRole('option', { name: /match approvals/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /suggested matches/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('option', { name: /exchanges/i })).not.toBeInTheDocument();
   });
 

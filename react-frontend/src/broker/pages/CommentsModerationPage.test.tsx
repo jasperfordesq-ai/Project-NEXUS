@@ -51,7 +51,7 @@ describe('CommentsModerationPage (broker)', () => {
     const Component = (await import('./CommentsModerationPage')).default;
     render(<Component />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Comments Moderation' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Comments' })).toBeInTheDocument();
     expect(screen.getByText('Review and moderate member comments across the community.')).toBeInTheDocument();
     expect(screen.getByTestId('admin-comments-moderation')).toBeInTheDocument();
     expect(mockAdmin).toHaveBeenCalledTimes(1);
@@ -70,7 +70,7 @@ describe('CommentsModerationPage (broker)', () => {
     render(<Component />);
 
     expect(titleEffects).toContain('Admin: Comments Moderation');
-    expect(titleEffects[titleEffects.length - 1]).toBe('Comments Moderation');
+    expect(titleEffects[titleEffects.length - 1]).toBe('Comments');
   });
 
   it('links to the plain-English guide for this page', async () => {

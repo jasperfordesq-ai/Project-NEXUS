@@ -5,12 +5,18 @@
 
 /**
  * Broker Sidebar Navigation
- * Sectioned sidebar covering daily workflow, compliance, records, and
- * settings. Live badge counts are owned by BrokerLayout and passed in as
- * a prop — keeps the polling singleton even though we mount two
- * BrokerSidebar instances (desktop fixed + mobile drawer).
+ * Five groups, in the order a broker uses them: every day, safeguarding,
+ * posts and reports, checks and records, settings and help. Each group
+ * opens and closes; a closed group shows how many things are waiting inside,
+ * so closing one never hides work (Nov 2026 — the menu had grown to 22 links
+ * and its lower half was off the screen on a laptop).
+ *
+ * Live badge counts are owned by BrokerLayout and passed in as a prop —
+ * keeps the polling singleton even though we mount two BrokerSidebar
+ * instances (desktop fixed + mobile drawer).
  */
 
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -42,6 +48,7 @@ import Settings2 from 'lucide-react/icons/settings-2';
 import HelpCircle from 'lucide-react/icons/circle-help';
 import PanelLeftClose from 'lucide-react/icons/panel-left-close';
 import PanelLeft from 'lucide-react/icons/panel-left';
+import ChevronDown from 'lucide-react/icons/chevron-down';
 import Settings from 'lucide-react/icons/settings';
 import { Badge, Button, Chip, Tooltip } from '@/components/ui';
 
@@ -100,6 +107,35 @@ interface NavSection {
   items: NavItem[];
 }
 
+/** Groups open the first time a broker sees the menu; the rest start closed. */
+const OPEN_BY_DEFAULT: Record<string, boolean> = { daily: true, safeguarding: true };
+const SECTIONS_STORAGE_KEY = 'nexus_broker_menu_sections';
+
+/** Which groups this browser last left open. A per-viewer convenience only. */
+function readStoredSections(): Record<string, boolean> {
+  try {
+    const raw = window.localStorage.getItem(SECTIONS_STORAGE_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    const out: Record<string, boolean> = {};
+    for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
+      if (typeof value === 'boolean') out[key] = value;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+function storeSections(sections: Record<string, boolean>): void {
+  try {
+    window.localStorage.setItem(SECTIONS_STORAGE_KEY, JSON.stringify(sections));
+  } catch {
+    // Private window or blocked storage: the menu still works, it just
+    // forgets which groups were open.
+  }
+}
+
 export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProps) {
   const { t } = useTranslation('broker');
   const location = useLocation();
@@ -144,7 +180,7 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
       // One page per safeguarding job (Oct 2026). These were tabs on a
       // single page and brokers said things were hidden; Members' support
       // needs leads because those answers change what a member can do.
-      // Flagged messages are not here: they are the Messages queue above.
+      // Flagged messages are not here: they are the message checks above.
       key: 'safeguarding',
       title: t('sidebar.section_safeguarding'),
       items: [
@@ -154,7 +190,6 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
         ...(showVolunteering
           ? ([{ key: 'safeguarding-volunteering', label: t('nav.safeguarding_volunteering'), icon: HandHeart, path: '/broker/safeguarding/volunteering' }] as NavItem[])
           : []),
-        { key: 'safeguarding-options', label: t('nav.safeguarding_options'), icon: SlidersHorizontal, path: '/broker/safeguarding-options' },
       ],
     },
     {
@@ -173,6 +208,8 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
       ],
     },
     {
+      // The record of past message checks sits with the other registers; it
+      // was a group of its own with a single link in it.
       key: 'compliance',
       title: t('sidebar.section_compliance'),
       items: [
@@ -180,20 +217,17 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
         { key: 'monitoring', label: t('nav.monitoring'), icon: Eye, path: '/broker/monitoring', badgeKey: 'monitored_users', badgeTone: 'inventory' },
         { key: 'risk-tags', label: t('nav.risk_tags'), icon: AlertTriangle, path: '/broker/risk-tags', badgeKey: 'high_risk_listings', badgeTone: 'inventory' },
         { key: 'insurance', label: t('nav.insurance'), icon: FileText, path: '/broker/insurance', badgeKey: 'insurance_attention', badgeTone: 'attention' },
-      ],
-    },
-    {
-      key: 'records',
-      title: t('sidebar.section_records'),
-      items: [
         { key: 'archives', label: t('nav.archives'), icon: Archive, path: '/broker/archives' },
       ],
     },
     {
+      // The safeguarding options page sets up the questions members are
+      // asked; it is a setting, not day-to-day safeguarding work.
       key: 'settings',
       title: t('sidebar.section_settings'),
       items: [
         { key: 'configuration', label: t('nav.configuration'), icon: Settings2, path: '/broker/configuration' },
+        { key: 'safeguarding-options', label: t('nav.safeguarding_options'), icon: SlidersHorizontal, path: '/broker/safeguarding-options' },
         { key: 'help', label: t('nav.help'), icon: HelpCircle, path: '/broker/help' },
       ],
     },
@@ -209,6 +243,38 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
     }
     return isOnPanelPath(location.pathname, path, tenantPath);
   };
+
+  const [storedSections, setStoredSections] = useState<Record<string, boolean>>(readStoredSections);
+  const isSectionOpen = (key: string) => storedSections[key] ?? OPEN_BY_DEFAULT[key] ?? false;
+
+  const toggleSection = (key: string) => {
+    setStoredSections((current) => {
+      const next = { ...current, [key]: !(current[key] ?? OPEN_BY_DEFAULT[key] ?? false) };
+      storeSections(next);
+      return next;
+    });
+  };
+
+  // Arriving on a page (from the dashboard, the search box, a link in an
+  // email) opens its group, so the menu always shows where you are. Only on
+  // arrival: a broker may still close the group afterwards.
+  const activeSectionKey = sections.find((section) => section.items.some((item) => isActive(item.path)))?.key;
+  useEffect(() => {
+    if (!activeSectionKey || activeSectionKey === 'overview') return;
+    setStoredSections((current) => {
+      if (current[activeSectionKey] ?? OPEN_BY_DEFAULT[activeSectionKey] ?? false) return current;
+      const next = { ...current, [activeSectionKey]: true };
+      storeSections(next);
+      return next;
+    });
+  }, [activeSectionKey, location.pathname]);
+
+  /** What is waiting inside a group: work and things to look at, never the standing counts. */
+  const waitingIn = (section: NavSection) =>
+    section.items.reduce((sum, item) => {
+      if (!item.badgeKey || item.badgeTone === 'inventory') return sum;
+      return sum + (badges[item.badgeKey] || 0);
+    }, 0);
 
   const renderItem = (item: NavItem) => {
     const active = isActive(item.path);
@@ -260,7 +326,9 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
           )}
           {!collapsed && (
             <>
-              <span className="flex-1 truncate">{item.label}</span>
+              {/* Long names wrap onto a second line: cut off with an ellipsis, half the
+                  menu was unreadable in German, French, Spanish and Portuguese. */}
+              <span className="min-w-0 flex-1 hyphens-auto break-words leading-5">{item.label}</span>
               {badgeCount > 0 && (
                 <Chip
                   size="sm"
@@ -319,18 +387,49 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
 
       {/* Navigation */}
       <nav aria-label={t('sidebar.nav_label')} className="flex-1 overflow-y-auto px-2 py-3">
-        {sections.map((section, idx) => (
-          <div key={section.key} className={idx > 0 ? 'mt-4' : ''}>
-            {!collapsed && section.key !== 'overview' && (
-              <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-muted">
-                {section.title}
-              </p>
-            )}
-            <ul className="flex flex-col gap-1">
-              {section.items.map(renderItem)}
-            </ul>
-          </div>
-        ))}
+        {sections.map((section, idx) => {
+          // The narrow icon rail has no headings to press, so it shows every link.
+          const isGroup = !collapsed && section.key !== 'overview';
+          const open = !isGroup || isSectionOpen(section.key);
+          const waiting = isGroup && !open ? waitingIn(section) : 0;
+          const listId = `broker-menu-${section.key}`;
+          return (
+            <div key={section.key} className={idx > 0 ? 'mt-3' : ''}>
+              {isGroup && (
+                <button
+                  type="button"
+                  onClick={() => toggleSection(section.key)}
+                  aria-expanded={open}
+                  aria-controls={open ? listId : undefined}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-foreground transition-colors hover:bg-surface-secondary motion-reduce:transition-none"
+                >
+                  <span className="min-w-0 flex-1 hyphens-auto break-words leading-5">{section.title}</span>
+                  {waiting > 0 && (
+                    <Chip
+                      size="sm"
+                      color="danger"
+                      variant="tertiary"
+                      className="h-5 min-w-[24px] text-xs tabular-nums"
+                      aria-label={t('sidebar.section_waiting', { count: waiting })}
+                    >
+                      {waiting > 99 ? '99+' : String(waiting)}
+                    </Chip>
+                  )}
+                  <ChevronDown
+                    size={16}
+                    aria-hidden="true"
+                    className={`shrink-0 text-muted transition-transform motion-reduce:transition-none ${open ? '' : '-rotate-90'}`}
+                  />
+                </button>
+              )}
+              {open && (
+                <ul id={listId} className="flex flex-col gap-1">
+                  {section.items.map(renderItem)}
+                </ul>
+              )}
+            </div>
+          );
+        })}
       </nav>
 
       {/* Footer — Admin panel link for admins */}

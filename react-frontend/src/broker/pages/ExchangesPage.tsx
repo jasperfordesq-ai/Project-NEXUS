@@ -21,8 +21,6 @@ import ArrowRight from 'lucide-react/icons/arrow-right';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
 import AlertCircle from 'lucide-react/icons/circle-alert';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import Clock from 'lucide-react/icons/clock';
 import Download from 'lucide-react/icons/download';
 import Eye from 'lucide-react/icons/eye';
 import Inbox from 'lucide-react/icons/inbox';
@@ -37,7 +35,6 @@ import type { ExchangeRequest } from '@/admin/api/types';
 import { Button, Avatar } from '@/components/ui';
 import {
   BrokerPageShell,
-  BrokerStatCard,
   BrokerEmptyState,
   BrokerSkeleton,
   BrokerStatusChip,
@@ -80,6 +77,13 @@ function readHasMore(res: Awaited<ReturnType<typeof adminBroker.getExchanges>>, 
   const totalPages = Number(meta?.total_pages);
   return Number.isFinite(totalPages) ? page < totalPages : false;
 }
+
+/** The one-line explanation shown under the tabs for the three lists a broker acts on. */
+const TAB_HINT_KEYS: Partial<Record<ExchangeStatus, string>> = {
+  needs_action: 'exchanges.stat_needs_action_hint',
+  pending_broker: 'exchanges.stat_pending_hint',
+  disputed: 'exchanges.stat_disputed_hint',
+};
 
 export function ExchangeManagement() {
   const { t } = useTranslation('broker');
@@ -124,10 +128,10 @@ export function ExchangeManagement() {
   const [initialLoad, setInitialLoad] = useState(true);
   const [loadError, setLoadError] = useState(false);
 
-  // KPI header state. There is no dedicated exchange-stats endpoint, so the
-  // header reuses the page's own list endpoint: one probe per card reading
-  // only meta.total (per_page 1 keeps the probes cheap). The cards and the
-  // tab badges read the same numbers, so a card can never disagree with its list.
+  // The counts on the tabs. There is no dedicated exchange-stats endpoint, so
+  // they reuse the page's own list endpoint: one probe per count reading only
+  // meta.total (per_page 1 keeps the probes cheap), so a tab can never
+  // disagree with the list behind it.
   const [stats, setStats] = useState<{
     total: number | null;
     pending: number | null;
@@ -197,7 +201,7 @@ export function ExchangeManagement() {
         disputed: readTotal(disputedRes),
       });
     } catch {
-      // KPI header degrades to em-dashes; the list load owns error messaging.
+      // The tabs simply show no counts; the list load owns error messaging.
     } finally {
       setStatsLoading(false);
     }
@@ -390,54 +394,21 @@ export function ExchangeManagement() {
           <ExchangeStatusTabs
             status={status}
             onChange={setStatus}
-            counts={{ needsAction: stats.needsAction, pending: stats.pending }}
+            counts={{ all: stats.total, needsAction: stats.needsAction, pending: stats.pending, disputed: stats.disputed }}
           />
+          {/* What the tab you are on means, in a sentence. "Needs a decision"
+              and "Waiting for approval" are easy to mix up without it. */}
+          {TAB_HINT_KEYS[status] && (
+            <p className="px-2 text-sm leading-6 text-muted">{t(TAB_HINT_KEYS[status])}</p>
+          )}
           <div className="px-1 pb-1">
             <ExchangeDateRangeFilter from={from} to={to} onChange={setDates} />
           </div>
         </div>
       }
     >
-      {/* KPI header — deep-links into the matching filtered view */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <BrokerStatCard
-          label={t('exchanges.stat_total')}
-          value={stats.total}
-          icon={ArrowLeftRight}
-          color="accent"
-          loading={statsLoading}
-          description={t('exchanges.stat_total_hint')}
-          to={tenantPath('/broker/exchanges')}
-        />
-        <BrokerStatCard
-          label={t('exchanges.stat_pending')}
-          value={stats.pending}
-          icon={Clock}
-          color="warning"
-          loading={statsLoading}
-          description={t('exchanges.stat_pending_hint')}
-          to={tenantPath('/broker/exchanges?status=pending_broker')}
-        />
-        <BrokerStatCard
-          label={t('exchanges.stat_needs_action')}
-          value={stats.needsAction}
-          icon={AlertCircle}
-          color="accent"
-          loading={statsLoading}
-          description={t('exchanges.stat_needs_action_hint')}
-          to={tenantPath('/broker/exchanges?status=needs_action')}
-        />
-        <BrokerStatCard
-          label={t('exchanges.stat_disputed')}
-          value={stats.disputed}
-          icon={AlertTriangle}
-          color="danger"
-          loading={statsLoading}
-          description={t('exchanges.stat_disputed_hint')}
-          to={tenantPath('/broker/exchanges?status=disputed')}
-        />
-      </div>
-
+      {/* The four number tiles that sat here repeated the tabs above; each tab
+          now carries its own count and the list starts higher up the page. */}
       {initialLoad ? (
         <BrokerSkeleton variant="table" />
       ) : loadError && items.length === 0 ? (

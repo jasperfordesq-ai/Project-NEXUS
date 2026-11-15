@@ -89,7 +89,7 @@ describe('BrokerBreadcrumbs', () => {
       renderAt('/test/broker/messages/42');
       const current = screen.getByText('#42');
       expect(current.closest('a')).toBeNull();
-      expect(screen.getByRole('link', { name: 'Messages' })).toHaveAttribute('href', '/test/broker/messages');
+      expect(screen.getByRole('link', { name: 'Message checks' })).toHaveAttribute('href', '/test/broker/messages');
     });
 
     it('uses the name the detail page set for the record', () => {
@@ -112,10 +112,10 @@ describe('BrokerBreadcrumbs', () => {
       expect(screen.getByText('Guardians')).toBeInTheDocument();
     });
 
-    it('shows Moderation as plain text, not a link', () => {
+    it('shows the moderation group as plain text, not a link', () => {
       renderAt('/test/broker/moderation/queue');
-      expect(screen.getByText('Moderation')).toBeInTheDocument();
-      expect(screen.queryByRole('link', { name: 'Moderation' })).not.toBeInTheDocument();
+      expect(screen.getByText('Posts and reports')).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Posts and reports' })).not.toBeInTheDocument();
     });
   });
 

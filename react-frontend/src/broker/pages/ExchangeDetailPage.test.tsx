@@ -155,7 +155,7 @@ describe('ExchangeDetailPage (ExchangeDetail)', () => {
     await waitFor(() => {
       const current = document.querySelector('[aria-current="step"]');
       expect(current).toBeTruthy();
-      expect(current?.textContent).toContain('Pending Broker Approval');
+      expect(current?.textContent).toContain('Waiting for approval');
     });
   });
 
@@ -165,7 +165,7 @@ describe('ExchangeDetailPage (ExchangeDetail)', () => {
   // nothing current for a live exchange.
   it.each([
     ['pending_provider', 'Pending Provider'],
-    ['pending_broker', 'Pending Broker Approval'],
+    ['pending_broker', 'Waiting for approval'],
     ['accepted', 'Accepted'],
     ['in_progress', 'In Progress'],
     ['pending_confirmation', 'Pending Confirmation'],
@@ -186,7 +186,7 @@ describe('ExchangeDetailPage (ExchangeDetail)', () => {
       .map((li) => (li.textContent ?? '').replace(/^\d+/, ''));
     expect(stages).toEqual([
       'Pending Provider',
-      'Pending Broker Approval',
+      'Waiting for approval',
       'Accepted',
       'In Progress',
       'Pending Confirmation',

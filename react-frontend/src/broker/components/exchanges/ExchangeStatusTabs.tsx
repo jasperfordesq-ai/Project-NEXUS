@@ -22,10 +22,13 @@ import Clock from 'lucide-react/icons/clock';
 import Hourglass from 'lucide-react/icons/hourglass';
 import Users from 'lucide-react/icons/users';
 import type { LucideIcon } from 'lucide-react';
-import { Chip, Tab, Tabs } from '@/components/ui';
+import { Tab, Tabs } from '@/components/ui';
+import { BrokerTabCount, type BrokerTabCountTone } from '../BrokerTabCount';
 
+// Tab order: everything, then the three lists a broker acts on, then history.
+// "Disputed" was last, where its count scrolled out of sight on a laptop.
 export const EXCHANGE_STATUSES = [
-  'all', 'needs_action', 'pending_broker', 'accepted', 'in_progress', 'completed', 'cancelled', 'disputed',
+  'all', 'needs_action', 'pending_broker', 'disputed', 'accepted', 'in_progress', 'completed', 'cancelled',
 ] as const;
 
 export type ExchangeStatus = (typeof EXCHANGE_STATUSES)[number];
@@ -44,19 +47,20 @@ const TAB_ICONS: Record<ExchangeStatus, LucideIcon> = {
 export interface ExchangeStatusTabsProps {
   status: ExchangeStatus;
   onChange: (status: ExchangeStatus) => void;
-  /** Badge counts; null while unknown (no badge is drawn). */
-  counts: { needsAction: number | null; pending: number | null };
+  /** The count behind each tab that has one; null while unknown (nothing is drawn). */
+  counts: { all: number | null; needsAction: number | null; pending: number | null; disputed: number | null };
 }
+
+/** Which count a tab shows, and how: a plain total, or work that should fall to zero. */
+const TAB_COUNT: Partial<Record<ExchangeStatus, { from: keyof ExchangeStatusTabsProps['counts']; tone: BrokerTabCountTone }>> = {
+  all: { from: 'all', tone: 'neutral' },
+  needs_action: { from: 'needsAction', tone: 'warning' },
+  pending_broker: { from: 'pending', tone: 'warning' },
+  disputed: { from: 'disputed', tone: 'danger' },
+};
 
 export function ExchangeStatusTabs({ status, onChange, counts }: ExchangeStatusTabsProps) {
   const { t } = useTranslation('broker');
-  const badge = (value: number | null) =>
-    value != null && value > 0 ? (
-      <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
-        {value}
-      </Chip>
-    ) : null;
-
   return (
     <Tabs
       aria-label={t('exchanges.tabs_aria')}
@@ -74,8 +78,7 @@ export function ExchangeStatusTabs({ status, onChange, counts }: ExchangeStatusT
               <div className="flex items-center gap-2">
                 <Icon size={14} aria-hidden="true" />
                 <span>{t(`exchanges.tab_${key}`)}</span>
-                {key === 'needs_action' && badge(counts.needsAction)}
-                {key === 'pending_broker' && badge(counts.pending)}
+                {TAB_COUNT[key] && <BrokerTabCount value={counts[TAB_COUNT[key].from]} tone={TAB_COUNT[key].tone} />}
               </div>
             }
           />

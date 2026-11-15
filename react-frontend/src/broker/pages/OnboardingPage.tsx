@@ -30,7 +30,6 @@ import ArrowDown from 'lucide-react/icons/arrow-down';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import CalendarDays from 'lucide-react/icons/calendar-days';
-import Clock from 'lucide-react/icons/clock';
 import ExternalLink from 'lucide-react/icons/external-link';
 import Filter from 'lucide-react/icons/filter';
 import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
@@ -278,7 +277,8 @@ export default function OnboardingPage() {
       ? ((lastStage.count / firstStage.count) * 100).toFixed(1)
       : null;
 
-  // The stage transition with the lowest conversion — where members drop off most.
+  // The step the fewest members carry on to — where most people stop. `rate`
+  // is the share who DID carry on; the tile shows the share who did not.
   let biggestDropoff: { name: string; rate: number } | null = null;
   for (let i = 1; i < stages.length; i++) {
     const prev = stages[i - 1];
@@ -290,6 +290,8 @@ export default function OnboardingPage() {
       }
     }
   }
+
+  const stoppedShare = biggestDropoff ? Math.max(0, Math.round((100 - biggestDropoff.rate) * 10) / 10) : 0;
 
   // ─── Monthly registrations trend (newer API only) ─────────────────────────
 
@@ -350,6 +352,17 @@ export default function OnboardingPage() {
         key: 'actions',
         label: t('members.col_actions'),
         render: (user: AdminUser) => (
+          <div className="flex items-center gap-1">
+          <Button
+            size="sm"
+            color="success"
+            variant="flat"
+            startContent={<UserCheck size={14} aria-hidden="true" />}
+            onPress={() => setApproveUser(user)}
+            aria-label={t('members.approve_named', { name: user.name })}
+          >
+            {t('members.approve')}
+          </Button>
           <Dropdown>
             <DropdownTrigger>
               <Button isIconOnly variant="light" size="sm" aria-label={t('members.col_actions')}>
@@ -375,6 +388,7 @@ export default function OnboardingPage() {
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
+          </div>
         ),
       },
     ],
@@ -402,8 +416,69 @@ export default function OnboardingPage() {
         </Button>
       }
     >
-      {/* ── KPI cards — derived from the funnel + pending queue ──────────── */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+      {/* ── Waiting for approval — the one thing on this page a broker acts
+          on, so it comes first. With nobody waiting it is a single line, not
+          an empty table. ──────────────────────────────────────────────────── */}
+      {!membersLoading && !membersError && total === 0 ? (
+        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-success/30 bg-success/5 px-4 py-3 text-sm text-foreground">
+          <Sparkles size={16} className="shrink-0 text-success" aria-hidden="true" />
+          <span>{t('onboarding.no_pending')}</span>
+        </div>
+      ) : (
+        <section aria-labelledby="broker-waiting-approval-title" className="mb-8">
+          <div className="mb-4 flex items-center gap-2">
+            <h2 id="broker-waiting-approval-title" className="text-lg font-semibold tracking-tight text-foreground">
+              {t('onboarding.pending_approvals')}
+            </h2>
+            {!membersLoading && total > 0 && (
+              <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
+                {total.toLocaleString(getFormattingLocale())}
+              </Chip>
+            )}
+          </div>
+          <DataTable<AdminUser>
+            stickyActions
+            mobileCards
+            columns={columns}
+            data={members}
+            keyField="id"
+            isLoading={membersLoading}
+            searchable={false}
+            totalItems={total}
+            page={page}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+            onRefresh={fetchMembers}
+            emptyContent={
+              membersError ? (
+                <BrokerEmptyState
+                  bare
+                  icon={AlertCircle}
+                  color="danger"
+                  title={t('onboarding.members_error_title')}
+                  hint={t('onboarding.members_error_hint')}
+                  action={
+                    <Button size="sm" variant="danger-soft" onPress={fetchMembers}>
+                      {t('onboarding.retry')}
+                    </Button>
+                  }
+                />
+              ) : (
+                <BrokerEmptyState
+                  bare
+                  icon={Sparkles}
+                  color="success"
+                  title={t('onboarding.empty_pending_title')}
+                  hint={t('onboarding.no_pending')}
+                />
+              )
+            }
+          />
+        </section>
+      )}
+
+      {/* ── Number tiles — derived from the steps + the waiting list ─────── */}
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         <BrokerStatCard
           label={t('onboarding.kpi_registered')}
           value={firstStage?.count ?? null}
@@ -422,20 +497,16 @@ export default function OnboardingPage() {
           loading={funnelLoading}
         />
         <BrokerStatCard
-          label={t('onboarding.kpi_pending')}
-          value={membersError ? null : total}
-          icon={Clock}
-          color="warning"
-          loading={membersLoading}
-          to={tenantPath('/broker/members?status=pending')}
-        />
-        <BrokerStatCard
           label={t('onboarding.kpi_dropoff')}
-          value={biggestDropoff ? `${biggestDropoff.rate}%` : null}
+          value={biggestDropoff ? `${stoppedShare}%` : null}
           icon={TrendingDown}
           color="danger"
           loading={funnelLoading}
-          description={biggestDropoff ? biggestDropoff.name : t('onboarding.kpi_none')}
+          description={
+            biggestDropoff && stoppedShare > 0
+              ? t('onboarding.kpi_dropoff_before', { step: biggestDropoff.name })
+              : t('onboarding.kpi_none')
+          }
         />
       </div>
 
@@ -652,56 +723,6 @@ export default function OnboardingPage() {
           </CardBody>
         </Card>
       )}
-
-      {/* ── Pending approvals queue ───────────────────────────────────────── */}
-      <div className="mb-4 flex items-center gap-2">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">
-          {t('onboarding.pending_approvals')}
-        </h2>
-        {!membersLoading && total > 0 && (
-          <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
-            {total.toLocaleString(getFormattingLocale())}
-          </Chip>
-        )}
-      </div>
-      <DataTable<AdminUser>
-        stickyActions
-        mobileCards
-        columns={columns}
-        data={members}
-        keyField="id"
-        isLoading={membersLoading}
-        searchable={false}
-        totalItems={total}
-        page={page}
-        pageSize={PAGE_SIZE}
-        onPageChange={setPage}
-        onRefresh={fetchMembers}
-        emptyContent={
-          membersError ? (
-            <BrokerEmptyState
-              bare
-              icon={AlertCircle}
-              color="danger"
-              title={t('onboarding.members_error_title')}
-              hint={t('onboarding.members_error_hint')}
-              action={
-                <Button size="sm" variant="danger-soft" onPress={fetchMembers}>
-                  {t('onboarding.retry')}
-                </Button>
-              }
-            />
-          ) : (
-            <BrokerEmptyState
-              bare
-              icon={Sparkles}
-              color="success"
-              title={t('onboarding.empty_pending_title')}
-              hint={t('onboarding.no_pending')}
-            />
-          )
-        }
-      />
 
       {/* Approve confirmation */}
       <ConfirmModal

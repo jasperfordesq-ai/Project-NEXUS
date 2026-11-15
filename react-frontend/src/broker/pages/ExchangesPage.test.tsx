@@ -78,7 +78,7 @@ describe('ExchangeManagement — loading state', () => {
   it('renders the shell header with the page title', () => {
     render(<ExchangeManagement />);
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Exchange Management' })
+      screen.getByRole('heading', { level: 1, name: 'Exchanges' })
     ).toBeInTheDocument();
   });
 
@@ -123,7 +123,7 @@ describe('ExchangeManagement — empty state', () => {
   it('shows its own empty state on the needs-action queue', async () => {
     renderAt('/broker/exchanges?status=needs_action');
     await waitFor(() => {
-      expect(screen.getByText('Nothing needs your action')).toBeInTheDocument();
+      expect(screen.getByText('Nothing needs a decision')).toBeInTheDocument();
     });
   });
 });
@@ -145,7 +145,7 @@ describe('ExchangeManagement — needs-action deep link', () => {
         expect.objectContaining({ page: 1, status: 'needs_action' })
       );
     });
-    expect(screen.getByRole('tab', { name: /Needs action/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: /Needs a decision/ })).toHaveAttribute('aria-selected', 'true');
   });
 });
 
@@ -166,18 +166,20 @@ describe('ExchangeManagement — populated state', () => {
     expect(screen.getByText('Dave Brown')).toBeInTheDocument();
   });
 
-  it('renders the KPI stat cards for total and pending exchanges', async () => {
+  // The row of four number tiles repeated the tabs and pushed the list down
+  // the page (Nov 2026). The tabs carry the counts now.
+  it('has no row of number tiles above the list', async () => {
     render(<ExchangeManagement />);
-    await waitFor(() => {
-      expect(screen.getByText('Total exchanges')).toBeInTheDocument();
-    });
-    expect(screen.getByText('Pending broker review')).toBeInTheDocument();
+    expect(await screen.findByRole('tab', { name: /^All/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Waiting for approval/ })).toBeInTheDocument();
+    expect(screen.queryByText('Total exchanges')).not.toBeInTheDocument();
+    expect(screen.queryByText('Pending broker review')).not.toBeInTheDocument();
   });
 
   it('renders panel-wide status chips for exchange statuses', async () => {
     render(<ExchangeManagement />);
     await waitFor(() => {
-      expect(screen.getByText('Pending Broker Approval')).toBeInTheDocument();
+      expect(screen.getByText('Waiting for approval')).toBeInTheDocument();
     });
   });
 
@@ -315,7 +317,7 @@ describe('ExchangeManagement — a failed decision keeps the typed reason', () =
   });
 });
 
-describe('ExchangeManagement — KPI cards and labels', () => {
+describe('ExchangeManagement — tab counts and labels', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.history.pushState({}, '', '/broker/exchanges');
@@ -329,27 +331,46 @@ describe('ExchangeManagement — KPI cards and labels', () => {
     });
   });
 
-  // The header grid had two cards in a four-card grid. The two new cards must
-  // read the same probe the tabs read, so a card never disagrees with its list.
-  it('shows Needs action and Disputed cards whose numbers match the tab counts', async () => {
+  // Each count is read from the same one-row probe as before, and now sits
+  // on the tab it belongs to instead of on a tile above the tabs.
+  it('shows each count once, on its tab', async () => {
     render(<ExchangeManagement />);
-    // The label appears on the card and on the tab; the card is the link.
-    expect(await screen.findByRole('link', { name: 'Needs action' })).toBeInTheDocument();
-    expect(screen.getByText('Awaiting your approval or in dispute')).toBeInTheDocument();
-    expect(screen.getByText('Members disagree about the hours')).toBeInTheDocument();
+    const needs = await screen.findByRole('tab', { name: /Needs a decision/ });
+    await waitFor(() => expect(needs.textContent).toContain('5'));
+    expect(screen.getByRole('tab', { name: /Waiting for approval/ }).textContent).toContain('3');
+    expect(screen.getByRole('tab', { name: /Disputed/ }).textContent).toContain('2');
+    expect(screen.getByRole('tab', { name: /^All/ }).textContent).toContain('10');
+    // No tile repeats them.
+    expect(screen.queryByRole('link', { name: 'Needs a decision' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Disputed' })).not.toBeInTheDocument();
+  });
 
-    // Needs-action: card value + tab badge both read 5.
-    await waitFor(() => expect(screen.getAllByText('5').length).toBeGreaterThanOrEqual(2));
-    // Disputed total 2 appears on its card.
-    expect(screen.getAllByText('2').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByRole('link', { name: 'Disputed' })).toHaveAttribute(
-      'href',
-      expect.stringContaining('/broker/exchanges?status=disputed'),
-    );
-    expect(screen.getByRole('link', { name: 'Needs action' })).toHaveAttribute(
-      'href',
-      expect.stringContaining('/broker/exchanges?status=needs_action'),
-    );
+  // "Disputed" was the last of eight tabs, where its count scrolled out of
+  // sight on a laptop. The three lists a broker acts on now sit together.
+  it('puts the three lists a broker acts on before the history tabs', async () => {
+    render(<ExchangeManagement />);
+    await screen.findByRole('tab', { name: /Needs a decision/ });
+    const names = screen.getAllByRole('tab').map((tab) => tab.textContent ?? '');
+    const at = (label: string) => names.findIndex((name) => name.includes(label));
+    expect(at('Needs a decision')).toBeLessThan(at('Waiting for approval'));
+    expect(at('Waiting for approval')).toBeLessThan(at('Disputed'));
+    expect(at('Disputed')).toBeLessThan(at('Approved'));
+    expect(at('Disputed')).toBeLessThan(at('Completed'));
+  });
+
+  it('says in a sentence what the tab you are on means, for the lists a broker acts on', async () => {
+    render(<ExchangeManagement />);
+    await screen.findByRole('tab', { name: /Needs a decision/ });
+    // Nothing on "All".
+    expect(screen.queryByText('Awaiting your approval or in dispute')).not.toBeInTheDocument();
+    expect(screen.queryByText('Members disagree about the hours')).not.toBeInTheDocument();
+  });
+
+  it('explains the Disputed tab when it is the one open', async () => {
+    window.history.pushState({}, '', '/broker/exchanges?status=disputed');
+    render(<ExchangeManagement />);
+    expect(await screen.findByText('Members disagree about the hours')).toBeInTheDocument();
+    expect(screen.queryByText('Awaiting your approval or in dispute')).not.toBeInTheDocument();
   });
 
   it('writes hours through a translated label instead of a bare "h" suffix', async () => {

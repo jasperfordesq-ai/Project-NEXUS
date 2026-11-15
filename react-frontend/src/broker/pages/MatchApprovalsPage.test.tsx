@@ -97,13 +97,17 @@ describe('MatchApprovalsPage', () => {
     mockGetApprovalStats.mockResolvedValue({ success: true, data: STATS });
   });
 
-  it('renders the page title and stat cards', async () => {
+  it('renders the page title, with the counts on the tabs and the share approved as a line of text', async () => {
     renderPage();
-    expect(screen.getByRole('heading', { level: 1, name: 'Match Approvals' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Suggested matches' })).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByText('Pending Review')).toBeInTheDocument();
-      expect(screen.getByText('Approval Rate')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Waiting for approval/ }).textContent).toContain('3');
     });
+    expect(screen.getByRole('tab', { name: /Approved/ }).textContent).toContain('10');
+    expect(screen.getByText(/Approval rate/)).toBeInTheDocument();
+    expect(screen.getByText('83.3%')).toBeInTheDocument();
+    // The four tiles that repeated the tabs are gone.
+    expect(screen.queryByText('Pending Review')).not.toBeInTheDocument();
   });
 
   it('lists a pending match with both parties and its score', async () => {
@@ -136,7 +140,7 @@ describe('MatchApprovalsPage', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
 
-    await user.click(screen.getByRole('button', { name: 'Approve Match' }));
+    await user.click(screen.getByRole('button', { name: 'Approve match' }));
 
     await waitFor(() => {
       expect(mockApproveMatch).toHaveBeenCalledWith(11);
@@ -153,7 +157,7 @@ describe('MatchApprovalsPage', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
 
-    await user.click(screen.getByRole('button', { name: 'Approve Match' }));
+    await user.click(screen.getByRole('button', { name: 'Approve match' }));
 
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalledWith('Brokers cannot review a match they are a party to.');
@@ -166,11 +170,11 @@ describe('MatchApprovalsPage', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
 
-    await user.click(screen.getByRole('button', { name: 'Reject Match' }));
+    await user.click(screen.getByRole('button', { name: 'Reject match' }));
 
     const textarea = await screen.findByLabelText(/rejection reason/i);
     // Submit disabled while reason is empty
-    const submitButtons = screen.getAllByRole('button', { name: 'Reject Match' });
+    const submitButtons = screen.getAllByRole('button', { name: 'Reject match' });
     const modalSubmit = submitButtons[submitButtons.length - 1];
     expect(modalSubmit).toBeDisabled();
 
@@ -201,7 +205,7 @@ describe('MatchApprovalsPage', () => {
     const user = userEvent.setup();
     renderPage();
 
-    expect(await screen.findByText("Couldn't load match approvals")).toBeInTheDocument();
+    expect(await screen.findByText("Couldn't load the suggested matches")).toBeInTheDocument();
     expect(screen.queryByText('No matches waiting')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Try again' }));
@@ -211,14 +215,17 @@ describe('MatchApprovalsPage', () => {
   it('treats a success:false list response as a failure, not an empty queue', async () => {
     mockGetApprovals.mockResolvedValue({ success: false, error: 'nope' });
     renderPage();
-    expect(await screen.findByText("Couldn't load match approvals")).toBeInTheDocument();
+    expect(await screen.findByText("Couldn't load the suggested matches")).toBeInTheDocument();
   });
 
-  it('shows a dash on every stat card when the stats request fails, never 0', async () => {
+  it('shows no counts at all when the stats request fails, never a 0', async () => {
     mockGetApprovalStats.mockRejectedValue(new Error('network'));
     renderPage();
     await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
-    await waitFor(() => expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(4));
+    for (const tab of screen.getAllByRole('tab')) {
+      expect(tab.textContent).not.toMatch(/\d/);
+    }
+    expect(screen.queryByText(/Approval rate/)).not.toBeInTheDocument();
     expect(screen.queryByText('0%')).not.toBeInTheDocument();
   });
 
@@ -228,10 +235,10 @@ describe('MatchApprovalsPage', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
 
-    await user.click(screen.getByRole('button', { name: 'Reject Match' }));
+    await user.click(screen.getByRole('button', { name: 'Reject match' }));
     const textarea = await screen.findByLabelText(/rejection reason/i);
     await user.type(textarea, 'Too far apart');
-    const submitButtons = screen.getAllByRole('button', { name: 'Reject Match' });
+    const submitButtons = screen.getAllByRole('button', { name: 'Reject match' });
     await user.click(submitButtons[submitButtons.length - 1] as HTMLElement);
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Server said no'));
@@ -245,9 +252,9 @@ describe('MatchApprovalsPage', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
 
-    await user.click(screen.getByRole('button', { name: 'Reject Match' }));
+    await user.click(screen.getByRole('button', { name: 'Reject match' }));
     await user.type(await screen.findByLabelText(/rejection reason/i), 'Too far apart');
-    const submitButtons = screen.getAllByRole('button', { name: 'Reject Match' });
+    const submitButtons = screen.getAllByRole('button', { name: 'Reject match' });
     await user.click(submitButtons[submitButtons.length - 1] as HTMLElement);
 
     await waitFor(() => expect(mockToast.success).toHaveBeenCalled());

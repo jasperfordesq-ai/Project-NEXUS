@@ -129,21 +129,37 @@ describe('BrokerDashboard', () => {
     expect(spinner).toBeInTheDocument();
   });
 
-  it('renders stat cards after successful load', async () => {
+  it('lists what is waiting, and shows the two standing counts apart from it', async () => {
     mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
     render(<BrokerDashboard />);
-    await waitFor(() => {
-      // Real BrokerStatCards render the translated metric labels.
-      expect(screen.getAllByText('Unreviewed Messages').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('Monitored Users').length).toBeGreaterThan(0);
-    });
+    await waitFor(() => expect(screen.getByText('What needs you now')).toBeInTheDocument());
+    const waiting = screen.getByRole('region', { name: 'What needs you now' });
+    expect(within(waiting).getByText('Messages to check')).toBeInTheDocument();
+    // Monitored members and high-risk listings never fall as a broker works,
+    // so they are not lines in the waiting list.
+    expect(within(waiting).queryByText('Monitored members')).not.toBeInTheDocument();
+    expect(within(waiting).queryByText('High-risk listings')).not.toBeInTheDocument();
+    const standing = screen.getByRole('region', { name: 'Also worth knowing' });
+    expect(within(standing).getByRole('link', { name: 'Monitored members' })).toHaveTextContent('10');
+    expect(within(standing).getByRole('link', { name: 'High-risk listings' })).toHaveTextContent('2');
+  });
+
+  // Each number used to appear three times: a pill, a tile, the menu badge.
+  it('says each waiting number once on the page', async () => {
+    mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
+    render(<BrokerDashboard />);
+    await waitFor(() => expect(screen.getByText('What needs you now')).toBeInTheDocument());
+    expect(screen.getAllByText('Exchanges needing a decision')).toHaveLength(1);
+    expect(screen.getAllByText('Vetting review requests')).toHaveLength(1);
+    expect(screen.queryByRole('navigation', { name: 'Quick Access' })).not.toBeInTheDocument();
+    expect(screen.queryByText('vs previous fortnight')).not.toBeInTheDocument();
   });
 
   it('shows pending_exchanges count', async () => {
     mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
     render(<BrokerDashboard />);
     await waitFor(() => {
-      // 5 appears on the KPI card (and possibly the triage hero pill).
+      // 5 is the count on the exchanges line.
       expect(screen.getAllByText('5').length).toBeGreaterThan(0);
     });
   });
@@ -170,7 +186,7 @@ describe('BrokerDashboard', () => {
     render(<BrokerDashboard />);
 
     await waitFor(() => {
-      expect(screen.getAllByText('Pending Exchanges').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Exchanges needing a decision').length).toBeGreaterThan(0);
     });
 
     const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href') ?? '');
@@ -185,7 +201,7 @@ describe('BrokerDashboard', () => {
     render(<BrokerDashboard />);
 
     await waitFor(() => {
-      expect(screen.getAllByText('High Risk Listings').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('High-risk listings').length).toBeGreaterThan(0);
     });
 
     const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href') ?? '');
@@ -193,7 +209,7 @@ describe('BrokerDashboard', () => {
     expect(hrefs.some((h) => h.endsWith('/broker/risk-tags?level=high'))).toBe(false);
   });
 
-  it('counts a flagged unreviewed message once in the hero total, not under both chips', async () => {
+  it('counts a flagged unreviewed message once in the total, not under both lines', async () => {
     // Safeguarding alerts are a subset of unreviewed messages.
     mockGetDashboard.mockResolvedValueOnce({
       success: true,
@@ -210,8 +226,39 @@ describe('BrokerDashboard', () => {
     await waitFor(() => {
       expect(screen.getByText('What needs you now')).toBeInTheDocument();
     });
-    // 5+3+2+4+2 = 16 open items across the non-zero queues
-    expect(screen.getByText('16')).toBeInTheDocument();
+    // 5 exchanges + 3 messages + 4 vetting re-checks + 2 support needs = 14.
+    // The 2 high-risk listings are a standing count, not waiting work.
+    expect(screen.getByText('14')).toBeInTheDocument();
+  });
+
+  // Counted as waiting, one listing left tagged high risk meant the page
+  // could never say "All clear".
+  it('says all clear when only the standing counts are above zero', async () => {
+    mockGetDashboard.mockResolvedValueOnce({
+      success: true,
+      data: { ...MOCK_STATS, pending_exchanges: 0, unreviewed_messages: 0, vetting_review_requests: 0, onboarding_safeguarding_flags: 0, high_risk_listings: 2, monitored_users: 10 },
+    });
+    render(<BrokerDashboard />);
+    await waitFor(() => expect(screen.getByText('All clear')).toBeInTheDocument());
+  });
+
+  // A count that failed is null, which is not zero: the page must not read
+  // as all clear when the one thing it could not count is safeguarding.
+  it('does not say all clear when a waiting count could not be worked out', async () => {
+    mockGetDashboard.mockResolvedValueOnce({
+      success: true,
+      data: {
+        ...MOCK_STATS,
+        pending_exchanges: 0, unreviewed_messages: 0, vetting_review_requests: 0, onboarding_safeguarding_flags: 0,
+        safeguarding_alerts: null, _partial: true, _failed_metrics: ['safeguarding_alerts'],
+      },
+    });
+    render(<BrokerDashboard />);
+    await waitFor(() => expect(screen.getByText('What needs you now')).toBeInTheDocument());
+    expect(screen.queryByText('All clear')).not.toBeInTheDocument();
+    const line = screen.getByRole('link', { name: /Safeguarding alerts/ });
+    expect(within(line).getByText('Could not load')).toBeInTheDocument();
+    expect(within(line).getByText('—')).toBeInTheDocument();
   });
 
   it('renders the all-clear hero when every queue is empty', async () => {
@@ -274,7 +321,7 @@ describe('BrokerDashboard', () => {
     });
     render(<BrokerDashboard />);
     await waitFor(() => {
-      expect(screen.getAllByText('Unreviewed Messages').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Messages to check').length).toBeGreaterThan(0);
     });
     expect(screen.getByText("Some numbers couldn't be loaded")).toBeInTheDocument();
   });
@@ -287,29 +334,39 @@ describe('BrokerDashboard', () => {
       data: { ...MOCK_STATS, _partial: true, _failed_metrics: ['monitored_users'], monitored_users: null },
     });
     render(<BrokerDashboard />);
-    await waitFor(() => expect(screen.getAllByText('Monitored Users').length).toBeGreaterThan(0));
-    const tile = screen.getByRole('link', { name: 'Monitored Users' });
+    await waitFor(() => expect(screen.getAllByText('Monitored members').length).toBeGreaterThan(0));
+    const tile = screen.getByRole('link', { name: 'Monitored members' });
     expect(within(tile).getByText('Could not load')).toBeInTheDocument();
     expect(within(tile).getByText('—')).toBeInTheDocument();
-    // A tile that loaded is not marked.
-    expect(within(screen.getByRole('link', { name: 'Unreviewed Messages' })).queryByText('Could not load')).not.toBeInTheDocument();
+    // A line that loaded is not marked.
+    expect(within(screen.getByRole('link', { name: /Messages to check/ })).queryByText('Could not load')).not.toBeInTheDocument();
   });
 
-  it('says how long each queue\'s oldest item has waited, and shows the fortnight change', async () => {
+  it('says on each line how many are waiting and how long the oldest has waited', async () => {
     mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
     render(<BrokerDashboard />);
-    await waitFor(() => expect(screen.getAllByText('Pending Exchanges').length).toBeGreaterThan(0));
-    const exchanges = screen.getByRole('link', { name: 'Pending Exchanges' });
+    await waitFor(() => expect(screen.getAllByText('Exchanges needing a decision').length).toBeGreaterThan(0));
+    const exchanges = screen.getByRole('link', { name: /Exchanges needing a decision/ });
+    expect(within(exchanges).getByText('5')).toBeInTheDocument();
     expect(within(exchanges).getByText('Oldest waiting 3 days')).toBeInTheDocument();
-    expect(within(exchanges).getByText('+50%')).toBeInTheDocument();
-    expect(within(exchanges).getByText('vs previous fortnight')).toBeInTheDocument();
-    expect(exchanges.querySelector('svg[aria-hidden="true"] polyline, svg[aria-hidden="true"] path')).not.toBeNull();
-    expect(within(screen.getByRole('link', { name: 'Unreviewed Messages' })).getByText('Oldest arrived today')).toBeInTheDocument();
-    expect(within(screen.getByRole('link', { name: 'Vetting review requests' })).getByText('Oldest waiting 1 day')).toBeInTheDocument();
-    // An empty queue says nothing about age, and a flat fortnight draws no sparkline or delta.
-    const alerts = screen.getByRole('link', { name: 'Safeguarding Alerts' });
-    expect(within(alerts).queryByText(/Oldest/)).not.toBeInTheDocument();
-    expect(within(screen.getByRole('link', { name: 'Unreviewed Messages' })).queryByText('vs previous fortnight')).not.toBeInTheDocument();
+    expect(within(screen.getByRole('link', { name: /Messages to check/ })).getByText('Oldest arrived today')).toBeInTheDocument();
+    expect(within(screen.getByRole('link', { name: /Vetting review requests/ })).getByText('Oldest waiting 1 day')).toBeInTheDocument();
+    // The server reports no age for support needs, so that line gives none.
+    expect(within(screen.getByRole('link', { name: /Support needs not yet seen/ })).queryByText(/Oldest/)).not.toBeInTheDocument();
+    // A kind of work with nothing waiting has no line at all.
+    expect(screen.queryByRole('link', { name: /Safeguarding alerts/ })).not.toBeInTheDocument();
+  });
+
+  it('puts the most urgent kind of work first', async () => {
+    mockGetDashboard.mockResolvedValueOnce({ success: true, data: { ...MOCK_STATS, safeguarding_alerts: 1, pending_members: 9 } });
+    render(<BrokerDashboard />);
+    await waitFor(() => expect(screen.getByText('What needs you now')).toBeInTheDocument());
+    const lines = within(screen.getByRole('region', { name: 'What needs you now' })).getAllByRole('link');
+    expect(lines[0]).toHaveTextContent('Safeguarding alerts');
+    // New members are the largest number here but not the most urgent.
+    expect(lines[lines.length - 1]).not.toHaveTextContent('Safeguarding alerts');
+    expect(lines.findIndex((l) => l.textContent?.includes('New members to approve')))
+      .toBeGreaterThan(lines.findIndex((l) => l.textContent?.includes('Messages to check')));
   });
 
   it('shows what the broker decided this week, with the match review time on exchange-workflow communities', async () => {
@@ -335,18 +392,6 @@ describe('BrokerDashboard', () => {
     expect(screen.queryByText('Exchanges decided')).not.toBeInTheDocument();
   });
 
-  it('renders the quick links as one row of small buttons, not cards', async () => {
-    mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
-    render(<BrokerDashboard />);
-    await waitFor(() => expect(screen.getByRole('navigation', { name: 'Quick Access' })).toBeInTheDocument());
-    const nav = screen.getByRole('navigation', { name: 'Quick Access' });
-    const links = within(nav).getAllByRole('link');
-    expect(links).toHaveLength(7);
-    expect(links.map((l) => l.textContent)).toContain('Exchange Management');
-    // The old cards carried a description line each; the row does not.
-    expect(within(nav).queryByText('Review and approve exchange requests flagged for broker attention.')).not.toBeInTheDocument();
-  });
-
   describe('safeguarding jurisdiction not set', () => {
     it('tells a broker to ask an admin, without a button', async () => {
       mockGetDashboard.mockResolvedValueOnce({ success: true, data: { ...MOCK_STATS, safeguarding_jurisdiction_configured: false } });
@@ -357,7 +402,7 @@ describe('BrokerDashboard', () => {
     });
 
     // The setting lives in the Compliance & Safeguarding card of the
-    // Configuration page (Oct 2026). This pointed at Safeguarding Options,
+    // Broker settings page (Oct 2026). This pointed at Safeguarding options,
     // where there is no such control.
     it('gives an admin a button to the jurisdiction setting on the Configuration page', async () => {
       mockAuth.user = { id: 1, role: 'admin' };
@@ -371,7 +416,7 @@ describe('BrokerDashboard', () => {
     it('shows nothing when the jurisdiction is set or unknown', async () => {
       mockGetDashboard.mockResolvedValueOnce({ success: true, data: { ...MOCK_STATS, safeguarding_jurisdiction_configured: null } });
       render(<BrokerDashboard />);
-      await waitFor(() => expect(screen.getAllByText('Unreviewed Messages').length).toBeGreaterThan(0));
+      await waitFor(() => expect(screen.getAllByText('Messages to check').length).toBeGreaterThan(0));
       expect(screen.queryByText('Safeguarding jurisdiction not set')).not.toBeInTheDocument();
     });
   });
@@ -383,22 +428,12 @@ describe('BrokerDashboard', () => {
     });
     render(<BrokerDashboard />);
     await waitFor(() => {
-      expect(screen.getAllByText('Unreviewed Messages').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Messages to check').length).toBeGreaterThan(0);
     });
     // When recent_activity=[], the component renders the empty-state card
-    // (an icon + translated text). Assert no activity list items are present.
-    const listItems = document.querySelectorAll('ul > li');
-    expect(listItems.length).toBe(0);
+    // (an icon + translated text) in place of the timeline.
     expect(screen.getByText('No recent broker activity')).toBeInTheDocument();
-  });
-
-  it('renders quick links section', async () => {
-    mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
-    render(<BrokerDashboard />);
-    await waitFor(() => {
-      const body = document.body.textContent ?? '';
-      expect(body).toMatch(/exchange|vetting|message/i);
-    });
+    expect(screen.queryByText('Alice Broker')).not.toBeInTheDocument();
   });
 
   it('calls getDashboard again when Refresh is clicked', async () => {
@@ -407,7 +442,7 @@ describe('BrokerDashboard', () => {
       .mockResolvedValueOnce({ success: true, data: MOCK_STATS });
     render(<BrokerDashboard />);
     await waitFor(() => {
-      expect(screen.getAllByText('Unreviewed Messages').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Messages to check').length).toBeGreaterThan(0);
     });
     // The Refresh button is in the page shell actions
     const refreshBtn = screen.getAllByRole('button').find(

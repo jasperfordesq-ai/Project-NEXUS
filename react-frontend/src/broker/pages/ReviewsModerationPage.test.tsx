@@ -51,7 +51,7 @@ describe('ReviewsModerationPage (broker)', () => {
     const Component = (await import('./ReviewsModerationPage')).default;
     render(<Component />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Reviews Moderation' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Reviews' })).toBeInTheDocument();
     expect(screen.getByText('Review, flag, and moderate member reviews.')).toBeInTheDocument();
     expect(screen.getByTestId('admin-reviews-moderation')).toBeInTheDocument();
     expect(mockAdmin).toHaveBeenCalledTimes(1);
@@ -70,7 +70,7 @@ describe('ReviewsModerationPage (broker)', () => {
     render(<Component />);
 
     expect(titleEffects).toContain('Admin: Reviews Moderation');
-    expect(titleEffects[titleEffects.length - 1]).toBe('Reviews Moderation');
+    expect(titleEffects[titleEffects.length - 1]).toBe('Reviews');
   });
 
   it('links to the plain-English guide for this page', async () => {

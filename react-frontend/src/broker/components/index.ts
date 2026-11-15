@@ -14,6 +14,7 @@ export { BrokerPageShell, type BrokerPageHelp } from './BrokerPageShell';
 export { BrokerEmptyState } from './BrokerEmptyState';
 export { BrokerSkeleton } from './BrokerSkeleton';
 export { BrokerStatusChip, brokerStatusColor } from './BrokerStatusChip';
+export { BrokerTabCount, type BrokerTabCountTone } from './BrokerTabCount';
 export { BrokerSparkline } from './BrokerSparkline';
 export { useCountUp } from './useCountUp';
 export { AdminOnlyBadge } from './AdminOnlyBadge';

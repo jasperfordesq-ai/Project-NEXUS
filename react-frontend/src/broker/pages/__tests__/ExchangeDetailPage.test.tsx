@@ -54,7 +54,7 @@ vi.mock('react-i18next', () => ({
         'exchanges.detail_history_actions.request_created': 'Request created',
         'exchanges.detail_history_actions.status_changed': 'Status changed',
         'status.pending': 'Pending',
-        'status.pending_broker': 'Pending Broker Approval',
+        'status.pending_broker': 'Waiting for approval',
         'status.accepted': 'Accepted',
         'status.completed': 'Completed',
         'status.cancelled': 'Cancelled',

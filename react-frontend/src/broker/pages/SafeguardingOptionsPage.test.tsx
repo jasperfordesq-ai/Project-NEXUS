@@ -51,7 +51,7 @@ describe('SafeguardingOptionsPage (broker)', () => {
     const Component = (await import('./SafeguardingOptionsPage')).default;
     render(<Component />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Safeguarding Options' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Safeguarding options' })).toBeInTheDocument();
     expect(screen.getByText('Configure the safeguarding declaration options members can select.')).toBeInTheDocument();
     expect(screen.getByTestId('admin-safeguarding-options')).toBeInTheDocument();
     expect(mockAdmin).toHaveBeenCalledTimes(1);
@@ -70,7 +70,7 @@ describe('SafeguardingOptionsPage (broker)', () => {
     render(<Component />);
 
     expect(titleEffects).toContain('Admin: Safeguarding Options');
-    expect(titleEffects[titleEffects.length - 1]).toBe('Safeguarding Options');
+    expect(titleEffects[titleEffects.length - 1]).toBe('Safeguarding options');
   });
 
   it('links to the plain-English guide for this page', async () => {

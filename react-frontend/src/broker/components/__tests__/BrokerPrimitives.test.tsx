@@ -136,7 +136,7 @@ describe('BrokerSkeleton', () => {
 describe('BrokerStatusChip', () => {
   it('renders a translated label for known statuses', () => {
     wrap(<BrokerStatusChip status="pending_broker" />);
-    expect(screen.getByText('Pending Broker Approval')).toBeInTheDocument();
+    expect(screen.getByText('Waiting for approval')).toBeInTheDocument();
   });
 
   // BrokerStatusChip deliberately does NOT prettify an unrecognised status into

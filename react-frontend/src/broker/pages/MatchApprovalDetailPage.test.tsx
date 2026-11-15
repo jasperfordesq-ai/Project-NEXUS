@@ -121,7 +121,7 @@ describe('MatchApprovalDetailPage', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('91%')).toBeInTheDocument());
 
-    await user.click(screen.getByRole('button', { name: 'Approve Match' }));
+    await user.click(screen.getByRole('button', { name: 'Approve match' }));
 
     await waitFor(() => {
       expect(mockApproveMatch).toHaveBeenCalledWith(11);
@@ -146,7 +146,7 @@ describe('MatchApprovalDetailPage', () => {
       expect(screen.getByText('Rita Broker')).toBeInTheDocument();
       expect(screen.getByText('Too far apart')).toBeInTheDocument();
     });
-    expect(screen.queryByRole('button', { name: 'Approve Match' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Approve match' })).not.toBeInTheDocument();
   });
 
   it('renders an honest not-found state when the load fails', async () => {
@@ -180,9 +180,9 @@ describe('MatchApprovalDetailPage', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('91%')).toBeInTheDocument());
 
-    await user.click(screen.getByRole('button', { name: 'Reject Match' }));
+    await user.click(screen.getByRole('button', { name: 'Reject match' }));
     await user.type(await screen.findByLabelText(/rejection reason/i), 'Too far apart');
-    const submitButtons = screen.getAllByRole('button', { name: 'Reject Match' });
+    const submitButtons = screen.getAllByRole('button', { name: 'Reject match' });
     await user.click(submitButtons[submitButtons.length - 1] as HTMLElement);
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Server said no'));
@@ -196,9 +196,9 @@ describe('MatchApprovalDetailPage', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('91%')).toBeInTheDocument());
 
-    await user.click(screen.getByRole('button', { name: 'Approve Match' }));
+    await user.click(screen.getByRole('button', { name: 'Approve match' }));
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to approve match'));
-    expect(screen.getByRole('button', { name: 'Approve Match' })).not.toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('button', { name: 'Approve match' })).not.toHaveAttribute('aria-busy', 'true');
   });
 
   it('describes the page and links to its guide article', async () => {

@@ -182,7 +182,7 @@ describe('UserMonitoring', () => {
     render(<UserMonitoring />);
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'User Monitoring' })
+      screen.getByRole('heading', { level: 1, name: 'Monitored members' })
     ).toBeInTheDocument();
   });
 

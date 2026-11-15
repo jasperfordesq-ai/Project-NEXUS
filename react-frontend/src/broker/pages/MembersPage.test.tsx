@@ -278,11 +278,11 @@ describe('MembersPage (broker)', () => {
       const tabs = screen.getAllByRole('tab');
       expect(tabs.length).toBeGreaterThanOrEqual(6); // all, pending, active, suspended, never logged in, onboarding incomplete
     });
-    expect(screen.getByRole('tab', { name: /Never logged in/ })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Onboarding incomplete/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Never signed in/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Welcome steps not finished/ })).toBeInTheDocument();
   });
 
-  it('renders the KPI stat header from list totals', async () => {
+  it('shows the list totals on the tabs, with no row of number tiles', async () => {
     mockAdminUsers.list.mockImplementation((params: { limit?: number; status?: string } = {}) => {
       if (params.limit === 1) {
         const totals: Record<string, number> = { pending: 3, active: 30, suspended: 2 };
@@ -296,15 +296,15 @@ describe('MembersPage (broker)', () => {
     render(<MembersPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Total members')).toBeInTheDocument();
-      expect(screen.getByText('Pending approval')).toBeInTheDocument();
-      expect(screen.getByText('Active members')).toBeInTheDocument();
-      expect(screen.getByText('Suspended members')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /^All/ }).textContent).toContain('40');
     });
-    await waitFor(() => {
-      expect(screen.getByText('40')).toBeInTheDocument();
-      expect(screen.getByText('30')).toBeInTheDocument();
-    });
+    expect(screen.getByRole('tab', { name: /Waiting for approval/ }).textContent).toContain('3');
+    expect(screen.getByRole('tab', { name: /^Active/ }).textContent).toContain('30');
+    expect(screen.getByRole('tab', { name: /Suspended/ }).textContent).toContain('2');
+    // Each number is on the page once: the tiles that repeated the tabs are gone.
+    expect(screen.getAllByText('40')).toHaveLength(1);
+    expect(screen.queryByText('Total members')).not.toBeInTheDocument();
+    expect(screen.queryByText('Suspended members')).not.toBeInTheDocument();
   });
 
   it('calls adminUsers.list with status param and updates the URL when tab changes to pending', async () => {
@@ -314,7 +314,7 @@ describe('MembersPage (broker)', () => {
     await waitFor(() => screen.getAllByRole('tab'));
 
     const pendingTab = screen.getAllByRole('tab').find((el) =>
-      el.textContent?.toLowerCase().includes('pending')
+      el.textContent?.toLowerCase().includes('waiting for approval')
     );
     expect(pendingTab).toBeDefined();
     if (pendingTab) fireEvent.click(pendingTab);
@@ -416,7 +416,7 @@ describe('MembersPage (broker)', () => {
 
     await waitFor(() => screen.getAllByRole('tab'));
     const pendingTab = screen.getAllByRole('tab').find((el) =>
-      el.textContent?.toLowerCase().includes('pending')
+      el.textContent?.toLowerCase().includes('waiting for approval')
     );
     if (pendingTab) fireEvent.click(pendingTab);
 
@@ -624,7 +624,7 @@ describe('MembersPage (broker)', () => {
     expect(csvRun).toHaveBeenCalledTimes(1);
     const request = csvRun.mock.calls[0]?.[0] as { filename: string; columns: { label: string }[]; fetchPage: (p: number) => Promise<{ rows: unknown[]; hasMore: boolean }> };
     expect(request.filename).toBe('members_active_broker');
-    expect(request.columns.map((c) => c.label)).toEqual(['Member', 'Email', 'Status', 'Role', 'Balance', 'Last Active', 'Joined']);
+    expect(request.columns.map((c) => c.label)).toEqual(['Member', 'Email', 'Status', 'Role', 'Balance', 'Last active', 'Joined']);
 
     mockAdminUsers.list.mockClear();
     const page = await request.fetchPage(2);

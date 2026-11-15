@@ -243,7 +243,7 @@ describe('BrokerConfigurationPage', () => {
     render(<BrokerConfigurationPage />);
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Broker Configuration' })
+      screen.getByRole('heading', { level: 1, name: 'Broker settings' })
     ).toBeInTheDocument();
 
     await waitFor(() => {

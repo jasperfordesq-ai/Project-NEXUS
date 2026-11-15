@@ -68,6 +68,16 @@ const WITH_BADGES = {
 
 import { BrokerSidebar } from './BrokerSidebar';
 
+// Every menu group open, so a test can reach any link. The groups' own opening
+// and closing has tests of its own.
+const MENU_GROUPS_KEY = 'nexus_broker_menu_sections';
+beforeEach(() => {
+  window.localStorage.setItem(
+    MENU_GROUPS_KEY,
+    JSON.stringify({ daily: true, safeguarding: true, moderation: true, compliance: true, settings: true }),
+  );
+});
+
 describe('BrokerSidebar — expanded', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -81,10 +91,10 @@ describe('BrokerSidebar — expanded', () => {
 
   it('renders section labels when expanded', () => {
     render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
-    // i18n: broker.sidebar.section_daily → "Daily Workflow"
-    expect(screen.getByText('Daily Workflow')).toBeInTheDocument();
-    // i18n: broker.sidebar.section_compliance → "Compliance & Oversight"
-    expect(screen.getByText('Compliance & Oversight')).toBeInTheDocument();
+    // i18n: broker.sidebar.section_daily → "Every day"
+    expect(screen.getByRole('button', { name: 'Every day' })).toBeInTheDocument();
+    // i18n: broker.sidebar.section_compliance → "Checks and records"
+    expect(screen.getByRole('button', { name: 'Checks and records' })).toBeInTheDocument();
   });
 
   it('renders nav links for key routes', () => {
@@ -159,9 +169,14 @@ describe('BrokerSidebar — collapsed', () => {
   });
 
   it('hides section label text when collapsed', () => {
+    // No remembered groups: "Checks and records" would start closed.
+    window.localStorage.removeItem(MENU_GROUPS_KEY);
     render(<BrokerSidebar collapsed={true} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
-    // "Daily Workflow" section paragraph only renders when !collapsed
-    expect(screen.queryByText('Daily Workflow')).not.toBeInTheDocument();
+    // The "Every day" group heading only renders when !collapsed
+    expect(screen.queryByText('Every day')).not.toBeInTheDocument();
+    // …and with no headings to press, the icon rail shows every link, even
+    // one from a group that would start closed.
+    expect(document.querySelector('nav a[href="/test/broker/vetting"]')).not.toBeNull();
   });
 
   it('expand button has correct aria-label when collapsed', () => {
@@ -206,15 +221,15 @@ describe('BrokerSidebar — badge tone', () => {
 
   it('colours a queue that should fall to zero as danger', () => {
     render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={{ ...ZERO_BADGES, unreviewed_messages: 2 }} />);
-    const link = screen.getByRole('link', { name: /^Messages/i });
+    const link = screen.getByRole('link', { name: /^Message checks/i });
     expect(within(link).getByText('2').closest('[data-tone]')).toHaveAttribute('data-tone', 'queue');
   });
 
   it('colours an inventory count that never falls as neutral', () => {
     render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={{ ...ZERO_BADGES, monitored_users: 4, high_risk_listings: 9 }} />);
-    const monitoring = screen.getByRole('link', { name: /User Monitoring/i });
+    const monitoring = screen.getByRole('link', { name: /Monitored members/i });
     expect(within(monitoring).getByText('4').closest('[data-tone]')).toHaveAttribute('data-tone', 'inventory');
-    const risk = screen.getByRole('link', { name: /Risk Tags/i });
+    const risk = screen.getByRole('link', { name: /Listing risk tags/i });
     expect(within(risk).getByText('9').closest('[data-tone]')).toHaveAttribute('data-tone', 'inventory');
   });
 
@@ -222,6 +237,80 @@ describe('BrokerSidebar — badge tone', () => {
     render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={{ ...ZERO_BADGES, insurance_attention: 5 }} />);
     const insurance = screen.getByRole('link', { name: /^Insurance/i });
     expect(within(insurance).getByText('5').closest('[data-tone]')).toHaveAttribute('data-tone', 'attention');
+  });
+});
+
+// The menu had grown to 22 links and its lower half was off the screen on a
+// laptop (Nov 2026). Groups now open and close; a closed one must never hide
+// work, so it carries the number waiting inside.
+describe('BrokerSidebar — groups that open and close', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    window.localStorage.removeItem(MENU_GROUPS_KEY);
+    window.history.replaceState({}, '', '/');
+  });
+
+  it('starts with the everyday and safeguarding groups open and the rest closed', () => {
+    render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
+    expect(screen.getByRole('button', { name: 'Every day' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Safeguarding' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('link', { name: /^Members$/i })).toBeInTheDocument();
+    for (const name of ['Posts and reports', 'Checks and records', 'Settings and help']) {
+      expect(screen.getByRole('button', { name })).toHaveAttribute('aria-expanded', 'false');
+    }
+    expect(screen.queryByRole('link', { name: /Vetting confirmations/i })).not.toBeInTheDocument();
+    // The dashboard sits above the groups and is always there.
+    expect(screen.getByRole('link', { name: /^Dashboard$/i })).toBeInTheDocument();
+  });
+
+  it('shows on a closed group how many things are waiting inside, leaving out the standing counts', () => {
+    render(
+      <BrokerSidebar
+        collapsed={false}
+        onToggle={mockOnToggle}
+        badges={{ ...ZERO_BADGES, vetting_review_requests: 2, insurance_attention: 3, monitored_users: 4, high_risk_listings: 9 }}
+      />,
+    );
+    const heading = screen.getByRole('button', { name: /^Checks and records/ });
+    // 2 vetting re-checks + 3 insurance certificates; not the 4 monitored members or 9 tagged listings.
+    expect(within(heading).getByText('5')).toBeInTheDocument();
+    expect(within(heading).getByLabelText('5 waiting')).toBeInTheDocument();
+    // A closed group with nothing waiting shows no number.
+    expect(screen.getByRole('button', { name: 'Posts and reports' })).toHaveTextContent(/^Posts and reports$/);
+  });
+
+  it('opens a group when its heading is pressed, moves the number onto the links, and remembers it', async () => {
+    const user = userEvent.setup();
+    render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={{ ...ZERO_BADGES, vetting_review_requests: 2 }} />);
+    await user.click(screen.getByRole('button', { name: /^Checks and records/ }));
+
+    const heading = screen.getByRole('button', { name: 'Checks and records' });
+    expect(heading).toHaveAttribute('aria-expanded', 'true');
+    expect(within(heading).queryByText('2')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Vetting confirmations/i })).toHaveTextContent('2');
+    expect(JSON.parse(window.localStorage.getItem(MENU_GROUPS_KEY) ?? '{}')).toMatchObject({ compliance: true });
+
+    await user.click(heading);
+    expect(heading).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('link', { name: /Vetting confirmations/i })).not.toBeInTheDocument();
+  });
+
+  it('opens the group of the page you arrive on, so the menu shows where you are', () => {
+    window.history.replaceState({}, '', '/test/broker/vetting');
+    render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
+    expect(screen.getByRole('button', { name: 'Checks and records' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('link', { name: /Vetting confirmations/i })).toHaveAttribute('aria-current', 'page');
+    window.history.replaceState({}, '', '/');
+  });
+
+  it('keeps past message checks with the other registers and safeguarding options with the settings', async () => {
+    const user = userEvent.setup();
+    render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
+    await user.click(screen.getByRole('button', { name: 'Checks and records' }));
+    await user.click(screen.getByRole('button', { name: 'Settings and help' }));
+    const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
+    expect(hrefs.indexOf('/test/broker/archives')).toBe(hrefs.indexOf('/test/broker/insurance') + 1);
+    expect(hrefs.indexOf('/test/broker/safeguarding-options')).toBe(hrefs.indexOf('/test/broker/configuration') + 1);
   });
 });
 
@@ -233,10 +322,10 @@ describe('BrokerSidebar — distinct icons', () => {
     expect(screen.getByRole('link', { name: /^Guardians$/i }).querySelector('svg.lucide-users')).toBeNull();
   });
 
-  it('gives Configuration a different icon from Safeguarding Options', () => {
+  it('gives Broker settings a different icon from Safeguarding options', () => {
     render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
-    expect(screen.getByRole('link', { name: /Safeguarding Options/i }).querySelector('svg.lucide-sliders-horizontal')).not.toBeNull();
-    const configuration = screen.getByRole('link', { name: /^Configuration$/i });
+    expect(screen.getByRole('link', { name: /^Safeguarding options$/i }).querySelector('svg.lucide-sliders-horizontal')).not.toBeNull();
+    const configuration = screen.getByRole('link', { name: /^Broker settings$/i });
     expect(configuration.querySelector('svg[class*="lucide-settings"]')).not.toBeNull();
     expect(configuration.querySelector('svg.lucide-sliders-horizontal')).toBeNull();
   });

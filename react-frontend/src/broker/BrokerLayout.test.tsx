@@ -104,6 +104,11 @@ describe('BrokerLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.localStorage.clear();
+    // Every menu group open, so a test can reach any link.
+    window.localStorage.setItem(
+      'nexus_broker_menu_sections',
+      JSON.stringify({ daily: true, safeguarding: true, moderation: true, compliance: true, settings: true }),
+    );
     window.history.replaceState({}, '', '/');
     mockRole.value = 'broker';
     mockInsuranceStats.mockResolvedValue({ success: true, data: { total: 9, pending: 1, verified: 4, expired: 0, expiring_soon: 2, pending_review: 3 } });

@@ -28,7 +28,6 @@ import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
 import Clock from 'lucide-react/icons/clock';
 import Users from 'lucide-react/icons/users';
-import TrendingUp from 'lucide-react/icons/trending-up';
 import Eye from 'lucide-react/icons/eye';
 import UserCheck from 'lucide-react/icons/user-check';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
@@ -50,7 +49,7 @@ import {
 } from '@/components/ui';
 import {
   BrokerPageShell,
-  BrokerStatCard,
+  BrokerTabCount,
   BrokerEmptyState,
   BrokerSkeleton,
   BrokerStatusChip,
@@ -335,11 +334,7 @@ export function MatchApprovalsPage() {
               <div className="flex items-center gap-2">
                 <Clock size={14} />
                 <span>{t('matching.tab_pending')}</span>
-                {stats && stats.pending_count > 0 && (
-                  <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
-                    {stats.pending_count}
-                  </Chip>
-                )}
+                <BrokerTabCount value={stats?.pending_count} tone="warning" />
               </div>
             }
           />
@@ -349,6 +344,7 @@ export function MatchApprovalsPage() {
               <div className="flex items-center gap-2">
                 <CheckCircle size={14} />
                 <span>{t('matching.tab_approved')}</span>
+                <BrokerTabCount value={stats?.approved_count} />
               </div>
             }
           />
@@ -358,6 +354,7 @@ export function MatchApprovalsPage() {
               <div className="flex items-center gap-2">
                 <XCircle size={14} />
                 <span>{t('matching.tab_rejected')}</span>
+                <BrokerTabCount value={stats?.rejected_count} />
               </div>
             }
           />
@@ -373,37 +370,15 @@ export function MatchApprovalsPage() {
         </Tabs>
       }
     >
-      {/* Stats row */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <BrokerStatCard
-          label={t('matching.stat_pending')}
-          value={stats ? stats.pending_count : null}
-          icon={Clock}
-          color="warning"
-          loading={statsLoading}
-        />
-        <BrokerStatCard
-          label={t('matching.stat_approved')}
-          value={stats ? stats.approved_count : null}
-          icon={CheckCircle}
-          color="success"
-          loading={statsLoading}
-        />
-        <BrokerStatCard
-          label={t('matching.stat_rejected')}
-          value={stats ? stats.rejected_count : null}
-          icon={XCircle}
-          color="danger"
-          loading={statsLoading}
-        />
-        <BrokerStatCard
-          label={t('matching.stat_approval_rate')}
-          value={stats ? `${stats.approval_rate}%` : null}
-          icon={TrendingUp}
-          color="accent"
-          loading={statsLoading}
-        />
-      </div>
+      {/* The four number tiles that sat here repeated the tabs above; each tab
+          now carries its own count. The one figure no tab has, the share
+          approved, is a line of text. */}
+      {stats && Number.isFinite(Number(stats.approval_rate)) && stats.approved_count + stats.rejected_count > 0 && (
+        <p className="mb-3 px-1 text-sm text-muted">
+          {t('matching.stat_approval_rate')}:{' '}
+          <span className="font-medium tabular-nums text-foreground">{stats.approval_rate}%</span>
+        </p>
+      )}
 
       {initialLoad ? (
         <BrokerSkeleton variant="table" />

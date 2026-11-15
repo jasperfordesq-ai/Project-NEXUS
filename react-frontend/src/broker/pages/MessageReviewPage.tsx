@@ -51,15 +51,20 @@ import {
   MESSAGE_FILTERS,
   MESSAGE_QUEUE_FILTERS,
   MessageHotkeyHints,
-  MessageKpiCards,
   MessageQuickView,
   MessageStatusTabs,
   buildMessageColumns,
   buildMessageExportColumns,
   type DateRangeValue,
   type MessageFilter,
-  type MessageQueueTotals,
 } from '../components/messages';
+
+/** Whole-list totals behind the Flagged, Reviewed and Urgent tabs. */
+interface MessageQueueTotals {
+  flagged: number | null;
+  reviewed: number | null;
+  urgent: number | null;
+}
 
 type MessagesParams = Parameters<typeof adminBroker.getMessages>[0];
 type MessagesResponse = Awaited<ReturnType<typeof adminBroker.getMessages>>;
@@ -139,14 +144,13 @@ export function MessageReview() {
     setPage(1);
   }, []);
 
-  // Global unreviewed KPI — from the existing broker messages stats endpoint.
+  // How many are unreviewed in all — from the existing broker messages stats endpoint.
   const [unreviewedCount, setUnreviewedCount] = useState<number | null>(null);
   const [countLoading, setCountLoading] = useState(true);
 
-  // Whole-queue totals for the Flagged / Reviewed cards and the Urgent tab
-  // badge. There is no stats endpoint for these, so each is a one-row probe
-  // of the list endpoint read for meta.total only — the same number its tab
-  // shows, so a card can never disagree with its list.
+  // Whole-list totals for the Flagged, Reviewed and Urgent tabs. There is no
+  // stats endpoint for these, so each is a one-row probe of the list endpoint
+  // read for meta.total only, so a tab can never disagree with its list.
   const [queueTotals, setQueueTotals] = useState<MessageQueueTotals>({ flagged: null, reviewed: null, urgent: null });
   const [totalsLoading, setTotalsLoading] = useState(true);
 
@@ -217,7 +221,7 @@ export function MessageReview() {
       ]);
       setQueueTotals({ flagged: readTotal(flaggedRes), reviewed: readTotal(reviewedRes), urgent: readTotal(urgentRes) });
     } catch {
-      // KPI header degrades to em-dashes; the list load owns error messaging.
+      // The tabs simply show no counts; the list load owns error messaging.
     } finally {
       setTotalsLoading(false);
     }
@@ -232,7 +236,7 @@ export function MessageReview() {
         if (Number.isFinite(count)) setUnreviewedCount(count);
       }
     } catch {
-      // Decorative KPI — the list load surfaces real failures.
+      // The tab shows no count; the list load surfaces real failures.
     } finally {
       setCountLoading(false);
     }
@@ -441,18 +445,9 @@ export function MessageReview() {
               setFilter(next);
               setPage(1);
             }}
-            unreviewedCount={unreviewedCount}
-            urgentCount={queueTotals.urgent}
+            counts={{ unreviewed: unreviewedCount, urgent: queueTotals.urgent, flagged: queueTotals.flagged, reviewed: queueTotals.reviewed }}
           />
           <div className="flex flex-wrap items-center gap-3 px-1">
-            <MessageHotkeyHints
-              hints={[
-                { keys: ['j', 'k'], label: t('messages.hotkey_move') },
-                { keys: ['↵'], label: t('messages.hotkey_open') },
-                { keys: ['r'], label: t('messages.review_action') },
-                { keys: ['f'], label: t('messages.flag_action') },
-              ]}
-            />
             <BrokerDateRangeFilter
               value={dateRange}
               onChange={handleDateRange}
@@ -463,15 +458,8 @@ export function MessageReview() {
         </div>
       }
     >
-      <MessageKpiCards
-        unreviewedCount={unreviewedCount}
-        countLoading={countLoading}
-        queueTotals={queueTotals}
-        totalsLoading={totalsLoading}
-        filteredTotal={total}
-        hasLoaded={hasLoaded}
-      />
-
+      {/* The four number tiles that sat here repeated the tabs above; each tab
+          now carries its own count and the list starts higher up the page. */}
       {!hasLoaded ? (
         <BrokerSkeleton variant="table" />
       ) : loadError && items.length === 0 ? (
@@ -533,6 +521,19 @@ export function MessageReview() {
               )
             }
           />
+          {/* Keyboard shortcuts for brokers who work through many copies. They
+              sat among the filters, where they read as more controls; under
+              the list they are out of the way of everyone else. */}
+          <div className="mt-3 px-1">
+            <MessageHotkeyHints
+              hints={[
+                { keys: ['j', 'k'], label: t('messages.hotkey_move') },
+                { keys: ['↵'], label: t('messages.hotkey_open') },
+                { keys: ['r'], label: t('messages.review_action') },
+                { keys: ['f'], label: t('messages.flag_action') },
+              ]}
+            />
+          </div>
         </>
       )}
 
