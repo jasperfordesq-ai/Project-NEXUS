@@ -29,6 +29,9 @@ class CommunityEmailIdentityTest extends TestCase
     /** @var list<string> files this test wrote under httpdocs/uploads */
     private array $writtenFiles = [];
 
+    /** True when this test created httpdocs/uploads/tenant-logos itself. */
+    private bool $createdParentDir = false;
+
     protected function tearDown(): void
     {
         foreach ($this->writtenFiles as $file) {
@@ -40,6 +43,12 @@ class CommunityEmailIdentityTest extends TestCase
         if (is_dir($dir)) {
             @rmdir($dir);
         }
+        // The parent too, but only a folder this test made and only while it
+        // is empty: real community logos live in tenant-logos.
+        $parent = dirname($dir);
+        if ($this->createdParentDir && is_dir($parent) && (scandir($parent) ?: []) === ['.', '..']) {
+            @rmdir($parent);
+        }
         parent::tearDown();
     }
 
@@ -47,6 +56,9 @@ class CommunityEmailIdentityTest extends TestCase
     private function makeLogo(string $name, int $width, int $height, bool $white = false): string
     {
         $dir = base_path('httpdocs/uploads/tenant-logos/email-identity-test');
+        if (!is_dir(dirname($dir))) {
+            $this->createdParentDir = true;
+        }
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
         }
