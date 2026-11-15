@@ -6,6 +6,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Core\EmailPalette;
 use App\Core\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -31,6 +32,29 @@ final class PwaManifestController
         $manifest['id'] = $scope;
         $manifest['start_url'] = $scope;
         $manifest['scope'] = $scope;
+
+        // The community on the member's phone (warmth phase 6, A4). Each value
+        // changes only once the community's admin has chosen it; a community
+        // that chose nothing keeps today's manifest exactly.
+        $config = $this->tenantConfiguration($tenant);
+
+        $colour = $config['primary_color'] ?? null;
+        if (is_string($colour) && preg_match('/^#[0-9a-fA-F]{6}$/', trim($colour)) === 1) {
+            // The same shade the browser bar wears on the light theme
+            // (ThemeContext `accentStrong`), so the installed app's splash
+            // screen and title bar match the running page.
+            $manifest['theme_color'] = EmailPalette::fromColour(strtolower(trim($colour)))['button'];
+        }
+
+        $appIcon = $this->safeAppIcon($config['app_icon_url'] ?? null);
+        if ($appIcon !== null) {
+            // "any" only, never "maskable": a phone crops a maskable icon to a
+            // circle, which would cut the corners off a logo drawn to the edge.
+            $manifest['icons'] = [
+                ['src' => $appIcon['src'], 'sizes' => '192x192', 'type' => $appIcon['type'], 'purpose' => 'any'],
+                ['src' => $appIcon['src'], 'sizes' => '512x512', 'type' => $appIcon['type'], 'purpose' => 'any'],
+            ];
+        }
 
         foreach (($manifest['shortcuts'] ?? []) as $index => $shortcut) {
             if (!is_array($shortcut) || empty($shortcut['url'])) {
@@ -92,6 +116,54 @@ final class PwaManifestController
                 ['name' => 'Wallet', 'short_name' => 'Wallet', 'description' => 'View time credit balance', 'url' => 'wallet', 'icons' => [$icon192]],
             ],
         ];
+    }
+
+    /**
+     * The tenant's `configuration` JSON as an array (empty when absent or
+     * unreadable). Read from the tenant row already resolved for this manifest,
+     * so a path tenant's values never mix with the host tenant's.
+     *
+     * @param array<string, mixed> $tenant
+     * @return array<string, mixed>
+     */
+    private function tenantConfiguration(array $tenant): array
+    {
+        $raw = $tenant['configuration'] ?? null;
+        if (is_array($raw)) {
+            return $raw;
+        }
+        if (!is_string($raw) || $raw === '') {
+            return [];
+        }
+        $decoded = json_decode($raw, true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * The community's square app icon (Admin → Make it yours), only when it is
+     * one of our own uploaded raster files; anything else is ignored.
+     *
+     * @return array{src: string, type: string}|null
+     */
+    private function safeAppIcon(mixed $value): ?array
+    {
+        if (!is_string($value)) {
+            return null;
+        }
+        $path = trim($value);
+        if (preg_match('#^/uploads/[A-Za-z0-9._/\-]+\.(png|jpe?g|webp)$#i', $path, $m) !== 1
+            || str_contains($path, '..')
+            || str_contains($path, '//')) {
+            return null;
+        }
+        $type = match (strtolower($m[1])) {
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            default => 'image/jpeg',
+        };
+
+        return ['src' => $path, 'type' => $type];
     }
 
     /** @return array{0: array<string, mixed>, 1: string} */
