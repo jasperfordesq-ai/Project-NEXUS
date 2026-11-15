@@ -1635,5 +1635,21 @@
     "provider_jumio": "Jumio",
     "provider_onfido": "Onfido"
   },
-  "cancel": "Annuler"
+  "cancel": "Annuler",
+  "email_preview": {
+    "page_title": "Ce que reçoivent vos membres",
+    "title": "Ce que reçoivent vos membres",
+    "description": "Un e-mail d’exemple, tel que vos membres le voient. Rien n’est envoyé à personne.",
+    "where_title": "D’où vient l’apparence",
+    "where_body": "Le logo, la couleur et le nom de la communauté en haut de chaque e-mail viennent de « Un site à votre image ». Modifiez-les là-bas et cet exemple change aussi.",
+    "open_make_it_yours": "Ouvrir « Un site à votre image »",
+    "logo_formats": "Votre logo n’apparaît dans les e-mails que s’il s’agit d’une image PNG, JPEG ou GIF. Beaucoup de messageries n’affichent pas les images SVG ou WebP : ces e-mails montrent alors le nom de votre communauté.",
+    "language_note": "L’exemple est rédigé dans votre propre langue. Chaque membre reçoit ses e-mails dans la langue qu’il a choisie.",
+    "sample_title": "E-mail d’exemple",
+    "subject_label": "Objet :",
+    "refresh": "Recharger l’exemple",
+    "frame_title": "E-mail d’exemple",
+    "load_failed": "Nous n’avons pas pu charger l’e-mail d’exemple. Réessayez dans un instant.",
+    "try_again": "Réessayer"
+  }
 }

@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2840,
-  "api_route_rows": 2805,
-  "distinct_api_paths": 2340,
+  "total_registered_routes": 2847,
+  "api_route_rows": 2812,
+  "distinct_api_paths": 2345,
   "route_source_fingerprint": {
-    "digest": "d63bdf7675b591123d158cd7891b155ee3d8951da3378b2596a4ffb52c6f1b16",
+    "digest": "447f424619e99cf47b6417490e5e4de54e3cc85289221cc61434cae24560abac",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "bfd5f7157fc003659343f3cec9d96181dea6a63e9e5f84d5ae7daf7584d26309"
+        "sha256": "be84f5b03467c651e705757efdf6280094c03d855ed82bdb0ea59d61fd774808"
       },
       {
         "file": "routes/channels.php",
@@ -1190,6 +1190,13 @@
     "/api/v2/admin/community-setup": [
       "GET"
     ],
+    "/api/v2/admin/community-setup/founded": [
+      "PUT"
+    ],
+    "/api/v2/admin/community-setup/goal": [
+      "DELETE",
+      "PUT"
+    ],
     "/api/v2/admin/config": [
       "GET"
     ],
@@ -1456,6 +1463,9 @@
       "GET"
     ],
     "/api/v2/admin/email-deliverability/user/{userId}": [
+      "GET"
+    ],
+    "/api/v2/admin/email-preview": [
       "GET"
     ],
     "/api/v2/admin/email/config": [
@@ -2980,6 +2990,10 @@
       "GET",
       "PUT"
     ],
+    "/api/v2/admin/settings/app-icon": [
+      "DELETE",
+      "POST"
+    ],
     "/api/v2/admin/settings/community-photo": [
       "DELETE",
       "POST"
@@ -3934,6 +3948,9 @@
       "POST"
     ],
     "/api/v2/community/stats": [
+      "GET"
+    ],
+    "/api/v2/community/thank-yous": [
       "GET"
     ],
     "/api/v2/community/this-month": [

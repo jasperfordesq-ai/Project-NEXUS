@@ -40,6 +40,23 @@ describe('module registry thank-you notes', () => {
   });
 });
 
+describe('module registry community thank-you page', () => {
+  it('registers the community thank-you page as its own switch, named and described in every language', () => {
+    const module = getFeatureModules().find(candidate => candidate.id === 'community_thank_you_page');
+    expect(module).toBeDefined();
+    expect(module?.type).toBe('feature');
+    expect(module?.configSource).toBe('tenant_features');
+
+    for (const locale of ['en', 'ar', 'de', 'es', 'fr', 'ga', 'it', 'ja', 'nl', 'pl', 'pt']) {
+      const config = (JSON.parse(
+        readFileSync(`public/locales/${locale}/admin_config.json`, 'utf8')
+      ) as { config: Record<string, string> }).config;
+      expect(config.module_name_community_thank_you_page, locale).toBeTypeOf('string');
+      expect(config.module_desc_community_thank_you_page, locale).toBeTypeOf('string');
+    }
+  });
+});
+
 describe('module registry podcast module', () => {
   it('registers podcasts with editable member authoring and moderation options', () => {
     const modules = getFeatureModules();

@@ -70,6 +70,7 @@ const MyCollectionsPage = lazyWithRetry(() => import('@/pages/profile/MyCollecti
 const CollectionDetailPage = lazyWithRetry(() => import('@/pages/profile/CollectionDetailPage'));
 const UserCollectionsView = lazyWithRetry(() => import('@/pages/profile/UserCollectionsView'));
 const AppreciationWallPage = lazyWithRetry(() => import('@/pages/profile/AppreciationWallPage'));
+const CommunityThankYousPage = lazyWithRetry(() => import('@/pages/profile/CommunityThankYousPage'));
 const SettingsPage = lazyWithRetry(() => import('@/pages/settings/SettingsPage'));
 const BlockedUsersPage = lazyWithRetry(() => import('@/pages/settings/BlockedUsersPage'));
 const SearchPage = lazyWithRetry(() => import('@/pages/search/SearchPage'));
@@ -1115,6 +1116,14 @@ export function AppRoutes() {
             <FeatureGate feature="appreciations" redirect="/dashboard">
               <FeatureErrorBoundary featureName="Appreciations">
                 <AppreciationWallPage />
+              </FeatureErrorBoundary>
+            </FeatureGate>
+          } />
+          {/* Warmth phase 6, D3b: the community thank-you page. Its own switch, default off. */}
+          <Route path="thank-yous" element={
+            <FeatureGate features={['appreciations', 'community_thank_you_page']} redirect="/dashboard">
+              <FeatureErrorBoundary featureName="Appreciations">
+                <CommunityThankYousPage />
               </FeatureErrorBoundary>
             </FeatureGate>
           } />

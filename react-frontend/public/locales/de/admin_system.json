@@ -1616,5 +1616,21 @@
     "provider_jumio": "Jumio",
     "provider_onfido": "Onfido"
   },
-  "cancel": "Abbrechen"
+  "cancel": "Abbrechen",
+  "email_preview": {
+    "page_title": "Was Ihre Mitglieder erhalten",
+    "title": "Was Ihre Mitglieder erhalten",
+    "description": "Eine Beispiel-E-Mail, genau so, wie Ihre Mitglieder sie sehen. Es wird nichts verschickt.",
+    "where_title": "Woher das Aussehen kommt",
+    "where_body": "Logo, Farbe und Name der Gemeinschaft oben in jeder E-Mail kommen aus „Ihr eigener Auftritt“. Ändern Sie sie dort, dann ändert sich auch dieses Beispiel.",
+    "open_make_it_yours": "„Ihr eigener Auftritt“ öffnen",
+    "logo_formats": "Ihr Logo erscheint in E-Mails nur, wenn es ein PNG-, JPEG- oder GIF-Bild ist. Viele E-Mail-Programme zeigen keine SVG- oder WebP-Bilder; dann steht dort der Name Ihrer Gemeinschaft.",
+    "language_note": "Das Beispiel ist in Ihrer eigenen Sprache. Jedes Mitglied erhält seine E-Mails in der Sprache, die es gewählt hat.",
+    "sample_title": "Beispiel-E-Mail",
+    "subject_label": "Betreff:",
+    "refresh": "Beispiel neu laden",
+    "frame_title": "Beispiel-E-Mail",
+    "load_failed": "Wir konnten die Beispiel-E-Mail nicht laden. Versuchen Sie es gleich noch einmal.",
+    "try_again": "Erneut versuchen"
+  }
 }

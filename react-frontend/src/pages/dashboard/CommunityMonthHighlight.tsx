@@ -22,6 +22,7 @@
 import { CountUp } from '@/components/ui/CountUp';
 import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import Clock from 'lucide-react/icons/clock';
 import Gift from 'lucide-react/icons/gift';
 import Heart from 'lucide-react/icons/heart';
@@ -62,7 +63,7 @@ const GRID_COLUMNS: Record<number, string> = { 1: 'sm:grid-cols-1', 2: 'sm:grid-
 
 export function CommunityMonthHighlight({ className = '' }: { className?: string }) {
   const { t } = useTranslation('dashboard');
-  const { tenant, branding, hasModule } = useTenant();
+  const { tenant, branding, hasModule, hasFeature, tenantPath } = useTenant();
   const palette = useSitePalette();
   const [totals, setTotals] = useState<MonthTotals | null>(null);
 
@@ -96,9 +97,17 @@ export function CommunityMonthHighlight({ className = '' }: { className?: string
   // out like the tiles' zeros, and the helpers below three as well.
   const thankYous = Number(totals?.thank_yous ?? 0);
   const helpers = Number(totals?.members_helped ?? 0);
-  const counts = [
+  // The thank-you count leads to the community thank-you page (D3b) — only
+  // where the community has switched that page on (default off).
+  const thankYouPageOn = hasFeature('appreciations') && hasFeature('community_thank_you_page');
+  const counts: Array<{ key: string; icon: ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' }>; text: string; to?: string }> = [
     ...(thankYous >= 1
-      ? [{ key: 'thank-yous', icon: Heart, text: t('month_highlight.thank_yous', { count: thankYous, community }) }]
+      ? [{
+          key: 'thank-yous',
+          icon: Heart,
+          text: t('month_highlight.thank_yous', { count: thankYous, community }),
+          ...(thankYouPageOn ? { to: '/thank-yous' } : {}),
+        }]
       : []),
     ...(helpers >= MIN_HELPERS_SHOWN
       ? [{ key: 'helpers', icon: HeartHandshake, text: t('month_highlight.helpers', { count: helpers }) }]
@@ -160,7 +169,11 @@ export function CommunityMonthHighlight({ className = '' }: { className?: string
                 className="flex items-center gap-2 text-sm font-medium text-theme-primary"
               >
                 <Icon className="size-4 shrink-0 text-accent" aria-hidden="true" />
-                <span>{line.text}</span>
+                {line.to ? (
+                  <Link to={tenantPath(line.to)} className="underline decoration-dotted underline-offset-4 hover:decoration-solid">{line.text}</Link>
+                ) : (
+                  <span>{line.text}</span>
+                )}
               </li>
             );
           })}

@@ -2779,6 +2779,9 @@ Route::get('/v2/admin/listings-digest', [\App\Http\Controllers\Api\ListingsDiges
 Route::put('/v2/admin/listings-digest', [\App\Http\Controllers\Api\ListingsDigestController::class, 'adminUpdate']);
 Route::get('/v2/admin/listings-digest/preview', [\App\Http\Controllers\Api\ListingsDigestController::class, 'adminPreview']);
 Route::post('/v2/admin/listings-digest/send', [\App\Http\Controllers\Api\ListingsDigestController::class, 'adminSend']);
+// "What your members receive": one sample member email in the community's own
+// logo, colour and name. Read-only; sends nothing (AdminEmailPreviewController).
+Route::get('/v2/admin/email-preview', [\App\Http\Controllers\Api\AdminEmailPreviewController::class, 'show']);
 Route::get('/v2/admin/newsletters', [\App\Http\Controllers\Api\AdminNewsletterController::class, 'index']);
 Route::post('/v2/admin/newsletters', [\App\Http\Controllers\Api\AdminNewsletterController::class, 'store']);
 Route::get('/v2/admin/newsletters/subscribers', [\App\Http\Controllers\Api\AdminNewsletterController::class, 'subscribers']);
@@ -4660,6 +4663,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/v2/appreciations/{id}', [\App\Http\Controllers\Api\AppreciationsController::class, 'destroy'])->whereNumber('id');
         Route::post('/v2/appreciations/{id}/react', [\App\Http\Controllers\Api\AppreciationsController::class, 'react'])->whereNumber('id');
         Route::delete('/v2/appreciations/{id}/react', [\App\Http\Controllers\Api\AppreciationsController::class, 'removeReaction'])->whereNumber('id');
+        // Warmth phase 6, D3b — the community thank-you page: notes their
+        // receivers chose to show, newest first, first names. Its own switch,
+        // `community_thank_you_page`, default OFF. No ranking, no counts.
+        Route::get('/v2/community/thank-yous', [\App\Http\Controllers\Api\AppreciationsController::class, 'community'])
+            ->middleware('feature:community_thank_you_page');
     });
 });
 Route::post('/csp-report', [\App\Http\Controllers\Api\SecurityReportController::class, 'csp']);

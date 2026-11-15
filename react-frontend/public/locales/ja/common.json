@@ -2439,7 +2439,13 @@
     "thanks_to": "{{name}}さんへ",
     "thanks_empty_own_title": "お礼メッセージはまだありません",
     "thanks_empty_own_desc": "誰かがあなたにお礼を伝えると、そのメッセージがここに表示されます。あなたが表示すると決めるまで、見られるのはあなただけです。",
-    "thanks_empty_sent_desc": "ほかのメンバーに送ったメッセージがここに表示されます。"
+    "thanks_empty_sent_desc": "ほかのメンバーに送ったメッセージがここに表示されます。",
+    "community_title": "{{community}}のお礼メッセージ",
+    "community_intro": "メンバーが表示を選んだメッセージを、新しい順に表示しています。受け取った人が共有すると決めたメッセージだけが、ここに表示されます。",
+    "community_empty_title": "表示できるお礼メッセージはまだありません",
+    "community_empty_desc": "お礼メッセージを受け取った人が表示を選ぶと、ここに表示されます。ご自身でお礼を伝えるには、相手のプロフィールを開いて「感謝を伝える」を選んでください。",
+    "community_more": "以前のお礼メッセージを表示",
+    "community_link": "{{community}}のお礼メッセージを見る"
   },
   "install": {
     "cta": "アプリをインストール",

@@ -114,6 +114,9 @@ const defaultFeatures: TenantFeatures = {
   // Thank-you notes. Default ON (they were already live on the phone app and
   // the accessible site); a community can switch them off.
   appreciations: true,
+  // The community thank-you page (warmth phase 6, D3b): notes their receivers
+  // chose to show, for every member to read. Default OFF — a community opts in.
+  community_thank_you_page: false,
   polls: true,
   job_vacancies: true,
   ideation_challenges: true,

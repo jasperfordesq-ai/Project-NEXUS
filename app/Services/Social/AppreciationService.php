@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Scopes\TenantScope;
 use App\Services\BlockUserService;
 use App\Services\SafeguardingInteractionPolicy;
+use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -409,6 +410,83 @@ class AppreciationService
                 'total' => $paginator->total(),
             ],
         ];
+    }
+
+    /**
+     * The community thank-you page (warmth phase 6, D3b; owner, 13 Nov 2026):
+     * notes whose RECEIVER chose to show them, newest first, for one member
+     * of this community to read.
+     *
+     * The rules are the profile list's ({@see AppreciationsController::publicForUser()}),
+     * applied in SQL to BOTH people on each note, because here the viewer did
+     * not pick a profile — the page lists everyone's:
+     *  - only `is_public` notes in this community (a hidden note never, a
+     *    removed one no longer exists);
+     *  - both people active and approved members of this community;
+     *  - no block in either direction between the viewer and either person
+     *    ({@see BlockUserService::applyBilateralExclusion()}, the SQL form of
+     *    isBlockedEither());
+     *  - each person's own "who may see my profile" choice
+     *    ({@see MemberProfileVisibility::sqlCondition()}, the SQL form of
+     *    canView()).
+     * Names go through {@see decorate()} — first names for members (E-122).
+     * There is no count per person, no ranking and no search by person.
+     *
+     * Paged by note id, newest first: `$beforeId` is the last id already shown.
+     *
+     * @return array{items: list<array{id:int,message:string,created_at:mixed,sender:?array,receiver:?array}>, has_more: bool, next_before_id: ?int}
+     */
+    public function getCommunityShownNotes(int $viewerId, ?int $beforeId, int $limit = 20): array
+    {
+        $tenantId = (int) TenantContext::getId();
+        $limit = max(1, min(50, $limit));
+
+        $q = Appreciation::query()
+            ->from('appreciations')
+            ->join('users as tys', function ($join) use ($tenantId): void {
+                $join->on('tys.id', '=', 'appreciations.sender_id')
+                    ->where('tys.tenant_id', '=', $tenantId)
+                    ->where('tys.status', '=', 'active')
+                    ->where('tys.is_approved', '=', 1);
+            })
+            ->join('users as tyr', function ($join) use ($tenantId): void {
+                $join->on('tyr.id', '=', 'appreciations.receiver_id')
+                    ->where('tyr.tenant_id', '=', $tenantId)
+                    ->where('tyr.status', '=', 'active')
+                    ->where('tyr.is_approved', '=', 1);
+            })
+            ->where('appreciations.tenant_id', $tenantId)
+            ->where('appreciations.is_public', true)
+            ->select('appreciations.*')
+            ->orderByDesc('appreciations.id')
+            ->limit($limit + 1);
+
+        if ($beforeId !== null && $beforeId > 0) {
+            $q->where('appreciations.id', '<', $beforeId);
+        }
+
+        BlockUserService::applyBilateralExclusion($q, $tenantId, $viewerId, 'appreciations.sender_id');
+        BlockUserService::applyBilateralExclusion($q, $tenantId, $viewerId, 'appreciations.receiver_id');
+        MemberProfileVisibility::applyToQuery($q, $tenantId, $viewerId, 'tys');
+        MemberProfileVisibility::applyToQuery($q, $tenantId, $viewerId, 'tyr');
+
+        /** @var list<Appreciation> $rows */
+        $rows = $q->get()->all();
+        $hasMore = count($rows) > $limit;
+        $rows = array_slice($rows, 0, $limit);
+        $this->decorate($rows, $viewerId);
+
+        $items = array_map(static fn (Appreciation $a): array => [
+            'id' => (int) $a->id,
+            'message' => (string) $a->message,
+            'created_at' => $a->created_at,
+            'sender' => $a->getAttribute('sender'),
+            'receiver' => $a->getAttribute('receiver'),
+        ], $rows);
+
+        $last = $rows === [] ? null : (int) end($rows)->id;
+
+        return ['items' => $items, 'has_more' => $hasMore, 'next_before_id' => $hasMore ? $last : null];
     }
 
     public function getAppreciationsForContext(string $contextType, int $contextId): array

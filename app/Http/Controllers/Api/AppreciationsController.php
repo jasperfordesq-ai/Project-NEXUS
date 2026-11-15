@@ -129,6 +129,51 @@ class AppreciationsController extends BaseApiController
         return $this->respondWithData($result['data'], $result['meta']);
     }
 
+    /**
+     * GET /v2/community/thank-yous — the community thank-you page (warmth
+     * phase 6, D3b). Behind its own community switch,
+     * `community_thank_you_page`, default OFF (routes/api.php).
+     *
+     * Only an active, approved member of THIS community reads it: a member of
+     * another community, or a manager visiting from a community above, is
+     * refused. The privacy rules live in
+     * {@see AppreciationService::getCommunityShownNotes()}.
+     */
+    public function community(): JsonResponse
+    {
+        $viewerId = $this->requireAuth();
+        $tenantId = (int) \App\Core\TenantContext::getId();
+        $isMember = \Illuminate\Support\Facades\DB::table('users')
+            ->where('id', $viewerId)
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->where('is_approved', 1)
+            ->exists();
+        if (! $isMember) {
+            return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
+        }
+
+        $perPage = $this->queryInt('per_page', 20, 1, 50) ?? 20;
+        $beforeId = null;
+        $cursor = $this->query('cursor');
+        if (is_string($cursor) && $cursor !== '') {
+            $decoded = $this->decodeCursor($cursor);
+            if ($decoded === null || ! ctype_digit($decoded)) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.missing_required_field', ['field' => 'cursor']), 'cursor', 422);
+            }
+            $beforeId = (int) $decoded;
+        }
+
+        $page = $this->service->getCommunityShownNotes($viewerId, $beforeId, $perPage);
+
+        return $this->respondWithCollection(
+            $page['items'],
+            $page['next_before_id'] !== null ? $this->encodeCursor($page['next_before_id']) : null,
+            $perPage,
+            $page['has_more'],
+        );
+    }
+
     public function mine(): JsonResponse
     {
         $userId = $this->requireAuth();

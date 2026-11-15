@@ -528,7 +528,8 @@
     "group_bookings": "Rezerwacje grupowe",
     "stripe_account": "Konto Stripe",
     "new_page": "Nowa strona",
-    "wellbeing": "Samopoczucie"
+    "wellbeing": "Samopoczucie",
+    "email_preview": "Co dostają Twoi członkowie"
   },
   "aria": {
     "breadcrumbs": "Bułka tarta"
@@ -779,7 +780,8 @@
     "registration_policy": "zasady zapisu|kto może dołączyć|weryfikacja tożsamości|weryfikacja e-mail|rejestracja",
     "fadp": "Szwajcaria|szwajcarska|nDSG|ochrona danych|rejestr czynności przetwarzania",
     "stripe_account": "stripe|płatności|karta|bank|wypłaty|połącz|darowizny",
-    "listings_digest": "podsumowanie|oferty|prośby|ogłoszenia|e-mail|tygodniowy|miesięczny"
+    "listings_digest": "podsumowanie|oferty|prośby|ogłoszenia|e-mail|tygodniowy|miesięczny",
+    "email_preview": "e-mail|e-maile|podgląd|przykład|logo|kolor|członkowie|skrzynka|wygląd"
   },
   "user_report": "Raport użytkownika",
   "municipal_impact": "Miejskie raporty oddziaływania",
@@ -847,5 +849,6 @@
   "fadp": "Szwajcarska ochrona danych (FADP)",
   "subscriptions": "Subskrypcje",
   "stripe_account": "Konto Stripe",
-  "listings_digest": "Podsumowanie e-mail"
+  "listings_digest": "Podsumowanie e-mail",
+  "email_preview": "Co dostają Twoi członkowie"
 }

@@ -977,5 +977,13 @@
     "android_line": "Android スマートフォン（Google Play）: {{link}}",
     "ios_line": "iPhone・iPad（App Store）: {{link}}",
     "send_failed": "メールを送信できませんでした。しばらくしてからもう一度お試しください。"
+  },
+  "email_preview": {
+    "subject": "{{community}}からのお知らせ",
+    "title": "コミュニティからこんにちは",
+    "preview_text": "{{community}}からのニュース、メッセージ、お申し出をメールでお届けします。",
+    "body_intro": "<strong>{{community}}</strong>にご参加いただきありがとうございます。誰かからメッセージが届いたときや、手助けの申し出・依頼があったときは、このようにメールでお知らせします。",
+    "body_more": "受け取るメールの種類は、このメールの下にあるリンクからいつでも選べます。",
+    "button": "{{community}}を見る"
   }
 }

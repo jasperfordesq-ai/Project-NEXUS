@@ -78,7 +78,7 @@ const REACTIONS: Array<{ key: string; icon: React.ComponentType<{ className?: st
 export default function AppreciationWallPage() {
   const { t } = useTranslation('common');
   const { userId } = useParams<{ userId: string }>();
-  const { tenantPath } = useTenant();
+  const { tenantPath, tenant, branding, hasFeature } = useTenant();
   const { user } = useAuth();
   const toast = useToast();
   const confirm = useConfirm();
@@ -218,6 +218,15 @@ export default function AppreciationWallPage() {
           icon={<MessageCircleHeart className="h-6 w-6" aria-hidden="true" />}
           accent="indigo"
         />
+        {/* Warmth phase 6, D3b: the one way here to the community thank-you
+            page, only where the community has switched it on (default off). */}
+        {hasFeature('community_thank_you_page') && (
+          <p className="mt-3 text-sm">
+            <Link to={tenantPath('/thank-yous')} className="font-medium text-accent hover:underline">
+              {t('appreciations.community_link', { community: branding?.name || tenant?.name || '' })}
+            </Link>
+          </p>
+        )}
       </div>
 
       {isOwn && (

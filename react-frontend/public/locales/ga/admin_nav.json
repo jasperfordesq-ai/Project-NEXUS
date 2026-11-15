@@ -528,7 +528,8 @@
     "group_bookings": "Áirithintí grúpa",
     "stripe_account": "Cuntas Stripe",
     "new_page": "Leathanach nua",
-    "wellbeing": "Folláine"
+    "wellbeing": "Folláine",
+    "email_preview": "A bhfaigheann do bhaill"
   },
   "aria": {
     "breadcrumbs": "Brioscáin aráin"
@@ -783,7 +784,8 @@
     "registration_policy": "rialacha clárúcháin|cé atá in ann páirt a ghlacadh|fíorú aitheantais|fíorú ríomhphoist|clárú",
     "fadp": "an Eilvéis|Eilvéiseach|nDSG|cosaint sonraí|clár próiseála",
     "stripe_account": "stripe|íocaíochtaí|cárta|banc|íocaíochtaí amach|ceangail|síntiúis",
-    "listings_digest": "achoimre|tairiscintí|iarratais|liostaí|ríomhphost|seachtain|mí"
+    "listings_digest": "achoimre|tairiscintí|iarratais|liostaí|ríomhphost|seachtain|mí",
+    "email_preview": "ríomhphost|ríomhphoist|réamhamharc|sampla|lógó|dath|baill|bosca isteach|cuma"
   },
   "user_report": "Tuairisc Úsáideoir",
   "municipal_impact": "Tuarascálacha Tionchair Chathrach",
@@ -851,5 +853,6 @@
   "fadp": "Cosaint sonraí na hEilvéise (FADP)",
   "subscriptions": "Síntiúis",
   "stripe_account": "Cuntas Stripe",
-  "listings_digest": "Achoimre ríomhphoist"
+  "listings_digest": "Achoimre ríomhphoist",
+  "email_preview": "A bhfaigheann do bhaill"
 }

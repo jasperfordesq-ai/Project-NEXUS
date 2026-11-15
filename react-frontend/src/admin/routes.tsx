@@ -351,6 +351,7 @@ const MenuBuilder = lazy(() => import('./modules/content/MenuBuilder'));
 const AttributesAdmin = lazy(() => import('./modules/content/AttributesAdmin'));
 const AnnouncementsAdmin = lazy(() => import('./modules/content/AnnouncementsAdmin'));
 const MakeItYoursPage = lazy(() => import('./modules/system/make-it-yours/MakeItYoursPage'));
+const EmailPreviewPage = lazy(() => import('./modules/system/EmailPreviewPage'));
 const PlansAdmin = lazy(() => import('./modules/content/PlansAdmin'));
 const PlanForm = lazy(() => import('./modules/content/PlanForm'));
 const SubscriptionsAdmin = lazy(() => import('./modules/content/Subscriptions'));
@@ -405,6 +406,8 @@ export function AdminRoutes() {
       <Route path="announcements" element={<Lazy><AnnouncementsAdmin /></Lazy>} />
       {/* "Make it yours": the guided set-up of a community's own look (warmth phase 6). */}
       <Route path="make-it-yours" element={<Lazy><MakeItYoursPage /></Lazy>} />
+      {/* "What your members receive": a read-only sample member email in this community's own look. */}
+      <Route path="email-preview" element={<Lazy><EmailPreviewPage /></Lazy>} />
       <Route path="landing-page" element={<Lazy><LandingPageBuilder /></Lazy>} />
 
       {/* ─── ENGAGEMENT ─── */}

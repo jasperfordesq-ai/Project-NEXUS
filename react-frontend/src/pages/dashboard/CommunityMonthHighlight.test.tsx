@@ -9,7 +9,7 @@ import { createMockContexts } from '@/test/mock-contexts';
 
 const { mockApi, tenantState } = vi.hoisted(() => ({
   mockApi: { get: vi.fn() },
-  tenantState: { listings: true },
+  tenantState: { listings: true, thankYouPage: false },
 }));
 
 vi.mock('@/lib/api', () => ({ api: mockApi, default: mockApi }));
@@ -19,7 +19,7 @@ vi.mock('@/contexts', () => createMockContexts({
     tenant: { id: 2, name: 'Hour Timebank', slug: 'test' },
     branding: { name: 'Hour Timebank' },
     tenantPath: (p: string) => `/test${p}`,
-    hasFeature: vi.fn(() => true),
+    hasFeature: vi.fn((key: string) => (key === 'community_thank_you_page' ? tenantState.thankYouPage : true)),
     hasModule: vi.fn((key: string) => (key === 'listings' ? tenantState.listings : true)),
   }),
 }));
@@ -41,6 +41,7 @@ describe('CommunityMonthHighlight', () => {
   beforeEach(() => {
     mockApi.get.mockReset();
     tenantState.listings = true;
+    tenantState.thankYouPage = false;
   });
 
   it("shows this month's hours, new members and new offers for the community", async () => {
@@ -135,6 +136,25 @@ describe('CommunityMonthHighlight', () => {
     const card = await screen.findByTestId('community-month-highlight');
     expect(within(card).getByText('3 thank-yous in Hour Timebank this month')).toBeInTheDocument();
     expect(card.querySelector('dl')).toBeNull();
+  });
+
+  // Warmth phase 6, D3b: the count leads to the community thank-you page —
+  // only where the community has switched that page on (default off).
+  it('links the thank-you count to the community thank-you page when the community has it on', async () => {
+    tenantState.thankYouPage = true;
+    mockApi.get.mockResolvedValueOnce(month({ thank_yous: 3 }));
+    render(<CommunityMonthHighlight />);
+    const card = await screen.findByTestId('community-month-highlight');
+    const link = within(card).getByRole('link', { name: '3 thank-yous in Hour Timebank this month' });
+    expect(link).toHaveAttribute('href', '/test/thank-yous');
+  });
+
+  it('keeps the thank-you count as plain text while the community thank-you page is off', async () => {
+    mockApi.get.mockResolvedValueOnce(month({ thank_yous: 3 }));
+    render(<CommunityMonthHighlight />);
+    const card = await screen.findByTestId('community-month-highlight');
+    expect(within(card).getByText('3 thank-yous in Hour Timebank this month')).toBeInTheDocument();
+    expect(within(card).queryByRole('link')).toBeNull();
   });
 
   it('copes with an older reply that has no counts at all', async () => {

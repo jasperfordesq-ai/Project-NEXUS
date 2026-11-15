@@ -1640,6 +1640,16 @@ export const adminListingsDigest = {
     api.post<{ queued: boolean; recipient_count: number }>('/v2/admin/listings-digest/send', { confirm: true }),
 };
 
+/** "What your members receive": one sample member email for this community. Read-only. */
+export interface AdminEmailPreview {
+  subject: string;
+  html: string;
+}
+
+export const adminEmailPreview = {
+  get: () => api.get<AdminEmailPreview>('/v2/admin/email-preview'),
+};
+
 export const adminNewsletters = {
   list: (params: { page?: number; status?: string } = {}) =>
     api.get<PaginatedResponse<Newsletter>>(`/v2/admin/newsletters${buildQuery(params)}`),

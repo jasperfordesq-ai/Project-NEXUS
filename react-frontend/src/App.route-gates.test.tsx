@@ -72,6 +72,13 @@ describe('App route feature gates', () => {
     expect(appSource).toMatch(/<Route path="reviews\/create" element=\{\s*<FeatureGate feature="reviews" redirect="\/dashboard">[\s\S]*?<ReviewsPage \/>[\s\S]*?<\/FeatureGate>/);
   });
 
+  // Warmth phase 6, D3b: the community thank-you page needs BOTH switches —
+  // thank-you notes, and its own page switch (default off) — and is for
+  // signed-in members only.
+  it('gates the community thank-you page behind both thank-you switches, inside the protected routes', () => {
+    expect(protectedRoutesSource).toMatch(/<Route path="thank-yous" element=\{\s*<FeatureGate features=\{\['appreciations', 'community_thank_you_page'\]\} redirect="\/dashboard">[\s\S]*?<CommunityThankYousPage \/>[\s\S]*?<\/FeatureGate>/);
+  });
+
   it('keeps auth-entry routes out of the full app route registry', () => {
     expect(appSource).not.toContain('@/components/layout/AuthLayout');
     expect(appSource).not.toMatch(/@\/pages\/auth\/(?:LoginPage|RegisterPage|ForgotPasswordPage|ResetPasswordPage|VerifyEmailPage|VerifyIdentityPage|OauthCallbackPage)/);

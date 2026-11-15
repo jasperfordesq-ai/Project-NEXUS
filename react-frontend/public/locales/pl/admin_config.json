@@ -228,6 +228,8 @@
     "module_desc_polls": "Sondaże społecznościowe i głosowanie",
     "module_name_appreciations": "Podziękowania",
     "module_desc_appreciations": "Członkowie mogą sobie dziękować. Podziękowanie jest prywatne, dopóki osoba, która je otrzymała, nie zdecyduje się pokazać go na swoim profilu.",
+    "module_name_community_thank_you_page": "Strona podziękowań społeczności",
+    "module_desc_community_thank_you_page": "Członkowie widzą stronę z podziękowaniami, które ich odbiorcy zdecydowali się pokazać, z samymi imionami, od najnowszych. Wymaga włączonych podziękowań.",
     "module_name_job_vacancies": "Oferty pracy",
     "module_desc_job_vacancies": "Oferty pracy i zarządzanie aplikacjami",
     "module_name_ideation_challenges": "Wyzwania związane z ideami",

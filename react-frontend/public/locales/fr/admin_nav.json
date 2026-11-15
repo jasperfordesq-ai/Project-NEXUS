@@ -528,7 +528,8 @@
     "group_bookings": "Réservations de groupe",
     "stripe_account": "Compte Stripe",
     "new_page": "Nouvelle page",
-    "wellbeing": "Bien-être"
+    "wellbeing": "Bien-être",
+    "email_preview": "Ce que reçoivent vos membres"
   },
   "aria": {
     "breadcrumbs": "Fil d'Ariane"
@@ -775,7 +776,8 @@
     "registration_policy": "règles d'inscription|qui peut rejoindre|vérification d'identité|vérification de l'e-mail|inscription",
     "fadp": "Suisse|suisse|nLPD|LPD|protection des données|registre des traitements",
     "stripe_account": "stripe|paiements|carte|banque|virements|connecter|dons",
-    "listings_digest": "récapitulatif|offres|demandes|annonces|e-mail|hebdomadaire|mensuel"
+    "listings_digest": "récapitulatif|offres|demandes|annonces|e-mail|hebdomadaire|mensuel",
+    "email_preview": "e-mail|courriel|aperçu|exemple|logo|couleur|membres|boîte de réception"
   },
   "user_report": "Rapport utilisateur",
   "municipal_impact": "Rapports d'impact municipaux",
@@ -843,5 +845,6 @@
   "fadp": "Protection des données suisse (LPD)",
   "subscriptions": "Abonnements",
   "stripe_account": "Compte Stripe",
-  "listings_digest": "Récap par e-mail"
+  "listings_digest": "Récap par e-mail",
+  "email_preview": "Ce que reçoivent vos membres"
 }

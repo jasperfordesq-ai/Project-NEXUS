@@ -1654,5 +1654,21 @@
     "provider_jumio": "Jumio",
     "provider_onfido": "Onfido"
   },
-  "cancel": "Anuluj"
+  "cancel": "Anuluj",
+  "email_preview": {
+    "page_title": "Co dostają Twoi członkowie",
+    "title": "Co dostają Twoi członkowie",
+    "description": "Przykładowy e-mail dokładnie taki, jaki widzą Twoi członkowie. Nic nie jest wysyłane.",
+    "where_title": "Skąd bierze się wygląd",
+    "where_body": "Logo, kolor i nazwa społeczności na górze każdego e-maila pochodzą z „Nadaj własny charakter”. Zmień je tam, a ten przykład też się zmieni.",
+    "open_make_it_yours": "Otwórz „Nadaj własny charakter”",
+    "logo_formats": "Twoje logo pojawia się w e-mailach tylko wtedy, gdy jest obrazem PNG, JPEG lub GIF. Wiele programów pocztowych nie pokazuje obrazów SVG ani WebP, więc w takich e-mailach widać nazwę Twojej społeczności.",
+    "language_note": "Przykład jest w Twoim języku. Każdy członek dostaje e-maile w języku, który sam wybrał.",
+    "sample_title": "Przykładowy e-mail",
+    "subject_label": "Temat:",
+    "refresh": "Wczytaj przykład ponownie",
+    "frame_title": "Przykładowy e-mail",
+    "load_failed": "Nie udało nam się wczytać przykładowego e-maila. Spróbuj ponownie za chwilę.",
+    "try_again": "Spróbuj ponownie"
+  }
 }

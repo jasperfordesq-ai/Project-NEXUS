@@ -528,7 +528,8 @@
     "group_bookings": "Reservas de grupo",
     "stripe_account": "Conta Stripe",
     "new_page": "Nova página",
-    "wellbeing": "Bem-estar"
+    "wellbeing": "Bem-estar",
+    "email_preview": "O que seus membros recebem"
   },
   "aria": {
     "breadcrumbs": "Pão ralado"
@@ -775,7 +776,8 @@
     "registration_policy": "regras de cadastro|quem pode entrar|verificação de identidade|verificação de e-mail|registro",
     "fadp": "Suíça|suíço|nLPD|proteção de dados|registro de tratamento",
     "stripe_account": "stripe|pagamentos|cartão|banco|transferências|ligar|donativos",
-    "listings_digest": "resumo|ofertas|pedidos|anúncios|e-mail|semanal|mensal"
+    "listings_digest": "resumo|ofertas|pedidos|anúncios|e-mail|semanal|mensal",
+    "email_preview": "e-mail|e-mails|prévia|exemplo|logo|cor|membros|caixa de entrada|visual"
   },
   "user_report": "Relatório do usuário",
   "municipal_impact": "Relatórios de Impacto Municipal",
@@ -843,5 +845,6 @@
   "fadp": "Proteção de dados suíça (FADP)",
   "subscriptions": "Assinaturas",
   "stripe_account": "Conta Stripe",
-  "listings_digest": "Resumo por e-mail"
+  "listings_digest": "Resumo por e-mail",
+  "email_preview": "O que seus membros recebem"
 }

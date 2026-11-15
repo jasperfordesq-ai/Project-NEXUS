@@ -977,5 +977,13 @@
     "android_line": "Android-telefoons (Google Play): {{link}}",
     "ios_line": "iPhone en iPad (App Store): {{link}}",
     "send_failed": "We konden de e-mail niet versturen. Probeer het later opnieuw."
+  },
+  "email_preview": {
+    "subject": "Een berichtje van {{community}}",
+    "title": "Hallo van je gemeenschap",
+    "preview_text": "Nieuws, berichten en aanbiedingen van {{community}}, rechtstreeks in je inbox.",
+    "body_intro": "Fijn dat je bij <strong>{{community}}</strong> hoort. Als iemand je een bericht stuurt, hulp aanbiedt of om hulp vraagt, laten we het je per e-mail weten, net als nu.",
+    "body_more": "Met de link onderaan deze e-mail kies je op elk moment welke e-mails je krijgt.",
+    "button": "Naar {{community}}"
   }
 }

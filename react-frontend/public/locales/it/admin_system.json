@@ -1635,5 +1635,21 @@
     "provider_jumio": "Jumio",
     "provider_onfido": "Onfido"
   },
-  "cancel": "Annulla"
+  "cancel": "Annulla",
+  "email_preview": {
+    "page_title": "Cosa ricevono i tuoi membri",
+    "title": "Cosa ricevono i tuoi membri",
+    "description": "Un’email di esempio, proprio come la vedono i tuoi membri. Non viene inviato niente a nessuno.",
+    "where_title": "Da dove arriva l’aspetto",
+    "where_body": "Il logo, il colore e il nome della comunità in cima a ogni email vengono da «Rendilo tuo». Se li cambi lì, cambia anche questo esempio.",
+    "open_make_it_yours": "Apri «Rendilo tuo»",
+    "logo_formats": "Il tuo logo compare nelle email solo se è un’immagine PNG, JPEG o GIF. Molte app di posta non mostrano immagini SVG o WebP, quindi in quelle email compare il nome della tua comunità.",
+    "language_note": "L’esempio è nella tua lingua. Ogni membro riceve le email nella lingua che ha scelto.",
+    "sample_title": "Email di esempio",
+    "subject_label": "Oggetto:",
+    "refresh": "Ricarica l’esempio",
+    "frame_title": "Email di esempio",
+    "load_failed": "Non siamo riusciti a caricare l’email di esempio. Riprova tra un momento.",
+    "try_again": "Riprova"
+  }
 }

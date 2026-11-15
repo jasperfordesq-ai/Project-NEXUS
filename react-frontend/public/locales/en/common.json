@@ -2439,7 +2439,13 @@
     "thanks_to": "To {{name}}",
     "thanks_empty_own_title": "No thank-you notes yet",
     "thanks_empty_own_desc": "When someone thanks you, their note appears here. Only you can see it until you choose to show it.",
-    "thanks_empty_sent_desc": "Notes you send to other members appear here."
+    "thanks_empty_sent_desc": "Notes you send to other members appear here.",
+    "community_title": "Thank-yous in {{community}}",
+    "community_intro": "Notes members chose to show, newest first. A note only appears here if the person who received it decided to share it.",
+    "community_empty_title": "No thank-yous to show yet",
+    "community_empty_desc": "When someone who received a thank-you chooses to show it, it appears here. To thank someone yourself, open their profile and choose “Say thanks”.",
+    "community_more": "Show older thank-yous",
+    "community_link": "See thank-yous in {{community}}"
   },
   "install": {
     "cta": "Install app",

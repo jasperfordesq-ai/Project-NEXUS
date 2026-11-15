@@ -528,7 +528,8 @@
     "group_bookings": "Groepsboekingen",
     "stripe_account": "Stripe-account",
     "new_page": "Nieuwe pagina",
-    "wellbeing": "Welzijn"
+    "wellbeing": "Welzijn",
+    "email_preview": "Wat je leden ontvangen"
   },
   "aria": {
     "breadcrumbs": "Broodkruimels"
@@ -771,7 +772,8 @@
     "registration_policy": "aanmeldregels|wie mag lid worden|identiteitscontrole|e-mailverificatie|registratie",
     "fadp": "Zwitserland|Zwitserse|nDSG|gegevensbescherming|verwerkingsregister",
     "stripe_account": "stripe|betalingen|kaart|bank|uitbetalingen|koppelen|donaties",
-    "listings_digest": "overzicht|aanbod|vragen|advertenties|e-mail|wekelijks|maandelijks"
+    "listings_digest": "overzicht|aanbod|vragen|advertenties|e-mail|wekelijks|maandelijks",
+    "email_preview": "e-mail|e-mails|voorbeeld|logo|kleur|leden|inbox|uiterlijk"
   },
   "user_report": "Gebruikersrapport",
   "municipal_impact": "Gemeentelijke Impactrapporten",
@@ -839,5 +841,6 @@
   "fadp": "Zwitserse gegevensbescherming (FADP)",
   "subscriptions": "Abonnementen",
   "stripe_account": "Stripe-account",
-  "listings_digest": "E-mailoverzicht"
+  "listings_digest": "E-mailoverzicht",
+  "email_preview": "Wat je leden ontvangen"
 }

@@ -2453,7 +2453,13 @@
     "thanks_to": "À {{name}}",
     "thanks_empty_own_title": "Pas encore de mot de remerciement",
     "thanks_empty_own_desc": "Quand quelqu’un vous remercie, son mot apparaît ici. Vous seul pouvez le voir tant que vous ne choisissez pas de l’afficher.",
-    "thanks_empty_sent_desc": "Les mots que vous envoyez aux autres membres apparaissent ici."
+    "thanks_empty_sent_desc": "Les mots que vous envoyez aux autres membres apparaissent ici.",
+    "community_title": "Remerciements à {{community}}",
+    "community_intro": "Les mots que les membres ont choisi d’afficher, du plus récent au plus ancien. Un mot n’apparaît ici que si la personne qui l’a reçu a décidé de le partager.",
+    "community_empty_title": "Aucun remerciement à afficher pour l’instant",
+    "community_empty_desc": "Quand une personne choisit d’afficher un mot de remerciement reçu, il apparaît ici. Pour remercier quelqu’un vous-même, ouvrez son profil et choisissez « Dire merci ».",
+    "community_more": "Voir les remerciements plus anciens",
+    "community_link": "Voir les remerciements à {{community}}"
   },
   "install": {
     "cta": "Installer l’application",

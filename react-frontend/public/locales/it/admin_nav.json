@@ -528,7 +528,8 @@
     "group_bookings": "Prenotazioni di gruppo",
     "stripe_account": "Account Stripe",
     "new_page": "Nuova pagina",
-    "wellbeing": "Benessere"
+    "wellbeing": "Benessere",
+    "email_preview": "Cosa ricevono i tuoi membri"
   },
   "aria": {
     "breadcrumbs": "Pangrattato"
@@ -775,7 +776,8 @@
     "registration_policy": "regole di iscrizione|chi può unirsi|verifica dell'identità|verifica email|registrazione",
     "fadp": "Svizzera|svizzera|nLPD|LPD|protezione dei dati|registro dei trattamenti",
     "stripe_account": "stripe|pagamenti|carta|banca|versamenti|collegare|donazioni",
-    "listings_digest": "riepilogo|offerte|richieste|annunci|email|settimanale|mensile"
+    "listings_digest": "riepilogo|offerte|richieste|annunci|email|settimanale|mensile",
+    "email_preview": "email|anteprima|esempio|logo|colore|membri|posta in arrivo|aspetto"
   },
   "user_report": "Rapporto utente",
   "municipal_impact": "Rapporti sull'impatto municipale",
@@ -843,5 +845,6 @@
   "fadp": "Protezione dei dati svizzera (LPD)",
   "subscriptions": "Abbonamenti",
   "stripe_account": "Account Stripe",
-  "listings_digest": "Riepilogo email"
+  "listings_digest": "Riepilogo email",
+  "email_preview": "Cosa ricevono i tuoi membri"
 }

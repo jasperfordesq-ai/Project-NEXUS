@@ -2439,7 +2439,13 @@
     "thanks_to": "Aan {{name}}",
     "thanks_empty_own_title": "Nog geen bedankberichten",
     "thanks_empty_own_desc": "Als iemand je bedankt, verschijnt het bericht hier. Alleen jij ziet het totdat je ervoor kiest het te tonen.",
-    "thanks_empty_sent_desc": "Hier verschijnen de berichten die je naar andere leden stuurt."
+    "thanks_empty_sent_desc": "Hier verschijnen de berichten die je naar andere leden stuurt.",
+    "community_title": "Bedankjes in {{community}}",
+    "community_intro": "Berichten die leden wilden tonen, de nieuwste eerst. Een bericht verschijnt hier alleen als de ontvanger heeft besloten het te delen.",
+    "community_empty_title": "Nog geen bedankjes om te tonen",
+    "community_empty_desc": "Als iemand een ontvangen bedankje toont, verschijnt het hier. Wil je zelf iemand bedanken? Open dan diens profiel en kies ‘Zeg bedankt’.",
+    "community_more": "Oudere bedankjes tonen",
+    "community_link": "Bekijk de bedankjes in {{community}}"
   },
   "install": {
     "cta": "App installeren",

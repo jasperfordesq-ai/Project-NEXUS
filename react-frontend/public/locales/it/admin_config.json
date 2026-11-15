@@ -228,6 +228,8 @@
     "module_desc_polls": "Sondaggi e votazioni comunitari",
     "module_name_appreciations": "Messaggi di ringraziamento",
     "module_desc_appreciations": "I membri possono ringraziarsi a vicenda. Un messaggio resta privato finché chi lo ha ricevuto non sceglie di mostrarlo sul proprio profilo.",
+    "module_name_community_thank_you_page": "Pagina dei ringraziamenti della comunità",
+    "module_desc_community_thank_you_page": "I membri vedono una pagina con i messaggi di ringraziamento che chi li ha ricevuti ha scelto di mostrare, con i nomi di battesimo, dal più recente. Richiede i messaggi di ringraziamento attivi.",
     "module_name_job_vacancies": "Offerte di lavoro",
     "module_desc_job_vacancies": "Annunci di lavoro e gestione delle candidature",
     "module_name_ideation_challenges": "Sfide di ideazione",

@@ -227,6 +227,8 @@
     "module_desc_polls": "Sondages et vote communautaires",
     "module_name_appreciations": "Mots de remerciement",
     "module_desc_appreciations": "Les membres peuvent se remercier. Un mot reste privé tant que le membre qui l’a reçu ne choisit pas de l’afficher sur son profil.",
+    "module_name_community_thank_you_page": "Page des remerciements de la communauté",
+    "module_desc_community_thank_you_page": "Les membres voient une page des mots de remerciement que leurs destinataires ont choisi d’afficher, avec les prénoms, du plus récent au plus ancien. Nécessite les mots de remerciement activés.",
     "module_name_job_vacancies": "Offres d'emploi",
     "module_desc_job_vacancies": "Gestion des offres d'emploi et des candidatures",
     "module_name_ideation_challenges": "Défis d’idéation",

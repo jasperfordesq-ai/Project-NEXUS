@@ -2439,7 +2439,13 @@
     "thanks_to": "An {{name}}",
     "thanks_empty_own_title": "Noch keine Dankesnachrichten",
     "thanks_empty_own_desc": "Wenn Ihnen jemand dankt, erscheint die Nachricht hier. Nur Sie sehen sie, bis Sie sie zeigen.",
-    "thanks_empty_sent_desc": "Hier erscheinen Nachrichten, die Sie anderen Mitgliedern senden."
+    "thanks_empty_sent_desc": "Hier erscheinen Nachrichten, die Sie anderen Mitgliedern senden.",
+    "community_title": "Dankesnachrichten in {{community}}",
+    "community_intro": "Nachrichten, die Mitglieder zeigen möchten, die neuesten zuerst. Eine Nachricht erscheint hier nur, wenn die Person, die sie erhalten hat, sie teilen wollte.",
+    "community_empty_title": "Noch keine Dankesnachrichten zu sehen",
+    "community_empty_desc": "Sobald jemand eine erhaltene Dankesnachricht zeigt, erscheint sie hier. Wenn Sie selbst jemandem danken möchten, öffnen Sie das Profil dieser Person und wählen Sie „Danke sagen“.",
+    "community_more": "Ältere Dankesnachrichten anzeigen",
+    "community_link": "Dankesnachrichten in {{community}} ansehen"
   },
   "install": {
     "cta": "App installieren",

@@ -1265,6 +1265,8 @@ export interface TenantFeatures {
   reviews: boolean;
   /** Thank-you notes between members — default ON; a community can switch them off. */
   appreciations: boolean;
+  /** The community thank-you page (warmth phase 6, D3b) — default OFF; needs `appreciations` too. */
+  community_thank_you_page: boolean;
   polls: boolean;
   job_vacancies: boolean;
   ideation_challenges: boolean;

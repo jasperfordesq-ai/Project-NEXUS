@@ -228,6 +228,8 @@
     "module_desc_polls": "Encuestas y votaciones comunitarias",
     "module_name_appreciations": "Notas de agradecimiento",
     "module_desc_appreciations": "Los miembros pueden darse las gracias. Una nota es privada hasta que quien la recibió decide mostrarla en su perfil.",
+    "module_name_community_thank_you_page": "Página de agradecimientos de la comunidad",
+    "module_desc_community_thank_you_page": "Los miembros ven una página con las notas de agradecimiento que quienes las recibieron eligieron mostrar, con nombres de pila y de la más reciente a la más antigua. Requiere las notas de agradecimiento activadas.",
     "module_name_job_vacancies": "Ofertas de empleo",
     "module_desc_job_vacancies": "Ofertas de empleo y gestión de solicitudes.",
     "module_name_ideation_challenges": "Desafíos de ideación",

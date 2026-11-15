@@ -2467,7 +2467,13 @@
     "thanks_to": "Do: {{name}}",
     "thanks_empty_own_title": "Nie ma jeszcze podziękowań",
     "thanks_empty_own_desc": "Gdy ktoś Ci podziękuje, jego wiadomość pojawi się tutaj. Widzisz ją tylko Ty, dopóki nie zdecydujesz się jej pokazać.",
-    "thanks_empty_sent_desc": "Tutaj pojawiają się podziękowania, które wysyłasz innym osobom."
+    "thanks_empty_sent_desc": "Tutaj pojawiają się podziękowania, które wysyłasz innym osobom.",
+    "community_title": "Podziękowania w {{community}}",
+    "community_intro": "Wiadomości, które członkowie zdecydowali się pokazać, od najnowszych. Wiadomość pojawia się tutaj tylko wtedy, gdy osoba, która ją otrzymała, postanowiła się nią podzielić.",
+    "community_empty_title": "Nie ma jeszcze podziękowań do pokazania",
+    "community_empty_desc": "Gdy ktoś zdecyduje się pokazać otrzymane podziękowanie, pojawi się ono tutaj. Aby samemu komuś podziękować, otwórz jego profil i wybierz „Podziękuj”.",
+    "community_more": "Pokaż starsze podziękowania",
+    "community_link": "Zobacz podziękowania w {{community}}"
   },
   "install": {
     "cta": "Zainstaluj aplikację",

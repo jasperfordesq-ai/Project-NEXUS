@@ -1635,5 +1635,21 @@
     "provider_jumio": "Jumio",
     "provider_onfido": "Onfido"
   },
-  "cancel": "Cancelar"
+  "cancel": "Cancelar",
+  "email_preview": {
+    "page_title": "Lo que reciben tus miembros",
+    "title": "Lo que reciben tus miembros",
+    "description": "Un correo de ejemplo, tal como lo ven tus miembros. No se envía nada a nadie.",
+    "where_title": "De dónde sale el aspecto",
+    "where_body": "El logo, el color y el nombre de la comunidad que aparecen arriba en cada correo vienen de «Hazlo tuyo». Si los cambias allí, este ejemplo también cambia.",
+    "open_make_it_yours": "Abrir «Hazlo tuyo»",
+    "logo_formats": "Tu logo solo aparece en los correos si es una imagen PNG, JPEG o GIF. Muchas aplicaciones de correo no muestran imágenes SVG o WebP, así que esos correos muestran el nombre de tu comunidad.",
+    "language_note": "El ejemplo está en tu propio idioma. Cada miembro recibe sus correos en el idioma que eligió.",
+    "sample_title": "Correo de ejemplo",
+    "subject_label": "Asunto:",
+    "refresh": "Volver a cargar el ejemplo",
+    "frame_title": "Correo de ejemplo",
+    "load_failed": "No hemos podido cargar el correo de ejemplo. Inténtalo de nuevo en un momento.",
+    "try_again": "Intentar de nuevo"
+  }
 }

@@ -1635,5 +1635,21 @@
     "provider_jumio": "Jumio",
     "provider_onfido": "Onfido"
   },
-  "cancel": "Cancelar"
+  "cancel": "Cancelar",
+  "email_preview": {
+    "page_title": "O que seus membros recebem",
+    "title": "O que seus membros recebem",
+    "description": "Um e-mail de exemplo, exatamente como seus membros o veem. Nada é enviado para ninguém.",
+    "where_title": "De onde vem o visual",
+    "where_body": "O logo, a cor e o nome da comunidade no topo de cada e-mail vêm de \"Torne-o seu\". Mude-os lá e este exemplo muda também.",
+    "open_make_it_yours": "Abrir \"Torne-o seu\"",
+    "logo_formats": "Seu logo só aparece nos e-mails quando é uma imagem PNG, JPEG ou GIF. Muitos aplicativos de e-mail não mostram imagens SVG ou WebP, então esses e-mails mostram o nome da sua comunidade.",
+    "language_note": "O exemplo está no seu idioma. Cada membro recebe os e-mails no idioma que escolheu.",
+    "sample_title": "E-mail de exemplo",
+    "subject_label": "Assunto:",
+    "refresh": "Carregar o exemplo de novo",
+    "frame_title": "E-mail de exemplo",
+    "load_failed": "Não conseguimos carregar o e-mail de exemplo. Tente de novo em instantes.",
+    "try_again": "Tentar de novo"
+  }
 }

@@ -1616,5 +1616,21 @@
     "total_events_one": "{{count}} events",
     "total_events_other": "{{count}} events"
   },
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "email_preview": {
+    "page_title": "What your members receive",
+    "title": "What your members receive",
+    "description": "A sample email, exactly as your members see it. Nothing is sent to anyone.",
+    "where_title": "Where the look comes from",
+    "where_body": "The logo, the colour and the community name at the top of every email come from Make it yours. Change them there and this sample changes too.",
+    "open_make_it_yours": "Open Make it yours",
+    "logo_formats": "Your logo only appears in emails when it is a PNG, JPEG or GIF picture. Many mail apps don't show SVG or WebP pictures, so those emails show your community's name instead.",
+    "language_note": "The sample is written in your own language. Each member gets their emails in the language they chose.",
+    "sample_title": "Sample email",
+    "subject_label": "Subject:",
+    "refresh": "Load the sample again",
+    "frame_title": "Sample email",
+    "load_failed": "We couldn't load the sample email. Try again in a moment.",
+    "try_again": "Try again"
+  }
 }

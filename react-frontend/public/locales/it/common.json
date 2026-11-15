@@ -2453,7 +2453,13 @@
     "thanks_to": "A {{name}}",
     "thanks_empty_own_title": "Ancora nessun messaggio di ringraziamento",
     "thanks_empty_own_desc": "Quando qualcuno ti ringrazia, il suo messaggio compare qui. Lo vedi solo tu finché non scegli di mostrarlo.",
-    "thanks_empty_sent_desc": "Qui compaiono i messaggi che invii agli altri membri."
+    "thanks_empty_sent_desc": "Qui compaiono i messaggi che invii agli altri membri.",
+    "community_title": "Ringraziamenti in {{community}}",
+    "community_intro": "I messaggi che i membri hanno scelto di mostrare, dal più recente. Un messaggio compare qui solo se chi lo ha ricevuto ha deciso di condividerlo.",
+    "community_empty_title": "Ancora nessun ringraziamento da mostrare",
+    "community_empty_desc": "Quando qualcuno sceglie di mostrare un ringraziamento ricevuto, compare qui. Per ringraziare qualcuno, apri il suo profilo e scegli «Dì grazie».",
+    "community_more": "Mostra ringraziamenti meno recenti",
+    "community_link": "Vedi i ringraziamenti in {{community}}"
   },
   "install": {
     "cta": "Installa l'app",

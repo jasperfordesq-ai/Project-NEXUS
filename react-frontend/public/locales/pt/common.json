@@ -2453,7 +2453,13 @@
     "thanks_to": "Para {{name}}",
     "thanks_empty_own_title": "Ainda não há mensagens de agradecimento",
     "thanks_empty_own_desc": "Quando alguém lhe agradecer, a mensagem aparece aqui. Só você a pode ver até decidir mostrá-la.",
-    "thanks_empty_sent_desc": "As mensagens que envia a outros membros aparecem aqui."
+    "thanks_empty_sent_desc": "As mensagens que envia a outros membros aparecem aqui.",
+    "community_title": "Agradecimentos em {{community}}",
+    "community_intro": "Mensagens que os membros escolheram mostrar, das mais recentes para as mais antigas. Uma mensagem só aparece aqui se quem a recebeu decidiu compartilhá-la.",
+    "community_empty_title": "Ainda não há agradecimentos para mostrar",
+    "community_empty_desc": "Quando alguém que recebeu um agradecimento escolhe mostrá-lo, ele aparece aqui. Para você mesmo agradecer a alguém, abra o perfil da pessoa e escolha “Dizer obrigado”.",
+    "community_more": "Mostrar agradecimentos mais antigos",
+    "community_link": "Ver os agradecimentos em {{community}}"
   },
   "install": {
     "cta": "Instalar aplicação",

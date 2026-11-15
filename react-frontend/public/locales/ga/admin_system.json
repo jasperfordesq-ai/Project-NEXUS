@@ -1673,5 +1673,21 @@
     "provider_jumio": "Jumio",
     "provider_onfido": "Onfido"
   },
-  "cancel": "Cealaigh"
+  "cancel": "Cealaigh",
+  "email_preview": {
+    "page_title": "A bhfaigheann do bhaill",
+    "title": "A bhfaigheann do bhaill",
+    "description": "Ríomhphost samplach, díreach mar a fheiceann do bhaill é. Ní sheoltar aon rud chuig aon duine.",
+    "where_title": "Cá as a dtagann an chuma",
+    "where_body": "Tagann an lógó, an dath agus ainm an phobail ag barr gach ríomhphoist ó \"Cuir do chló féin air\". Athraigh ansin iad agus athróidh an sampla seo freisin.",
+    "open_make_it_yours": "Oscail \"Cuir do chló féin air\"",
+    "logo_formats": "Ní thaispeántar do lógó i ríomhphoist ach amháin más pictiúr PNG, JPEG nó GIF é. Ní thaispeánann go leor aipeanna ríomhphoist pictiúir SVG ná WebP, agus mar sin taispeánann na ríomhphoist sin ainm do phobail ina ionad.",
+    "language_note": "Tá an sampla i do theanga féin. Faigheann gach ball a ríomhphoist sa teanga a roghnaigh siad.",
+    "sample_title": "Ríomhphost samplach",
+    "subject_label": "Ábhar:",
+    "refresh": "Luchtaigh an sampla arís",
+    "frame_title": "Ríomhphost samplach",
+    "load_failed": "Níorbh fhéidir linn an ríomhphost samplach a luchtú. Bain triail eile as i gceann nóiméid.",
+    "try_again": "Bain triail eile as"
+  }
 }

@@ -93,6 +93,13 @@ class TenantFeatureConfig
         // /v2/appreciations route with 403 FEATURE_DISABLED. A note is private
         // until the member who RECEIVED it chooses to show it on their profile.
         'appreciations' => true,
+        // The community thank-you page (warmth phase 6, D3b): every member of
+        // the community can read the notes whose receivers chose to show them,
+        // with first names. Default OFF for every community — it shows members
+        // something new about each other, so a community opts in. Needs
+        // `appreciations` on as well. Timebank Ireland: not before its DPO has
+        // answered (owner, 13 Nov 2026).
+        'community_thank_you_page' => false,
     ];
 
     /**

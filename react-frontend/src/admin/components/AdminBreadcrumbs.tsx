@@ -273,6 +273,8 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   'landing-page': 'breadcrumbs.landing_page',
   // "Make it yours": the guided set-up of a community's own look (warmth phase 6).
   'make-it-yours': 'breadcrumbs.make_it_yours_page',
+  // "What your members receive": a sample member email (warmth phase 6, B6).
+  'email-preview': 'breadcrumbs.email_preview',
   requirements: 'breadcrumbs.requirements',
   tenant: 'breadcrumbs.tenant',
   webhooks: 'breadcrumbs.webhooks',

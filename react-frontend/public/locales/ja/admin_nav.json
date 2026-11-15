@@ -528,7 +528,8 @@
     "group_bookings": "グループ予約",
     "stripe_account": "Stripe アカウント",
     "new_page": "新しいページ",
-    "wellbeing": "ウェルビーイング"
+    "wellbeing": "ウェルビーイング",
+    "email_preview": "メンバーに届くメール"
   },
   "aria": {
     "breadcrumbs": "ブレッドクラム"
@@ -771,7 +772,8 @@
     "registration_policy": "登録ルール|参加できる人|本人確認|メール確認|登録",
     "fadp": "スイス|nDSG|データ保護|処理記録",
     "stripe_account": "stripe|支払い|カード|銀行|入金|接続|寄付",
-    "listings_digest": "まとめ|提供|リクエスト|掲載|メール|毎週|毎月"
+    "listings_digest": "まとめ|提供|リクエスト|掲載|メール|毎週|毎月",
+    "email_preview": "メール|プレビュー|サンプル|ロゴ|色|カラー|メンバー|受信トレイ|見た目"
   },
   "user_report": "ユーザーレポート",
   "municipal_impact": "自治体の影響レポート",
@@ -839,5 +841,6 @@
   "fadp": "スイスのデータ保護 (FADP)",
   "subscriptions": "サブスクリプション",
   "stripe_account": "Stripe アカウント",
-  "listings_digest": "メールダイジェスト"
+  "listings_digest": "メールダイジェスト",
+  "email_preview": "メンバーに届くメール"
 }

@@ -307,4 +307,13 @@ describe('AppreciationWallPage', () => {
     await waitFor(() => expect(screen.getByText('Thank you so much!')).toBeInTheDocument());
     expect(screen.getByRole('navigation')).toBeInTheDocument();
   });
+
+  // Warmth phase 6, D3b: one way to the community thank-you page, only where
+  // the community has switched it on (this file's tenant has every switch on).
+  it('links to the community thank-you page when the community has it on', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: [makeAppreciation()] });
+    renderWall();
+    const link = await screen.findByRole('link', { name: 'See thank-yous in Test Tenant' });
+    expect(link).toHaveAttribute('href', '/test/thank-yous');
+  });
 });

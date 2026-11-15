@@ -12,6 +12,7 @@
 import type { LucideIcon } from 'lucide-react';
 import ListChecks from 'lucide-react/icons/list-checks';
 import HeartHandshake from 'lucide-react/icons/heart-handshake';
+import MessageCircleHeart from 'lucide-react/icons/message-circle-heart';
 import Wallet from 'lucide-react/icons/wallet';
 import MessageSquare from 'lucide-react/icons/message-square';
 import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
@@ -519,6 +520,17 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     // every thank-you route when this is off.
     id: 'appreciations',
     icon: HeartHandshake,
+    type: 'feature',
+    configSource: 'tenant_features',
+    configOptions: [],
+  },
+  {
+    // The community thank-you page (warmth phase 6, D3b): every member can
+    // read the notes whose receivers chose to show them, with first names.
+    // OFF by default for every community; the server refuses the page while
+    // it, or thank-you notes, is off.
+    id: 'community_thank_you_page',
+    icon: MessageCircleHeart,
     type: 'feature',
     configSource: 'tenant_features',
     configOptions: [],

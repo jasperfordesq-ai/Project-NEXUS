@@ -977,5 +977,13 @@
     "android_line": "Telefoni Android (Google Play): {{link}}",
     "ios_line": "iPhone e iPad (App Store): {{link}}",
     "send_failed": "Non è stato possibile inviare l'email. Riprova più tardi."
+  },
+  "email_preview": {
+    "subject": "Un messaggio da {{community}}",
+    "title": "Un saluto dalla tua comunità",
+    "preview_text": "Novità, messaggi e offerte da {{community}}, direttamente nella tua casella di posta.",
+    "body_intro": "Grazie di far parte di <strong>{{community}}</strong>. Quando qualcuno ti scrive, offre aiuto o lo chiede, te lo diremo via email, proprio come adesso.",
+    "body_more": "Puoi scegliere in qualsiasi momento quali email ricevere, con il link in fondo a questa email.",
+    "button": "Visita {{community}}"
   }
 }

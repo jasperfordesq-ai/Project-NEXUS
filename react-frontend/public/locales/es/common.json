@@ -2453,7 +2453,13 @@
     "thanks_to": "Para {{name}}",
     "thanks_empty_own_title": "Aún no hay notas de agradecimiento",
     "thanks_empty_own_desc": "Cuando alguien te dé las gracias, su nota aparecerá aquí. Solo tú puedes verla hasta que decidas mostrarla.",
-    "thanks_empty_sent_desc": "Aquí aparecen las notas que envías a otros miembros."
+    "thanks_empty_sent_desc": "Aquí aparecen las notas que envías a otros miembros.",
+    "community_title": "Agradecimientos en {{community}}",
+    "community_intro": "Notas que los miembros han elegido mostrar, de la más reciente a la más antigua. Una nota solo aparece aquí si quien la recibió decidió compartirla.",
+    "community_empty_title": "Todavía no hay agradecimientos que mostrar",
+    "community_empty_desc": "Cuando alguien que recibió un agradecimiento decide mostrarlo, aparece aquí. Para dar las gracias a alguien, abre su perfil y elige «Dar las gracias».",
+    "community_more": "Ver agradecimientos anteriores",
+    "community_link": "Ver los agradecimientos en {{community}}"
   },
   "install": {
     "cta": "Instalar aplicación",

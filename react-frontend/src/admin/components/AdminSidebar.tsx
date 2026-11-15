@@ -681,6 +681,10 @@ function useAdminNav(): NavSection[] {
           // The guided walk through logo, colour, photo, tagline, theme pictures and a
           // first notice. Listed first: it is where a new community's admin should start.
           { label: t('make_it_yours'), href: '/admin/make-it-yours', icon: Sparkles, keywords: keyword(t('search_keywords.make_it_yours_search')) },
+          // A sample member email in the look chosen just above. Here, not under
+          // Communications: that section is god accounts only, and this page is
+          // for every community admin.
+          { label: t('email_preview'), href: '/admin/email-preview', icon: Mail, keywords: keyword(t('search_keywords.email_preview')) },
           { label: t('settings'), href: '/admin/settings', icon: Settings },
           // Joining methods, identity checks and provider keys: god accounts
           // only (owner, 13 Nov 2026), and guarded by GodOnlyRoute too, so a

@@ -228,6 +228,8 @@
     "module_desc_polls": "コミュニティの投票と投票",
     "module_name_appreciations": "お礼メッセージ",
     "module_desc_appreciations": "メンバー同士でお礼を伝えられます。メッセージは、受け取ったメンバーがプロフィールに表示すると決めるまで非公開です。",
+    "module_name_community_thank_you_page": "コミュニティのお礼ページ",
+    "module_desc_community_thank_you_page": "受け取った人が表示を選んだお礼メッセージを、名（ファーストネーム）だけで新しい順に並べたページをメンバーが見られます。お礼メッセージをオンにしておく必要があります。",
     "module_name_job_vacancies": "求人情報",
     "module_desc_job_vacancies": "求人情報の掲載と応募管理",
     "module_name_ideation_challenges": "アイデアの課題",

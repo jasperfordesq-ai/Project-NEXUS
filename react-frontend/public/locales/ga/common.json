@@ -2481,7 +2481,13 @@
     "thanks_to": "Chuig {{name}}",
     "thanks_empty_own_title": "Níl aon nóta buíochais ann fós",
     "thanks_empty_own_desc": "Nuair a ghabhann duine buíochas leat, feicfear a nóta anseo. Tusa amháin a fheiceann é go dtí go roghnaíonn tú é a thaispeáint.",
-    "thanks_empty_sent_desc": "Feicfear anseo na nótaí a sheolann tú chuig baill eile."
+    "thanks_empty_sent_desc": "Feicfear anseo na nótaí a sheolann tú chuig baill eile.",
+    "community_title": "Nótaí buíochais in {{community}}",
+    "community_intro": "Nótaí ar roghnaigh baill iad a thaispeáint, an ceann is nuaí ar dtús. Ní thaispeántar nóta anseo ach amháin má shocraigh an duine a fuair é é a roinnt.",
+    "community_empty_title": "Níl aon nóta buíochais le taispeáint fós",
+    "community_empty_desc": "Nuair a roghnaíonn duine nóta buíochais a fuair siad a thaispeáint, feicfear anseo é. Chun buíochas a ghabháil le duine tú féin, oscail a bpróifíl agus roghnaigh “Abair go raibh maith agat”.",
+    "community_more": "Taispeáin nótaí buíochais níos sine",
+    "community_link": "Féach na nótaí buíochais in {{community}}"
   },
   "install": {
     "cta": "Suiteáil aip",

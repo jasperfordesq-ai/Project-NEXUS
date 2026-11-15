@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-11-15T00:13:57.607Z",
+  "generatedAt": "2026-11-15T00:52:12.168Z",
   "provenance": {
-    "generatedAt": "2026-11-15T00:13:57.607Z",
+    "generatedAt": "2026-11-15T00:52:12.168Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "964e7a54149c52336a4f7542b4fcce31de9b4cd9",
+    "laravelCommitSha": "9b31113a774b380fc8c40c75980b75e38736400e",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "964e7a54149c52336a4f7542b4fcce31de9b4cd9",
+    "webUkRepositoryCommitSha": "9b31113a774b380fc8c40c75980b75e38736400e",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -23,7 +23,7 @@
       "routes/api-volunteering-qualifications.php",
       "routes/api-marketplace-admin.php"
     ],
-    "laravelApiRoutesSha256": "ce8d3735be24f8202d57d06acc7226d559959e1636bd083186997ea598371b17"
+    "laravelApiRoutesSha256": "89b82ee75a802e18ebbf8e6fa7b54653d1e9d40a867359b4a1608e850310e5fd"
   },
   "summary": {
     "contracts": 983,

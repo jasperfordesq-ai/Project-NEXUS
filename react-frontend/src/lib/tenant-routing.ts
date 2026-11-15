@@ -48,7 +48,7 @@ export const RESERVED_PATHS = new Set([
   'courses', 'podcasts', 'coupons', 'clubs', 'me', 'municipality-calendar',
   'advertise', 'join', 'venues', 'whats-on',
   'caring', 'caring-community', 'proposals', 'newsletter', 'onboarding',
-  'support-actions', 'linked-accounts',
+  'support-actions', 'linked-accounts', 'thank-yous',
   // Public/info pages
   'home', 'about', 'contact', 'faq', 'help', 'legal', 'terms', 'platform',
   'privacy', 'accessibility', 'cookies', 'community-guidelines', 'acceptable-use',

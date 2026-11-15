@@ -1616,5 +1616,21 @@
     "provider_jumio": "Jumio",
     "provider_onfido": "Onfido"
   },
-  "cancel": "Annuleer"
+  "cancel": "Annuleer",
+  "email_preview": {
+    "page_title": "Wat je leden ontvangen",
+    "title": "Wat je leden ontvangen",
+    "description": "Een voorbeeldmail, precies zoals je leden hem zien. Er wordt niets verstuurd.",
+    "where_title": "Waar het uiterlijk vandaan komt",
+    "where_body": "Het logo, de kleur en de naam van de gemeenschap bovenaan elke e-mail komen uit ‘Maak het eigen’. Pas je ze daar aan, dan verandert dit voorbeeld mee.",
+    "open_make_it_yours": "‘Maak het eigen’ openen",
+    "logo_formats": "Je logo verschijnt alleen in e-mails als het een PNG-, JPEG- of GIF-afbeelding is. Veel mailprogramma’s tonen geen SVG- of WebP-afbeeldingen; dan staat de naam van je gemeenschap er.",
+    "language_note": "Het voorbeeld is in je eigen taal. Elk lid krijgt e-mails in de taal die het zelf koos.",
+    "sample_title": "Voorbeeldmail",
+    "subject_label": "Onderwerp:",
+    "refresh": "Voorbeeld opnieuw laden",
+    "frame_title": "Voorbeeldmail",
+    "load_failed": "We konden de voorbeeldmail niet laden. Probeer het zo nog eens.",
+    "try_again": "Opnieuw proberen"
+  }
 }

@@ -528,7 +528,8 @@
     "group_bookings": "Gruppenbuchungen",
     "stripe_account": "Stripe-Konto",
     "new_page": "Neue Seite",
-    "wellbeing": "Wohlbefinden"
+    "wellbeing": "Wohlbefinden",
+    "email_preview": "Was Ihre Mitglieder erhalten"
   },
   "aria": {
     "breadcrumbs": "Semmelbrösel"
@@ -771,7 +772,8 @@
     "registration_policy": "Anmelderegeln|wer beitreten darf|Identitätsprüfung|E-Mail-Bestätigung|Registrierung",
     "fadp": "Schweiz|Schweizer|nDSG|revDSG|Datenschutz|Bearbeitungsverzeichnis",
     "stripe_account": "stripe|zahlungen|karte|bank|auszahlungen|verbinden|spenden",
-    "listings_digest": "Überblick|Angebote|Gesuche|Einträge|E-Mail|wöchentlich|monatlich"
+    "listings_digest": "Überblick|Angebote|Gesuche|Einträge|E-Mail|wöchentlich|monatlich",
+    "email_preview": "e-mail|e-mails|vorschau|beispiel|logo|farbe|mitglieder|posteingang|aussehen"
   },
   "user_report": "Benutzerbericht",
   "municipal_impact": "Kommunale Wirkungsberichte",
@@ -839,5 +841,6 @@
   "fadp": "Schweizer Datenschutz (DSG)",
   "subscriptions": "Abonnements",
   "stripe_account": "Stripe-Konto",
-  "listings_digest": "E-Mail-Übersicht"
+  "listings_digest": "E-Mail-Übersicht",
+  "email_preview": "Was Ihre Mitglieder erhalten"
 }
