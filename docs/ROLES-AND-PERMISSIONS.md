@@ -243,7 +243,7 @@ Endpoints are split by **what the power reaches**, not by convenience:
 | Tier | Gate | Contents |
 |---|---|---|
 | **A — subtree** | `super-panel` (`EnsureSuperPanelAccess`) | Tenant/user lists, hierarchy, dashboard, audit, and the tenant/user mutations — all of which confine themselves via `canAccessTenant()` or `subtreeFilter()`. Admits `master` **and** `regional`. |
-| **B — platform only** | `super-admin` (`EnsureIsSuperAdmin`) | Platform revenue/pricing, external-federation kill switches, platform capabilities, provisioning queue, granting global super admin, and tenant delete/purge. `master` only. |
+| **B — platform only** | `super-admin` (`EnsureIsSuperAdmin`) | Platform revenue/pricing, external-federation kill switches, platform capabilities, provisioning queue, granting global super admin, and tenant delete/purge. `master` only — and since 15 November 2026 most of it is narrower still: see below. |
 
 🔴 Two reasons something is in tier B, and both matter:
 
@@ -256,12 +256,28 @@ Endpoints are split by **what the power reaches**, not by convenience:
 Tenant delete/purge stay in tier B by choice despite scoping correctly: they are
 irreversible, and building a network needs create/move, not destroy.
 
+🔴 **Tier B is mostly the platform team's since 15 November 2026.** The
+platform-wide screens left the super admin panel for the
+[Platform team panel](#the-platform-team-panel-15-november-2026), and the
+endpoints only they call now ask for the platform team (`is_god` **and** super
+admin) inside the controller, behind the `super-admin` route group: the
+federation system controls and kill switches, platform billing and revenue,
+platform capabilities, the provisioning queue, the translation key and the
+regional analytics subscriptions. A global super admin who is not on the
+platform team gets 403 from them. What a global super admin still reaches in
+tier B is listed under "Left open on purpose" in that section, plus the
+grant/revoke of global super admin, tenant purge and the identity fee, which
+keep their own checks.
+
 **Frontend.** `GET /v2/users/me` returns `super_panel_level`
 (`master`/`regional`/`none`), resolved server-side — the UI must not infer it from
 flags, because eligibility also depends on `allows_subtenants` and the path.
-`SuperAdminRoute` admits both tiers; `PlatformOnlyRoute` guards the tier-B screens
-so a bookmarked URL refuses cleanly instead of rendering a page whose every request
-403s; and `SuperAdminSidebar` hides the tier-B sections. Isolation is proven by
+`SuperAdminRoute` admits both levels, and the panel now shows both the **same six
+pages** (dashboard, communities, hierarchy, users, bulk operations, audit log).
+`PlatformOnlyRoute` and the menu's tier-B sections no longer exist: the old
+`/super-admin/...` addresses of the moved screens are redirects that send the
+platform team to the new page and anyone else to the super admin home page.
+Isolation is proven by
 `tests/Laravel/Feature/SuperAdmin/RegionalPanelIsolationTest.php`.
 
 **This is what keeps a tenant super admin inside its own branch.** A tenant
@@ -318,9 +334,23 @@ The code keeps the names it had: `is_god`, `requireGod()`, `isGodUser()`.
 `src/admin/modules/` and are imported from there. Someone who is not on the
 platform team and opens a panel address lands on their own panel: an admin on
 `/admin`, a broker on `/broker`, a member on `/dashboard`, a signed-out visitor
-on the login page. Every old `/admin/...` address of a moved page is a redirect
-(`MovedToPlatformTeam`) that keeps the record id, the query string and the
-fragment. `GodOnlyRoute` and `GodPlatformRoute` no longer exist.
+on the login page. Every old `/admin/...` or `/super-admin/...` address of a
+moved page is a redirect (`MovedToPlatformTeam`) that keeps the record id, the
+query string and the fragment. From an old `/super-admin/...` address, someone
+who is not on the platform team stays in the super admin panel, on its home
+page. `GodOnlyRoute`, `GodPlatformRoute` and `PlatformOnlyRoute` no longer
+exist.
+
+**What is in it.** The pages the owner had restricted to the platform team in
+the admin panel (menus, email settings and deliverability, performance, SEO
+audit and redirects, the prerender engine, 404 tracking, search analytics,
+plans and subscriptions, registration policy, cron jobs, the enterprise
+dashboard, roles and permissions, monitoring, outbound webhooks, the matching
+diagnostics, the Tests page), and the platform-wide half of the super admin
+panel (the federation dashboard with its whitelist, partnerships and audit
+pages, platform billing and revenue, the provisioning queue, pilot inquiries,
+platform capabilities, the translation key, regional analytics subscriptions
+and the national dashboard).
 
 **The server.** A page in the panel is locked on the server, not only hidden:
 every endpoint that only panel pages call starts with
@@ -340,6 +370,10 @@ gets an answer:
 | `GET /v2/admin/pages` | Pages |
 | invite codes, the sign-up pause status | Community settings → Joining |
 | `GET /v2/admin/matching/stats` | Smart matching |
+| federation whitelist (read, add, remove) and partnerships (list, suspend, terminate) under `/v2/admin/super/federation/` | the per-community federation switches page, which stays in the super admin panel — open to a global super admin, as before |
+| `GET /v2/admin/super/audit`, `GET /v2/admin/super/tenants` | the super admin audit log and community pages (tier A, confined to the caller's branch) |
+| `GET /v2/admin/super/federation` (read-only overview) | no screen; `RegionalPanelIsolationTest` uses it as its control that a global super admin still reaches tier B |
+| everything under `/v2/admin/national/kiss/` | the national dashboard's endpoints are not changed (they also admit holders of `national.kiss_dashboard.view`); only the screen moved |
 
 **Not in the panel.** Community billing (`/admin/billing*`), the Impact report
 and the SEO overview stay in the admin panel (owner, 15 November 2026). Controls

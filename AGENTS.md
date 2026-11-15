@@ -741,9 +741,19 @@ admin** (`is_super_admin`: platform-wide) → **god** (`is_god` **and**
   per controller in `tests/Laravel/Feature/Security/PlatformTeamLocks/`. An
   endpoint a screen outside the panel still calls is left open on purpose and
   listed in `docs/ROLES-AND-PERMISSIONS.md`. Old `/admin/...` addresses of moved
-  pages are redirects (`MovedToPlatformTeam`). 🔴 `GodOnlyRoute` and
-  `GodPlatformRoute` **no longer exist** — do not look for them or restore
-  them; a platform-team-only page goes in the panel.
+  pages are redirects (`MovedToPlatformTeam`). 🔴 `GodOnlyRoute`,
+  `GodPlatformRoute` and `PlatformOnlyRoute` **no longer exist** — do not look
+  for them or restore them; a platform-team-only page goes in the panel.
+  🔴 **The super admin panel has no platform tier in the browser any more**
+  (owner, 15 Nov 2026: "Yes, move it"): it shows the same six branch pages to a
+  global super admin and to a tenant super admin, and its platform-wide
+  screens (federation controls, platform billing and revenue, provisioning
+  queue, pilot inquiries, platform capabilities, translation key, regional
+  analytics subscriptions, national dashboard) are in the Platform team panel.
+  The tier B endpoints only those screens call are platform-team-only in the
+  controller; the ones a page that stays still calls (federation whitelist,
+  partnership list / suspend / terminate, the audit log, the community list)
+  are left open and pinned by `AdminSuperControllerPlatformTeamLockTest`.
 
 - `app/Support/Authorization/AdminTier.php` is the canonical predicate. It
   **deliberately returns `false` for `broker`/`coordinator`** — a broker is an
