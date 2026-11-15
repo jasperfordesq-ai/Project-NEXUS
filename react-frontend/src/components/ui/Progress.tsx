@@ -61,7 +61,7 @@ export function Progress({
       {label && <Label className={classNames?.label}>{label}</Label>}
       {showValueLabel && <ProgressBar.Output className={classNames?.value} />}
       <ProgressBar.Track className={classNames?.track}>
-        <ProgressBar.Fill className={cn(isStriped && 'bg-stripes', classNames?.indicator)} />
+        <ProgressBar.Fill className={cn('rtl:left-auto rtl:right-0', isStriped && 'bg-stripes', classNames?.indicator)} />
       </ProgressBar.Track>
     </ProgressBar>
   );

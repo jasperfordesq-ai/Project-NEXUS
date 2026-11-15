@@ -944,7 +944,7 @@ export function RegisterPage() {
                   'glass-card backdrop-blur-lg border-glass-border hover:border-glass-border-hover',
                 label: 'text-theme-muted',
                 input: 'text-theme-primary placeholder:text-theme-subtle',
-                description: 'text-emerald-600 dark:text-emerald-400',
+                description: 'text-emerald-700 dark:text-emerald-400',
               }} />
           </div>
         );

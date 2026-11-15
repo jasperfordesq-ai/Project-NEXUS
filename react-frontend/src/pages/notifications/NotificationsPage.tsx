@@ -451,8 +451,8 @@ export function NotificationsPage() {
         <LoadError title={t('error_title')} onRetry={loadNotifications} />
       )}
 
-      {/* Notifications List */}
-      {!loadError && isLoading ? (
+      {/* Notifications List — nothing under a failed load: "none yet" would contradict the card above. */}
+      {loadError ? null : isLoading ? (
         <div role="status" aria-label={t('loading_aria')} aria-busy="true" className="space-y-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <GlassCard key={i} className="p-4">

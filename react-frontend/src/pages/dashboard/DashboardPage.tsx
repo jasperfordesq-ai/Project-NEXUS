@@ -326,6 +326,7 @@ export function DashboardPage() {
     upcomingEvents: [], myEndorsements: [],
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [listingsKnown, setListingsKnown] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activityLoading, setActivityLoading] = useState(true);
   const [suggestedLoading, setSuggestedLoading] = useState(true);
@@ -417,6 +418,8 @@ export function DashboardPage() {
       }
 
       const listingsCount = listingsData?.meta?.counts?.live ?? listingsData?.data?.length ?? 0;
+      // "Could not be loaded" is not "has none": the getting-started card waits rather than ask for an offer that exists.
+      setListingsKnown(Boolean(listingsData?.success));
       setStats({
         walletBalance: walletData?.success ? walletData.data ?? null : null,
         recentListings: listingsData?.success ? listingsData.data ?? [] : [],
@@ -510,7 +513,7 @@ export function DashboardPage() {
             replaced the separate welcome-steps banner and photo prompt
             (14 Nov 2026). Each renders nothing when it has nothing to say. */}
         <CommunityMilestone />
-        <GettingStartedCard hasListing={isLoading ? null : stats.activeListingsCount > 0} listingsOn={hasListingsModule} />
+        <GettingStartedCard hasListing={!hasListingsModule ? false : (isLoading || !listingsKnown) ? null : stats.activeListingsCount > 0} listingsOn={hasListingsModule} />
 
         {hasCaringCommunity && (
           <motion.div variants={itemVariants}>

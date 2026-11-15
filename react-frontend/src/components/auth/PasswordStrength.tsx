@@ -74,7 +74,7 @@ export function PasswordStrength({ state }: PasswordStrengthProps) {
           tone === 'error'
             ? 'text-danger flex items-center gap-2'
             : tone === 'success'
-              ? 'text-success flex items-center gap-2'
+              ? 'text-emerald-700 dark:text-emerald-400 flex items-center gap-2'
               : tone === 'warn'
                 ? 'text-warning flex items-center gap-2'
                 : 'text-theme-muted flex items-center gap-2'

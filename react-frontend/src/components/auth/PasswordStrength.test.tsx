@@ -213,7 +213,7 @@ describe('PasswordStrength — success (long enough, not pwned)', () => {
   it('applies the success tone class on the status paragraph', () => {
     render(<PasswordStrength state={successState} />);
     const live = document.querySelector('[aria-live="polite"]');
-    expect(live?.className).toMatch(/text-success/);
+    expect(live?.className).toMatch(/text-emerald-700/);
   });
 
   it('does NOT show the passphrase tip', () => {
