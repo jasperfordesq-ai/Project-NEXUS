@@ -611,4 +611,60 @@ describe('TenantContext', () => {
       expect(result.current.branding.primaryColor).toBe('#6366f1'); // default
     });
   });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // The community on the member's phone (warmth phase 6, A4)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  describe('home-screen identity', () => {
+    beforeEach(() => {
+      document.head.innerHTML = [
+        '<link rel="icon" type="image/svg+xml" href="/favicon.svg">',
+        '<meta name="apple-mobile-web-app-title" content="NEXUS">',
+        '<link rel="apple-touch-icon" href="/icons/icon-192.png">',
+      ].join('');
+    });
+
+    const titleMeta = () => document.querySelector('meta[name="apple-mobile-web-app-title"]');
+
+    it('names the home-screen app after the community and uses its stored favicon', async () => {
+      mockApiGet.mockResolvedValue({
+        success: true,
+        data: { ...mockTenantConfig, branding: { favicon_url: 'https://hour.example/uploads/t/2/fav.png' } },
+      });
+
+      const { result } = renderHook(() => useTenant(), { wrapper: tenantWrapper });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      await waitFor(() => expect(titleMeta()).toHaveAttribute('content', 'Hour Timebank'));
+      expect(document.querySelector('link[rel="icon"]')).toHaveAttribute('href', '/uploads/t/2/fav.png');
+    });
+
+    it("uses the community's uploaded app icon for the iPhone home-screen icon", async () => {
+      mockApiGet.mockResolvedValue({
+        success: true,
+        data: { ...mockTenantConfig, branding: { app_icon_url: '/uploads/tenants/hour/app-icons/icon.png' } },
+      });
+
+      const { result } = renderHook(() => useTenant(), { wrapper: tenantWrapper });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      await waitFor(() =>
+        expect(document.querySelector('link[rel="apple-touch-icon"]')).toHaveAttribute(
+          'href',
+          '/uploads/tenants/hour/app-icons/icon.png',
+        ),
+      );
+    });
+
+    it('leaves the platform community (id 1) exactly as the shell ships it', async () => {
+      mockApiGet.mockResolvedValue({ success: true, data: { ...mockTenantConfig, id: 1, name: 'Project NEXUS' } });
+
+      const { result } = renderHook(() => useTenant(), { wrapper: tenantWrapper });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(titleMeta()).toHaveAttribute('content', 'NEXUS');
+      expect(document.querySelector('link[rel="icon"]')).toHaveAttribute('href', '/favicon.svg');
+    });
+  });
 });

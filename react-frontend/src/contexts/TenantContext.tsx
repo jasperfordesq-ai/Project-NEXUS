@@ -36,6 +36,7 @@ import { tenantBootstrapSchema } from '@/lib/api-schemas';
 import { queueSentryTenant } from '@/lib/telemetryQueue';
 import { logError } from '@/lib/logger';
 import { setRegion } from '@/lib/regionStore';
+import { applyCommunityHead } from '@/lib/communityHead';
 import ThemeContext from './ThemeContext';
 import { DEFAULT_LANDING_PAGE_CONFIG } from '@/types';
 import type { TenantConfig, TenantFeatures, TenantModules, TenantBranding, GroupTabConfig, ListingConfig, VolunteeringConfig, JobConfig, LandingPageConfig, AuthenticationConfig } from '@/types';
@@ -631,6 +632,21 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
   useEffect(() => {
     setCommunityColourStrength?.(branding.colourStrength ?? null);
   }, [branding.colourStrength, setCommunityColourStrength]);
+
+  // The community on the member's phone (warmth phase 6, A4): the name a
+  // home-screen icon is saved under, the tab icon and the iPhone icon. The
+  // platform's own community (id 1) and "no community yet" keep the page's
+  // shipped tags; communityHead.ts validates every address it is given.
+  const homeScreenCommunityId = state.tenant?.id;
+  const homeScreenName = state.tenant?.name;
+  const rawFavicon = branding.favicon;
+  const rawAppIcon = branding.app_icon_url;
+  useEffect(() => {
+    const isCommunity = typeof homeScreenCommunityId === 'number' && homeScreenCommunityId > 1;
+    applyCommunityHead(
+      isCommunity ? { name: homeScreenName, favicon: rawFavicon, appIcon: rawAppIcon } : null,
+    );
+  }, [homeScreenCommunityId, homeScreenName, rawFavicon, rawAppIcon]);
 
   /**
    * Get listing config with fallback to defaults

@@ -1363,6 +1363,11 @@ export interface TenantBranding {
    */
   communityPhoto?: string | null;
   community_photo_url?: string; // raw backend field
+  /**
+   * The community's square app icon (Make it yours, warmth phase 6 A4), an
+   * uploads path. Used only as a home-screen icon; see lib/communityHead.ts.
+   */
+  app_icon_url?: string; // raw backend field
   secondaryColor?: string;
   og_image_url?: string;
 }
