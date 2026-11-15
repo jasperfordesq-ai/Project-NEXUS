@@ -18,12 +18,13 @@
  * @see docs/TRS-001-TENANT-RESOLUTION-SPEC.md
  */
 
-import { findCommunityLook, normaliseColourStrength } from '@/lib/communityLooks';
+import { findCommunityLook, normaliseColourStrength, normaliseCommunityDefaultTheme } from '@/lib/communityLooks';
 import {
   createContext,
   use,
   useState,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useCallback,
   type ReactNode,
@@ -615,6 +616,8 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
       communityLook: findCommunityLook(raw.community_look)?.id ?? null,
       // 'vivid' only when the server says so (warmth phase 5); else soft.
       colourStrength: normaliseColourStrength(raw.colour_strength),
+      // 'dark' or 'system' only when the server says so; else light.
+      defaultTheme: normaliseCommunityDefaultTheme(raw.default_theme),
       communityPhoto,
     };
   }, [state.tenant]);
@@ -635,6 +638,13 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
   useEffect(() => {
     setCommunityColourStrength?.(branding.colourStrength ?? null);
   }, [branding.colourStrength, setCommunityColourStrength]);
+  // Light or dark to start with (Make it yours): only for someone who has not
+  // chosen for themselves; the theme keeps that rule. A layout effect, so the
+  // page is never painted light and then turned dark once the community is known.
+  const setCommunityDefaultTheme = theme?.setCommunityDefaultTheme;
+  useLayoutEffect(() => {
+    setCommunityDefaultTheme?.(branding.defaultTheme ?? null);
+  }, [branding.defaultTheme, setCommunityDefaultTheme]);
 
   // The community on the member's phone (warmth phase 6, A4): the name a
   // home-screen icon is saved under, the tab icon and the iPhone icon. The

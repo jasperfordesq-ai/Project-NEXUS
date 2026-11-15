@@ -958,6 +958,9 @@ class AdminConfigController extends BaseApiController
         $generalSettings['community_look'] = \App\Support\CommunityLook::normalize($config['community_look'] ?? null);
         // How strongly the colour is worn (warmth phase 5): soft unless vivid was chosen.
         $generalSettings['colour_strength'] = \App\Support\ColourStrength::fromStored($config['colour_strength'] ?? null);
+        // How the member website starts for someone who has not chosen: light
+        // unless an admin chose dark or the visitor's device.
+        $generalSettings['default_theme'] = \App\Support\DefaultTheme::fromStored($config['default_theme'] ?? null);
 
         return $this->respondWithData([
             'tenant_id' => $tenantId,
@@ -1179,7 +1182,13 @@ class AdminConfigController extends BaseApiController
      * stored, as configuration.colour_strength; "soft" removes the key, so a
      * community that never chose is soft.
      *
-     * Each of the five keys is optional: a key that is not sent keeps its
+     * Also saves how the member website starts for someone who has not chosen
+     * for themselves (`default_theme`): "light", "dark" or "system"
+     * (App\Support\DefaultTheme). Only "dark" and "system" are stored, as
+     * configuration.default_theme; "light" removes the key, so a community
+     * that never chose starts light. A person's own choice always wins.
+     *
+     * Each of the six keys is optional: a key that is not sent keeps its
      * stored value; a key sent empty clears it.
      */
     public function saveHeaderColors(): JsonResponse
@@ -1235,6 +1244,26 @@ class AdminConfigController extends BaseApiController
             $strength = $normalised ?? \App\Support\ColourStrength::SOFT;
         }
 
+        // Light, dark or the visitor's device. Empty means light; anything
+        // else that is not one of ours is refused, because the name reaches
+        // the page's theme.
+        $sentDefaultTheme = array_key_exists('default_theme', $input);
+        $rawDefaultTheme = $input['default_theme'] ?? null;
+        $defaultTheme = \App\Support\DefaultTheme::fromStored($config['default_theme'] ?? null);
+        if ($sentDefaultTheme) {
+            $isEmpty = $rawDefaultTheme === null || (is_string($rawDefaultTheme) && trim($rawDefaultTheme) === '');
+            $normalised = \App\Support\DefaultTheme::normalize($rawDefaultTheme);
+            if (!$isEmpty && $normalised === null) {
+                return $this->respondWithError(
+                    'VALIDATION_ERROR',
+                    __('api.invalid_default_theme'),
+                    'default_theme',
+                    422,
+                );
+            }
+            $defaultTheme = $normalised ?? \App\Support\DefaultTheme::LIGHT;
+        }
+
         if ($sentCommunity && is_string($rawCommunity) && trim($rawCommunity) !== '') {
             if ($community === null) {
                 return $this->respondWithError(
@@ -1275,7 +1304,7 @@ class AdminConfigController extends BaseApiController
         }
 
         try {
-            DB::transaction(function () use ($tenantId, $bg, $accent, $community, $look, $strength, $sentBg, $sentAccent, $sentCommunity, $sentLook, $sentStrength): void {
+            DB::transaction(function () use ($tenantId, $bg, $accent, $community, $look, $strength, $defaultTheme, $sentBg, $sentAccent, $sentCommunity, $sentLook, $sentStrength, $sentDefaultTheme): void {
                 if ($sentBg) {
                     $this->setTenantConfigValue($tenantId, 'header_bg_color', $bg);
                 }
@@ -1296,6 +1325,14 @@ class AdminConfigController extends BaseApiController
                         $strength === \App\Support\ColourStrength::VIVID ? $strength : null,
                     );
                 }
+                if ($sentDefaultTheme) {
+                    // Only dark and system are stored; light is the absence of a value.
+                    $this->setTenantConfigValue(
+                        $tenantId,
+                        'default_theme',
+                        $defaultTheme === \App\Support\DefaultTheme::LIGHT ? null : $defaultTheme,
+                    );
+                }
                 app(PrerenderContentInvalidator::class)->refreshTenantOrFail($tenantId, true);
             });
         } catch (\Throwable $e) {
@@ -1309,6 +1346,7 @@ class AdminConfigController extends BaseApiController
             'community_color' => $community,
             'community_look' => $look,
             'colour_strength' => $strength,
+            'default_theme' => $defaultTheme,
         ]);
     }
 

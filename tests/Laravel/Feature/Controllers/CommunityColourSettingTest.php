@@ -297,4 +297,104 @@ class CommunityColourSettingTest extends TestCase
 
         $this->assertArrayNotHasKey('colour_strength', $this->storedConfig());
     }
+
+    // ── Light or dark to start with (Make it yours, 15 Nov 2026) ─────────
+
+    public function test_every_community_starts_light_until_an_admin_chooses_otherwise(): void
+    {
+        $this->actAsAdmin();
+
+        // Nothing stored: the bootstrap says nothing, so no existing community
+        // changes when this setting is deployed.
+        $this->assertArrayNotHasKey('default_theme', $this->bootstrapBranding());
+        $this->apiGet('/v2/admin/settings')->assertOk()->assertJsonPath('data.settings.default_theme', 'light');
+    }
+
+    public function test_an_admin_chooses_dark_or_the_visitors_device_and_the_member_site_receives_it(): void
+    {
+        $this->actAsAdmin();
+
+        foreach (['Dark' => 'dark', 'system' => 'system'] as $sent => $stored) {
+            $this->apiPut('/v2/admin/settings/header-colors', ['default_theme' => $sent])
+                ->assertOk()
+                ->assertJsonPath('data.default_theme', $stored);
+
+            $this->assertSame($stored, $this->storedConfig()['default_theme'] ?? null);
+            $this->apiGet('/v2/admin/settings')->assertOk()->assertJsonPath('data.settings.default_theme', $stored);
+            $this->assertSame($stored, $this->bootstrapBranding()['default_theme'] ?? null);
+        }
+    }
+
+    public function test_going_back_to_light_stores_nothing_and_leaving_it_out_keeps_it(): void
+    {
+        $this->storeConfig(array_merge($this->storedConfig(), ['default_theme' => 'dark']));
+        $this->actAsAdmin();
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['bg_color' => '#5b2a86'])
+            ->assertOk()
+            ->assertJsonPath('data.default_theme', 'dark');
+        $this->assertSame('dark', $this->storedConfig()['default_theme'] ?? null);
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['default_theme' => 'light'])
+            ->assertOk()
+            ->assertJsonPath('data.default_theme', 'light');
+        $this->assertArrayNotHasKey('default_theme', $this->storedConfig());
+        $this->assertArrayNotHasKey('default_theme', $this->bootstrapBranding());
+    }
+
+    public function test_an_empty_default_theme_means_light(): void
+    {
+        $this->storeConfig(array_merge($this->storedConfig(), ['default_theme' => 'system']));
+        $this->actAsAdmin();
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['default_theme' => ''])
+            ->assertOk()
+            ->assertJsonPath('data.default_theme', 'light');
+        $this->assertArrayNotHasKey('default_theme', $this->storedConfig());
+    }
+
+    public function test_a_default_theme_that_is_not_one_of_ours_is_refused_and_never_published(): void
+    {
+        $this->actAsAdmin();
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['default_theme' => 'sepia'])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.field', 'default_theme');
+        $this->assertArrayNotHasKey('default_theme', $this->storedConfig());
+
+        // Not a string at all: refused, not treated as "light".
+        $this->apiPut('/v2/admin/settings/header-colors', ['default_theme' => ['dark']])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.field', 'default_theme');
+
+        $this->storeConfig(array_merge($this->storedConfig(), ['default_theme' => '"><script>']));
+        $this->assertArrayNotHasKey('default_theme', $this->bootstrapBranding());
+        $this->apiGet('/v2/admin/settings')->assertOk()->assertJsonPath('data.settings.default_theme', 'light');
+    }
+
+    public function test_a_member_cannot_change_the_default_theme(): void
+    {
+        Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->create());
+
+        $this->apiPut('/v2/admin/settings/header-colors', ['default_theme' => 'dark'])
+            ->assertStatus(403);
+
+        $this->assertArrayNotHasKey('default_theme', $this->storedConfig());
+    }
+
+    /**
+     * The member website and the server each hold the three names. One added
+     * on one side only either cannot be saved (422) or is dropped on the way
+     * to the page, so the two lists are compared directly.
+     */
+    public function test_the_server_accepts_exactly_the_default_themes_the_member_website_offers(): void
+    {
+        $source = file_get_contents(base_path('react-frontend/src/lib/communityLooks.ts'));
+        $this->assertIsString($source);
+        preg_match('/COMMUNITY_DEFAULT_THEMES[^=]*=\s*\[(.*?)\];/s', $source, $list);
+        preg_match_all("/'([a-z]+)'/", $list[1] ?? '', $names);
+
+        $this->assertNotEmpty($names[1], 'No default themes found in communityLooks.ts');
+        $this->assertSame($names[1], \App\Support\DefaultTheme::ALLOWED);
+    }
 }

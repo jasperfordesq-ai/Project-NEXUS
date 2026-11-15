@@ -1360,6 +1360,13 @@ export interface TenantBranding {
   colourStrength?: 'soft' | 'vivid';
   colour_strength?: string; // raw backend field
   /**
+   * How the website starts for someone who has not chosen for themselves
+   * (Make it yours): 'light' (default), 'dark' or 'system'. The server sends
+   * `default_theme` only when it is dark or system.
+   */
+  defaultTheme?: 'light' | 'dark' | 'system';
+  default_theme?: string; // raw backend field
+  /**
    * The community's own photo (Admin → Settings → "Community photo"), an
    * uploads path, or null. Normalised from community_photo_url.
    */

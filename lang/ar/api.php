@@ -2888,6 +2888,7 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'community_color_low_contrast' => 'هذا اللون فاتح جدًا بحيث لا يمكن قراءته على صفحة بيضاء. اختر درجة أغمق لتبقى الروابط والأزرار سهلة القراءة.',
     'invalid_community_look' => 'اختر أحد المظاهر المعروضة.',
     'invalid_colour_strength' => 'اختر هادئًا أو زاهيًا.',
+    'invalid_default_theme' => 'اختر فاتحًا أو داكنًا أو مثل الجهاز.',
     'invalid_hex_color' => 'يجب أن يكون :field لونًا سداسيًا صالحًا، مثل :example.',
     'invalid_risk_category' => 'قيمة risk_category غير صالحة.',
     'landing_card_field_required' => 'القسم :section، البطاقة :card تفتقد :field.',

@@ -11,7 +11,7 @@
  */
 
 import type { AdminSettingsResponse } from '../../../api/types';
-import { normaliseColourStrength } from '@/lib/communityLooks';
+import { normaliseColourStrength, normaliseCommunityDefaultTheme } from '@/lib/communityLooks';
 
 export type RegistrationMode = 'open' | 'invite_only' | 'closed';
 
@@ -71,6 +71,7 @@ export interface SettingsForm {
   community_color: string;        // tenants.configuration.primary_color ('' = the standard colour)
   community_look: string;         // tenants.configuration.community_look ('' = no ready-made look)
   colour_strength: string;        // tenants.configuration.colour_strength ('soft' = default, or 'vivid')
+  default_theme: string;          // tenants.configuration.default_theme ('light' = default, 'dark' or 'system')
 }
 
 export type SettingsFormKey = keyof SettingsForm;
@@ -140,6 +141,7 @@ export const DEFAULT_SETTINGS: SettingsForm = {
   community_color: '',
   community_look: '',
   colour_strength: 'soft',
+  default_theme: 'light',
 };
 
 const truthy = (v: unknown) => v === true || v === 'true' || v === '1' || v === 1;
@@ -200,6 +202,7 @@ export function settingsFromResponse(data: AdminSettingsResponse): SettingsForm 
     community_color: str(settings.community_color),
     community_look: str(settings.community_look),
     colour_strength: normaliseColourStrength(settings.colour_strength),
+    default_theme: normaliseCommunityDefaultTheme(settings.default_theme),
   };
 }
 
@@ -248,9 +251,10 @@ export const PAYLOAD_RULES: Partial<Record<SettingsFormKey, PayloadRule>> = {
   community_color: { endpoint: 'colors' },
   community_look: { endpoint: 'colors' },
   colour_strength: { endpoint: 'colors' },
+  default_theme: { endpoint: 'colors' },
 };
 
-export const COLOR_KEYS: SettingsFormKey[] = ['header_bg_color', 'header_accent_color', 'community_color', 'community_look', 'colour_strength'];
+export const COLOR_KEYS: SettingsFormKey[] = ['header_bg_color', 'header_accent_color', 'community_color', 'community_look', 'colour_strength', 'default_theme'];
 
 export function changedKeys(form: SettingsForm, original: SettingsForm): SettingsFormKey[] {
   return (Object.keys(form) as SettingsFormKey[]).filter((k) => form[k] !== original[k]);

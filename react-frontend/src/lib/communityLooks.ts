@@ -101,3 +101,26 @@ export const COLOUR_STRENGTHS: readonly ColourStrength[] = ['soft', 'vivid'];
 export function normaliseColourStrength(value: unknown): ColourStrength {
   return value === 'vivid' ? 'vivid' : 'soft';
 }
+
+/**
+ * How a community's website starts for someone who has not chosen for
+ * themselves (Make it yours, Nov 2026).
+ *
+ * - `light`: the default, and what every community had before this setting
+ *   existed (light-first since 11 Aug 2026: dark is hard on older eyes).
+ * - `dark`: the dark theme.
+ * - `system`: whatever the visitor's own phone or computer is set to.
+ *
+ * Only ever a starting point: a person's own choice, kept in their browser,
+ * always wins (ThemeContext). The server stores the name
+ * (configuration.default_theme) and checks it against the same three names
+ * (app/Support/DefaultTheme.php) — keep in step; a server test compares them.
+ */
+export type CommunityDefaultTheme = 'light' | 'dark' | 'system';
+
+export const COMMUNITY_DEFAULT_THEMES: readonly CommunityDefaultTheme[] = ['light', 'dark', 'system'];
+
+/** One of our three names; anything else (missing, unknown) is light. */
+export function normaliseCommunityDefaultTheme(value: unknown): CommunityDefaultTheme {
+  return value === 'dark' || value === 'system' ? value : 'light';
+}

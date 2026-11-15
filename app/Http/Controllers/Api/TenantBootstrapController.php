@@ -937,6 +937,15 @@ class TenantBootstrapController extends BaseApiController
             $branding['colour_strength'] = \App\Support\ColourStrength::VIVID;
         }
 
+        // How the member website starts for someone who has not chosen for
+        // themselves (Make it yours, Nov 2026). Published only when an admin
+        // chose "dark" or "system": light is the default and sends nothing, so
+        // a community that never chose starts exactly as it did.
+        $defaultTheme = \App\Support\DefaultTheme::fromStored($config['default_theme'] ?? null);
+        if ($defaultTheme !== \App\Support\DefaultTheme::LIGHT) {
+            $branding['default_theme'] = $defaultTheme;
+        }
+
         // Accessible (web-uk) header colours, set on Admin → Settings → "Accessible
         // header colour" (AdminConfigController::saveHeaderColors). Published only
         // as strict #rrggbb so a frontend can put them straight into CSS. Until

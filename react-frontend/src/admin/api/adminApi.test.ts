@@ -1633,6 +1633,20 @@ describe('adminSettings', () => {
     });
   });
 
+  it('saveHeaderColors sends light or dark to start with only when it is given', async () => {
+    mockPut.mockResolvedValue({ success: true, data: {} });
+
+    await adminSettings.saveHeaderColors(null, null, null, null, 'soft', 'dark');
+    expect(mockPut).toHaveBeenLastCalledWith(
+      '/v2/admin/settings/header-colors',
+      expect.objectContaining({ colour_strength: 'soft', default_theme: 'dark' }),
+    );
+
+    // Left out, the key is not sent, so the server keeps the stored choice.
+    await adminSettings.saveHeaderColors(null, null, null);
+    expect(mockPut.mock.calls.at(-1)?.[1]).not.toHaveProperty('default_theme');
+  });
+
   it('saveHeaderColors with nulls sends empty strings', async () => {
     mockPut.mockResolvedValueOnce({ success: true, data: {} });
     await adminSettings.saveHeaderColors(null, null, null);

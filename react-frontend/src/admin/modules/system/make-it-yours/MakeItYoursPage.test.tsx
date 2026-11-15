@@ -232,8 +232,8 @@ describe('MakeItYoursPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Save colour' }));
 
     await waitFor(() => expect(api.saveHeaderColors).toHaveBeenCalledTimes(1));
-    // (accessible header bg, accessible header accent, community colour, look, strength)
-    expect(api.saveHeaderColors).toHaveBeenCalledWith(null, null, '#0f766e', null, 'soft');
+    // (accessible header bg, accessible header accent, community colour, look, strength, light or dark to start)
+    expect(api.saveHeaderColors).toHaveBeenCalledWith(null, null, '#0f766e', null, 'soft', 'light');
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Colour saved'));
     // Quietly: the full-screen loading state would remount this page.
     expect(refreshTenant).toHaveBeenCalledWith({ silent: true });
@@ -267,8 +267,45 @@ describe('MakeItYoursPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Save colour' }));
 
     await waitFor(() => expect(api.saveHeaderColors).toHaveBeenCalledTimes(1));
-    // (accessible header bg, accessible header accent, community colour, look, strength)
-    expect(api.saveHeaderColors).toHaveBeenCalledWith('#1d3557', null, '#0f766e', null, 'soft');
+    // (accessible header bg, accessible header accent, community colour, look, strength, light or dark to start)
+    expect(api.saveHeaderColors).toHaveBeenCalledWith('#1d3557', null, '#0f766e', null, 'soft', 'light');
+  });
+
+  // Light or dark to start with (15 Nov 2026): part of the colour step, not a
+  // seventh step, and saved by the same call as the colours.
+  it('lets the admin choose how the site starts for someone who has not chosen, and saves it with the colours', async () => {
+    api.getSettings.mockResolvedValue({
+      success: true,
+      data: { tenant: { name: 'Riverside Timebank' }, settings: { community_color: '#0f766e' } },
+    });
+    await renderPage();
+
+    expect(screen.getAllByTestId(/^setup-step-/)).toHaveLength(6);
+    const step = screen.getByTestId('setup-step-colour');
+    expect(within(step).getByRole('heading', { name: 'Light or dark to start with' })).toBeInTheDocument();
+    // Light until an admin says otherwise, and nothing to save yet.
+    expect(within(within(step).getByTestId('default-theme-light')).getByRole('radio')).toBeChecked();
+    expect(screen.queryByRole('button', { name: 'Save colour' })).toBeNull();
+
+    fireEvent.click(within(within(step).getByTestId('default-theme-dark')).getByRole('radio'));
+    expect(api.saveHeaderColors).not.toHaveBeenCalled();
+    fireEvent.click(await screen.findByRole('button', { name: 'Save colour' }));
+
+    await waitFor(() => expect(api.saveHeaderColors).toHaveBeenCalledTimes(1));
+    expect(api.saveHeaderColors).toHaveBeenCalledWith(null, null, '#0f766e', null, 'soft', 'dark');
+    // The site is read again, so the admin's own page follows the new start.
+    await waitFor(() => expect(refreshTenant).toHaveBeenCalledWith({ silent: true }));
+  });
+
+  it('shows a community’s saved start, and does not count it as a step', async () => {
+    api.getSettings.mockResolvedValue({
+      success: true,
+      data: { tenant: { name: 'Riverside Timebank' }, settings: { default_theme: 'system' } },
+    });
+    await renderPage();
+
+    expect(within(screen.getByTestId('default-theme-system')).getByRole('radio')).toBeChecked();
+    expect(screen.getByText('2 of 6 done')).toBeInTheDocument();
   });
 
   it('shows no "From your logo" row when the logo gave no colours', async () => {

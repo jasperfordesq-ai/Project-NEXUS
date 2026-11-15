@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { isPlatformSuperAdminUser } from '@/lib/access';
+import { normaliseCommunityDefaultTheme } from '@/lib/communityLooks';
 import { logError } from '@/lib/logger';
 import { adminSettings } from '../../../api/adminApi';
 import type { AdminSettingsResponse } from '../../../api/types';
@@ -180,6 +181,7 @@ export function useAdminSettingsForm(options: AdminSettingsFormOptions = {}): Ad
         form.community_color || null,
         form.community_look || null,
         form.colour_strength === 'vivid' ? 'vivid' : 'soft',
+        normaliseCommunityDefaultTheme(form.default_theme),
       );
       if (res.success === false) {
         // admin-i18n-ignore: localized server message — AdminConfigController

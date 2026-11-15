@@ -19,6 +19,7 @@ import {
   use,
   useState,
   useEffect,
+  useLayoutEffect,
   useCallback,
   useMemo,
   useRef,
@@ -42,7 +43,9 @@ import {
   CORNER_TOKEN_NAMES,
   findCommunityLook,
   normaliseColourStrength,
+  normaliseCommunityDefaultTheme,
   type ColourStrength,
+  type CommunityDefaultTheme,
   type CommunityLook,
 } from '@/lib/communityLooks';
 
@@ -93,6 +96,14 @@ interface ThemeContextValue extends ThemeState, ThemePreferences {
    */
   communityColourStrength: ColourStrength;
   setCommunityColourStrength: (value: string | null) => void;
+  /**
+   * How the community's website starts for someone who has not chosen for
+   * themselves (Make it yours): 'light' (the default), 'dark' or 'system'.
+   * Set by TenantProvider from the bootstrap. A person's own choice — the
+   * header picker or their settings, kept in this browser — always wins.
+   */
+  communityDefaultTheme: CommunityDefaultTheme;
+  setCommunityDefaultTheme: (value: string | null) => void;
   setTheme: (theme: ThemeMode) => Promise<void>;
   toggleTheme: () => Promise<void>;
   setAccentColor: (color: string) => void;
@@ -115,6 +126,13 @@ const THEME_PREFS_STORAGE_KEY = 'nexus_theme_preferences';
 // a coordinator that dark mode is hard on older eyes — a first impression that
 // members shouldn't have to go and fix. An explicit choice still wins: it is
 // stored under `nexus_theme` and mirrored to `users.preferred_theme`.
+//
+// Since Nov 2026 a community's admin may choose a different start for their
+// own community (Make it yours → "Light or dark to start with"). The order is:
+// the person's own choice in this browser, then the community's, then this.
+// 🔴 `users.preferred_theme` is written and never read back, and must not be:
+// the column defaults to 'dark', so a stored value cannot be told from "never
+// chose" — reading it would turn every such member dark.
 const DEFAULT_THEME: ThemeMode = 'light';
 
 const DEFAULT_PREFERENCES: ThemePreferences = {
@@ -168,13 +186,6 @@ function getSystemTheme(): ResolvedTheme {
   // dark, so 'system' resolves consistently with DEFAULT_THEME.
   if (typeof window === 'undefined') return 'light';
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
-function resolveTheme(theme: ThemeMode): ResolvedTheme {
-  if (theme === 'system') {
-    return getSystemTheme();
-  }
-  return theme;
 }
 
 function applyThemeToDOM(resolvedTheme: ResolvedTheme): void {
@@ -325,10 +336,18 @@ export function ThemeProvider({
   children,
   defaultTheme = DEFAULT_THEME,
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<ThemeMode>(() => {
-    // Try to get stored theme, fall back to default
-    return getStoredTheme() ?? defaultTheme;
-  });
+  // The person's own choice in this browser, or null when they have never
+  // made one. Only a real choice is ever stored, so someone who has not chosen
+  // keeps following their community (and a different community, if they visit
+  // one on the same address).
+  const [ownTheme, setOwnTheme] = useState<ThemeMode | null>(() => getStoredTheme());
+  // What the community starts people on when it is not light (Make it yours);
+  // null until the community is known, and for a community that starts light.
+  const [communityStart, setCommunityStart] = useState<Exclude<CommunityDefaultTheme, 'light'> | null>(null);
+  // What the device itself is set to, kept current, for the 'system' mode.
+  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() => getSystemTheme());
+  // Own choice, then the community's start, then the platform default.
+  const theme: ThemeMode = ownTheme ?? communityStart ?? defaultTheme;
   const [preferences, setPreferences] = useState<ThemePreferences>(() => {
     const stored = getStoredPreferences();
     if (stored) return stored;
@@ -348,12 +367,12 @@ export function ThemeProvider({
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Resolve the actual theme (handles 'system' mode)
-  const resolvedTheme = useMemo<ResolvedTheme>(() => {
-    return resolveTheme(theme);
-  }, [theme]);
+  const resolvedTheme: ResolvedTheme = theme === 'system' ? systemTheme : theme;
 
-  // Apply theme to DOM on mount and when theme changes
-  useEffect(() => {
+  // Apply theme to DOM on mount and when theme changes. A layout effect: a
+  // change of theme (the community's start arriving, the picker) reaches the
+  // page before it is painted, never one frame after.
+  useLayoutEffect(() => {
     applyThemeToDOM(resolvedTheme);
     setIsInitialized(true);
   }, [resolvedTheme]);
@@ -437,6 +456,11 @@ export function ThemeProvider({
     setCommunityColourStrengthState(normaliseColourStrength(value));
   }, []);
 
+  const setCommunityDefaultTheme = useCallback((value: string | null) => {
+    const start = normaliseCommunityDefaultTheme(value);
+    setCommunityStart(start === 'light' ? null : start);
+  }, []);
+
   // Load preferences from backend on mount (if authenticated)
   useEffect(() => {
     if (!tokenManager.getAccessToken()) return;
@@ -471,22 +495,22 @@ export function ThemeProvider({
     return () => { cancelled = true; };
   }, []); // load theme once on mount
 
-  // Listen for system preference changes (only relevant when theme is 'system')
+  // Keep track of what the device is set to. It only shows when the theme is
+  // 'system', but it is kept current always, so switching to 'system' (or a
+  // community that starts on it) is right from the first frame.
+  //
+  // Until Nov 2026 this repainted the page itself and then "forced a
+  // re-render" with a state update that changed nothing, so React skipped it:
+  // the page turned dark while `resolvedTheme` (and with it the accent shades
+  // and the phone's browser bar) stayed light until the next reload.
   useEffect(() => {
-    if (theme !== 'system') return;
-
+    if (typeof window === 'undefined') return;
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const handleChange = () => {
-      const newResolved = getSystemTheme();
-      applyThemeToDOM(newResolved);
-      // Force re-render to update resolvedTheme
-      setThemeState((current) => current);
-    };
+    const handleChange = () => setSystemTheme(getSystemTheme());
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme]);
+  }, []);
 
   // Mirror OS prefers-reduced-motion into the reducedMotion preference whenever
   // the user has NOT explicitly set their own preference (no stored value).
@@ -534,7 +558,7 @@ export function ThemeProvider({
 
   // Set theme with persistence
   const setTheme = useCallback(async (newTheme: ThemeMode) => {
-    setThemeState(newTheme);
+    setOwnTheme(newTheme);
     storeTheme(newTheme);
 
     // Sync to backend if authenticated
@@ -636,6 +660,8 @@ export function ThemeProvider({
       setCommunityLook,
       communityColourStrength,
       setCommunityColourStrength,
+      communityDefaultTheme: communityStart ?? 'light',
+      setCommunityDefaultTheme,
       accentColor: preferences.accentColor,
       fontSize: preferences.fontSize,
       density: preferences.density,
@@ -654,6 +680,7 @@ export function ThemeProvider({
     [theme, resolvedTheme, isInitialized, setTheme, toggleTheme, isLoading,
      communityAccent, setCommunityAccent, communityLook, setCommunityLook,
      communityColourStrength, setCommunityColourStrength,
+     communityStart, setCommunityDefaultTheme,
      preferences, setAccentColor, setFontSize, setDensity, setLargeText,
      setHighContrast, setReducedMotion, setSimplifiedLayout]
   );

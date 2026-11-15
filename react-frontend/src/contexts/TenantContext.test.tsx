@@ -405,6 +405,47 @@ describe('TenantContext', () => {
       });
       expect(screen.getByTestId('community-color')).toHaveTextContent('none');
     });
+
+    // Light or dark to start with (Make it yours, 15 Nov 2026): the seam
+    // between what the server publishes and what the page wears.
+    describe('light or dark to start with', () => {
+      const html = () => document.documentElement;
+
+      beforeEach(() => {
+        html().removeAttribute('data-theme');
+        html().classList.remove('light', 'dark');
+      });
+
+      it('starts a visitor who has not chosen on the community’s dark start', async () => {
+        await renderWithTheme({ default_theme: 'dark' });
+
+        await waitFor(() => expect(html().getAttribute('data-theme')).toBe('dark'));
+        expect(html().classList.contains('dark')).toBe(true);
+        // Following the community is not a choice, so nothing is remembered.
+        expect(localStorage.getItem('nexus_theme')).toBeNull();
+      });
+
+      it('leaves alone a visitor who chose light for themselves', async () => {
+        localStorage.setItem('nexus_theme', 'light');
+        await renderWithTheme({ default_theme: 'dark' });
+
+        // Give the hand-off every chance to (wrongly) apply.
+        await waitFor(() => expect(html().getAttribute('data-theme')).toBe('light'));
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        expect(html().getAttribute('data-theme')).toBe('light');
+      });
+
+      it('stays light for a community that says nothing, or something that is not one of the three', async () => {
+        await renderWithTheme({});
+        await waitFor(() => expect(html().getAttribute('data-theme')).toBe('light'));
+      });
+
+      it('never lets an unknown value through to the page', async () => {
+        await renderWithTheme({ default_theme: 'dark" onload="x' });
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        expect(html().getAttribute('data-theme')).toBe('light');
+      });
+    });
   });
 
   describe('community photo', () => {

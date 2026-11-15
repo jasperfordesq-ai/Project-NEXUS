@@ -16,7 +16,10 @@
  * 13 Nov 2026 they live here only (owner: one admin place per setting). The
  * accessible site's header colour followed on the same day: it sits under the
  * community colour in step 2, because both are saved by one call and an admin
- * choosing a colour should see where else it shows. The tagline saves through
+ * choosing a colour should see where else it shows. "Light or dark to start
+ * with" (15 Nov 2026) sits under it for the same reason: it is saved by that
+ * same call, and it is the one new value here that IS stored — for someone who
+ * has not chosen for themselves; a person's own choice always wins. The tagline saves through
  * the SEO endpoint that already owned it; themes and notices link to their
  * screens. Nothing changes for a community until its admin chooses it.
  *
@@ -51,6 +54,7 @@ import { useUnsavedChangesGuard } from '../../../components/useUnsavedChangesGua
 import { SettingsSection } from '../settings/SettingsSection';
 import { CommunityColourSection, communityColourTooLight } from '../settings/sections/CommunityColourSection';
 import { CommunityPhotoSection } from '../settings/sections/CommunityPhotoSection';
+import { DefaultThemeSection } from '../settings/sections/DefaultThemeSection';
 import { HeaderColorsSection } from '../settings/sections/HeaderColorsSection';
 import { HeaderLogoSection } from '../settings/sections/HeaderLogoSection';
 import { useAdminSettingsForm } from '../settings/useAdminSettingsForm';
@@ -317,6 +321,13 @@ export function MakeItYoursPage() {
                 header takes its line from that colour unless one is set. */}
             <div className="pt-4">
               <HeaderColorsSection state={general} />
+            </div>
+            {/* Not a step either, and never moves the meter: light or dark
+                for someone who has not chosen for themselves. It is here
+                because it is part of how the site looks and saves with the
+                colour choices, in the same call. */}
+            <div className="pt-4">
+              <DefaultThemeSection state={general} />
             </div>
           </SetupStep>
 

@@ -2231,6 +2231,8 @@ export interface AdminSettingsResponse {
     community_color?: string | null;
     /** How strongly the colour is worn (warmth phase 5): 'soft' (default) or 'vivid'. */
     colour_strength?: string | null;
+    /** How the website starts for someone who has not chosen (Make it yours): 'light' (default), 'dark' or 'system'. */
+    default_theme?: string | null;
   };
 }
 

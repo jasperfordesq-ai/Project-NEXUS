@@ -2521,8 +2521,9 @@ export const adminSettings = {
     communityColor: string | null,
     communityLook?: string | null,
     colourStrength?: 'soft' | 'vivid',
+    defaultTheme?: 'light' | 'dark' | 'system',
   ) =>
-    api.put<{ header_bg_color: string | null; header_accent_color: string | null; community_color: string | null; community_look?: string | null; colour_strength?: 'soft' | 'vivid' }>(
+    api.put<{ header_bg_color: string | null; header_accent_color: string | null; community_color: string | null; community_look?: string | null; colour_strength?: 'soft' | 'vivid'; default_theme?: 'light' | 'dark' | 'system' }>(
       '/v2/admin/settings/header-colors',
       {
         bg_color: bgColor ?? '',
@@ -2533,6 +2534,9 @@ export const adminSettings = {
         ...(communityLook === undefined ? {} : { community_look: communityLook ?? '' }),
         // Soft or vivid (warmth phase 5); left out, the stored choice is kept.
         ...(colourStrength === undefined ? {} : { colour_strength: colourStrength }),
+        // Light, dark or the visitor's device, for someone who has not chosen
+        // (Make it yours); left out, the stored choice is kept.
+        ...(defaultTheme === undefined ? {} : { default_theme: defaultTheme }),
       },
     ),
 

@@ -201,6 +201,181 @@ describe('ThemeContext', () => {
     expect(screen.getByTestId('resolved')).toHaveTextContent('light');
   });
 
+  describe('light or dark to start with (the community default)', () => {
+    function StartProbe({ start }: { start: string | null }) {
+      const { setCommunityDefaultTheme } = useTheme();
+      useEffect(() => {
+        setCommunityDefaultTheme(start);
+      }, [start, setCommunityDefaultTheme]);
+      return null;
+    }
+
+    const html = () => document.documentElement;
+
+    it('starts someone who has not chosen on the community default', async () => {
+      render(
+        <ThemeProvider>
+          <StartProbe start="dark" />
+          <TestComponent />
+        </ThemeProvider>
+      );
+
+      await act(async () => {});
+      expect(screen.getByTestId('theme')).toHaveTextContent('dark');
+      expect(screen.getByTestId('resolved')).toHaveTextContent('dark');
+      expect(html().getAttribute('data-theme')).toBe('dark');
+      expect(html().classList.contains('dark')).toBe(true);
+      // Following the community is not a choice: nothing is remembered, so the
+      // same person visiting a light community next is light there.
+      expect(localStorage.getItem('nexus_theme')).toBeNull();
+    });
+
+    it('never overrides a choice the person made themselves', async () => {
+      localStorage.setItem('nexus_theme', 'light');
+
+      render(
+        <ThemeProvider>
+          <StartProbe start="dark" />
+          <TestComponent />
+        </ThemeProvider>
+      );
+
+      await act(async () => {});
+      expect(screen.getByTestId('theme')).toHaveTextContent('light');
+      expect(html().getAttribute('data-theme')).toBe('light');
+      expect(localStorage.getItem('nexus_theme')).toBe('light');
+    });
+
+    it('lets the person switch away from it, and remembers that', async () => {
+      render(
+        <ThemeProvider>
+          <StartProbe start="dark" />
+          <TestComponent />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+
+      await act(async () => {
+        screen.getByText('Set Light').click();
+      });
+
+      expect(screen.getByTestId('theme')).toHaveTextContent('light');
+      expect(html().getAttribute('data-theme')).toBe('light');
+      expect(localStorage.getItem('nexus_theme')).toBe('light');
+    });
+
+    it('toggles away from a dark start to light', async () => {
+      render(
+        <ThemeProvider>
+          <StartProbe start="dark" />
+          <TestComponent />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+
+      await act(async () => {
+        screen.getByText('Toggle').click();
+      });
+
+      expect(screen.getByTestId('resolved')).toHaveTextContent('light');
+      expect(localStorage.getItem('nexus_theme')).toBe('light');
+    });
+
+    it('follows the device when the community chose that', async () => {
+      const original = window.matchMedia;
+      window.matchMedia = ((query: string) => ({
+        ...original(query),
+        matches: query.includes('prefers-color-scheme: dark'),
+      })) as typeof window.matchMedia;
+
+      try {
+        render(
+          <ThemeProvider>
+            <StartProbe start="system" />
+            <TestComponent />
+          </ThemeProvider>
+        );
+
+        await act(async () => {});
+        expect(screen.getByTestId('theme')).toHaveTextContent('system');
+        expect(screen.getByTestId('resolved')).toHaveTextContent('dark');
+        expect(html().getAttribute('data-theme')).toBe('dark');
+      } finally {
+        window.matchMedia = original;
+      }
+    });
+
+    it('goes back to light when the community does, and when the person moves to a light community', async () => {
+      const { rerender } = render(
+        <ThemeProvider>
+          <StartProbe start="dark" />
+          <TestComponent />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(html().getAttribute('data-theme')).toBe('dark');
+
+      rerender(
+        <ThemeProvider>
+          <StartProbe start={null} />
+          <TestComponent />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(screen.getByTestId('theme')).toHaveTextContent('light');
+      expect(html().getAttribute('data-theme')).toBe('light');
+    });
+
+    it('ignores a value that is not one of the three names', async () => {
+      render(
+        <ThemeProvider>
+          <StartProbe start={'dark" onload="x'} />
+          <TestComponent />
+        </ThemeProvider>
+      );
+
+      await act(async () => {});
+      expect(screen.getByTestId('theme')).toHaveTextContent('light');
+      expect(html().getAttribute('data-theme')).toBe('light');
+    });
+  });
+
+  it('follows the device live while on "system": the page and resolvedTheme change together', async () => {
+    // Until Nov 2026 the page was repainted but resolvedTheme stayed as it was
+    // (the "force re-render" was a state update React skipped).
+    const original = window.matchMedia;
+    let deviceDark = false;
+    const listeners = new Set<() => void>();
+    window.matchMedia = ((query: string) => ({
+      ...original(query),
+      get matches() {
+        return query.includes('prefers-color-scheme: dark') && deviceDark;
+      },
+      addEventListener: (_: string, listener: () => void) => { listeners.add(listener); },
+      removeEventListener: (_: string, listener: () => void) => { listeners.delete(listener); },
+    })) as unknown as typeof window.matchMedia;
+
+    try {
+      render(
+        <ThemeProvider defaultTheme="system">
+          <TestComponent />
+        </ThemeProvider>
+      );
+      await act(async () => {});
+      expect(screen.getByTestId('resolved')).toHaveTextContent('light');
+
+      await act(async () => {
+        deviceDark = true;
+        listeners.forEach((listener) => listener());
+      });
+
+      expect(screen.getByTestId('resolved')).toHaveTextContent('dark');
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    } finally {
+      window.matchMedia = original;
+    }
+  });
+
   it('throws error when useTheme is used outside provider', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
