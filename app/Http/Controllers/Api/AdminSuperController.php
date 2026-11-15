@@ -2685,7 +2685,9 @@ class AdminSuperController extends BaseApiController
     /** POST /api/v2/admin/super/federation/partnerships/{id}/reactivate */
     public function federationReactivatePartnership($id): JsonResponse
     {
-        $userId = $this->requireGodPlatformAdmin();
+        // Same check as suspend and terminate, on purpose (E-128): it is the
+        // undo of suspend, so whoever may suspend must be able to put it back.
+        $userId = $this->requirePlatformSuperAdmin();
 
         $partnershipId = (int) $id;
 

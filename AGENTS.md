@@ -752,7 +752,8 @@ admin** (`is_super_admin`: platform-wide) → **god** (`is_god` **and**
   analytics subscriptions, national dashboard) are in the Platform team panel.
   The tier B endpoints only those screens call are platform-team-only in the
   controller; the ones a page that stays still calls (federation whitelist,
-  partnership list / suspend / terminate, the audit log, the community list)
+  partnership list / suspend / terminate / reactivate, the audit log, the
+  community list)
   are left open and pinned by `AdminSuperControllerPlatformTeamLockTest`.
 
 - `app/Support/Authorization/AdminTier.php` is the canonical predicate. It

@@ -20,7 +20,8 @@ namespace Tests\Laravel\Feature\Security\PlatformTeamLocks;
  *
  * Left open on purpose (design 6.2, "L2"), and pinned below: the whitelist
  * and the partnership list / suspend / terminate endpoints are also called by
- * the per-community federation page, which stays in the super admin panel;
+ * the per-community federation page, which stays in the super admin panel
+ * (reactivate stays open with them, as the undo of suspend);
  * the audit log and the community list are shared with pages that stay too;
  * and the read-only federation overview, which no screen calls, is the tier B
  * control of RegionalPanelIsolationTest.
@@ -37,7 +38,6 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
             'save federation switches' => ['PUT', '/v2/admin/super/federation/system-controls', 'refusal-only'],
             'emergency lockdown' => ['POST', '/v2/admin/super/federation/emergency-lockdown', 'refusal-only'],
             'lift lockdown' => ['POST', '/v2/admin/super/federation/lift-lockdown', 'refusal-only'],
-            'reactivate a partnership' => ['POST', '/v2/admin/super/federation/partnerships/999999999/reactivate', 'refusal-only'],
 
             // Platform billing and revenue.
             'billing snapshot' => ['GET', '/v2/admin/super/billing/snapshot'],
@@ -63,6 +63,9 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
             'partnerships' => ['GET', '/v2/admin/super/federation/partnerships'],
             'suspend a partnership' => ['POST', '/v2/admin/super/federation/partnerships/999999999/suspend'],
             'terminate a partnership' => ['POST', '/v2/admin/super/federation/partnerships/999999999/terminate'],
+            // No staying screen calls reactivate, but it is the undo of suspend:
+            // whoever may suspend a partnership must be able to put it back.
+            'reactivate a partnership' => ['POST', '/v2/admin/super/federation/partnerships/999999999/reactivate'],
             // No screen calls this read-only summary; RegionalPanelIsolationTest
             // (not to be edited) uses it as its tier B control, so it stays.
             'federation overview' => ['GET', '/v2/admin/super/federation'],
@@ -82,8 +85,8 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
     }
 
     /**
-     * The two that change an installation-wide switch, as the platform team:
-     * the lock test above only proves who is refused.
+     * Saving the installation-wide switches, as the platform team: the lock
+     * test above only proves who is refused.
      */
     public function test_the_platform_team_is_admitted_to_the_federation_switches(): void
     {
@@ -92,9 +95,5 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
         // An empty save changes nothing and must not be refused.
         $status = $this->apiPut('/v2/admin/super/federation/system-controls', [])->getStatusCode();
         $this->assertNotContains($status, [401, 403], "saving the switches refused the platform team with {$status}");
-
-        // A partnership that does not exist: the lock has been passed if the answer is about the record.
-        $status = $this->apiPost('/v2/admin/super/federation/partnerships/999999999/reactivate')->getStatusCode();
-        $this->assertNotContains($status, [401, 403], "reactivating refused the platform team with {$status}");
     }
 }

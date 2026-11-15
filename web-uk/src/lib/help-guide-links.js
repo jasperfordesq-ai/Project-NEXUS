@@ -163,7 +163,6 @@ const HELP_LINK_TARGETS = Object.freeze({
   '/admin/resources': null,
   '/admin/retention': null,
   '/admin/settings': null,
-  '/admin/settings/registration-policy': null,
   '/admin/support-reports': null,
   '/admin/timebanking': null,
   '/admin/timebanking/community-fund': null,

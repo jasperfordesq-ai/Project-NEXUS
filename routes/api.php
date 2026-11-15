@@ -3410,10 +3410,12 @@ Route::post('/v2/admin/super/users/{id}/revoke-global-super-admin', [\App\Http\C
 
 // Installation-wide federation control, including the external kill switches.
 // 🔴 Platform team only since 15 Nov 2026 (requireGodPlatformAdmin() in the
-// controller): overview, system controls, signing-key and external status, the
-// lockdown pair and reactivate. The whitelist and partnership list / suspend /
-// terminate stay open to any global super admin ON PURPOSE: the per-community
-// federation page, which stays in the super admin panel, calls them. Pinned
+// controller): system controls (read and save), signing-key and external
+// status, and the lockdown pair. Left open to any global super admin ON
+// PURPOSE: the whitelist and partnership list / suspend / terminate (the
+// per-community federation page, which stays in the super admin panel, calls
+// them), reactivate (the undo of suspend), and the read-only overview (no
+// screen calls it; RegionalPanelIsolationTest uses it as its control). Pinned
 // both ways by AdminSuperControllerPlatformTeamLockTest.
 Route::get('/v2/admin/super/federation', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationOverview']);
 Route::get('/v2/admin/super/federation/system-controls', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationGetSystemControls']);
