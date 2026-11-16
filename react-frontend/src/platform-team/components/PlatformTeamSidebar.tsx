@@ -48,9 +48,11 @@ import Building2 from 'lucide-react/icons/building-2';
 import CreditCard from 'lucide-react/icons/credit-card';
 import FileSearch from 'lucide-react/icons/file-search';
 import FileText from 'lucide-react/icons/file-text';
+import FlaskConical from 'lucide-react/icons/flask-conical';
 import Globe from 'lucide-react/icons/globe';
 import Handshake from 'lucide-react/icons/handshake';
 import Heart from 'lucide-react/icons/heart';
+import HeartPulse from 'lucide-react/icons/heart-pulse';
 import KeyIcon from 'lucide-react/icons/key';
 import Landmark from 'lucide-react/icons/landmark';
 import Languages from 'lucide-react/icons/languages';
@@ -69,7 +71,9 @@ import Grid3x3 from 'lucide-react/icons/grid-3x3';
 import Lock from 'lucide-react/icons/lock';
 import Megaphone from 'lucide-react/icons/megaphone';
 import Smartphone from 'lucide-react/icons/smartphone';
+import Gauge from 'lucide-react/icons/gauge';
 import UserCog from 'lucide-react/icons/user-cog';
+import UserSearch from 'lucide-react/icons/user-search';
 import Stethoscope from 'lucide-react/icons/stethoscope';
 import Target from 'lucide-react/icons/target';
 import Timer from 'lucide-react/icons/timer';
@@ -149,11 +153,15 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           title: t('sidebar.group_communities'),
           items: [
             { label: t('glance.nav'), icon: Grid3x3, path: `${P}/communities` },
+            { label: t('community_health.nav'), icon: HeartPulse, path: `${P}/community-health` },
+            { label: t('community_setup.nav'), icon: ListChecks, path: `${P}/community-setup` },
             { label: t('notices.title'), icon: Megaphone, path: `${P}/notices` },
             { label: tSuper('nav.provisioning_queue'), icon: Building2, path: `${P}/provisioning-requests` },
             { label: tSuper('nav.pilot_inquiries'), icon: FileSearch, path: `${P}/platform/pilot-inquiries` },
             { label: tNav('platform_capabilities'), icon: SlidersHorizontal, path: `${P}/platform-capabilities` },
+            { label: t('unfinished_features.nav'), icon: FlaskConical, path: `${P}/unfinished-features` },
             { label: t('phone_app.title'), icon: Smartphone, path: `${P}/phone-app` },
+            { label: t('usage.nav'), icon: Gauge, path: `${P}/usage` },
           ],
         },
         {
@@ -188,6 +196,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           items: [
             { label: t('security.title'), icon: Lock, path: `${P}/security` },
             { label: t('senior_accounts.title'), icon: UserCog, path: `${P}/senior-accounts` },
+            { label: t('accounts.title'), icon: UserSearch, path: `${P}/accounts` },
             { label: tNav('enterprise_dashboard'), icon: Building2, path: `${P}/enterprise` },
             { label: tNav('permissions_list'), icon: ListChecks, path: `${P}/enterprise/permissions` },
           ],

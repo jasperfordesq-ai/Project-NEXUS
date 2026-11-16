@@ -427,6 +427,86 @@ recorded in `activity_log` with `tenant_id` NULL, so no community's admins can
 read it there. Changing a notice's words, kind or link deletes its dismissal
 rows, so it is shown again to everyone who closed it.
 
+Find an account (`/platform-team/accounts`; `FindAccountService`,
+16 November 2026) is the panel's one page that acts on a named member's
+account. `POST /v2/platform-team/accounts/find` takes one whole email address
+in the body and answers with every account that uses it, in any community
+(`email = ?`, never `LIKE`; the column's collation makes capital letters not
+matter). It sends name, community, status, role, senior level, last sign-in,
+two-step, passkey and the number of open sign-ins, and does not send the
+address back. 30 searches a minute per caller. 🔴 Each search writes one
+`activity_log` row with `tenant_id` NULL (`platform_team_account_lookup`: the
+ids found, never the address), and a search that cannot be recorded gives no
+answer. `POST /v2/platform-team/accounts/{id}/sign-out` ends every sign-in of
+one account through `TokenService::revokeAllTokensForUser($id,
+'platform_team')`. It needs a reason (5 to 200 characters) and a recent second
+sign-in step: the route carries `step-up` **after** the `platform-team` group
+middleware, so an account below the platform team is refused by the lock and
+is never asked for a code. 🔴 It writes one `org_audit_log` row
+(`platform_team_signed_out_everywhere`) in the **target's** community, not the
+caller's, in the same transaction as the sign-out: neither happens without the
+other. 🔴 A manager's stand-in (`status = 'delegate'`) and an erased account
+(`anonymized_at` set) are never found and cannot be signed out (404). 🔴 It
+changes no password, role or access, and must not grow an action that does.
+The Security page lists these sign-outs (who, whom, which community, when) in
+its `sign_outs` section; the reason is not sent there.
+
+Community health (`GET /v2/platform-team/community-health`;
+`CommunityHealthService`, 16 November 2026) is read-only: one row of counts
+per community (members, members active in the last 30 days, new members,
+exchanges this month and last month, hours, new listings, the most recent
+sign-in time) and whether the community is quiet. The member, active and
+exchange definitions are copied from `AdminDashboardController::stats()` /
+`exchangeWhere()`, and a test pins both to the same numbers for one
+community; managers' stand-ins (`status = 'delegate'`) are not counted here.
+🔴 Counts only: no member's name, email or id is selected into the response.
+A figure that cannot be read is null and named in `unavailable`, never zero.
+
+Community setup (`GET /v2/platform-team/community-setup`;
+`CommunitySetupChecklistService`, 16 November 2026) is read-only: for the 200
+newest communities (`truncated` says when there are more), the community
+admin's own "Make it yours" count (`CommunitySetupService::status($id, false)`,
+so no logo file is opened), whether `tenants.domain` is set and is not a
+platform address (equal to or below a host in `tenancy.platform_hosts`,
+`platform_app_hosts` or `platform_accessible_hosts`), whether an accessible
+address is set, whether the privacy notice and terms are published (active,
+current version not a draft), whether a community administrator (role admin,
+legacy `is_admin` or tenant super admin; not a stand-in, a global super admin
+or a platform team account) has ever signed in, and whether its mail goes out
+from its own account (`own` only when `Mailer::loadTenantConfig()` would
+really use it: `gmail_api` or `smtp` with the settings it needs filled in).
+🔴 Yes/no only: no name, address of a person or email setting value is
+selected; the email settings are tested for "not empty" inside the database.
+A step that cannot be read is null and named in `unavailable`, never "not done".
+
+Usage per community (`GET /v2/platform-team/usage?month=YYYY-MM`;
+`UsagePerCommunityService`, 16 November 2026) is read-only: for one month,
+each community's emails from `email_log` (sent = `sent` + `delivered`, failed,
+bounced; mail with no community is its own "Platform mail" row), AI chat from
+`ai_usage` (requests, tokens, recorded cost in US dollars), and the bytes its
+groups' files take today (`group_files` + `group_media`, as the group storage
+quota counts them; a current total, not a monthly one). A malformed or future
+month is refused with 422. Map look-ups, automatic translation and other
+stored files are not recorded anywhere and are listed as such, never as zero.
+🔴 Counts and sums only: no address, subject, error text, file name or user id
+is selected. A source that cannot be read is `false` in `sources` and its
+figures are null.
+
+Unfinished features (`GET /v2/platform-team/unfinished-features`;
+`UnfinishedFeaturesService`, 16 November 2026) is read-only: every feature
+marked alpha or beta in the admin Features page's registry
+(`react-frontend/src/admin/modules/config/moduleRegistry.ts`, module-level
+`stage` only), plus every feature whose `TenantFeatureConfig::FEATURE_DEFAULTS`
+value is off, each with the communities that have it on
+(`TenantFeatureConfig::mergeFeatures()` of the stored switches, every
+community, active or not). The server keeps a copy of the stages
+(`UnfinishedFeaturesService::STAGES`, because the API image does not ship
+`react-frontend/`) and `UnfinishedFeaturesTest` fails when the copy and the
+registry disagree in either direction. `caring_community` is listed with the
+note `not_for_use` and nothing that links to it. 🔴 No switch and no link that
+switches anything: a feature is changed in that community's own admin panel.
+Community names and switches only; no member data is read.
+
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still
 gets an answer:

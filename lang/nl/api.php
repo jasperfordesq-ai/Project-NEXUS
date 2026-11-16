@@ -3065,4 +3065,5 @@ KANDIDATEN::candidates',
     'site_announcement_flag_invalid' => 'Deze instelling moet aan of uit staan.',
     'platform_notice_cannot_be_closed' => 'Deze mededeling kan niet worden gesloten.',
     'platform_notice_link_must_be_https' => 'De link moet een volledig adres zijn dat begint met "https://".',
+    'platform_usage_month_invalid' => 'Kies een maand in de vorm JJJJ-MM, niet later dan deze maand.',
 ];

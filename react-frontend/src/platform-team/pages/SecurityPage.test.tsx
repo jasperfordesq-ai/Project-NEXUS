@@ -53,6 +53,11 @@ const overview = (over: Partial<SecurityOverview> = {}): SecurityOverview => ({
     ],
   },
   two_step: { available: true, senior_total: 9, without_two_step: 2 },
+  sign_outs: {
+    available: true,
+    truncated: false,
+    items: [{ at: '2026-11-14T09:00:00+00:00', by: 'Team Sample', account: 'Signed Out Sample', community: 'Sample Timebank' }],
+  },
   ...over,
 });
 
@@ -123,6 +128,46 @@ describe('SecurityPage', () => {
     const section = await screen.findByTestId('security-impersonation');
     expect(within(section).getByText('Admin Sample')).toBeInTheDocument();
     expect(within(section).getByText('Member Sample')).toBeInTheDocument();
+  });
+
+  it('lists the accounts the platform team signed out everywhere, and who did it', async () => {
+    show();
+
+    const section = await screen.findByTestId('security-sign-outs');
+    expect(within(section).getByText('Signed Out Sample')).toBeInTheDocument();
+    expect(within(section).getByText('Team Sample')).toBeInTheDocument();
+    expect(within(section).getByText('Sample Timebank')).toBeInTheDocument();
+    // The reason typed each time stays in the community's record: the page says so.
+    expect(within(section).getByText('security.sign_outs.note')).toBeInTheDocument();
+  });
+
+  it('says in words when the platform team signed nobody out', async () => {
+    apiGet.mockResolvedValue({
+      success: true,
+      data: overview({ sign_outs: { available: true, truncated: false, items: [] } }),
+    });
+    show();
+
+    expect(await screen.findByText('security.sign_outs.empty|90')).toBeInTheDocument();
+  });
+
+  it('says "could not be checked" for the sign-outs when the record could not be read, or was not sent', async () => {
+    apiGet.mockResolvedValue({ success: true, data: overview({ sign_outs: { available: false } }) });
+    const first = show();
+
+    const section = await screen.findByTestId('security-sign-outs');
+    expect(within(section).getByText('security.unavailable')).toBeInTheDocument();
+    expect(screen.queryByText('security.sign_outs.empty|90')).not.toBeInTheDocument();
+    first.unmount();
+
+    // A server that has not been updated yet sends no such section at all.
+    const older = overview();
+    delete older.sign_outs;
+    apiGet.mockResolvedValue({ success: true, data: older });
+    show();
+
+    expect(within(await screen.findByTestId('security-sign-outs')).getByText('security.unavailable')).toBeInTheDocument();
+    expect(screen.queryByText('security.sign_outs.empty|90')).not.toBeInTheDocument();
   });
 
   it('says a list is empty in words', async () => {

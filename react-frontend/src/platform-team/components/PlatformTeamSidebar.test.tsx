@@ -39,13 +39,18 @@ import { PlatformTeamSidebar } from './PlatformTeamSidebar';
 const PLATFORM_ZONE = [
   'enterprise/monitoring', 'cron-jobs', 'cron-jobs/logs', 'cron-jobs/setup', 'cron-jobs/settings',
   'seo/prerender', 'failed-jobs', '404-errors', 'tests', 'plans', 'plans/subscriptions', 'integrations/webhooks',
-  'security', 'senior-accounts', 'enterprise', 'enterprise/permissions',
+  'security', 'senior-accounts', 'accounts', 'enterprise', 'enterprise/permissions',
   // Moved in from the super admin panel's platform-wide half (phase 2).
   'billing', 'billing/revenue',
   'communities', 'notices', 'provisioning-requests', 'platform/pilot-inquiries', 'platform-capabilities', 'phone-app',
   'federation', 'federation/whitelist', 'federation/partnerships', 'federation/audit',
   'regional-analytics/subscriptions', 'national/kiss',
   'platform/translation',
+  // Written for the panel, 16 Nov 2026.
+  'community-health',
+  'community-setup',
+  'usage',
+  'unfinished-features',
 ];
 const COMMUNITY_ZONE = [
   'email-settings', 'email-deliverability', 'deliverability', 'settings/registration-policy', 'enterprise/roles',

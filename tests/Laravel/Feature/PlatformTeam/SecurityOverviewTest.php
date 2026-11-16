@@ -172,6 +172,53 @@ class SecurityOverviewTest extends TestCase
         $this->assertNotContains('Long Ago Member', array_column($data['impersonations']['items'], 'member'));
     }
 
+    /**
+     * Accounts the platform team signed out everywhere (Find an account page):
+     * who, whom, where and when. The reason is free text typed by a person, so
+     * it stays in the record and is never sent here.
+     */
+    public function test_it_lists_accounts_the_platform_team_signed_out_without_the_reason(): void
+    {
+        $actor = $this->account(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin', 'first_name' => 'Signing', 'last_name' => 'Actor']);
+        $target = $this->account(['role' => 'member', 'first_name' => 'Signed', 'last_name' => 'Out']);
+        $longAgo = $this->account(['role' => 'member', 'first_name' => 'Signed', 'last_name' => 'LongAgo']);
+        $row = fn (int $targetId, \DateTimeInterface $at): array => [
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $actor->id,
+            'target_user_id' => $targetId,
+            'action' => 'platform_team_signed_out_everywhere',
+            'details' => json_encode(['reason' => 'planted-reason-text about target.planted@example.test']),
+            'ip_address' => self::PLANTED_IP,
+            'user_agent' => self::PLANTED_AGENT,
+            'created_at' => $at,
+        ];
+        DB::table('org_audit_log')->insert([
+            $row((int) $target->id, now()->subHour()),
+            $row((int) $longAgo->id, now()->subDays(SecurityOverviewService::WINDOW_DAYS + 5)),
+        ]);
+        $this->actAsPlatformTeam();
+
+        $response = $this->apiGet(self::URI)->assertStatus(200);
+        $section = $response->json('data.sign_outs');
+
+        $this->assertTrue($section['available']);
+        $this->assertIsBool($section['truncated']);
+        $mine = array_values(array_filter(
+            $section['items'],
+            static fn (array $item): bool => $item['account'] === 'Signed Out',
+        ));
+        $this->assertCount(1, $mine);
+        $this->assertSame(['account', 'at', 'by', 'community'], $this->sortedKeys($mine[0]));
+        $this->assertSame('Signing Actor', $mine[0]['by']);
+        $this->assertSame($this->communityName(), $mine[0]['community']);
+        $this->assertNotContains('Signed LongAgo', array_column($section['items'], 'account'));
+
+        $body = $response->getContent();
+        foreach (['planted-reason-text', 'target.planted@example.test', $target->email, self::PLANTED_IP, self::PLANTED_AGENT] as $needle) {
+            $this->assertStringNotContainsString($needle, $body, $needle);
+        }
+    }
+
     public function test_it_counts_failed_sign_ins_by_community_and_never_sends_an_address(): void
     {
         $digestA = hash('sha256', 'security-overview-a@example.test');

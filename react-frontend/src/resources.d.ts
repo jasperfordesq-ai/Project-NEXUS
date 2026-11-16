@@ -57231,6 +57231,57 @@ export default interface Resources {
     }
   },
   "platform_team": {
+    "accounts": {
+      "confirm": {
+        "cancel": "Leave them signed in",
+        "close": "Close",
+        "failed": "That didn't work. Nobody was signed out.",
+        "gone": "This account can no longer be signed out from here. Search again.",
+        "own_account": "This is your own account. You will have to sign in again too.",
+        "reason_hint": "Between {{min}} and {{max}} characters. It is kept with the record of this, in the account's own community.",
+        "reason_label": "Why are you doing this?",
+        "step_cancelled": "You did not confirm it was you, so nobody was signed out.",
+        "step_note": "You may be asked for your sign-in code first.",
+        "text": "They will be signed out on every phone and computer and must sign in again. Their password is not changed. Notifications to their phone stop until they sign in again.",
+        "title": "Sign {{name}} out everywhere?",
+        "title_unnamed": "Sign this account out everywhere?"
+      },
+      "done": "Signed out everywhere just now.",
+      "done_toast": "{{name}} was signed out everywhere.",
+      "done_toast_unnamed": "The account was signed out everywhere.",
+      "email_hint": "Type the whole address. Part of an address finds nothing.",
+      "email_invalid": "Type one whole email address, such as name@example.org.",
+      "email_label": "Email address",
+      "find": "Find",
+      "found": "Accounts found: {{count}}",
+      "intro": "Look an account up by its email address, in every community. If you need to, sign it out everywhere.",
+      "level": {
+        "global_super_admin": "Global super admin",
+        "platform_flag_only": "Platform-wide access, not on the platform team",
+        "platform_team": "Platform team",
+        "tenant_super_admin": "Tenant super admin"
+      },
+      "no_community_note": "This account is in no community, so it has no sign-ins to end.",
+      "none": "No account uses that address",
+      "none_note": "Every community was checked. Erased accounts are never found.",
+      "open_sign_ins": "Open sign-ins:",
+      "recorded_note": "Each search is recorded: who searched and which accounts were found, never the address. Nothing here changes a password, a role or anyone's access.",
+      "role": {
+        "admin": "Community admin",
+        "broker": "Broker",
+        "coordinator": "Coordinator",
+        "member": "Member",
+        "other": "Another role"
+      },
+      "role_label": "Role:",
+      "search_error_title": "We couldn't search just now",
+      "searching": "Searching every community",
+      "sign_out": "Sign out everywhere",
+      "status_deleted": "Deleted",
+      "title": "Find an account",
+      "too_many": "That is a lot of searches. Wait a minute, then try again.",
+      "truncated": "Only the first {{count}} accounts are shown."
+    },
     "breadcrumbs": {
       "aria_label": "Where you are",
       "create": "Create",
@@ -57239,6 +57290,71 @@ export default interface Resources {
       "root": "Platform team",
       "search_analytics": "Search analytics",
       "unknown": "{{segment}}"
+    },
+    "community_health": {
+      "column": {
+        "active_members": "Active in the last {{days}} days",
+        "community": "Community",
+        "exchanges_last_month": "Exchanges last month",
+        "exchanges_this_month": "Exchanges this month",
+        "hours_this_month": "Hours exchanged this month",
+        "last_sign_in": "Most recent sign-in",
+        "members": "Members",
+        "new_listings_this_month": "New listings this month",
+        "new_members_this_month": "New members this month"
+      },
+      "community_count": "Communities: {{count}}",
+      "counts_only": "Counts only. No member is named on this page.",
+      "empty": "There are no communities yet.",
+      "intro": "How busy each community is: its members, its exchanges and its new listings.",
+      "load_error_title": "We couldn't load community health just now",
+      "loading": "Loading community health",
+      "nav": "Community health",
+      "never_signed_in": "No sign-in yet",
+      "none_quiet": "No community is quiet.",
+      "not_active": "Not active",
+      "not_available": "Not available",
+      "quiet": "Quiet",
+      "quiet_count": "Quiet communities: {{count}}",
+      "quiet_names": "Quiet: {{names}}",
+      "quiet_rule": "A community is called quiet when it is switched on and either no member has been active in the last {{days}} days, or there has been no exchange this month and none last month.",
+      "quiet_unknown": "Can't tell if quiet",
+      "same_as_dashboard": "Everything is counted the same way as on each community's own admin dashboard.",
+      "title": "Community health",
+      "totals_row": "All communities",
+      "unavailable_note": "Some figures could not be read just now. They say \"Not available\". They are not zero."
+    },
+    "community_setup": {
+      "column": {
+        "accessible_address": "Accessible site address",
+        "community": "Community",
+        "email_sender": "Email is sent from",
+        "first_admin_signed_in": "An administrator has signed in",
+        "make_it_yours": "Make it yours",
+        "own_address": "Its own web address",
+        "privacy_notice_published": "Privacy notice published",
+        "terms_published": "Terms published"
+      },
+      "community_count": "Communities: {{count}}",
+      "created_on": "Created {{date}}",
+      "done": "Done",
+      "empty": "There are no communities yet.",
+      "intro": "How far each community has got with its first setup steps. Newest communities first.",
+      "load_error_title": "We couldn't load community setup just now",
+      "loading": "Loading community setup",
+      "make_it_yours_count": "{{done}} of {{total}} done",
+      "nav": "Community setup",
+      "not_active": "Not active",
+      "not_available": "Not available",
+      "not_done": "Not done",
+      "not_recorded": "Whether a community's email sending has been tested is not recorded anywhere, so this page does not show it.",
+      "sender_own": "Its own email account",
+      "sender_platform": "The platform's sender",
+      "terms_note": "Terms are added automatically when a community is created, so a tick for terms means less than the others.",
+      "title": "Community setup",
+      "truncated": "Showing the {{shown}} newest of {{total}} communities.",
+      "unavailable_note": "Some steps could not be read just now. They say \"Not available\". That does not mean they are not done.",
+      "yes_no_only": "Done or not done only. No person is named on this page."
     },
     "failed_jobs": {
       "action_failed": "That didn't work. Nothing was changed.",
@@ -57487,6 +57603,11 @@ export default interface Resources {
       "loading": "Loading the security page",
       "not_recorded": "Not recorded",
       "privacy_note": "People and communities are shown by name. Email addresses and internet addresses are never shown here.",
+      "sign_outs": {
+        "empty": "The platform team signed nobody out in the last {{days}} days.",
+        "note": "Done from the Find an account page. The reason given each time is kept in that community's own record and is not shown here.",
+        "title": "Accounts signed out by the platform team"
+      },
       "title": "Security",
       "truncated": "Only the newest {{count}} are shown.",
       "two_step": {
@@ -57558,6 +57679,73 @@ export default interface Resources {
       "nav_label": "Platform team menu",
       "zone_community": "This community: {{name}}",
       "zone_platform": "The whole platform"
+    },
+    "unfinished_features": {
+      "intro": "Features that are still being tested, and features that stay off unless a community switches them on. For each one, the communities that have it on.",
+      "load_error_title": "We couldn't load the unfinished features just now",
+      "loading": "Loading the unfinished features",
+      "nav": "Unfinished features",
+      "not_on_admin_page": "Not on the admin Features page",
+      "note": {
+        "not_for_use": "Not for use. It must not be switched on for any community."
+      },
+      "off_unless_switched_on": "Off unless switched on",
+      "on_in": "Communities with it on: {{count}}",
+      "on_names": "On in: {{names}}",
+      "on_nowhere": "Not on in any community",
+      "read_only": "This page only shows. A feature is switched on or off in that community's own admin panel.",
+      "stage": {
+        "alpha": "Early test (alpha)",
+        "beta": "Late test (beta)"
+      },
+      "summary": "Features listed: {{count}}",
+      "summary_on_somewhere": "On in at least one community: {{count}}",
+      "title": "Unfinished features"
+    },
+    "usage": {
+      "ai_cost": "Cost",
+      "ai_heading": "AI chat",
+      "ai_note": "AI cost is what was recorded for each request, in US dollars.",
+      "ai_requests": "Requests",
+      "ai_tokens": "Tokens",
+      "bounced": "Bounced",
+      "communities_heading": "Each community ({{count}})",
+      "emails_heading": "Emails",
+      "empty": "There are no communities yet.",
+      "failed": "Failed",
+      "files": "Space used now",
+      "files_heading": "Group files",
+      "files_note": "Group files is the space they take today, not what was added in this month.",
+      "intro": "How much each community used in one month: emails, AI chat, and the space its groups’ files take.",
+      "load_error_title": "We couldn’t load the usage figures just now",
+      "loading": "Loading the usage figures",
+      "month_picker": "Choose the month",
+      "month_so_far": "This month so far.",
+      "nav": "Usage",
+      "next_month": "Next month",
+      "not_active": "Not active",
+      "not_available": "Not available",
+      "not_recorded": {
+        "maps": "Map and address look-ups",
+        "other_storage": "Other stored files, such as photos in posts, profile pictures and documents",
+        "translation": "Automatic translation"
+      },
+      "not_recorded_heading": "Not recorded today",
+      "not_recorded_intro": "The platform does not count these anywhere yet, so this page cannot show them.",
+      "notes_heading": "What the figures mean",
+      "platform_mail": "Platform mail",
+      "platform_mail_note": "Emails the platform sent that belong to no one community.",
+      "previous_month": "Previous month",
+      "removed_community": "Community #{{id}} (no longer exists)",
+      "sent": "Sent",
+      "sent_note": "“Sent” means the email was handed to the mail service. It does not prove the email arrived.",
+      "title": "Usage per community",
+      "totals_heading": "All communities together",
+      "unavailable": {
+        "ai_chat": "AI chat figures could not be read just now. They are not zero.",
+        "emails": "Email figures could not be read just now. They are not zero.",
+        "group_files": "Group file sizes could not be read just now. They are not zero."
+      }
     }
   },
   "podcasts": {

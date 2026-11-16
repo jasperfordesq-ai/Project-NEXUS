@@ -32,6 +32,11 @@ use Illuminate\Support\Facades\Log;
  *                    (`org_audit_log` rows `admin_user_impersonated`)
  *   failed_sign_ins  failed sign-in attempts, counted (`login_attempts`)
  *   two_step         senior accounts without two-step (SeniorAccountsService)
+ *   sign_outs        accounts the platform team signed out everywhere
+ *                    (`org_audit_log` rows `platform_team_signed_out_everywhere`,
+ *                    written by FindAccountService in the account's own
+ *                    community). Who, whom, where, when: the reason typed by
+ *                    the platform team is free text and is not sent.
  *
  * 🔴 Read-only, and cross-community on purpose: no `tenant_id` filter. Correct
  * only because nothing below the platform team can call it.
@@ -110,6 +115,7 @@ final class SecurityOverviewService
             'impersonations' => $this->guarded('impersonations', fn (): array => $this->impersonations()),
             'failed_sign_ins' => $this->guarded('failed_sign_ins', fn (): array => $this->failedSignIns()),
             'two_step' => $this->guarded('two_step', fn (): array => $this->twoStep()),
+            'sign_outs' => $this->guarded('sign_outs', fn (): array => $this->signOuts()),
         ];
     }
 
@@ -365,6 +371,38 @@ final class SecurityOverviewService
                     'last_at' => $row->last_at !== null ? self::iso((string) $row->last_at) : null,
                 ];
             }, $byCommunity),
+        ];
+    }
+
+    /**
+     * Accounts the platform team signed out everywhere. `details` (the reason
+     * a person typed) is deliberately not selected.
+     *
+     * @return array{items: array<int, array<string, mixed>>, truncated: bool}
+     */
+    private function signOuts(): array
+    {
+        $rows = DB::table('org_audit_log as a')
+            ->leftJoin('users as actor', 'actor.id', '=', 'a.user_id')
+            ->leftJoin('users as target', 'target.id', '=', 'a.target_user_id')
+            ->leftJoin('tenants as t', 't.id', '=', 'a.tenant_id')
+            ->where('a.action', FindAccountService::SIGN_OUT_ACTION)
+            ->where('a.created_at', '>=', now()->subDays(self::WINDOW_DAYS))
+            ->orderByDesc('a.created_at')
+            ->orderByDesc('a.id')
+            ->limit(self::LIST_LIMIT + 1)
+            ->get(['a.created_at', self::fullName('actor', 'actor_name'), self::fullName('target', 'target_name'), 't.name as community']);
+
+        return [
+            'items' => $rows->take(self::LIST_LIMIT)
+                ->map(static fn (object $row): array => [
+                    'at' => self::iso((string) $row->created_at),
+                    'by' => self::nameOrNull($row->actor_name),
+                    'account' => self::nameOrNull($row->target_name),
+                    'community' => self::nameOrNull($row->community),
+                ])
+                ->all(),
+            'truncated' => $rows->count() > self::LIST_LIMIT,
         ];
     }
 

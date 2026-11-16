@@ -188,6 +188,8 @@ const NO_TRANSLATE_VALUES = new Set([
 // it alone. Mirrors the entry in scripts/translate-i18n-gaps.mjs.
 const LOCALE_IDENTITY_VALUES = new Map([
   ['de', new Set([
+      // German for "Link (optional)" is the same two words (platform_team:notices.form.link).
+      "Link (optional)",
       "Status:",
       "Status: {{status}}",
       "Jane...",

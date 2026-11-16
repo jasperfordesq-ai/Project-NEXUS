@@ -3065,4 +3065,5 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'site_announcement_flag_invalid' => 'この設定はオンかオフのどちらかにしてください。',
     'platform_notice_cannot_be_closed' => 'このお知らせは閉じることができません。',
     'platform_notice_link_must_be_https' => 'リンクは「https://」で始まる完全なアドレスにしてください。',
+    'platform_usage_month_invalid' => 'YYYY-MM の形式で、今月以前の月を選んでください。',
 ];

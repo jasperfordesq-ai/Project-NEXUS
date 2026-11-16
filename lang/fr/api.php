@@ -3065,4 +3065,5 @@ CANDIDATS ::candidates',
     'site_announcement_flag_invalid' => 'Ce réglage doit être activé ou désactivé.',
     'platform_notice_cannot_be_closed' => 'Cet avis ne peut pas être fermé.',
     'platform_notice_link_must_be_https' => 'Le lien doit être une adresse complète qui commence par « https:// ».',
+    'platform_usage_month_invalid' => 'Choisissez un mois écrit sous la forme AAAA-MM, au plus tard ce mois-ci.',
 ];

@@ -4513,10 +4513,21 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     Route::get('/v2/platform-team/phone-app', [\App\Http\Controllers\Api\PlatformTeam\PhoneAppController::class, 'index']);
     // Senior accounts: who can administer more than one community. Read-only; nothing here grants or removes access.
     Route::get('/v2/platform-team/senior-accounts', [\App\Http\Controllers\Api\PlatformTeam\SeniorAccountsController::class, 'index']);
+    // Find an account by its exact email address (in the body, never the address), and sign it out everywhere (needs a recent second step, asked after the lock).
+    Route::post('/v2/platform-team/accounts/find', [\App\Http\Controllers\Api\PlatformTeam\FindAccountController::class, 'find']);
+    Route::post('/v2/platform-team/accounts/{id}/sign-out', [\App\Http\Controllers\Api\PlatformTeam\FindAccountController::class, 'signOut'])->whereNumber('id')->middleware('step-up');
     // Security: senior access given and removed, sign-ins as another member, failed sign-ins. Read-only; names and counts only.
     Route::get('/v2/platform-team/security', [\App\Http\Controllers\Api\PlatformTeam\SecurityOverviewController::class, 'index']);
     // Communities at a glance: every community against every feature and core part. Read-only; no member data.
     Route::get('/v2/platform-team/communities', [\App\Http\Controllers\Api\PlatformTeam\CommunitiesAtAGlanceController::class, 'index']);
+    // Community health: counts per community (members, activity, exchanges, listings) and which have gone quiet. Read-only; counts only.
+    Route::get('/v2/platform-team/community-health', [\App\Http\Controllers\Api\PlatformTeam\CommunityHealthController::class, 'index']);
+    // Community setup: per community, which first setup steps are done (Make it yours, own address, legal documents, first admin signed in, email sender). Read-only; yes/no only.
+    Route::get('/v2/platform-team/community-setup', [\App\Http\Controllers\Api\PlatformTeam\CommunitySetupController::class, 'index']);
+    // Usage per community: one month's emails, AI chat and group file space per community. Read-only; counts only.
+    Route::get('/v2/platform-team/usage', [\App\Http\Controllers\Api\PlatformTeam\UsagePerCommunityController::class, 'index']);
+    // Unfinished features: alpha/beta features and features off unless switched on, with the communities that have each on. Read-only; no member data.
+    Route::get('/v2/platform-team/unfinished-features', [\App\Http\Controllers\Api\PlatformTeam\UnfinishedFeaturesController::class, 'index']);
     // Platform-wide notices: written here once, shown to every community's admins (see /v2/admin/platform-notices).
     Route::get('/v2/platform-team/notices', [\App\Http\Controllers\Api\PlatformTeam\PlatformNoticesController::class, 'index']);
     Route::post('/v2/platform-team/notices', [\App\Http\Controllers\Api\PlatformTeam\PlatformNoticesController::class, 'store']);

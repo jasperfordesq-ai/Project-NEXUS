@@ -35,9 +35,14 @@ const PlatformTeamHome = lazy(() => import('./pages/PlatformTeamHome'));
 const FailedJobsPage = lazy(() => import('./pages/FailedJobsPage'));
 const PhoneAppPage = lazy(() => import('./pages/PhoneAppPage'));
 const SeniorAccountsPage = lazy(() => import('./pages/SeniorAccountsPage'));
+const FindAccountPage = lazy(() => import('./pages/FindAccountPage'));
 const SecurityPage = lazy(() => import('./pages/SecurityPage'));
 const CommunitiesAtAGlancePage = lazy(() => import('./pages/CommunitiesAtAGlancePage'));
+const CommunityHealthPage = lazy(() => import('./pages/CommunityHealthPage'));
+const CommunitySetupPage = lazy(() => import('./pages/CommunitySetupPage'));
 const PlatformNoticesPage = lazy(() => import('./pages/PlatformNoticesPage'));
+const UsagePage = lazy(() => import('./pages/UsagePage'));
+const UnfinishedFeaturesPage = lazy(() => import('./pages/UnfinishedFeaturesPage'));
 
 const MenusAdmin = lazy(() => import('@/admin/modules/content/MenusAdmin'));
 const MenuBuilder = lazy(() => import('@/admin/modules/content/MenuBuilder'));
@@ -104,9 +109,14 @@ export function PlatformTeamRoutes() {
       <Route path="failed-jobs" element={<Lazy><FailedJobsPage /></Lazy>} />
       <Route path="phone-app" element={<Lazy><PhoneAppPage /></Lazy>} />
       <Route path="senior-accounts" element={<Lazy><SeniorAccountsPage /></Lazy>} />
+      <Route path="accounts" element={<Lazy><FindAccountPage /></Lazy>} />
       <Route path="security" element={<Lazy><SecurityPage /></Lazy>} />
       <Route path="communities" element={<Lazy><CommunitiesAtAGlancePage /></Lazy>} />
+      <Route path="community-health" element={<Lazy><CommunityHealthPage /></Lazy>} />
+      <Route path="community-setup" element={<Lazy><CommunitySetupPage /></Lazy>} />
       <Route path="notices" element={<Lazy><PlatformNoticesPage /></Lazy>} />
+      <Route path="usage" element={<Lazy><UsagePage /></Lazy>} />
+      <Route path="unfinished-features" element={<Lazy><UnfinishedFeaturesPage /></Lazy>} />
 
       <Route path="menus" element={<Lazy><MenusAdmin /></Lazy>} />
       <Route path="menus/builder/:id" element={<Lazy><MenuBuilder /></Lazy>} />

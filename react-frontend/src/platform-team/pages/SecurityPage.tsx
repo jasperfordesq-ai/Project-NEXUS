@@ -57,6 +57,14 @@ interface Impersonation {
   community: string | null;
 }
 
+/** An account the platform team signed out everywhere (Find an account page). The reason is not sent. */
+interface SignOut {
+  at: string;
+  by: string | null;
+  account: string | null;
+  community: string | null;
+}
+
 interface CommunityFailures {
   community: { id: number; name: string | null } | null;
   failed: number;
@@ -81,6 +89,8 @@ export interface SecurityOverview {
     by_community: CommunityFailures[];
   }>;
   two_step: Section<{ senior_total: number; without_two_step: number }>;
+  /** Optional: a server that has not been updated yet does not send it, and that is "could not be checked". */
+  sign_outs?: Section<{ items: SignOut[]; truncated: boolean }>;
 }
 
 export function SecurityPage() {
@@ -123,6 +133,9 @@ export function SecurityPage() {
       ? t('security.not_recorded')
       : date.toLocaleString(i18n.language, { dateStyle: 'medium', timeStyle: 'short' });
   };
+
+  // Not sent (an older server) is "could not be checked", never "nobody was signed out".
+  const signOuts: Section<{ items: SignOut[]; truncated: boolean }> = overview?.sign_outs ?? { available: false };
 
   const number = (value: number): string => value.toLocaleString(i18n.language);
   const person = (name: string | null): string => name ?? t('security.not_recorded');
@@ -344,6 +357,43 @@ export function SecurityPage() {
                 {overview.impersonations.truncated ? (
                   <p className="mt-2 text-sm text-muted">
                     {t('security.truncated', { count: overview.impersonations.items.length })}
+                  </p>
+                ) : null}
+              </>
+            ),
+          )}
+
+          {block(
+            'sign-outs',
+            t('security.sign_outs.title'),
+            t('security.sign_outs.note'),
+            !signOuts.available ? (
+              unavailable
+            ) : signOuts.items.length === 0 ? (
+              <p className="text-sm text-muted">{t('security.sign_outs.empty', { days: overview.window_days })}</p>
+            ) : (
+              <>
+                <ul className="flex flex-col gap-2">
+                  {signOuts.items.map((item, index) => (
+                    <li key={`${item.at}-${index}`}>
+                      <Card>
+                        <CardBody className="p-4">
+                          <h3 className="break-words text-base font-semibold text-foreground">
+                            {person(item.account)}
+                          </h3>
+                          <dl className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+                            {fact(t('security.by'), person(item.by))}
+                            {fact(t('senior_accounts.community'), item.community ?? t('senior_accounts.no_community'))}
+                            {fact(t('security.when'), when(item.at))}
+                          </dl>
+                        </CardBody>
+                      </Card>
+                    </li>
+                  ))}
+                </ul>
+                {signOuts.truncated ? (
+                  <p className="mt-2 text-sm text-muted">
+                    {t('security.truncated', { count: signOuts.items.length })}
                   </p>
                 ) : null}
               </>

@@ -52,9 +52,14 @@ vi.mock('./pages/PlatformTeamHome', () => ({ default: () => <div>page:PlatformTe
 vi.mock('./pages/FailedJobsPage', () => ({ default: () => <div>page:FailedJobsPage</div> }));
 vi.mock('./pages/PhoneAppPage', () => ({ default: () => <div>page:PhoneAppPage</div> }));
 vi.mock('./pages/SeniorAccountsPage', () => ({ default: () => <div>page:SeniorAccountsPage</div> }));
+vi.mock('./pages/FindAccountPage', () => ({ default: () => <div>page:FindAccountPage</div> }));
 vi.mock('./pages/SecurityPage', () => ({ default: () => <div>page:SecurityPage</div> }));
 vi.mock('./pages/CommunitiesAtAGlancePage', () => ({ default: () => <div>page:CommunitiesAtAGlancePage</div> }));
+vi.mock('./pages/CommunityHealthPage', () => ({ default: () => <div>page:CommunityHealthPage</div> }));
+vi.mock('./pages/CommunitySetupPage', () => ({ default: () => <div>page:CommunitySetupPage</div> }));
 vi.mock('./pages/PlatformNoticesPage', () => ({ default: () => <div>page:PlatformNoticesPage</div> }));
+vi.mock('./pages/UsagePage', () => ({ default: () => <div>page:UsagePage</div> }));
+vi.mock('./pages/UnfinishedFeaturesPage', () => ({ default: () => <div>page:UnfinishedFeaturesPage</div> }));
 vi.mock('@/admin/modules/content/MenusAdmin', () => ({ default: () => <div>page:MenusAdmin</div> }));
 vi.mock('@/admin/modules/content/MenuBuilder', () => ({ default: () => <div>page:MenuBuilder</div> }));
 vi.mock('@/admin/modules/advanced/EmailSettings', () => ({ default: () => <div>page:EmailSettings</div> }));
@@ -244,6 +249,26 @@ describe('the Platform team panel mounts every moved page', () => {
     expect(await screen.findByText('page:CommunitiesAtAGlancePage')).toBeInTheDocument();
   });
 
+  it('opens the Community health page', async () => {
+    renderAt('/test/platform-team/community-health');
+    expect(await screen.findByText('page:CommunityHealthPage')).toBeInTheDocument();
+  });
+
+  it('opens the Community setup page', async () => {
+    renderAt('/test/platform-team/community-setup');
+    expect(await screen.findByText('page:CommunitySetupPage')).toBeInTheDocument();
+  });
+
+  it('opens the Usage per community page', async () => {
+    renderAt('/test/platform-team/usage');
+    expect(await screen.findByText('page:UsagePage')).toBeInTheDocument();
+  });
+
+  it('opens the Unfinished features page', async () => {
+    renderAt('/test/platform-team/unfinished-features');
+    expect(await screen.findByText('page:UnfinishedFeaturesPage')).toBeInTheDocument();
+  });
+
   it('opens the Security page', async () => {
     renderAt('/test/platform-team/security');
     expect(await screen.findByText('page:SecurityPage')).toBeInTheDocument();
@@ -252,6 +277,11 @@ describe('the Platform team panel mounts every moved page', () => {
   it('opens the Senior accounts page', async () => {
     renderAt('/test/platform-team/senior-accounts');
     expect(await screen.findByText('page:SeniorAccountsPage')).toBeInTheDocument();
+  });
+
+  it('opens the Find an account page', async () => {
+    renderAt('/test/platform-team/accounts');
+    expect(await screen.findByText('page:FindAccountPage')).toBeInTheDocument();
   });
 
   it('opens the Phone app page', async () => {

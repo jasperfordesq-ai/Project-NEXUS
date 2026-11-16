@@ -130,9 +130,14 @@ describe('PlatformTeamBreadcrumbs', () => {
     ['/platform-team/failed-jobs', 'home.card.failed_jobs'],
     ['/platform-team/phone-app', 'phone_app.title'],
     ['/platform-team/senior-accounts', 'senior_accounts.title'],
+    ['/platform-team/accounts', 'accounts.title'],
     ['/platform-team/security', 'security.title'],
     ['/platform-team/communities', 'glance.title'],
+    ['/platform-team/community-health', 'community_health.title'],
+    ['/platform-team/community-setup', 'community_setup.title'],
     ['/platform-team/notices', 'notices.title'],
+    ['/platform-team/usage', 'usage.title'],
+    ['/platform-team/unfinished-features', 'unfinished_features.title'],
   ])('names the last step of %s', (pathname, label) => {
     state.pathname = pathname;
     render(<PlatformTeamBreadcrumbs />);
