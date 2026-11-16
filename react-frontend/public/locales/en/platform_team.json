@@ -150,5 +150,46 @@
     "not_downloads": "These are members signed in on the app, not downloads from the app stores.",
     "loading": "Loading the phone app figures",
     "load_error_title": "We couldn't load the phone app figures just now"
+  },
+  "senior_accounts": {
+    "title": "Senior accounts",
+    "intro": "Every account that can manage more than one community, when it last signed in, and whether two-step sign-in is on.",
+    "read_only_note": "This page only shows these accounts. Nothing here gives or takes away access.",
+    "loading": "Loading the senior accounts",
+    "load_error_title": "We couldn't load the senior accounts just now",
+    "without_two_step": "Two-step sign-in is off for {{count}} of these {{total}} accounts.",
+    "all_have_two_step": "Two-step sign-in is on for all {{total}} of these accounts.",
+    "truncated": "Only the first {{count}} accounts are shown.",
+    "none_at_level": "No accounts at this level.",
+    "level": {
+      "platform_team": "Platform team",
+      "global_super_admin": "Global super admins",
+      "tenant_super_admin": "Tenant super admins",
+      "platform_flag_only": "Platform team mark only"
+    },
+    "level_note": {
+      "platform_team": "Can do everything, in every community, including this panel.",
+      "global_super_admin": "Can administer every community, but cannot open this panel.",
+      "tenant_super_admin": "Can administer their own community and every community below it.",
+      "platform_flag_only": "These accounts carry the platform team mark but are not super admins, so they are not on the platform team."
+    },
+    "two_step_on": "Two-step on",
+    "two_step_off": "Two-step off",
+    "passkey": "Has a passkey",
+    "incomplete": "Platform team mark, not a super admin",
+    "community": "Community:",
+    "no_community": "None",
+    "unnamed_community": "Community {{id}}",
+    "last_sign_in": "Last signed in:",
+    "never": "Never",
+    "unnamed": "No name recorded",
+    "status": {
+      "inactive": "Inactive",
+      "suspended": "Suspended",
+      "banned": "Banned",
+      "pending": "Waiting for approval",
+      "rejected": "Rejected",
+      "other": "Not active"
+    }
   }
 }

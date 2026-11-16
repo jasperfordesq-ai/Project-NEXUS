@@ -150,5 +150,46 @@
     "not_downloads": "Is baill iad seo atá sínithe isteach san aip, ní íoslódálacha ó na siopaí aipeanna.",
     "loading": "Figiúirí na haipe fóin á lódáil",
     "load_error_title": "Níorbh fhéidir linn figiúirí na haipe fóin a lódáil faoi láthair"
+  },
+  "senior_accounts": {
+    "title": "Cuntais shinsearacha",
+    "intro": "Gach cuntas ar féidir leis níos mó ná pobal amháin a bhainistiú, cathain a shínigh sé isteach go deireanach, agus an bhfuil síniú isteach dhá chéim ar siúl.",
+    "read_only_note": "Ní dhéanann an leathanach seo ach na cuntais seo a thaispeáint. Ní thugtar ná ní bhaintear rochtain anseo.",
+    "loading": "Na cuntais shinsearacha á lódáil",
+    "load_error_title": "Níorbh fhéidir linn na cuntais shinsearacha a lódáil faoi láthair",
+    "without_two_step": "Tá síniú isteach dhá chéim múchta i gcás {{count}} de na {{total}} cuntas seo.",
+    "all_have_two_step": "Tá síniú isteach dhá chéim ar siúl i gcás gach ceann de na {{total}} cuntas seo.",
+    "truncated": "Ní thaispeántar ach an chéad {{count}} cuntas.",
+    "none_at_level": "Níl aon chuntas ag an leibhéal seo.",
+    "level": {
+      "platform_team": "Foireann an ardáin",
+      "global_super_admin": "Sár-riarthóirí domhanda",
+      "tenant_super_admin": "Sár-riarthóirí pobail",
+      "platform_flag_only": "Marc fhoireann an ardáin amháin"
+    },
+    "level_note": {
+      "platform_team": "Is féidir leo gach rud a dhéanamh, i ngach pobal, an painéal seo san áireamh.",
+      "global_super_admin": "Is féidir leo gach pobal a riar, ach ní féidir leo an painéal seo a oscailt.",
+      "tenant_super_admin": "Is féidir leo a bpobal féin agus gach pobal faoina bhun a riar.",
+      "platform_flag_only": "Tá marc fhoireann an ardáin ar na cuntais seo ach ní sár-riarthóirí iad, mar sin níl siad ar fhoireann an ardáin."
+    },
+    "two_step_on": "Dhá chéim: ar siúl",
+    "two_step_off": "Dhá chéim: múchta",
+    "passkey": "Tá eochair rochtana aige",
+    "incomplete": "Marc na foirne, gan a bheith ina shár-riarthóir",
+    "community": "Pobal:",
+    "no_community": "Ceann ar bith",
+    "unnamed_community": "Pobal {{id}}",
+    "last_sign_in": "Sínithe isteach go deireanach:",
+    "never": "Riamh",
+    "unnamed": "Níl ainm taifeadta",
+    "status": {
+      "inactive": "Neamhghníomhach",
+      "suspended": "Ar fionraí",
+      "banned": "Coiscthe",
+      "pending": "Ag fanacht le faomhadh",
+      "rejected": "Diúltaithe",
+      "other": "Gan a bheith gníomhach"
+    }
   }
 }

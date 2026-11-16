@@ -66,6 +66,7 @@ import Shield from 'lucide-react/icons/shield';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import SlidersHorizontal from 'lucide-react/icons/sliders-horizontal';
 import Smartphone from 'lucide-react/icons/smartphone';
+import UserCog from 'lucide-react/icons/user-cog';
 import Stethoscope from 'lucide-react/icons/stethoscope';
 import Target from 'lucide-react/icons/target';
 import Timer from 'lucide-react/icons/timer';
@@ -173,6 +174,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           key: 'access',
           title: t('sidebar.group_access'),
           items: [
+            { label: t('senior_accounts.title'), icon: UserCog, path: `${P}/senior-accounts` },
             { label: tNav('enterprise_dashboard'), icon: Building2, path: `${P}/enterprise` },
             { label: tNav('permissions_list'), icon: ListChecks, path: `${P}/enterprise/permissions` },
           ],

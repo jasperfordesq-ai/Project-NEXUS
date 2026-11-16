@@ -379,7 +379,14 @@ community, with the newest members named by display name and username and no
 email addresses. Those figures used to be sent to any `is_god` account inside
 the community admin's own request
 (`GET /v2/admin/config/native-app/install-stats`); since 16 November 2026 that
-request answers for the one community only, whoever asks.
+request answers for the one community only, whoever asks. The fourth is Senior
+accounts (`GET /v2/platform-team/senior-accounts`; `SeniorAccountsService`):
+every account that can administer more than one community, with its level
+(platform team, global super admin, tenant super admin, or the `is_god` flag
+without super admin, which is not platform team membership), home community,
+last sign-in date, two-step on or off and whether it has a passkey. 🔴 It is
+read-only and must stay so: no request grants or removes platform team
+membership, which is set in the database on purpose.
 
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still

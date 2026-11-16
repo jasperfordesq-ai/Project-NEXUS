@@ -150,5 +150,46 @@
     "not_downloads": "To członkowie zalogowani w aplikacji, a nie pobrania ze sklepów z aplikacjami.",
     "loading": "Wczytywanie danych o aplikacji na telefon",
     "load_error_title": "Nie udało się teraz wczytać danych o aplikacji na telefon"
+  },
+  "senior_accounts": {
+    "title": "Konta wysokiego szczebla",
+    "intro": "Każde konto, które może zarządzać więcej niż jedną społecznością, data jego ostatniego logowania oraz to, czy ma włączone logowanie dwuetapowe.",
+    "read_only_note": "Ta strona tylko pokazuje te konta. Nic tutaj nie nadaje ani nie odbiera dostępu.",
+    "loading": "Wczytywanie kont wysokiego szczebla",
+    "load_error_title": "Nie udało się teraz wczytać kont wysokiego szczebla",
+    "without_two_step": "Logowanie dwuetapowe jest wyłączone na {{count}} z tych {{total}} kont.",
+    "all_have_two_step": "Logowanie dwuetapowe jest włączone na wszystkich tych kontach ({{total}}).",
+    "truncated": "Pokazano tylko pierwsze konta: {{count}}.",
+    "none_at_level": "Brak kont na tym poziomie.",
+    "level": {
+      "platform_team": "Zespół platformy",
+      "global_super_admin": "Globalni superadministratorzy",
+      "tenant_super_admin": "Superadministratorzy społeczności",
+      "platform_flag_only": "Tylko oznaczenie zespołu platformy"
+    },
+    "level_note": {
+      "platform_team": "Mogą wszystko, w każdej społeczności, łącznie z tym panelem.",
+      "global_super_admin": "Mogą administrować każdą społecznością, ale nie mogą otworzyć tego panelu.",
+      "tenant_super_admin": "Mogą administrować własną społecznością i każdą społecznością poniżej niej.",
+      "platform_flag_only": "Te konta mają oznaczenie zespołu platformy, ale nie są superadministratorami, więc nie należą do zespołu platformy."
+    },
+    "two_step_on": "Dwa etapy: włączone",
+    "two_step_off": "Dwa etapy: wyłączone",
+    "passkey": "Ma klucz dostępu",
+    "incomplete": "Oznaczenie zespołu, bez uprawnień superadministratora",
+    "community": "Społeczność:",
+    "no_community": "Brak",
+    "unnamed_community": "Społeczność {{id}}",
+    "last_sign_in": "Ostatnie logowanie:",
+    "never": "Nigdy",
+    "unnamed": "Brak zapisanej nazwy",
+    "status": {
+      "inactive": "Nieaktywne",
+      "suspended": "Zawieszone",
+      "banned": "Zablokowane",
+      "pending": "Czeka na zatwierdzenie",
+      "rejected": "Odrzucone",
+      "other": "Nieaktywne"
+    }
   }
 }

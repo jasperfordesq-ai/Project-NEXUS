@@ -129,6 +129,7 @@ describe('PlatformTeamBreadcrumbs', () => {
     ['/platform-team/national/kiss', 'super_admin:nav.national_dashboard'],
     ['/platform-team/failed-jobs', 'home.card.failed_jobs'],
     ['/platform-team/phone-app', 'phone_app.title'],
+    ['/platform-team/senior-accounts', 'senior_accounts.title'],
   ])('names the last step of %s', (pathname, label) => {
     state.pathname = pathname;
     render(<PlatformTeamBreadcrumbs />);

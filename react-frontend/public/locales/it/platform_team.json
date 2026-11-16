@@ -150,5 +150,46 @@
     "not_downloads": "Sono membri che hanno effettuato l’accesso nell’app, non download dagli app store.",
     "loading": "Caricamento dei dati dell’app per il telefono",
     "load_error_title": "Non siamo riusciti a caricare i dati dell’app in questo momento"
+  },
+  "senior_accounts": {
+    "title": "Account di alto livello",
+    "intro": "Tutti gli account che possono gestire più di una comunità, quando hanno effettuato l’ultimo accesso e se l’accesso in due passaggi è attivo.",
+    "read_only_note": "Questa pagina mostra soltanto questi account. Qui non si concede né si toglie alcun accesso.",
+    "loading": "Caricamento degli account di alto livello",
+    "load_error_title": "Non siamo riusciti a caricare gli account di alto livello in questo momento",
+    "without_two_step": "L’accesso in due passaggi è disattivato per {{count}} di questi {{total}} account.",
+    "all_have_two_step": "L’accesso in due passaggi è attivo per tutti questi {{total}} account.",
+    "truncated": "Sono mostrati solo i primi {{count}} account.",
+    "none_at_level": "Nessun account a questo livello.",
+    "level": {
+      "platform_team": "Team della piattaforma",
+      "global_super_admin": "Super amministratori globali",
+      "tenant_super_admin": "Super amministratori di comunità",
+      "platform_flag_only": "Solo il contrassegno del team della piattaforma"
+    },
+    "level_note": {
+      "platform_team": "Possono fare tutto, in ogni comunità, compreso aprire questo pannello.",
+      "global_super_admin": "Possono amministrare ogni comunità, ma non possono aprire questo pannello.",
+      "tenant_super_admin": "Possono amministrare la propria comunità e tutte quelle sotto di essa.",
+      "platform_flag_only": "Questi account hanno il contrassegno del team della piattaforma ma non sono super amministratori, quindi non fanno parte del team."
+    },
+    "two_step_on": "Due passaggi: attivo",
+    "two_step_off": "Due passaggi: disattivato",
+    "passkey": "Ha una passkey",
+    "incomplete": "Contrassegno del team, senza essere super amministratore",
+    "community": "Comunità:",
+    "no_community": "Nessuna",
+    "unnamed_community": "Comunità {{id}}",
+    "last_sign_in": "Ultimo accesso:",
+    "never": "Mai",
+    "unnamed": "Nessun nome registrato",
+    "status": {
+      "inactive": "Inattivo",
+      "suspended": "Sospeso",
+      "banned": "Bloccato",
+      "pending": "In attesa di approvazione",
+      "rejected": "Rifiutato",
+      "other": "Non attivo"
+    }
   }
 }

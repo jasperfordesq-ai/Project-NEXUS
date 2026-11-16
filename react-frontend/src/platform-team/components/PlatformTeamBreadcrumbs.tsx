@@ -27,6 +27,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   // The panel's own pages: named as on the home page and in the menu.
   'failed-jobs': 'home.card.failed_jobs',
   'phone-app': 'phone_app.title',
+  'senior-accounts': 'senior_accounts.title',
   // Pages that came from the super admin panel, or whose admin breadcrumb
   // wording would mislead: named with the wording their own menu entry uses.
   translation: 'super_admin:breadcrumbs.translation',

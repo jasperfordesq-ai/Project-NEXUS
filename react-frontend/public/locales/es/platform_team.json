@@ -150,5 +150,46 @@
     "not_downloads": "Son miembros que han iniciado sesión en la app, no descargas de las tiendas de aplicaciones.",
     "loading": "Cargando las cifras de la app para el móvil",
     "load_error_title": "No hemos podido cargar las cifras de la app ahora mismo"
+  },
+  "senior_accounts": {
+    "title": "Cuentas de alto nivel",
+    "intro": "Todas las cuentas que pueden gestionar más de una comunidad, cuándo iniciaron sesión por última vez y si tienen activado el inicio de sesión en dos pasos.",
+    "read_only_note": "Esta página solo muestra estas cuentas. Aquí no se da ni se quita ningún acceso.",
+    "loading": "Cargando las cuentas de alto nivel",
+    "load_error_title": "No hemos podido cargar las cuentas de alto nivel ahora mismo",
+    "without_two_step": "El inicio de sesión en dos pasos está desactivado en {{count}} de estas {{total}} cuentas.",
+    "all_have_two_step": "El inicio de sesión en dos pasos está activado en las {{total}} cuentas.",
+    "truncated": "Solo se muestran las primeras {{count}} cuentas.",
+    "none_at_level": "No hay cuentas en este nivel.",
+    "level": {
+      "platform_team": "Equipo de la plataforma",
+      "global_super_admin": "Superadministradores globales",
+      "tenant_super_admin": "Superadministradores de comunidad",
+      "platform_flag_only": "Solo la marca de equipo de la plataforma"
+    },
+    "level_note": {
+      "platform_team": "Pueden hacerlo todo, en todas las comunidades, incluido este panel.",
+      "global_super_admin": "Pueden administrar todas las comunidades, pero no pueden abrir este panel.",
+      "tenant_super_admin": "Pueden administrar su propia comunidad y todas las que dependen de ella.",
+      "platform_flag_only": "Estas cuentas llevan la marca de equipo de la plataforma pero no son superadministradores, así que no forman parte del equipo."
+    },
+    "two_step_on": "Dos pasos: activado",
+    "two_step_off": "Dos pasos: desactivado",
+    "passkey": "Tiene una llave de acceso",
+    "incomplete": "Marca de equipo, sin ser superadministrador",
+    "community": "Comunidad:",
+    "no_community": "Ninguna",
+    "unnamed_community": "Comunidad {{id}}",
+    "last_sign_in": "Último inicio de sesión:",
+    "never": "Nunca",
+    "unnamed": "Sin nombre registrado",
+    "status": {
+      "inactive": "Inactiva",
+      "suspended": "Suspendida",
+      "banned": "Bloqueada",
+      "pending": "Pendiente de aprobación",
+      "rejected": "Rechazada",
+      "other": "No activa"
+    }
   }
 }

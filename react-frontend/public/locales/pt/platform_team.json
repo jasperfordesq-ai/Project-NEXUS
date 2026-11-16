@@ -150,5 +150,46 @@
     "not_downloads": "São membros conectados no aplicativo, não downloads das lojas de aplicativos.",
     "loading": "Carregando os números do aplicativo",
     "load_error_title": "Não conseguimos carregar os números do aplicativo agora"
+  },
+  "senior_accounts": {
+    "title": "Contas de alto nível",
+    "intro": "Todas as contas que podem gerenciar mais de uma comunidade, quando entraram pela última vez e se a entrada em duas etapas está ativada.",
+    "read_only_note": "Esta página apenas mostra essas contas. Nada aqui concede ou retira acesso.",
+    "loading": "Carregando as contas de alto nível",
+    "load_error_title": "Não conseguimos carregar as contas de alto nível agora",
+    "without_two_step": "A entrada em duas etapas está desativada em {{count}} destas {{total}} contas.",
+    "all_have_two_step": "A entrada em duas etapas está ativada em todas estas {{total}} contas.",
+    "truncated": "Apenas as primeiras {{count}} contas são mostradas.",
+    "none_at_level": "Nenhuma conta neste nível.",
+    "level": {
+      "platform_team": "Equipe da plataforma",
+      "global_super_admin": "Superadministradores globais",
+      "tenant_super_admin": "Superadministradores de comunidade",
+      "platform_flag_only": "Apenas a marca da equipe da plataforma"
+    },
+    "level_note": {
+      "platform_team": "Podem fazer tudo, em todas as comunidades, inclusive abrir este painel.",
+      "global_super_admin": "Podem administrar todas as comunidades, mas não podem abrir este painel.",
+      "tenant_super_admin": "Podem administrar a própria comunidade e todas as comunidades abaixo dela.",
+      "platform_flag_only": "Estas contas têm a marca da equipe da plataforma, mas não são superadministradores; por isso não fazem parte da equipe."
+    },
+    "two_step_on": "Duas etapas: ativada",
+    "two_step_off": "Duas etapas: desativada",
+    "passkey": "Tem uma chave de acesso",
+    "incomplete": "Marca da equipe, sem ser superadministrador",
+    "community": "Comunidade:",
+    "no_community": "Nenhuma",
+    "unnamed_community": "Comunidade {{id}}",
+    "last_sign_in": "Última entrada:",
+    "never": "Nunca",
+    "unnamed": "Nenhum nome registrado",
+    "status": {
+      "inactive": "Inativa",
+      "suspended": "Suspensa",
+      "banned": "Banida",
+      "pending": "Aguardando aprovação",
+      "rejected": "Rejeitada",
+      "other": "Não ativa"
+    }
   }
 }

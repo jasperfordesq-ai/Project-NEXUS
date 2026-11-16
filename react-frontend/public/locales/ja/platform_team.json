@@ -150,5 +150,46 @@
     "not_downloads": "これはアプリにサインインしているメンバーの数であり、アプリストアでのダウンロード数ではありません。",
     "loading": "スマホアプリの数字を読み込んでいます",
     "load_error_title": "いまスマホアプリの数字を読み込めませんでした"
+  },
+  "senior_accounts": {
+    "title": "上位アカウント",
+    "intro": "複数のコミュニティを管理できるすべてのアカウントと、最後にサインインした日、2段階サインインが有効かどうかを表示します。",
+    "read_only_note": "このページはこれらのアカウントを表示するだけです。ここで権限を与えたり取り消したりすることはできません。",
+    "loading": "上位アカウントを読み込んでいます",
+    "load_error_title": "いま上位アカウントを読み込めませんでした",
+    "without_two_step": "これら{{total}}件のアカウントのうち{{count}}件で、2段階サインインが無効です。",
+    "all_have_two_step": "これら{{total}}件のアカウントすべてで、2段階サインインが有効です。",
+    "truncated": "最初の{{count}}件のアカウントのみ表示しています。",
+    "none_at_level": "このレベルのアカウントはありません。",
+    "level": {
+      "platform_team": "プラットフォームチーム",
+      "global_super_admin": "グローバル特権管理者",
+      "tenant_super_admin": "コミュニティ特権管理者",
+      "platform_flag_only": "プラットフォームチームの印のみ"
+    },
+    "level_note": {
+      "platform_team": "このパネルを含め、すべてのコミュニティですべての操作ができます。",
+      "global_super_admin": "すべてのコミュニティを管理できますが、このパネルは開けません。",
+      "tenant_super_admin": "自分のコミュニティと、その下にあるすべてのコミュニティを管理できます。",
+      "platform_flag_only": "これらのアカウントにはプラットフォームチームの印がありますが、特権管理者ではないため、プラットフォームチームには含まれません。"
+    },
+    "two_step_on": "2段階：有効",
+    "two_step_off": "2段階：無効",
+    "passkey": "パスキーあり",
+    "incomplete": "チームの印あり・特権管理者ではない",
+    "community": "コミュニティ：",
+    "no_community": "なし",
+    "unnamed_community": "コミュニティ {{id}}",
+    "last_sign_in": "最後のサインイン：",
+    "never": "なし",
+    "unnamed": "名前の登録なし",
+    "status": {
+      "inactive": "無効",
+      "suspended": "停止中",
+      "banned": "利用禁止",
+      "pending": "承認待ち",
+      "rejected": "却下",
+      "other": "有効ではない"
+    }
   }
 }

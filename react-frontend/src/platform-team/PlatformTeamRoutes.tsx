@@ -34,6 +34,7 @@ const PlatformTeamHome = lazy(() => import('./pages/PlatformTeamHome'));
 // Pages written for the panel itself (not moved in from another panel).
 const FailedJobsPage = lazy(() => import('./pages/FailedJobsPage'));
 const PhoneAppPage = lazy(() => import('./pages/PhoneAppPage'));
+const SeniorAccountsPage = lazy(() => import('./pages/SeniorAccountsPage'));
 
 const MenusAdmin = lazy(() => import('@/admin/modules/content/MenusAdmin'));
 const MenuBuilder = lazy(() => import('@/admin/modules/content/MenuBuilder'));
@@ -99,6 +100,7 @@ export function PlatformTeamRoutes() {
 
       <Route path="failed-jobs" element={<Lazy><FailedJobsPage /></Lazy>} />
       <Route path="phone-app" element={<Lazy><PhoneAppPage /></Lazy>} />
+      <Route path="senior-accounts" element={<Lazy><SeniorAccountsPage /></Lazy>} />
 
       <Route path="menus" element={<Lazy><MenusAdmin /></Lazy>} />
       <Route path="menus/builder/:id" element={<Lazy><MenuBuilder /></Lazy>} />

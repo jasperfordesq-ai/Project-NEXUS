@@ -150,5 +150,46 @@
     "not_downloads": "Dit zijn leden die in de app zijn ingelogd, geen downloads uit de appwinkels.",
     "loading": "De cijfers van de telefoon-app worden geladen",
     "load_error_title": "We konden de cijfers van de telefoon-app nu niet laden"
+  },
+  "senior_accounts": {
+    "title": "Accounts op hoog niveau",
+    "intro": "Elk account dat meer dan één gemeenschap kan beheren, wanneer het voor het laatst inlogde en of inloggen in twee stappen aanstaat.",
+    "read_only_note": "Deze pagina laat deze accounts alleen zien. Hier wordt geen toegang gegeven of afgenomen.",
+    "loading": "De accounts op hoog niveau worden geladen",
+    "load_error_title": "We konden de accounts op hoog niveau nu niet laden",
+    "without_two_step": "Inloggen in twee stappen staat uit bij {{count}} van deze {{total}} accounts.",
+    "all_have_two_step": "Inloggen in twee stappen staat aan bij alle {{total}} accounts.",
+    "truncated": "Alleen de eerste {{count}} accounts worden getoond.",
+    "none_at_level": "Geen accounts op dit niveau.",
+    "level": {
+      "platform_team": "Platformteam",
+      "global_super_admin": "Globale superbeheerders",
+      "tenant_super_admin": "Superbeheerders van een gemeenschap",
+      "platform_flag_only": "Alleen het kenmerk van het platformteam"
+    },
+    "level_note": {
+      "platform_team": "Kunnen alles doen, in elke gemeenschap, ook dit paneel openen.",
+      "global_super_admin": "Kunnen elke gemeenschap beheren, maar kunnen dit paneel niet openen.",
+      "tenant_super_admin": "Kunnen hun eigen gemeenschap en elke gemeenschap daaronder beheren.",
+      "platform_flag_only": "Deze accounts hebben het kenmerk van het platformteam maar zijn geen superbeheerder, dus ze horen niet bij het platformteam."
+    },
+    "two_step_on": "Twee stappen: aan",
+    "two_step_off": "Twee stappen: uit",
+    "passkey": "Heeft een passkey",
+    "incomplete": "Kenmerk van het team, geen superbeheerder",
+    "community": "Gemeenschap:",
+    "no_community": "Geen",
+    "unnamed_community": "Gemeenschap {{id}}",
+    "last_sign_in": "Laatst ingelogd:",
+    "never": "Nooit",
+    "unnamed": "Geen naam vastgelegd",
+    "status": {
+      "inactive": "Inactief",
+      "suspended": "Geschorst",
+      "banned": "Geblokkeerd",
+      "pending": "Wacht op goedkeuring",
+      "rejected": "Afgewezen",
+      "other": "Niet actief"
+    }
   }
 }

@@ -150,5 +150,46 @@
     "not_downloads": "Das sind Mitglieder, die in der App angemeldet sind, keine Downloads aus den App-Stores.",
     "loading": "Zahlen zur Handy-App werden geladen",
     "load_error_title": "Wir konnten die Zahlen zur Handy-App gerade nicht laden"
+  },
+  "senior_accounts": {
+    "title": "Leitende Konten",
+    "intro": "Jedes Konto, das mehr als eine Gemeinschaft verwalten kann, wann es sich zuletzt angemeldet hat und ob die Anmeldung in zwei Schritten eingeschaltet ist.",
+    "read_only_note": "Diese Seite zeigt diese Konten nur an. Hier wird kein Zugriff vergeben oder entzogen.",
+    "loading": "Leitende Konten werden geladen",
+    "load_error_title": "Wir konnten die leitenden Konten gerade nicht laden",
+    "without_two_step": "Bei {{count}} dieser {{total}} Konten ist die Anmeldung in zwei Schritten ausgeschaltet.",
+    "all_have_two_step": "Bei allen {{total}} dieser Konten ist die Anmeldung in zwei Schritten eingeschaltet.",
+    "truncated": "Es werden nur die ersten {{count}} Konten angezeigt.",
+    "none_at_level": "Keine Konten auf dieser Stufe.",
+    "level": {
+      "platform_team": "Plattform-Team",
+      "global_super_admin": "Globale Super-Admins",
+      "tenant_super_admin": "Super-Admins einer Gemeinschaft",
+      "platform_flag_only": "Nur Plattform-Team-Kennzeichen"
+    },
+    "level_note": {
+      "platform_team": "Können alles, in jeder Gemeinschaft, auch diesen Bereich öffnen.",
+      "global_super_admin": "Können jede Gemeinschaft verwalten, aber diesen Bereich nicht öffnen.",
+      "tenant_super_admin": "Können ihre eigene Gemeinschaft und jede Gemeinschaft darunter verwalten.",
+      "platform_flag_only": "Diese Konten tragen das Plattform-Team-Kennzeichen, sind aber keine Super-Admins und gehören deshalb nicht zum Plattform-Team."
+    },
+    "two_step_on": "Zwei Schritte: an",
+    "two_step_off": "Zwei Schritte: aus",
+    "passkey": "Hat einen Passkey",
+    "incomplete": "Plattform-Team-Kennzeichen, kein Super-Admin",
+    "community": "Gemeinschaft:",
+    "no_community": "Keine",
+    "unnamed_community": "Gemeinschaft {{id}}",
+    "last_sign_in": "Zuletzt angemeldet:",
+    "never": "Noch nie",
+    "unnamed": "Kein Name hinterlegt",
+    "status": {
+      "inactive": "Inaktiv",
+      "suspended": "Gesperrt",
+      "banned": "Verbannt",
+      "pending": "Wartet auf Freigabe",
+      "rejected": "Abgelehnt",
+      "other": "Nicht aktiv"
+    }
   }
 }

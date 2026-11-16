@@ -150,5 +150,46 @@
     "not_downloads": "Il s'agit des membres connectés dans l'application, pas des téléchargements depuis les boutiques d'applications.",
     "loading": "Chargement des chiffres de l'application mobile",
     "load_error_title": "Nous n'avons pas pu charger les chiffres de l'application pour le moment"
+  },
+  "senior_accounts": {
+    "title": "Comptes à haut niveau",
+    "intro": "Tous les comptes qui peuvent gérer plus d'une communauté, la date de leur dernière connexion et si la connexion en deux étapes est activée.",
+    "read_only_note": "Cette page ne fait qu'afficher ces comptes. Rien ici ne donne ni ne retire un accès.",
+    "loading": "Chargement des comptes à haut niveau",
+    "load_error_title": "Nous n'avons pas pu charger les comptes à haut niveau pour le moment",
+    "without_two_step": "La connexion en deux étapes est désactivée pour {{count}} de ces {{total}} comptes.",
+    "all_have_two_step": "La connexion en deux étapes est activée pour ces {{total}} comptes.",
+    "truncated": "Seuls les {{count}} premiers comptes sont affichés.",
+    "none_at_level": "Aucun compte à ce niveau.",
+    "level": {
+      "platform_team": "Équipe de la plateforme",
+      "global_super_admin": "Super-administrateurs globaux",
+      "tenant_super_admin": "Super-administrateurs de communauté",
+      "platform_flag_only": "Marque d'équipe de la plateforme seule"
+    },
+    "level_note": {
+      "platform_team": "Peuvent tout faire, dans toutes les communautés, y compris ouvrir cet espace.",
+      "global_super_admin": "Peuvent administrer toutes les communautés, mais ne peuvent pas ouvrir cet espace.",
+      "tenant_super_admin": "Peuvent administrer leur propre communauté et toutes celles qui en dépendent.",
+      "platform_flag_only": "Ces comptes portent la marque d'équipe de la plateforme sans être super-administrateurs : ils ne font donc pas partie de l'équipe."
+    },
+    "two_step_on": "Deux étapes : activée",
+    "two_step_off": "Deux étapes : désactivée",
+    "passkey": "A une clé d'accès",
+    "incomplete": "Marque d'équipe, sans être super-administrateur",
+    "community": "Communauté :",
+    "no_community": "Aucune",
+    "unnamed_community": "Communauté {{id}}",
+    "last_sign_in": "Dernière connexion :",
+    "never": "Jamais",
+    "unnamed": "Aucun nom enregistré",
+    "status": {
+      "inactive": "Inactif",
+      "suspended": "Suspendu",
+      "banned": "Banni",
+      "pending": "En attente d'approbation",
+      "rejected": "Refusé",
+      "other": "Non actif"
+    }
   }
 }

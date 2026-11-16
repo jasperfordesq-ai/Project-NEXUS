@@ -57353,6 +57353,47 @@ export default interface Resources {
       "not_downloads": "These are members signed in on the app, not downloads from the app stores.",
       "title": "Phone app"
     },
+    "senior_accounts": {
+      "all_have_two_step": "Two-step sign-in is on for all {{total}} of these accounts.",
+      "community": "Community:",
+      "incomplete": "Platform team mark, not a super admin",
+      "intro": "Every account that can manage more than one community, when it last signed in, and whether two-step sign-in is on.",
+      "last_sign_in": "Last signed in:",
+      "level": {
+        "global_super_admin": "Global super admins",
+        "platform_flag_only": "Platform team mark only",
+        "platform_team": "Platform team",
+        "tenant_super_admin": "Tenant super admins"
+      },
+      "level_note": {
+        "global_super_admin": "Can administer every community, but cannot open this panel.",
+        "platform_flag_only": "These accounts carry the platform team mark but are not super admins, so they are not on the platform team.",
+        "platform_team": "Can do everything, in every community, including this panel.",
+        "tenant_super_admin": "Can administer their own community and every community below it."
+      },
+      "load_error_title": "We couldn't load the senior accounts just now",
+      "loading": "Loading the senior accounts",
+      "never": "Never",
+      "no_community": "None",
+      "none_at_level": "No accounts at this level.",
+      "passkey": "Has a passkey",
+      "read_only_note": "This page only shows these accounts. Nothing here gives or takes away access.",
+      "status": {
+        "banned": "Banned",
+        "inactive": "Inactive",
+        "other": "Not active",
+        "pending": "Waiting for approval",
+        "rejected": "Rejected",
+        "suspended": "Suspended"
+      },
+      "title": "Senior accounts",
+      "truncated": "Only the first {{count}} accounts are shown.",
+      "two_step_off": "Two-step off",
+      "two_step_on": "Two-step on",
+      "unnamed": "No name recorded",
+      "unnamed_community": "Community {{id}}",
+      "without_two_step": "Two-step sign-in is off for {{count}} of these {{total}} accounts."
+    },
     "sidebar": {
       "collapse": "Hide the menu",
       "expand": "Show the menu",
