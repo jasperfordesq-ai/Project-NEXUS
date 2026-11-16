@@ -1317,7 +1317,9 @@ class AdminEnterpriseController extends BaseApiController
     /** GET /api/v2/admin/enterprise/secrets */
     public function secrets(): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        // F-626: platform team only, and never any part of a value — it sent
+        // the first and last two characters of real keys until 16 Nov 2026.
+        $this->requireGodPlatformAdmin();
 
         $categoryMap = [
             'DB_HOST' => 'database', 'DB_NAME' => 'database', 'DB_USER' => 'database', 'DB_PASS' => 'database',
@@ -1333,17 +1335,10 @@ class AdminEnterpriseController extends BaseApiController
         foreach ($categoryMap as $key => $category) {
             $value = getenv($key);
             $isSet = $value !== false && $value !== '';
-            $maskedValue = null;
-            if ($isSet && strlen($value) > 4) {
-                $maskedValue = substr($value, 0, 2) . '****' . substr($value, -2);
-            } elseif ($isSet) {
-                $maskedValue = '****';
-            }
             $secrets[] = [
                 'key' => $key,
                 'is_set' => $isSet,
                 'category' => $category,
-                'masked_value' => $maskedValue,
             ];
         }
         return $this->respondWithData($secrets);

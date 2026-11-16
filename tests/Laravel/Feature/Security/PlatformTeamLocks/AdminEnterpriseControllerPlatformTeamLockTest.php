@@ -34,6 +34,49 @@ final class AdminEnterpriseControllerPlatformTeamLockTest extends PlatformTeamLo
             'download a log file' => ['GET', '/v2/admin/enterprise/monitoring/log-files/no-such-file.log/download'],
             'clear a log file' => ['DELETE', '/v2/admin/enterprise/monitoring/log-files/no-such-file.log', 'refusal-only'],
             'requirements' => ['GET', '/v2/admin/enterprise/monitoring/requirements'],
+            // F-626: no screen calls it; it admitted any global super admin.
+            'secrets list' => ['GET', '/v2/admin/enterprise/config/secrets'],
         ];
+    }
+
+    /**
+     * F-626: the list said whether each server key is set, and also sent the
+     * first and last two characters of the real value. Now it says only
+     * whether it is set.
+     */
+    public function test_the_secrets_list_never_sends_any_part_of_a_value(): void
+    {
+        $name = 'FCM_SERVER_KEY';
+        $before = getenv($name);
+        $planted = 'ZQXJ4489PLMNwvut7731';
+        putenv("{$name}={$planted}");
+
+        try {
+            $this->actAsPlatformTeam();
+            $response = $this->apiGet('/v2/admin/enterprise/config/secrets')->assertStatus(200);
+        } finally {
+            putenv($before === false ? $name : "{$name}={$before}");
+        }
+
+        $rows = $response->json('data');
+        $this->assertIsArray($rows);
+        $this->assertNotEmpty($rows);
+        $found = false;
+        foreach ($rows as $row) {
+            $keys = array_keys($row);
+            sort($keys);
+            $this->assertSame(['category', 'is_set', 'key'], $keys);
+            $this->assertArrayNotHasKey('masked_value', $row);
+            if ($row['key'] === $name) {
+                $found = true;
+                $this->assertTrue($row['is_set']);
+            }
+        }
+        $this->assertTrue($found, "{$name} is not in the list");
+
+        $body = (string) $response->getContent();
+        for ($i = 0; $i + 4 <= strlen($planted); $i++) {
+            $this->assertStringNotContainsString(substr($planted, $i, 4), $body);
+        }
     }
 }
