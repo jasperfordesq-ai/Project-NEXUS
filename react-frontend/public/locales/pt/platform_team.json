@@ -270,17 +270,18 @@
       "link": "Ver as contas de alto nível"
     },
     "failed": {
-      "title": "Entradas que falharam nas últimas 24 horas",
-      "note": "As tentativas que falharam em uma conta são apagadas quando ela volta a entrar com sucesso, assim como as de um endereço; por isso não são contadas aqui. As entradas pelo site acessível chegam todas de um único endereço.",
+      "title": "Entradas que falharam",
+      "note": "Cada entrada que falha é contada no momento em que acontece, por comunidade e por hora. A contagem guarda só um número: nada sobre a pessoa nem sobre de onde ela tentou entrar. Os números são contados em horas inteiras, então cada um pode incluir até uma hora a mais.",
+      "counted_since": "Contadas desde {{date}}",
+      "nothing_counted": "Nada foi contado ainda. As entradas que falharam são contadas a partir do dia em que esta contagem foi ligada.",
       "last_hour": "Na última hora",
       "last_24h": "Nas últimas 24 horas",
-      "addresses": "Endereços de internet diferentes",
-      "most_from_one": "O maior número de um só endereço",
       "empty": "Nenhuma entrada falhou nas últimas 24 horas.",
-      "col_failed": "Tentativas que falharam:",
-      "col_accounts": "Contas tentadas:",
-      "col_most": "O maior número em uma só conta:",
-      "col_last": "A mais recente:"
+      "col_failed": "Falharam nas últimas 24 horas:",
+      "recent_title": "Nos últimos 15 minutos",
+      "recent_note": "Quais endereços de internet estão sendo tentados agora. A plataforma guarda esses dados por só cerca de 20 minutos e esquece as falhas de um endereço quando dele vem uma entrada com sucesso. As entradas pelo site acessível chegam todas de um único endereço.",
+      "addresses_15m": "Endereços de internet diferentes nos últimos 15 minutos",
+      "most_from_one_15m": "O maior número de um só endereço nos últimos 15 minutos"
     },
     "access": {
       "title": "Acesso de alto nível concedido e retirado",

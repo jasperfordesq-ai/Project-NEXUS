@@ -270,17 +270,18 @@
       "link": "See the senior accounts"
     },
     "failed": {
-      "title": "Failed sign-ins in the last 24 hours",
-      "note": "An account's failed attempts are cleared when it next signs in successfully, and so are an address's, so those are not counted here. Sign-ins through the accessible site all arrive from one address.",
+      "title": "Failed sign-ins",
+      "note": "Every failed sign-in is counted as it happens, by community and by the hour. The count keeps only a number: nothing about the person or where they signed in from. Figures are counted in whole hours, so each one can include up to an hour more.",
+      "counted_since": "Counted since {{date}}",
+      "nothing_counted": "Nothing has been counted yet. Failed sign-ins are counted from the day this count was switched on.",
       "last_hour": "In the last hour",
       "last_24h": "In the last 24 hours",
-      "addresses": "Different internet addresses",
-      "most_from_one": "Most from one address",
       "empty": "No failed sign-ins in the last 24 hours.",
-      "col_failed": "Failed attempts:",
-      "col_accounts": "Accounts tried:",
-      "col_most": "Most on one account:",
-      "col_last": "Latest:"
+      "col_failed": "Failed in the last 24 hours:",
+      "recent_title": "In the last 15 minutes",
+      "recent_note": "Which internet addresses are being tried right now. The platform keeps these details for only about 20 minutes, and forgets an address's failures when it next signs in successfully. Sign-ins through the accessible site all arrive from one address.",
+      "addresses_15m": "Different internet addresses in the last 15 minutes",
+      "most_from_one_15m": "Most from one address in the last 15 minutes"
     },
     "access": {
       "title": "Senior access given and removed",

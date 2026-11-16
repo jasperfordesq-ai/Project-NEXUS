@@ -241,6 +241,25 @@ class PruneLogsTest extends TestCase
     }
 
     // ---------------------------------------------------------------
+    // sign_in_failure_hours (hour_start, 90-day retention)
+    // ---------------------------------------------------------------
+
+    public function test_prune_logs_deletes_failed_sign_in_counts_older_than_90_days_and_keeps_newer(): void
+    {
+        $old = now()->subDays(91)->startOfHour()->toDateTimeString();
+        $recent = now()->subDays(89)->startOfHour()->toDateTimeString();
+        DB::table('sign_in_failure_hours')->insert([
+            ['hour_start' => $old, 'tenant_id' => self::TENANT_ID, 'failures' => 4],
+            ['hour_start' => $recent, 'tenant_id' => self::TENANT_ID, 'failures' => 2],
+        ]);
+
+        $this->artisan('nexus:prune-logs')->assertExitCode(0);
+
+        $this->assertDatabaseMissing('sign_in_failure_hours', ['hour_start' => $old, 'tenant_id' => self::TENANT_ID]);
+        $this->assertDatabaseHas('sign_in_failure_hours', ['hour_start' => $recent, 'tenant_id' => self::TENANT_ID]);
+    }
+
+    // ---------------------------------------------------------------
     // Command returns 0 even when no tables have qualifying rows
     // ---------------------------------------------------------------
 

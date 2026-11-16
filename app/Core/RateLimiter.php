@@ -7,6 +7,7 @@
 namespace App\Core;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Rate limiting for login attempts and API endpoints.
@@ -38,6 +39,16 @@ class RateLimiter
 
     /** Cache of rate limit state for current request */
     private static ?array $currentRateLimitState = null;
+
+    /**
+     * Hourly count of failed email sign-ins per community, for the Platform
+     * team panel's Security page. A property only so a test can point it at a
+     * table that does not exist (the broken-counter case); never set otherwise.
+     */
+    private static string $failureCounterTable = 'sign_in_failure_hours';
+
+    /** Whether a failed count has already been logged in this process. */
+    private static bool $failureCounterLogged = false;
 
     /**
      * Check if an IP/email combination is currently rate limited.
@@ -107,6 +118,49 @@ class RateLimiter
         // On successful login, clear failed attempts for this identifier
         if ($success) {
             self::clearScopedAttempts($identifier, $type);
+        } elseif ($type === 'email') {
+            // Only the `email` row: every failed sign-in also writes an `ip`
+            // row, so counting that too would count one failure twice.
+            self::countFailedSignIn($identifier);
+        }
+    }
+
+    /**
+     * Add one to this hour's failed sign-in count for the community in the
+     * stored identifier (`tenant:<id>:email:<digest>`). `login_attempts` is
+     * not a record: cleanupOldAttempts() deletes it after 20 minutes and a
+     * successful sign-in deletes the account's failed rows. This count is
+     * what the Platform team panel's Security page reads instead.
+     *
+     * Counts only: an hour, a community id, a number. Nothing about the person.
+     *
+     * 🔴 This is the sign-in path. A failure to count must never fail the
+     * sign-in or its lock-out record, so it is caught and logged once per
+     * process (the narrow allowed case of swallowing a Throwable: nothing
+     * returns a success-shaped value to a caller). No DDL here, ever (see the
+     * class comment): the table is created by a migration.
+     */
+    private static function countFailedSignIn(string $scopedIdentifier): void
+    {
+        // Read the community from the identifier just stored, so the count
+        // can never disagree with the lock-out record. 0 = not known.
+        $tenantId = preg_match('/^tenant:(\d+):email:/', $scopedIdentifier, $match) === 1 ? (int) $match[1] : 0;
+
+        try {
+            DB::insert(
+                'INSERT INTO `' . self::$failureCounterTable . "` (hour_start, tenant_id, failures)
+                 VALUES (DATE_FORMAT(NOW(), '%Y-%m-%d %H:00:00'), ?, 1)
+                 ON DUPLICATE KEY UPDATE failures = failures + 1",
+                [$tenantId]
+            );
+        } catch (\Throwable $e) {
+            if (!self::$failureCounterLogged) {
+                self::$failureCounterLogged = true;
+                Log::error('Failed sign-in could not be counted (sign_in_failure_hours); the sign-in itself was recorded. Logged once per process.', [
+                    'exception' => $e::class,
+                    'message' => $e->getMessage(),
+                ]);
+            }
         }
     }
 

@@ -270,17 +270,18 @@
       "link": "Féach na cuntais shinsearacha"
     },
     "failed": {
-      "title": "Sínithe isteach ar theip orthu le 24 uair an chloig anuas",
-      "note": "Glantar iarrachtaí teipthe cuntais nuair a shíníonn sé isteach go rathúil arís, agus iarrachtaí seolta chomh maith, mar sin ní áirítear anseo iad. Tagann gach síniú isteach tríd an suíomh inrochtana ó sheoladh amháin.",
+      "title": "Sínithe isteach ar theip orthu",
+      "note": "Áirítear gach síniú isteach a dteipeann air nuair a tharlaíonn sé, de réir pobail agus de réir uaire. Ní choinníonn an comhaireamh ach uimhir: faic faoin duine ná faoin áit ar shínigh sé isteach uaidh. Áirítear na figiúirí in uaireanta iomlána, mar sin d’fhéadfadh suas le huair an chloig breise a bheith i ngach ceann.",
+      "counted_since": "Á n-áireamh ó {{date}}",
+      "nothing_counted": "Níor áiríodh aon rud fós. Áirítear sínithe isteach ar theip orthu ón lá a cuireadh an comhaireamh seo ar siúl.",
       "last_hour": "San uair an chloig dheireanach",
       "last_24h": "Le 24 uair an chloig anuas",
-      "addresses": "Seoltaí idirlín éagsúla",
-      "most_from_one": "An líon is mó ó sheoladh amháin",
       "empty": "Níor theip ar aon síniú isteach le 24 uair an chloig anuas.",
-      "col_failed": "Iarrachtaí teipthe:",
-      "col_accounts": "Cuntais a triaileadh:",
-      "col_most": "An líon is mó ar chuntas amháin:",
-      "col_last": "An ceann is déanaí:"
+      "col_failed": "Teipthe le 24 uair an chloig anuas:",
+      "recent_title": "Sa 15 nóiméad dheireanach",
+      "recent_note": "Na seoltaí idirlín atá á dtriail anois díreach. Ní choinníonn an t-ardán na sonraí seo ach ar feadh timpeall 20 nóiméad, agus déanann sé dearmad ar iarrachtaí teipthe seolta nuair a shínítear isteach go rathúil uaidh arís. Tagann gach síniú isteach tríd an suíomh inrochtana ó sheoladh amháin.",
+      "addresses_15m": "Seoltaí idirlín éagsúla sa 15 nóiméad dheireanach",
+      "most_from_one_15m": "An líon is mó ó sheoladh amháin sa 15 nóiméad dheireanach"
     },
     "access": {
       "title": "Rochtain shinsearach a tugadh agus a baineadh",

@@ -270,17 +270,18 @@
       "link": "Leitende Konten ansehen"
     },
     "failed": {
-      "title": "Fehlgeschlagene Anmeldungen in den letzten 24 Stunden",
-      "note": "Die fehlgeschlagenen Versuche eines Kontos werden gelöscht, sobald es sich wieder erfolgreich anmeldet, ebenso die einer Adresse. Sie werden hier deshalb nicht mitgezählt. Anmeldungen über die barrierefreie Website kommen alle von einer einzigen Adresse.",
+      "title": "Fehlgeschlagene Anmeldungen",
+      "note": "Jede fehlgeschlagene Anmeldung wird gezählt, sobald sie geschieht, nach Community und nach Stunde. Die Zählung speichert nur eine Zahl: nichts über die Person und nichts darüber, von wo sie sich anmelden wollte. Gezählt wird in ganzen Stunden, daher kann jede Zahl bis zu eine Stunde mehr enthalten.",
+      "counted_since": "Gezählt seit {{date}}",
+      "nothing_counted": "Bisher wurde noch nichts gezählt. Fehlgeschlagene Anmeldungen werden ab dem Tag gezählt, an dem diese Zählung eingeschaltet wurde.",
       "last_hour": "In der letzten Stunde",
       "last_24h": "In den letzten 24 Stunden",
-      "addresses": "Verschiedene Internetadressen",
-      "most_from_one": "Die meisten von einer Adresse",
       "empty": "Keine fehlgeschlagenen Anmeldungen in den letzten 24 Stunden.",
-      "col_failed": "Fehlversuche:",
-      "col_accounts": "Betroffene Konten:",
-      "col_most": "Die meisten bei einem Konto:",
-      "col_last": "Zuletzt:"
+      "col_failed": "Fehlversuche in den letzten 24 Stunden:",
+      "recent_title": "In den letzten 15 Minuten",
+      "recent_note": "Welche Internetadressen gerade ausprobiert werden. Die Plattform bewahrt diese Angaben nur etwa 20 Minuten auf und vergisst die Fehlversuche einer Adresse, sobald von ihr wieder eine erfolgreiche Anmeldung kommt. Anmeldungen über die barrierefreie Website kommen alle von einer einzigen Adresse.",
+      "addresses_15m": "Verschiedene Internetadressen in den letzten 15 Minuten",
+      "most_from_one_15m": "Die meisten von einer Adresse in den letzten 15 Minuten"
     },
     "access": {
       "title": "Leitender Zugriff: vergeben und entzogen",

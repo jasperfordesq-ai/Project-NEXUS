@@ -270,17 +270,18 @@
       "link": "Zobacz konta wysokiego szczebla"
     },
     "failed": {
-      "title": "Nieudane logowania w ciągu ostatnich 24 godzin",
-      "note": "Nieudane próby danego konta są usuwane, gdy konto ponownie zaloguje się poprawnie, podobnie jak próby z danego adresu, więc nie są tu liczone. Logowania przez dostępną wersję serwisu przychodzą wszystkie z jednego adresu.",
+      "title": "Nieudane logowania",
+      "note": "Każde nieudane logowanie jest liczone w chwili, gdy się zdarzy, osobno dla każdej społeczności i każdej godziny. Licznik przechowuje tylko liczbę: nic o osobie ani o tym, skąd próbowała się zalogować. Liczby są liczone w pełnych godzinach, więc każda może obejmować do godziny więcej.",
+      "counted_since": "Liczone od {{date}}",
+      "nothing_counted": "Jeszcze niczego nie policzono. Nieudane logowania są liczone od dnia, w którym włączono to liczenie.",
       "last_hour": "W ciągu ostatniej godziny",
       "last_24h": "W ciągu ostatnich 24 godzin",
-      "addresses": "Różne adresy internetowe",
-      "most_from_one": "Najwięcej z jednego adresu",
       "empty": "Brak nieudanych logowań w ciągu ostatnich 24 godzin.",
-      "col_failed": "Nieudane próby:",
-      "col_accounts": "Konta, na które próbowano:",
-      "col_most": "Najwięcej na jednym koncie:",
-      "col_last": "Ostatnia:"
+      "col_failed": "Nieudane w ciągu ostatnich 24 godzin:",
+      "recent_title": "W ciągu ostatnich 15 minut",
+      "recent_note": "Z jakich adresów internetowych właśnie próbuje się logować. Platforma przechowuje te dane tylko przez około 20 minut i zapomina nieudane próby z adresu, gdy z niego nastąpi udane logowanie. Logowania przez dostępną wersję serwisu przychodzą wszystkie z jednego adresu.",
+      "addresses_15m": "Różne adresy internetowe w ciągu ostatnich 15 minut",
+      "most_from_one_15m": "Najwięcej z jednego adresu w ciągu ostatnich 15 minut"
     },
     "access": {
       "title": "Nadany i odebrany dostęp wysokiego szczebla",

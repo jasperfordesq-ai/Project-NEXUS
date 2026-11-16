@@ -219,50 +219,98 @@ class SecurityOverviewTest extends TestCase
         }
     }
 
-    public function test_it_counts_failed_sign_ins_by_community_and_never_sends_an_address(): void
+    /** Exactly what the page shows about failed sign-ins; anything else must not leave the server. */
+    public function test_the_failed_sign_in_section_sends_exactly_what_the_page_shows(): void
+    {
+        DB::table('sign_in_failure_hours')->delete();
+        $this->plantHour('30 MINUTE', $this->testTenantId, 3);
+        $this->actAsPlatformTeam();
+
+        $section = $this->data()['failed_sign_ins'];
+
+        $this->assertSame(
+            ['addresses_15m', 'available', 'by_community', 'counted_since', 'last_24h', 'last_hour', 'most_from_one_address_15m'],
+            $this->sortedKeys($section),
+        );
+        $this->assertSame(['community', 'failed'], $this->sortedKeys($section['by_community'][0]));
+        $this->assertSame(['id', 'name'], $this->sortedKeys($section['by_community'][0]['community']));
+    }
+
+    /**
+     * The hour and 24-hour totals, and the communities with the most, come
+     * from the hourly count. `login_attempts` forgets a failure after 20
+     * minutes, or as soon as the account signs in, so it cannot answer them.
+     */
+    public function test_failed_sign_in_totals_come_from_the_hourly_count(): void
+    {
+        DB::table('sign_in_failure_hours')->delete();
+        $otherCommunity = $this->testTenantId === 1 ? 2 : 1;
+        $this->plantHour('30 MINUTE', $this->testTenantId, 3);
+        $this->plantHour('30 MINUTE', $otherCommunity, 2);
+        $this->plantHour('5 HOUR', $this->testTenantId, 5);
+        $this->plantHour('30 HOUR', $this->testTenantId, 7);
+        $this->plantHour('5 HOUR', 0, 1);
+        $this->actAsPlatformTeam();
+
+        $section = $this->data()['failed_sign_ins'];
+
+        $this->assertTrue($section['available']);
+        $this->assertSame(5, $section['last_hour'], 'only the hour rows that touch the last 60 minutes');
+        $this->assertSame(11, $section['last_24h'], 'not the row from 30 hours ago');
+        $this->assertSame(
+            [
+                ['community' => ['id' => $this->testTenantId, 'name' => $this->communityName()], 'failed' => 8],
+                ['community' => ['id' => $otherCommunity, 'name' => (string) DB::table('tenants')->where('id', $otherCommunity)->value('name')], 'failed' => 2],
+                // 0 is "the community was not known".
+                ['community' => null, 'failed' => 1],
+            ],
+            $section['by_community'],
+        );
+        $oldest = (string) DB::selectOne(
+            "SELECT DATE_FORMAT(NOW() - INTERVAL 30 HOUR, '%Y-%m-%d %H:00:00') AS h"
+        )->h;
+        $this->assertSame(\Illuminate\Support\Carbon::parse($oldest)->toIso8601String(), $section['counted_since']);
+    }
+
+    public function test_when_nothing_has_been_counted_it_says_so_rather_than_zero(): void
+    {
+        DB::table('sign_in_failure_hours')->delete();
+        $this->actAsPlatformTeam();
+
+        $section = $this->data()['failed_sign_ins'];
+
+        $this->assertTrue($section['available']);
+        $this->assertNull($section['counted_since']);
+        $this->assertSame([], $section['by_community']);
+    }
+
+    /**
+     * What still comes from `login_attempts` (which addresses are being tried
+     * right now) covers 15 minutes: those rows are deleted after 20.
+     */
+    public function test_the_address_figures_cover_the_last_15_minutes_and_never_send_an_address(): void
     {
         $digestA = hash('sha256', 'security-overview-a@example.test');
-        $digestB = hash('sha256', 'security-overview-b@example.test');
         $rows = [];
-        foreach ([[$digestA, 4], [$digestB, 2]] as [$digest, $times]) {
-            for ($i = 0; $i < $times; $i++) {
-                $rows[] = ['identifier' => "tenant:{$this->testTenantId}:email:{$digest}", 'type' => 'email', 'ip_address' => self::PLANTED_IP, 'success' => 0, 'attempted_at' => DB::raw('NOW()')];
-                $rows[] = ['identifier' => self::PLANTED_IP, 'type' => 'ip', 'ip_address' => self::PLANTED_IP, 'success' => 0, 'attempted_at' => DB::raw('NOW()')];
-            }
+        for ($i = 0; $i < 6; $i++) {
+            $rows[] = ['identifier' => "tenant:{$this->testTenantId}:email:{$digestA}", 'type' => 'email', 'ip_address' => self::PLANTED_IP, 'success' => 0, 'attempted_at' => DB::raw('NOW()')];
+            $rows[] = ['identifier' => self::PLANTED_IP, 'type' => 'ip', 'ip_address' => self::PLANTED_IP, 'success' => 0, 'attempted_at' => DB::raw('NOW()')];
         }
-        // A successful sign-in is not a failure.
-        $rows[] = ['identifier' => "tenant:{$this->testTenantId}:email:{$digestA}", 'type' => 'email', 'ip_address' => self::PLANTED_IP, 'success' => 1, 'attempted_at' => DB::raw('NOW()')];
+        // An address tried 18 minutes ago is outside the window.
+        $rows[] = ['identifier' => '203.0.113.78', 'type' => 'ip', 'ip_address' => '203.0.113.78', 'success' => 0, 'attempted_at' => DB::raw('NOW() - INTERVAL 18 MINUTE')];
         DB::table('login_attempts')->insert($rows);
-        $before = $this->baseline();
+        $before = $this->addressBaseline();
         $this->actAsPlatformTeam();
 
         $response = $this->apiGet(self::URI)->assertStatus(200);
         $section = $response->json('data.failed_sign_ins');
 
-        $this->assertTrue($section['available']);
-        $this->assertSame($before['last_24h'], $section['last_24h']);
-        $this->assertSame($before['last_hour'], $section['last_hour']);
-        $this->assertGreaterThanOrEqual(6, $section['last_24h']);
-        // Six failed attempts came from the planted address.
-        $this->assertGreaterThanOrEqual(6, $section['most_from_one_address_24h']);
-        $this->assertGreaterThanOrEqual(1, $section['addresses_24h']);
-
-        $mine = array_values(array_filter(
-            $section['by_community'],
-            fn (array $row): bool => ($row['community']['id'] ?? null) === $this->testTenantId,
-        ));
-        $this->assertCount(1, $mine);
-        $this->assertSame(
-            ['accounts_tried', 'community', 'failed', 'last_at', 'most_on_one_account'],
-            $this->sortedKeys($mine[0]),
-        );
-        $this->assertGreaterThanOrEqual(6, $mine[0]['failed']);
-        $this->assertGreaterThanOrEqual(2, $mine[0]['accounts_tried']);
-        $this->assertGreaterThanOrEqual(4, $mine[0]['most_on_one_account']);
-        $this->assertSame($this->communityName(), $mine[0]['community']['name']);
+        $this->assertSame($before['addresses'], $section['addresses_15m']);
+        $this->assertSame($before['most'], $section['most_from_one_address_15m']);
+        $this->assertGreaterThanOrEqual(6, $section['most_from_one_address_15m']);
 
         $body = $response->getContent();
-        foreach ([self::PLANTED_IP, $digestA, $digestB] as $needle) {
+        foreach ([self::PLANTED_IP, '203.0.113.78', $digestA] as $needle) {
             $this->assertStringNotContainsString($needle, $body, $needle);
         }
     }
@@ -471,20 +519,33 @@ class SecurityOverviewTest extends TestCase
         }
     }
 
+    /** One hour row, `$ago` before now, in the database's clock (the one the counter writes with). */
+    private function plantHour(string $ago, int $tenantId, int $failures): void
+    {
+        DB::insert(
+            "INSERT INTO sign_in_failure_hours (hour_start, tenant_id, failures)
+             VALUES (DATE_FORMAT(NOW() - INTERVAL {$ago}, '%Y-%m-%d %H:00:00'), ?, ?)",
+            [$tenantId, $failures],
+        );
+    }
+
     /**
      * The shared local test database can already hold sign-in attempts, so the
-     * totals are compared with a count made here, not with a fixed number.
+     * address figures are compared with a count made here, not a fixed number.
      *
-     * @return array{last_hour: int, last_24h: int}
+     * @return array{addresses: int, most: int}
      */
-    private function baseline(): array
+    private function addressBaseline(): array
     {
-        $count = static fn (string $interval): int => (int) DB::selectOne(
-            "SELECT COUNT(*) AS c FROM login_attempts
-             WHERE type = 'email' AND success = 0 AND attempted_at > (NOW() - INTERVAL {$interval})"
-        )->c;
+        $row = DB::selectOne(
+            "SELECT COUNT(*) AS addresses, COALESCE(MAX(c), 0) AS most FROM (
+                SELECT COUNT(*) AS c FROM login_attempts
+                WHERE type = 'ip' AND success = 0 AND attempted_at > (NOW() - INTERVAL 15 MINUTE)
+                GROUP BY identifier
+             ) x"
+        );
 
-        return ['last_hour' => $count('1 HOUR'), 'last_24h' => $count('24 HOUR')];
+        return ['addresses' => (int) $row->addresses, 'most' => (int) $row->most];
     }
 
     /**

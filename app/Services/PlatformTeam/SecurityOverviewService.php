@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * Platform team panel → Security.
  *
- * Four things the platform already recorded and no page put side by side:
+ * Five things the platform records and no page put side by side:
  *
  *   access_changes   who was given or lost senior access. Every recorded way:
  *                    - super admin panel (`super_admin_audit_log`): the four
@@ -30,7 +30,9 @@ use Illuminate\Support\Facades\Log;
  *                      `admin_role_changed` to or from a platform role.
  *   impersonations   who signed in as another member
  *                    (`org_audit_log` rows `admin_user_impersonated`)
- *   failed_sign_ins  failed sign-in attempts, counted (`login_attempts`)
+ *   failed_sign_ins  failed sign-ins, counted by the hour per community
+ *                    (`sign_in_failure_hours`), plus which addresses are
+ *                    being tried in the last 15 minutes (`login_attempts`)
  *   two_step         senior accounts without two-step (SeniorAccountsService)
  *   sign_outs        accounts the platform team signed out everywhere
  *                    (`org_audit_log` rows `platform_team_signed_out_everywhere`,
@@ -59,10 +61,13 @@ use Illuminate\Support\Facades\Log;
  * Erasure anonymises the account but does not scrub those copies, so showing
  * them would bring an erased person's name back (review, 16 Nov 2026).
  *
- * 🔴 `login_attempts` deletes an account's failed rows when that account next
- * signs in successfully (App\Core\RateLimiter). So the counts are "failed
- * attempts not yet followed by a successful sign-in", and the page says that
- * too rather than presenting them as every failure.
+ * 🔴 `login_attempts` is not a record (fault found 16 Nov 2026): RateLimiter
+ * deletes its rows after 20 minutes, and a successful sign-in deletes the
+ * account's and the address's failed rows. The hour and 24-hour totals used
+ * to be read from it and showed far less than they claimed. They now come
+ * from `sign_in_failure_hours`, which RateLimiter::recordAttempt() adds to on
+ * every failed email sign-in; only the "last 15 minutes" address figures
+ * still read `login_attempts`.
  *
  * Each section is read on its own. One that throws is reported as
  * `available: false` and its reason is logged, not sent: an unreadable record
@@ -295,19 +300,27 @@ final class SecurityOverviewService
     }
 
     /**
-     * Counts only. Every failed sign-in writes one `email` row (identifier
-     * `tenant:<id>:email:<digest>`) and one `ip` row, so attempts are counted
-     * on the `email` rows and addresses on the `ip` rows, never both.
+     * Counts only.
      *
-     * Two things make these numbers a floor, not a total, and the page says
-     * both: a successful sign-in deletes that account's failed `email` rows
-     * AND that address's failed `ip` rows (App\Core\RateLimiter); and every
-     * sign-in through the accessible site arrives from that site's one server
-     * address, so "most from one address" is often that server.
+     * Totals and "communities with the most" come from `sign_in_failure_hours`
+     * (one row per hour and community, written by RateLimiter::recordAttempt()
+     * for every failed email sign-in). The rows are whole hours, so a window
+     * takes every hour row that touches it: "last hour" is this hour and the
+     * one before, "last 24 hours" the 24 hours before this one plus this one.
+     * A figure can include up to an hour more than its label; the page says
+     * so. `counted_since` is the oldest hour held (null = nothing counted
+     * yet), so a quiet first day is not read as a quiet week.
      *
-     * The windows use the database's NOW(), as RateLimiter does when it writes
-     * `attempted_at`. The other sections compare against PHP's now(); both
-     * are UTC on this platform (`app.timezone` and the database session).
+     * The address figures still come from `login_attempts` `ip` rows, and
+     * cover 15 minutes: RateLimiter deletes those rows after 20 minutes, and
+     * a successful sign-in deletes that address's failed rows. Sign-ins
+     * through the accessible site all arrive from that site's one server
+     * address, so "most from one address" is often that server. No address
+     * and no digest is selected into the response.
+     *
+     * The windows use the database's NOW(), the clock the counter and
+     * RateLimiter write with. The other sections compare against PHP's now();
+     * both are UTC on this platform (`app.timezone` and the database session).
      *
      * @return array<string, mixed>
      */
@@ -315,10 +328,22 @@ final class SecurityOverviewService
     {
         $totals = DB::selectOne(
             "SELECT
-                COALESCE(SUM(attempted_at > (NOW() - INTERVAL 1 HOUR)), 0) AS last_hour,
-                COUNT(*) AS last_24h
-             FROM login_attempts
-             WHERE type = 'email' AND success = 0 AND attempted_at > (NOW() - INTERVAL 24 HOUR)"
+                COALESCE(SUM(CASE WHEN hour_start >= DATE_FORMAT(NOW() - INTERVAL 1 HOUR, '%Y-%m-%d %H:00:00') THEN failures ELSE 0 END), 0) AS last_hour,
+                COALESCE(SUM(failures), 0) AS last_24h
+             FROM sign_in_failure_hours
+             WHERE hour_start >= DATE_FORMAT(NOW() - INTERVAL 24 HOUR, '%Y-%m-%d %H:00:00')"
+        );
+
+        $countedSince = DB::selectOne('SELECT MIN(hour_start) AS since FROM sign_in_failure_hours');
+
+        $byCommunity = DB::select(
+            "SELECT tenant_id, SUM(failures) AS failed
+             FROM sign_in_failure_hours
+             WHERE hour_start >= DATE_FORMAT(NOW() - INTERVAL 24 HOUR, '%Y-%m-%d %H:00:00')
+             GROUP BY tenant_id
+             HAVING failed > 0
+             ORDER BY failed DESC, tenant_id ASC
+             LIMIT 100"
         );
 
         $addresses = DB::selectOne(
@@ -326,49 +351,32 @@ final class SecurityOverviewService
              FROM (
                 SELECT COUNT(*) AS c
                 FROM login_attempts
-                WHERE type = 'ip' AND success = 0 AND attempted_at > (NOW() - INTERVAL 24 HOUR)
+                WHERE type = 'ip' AND success = 0 AND attempted_at > (NOW() - INTERVAL 15 MINUTE)
                 GROUP BY identifier
              ) per_address"
-        );
-
-        $byCommunity = DB::select(
-            "SELECT tenant_id, SUM(c) AS failed, COUNT(*) AS accounts_tried, MAX(c) AS most_on_one_account, MAX(last_at) AS last_at
-             FROM (
-                SELECT
-                    CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(identifier, ':', 2), ':', -1) AS UNSIGNED) AS tenant_id,
-                    COUNT(*) AS c,
-                    MAX(attempted_at) AS last_at
-                FROM login_attempts
-                WHERE type = 'email' AND success = 0 AND attempted_at > (NOW() - INTERVAL 24 HOUR)
-                  AND identifier LIKE 'tenant:%'
-                GROUP BY identifier
-             ) per_account
-             GROUP BY tenant_id
-             ORDER BY failed DESC, tenant_id ASC
-             LIMIT 100"
         );
 
         $names = DB::table('tenants')
             ->whereIn('id', array_map(static fn (object $row): int => (int) $row->tenant_id, $byCommunity) ?: [0])
             ->pluck('name', 'id');
 
+        $since = $countedSince->since ?? null;
+
         return [
             'last_hour' => (int) ($totals->last_hour ?? 0),
             'last_24h' => (int) ($totals->last_24h ?? 0),
-            'addresses_24h' => (int) ($addresses->addresses ?? 0),
-            'most_from_one_address_24h' => (int) ($addresses->most ?? 0),
+            'counted_since' => $since !== null ? self::iso((string) $since) : null,
+            'addresses_15m' => (int) ($addresses->addresses ?? 0),
+            'most_from_one_address_15m' => (int) ($addresses->most ?? 0),
             'by_community' => array_map(static function (object $row) use ($names): array {
                 $tenantId = (int) $row->tenant_id;
 
                 return [
-                    // Tenant 0 is the scheme's "no community" bucket.
+                    // Tenant 0 is "the community was not known".
                     'community' => $tenantId > 0
                         ? ['id' => $tenantId, 'name' => self::nameOrNull($names[$tenantId] ?? null)]
                         : null,
                     'failed' => (int) $row->failed,
-                    'accounts_tried' => (int) $row->accounts_tried,
-                    'most_on_one_account' => (int) $row->most_on_one_account,
-                    'last_at' => $row->last_at !== null ? self::iso((string) $row->last_at) : null,
                 ];
             }, $byCommunity),
         ];

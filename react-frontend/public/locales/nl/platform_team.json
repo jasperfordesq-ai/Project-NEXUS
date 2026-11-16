@@ -270,17 +270,18 @@
       "link": "Bekijk de accounts op hoog niveau"
     },
     "failed": {
-      "title": "Mislukte inlogpogingen in de afgelopen 24 uur",
-      "note": "De mislukte pogingen van een account worden gewist zodra het weer met succes inlogt, en die van een adres ook. Die worden hier dus niet meegeteld. Inlogpogingen via de toegankelijke site komen allemaal van één adres.",
+      "title": "Mislukte inlogpogingen",
+      "note": "Elke mislukte inlogpoging wordt geteld zodra die gebeurt, per community en per uur. De telling bewaart alleen een getal: niets over de persoon en niets over waar vandaan werd ingelogd. Er wordt in hele uren geteld, dus elk getal kan tot een uur extra bevatten.",
+      "counted_since": "Geteld sinds {{date}}",
+      "nothing_counted": "Er is nog niets geteld. Mislukte inlogpogingen worden geteld vanaf de dag waarop deze telling is aangezet.",
       "last_hour": "In het afgelopen uur",
       "last_24h": "In de afgelopen 24 uur",
-      "addresses": "Verschillende internetadressen",
-      "most_from_one": "De meeste vanaf één adres",
       "empty": "Geen mislukte inlogpogingen in de afgelopen 24 uur.",
-      "col_failed": "Mislukte pogingen:",
-      "col_accounts": "Geprobeerde accounts:",
-      "col_most": "De meeste op één account:",
-      "col_last": "Laatste:"
+      "col_failed": "Mislukt in de afgelopen 24 uur:",
+      "recent_title": "In de afgelopen 15 minuten",
+      "recent_note": "Welke internetadressen het nu proberen. Het platform bewaart deze gegevens maar ongeveer 20 minuten en vergeet de mislukte pogingen van een adres zodra daarvandaan weer met succes wordt ingelogd. Inlogpogingen via de toegankelijke site komen allemaal van één adres.",
+      "addresses_15m": "Verschillende internetadressen in de afgelopen 15 minuten",
+      "most_from_one_15m": "De meeste vanaf één adres in de afgelopen 15 minuten"
     },
     "access": {
       "title": "Toegang op hoog niveau gegeven en ingetrokken",

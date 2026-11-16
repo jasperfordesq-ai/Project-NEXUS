@@ -270,17 +270,18 @@
       "link": "Ver las cuentas de alto nivel"
     },
     "failed": {
-      "title": "Inicios de sesión fallidos en las últimas 24 horas",
-      "note": "Los intentos fallidos de una cuenta se borran cuando vuelve a iniciar sesión correctamente, y también los de una dirección, así que esos no se cuentan aquí. Los inicios de sesión a través del sitio accesible llegan todos desde una sola dirección.",
+      "title": "Inicios de sesión fallidos",
+      "note": "Cada inicio de sesión fallido se cuenta en el momento en que ocurre, por comunidad y por hora. El recuento solo guarda un número: nada sobre la persona ni sobre desde dónde intentó entrar. Las cifras se cuentan en horas completas, así que cada una puede incluir hasta una hora más.",
+      "counted_since": "Contados desde el {{date}}",
+      "nothing_counted": "Todavía no se ha contado nada. Los inicios de sesión fallidos se cuentan desde el día en que se activó este recuento.",
       "last_hour": "En la última hora",
       "last_24h": "En las últimas 24 horas",
-      "addresses": "Direcciones de internet distintas",
-      "most_from_one": "Más desde una sola dirección",
       "empty": "No hay inicios de sesión fallidos en las últimas 24 horas.",
-      "col_failed": "Intentos fallidos:",
-      "col_accounts": "Cuentas probadas:",
-      "col_most": "Más en una sola cuenta:",
-      "col_last": "El último:"
+      "col_failed": "Fallidos en las últimas 24 horas:",
+      "recent_title": "En los últimos 15 minutos",
+      "recent_note": "Qué direcciones de internet se están probando ahora mismo. La plataforma guarda estos datos solo unos 20 minutos y olvida los intentos fallidos de una dirección cuando desde ella se vuelve a iniciar sesión correctamente. Los inicios de sesión a través del sitio accesible llegan todos desde una sola dirección.",
+      "addresses_15m": "Direcciones de internet distintas en los últimos 15 minutos",
+      "most_from_one_15m": "Más desde una sola dirección en los últimos 15 minutos"
     },
     "access": {
       "title": "Acceso de alto nivel concedido y retirado",

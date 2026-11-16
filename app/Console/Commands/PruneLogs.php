@@ -22,7 +22,7 @@ class PruneLogs extends Command
     protected $signature = 'nexus:prune-logs
                             {--chunk=1000 : Number of rows to delete per iteration}';
 
-    protected $description = 'Prune old rows from unbounded logging tables (cron_logs, error_404_log, activity_log, api_logs, federation_api_logs, federation_messages)';
+    protected $description = 'Prune old rows from unbounded logging tables (cron_logs, error_404_log, activity_log, api_logs, federation_api_logs, federation_messages, sign_in_failure_hours)';
 
     /**
      * Retention policy per table (in days) and the timestamp column to filter on.
@@ -40,6 +40,8 @@ class PruneLogs extends Command
         ['table' => 'api_logs',              'days' => 30,  'column' => 'created_at'],
         ['table' => 'federation_api_logs',   'days' => 30,  'column' => 'created_at'],
         ['table' => 'federation_messages',   'days' => 90,  'column' => 'created_at'],
+        // Failed sign-ins counted by the hour (Platform team panel → Security). Counts only.
+        ['table' => 'sign_in_failure_hours', 'days' => 90,  'column' => 'hour_start'],
     ];
 
     public function handle(): int

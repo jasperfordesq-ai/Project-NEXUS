@@ -18,6 +18,7 @@ vi.mock('react-i18next', () => ({
     t: (key: string, options?: Record<string, unknown>) => {
       if (options && 'count' in options) return `${key}|${String(options.count)}`;
       if (options && 'days' in options) return `${key}|${String(options.days)}`;
+      if (options && 'date' in options) return `${key}|${String(options.date)}`;
       return key;
     },
     i18n: { language: 'en' },
@@ -45,11 +46,12 @@ const overview = (over: Partial<SecurityOverview> = {}): SecurityOverview => ({
     available: true,
     last_hour: 3,
     last_24h: 41,
-    addresses_24h: 7,
-    most_from_one_address_24h: 22,
+    counted_since: '2026-11-10T14:00:00+00:00',
+    addresses_15m: 7,
+    most_from_one_address_15m: 22,
     by_community: [
-      { community: { id: 2, name: 'Sample Timebank' }, failed: 30, accounts_tried: 4, most_on_one_account: 19, last_at: '2026-11-16T09:30:00+00:00' },
-      { community: null, failed: 11, accounts_tried: 11, most_on_one_account: 1, last_at: null },
+      { community: { id: 2, name: 'Sample Timebank' }, failed: 30 },
+      { community: null, failed: 11 },
     ],
   },
   two_step: { available: true, senior_total: 9, without_two_step: 2 },
@@ -99,16 +101,48 @@ describe('SecurityPage', () => {
     expect(within(await screen.findByTestId('security-two-step')).getByText('security.two_step.all_on')).toBeInTheDocument();
   });
 
-  it('shows the failed sign-in counts and each community', async () => {
+  it('shows the failed sign-in counts, since when they were counted, and each community', async () => {
     show();
 
-    await screen.findByTestId('security-failed');
+    const section = await screen.findByTestId('security-failed');
     expect(screen.getByTestId('failed-last_hour')).toHaveTextContent('3');
     expect(screen.getByTestId('failed-last_24h')).toHaveTextContent('41');
-    expect(screen.getByTestId('failed-addresses')).toHaveTextContent('7');
-    expect(screen.getByTestId('failed-most_from_one')).toHaveTextContent('22');
+    expect(screen.getByTestId('failed-addresses_15m')).toHaveTextContent('7');
+    expect(screen.getByTestId('failed-most_from_one_15m')).toHaveTextContent('22');
+    const since = new Date('2026-11-10T14:00:00+00:00').toLocaleDateString('en', { dateStyle: 'medium' });
+    expect(within(section).getByText(`security.failed.counted_since|${since}`)).toBeInTheDocument();
+    expect(within(section).queryByText('security.failed.nothing_counted')).not.toBeInTheDocument();
     expect(within(screen.getByTestId('failed-community-2')).getByText('Sample Timebank')).toBeInTheDocument();
+    expect(within(screen.getByTestId('failed-community-2')).getByText('30')).toBeInTheDocument();
     expect(within(screen.getByTestId('failed-community-0')).getByText('senior_accounts.no_community')).toBeInTheDocument();
+  });
+
+  // A quiet first day must not read as "nothing happened this week".
+  it('says nothing has been counted yet, rather than showing zeros as if they covered a day', async () => {
+    apiGet.mockResolvedValue({
+      success: true,
+      data: overview({
+        failed_sign_ins: {
+          available: true,
+          last_hour: 0,
+          last_24h: 0,
+          counted_since: null,
+          addresses_15m: 1,
+          most_from_one_address_15m: 2,
+          by_community: [],
+        },
+      }),
+    });
+    show();
+
+    const section = await screen.findByTestId('security-failed');
+    expect(within(section).getByText('security.failed.nothing_counted')).toBeInTheDocument();
+    expect(screen.queryByTestId('failed-last_hour')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('failed-last_24h')).not.toBeInTheDocument();
+    expect(within(section).queryByText('security.failed.empty')).not.toBeInTheDocument();
+    expect(within(section).queryByText(/security\.failed\.counted_since/)).not.toBeInTheDocument();
+    // The last-15-minutes figures come from another record and still show.
+    expect(screen.getByTestId('failed-addresses_15m')).toHaveTextContent('1');
   });
 
   it('lists senior access given and removed, and says what is not recorded', async () => {
@@ -211,6 +245,8 @@ describe('SecurityPage', () => {
     expect(screen.queryByText('security.access.empty|90')).not.toBeInTheDocument();
     expect(screen.queryByText('security.impersonation.empty|90')).not.toBeInTheDocument();
     expect(screen.queryByText('security.failed.empty')).not.toBeInTheDocument();
+    expect(screen.queryByText('security.failed.nothing_counted')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('failed-last_24h')).not.toBeInTheDocument();
     expect(screen.queryByText('security.two_step.all_on')).not.toBeInTheDocument();
   });
 

@@ -6,9 +6,17 @@
 /**
  * Platform team panel — Security.
  *
- * Four things the platform already recorded, side by side for the first time:
- * senior accounts without two-step sign-in, failed sign-ins, senior access
- * given and removed, and admins signing in as another member.
+ * Five things the platform records, side by side: senior accounts without
+ * two-step sign-in, failed sign-ins, senior access given and removed, admins
+ * signing in as another member, and accounts the platform team signed out
+ * everywhere.
+ *
+ * Failed sign-ins: the hour and 24-hour totals and the per-community list come
+ * from an hourly count (`sign_in_failure_hours`) that started on the day it
+ * was switched on, so the page says since when it has counted, and says
+ * "nothing counted yet" rather than showing zeros as if they covered a day.
+ * The two address figures come from the lock-out record, which keeps only
+ * about 20 minutes, so they are labelled "in the last 15 minutes".
  *
  * 🔴 Read-only. People are shown by name and communities by name; email
  * addresses, IP addresses and browser details never reach this page (the
@@ -65,12 +73,10 @@ interface SignOut {
   community: string | null;
 }
 
+/** Failed sign-ins in the last 24 hours for one community (`community: null` = not known). */
 interface CommunityFailures {
   community: { id: number; name: string | null } | null;
   failed: number;
-  accounts_tried: number;
-  most_on_one_account: number;
-  last_at: string | null;
 }
 
 /** A section the server could not read carries `available: false` and nothing else. */
@@ -84,8 +90,10 @@ export interface SecurityOverview {
   failed_sign_ins: Section<{
     last_hour: number;
     last_24h: number;
-    addresses_24h: number;
-    most_from_one_address_24h: number;
+    /** The oldest hour counted; null when nothing has been counted yet. */
+    counted_since: string | null;
+    addresses_15m: number;
+    most_from_one_address_15m: number;
     by_community: CommunityFailures[];
   }>;
   two_step: Section<{ senior_total: number; without_two_step: number }>;
@@ -138,6 +146,21 @@ export function SecurityPage() {
   const signOuts: Section<{ items: SignOut[]; truncated: boolean }> = overview?.sign_outs ?? { available: false };
 
   const number = (value: number): string => value.toLocaleString(i18n.language);
+  const day = (iso: string): string => {
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime())
+      ? t('security.not_recorded')
+      : date.toLocaleDateString(i18n.language, { dateStyle: 'medium' });
+  };
+
+  const figure = (key: string, label: string, value: number) => (
+    <Card key={key}>
+      <CardBody className="p-4" data-testid={`failed-${key}`}>
+        <dt className="text-sm text-muted">{label}</dt>
+        <dd className="mt-1 text-2xl font-semibold text-foreground">{number(value)}</dd>
+      </CardBody>
+    </Card>
+  );
   const person = (name: string | null): string => name ?? t('security.not_recorded');
 
   const unavailable = (
@@ -231,50 +254,57 @@ export function SecurityPage() {
               unavailable
             ) : (
               <div className="flex flex-col gap-3">
-                <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {(
-                    [
-                      ['last_hour', overview.failed_sign_ins.last_hour],
-                      ['last_24h', overview.failed_sign_ins.last_24h],
-                      ['addresses', overview.failed_sign_ins.addresses_24h],
-                      ['most_from_one', overview.failed_sign_ins.most_from_one_address_24h],
-                    ] as const
-                  ).map(([key, value]) => (
-                    <Card key={key}>
-                      <CardBody className="p-4" data-testid={`failed-${key}`}>
-                        <dt className="text-sm text-muted">{t(`security.failed.${key}`)}</dt>
-                        <dd className="mt-1 text-2xl font-semibold text-foreground">{number(value)}</dd>
-                      </CardBody>
-                    </Card>
-                  ))}
-                </dl>
-
-                {overview.failed_sign_ins.by_community.length === 0 ? (
-                  <p className="text-sm text-muted">{t('security.failed.empty')}</p>
+                {overview.failed_sign_ins.counted_since === null ? (
+                  <p className="flex items-start gap-2 text-sm text-muted" role="status">
+                    <Info size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                    {t('security.failed.nothing_counted')}
+                  </p>
                 ) : (
-                  <ul className="flex flex-col gap-2">
-                    {overview.failed_sign_ins.by_community.map((row) => (
-                      <li key={row.community?.id ?? 0} data-testid={`failed-community-${row.community?.id ?? 0}`}>
-                        <Card>
-                          <CardBody className="p-4">
-                            <h3 className="text-base font-semibold text-foreground">
-                              {row.community === null
-                                ? t('senior_accounts.no_community')
-                                : (row.community.name ??
-                                  t('senior_accounts.unnamed_community', { id: row.community.id }))}
-                            </h3>
-                            <dl className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
-                              {fact(t('security.failed.col_failed'), number(row.failed))}
-                              {fact(t('security.failed.col_accounts'), number(row.accounts_tried))}
-                              {fact(t('security.failed.col_most'), number(row.most_on_one_account))}
-                              {fact(t('security.failed.col_last'), when(row.last_at))}
-                            </dl>
-                          </CardBody>
-                        </Card>
-                      </li>
-                    ))}
-                  </ul>
+                  <>
+                    <p className="text-sm text-muted">
+                      {t('security.failed.counted_since', { date: day(overview.failed_sign_ins.counted_since) })}
+                    </p>
+                    <dl className="grid grid-cols-2 gap-3">
+                      {figure('last_hour', t('security.failed.last_hour'), overview.failed_sign_ins.last_hour)}
+                      {figure('last_24h', t('security.failed.last_24h'), overview.failed_sign_ins.last_24h)}
+                    </dl>
+
+                    {overview.failed_sign_ins.by_community.length === 0 ? (
+                      <p className="text-sm text-muted">{t('security.failed.empty')}</p>
+                    ) : (
+                      <ul className="flex flex-col gap-2">
+                        {overview.failed_sign_ins.by_community.map((row) => (
+                          <li key={row.community?.id ?? 0} data-testid={`failed-community-${row.community?.id ?? 0}`}>
+                            <Card>
+                              <CardBody className="flex flex-wrap items-baseline justify-between gap-2 p-4">
+                                <h3 className="min-w-0 break-words text-base font-semibold text-foreground">
+                                  {row.community === null
+                                    ? t('senior_accounts.no_community')
+                                    : (row.community.name ??
+                                      t('senior_accounts.unnamed_community', { id: row.community.id }))}
+                                </h3>
+                                <dl className="text-sm text-muted">
+                                  {fact(t('security.failed.col_failed'), number(row.failed))}
+                                </dl>
+                              </CardBody>
+                            </Card>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
                 )}
+
+                <h3 className="mt-2 text-base font-semibold text-foreground">{t('security.failed.recent_title')}</h3>
+                <p className="max-w-2xl text-sm text-muted">{t('security.failed.recent_note')}</p>
+                <dl className="grid grid-cols-2 gap-3">
+                  {figure('addresses_15m', t('security.failed.addresses_15m'), overview.failed_sign_ins.addresses_15m)}
+                  {figure(
+                    'most_from_one_15m',
+                    t('security.failed.most_from_one_15m'),
+                    overview.failed_sign_ins.most_from_one_address_15m,
+                  )}
+                </dl>
               </div>
             ),
           )}

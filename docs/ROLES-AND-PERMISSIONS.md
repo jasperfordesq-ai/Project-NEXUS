@@ -397,8 +397,16 @@ before and after values show a super admin flag changing; `org_audit_log`:
 `grant_` / `revoke_tenant_super_admin`, `grant_` / `revoke_global_super_admin`
 and `admin_role_changed` to or from a platform role), admins signing
 in as another member (`org_audit_log` rows `admin_user_impersonated`), counts
-of failed sign-ins (`login_attempts`) and how many senior accounts have
-two-step off. 🔴 It sends names and counts only: email addresses, IP
+of failed sign-ins and how many senior accounts have two-step off. 🔴 The
+failed sign-in totals (last hour, last 24 hours, communities with the most)
+come from `sign_in_failure_hours`, one row per hour and community that
+`RateLimiter::recordAttempt()` adds to on every failed email sign-in (counts
+only; kept 90 days by `nexus:prune-logs`), and the page says since when it has
+counted. They used to be read from `login_attempts`, which is not a record:
+`RateLimiter` deletes its rows after 20 minutes and on a successful sign-in, so
+the figures showed far less than they claimed (fixed 16 Nov 2026). Only the two
+address figures still read `login_attempts`, and they are labelled "in the last
+15 minutes". 🔴 It sends names and counts only: email addresses, IP
 addresses, user agents and stored descriptions are never selected into the
 response, and a section that cannot be read answers `available: false`
 instead of an empty list. 🔴 Names are the account's name today, joined from

@@ -57707,17 +57707,18 @@ export default interface Resources {
       },
       "by": "By:",
       "failed": {
-        "addresses": "Different internet addresses",
-        "col_accounts": "Accounts tried:",
-        "col_failed": "Failed attempts:",
-        "col_last": "Latest:",
-        "col_most": "Most on one account:",
+        "addresses_15m": "Different internet addresses in the last 15 minutes",
+        "col_failed": "Failed in the last 24 hours:",
+        "counted_since": "Counted since {{date}}",
         "empty": "No failed sign-ins in the last 24 hours.",
         "last_24h": "In the last 24 hours",
         "last_hour": "In the last hour",
-        "most_from_one": "Most from one address",
-        "note": "An account's failed attempts are cleared when it next signs in successfully, and so are an address's, so those are not counted here. Sign-ins through the accessible site all arrive from one address.",
-        "title": "Failed sign-ins in the last 24 hours"
+        "most_from_one_15m": "Most from one address in the last 15 minutes",
+        "note": "Every failed sign-in is counted as it happens, by community and by the hour. The count keeps only a number: nothing about the person or where they signed in from. Figures are counted in whole hours, so each one can include up to an hour more.",
+        "nothing_counted": "Nothing has been counted yet. Failed sign-ins are counted from the day this count was switched on.",
+        "recent_note": "Which internet addresses are being tried right now. The platform keeps these details for only about 20 minutes, and forgets an address's failures when it next signs in successfully. Sign-ins through the accessible site all arrive from one address.",
+        "recent_title": "In the last 15 minutes",
+        "title": "Failed sign-ins"
       },
       "impersonation": {
         "empty": "Nobody signed in as another member in the last {{days}} days.",

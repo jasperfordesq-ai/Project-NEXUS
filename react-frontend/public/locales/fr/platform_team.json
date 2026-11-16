@@ -270,17 +270,18 @@
       "link": "Voir les comptes à haut niveau"
     },
     "failed": {
-      "title": "Connexions échouées au cours des dernières 24 heures",
-      "note": "Les tentatives échouées d'un compte sont effacées dès qu'il se connecte à nouveau avec succès, tout comme celles d'une adresse ; elles ne sont donc pas comptées ici. Les connexions via le site accessible arrivent toutes d'une seule adresse.",
+      "title": "Connexions échouées",
+      "note": "Chaque connexion échouée est comptée au moment où elle se produit, par communauté et par heure. Le décompte ne garde qu'un nombre : rien sur la personne ni sur l'endroit d'où elle a tenté de se connecter. Les chiffres sont comptés par heures entières, chacun peut donc inclure jusqu'à une heure de plus.",
+      "counted_since": "Compté depuis le {{date}}",
+      "nothing_counted": "Rien n'a encore été compté. Les connexions échouées sont comptées à partir du jour où ce décompte a été activé.",
       "last_hour": "Durant la dernière heure",
       "last_24h": "Durant les dernières 24 heures",
-      "addresses": "Adresses internet différentes",
-      "most_from_one": "Le plus depuis une seule adresse",
       "empty": "Aucune connexion échouée au cours des dernières 24 heures.",
-      "col_failed": "Tentatives échouées :",
-      "col_accounts": "Comptes essayés :",
-      "col_most": "Le plus sur un seul compte :",
-      "col_last": "La plus récente :"
+      "col_failed": "Échecs au cours des dernières 24 heures :",
+      "recent_title": "Durant les 15 dernières minutes",
+      "recent_note": "Les adresses internet essayées en ce moment. La plateforme ne garde ces détails qu'environ 20 minutes et oublie les échecs d'une adresse dès qu'une connexion réussit depuis celle-ci. Les connexions via le site accessible arrivent toutes d'une seule adresse.",
+      "addresses_15m": "Adresses internet différentes durant les 15 dernières minutes",
+      "most_from_one_15m": "Le plus depuis une seule adresse durant les 15 dernières minutes"
     },
     "access": {
       "title": "Accès à haut niveau accordés et retirés",
