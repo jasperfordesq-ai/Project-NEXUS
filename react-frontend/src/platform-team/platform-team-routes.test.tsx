@@ -63,6 +63,7 @@ vi.mock('./pages/UsagePage', () => ({ default: () => <div>page:UsagePage</div> }
 vi.mock('./pages/UnfinishedFeaturesPage', () => ({ default: () => <div>page:UnfinishedFeaturesPage</div> }));
 vi.mock('./pages/DataRequestsPage', () => ({ default: () => <div>page:DataRequestsPage</div> }));
 vi.mock('./pages/LegalDocumentsPage', () => ({ default: () => <div>page:LegalDocumentsPage</div> }));
+vi.mock('./pages/PushNotificationsPage', () => ({ default: () => <div>page:PushNotificationsPage</div> }));
 vi.mock('@/admin/modules/content/MenusAdmin', () => ({ default: () => <div>page:MenusAdmin</div> }));
 vi.mock('@/admin/modules/content/MenuBuilder', () => ({ default: () => <div>page:MenuBuilder</div> }));
 vi.mock('@/admin/modules/advanced/EmailSettings', () => ({ default: () => <div>page:EmailSettings</div> }));
@@ -305,6 +306,11 @@ describe('the Platform team panel mounts every moved page', () => {
   it('opens the Phone app page', async () => {
     renderAt('/test/platform-team/phone-app');
     expect(await screen.findByText('page:PhoneAppPage')).toBeInTheDocument();
+  });
+
+  it('opens the Push notifications page', async () => {
+    renderAt('/test/platform-team/push-notifications');
+    expect(await screen.findByText('page:PushNotificationsPage')).toBeInTheDocument();
   });
 
   it('forwards /platform-team/integrations to its only page', async () => {

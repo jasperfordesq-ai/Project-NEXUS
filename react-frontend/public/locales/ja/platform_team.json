@@ -636,5 +636,28 @@
     "history_removals_one": "外すべき：{{count}} 件",
     "history_removals_other": "外すべき：{{count}} 件",
     "erased": "消去されたアカウント"
+  },
+  "push_notifications": {
+    "title": "プッシュ通知",
+    "nav": "プッシュ通知",
+    "intro": "メンバーの携帯電話やブラウザに送られた通知の数を、日ごと・コミュニティごとに示します。「プッシュサービスが受け付けた」とは、サービスが通知を受け取ったという意味で、携帯電話に表示されたという意味ではありません。一部の種類の通知（イベントのリマインダー、緊急アラートなど）は、ここに記録されずに送られます。そのため、実際の数はこれ以上です。",
+    "timezone_note": "日付はサーバーの時刻（UTC）で区切っています。",
+    "days_picker": "表示する日数",
+    "days_option": "直近{{count}}日",
+    "loading": "プッシュ通知の数を読み込んでいます",
+    "load_error_title": "プッシュ通知の数を読み込めませんでした",
+    "not_available": "利用できません：プッシュ通知の記録を読み取れませんでした。何も送られなかったという意味ではありません。",
+    "by_day_heading": "日ごと",
+    "by_community_heading": "各コミュニティ（{{count}}）",
+    "by_community_note": "期間全体の合計です。「送り先なし」は日ごとにのみ表示します。",
+    "no_community_heading": "コミュニティに結び付いていないもの",
+    "no_community_note": "コミュニティなしで記録された通知です。日ごとの数には含まれています。",
+    "removed_community": "コミュニティ #{{id}}（現在は存在しません）",
+    "figure": {
+      "accepted": "プッシュサービスが受け付けた",
+      "partial": "一部だけ受け付けられた",
+      "failed": "失敗",
+      "nobody_to_send_to": "送り先なし"
+    }
   }
 }

@@ -636,5 +636,28 @@
     "history_removals_one": "{{count}} marqué à retirer",
     "history_removals_other": "{{count}} marqués à retirer",
     "erased": "Compte effacé"
+  },
+  "push_notifications": {
+    "title": "Notifications push",
+    "nav": "Notifications push",
+    "intro": "Combien de notifications ont été envoyées aux téléphones et navigateurs des membres, par jour et par communauté. « Acceptées par le service push » signifie que le service a pris la notification, pas qu’un téléphone l’a affichée. Certains types de notification sont envoyés sans être enregistrés ici (rappels d’événements, alertes d’urgence et quelques autres) : les chiffres réels sont donc au moins ceux-ci.",
+    "timezone_note": "Les jours suivent l’heure du serveur (UTC).",
+    "days_picker": "Nombre de jours à afficher",
+    "days_option": "{{count}} derniers jours",
+    "loading": "Chargement des chiffres des notifications push",
+    "load_error_title": "Les chiffres des notifications push n’ont pas pu être chargés",
+    "not_available": "Non disponible : le registre des notifications push n’a pas pu être lu. Cela ne veut pas dire qu’aucune n’a été envoyée.",
+    "by_day_heading": "Chaque jour",
+    "by_community_heading": "Chaque communauté ({{count}})",
+    "by_community_note": "Totaux sur toute la période. « Personne à qui envoyer » n’apparaît que par jour.",
+    "no_community_heading": "Sans communauté",
+    "no_community_note": "Notifications enregistrées sans communauté. Elles sont comptées dans les chiffres de chaque jour.",
+    "removed_community": "Communauté #{{id}} (n’existe plus)",
+    "figure": {
+      "accepted": "Acceptées par le service push",
+      "partial": "Acceptées en partie",
+      "failed": "Échouées",
+      "nobody_to_send_to": "Personne à qui envoyer"
+    }
   }
 }

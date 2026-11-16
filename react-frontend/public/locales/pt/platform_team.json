@@ -636,5 +636,28 @@
     "history_removals_one": "{{count}} marcada para remoção",
     "history_removals_other": "{{count}} marcadas para remoção",
     "erased": "Conta apagada"
+  },
+  "push_notifications": {
+    "title": "Notificações push",
+    "nav": "Notificações push",
+    "intro": "Quantas notificações foram enviadas para os celulares e navegadores dos membros, por dia e por comunidade. “Aceitas pelo serviço de push” quer dizer que o serviço recebeu a notificação, não que um celular a exibiu. Alguns tipos de notificação são enviados sem ser registrados aqui (lembretes de eventos, alertas de emergência e alguns outros), então os números reais são no mínimo estes.",
+    "timezone_note": "Os dias seguem o horário do servidor (UTC).",
+    "days_picker": "Quantos dias mostrar",
+    "days_option": "Últimos {{count}} dias",
+    "loading": "Carregando os números de notificações push",
+    "load_error_title": "Não foi possível carregar os números de notificações push",
+    "not_available": "Indisponível: não foi possível ler o registro de notificações push. Isso não quer dizer que nenhuma foi enviada.",
+    "by_day_heading": "Cada dia",
+    "by_community_heading": "Cada comunidade ({{count}})",
+    "by_community_note": "Totais do período inteiro. “Ninguém para quem enviar” aparece só por dia.",
+    "no_community_heading": "Sem comunidade",
+    "no_community_note": "Notificações registradas sem comunidade. Elas estão incluídas nos números diários.",
+    "removed_community": "Comunidade #{{id}} (não existe mais)",
+    "figure": {
+      "accepted": "Aceitas pelo serviço de push",
+      "partial": "Aceitas em parte",
+      "failed": "Com falha",
+      "nobody_to_send_to": "Ninguém para quem enviar"
+    }
   }
 }

@@ -636,5 +636,28 @@
     "history_removals_one": "{{count}} zur Entfernung markiert",
     "history_removals_other": "{{count}} zur Entfernung markiert",
     "erased": "Gelöschtes Konto"
+  },
+  "push_notifications": {
+    "title": "Push-Benachrichtigungen",
+    "nav": "Push-Benachrichtigungen",
+    "intro": "Wie viele Benachrichtigungen an die Handys und Browser der Mitglieder gesendet wurden, nach Tag und nach Gemeinschaft. „Vom Push-Dienst angenommen“ heißt, dass der Dienst die Benachrichtigung entgegengenommen hat, nicht dass ein Handy sie angezeigt hat. Manche Arten von Benachrichtigungen werden gesendet, ohne hier erfasst zu werden (Erinnerungen an Veranstaltungen, Notfallwarnungen und einige andere). Die tatsächlichen Zahlen sind also mindestens so hoch.",
+    "timezone_note": "Die Tage richten sich nach der Serverzeit (UTC).",
+    "days_picker": "Wie viele Tage angezeigt werden",
+    "days_option": "Letzte {{count}} Tage",
+    "loading": "Zahlen zu Push-Benachrichtigungen werden geladen",
+    "load_error_title": "Die Zahlen zu Push-Benachrichtigungen konnten nicht geladen werden",
+    "not_available": "Nicht verfügbar: Die Aufzeichnung der Push-Benachrichtigungen konnte nicht gelesen werden. Das heißt nicht, dass keine gesendet wurden.",
+    "by_day_heading": "Jeder Tag",
+    "by_community_heading": "Jede Gemeinschaft ({{count}})",
+    "by_community_note": "Summen für den ganzen Zeitraum. „Niemand zum Senden“ wird nur pro Tag gezeigt.",
+    "no_community_heading": "Keiner Gemeinschaft zugeordnet",
+    "no_community_note": "Benachrichtigungen, die ohne Gemeinschaft erfasst wurden. Sie sind in den Tageszahlen enthalten.",
+    "removed_community": "Gemeinschaft #{{id}} (existiert nicht mehr)",
+    "figure": {
+      "accepted": "Vom Push-Dienst angenommen",
+      "partial": "Teilweise angenommen",
+      "failed": "Fehlgeschlagen",
+      "nobody_to_send_to": "Niemand zum Senden"
+    }
   }
 }

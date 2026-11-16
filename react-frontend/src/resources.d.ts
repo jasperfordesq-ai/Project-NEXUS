@@ -57693,6 +57693,29 @@ export default interface Resources {
       "not_downloads": "These are members signed in on the app, not downloads from the app stores.",
       "title": "Phone app"
     },
+    "push_notifications": {
+      "by_community_heading": "Each community ({{count}})",
+      "by_community_note": "Totals for the whole period. “Nobody to send to” is shown per day only.",
+      "by_day_heading": "Each day",
+      "days_option": "Last {{count}} days",
+      "days_picker": "How many days to show",
+      "figure": {
+        "accepted": "Accepted by the push service",
+        "failed": "Failed",
+        "nobody_to_send_to": "Nobody to send to",
+        "partial": "Partly accepted"
+      },
+      "intro": "How many notifications were sent to members’ phones and browsers, by day and by community. “Accepted by the push service” means the service took the notification, not that a phone showed it. Some kinds of notification are sent without being recorded here (event reminders, emergency alerts and some others), so the real numbers are at least these.",
+      "load_error_title": "The push notification figures could not be loaded",
+      "loading": "Loading push notification figures",
+      "nav": "Push notifications",
+      "no_community_heading": "Not linked to a community",
+      "no_community_note": "Notifications recorded without a community. They are included in the daily figures.",
+      "not_available": "Not available: the record of push notifications could not be read. This does not mean none were sent.",
+      "removed_community": "Community #{{id}} (no longer exists)",
+      "timezone_note": "Days run in the server’s time (UTC).",
+      "title": "Push notifications"
+    },
     "security": {
       "access": {
         "change": {

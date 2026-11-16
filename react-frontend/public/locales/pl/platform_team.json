@@ -640,5 +640,28 @@
     "history_accounts_many": "Kont: {{count}}",
     "history_removals_few": "{{count}} oznaczone do usunięcia",
     "history_removals_many": "Oznaczonych do usunięcia: {{count}}"
+  },
+  "push_notifications": {
+    "title": "Powiadomienia push",
+    "nav": "Powiadomienia push",
+    "intro": "Ile powiadomień wysłano na telefony i do przeglądarek członków, według dni i społeczności. „Przyjęte przez usługę push” oznacza, że usługa przyjęła powiadomienie, a nie że telefon je wyświetlił. Niektóre rodzaje powiadomień są wysyłane bez zapisu tutaj (przypomnienia o wydarzeniach, alerty alarmowe i kilka innych), więc rzeczywiste liczby są co najmniej takie.",
+    "timezone_note": "Dni liczone są według czasu serwera (UTC).",
+    "days_picker": "Ile dni pokazać",
+    "days_option": "Ostatnie dni: {{count}}",
+    "loading": "Wczytywanie liczb powiadomień push",
+    "load_error_title": "Nie udało się wczytać liczb powiadomień push",
+    "not_available": "Niedostępne: nie udało się odczytać zapisu powiadomień push. Nie oznacza to, że żadnego nie wysłano.",
+    "by_day_heading": "Każdy dzień",
+    "by_community_heading": "Każda społeczność ({{count}})",
+    "by_community_note": "Sumy za cały okres. „Brak odbiorcy” pokazujemy tylko dla każdego dnia.",
+    "no_community_heading": "Bez społeczności",
+    "no_community_note": "Powiadomienia zapisane bez społeczności. Są wliczone w liczby dzienne.",
+    "removed_community": "Społeczność #{{id}} (już nie istnieje)",
+    "figure": {
+      "accepted": "Przyjęte przez usługę push",
+      "partial": "Przyjęte częściowo",
+      "failed": "Nieudane",
+      "nobody_to_send_to": "Brak odbiorcy"
+    }
   }
 }

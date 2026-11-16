@@ -520,6 +520,18 @@ stored files are not recorded anywhere and are listed as such, never as zero.
 is selected. A source that cannot be read is `false` in `sources` and its
 figures are null.
 
+Push notifications (`GET /v2/platform-team/push-notifications?days=1..30`,
+default 14; `PushNotificationsService`, 16 November 2026) is read-only: from
+`push_log`, per day (server time, UTC; every day listed, zeros included) the
+count of each `status` (`delivered` shown as "accepted by the push service",
+`partial`, `failed`, `no_targets` shown as "nobody to send to"), and per
+community the first three over the window, rows with no community as their
+own figure. Any other number of days is refused with 422. Some senders do not
+write `push_log`, so the figures are a floor. 🔴 Counts only: `error` (free
+text that may hold token fragments), `title`, `activity_type` and `user_id`
+are never selected. A record that cannot be read answers `available: false`
+with null figures.
+
 Unfinished features (`GET /v2/platform-team/unfinished-features`;
 `UnfinishedFeaturesService`, 16 November 2026) is read-only: every feature
 marked alpha or beta in the admin Features page's registry

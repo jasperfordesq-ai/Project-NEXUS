@@ -4511,6 +4511,8 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     Route::delete('/v2/platform-team/failed-jobs/{uuid}', [\App\Http\Controllers\Api\PlatformTeam\FailedJobsController::class, 'destroy'])->whereUuid('uuid');
     // Phone app: who has the app across every community (moved out of the community admin's request).
     Route::get('/v2/platform-team/phone-app', [\App\Http\Controllers\Api\PlatformTeam\PhoneAppController::class, 'index']);
+    // Push notifications: per day and per community, pushes accepted / partly accepted / failed / with nobody to send to. Read-only; counts only.
+    Route::get('/v2/platform-team/push-notifications', [\App\Http\Controllers\Api\PlatformTeam\PushNotificationsController::class, 'index']);
     // Senior accounts: who can administer more than one community. Read-only; nothing here grants or removes access.
     Route::get('/v2/platform-team/senior-accounts', [\App\Http\Controllers\Api\PlatformTeam\SeniorAccountsController::class, 'index']);
     // Find an account by its exact email address (in the body, never the address), and sign it out everywhere (needs a recent second step, asked after the lock).

@@ -46,6 +46,7 @@ const UsagePage = lazy(() => import('./pages/UsagePage'));
 const UnfinishedFeaturesPage = lazy(() => import('./pages/UnfinishedFeaturesPage'));
 const DataRequestsPage = lazy(() => import('./pages/DataRequestsPage'));
 const LegalDocumentsPage = lazy(() => import('./pages/LegalDocumentsPage'));
+const PushNotificationsPage = lazy(() => import('./pages/PushNotificationsPage'));
 
 const MenusAdmin = lazy(() => import('@/admin/modules/content/MenusAdmin'));
 const MenuBuilder = lazy(() => import('@/admin/modules/content/MenuBuilder'));
@@ -111,6 +112,7 @@ export function PlatformTeamRoutes() {
 
       <Route path="failed-jobs" element={<Lazy><FailedJobsPage /></Lazy>} />
       <Route path="phone-app" element={<Lazy><PhoneAppPage /></Lazy>} />
+      <Route path="push-notifications" element={<Lazy><PushNotificationsPage /></Lazy>} />
       <Route path="senior-accounts" element={<Lazy><SeniorAccountsPage /></Lazy>} />
       <Route path="accounts" element={<Lazy><FindAccountPage /></Lazy>} />
       <Route path="access-review" element={<Lazy><AccessReviewPage /></Lazy>} />

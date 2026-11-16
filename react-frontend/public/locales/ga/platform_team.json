@@ -642,5 +642,28 @@
     "history_removals_two": "{{count}} marcáilte lena mbaint",
     "history_removals_few": "{{count}} marcáilte lena mbaint",
     "history_removals_many": "{{count}} marcáilte lena mbaint"
+  },
+  "push_notifications": {
+    "title": "Fógraí brú",
+    "nav": "Fógraí brú",
+    "intro": "Cé mhéad fógra a seoladh chuig fóin agus brabhsálaithe na mball, de réir lae agus de réir pobail. Ciallaíonn “Glactha ag an tseirbhís bhrú” gur ghlac an tseirbhís leis an bhfógra, ní gur thaispeáin fón é. Seoltar roinnt cineálacha fógraí gan iad a thaifeadadh anseo (meabhrúcháin imeachtaí, foláirimh éigeandála agus roinnt eile), mar sin is ar a laghad iad seo na fíoruimhreacha.",
+    "timezone_note": "Leanann na laethanta am an fhreastalaí (UTC).",
+    "days_picker": "Cé mhéad lá le taispeáint",
+    "days_option": "Na {{count}} lá deiridh",
+    "loading": "Figiúirí na bhfógraí brú á lódáil",
+    "load_error_title": "Níorbh fhéidir figiúirí na bhfógraí brú a lódáil",
+    "not_available": "Níl sé ar fáil: níorbh fhéidir taifead na bhfógraí brú a léamh. Ní chiallaíonn sé sin nár seoladh aon cheann.",
+    "by_day_heading": "Gach lá",
+    "by_community_heading": "Gach pobal ({{count}})",
+    "by_community_note": "Iomláin don tréimhse ar fad. Ní thaispeántar “Gan aon duine le seoladh chuige” ach in aghaidh an lae.",
+    "no_community_heading": "Gan nasc le pobal",
+    "no_community_note": "Fógraí a taifeadadh gan pobal. Tá siad san áireamh sna figiúirí laethúla.",
+    "removed_community": "Pobal #{{id}} (níl sé ann a thuilleadh)",
+    "figure": {
+      "accepted": "Glactha ag an tseirbhís bhrú",
+      "partial": "Glactha go páirteach",
+      "failed": "Theip orthu",
+      "nobody_to_send_to": "Gan aon duine le seoladh chuige"
+    }
   }
 }

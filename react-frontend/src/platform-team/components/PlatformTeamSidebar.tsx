@@ -44,6 +44,7 @@ import Activity from 'lucide-react/icons/activity';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import BarChart3 from 'lucide-react/icons/chart-column';
+import BellRing from 'lucide-react/icons/bell-ring';
 import Building2 from 'lucide-react/icons/building-2';
 import CreditCard from 'lucide-react/icons/credit-card';
 import FileSearch from 'lucide-react/icons/file-search';
@@ -164,6 +165,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
             { label: tNav('platform_capabilities'), icon: SlidersHorizontal, path: `${P}/platform-capabilities` },
             { label: t('unfinished_features.nav'), icon: FlaskConical, path: `${P}/unfinished-features` },
             { label: t('phone_app.title'), icon: Smartphone, path: `${P}/phone-app` },
+            { label: t('push_notifications.nav'), icon: BellRing, path: `${P}/push-notifications` },
             { label: t('usage.nav'), icon: Gauge, path: `${P}/usage` },
           ],
         },

@@ -636,5 +636,28 @@
     "history_removals_one": "{{count}} segnato da rimuovere",
     "history_removals_other": "{{count}} segnati da rimuovere",
     "erased": "Account cancellato"
+  },
+  "push_notifications": {
+    "title": "Notifiche push",
+    "nav": "Notifiche push",
+    "intro": "Quante notifiche sono state inviate ai telefoni e ai browser dei membri, per giorno e per comunità. «Accettate dal servizio push» significa che il servizio ha preso in carico la notifica, non che un telefono l’abbia mostrata. Alcuni tipi di notifica vengono inviati senza essere registrati qui (promemoria degli eventi, avvisi di emergenza e alcuni altri), quindi i numeri reali sono almeno questi.",
+    "timezone_note": "I giorni seguono l’ora del server (UTC).",
+    "days_picker": "Quanti giorni mostrare",
+    "days_option": "Ultimi {{count}} giorni",
+    "loading": "Caricamento dei dati sulle notifiche push",
+    "load_error_title": "Non è stato possibile caricare i dati sulle notifiche push",
+    "not_available": "Non disponibile: non è stato possibile leggere il registro delle notifiche push. Questo non significa che non ne sia stata inviata nessuna.",
+    "by_day_heading": "Ogni giorno",
+    "by_community_heading": "Ogni comunità ({{count}})",
+    "by_community_note": "Totali per l’intero periodo. «Nessuno a cui inviare» è mostrato solo per giorno.",
+    "no_community_heading": "Senza comunità",
+    "no_community_note": "Notifiche registrate senza una comunità. Sono incluse nei dati giornalieri.",
+    "removed_community": "Comunità #{{id}} (non esiste più)",
+    "figure": {
+      "accepted": "Accettate dal servizio push",
+      "partial": "Accettate in parte",
+      "failed": "Non riuscite",
+      "nobody_to_send_to": "Nessuno a cui inviare"
+    }
   }
 }

@@ -53,6 +53,7 @@ const PLATFORM_ZONE = [
   'unfinished-features',
   'data-requests',
   'legal-documents',
+  'push-notifications',
 ];
 const COMMUNITY_ZONE = [
   'email-settings', 'email-deliverability', 'deliverability', 'settings/registration-policy', 'enterprise/roles',

@@ -636,5 +636,28 @@
     "history_removals_one": "{{count}} gemarkeerd als moet weg",
     "history_removals_other": "{{count}} gemarkeerd als moet weg",
     "erased": "Gewist account"
+  },
+  "push_notifications": {
+    "title": "Pushmeldingen",
+    "nav": "Pushmeldingen",
+    "intro": "Hoeveel meldingen er naar de telefoons en browsers van leden zijn gestuurd, per dag en per gemeenschap. „Aangenomen door de pushdienst” betekent dat de dienst de melding heeft aangenomen, niet dat een telefoon hem heeft getoond. Sommige soorten meldingen worden verstuurd zonder hier te worden vastgelegd (herinneringen aan evenementen, noodmeldingen en enkele andere), dus de echte aantallen zijn minstens deze.",
+    "timezone_note": "De dagen volgen de tijd van de server (UTC).",
+    "days_picker": "Hoeveel dagen tonen",
+    "days_option": "Laatste {{count}} dagen",
+    "loading": "Cijfers over pushmeldingen laden",
+    "load_error_title": "De cijfers over pushmeldingen konden niet worden geladen",
+    "not_available": "Niet beschikbaar: het overzicht van pushmeldingen kon niet worden gelezen. Dat betekent niet dat er geen zijn verstuurd.",
+    "by_day_heading": "Elke dag",
+    "by_community_heading": "Elke gemeenschap ({{count}})",
+    "by_community_note": "Totalen over de hele periode. „Niemand om naar te sturen” staat alleen per dag.",
+    "no_community_heading": "Niet aan een gemeenschap gekoppeld",
+    "no_community_note": "Meldingen die zonder gemeenschap zijn vastgelegd. Ze tellen mee in de dagcijfers.",
+    "removed_community": "Gemeenschap #{{id}} (bestaat niet meer)",
+    "figure": {
+      "accepted": "Aangenomen door de pushdienst",
+      "partial": "Deels aangenomen",
+      "failed": "Mislukt",
+      "nobody_to_send_to": "Niemand om naar te sturen"
+    }
   }
 }
