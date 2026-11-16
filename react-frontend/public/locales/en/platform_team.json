@@ -119,5 +119,29 @@
       "browser_same": "This browser is on the same version.",
       "browser_other": "This browser is on a different version. Reload the page."
     }
+  },
+  "failed_jobs": {
+    "title": "Failed background jobs",
+    "intro": "Work the platform tried to do in the background and could not finish, such as an email it could not send. Run one again, or discard it if it is no longer needed.",
+    "loading": "Loading failed background jobs",
+    "load_error_title": "We couldn't load the failed jobs just now",
+    "empty_title": "Nothing is waiting",
+    "empty_text": "No background job has failed, or every one has been dealt with.",
+    "count": "Waiting to be looked at: {{count}}",
+    "unknown_job": "Name not recorded",
+    "no_reason": "No reason was recorded.",
+    "queue": "Queue:",
+    "failed_at": "Failed:",
+    "retry": "Run again",
+    "discard": "Discard",
+    "retried": "The job is back in the queue.",
+    "discarded": "The job was discarded.",
+    "action_failed": "That didn't work. Nothing was changed.",
+    "discard_title": "Discard this job?",
+    "discard_message": "The work it stood for will not be done, and this cannot be undone.",
+    "cancel": "Keep it",
+    "previous_page": "Previous",
+    "next_page": "Next",
+    "page_of": "Page {{page}} of {{pages}}"
   }
 }

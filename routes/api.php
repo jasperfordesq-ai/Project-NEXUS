@@ -4502,6 +4502,10 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     // Home page: health at a glance for the whole installation.
     Route::get('/v2/platform-team/health', [\App\Http\Controllers\Api\PlatformTeam\PlatformHealthController::class, 'summary']);
+    // Failed background jobs: list, run again, discard. Never the job's payload.
+    Route::get('/v2/platform-team/failed-jobs', [\App\Http\Controllers\Api\PlatformTeam\FailedJobsController::class, 'index']);
+    Route::post('/v2/platform-team/failed-jobs/{uuid}/retry', [\App\Http\Controllers\Api\PlatformTeam\FailedJobsController::class, 'retry'])->whereUuid('uuid');
+    Route::delete('/v2/platform-team/failed-jobs/{uuid}', [\App\Http\Controllers\Api\PlatformTeam\FailedJobsController::class, 'destroy'])->whereUuid('uuid');
 });
 
 // AG71 — Pilot Region Inquiry & Qualification Funnel

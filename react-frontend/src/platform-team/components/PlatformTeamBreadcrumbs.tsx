@@ -24,6 +24,8 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   // No admin breadcrumb wording exists for these two.
   'search-analytics': 'breadcrumbs.search_analytics',
   '404-errors': 'breadcrumbs.errors_404',
+  // The panel's own pages: named as on the home page and in the menu.
+  'failed-jobs': 'home.card.failed_jobs',
   // Pages that came from the super admin panel, or whose admin breadcrumb
   // wording would mislead: named with the wording their own menu entry uses.
   translation: 'super_admin:breadcrumbs.translation',

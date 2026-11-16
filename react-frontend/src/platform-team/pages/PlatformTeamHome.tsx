@@ -93,6 +93,7 @@ const CARD_PAGE: Record<string, string> = {
   database: '/platform-team/enterprise/monitoring',
   cache: '/platform-team/enterprise/monitoring',
   disk: '/platform-team/enterprise/monitoring',
+  failed_jobs: '/platform-team/failed-jobs',
   cron: '/platform-team/cron-jobs',
   email: '/platform-team/email-deliverability',
   snapshots: '/platform-team/seo/prerender',

@@ -119,5 +119,29 @@
       "browser_same": "Tá an brabhsálaí seo ar an leagan céanna.",
       "browser_other": "Tá an brabhsálaí seo ar leagan eile. Athlódáil an leathanach."
     }
+  },
+  "failed_jobs": {
+    "title": "Tascanna cúlra a theip orthu",
+    "intro": "Obair a rinne an t-ardán iarracht a dhéanamh sa chúlra agus nár éirigh leis a chríochnú, mar shampla ríomhphost nárbh fhéidir a sheoladh. Rith tasc arís, nó caith uait é mura bhfuil gá leis a thuilleadh.",
+    "loading": "Tascanna cúlra a theip orthu á lódáil",
+    "load_error_title": "Níorbh fhéidir linn na tascanna a theip orthu a lódáil faoi láthair",
+    "empty_title": "Níl aon rud ag fanacht",
+    "empty_text": "Níor theip ar aon tasc cúlra, nó déileáladh le gach ceann acu.",
+    "count": "Ag fanacht le breathnú orthu: {{count}}",
+    "unknown_job": "Níor taifeadadh an t-ainm",
+    "no_reason": "Níor taifeadadh aon chúis.",
+    "queue": "Scuaine:",
+    "failed_at": "Theip:",
+    "retry": "Rith arís",
+    "discard": "Caith uait",
+    "retried": "Tá an tasc ar ais sa scuaine.",
+    "discarded": "Caitheadh an tasc uait.",
+    "action_failed": "Níor oibrigh sé sin. Níor athraíodh aon rud.",
+    "discard_title": "An tasc seo a chaitheamh uait?",
+    "discard_message": "Ní dhéanfar an obair a bhain leis, agus ní féidir é seo a chealú.",
+    "cancel": "Coinnigh é",
+    "previous_page": "Roimhe",
+    "next_page": "Ar aghaidh",
+    "page_of": "Leathanach {{page}} de {{pages}}"
   }
 }

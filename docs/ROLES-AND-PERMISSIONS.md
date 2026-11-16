@@ -369,7 +369,11 @@ is the home page's `GET /v2/platform-team/health`
 the whole installation. It reads tables with no community filter (scheduled
 job logs, failed background jobs, the maintenance setting of every community),
 which is correct only because nothing below the platform team can call it; it
-sends counts and times, never the contents of a failed job.
+sends counts and times, never the contents of a failed job. The second is
+Failed background jobs (`GET /v2/platform-team/failed-jobs`, `POST …/{uuid}/retry`,
+`DELETE …/{uuid}`; `FailedJobsService`): it lists each failed job by name, queue,
+time and one line of the reason with email addresses masked, and never returns
+the job's payload or stack trace, which can hold members' details.
 
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still

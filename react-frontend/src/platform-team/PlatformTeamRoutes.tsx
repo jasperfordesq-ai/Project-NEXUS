@@ -31,6 +31,8 @@ import { PlatformTeamIndex } from './PlatformTeamIndex';
 
 // The panel's front page: health at a glance (phase 3).
 const PlatformTeamHome = lazy(() => import('./pages/PlatformTeamHome'));
+// Pages written for the panel itself (not moved in from another panel).
+const FailedJobsPage = lazy(() => import('./pages/FailedJobsPage'));
 
 const MenusAdmin = lazy(() => import('@/admin/modules/content/MenusAdmin'));
 const MenuBuilder = lazy(() => import('@/admin/modules/content/MenuBuilder'));
@@ -93,6 +95,8 @@ export function PlatformTeamRoutes() {
   return (
     <>
       <Route index element={<Lazy><PlatformTeamHome /></Lazy>} />
+
+      <Route path="failed-jobs" element={<Lazy><FailedJobsPage /></Lazy>} />
 
       <Route path="menus" element={<Lazy><MenusAdmin /></Lazy>} />
       <Route path="menus/builder/:id" element={<Lazy><MenuBuilder /></Lazy>} />

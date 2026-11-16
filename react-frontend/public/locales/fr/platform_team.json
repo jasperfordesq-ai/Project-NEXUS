@@ -119,5 +119,29 @@
       "browser_same": "Ce navigateur utilise la même version.",
       "browser_other": "Ce navigateur utilise une autre version. Rechargez la page."
     }
+  },
+  "failed_jobs": {
+    "title": "Tâches en arrière-plan en échec",
+    "intro": "Du travail que la plateforme a tenté de faire en arrière-plan sans pouvoir le terminer, comme un e-mail qu'elle n'a pas pu envoyer. Relancez une tâche, ou écartez-la si elle n'est plus utile.",
+    "loading": "Chargement des tâches en arrière-plan en échec",
+    "load_error_title": "Nous n'avons pas pu charger les tâches en échec pour le moment",
+    "empty_title": "Rien n'est en attente",
+    "empty_text": "Aucune tâche en arrière-plan n'a échoué, ou toutes ont été traitées.",
+    "count": "En attente d’examen : {{count}}",
+    "unknown_job": "Nom non enregistré",
+    "no_reason": "Aucune raison n'a été enregistrée.",
+    "queue": "File :",
+    "failed_at": "Échec :",
+    "retry": "Relancer",
+    "discard": "Écarter",
+    "retried": "La tâche est de retour dans la file.",
+    "discarded": "La tâche a été écartée.",
+    "action_failed": "Cela n'a pas fonctionné. Rien n'a été modifié.",
+    "discard_title": "Écarter cette tâche ?",
+    "discard_message": "Le travail qu’elle représentait ne sera pas fait, et cette action est irréversible.",
+    "cancel": "La garder",
+    "previous_page": "Précédent",
+    "next_page": "Suivant",
+    "page_of": "Page {{page}} sur {{pages}}"
   }
 }

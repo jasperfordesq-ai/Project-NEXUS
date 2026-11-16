@@ -119,5 +119,29 @@
       "browser_same": "Ta przeglądarka ma tę samą wersję.",
       "browser_other": "Ta przeglądarka ma inną wersję. Odśwież stronę."
     }
+  },
+  "failed_jobs": {
+    "title": "Nieudane zadania w tle",
+    "intro": "Praca, którą platforma próbowała wykonać w tle i nie mogła dokończyć, na przykład e-mail, którego nie udało się wysłać. Uruchom zadanie ponownie albo je odrzuć, jeśli nie jest już potrzebne.",
+    "loading": "Wczytywanie nieudanych zadań w tle",
+    "load_error_title": "Nie udało się teraz wczytać nieudanych zadań",
+    "empty_title": "Nic nie czeka",
+    "empty_text": "Żadne zadanie w tle nie zakończyło się niepowodzeniem albo wszystkie zostały obsłużone.",
+    "count": "Czekają na przejrzenie: {{count}}",
+    "unknown_job": "Nie zapisano nazwy",
+    "no_reason": "Nie zapisano przyczyny.",
+    "queue": "Kolejka:",
+    "failed_at": "Niepowodzenie:",
+    "retry": "Uruchom ponownie",
+    "discard": "Odrzuć",
+    "retried": "Zadanie wróciło do kolejki.",
+    "discarded": "Zadanie zostało odrzucone.",
+    "action_failed": "To się nie udało. Nic nie zostało zmienione.",
+    "discard_title": "Odrzucić to zadanie?",
+    "discard_message": "Praca, którą miało wykonać, nie zostanie wykonana, a tej operacji nie można cofnąć.",
+    "cancel": "Zostaw",
+    "previous_page": "Poprzednia",
+    "next_page": "Następna",
+    "page_of": "Strona {{page}} z {{pages}}"
   }
 }

@@ -59,6 +59,7 @@ import Mail from 'lucide-react/icons/mail';
 import Menu from 'lucide-react/icons/menu';
 import PanelLeft from 'lucide-react/icons/panel-left';
 import PanelLeftClose from 'lucide-react/icons/panel-left-close';
+import RotateCcw from 'lucide-react/icons/rotate-ccw';
 import ScrollText from 'lucide-react/icons/scroll-text';
 import Settings from 'lucide-react/icons/settings';
 import Shield from 'lucide-react/icons/shield';
@@ -123,6 +124,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
             { label: tNav('cron_setup'), icon: Wrench, path: `${P}/cron-jobs/setup` },
             { label: tNav('cron_settings'), icon: Settings, path: `${P}/cron-jobs/settings` },
             { label: tNav('prerender_engine'), icon: Zap, path: `${P}/seo/prerender` },
+            { label: t('home.card.failed_jobs'), icon: RotateCcw, path: `${P}/failed-jobs` },
             { label: tNav('error_404_tracking'), icon: AlertTriangle, path: `${P}/404-errors` },
             { label: t('nav.tests'), icon: Stethoscope, path: `${P}/tests` },
           ],

@@ -119,5 +119,29 @@
       "browser_same": "Questo browser usa la stessa versione.",
       "browser_other": "Questo browser usa un’altra versione. Ricarica la pagina."
     }
+  },
+  "failed_jobs": {
+    "title": "Attività in background non riuscite",
+    "intro": "Lavoro che la piattaforma ha provato a fare in background senza riuscire a finirlo, come un’email che non è stato possibile inviare. Riesegui un’attività, oppure scartala se non serve più.",
+    "loading": "Caricamento delle attività in background non riuscite",
+    "load_error_title": "Non siamo riusciti a caricare le attività non riuscite in questo momento",
+    "empty_title": "Niente in attesa",
+    "empty_text": "Nessuna attività in background è fallita, oppure sono state tutte gestite.",
+    "count": "In attesa di essere viste: {{count}}",
+    "unknown_job": "Nome non registrato",
+    "no_reason": "Non è stato registrato alcun motivo.",
+    "queue": "Coda:",
+    "failed_at": "Fallita:",
+    "retry": "Riesegui",
+    "discard": "Scarta",
+    "retried": "L’attività è di nuovo in coda.",
+    "discarded": "L’attività è stata scartata.",
+    "action_failed": "Non ha funzionato. Non è stato modificato nulla.",
+    "discard_title": "Scartare questa attività?",
+    "discard_message": "Il lavoro che rappresentava non verrà fatto, e l’azione non può essere annullata.",
+    "cancel": "Tienila",
+    "previous_page": "Precedente",
+    "next_page": "Successiva",
+    "page_of": "Pagina {{page}} di {{pages}}"
   }
 }

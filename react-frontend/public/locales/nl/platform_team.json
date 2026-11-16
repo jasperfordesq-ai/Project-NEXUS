@@ -119,5 +119,29 @@
       "browser_same": "Deze browser heeft dezelfde versie.",
       "browser_other": "Deze browser heeft een andere versie. Laad de pagina opnieuw."
     }
+  },
+  "failed_jobs": {
+    "title": "Mislukte achtergrondtaken",
+    "intro": "Werk dat het platform op de achtergrond probeerde te doen en niet kon afmaken, zoals een e-mail die niet verstuurd kon worden. Voer een taak opnieuw uit, of verwijder die als hij niet meer nodig is.",
+    "loading": "Mislukte achtergrondtaken worden geladen",
+    "load_error_title": "We konden de mislukte taken nu niet laden",
+    "empty_title": "Er wacht niets",
+    "empty_text": "Er is geen achtergrondtaak mislukt, of ze zijn allemaal afgehandeld.",
+    "count": "Wachten op een blik: {{count}}",
+    "unknown_job": "Naam niet vastgelegd",
+    "no_reason": "Er is geen reden vastgelegd.",
+    "queue": "Wachtrij:",
+    "failed_at": "Mislukt:",
+    "retry": "Opnieuw uitvoeren",
+    "discard": "Verwijderen",
+    "retried": "De taak staat weer in de wachtrij.",
+    "discarded": "De taak is verwijderd.",
+    "action_failed": "Dat is niet gelukt. Er is niets gewijzigd.",
+    "discard_title": "Deze taak verwijderen?",
+    "discard_message": "Het werk waarvoor de taak stond wordt niet gedaan, en dit kan niet ongedaan worden gemaakt.",
+    "cancel": "Behouden",
+    "previous_page": "Vorige",
+    "next_page": "Volgende",
+    "page_of": "Pagina {{page}} van {{pages}}"
   }
 }

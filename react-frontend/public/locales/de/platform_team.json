@@ -119,5 +119,29 @@
       "browser_same": "Dieser Browser hat dieselbe Version.",
       "browser_other": "Dieser Browser hat eine andere Version. Bitte die Seite neu laden."
     }
+  },
+  "failed_jobs": {
+    "title": "Fehlgeschlagene Hintergrundaufgaben",
+    "intro": "Arbeiten, die die Plattform im Hintergrund erledigen wollte und nicht abschließen konnte, etwa eine E-Mail, die sich nicht senden ließ. Starte eine Aufgabe erneut oder verwirf sie, wenn sie nicht mehr gebraucht wird.",
+    "loading": "Fehlgeschlagene Hintergrundaufgaben werden geladen",
+    "load_error_title": "Wir konnten die fehlgeschlagenen Aufgaben gerade nicht laden",
+    "empty_title": "Nichts wartet",
+    "empty_text": "Keine Hintergrundaufgabe ist fehlgeschlagen, oder alle wurden erledigt.",
+    "count": "Warten auf Durchsicht: {{count}}",
+    "unknown_job": "Name nicht erfasst",
+    "no_reason": "Es wurde kein Grund erfasst.",
+    "queue": "Warteschlange:",
+    "failed_at": "Fehlgeschlagen:",
+    "retry": "Erneut starten",
+    "discard": "Verwerfen",
+    "retried": "Die Aufgabe ist wieder in der Warteschlange.",
+    "discarded": "Die Aufgabe wurde verworfen.",
+    "action_failed": "Das hat nicht geklappt. Es wurde nichts geändert.",
+    "discard_title": "Diese Aufgabe verwerfen?",
+    "discard_message": "Die Arbeit, für die sie stand, wird nicht erledigt, und das lässt sich nicht rückgängig machen.",
+    "cancel": "Behalten",
+    "previous_page": "Zurück",
+    "next_page": "Weiter",
+    "page_of": "Seite {{page}} von {{pages}}"
   }
 }

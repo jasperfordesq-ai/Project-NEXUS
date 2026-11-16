@@ -119,5 +119,29 @@
       "browser_same": "Este navegador está na mesma versão.",
       "browser_other": "Este navegador está em outra versão. Recarregue a página."
     }
+  },
+  "failed_jobs": {
+    "title": "Tarefas em segundo plano com falha",
+    "intro": "Trabalho que a plataforma tentou fazer em segundo plano e não conseguiu terminar, como um e-mail que não pôde ser enviado. Execute uma tarefa de novo ou descarte-a se ela não for mais necessária.",
+    "loading": "Carregando as tarefas em segundo plano com falha",
+    "load_error_title": "Não conseguimos carregar as tarefas com falha agora",
+    "empty_title": "Nada aguardando",
+    "empty_text": "Nenhuma tarefa em segundo plano falhou, ou todas já foram tratadas.",
+    "count": "Aguardando análise: {{count}}",
+    "unknown_job": "Nome não registrado",
+    "no_reason": "Nenhum motivo foi registrado.",
+    "queue": "Fila:",
+    "failed_at": "Falhou:",
+    "retry": "Executar de novo",
+    "discard": "Descartar",
+    "retried": "A tarefa voltou para a fila.",
+    "discarded": "A tarefa foi descartada.",
+    "action_failed": "Não deu certo. Nada foi alterado.",
+    "discard_title": "Descartar esta tarefa?",
+    "discard_message": "O trabalho que ela representava não será feito, e isso não pode ser desfeito.",
+    "cancel": "Manter",
+    "previous_page": "Anterior",
+    "next_page": "Próxima",
+    "page_of": "Página {{page}} de {{pages}}"
   }
 }
