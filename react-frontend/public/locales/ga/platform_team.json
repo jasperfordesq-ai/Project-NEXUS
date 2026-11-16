@@ -239,5 +239,34 @@
       "empty": "Níor shínigh aon duine isteach mar bhall eile le {{days}} lá anuas.",
       "member": "Sínithe isteach mar:"
     }
+  },
+  "glance": {
+    "title": "Sracfhéachaint ar na pobail",
+    "nav": "Sracfhéachaint",
+    "intro": "Gach pobal ar an ardán, agus na gnéithe atá curtha ar siúl ag gach ceann acu.",
+    "read_only_note": "Ní dhéanann an leathanach seo ach na lasca a thaispeáint. Chun ceann a athrú, oscail painéal riaracháin an phobail sin.",
+    "loading": "Na pobail á lódáil",
+    "load_error_title": "Níorbh fhéidir linn na pobail a lódáil faoi láthair",
+    "empty": "Níl aon phobal ann fós.",
+    "community_count": "Pobail: {{count}}",
+    "on": "Ar siúl",
+    "off": "Múchta",
+    "held": "Ar siúl anseo, ach múchta don ardán ar fad",
+    "held_note": "Tá gné a bhfuil glas uirthi ar siúl sa phobal sin, ach tá lasc ar leibhéal an ardáin á coinneáil múchta. Ní oibreoidh sí ansin go dtí go gcuirfear lasc an ardáin ar siúl.",
+    "not_active": "Gan a bheith gníomhach",
+    "features_heading": "Gnéithe",
+    "modules_heading": "Bunchodanna",
+    "modules_note": "Na codanna a dtosaíonn gach pobal leo. Is féidir le pobal ceann a mhúchadh mar sin féin.",
+    "switch_column": "Lasc",
+    "count_column": "Cé mhéad",
+    "on_in": "Ar siúl i {{count}} as {{total}}",
+    "on_everywhere": "Ar siúl i ngach pobal.",
+    "off_everywhere": "Múchta i ngach pobal.",
+    "off_in": "Múchta i:",
+    "feature_name": {
+      "fadp_compliance": "Cosaint sonraí na hEilvéise (FADP)",
+      "local_advertising": "Fógraíocht áitiúil",
+      "maps": "Léarscáileanna"
+    }
   }
 }

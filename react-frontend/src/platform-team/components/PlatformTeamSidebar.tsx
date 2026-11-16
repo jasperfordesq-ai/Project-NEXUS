@@ -65,6 +65,7 @@ import Settings from 'lucide-react/icons/settings';
 import Shield from 'lucide-react/icons/shield';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import SlidersHorizontal from 'lucide-react/icons/sliders-horizontal';
+import Grid3x3 from 'lucide-react/icons/grid-3x3';
 import Lock from 'lucide-react/icons/lock';
 import Smartphone from 'lucide-react/icons/smartphone';
 import UserCog from 'lucide-react/icons/user-cog';
@@ -146,6 +147,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           key: 'communities',
           title: t('sidebar.group_communities'),
           items: [
+            { label: t('glance.nav'), icon: Grid3x3, path: `${P}/communities` },
             { label: tSuper('nav.provisioning_queue'), icon: Building2, path: `${P}/provisioning-requests` },
             { label: tSuper('nav.pilot_inquiries'), icon: FileSearch, path: `${P}/platform/pilot-inquiries` },
             { label: tNav('platform_capabilities'), icon: SlidersHorizontal, path: `${P}/platform-capabilities` },

@@ -239,5 +239,34 @@
       "empty": "Nadie ha iniciado sesión como otro miembro en los últimos {{days}} días.",
       "member": "Inició sesión como:"
     }
+  },
+  "glance": {
+    "title": "Las comunidades de un vistazo",
+    "nav": "De un vistazo",
+    "intro": "Todas las comunidades de la plataforma y qué funciones tiene activadas cada una.",
+    "read_only_note": "Esta página solo muestra los interruptores. Para cambiar uno, abre el panel de administración de esa comunidad.",
+    "loading": "Cargando las comunidades",
+    "load_error_title": "No hemos podido cargar las comunidades ahora mismo",
+    "empty": "Todavía no hay comunidades.",
+    "community_count": "Comunidades: {{count}}",
+    "on": "Activado",
+    "off": "Desactivado",
+    "held": "Activado aquí, pero desactivado para toda la plataforma",
+    "held_note": "Una función marcada con un candado está activada en esa comunidad, pero un interruptor de toda la plataforma la mantiene desactivada. No funcionará allí hasta que se active el interruptor de la plataforma.",
+    "not_active": "No activa",
+    "features_heading": "Funciones",
+    "modules_heading": "Partes básicas",
+    "modules_note": "Las partes con las que empieza toda comunidad. Aun así, una comunidad puede desactivar alguna.",
+    "switch_column": "Interruptor",
+    "count_column": "Cuántas",
+    "on_in": "Activado en {{count}} de {{total}}",
+    "on_everywhere": "Activado en todas las comunidades.",
+    "off_everywhere": "Desactivado en todas las comunidades.",
+    "off_in": "Desactivado en:",
+    "feature_name": {
+      "fadp_compliance": "Protección de datos suiza (LPD)",
+      "local_advertising": "Publicidad local",
+      "maps": "Mapas"
+    }
   }
 }

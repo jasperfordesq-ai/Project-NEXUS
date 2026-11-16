@@ -145,7 +145,7 @@ export function SeniorAccountsPage() {
           </Card>
 
           {list.truncated ? (
-            <p className="text-sm text-warning" role="status">
+            <p className="text-sm text-warning-soft-foreground" role="status">
               {t('senior_accounts.truncated', { count: list.accounts.length })}
             </p>
           ) : null}

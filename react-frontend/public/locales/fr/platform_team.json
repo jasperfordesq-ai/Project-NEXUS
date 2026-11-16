@@ -239,5 +239,34 @@
       "empty": "Personne ne s'est connecté à la place d'un autre membre au cours des {{days}} derniers jours.",
       "member": "Connecté en tant que :"
     }
+  },
+  "glance": {
+    "title": "Les communautés en un coup d'œil",
+    "nav": "En un coup d'œil",
+    "intro": "Toutes les communautés de la plateforme, et les fonctions que chacune a activées.",
+    "read_only_note": "Cette page ne fait qu'afficher les interrupteurs. Pour en changer un, ouvrez l'espace d'administration de la communauté concernée.",
+    "loading": "Chargement des communautés",
+    "load_error_title": "Nous n'avons pas pu charger les communautés pour le moment",
+    "empty": "Il n'y a pas encore de communauté.",
+    "community_count": "Communautés : {{count}}",
+    "on": "Activé",
+    "off": "Désactivé",
+    "held": "Activé ici, mais désactivé pour toute la plateforme",
+    "held_note": "Une fonction marquée d'un cadenas est activée dans cette communauté, mais un interrupteur de la plateforme la maintient désactivée. Elle n'y fonctionnera pas tant que l'interrupteur de la plateforme ne sera pas activé.",
+    "not_active": "Non active",
+    "features_heading": "Fonctions",
+    "modules_heading": "Parties de base",
+    "modules_note": "Les parties avec lesquelles chaque communauté démarre. Une communauté peut tout de même en désactiver une.",
+    "switch_column": "Interrupteur",
+    "count_column": "Combien",
+    "on_in": "Activé dans {{count}} sur {{total}}",
+    "on_everywhere": "Activé dans toutes les communautés.",
+    "off_everywhere": "Désactivé dans toutes les communautés.",
+    "off_in": "Désactivé dans :",
+    "feature_name": {
+      "fadp_compliance": "Protection des données suisse (LPD)",
+      "local_advertising": "Publicité locale",
+      "maps": "Cartes"
+    }
   }
 }

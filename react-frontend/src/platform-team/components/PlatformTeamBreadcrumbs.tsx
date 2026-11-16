@@ -29,6 +29,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   'phone-app': 'phone_app.title',
   'senior-accounts': 'senior_accounts.title',
   security: 'security.title',
+  communities: 'glance.title',
   // Pages that came from the super admin panel, or whose admin breadcrumb
   // wording would mislead: named with the wording their own menu entry uses.
   translation: 'super_admin:breadcrumbs.translation',

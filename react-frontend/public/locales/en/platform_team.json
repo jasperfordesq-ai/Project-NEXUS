@@ -239,5 +239,34 @@
       "empty": "Nobody signed in as another member in the last {{days}} days.",
       "member": "Signed in as:"
     }
+  },
+  "glance": {
+    "title": "Communities at a glance",
+    "nav": "At a glance",
+    "intro": "Every community on the platform, and which features each one has switched on.",
+    "read_only_note": "This page only shows the switches. To change one, open that community's own admin panel.",
+    "loading": "Loading the communities",
+    "load_error_title": "We couldn't load the communities just now",
+    "empty": "There are no communities yet.",
+    "community_count": "Communities: {{count}}",
+    "on": "On",
+    "off": "Off",
+    "held": "On here, but switched off for the whole platform",
+    "held_note": "A feature marked with a padlock is switched on in that community, but a platform-wide switch is holding it off. It will not work there until the platform switch is turned on.",
+    "not_active": "Not active",
+    "features_heading": "Features",
+    "modules_heading": "Core parts",
+    "modules_note": "The parts every community starts with. A community can still switch one off.",
+    "switch_column": "Switch",
+    "count_column": "How many",
+    "on_in": "On in {{count}} of {{total}}",
+    "on_everywhere": "On in every community.",
+    "off_everywhere": "Off in every community.",
+    "off_in": "Off in:",
+    "feature_name": {
+      "fadp_compliance": "Swiss data protection (FADP)",
+      "local_advertising": "Local advertising",
+      "maps": "Maps"
+    }
   }
 }

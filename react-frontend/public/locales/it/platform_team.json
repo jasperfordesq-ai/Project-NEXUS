@@ -239,5 +239,34 @@
       "empty": "Negli ultimi {{days}} giorni nessuno ha effettuato l’accesso come un altro membro.",
       "member": "Accesso effettuato come:"
     }
+  },
+  "glance": {
+    "title": "Le comunità a colpo d’occhio",
+    "nav": "A colpo d’occhio",
+    "intro": "Tutte le comunità della piattaforma e quali funzioni ha attivato ciascuna.",
+    "read_only_note": "Questa pagina mostra soltanto gli interruttori. Per cambiarne uno, apri il pannello di amministrazione di quella comunità.",
+    "loading": "Caricamento delle comunità",
+    "load_error_title": "Non siamo riusciti a caricare le comunità in questo momento",
+    "empty": "Non ci sono ancora comunità.",
+    "community_count": "Comunità: {{count}}",
+    "on": "Attivo",
+    "off": "Disattivato",
+    "held": "Attivo qui, ma disattivato per tutta la piattaforma",
+    "held_note": "Una funzione contrassegnata da un lucchetto è attiva in quella comunità, ma un interruttore di tutta la piattaforma la tiene disattivata. Lì non funzionerà finché l’interruttore della piattaforma non verrà attivato.",
+    "not_active": "Non attiva",
+    "features_heading": "Funzioni",
+    "modules_heading": "Parti di base",
+    "modules_note": "Le parti con cui ogni comunità inizia. Una comunità può comunque disattivarne una.",
+    "switch_column": "Interruttore",
+    "count_column": "Quante",
+    "on_in": "Attivo in {{count}} su {{total}}",
+    "on_everywhere": "Attivo in tutte le comunità.",
+    "off_everywhere": "Disattivato in tutte le comunità.",
+    "off_in": "Disattivato in:",
+    "feature_name": {
+      "fadp_compliance": "Protezione dei dati svizzera (LPD)",
+      "local_advertising": "Pubblicità locale",
+      "maps": "Mappe"
+    }
   }
 }

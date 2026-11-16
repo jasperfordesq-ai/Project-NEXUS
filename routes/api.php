@@ -4512,6 +4512,8 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     Route::get('/v2/platform-team/senior-accounts', [\App\Http\Controllers\Api\PlatformTeam\SeniorAccountsController::class, 'index']);
     // Security: senior access given and removed, sign-ins as another member, failed sign-ins. Read-only; names and counts only.
     Route::get('/v2/platform-team/security', [\App\Http\Controllers\Api\PlatformTeam\SecurityOverviewController::class, 'index']);
+    // Communities at a glance: every community against every feature and core part. Read-only; no member data.
+    Route::get('/v2/platform-team/communities', [\App\Http\Controllers\Api\PlatformTeam\CommunitiesAtAGlanceController::class, 'index']);
 });
 
 // AG71 — Pilot Region Inquiry & Qualification Funnel

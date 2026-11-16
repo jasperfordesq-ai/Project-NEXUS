@@ -239,5 +239,34 @@
       "empty": "In de afgelopen {{days}} dagen heeft niemand ingelogd als een ander lid.",
       "member": "Ingelogd als:"
     }
+  },
+  "glance": {
+    "title": "Gemeenschappen in één oogopslag",
+    "nav": "In één oogopslag",
+    "intro": "Elke gemeenschap op het platform, en welke functies elk ervan heeft aangezet.",
+    "read_only_note": "Deze pagina laat de schakelaars alleen zien. Om er een te wijzigen, open je het beheerpaneel van die gemeenschap.",
+    "loading": "De gemeenschappen worden geladen",
+    "load_error_title": "We konden de gemeenschappen nu niet laden",
+    "empty": "Er zijn nog geen gemeenschappen.",
+    "community_count": "Gemeenschappen: {{count}}",
+    "on": "Aan",
+    "off": "Uit",
+    "held": "Hier aan, maar uitgezet voor het hele platform",
+    "held_note": "Een functie met een hangslot staat in die gemeenschap aan, maar een schakelaar voor het hele platform houdt haar uit. Ze werkt daar pas als de platformschakelaar wordt aangezet.",
+    "not_active": "Niet actief",
+    "features_heading": "Functies",
+    "modules_heading": "Basisonderdelen",
+    "modules_note": "De onderdelen waarmee elke gemeenschap begint. Een gemeenschap kan er toch een uitzetten.",
+    "switch_column": "Schakelaar",
+    "count_column": "Hoeveel",
+    "on_in": "Aan in {{count}} van {{total}}",
+    "on_everywhere": "Aan in elke gemeenschap.",
+    "off_everywhere": "Uit in elke gemeenschap.",
+    "off_in": "Uit in:",
+    "feature_name": {
+      "fadp_compliance": "Zwitserse gegevensbescherming (FADP)",
+      "local_advertising": "Lokale advertenties",
+      "maps": "Kaarten"
+    }
   }
 }

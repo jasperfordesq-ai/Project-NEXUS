@@ -36,6 +36,7 @@ const FailedJobsPage = lazy(() => import('./pages/FailedJobsPage'));
 const PhoneAppPage = lazy(() => import('./pages/PhoneAppPage'));
 const SeniorAccountsPage = lazy(() => import('./pages/SeniorAccountsPage'));
 const SecurityPage = lazy(() => import('./pages/SecurityPage'));
+const CommunitiesAtAGlancePage = lazy(() => import('./pages/CommunitiesAtAGlancePage'));
 
 const MenusAdmin = lazy(() => import('@/admin/modules/content/MenusAdmin'));
 const MenuBuilder = lazy(() => import('@/admin/modules/content/MenuBuilder'));
@@ -103,6 +104,7 @@ export function PlatformTeamRoutes() {
       <Route path="phone-app" element={<Lazy><PhoneAppPage /></Lazy>} />
       <Route path="senior-accounts" element={<Lazy><SeniorAccountsPage /></Lazy>} />
       <Route path="security" element={<Lazy><SecurityPage /></Lazy>} />
+      <Route path="communities" element={<Lazy><CommunitiesAtAGlancePage /></Lazy>} />
 
       <Route path="menus" element={<Lazy><MenusAdmin /></Lazy>} />
       <Route path="menus/builder/:id" element={<Lazy><MenuBuilder /></Lazy>} />

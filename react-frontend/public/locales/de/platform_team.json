@@ -239,5 +239,34 @@
       "empty": "In den letzten {{days}} Tagen hat sich niemand als ein anderes Mitglied angemeldet.",
       "member": "Angemeldet als:"
     }
+  },
+  "glance": {
+    "title": "Gemeinschaften auf einen Blick",
+    "nav": "Auf einen Blick",
+    "intro": "Jede Gemeinschaft auf der Plattform und welche Funktionen sie eingeschaltet hat.",
+    "read_only_note": "Diese Seite zeigt die Schalter nur an. Um einen zu ändern, öffnen Sie den Admin-Bereich der jeweiligen Gemeinschaft.",
+    "loading": "Gemeinschaften werden geladen",
+    "load_error_title": "Wir konnten die Gemeinschaften gerade nicht laden",
+    "empty": "Es gibt noch keine Gemeinschaften.",
+    "community_count": "Gemeinschaften: {{count}}",
+    "on": "An",
+    "off": "Aus",
+    "held": "Hier an, aber für die ganze Plattform ausgeschaltet",
+    "held_note": "Eine Funktion mit Schloss ist in dieser Gemeinschaft eingeschaltet, wird aber von einem plattformweiten Schalter zurückgehalten. Sie funktioniert dort erst, wenn der Plattform-Schalter eingeschaltet wird.",
+    "not_active": "Nicht aktiv",
+    "features_heading": "Funktionen",
+    "modules_heading": "Kernbereiche",
+    "modules_note": "Die Bereiche, mit denen jede Gemeinschaft startet. Eine Gemeinschaft kann trotzdem einen ausschalten.",
+    "switch_column": "Schalter",
+    "count_column": "Wie viele",
+    "on_in": "An in {{count}} von {{total}}",
+    "on_everywhere": "In jeder Gemeinschaft an.",
+    "off_everywhere": "In jeder Gemeinschaft aus.",
+    "off_in": "Aus in:",
+    "feature_name": {
+      "fadp_compliance": "Schweizer Datenschutz (DSG)",
+      "local_advertising": "Lokale Werbung",
+      "maps": "Karten"
+    }
   }
 }

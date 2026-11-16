@@ -396,7 +396,13 @@ two-step off. 🔴 It sends names and counts only: email addresses, IP
 addresses, user agents and stored descriptions are never selected into the
 response, and a section that cannot be read answers `available: false`
 instead of an empty list. 🔴 Changes to `users.is_god` are not recorded
-anywhere, so no page can show them.
+anywhere, so no page can show them. The sixth is Communities at a glance
+(`GET /v2/platform-team/communities`; `CommunitiesAtAGlanceService`), also
+read-only: every community against every optional feature and core module, on
+or off, computed as `TenantContext::hasFeature()` / `hasModule()` compute it,
+plus the features a platform-wide switch is currently holding off. It reads
+no member data. Switches are still changed in each community's own admin
+panel.
 
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still

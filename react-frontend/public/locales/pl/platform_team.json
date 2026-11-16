@@ -239,5 +239,34 @@
       "empty": "W ciągu ostatnich {{days}} dni nikt nie zalogował się jako inny członek.",
       "member": "Zalogowano jako:"
     }
+  },
+  "glance": {
+    "title": "Społeczności w skrócie",
+    "nav": "W skrócie",
+    "intro": "Każda społeczność na platformie i funkcje, które każda z nich ma włączone.",
+    "read_only_note": "Ta strona tylko pokazuje przełączniki. Aby zmienić któryś z nich, otwórz panel administracyjny danej społeczności.",
+    "loading": "Wczytywanie społeczności",
+    "load_error_title": "Nie udało się teraz wczytać społeczności",
+    "empty": "Nie ma jeszcze żadnych społeczności.",
+    "community_count": "Społeczności: {{count}}",
+    "on": "Włączone",
+    "off": "Wyłączone",
+    "held": "Włączone tutaj, ale wyłączone dla całej platformy",
+    "held_note": "Funkcja oznaczona kłódką jest włączona w tej społeczności, ale przełącznik całej platformy trzyma ją wyłączoną. Nie będzie tam działać, dopóki przełącznik platformy nie zostanie włączony.",
+    "not_active": "Nieaktywna",
+    "features_heading": "Funkcje",
+    "modules_heading": "Części podstawowe",
+    "modules_note": "Części, z którymi zaczyna każda społeczność. Społeczność może mimo to którąś wyłączyć.",
+    "switch_column": "Przełącznik",
+    "count_column": "Ile",
+    "on_in": "Włączone w {{count}} z {{total}}",
+    "on_everywhere": "Włączone w każdej społeczności.",
+    "off_everywhere": "Wyłączone w każdej społeczności.",
+    "off_in": "Wyłączone w:",
+    "feature_name": {
+      "fadp_compliance": "Szwajcarska ochrona danych (FADP)",
+      "local_advertising": "Reklama lokalna",
+      "maps": "Mapy"
+    }
   }
 }

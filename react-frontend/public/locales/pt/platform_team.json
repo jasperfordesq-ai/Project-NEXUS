@@ -239,5 +239,34 @@
       "empty": "Ninguém entrou como outro membro nos últimos {{days}} dias.",
       "member": "Entrou como:"
     }
+  },
+  "glance": {
+    "title": "Comunidades em resumo",
+    "nav": "Em resumo",
+    "intro": "Todas as comunidades da plataforma e quais recursos cada uma tem ativados.",
+    "read_only_note": "Esta página apenas mostra as chaves. Para mudar uma delas, abra o painel de administração daquela comunidade.",
+    "loading": "Carregando as comunidades",
+    "load_error_title": "Não conseguimos carregar as comunidades agora",
+    "empty": "Ainda não há comunidades.",
+    "community_count": "Comunidades: {{count}}",
+    "on": "Ativado",
+    "off": "Desativado",
+    "held": "Ativado aqui, mas desativado para toda a plataforma",
+    "held_note": "Um recurso marcado com um cadeado está ativado naquela comunidade, mas uma chave de toda a plataforma o mantém desativado. Ele não vai funcionar lá até que a chave da plataforma seja ativada.",
+    "not_active": "Não ativa",
+    "features_heading": "Recursos",
+    "modules_heading": "Partes básicas",
+    "modules_note": "As partes com que toda comunidade começa. Mesmo assim, uma comunidade pode desativar alguma.",
+    "switch_column": "Chave",
+    "count_column": "Quantas",
+    "on_in": "Ativado em {{count}} de {{total}}",
+    "on_everywhere": "Ativado em todas as comunidades.",
+    "off_everywhere": "Desativado em todas as comunidades.",
+    "off_in": "Desativado em:",
+    "feature_name": {
+      "fadp_compliance": "Proteção de dados suíça (LPD)",
+      "local_advertising": "Publicidade local",
+      "maps": "Mapas"
+    }
   }
 }

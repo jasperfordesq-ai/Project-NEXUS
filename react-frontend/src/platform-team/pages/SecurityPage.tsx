@@ -128,8 +128,8 @@ export function SecurityPage() {
   const person = (name: string | null): string => name ?? t('security.not_recorded');
 
   const unavailable = (
-    <p className="flex items-start gap-2 text-sm text-warning" role="status">
-      <CircleHelp size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+    <p className="flex items-start gap-2 text-sm text-warning-soft-foreground" role="status">
+      <CircleHelp size={16} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
       {t('security.unavailable')}
     </p>
   );

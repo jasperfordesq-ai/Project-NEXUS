@@ -57253,6 +57253,35 @@ export default interface Resources {
       "title": "Failed background jobs",
       "unknown_job": "Name not recorded"
     },
+    "glance": {
+      "community_count": "Communities: {{count}}",
+      "count_column": "How many",
+      "empty": "There are no communities yet.",
+      "feature_name": {
+        "fadp_compliance": "Swiss data protection (FADP)",
+        "local_advertising": "Local advertising",
+        "maps": "Maps"
+      },
+      "features_heading": "Features",
+      "held": "On here, but switched off for the whole platform",
+      "held_note": "A feature marked with a padlock is switched on in that community, but a platform-wide switch is holding it off. It will not work there until the platform switch is turned on.",
+      "intro": "Every community on the platform, and which features each one has switched on.",
+      "load_error_title": "We couldn't load the communities just now",
+      "loading": "Loading the communities",
+      "modules_heading": "Core parts",
+      "modules_note": "The parts every community starts with. A community can still switch one off.",
+      "nav": "At a glance",
+      "not_active": "Not active",
+      "off": "Off",
+      "off_everywhere": "Off in every community.",
+      "off_in": "Off in:",
+      "on": "On",
+      "on_everywhere": "On in every community.",
+      "on_in": "On in {{count}} of {{total}}",
+      "read_only_note": "This page only shows the switches. To change one, open that community's own admin panel.",
+      "switch_column": "Switch",
+      "title": "Communities at a glance"
+    },
     "header": {
       "back_to_admin": "Back to admin",
       "my_profile": "My profile",
