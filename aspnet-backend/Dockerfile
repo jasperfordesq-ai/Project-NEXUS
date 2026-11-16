@@ -41,7 +41,7 @@ RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 # Stage 2: Runtime (lightweight ASP.NET runtime image)
 # EF migrations run via a separate SDK-based step when needed.
 # -----------------------------------------------------------------------------
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS runtime
 WORKDIR /app
 
 # Install curl for health checks and create the non-root runtime user.
