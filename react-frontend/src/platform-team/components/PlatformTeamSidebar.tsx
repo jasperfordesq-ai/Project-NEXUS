@@ -157,6 +157,13 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           ],
         },
         {
+          // Data requests, legal documents and the jobs that delete old data,
+          // across every community. A group with no entries is not drawn.
+          key: 'data',
+          title: t('sidebar.group_data'),
+          items: [],
+        },
+        {
           // Links with other installations and other platforms. The name and
           // the four entries are the super admin menu's own, unchanged.
           key: 'federation',
@@ -359,7 +366,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
             {!collapsed && (
               <h2 className="px-3 pb-2 text-sm font-semibold text-foreground">{zone.title}</h2>
             )}
-            {zone.groups.map((group, groupIndex) => (
+            {zone.groups.filter((group) => group.items.length > 0).map((group, groupIndex) => (
               <div key={group.key} className={groupIndex > 0 ? 'mt-3' : ''}>
                 {!collapsed && (
                   <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-muted">

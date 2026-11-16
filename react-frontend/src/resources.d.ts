@@ -57545,6 +57545,7 @@ export default interface Resources {
       "group_access": "Access",
       "group_communities": "Communities",
       "group_connections": "Connections",
+      "group_data": "Data and legal",
       "group_email": "Email",
       "group_health": "Health",
       "group_joining": "Joining and roles",
